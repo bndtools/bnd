@@ -11,7 +11,7 @@ public class WithoutDeclarationType {
   String test = "test";
 
   /**
-   * 
+   *
    */
   public void print() {
     // Comment

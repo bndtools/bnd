@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 
 public class ProgressToOutput implements ProgressPlugin {
 	final static Logger	logger	= LoggerFactory.getLogger(ProgressToOutput.class);
-	final Object	lock	= new Object();
+	final Object		lock	= new Object();
 	final Appendable	appendable;
-	final String	eol;
+	final String		eol;
 
 	public ProgressToOutput(Appendable appendable, String eol) {
 		this.appendable = appendable;

@@ -20,8 +20,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
-import org.osgi.framework.FrameworkEvent;
-import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 
@@ -107,12 +105,8 @@ public class AgentDispatcher {
 		Framework framework = ff.newFramework((Map) configuration);
 		framework.init();
 		framework.getBundleContext()
-			.addFrameworkListener(new FrameworkListener() {
-
-				@Override
-				public void frameworkEvent(FrameworkEvent event) {
-					// System.err.println("FW Event " + event);
-				}
+			.addFrameworkListener(event -> {
+				// System.err.println("FW Event " + event);
 			});
 
 		framework.start();

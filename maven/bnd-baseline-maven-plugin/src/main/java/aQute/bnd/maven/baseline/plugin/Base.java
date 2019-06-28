@@ -18,7 +18,7 @@ public class Base {
 
 	/**
 	 * Set the groupId of the baseline artifact.
-	 * 
+	 *
 	 * @param groupId The groupId of the baseline artifact. This defaults to the
 	 *            groupId of the project.
 	 */
@@ -32,7 +32,7 @@ public class Base {
 
 	/**
 	 * Set the artifactId of the baseline artifact.
-	 * 
+	 *
 	 * @param artifactId The artifactId of the baseline artifact. This defaults
 	 *            to the artifactId of the project.
 	 */
@@ -46,7 +46,7 @@ public class Base {
 
 	/**
 	 * Set the version or version range of the baseline artifact.
-	 * 
+	 *
 	 * @param version The version or version range of the baseline artifact.
 	 *            This defaults to the highest version less than the version of
 	 *            the project's artifact.
@@ -61,7 +61,7 @@ public class Base {
 
 	/**
 	 * Set the classifier of the baseline artifact.
-	 * 
+	 *
 	 * @param classifier The classifier of the baseline artifact. This defaults
 	 *            to the classifier of the project's artifact.
 	 */
@@ -75,7 +75,7 @@ public class Base {
 
 	/**
 	 * Set the extension of the baseline artifact.
-	 * 
+	 *
 	 * @param extension The extension of the baseline artifact. This defaults to
 	 *            the extension of the project's artifact.
 	 */

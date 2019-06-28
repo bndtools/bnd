@@ -15,7 +15,7 @@ import aQute.launchpad.LaunchpadBuilder;
 
 public class RuleTest {
 
-	LaunchpadBuilder builder = new LaunchpadBuilder();
+	LaunchpadBuilder		builder	= new LaunchpadBuilder();
 
 	@Rule
 	public TemporaryFolder	folder	= new TemporaryFolder();
@@ -28,7 +28,6 @@ public class RuleTest {
 
 	@Test
 	public void test() throws Exception {
-
 
 		try (Launchpad framework = builder.runfw("org.apache.felix.framework")
 			.create()) {

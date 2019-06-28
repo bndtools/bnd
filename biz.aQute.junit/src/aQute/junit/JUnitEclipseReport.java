@@ -47,8 +47,7 @@ public class JUnitEclipseReport implements TestReporter {
 	}
 
 	@Override
-	public void setup(Bundle fw, Bundle targetBundle) {
-	}
+	public void setup(Bundle fw, Bundle targetBundle) {}
 
 	@Override
 	public void begin(List<Test> tests, int realcount) {

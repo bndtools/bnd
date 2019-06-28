@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import aQute.bnd.resource.repository.ResourceRepositoryImpl;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
-import aQute.bnd.service.repository.ResourceRepository.Listener;
 import aQute.bnd.service.repository.ResourceRepository.ResourceRepositoryEvent;
 import aQute.bnd.service.repository.ResourceRepository.TYPE;
 import aQute.bnd.service.repository.SearchableRepository;
@@ -178,32 +177,28 @@ public class ResourceRepoTest extends TestCase {
 		final AtomicInteger ends = new AtomicInteger();
 		final AtomicInteger errors = new AtomicInteger();
 
-		repoImpl.addListener(new Listener() {
+		repoImpl.addListener(events -> {
+			for (ResourceRepositoryEvent event : events) {
+				switch (event.type) {
+					case ADD :
+						adds.incrementAndGet();
+						break;
+					case END_DOWNLOAD :
+						ends.incrementAndGet();
+						break;
+					case ERROR :
+						errors.incrementAndGet();
+						break;
+					case REMOVE :
+						removes.incrementAndGet();
+						break;
+					case START_DOWNLOAD :
+						starts.incrementAndGet();
+						break;
 
-			@Override
-			public void events(ResourceRepositoryEvent... events) throws Exception {
-				for (ResourceRepositoryEvent event : events) {
-					switch (event.type) {
-						case ADD :
-							adds.incrementAndGet();
-							break;
-						case END_DOWNLOAD :
-							ends.incrementAndGet();
-							break;
-						case ERROR :
-							errors.incrementAndGet();
-							break;
-						case REMOVE :
-							removes.incrementAndGet();
-							break;
-						case START_DOWNLOAD :
-							starts.incrementAndGet();
-							break;
-
-						default :
-							errors.incrementAndGet();
-							break;
-					}
+					default :
+						errors.incrementAndGet();
+						break;
 				}
 			}
 		});
@@ -213,7 +208,7 @@ public class ResourceRepoTest extends TestCase {
 		assertEquals(1, adds.get());
 		assertEquals(0, removes.get());
 		repoImpl.delete(null, rd.id);
-		;
+
 		assertEquals(1, adds.get());
 		assertEquals(1, removes.get());
 
@@ -253,20 +248,16 @@ public class ResourceRepoTest extends TestCase {
 			}
 		};
 
-		repoImpl.addListener(new Listener() {
-
-			@Override
-			public void events(ResourceRepositoryEvent... events) throws Exception {
-				for (ResourceRepositoryEvent event : events) {
-					if (event.type == TYPE.START_DOWNLOAD) {
-						System.out.println("trying to acquire s");
-						s.acquire();
-						System.out.println("got it");
-						downloads.incrementAndGet();
-					}
+		repoImpl.addListener(events -> {
+			for (ResourceRepositoryEvent event : events) {
+				if (event.type == TYPE.START_DOWNLOAD) {
+					System.out.println("trying to acquire s");
+					s.acquire();
+					System.out.println("got it");
+					downloads.incrementAndGet();
 				}
-
 			}
+
 		});
 		File f1 = repoImpl.getResource(rd.id, l);
 		File f2 = repoImpl.getResource(rd.id, l);

@@ -24,13 +24,14 @@ public class ResolverTest {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
 			List<FieldDef> fields = new ArrayList<>();
-			c.parseClassFile(IO.stream(new File("bin_test/aQute/bnd/signatures/TypeUser1.class")), new ClassDataCollector() {
+			c.parseClassFile(IO.stream(new File("bin_test/aQute/bnd/signatures/TypeUser1.class")),
+				new ClassDataCollector() {
 
-				@Override
-				public void field(FieldDef defined) {
-					fields.add(defined);
-				}
-			});
+					@Override
+					public void field(FieldDef defined) {
+						fields.add(defined);
+					}
+				});
 
 			ClassSignature classSig = a.getClassSignature(c.getClassSignature());
 			System.out.printf("ClassSignature[%s]: %s\n", c, classSig);
@@ -128,13 +129,14 @@ public class ResolverTest {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
 			List<MethodDef> methods = new ArrayList<>();
-			c.parseClassFile(IO.stream(new File("bin_test/aQute/bnd/signatures/TypeUser1.class")), new ClassDataCollector() {
+			c.parseClassFile(IO.stream(new File("bin_test/aQute/bnd/signatures/TypeUser1.class")),
+				new ClassDataCollector() {
 
-				@Override
-				public void method(MethodDef defined) {
-					methods.add(defined);
-				}
-			});
+					@Override
+					public void method(MethodDef defined) {
+						methods.add(defined);
+					}
+				});
 
 			ClassSignature classSig = a.getClassSignature(c.getClassSignature());
 			System.out.printf("ClassSignature[%s]: %s\n", c, classSig);

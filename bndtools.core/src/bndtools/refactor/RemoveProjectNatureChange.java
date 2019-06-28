@@ -7,27 +7,27 @@ import org.eclipse.ltk.core.refactoring.Change;
 
 public class RemoveProjectNatureChange extends ProjectNatureChange {
 
-    private final String natureId;
-    private final String name;
+	private final String	natureId;
+	private final String	name;
 
-    public RemoveProjectNatureChange(IProject project, String natureId, String name) {
-        super(project);
-        this.natureId = natureId;
-        this.name = name;
-    }
+	public RemoveProjectNatureChange(IProject project, String natureId, String name) {
+		super(project);
+		this.natureId = natureId;
+		this.name = name;
+	}
 
-    @Override
-    public String getName() {
-        return "Remove project nature: " + name;
-    }
+	@Override
+	public String getName() {
+		return "Remove project nature: " + name;
+	}
 
-    @Override
-    protected Change createInverse() {
-        return new AddProjectNatureChange(project, natureId, name);
-    }
+	@Override
+	protected Change createInverse() {
+		return new AddProjectNatureChange(project, natureId, name);
+	}
 
-    @Override
-    protected boolean modifyNatures(Set<String> natures) {
-        return natures.remove(natureId);
-    }
+	@Override
+	protected boolean modifyNatures(Set<String> natures) {
+		return natures.remove(natureId);
+	}
 }

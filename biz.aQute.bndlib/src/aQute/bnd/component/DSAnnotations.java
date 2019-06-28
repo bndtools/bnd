@@ -43,7 +43,6 @@ import aQute.lib.strings.Strings;
  */
 public class DSAnnotations implements AnalyzerPlugin {
 
-
 	public enum Options {
 		inherit,
 		felixExtensions,
@@ -95,7 +94,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 			}
 
 		}
-	};
+	}
 
 	static class VersionSettings {
 		Version	minVersion	= V1_3;
@@ -104,9 +103,9 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
-		
+
 		VersionSettings settings = new VersionSettings();
-		
+
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS, "*"));
 		if (header.size() == 0) {
 			return false;
@@ -160,7 +159,6 @@ public class DSAnnotations implements AnalyzerPlugin {
 						break;
 					}
 
-
 					componentProcessed = true;
 					definition.sortReferences();
 					definition.prepare(analyzer);
@@ -200,7 +198,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 						requires.addAll(serviceReqMerge.toStringList());
 					}
 					maxVersionUsedByAnyComponent = ComponentDef.max(maxVersionUsedByAnyComponent, definition.version);
-					
+
 					break;
 				}
 			}
@@ -227,11 +225,10 @@ public class DSAnnotations implements AnalyzerPlugin {
 			.filter(e -> e.getValue()
 				.size() > 1)
 			.forEach(e -> {
-				analyzer.error("Same component name %s used in multiple component implementations: %s",
-					e.getKey(),
+				analyzer.error("Same component name %s used in multiple component implementations: %s", e.getKey(),
 					e.getValue()
-					.stream()
-					.map(def -> def.implementation)
+						.stream()
+						.map(def -> def.implementation)
 						.collect(toList()));
 			});
 
@@ -248,9 +245,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 				definition.implementation.getFQN(), null, ErrorType.VERSION_MISMATCH);
 			analyzer
 				.error("component %s version %s exceeds -dsannotations-options version;maximum version %s because %s",
-					definition.version,
-					definition.name, settings.maxVersion,
-					definition.versionReason)
+					definition.version, definition.name, settings.maxVersion, definition.versionReason)
 				.details(dse);
 		}
 
@@ -328,7 +323,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 	/**
 	 * Updates specified header, sorting and removing duplicates. Destroys
 	 * contents of set parameter.
-	 * 
+	 *
 	 * @param analyzer
 	 * @param name header name
 	 * @param set values to add to header; contents are not preserved.

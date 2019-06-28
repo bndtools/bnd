@@ -19,7 +19,7 @@ public class AttributesTest extends TestCase {
 	/**
 	 * Remove a version attribute A mandatory attribute adds the common and tst
 	 * properties to the import. We remove them using remove:=*
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testRemoveDirective() throws Exception {
@@ -67,7 +67,7 @@ public class AttributesTest extends TestCase {
 
 	/**
 	 * Remove a version attribute
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testRemoveAttribute() throws Exception {
@@ -103,7 +103,7 @@ public class AttributesTest extends TestCase {
 
 	/**
 	 * Override a version attribute
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testOverrideAttribute() throws Exception {
@@ -133,7 +133,7 @@ public class AttributesTest extends TestCase {
 
 	/**
 	 * See if we inherit the version from the osgi.jar file.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testSimple() throws Exception {

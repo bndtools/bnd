@@ -22,7 +22,7 @@ public class ConsoleRedirector implements Redirector {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param agent the agent we're redirecting for
 	 */
 	public ConsoleRedirector(AgentServer agent) throws IOException {

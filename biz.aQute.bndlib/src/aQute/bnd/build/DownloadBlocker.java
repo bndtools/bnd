@@ -25,7 +25,7 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 		INIT,
 		SUCCESS,
 		FAILURE
-	};
+	}
 
 	private volatile Stage			stage	= Stage.INIT;
 	private String					failure;
@@ -95,7 +95,7 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	 * Return a failure reason or null. This method will block until either
 	 * {@link #success(File)} or {@link #failure(File, String)} has been called.
 	 * It can be called many times.
-	 * 
+	 *
 	 * @return null or a reason for a failure
 	 */
 	public String getReason() {
@@ -109,7 +109,7 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 
 	/**
 	 * Return the stage we're in
-	 * 
+	 *
 	 * @return the current stage
 	 */
 	public Stage getStage() {

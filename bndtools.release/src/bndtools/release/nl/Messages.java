@@ -14,7 +14,7 @@ import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
 
-    private final static String RESOURCE_BUNDLE = Messages.class.getName();
+	private final static String	RESOURCE_BUNDLE	= Messages.class.getName();
 
     public static String releaseDialogTitle; /* bndtools.release.Activator::message */
     public static String errorExecutingStartupParticipant; /* bndtools.release.Activator::getReleaseParticipants */
@@ -84,7 +84,7 @@ public class Messages extends NLS {
     public static String macrosWillBeOverwritten1; /* bndtools.release.ui.WorkspaceReleaseDialog::okPressed */
     public static String macrosWillBeOverwritten2; /* bndtools.release.ui.WorkspaceReleaseDialog::okPressed */
 
-    static {
-        NLS.initializeMessages(RESOURCE_BUNDLE, Messages.class);
-    }
+	static {
+		NLS.initializeMessages(RESOURCE_BUNDLE, Messages.class);
+	}
 }

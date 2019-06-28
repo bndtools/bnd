@@ -84,7 +84,7 @@ import aQute.lib.strings.Strings;
  */
 class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
-	private static final Logger	logger					= LoggerFactory.getLogger(AnnotationHeaders.class);
+	private static final Logger		logger	= LoggerFactory.getLogger(AnnotationHeaders.class);
 
 	private static final Converter	CONVERTER;
 
@@ -101,7 +101,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 	private static final Instruction	ANNOTATION_INSTRUCTION	= new Instruction("java.lang.annotation.Annotation");
 
-	static final Pattern		SIMPLE_PARAM_PATTERN	= Pattern
+	static final Pattern				SIMPLE_PARAM_PATTERN	= Pattern
 		.compile("\\$\\{(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\}");
 
 	// Annotations to ignore scanning further because they are known to be
@@ -111,7 +111,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	// for annotations that aren't supposed to be needed on the classpath
 	// (usually
 	// OSGi versioning annotations).
-	static final Set<String>	DO_NOT_SCAN;
+	static final Set<String>			DO_NOT_SCAN;
 
 	static {
 		DO_NOT_SCAN = Stream
@@ -121,7 +121,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	}
 
 	final Analyzer					analyzer;
-	final MultiMap<String, String>	headers				= new MultiMap<>();
+	final MultiMap<String, String>	headers						= new MultiMap<>();
 
 	//
 	// Constant Strings for a fast switch statement
@@ -129,27 +129,27 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 	static final String				CARDINALITY					= "aQute.bnd.annotation.Cardinality";
 	static final String				RESOLUTION					= "aQute.bnd.annotation.Resolution";
-	static final String				BUNDLE_LICENSE		= "aQute.bnd.annotation.headers.BundleLicense";
-	static final String				REQUIRE_CAPABILITY	= "aQute.bnd.annotation.headers.RequireCapability";
-	static final String				PROVIDE_CAPABILITY	= "aQute.bnd.annotation.headers.ProvideCapability";
-	static final String				BUNDLE_CATEGORY		= "aQute.bnd.annotation.headers.BundleCategory";
-	static final String				BUNDLE_DOC_URL		= "aQute.bnd.annotation.headers.BundleDocURL";
-	static final String				BUNDLE_DEVELOPERS	= "aQute.bnd.annotation.headers.BundleDevelopers";
-	static final String				BUNDLE_CONTRIBUTORS	= "aQute.bnd.annotation.headers.BundleContributors";
-	static final String				BUNDLE_COPYRIGHT	= "aQute.bnd.annotation.headers.BundleCopyright";
-	static final String				STD_REQUIREMENT		= "org.osgi.annotation.bundle.Requirement";
+	static final String				BUNDLE_LICENSE				= "aQute.bnd.annotation.headers.BundleLicense";
+	static final String				REQUIRE_CAPABILITY			= "aQute.bnd.annotation.headers.RequireCapability";
+	static final String				PROVIDE_CAPABILITY			= "aQute.bnd.annotation.headers.ProvideCapability";
+	static final String				BUNDLE_CATEGORY				= "aQute.bnd.annotation.headers.BundleCategory";
+	static final String				BUNDLE_DOC_URL				= "aQute.bnd.annotation.headers.BundleDocURL";
+	static final String				BUNDLE_DEVELOPERS			= "aQute.bnd.annotation.headers.BundleDevelopers";
+	static final String				BUNDLE_CONTRIBUTORS			= "aQute.bnd.annotation.headers.BundleContributors";
+	static final String				BUNDLE_COPYRIGHT			= "aQute.bnd.annotation.headers.BundleCopyright";
+	static final String				STD_REQUIREMENT				= "org.osgi.annotation.bundle.Requirement";
 	static final String				STD_REQUIREMENT_CARDINALITY	= "org.osgi.annotation.bundle.Requirement$Cardinality";
 	static final String				STD_REQUIREMENT_RESOLUTION	= "org.osgi.annotation.bundle.Requirement$Resolution";
-	static final String				STD_REQUIREMENTS	= "org.osgi.annotation.bundle.Requirements";
-	static final String				STD_CAPABILITY		= "org.osgi.annotation.bundle.Capability";
-	static final String				STD_CAPABILITIES	= "org.osgi.annotation.bundle.Capabilities";
-	static final String				STD_HEADER			= "org.osgi.annotation.bundle.Header";
-	static final String				STD_HEADERS			= "org.osgi.annotation.bundle.Headers";
+	static final String				STD_REQUIREMENTS			= "org.osgi.annotation.bundle.Requirements";
+	static final String				STD_CAPABILITY				= "org.osgi.annotation.bundle.Capability";
+	static final String				STD_CAPABILITIES			= "org.osgi.annotation.bundle.Capabilities";
+	static final String				STD_HEADER					= "org.osgi.annotation.bundle.Header";
+	static final String				STD_HEADERS					= "org.osgi.annotation.bundle.Headers";
 
 	// Used to detect attributes and directives on Require-Capability and
 	// Provide-Capability
-	static final String				STD_ATTRIBUTE		= "org.osgi.annotation.bundle.Attribute";
-	static final String				STD_DIRECTIVE		= "org.osgi.annotation.bundle.Directive";
+	static final String				STD_ATTRIBUTE				= "org.osgi.annotation.bundle.Attribute";
+	static final String				STD_DIRECTIVE				= "org.osgi.annotation.bundle.Directive";
 
 	// Class we're currently processing
 	Clazz							current;
@@ -157,7 +157,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	// The annotations we could not load. used to avoid repeatedly logging the
 	// same missing annotation for the same project. Note that this should not
 	// be reset for each #classStart(Clazz).
-	final Set<String>				loggedMissing		= new HashSet<>();
+	final Set<String>				loggedMissing				= new HashSet<>();
 	final Instructions				instructions;
 
 	// we parse the annotations separately at the end
@@ -642,8 +642,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	 * Provide-Capability header
 	 */
 	@SuppressWarnings("deprecation")
-	private void doProvideCapability(Annotation a,
-		aQute.bnd.annotation.headers.ProvideCapability annotation) throws Exception {
+	private void doProvideCapability(Annotation a, aQute.bnd.annotation.headers.ProvideCapability annotation)
+		throws Exception {
 
 		Parameters p = new Parameters();
 		Attrs attrs = getAttributes(a, "ns");
@@ -667,8 +667,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	 * Require-Capability header
 	 */
 	@SuppressWarnings("deprecation")
-	private void doRequireCapability(Annotation a,
-		aQute.bnd.annotation.headers.RequireCapability annotation) throws Exception {
+	private void doRequireCapability(Annotation a, aQute.bnd.annotation.headers.RequireCapability annotation)
+		throws Exception {
 		Parameters p = new Parameters();
 		Attrs attrs = getAttributes(a, "ns");
 		directivesAndVersion(attrs, "filter", "effective", "resolution");
@@ -827,8 +827,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 							.append(')');
 					}
 				}
-			}
-			else {
+			} else {
 				String floor = annotation.version();
 
 				int current = filter.lastIndexOf(")");
@@ -841,10 +840,10 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 				if (andAdded) {
 					filter.deleteCharAt(current)
-					.append(')');
+						.append(')');
 				} else if (addAnd) {
 					filter.insert(0, "(&")
-					.append(')');
+						.append(')');
 				}
 			}
 		}

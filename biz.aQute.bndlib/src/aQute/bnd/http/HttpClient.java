@@ -191,8 +191,7 @@ public class HttpClient implements Closeable, URLConnector {
 							return recovery;
 						}
 						// replace failure exception
-						return promiseFactory()
-							.failed(new HttpRequestException(tag, failure.getCause()));
+						return promiseFactory().failed(new HttpRequestException(tag, failure.getCause()));
 					}
 					return null; // no recovery
 				}
@@ -399,6 +398,7 @@ public class HttpClient implements Closeable, URLConnector {
 			requireNonNull(request.url);
 		}
 
+		@Override
 		@SuppressWarnings("unchecked")
 		public T call() throws Exception {
 			final Thread thread = requestThread = Thread.currentThread();
@@ -852,12 +852,10 @@ public class HttpClient implements Closeable, URLConnector {
 				task = new ProgressPlugin.Task() {
 
 					@Override
-					public void worked(int units) {
-					}
+					public void worked(int units) {}
 
 					@Override
-					public void done(String message, Throwable e) {
-					}
+					public void done(String message, Throwable e) {}
 
 					@Override
 					public boolean isCanceled() {

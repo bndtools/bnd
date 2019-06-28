@@ -12,35 +12,36 @@ import org.eclipse.jdt.launching.JavaRuntime;
 
 public class BndContainerRuntimeClasspathEntryResolver implements IRuntimeClasspathEntryResolver2 {
 
-    public BndContainerRuntimeClasspathEntryResolver() {
-    }
+	public BndContainerRuntimeClasspathEntryResolver() {}
 
-    @Override
-    public IRuntimeClasspathEntry[] resolveRuntimeClasspathEntry(IRuntimeClasspathEntry entry, IJavaProject project) throws CoreException {
-        IClasspathContainer container = BndContainerInitializer.getClasspathContainer(project);
-        if (container instanceof BndContainer) {
-            BndContainer bndContainer = (BndContainer) container;
-            return bndContainer.getRuntimeClasspathEntries();
-        }
-        return BndContainer.EMPTY_RUNTIMEENTRIES;
-    }
+	@Override
+	public IRuntimeClasspathEntry[] resolveRuntimeClasspathEntry(IRuntimeClasspathEntry entry, IJavaProject project)
+		throws CoreException {
+		IClasspathContainer container = BndContainerInitializer.getClasspathContainer(project);
+		if (container instanceof BndContainer) {
+			BndContainer bndContainer = (BndContainer) container;
+			return bndContainer.getRuntimeClasspathEntries();
+		}
+		return BndContainer.EMPTY_RUNTIMEENTRIES;
+	}
 
-    @Override
-    public IVMInstall resolveVMInstall(IClasspathEntry entry) throws CoreException {
-        return null;
-    }
+	@Override
+	public IVMInstall resolveVMInstall(IClasspathEntry entry) throws CoreException {
+		return null;
+	}
 
-    @Override
-    public boolean isVMInstallReference(IClasspathEntry entry) {
-        return false;
-    }
+	@Override
+	public boolean isVMInstallReference(IClasspathEntry entry) {
+		return false;
+	}
 
-    @Override
-    public IRuntimeClasspathEntry[] resolveRuntimeClasspathEntry(IRuntimeClasspathEntry entry, ILaunchConfiguration configuration) throws CoreException {
-        IJavaProject project = entry.getJavaProject();
-        if (project == null) {
-            project = JavaRuntime.getJavaProject(configuration);
-        }
-        return resolveRuntimeClasspathEntry(entry, project);
-    }
+	@Override
+	public IRuntimeClasspathEntry[] resolveRuntimeClasspathEntry(IRuntimeClasspathEntry entry,
+		ILaunchConfiguration configuration) throws CoreException {
+		IJavaProject project = entry.getJavaProject();
+		if (project == null) {
+			project = JavaRuntime.getJavaProject(configuration);
+		}
+		return resolveRuntimeClasspathEntry(entry, project);
+	}
 }

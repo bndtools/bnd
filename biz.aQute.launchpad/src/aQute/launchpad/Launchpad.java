@@ -91,7 +91,7 @@ public class Launchpad implements AutoCloseable {
 
 	final Framework								framework;
 	final List<ServiceTracker<?, ?>>			trackers				= new ArrayList<>();
-	final List<FrameworkEvent>					frameworkEvents			= new CopyOnWriteArrayList<FrameworkEvent>();
+	final List<FrameworkEvent>					frameworkEvents			= new CopyOnWriteArrayList<>();
 	final Injector<Service>						injector;
 	final Map<Class<?>, ServiceTracker<?, ?>>	injectedDoNotClose		= new HashMap<>();
 	final Set<String>							frameworkExports;
@@ -135,7 +135,7 @@ public class Launchpad implements AutoCloseable {
 			framework.getBundleContext()
 				.addFrameworkListener(frameworkEvents::add);
 
-			hooks = new ServiceTracker<FindHook, FindHook>(framework.getBundleContext(), FindHook.class, null);
+			hooks = new ServiceTracker<>(framework.getBundleContext(), FindHook.class, null);
 			hooks.open();
 
 		} catch (Exception e) {
@@ -153,7 +153,7 @@ public class Launchpad implements AutoCloseable {
 	/**
 	 * Generate an error so that the test case can check if we found anything
 	 * wrong. This is easy to check with {@link #check(String...)}
-	 * 
+	 *
 	 * @param format the format string used in
 	 *            {@link String#format(String, Object...)}
 	 * @param args the arguments to be formatted
@@ -168,7 +168,7 @@ public class Launchpad implements AutoCloseable {
 	 * Check the errors found, filtering out any unwanted with globbing patters.
 	 * Each error is filtered against all the patterns. This method return true
 	 * if there are no unfiltered errors, otherwise false.
-	 * 
+	 *
 	 * @param patterns globbing patterns
 	 * @return true if no errors after filtering,otherwise false
 	 */
@@ -214,7 +214,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Add a file as a bundle to the framework. This bundle will not be started.
-	 * 
+	 *
 	 * @param f the file to install
 	 * @return the bundle object
 	 */
@@ -240,7 +240,7 @@ public class Launchpad implements AutoCloseable {
 	/**
 	 * Install a number of bundles based on their bundle specification. A bundle
 	 * specification is the format used in for example -runbundles.
-	 * 
+	 *
 	 * @param specification the bundle specifications
 	 * @return a list of bundles
 	 */
@@ -258,7 +258,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Install a number of bundles
-	 * 
+	 *
 	 * @param runbundles the list of bundles
 	 * @return a list of bundle objects
 	 */
@@ -280,7 +280,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Start a bundle
-	 * 
+	 *
 	 * @param b the bundle object
 	 */
 	public void start(Bundle b) {
@@ -312,7 +312,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Start all bundles
-	 * 
+	 *
 	 * @param bs a collection of bundles
 	 */
 	public void start(Collection<Bundle> bs) {
@@ -336,7 +336,7 @@ public class Launchpad implements AutoCloseable {
 	 * context of the test bundle otherwise it is the context of the framework.
 	 * To be able to proxy services it is necessary to have a test bundle
 	 * installed.
-	 * 
+	 *
 	 * @return the bundle context of the test bundle or the framework
 	 */
 	public BundleContext getBundleContext() {
@@ -349,7 +349,7 @@ public class Launchpad implements AutoCloseable {
 	/**
 	 * Get a service registered under class. If multiple services are registered
 	 * it will return the first
-	 * 
+	 *
 	 * @param serviceInterface the name of the service
 	 * @return a service
 	 */
@@ -365,7 +365,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Get a list of services of a given name
-	 * 
+	 *
 	 * @param serviceClass the service name
 	 * @return a list of services
 	 */
@@ -375,7 +375,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Get a list of services in the current registry
-	 * 
+	 *
 	 * @param serviceClass the type of the service
 	 * @param target the target, may be null
 	 * @return a list of found services currently in the registry
@@ -389,7 +389,7 @@ public class Launchpad implements AutoCloseable {
 	/**
 	 * Get a service from a reference. If the service is null, then throw an
 	 * exception.
-	 * 
+	 *
 	 * @param ref the reference
 	 * @return the service, never null
 	 */
@@ -436,7 +436,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Inject an object with services and other OSGi specific values.
-	 * 
+	 *
 	 * @param object the object to inject
 	 */
 
@@ -451,7 +451,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Install a bundle from a file
-	 * 
+	 *
 	 * @param file the file to install
 	 * @return a bundle
 	 */
@@ -481,7 +481,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Create a new synthetic bundle.
-	 * 
+	 *
 	 * @return the bundle builder
 	 */
 	public BundleBuilder bundle() {
@@ -490,7 +490,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Create a new object and inject it.
-	 * 
+	 *
 	 * @param type the type of object
 	 * @return a new object injected and all
 	 */
@@ -540,7 +540,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Wait for a Service Reference to be registered
-	 * 
+	 *
 	 * @param class1 the name of the service
 	 * @param timeoutInMs the time to wait
 	 * @return a service reference
@@ -554,7 +554,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Wait for a Service Reference to be registered
-	 * 
+	 *
 	 * @param class1 the name of the service
 	 * @param timeoutInMs the time to wait
 	 * @return a service reference
@@ -568,7 +568,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Wait for service to be registered
-	 * 
+	 *
 	 * @param class1 name of the service
 	 * @param timeoutInMs timeout in ms
 	 * @return a service
@@ -579,7 +579,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Wait for service to be registered
-	 * 
+	 *
 	 * @param class1 name of the service
 	 * @param timeoutInMs timeout in ms
 	 * @param target filter, may be null
@@ -597,7 +597,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Turn a service reference's properties into a Map
-	 * 
+	 *
 	 * @param reference the reference
 	 * @return a Map with all the properties of the reference
 	 */
@@ -660,7 +660,7 @@ public class Launchpad implements AutoCloseable {
 	 * indicate this to the build with {@link LaunchpadBuilder#nostart()}. The
 	 * framework can be started after creation with {@link #start()}. Notice
 	 * that services through the testbundle remain visible for this hide.
-	 * 
+	 *
 	 * @param type the type to hide
 	 * @param reason the reason why it is hidden
 	 * @return a Closeable, when closed it will remove the hooks
@@ -709,7 +709,7 @@ public class Launchpad implements AutoCloseable {
 	/**
 	 * Check of a service reference has one of the given types in its object
 	 * class
-	 * 
+	 *
 	 * @param serviceReference the service reference to check
 	 * @param types the set of types
 	 * @return true if one of the types name is in the service reference's
@@ -846,13 +846,13 @@ public class Launchpad implements AutoCloseable {
 	 * can define a property by specifying the key (which must be a String) and
 	 * the value consecutively. The value can be any of the types allowed by the
 	 * service properties.
-	 * 
+	 *
 	 * <pre>
 	 * fw.register(Foo.class, instance, "foo", 10, "bar", new long[] {
 	 * 	1, 2, 3
 	 * });
 	 * </pre>
-	 * 
+	 *
 	 * @param type the service type
 	 * @param instance the service object
 	 * @param props the service properties specified as a seq of "key", value
@@ -874,7 +874,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Return the framework object
-	 * 
+	 *
 	 * @return the framework object
 	 */
 	public Framework getFramework() {
@@ -899,7 +899,7 @@ public class Launchpad implements AutoCloseable {
 	 * {@link BundleBuilder#addResourceWithCopy}. It then loads the class using
 	 * the synthetic bundle's class loader and instantiates it using the public,
 	 * no-parameter constructor.
-	 * 
+	 *
 	 * @param clazz the class to instantiate within the context of the
 	 *            framework.
 	 * @return The instantiated object.
@@ -925,7 +925,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Check if a bundle is a fragement
-	 * 
+	 *
 	 * @param b the bundle to check
 	 */
 	public boolean isFragment(Bundle b) {
@@ -935,7 +935,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Check if a bundle is in the ACTIVE state
-	 * 
+	 *
 	 * @param b the bundle to check
 	 */
 	public boolean isActive(Bundle b) {
@@ -944,7 +944,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Check if a bundle is in the RESOLVED state
-	 * 
+	 *
 	 * @param b the bundle to check
 	 */
 	public boolean isResolved(Bundle b) {
@@ -953,7 +953,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Check if a bundle is in the INSTALLED state
-	 * 
+	 *
 	 * @param b the bundle to check
 	 */
 	public boolean isInstalled(Bundle b) {
@@ -962,7 +962,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Check if a bundle is in the UNINSTALLED state
-	 * 
+	 *
 	 * @param b the bundle to check
 	 */
 	public boolean isUninstalled(Bundle b) {
@@ -971,7 +971,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Check if a bundle is in the STARTING state
-	 * 
+	 *
 	 * @param b the bundle to check
 	 */
 	public boolean isStarting(Bundle b) {
@@ -980,7 +980,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Check if a bundle is in the STOPPING state
-	 * 
+	 *
 	 * @param b the bundle to check
 	 */
 	public boolean isStopping(Bundle b) {
@@ -989,7 +989,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Check if a bundle is in the ACTIVE or STARTING state
-	 * 
+	 *
 	 * @param b the bundle to check
 	 */
 	public boolean isRunning(Bundle b) {
@@ -998,7 +998,7 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Check if a bundle is in the RESOLVED or ACTIVE or STARTING state
-	 * 
+	 *
 	 * @param b the bundle to check
 	 */
 	public boolean isReady(Bundle b) {
@@ -1087,8 +1087,7 @@ public class Launchpad implements AutoCloseable {
 			String className = serviceClass.getName();
 
 			ServiceTracker<?, ?> tracker = injectedDoNotClose.computeIfAbsent(serviceClass, (c) -> {
-				ServiceTracker<?, ?> t = new ServiceTracker<Object, Object>(framework.getBundleContext(), className,
-					null);
+				ServiceTracker<?, ?> t = new ServiceTracker<>(framework.getBundleContext(), className, null);
 				t.open(true);
 				return t;
 			});

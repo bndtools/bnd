@@ -8,23 +8,23 @@ import org.eclipse.swt.widgets.Display;
 
 public class HyperlinkStyler extends Styler {
 
-    private final Color color;
+	private final Color color;
 
-    public HyperlinkStyler() {
-        this(Display.getCurrent());
-    }
+	public HyperlinkStyler() {
+		this(Display.getCurrent());
+	}
 
-    public HyperlinkStyler(Display display) {
-        color = display.getSystemColor(SWT.COLOR_BLUE);
-    }
+	public HyperlinkStyler(Display display) {
+		color = display.getSystemColor(SWT.COLOR_BLUE);
+	}
 
-    @Override
-    public void applyStyles(TextStyle style) {
-        style.foreground = color;
+	@Override
+	public void applyStyles(TextStyle style) {
+		style.foreground = color;
 
-        style.underline = true;
-        style.underlineColor = color;
-        style.underlineStyle = SWT.UNDERLINE_SINGLE;
-    }
+		style.underline = true;
+		style.underlineColor = color;
+		style.underlineStyle = SWT.UNDERLINE_SINGLE;
+	}
 
 }

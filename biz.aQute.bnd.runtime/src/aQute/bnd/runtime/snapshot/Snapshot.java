@@ -66,7 +66,7 @@ public class Snapshot implements BundleActivator {
 			.addShutdownHook(snapshotThread);
 
 		Filter filter = FrameworkUtil.createFilter("(snapshot=*)");
-		tracker = new ServiceTracker<Object, Object>(context, filter, null);
+		tracker = new ServiceTracker<>(context, filter, null);
 		tracker.open();
 
 		this.context.addBundleListener(new SynchronousBundleListener() {

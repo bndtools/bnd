@@ -18,69 +18,69 @@ import bndtools.Plugin;
 
 public class PluginClauseLabelProvider extends StyledCellLabelProvider {
 
-    private final Map<String, IConfigurationElement> configElements;
-    private final Map<String, Image> images = new HashMap<String, Image>();
+	private final Map<String, IConfigurationElement>	configElements;
+	private final Map<String, Image>					images	= new HashMap<>();
 
-    public PluginClauseLabelProvider(Map<String, IConfigurationElement> configElements) {
-        this.configElements = configElements;
-    }
+	public PluginClauseLabelProvider(Map<String, IConfigurationElement> configElements) {
+		this.configElements = configElements;
+	}
 
-    @Override
-    public void update(ViewerCell cell) {
-        HeaderClause header = (HeaderClause) cell.getElement();
+	@Override
+	public void update(ViewerCell cell) {
+		HeaderClause header = (HeaderClause) cell.getElement();
 
-        String className = header.getName();
-        StyledString label = new StyledString(className);
+		String className = header.getName();
+		StyledString label = new StyledString(className);
 
-        Map<String, String> attribs = header.getAttribs();
-        if (!attribs.isEmpty())
-            label.append(" ");
-        for (Iterator<Entry<String, String>> iter = attribs.entrySet()
-            .iterator(); iter.hasNext();) {
-            Entry<String, String> entry = iter.next();
-            label.append(entry.getKey(), StyledString.QUALIFIER_STYLER);
-            label.append("=", StyledString.QUALIFIER_STYLER);
-            label.append(entry.getValue(), StyledString.COUNTER_STYLER);
+		Map<String, String> attribs = header.getAttribs();
+		if (!attribs.isEmpty())
+			label.append(" ");
+		for (Iterator<Entry<String, String>> iter = attribs.entrySet()
+			.iterator(); iter.hasNext();) {
+			Entry<String, String> entry = iter.next();
+			label.append(entry.getKey(), StyledString.QUALIFIER_STYLER);
+			label.append("=", StyledString.QUALIFIER_STYLER);
+			label.append(entry.getValue(), StyledString.COUNTER_STYLER);
 
-            if (iter.hasNext())
-                label.append(", ");
-        }
+			if (iter.hasNext())
+				label.append(", ");
+		}
 
-        cell.setText(label.toString());
-        cell.setStyleRanges(label.getStyleRanges());
+		cell.setText(label.toString());
+		cell.setStyleRanges(label.getStyleRanges());
 
-        Image image = images.get(className);
-        if (image == null) {
-            IConfigurationElement configElem = configElements.get(className);
-            if (configElem != null) {
-                String iconPath = configElem.getAttribute("icon");
-                if (iconPath != null) {
-                    ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(configElem.getContributor()
-                        .getName(), iconPath);
-                    if (descriptor != null) {
-                        image = descriptor.createImage();
-                        images.put(className, image);
-                    }
-                }
-            }
-        }
-        if (image == null) {
-            image = images.get("__DEFAULT__");
-            if (image == null) {
-                image = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/plugin.png")
-                    .createImage();
-                images.put("__DEFAULT__", image);
-            }
-        }
-        cell.setImage(image);
-    }
+		Image image = images.get(className);
+		if (image == null) {
+			IConfigurationElement configElem = configElements.get(className);
+			if (configElem != null) {
+				String iconPath = configElem.getAttribute("icon");
+				if (iconPath != null) {
+					ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(configElem.getContributor()
+						.getName(), iconPath);
+					if (descriptor != null) {
+						image = descriptor.createImage();
+						images.put(className, image);
+					}
+				}
+			}
+		}
+		if (image == null) {
+			image = images.get("__DEFAULT__");
+			if (image == null) {
+				image = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/plugin.png")
+					.createImage();
+				images.put("__DEFAULT__", image);
+			}
+		}
+		cell.setImage(image);
+	}
 
-    @Override
-    public void dispose() {
-        super.dispose();
-        for (Image image : images.values()) {
-            if (!image.isDisposed())
-                image.dispose();
-        }
-    }
+	@Override
+	public void dispose() {
+		super.dispose();
+		for (Image image : images.values()) {
+			if (!image.isDisposed())
+				image.dispose();
+		}
+	}
 }

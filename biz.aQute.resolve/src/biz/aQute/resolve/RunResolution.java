@@ -50,7 +50,7 @@ public class RunResolution {
 
 	/**
 	 * The main workhorse to resolve
-	 * 
+	 *
 	 * @param project used for reporting errors
 	 * @param actualProperties the actual properties used for resolving. This
 	 *            can be the project in builders that do not use the
@@ -97,7 +97,7 @@ public class RunResolution {
 	 * interactive editing. In that case the properties to resolve are in the
 	 * project and we can use the project both for the domain and the
 	 * properties.
-	 * 
+	 *
 	 * @param project used for reporting errors and the properties for the
 	 *            resolve operations
 	 * @param callbacks any callbacks
@@ -130,7 +130,7 @@ public class RunResolution {
 
 	/**
 	 * Check if the resolution is ok, that is, there was no exception.
-	 * 
+	 *
 	 * @return true if there was no exception
 	 */
 	public boolean isOK() {
@@ -148,7 +148,7 @@ public class RunResolution {
 	 * previous one.
 	 * <p>
 	 * return true if the list was changed
-	 * 
+	 *
 	 * @param model the edit model to update
 	 * @return true if there were changes
 	 */
@@ -182,7 +182,7 @@ public class RunResolution {
 	 * Sort the resources based on their dependencies. Least dependent bundles
 	 * are first. This method uses a toplogical sort. If there are cycles then
 	 * clearly the topological sort is not perfect.
-	 * 
+	 *
 	 * @param resolution the required wiring
 	 * @return a topologically sorted list of resources
 	 */
@@ -198,7 +198,7 @@ public class RunResolution {
 
 	/**
 	 * Turn the wiring into a a->b map.
-	 * 
+	 *
 	 * @param resolution the wiring
 	 * @return a map where the vertices are connected to other vertices.
 	 */
@@ -219,7 +219,7 @@ public class RunResolution {
 
 	/**
 	 * Get a list of ordered run bundles.
-	 * 
+	 *
 	 * @return a list of ordered bundles
 	 */
 	public List<VersionedClause> getRunBundles() {

@@ -81,12 +81,11 @@ import aQute.service.reporter.Reporter;
 public class MavenBndRepository extends BaseRepository implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable,
 	Refreshable, Actionable, ToDependencyPom, ReleaseBracketingPlugin {
 
-	private final static Logger	logger						= LoggerFactory.getLogger(MavenBndRepository.class);
-	private static final int	DEFAULT_POLL_TIME			= 5;
+	private final static Logger	logger				= LoggerFactory.getLogger(MavenBndRepository.class);
+	private static final int	DEFAULT_POLL_TIME	= 5;
 
-	private static final String	NONE						= "NONE";
-	private static final String	MAVEN_REPO_LOCAL			= System.getProperty("maven.repo.local",
-		"~/.m2/repository");
+	private static final String	NONE				= "NONE";
+	private static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 	private Configuration		configuration;
 	private Registry			registry;
 	private File				localRepo;
@@ -95,10 +94,10 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private boolean				inited;
 	IndexFile					index;
 	private ScheduledFuture<?>	indexPoller;
-	private RepoActions			actions						= new RepoActions(this);
+	private RepoActions			actions				= new RepoActions(this);
 	private String				name;
 	private HttpClient			client;
-	private ReleasePluginImpl	releasePlugin				= new ReleasePluginImpl(this, null);
+	private ReleasePluginImpl	releasePlugin		= new ReleasePluginImpl(this, null);
 
 	/**
 	 * Put result
@@ -414,6 +413,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	private static final Predicate<String> pomPropertiesFilter = new PathSet("META-INF/maven/*/*/pom.properties")
 		.matches();
+
 	private PomResource createPomFromFirstMavenPropertiesInJar(Jar jar, Processor context) throws Exception {
 		return jar.getResources()
 			.keySet()
@@ -547,8 +547,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			if (source != null) {
 				source = source.replaceAll("(\\s|,|;|\n|\r)+", "\n");
 			}
-			this.index = new IndexFile(domain, reporter, indexFile, source, storage,
-				client.promiseFactory(), multi);
+			this.index = new IndexFile(domain, reporter, indexFile, source, storage, client.promiseFactory(), multi);
 			this.index.open();
 
 			startPoll();
@@ -850,8 +849,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		Promise<File> promise = storage.get(primaryArchive);
 		if (listeners.length != 0) {
-			new DownloadListenerPromise(reporter, "Get sources " + sourceBsn + "-" + version + " for " + getName(), promise,
-				listeners);
+			new DownloadListenerPromise(reporter, "Get sources " + sourceBsn + "-" + version + " for " + getName(),
+				promise, listeners);
 			return storage.toLocalFile(primaryArchive);
 		} else
 			return promise.getValue();

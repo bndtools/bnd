@@ -4,5 +4,4 @@ import aQute.bnd.annotation.spi.ServiceConsumer;
 
 @ServiceConsumer(Foo.class)
 @ServiceConsumer(Integer.class)
-public class FooFactory3 {
-}
+public class FooFactory3 {}

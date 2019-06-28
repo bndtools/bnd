@@ -9,7 +9,6 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -44,12 +43,7 @@ public class HttpsUtil {
 		SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 		httpsConnection.setSSLSocketFactory(sslSocketFactory);
 
-		HostnameVerifier trustAnyHost = new HostnameVerifier() {
-			@Override
-			public boolean verify(String string, SSLSession session) {
-				return true;
-			}
-		};
+		HostnameVerifier trustAnyHost = (string, session) -> true;
 		httpsConnection.setHostnameVerifier(trustAnyHost);
 	}
 }

@@ -18,7 +18,7 @@ import aQute.bnd.osgi.resource.FilterParser.PatternExpression;
 import aQute.bnd.osgi.resource.FilterParser.SimpleExpression;
 
 public class PermissionGenerator {
-	public static enum Parameter {
+	public enum Parameter {
 		ADMIN {
 			@Override
 			public void generate(StringBuilder sb, Builder builder) {

@@ -136,7 +136,7 @@ public class FilterBuilder {
 	 * close (')' \u0029), then these characters should be preceded with the
 	 * reverse solidus ('\' \u005C) character. Spaces are significant in value.
 	 * Space characters are defined by Character.isWhiteSpace().
-	 * 
+	 *
 	 * @param value
 	 * @return
 	 */

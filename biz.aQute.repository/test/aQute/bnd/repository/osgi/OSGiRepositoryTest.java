@@ -19,6 +19,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.progress.ProgressPlugin;
+import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
@@ -87,30 +88,26 @@ public class OSGiRepositoryTest extends TestCase {
 
 				final AtomicInteger tasks = new AtomicInteger();
 
-				p.addBasicPlugin(new ProgressPlugin() {
+				p.addBasicPlugin((ProgressPlugin) (name, size) -> {
+					System.out.println("Starting " + name);
+					tasks.incrementAndGet();
+					return new Task() {
 
-					@Override
-					public Task startTask(final String name, int size) {
-						System.out.println("Starting " + name);
-						tasks.incrementAndGet();
-						return new Task() {
+						@Override
+						public void worked(int units) {
+							System.out.println("Worked " + name + " " + units);
+						}
 
-							@Override
-							public void worked(int units) {
-								System.out.println("Worked " + name + " " + units);
-							}
+						@Override
+						public void done(String message, Throwable e) {
+							System.out.println("Done " + name + " " + message);
+						}
 
-							@Override
-							public void done(String message, Throwable e) {
-								System.out.println("Done " + name + " " + message);
-							}
-
-							@Override
-							public boolean isCanceled() {
-								return false;
-							}
-						};
-					}
+						@Override
+						public boolean isCanceled() {
+							return false;
+						}
+					};
 				});
 
 				assertEquals(0, tasks.get());
@@ -375,30 +372,26 @@ public class OSGiRepositoryTest extends TestCase {
 
 			final AtomicInteger tasks = new AtomicInteger();
 
-			p.addBasicPlugin(new ProgressPlugin() {
+			p.addBasicPlugin((ProgressPlugin) (name, size) -> {
+				System.out.println("Starting " + name);
+				tasks.incrementAndGet();
+				return new Task() {
 
-				@Override
-				public Task startTask(final String name, int size) {
-					System.out.println("Starting " + name);
-					tasks.incrementAndGet();
-					return new Task() {
+					@Override
+					public void worked(int units) {
+						System.out.println("Worked " + name + " " + units);
+					}
 
-						@Override
-						public void worked(int units) {
-							System.out.println("Worked " + name + " " + units);
-						}
+					@Override
+					public void done(String message, Throwable e) {
+						System.out.println("Done " + name + " " + message);
+					}
 
-						@Override
-						public void done(String message, Throwable e) {
-							System.out.println("Done " + name + " " + message);
-						}
-
-						@Override
-						public boolean isCanceled() {
-							return false;
-						}
-					};
-				}
+					@Override
+					public boolean isCanceled() {
+						return false;
+					}
+				};
 			});
 
 			assertThat(tasks).hasValue(0);

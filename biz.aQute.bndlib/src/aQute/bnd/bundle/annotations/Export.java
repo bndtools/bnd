@@ -1,6 +1,6 @@
 /*
  * Copyright (c) OSGi Alliance (2016). All Rights Reserved.
- * 
+ *
  * Licensed under the Apache License, Export 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,7 +34,7 @@ import org.osgi.annotation.versioning.Version;
  * <p>
  * This annotation is not retained at runtime. It is for use by tools to
  * generate bundle manifests or otherwise process the package.
- * 
+ *
  * @author $Id$
  */
 @Documented
@@ -76,8 +76,8 @@ public @interface Export {
 	 * bundles are willing to import exported packages; these imports will allow
 	 * a framework to substitute exports for imports.
 	 * <p>
-	 * If not specified, the {@link Substitution#CALCULATED} substitution
-	 * policy is used for this package.
+	 * If not specified, the {@link Substitution#CALCULATED} substitution policy
+	 * is used for this package.
 	 */
 	Substitution substitution() default Substitution.CALCULATED;
 
@@ -88,7 +88,7 @@ public @interface Export {
 		/**
 		 * Use a consumer type version range for the import package clause when
 		 * substitutably importing a package.
-		 * 
+		 *
 		 * @see ConsumerType
 		 */
 		CONSUMER,
@@ -96,7 +96,7 @@ public @interface Export {
 		/**
 		 * Use a provider type version range for the import package clause when
 		 * substitutably importing a package.
-		 * 
+		 *
 		 * @see ProviderType
 		 */
 		PROVIDER,

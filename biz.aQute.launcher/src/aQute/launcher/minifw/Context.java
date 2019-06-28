@@ -390,6 +390,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		return id + " " + location;
 	}
 
+	@Override
 	public int compareTo(Bundle var0) {
 		return 0;
 	}
@@ -404,14 +405,17 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		return null;
 	}
 
+	@Override
 	public <T> ServiceRegistration<T> registerService(Class<T> clazz, T service, Dictionary<String, ?> properties) {
 		return null;
 	}
 
+	@Override
 	public <S> ServiceReference<S> getServiceReference(Class<S> clazz) {
 		return null;
 	}
 
+	@Override
 	public <S> Collection<ServiceReference<S>> getServiceReferences(Class<S> clazz, String filter)
 		throws InvalidSyntaxException {
 		return null;
@@ -427,14 +431,15 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		return false;
 	}
 
+	@Override
 	public Bundle getBundle(String location) {
 		return null;
 	}
 
+	@Override
 	public <A> A adapt(Class<A> type) {
 		return null;
 	}
-
 
 	@Override
 	public <S> ServiceRegistration<S> registerService(Class<S> clazz, ServiceFactory<S> factory,

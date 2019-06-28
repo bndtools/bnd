@@ -31,14 +31,13 @@ import aQute.lib.strings.Strings;
  */
 
 class CompositeArtifacts extends XML {
-	final List<URI> uris = new ArrayList<>();
+	final List<URI>	uris	= new ArrayList<>();
 	final URI		base;
 
 	CompositeArtifacts(InputStream in, URI base) throws Exception {
 		super(getDocument(in));
 		this.base = base;
 	}
-
 
 	void parse() throws Exception {
 		NodeList nodes = getNodes("repository/children/child");

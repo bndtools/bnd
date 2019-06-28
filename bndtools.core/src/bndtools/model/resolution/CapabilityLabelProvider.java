@@ -13,57 +13,57 @@ import bndtools.Plugin;
 
 public class CapabilityLabelProvider extends ImageCachingLabelProvider {
 
-    private final boolean shortenNamespaces;
+	private final boolean shortenNamespaces;
 
-    public CapabilityLabelProvider() {
-        this(false);
-    }
+	public CapabilityLabelProvider() {
+		this(false);
+	}
 
-    public CapabilityLabelProvider(boolean shortenNamespaces) {
-        super(Plugin.PLUGIN_ID);
-        this.shortenNamespaces = shortenNamespaces;
-    }
+	public CapabilityLabelProvider(boolean shortenNamespaces) {
+		super(Plugin.PLUGIN_ID);
+		this.shortenNamespaces = shortenNamespaces;
+	}
 
-    @Override
-    public void update(ViewerCell cell) {
-        Capability cap = (Capability) cell.getElement();
+	@Override
+	public void update(ViewerCell cell) {
+		Capability cap = (Capability) cell.getElement();
 
-        StyledString label = new StyledString();
-        R5LabelFormatter.appendCapability(label, cap, shortenNamespaces);
-        cell.setText(label.toString());
-        cell.setStyleRanges(label.getStyleRanges());
+		StyledString label = new StyledString();
+		R5LabelFormatter.appendCapability(label, cap, shortenNamespaces);
+		cell.setText(label.toString());
+		cell.setStyleRanges(label.getStyleRanges());
 
-        // Get the icon from the capability namespace
-        Image icon = getImage(R5LabelFormatter.getNamespaceImagePath(cap.getNamespace()), true);
-        if (icon != null)
-            cell.setImage(icon);
-    }
+		// Get the icon from the capability namespace
+		Image icon = getImage(R5LabelFormatter.getNamespaceImagePath(cap.getNamespace()), true);
+		if (icon != null)
+			cell.setImage(icon);
+	}
 
-    @Override
-    public String getToolTipText(Object element) {
-        if (element instanceof Capability) {
-            Capability cap = (Capability) element;
+	@Override
+	public String getToolTipText(Object element) {
+		if (element instanceof Capability) {
+			Capability cap = (Capability) element;
 
-            StringBuilder buf = new StringBuilder();
-            buf.append(cap.getNamespace());
-            for (Entry<String, Object> attribute : cap.getAttributes()
-                .entrySet())
-                buf.append(";\n\t")
-                    .append(attribute.getKey())
-                    .append(" = ")
-                    .append(attribute.getValue());
+			StringBuilder buf = new StringBuilder();
+			buf.append(cap.getNamespace());
+			for (Entry<String, Object> attribute : cap.getAttributes()
+				.entrySet())
+				buf.append(";\n\t")
+					.append(attribute.getKey())
+					.append(" = ")
+					.append(attribute.getValue());
 
-            for (Entry<String, String> directive : cap.getDirectives()
-                .entrySet())
-                buf.append(";\n\t")
-                    .append(directive.getKey())
-                    .append(" := ")
-                    .append(directive.getValue());
+			for (Entry<String, String> directive : cap.getDirectives()
+				.entrySet())
+				buf.append(";\n\t")
+					.append(directive.getKey())
+					.append(" := ")
+					.append(directive.getValue());
 
-            return buf.toString();
-        }
+			return buf.toString();
+		}
 
-        return null;
-    }
+		return null;
+	}
 
 }

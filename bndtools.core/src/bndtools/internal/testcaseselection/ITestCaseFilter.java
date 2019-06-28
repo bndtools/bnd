@@ -11,5 +11,5 @@
 package bndtools.internal.testcaseselection;
 
 public interface ITestCaseFilter {
-    boolean select(String testClassName);
+	boolean select(String testClassName);
 }

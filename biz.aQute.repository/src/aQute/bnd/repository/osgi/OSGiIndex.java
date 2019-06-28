@@ -198,7 +198,7 @@ class OSGiIndex {
 				@SuppressWarnings("unchecked")
 				Promise<TaggedData> delayed = (Promise<TaggedData>) failed.delay(delay);
 				return delayed.recoverWith(f -> get(url, file, remoteDigest, retries - 1,
-						Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
+					Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
 			}));
 	}
 

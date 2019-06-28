@@ -9,7 +9,7 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.lib.tag.Tag;
 
 public class PropertiesDef {
-	private final List<String>				properties			= new ArrayList<>();
+	private final List<String> properties = new ArrayList<>();
 
 	PropertiesDef(Analyzer analyzer) {}
 

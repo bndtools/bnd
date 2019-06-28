@@ -9,6 +9,10 @@ import javax.security.auth.callback.Callback;
 public class UsesGenericExtend extends ArrayList<Callback> {
 
 	@SuppressWarnings("unused")
-	private Subject subject;
+	private Subject				subject;
+	/**
+	 * 
+	 */
+	private static final long	serialVersionUID	= 1L;
 
 }

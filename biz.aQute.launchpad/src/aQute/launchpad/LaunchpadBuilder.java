@@ -206,7 +206,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 
 	/**
 	 * Exclude the exports that are matched by any of the given globs
-	 * 
+	 *
 	 * @param globs the globs to match against the system framework exports
 	 * @return this
 	 */
@@ -220,7 +220,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 
 	/**
 	 * Exclude the exports that are matched by any of the given predicates
-	 * 
+	 *
 	 * @param predicate the predicates to match against the system framework
 	 *            exports
 	 * @return this
@@ -309,7 +309,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 	// })
 	// .filter(s -> !s.startsWith("java"))
 	// .distinct()
-	// .collect(Collectors.joining(","));
+	// .collect(Strings.joining());
 	//
 	// extraSystemPackages.entrySet()
 	// .forEach(e -> {

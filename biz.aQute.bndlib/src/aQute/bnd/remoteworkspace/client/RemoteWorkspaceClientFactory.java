@@ -36,7 +36,7 @@ public class RemoteWorkspaceClientFactory {
 	 * for registered workspaces. (Multiple can be registered.) It will try to
 	 * contact these remote workspace servers in order of last modified, newest
 	 * first. The first one that responds will be returned.
-	 * 
+	 *
 	 * @param dir The directory of the workspace
 	 * @param client the client API
 	 * @return a RemoteWorkspace
@@ -49,7 +49,7 @@ public class RemoteWorkspaceClientFactory {
 
 	/**
 	 * Create a Remote Workspace on a specific port.
-	 * 
+	 *
 	 * @param port the port to use
 	 * @param client the client API
 	 * @return a Workspace
@@ -124,7 +124,7 @@ public class RemoteWorkspaceClientFactory {
 
 	/**
 	 * Get the directory where the ports are registered in
-	 * 
+	 *
 	 * @param dir the directory to start from.
 	 * @param org the original directory started from
 	 * @return the directory (cnf/cache/remotews) in the first workspace

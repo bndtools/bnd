@@ -44,15 +44,15 @@ import aQute.lib.collections.MultiMap;
 
 public class FrameworkFacade implements SnapshotProvider {
 
-	final BundleContext									context;
-	final MultiMap<Bundle, ListenerInfo>				serviceListeners	= new MultiMap<>();
+	final BundleContext																								context;
+	final MultiMap<Bundle, ListenerInfo>																			serviceListeners	= new MultiMap<>();
 	@SuppressWarnings("deprecation")
 	final ServiceTracker<org.osgi.service.packageadmin.PackageAdmin, org.osgi.service.packageadmin.PackageAdmin>	packageAdminTracker;
-	final AtomicLong									number				= new AtomicLong();
-	final Map<String, PackageDTO>						packages			= new ConcurrentHashMap<>();
-	final TimeMeasurement								timing;
+	final AtomicLong																								number				= new AtomicLong();
+	final Map<String, PackageDTO>																					packages			= new ConcurrentHashMap<>();
+	final TimeMeasurement																							timing;
 
-	private ServiceRegistration<ListenerHook>			listenerHook;
+	private ServiceRegistration<ListenerHook>																		listenerHook;
 
 	public static class XBundleDTO extends BundleDTO {
 		public String						location;
@@ -121,8 +121,7 @@ public class FrameworkFacade implements SnapshotProvider {
 	@SuppressWarnings("deprecation")
 	public FrameworkFacade(BundleContext context) {
 		this.context = context;
-		packageAdminTracker = new ServiceTracker<org.osgi.service.packageadmin.PackageAdmin, org.osgi.service.packageadmin.PackageAdmin>(
-			context, org.osgi.service.packageadmin.PackageAdmin.class, null);
+		packageAdminTracker = new ServiceTracker<>(context, org.osgi.service.packageadmin.PackageAdmin.class, null);
 		packageAdminTracker.open();
 		this.timing = new TimeMeasurement(context);
 

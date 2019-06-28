@@ -214,7 +214,7 @@ public class DiffTest extends TestCase {
 	 * actual diff is not consistent. Tested with several versions of bnd
 	 * (including master HEAD) as well as several versions of the guava bundles
 	 * from maven central. Reproduced by @bnd .
-	 * 
+	 *
 	 * <pre>
 	 *  $ java -jar
 	 * biz.aQute.bnd.jar diff guava-14.0.1.jar guava-14.0.1.jar MINOR PACKAGE
@@ -231,7 +231,7 @@ public class DiffTest extends TestCase {
 	 * java.util.Collection ADDED RETURN java.util.Collection ADDED RETURN
 	 * java.util.Set
 	 * </pre>
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -249,12 +249,12 @@ public class DiffTest extends TestCase {
 	 * diffs
 	 * <p>
 	 * The trigger is a class-level annotations of the form
-	 * 
+	 *
 	 * <pre>
 	 * {@literal @}Properties(value = { {@literal @}Property(name = "some.key",
 	 * value = "some.value") })
 	 * </pre>
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testNestedExportedAnnotations() throws Exception {
@@ -275,12 +275,12 @@ public class DiffTest extends TestCase {
 	 * diffs
 	 * <p>
 	 * The trigger is a class-level annotations of the form
-	 * 
+	 *
 	 * <pre>
 	 * {@literal @}Properties(value = { {@literal @}Property(name = "some.key",
 	 * value = "some.value") })
 	 * </pre>
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testNestedExportedAnnotations2() throws Exception {
@@ -351,7 +351,7 @@ public class DiffTest extends TestCase {
 		b.close();
 	}
 
-	public static interface Intf {
+	public interface Intf {
 		void foo();
 	}
 
@@ -361,7 +361,7 @@ public class DiffTest extends TestCase {
 		public void foo() {}
 	}
 
-	static interface A extends Comparable<Object>, Serializable {
+	interface A extends Comparable<Object>, Serializable {
 
 	}
 

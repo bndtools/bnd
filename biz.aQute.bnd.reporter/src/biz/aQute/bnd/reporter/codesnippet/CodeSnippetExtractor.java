@@ -50,7 +50,7 @@ public class CodeSnippetExtractor {
 	 * <p>
 	 * Code snippets are ordered as they appear in the directories (files are
 	 * first sorted in a lexicographic order).
-	 * 
+	 *
 	 * @param directoryPaths a list of directory paths from which code snippets
 	 *            are looked up.
 	 * @return an ordered list of code snippets.

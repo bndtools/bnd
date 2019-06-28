@@ -17,77 +17,77 @@ public class ResolutionTreeContentProvider implements ITreeContentProvider {
 
     @SuppressWarnings("unused")
     private boolean optional;
-    private Map<Resource, List<Wire>> resolution;
+	private Map<Resource, List<Wire>> resolution;
 
     public void setOptional(boolean optional) {
         this.optional = optional;
     }
 
-    public void setResolution(Map<Resource, List<Wire>> resolution) {
-        this.resolution = resolution;
-    }
+	public void setResolution(Map<Resource, List<Wire>> resolution) {
+		this.resolution = resolution;
+	}
 
-    @Override
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
+	@Override
+	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
 
-    @Override
-    public Object[] getElements(Object input) {
-        return getChildren(input);
-    }
+	@Override
+	public Object[] getElements(Object input) {
+		return getChildren(input);
+	}
 
-    @Override
-    public Object[] getChildren(Object parent) {
-        Object[] result;
+	@Override
+	public Object[] getChildren(Object parent) {
+		Object[] result;
 
-        if (parent instanceof Resource) {
-            Resource parentResource = (Resource) parent;
+		if (parent instanceof Resource) {
+			Resource parentResource = (Resource) parent;
 
-            Map<Capability, ResolutionTreeItem> items = new HashMap<Capability, ResolutionTreeItem>();
-            List<Wire> wires = resolution.get(parentResource);
-            processWires(wires, items);
+			Map<Capability, ResolutionTreeItem> items = new HashMap<>();
+			List<Wire> wires = resolution.get(parentResource);
+			processWires(wires, items);
 
-            result = items.values()
-                .toArray();
-        } else if (parent instanceof Requirement) {
-            result = getChildren(((Requirement) parent).getResource());
-        } else if (parent instanceof ResolutionTreeItem) {
-            ResolutionTreeItem item = (ResolutionTreeItem) parent;
-            List<Wire> wires = item.getWires();
-            List<Requirement> reqs = new ArrayList<Requirement>();
-            for (Wire wire : wires)
-                reqs.add(wire.getRequirement());
-            result = reqs.toArray();
-        } else {
-            result = null;
-        }
+			result = items.values()
+				.toArray();
+		} else if (parent instanceof Requirement) {
+			result = getChildren(((Requirement) parent).getResource());
+		} else if (parent instanceof ResolutionTreeItem) {
+			ResolutionTreeItem item = (ResolutionTreeItem) parent;
+			List<Wire> wires = item.getWires();
+			List<Requirement> reqs = new ArrayList<>();
+			for (Wire wire : wires)
+				reqs.add(wire.getRequirement());
+			result = reqs.toArray();
+		} else {
+			result = null;
+		}
 
-        return result;
-    }
+		return result;
+	}
 
-    private static void processWires(Collection<Wire> wires, Map<Capability, ResolutionTreeItem> items) {
-        if (wires != null) {
-            for (Wire wire : wires) {
-                ResolutionTreeItem item = items.get(wire.getCapability());
-                if (item == null) {
-                    item = new ResolutionTreeItem(wire.getCapability());
-                    items.put(wire.getCapability(), item);
-                }
-                item.addWire(wire);
-            }
-        }
-    }
+	private static void processWires(Collection<Wire> wires, Map<Capability, ResolutionTreeItem> items) {
+		if (wires != null) {
+			for (Wire wire : wires) {
+				ResolutionTreeItem item = items.get(wire.getCapability());
+				if (item == null) {
+					item = new ResolutionTreeItem(wire.getCapability());
+					items.put(wire.getCapability(), item);
+				}
+				item.addWire(wire);
+			}
+		}
+	}
 
-    @Override
-    public Object getParent(Object object) {
-        return null;
-    }
+	@Override
+	public Object getParent(Object object) {
+		return null;
+	}
 
-    @Override
-    public boolean hasChildren(Object object) {
-        return true;
-    }
+	@Override
+	public boolean hasChildren(Object object) {
+		return true;
+	}
 
-    @Override
-    public void dispose() {}
+	@Override
+	public void dispose() {}
 
 }

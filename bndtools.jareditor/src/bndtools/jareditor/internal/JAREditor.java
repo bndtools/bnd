@@ -29,116 +29,113 @@ import bndtools.jareditor.internal.utils.SWTConcurrencyUtil;
 
 public class JAREditor extends FormEditor implements IResourceChangeListener {
 
-    JARContentPage contentPage = new JARContentPage(this, "contentPage", "Content");
-    JARPrintPage printPage = new JARPrintPage(this, "printPage", "Print");
+	JARContentPage	contentPage	= new JARContentPage(this, "contentPage", "Content");
+	JARPrintPage	printPage	= new JARPrintPage(this, "printPage", "Print");
 
-    @Override
-    protected void addPages() {
-        try {
-            addPage(contentPage);
-            addPage(printPage);
-        } catch (PartInitException e) {
-            e.printStackTrace();
-        }
-    }
+	@Override
+	protected void addPages() {
+		try {
+			addPage(contentPage);
+			addPage(printPage);
+		} catch (PartInitException e) {
+			e.printStackTrace();
+		}
+	}
 
-    @Override
-    public void doSave(final IProgressMonitor monitor) {}
+	@Override
+	public void doSave(final IProgressMonitor monitor) {}
 
-    @Override
-    public void doSaveAs() {}
+	@Override
+	public void doSaveAs() {}
 
-    @Override
-    public boolean isSaveAsAllowed() {
-        return false;
-    }
+	@Override
+	public boolean isSaveAsAllowed() {
+		return false;
+	}
 
-    @Override
-    public void init(final IEditorSite site, final IEditorInput input) throws PartInitException {
-        super.init(site, input);
+	@Override
+	public void init(final IEditorSite site, final IEditorInput input) throws PartInitException {
+		super.init(site, input);
 
-        IResource resource = ResourceUtil.getResource(input);
-        if (resource != null) {
-            resource.getWorkspace()
-                .addResourceChangeListener(this);
-        }
-    }
+		IResource resource = ResourceUtil.getResource(input);
+		if (resource != null) {
+			resource.getWorkspace()
+				.addResourceChangeListener(this);
+		}
+	}
 
-    @Override
-    protected void setInput(final IEditorInput input) {
-        super.setInput(input);
-        String name = "unknown";
-        if (input instanceof IFileEditorInput) {
-            name = ((IFileEditorInput) input).getFile()
-                .getName();
-        } else if (input instanceof IURIEditorInput) {
-            name = ((IURIEditorInput) input).getName();
-        }
-        setPartName(name);
+	@Override
+	protected void setInput(final IEditorInput input) {
+		super.setInput(input);
+		String name = "unknown";
+		if (input instanceof IFileEditorInput) {
+			name = ((IFileEditorInput) input).getFile()
+				.getName();
+		} else if (input instanceof IURIEditorInput) {
+			name = ((IURIEditorInput) input).getName();
+		}
+		setPartName(name);
 
-        contentPage.setSelectedPath(new String[] {
-            "META-INF/", "MANIFEST.MF"
-        });
-    }
+		contentPage.setSelectedPath(new String[] {
+			"META-INF/", "MANIFEST.MF"
+		});
+	}
 
-    protected void updateContent(@SuppressWarnings("unused")
-    final IEditorInput input) {
-        Runnable update = new Runnable() {
-            @Override
-            public void run() {
-                Control c = (contentPage == null) ? null : contentPage.getPartControl();
-                if ((c != null) && !c.isDisposed()) {
-                    String[] selectedPath = contentPage.getSelectedPath();
-                    contentPage.getManagedForm()
-                        .refresh();
-                    contentPage.setSelectedPath(selectedPath);
-                }
+	protected void updateContent(@SuppressWarnings("unused")
+	final IEditorInput input) {
+		Runnable update = () -> {
+			Control c = (contentPage == null) ? null : contentPage.getPartControl();
+			if ((c != null) && !c.isDisposed()) {
+				String[] selectedPath = contentPage.getSelectedPath();
+				contentPage.getManagedForm()
+					.refresh();
+				contentPage.setSelectedPath(selectedPath);
+			}
 
-                c = (printPage == null) ? null : printPage.getPartControl();
-                if ((c != null) && !c.isDisposed()) {
-                    printPage.refresh();
-                }
-            }
-        };
-        try {
-            SWTConcurrencyUtil.execForDisplay(contentPage.getPartControl()
-                .getDisplay(), update);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+			c = (printPage == null) ? null : printPage.getPartControl();
+			if ((c != null) && !c.isDisposed()) {
+				printPage.refresh();
+			}
+		};
+		try {
+			SWTConcurrencyUtil.execForDisplay(contentPage.getPartControl()
+				.getDisplay(), update);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-    @Override
-    public void dispose() {
-        IResource resource = ResourceUtil.getResource(getEditorInput());
+	@Override
+	public void dispose() {
+		IResource resource = ResourceUtil.getResource(getEditorInput());
 
-        super.dispose();
+		super.dispose();
 
-        if (resource != null) {
-            resource.getWorkspace()
-                .removeResourceChangeListener(this);
-        }
-    }
+		if (resource != null) {
+			resource.getWorkspace()
+				.removeResourceChangeListener(this);
+		}
+	}
 
-    @Override
-    public void resourceChanged(final IResourceChangeEvent event) {
-        IResource myResource = ResourceUtil.getResource(getEditorInput());
+	@Override
+	public void resourceChanged(final IResourceChangeEvent event) {
+		IResource myResource = ResourceUtil.getResource(getEditorInput());
 
-        IResourceDelta delta = event.getDelta();
-        if (delta == null) {
-            return;
-        }
+		IResourceDelta delta = event.getDelta();
+		if (delta == null) {
+			return;
+		}
 
-        IPath fullPath = myResource.getFullPath();
-        delta = delta.findMember(fullPath);
-        if (delta == null) {
-            return;
-        }
+		IPath fullPath = myResource.getFullPath();
+		delta = delta.findMember(fullPath);
+		if (delta == null) {
+			return;
+		}
 
-        if (delta.getKind() == IResourceDelta.REMOVED) {
-            close(false);
-        } else if (delta.getKind() == IResourceDelta.CHANGED) {
-            updateContent(getEditorInput());
-        }
-    }
+		if (delta.getKind() == IResourceDelta.REMOVED) {
+			close(false);
+		} else if (delta.getKind() == IResourceDelta.CHANGED) {
+			updateContent(getEditorInput());
+		}
+	}
 }

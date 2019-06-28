@@ -37,21 +37,21 @@ public class AnnotationHeadersTest extends TestCase {
 	 * filter:="(osgi.implementation=osgi.http)". I want to define an annotation
 	 * that I can put onto a component that implies both the above provide and
 	 * require. I tried the following:
-	 * 
+	 *
 	 * <pre>
 	 * &#64;ProvideCapability(ns = "webapp")
 	 * &#64;RequireCapability(ns = "osgi.implementation", filter = "(osgi.implementation=osgi.http)")
 	 * &#64;interface WebApplication {
 	 * 	String name();
 	 * }
-	 * 
+	 *
 	 * &#64;WebApplication(name = "Petstore")
 	 * &#64;Component
 	 * public class PetstoreAppComponent {
 	 * 	// ..
 	 * }
 	 * </pre>
-	 * 
+	 *
 	 * However this only generated the Provide, it did not generate the Require.
 	 * If I switch the order of annotations so that @RequireCapability is first,
 	 * then it only generates the Require.

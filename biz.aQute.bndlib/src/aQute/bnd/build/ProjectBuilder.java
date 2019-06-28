@@ -50,10 +50,10 @@ import aQute.libg.glob.PathSet;
 public class ProjectBuilder extends Builder {
 	private static final Predicate<String>	pomPropertiesFilter	= new PathSet("META-INF/maven/*/*/pom.properties")
 		.matches();
-	private final static Logger		logger	= LoggerFactory.getLogger(ProjectBuilder.class);
-	private final DiffPluginImpl	differ	= new DiffPluginImpl();
-	Project							project;
-	boolean							initialized;
+	private final static Logger				logger				= LoggerFactory.getLogger(ProjectBuilder.class);
+	private final DiffPluginImpl			differ				= new DiffPluginImpl();
+	Project									project;
+	boolean									initialized;
 
 	public ProjectBuilder(Project project) {
 		super(project);
@@ -180,7 +180,7 @@ public class ProjectBuilder extends Builder {
 
 	/**
 	 * Compare this builder's JAR with a baseline
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Override
@@ -284,10 +284,10 @@ public class ProjectBuilder extends Builder {
 	}
 
 	// *
-	private static final Pattern	PATTERN_EXPORT_PACKAGE		= Pattern
-		.compile(Constants.EXPORT_PACKAGE, Pattern.CASE_INSENSITIVE | Pattern.LITERAL);
-	private static final Pattern	PATTERN_EXPORT_CONTENTS		= Pattern
-		.compile(Constants.EXPORT_CONTENTS, Pattern.CASE_INSENSITIVE | Pattern.LITERAL);
+	private static final Pattern	PATTERN_EXPORT_PACKAGE		= Pattern.compile(Constants.EXPORT_PACKAGE,
+		Pattern.CASE_INSENSITIVE | Pattern.LITERAL);
+	private static final Pattern	PATTERN_EXPORT_CONTENTS		= Pattern.compile(Constants.EXPORT_CONTENTS,
+		Pattern.CASE_INSENSITIVE | Pattern.LITERAL);
 	private static final Pattern	PATTERN_VERSION_ANNOTATION	= Pattern
 		.compile("@(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*\\.)*Version\\s*([^)]+)");
 	private static final Pattern	PATTERN_VERSION_PACKAGEINFO	= Pattern.compile("^\\s*version\\s.*$");
@@ -361,12 +361,12 @@ public class ProjectBuilder extends Builder {
 	 * builders!). If they match, the sub builder is selected.
 	 * <p>
 	 * The instruction can then specify the following options:
-	 * 
+	 *
 	 * <pre>
 	 *  version :
 	 * baseline version from repository file : a file path
 	 * </pre>
-	 * 
+	 *
 	 * If neither is specified, the current version is used to find the highest
 	 * version (without qualifier) that is below the current version. If a
 	 * version is specified, we take the highest version with the same base
@@ -375,7 +375,7 @@ public class ProjectBuilder extends Builder {
 	 * Since baselining is expensive and easily generates errors you must enable
 	 * it. The easiest solution is to {@code -baseline: *}. This will match all
 	 * sub builders and will calculate the version.
-	 * 
+	 *
 	 * @return a Jar or null
 	 */
 	public Jar getBaselineJar() throws Exception {
@@ -490,7 +490,7 @@ public class ProjectBuilder extends Builder {
 
 	/**
 	 * Remove any staging versions that have a variant with a higher qualifier.
-	 * 
+	 *
 	 * @param versions
 	 * @param repo
 	 * @throws Exception
@@ -534,7 +534,7 @@ public class ProjectBuilder extends Builder {
 
 	/**
 	 * Check if we have a master phase.
-	 * 
+	 *
 	 * @param repo
 	 * @param bsn
 	 * @param v
@@ -590,7 +590,7 @@ public class ProjectBuilder extends Builder {
 
 	/**
 	 * Create a report of the settings
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -608,7 +608,7 @@ public class ProjectBuilder extends Builder {
 
 	/**
 	 * Return the bndrun files that need to be exported
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public List<Run> getExportedRuns() throws Exception {
@@ -738,7 +738,7 @@ public class ProjectBuilder extends Builder {
 
 	/**
 	 * Find the source file for this type
-	 * 
+	 *
 	 * @param type
 	 * @throws Exception
 	 */

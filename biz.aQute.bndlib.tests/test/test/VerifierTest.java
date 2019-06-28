@@ -65,7 +65,7 @@ public class VerifierTest extends TestCase {
 
 	/**
 	 * Verify that the Meta-Persistence header is correctly verified
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -91,7 +91,7 @@ public class VerifierTest extends TestCase {
 
 	/**
 	 * Check for reserved file names (INVALIDFILENAMES)
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testInvalidFileNames() throws Exception {
@@ -133,7 +133,7 @@ public class VerifierTest extends TestCase {
 
 	/**
 	 * Create a require capality filter verification test
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -160,7 +160,7 @@ public class VerifierTest extends TestCase {
 
 	/**
 	 * Create a require capality directive test
-	 * 
+	 *
 	 * @throws Exception
 	 */
 

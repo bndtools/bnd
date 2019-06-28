@@ -45,7 +45,7 @@ import biz.aQute.resolve.ResolveProcess;
 
 @Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true)
 public class ExportMojo extends AbstractMojo {
-	private static final Logger			logger	= LoggerFactory.getLogger(ExportMojo.class);
+	private static final Logger									logger	= LoggerFactory.getLogger(ExportMojo.class);
 
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
 	private MavenProject										project;
@@ -109,6 +109,7 @@ public class ExportMojo extends AbstractMojo {
 	@SuppressWarnings("deprecation")
 	protected org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
 
+	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (skip) {
 			logger.debug("skip project as configured");

@@ -14,10 +14,9 @@ public class FileSetRepositoryTest {
 
 	@Test
 	public void includesMavenArtifacts() throws Exception {
-		List<File> files = Arrays.asList(
-			IO.getFile("testresources/demo.jar"), IO.getFile("testresources/release.jar"),
-			IO.getFile("testresources/nanohttpd-2.2.0.jar"),
-			IO.getFile("testresources/jsr250-api-1.0.jar"), IO.getFile("testresources/javafx-base-13-ea+8-linux.jar"));
+		List<File> files = Arrays.asList(IO.getFile("testresources/demo.jar"), IO.getFile("testresources/release.jar"),
+			IO.getFile("testresources/nanohttpd-2.2.0.jar"), IO.getFile("testresources/jsr250-api-1.0.jar"),
+			IO.getFile("testresources/javafx-base-13-ea+8-linux.jar"));
 
 		assertThat(files).hasSizeGreaterThan(0);
 

@@ -12,27 +12,28 @@ public interface ResolutionInstructions {
 	 */
 
 	enum Runorder {
-	/**
-	 * Order the -runbundles by having the least dependent first.
-	 */
-	LEASTDEPENDENCIESFIRST,
-	/**
-	 * Order the -runbundles by having the least dependent last.
-	 */
-	LEASTDEPENDENCIESLAST,
-	/**
-	 * Order the -runbundles randomly using the Collections#shuffle.
-	 */
-	RANDOM,
-	/**
-	 * Order the -runbundles sorted by name.
-	 */
-	SORTBYNAMEVERSION,
-	/**
-	 * Order the -runbundles sorted by name and merged with the existing value
-	 * if it exists. This is the default since it was the classic behavior.
-	 */
-	MERGESORTBYNAMEVERSION;
+		/**
+		 * Order the -runbundles by having the least dependent first.
+		 */
+		LEASTDEPENDENCIESFIRST,
+		/**
+		 * Order the -runbundles by having the least dependent last.
+		 */
+		LEASTDEPENDENCIESLAST,
+		/**
+		 * Order the -runbundles randomly using the Collections#shuffle.
+		 */
+		RANDOM,
+		/**
+		 * Order the -runbundles sorted by name.
+		 */
+		SORTBYNAMEVERSION,
+		/**
+		 * Order the -runbundles sorted by name and merged with the existing
+		 * value if it exists. This is the default since it was the classic
+		 * behavior.
+		 */
+		MERGESORTBYNAMEVERSION;
 	}
 
 	@interface RunStartLevel {

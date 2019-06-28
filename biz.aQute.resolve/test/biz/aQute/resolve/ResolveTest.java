@@ -155,7 +155,7 @@ public class ResolveTest extends TestCase {
 
 	/**
 	 * Test if we can augment
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -222,7 +222,7 @@ public class ResolveTest extends TestCase {
 
 	/**
 	 * Test minimal setup
-	 * 
+	 *
 	 * @throws URISyntaxException
 	 * @throws MalformedURLException
 	 */
@@ -260,7 +260,7 @@ public class ResolveTest extends TestCase {
 
 	/**
 	 * Test if we can resolve with a distro
-	 * 
+	 *
 	 * @throws ResolutionException
 	 */
 	public void testResolveWithDistro() throws Exception {
@@ -459,7 +459,7 @@ public class ResolveTest extends TestCase {
 
 	/**
 	 * Simple test that resolves a requirement
-	 * 
+	 *
 	 * @throws ResolutionException
 	 */
 	public void testMultipleOptionsNotDuplicated() throws Exception {
@@ -512,7 +512,7 @@ public class ResolveTest extends TestCase {
 
 	/**
 	 * Test that latest bundle is selected when namespace is 'osgi.service'
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testLatestBundleServiceNamespace() throws Exception {
@@ -547,7 +547,6 @@ public class ResolveTest extends TestCase {
 			}
 		}
 	}
-
 
 	public void testFrameworkFragmentResolve() throws Exception {
 		String wspath = "framework-fragment/";

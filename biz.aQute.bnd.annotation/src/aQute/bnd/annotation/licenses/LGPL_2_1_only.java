@@ -18,5 +18,4 @@ import aQute.bnd.annotation.headers.BundleLicense;
 	ElementType.PACKAGE, ElementType.TYPE
 })
 @BundleLicense(name = "LGPL-2.1-only", link = "https://opensource.org/licenses/LGPL-2.1", description = "GNU Lesser General Public License v2.1 only")
-public @interface LGPL_2_1_only {
-}
+public @interface LGPL_2_1_only {}

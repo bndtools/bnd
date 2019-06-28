@@ -257,7 +257,7 @@ public class MacroTest extends TestCase {
 
 	/**
 	 * A macro to get an attribute from a package
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -328,7 +328,7 @@ public class MacroTest extends TestCase {
 
 	/**
 	 * File name tests
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -343,7 +343,7 @@ public class MacroTest extends TestCase {
 		assertEquals("properties", processor.getReplacer()
 			._extension(new String[] {
 				"", "testresources/testfilenamemacros.properties"
-		}));
+			}));
 
 		assertEquals("testfilenamemacros.properties", processor.getReplacer()
 			.process("${basename;testfilenamemacros.properties}"));
@@ -958,17 +958,17 @@ public class MacroTest extends TestCase {
 
 			List<String> c = Strings.split(macro.process("${lsa;test/test;*.java}"));
 			assertThat(c)
-			.contains(IO.absolutePath(new File("test/test/MacroTest.java")),
-				IO.absolutePath(new File("test/test/ManifestTest.java")))
-			.doesNotContain(IO.absolutePath(new File("test/test/bnd.info")),
+				.contains(IO.absolutePath(new File("test/test/MacroTest.java")),
+					IO.absolutePath(new File("test/test/ManifestTest.java")))
+				.doesNotContain(IO.absolutePath(new File("test/test/bnd.info")),
 					IO.absolutePath(new File("test/test/com.acme")))
 				.allMatch(absolute);
 
 			List<String> d = Strings.split(macro.process("${lsa;test/test}"));
 			assertThat(d)
-			.contains(IO.absolutePath(new File("test/test/MacroTest.java")),
-				IO.absolutePath(new File("test/test/ManifestTest.java")),
-				IO.absolutePath(new File("test/test/bnd.info")), IO.absolutePath(new File("test/test/com.acme")))
+				.contains(IO.absolutePath(new File("test/test/MacroTest.java")),
+					IO.absolutePath(new File("test/test/ManifestTest.java")),
+					IO.absolutePath(new File("test/test/bnd.info")), IO.absolutePath(new File("test/test/com.acme")))
 				.allMatch(absolute);
 		}
 	}

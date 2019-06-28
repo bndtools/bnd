@@ -340,6 +340,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		}
 	}
 
+	@Override
 	public int compareTo(Bundle var0) {
 		// TODO Auto-generated method stub
 		return 0;
@@ -355,14 +356,17 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return null;
 	}
 
+	@Override
 	public <S> ServiceRegistration<S> registerService(Class<S> clazz, S service, Dictionary<String, ?> properties) {
 		return null;
 	}
 
+	@Override
 	public <S> ServiceReference<S> getServiceReference(Class<S> clazz) {
 		return null;
 	}
 
+	@Override
 	public <S> Collection<ServiceReference<S>> getServiceReferences(Class<S> clazz, String filter)
 		throws InvalidSyntaxException {
 		return null;
@@ -378,10 +382,12 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return false;
 	}
 
+	@Override
 	public Bundle getBundle(String location) {
 		return null;
 	}
 
+	@Override
 	public <A> A adapt(Class<A> type) {
 		return null;
 	}

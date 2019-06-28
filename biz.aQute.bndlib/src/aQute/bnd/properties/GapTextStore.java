@@ -22,7 +22,7 @@ package aQute.bnd.properties;
  * <p>
  * This class is not intended to be subclassed.
  * </p>
- * 
+ *
  * @see CopyOnWriteTextStore for a copy-on-write text store wrapper @noextend
  *      This class is not intended to be subclassed by clients.
  */
@@ -56,7 +56,7 @@ public class GapTextStore implements ITextStore {
 	/**
 	 * Creates a new empty text store using the specified low and high
 	 * watermarks.
-	 * 
+	 *
 	 * @param lowWatermark unused - at the lower bound, the array is only
 	 *            resized when the content does not fit
 	 * @param highWatermark if the gap is ever larger than this, it will
@@ -110,7 +110,7 @@ public class GapTextStore implements ITextStore {
 	 * frequent re-allocation for small documents. Use <code>maxSize</code> to
 	 * avoid a huge gap being allocated for large documents.
 	 * </p>
-	 * 
+	 *
 	 * @param minSize the minimum gap size to allocate (&gt;=&nbsp;0; use 0 for
 	 *            no minimum)
 	 * @param maxSize the maximum gap size to allocate (&gt;=&nbsp;minSize; use
@@ -201,7 +201,7 @@ public class GapTextStore implements ITextStore {
 	 * 0 and {@link #fThreshold}, leading to re-allocation if needed. The
 	 * content between <code>offset</code> and <code>offset + add</code> is
 	 * undefined after this operation.
-	 * 
+	 *
 	 * @param offset the offset at which a change happens
 	 * @param remove the number of character which are removed or overwritten at
 	 *            <code>offset</code>
@@ -227,7 +227,7 @@ public class GapTextStore implements ITextStore {
 
 	/**
 	 * Moves the gap to <code>newGapStart</code>.
-	 * 
+	 *
 	 * @param offset the change offset
 	 * @param remove the number of removed / overwritten characters
 	 * @param oldGapSize the old gap size
@@ -262,7 +262,7 @@ public class GapTextStore implements ITextStore {
 
 	/**
 	 * Reallocates a new array and copies the data from the previous one.
-	 * 
+	 *
 	 * @param offset the change offset
 	 * @param remove the number of removed / overwritten characters
 	 * @param oldGapSize the old gap size
@@ -332,7 +332,7 @@ public class GapTextStore implements ITextStore {
 
 	/**
 	 * Allocates a new <code>char[size]</code>.
-	 * 
+	 *
 	 * @param size the length of the new array.
 	 * @return a newly allocated char array @since 3.3
 	 */
@@ -352,7 +352,7 @@ public class GapTextStore implements ITextStore {
 
 	/**
 	 * Returns the gap size.
-	 * 
+	 *
 	 * @return the gap size @since 3.3
 	 */
 	private int gapSize() {
@@ -361,7 +361,7 @@ public class GapTextStore implements ITextStore {
 
 	/**
 	 * Returns a copy of the content of this text store. For internal use only.
-	 * 
+	 *
 	 * @return a copy of the content of this text store
 	 */
 	protected String getContentAsString() {
@@ -371,7 +371,7 @@ public class GapTextStore implements ITextStore {
 	/**
 	 * Returns the start index of the gap managed by this text store. For
 	 * internal use only.
-	 * 
+	 *
 	 * @return the start index of the gap managed by this text store
 	 */
 	protected int getGapStartIndex() {
@@ -381,7 +381,7 @@ public class GapTextStore implements ITextStore {
 	/**
 	 * Returns the end index of the gap managed by this text store. For internal
 	 * use only.
-	 * 
+	 *
 	 * @return the end index of the gap managed by this text store
 	 */
 	protected int getGapEndIndex() {

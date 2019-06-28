@@ -22,16 +22,16 @@ import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
 
 public class PomFromManifest extends WriteResource {
-	final Manifest			manifest;
-	private List<String>	scm			= new ArrayList<>();
-	private List<String>	developers	= new ArrayList<>();
+	final Manifest					manifest;
+	private List<String>			scm			= new ArrayList<>();
+	private List<String>			developers	= new ArrayList<>();
 	private final static Pattern	NAME_URL	= Pattern.compile("(.*)(https?://.*)", Pattern.CASE_INSENSITIVE);
 	private final static Pattern	EMAIL_P		= Pattern.compile("([^@]+)@([-.\\w]+)\\.([-.\\w]+)");
-	String					xbsn;
-	String					xversion;
-	String					xgroupId;
-	String					xartifactId;
-	private String			projectURL;
+	String							xbsn;
+	String							xversion;
+	String							xgroupId;
+	String							xartifactId;
+	private String					projectURL;
 
 	public String getBsn() {
 		if (xbsn == null)
@@ -222,7 +222,7 @@ public class PomFromManifest extends WriteResource {
 
 	/**
 	 * Utility function to print a tag from a map
-	 * 
+	 *
 	 * @param ps
 	 * @param values
 	 * @param string

@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.osgi.framework.Bundle;
@@ -21,14 +20,15 @@ import aQute.bnd.service.specifications.BuilderSpecification;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.regex.PatternConstants;
+import aQute.lib.strings.Strings;
 
 /**
  * Provides all builder functions. Specified as default methods so that we can
  * create sub builder interfaces that inherit all functions of the outer one.
  */
 public interface BundleSpecBuilder {
-	final static String		CONFIGURATION_JSON	= "configuration/configuration.json";
-	final static Pattern	SYMBOLICNAME		= Pattern.compile(PatternConstants.SYMBOLICNAME);
+	String	CONFIGURATION_JSON	= "configuration/configuration.json";
+	Pattern	SYMBOLICNAME		= Pattern.compile(PatternConstants.SYMBOLICNAME);
 
 	BundleBuilder x();
 
@@ -54,6 +54,7 @@ public interface BundleSpecBuilder {
 				return x;
 			}
 
+			@Override
 			public String bsn() {
 				return name;
 			}
@@ -68,7 +69,7 @@ public interface BundleSpecBuilder {
 		never("never"),
 		resolve_time("resolve-time");
 
-		public final String value;
+		String value;
 
 		FragmentAttachment(String name) {
 			this.value = name;
@@ -90,7 +91,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * Set the bundle's fragment attachment policy
-		 * 
+		 *
 		 * @param attachment the attachment policy
 		 */
 		default BundleSpecBsn fragmentAttachment(FragmentAttachment attachment) {
@@ -100,18 +101,18 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * Set the mandatory matching attributes
-		 * 
+		 *
 		 * @param attributes the matching attributes
 		 */
 		default BundleSpecBsn mandatory(String... attributes) {
 			directive("mandatory", Stream.of(attributes)
-				.collect(Collectors.joining(",")));
+				.collect(Strings.joining()));
 			return this;
 		}
 
 		/**
 		 * Bundle-SymbolicName attribute
-		 * 
+		 *
 		 * @param key the attribute name
 		 * @param value the value
 		 */
@@ -122,7 +123,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * Bundle-SymbolicName directive
-		 * 
+		 *
 		 * @param key the directive name (no ':' at end)
 		 * @param value the value
 		 */
@@ -168,7 +169,7 @@ public interface BundleSpecBuilder {
 	 * as an activator. The class is also added as a resource so that it could
 	 * potentially also be a DS component. However, this resource is only used
 	 * by bnd since in runtime we will load the class from the classpath.
-	 * 
+	 *
 	 * @param bundleActivator the class that is intended to be the Bundle
 	 *            Activator
 	 */
@@ -203,6 +204,7 @@ public interface BundleSpecBuilder {
 			/*
 			 * access to the current fragmenthost
 			 */
+			@Override
 			public String fragmenthost() {
 				return name;
 			}
@@ -222,7 +224,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * extension
-		 * 
+		 *
 		 * @param extension the actual extension type
 		 */
 		default BundleSpecBuilder extension(Extension extension) {
@@ -232,9 +234,10 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * The Fragment-Host bundle-version attribute
-		 * 
+		 *
 		 * @param versionRange the range of version for the fragment host
 		 */
+		@Override
 		default BundleSpecFragmentHost bundleVersion(String versionRange) {
 			attribute("bundle-version", versionRange);
 			return this;
@@ -242,7 +245,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * Fragment-Host attribute
-		 * 
+		 *
 		 * @param key the attribute name
 		 * @param value the attribute value
 		 */
@@ -253,7 +256,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * Fragment-Host directive
-		 * 
+		 *
 		 * @param key the directive name without the ':'
 		 * @param value the directive value
 		 */
@@ -319,9 +322,10 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * Require-Bundle bundleVersion attribute
-		 * 
+		 *
 		 * @param versionRange the version range of the required bundles
 		 */
+		@Override
 		default BundleSpecBuilderRequireBundle bundleVersion(String versionRange) {
 			attribute("bundle-version", versionRange);
 			return this;
@@ -329,7 +333,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * Require-Bundle attribute
-		 * 
+		 *
 		 * @param key the name of the attribute
 		 * @param value the value of the attribute
 		 */
@@ -340,7 +344,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * Require-Bundle directive
-		 * 
+		 *
 		 * @param key the name of the directive (without the ':')
 		 * @param value the value of the directive
 		 */
@@ -357,7 +361,7 @@ public interface BundleSpecBuilder {
 
 	/**
 	 * Import-Package
-	 * 
+	 *
 	 * @param name name of the package to be imported, may contain wildcards
 	 */
 
@@ -400,7 +404,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * Set the package version attribute
-		 * 
+		 *
 		 * @param versionRange the version range of the required package
 		 */
 		default BundleSpecImportPackage version(String versionRange) {
@@ -410,7 +414,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * Set the import from specific bundle attribute
-		 * 
+		 *
 		 * @param bundleSymbolicName the bundle to import the package from
 		 */
 		default BundleSpecImportPackage bundle_symbolic_name(String bundleSymbolicName) {
@@ -420,7 +424,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * Set the import from specific bundle version attribute
-		 * 
+		 *
 		 * @param versionRange the version range of the required package
 		 */
 		default BundleSpecImportPackage bundle_version(String versionRange) {
@@ -430,7 +434,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * The Import-Package attribute
-		 * 
+		 *
 		 * @param key the name of the attribute
 		 * @param value the value of the attribute
 		 */
@@ -441,7 +445,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * The Import-Package directive
-		 * 
+		 *
 		 * @param key the name of the directive (without the ':')
 		 * @param value the value of the directive
 		 */
@@ -493,7 +497,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * Set the uses directive
-		 * 
+		 *
 		 * @param packageNames packages used by the current export package
 		 */
 		default BundleSpecExportPackage uses(String... packageNames) {
@@ -503,7 +507,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * Set the mandatory attributes
-		 * 
+		 *
 		 * @param attributeNames the mandatory attribute names
 		 */
 		default BundleSpecExportPackage mandatory(String... attributeNames) {
@@ -513,7 +517,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * Set included classes
-		 * 
+		 *
 		 * @param classNames the included class names
 		 */
 		default BundleSpecExportPackage include(String... classNames) {
@@ -523,7 +527,7 @@ public interface BundleSpecBuilder {
 
 		/**
 		 * Set included classes
-		 * 
+		 *
 		 * @param classNames the included class names
 		 */
 		default BundleSpecExportPackage include(@SuppressWarnings("rawtypes") Class... classes) {
@@ -860,7 +864,7 @@ public interface BundleSpecBuilder {
 	 * import the class' package from the framework (-classpath). This way DS
 	 * can do its magic since the component class will come from the classpath
 	 * although bnd calculates the XML.
-	 * 
+	 *
 	 * @param class1 the class to add as a resource
 	 */
 	default BundleSpecBuilder addResource(Class<?> class1) {
@@ -878,7 +882,7 @@ public interface BundleSpecBuilder {
 	 * (typically from the system classloader). Classes added using this method
 	 * will be loaded from within the framework, rather than by the system
 	 * framework.
-	 * 
+	 *
 	 * @param class1 the class to add as a resource
 	 */
 	default BundleSpecBuilder addResourceWithCopy(Class<?> class1) {
@@ -999,7 +1003,7 @@ public interface BundleSpecBuilder {
 	 * Inherit the build instructions from a file. This file must exist. It is
 	 * used as the properties file for the used builder. The further
 	 * specifications from this builder fully overwrite these properties.
-	 * 
+	 *
 	 * @param path
 	 */
 	default BundleSpecBuilder parent(String path) {
@@ -1033,7 +1037,7 @@ public interface BundleSpecBuilder {
 	 * <p>
 	 * If not specified, the location will default to the string
 	 * <tt>bsn-bundleVersion</tt>.
-	 * 
+	 *
 	 * @param location the location string to use for this bundle.
 	 * @return The builder object for chained invocations.
 	 */

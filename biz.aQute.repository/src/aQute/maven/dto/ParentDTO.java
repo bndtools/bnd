@@ -26,7 +26,7 @@ public class ParentDTO extends DTO {
 	public MavenVersion	version;
 
 	/**
-	 * 
+	 *
 	 */
 	public String		relativePath	= "../pom.xml";
 

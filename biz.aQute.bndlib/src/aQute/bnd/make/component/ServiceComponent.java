@@ -70,7 +70,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * An XML reference is immediately expanded, an FQN/wildcard is more
 		 * complicated and is delegated to
 		 * {@link #componentEntry(Map, String, Map)}.
-		 * 
+		 *
 		 * @throws Exception
 		 */
 		Map<String, Map<String, String>> doServiceComponent() throws Exception {
@@ -115,7 +115,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * format that does not support annotations, this can be a problem with
 		 * JSR14 who silently ignores annotations. An error is reported in such
 		 * a case.
-		 * 
+		 *
 		 * @param serviceComponents
 		 * @param name
 		 * @param info
@@ -149,8 +149,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 				where.set(warning);
 			}
 
-			warning.reference(
-				"https://osgi.org/specification/osgi.cmpn/7.0.0/service.component.html#d0e36857");
+			warning.reference("https://osgi.org/specification/osgi.cmpn/7.0.0/service.component.html#d0e36857");
 
 			//
 			// We now have a selection on the classes in the analyzer.
@@ -225,7 +224,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 		/**
 		 * Create a Metatype and Designate record out of the given
 		 * configurations.
-		 * 
+		 *
 		 * @param name
 		 * @param config
 		 * @throws Exception
@@ -254,7 +253,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 		/**
 		 * Create the resource for a DS component.
-		 * 
+		 *
 		 * @param list
 		 * @param name
 		 * @param info

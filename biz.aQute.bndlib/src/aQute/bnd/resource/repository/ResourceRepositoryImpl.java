@@ -55,27 +55,21 @@ import aQute.service.reporter.Reporter;
 public class ResourceRepositoryImpl implements ResourceRepository {
 	private final static Logger						logger							= LoggerFactory
 		.getLogger(ResourceRepositoryImpl.class);
-	private static Comparator<ResourceDescriptor>	RESOURCE_DESCRIPTOR_COMPARATOR	= new Comparator<ResourceDescriptor>() {
+	private static Comparator<ResourceDescriptor>	RESOURCE_DESCRIPTOR_COMPARATOR	= (o1, o2) -> {
+																						if (o1 == o2)
+																							return 0;
 
-																						@Override
-																						public int compare(
-																							ResourceDescriptor o1,
-																							ResourceDescriptor o2) {
-																							if (o1 == o2)
-																								return 0;
+																						int r = o1.bsn
+																							.compareTo(o2.bsn);
+																						if (r > 0)
+																							return 1;
+																						else if (r < 0)
+																							return -1;
 
-																							int r = o1.bsn
-																								.compareTo(o2.bsn);
-																							if (r > 0)
-																								return 1;
-																							else if (r < 0)
-																								return -1;
-
-																							return o1.version
-																								.compareTo(o2.version);
-																						}
+																						return o1.version
+																							.compareTo(o2.version);
 																					};
-	private static final long						THRESHOLD						= 4 * 3600 * 1000;						// 4
+	private static final long						THRESHOLD						= 4 * 3600 * 1000;					// 4
 	protected static final DownloadListener[]		EMPTY_LISTENER					= new DownloadListener[0];
 	static JSONCodec								codec							= new JSONCodec();
 	private final List<Listener>					listeners						= new CopyOnWriteArrayList<>();
@@ -293,26 +287,23 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		}
 		limitDownloads.acquire();
 
-		executor.execute(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					download(rds, path);
-					synchronized (queues) {
-						ok(queues.get(path)
-							.toArray(EMPTY_LISTENER), path);
-					}
-				} catch (Exception e) {
-					synchronized (queues) {
-						fail(e, queues.get(path)
-							.toArray(EMPTY_LISTENER), path);
-					}
-				} finally {
-					synchronized (queues) {
-						queues.remove(path);
-					}
-					limitDownloads.release();
+		executor.execute(() -> {
+			try {
+				download(rds, path);
+				synchronized (queues) {
+					ok(queues.get(path)
+						.toArray(EMPTY_LISTENER), path);
 				}
+			} catch (Exception e) {
+				synchronized (queues) {
+					fail(e, queues.get(path)
+						.toArray(EMPTY_LISTENER), path);
+				}
+			} finally {
+				synchronized (queues) {
+					queues.remove(path);
+				}
+				limitDownloads.release();
 			}
 		});
 		return path;
@@ -354,7 +345,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
 	/**
 	 * Just report success to all download listeners
-	 * 
+	 *
 	 * @param blockers
 	 * @param file
 	 */
@@ -462,7 +453,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
 	/**
 	 * Dispatch the events
-	 * 
+	 *
 	 * @param type
 	 * @param rds
 	 * @param exception
@@ -479,7 +470,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
 	/**
 	 * Sleep function that does not throw {@link InterruptedException}
-	 * 
+	 *
 	 * @param i
 	 */
 	private boolean sleep(int i) {
@@ -493,7 +484,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
 	/**
 	 * Save the index file.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void save() throws Exception {

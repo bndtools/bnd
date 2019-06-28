@@ -23,77 +23,75 @@ import bndtools.Plugin;
 
 public class AddJpmDependenciesWizard extends Wizard {
 
-    @SuppressWarnings("unused")
-    private final URI uri;
-    private final JpmDependencyWizardPage depsPage;
-    private final Set<ResourceDescriptor> result = new HashSet<ResourceDescriptor>();
+	private final JpmDependencyWizardPage	depsPage;
+	private final Set<ResourceDescriptor>	result	= new HashSet<>();
 
-    public AddJpmDependenciesWizard(URI uri) {
-        this.uri = uri;
-        this.depsPage = new JpmDependencyWizardPage(uri);
+	public AddJpmDependenciesWizard(URI uri) {
+		this.depsPage = new JpmDependencyWizardPage(uri);
 
-        setNeedsProgressMonitor(true);
-        addPage(depsPage);
-    }
+		setNeedsProgressMonitor(true);
+		addPage(depsPage);
+	}
 
-    @Override
-    public boolean performFinish() {
-        result.clear();
+	@Override
+	public boolean performFinish() {
+		result.clear();
 
-        result.addAll(depsPage.getDirectResources());
-        result.addAll(depsPage.getSelectedIndirectResources());
+		result.addAll(depsPage.getDirectResources());
+		result.addAll(depsPage.getSelectedIndirectResources());
 
-        final Set<ResourceDescriptor> indirectResources;
-        if (depsPage.getIndirectResources() != null) {
-            indirectResources = new HashSet<SearchableRepository.ResourceDescriptor>(depsPage.getIndirectResources());
-            indirectResources.removeAll(result);
-        } else {
-            indirectResources = Collections.<ResourceDescriptor> emptySet();
-        }
-        final MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Errors occurred while processing dependencies.", null);
-        IRunnableWithProgress runnable = new IRunnableWithProgress() {
-            @Override
-            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                SubMonitor progress = SubMonitor.convert(monitor, result.size() + indirectResources.size());
-                progress.setTaskName("Processing dependencies...");
+		final Set<ResourceDescriptor> indirectResources;
+		if (depsPage.getIndirectResources() != null) {
+			indirectResources = new HashSet<>(depsPage.getIndirectResources());
+			indirectResources.removeAll(result);
+		} else {
+			indirectResources = Collections.<ResourceDescriptor> emptySet();
+		}
+		final MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0,
+			"Errors occurred while processing dependencies.", null);
+		IRunnableWithProgress runnable = monitor -> {
+			SubMonitor progress = SubMonitor.convert(monitor, result.size() + indirectResources.size());
+			progress.setTaskName("Processing dependencies...");
 
-                // Process all resources (including non-selected ones) into the repository
-                for (ResourceDescriptor resource : result)
-                    processResource(resource, status, progress.newChild(1));
-                for (ResourceDescriptor resource : indirectResources)
-                    processResource(resource, status, progress.newChild(1));
-            }
-        };
+			// Process all resources (including non-selected ones) into the
+			// repository
+			for (ResourceDescriptor resource1 : result)
+				processResource(resource1, status, progress.newChild(1));
+			for (ResourceDescriptor resource2 : indirectResources)
+				processResource(resource2, status, progress.newChild(1));
+		};
 
-        try {
-            getContainer().run(true, true, runnable);
+		try {
+			getContainer().run(true, true, runnable);
 
-            if (!status.isOK())
-                ErrorDialog.openError(getShell(), "Errors", null, status);
+			if (!status.isOK())
+				ErrorDialog.openError(getShell(), "Errors", null, status);
 
-            return true;
-        } catch (InvocationTargetException e) {
-            MessageDialog.openError(getShell(), "Error", Exceptions.unrollCause(e, InvocationTargetException.class)
-                .getMessage());
-            return false;
-        } catch (InterruptedException e) {
-            return false;
-        }
-    }
+			return true;
+		} catch (InvocationTargetException e) {
+			MessageDialog.openError(getShell(), "Error", Exceptions.unrollCause(e, InvocationTargetException.class)
+				.getMessage());
+			return false;
+		} catch (InterruptedException e) {
+			return false;
+		}
+	}
 
-    public Set<ResourceDescriptor> getResult() {
-        return Collections.unmodifiableSet(result);
-    }
+	public Set<ResourceDescriptor> getResult() {
+		return Collections.unmodifiableSet(result);
+	}
 
-    @SuppressWarnings("unused")
-    private void processResource(ResourceDescriptor resource, MultiStatus status, IProgressMonitor monitor) {
-        SearchableRepository repo = depsPage.getRepository();
-        try {
-            if (!resource.included)
-                repo.addResource(resource);
-        } catch (Exception e) {
-            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error adding resource to local Searchable Repository: " + resource.bsn + " [" + resource.version + "]", e));
-        }
-    }
+	@SuppressWarnings("unused")
+	private void processResource(ResourceDescriptor resource, MultiStatus status, IProgressMonitor monitor) {
+		SearchableRepository repo = depsPage.getRepository();
+		try {
+			if (!resource.included)
+				repo.addResource(resource);
+		} catch (Exception e) {
+			status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
+				"Error adding resource to local Searchable Repository: " + resource.bsn + " [" + resource.version + "]",
+				e));
+		}
+	}
 
 }

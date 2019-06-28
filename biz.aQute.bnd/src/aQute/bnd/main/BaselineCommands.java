@@ -13,7 +13,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -167,12 +166,7 @@ public class BaselineCommands {
 		BundleInfo bundleInfo = baseline.getBundleInfo();
 
 		Info[] sorted = infos.toArray(new Info[0]);
-		Arrays.sort(sorted, new Comparator<Info>() {
-			@Override
-			public int compare(Info o1, Info o2) {
-				return o1.packageName.compareTo(o2.packageName);
-			}
-		});
+		Arrays.sort(sorted, (o1, o2) -> o1.packageName.compareTo(o2.packageName));
 
 		if (!opts.quiet()) {
 			bnd.out.printf("===============================================================%n%s %s %s-%s",
@@ -290,7 +284,7 @@ public class BaselineCommands {
 	/**
 	 * Print out the packages from spec jars and check in which ees they appear.
 	 * Example
-	 * 
+	 *
 	 * <pre>
 	 *  package overview -ee j2se-1.6.0 -ee j2se-1.5.0 -ee
 	 * j2ee-1.4.0 javax.activation-1.1.jar
@@ -324,12 +318,12 @@ public class BaselineCommands {
 	 * Create a schema of a set of jars outling the packages and their versions.
 	 * This will create a list of packages with multiple versions, link to their
 	 * specifications, and the deltas between versions.
-	 * 
+	 *
 	 * <pre>
 	 *  bnd package schema
 	 * <file.jar>*
 	 * </pre>
-	 * 
+	 *
 	 * @param opts
 	 * @throws Exception
 	 */

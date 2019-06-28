@@ -45,14 +45,14 @@ import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
 public class ResourceBuilder {
-	private final static String		BUNDLE_MIME_TYPE	= "application/vnd.osgi.bundle";
-	private final static String		JAR_MIME_TYPE		= "application/java-archive";
-	private final ResourceImpl		resource			= new ResourceImpl();
+	private final static String					BUNDLE_MIME_TYPE	= "application/vnd.osgi.bundle";
+	private final static String					JAR_MIME_TYPE		= "application/java-archive";
+	private final ResourceImpl					resource			= new ResourceImpl();
 	private final Map<Capability, Capability>	capabilities		= new LinkedHashMap<>();
 	private final Map<Requirement, Requirement>	requirements		= new LinkedHashMap<>();
-	private ReporterAdapter			reporter			= new ReporterAdapter();
+	private ReporterAdapter						reporter			= new ReporterAdapter();
 
-	private boolean					built				= false;
+	private boolean								built				= false;
 
 	public ResourceBuilder(Resource source) throws Exception {
 		addCapabilities(source.getCapabilities(null));
@@ -138,7 +138,7 @@ public class ResourceBuilder {
 
 	/**
 	 * Parse the manifest and turn them into requirements & capabilities
-	 * 
+	 *
 	 * @param manifest The manifest to parse
 	 * @throws Exception
 	 */
@@ -321,7 +321,7 @@ public class ResourceBuilder {
 
 	/**
 	 * Caclulate the requirement from a native code header
-	 * 
+	 *
 	 * @param header the Bundle-NativeCode header or null
 	 * @return a Requirement Builder set to the requirements according tot he
 	 *         core spec
@@ -438,7 +438,7 @@ public class ResourceBuilder {
 
 	/**
 	 * Add the Require-Bundle header
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -551,7 +551,7 @@ public class ResourceBuilder {
 
 	/**
 	 * Add Exported Packages
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void addExportPackages(Parameters exports) throws Exception {
@@ -584,7 +584,7 @@ public class ResourceBuilder {
 
 	/**
 	 * Add imported packages
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void addImportPackages(Parameters imports) throws Exception {

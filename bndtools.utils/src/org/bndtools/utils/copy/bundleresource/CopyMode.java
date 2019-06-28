@@ -1,24 +1,24 @@
 package org.bndtools.utils.copy.bundleresource;
 
 public enum CopyMode {
-    /**
-     * Add if not already present.
-     */
-    ADD,
+	/**
+	 * Add if not already present.
+	 */
+	ADD,
 
-    /**
-     * Add and overwrite if already present.
-     */
-    REPLACE,
+	/**
+	 * Add and overwrite if already present.
+	 */
+	REPLACE,
 
-    /**
-     * Remove if present.
-     */
-    REMOVE,
+	/**
+	 * Remove if present.
+	 */
+	REMOVE,
 
-    /**
-     * Do nothing, just check if the file exists.
-     */
-    CHECK
+	/**
+	 * Do nothing, just check if the file exists.
+	 */
+	CHECK
 
 }

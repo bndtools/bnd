@@ -1,6 +1,5 @@
 package bndtools.launch.ui;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import org.eclipse.core.runtime.CoreException;
@@ -20,82 +19,80 @@ import bndtools.Plugin;
 
 public abstract class GenericStackedLaunchTab extends AbstractLaunchConfigurationTab {
 
-    private ILaunchTabPiece[] stack = null;
+	private ILaunchTabPiece[] stack = null;
 
-    protected abstract ILaunchTabPiece[] createStack();
+	protected abstract ILaunchTabPiece[] createStack();
 
-    private synchronized ILaunchTabPiece[] getStack() {
-        if (stack == null) {
-            stack = createStack();
-        }
-        return stack;
-    }
+	private synchronized ILaunchTabPiece[] getStack() {
+		if (stack == null) {
+			stack = createStack();
+		}
+		return stack;
+	}
 
-    private final PropertyChangeListener updateListener = new PropertyChangeListener() {
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            checkValid();
-            updateLaunchConfigurationDialog();
-        }
-    };
+	private final PropertyChangeListener updateListener = evt -> {
+		checkValid();
+		updateLaunchConfigurationDialog();
+	};
 
-    @Override
-    protected boolean isDirty() {
-        for (ILaunchTabPiece piece : getStack()) {
-            if (piece.isDirty())
-                return true;
-        }
-        return false;
-    }
+	@Override
+	protected boolean isDirty() {
+		for (ILaunchTabPiece piece : getStack()) {
+			if (piece.isDirty())
+				return true;
+		}
+		return false;
+	}
 
-    @Override
-    public void createControl(Composite parent) {
-        Composite composite = new Composite(parent, SWT.NONE);
-        setControl(composite);
-        composite.setLayout(new GridLayout(1, false));
+	@Override
+	public void createControl(Composite parent) {
+		Composite composite = new Composite(parent, SWT.NONE);
+		setControl(composite);
+		composite.setLayout(new GridLayout(1, false));
 
-        for (ILaunchTabPiece piece : getStack()) {
-            Control control = piece.createControl(composite);
-            control.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            piece.addPropertyChangeListener(updateListener);
-        }
-    }
+		for (ILaunchTabPiece piece : getStack()) {
+			Control control = piece.createControl(composite);
+			control.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+			piece.addPropertyChangeListener(updateListener);
+		}
+	}
 
-    void checkValid() {
-        for (ILaunchTabPiece piece : getStack()) {
-            String error = piece.checkForError();
-            if (error != null) {
-                setErrorMessage(error);
-                return;
-            }
-        }
-        setErrorMessage(null);
-    }
+	void checkValid() {
+		for (ILaunchTabPiece piece : getStack()) {
+			String error = piece.checkForError();
+			if (error != null) {
+				setErrorMessage(error);
+				return;
+			}
+		}
+		setErrorMessage(null);
+	}
 
-    @Override
-    public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
-        for (ILaunchTabPiece piece : getStack()) {
-            piece.setDefaults(configuration);
-        }
-    }
+	@Override
+	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
+		for (ILaunchTabPiece piece : getStack()) {
+			piece.setDefaults(configuration);
+		}
+	}
 
-    @Override
-    public void initializeFrom(ILaunchConfiguration configuration) {
-        try {
-            for (ILaunchTabPiece piece : getStack()) {
-                piece.initializeFrom(configuration);
-            }
-        } catch (CoreException e) {
-            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error reading launch configuration.", e));
-        }
+	@Override
+	public void initializeFrom(ILaunchConfiguration configuration) {
+		try {
+			for (ILaunchTabPiece piece : getStack()) {
+				piece.initializeFrom(configuration);
+			}
+		} catch (CoreException e) {
+			ErrorDialog.openError(getShell(), "Error", null,
+				new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error reading launch configuration.", e));
+		}
 
-        checkValid();
-    }
+		checkValid();
+	}
 
-    @Override
-    public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-        for (ILaunchTabPiece piece : getStack()) {
-            piece.performApply(configuration);
-        }
-    }
+	@Override
+	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
+		for (ILaunchTabPiece piece : getStack()) {
+			piece.performApply(configuration);
+		}
+	}
 }

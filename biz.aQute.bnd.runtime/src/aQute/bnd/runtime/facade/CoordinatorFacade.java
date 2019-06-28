@@ -18,7 +18,7 @@ import aQute.bnd.runtime.api.SnapshotProvider;
 
 public class CoordinatorFacade implements SnapshotProvider {
 
-	final BundleContext								context;
+	final BundleContext context;
 
 	public static class CoordinationDTO extends DTO {
 
@@ -35,7 +35,7 @@ public class CoordinatorFacade implements SnapshotProvider {
 
 	static class CoordinatorDTO extends DTO {
 		public List<CoordinationDTO>	coordinations	= new ArrayList<>();
-		public List<String>					errors			= new ArrayList<>();
+		public List<String>				errors			= new ArrayList<>();
 	}
 
 	public CoordinatorFacade(BundleContext context) {
@@ -95,8 +95,7 @@ public class CoordinatorFacade implements SnapshotProvider {
 	}
 
 	@Override
-	public void close() throws IOException {
-	}
+	public void close() throws IOException {}
 
 	@Override
 	public Object getSnapshot() throws Exception {

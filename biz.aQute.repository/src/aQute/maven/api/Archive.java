@@ -6,16 +6,16 @@ import java.util.regex.Pattern;
 import aQute.bnd.version.MavenVersion;
 
 public class Archive implements Comparable<Archive> {
-	public static final Pattern	ARCHIVE_P			= Pattern.compile(																																															//
-		"\\s*"																																																													// skip
-																																																																// whitespace
-			+ "(?<program>[^:]+:[^:]+)         # program\n"																																																		//
-			+ "(:(?<extension>[^:]+)         # optional extension\n"																																															//
-			+ "    (:(?<classifier>[^:]*))?  # optional classifer (must be preceded by extension)\n"																																			//
-			+ ")?                            # end of extension\n"																																																//
-			+ ":(?<version>[^:]+)           # version is last\n"																																																//
-			+ "\\s*",																																																											// skip
-																																																																// whitespace
+	public static final Pattern	ARCHIVE_P			= Pattern.compile(																																																							//
+		"\\s*"																																																																					// skip
+																																																																								// whitespace
+			+ "(?<program>[^:]+:[^:]+)         # program\n"																																																										//
+			+ "(:(?<extension>[^:]+)         # optional extension\n"																																																							//
+			+ "    (:(?<classifier>[^:]*))?  # optional classifer (must be preceded by extension)\n"																																															//
+			+ ")?                            # end of extension\n"																																																								//
+			+ ":(?<version>[^:]+)           # version is last\n"																																																								//
+			+ "\\s*",																																																																			// skip
+																																																																								// whitespace
 		Pattern.COMMENTS);
 
 	public static final String	SOURCES_CLASSIFIER	= "sources";

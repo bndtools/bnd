@@ -21,141 +21,141 @@ import bndtools.central.Central;
 import bndtools.launch.LaunchConstants;
 
 public final class LaunchUtils {
-    private static final ILogger logger = Logger.getLogger(LaunchUtils.class);
+	private static final ILogger							logger	= Logger.getLogger(LaunchUtils.class);
 
-    private static ServiceTracker<RunListener, RunListener> runListeners;
-    private static ServiceTracker<RunProvider, RunProvider> runProviders;
+	private static ServiceTracker<RunListener, RunListener>	runListeners;
+	private static ServiceTracker<RunProvider, RunProvider>	runProviders;
 
-    private LaunchUtils() {
-    }
+	private LaunchUtils() {}
 
-    public static IResource getTargetResource(ILaunchConfiguration configuration) throws CoreException {
-        String target = getTargetName(configuration);
-        if (target == null)
-            return null;
+	public static IResource getTargetResource(ILaunchConfiguration configuration) throws CoreException {
+		String target = getTargetName(configuration);
+		if (target == null)
+			return null;
 
-        IResource targetResource = ResourcesPlugin.getWorkspace()
-            .getRoot()
-            .findMember(target);
-        return targetResource;
-    }
+		IResource targetResource = ResourcesPlugin.getWorkspace()
+			.getRoot()
+			.findMember(target);
+		return targetResource;
+	}
 
-    public static String getLaunchProjectName(IResource launchResource) {
-        String result;
+	public static String getLaunchProjectName(IResource launchResource) {
+		String result;
 
-        IProject project = launchResource.getProject();
-        Project bnd;
-        try {
-            bnd = Central.getWorkspace()
-                .getProject(project.getName());
-        } catch (Exception e) {
-            bnd = null;
-        }
+		IProject project = launchResource.getProject();
+		Project bnd;
+		try {
+			bnd = Central.getWorkspace()
+				.getProject(project.getName());
+		} catch (Exception e) {
+			bnd = null;
+		}
 
-        result = (bnd != null) ? bnd.getName() : Project.BNDCNF;
-        return result;
-    }
+		result = (bnd != null) ? bnd.getName() : Project.BNDCNF;
+		return result;
+	}
 
-    public static Run createRun(ILaunchConfiguration configuration, RunMode mode) throws Exception {
-        IResource targetResource = getTargetResource(configuration);
-        if (targetResource == null) {
-            String target = getTargetName(configuration);
-            throw new IllegalArgumentException(String.format("The run descriptor '%s' could not be found.", target));
-        }
+	public static Run createRun(ILaunchConfiguration configuration, RunMode mode) throws Exception {
+		IResource targetResource = getTargetResource(configuration);
+		if (targetResource == null) {
+			String target = getTargetName(configuration);
+			throw new IllegalArgumentException(String.format("The run descriptor '%s' could not be found.", target));
+		}
 
-        return createRun(targetResource, mode);
-    }
+		return createRun(targetResource, mode);
+	}
 
-    public static Run createRun(IResource targetResource, RunMode mode) throws Exception {
-        Run run = null;
-        for (RunProvider runProvider : getRunProviders()) {
-            try {
-                if ((run = runProvider.create(targetResource, mode)) != null) {
-                    break;
-                }
-            } catch (Throwable t) {
-                logger.logError("Error in run listener", t);
-            }
-        }
+	public static Run createRun(IResource targetResource, RunMode mode) throws Exception {
+		Run run = null;
+		for (RunProvider runProvider : getRunProviders()) {
+			try {
+				if ((run = runProvider.create(targetResource, mode)) != null) {
+					break;
+				}
+			} catch (Throwable t) {
+				logger.logError("Error in run listener", t);
+			}
+		}
 
-        if (run == null) {
-            throw new Exception(String.format("Cannot load Bnd project for directory %s: no Bnd workspace found", targetResource.getLocation()));
-        }
+		if (run == null) {
+			throw new Exception(String.format("Cannot load Bnd project for directory %s: no Bnd workspace found",
+				targetResource.getLocation()));
+		}
 
-        for (RunListener runListener : getRunListeners()) {
-            try {
-                runListener.create(run);
-            } catch (Throwable t) {
-                logger.logError("Error in run listener", t);
-            }
-        }
+		for (RunListener runListener : getRunListeners()) {
+			try {
+				runListener.create(run);
+			} catch (Throwable t) {
+				logger.logError("Error in run listener", t);
+			}
+		}
 
-        RunMode.set(run, mode);
+		RunMode.set(run, mode);
 
-        return run;
-    }
+		return run;
+	}
 
-    private static String getTargetName(ILaunchConfiguration configuration) throws CoreException {
-        String target = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
-        if (target != null && target.isEmpty()) {
-            target = null;
-        }
-        return target;
-    }
+	private static String getTargetName(ILaunchConfiguration configuration) throws CoreException {
+		String target = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
+		if (target != null && target.isEmpty()) {
+			target = null;
+		}
+		return target;
+	}
 
-    public static void endRun(Run run) {
-        for (RunListener runListener : getRunListeners()) {
-            try {
-                runListener.end(run);
-            } catch (Throwable t) {
-                logger.logError("Error in run listener", t);
-            }
-        }
-    }
+	public static void endRun(Run run) {
+		for (RunListener runListener : getRunListeners()) {
+			try {
+				runListener.end(run);
+			} catch (Throwable t) {
+				logger.logError("Error in run listener", t);
+			}
+		}
+	}
 
-    private static synchronized RunListener[] getRunListeners() {
-        if (runListeners == null) {
-            final BundleContext context = FrameworkUtil.getBundle(LaunchUtils.class)
-                .getBundleContext();
+	private static synchronized RunListener[] getRunListeners() {
+		if (runListeners == null) {
+			final BundleContext context = FrameworkUtil.getBundle(LaunchUtils.class)
+				.getBundleContext();
 
-            if (context == null) {
-                throw new IllegalStateException("Bundle context is null");
-            }
+			if (context == null) {
+				throw new IllegalStateException("Bundle context is null");
+			}
 
-            runListeners = new ServiceTracker<RunListener, RunListener>(context, RunListener.class, null);
-            runListeners.open();
-        }
+			runListeners = new ServiceTracker<>(context, RunListener.class, null);
+			runListeners.open();
+		}
 
-        return runListeners.getTracked()
-            .values()
-            .toArray(new RunListener[0]);
-    }
+		return runListeners.getTracked()
+			.values()
+			.toArray(new RunListener[0]);
+	}
 
-    private static synchronized RunProvider[] getRunProviders() {
-        if (runProviders == null) {
-            final BundleContext context = FrameworkUtil.getBundle(LaunchUtils.class)
-                .getBundleContext();
+	private static synchronized RunProvider[] getRunProviders() {
+		if (runProviders == null) {
+			final BundleContext context = FrameworkUtil.getBundle(LaunchUtils.class)
+				.getBundleContext();
 
-            if (context == null) {
-                throw new IllegalStateException("Bundle context is null");
-            }
+			if (context == null) {
+				throw new IllegalStateException("Bundle context is null");
+			}
 
-            runProviders = new ServiceTracker<RunProvider, RunProvider>(context, RunProvider.class, null);
-            runProviders.open();
-        }
+			runProviders = new ServiceTracker<>(context, RunProvider.class, null);
+			runProviders.open();
+		}
 
-        return runProviders.getTracked()
-            .values()
-            .toArray(new RunProvider[0]);
-    }
+		return runProviders.getTracked()
+			.values()
+			.toArray(new RunProvider[0]);
+	}
 
-    public static boolean isInBndWorkspaceProject(IResource resource) throws CoreException {
-        if (resource == null) {
-            return false;
-        }
+	public static boolean isInBndWorkspaceProject(IResource resource) throws CoreException {
+		if (resource == null) {
+			return false;
+		}
 
-        IProject project = resource.getProject();
+		IProject project = resource.getProject();
 
-        return project.isOpen() && project.hasNature(BndtoolsConstants.NATURE_ID);
-    }
+		return project.isOpen() && project.hasNature(BndtoolsConstants.NATURE_ID);
+	}
 }

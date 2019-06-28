@@ -382,19 +382,16 @@ public class BndrunResolveContextTest extends TestCase {
 
 		// Add a hook that removes all capabilities from resource with id
 		// "osgi.cmpn"
-		registry.addPlugin(new ResolverHook() {
-			@Override
-			public void filterMatches(Requirement requirement, List<Capability> candidates) {
-				for (Iterator<Capability> iter = candidates.iterator(); iter.hasNext();) {
-					Object id = iter.next()
-						.getResource()
-						.getCapabilities("osgi.identity")
-						.get(0)
-						.getAttributes()
-						.get("osgi.identity");
-					if ("osgi.cmpn".equals(id))
-						iter.remove();
-				}
+		registry.addPlugin((ResolverHook) (requirement, candidates) -> {
+			for (Iterator<Capability> iter = candidates.iterator(); iter.hasNext();) {
+				Object id = iter.next()
+					.getResource()
+					.getCapabilities("osgi.identity")
+					.get(0)
+					.getAttributes()
+					.get("osgi.identity");
+				if ("osgi.cmpn".equals(id))
+					iter.remove();
 			}
 		});
 
@@ -514,19 +511,16 @@ public class BndrunResolveContextTest extends TestCase {
 
 		// Add a hook that tries to remove all capabilities from resource with
 		// id "org.apache.felix.framework"
-		registry.addPlugin(new ResolverHook() {
-			@Override
-			public void filterMatches(Requirement requirement, List<Capability> candidates) {
-				for (Iterator<Capability> iter = candidates.iterator(); iter.hasNext();) {
-					Object id = iter.next()
-						.getResource()
-						.getCapabilities("osgi.identity")
-						.get(0)
-						.getAttributes()
-						.get("osgi.identity");
-					if ("org.apache.felix.framework".equals(id)) {
-						fail("this line should not be reached");
-					}
+		registry.addPlugin((ResolverHook) (requirement, candidates) -> {
+			for (Iterator<Capability> iter = candidates.iterator(); iter.hasNext();) {
+				Object id = iter.next()
+					.getResource()
+					.getCapabilities("osgi.identity")
+					.get(0)
+					.getAttributes()
+					.get("osgi.identity");
+				if ("org.apache.felix.framework".equals(id)) {
+					fail("this line should not be reached");
 				}
 			}
 		});

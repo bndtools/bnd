@@ -54,10 +54,11 @@ public @interface ServiceProvider {
 	/**
 	 * The effective time of the {@code osgi.extender} requirement.
 	 * <p>
-	 * Specifies the time the {@code osgi.extender} requirements are available. The
-	 * OSGi framework resolver only considers requirements without an effective
-	 * directive or {@code effective:=resolve}. Requirements with other values for the
-	 * effective directive can be considered by an external agent.
+	 * Specifies the time the {@code osgi.extender} requirements are available.
+	 * The OSGi framework resolver only considers requirements without an
+	 * effective directive or {@code effective:=resolve}. Requirements with
+	 * other values for the effective directive can be considered by an external
+	 * agent.
 	 * <p>
 	 * If not specified, the {@code effective} directive is omitted from the
 	 * requirement clause.

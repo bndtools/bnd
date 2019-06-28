@@ -77,19 +77,16 @@ public class HttpRedirectionTest extends TestCase {
 			// Use a future to ensure we timeout after 1s if the redirect does
 			// actually loop forever
 			ExecutorService executor = Executors.newSingleThreadExecutor();
-			Future<?> future = executor.submit(new Runnable() {
-				@Override
-				public void run() {
-					try (HttpClient connector = new HttpClient()) {
-						try {
-							InputStream stream = connector.build()
-								.retries(0)
-								.get(InputStream.class)
-								.go(new URL("http://localhost:" + httpd.getPort() + "/foo"));
-							IO.collect(stream);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
+			Future<?> future = executor.submit(() -> {
+				try (HttpClient connector = new HttpClient()) {
+					try {
+						InputStream stream = connector.build()
+							.retries(0)
+							.get(InputStream.class)
+							.go(new URL("http://localhost:" + httpd.getPort() + "/foo"));
+						IO.collect(stream);
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
 				}
 			});

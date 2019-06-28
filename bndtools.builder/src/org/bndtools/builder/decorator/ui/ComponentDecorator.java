@@ -28,127 +28,128 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
  * @author wodencafe
  */
 public class ComponentDecorator extends LabelProvider implements ILightweightLabelDecorator {
-    private static final ILogger logger = Logger.getLogger(ComponentDecorator.class);
-    private final ImageDescriptor componentIcon = AbstractUIPlugin.imageDescriptorFromPlugin(BndtoolsBuilder.PLUGIN_ID, "icons/component_s_flip.png");
+	private static final ILogger	logger			= Logger.getLogger(ComponentDecorator.class);
+	private final ImageDescriptor	componentIcon	= AbstractUIPlugin
+		.imageDescriptorFromPlugin(BndtoolsBuilder.PLUGIN_ID, "icons/component_s_flip.png");
 
-    @Override
-    public void decorate(Object element, IDecoration decoration) {
+	@Override
+	public void decorate(Object element, IDecoration decoration) {
 
-        try {
+		try {
 
-            if (element instanceof CompilationUnit) {
+			if (element instanceof CompilationUnit) {
 
-                CompilationUnit unit = (CompilationUnit) element;
-                if (!isComponentInImports(unit)) {
-                    return;
-                }
+				CompilationUnit unit = (CompilationUnit) element;
+				if (!isComponentInImports(unit)) {
+					return;
+				}
 
-                IPackageDeclaration[] decs = unit.getPackageDeclarations();
-                if (decs != null && decs.length > 0) {
-                    IPackageDeclaration dec = decs[0];
-                    if (dec != null) {
-                        boolean found = false;
-                        String customText = null;
+				IPackageDeclaration[] decs = unit.getPackageDeclarations();
+				if (decs != null && decs.length > 0) {
+					IPackageDeclaration dec = decs[0];
+					if (dec != null) {
+						boolean found = false;
+						String customText = null;
 
-                        for (IMarker marker : unit.getResource()
-                            .findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE)) {
-                            found = true;
-                            customText = marker.getAttribute(IMarker.MESSAGE)
-                                .toString();
-                        }
+						for (IMarker marker : unit.getResource()
+							.findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE)) {
+							found = true;
+							customText = marker.getAttribute(IMarker.MESSAGE)
+								.toString();
+						}
 
-                        if (found) {
-                            decoration.addOverlay(componentIcon);
-                            if (customText != null) {
+						if (found) {
+							decoration.addOverlay(componentIcon);
+							if (customText != null) {
 
-                                if (customText.equals("OSGi Component")) {
-                                    decoration.addSuffix(" [Component]");
+								if (customText.equals("OSGi Component")) {
+									decoration.addSuffix(" [Component]");
 
-                                } else {
-                                    decoration.addSuffix(" [" + customText + "]");
+								} else {
+									decoration.addSuffix(" [" + customText + "]");
 
-                                }
-                            }
+								}
+							}
 
-                        }
+						}
 
-                    }
-                }
+					}
+				}
 
-            } else if (element instanceof SourceType) {
-                SourceType type = (SourceType) element;
+			} else if (element instanceof SourceType) {
+				SourceType type = (SourceType) element;
 
-                if (!isComponentInImports(type.getCompilationUnit())) {
-                    return;
-                }
+				if (!isComponentInImports(type.getCompilationUnit())) {
+					return;
+				}
 
-                boolean found = false;
-                String customText = null;
-                for (IMarker marker : type.getCompilationUnit()
-                    .getResource()
-                    .findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE)) {
-                    found = true;
-                    customText = marker.getAttribute(IMarker.MESSAGE)
-                        .toString();
-                }
+				boolean found = false;
+				String customText = null;
+				for (IMarker marker : type.getCompilationUnit()
+					.getResource()
+					.findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE)) {
+					found = true;
+					customText = marker.getAttribute(IMarker.MESSAGE)
+						.toString();
+				}
 
-                if (found) {
-                    decoration.addOverlay(componentIcon);
-                    if (customText != null) {
+				if (found) {
+					decoration.addOverlay(componentIcon);
+					if (customText != null) {
 
-                        if (customText.equals("OSGi Component")) {
-                            decoration.addSuffix(" [Component]");
+						if (customText.equals("OSGi Component")) {
+							decoration.addSuffix(" [Component]");
 
-                        } else {
-                            decoration.addSuffix(" [" + customText + "]");
+						} else {
+							decoration.addSuffix(" [" + customText + "]");
 
-                        }
-                    }
+						}
+					}
 
-                }
-            } else if (element instanceof IPackageFragment) {
-                IPackageFragment frag = (IPackageFragment) element;
-                IResource resource = frag.getAdapter(IResource.class);
-                if (resource != null && countComponents(resource)) {
-                    decoration.addOverlay(componentIcon);
-                }
+				}
+			} else if (element instanceof IPackageFragment) {
+				IPackageFragment frag = (IPackageFragment) element;
+				IResource resource = frag.getAdapter(IResource.class);
+				if (resource != null && countComponents(resource)) {
+					decoration.addOverlay(componentIcon);
+				}
 
-            }
+			}
 
-        } catch (CoreException e) {
-            logger.logError("Component Decorator error", e);
-        }
-    }
+		} catch (CoreException e) {
+			logger.logError("Component Decorator error", e);
+		}
+	}
 
-    private static boolean countComponents(IResource resource) {
-        boolean found = false;
+	private static boolean countComponents(IResource resource) {
+		boolean found = false;
 
-        try {
-            if (resource.findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE).length > 0) {
-                found = true;
-            }
+		try {
+			if (resource.findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE).length > 0) {
+				found = true;
+			}
 
-        } catch (CoreException e) {
-            logger.logError("Component Package Decorator error", e);
-        }
-        return found;
-    }
+		} catch (CoreException e) {
+			logger.logError("Component Package Decorator error", e);
+		}
+		return found;
+	}
 
-    private static boolean isComponentInImports(ICompilationUnit unit) throws CoreException {
-        boolean annotationInImports = false;
+	private static boolean isComponentInImports(ICompilationUnit unit) throws CoreException {
+		boolean annotationInImports = false;
 
-        if ((unit != null) && unit.exists()) {
-            for (IImportDeclaration importDecl : unit.getImports()) {
-                annotationInImports = importDecl.getElementName()
-                    .equals(ComponentMarker.ANNOTATION_COMPONENT_FQN)
-                    || importDecl.getElementName()
-                        .equals(ComponentMarker.ANNOTATION_COMPONENT_PACKAGE + ".*");
-                if (annotationInImports) {
-                    break;
-                }
-            }
-        }
-        return annotationInImports;
-    }
+		if ((unit != null) && unit.exists()) {
+			for (IImportDeclaration importDecl : unit.getImports()) {
+				annotationInImports = importDecl.getElementName()
+					.equals(ComponentMarker.ANNOTATION_COMPONENT_FQN)
+					|| importDecl.getElementName()
+						.equals(ComponentMarker.ANNOTATION_COMPONENT_PACKAGE + ".*");
+				if (annotationInImports) {
+					break;
+				}
+			}
+		}
+		return annotationInImports;
+	}
 
 }

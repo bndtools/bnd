@@ -22,6 +22,7 @@ import aQute.bnd.http.URLCache;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.progress.ProgressPlugin;
+import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.url.HttpsVerification;
@@ -320,30 +321,24 @@ public class HttpClientTest extends TestCase {
 
 		try (HttpClient hc = new HttpClient();) {
 			Processor p = new Processor();
-			p.addBasicPlugin(new ProgressPlugin() {
+			p.addBasicPlugin((ProgressPlugin) (name, size) -> new Task() {
 
 				@Override
-				public Task startTask(String name, int size) {
-					return new Task() {
-
-						@Override
-						public void worked(int units) {
-							System.out.println("Worked " + units);
-						}
-
-						@Override
-						public void done(String message, Throwable e) {
-							System.out.println("Done " + message + " " + e);
-						}
-
-						@Override
-						public boolean isCanceled() {
-							System.out.println("Cancel check ");
-							return System.currentTimeMillis() > deadline;
-						}
-
-					};
+				public void worked(int units) {
+					System.out.println("Worked " + units);
 				}
+
+				@Override
+				public void done(String message, Throwable e) {
+					System.out.println("Done " + message + " " + e);
+				}
+
+				@Override
+				public boolean isCanceled() {
+					System.out.println("Cancel check ");
+					return System.currentTimeMillis() > deadline;
+				}
+
 			});
 			hc.setRegistry(p);
 
@@ -624,46 +619,36 @@ public class HttpClientTest extends TestCase {
 			final int[] counts = new int[2];
 			counts[0] = counts[1] = 0;
 
-			p.addBasicPlugin(new ProgressPlugin() {
+			p.addBasicPlugin((ProgressPlugin) (name, size) -> new Task() {
 				@Override
-				public Task startTask(String name, int size) {
-					return new Task() {
-						@Override
-						public void worked(int units) {
-							counts[0]++;
-						}
+				public void worked(int units) {
+					counts[0]++;
+				}
 
-						@Override
-						public void done(String message, Throwable e) {
-							counts[0]++;
-						}
+				@Override
+				public void done(String message, Throwable e) {
+					counts[0]++;
+				}
 
-						@Override
-						public boolean isCanceled() {
-							return false;
-						}
-					};
+				@Override
+				public boolean isCanceled() {
+					return false;
 				}
 			});
-			p.addBasicPlugin(new ProgressPlugin() {
+			p.addBasicPlugin((ProgressPlugin) (name, size) -> new Task() {
 				@Override
-				public Task startTask(String name, int size) {
-					return new Task() {
-						@Override
-						public void worked(int units) {
-							counts[1]++;
-						}
+				public void worked(int units) {
+					counts[1]++;
+				}
 
-						@Override
-						public void done(String message, Throwable e) {
-							counts[1]++;
-						}
+				@Override
+				public void done(String message, Throwable e) {
+					counts[1]++;
+				}
 
-						@Override
-						public boolean isCanceled() {
-							return false;
-						}
-					};
+				@Override
+				public boolean isCanceled() {
+					return false;
 				}
 			});
 			hc.setRegistry(p);
@@ -680,30 +665,26 @@ public class HttpClientTest extends TestCase {
 	public void testPut() throws URISyntaxException, Exception {
 		try (Processor p = new Processor();) {
 			final AtomicBoolean done = new AtomicBoolean();
-			p.addBasicPlugin(new ProgressPlugin() {
+			p.addBasicPlugin((ProgressPlugin) (name, size) -> {
+				System.out.println("start " + name);
+				return new Task() {
 
-				@Override
-				public Task startTask(final String name, int size) {
-					System.out.println("start " + name);
-					return new Task() {
+					@Override
+					public void worked(int units) {
+						System.out.println("worked " + name + " " + units);
+					}
 
-						@Override
-						public void worked(int units) {
-							System.out.println("worked " + name + " " + units);
-						}
+					@Override
+					public void done(String message, Throwable e) {
+						System.out.println("done " + name + " " + message + " " + e);
+						done.set(true);
+					}
 
-						@Override
-						public void done(String message, Throwable e) {
-							System.out.println("done " + name + " " + message + " " + e);
-							done.set(true);
-						}
-
-						@Override
-						public boolean isCanceled() {
-							return false;
-						}
-					};
-				}
+					@Override
+					public boolean isCanceled() {
+						return false;
+					}
+				};
 			});
 			try (HttpClient c = new HttpClient();) {
 				c.setRegistry(p);

@@ -40,15 +40,14 @@ public class CDIAnnotationReader extends ClassDataCollector {
 
 	private static final Instruction	COMPONENTSCOPED_INSTR	= new Instruction(
 		"org.osgi.service.cdi.annotations.ComponentScoped");
-	private static final Instruction	DEPENDENT_INSTR		= new Instruction("javax.enterprise.context.Dependent");
-	private static final Instruction	EXTENSION_INSTR		= new Instruction("javax.enterprise.inject.spi.Extension");
-	private static final Instruction	INTERCEPTOR_INSTR	= new Instruction(
-		"javax.interceptor.Interceptor");
-	private static final Instruction	NORMALSCOPE_INSTR			= new Instruction(
+	private static final Instruction	DEPENDENT_INSTR			= new Instruction("javax.enterprise.context.Dependent");
+	private static final Instruction	EXTENSION_INSTR			= new Instruction(
+		"javax.enterprise.inject.spi.Extension");
+	private static final Instruction	INTERCEPTOR_INSTR		= new Instruction("javax.interceptor.Interceptor");
+	private static final Instruction	NORMALSCOPE_INSTR		= new Instruction(
 		"javax.enterprise.context.NormalScope");
-	private static final Instruction	STEREOTYPE_INSTR			= new Instruction(
-		"javax.enterprise.inject.Stereotype");
-	private static final Instruction	VETOED_INSTR		= new Instruction("javax.enterprise.inject.Vetoed");
+	private static final Instruction	STEREOTYPE_INSTR		= new Instruction("javax.enterprise.inject.Stereotype");
+	private static final Instruction	VETOED_INSTR			= new Instruction("javax.enterprise.inject.Vetoed");
 
 	final Analyzer						analyzer;
 	final Clazz							clazz;
@@ -269,8 +268,9 @@ public class CDIAnnotationReader extends ClassDataCollector {
 		ClassResolver resolver;
 		switch (reference.elementType()) {
 			case PARAMETER : {
-				String signature = (member.getSignature() != null) ? member.getSignature() : member.getDescriptor()
-					.toString();
+				String signature = (member.getSignature() != null) ? member.getSignature()
+					: member.getDescriptor()
+						.toString();
 				MethodSignature methodSig = analyzer.getMethodSignature(signature);
 				resolver = new MethodResolver(classSig, methodSig);
 				JavaTypeSignature parameterType = ((MethodResolver) resolver).resolveParameter(parameter);
@@ -322,8 +322,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 			if (!(inferred instanceof ClassTypeSignature)) {
 				analyzer.error(
 					"In bean %s, in member %s with @Reference the type argument of Provider can't be resolved: %s",
-					clazz,
-					member.getName(), inferred);
+					clazz, member.getName(), inferred);
 				return;
 			}
 			type = (ClassTypeSignature) inferred;

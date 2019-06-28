@@ -48,33 +48,33 @@ import aQute.libg.cryptography.SHA256;
 
 public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable, Participant, Actionable {
 
-	private final String		UPWARDS_ARROW			= " \u2191";
-	private final String		DOWNWARDS_ARROW			= " \u2193";
+	private final String			UPWARDS_ARROW			= " \u2191";
+	private final String			DOWNWARDS_ARROW			= " \u2193";
 	private static final Pattern	REPO_FILE				= Pattern
 		.compile("([-.\\w]+)(-|_)([.\\d]+)(-[-\\w]+)?\\.(jar|lib)");
-	private static final String	CACHE_PATH				= ".cache";
-	public static final String	PROP_LOCAL_DIR			= "local";
-	public static final String	PROP_READONLY			= "readonly";
-	public static final String	PROP_PRETTY				= "pretty";
-	public static final String	PROP_OVERWRITE			= "overwrite";
-	public static final String	PROP_ONLYDIRS			= "onlydirs";
+	private static final String		CACHE_PATH				= ".cache";
+	public static final String		PROP_LOCAL_DIR			= "local";
+	public static final String		PROP_READONLY			= "readonly";
+	public static final String		PROP_PRETTY				= "pretty";
+	public static final String		PROP_OVERWRITE			= "overwrite";
+	public static final String		PROP_ONLYDIRS			= "onlydirs";
 
 	@SuppressWarnings("deprecation")
-	private boolean				readOnly;
-	private boolean				pretty					= false;
-	private boolean				overwrite				= true;
-	private File				storageDir;
-	private String				onlydirs				= null;
+	private boolean					readOnly;
+	private boolean					pretty					= false;
+	private boolean					overwrite				= true;
+	private File					storageDir;
+	private String					onlydirs				= null;
 
 	// @GuardedBy("newFilesInCoordination")
-	private final List<URI>		newFilesInCoordination	= new LinkedList<>();
-	private static final String	EMPTY_LOCATION			= "";
+	private final List<URI>			newFilesInCoordination	= new LinkedList<>();
+	private static final String		EMPTY_LOCATION			= "";
 
-	public static final String	PROP_LOCATIONS			= "locations";
-	public static final String	PROP_CACHE				= "cache";
+	public static final String		PROP_LOCATIONS			= "locations";
+	public static final String		PROP_CACHE				= "cache";
 
-	private String				locations;
-	protected File				cacheDir				= new File(
+	private String					locations;
+	protected File					cacheDir				= new File(
 		System.getProperty("user.home") + File.separator + DEFAULT_CACHE_DIR);
 
 	@SuppressWarnings("deprecation")
@@ -265,31 +265,27 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	private void listRecurse(final Pattern pattern, final String[] onlydirsFiles, File root, File dir,
 		LinkedList<File> files) {
 		final LinkedList<File> dirs = new LinkedList<>();
-		File[] moreFiles = dir.listFiles(new FileFilter() {
-
-			@Override
-			public boolean accept(File f) {
-				if (f.isDirectory()) {
-					boolean addit = true;
-					if (onlydirsFiles != null) {
-						String fabs = f.getAbsolutePath();
-						addit = false;
-						for (String dirtest : onlydirsFiles) {
-							if (dirtest.startsWith(fabs) || fabs.startsWith(dirtest)) {
-								addit = true;
-								break;
-							}
+		File[] moreFiles = dir.listFiles((FileFilter) f -> {
+			if (f.isDirectory()) {
+				boolean addit = true;
+				if (onlydirsFiles != null) {
+					String fabs = f.getAbsolutePath();
+					addit = false;
+					for (String dirtest : onlydirsFiles) {
+						if (dirtest.startsWith(fabs) || fabs.startsWith(dirtest)) {
+							addit = true;
+							break;
 						}
 					}
-					if (addit) {
-						dirs.add(f);
-					}
-				} else if (f.isFile()) {
-					Matcher matcher = pattern.matcher(f.getName());
-					return matcher.matches();
 				}
-				return false;
+				if (addit) {
+					dirs.add(f);
+				}
+			} else if (f.isFile()) {
+				Matcher matcher = pattern.matcher(f.getName());
+				return matcher.matches();
 			}
+			return false;
 		});
 		// Add the files that we found.
 		files.addAll(Arrays.asList(moreFiles));
@@ -498,14 +494,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	@Override
 	public Map<String, Runnable> actions(Object... target) throws Exception {
 		Map<String, Runnable> map = new HashMap<>();
-		map.put("Refresh", new Runnable() {
-
-			@Override
-			public void run() {
-				regenerateAllIndexes();
-			}
-
-		});
+		map.put("Refresh", () -> regenerateAllIndexes());
 		if (target.length == 3) {
 			String bsn = (String) target[1];
 			String version = (String) target[2];

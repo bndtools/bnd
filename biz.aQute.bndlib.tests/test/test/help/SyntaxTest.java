@@ -77,6 +77,7 @@ public class SyntaxTest {
 		Optional<TypedParameter> optionalProperties();
 
 		String string();
+
 		Optional<String> optionalString();
 
 		Attrs attrs();
@@ -128,7 +129,6 @@ public class SyntaxTest {
 			assertTrue(instructions.optionalTypedParameters()
 				.isPresent());
 
-			
 			Map<String, TypedParameter> optionalTypedParameters = instructions.optionalTypedParameters()
 				.get();
 			assertEquals(2, optionalTypedParameters.size());
@@ -149,8 +149,7 @@ public class SyntaxTest {
 			Optional<TypedParameter> tp2 = instructions.optionalProperties();
 			assertFalse(tp2.isPresent());
 
-			p.setProperty("-properties",
-				"string=s1,numbers='1,2,3',integer=42,bool=true");
+			p.setProperty("-properties", "string=s1,numbers='1,2,3',integer=42,bool=true");
 
 			TypedParameters tp3 = instructions.properties();
 			assertEquals(Arrays.asList(1, 2, 3), tp3.numbers());

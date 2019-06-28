@@ -10,8 +10,6 @@
  *******************************************************************************/
 package bndtools.release.ui;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -34,8 +32,6 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -63,464 +59,451 @@ import bndtools.release.ui.TableSortingEnabler.IColumnContentProvider;
 
 public class ProjectListControl {
 
-    private final Color COLOR_RELEASE_REQUIRED;
-    private final Color COLOR_VERSION_UPDATE_REQUIRED;
-
-    private Table projects;
-    private final String[] releaseRepos;
-    private CheckboxTableViewer tableViewer;
-    private final SelectionListener selectionListener;
-    private List<ProjectDiff> projectDiffs;
-    private ContentProvider contentProvider;
-
-    private static final String PROJECT_COLUMN = "project";
-    private static final String REPOSITORY_COLUMN = "repository";
-    private static final String BUNDLES_COLUMN = "bundles";
-
-    // Set column names
-    private static final String[] columnNames = new String[] {
-        PROJECT_COLUMN, REPOSITORY_COLUMN, BUNDLES_COLUMN
-    };
-
-    public ProjectListControl(SelectionListener selectionListener, String[] releaseRepos) {
-        this.selectionListener = selectionListener;
-        this.releaseRepos = releaseRepos;
-
-        COLOR_VERSION_UPDATE_REQUIRED = new Color(Display.getCurrent(), 247, 200, 200);
-        COLOR_RELEASE_REQUIRED = new Color(Display.getCurrent(), 206, 255, 206);
-    }
-
-    public void createControl(final Composite parent) {
-
-        createFilter(parent);
-
-        GridLayout gridLayout = new GridLayout(1, false);
-        gridLayout.marginWidth = 0;
-
-        // Create the composite
-        Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayout(gridLayout);
-        composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-        createTableLayout(composite);
-        createLegend(composite);
-    }
-
-    private void createFilter(Composite parent) {
-
-        Composite composite = new Composite(parent, SWT.NONE);
-        GridLayout gridLayout = new GridLayout(2, false);
-        gridLayout.marginHeight = gridLayout.marginWidth = 0;
-        gridLayout.horizontalSpacing = 0;
-        gridLayout.verticalSpacing = 0;
-
-        composite.setLayout(gridLayout);
-        GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
-        gridData.grabExcessHorizontalSpace = true;
-        composite.setLayoutData(gridData);
-
-        FilterPanelPart filterPart = new FilterPanelPart(Activator.getDefault()
-            .getScheduler());
-        filterPart.createControl(composite, 0, 0);
-        filterPart.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent event) {
-                String filter = (String) event.getNewValue();
-                updatedFilter(filter);
-            }
-        });
-
-        ToolBar toolbar = new ToolBar(composite, SWT.FLAT);
-        ToolItem tiCheckAll = new ToolItem(toolbar, SWT.FLAT);
-        tiCheckAll.setImage(Activator.getImageDescriptor("icons/check_all.gif")
-            .createImage());
-        tiCheckAll.setToolTipText(Messages.checkAll);
-        tiCheckAll.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                Object[] objs = contentProvider.getElements(null);
-                for (Object obj : objs) {
-                    ProjectDiff diff = (ProjectDiff) obj;
-                    diff.setRelease(true);
-                }
-                tableViewer.refresh();
-            }
-        });
-
-        ToolItem tiUncheckAll = new ToolItem(toolbar, SWT.FLAT);
-        tiUncheckAll.setImage(Activator.getImageDescriptor("icons/uncheck_all.gif")
-            .createImage());
-        tiUncheckAll.setToolTipText(Messages.uncheckAll);
-        tiUncheckAll.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                Object[] objs = contentProvider.getElements(null);
-                for (Object obj : objs) {
-                    ProjectDiff diff = (ProjectDiff) obj;
-                    diff.setRelease(false);
-                }
-                tableViewer.refresh();
-            }
-        });
-    }
-
-    private void updatedFilter(String filterString) {
-        String newFilter;
-        if (filterString == null || filterString.length() == 0 || filterString.trim()
-            .equals("*"))
-            newFilter = null;
-        else
-            newFilter = "*" + filterString.trim() + "*";
-        contentProvider.setFilter(newFilter);
-        tableViewer.refresh();
-    }
-
-    private void createTableLayout(Composite parent) {
-
-        Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-        // Add TableColumnLayout
-        TableColumnLayout layout = new TableColumnLayout();
-        composite.setLayout(layout);
-
-        // Instantiate TableViewer
-        projects = new Table(composite, SWT.CHECK | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
-        projects.setHeaderVisible(true);
-        projects.setLinesVisible(true);
-        projects.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                selectionListener.widgetSelected(e);
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                selectionListener.widgetDefaultSelected(e);
-            }
-        });
-        tableViewer = new CheckboxTableViewer(projects);
-        tableViewer.setUseHashlookup(true);
-
-        // Project
-        TableViewerColumn tableViewerColumn = new TableViewerColumn(tableViewer, SWT.LEFT);
-        TableColumn tableCol = tableViewerColumn.getColumn();
-        layout.setColumnData(tableCol, new ColumnWeightData(60, 100, true));
-        tableCol.setText(Messages.project1);
-
-        // Repository
-        tableViewerColumn = new TableViewerColumn(tableViewer, SWT.LEFT);
-        tableCol = tableViewerColumn.getColumn();
-        layout.setColumnData(tableCol, new ColumnWeightData(26, 80, true));
-        tableCol.setText(Messages.repository);
-        tableViewerColumn.setEditingSupport(new InlineComboEditingSupport(tableViewer));
-
-        // Bundles
-        tableViewerColumn = new TableViewerColumn(tableViewer, SWT.CENTER);
-        tableCol = tableViewerColumn.getColumn();
-        layout.setColumnData(tableCol, new ColumnWeightData(14, 35, true));
-        tableCol.setText(Messages.bundles);
-
-        contentProvider = new ContentProvider();
-        tableViewer.setContentProvider(contentProvider);
-        tableViewer.setLabelProvider(new TableLabelProvider());
-        tableViewer.setColumnProperties(columnNames);
-        tableViewer.setCheckStateProvider(new ICheckStateProvider() {
-
-            @Override
-            public boolean isGrayed(Object element) {
-                return false;
-            }
-
-            @Override
-            public boolean isChecked(Object element) {
-                ProjectDiff diff = (ProjectDiff) element;
-                return diff.isRelease();
-            }
-        });
-
-        projects.pack();
-
-        TableSortingEnabler.applyTableColumnSorting(tableViewer);
-    }
-
-    private Image createSmallIcon(Display display) {
-        Point[] iconSizes = display.getIconSizes();
-        Point chosen = null;
-
-        if (iconSizes.length == 0) {
-            chosen = new Point(16, 16);
-        } else {
-            chosen = iconSizes[0];
-        }
-
-        return new Image(display, chosen.x, chosen.y);
-    }
-
-    private Image createSolidIcon(Display display, Color color) {
-        Image img = createSmallIcon(display);
-
-        GC gc = new GC(img);
-        gc.setBackground(color);
-        gc.fillRectangle(img.getBounds());
-        gc.dispose();
-
-        return img;
-    }
-
-    private void createLegend(Composite parent) {
-
-        final Image updateRequiredImage = createSolidIcon(parent.getDisplay(), COLOR_VERSION_UPDATE_REQUIRED);
-        final Image releaseRequiredImage = createSolidIcon(parent.getDisplay(), COLOR_RELEASE_REQUIRED);
-
-        Composite composite = new Composite(parent, SWT.NONE);
-        GridLayout gridLayout = new GridLayout(2, false);
-        gridLayout.verticalSpacing = 2;
-        gridLayout.marginHeight = 2;
-        gridLayout.marginWidth = 0;
-        gridLayout.horizontalSpacing = 2;
-        composite.setLayout(gridLayout);
-
-        GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
-        gridData.grabExcessHorizontalSpace = true;
-        composite.setLayoutData(gridData);
-
-        Label l = new Label(composite, SWT.BORDER);
-        l.setImage(updateRequiredImage);
-        l.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                updateRequiredImage.dispose();
-            }
-        });
-
-        l = new Label(composite, SWT.NONE);
-        l.setText(Messages.versionUpdateRequired);
-
-        l = new Label(composite, SWT.BORDER);
-        l.setImage(releaseRequiredImage);
-        l.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                releaseRequiredImage.dispose();
-            }
-        });
-
-        l = new Label(composite, SWT.NONE);
-        l.setText(Messages.releaseRequired);
-    }
-
-    public void setInput(List<ProjectDiff> projectDiffs) {
-        this.projectDiffs = projectDiffs;
-        tableViewer.setInput(projectDiffs);
-    }
-
-    public Table getTable() {
-        return projects;
-    }
-
-    public void setSelected(int index) {
-        projects.select(index);
-    }
-
-    private class ContentProvider implements IStructuredContentProvider, IColumnContentProvider {
-
-        private final AtomicReference<String> filterRef = new AtomicReference<String>();
-
-        public void setFilter(String filter) {
-            this.filterRef.set(filter);
-        }
-
-        @Override
-        public void dispose() {}
-
-        @Override
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
-
-        @Override
-        public Object[] getElements(Object parent) {
-            final String filter = filterRef.get();
-            if (filter == null || "".equals(filter))
-                return projectDiffs.toArray();
-
-            Glob glob = new Glob(filter);
-            List<ProjectDiff> filtered = new ArrayList<ProjectDiff>();
-            for (ProjectDiff diff : projectDiffs) {
-                if (glob.matcher(diff.getProject()
-                    .getName())
-                    .matches()) {
-                    filtered.add(diff);
-                }
-            }
-            return filtered.toArray();
-        }
-
-        @Override
-        public Comparable<?> getValue(Object element, int columnIndex) {
-            ProjectDiff diff = (ProjectDiff) element;
-            switch (columnIndex) {
-                case 0 :
-                    return diff.getProject()
-                        .getName();
-                case 1 :
-                    return diff.getReleaseRepository();
-                case 2 :
-                    int bundles = -1;
-                    try (ProjectBuilder pb = diff.getProject()
-                        .getBuilder(null)) {
-                        bundles = pb.getSubBuilders()
-                            .size();
-                    } catch (Exception e) {
-                        /* ignore */
-                    }
-                    return Integer.valueOf(bundles);
-                default :
-                    return "";
-            }
-        }
-    }
-
-    private class TableLabelProvider extends LabelProvider implements ITableColorProvider, ITableLabelProvider {
-
-        @Override
-        public Image getColumnImage(Object element, int columnIndex) {
-            return null;
-        }
-
-        @Override
-        public String getColumnText(Object element, int columnIndex) {
-            String text = "";
-            ProjectDiff diff = (ProjectDiff) element;
-            switch (columnIndex) {
-                case 0 :
-                    text = diff.getProject()
-                        .getName();
-                    break;
-                case 1 :
-                    text = diff.getReleaseRepository();
-                    if (text == null) {
-                        text = diff.getDefaultReleaseRepository();
-                    }
-                    break;
-                case 2 :
-                    int bundles = -1;
-                    try (ProjectBuilder pb = diff.getProject()
-                        .getBuilder(null)) {
-                        bundles = pb.getSubBuilders()
-                            .size();
-                    } catch (Exception e) {
-                        /* ignore */
-                    }
-                    text = String.valueOf(bundles);
-                    break;
-                default :
-                    break;
-            }
-            return text;
-        }
-
-        @Override
-        public Color getBackground(Object element, int columnIndex) {
-            ProjectDiff diff = (ProjectDiff) element;
-            if (diff.isVersionUpdateRequired()) {
-                return COLOR_VERSION_UPDATE_REQUIRED;
-            }
-            if (diff.isReleaseRequired()) {
-                return COLOR_RELEASE_REQUIRED;
-            }
-            return null;
-        }
-
-        @Override
-        public Color getForeground(Object element, int columnIndex) {
-            return null;
-        }
-    }
-
-    class InlineComboEditingSupport extends EditingSupport {
-
-        protected ComboBoxCellEditor editor;
-
-        public InlineComboEditingSupport(ColumnViewer viewer) {
-            super(viewer);
-            this.editor = new ComboBoxCellEditor((Composite) viewer.getControl(), new String[] {});
-
-            Control control = editor.getControl();
-            ((CCombo) control).addSelectionListener(new SelectionListener() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    editor.deactivate();
-                }
-
-                @Override
-                public void widgetDefaultSelected(SelectionEvent e) {}
-            });
-        }
-
-        @Override
-        protected boolean canEdit(Object element) {
-            return true;
-        }
-
-        @Override
-        protected CellEditor getCellEditor(Object element) {
-            editor.setItems(releaseRepos);
-            return editor;
-        }
-
-        @Override
-        protected Object getValue(Object element) {
-            return null;
-            // Not needed
-        }
-
-        @Override
-        protected void setValue(Object element, Object value) {
-            // Not needed
-        }
-
-        @Override
-        protected void initializeCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
-
-            String repository = ""; //$NON-NLS-1$
-            repository = ((ProjectDiff) cell.getElement()).getReleaseRepository();
-            if (repository == null) {
-                repository = ((ProjectDiff) cell.getElement()).getDefaultReleaseRepository();
-            }
-            String[] items = ((ComboBoxCellEditor) cellEditor).getItems();
-            int idx = -1;
-            for (int i = 0; i < items.length; i++) {
-                if (items[i].equals(repository)) {
-                    idx = i;
-                    break;
-                }
-            }
-            if (idx > -1)
-                cellEditor.setValue(idx);
-            cell.setText(repository);
-        }
-
-        @Override
-        protected void saveCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
-            int idx = ((Integer) cellEditor.getValue()).intValue();
-            String[] items = ((ComboBoxCellEditor) cellEditor).getItems();
-
-            String repository;
-            if (idx > -1) {
-                repository = items[idx];
-            } else {
-                repository = ((CCombo) cellEditor.getControl()).getText();
-            }
-
-            cell.setText(repository);
-            ((ProjectDiff) cell.getElement()).setReleaseRepository(repository);
-        }
-    }
-
-    public void dispose() {
-        COLOR_RELEASE_REQUIRED.dispose();
-        COLOR_VERSION_UPDATE_REQUIRED.dispose();
-    }
+	private final Color				COLOR_RELEASE_REQUIRED;
+	private final Color				COLOR_VERSION_UPDATE_REQUIRED;
+
+	private Table					projects;
+	private final String[]			releaseRepos;
+	private CheckboxTableViewer		tableViewer;
+	private final SelectionListener	selectionListener;
+	private List<ProjectDiff>		projectDiffs;
+	private ContentProvider			contentProvider;
+
+	private static final String		PROJECT_COLUMN		= "project";
+	private static final String		REPOSITORY_COLUMN	= "repository";
+	private static final String		BUNDLES_COLUMN		= "bundles";
+
+	// Set column names
+	private static final String[]	columnNames			= new String[] {
+		PROJECT_COLUMN, REPOSITORY_COLUMN, BUNDLES_COLUMN
+	};
+
+	public ProjectListControl(SelectionListener selectionListener, String[] releaseRepos) {
+		this.selectionListener = selectionListener;
+		this.releaseRepos = releaseRepos;
+
+		COLOR_VERSION_UPDATE_REQUIRED = new Color(Display.getCurrent(), 247, 200, 200);
+		COLOR_RELEASE_REQUIRED = new Color(Display.getCurrent(), 206, 255, 206);
+	}
+
+	public void createControl(final Composite parent) {
+
+		createFilter(parent);
+
+		GridLayout gridLayout = new GridLayout(1, false);
+		gridLayout.marginWidth = 0;
+
+		// Create the composite
+		Composite composite = new Composite(parent, SWT.NONE);
+		composite.setLayout(gridLayout);
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		createTableLayout(composite);
+		createLegend(composite);
+	}
+
+	private void createFilter(Composite parent) {
+
+		Composite composite = new Composite(parent, SWT.NONE);
+		GridLayout gridLayout = new GridLayout(2, false);
+		gridLayout.marginHeight = gridLayout.marginWidth = 0;
+		gridLayout.horizontalSpacing = 0;
+		gridLayout.verticalSpacing = 0;
+
+		composite.setLayout(gridLayout);
+		GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+		gridData.grabExcessHorizontalSpace = true;
+		composite.setLayoutData(gridData);
+
+		FilterPanelPart filterPart = new FilterPanelPart(Activator.getDefault()
+			.getScheduler());
+		filterPart.createControl(composite, 0, 0);
+		filterPart.addPropertyChangeListener(event -> {
+			String filter = (String) event.getNewValue();
+			updatedFilter(filter);
+		});
+
+		ToolBar toolbar = new ToolBar(composite, SWT.FLAT);
+		ToolItem tiCheckAll = new ToolItem(toolbar, SWT.FLAT);
+		tiCheckAll.setImage(Activator.getImageDescriptor("icons/check_all.gif")
+			.createImage());
+		tiCheckAll.setToolTipText(Messages.checkAll);
+		tiCheckAll.addSelectionListener(new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Object[] objs = contentProvider.getElements(null);
+				for (Object obj : objs) {
+					ProjectDiff diff = (ProjectDiff) obj;
+					diff.setRelease(true);
+				}
+				tableViewer.refresh();
+			}
+		});
+
+		ToolItem tiUncheckAll = new ToolItem(toolbar, SWT.FLAT);
+		tiUncheckAll.setImage(Activator.getImageDescriptor("icons/uncheck_all.gif")
+			.createImage());
+		tiUncheckAll.setToolTipText(Messages.uncheckAll);
+		tiUncheckAll.addSelectionListener(new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Object[] objs = contentProvider.getElements(null);
+				for (Object obj : objs) {
+					ProjectDiff diff = (ProjectDiff) obj;
+					diff.setRelease(false);
+				}
+				tableViewer.refresh();
+			}
+		});
+	}
+
+	private void updatedFilter(String filterString) {
+		String newFilter;
+		if (filterString == null || filterString.length() == 0 || filterString.trim()
+			.equals("*"))
+			newFilter = null;
+		else
+			newFilter = "*" + filterString.trim() + "*";
+		contentProvider.setFilter(newFilter);
+		tableViewer.refresh();
+	}
+
+	private void createTableLayout(Composite parent) {
+
+		Composite composite = new Composite(parent, SWT.NONE);
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		// Add TableColumnLayout
+		TableColumnLayout layout = new TableColumnLayout();
+		composite.setLayout(layout);
+
+		// Instantiate TableViewer
+		projects = new Table(composite, SWT.CHECK | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
+		projects.setHeaderVisible(true);
+		projects.setLinesVisible(true);
+		projects.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				selectionListener.widgetSelected(e);
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				selectionListener.widgetDefaultSelected(e);
+			}
+		});
+		tableViewer = new CheckboxTableViewer(projects);
+		tableViewer.setUseHashlookup(true);
+
+		// Project
+		TableViewerColumn tableViewerColumn = new TableViewerColumn(tableViewer, SWT.LEFT);
+		TableColumn tableCol = tableViewerColumn.getColumn();
+		layout.setColumnData(tableCol, new ColumnWeightData(60, 100, true));
+		tableCol.setText(Messages.project1);
+
+		// Repository
+		tableViewerColumn = new TableViewerColumn(tableViewer, SWT.LEFT);
+		tableCol = tableViewerColumn.getColumn();
+		layout.setColumnData(tableCol, new ColumnWeightData(26, 80, true));
+		tableCol.setText(Messages.repository);
+		tableViewerColumn.setEditingSupport(new InlineComboEditingSupport(tableViewer));
+
+		// Bundles
+		tableViewerColumn = new TableViewerColumn(tableViewer, SWT.CENTER);
+		tableCol = tableViewerColumn.getColumn();
+		layout.setColumnData(tableCol, new ColumnWeightData(14, 35, true));
+		tableCol.setText(Messages.bundles);
+
+		contentProvider = new ContentProvider();
+		tableViewer.setContentProvider(contentProvider);
+		tableViewer.setLabelProvider(new TableLabelProvider());
+		tableViewer.setColumnProperties(columnNames);
+		tableViewer.setCheckStateProvider(new ICheckStateProvider() {
+
+			@Override
+			public boolean isGrayed(Object element) {
+				return false;
+			}
+
+			@Override
+			public boolean isChecked(Object element) {
+				ProjectDiff diff = (ProjectDiff) element;
+				return diff.isRelease();
+			}
+		});
+
+		projects.pack();
+
+		TableSortingEnabler.applyTableColumnSorting(tableViewer);
+	}
+
+	private Image createSmallIcon(Display display) {
+		Point[] iconSizes = display.getIconSizes();
+		Point chosen = null;
+
+		if (iconSizes.length == 0) {
+			chosen = new Point(16, 16);
+		} else {
+			chosen = iconSizes[0];
+		}
+
+		return new Image(display, chosen.x, chosen.y);
+	}
+
+	private Image createSolidIcon(Display display, Color color) {
+		Image img = createSmallIcon(display);
+
+		GC gc = new GC(img);
+		gc.setBackground(color);
+		gc.fillRectangle(img.getBounds());
+		gc.dispose();
+
+		return img;
+	}
+
+	private void createLegend(Composite parent) {
+
+		final Image updateRequiredImage = createSolidIcon(parent.getDisplay(), COLOR_VERSION_UPDATE_REQUIRED);
+		final Image releaseRequiredImage = createSolidIcon(parent.getDisplay(), COLOR_RELEASE_REQUIRED);
+
+		Composite composite = new Composite(parent, SWT.NONE);
+		GridLayout gridLayout = new GridLayout(2, false);
+		gridLayout.verticalSpacing = 2;
+		gridLayout.marginHeight = 2;
+		gridLayout.marginWidth = 0;
+		gridLayout.horizontalSpacing = 2;
+		composite.setLayout(gridLayout);
+
+		GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+		gridData.grabExcessHorizontalSpace = true;
+		composite.setLayoutData(gridData);
+
+		Label l = new Label(composite, SWT.BORDER);
+		l.setImage(updateRequiredImage);
+		l.addDisposeListener(e -> updateRequiredImage.dispose());
+
+		l = new Label(composite, SWT.NONE);
+		l.setText(Messages.versionUpdateRequired);
+
+		l = new Label(composite, SWT.BORDER);
+		l.setImage(releaseRequiredImage);
+		l.addDisposeListener(e -> releaseRequiredImage.dispose());
+
+		l = new Label(composite, SWT.NONE);
+		l.setText(Messages.releaseRequired);
+	}
+
+	public void setInput(List<ProjectDiff> projectDiffs) {
+		this.projectDiffs = projectDiffs;
+		tableViewer.setInput(projectDiffs);
+	}
+
+	public Table getTable() {
+		return projects;
+	}
+
+	public void setSelected(int index) {
+		projects.select(index);
+	}
+
+	private class ContentProvider implements IStructuredContentProvider, IColumnContentProvider {
+
+		private final AtomicReference<String> filterRef = new AtomicReference<>();
+
+		public void setFilter(String filter) {
+			this.filterRef.set(filter);
+		}
+
+		@Override
+		public void dispose() {}
+
+		@Override
+		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
+
+		@Override
+		public Object[] getElements(Object parent) {
+			final String filter = filterRef.get();
+			if (filter == null || "".equals(filter))
+				return projectDiffs.toArray();
+
+			Glob glob = new Glob(filter);
+			List<ProjectDiff> filtered = new ArrayList<>();
+			for (ProjectDiff diff : projectDiffs) {
+				if (glob.matcher(diff.getProject()
+					.getName())
+					.matches()) {
+					filtered.add(diff);
+				}
+			}
+			return filtered.toArray();
+		}
+
+		@Override
+		public Comparable<?> getValue(Object element, int columnIndex) {
+			ProjectDiff diff = (ProjectDiff) element;
+			switch (columnIndex) {
+				case 0 :
+					return diff.getProject()
+						.getName();
+				case 1 :
+					return diff.getReleaseRepository();
+				case 2 :
+					int bundles = -1;
+					try (ProjectBuilder pb = diff.getProject()
+						.getBuilder(null)) {
+						bundles = pb.getSubBuilders()
+							.size();
+					} catch (Exception e) {
+						/* ignore */
+					}
+					return Integer.valueOf(bundles);
+				default :
+					return "";
+			}
+		}
+	}
+
+	private class TableLabelProvider extends LabelProvider implements ITableColorProvider, ITableLabelProvider {
+
+		@Override
+		public Image getColumnImage(Object element, int columnIndex) {
+			return null;
+		}
+
+		@Override
+		public String getColumnText(Object element, int columnIndex) {
+			String text = "";
+			ProjectDiff diff = (ProjectDiff) element;
+			switch (columnIndex) {
+				case 0 :
+					text = diff.getProject()
+						.getName();
+					break;
+				case 1 :
+					text = diff.getReleaseRepository();
+					if (text == null) {
+						text = diff.getDefaultReleaseRepository();
+					}
+					break;
+				case 2 :
+					int bundles = -1;
+					try (ProjectBuilder pb = diff.getProject()
+						.getBuilder(null)) {
+						bundles = pb.getSubBuilders()
+							.size();
+					} catch (Exception e) {
+						/* ignore */
+					}
+					text = String.valueOf(bundles);
+					break;
+				default :
+					break;
+			}
+			return text;
+		}
+
+		@Override
+		public Color getBackground(Object element, int columnIndex) {
+			ProjectDiff diff = (ProjectDiff) element;
+			if (diff.isVersionUpdateRequired()) {
+				return COLOR_VERSION_UPDATE_REQUIRED;
+			}
+			if (diff.isReleaseRequired()) {
+				return COLOR_RELEASE_REQUIRED;
+			}
+			return null;
+		}
+
+		@Override
+		public Color getForeground(Object element, int columnIndex) {
+			return null;
+		}
+	}
+
+	class InlineComboEditingSupport extends EditingSupport {
+
+		protected ComboBoxCellEditor editor;
+
+		public InlineComboEditingSupport(ColumnViewer viewer) {
+			super(viewer);
+			this.editor = new ComboBoxCellEditor((Composite) viewer.getControl(), new String[] {});
+
+			Control control = editor.getControl();
+			((CCombo) control).addSelectionListener(new SelectionListener() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					editor.deactivate();
+				}
+
+				@Override
+				public void widgetDefaultSelected(SelectionEvent e) {}
+			});
+		}
+
+		@Override
+		protected boolean canEdit(Object element) {
+			return true;
+		}
+
+		@Override
+		protected CellEditor getCellEditor(Object element) {
+			editor.setItems(releaseRepos);
+			return editor;
+		}
+
+		@Override
+		protected Object getValue(Object element) {
+			return null;
+			// Not needed
+		}
+
+		@Override
+		protected void setValue(Object element, Object value) {
+			// Not needed
+		}
+
+		@Override
+		protected void initializeCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
+
+			String repository = ""; //$NON-NLS-1$
+			repository = ((ProjectDiff) cell.getElement()).getReleaseRepository();
+			if (repository == null) {
+				repository = ((ProjectDiff) cell.getElement()).getDefaultReleaseRepository();
+			}
+			String[] items = ((ComboBoxCellEditor) cellEditor).getItems();
+			int idx = -1;
+			for (int i = 0; i < items.length; i++) {
+				if (items[i].equals(repository)) {
+					idx = i;
+					break;
+				}
+			}
+			if (idx > -1)
+				cellEditor.setValue(idx);
+			cell.setText(repository);
+		}
+
+		@Override
+		protected void saveCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
+			int idx = ((Integer) cellEditor.getValue()).intValue();
+			String[] items = ((ComboBoxCellEditor) cellEditor).getItems();
+
+			String repository;
+			if (idx > -1) {
+				repository = items[idx];
+			} else {
+				repository = ((CCombo) cellEditor.getControl()).getText();
+			}
+
+			cell.setText(repository);
+			((ProjectDiff) cell.getElement()).setReleaseRepository(repository);
+		}
+	}
+
+	public void dispose() {
+		COLOR_RELEASE_REQUIRED.dispose();
+		COLOR_VERSION_UPDATE_REQUIRED.dispose();
+	}
 }

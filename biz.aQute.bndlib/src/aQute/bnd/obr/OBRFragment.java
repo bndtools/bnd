@@ -37,7 +37,7 @@ import aQute.service.reporter.Reporter;
 public class OBRFragment {
 
 	// The mime-type of an OSGi bundle
-	static final String	MIME_TYPE_OSGI_BUNDLE	= "application/vnd.osgi.bundle";
+	static final String				MIME_TYPE_OSGI_BUNDLE	= "application/vnd.osgi.bundle";
 	private final static Pattern	EE_PATTERN				= Pattern
 		.compile("[^.]-(\\d+(?:\\.\\d+(?:\\.\\d+(?:\\.)?)?)?)");
 

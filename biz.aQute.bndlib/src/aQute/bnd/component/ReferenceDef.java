@@ -53,7 +53,7 @@ class ReferenceDef extends ExtensionDef {
 
 	/**
 	 * Prepare the reference, will check for any errors.
-	 * 
+	 *
 	 * @param analyzer the analyzer to report errors to.
 	 * @throws Exception
 	 */
@@ -95,7 +95,7 @@ class ReferenceDef extends ExtensionDef {
 
 	/**
 	 * Calculate the tag.
-	 * 
+	 *
 	 * @param namespaces
 	 * @return a tag for the reference element.
 	 */

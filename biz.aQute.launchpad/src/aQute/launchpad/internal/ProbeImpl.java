@@ -18,13 +18,12 @@ import aQute.lib.exceptions.Exceptions;
 public class ProbeImpl implements Probe {
 
 	@Service
-	Launchpad launchpad;
+	Launchpad				launchpad;
 
 	@Service(timeout = 100)
 	ServiceComponentRuntime	scr;
 
-	public ProbeImpl() {
-	}
+	public ProbeImpl() {}
 
 	@Override
 	public void foo() {

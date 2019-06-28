@@ -280,7 +280,7 @@ public class CapReqBuilder {
 
 	/**
 	 * Equivalent to {@code getRequirementsFrom(rr, true)}.
-	 * 
+	 *
 	 * @param rr
 	 */
 	public static List<Requirement> getRequirementsFrom(Parameters rr) throws Exception {
@@ -290,7 +290,7 @@ public class CapReqBuilder {
 	/**
 	 * Parse requirements from a Parameters set in the form of an OSGi
 	 * Require-Capability header.
-	 * 
+	 *
 	 * @param rr The Require-Capability header.
 	 * @param unalias Whether to unalias requirements. If false then an aliases
 	 *            such as "bundle; bsn=org.foo" will be returned as a raw
@@ -462,7 +462,7 @@ public class CapReqBuilder {
 	/**
 	 * In bnd, we only use one map for both directives & attributes. This method
 	 * will properly dispatch them AND take care of typing
-	 * 
+	 *
 	 * @param attrs
 	 * @throws Exception
 	 */

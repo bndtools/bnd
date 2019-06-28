@@ -26,7 +26,7 @@ class URLResource implements Resource {
 	/**
 	 * This constructor is not for use other than by
 	 * {@link Resource#fromURL(URL)}.
-	 * 
+	 *
 	 * @see Resource#fromURL(URL)
 	 */
 	URLResource(URL url, HttpClient client) {

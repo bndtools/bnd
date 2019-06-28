@@ -37,7 +37,7 @@ import aQute.service.reporter.Reporter;
  * resource, and only uses the pre-downloaded cache if the remote could not be
  * downloaded (e.g. because the network is offline).
  * </p>
- * 
+ *
  * @author njbartlett
  */
 public class CachingUriResourceHandle implements ResourceHandle {
@@ -46,7 +46,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 	private static final String	SHA_256		= "SHA-256";
 
 	@Deprecated
-	public static enum CachingMode {
+	public enum CachingMode {
 		/**
 		 * Always use the cached file, if it exists.
 		 */

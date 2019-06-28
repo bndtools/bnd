@@ -153,8 +153,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * @throws IOException
 	 */
 	private LauncherConstants getConstants(Collection<String> runbundles, Collection<Integer> startlevels,
-		boolean exported)
-		throws Exception, FileNotFoundException, IOException {
+		boolean exported) throws Exception, FileNotFoundException, IOException {
 		logger.debug("preparing the aQute launcher plugin");
 
 		LauncherConstants lc = new LauncherConstants();
@@ -173,26 +172,23 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		if (!exported && !getNotificationListeners().isEmpty()) {
 			if (listenerComms == null) {
 				listenerComms = new DatagramSocket(new InetSocketAddress(InetAddress.getByName(null), 0));
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						DatagramSocket socket = listenerComms;
-						DatagramPacket packet = new DatagramPacket(new byte[65536], 65536);
-						while (!socket.isClosed()) {
-							try {
-								socket.receive(packet);
-								DataInput dai = ByteBufferDataInput.wrap(packet.getData(), packet.getOffset(),
-									packet.getLength());
-								NotificationType type = NotificationType.values()[dai.readInt()];
-								String message = dai.readUTF();
-								if (type == NotificationType.ERROR) {
-									message += "\n" + dai.readUTF();
-								}
-								for (NotificationListener listener : getNotificationListeners()) {
-									listener.notify(type, message);
-								}
-							} catch (IOException e) {}
-						}
+				new Thread(() -> {
+					DatagramSocket socket = listenerComms;
+					DatagramPacket packet = new DatagramPacket(new byte[65536], 65536);
+					while (!socket.isClosed()) {
+						try {
+							socket.receive(packet);
+							DataInput dai = ByteBufferDataInput.wrap(packet.getData(), packet.getOffset(),
+								packet.getLength());
+							NotificationType type = NotificationType.values()[dai.readInt()];
+							String message = dai.readUTF();
+							if (type == NotificationType.ERROR) {
+								message += "\n" + dai.readUTF();
+							}
+							for (NotificationListener listener : getNotificationListeners()) {
+								listener.notify(type, message);
+							}
+						} catch (IOException e) {}
 					}
 				}).start();
 			}

@@ -43,7 +43,7 @@ public class AnalyzerTest extends BndTestCase {
 	/**
 	 * #1352 support globbing during includeresource's buildpath reference
 	 * resolution
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -118,7 +118,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * maven-bundle-plugin fails to generate the package import for
 	 * javax.enterprise.inject.Any, the default value of the annotation method.
 	 * At runtime, this leads to a non-descriptive exception
-	 * 
+	 *
 	 * <pre>
 	 *  Caused by:
 	 * java.lang.ArrayStoreException:
@@ -290,7 +290,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Fastest way to create a manifest
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -348,7 +348,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Uses constraints must be filtered by imports or exports.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -392,7 +392,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Test if require works
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -494,7 +494,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Use a private activator, check it is not imported.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testEmptyHeader() throws Exception {
@@ -657,7 +657,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Use a private activator, check it is not imported.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testPrivataBundleActivatorNotImported() throws Exception {
@@ -687,7 +687,7 @@ public class AnalyzerTest extends BndTestCase {
 	/**
 	 * Use an activator that is not in the bundle but do not allow it to be
 	 * imported, this should generate an error.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testBundleActivatorNotImported() throws Exception {
@@ -716,7 +716,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Use an activator that is on the class path but that is not in the bundle.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testBundleActivatorImport() throws Exception {
@@ -751,7 +751,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Use an activator that abstract, and so cannot be instantiated.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testBundleActivatorAbstract() throws Exception {
@@ -778,7 +778,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Use an activator that is an interface, and so cannot be instantiated.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testBundleActivatorInterface() throws Exception {
@@ -806,7 +806,7 @@ public class AnalyzerTest extends BndTestCase {
 	/**
 	 * Use an activator that has no default constructor, and so cannot be
 	 * instantiated.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testBundleActivatorNoDefaultConstructor() throws Exception {
@@ -834,7 +834,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Use an activator that is not public, and so cannot be instantiated.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testBundleActivatorNotPublic() throws Exception {
@@ -864,7 +864,7 @@ public class AnalyzerTest extends BndTestCase {
 	/**
 	 * Use an activator that is not an instance of BundleActivator, and so
 	 * cannot be used.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testNotABundleActivator() throws Exception {
@@ -892,7 +892,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Scan for a BundleActivator, but there are no matches!
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testBundleActivatorNoType() throws Exception {
@@ -923,7 +923,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Scan for a BundleActivator, but the value is not a Java type identifier!
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testBundleActivatorNotAType() throws Exception {
@@ -955,7 +955,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Scan for a BundleActivator, but there are no matches!
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testScanForABundleActivatorNoMatches() throws Exception {
@@ -987,7 +987,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Scan for a BundleActivator, but there are multiple matches!
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testScanForABundleActivatorMultipleMatches() throws Exception {
@@ -1043,7 +1043,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * There was an export generated for a jar file.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testExportForJar() throws Exception {
@@ -1067,7 +1067,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Test if version works
-	 * 
+	 *
 	 * @throws IOException
 	 */
 
@@ -1110,7 +1110,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * See if we set attributes on export
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	public void testAsm2() throws Exception {
@@ -1238,7 +1238,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * the underlying classpath. These are reflected as warnings. If there is an
 	 * extra import, and it contains no wildcards, then it is treated as a
 	 * wildcard
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	public void testSuperfluous() throws Exception {

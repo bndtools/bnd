@@ -139,7 +139,7 @@ public abstract class ProjectLauncher extends Processor {
 	/**
 	 * Collect all the aspect from the project and set the local fields from
 	 * them. Should be called
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	protected void updateFromProject() throws Exception {
@@ -474,6 +474,7 @@ public abstract class ProjectLauncher extends Processor {
 		}
 		@SuppressWarnings("resource")
 		URLClassLoader cl = new URLClassLoader(cp.toArray(new URL[0]), fcl) {
+			@Override
 			public void addURL(URL url) {
 				super.addURL(url);
 			}
@@ -564,7 +565,7 @@ public abstract class ProjectLauncher extends Processor {
 	/**
 	 * Should be called when all the changes to the launchers are set. Will
 	 * calculate whatever is necessary for the launcher.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public abstract void prepare() throws Exception;
@@ -600,7 +601,7 @@ public abstract class ProjectLauncher extends Processor {
 	 * Add the specification for a set of bundles the runpath if it does not
 	 * already is included. This can be used by subclasses to ensure the proper
 	 * jars are on the classpath.
-	 * 
+	 *
 	 * @param defaultSpec The default spec for default jars
 	 */
 	public void addDefault(String defaultSpec) throws Exception {
@@ -637,11 +638,11 @@ public abstract class ProjectLauncher extends Processor {
 		return Collections.emptyMap();
 	}
 
-	public static interface NotificationListener {
+	public interface NotificationListener {
 		void notify(NotificationType type, String notification);
 	}
 
-	public static enum NotificationType {
+	public enum NotificationType {
 		ERROR,
 		WARNING,
 		INFO;
@@ -659,7 +660,7 @@ public abstract class ProjectLauncher extends Processor {
 	 * Set the stderr and stdout streams for the output process. The debugged
 	 * process must append its output (i.e. write operation in the process under
 	 * debug) to the given appendables.
-	 * 
+	 *
 	 * @param out std out
 	 * @param err std err
 	 */
@@ -670,7 +671,7 @@ public abstract class ProjectLauncher extends Processor {
 
 	/**
 	 * Write text to the debugged process as if it came from stdin.
-	 * 
+	 *
 	 * @param text the text to write
 	 * @throws Exception
 	 */
@@ -681,7 +682,7 @@ public abstract class ProjectLauncher extends Processor {
 	/**
 	 * Get the run sessions. If this return null, then launch on this object
 	 * should be used, otherwise each returned object provides a remote session.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -694,7 +695,7 @@ public abstract class ProjectLauncher extends Processor {
 	 */
 	/**
 	 * This method should go to the ProjectLauncher
-	 * 
+	 *
 	 * @throws Exception
 	 */
 

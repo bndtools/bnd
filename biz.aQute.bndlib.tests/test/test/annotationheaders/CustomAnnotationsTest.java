@@ -116,8 +116,7 @@ public class CustomAnnotationsTest {
 			Props p = req.get("type");
 			assertNotNull(p);
 			assertEquals("java.lang.Boolean", p.get("value"));
-			assertEquals(
-				"java.lang.Long,java.lang.Integer,test.annotationheaders.custom.metaClass.ConversionCheck",
+			assertEquals("java.lang.Long,java.lang.Integer,test.annotationheaders.custom.metaClass.ConversionCheck",
 				p.get("array"));
 			assertEquals("test.annotationheaders.custom.metaClass.ConversionCheck", p.get("host"));
 		}

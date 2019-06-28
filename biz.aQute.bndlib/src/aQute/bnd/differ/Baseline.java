@@ -87,7 +87,7 @@ public class Baseline {
 	 * This method compares a jar to a baseline jar and returns version
 	 * suggestions if the baseline does not agree with the newer jar. The
 	 * returned set contains all the exported packages.
-	 * 
+	 *
 	 * @param newer
 	 * @param older
 	 * @return null if ok, otherwise a set of suggested versions for all
@@ -306,7 +306,7 @@ public class Baseline {
 	/**
 	 * "Major version zero (0.y.z) is for initial development. Anything may
 	 * change at any time. The public API should not be considered stable."
-	 * 
+	 *
 	 * @see <a href="https://semver.org/#spec-item-4">SemVer</a>
 	 */
 	private boolean mismatch(Version older, Version newer) {
@@ -342,7 +342,7 @@ public class Baseline {
 
 	/**
 	 * Gets the generated diff
-	 * 
+	 *
 	 * @return the diff
 	 */
 	public Diff getDiff() {

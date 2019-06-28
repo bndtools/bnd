@@ -116,8 +116,7 @@ class ArtifactRepository extends XML {
 					continue; // we do not currently support packed format
 				}
 
-				Map<String, String> map = Converter.cnv(new TypeReference<Map<String, String>>() {
-				}, xmlArtifact);
+				Map<String, String> map = Converter.cnv(new TypeReference<Map<String, String>>() {}, xmlArtifact);
 				try (Processor domain = new Processor(parent)) {
 					domain.addProperties(map);
 
@@ -152,7 +151,7 @@ class ArtifactRepository extends XML {
 	 * * <artifact classifier='osgi.bundle' id=
 	 * 'org.bndtools.versioncontrol.ignores.plugin.git' version=
 	 * '3.3.0.201605202157'>
-	 * 
+	 *
 	 * @param item
 	 * @return
 	 * @throws Exception

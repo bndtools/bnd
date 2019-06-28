@@ -17,7 +17,7 @@ public interface Envoy {
 
 	/**
 	 * Create a framework
-	 * 
+	 *
 	 * @param name the name of the framework
 	 * @param runpath The SHAs for the -runpath
 	 * @param properties the fw properties

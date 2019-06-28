@@ -216,19 +216,18 @@ public class BndMavenPlugin extends AbstractMojo {
 					builder.setProperty(Constants.WAB, "");
 				}
 				outputDir = warOutputDir;
-				logger.info(
-					"WAB mode enabled. Bnd output will be expanded into the 'maven-war-plugin' <webappDirectory>:"
+				logger
+					.info("WAB mode enabled. Bnd output will be expanded into the 'maven-war-plugin' <webappDirectory>:"
 						+ outputDir);
-			}
-			else if ((wabProperty != null) || hasWablibs) {
+			} else if ((wabProperty != null) || hasWablibs) {
 				throw new MojoFailureException(
 					Constants.WAB + " & " + Constants.WABLIB + " are not supported with packaging 'jar'");
 			}
 
 			// Compute bnd classpath
 			Set<Artifact> artifacts = project.getArtifacts();
-			List<Object> buildpath = new ArrayList<Object>(artifacts.size());
-			List<String> wablibs = new ArrayList<String>(artifacts.size());
+			List<Object> buildpath = new ArrayList<>(artifacts.size());
+			List<String> wablibs = new ArrayList<>(artifacts.size());
 			for (Artifact artifact : artifacts) {
 				File cpe = artifact.getFile()
 					.getCanonicalFile();
@@ -280,7 +279,7 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			// Compute bnd sourcepath
 			boolean delta = !buildContext.isIncremental() || manifestOutOfDate();
-			List<File> sourcepath = new ArrayList<File>();
+			List<File> sourcepath = new ArrayList<>();
 			if (sourceDir.exists()) {
 				sourcepath.add(sourceDir.getCanonicalFile());
 				delta |= buildContext.hasDelta(sourceDir);
@@ -322,8 +321,10 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			// Set Bundle-Vendor
 			if (builder.getProperty(Constants.BUNDLE_VENDOR) == null) {
-				if (project.getOrganization() != null && StringUtils.isNotBlank(project.getOrganization().getName())) {
-					builder.setProperty(Constants.BUNDLE_VENDOR, project.getOrganization().getName());
+				if (project.getOrganization() != null && StringUtils.isNotBlank(project.getOrganization()
+					.getName())) {
+					builder.setProperty(Constants.BUNDLE_VENDOR, project.getOrganization()
+						.getName());
 				}
 			}
 
@@ -350,17 +351,25 @@ public class BndMavenPlugin extends AbstractMojo {
 			if (builder.getProperty(Constants.BUNDLE_SCM) == null) {
 				StringBuilder scm = new StringBuilder();
 				if (project.getScm() != null) {
-					if (StringUtils.isNotBlank(project.getScm().getUrl())) {
-						addHeaderAttribute(scm, "url", project.getScm().getUrl(), ',');
+					if (StringUtils.isNotBlank(project.getScm()
+						.getUrl())) {
+						addHeaderAttribute(scm, "url", project.getScm()
+							.getUrl(), ',');
 					}
-					if (StringUtils.isNotBlank(project.getScm().getConnection())) {
-						addHeaderAttribute(scm, "connection", project.getScm().getConnection(), ',');
+					if (StringUtils.isNotBlank(project.getScm()
+						.getConnection())) {
+						addHeaderAttribute(scm, "connection", project.getScm()
+							.getConnection(), ',');
 					}
-					if (StringUtils.isNotBlank(project.getScm().getDeveloperConnection())) {
-						addHeaderAttribute(scm, "developer-connection", project.getScm().getDeveloperConnection(), ',');
+					if (StringUtils.isNotBlank(project.getScm()
+						.getDeveloperConnection())) {
+						addHeaderAttribute(scm, "developer-connection", project.getScm()
+							.getDeveloperConnection(), ',');
 					}
-					if (StringUtils.isNotBlank(project.getScm().getTag())) {
-						addHeaderAttribute(scm, "tag", project.getScm().getTag(), ',');
+					if (StringUtils.isNotBlank(project.getScm()
+						.getTag())) {
+						addHeaderAttribute(scm, "tag", project.getScm()
+							.getTag(), ',');
 					}
 					if (scm.length() > 0) {
 						builder.setProperty(Constants.BUNDLE_SCM, scm.toString());
@@ -389,8 +398,10 @@ public class BndMavenPlugin extends AbstractMojo {
 						if (StringUtils.isNotBlank(developer.getOrganizationUrl())) {
 							addHeaderAttribute(developers, "organizationUrl", developer.getOrganizationUrl(), ';');
 						}
-						if (!developer.getRoles().isEmpty()) {
-							addHeaderAttribute(developers, "roles", StringUtils.join(developer.getRoles().iterator(), ","), ';');
+						if (!developer.getRoles()
+							.isEmpty()) {
+							addHeaderAttribute(developers, "roles", StringUtils.join(developer.getRoles()
+								.iterator(), ","), ';');
 						}
 						if (StringUtils.isNotBlank(developer.getTimezone())) {
 							addHeaderAttribute(developers, "timezone", developer.getTimezone(), ';');
@@ -398,7 +409,12 @@ public class BndMavenPlugin extends AbstractMojo {
 					} else {
 						logger.warn(
 							"Cannot consider developer in line '{}' of file '{}' for bundle header '{}' as it does not contain the mandatory id.",
-							developer.getLocation("").getLineNumber(), developer.getLocation("").getSource().getLocation(), Constants.BUNDLE_DEVELOPERS);
+							developer.getLocation("")
+								.getLineNumber(),
+							developer.getLocation("")
+								.getSource()
+								.getLocation(),
+							Constants.BUNDLE_DEVELOPERS);
 					}
 				}
 				if (developers.length() > 0) {
@@ -453,7 +469,8 @@ public class BndMavenPlugin extends AbstractMojo {
 		if (builder.length() > 0) {
 			builder.append(separator);
 		}
-		builder.append(key).append("=");
+		builder.append(key)
+			.append("=");
 		// use quoted string if necessary
 		OSGiHeader.quote(builder, value);
 		return builder;

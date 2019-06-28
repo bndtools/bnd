@@ -14,7 +14,7 @@ import aQute.bnd.osgi.Processor;
  * Optional.
  */
 class ProcessorHandler implements InvocationHandler {
-	final Processor			processor;
+	final Processor					processor;
 
 	final static SpecialConverter	converter	= new SpecialConverter();
 
@@ -30,7 +30,6 @@ class ProcessorHandler implements InvocationHandler {
 		}
 
 		String name = Syntax.toInstruction(method);
-
 
 		Object value = processor.mergeProperties(name);
 
@@ -52,6 +51,7 @@ class ProcessorHandler implements InvocationHandler {
 		}, new ProcessorHandler(processor));
 	}
 
+	@Override
 	public String toString() {
 		return processor.toString() + "'";
 	}

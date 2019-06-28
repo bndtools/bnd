@@ -6,8 +6,8 @@ import org.osgi.resource.Requirement;
 
 public class RequirementWrapper {
 
-    public Requirement requirement;
-    public boolean resolved;
-    public Collection<? extends Object> requirers;
+	public Requirement					requirement;
+	public boolean						resolved;
+	public Collection<? extends Object>	requirers;
 
 }

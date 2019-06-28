@@ -307,6 +307,7 @@ public class ComparableVersion implements Comparable<ComparableVersion> {
 			return value.hashCode();
 		}
 
+		@Override
 		public String toString() {
 			return value.toString();
 		}
@@ -426,6 +427,7 @@ public class ComparableVersion implements Comparable<ComparableVersion> {
 			return value.hashCode();
 		}
 
+		@Override
 		public String toString() {
 			return value;
 		}
@@ -438,7 +440,7 @@ public class ComparableVersion implements Comparable<ComparableVersion> {
 	 */
 	private static class ListItem extends ArrayList<Item> implements Item {
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 1L;
 

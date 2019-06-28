@@ -10,7 +10,7 @@ import aQute.bnd.version.Version;
 public interface InfoRepository extends RepositoryPlugin {
 	/**
 	 * Return a resource descriptor for a given bsn/version.
-	 * 
+	 *
 	 * @param bsn The exact bsn
 	 * @param version The exact version (must also match qualifier)
 	 * @return a ResourceDescriptor describing the artifact

@@ -12,31 +12,32 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface BuildListener {
 
-    enum BuildState {
-        starting,
-        built,
-        released;
-    }
+	enum BuildState {
+		starting,
+		built,
+		released;
+	}
 
-    /**
-     * Bndtools is starting to build the specified project. The corresponding bnd project model in the bnd workspace has
-     * yet been created, and may not exist.
-     *
-     * @param project
-     */
-    void buildStarting(IProject project);
+	/**
+	 * Bndtools is starting to build the specified project. The corresponding
+	 * bnd project model in the bnd workspace has yet been created, and may not
+	 * exist.
+	 *
+	 * @param project
+	 */
+	void buildStarting(IProject project);
 
-    /**
-     * Bndtools has built one or more bundles in the specified project.
-     *
-     * @param project The Eclipse project for which the built has been executed.
-     * @param paths An array of workspace-relative paths.
-     */
-    void builtBundles(IProject project, IPath[] paths);
+	/**
+	 * Bndtools has built one or more bundles in the specified project.
+	 *
+	 * @param project The Eclipse project for which the built has been executed.
+	 * @param paths An array of workspace-relative paths.
+	 */
+	void builtBundles(IProject project, IPath[] paths);
 
-    /**
-     * Listeners are released
-     */
+	/**
+	 * Listeners are released
+	 */
 
-    void released(IProject project);
+	void released(IProject project);
 }

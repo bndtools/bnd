@@ -253,7 +253,6 @@ public class ResolveCommand extends Processor {
 
 						if (bndrun.isOk()) {
 
-
 							if (options.urls()) {
 								bnd.out.printf("# URLS ", f.getName());
 								doUrls(resolution.getOrderedResources());

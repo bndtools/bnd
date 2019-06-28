@@ -20,29 +20,29 @@ import bndtools.release.nl.Messages;
 
 public class ReleaseWorkspaceHandler extends AbstractHandler {
 
-    @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        try {
+	@Override
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		try {
 
-            if (ReleaseHelper.getReleaseRepositories().length == 0) {
-                Activator.message(Messages.noReleaseRepos);
-                return null;
-            }
+			if (ReleaseHelper.getReleaseRepositories().length == 0) {
+				Activator.message(Messages.noReleaseRepos);
+				return null;
+			}
 
-            if (!PlatformUI.getWorkbench()
-                .saveAllEditors(true)) {
-                return null;
-            }
+			if (!PlatformUI.getWorkbench()
+				.saveAllEditors(true)) {
+				return null;
+			}
 
-            WorkspaceAnalyserJob job = new WorkspaceAnalyserJob(null);
-            job.setRule(ResourcesPlugin.getWorkspace()
-                .getRoot());
-            job.schedule();
+			WorkspaceAnalyserJob job = new WorkspaceAnalyserJob(null);
+			job.setRule(ResourcesPlugin.getWorkspace()
+				.getRoot());
+			job.schedule();
 
-        } catch (Exception e) {
-            throw new ExecutionException(e.getMessage(), e);
-        }
+		} catch (Exception e) {
+			throw new ExecutionException(e.getMessage(), e);
+		}
 
-        return null;
-    }
+		return null;
+	}
 }

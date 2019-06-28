@@ -37,6 +37,7 @@ import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.service.progress.ProgressPlugin;
+import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
@@ -264,8 +265,7 @@ public class MavenBndRepoTest extends TestCase {
 			.toString());
 		config(map);
 		try (Processor context = new Processor()) {
-			context.setProperty("-maven-release",
-				"sources;path=\"testresources/src\",javadoc;packages=all");
+			context.setProperty("-maven-release", "sources;path=\"testresources/src\",javadoc;packages=all");
 			File jar = IO.getFile("testresources/release.jar");
 			PutOptions options = new PutOptions();
 			options.context = context;
@@ -731,29 +731,25 @@ public class MavenBndRepoTest extends TestCase {
 		if (override != null)
 			config.putAll(override);
 
-		domain.addBasicPlugin(new ProgressPlugin() {
+		domain.addBasicPlugin((ProgressPlugin) (name, size) -> {
+			System.out.println("Starting " + name);
+			return new Task() {
 
-			@Override
-			public Task startTask(final String name, int size) {
-				System.out.println("Starting " + name);
-				return new Task() {
+				@Override
+				public void worked(int units) {
+					System.out.println("Worked " + name + " " + units);
+				}
 
-					@Override
-					public void worked(int units) {
-						System.out.println("Worked " + name + " " + units);
-					}
+				@Override
+				public void done(String message, Throwable e) {
+					System.out.println("Done " + name + " " + message + " " + e);
+				}
 
-					@Override
-					public void done(String message, Throwable e) {
-						System.out.println("Done " + name + " " + message + " " + e);
-					}
-
-					@Override
-					public boolean isCanceled() {
-						return false;
-					}
-				};
-			}
+				@Override
+				public boolean isCanceled() {
+					return false;
+				}
+			};
 		});
 		domain.setTrace(true);
 

@@ -18,9 +18,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.wizard.WizardPage;
@@ -43,197 +41,195 @@ import org.osgi.framework.Bundle;
 import bndtools.Plugin;
 
 public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
-    private static final ILogger logger = Logger.getLogger(AbstractTemplateSelectionWizardPage.class);
+	private static final ILogger			logger			= Logger
+		.getLogger(AbstractTemplateSelectionWizardPage.class);
 
-    public static final String PROP_ELEMENT = "selectedElement";
-    protected final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+	public static final String				PROP_ELEMENT	= "selectedElement";
+	protected final PropertyChangeSupport	propSupport		= new PropertyChangeSupport(this);
 
-    private Tree tree;
-    private TreeViewer viewer;
-    private ScrolledFormText txtDescription;
+	private Tree							tree;
+	private TreeViewer						viewer;
+	private ScrolledFormText				txtDescription;
 
-    private IConfigurationElement[] elements;
-    private IConfigurationElement selectedElement = null;
+	private IConfigurationElement[]			elements;
+	private IConfigurationElement			selectedElement	= null;
 
-    private boolean shown = false;
+	private boolean							shown			= false;
 
-    protected AbstractTemplateSelectionWizardPage(String pageName) {
-        super(pageName);
-    }
+	protected AbstractTemplateSelectionWizardPage(String pageName) {
+		super(pageName);
+	}
 
-    @Override
-    public void createControl(Composite parent) {
-        Composite container = new Composite(parent, SWT.NULL);
+	@Override
+	public void createControl(Composite parent) {
+		Composite container = new Composite(parent, SWT.NULL);
 
-        setControl(container);
-        container.setLayout(new GridLayout(1, false));
+		setControl(container);
+		container.setLayout(new GridLayout(1, false));
 
-        new Label(container, SWT.NONE).setText("Select Template:");
+		new Label(container, SWT.NONE).setText("Select Template:");
 
-        tree = new Tree(container, SWT.BORDER | SWT.FULL_SELECTION);
-        GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_table.heightHint = 100;
-        tree.setLayoutData(gd_table);
+		tree = new Tree(container, SWT.BORDER | SWT.FULL_SELECTION);
+		GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		gd_table.heightHint = 100;
+		tree.setLayoutData(gd_table);
 
-        viewer = new TreeViewer(tree);
+		viewer = new TreeViewer(tree);
 
-        Label lblNewLabel = new Label(container, SWT.NONE);
-        lblNewLabel.setText("Description:");
+		Label lblNewLabel = new Label(container, SWT.NONE);
+		lblNewLabel.setText("Description:");
 
-        Composite cmpDescription = new Composite(container, SWT.BORDER);
-        cmpDescription.setBackground(tree.getBackground());
+		Composite cmpDescription = new Composite(container, SWT.BORDER);
+		cmpDescription.setBackground(tree.getBackground());
 
-        txtDescription = new ScrolledFormText(cmpDescription, SWT.V_SCROLL | SWT.H_SCROLL, false);
-        FormText formText = new FormText(txtDescription, SWT.NO_FOCUS);
-        txtDescription.setFormText(formText);
-        txtDescription.setBackground(tree.getBackground());
-        formText.setBackground(tree.getBackground());
-        formText.setForeground(tree.getForeground());
-        formText.setFont("fixed", JFaceResources.getTextFont());
-        formText.setFont("italic", JFaceResources.getFontRegistry()
-            .getItalic(""));
+		txtDescription = new ScrolledFormText(cmpDescription, SWT.V_SCROLL | SWT.H_SCROLL, false);
+		FormText formText = new FormText(txtDescription, SWT.NO_FOCUS);
+		txtDescription.setFormText(formText);
+		txtDescription.setBackground(tree.getBackground());
+		formText.setBackground(tree.getBackground());
+		formText.setForeground(tree.getForeground());
+		formText.setFont("fixed", JFaceResources.getTextFont());
+		formText.setFont("italic", JFaceResources.getFontRegistry()
+			.getItalic(""));
 
-        GridData gd_cmpDescription = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd_cmpDescription.heightHint = 100;
-        cmpDescription.setLayoutData(gd_cmpDescription);
+		GridData gd_cmpDescription = new GridData(SWT.FILL, SWT.FILL, true, true);
+		gd_cmpDescription.heightHint = 100;
+		cmpDescription.setLayoutData(gd_cmpDescription);
 
-        GridLayout layout_cmpDescription = new GridLayout(1, false);
-        cmpDescription.setLayout(layout_cmpDescription);
+		GridLayout layout_cmpDescription = new GridLayout(1, false);
+		cmpDescription.setLayout(layout_cmpDescription);
 
-        GridData gd_txtDescription = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_txtDescription.heightHint = 100;
-        txtDescription.setLayoutData(gd_txtDescription);
+		GridData gd_txtDescription = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		gd_txtDescription.heightHint = 100;
+		txtDescription.setLayoutData(gd_txtDescription);
 
-        viewer.setContentProvider(new CategorisedPrioritisedConfigurationElementTreeContentProvider(true));
-        viewer.setLabelProvider(new ConfigElementLabelProvider(parent.getDisplay(), "icons/template.gif"));
+		viewer.setContentProvider(new CategorisedPrioritisedConfigurationElementTreeContentProvider(true));
+		viewer.setLabelProvider(new ConfigElementLabelProvider(parent.getDisplay(), "icons/template.gif"));
 
-        loadData();
+		loadData();
 
-        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                Object selected = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-                if (selected instanceof IConfigurationElement)
-                    setSelectionFromConfigElement((IConfigurationElement) selected);
-                else
-                    setSelectionFromConfigElement(null);
-                updateUI();
-            }
-        });
+		viewer.addSelectionChangedListener(event -> {
+			Object selected = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+			if (selected instanceof IConfigurationElement)
+				setSelectionFromConfigElement((IConfigurationElement) selected);
+			else
+				setSelectionFromConfigElement(null);
+			updateUI();
+		});
 
-        txtDescription.getFormText()
-            .addHyperlinkListener(new HyperlinkAdapter() {
-                @Override
-                public void linkActivated(HyperlinkEvent event) {
-                    IWorkbenchBrowserSupport browserSupport = PlatformUI.getWorkbench()
-                        .getBrowserSupport();
-                    try {
-                        IWebBrowser externalBrowser = browserSupport.getExternalBrowser();
-                        externalBrowser.openURL(new URL((String) event.getHref()));
-                    } catch (PartInitException e) {
-                        logger.logError("Error opening external browser.", e);
-                    } catch (MalformedURLException e) {
-                        // Ignore
-                    }
-                }
-            });
+		txtDescription.getFormText()
+			.addHyperlinkListener(new HyperlinkAdapter() {
+				@Override
+				public void linkActivated(HyperlinkEvent event) {
+					IWorkbenchBrowserSupport browserSupport = PlatformUI.getWorkbench()
+						.getBrowserSupport();
+					try {
+						IWebBrowser externalBrowser = browserSupport.getExternalBrowser();
+						externalBrowser.openURL(new URL((String) event.getHref()));
+					} catch (PartInitException e) {
+						logger.logError("Error opening external browser.", e);
+					} catch (MalformedURLException e) {
+						// Ignore
+					}
+				}
+			});
 
-        updateUI();
-    }
+		updateUI();
+	}
 
-    private void updateUI() {
-        if (selectedElement == null) {
-            setPageComplete(false);
-            setMessage("Select a template", IMessageProvider.INFORMATION);
-        } else {
-            setPageComplete(true);
-            setMessage(null);
-        }
-    }
+	private void updateUI() {
+		if (selectedElement == null) {
+			setPageComplete(false);
+			setMessage("Select a template", IMessageProvider.INFORMATION);
+		} else {
+			setPageComplete(true);
+			setMessage(null);
+		}
+	}
 
-    protected abstract IConfigurationElement[] loadConfigurationElements();
+	protected abstract IConfigurationElement[] loadConfigurationElements();
 
-    private void loadData() {
-        elements = loadConfigurationElements();
-        Arrays.sort(elements, new CategorisedConfigurationElementComparator(true));
+	private void loadData() {
+		elements = loadConfigurationElements();
+		Arrays.sort(elements, new CategorisedConfigurationElementComparator(true));
 
-        viewer.setInput(elements);
-        viewer.expandAll();
-    }
+		viewer.setInput(elements);
+		viewer.expandAll();
+	}
 
-    private void setSelectionFromConfigElement(IConfigurationElement element) {
-        showTemplateDescription(element);
+	private void setSelectionFromConfigElement(IConfigurationElement element) {
+		showTemplateDescription(element);
 
-        IConfigurationElement old = this.selectedElement;
-        this.selectedElement = element;
-        propSupport.firePropertyChange(PROP_ELEMENT, old, element);
-    }
+		IConfigurationElement old = this.selectedElement;
+		this.selectedElement = element;
+		propSupport.firePropertyChange(PROP_ELEMENT, old, element);
+	}
 
-    private void showTemplateDescription(IConfigurationElement element) {
-        String browserText = "";
-        if (element != null) {
-            browserText = "<form>No description available.</form>";
-            String name = element.getAttribute("name");
-            String htmlAttr = element.getAttribute("doc");
-            if (htmlAttr != null) {
-                String bsn = element.getContributor()
-                    .getName();
-                Bundle bundle = BundleUtils.findBundle(Plugin.getDefault()
-                    .getBundleContext(), bsn, null);
-                if (bundle != null) {
-                    URL htmlUrl = bundle.getResource(htmlAttr);
-                    if (htmlUrl == null)
-                        browserText = String.format("<form>No description for %s.</form>", name);
-                    else
-                        try {
-                            byte[] bytes = FileUtils.readFully(htmlUrl.openStream());
-                            browserText = new String(bytes, "UTF-8");
-                        } catch (IOException e) {
-                            logger.logError("Error reading template description document.", e);
-                        }
-                }
-            }
-        }
-        txtDescription.setText(browserText);
-    }
+	private void showTemplateDescription(IConfigurationElement element) {
+		String browserText = "";
+		if (element != null) {
+			browserText = "<form>No description available.</form>";
+			String name = element.getAttribute("name");
+			String htmlAttr = element.getAttribute("doc");
+			if (htmlAttr != null) {
+				String bsn = element.getContributor()
+					.getName();
+				Bundle bundle = BundleUtils.findBundle(Plugin.getDefault()
+					.getBundleContext(), bsn, null);
+				if (bundle != null) {
+					URL htmlUrl = bundle.getResource(htmlAttr);
+					if (htmlUrl == null)
+						browserText = String.format("<form>No description for %s.</form>", name);
+					else
+						try {
+							byte[] bytes = FileUtils.readFully(htmlUrl.openStream());
+							browserText = new String(bytes, "UTF-8");
+						} catch (IOException e) {
+							logger.logError("Error reading template description document.", e);
+						}
+				}
+			}
+		}
+		txtDescription.setText(browserText);
+	}
 
-    @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
+	@Override
+	public void setVisible(boolean visible) {
+		super.setVisible(visible);
 
-        if (visible && !shown) {
-            shown = true;
-            if (elements.length > 0) {
-                setSelectionFromConfigElement(elements[0]);
+		if (visible && !shown) {
+			shown = true;
+			if (elements.length > 0) {
+				setSelectionFromConfigElement(elements[0]);
 
-                ISelection selection = new StructuredSelection(elements[0]);
-                viewer.setSelection(selection);
-            }
-        }
-    }
+				ISelection selection = new StructuredSelection(elements[0]);
+				viewer.setSelection(selection);
+			}
+		}
+	}
 
-    @Override
-    public boolean isPageComplete() {
-        return shown && super.isPageComplete();
-    }
+	@Override
+	public boolean isPageComplete() {
+		return shown && super.isPageComplete();
+	}
 
-    public IConfigurationElement getSelectedElement() {
-        return selectedElement;
-    }
+	public IConfigurationElement getSelectedElement() {
+		return selectedElement;
+	}
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propSupport.addPropertyChangeListener(listener);
-    }
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		propSupport.addPropertyChangeListener(listener);
+	}
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propSupport.removePropertyChangeListener(listener);
-    }
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		propSupport.removePropertyChangeListener(listener);
+	}
 
-    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        propSupport.addPropertyChangeListener(propertyName, listener);
-    }
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		propSupport.addPropertyChangeListener(propertyName, listener);
+	}
 
-    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        propSupport.removePropertyChangeListener(propertyName, listener);
-    }
+	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		propSupport.removePropertyChangeListener(propertyName, listener);
+	}
 }

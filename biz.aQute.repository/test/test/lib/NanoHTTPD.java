@@ -99,7 +99,7 @@ public class NanoHTTPD {
 	 * Override this to customize the server.
 	 * <p>
 	 * (By default, this delegates to serveFile() and allows directory listing.)
-	 * 
+	 *
 	 * @param uri Percent-decoded URI without parameters, for example
 	 *            "/index.cgi"
 	 * @param method "GET", "POST" etc.

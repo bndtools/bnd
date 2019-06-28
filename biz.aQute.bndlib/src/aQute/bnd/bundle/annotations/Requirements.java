@@ -1,6 +1,6 @@
 /*
  * Copyright (c) OSGi Alliance (2016). All Rights Reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,13 +24,13 @@ import java.lang.annotation.Target;
 
 /**
  * Container annotation for repeated {@link Requirement} annotations.
- * 
+ *
  * @author $Id$
  */
 @Documented
 @Retention(RetentionPolicy.CLASS)
 @Target({
-		ElementType.TYPE, ElementType.PACKAGE
+	ElementType.TYPE, ElementType.PACKAGE
 })
 public @interface Requirements {
 	/**

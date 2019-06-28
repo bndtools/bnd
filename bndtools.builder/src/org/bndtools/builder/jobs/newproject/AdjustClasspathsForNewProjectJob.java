@@ -24,49 +24,50 @@ import aQute.bnd.build.Project;
 import bndtools.central.Central;
 
 class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
-    private static final ILogger logger = Logger.getLogger(AdjustClasspathsForNewProjectJob.class);
+	private static final ILogger	logger	= Logger.getLogger(AdjustClasspathsForNewProjectJob.class);
 
-    private final List<IProject> addedProjects;
+	private final List<IProject>	addedProjects;
 
-    AdjustClasspathsForNewProjectJob(List<IProject> addedProjects) {
-        super("Adjusting classpaths for new projects");
-        this.addedProjects = addedProjects;
-    }
+	AdjustClasspathsForNewProjectJob(List<IProject> addedProjects) {
+		super("Adjusting classpaths for new projects");
+		this.addedProjects = addedProjects;
+	}
 
-    @Override
-    public IStatus runInWorkspace(IProgressMonitor monitor) {
-        List<Project> projects;
-        SubMonitor progress;
-        try {
-            projects = new ArrayList<Project>(Central.getWorkspace()
-                .getAllProjects());
-            progress = SubMonitor.convert(monitor, addedProjects.size());
-        } catch (Exception e) {
-            return Status.CANCEL_STATUS;
-        }
+	@Override
+	public IStatus runInWorkspace(IProgressMonitor monitor) {
+		List<Project> projects;
+		SubMonitor progress;
+		try {
+			projects = new ArrayList<>(Central.getWorkspace()
+				.getAllProjects());
+			progress = SubMonitor.convert(monitor, addedProjects.size());
+		} catch (Exception e) {
+			return Status.CANCEL_STATUS;
+		}
 
-        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace()
-            .getRoot();
-        for (Project project : projects) {
-            IProject eclipseProject = WorkspaceUtils.findOpenProject(wsroot, project);
-            if (eclipseProject != null && addedProjects.contains(eclipseProject)) {
-                try {
-                    project.propertiesChanged();
-                    IJavaProject javaProject = JavaCore.create(eclipseProject);
-                    if (javaProject != null) {
-                        BndContainerInitializer.requestClasspathContainerUpdate(javaProject);
-                    }
-                } catch (CoreException e) {
-                    IStatus result = new Status(e.getStatus()
-                        .getSeverity(), BndtoolsBuilder.PLUGIN_ID, "Failure to update classpath for project " + eclipseProject, e);
-                    logger.logStatus(result);
-                }
-                progress.worked(1);
-            }
-            if (progress.isCanceled())
-                return Status.CANCEL_STATUS;
-        }
-        return Status.OK_STATUS;
-    }
+		IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace()
+			.getRoot();
+		for (Project project : projects) {
+			IProject eclipseProject = WorkspaceUtils.findOpenProject(wsroot, project);
+			if (eclipseProject != null && addedProjects.contains(eclipseProject)) {
+				try {
+					project.propertiesChanged();
+					IJavaProject javaProject = JavaCore.create(eclipseProject);
+					if (javaProject != null) {
+						BndContainerInitializer.requestClasspathContainerUpdate(javaProject);
+					}
+				} catch (CoreException e) {
+					IStatus result = new Status(e.getStatus()
+						.getSeverity(), BndtoolsBuilder.PLUGIN_ID,
+						"Failure to update classpath for project " + eclipseProject, e);
+					logger.logStatus(result);
+				}
+				progress.worked(1);
+			}
+			if (progress.isCanceled())
+				return Status.CANCEL_STATUS;
+		}
+		return Status.OK_STATUS;
+	}
 
 }

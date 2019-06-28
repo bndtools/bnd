@@ -20,7 +20,7 @@ public class BeforeAfterTest {
 		.debug();
 
 	@Service
-	Launchpad			framework;
+	Launchpad				framework;
 
 	@Before
 	public void before() {

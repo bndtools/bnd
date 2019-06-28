@@ -34,7 +34,7 @@ public class SocketRedirector implements Redirector {
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param agentServer the agent we're working for
 	 * @param port the shell port
 	 */

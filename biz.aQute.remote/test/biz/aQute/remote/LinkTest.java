@@ -105,7 +105,7 @@ public class LinkTest extends TestCase {
 
 	/**
 	 * Test transfer
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -132,7 +132,7 @@ public class LinkTest extends TestCase {
 
 	/**
 	 * Test simple
-	 * 
+	 *
 	 * @throws InterruptedException
 	 */
 
@@ -162,7 +162,7 @@ public class LinkTest extends TestCase {
 
 	/**
 	 * Only close in
-	 * 
+	 *
 	 * @throws InterruptedException
 	 */
 

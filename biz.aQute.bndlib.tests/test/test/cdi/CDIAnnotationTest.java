@@ -52,8 +52,7 @@ public class CDIAnnotationTest {
 				fail();
 			Attributes a = getAttr(jar);
 			checkProvides(a);
-			checkRequires(a,
-				Arrays.asList("test.cdi.beans_a.AppScopedBean"));
+			checkRequires(a, Arrays.asList("test.cdi.beans_a.AppScopedBean"));
 		}
 	}
 
@@ -118,9 +117,10 @@ public class CDIAnnotationTest {
 				fail();
 			Attributes a = getAttr(jar);
 			checkProvides(a);
-			checkRequires(a, Arrays.asList("test.cdi.beans_e.AppScopedBean", "test.cdi.beans_e.SessionScopedBean",
-				"test.cdi.beans_e.ComponentA", "test.cdi.beans_e.DecoratorA", "test.cdi.beans_e.InterceptorA",
-				"test.cdi.beans_e.DependentBean", "test.cdi.beans_e.ComponentScopedBean"));
+			checkRequires(a,
+				Arrays.asList("test.cdi.beans_e.AppScopedBean", "test.cdi.beans_e.SessionScopedBean",
+					"test.cdi.beans_e.ComponentA", "test.cdi.beans_e.DecoratorA", "test.cdi.beans_e.InterceptorA",
+					"test.cdi.beans_e.DependentBean", "test.cdi.beans_e.ComponentScopedBean"));
 		}
 	}
 
@@ -179,8 +179,7 @@ public class CDIAnnotationTest {
 				"test.cdi.beans_f.Foo"
 			}, new String[] {
 				"test.cdi.beans_f.Blah", "test.cdi.beans_f.Bar", "test.cdi.beans_f.Fee"
-			}
-			);
+			});
 			checkRequires(a, Arrays.asList("test.cdi.beans_f.AppScopedBean", "test.cdi.beans_f.ServiceB",
 				"test.cdi.beans_f.ServiceC"));
 		}
@@ -391,8 +390,7 @@ public class CDIAnnotationTest {
 		if (beans != null) {
 			Attrs attr = header.get("osgi.extender");
 			assertNotNull(attr);
-			assertEquals("(&(osgi.extender=osgi.cdi)(version>=1.0.0)(!(version>=2.0.0)))",
-				attr.get("filter:"));
+			assertEquals("(&(osgi.extender=osgi.cdi)(version>=1.0.0)(!(version>=2.0.0)))", attr.get("filter:"));
 			assertThat(attr.getTyped("beans")).isInstanceOf(List.class)
 				.asList()
 				.containsAll(beans)

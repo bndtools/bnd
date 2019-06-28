@@ -37,7 +37,7 @@ public class MakeTest extends TestCase {
 
 	/**
 	 * Check if we can get a resource through the make copy facility.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testCopy() throws Exception {
@@ -57,7 +57,7 @@ public class MakeTest extends TestCase {
 
 	/**
 	 * Check if we can create a JAR recursively
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testJarInJarInJar() throws Exception {
@@ -84,7 +84,7 @@ public class MakeTest extends TestCase {
 
 	/**
 	 * Check that inner jar does not include filtered headers
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testFilteredHeader() throws Exception {
@@ -119,7 +119,7 @@ public class MakeTest extends TestCase {
 	/**
 	 * Check if we can create a jar on demand through the make facility with a
 	 * new name.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testComplexOnDemand() throws Exception {

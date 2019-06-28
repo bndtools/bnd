@@ -5,6 +5,6 @@ import java.net.URI;
 
 public interface BundleLocator {
 
-    File locate(String bsn, String hash, String algo, URI location) throws Exception;
+	File locate(String bsn, String hash, String algo, URI location) throws Exception;
 
 }

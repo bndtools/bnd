@@ -5,5 +5,4 @@ import aQute.bnd.annotation.spi.ServiceConsumer;
 import test.annotationheaders.spi.SPIService;
 
 @ServiceConsumer(value = SPIService.class, resolution = Resolution.OPTIONAL)
-public class SPIServiceFactory {
-}
+public class SPIServiceFactory {}

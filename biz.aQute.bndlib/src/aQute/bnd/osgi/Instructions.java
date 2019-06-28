@@ -279,7 +279,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 	 * base directory, which will match all files in that directory against the
 	 * specification or you can use literal instructions to get files from
 	 * anywhere.
-	 * 
+	 *
 	 * @param base The directory to list files from.
 	 * @return The map that links files to attributes
 	 */
@@ -329,7 +329,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 	 * Match the instruction against the parameters and merge the attributes if
 	 * matches. Remove any negated instructions. Literal unmatched instructions
 	 * are added
-	 * 
+	 *
 	 * @param parameters
 	 */
 	public void decorate(Parameters parameters) {

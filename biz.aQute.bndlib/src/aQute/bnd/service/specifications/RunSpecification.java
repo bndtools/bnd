@@ -24,11 +24,12 @@ public class RunSpecification implements Cloneable {
 	public Map<String, String>				properties				= new LinkedHashMap<>();
 	public List<String>						errors					= new ArrayList<>();
 	public List<String>						runfw					= new ArrayList<>();
-	public Map<String, String>				instructions			= new HashMap<>();;
+	public Map<String, String>				instructions			= new HashMap<>();
 
 	/**
 	 * Create a clone of this specification.
 	 */
+	@Override
 	public RunSpecification clone() {
 		try {
 			return (RunSpecification) super.clone();
@@ -40,7 +41,7 @@ public class RunSpecification implements Cloneable {
 	/**
 	 * Merge this specification with the given spec. The given spec will
 	 * override the values of this specification if set.
-	 * 
+	 *
 	 * @param spec the spec that overrides the values in this spec.
 	 */
 	public void mergeWith(RunSpecification spec) {

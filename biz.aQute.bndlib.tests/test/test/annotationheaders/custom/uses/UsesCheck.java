@@ -9,8 +9,7 @@ import org.osgi.annotation.bundle.Capability;
 @Meta(uses = {
 	Serializable.class, Capability.class
 })
-public class UsesCheck {
-}
+public class UsesCheck {}
 
 @Capability(attribute = {
 	USES_MACRO

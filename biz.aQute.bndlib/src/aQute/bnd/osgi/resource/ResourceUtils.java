@@ -104,7 +104,7 @@ public class ResourceUtils {
 				return ((ResourceImpl) o1).compareTo(o2);
 			} else {
 
-		}
+			}
 
 			return o1.toString()
 				.compareTo(o2.toString());
@@ -116,7 +116,7 @@ public class ResourceUtils {
 	private static final Converter						cnv							= new Converter()
 		.hook(Version.class, (dest, o) -> toVersion(o));
 
-	public static interface IdentityCapability extends Capability {
+	public interface IdentityCapability extends Capability {
 		public enum Type {
 			bundle(IdentityNamespace.TYPE_BUNDLE),
 			fragment(IdentityNamespace.TYPE_FRAGMENT),
@@ -540,7 +540,7 @@ public class ResourceUtils {
 	/**
 	 * Return all resources from a repository as returned by the wildcard
 	 * requirement, see {@link #createWildcardRequirement()}
-	 * 
+	 *
 	 * @param repository the repository to use
 	 * @return a set of resources from the repository.
 	 */
@@ -554,7 +554,7 @@ public class ResourceUtils {
 	/**
 	 * Compare two resources. This can be used to act as a comparator. The
 	 * comparison is first done on name and then version.
-	 * 
+	 *
 	 * @param a the left resource
 	 * @param b the right resource
 	 * @return 0 if equal bame and version, 1 if left has a higher name or same
@@ -596,12 +596,12 @@ public class ResourceUtils {
 
 	/**
 	 * Sort the resources by symbolic name and version
-	 * 
+	 *
 	 * @param resources the set of resources to sort
 	 * @return a sorted set of resources
 	 */
 	public static List<Resource> sortByNameVersion(Collection<Resource> resources) {
-		ArrayList<Resource> sorted = new ArrayList<Resource>(resources);
+		ArrayList<Resource> sorted = new ArrayList<>(resources);
 		Collections.sort(sorted, ResourceUtils::compareTo);
 		return sorted;
 	}

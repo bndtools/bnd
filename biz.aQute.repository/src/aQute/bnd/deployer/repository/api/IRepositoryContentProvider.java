@@ -20,7 +20,7 @@ public interface IRepositoryContentProvider {
 
 	/**
 	 * Parse the index provided via the input stream.
-	 * 
+	 *
 	 * @param stream The stream that provides the index data.
 	 * @param baseUri
 	 * @param processor
@@ -33,7 +33,7 @@ public interface IRepositoryContentProvider {
 	 * Check the stream for compatibility with this provider.
 	 * </p>
 	 * </ul>
-	 * 
+	 *
 	 * @param name The name of the stream, which may be the file name, or
 	 *            {@code null}. Providers can use this as a hint to the nature
 	 *            of the file.
@@ -52,7 +52,7 @@ public interface IRepositoryContentProvider {
 	 * Generate a new repository index to a stream. Clients must not call this
 	 * method if the provider returns {@code false} from
 	 * {@link #supportsGeneration()}.
-	 * 
+	 *
 	 * @param files The files to be indexed.
 	 * @param output The output stream, on which the index should be written.
 	 * @param repoName The name of the repository, which may be entered into the
@@ -73,7 +73,7 @@ public interface IRepositoryContentProvider {
 	 * Get the default name for an index file supported by this provider;
 	 * however the actual index file may take a different name if it is
 	 * overridden by the user or build settings.
-	 * 
+	 *
 	 * @param pretty Whether the pretty-printing option will be used. Providers
 	 *            may return a different default file name depending on this
 	 *            value, e.g. a non-pretty file may be compressed with the

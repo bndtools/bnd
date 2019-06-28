@@ -9,7 +9,7 @@ public enum Delta {
 	// ORDER IS IMPORTANT FOR TRANSITIONS TABLE!
 
 	/**
-	 * 
+	 *
 	 */
 	IGNORED, // for all
 	UNCHANGED,

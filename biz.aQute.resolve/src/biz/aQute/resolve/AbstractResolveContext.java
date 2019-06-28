@@ -297,7 +297,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	/**
 	 * Return any capabilities from the given repo. This method will filter the
 	 * blacklist.
-	 * 
+	 *
 	 * @param repo The repo to fetch requirements from
 	 * @param requirement the requirement
 	 * @return a list of caps for the asked requirement minus and capabilities
@@ -712,7 +712,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	/**
 	 * Get the framework repository from the
-	 * 
+	 *
 	 * @param repos
 	 * @param bsn
 	 */
@@ -737,7 +737,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	/**
 	 * Add a framework resource to the system resource builder
-	 * 
+	 *
 	 * @param system the system resource being build up
 	 * @param framework the framework resource
 	 * @throws Exception
@@ -884,7 +884,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	/**
 	 * Load a bnd path from the OSGi repositories. We assume the highest version
 	 * allowed. This mimics Project.getBundles()
-	 * 
+	 *
 	 * @param system
 	 * @param path
 	 * @param what

@@ -159,8 +159,7 @@ public enum EE {
 			packages = new Parameters(packagesProp);
 			String modulesProp = props.getProperty("jpms.modules");
 			modules = new Parameters(modulesProp);
-		}
-		catch (IOException ioe) {
+		} catch (IOException ioe) {
 			throw Exceptions.duck(ioe);
 		}
 	}

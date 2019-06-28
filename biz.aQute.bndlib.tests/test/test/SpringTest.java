@@ -8,7 +8,7 @@ public class SpringTest extends TestCase {
 	/**
 	 * Basic test to see if the analzyer works. We read the sprint-test1.xml and
 	 * see if we can detect all the different packages.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testSimple() throws Exception {
@@ -33,7 +33,7 @@ public class SpringTest extends TestCase {
 	 * Now check if the plugin works, we create a dummy bundle and put the
 	 * spring-test1.xml in the appropriate place. This means that the
 	 * import-header contains all the the packages.
-	 * 
+	 *
 	 * @throws Exception public void testPlugin() throws Exception { Builder b =
 	 *             new Builder(); b.setProperty(Analyzer.INCLUDE_RESOURCE,
 	 *             "META-INF/spring/one.xml=test/test/spring-test1.xml");

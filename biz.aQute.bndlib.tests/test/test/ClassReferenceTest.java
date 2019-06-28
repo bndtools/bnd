@@ -26,7 +26,7 @@ public class ClassReferenceTest extends TestCase {
 	 * class contains a javax.swing.Box.class reference Prior to Java 1.5, this
 	 * was done in a silly way that is handled specially. After 1.5 it is a
 	 * normal reference.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 

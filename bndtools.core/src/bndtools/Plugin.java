@@ -47,246 +47,230 @@ import bndtools.services.WorkspaceURLStreamHandlerService;
 
 public class Plugin extends AbstractUIPlugin {
 
-    private static final ILogger logger = Logger.getLogger(Plugin.class);
+	private static final ILogger									logger				= Logger
+		.getLogger(Plugin.class);
 
-    public static final String PLUGIN_ID = "bndtools.core";
-    public static final String BND_EDITOR_ID = PLUGIN_ID + ".bndEditor";
-    public static final String JPM_BROWSER_VIEW_ID = "org.bndtools.core.views.jpm.JPMBrowserView";
+	public static final String										PLUGIN_ID			= "bndtools.core";
+	public static final String										BND_EDITOR_ID		= PLUGIN_ID + ".bndEditor";
+	public static final String										JPM_BROWSER_VIEW_ID	= "org.bndtools.core.views.jpm.JPMBrowserView";
 
-    public static final Version DEFAULT_VERSION = new Version(0, 0, 0);
+	public static final Version										DEFAULT_VERSION		= new Version(0, 0, 0);
 
-    public static final String BNDTOOLS_NATURE = "bndtools.core.bndnature";
+	public static final String										BNDTOOLS_NATURE		= "bndtools.core.bndnature";
 
-    private static volatile Plugin plugin;
+	private static volatile Plugin									plugin;
 
-    private BundleContext bundleContext;
-    private Activator bndActivator;
-    private final List<IStartupParticipant> startupParticipants = new LinkedList<IStartupParticipant>();
+	private BundleContext											bundleContext;
+	private Activator												bndActivator;
+	private final List<IStartupParticipant>							startupParticipants	= new LinkedList<>();
 
-    private volatile ServiceTracker<IWorkspace, IWorkspace> workspaceTracker;
-    private volatile ServiceRegistration<URLStreamHandlerService> urlHandlerReg;
-    private volatile HeadlessBuildManagerTracker headlessBuildManager;
-    private volatile VersionControlIgnoresManagerTracker versionControlIgnoresManager;
+	private volatile ServiceTracker<IWorkspace, IWorkspace>			workspaceTracker;
+	private volatile ServiceRegistration<URLStreamHandlerService>	urlHandlerReg;
+	private volatile HeadlessBuildManagerTracker					headlessBuildManager;
+	private volatile VersionControlIgnoresManagerTracker			versionControlIgnoresManager;
 
-    private volatile ScheduledExecutorService scheduler;
+	private volatile ScheduledExecutorService						scheduler;
 
-    @Override
-    public void start(BundleContext context) throws Exception {
-        registerWorkspaceURLHandler(context);
-        super.start(context);
-        plugin = this;
-        this.bundleContext = context;
+	@Override
+	public void start(BundleContext context) throws Exception {
+		registerWorkspaceURLHandler(context);
+		super.start(context);
+		plugin = this;
+		this.bundleContext = context;
 
-        scheduler = Executors.newScheduledThreadPool(1);
+		scheduler = Executors.newScheduledThreadPool(1);
 
-        bndActivator = new Activator();
-        bndActivator.start(context);
+		bndActivator = new Activator();
+		bndActivator.start(context);
 
-        versionControlIgnoresManager = new VersionControlIgnoresManagerTracker(context);
-        versionControlIgnoresManager.open();
+		versionControlIgnoresManager = new VersionControlIgnoresManagerTracker(context);
+		versionControlIgnoresManager.open();
 
-        headlessBuildManager = new HeadlessBuildManagerTracker(context);
-        headlessBuildManager.open();
+		headlessBuildManager = new HeadlessBuildManagerTracker(context);
+		headlessBuildManager.open();
 
-        registerWorkspaceServiceFactory(context);
+		registerWorkspaceServiceFactory(context);
 
-        runStartupParticipants();
-    }
+		runStartupParticipants();
+	}
 
-    private static void registerWorkspaceServiceFactory(BundleContext context) {
-        Dictionary<String, Object> props = new Hashtable<String, Object>();
-        props.put("name", "bndtools");
+	private static void registerWorkspaceServiceFactory(BundleContext context) {
+		Dictionary<String, Object> props = new Hashtable<>();
+		props.put("name", "bndtools");
 
-        context.registerService(Workspace.class.getName(), new WorkspaceServiceFactory(), props);
-    }
+		context.registerService(Workspace.class.getName(), new WorkspaceServiceFactory(), props);
+	}
 
-    private void registerWorkspaceURLHandler(BundleContext context) {
-        workspaceTracker = new ServiceTracker<IWorkspace, IWorkspace>(context, IWorkspace.class.getName(), null);
-        workspaceTracker.open();
+	private void registerWorkspaceURLHandler(BundleContext context) {
+		workspaceTracker = new ServiceTracker<>(context, IWorkspace.class.getName(), null);
+		workspaceTracker.open();
 
-        Dictionary<String, Object> props = new Hashtable<String, Object>();
-        props.put(URLConstants.URL_HANDLER_PROTOCOL, new String[] {
-            WorkspaceURLStreamHandlerService.PROTOCOL
-        });
-        urlHandlerReg = context.registerService(URLStreamHandlerService.class, new WorkspaceURLStreamHandlerService(workspaceTracker), props);
-    }
+		Dictionary<String, Object> props = new Hashtable<>();
+		props.put(URLConstants.URL_HANDLER_PROTOCOL, new String[] {
+			WorkspaceURLStreamHandlerService.PROTOCOL
+		});
+		urlHandlerReg = context.registerService(URLStreamHandlerService.class,
+			new WorkspaceURLStreamHandlerService(workspaceTracker), props);
+	}
 
-    private void runStartupParticipants() {
-        IConfigurationElement[] elements = Platform.getExtensionRegistry()
-            .getConfigurationElementsFor(PLUGIN_ID, "bndtoolsStartupParticipant");
+	private void runStartupParticipants() {
+		IConfigurationElement[] elements = Platform.getExtensionRegistry()
+			.getConfigurationElementsFor(PLUGIN_ID, "bndtoolsStartupParticipant");
 
-        for (IConfigurationElement element : elements) {
-            try {
-                Object obj = element.createExecutableExtension("class");
-                if (obj instanceof Runnable) {
-                    Runnable participant = (Runnable) obj;
-                    participant.run();
-                } else if (obj instanceof IStartupParticipant) {
-                    IStartupParticipant isp = (IStartupParticipant) obj;
-                    startupParticipants.add(isp);
-                    isp.start();
-                }
-            } catch (CoreException e) {
-                logger.logError("Error executing startup participant", e);
-            }
-        }
-    }
+		for (IConfigurationElement element : elements) {
+			try {
+				Object obj = element.createExecutableExtension("class");
+				if (obj instanceof Runnable) {
+					Runnable participant = (Runnable) obj;
+					participant.run();
+				} else if (obj instanceof IStartupParticipant) {
+					IStartupParticipant isp = (IStartupParticipant) obj;
+					startupParticipants.add(isp);
+					isp.start();
+				}
+			} catch (CoreException e) {
+				logger.logError("Error executing startup participant", e);
+			}
+		}
+	}
 
-    private void stopStartupParticipants() {
-        for (IStartupParticipant isp : startupParticipants) {
-            try {
-                isp.stop();
-            } catch (Exception e) {
-                logger.logError("Error stopping startup participant", e);
-            }
-        }
-    }
+	private void stopStartupParticipants() {
+		for (IStartupParticipant isp : startupParticipants) {
+			try {
+				isp.stop();
+			} catch (Exception e) {
+				logger.logError("Error stopping startup participant", e);
+			}
+		}
+	}
 
-    private void unregisterWorkspaceURLHandler() {
-        urlHandlerReg.unregister();
-        workspaceTracker.close();
-    }
+	private void unregisterWorkspaceURLHandler() {
+		urlHandlerReg.unregister();
+		workspaceTracker.close();
+	}
 
-    @Override
-    public void stop(BundleContext context) throws Exception {
-        stopStartupParticipants();
+	@Override
+	public void stop(BundleContext context) throws Exception {
+		stopStartupParticipants();
 
-        bndActivator.stop(context);
-        headlessBuildManager.close();
-        versionControlIgnoresManager.close();
-        this.bundleContext = null;
-        plugin = null;
-        super.stop(context);
-        unregisterWorkspaceURLHandler();
-        scheduler.shutdown();
-    }
+		bndActivator.stop(context);
+		headlessBuildManager.close();
+		versionControlIgnoresManager.close();
+		this.bundleContext = null;
+		plugin = null;
+		super.stop(context);
+		unregisterWorkspaceURLHandler();
+		scheduler.shutdown();
+	}
 
-    public static Plugin getDefault() {
-        return plugin;
-    }
+	public static Plugin getDefault() {
+		return plugin;
+	}
 
-    public BundleContext getBundleContext() {
-        return bundleContext;
-    }
+	public BundleContext getBundleContext() {
+		return bundleContext;
+	}
 
-    public static void report(boolean warnings, @SuppressWarnings("unused") boolean acknowledge, Processor reporter, final String title, final String extra) {
-        if (reporter.getErrors()
-            .size() > 0
-            || (warnings && reporter.getWarnings()
-                .size() > 0)) {
-            final StringBuffer sb = new StringBuffer();
-            sb.append("\n");
-            if (reporter.getErrors()
-                .size() > 0) {
-                sb.append("[Errors]\n");
-                for (String msg : reporter.getErrors()) {
-                    sb.append(msg);
-                    sb.append("\n");
-                }
-            }
-            sb.append("\n");
-            if (reporter.getWarnings()
-                .size() > 0) {
-                sb.append("[Warnings]\n");
-                for (String msg : reporter.getWarnings()) {
-                    sb.append(msg);
-                    sb.append("\n");
-                }
-            }
-            final Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, sb.toString(), null);
-            reporter.clear();
+	public static void report(boolean warnings, @SuppressWarnings("unused") boolean acknowledge, Processor reporter,
+		final String title, final String extra) {
+		if (reporter.getErrors()
+			.size() > 0
+			|| (warnings && reporter.getWarnings()
+				.size() > 0)) {
+			final StringBuffer sb = new StringBuffer();
+			sb.append("\n");
+			if (reporter.getErrors()
+				.size() > 0) {
+				sb.append("[Errors]\n");
+				for (String msg : reporter.getErrors()) {
+					sb.append(msg);
+					sb.append("\n");
+				}
+			}
+			sb.append("\n");
+			if (reporter.getWarnings()
+				.size() > 0) {
+				sb.append("[Warnings]\n");
+				for (String msg : reporter.getWarnings()) {
+					sb.append(msg);
+					sb.append("\n");
+				}
+			}
+			final Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, sb.toString(), null);
+			reporter.clear();
 
-            async(new Runnable() {
-                @Override
-                public void run() {
-                    ErrorDialog.openError(null, title, title + "\n" + extra, s);
-                }
-            });
+			async(() -> ErrorDialog.openError(null, title, title + "\n" + extra, s));
 
-        } else {
-            message(title + " : ok");
-        }
-    }
+		} else {
+			message(title + " : ok");
+		}
+	}
 
-    public static void message(final String msg) {
-        async(new Runnable() {
-            @Override
-            public void run() {
-                MessageDialog.openInformation(null, "Bnd", msg);
-            }
-        });
-    }
+	public static void message(final String msg) {
+		async(() -> MessageDialog.openInformation(null, "Bnd", msg));
+	}
 
-    static void async(Runnable run) {
-        if (Display.getCurrent() == null) {
-            Display.getDefault()
-                .asyncExec(run);
-        } else
-            run.run();
-    }
+	static void async(Runnable run) {
+		if (Display.getCurrent() == null) {
+			Display.getDefault()
+				.asyncExec(run);
+		} else
+			run.run();
+	}
 
-    public static void error(List<String> errors) {
-        final StringBuffer sb = new StringBuffer();
-        for (String msg : errors) {
-            sb.append(msg);
-            sb.append("\n");
-        }
+	public static void error(List<String> errors) {
+		final StringBuffer sb = new StringBuffer();
+		for (String msg : errors) {
+			sb.append(msg);
+			sb.append("\n");
+		}
 
-        async(new Runnable() {
-            @Override
-            public void run() {
-                Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
-                ErrorDialog.openError(null, "Errors during bundle generation", sb.toString(), s);
-            }
-        });
-    }
+		async(() -> {
+			Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
+			ErrorDialog.openError(null, "Errors during bundle generation", sb.toString(), s);
+		});
+	}
 
-    static final AtomicBoolean busy = new AtomicBoolean(false);
+	static final AtomicBoolean busy = new AtomicBoolean(false);
 
-    public void error(final String msg, final Throwable t) {
-        Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, msg, t);
-        getLog().log(s);
-        async(new Runnable() {
-            @Override
-            public void run() {
-                if (!busy.compareAndSet(false, true)) {
-                    Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
-                    ErrorDialog.openError(null, "Errors during bundle generation", msg + " " + t.getMessage(), s);
+	public void error(final String msg, final Throwable t) {
+		Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, msg, t);
+		getLog().log(s);
+		async(() -> {
+			if (!busy.compareAndSet(false, true)) {
+				Status s1 = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
+				ErrorDialog.openError(null, "Errors during bundle generation", msg + " " + t.getMessage(), s1);
 
-                    busy.set(false);
-                }
-            }
-        });
-    }
+				busy.set(false);
+			}
+		});
+	}
 
-    public static void warning(List<String> errors) {
-        final StringBuffer sb = new StringBuffer();
-        for (String msg : errors) {
-            sb.append(msg);
-            sb.append("\n");
-        }
-        async(new Runnable() {
-            @Override
-            public void run() {
-                Status s = new Status(IStatus.WARNING, PLUGIN_ID, 0, "", null);
-                ErrorDialog.openError(null, "Warnings during bundle generation", sb.toString(), s);
-            }
-        });
-    }
+	public static void warning(List<String> errors) {
+		final StringBuffer sb = new StringBuffer();
+		for (String msg : errors) {
+			sb.append(msg);
+			sb.append("\n");
+		}
+		async(() -> {
+			Status s = new Status(IStatus.WARNING, PLUGIN_ID, 0, "", null);
+			ErrorDialog.openError(null, "Warnings during bundle generation", sb.toString(), s);
+		});
+	}
 
-    public static ImageDescriptor imageDescriptorFromPlugin(String imageFilePath) {
-        return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, imageFilePath);
-    }
+	public static ImageDescriptor imageDescriptorFromPlugin(String imageFilePath) {
+		return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, imageFilePath);
+	}
 
-    public HeadlessBuildManager getHeadlessBuildManager() {
-        return headlessBuildManager;
-    }
+	public HeadlessBuildManager getHeadlessBuildManager() {
+		return headlessBuildManager;
+	}
 
-    public VersionControlIgnoresManager getVersionControlIgnoresManager() {
-        return versionControlIgnoresManager;
-    }
+	public VersionControlIgnoresManager getVersionControlIgnoresManager() {
+		return versionControlIgnoresManager;
+	}
 
-    public ScheduledExecutorService getScheduler() {
-        return scheduler;
-    }
+	public ScheduledExecutorService getScheduler() {
+		return scheduler;
+	}
 }

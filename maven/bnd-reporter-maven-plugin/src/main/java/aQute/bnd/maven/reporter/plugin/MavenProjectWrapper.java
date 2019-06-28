@@ -12,14 +12,14 @@ import org.apache.maven.project.MavenProject;
  */
 public class MavenProjectWrapper {
 
-	private Properties		reportConfigs	= new Properties();
+	private Properties			reportConfigs	= new Properties();
 	private List<MavenProject>	projects;
 	private MavenProject		project;
 	private List<MavenProject>	subProjects;
 
 	/**
 	 * Constructor of the wrapper.
-	 * 
+	 *
 	 * @param projects the list of projects of the current session
 	 * @param projectBase the current project
 	 */

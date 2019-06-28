@@ -21,18 +21,27 @@ public class Descriptors {
 	private final Map<String, FieldSignature>	fieldSignatureCache		= new HashMap<>();
 
 	// MUST BE BEFORE PRIMITIVES, THEY USE THE DEFAULT PACKAGE!!
-	final static PackageRef	DEFAULT_PACKAGE		= new PackageRef();
-	final static PackageRef	PRIMITIVE_PACKAGE	= new PackageRef();
+	final static PackageRef						DEFAULT_PACKAGE			= new PackageRef();
+	final static PackageRef						PRIMITIVE_PACKAGE		= new PackageRef();
 
-	final static TypeRef	VOID				= new ConcreteRef("V", "void", PRIMITIVE_PACKAGE);
-	final static TypeRef	BOOLEAN				= new ConcreteRef("Z", "boolean", PRIMITIVE_PACKAGE);
-	final static TypeRef	BYTE				= new ConcreteRef("B", "byte", PRIMITIVE_PACKAGE);
-	final static TypeRef	CHAR				= new ConcreteRef("C", "char", PRIMITIVE_PACKAGE);
-	final static TypeRef	SHORT				= new ConcreteRef("S", "short", PRIMITIVE_PACKAGE);
-	final static TypeRef	INTEGER				= new ConcreteRef("I", "int", PRIMITIVE_PACKAGE);
-	final static TypeRef	LONG				= new ConcreteRef("J", "long", PRIMITIVE_PACKAGE);
-	final static TypeRef	DOUBLE				= new ConcreteRef("D", "double", PRIMITIVE_PACKAGE);
-	final static TypeRef	FLOAT				= new ConcreteRef("F", "float", PRIMITIVE_PACKAGE);
+	final static TypeRef						VOID					= new ConcreteRef("V", "void",
+		PRIMITIVE_PACKAGE);
+	final static TypeRef						BOOLEAN					= new ConcreteRef("Z", "boolean",
+		PRIMITIVE_PACKAGE);
+	final static TypeRef						BYTE					= new ConcreteRef("B", "byte",
+		PRIMITIVE_PACKAGE);
+	final static TypeRef						CHAR					= new ConcreteRef("C", "char",
+		PRIMITIVE_PACKAGE);
+	final static TypeRef						SHORT					= new ConcreteRef("S", "short",
+		PRIMITIVE_PACKAGE);
+	final static TypeRef						INTEGER					= new ConcreteRef("I", "int",
+		PRIMITIVE_PACKAGE);
+	final static TypeRef						LONG					= new ConcreteRef("J", "long",
+		PRIMITIVE_PACKAGE);
+	final static TypeRef						DOUBLE					= new ConcreteRef("D", "double",
+		PRIMITIVE_PACKAGE);
+	final static TypeRef						FLOAT					= new ConcreteRef("F", "float",
+		PRIMITIVE_PACKAGE);
 
 	@Deprecated
 	public enum SignatureType {

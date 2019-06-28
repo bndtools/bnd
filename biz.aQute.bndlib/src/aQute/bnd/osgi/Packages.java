@@ -11,7 +11,7 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 public class Packages implements Map<PackageRef, Attrs> {
 	private final Map<PackageRef, Attrs> map;
 
-	public static enum QUERY {
+	public enum QUERY {
 		ANY,
 		ANNOTATED,
 		NAMED,

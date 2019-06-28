@@ -51,7 +51,7 @@ public class MavenTest extends TestCase {
 
 	/**
 	 * A test against maven 2
-	 * 
+	 *
 	 * @throws Exception
 	 * @throws URISyntaxException
 	 */
@@ -69,7 +69,7 @@ public class MavenTest extends TestCase {
 
 	/**
 	 * Check if we get the correct bundles for a project
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -103,7 +103,7 @@ public class MavenTest extends TestCase {
 
 	/**
 	 * See if we can create a maven repostory as a plugin
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -150,7 +150,7 @@ public class MavenTest extends TestCase {
 
 	/**
 	 * Test parsing a project pom
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -266,7 +266,7 @@ public class MavenTest extends TestCase {
 	/**
 	 * Test the pom parser which will turn the pom into a set of properties,
 	 * which will make it actually readable according to some.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 

@@ -19,7 +19,7 @@ import aQute.service.reporter.Reporter;
  */
 class ClassDataCollectors implements Closeable {
 	final List<ClassDataCollector>	delegates	= new ArrayList<>();
-	final Reporter							reporter;
+	final Reporter					reporter;
 
 	ClassDataCollectors(Reporter reporter) {
 		this.reporter = reporter;

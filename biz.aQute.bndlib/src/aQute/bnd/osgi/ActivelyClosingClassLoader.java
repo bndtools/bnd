@@ -157,8 +157,7 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 
 	@Override
 	public Enumeration<URL> findResources(String name) {
-		List<URL> resources = dataStream(name)
-			.map(data -> createURL(name, data))
+		List<URL> resources = dataStream(name).map(data -> createURL(name, data))
 			.collect(toList());
 		return enumeration(resources);
 	}
@@ -166,7 +165,7 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 	/**
 	 * This method will close any open files that have not been accessed since
 	 * purgeTime
-	 * 
+	 *
 	 * @param purgeTime the absolute cutoff time
 	 */
 

@@ -25,206 +25,195 @@ import aQute.bnd.service.action.Action;
  */
 public class Activator extends AbstractUIPlugin {
 
-    // The plug-in ID
-    public static final String PLUGIN_ID = "aQute.bmaker";
+	// The plug-in ID
+	public static final String								PLUGIN_ID	= "aQute.bmaker";
 
-    // The shared instance
-    public static volatile Activator instance;
-    BundleContext context;
-    private ServiceRegistration<URLStreamHandlerService> dataUrlHandlerReg;
+	// The shared instance
+	public static volatile Activator						instance;
+	BundleContext											context;
+	private ServiceRegistration<URLStreamHandlerService>	dataUrlHandlerReg;
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext )
-     */
-    @Override
-    public void start(BundleContext context) throws Exception {
-        super.start(context);
-        instance = this;
-        this.context = context;
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.
+	 * BundleContext )
+	 */
+	@Override
+	public void start(BundleContext context) throws Exception {
+		super.start(context);
+		instance = this;
+		this.context = context;
 
-        Hashtable<String, Object> p = new Hashtable<String, Object>();
-        // p.put(Action.ACTION_MENU, new String[] {"a:b", "a:c", "a:d",
-        // "a:d:e"});
-        context.registerService(Action.class.getName(), new ReflectAction(""), p);
+		Hashtable<String, Object> p = new Hashtable<>();
+		// p.put(Action.ACTION_MENU, new String[] {"a:b", "a:c", "a:d",
+		// "a:d:e"});
+		context.registerService(Action.class.getName(), new ReflectAction(""), p);
 
-        Hashtable<String, Object> dataUrlHandlerProps = new Hashtable<>();
-        dataUrlHandlerProps.put(URLConstants.URL_HANDLER_PROTOCOL, DataURLStreamHandler.PROTOCOL);
-        dataUrlHandlerReg = context.registerService(URLStreamHandlerService.class, new DataURLStreamHandler(), dataUrlHandlerProps);
-    }
+		Hashtable<String, Object> dataUrlHandlerProps = new Hashtable<>();
+		dataUrlHandlerProps.put(URLConstants.URL_HANDLER_PROTOCOL, DataURLStreamHandler.PROTOCOL);
+		dataUrlHandlerReg = context.registerService(URLStreamHandlerService.class, new DataURLStreamHandler(),
+			dataUrlHandlerProps);
+	}
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext )
-     */
-    @Override
-    public void stop(BundleContext context) throws Exception {
-        dataUrlHandlerReg.unregister();
-        instance = null;
-        super.stop(context);
-    }
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.
+	 * BundleContext )
+	 */
+	@Override
+	public void stop(BundleContext context) throws Exception {
+		dataUrlHandlerReg.unregister();
+		instance = null;
+		super.stop(context);
+	}
 
-    /**
-     * Returns the shared instance
-     *
-     * @return the shared instance
-     */
-    public static Activator getDefault() {
-        return instance;
-    }
+	/**
+	 * Returns the shared instance
+	 *
+	 * @return the shared instance
+	 */
+	public static Activator getDefault() {
+		return instance;
+	}
 
-    /**
-     * Returns an image descriptor for the image file at the given plug-in relative path
-     *
-     * @param path the path
-     * @return the image descriptor
-     */
-    public static ImageDescriptor getImageDescriptor(String path) {
-        return imageDescriptorFromPlugin(PLUGIN_ID, path);
-    }
+	/**
+	 * Returns an image descriptor for the image file at the given plug-in
+	 * relative path
+	 *
+	 * @param path the path
+	 * @return the image descriptor
+	 */
+	public static ImageDescriptor getImageDescriptor(String path) {
+		return imageDescriptorFromPlugin(PLUGIN_ID, path);
+	}
 
-    static volatile boolean busy;
+	static volatile boolean busy;
 
-    public void error(final String msg, final Throwable t) {
-        Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, msg, t);
-        getLog().log(s);
-        async(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (this) {
-                    if (busy)
-                        return;
-                    busy = true;
-                }
-                Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
-                ErrorDialog.openError(null, "Errors during bundle generation", msg + " " + t.getMessage(), s);
+	public void error(final String msg, final Throwable t) {
+		Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, msg, t);
+		getLog().log(s);
+		async(new Runnable() {
+			@Override
+			public void run() {
+				synchronized (this) {
+					if (busy)
+						return;
+					busy = true;
+				}
+				Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
+				ErrorDialog.openError(null, "Errors during bundle generation", msg + " " + t.getMessage(), s);
 
-                busy = false;
-            }
-        });
-    }
+				busy = false;
+			}
+		});
+	}
 
-    public void info(String msg) {
-        Status s = new Status(IStatus.INFO, PLUGIN_ID, 0, msg, null);
-        getLog().log(s);
-    }
+	public void info(String msg) {
+		Status s = new Status(IStatus.INFO, PLUGIN_ID, 0, msg, null);
+		getLog().log(s);
+	}
 
-    public static void error(List<String> errors) {
-        final StringBuffer sb = new StringBuffer();
-        for (String msg : errors) {
-            sb.append(msg);
-            sb.append("\n");
-        }
+	public static void error(List<String> errors) {
+		final StringBuffer sb = new StringBuffer();
+		for (String msg : errors) {
+			sb.append(msg);
+			sb.append("\n");
+		}
 
-        async(new Runnable() {
-            @Override
-            public void run() {
-                Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
-                ErrorDialog.openError(null, "Errors during bundle generation", sb.toString(), s);
-            }
-        });
-    }
+		async(() -> {
+			Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
+			ErrorDialog.openError(null, "Errors during bundle generation", sb.toString(), s);
+		});
+	}
 
-    public static void message(final String msg) {
-        async(new Runnable() {
-            @Override
-            public void run() {
-                MessageDialog.openInformation(null, "Bnd", msg);
-            }
-        });
-    }
+	public static void message(final String msg) {
+		async(() -> MessageDialog.openInformation(null, "Bnd", msg));
+	}
 
-    public static void warning(List<String> errors) {
-        final StringBuffer sb = new StringBuffer();
-        for (String msg : errors) {
-            sb.append(msg);
-            sb.append("\n");
-        }
-        async(new Runnable() {
-            @Override
-            public void run() {
-                Status s = new Status(IStatus.WARNING, PLUGIN_ID, 0, "", null);
-                ErrorDialog.openError(null, "Warnings during bundle generation", sb.toString(), s);
-            }
-        });
-    }
+	public static void warning(List<String> errors) {
+		final StringBuffer sb = new StringBuffer();
+		for (String msg : errors) {
+			sb.append(msg);
+			sb.append("\n");
+		}
+		async(() -> {
+			Status s = new Status(IStatus.WARNING, PLUGIN_ID, 0, "", null);
+			ErrorDialog.openError(null, "Warnings during bundle generation", sb.toString(), s);
+		});
+	}
 
-    static void async(Runnable run) {
-        if (Display.getCurrent() == null) {
-            Display.getDefault()
-                .asyncExec(run);
-        } else
-            run.run();
-    }
+	static void async(Runnable run) {
+		if (Display.getCurrent() == null) {
+			Display.getDefault()
+				.asyncExec(run);
+		} else
+			run.run();
+	}
 
-    public static boolean getReportDone() {
-        return true;
-        // return
-        // getPreferenceStore().getBoolean(PreferenceConstants.P_REPORT_DONE);
-    }
+	public static boolean getReportDone() {
+		return true;
+		// return
+		// getPreferenceStore().getBoolean(PreferenceConstants.P_REPORT_DONE);
+	}
 
-    public static File getCopy() {
-        return null;
+	public static File getCopy() {
+		return null;
 
-        // String path =
-        // getPreferenceStore().getString(PreferenceConstants.P_COPY);
-        // if ( path == null )
-        // return null;
+		// String path =
+		// getPreferenceStore().getString(PreferenceConstants.P_COPY);
+		// if ( path == null )
+		// return null;
 
-        // File file = new File(path);
-        // if ( !file.exists() || file.isFile() )
-        // return null;
+		// File file = new File(path);
+		// if ( !file.exists() || file.isFile() )
+		// return null;
 
-        // return file;
-    }
+		// return file;
+	}
 
-    public static boolean isPedantic() {
-        return false;
-        // IPreferenceStore store = getPreferenceStore();
-        // return store.getBoolean(PreferenceConstants.P_PEDANTIC);
-    }
+	public static boolean isPedantic() {
+		return false;
+		// IPreferenceStore store = getPreferenceStore();
+		// return store.getBoolean(PreferenceConstants.P_PEDANTIC);
+	}
 
-    public BundleContext getBundleContext() {
-        return context;
-    }
+	public BundleContext getBundleContext() {
+		return context;
+	}
 
-    public static void report(boolean warnings, @SuppressWarnings("unused") boolean acknowledge, Processor reporter, final String title, final String extra) {
-        if (reporter.getErrors()
-            .size() > 0
-            || (warnings && reporter.getWarnings()
-                .size() > 0)) {
-            final StringBuffer sb = new StringBuffer();
-            sb.append("\n");
-            if (reporter.getErrors()
-                .size() > 0) {
-                sb.append("[Errors]\n");
-                for (String msg : reporter.getErrors()) {
-                    sb.append(msg);
-                    sb.append("\n");
-                }
-            }
-            sb.append("\n");
-            if (reporter.getWarnings()
-                .size() > 0) {
-                sb.append("[Warnings]\n");
-                for (String msg : reporter.getWarnings()) {
-                    sb.append(msg);
-                    sb.append("\n");
-                }
-            }
-            final Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, sb.toString(), null);
-            reporter.clear();
+	public static void report(boolean warnings, @SuppressWarnings("unused") boolean acknowledge, Processor reporter,
+		final String title, final String extra) {
+		if (reporter.getErrors()
+			.size() > 0
+			|| (warnings && reporter.getWarnings()
+				.size() > 0)) {
+			final StringBuffer sb = new StringBuffer();
+			sb.append("\n");
+			if (reporter.getErrors()
+				.size() > 0) {
+				sb.append("[Errors]\n");
+				for (String msg : reporter.getErrors()) {
+					sb.append(msg);
+					sb.append("\n");
+				}
+			}
+			sb.append("\n");
+			if (reporter.getWarnings()
+				.size() > 0) {
+				sb.append("[Warnings]\n");
+				for (String msg : reporter.getWarnings()) {
+					sb.append(msg);
+					sb.append("\n");
+				}
+			}
+			final Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, sb.toString(), null);
+			reporter.clear();
 
-            async(new Runnable() {
-                @Override
-                public void run() {
-                    ErrorDialog.openError(null, title, title + "\n" + extra, s);
-                }
-            });
+			async(() -> ErrorDialog.openError(null, title, title + "\n" + extra, s));
 
-        } else {
-            message(title + " : ok");
-        }
-    }
+		} else {
+			message(title + " : ok");
+		}
+	}
 
 }

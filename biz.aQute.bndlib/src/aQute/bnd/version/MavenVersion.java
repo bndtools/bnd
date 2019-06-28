@@ -28,10 +28,9 @@ public class MavenVersion implements Comparable<MavenVersion> {
 
 	public static final MavenVersion	UNRESOLVED	= new MavenVersion("0-UNRESOLVED");
 
-	private static final String			SNAPSHOT		= "SNAPSHOT";
-	public static final MavenVersion	HIGHEST			= new MavenVersion(
-		"2147483647.2147483647.2147483647.2147483647");
-	public static final MavenVersion	LOWEST			= new MavenVersion("alpha");
+	private static final String			SNAPSHOT	= "SNAPSHOT";
+	public static final MavenVersion	HIGHEST		= new MavenVersion("2147483647.2147483647.2147483647.2147483647");
+	public static final MavenVersion	LOWEST		= new MavenVersion("alpha");
 
 	private final Version				version;
 	private final ComparableVersion		comparable;

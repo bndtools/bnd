@@ -281,7 +281,6 @@ public class CDIAnnotations implements AnalyzerPlugin {
 			return Discover.all;
 		}
 
-
 		try {
 			XPath xPath = xpf.newXPath();
 			XPathExpression discoveryModeExpression = xPath.compile("/beans/@bean-discovery-mode");

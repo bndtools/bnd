@@ -101,9 +101,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		log = reporterAdapter;
 	}
 
-	static final int									BUFFER_SIZE			= IOConstants.PAGE_SIZE * 1;
+	static final int									BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
 
-	final static ThreadLocal<Processor>					current				= new ThreadLocal<>();
+	final static ThreadLocal<Processor>					current		= new ThreadLocal<>();
 	private final static ScheduledThreadPoolExecutor	scheduledExecutor;
 	private final static ThreadPoolExecutor				executor;
 	static {
@@ -1850,6 +1850,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				.getClassLoader());
 		}
 
+		@Override
 		@Deprecated
 		public URL[] getURLs() {
 			return new URL[0];
@@ -2147,6 +2148,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	private static final Pattern DURATION_P = Pattern
 		.compile("\\s*(\\d+)\\s*(NANOSECONDS|MICROSECONDS|MILLISECONDS|SECONDS|MINUTES|HOURS|DAYS)?");
+
 	public static long getDuration(String tm, long dflt) {
 		if (tm == null)
 			return dflt;
@@ -2781,6 +2783,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	static final String _frangeHelp = "${frange;<version>[;true|false]}";
+
 	/**
 	 * Return a range expression for a filter from a version. By default this is
 	 * based on consumer compatibility. You can specify a third argument (true)

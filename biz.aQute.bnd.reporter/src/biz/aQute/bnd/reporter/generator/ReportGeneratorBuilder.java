@@ -40,7 +40,7 @@ public class ReportGeneratorBuilder {
 
 	/**
 	 * Create a new builder.
-	 * 
+	 *
 	 * @return the builder
 	 */
 	public static ReportGeneratorBuilder create() {
@@ -50,7 +50,7 @@ public class ReportGeneratorBuilder {
 	/**
 	 * Set the processor from which plugins are loaded as well as properties and
 	 * to which errors are reported.
-	 * 
+	 *
 	 * @param processor the processor to use.
 	 * @return the builder
 	 */
@@ -63,7 +63,7 @@ public class ReportGeneratorBuilder {
 	/**
 	 * If set, the {@link ReportGeneratorConstants#REPORT_CONFIG_INSTRUCTION}
 	 * instruction will be processed to customize the report generation.
-	 * 
+	 *
 	 * @return the builder
 	 */
 	public ReportGeneratorBuilder useCustomConfig() {
@@ -76,7 +76,7 @@ public class ReportGeneratorBuilder {
 	 * Register a plugin to be used by the
 	 * {@link ReportGeneratorConstants#REPORT_CONFIG_INSTRUCTION} and to be able
 	 * to use plugin short names.
-	 * 
+	 *
 	 * @param className the class name of the plugin.
 	 * @return the builder
 	 */
@@ -94,7 +94,7 @@ public class ReportGeneratorBuilder {
 	/**
 	 * Add a plugin to be used as default plugins for custom configuration or in
 	 * addition to plugins defined by the processor.
-	 * 
+	 *
 	 * @param classNameOrPluginName a class name or the short name of a plugin.
 	 * @return the builder
 	 */
@@ -109,7 +109,7 @@ public class ReportGeneratorBuilder {
 
 	/**
 	 * Add the default plugins used to extract bundle data.
-	 * 
+	 *
 	 * @return the builder
 	 */
 	public ReportGeneratorBuilder withBundleDefaultPlugins() {
@@ -124,7 +124,7 @@ public class ReportGeneratorBuilder {
 
 	/**
 	 * Add the default plugins used to extract project data.
-	 * 
+	 *
 	 * @return the builder
 	 */
 	public ReportGeneratorBuilder withProjectDefaultPlugins() {
@@ -139,7 +139,7 @@ public class ReportGeneratorBuilder {
 	/**
 	 * Add the default plugins used to extract aggregator project or workspace
 	 * data.
-	 * 
+	 *
 	 * @return the builder
 	 */
 	public ReportGeneratorBuilder withAggregatorProjectDefaultPlugins() {
@@ -153,7 +153,7 @@ public class ReportGeneratorBuilder {
 
 	/**
 	 * Build the service.
-	 * 
+	 *
 	 * @return the service
 	 */
 	public ReportGeneratorService build() {

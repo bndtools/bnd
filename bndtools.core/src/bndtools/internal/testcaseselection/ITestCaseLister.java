@@ -11,5 +11,5 @@
 package bndtools.internal.testcaseselection;
 
 public interface ITestCaseLister {
-    public String[] getTestCases(boolean includeNonSource, ITestCaseFilter filter) throws TestCaseListException;
+	String[] getTestCases(boolean includeNonSource, ITestCaseFilter filter) throws TestCaseListException;
 }

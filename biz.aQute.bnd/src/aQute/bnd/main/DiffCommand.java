@@ -186,7 +186,7 @@ public class DiffCommand {
 
 	/**
 	 * Just show the single tree
-	 * 
+	 *
 	 * @param bnd
 	 * @param options
 	 * @throws Exception

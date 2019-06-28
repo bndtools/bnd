@@ -4,7 +4,8 @@ import org.osgi.service.component.annotations.Component;
 
 @Component
 public class AnComponentDSFourteen implements MyInterface {
-    public String getName() {
-        return "Cristiano";
-    }
+	@Override
+	public String getName() {
+		return "Cristiano";
+	}
 }

@@ -15,7 +15,7 @@ import aQute.lib.io.IO;
 
 @Deprecated
 public class FileRepo {
-	File	root;
+	File					root;
 	static final Pattern	REPO_FILE	= Pattern.compile("([-.\\w]+)-([.\\d]+)\\.(jar|lib)");
 
 	public FileRepo(File root) {
@@ -42,18 +42,15 @@ public class FileRepo {
 		// that match the desired range are included in
 		// this list.
 		//
-		return f.listFiles(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				Matcher m = REPO_FILE.matcher(name);
-				if (!m.matches())
-					return false;
-				if (versionRange == null)
-					return true;
+		return f.listFiles((FilenameFilter) (dir, name) -> {
+			Matcher m = REPO_FILE.matcher(name);
+			if (!m.matches())
+				return false;
+			if (versionRange == null)
+				return true;
 
-				Version v = new Version(m.group(2));
-				return versionRange.includes(v);
-			}
+			Version v = new Version(m.group(2));
+			return versionRange.includes(v);
 		});
 	}
 
@@ -62,14 +59,9 @@ public class FileRepo {
 			regex = ".*";
 		final Pattern pattern = Pattern.compile(regex);
 
-		String list[] = root.list(new FilenameFilter() {
-
-			@Override
-			public boolean accept(File dir, String name) {
-				Matcher matcher = pattern.matcher(name);
-				return matcher.matches();
-			}
-
+		String list[] = root.list((dir, name) -> {
+			Matcher matcher = pattern.matcher(name);
+			return matcher.matches();
 		});
 		return Arrays.asList(list);
 	}
@@ -77,18 +69,13 @@ public class FileRepo {
 	public List<Version> versions(String bsn) throws Exception {
 		File dir = new File(root, bsn);
 		final List<Version> versions = new ArrayList<>();
-		dir.list(new FilenameFilter() {
-
-			@Override
-			public boolean accept(File dir, String name) {
-				Matcher m = REPO_FILE.matcher(name);
-				if (m.matches()) {
-					versions.add(new Version(m.group(2)));
-					return true;
-				}
-				return false;
+		dir.list((dir1, name) -> {
+			Matcher m = REPO_FILE.matcher(name);
+			if (m.matches()) {
+				versions.add(new Version(m.group(2)));
+				return true;
 			}
-
+			return false;
 		});
 		return versions;
 	}

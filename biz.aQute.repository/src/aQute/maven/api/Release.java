@@ -36,7 +36,7 @@ public interface Release extends Closeable {
 
 	/**
 	 * Set the replacement for the SNAPSHOT part
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	void setBuild(long timestamp, String build) throws Exception;
@@ -58,7 +58,7 @@ public interface Release extends Closeable {
 
 	/**
 	 * Set a pass phrase and indicate that the files must be signed.
-	 * 
+	 *
 	 * @param passphrase the passphrase
 	 */
 	void setPassphrase(String passphrase);

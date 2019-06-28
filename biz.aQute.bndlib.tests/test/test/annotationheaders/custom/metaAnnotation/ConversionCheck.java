@@ -3,8 +3,7 @@ package test.annotationheaders.custom.metaAnnotation;
 import org.osgi.annotation.bundle.Capability;
 
 @Meta
-public class ConversionCheck {
-}
+public class ConversionCheck {}
 
 @Capability(attribute = {
 	"value=${#value}", "array='${#array}'"

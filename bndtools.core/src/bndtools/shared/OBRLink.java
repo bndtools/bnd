@@ -3,7 +3,7 @@ package bndtools.shared;
 import org.eclipse.jface.viewers.StyledString;
 
 public interface OBRLink {
-    StyledString getLabel();
+	StyledString getLabel();
 
-    String getLink();
+	String getLink();
 }

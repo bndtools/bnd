@@ -14,17 +14,14 @@ import java.lang.annotation.Target;
  * <pre>
  * interface Webserver {
  * 	&#64;ProvideCapability(ns = "osgi.extender", name = "aQute.webserver", version = "${&#64;version}")
- * 	&#64;interface Provide {
- * 	}
+ * 	&#64;interface Provide {}
  *
  * 	&#64;RequireCapability(ns = "osgi.extender", filter = "(&amp;(osgi.extender=aQute.webserver)${frange;${&#64;version}})")
- * 	&#64;interface Require {
- * 	}
+ * 	&#64;interface Require {}
  * }
  *
  * &#64;Webserver.Provide
- * public class MyWebserver {
- * }
+ * public class MyWebserver {}
  * </pre>
  *
  * @deprecated see {@code org.osgi.annotation.bundle.Capability}

@@ -155,12 +155,11 @@ public class ResolveProcessTest extends TestCase {
 			Processor model = new Processor();
 
 			model.setProperty("-runfw", "org.apache.felix.framework");
-			model.setProperty("-runrequires",
-				"osgi.wiring.package;filter:='(osgi.wiring.package=aQute.lib.io)'");
+			model.setProperty("-runrequires", "osgi.wiring.package;filter:='(osgi.wiring.package=aQute.lib.io)'");
 
 			try {
-				process.resolveRequired(model, null, registry, new BndResolver(logger),
-					Collections.emptyList(), logger);
+				process.resolveRequired(model, null, registry, new BndResolver(logger), Collections.emptyList(),
+					logger);
 			} catch (ResolutionException re) {
 				assertNotNull(re.getCause());
 
@@ -267,8 +266,7 @@ public class ResolveProcessTest extends TestCase {
 				System.out.println(output);
 
 				String expected = "osgi.wiring.package=org.apache.tools.ant.types";
-				assertTrue("Doesn't contain " + expected + ": <" + output + ">",
-					output.contains(expected));
+				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
 
 				expected = "Capabilities satisfying the following requirements could not be found:";
 				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));

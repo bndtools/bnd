@@ -14,70 +14,70 @@ import org.eclipse.ui.PlatformUI;
 
 public class AddRemoveButtonBarPart {
 
-    public static interface AddRemoveListener {
-        void addSelected();
+	public interface AddRemoveListener {
+		void addSelected();
 
-        void removeSelected();
-    }
+		void removeSelected();
+	}
 
-    private final List<AddRemoveListener> listeners = new ArrayList<>();
+	private final List<AddRemoveListener>	listeners	= new ArrayList<>();
 
-    private ToolBar toolbar;
+	private ToolBar							toolbar;
 
-    private ToolItem btnAdd;
-    private ToolItem btnRemove;
+	private ToolItem						btnAdd;
+	private ToolItem						btnRemove;
 
-    public ToolBar createControl(Composite parent, int style) {
-        toolbar = new ToolBar(parent, style);
+	public ToolBar createControl(Composite parent, int style) {
+		toolbar = new ToolBar(parent, style);
 
-        btnAdd = new ToolItem(toolbar, SWT.PUSH);
-        btnAdd.setImage(PlatformUI.getWorkbench()
-            .getSharedImages()
-            .getImage(ISharedImages.IMG_OBJ_ADD));
-        btnAdd.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                for (AddRemoveListener l : listeners) {
-                    l.addSelected();
-                }
-            }
-        });
+		btnAdd = new ToolItem(toolbar, SWT.PUSH);
+		btnAdd.setImage(PlatformUI.getWorkbench()
+			.getSharedImages()
+			.getImage(ISharedImages.IMG_OBJ_ADD));
+		btnAdd.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				for (AddRemoveListener l : listeners) {
+					l.addSelected();
+				}
+			}
+		});
 
-        btnRemove = new ToolItem(toolbar, SWT.PUSH);
-        btnRemove.setImage(PlatformUI.getWorkbench()
-            .getSharedImages()
-            .getImage(ISharedImages.IMG_TOOL_DELETE));
-        btnRemove.setDisabledImage(PlatformUI.getWorkbench()
-            .getSharedImages()
-            .getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
-        btnRemove.setToolTipText("Remove");
-        btnRemove.setEnabled(false);
-        btnRemove.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                for (AddRemoveListener l : listeners) {
-                    l.removeSelected();
-                }
-            }
-        });
+		btnRemove = new ToolItem(toolbar, SWT.PUSH);
+		btnRemove.setImage(PlatformUI.getWorkbench()
+			.getSharedImages()
+			.getImage(ISharedImages.IMG_TOOL_DELETE));
+		btnRemove.setDisabledImage(PlatformUI.getWorkbench()
+			.getSharedImages()
+			.getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+		btnRemove.setToolTipText("Remove");
+		btnRemove.setEnabled(false);
+		btnRemove.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				for (AddRemoveListener l : listeners) {
+					l.removeSelected();
+				}
+			}
+		});
 
-        return toolbar;
-    }
+		return toolbar;
+	}
 
-    public void setAddEnabled(boolean enable) {
-        btnAdd.setEnabled(enable);
-    }
+	public void setAddEnabled(boolean enable) {
+		btnAdd.setEnabled(enable);
+	}
 
-    public void setRemoveEnabled(boolean enable) {
-        btnRemove.setEnabled(enable);
-    }
+	public void setRemoveEnabled(boolean enable) {
+		btnRemove.setEnabled(enable);
+	}
 
-    public void addListener(AddRemoveListener l) {
-        listeners.add(l);
-    }
+	public void addListener(AddRemoveListener l) {
+		listeners.add(l);
+	}
 
-    public void removeListener(AddRemoveListener l) {
-        listeners.remove(l);
-    }
+	public void removeListener(AddRemoveListener l) {
+		listeners.remove(l);
+	}
 
 }

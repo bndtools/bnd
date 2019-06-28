@@ -31,26 +31,26 @@ import aQute.service.reporter.Reporter;
  */
 public class EclipseClasspath {
 	static final DocumentBuilderFactory	documentBuilderFactory	= DocumentBuilderFactory.newInstance();
-	File							project;
-	File							workspace;
-	Set<File>						sources					= new LinkedHashSet<>();
-	Set<File>						allSources				= new LinkedHashSet<>();
+	File								project;
+	File								workspace;
+	Set<File>							sources					= new LinkedHashSet<>();
+	Set<File>							allSources				= new LinkedHashSet<>();
 
-	Set<File>						classpath				= new LinkedHashSet<>();
-	List<File>						dependents				= new ArrayList<>();
-	File							output;
-	boolean							recurse					= true;
-	Set<File>						exports					= new LinkedHashSet<>();
-	Map<String, String>				properties				= new HashMap<>();
-	Reporter						reporter;
-	int								options;
-	Set<File>						bootclasspath			= new LinkedHashSet<>();
+	Set<File>							classpath				= new LinkedHashSet<>();
+	List<File>							dependents				= new ArrayList<>();
+	File								output;
+	boolean								recurse					= true;
+	Set<File>							exports					= new LinkedHashSet<>();
+	Map<String, String>					properties				= new HashMap<>();
+	Reporter							reporter;
+	int									options;
+	Set<File>							bootclasspath			= new LinkedHashSet<>();
 
-	public final static int			DO_VARIABLES			= 1;
+	public final static int				DO_VARIABLES			= 1;
 
 	/**
 	 * Parse an Eclipse project structure to discover the classpath.
-	 * 
+	 *
 	 * @param workspace Points to workspace
 	 * @param project Points to project
 	 * @throws ParserConfigurationException
@@ -73,7 +73,7 @@ public class EclipseClasspath {
 	/**
 	 * Recursive routine to parse the files. If a sub project is detected, it is
 	 * parsed before the parsing continues. This should give the right order.
-	 * 
+	 *
 	 * @param project Project directory
 	 * @param top If this is the top project
 	 * @throws ParserConfigurationException

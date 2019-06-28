@@ -60,7 +60,7 @@ public class MavenCommand extends Processor {
 	/**
 	 * maven deploy [-url repo] [-passphrase passphrase] [-homedir homedir]
 	 * [-keyname keyname] bundle ...
-	 * 
+	 *
 	 * @param args
 	 * @param i
 	 * @throws Exception
@@ -126,7 +126,7 @@ public class MavenCommand extends Processor {
 
 	/**
 	 * Show the maven settings
-	 * 
+	 *
 	 * @throws FileNotFoundException
 	 * @throws Exception
 	 */
@@ -151,7 +151,7 @@ public class MavenCommand extends Processor {
 
 	/**
 	 * Create a maven bundle.
-	 * 
+	 *
 	 * @param args
 	 * @param i
 	 * @throws Exception
@@ -494,7 +494,7 @@ public class MavenCommand extends Processor {
 
 	/**
 	 * Generate a license string
-	 * 
+	 *
 	 * @param attr
 	 */
 	private String license(Attributes attr) {
@@ -532,7 +532,7 @@ public class MavenCommand extends Processor {
 
 	/**
 	 * Generate the copyright statement.
-	 * 
+	 *
 	 * @param attr
 	 */
 	private String copyright(Attributes attr) {

@@ -50,6 +50,7 @@ public class ComponentTest extends TestCase {
 		dbf.setNamespaceAware(true);
 	}
 
+	@Override
 	protected void setUp() {
 		xpath = xpathf.newXPath();
 		xpath.setNamespaceContext(new NamespaceContext() {
@@ -96,7 +97,7 @@ public class ComponentTest extends TestCase {
 	/**
 	 * 112.5.7 says refeence order is used to order binding services, so from
 	 * headers we preserve order.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testHeaderReferenceOrder() throws Exception {
@@ -110,7 +111,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Test to see if we ignore scala.ScalaObject as interface
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testScalaObject() throws Exception {
@@ -276,8 +277,8 @@ public class ComponentTest extends TestCase {
 			.getResource(path), System.err);
 		Document doc = dbf.newDocumentBuilder()
 			.parse(new InputSource(b.getJar()
-			.getResource(path)
-			.openInputStream()));
+				.getResource(path)
+				.openInputStream()));
 
 		return doc;
 	}
@@ -331,7 +332,7 @@ public class ComponentTest extends TestCase {
 
 		Document doc = dbf.newDocumentBuilder()
 			.parse(new InputSource(jar.getResource("OSGI-INF/silly.name.xml")
-			.openInputStream()));
+				.openInputStream()));
 
 		assertEquals("test.activator.Activator", doc.getElementsByTagName("implementation")
 			.item(0)
@@ -347,7 +348,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Standard activator with reference to http.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testProperties() throws Exception {
@@ -417,7 +418,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Check if all the directives work
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testUnknownDirective() throws Exception {
@@ -445,7 +446,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Check if all the directives work
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testDirectives() throws Exception {
@@ -466,7 +467,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Check if a bad filter on a service component causes an error.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testBadFilter() throws Exception {
@@ -494,7 +495,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Check if we can set a target filter
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testFilter() throws Exception {
@@ -515,7 +516,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Standard activator with reference to http.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testSimple() throws Exception {
@@ -537,7 +538,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Standard activator with reference to http.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testQuestion() throws Exception {

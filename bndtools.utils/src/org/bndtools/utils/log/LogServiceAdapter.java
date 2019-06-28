@@ -6,45 +6,45 @@ import org.osgi.service.log.LogService;
 
 public class LogServiceAdapter implements LogService {
 
-    private final ILogger delegate;
+	private final ILogger delegate;
 
-    public LogServiceAdapter(ILogger delegate) {
-        this.delegate = delegate;
-    }
+	public LogServiceAdapter(ILogger delegate) {
+		this.delegate = delegate;
+	}
 
-    @Override
-    public void log(int level, String message) {
-        log(null, level, message, null);
-    }
+	@Override
+	public void log(int level, String message) {
+		log(null, level, message, null);
+	}
 
-    @Override
-    public void log(int level, String message, Throwable exception) {
-        log(null, level, message, exception);
-    }
+	@Override
+	public void log(int level, String message, Throwable exception) {
+		log(null, level, message, exception);
+	}
 
-    @Override
-    @SuppressWarnings("rawtypes")
-    public void log(ServiceReference sr, int level, String message) {
-        log(sr, level, message, null);
-    }
+	@Override
+	@SuppressWarnings("rawtypes")
+	public void log(ServiceReference sr, int level, String message) {
+		log(sr, level, message, null);
+	}
 
-    @Override
-    @SuppressWarnings("rawtypes")
-    public void log(ServiceReference sr, int level, String message, Throwable exception) {
-        switch (level) {
-            case LogService.LOG_ERROR :
-                delegate.logError(message, exception);
-                break;
-            case LogService.LOG_WARNING :
-                delegate.logWarning(message, exception);
-                break;
-            case LogService.LOG_INFO :
-                delegate.logInfo(message, exception);
-                break;
-            default :
-                delegate.logError("[Unknown level " + level + ", assumed error]" + message, exception);
-                break;
-        }
-    }
+	@Override
+	@SuppressWarnings("rawtypes")
+	public void log(ServiceReference sr, int level, String message, Throwable exception) {
+		switch (level) {
+			case LogService.LOG_ERROR :
+				delegate.logError(message, exception);
+				break;
+			case LogService.LOG_WARNING :
+				delegate.logWarning(message, exception);
+				break;
+			case LogService.LOG_INFO :
+				delegate.logInfo(message, exception);
+				break;
+			default :
+				delegate.logError("[Unknown level " + level + ", assumed error]" + message, exception);
+				break;
+		}
+	}
 
 }

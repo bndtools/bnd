@@ -127,7 +127,7 @@ public class ResourcesTest extends TestCase {
 	/**
 	 * If a name starts with a - sign then it is ok if it does not exist. The -
 	 * sign must be skipped obviously.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testAbsentIsOk() throws Exception {
@@ -409,7 +409,7 @@ public class ResourcesTest extends TestCase {
 
 	/**
 	 * Check if we can create a jar on demand through the make facility.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testOnDemandResource() throws Exception {

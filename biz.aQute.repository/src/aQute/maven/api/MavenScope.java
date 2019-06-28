@@ -33,7 +33,7 @@ public enum MavenScope {
 	system(false), //
 
 	/**
-	 * 
+	 *
 	 */
 	import_(false),;
 

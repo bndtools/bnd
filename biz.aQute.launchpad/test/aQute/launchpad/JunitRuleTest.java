@@ -27,6 +27,5 @@ public class JunitRuleTest {
 	}
 
 	@Test
-	public void whenGetLaunchpadIsNotCalled_thenDontTryToCloseIt() {
-	}
+	public void whenGetLaunchpadIsNotCalled_thenDontTryToCloseIt() {}
 }

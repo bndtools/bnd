@@ -52,4 +52,4 @@ public enum Category {
 		this.name = name;
 		this.desc = desc;
 	}
-};
+}

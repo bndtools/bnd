@@ -58,7 +58,7 @@ public interface Agent {
 	 * {@link #createFramework(String, Collection, Map)} so other methods should
 	 * not be called. This rather awkward model is necessary so that we do not
 	 * have to reconnect to the actual agent.
-	 * 
+	 *
 	 * @return true if this is a limited envoy, otherwise true for a true Agent.
 	 */
 	boolean isEnvoy();
@@ -88,7 +88,7 @@ public interface Agent {
 	 * {@code location} identifier. If found, the existing bundle gets updated
 	 * with the specified byte array instance. Otherwise, a new bundle gets
 	 * installed with the specified byte array instance.
-	 * 
+	 *
 	 * @param location The bundle location (cannot be {@code null})
 	 * @param data The byte array instance from which this bundle will be read
 	 *            (cannot be {@code null})
@@ -101,7 +101,7 @@ public interface Agent {
 	 * Install a new bundle at the given bundle location. The SHA identifies the
 	 * file and should be retrievable through {@link Supervisor#getFile(String)}
 	 * .
-	 * 
+	 *
 	 * @param location the bundle location
 	 * @param sha the sha of the bundle's JAR
 	 * @return A Bundle DTO
@@ -124,7 +124,7 @@ public interface Agent {
 
 	/**
 	 * Start a number of bundles
-	 * 
+	 *
 	 * @param id the bundle ids
 	 * @return any errors that occurred
 	 */
@@ -132,7 +132,7 @@ public interface Agent {
 
 	/**
 	 * Stop a number of bundles
-	 * 
+	 *
 	 * @param id the bundle ids
 	 * @return any errors that occurred
 	 */
@@ -140,7 +140,7 @@ public interface Agent {
 
 	/**
 	 * Uninstall a number of bundles
-	 * 
+	 *
 	 * @param id the bundle ids
 	 * @return any errors that occurred
 	 */
@@ -154,7 +154,7 @@ public interface Agent {
 	 * the SHA will update, a new entry will install, and a removed entry will
 	 * uninstall. This is the preferred way to keep the remote framework
 	 * synchronized since it is idempotent.
-	 * 
+	 *
 	 * @param bundles the bundles to update
 	 */
 	String update(Map<String, String> bundles) throws Exception;
@@ -186,7 +186,7 @@ public interface Agent {
 	/**
 	 * Redirect I/O from port. Port can be {@link #CONSOLE},
 	 * {@link #COMMAND_SESSION}, {@link #NONE}, or a TCP Telnet port.
-	 * 
+	 *
 	 * @param port the port to redirect from
 	 * @return if the redirection was changed
 	 */
@@ -195,7 +195,7 @@ public interface Agent {
 	/**
 	 * Send a text to the potentially redirected stdin stream so that remotely
 	 * executing code will read it from an InputStream.
-	 * 
+	 *
 	 * @param s text that should be read as input
 	 * @return true if this was redirected
 	 */
@@ -203,7 +203,7 @@ public interface Agent {
 
 	/**
 	 * Execute a remote command on Gogo (if present) and return the result.
-	 * 
+	 *
 	 * @param cmd the command to execute
 	 * @return the result
 	 */
@@ -211,7 +211,7 @@ public interface Agent {
 
 	/**
 	 * Get the remote's system's System properties
-	 * 
+	 *
 	 * @return the remote systems properties
 	 */
 	Map<String, String> getSystemProperties() throws Exception;
@@ -223,7 +223,7 @@ public interface Agent {
 	 * existed, and the given parameters are identical, that framework will be
 	 * used for the aget that will take over. Otherwise the current framework is
 	 * stopped and a new framework is started.
-	 * 
+	 *
 	 * @param name the name of the framework
 	 * @param runpath the runpath the install
 	 * @param properties the framework properties

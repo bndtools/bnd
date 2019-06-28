@@ -6,7 +6,7 @@ public interface ToDependencyPom {
 
 	/**
 	 * Create a pom with the repository as dependencies
-	 * 
+	 *
 	 * @param out where it should be stored
 	 * @param options te options
 	 */

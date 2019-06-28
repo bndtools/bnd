@@ -7,6 +7,6 @@ import aQute.bnd.build.model.BndEditModel;
 
 public interface IRunDescriptionExportWizard extends IWizard {
 
-    void setBndModel(BndEditModel model, Project bndProject);
+	void setBndModel(BndEditModel model, Project bndProject);
 
 }

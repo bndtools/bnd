@@ -115,12 +115,12 @@ public class PermissionGeneratorTest extends BndTestCase {
 
 		/* @formatter:off */
 		assertEquals("Registered services",
-				new TreeSet<>(Arrays.asList("java.lang.Runnable", 
+				new TreeSet<>(Arrays.asList("java.lang.Runnable",
 						"java.io.Serializable",
-						"java.lang.Object")), 
+						"java.lang.Object")),
 						registeredServices);
 		assertEquals("Required services",
-				new TreeSet<>(Arrays.asList("org.osgi.service.log.LogService")), 
+				new TreeSet<>(Arrays.asList("org.osgi.service.log.LogService")),
 						requiredServices);
 		/* @formatter:on */
 	}
@@ -133,10 +133,10 @@ public class PermissionGeneratorTest extends BndTestCase {
 
 		/* @formatter:off */
 		assertEquals("Provided capabilities",
-				new TreeSet<>(Arrays.asList("osgi.service")), 
+				new TreeSet<>(Arrays.asList("osgi.service")),
 				providedCapabilities);
 		assertEquals("Required capabilities",
-				new TreeSet<>(Arrays.asList("osgi.service")), 
+				new TreeSet<>(Arrays.asList("osgi.service")),
 						requiredCapabilities);
 		/* @formatter:on */
 	}

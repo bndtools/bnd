@@ -1,4 +1,3 @@
 package test.annotationheaders.spi;
 
-public interface SPIService {
-}
+public interface SPIService {}

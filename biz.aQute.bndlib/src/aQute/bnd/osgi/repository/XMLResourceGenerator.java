@@ -152,28 +152,28 @@ public class XMLResourceGenerator {
 	private void directives(Tag cr, Map<String, String> directives) {
 		directives.entrySet()
 			.forEach(e -> {
-			Tag d = new Tag(cr, "directive");
-			d.addAttribute("name", e.getKey());
-			d.addAttribute("value", e.getValue());
-		});
+				Tag d = new Tag(cr, "directive");
+				d.addAttribute("name", e.getKey());
+				d.addAttribute("value", e.getValue());
+			});
 	}
 
 	private void attributes(Tag cr, Map<String, Object> attributes) {
 		attributes.entrySet()
 			.forEach(e -> {
-			Object value = e.getValue();
-			if (value == null)
+				Object value = e.getValue();
+				if (value == null)
 					return;
 
-			TypedAttribute ta = TypedAttribute.getTypedAttribute(value);
-			if (ta == null)
+				TypedAttribute ta = TypedAttribute.getTypedAttribute(value);
+				if (ta == null)
 					return;
 
-			Tag d = new Tag(cr, "attribute");
-			d.addAttribute("name", e.getKey());
-			d.addAttribute("value", ta.value);
-			if (ta.type != null)
-				d.addAttribute("type", ta.type);
+				Tag d = new Tag(cr, "attribute");
+				d.addAttribute("name", e.getKey());
+				d.addAttribute("value", ta.value);
+				if (ta.type != null)
+					d.addAttribute("type", ta.type);
 			});
 	}
 

@@ -2,29 +2,29 @@ package bndtools.launch;
 
 public interface LaunchConstants {
 
-    public static String EXT_BND = ".bnd";
-    public static String EXT_BNDRUN = ".bndrun";
+	String	EXT_BND						= ".bnd";
+	String	EXT_BNDRUN					= ".bndrun";
 
-    public static String LAUNCH_ID_OSGI_RUNTIME = "bndtools.launch";
-    public static String LAUNCH_ID_OSGI_JUNIT = "bndtools.launch.junit";
+	String	LAUNCH_ID_OSGI_RUNTIME		= "bndtools.launch";
+	String	LAUNCH_ID_OSGI_JUNIT		= "bndtools.launch.junit";
 
-    public static String ATTR_LAUNCH_TARGET = "launchTarget";
-    public static String ATTR_DYNAMIC_BUNDLES = "dynamicBundles";
-    public static boolean DEFAULT_DYNAMIC_BUNDLES = true;
+	String	ATTR_LAUNCH_TARGET			= "launchTarget";
+	String	ATTR_DYNAMIC_BUNDLES		= "dynamicBundles";
+	boolean	DEFAULT_DYNAMIC_BUNDLES		= true;
 
-    public static String ATTR_CLEAN = "clean";
-    public static boolean DEFAULT_CLEAN = true;
+	String	ATTR_CLEAN					= "clean";
+	boolean	DEFAULT_CLEAN				= true;
 
-    public static String ATTR_TRACE = "trace";
-    public static boolean DEFAULT_TRACE = false;
+	String	ATTR_TRACE					= "trace";
+	boolean	DEFAULT_TRACE				= false;
 
-    @Deprecated
-    public static String ATTR_LOGLEVEL = "logLevel";
+	@Deprecated
+	String	ATTR_LOGLEVEL				= "logLevel";
 
-    @Deprecated
-    public static final String ATTR_OLD_JUNIT_KEEP_ALIVE = "bndtools.runtime.junit.keepAlive";
-    public static final String ATTR_JUNIT_KEEP_ALIVE = "junit.keepAlive";
-    public static final boolean DEFAULT_JUNIT_KEEP_ALIVE = false;
+	@Deprecated
+	String	ATTR_OLD_JUNIT_KEEP_ALIVE	= "bndtools.runtime.junit.keepAlive";
+	String	ATTR_JUNIT_KEEP_ALIVE		= "junit.keepAlive";
+	boolean	DEFAULT_JUNIT_KEEP_ALIVE	= false;
 
-    public static final int LAUNCH_STATUS_JUNIT = 999;
+	int		LAUNCH_STATUS_JUNIT			= 999;
 }

@@ -75,9 +75,10 @@ public class Attrs implements Map<String, String> {
 	public static final Pattern					TYPED			= Pattern
 		.compile("List\\s*<\\s*(String|Version|Long|Double)\\s*>");
 
-	private final Map<String, String>	map;
-	private final Map<String, Type>		types;
-	public static final Attrs			EMPTY_ATTRS	= new Attrs(Collections.emptyMap(), Collections.emptyMap());
+	private final Map<String, String>			map;
+	private final Map<String, Type>				types;
+	public static final Attrs					EMPTY_ATTRS		= new Attrs(Collections.emptyMap(),
+		Collections.emptyMap());
 
 	private Attrs(Map<String, String> map, Map<String, Type> types) {
 		this.map = map;

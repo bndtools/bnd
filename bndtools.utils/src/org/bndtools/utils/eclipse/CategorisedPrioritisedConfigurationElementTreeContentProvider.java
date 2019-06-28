@@ -15,83 +15,83 @@ import org.eclipse.jface.viewers.Viewer;
 
 public class CategorisedPrioritisedConfigurationElementTreeContentProvider implements ITreeContentProvider {
 
-    private final SortedMap<ConfigurationElementCategory, List<IConfigurationElement>> data = new TreeMap<ConfigurationElementCategory, List<IConfigurationElement>>();
-    private final boolean flattenSingleCategory;
+	private final SortedMap<ConfigurationElementCategory, List<IConfigurationElement>>	data	= new TreeMap<>();
+	private final boolean																flattenSingleCategory;
 
-    public CategorisedPrioritisedConfigurationElementTreeContentProvider(boolean flattenSingleCategory) {
-        this.flattenSingleCategory = flattenSingleCategory;
-    }
+	public CategorisedPrioritisedConfigurationElementTreeContentProvider(boolean flattenSingleCategory) {
+		this.flattenSingleCategory = flattenSingleCategory;
+	}
 
-    @Override
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-        data.clear();
+	@Override
+	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+		data.clear();
 
-        // Dump input into categories
-        if (newInput instanceof IConfigurationElement[]) {
-            IConfigurationElement[] array = (IConfigurationElement[]) newInput;
-            for (IConfigurationElement element : array)
-                categorise(element);
-        } else if (newInput instanceof Collection) {
-            @SuppressWarnings("unchecked")
-            Collection<IConfigurationElement> coll = (Collection<IConfigurationElement>) newInput;
-            for (IConfigurationElement element : coll)
-                categorise(element);
-        }
+		// Dump input into categories
+		if (newInput instanceof IConfigurationElement[]) {
+			IConfigurationElement[] array = (IConfigurationElement[]) newInput;
+			for (IConfigurationElement element : array)
+				categorise(element);
+		} else if (newInput instanceof Collection) {
+			@SuppressWarnings("unchecked")
+			Collection<IConfigurationElement> coll = (Collection<IConfigurationElement>) newInput;
+			for (IConfigurationElement element : coll)
+				categorise(element);
+		}
 
-        // Sort within each category
-        CategorisedConfigurationElementComparator comparator = new CategorisedConfigurationElementComparator(true);
-        for (Entry<ConfigurationElementCategory, List<IConfigurationElement>> entry : data.entrySet()) {
-            List<IConfigurationElement> list = entry.getValue();
-            Collections.sort(list, comparator);
-        }
-    }
+		// Sort within each category
+		CategorisedConfigurationElementComparator comparator = new CategorisedConfigurationElementComparator(true);
+		for (Entry<ConfigurationElementCategory, List<IConfigurationElement>> entry : data.entrySet()) {
+			List<IConfigurationElement> list = entry.getValue();
+			Collections.sort(list, comparator);
+		}
+	}
 
-    private void categorise(IConfigurationElement element) {
-        ConfigurationElementCategory category = ConfigurationElementCategory.parse(element.getAttribute("category"));
-        List<IConfigurationElement> list = data.get(category);
-        if (list == null) {
-            list = new LinkedList<IConfigurationElement>();
-            data.put(category, list);
-        }
-        list.add(element);
-    }
+	private void categorise(IConfigurationElement element) {
+		ConfigurationElementCategory category = ConfigurationElementCategory.parse(element.getAttribute("category"));
+		List<IConfigurationElement> list = data.get(category);
+		if (list == null) {
+			list = new LinkedList<>();
+			data.put(category, list);
+		}
+		list.add(element);
+	}
 
-    @Override
-    public Object[] getElements(Object inputElement) {
-        Object[] result;
+	@Override
+	public Object[] getElements(Object inputElement) {
+		Object[] result;
 
-        Set<ConfigurationElementCategory> keys = data.keySet();
-        if (keys.size() == 1 && flattenSingleCategory) {
-            List<IConfigurationElement> elements = data.get(keys.iterator()
-                .next());
-            result = elements.toArray();
-        } else {
-            result = keys.toArray();
-        }
-        return result;
-    }
+		Set<ConfigurationElementCategory> keys = data.keySet();
+		if (keys.size() == 1 && flattenSingleCategory) {
+			List<IConfigurationElement> elements = data.get(keys.iterator()
+				.next());
+			result = elements.toArray();
+		} else {
+			result = keys.toArray();
+		}
+		return result;
+	}
 
-    @Override
-    public void dispose() {}
+	@Override
+	public void dispose() {}
 
-    @Override
-    public Object[] getChildren(Object parentElement) {
-        List<IConfigurationElement> list = data.get(parentElement);
-        return list.toArray();
-    }
+	@Override
+	public Object[] getChildren(Object parentElement) {
+		List<IConfigurationElement> list = data.get(parentElement);
+		return list.toArray();
+	}
 
-    @Override
-    public Object getParent(Object element) {
-        return null;
-    }
+	@Override
+	public Object getParent(Object element) {
+		return null;
+	}
 
-    @Override
-    public boolean hasChildren(Object element) {
-        boolean result = false;
-        if (element instanceof ConfigurationElementCategory) {
-            List<IConfigurationElement> list = data.get(element);
-            result = !list.isEmpty();
-        }
-        return result;
-    }
+	@Override
+	public boolean hasChildren(Object element) {
+		boolean result = false;
+		if (element instanceof ConfigurationElementCategory) {
+			List<IConfigurationElement> list = data.get(element);
+			result = !list.isEmpty();
+		}
+		return result;
+	}
 }

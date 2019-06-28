@@ -45,7 +45,7 @@ public class FileResource implements Resource {
 	/**
 	 * Turn a resource into a file so that anything in the conversion is
 	 * properly caught
-	 * 
+	 *
 	 * @param r
 	 * @throws Exception
 	 */

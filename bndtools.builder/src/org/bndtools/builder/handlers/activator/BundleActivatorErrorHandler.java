@@ -20,67 +20,69 @@ import aQute.service.reporter.Report.Location;
 
 public class BundleActivatorErrorHandler extends AbstractBuildErrorDetailsHandler {
 
-    @Override
-    public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
-        List<MarkerData> result = new ArrayList<MarkerData>();
+	@Override
+	public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
+		List<MarkerData> result = new ArrayList<>();
 
-        BundleActivatorError baError = (BundleActivatorError) location.details;
+		BundleActivatorError baError = (BundleActivatorError) location.details;
 
-        IJavaProject javaProject = JavaCore.create(project);
+		IJavaProject javaProject = JavaCore.create(project);
 
-        Map<String, Object> attribs = createMessageMarkerAttributes(baError, location.message);
-        // Eclipse line numbers are 1 indexed
-        attribs.put(IMarker.LINE_NUMBER, location.line + 1);
+		Map<String, Object> attribs = createMessageMarkerAttributes(baError, location.message);
+		// Eclipse line numbers are 1 indexed
+		attribs.put(IMarker.LINE_NUMBER, location.line + 1);
 
-        // Add a marker to the bnd file on the BundleActivator line
-        result.add(new MarkerData(getDefaultResource(project), attribs, false));
+		// Add a marker to the bnd file on the BundleActivator line
+		result.add(new MarkerData(getDefaultResource(project), attribs, false));
 
-        MarkerData md;
-        switch (baError.errorType) {
-            case NO_SUITABLE_CONSTRUCTOR :
-                md = createMethodMarkerData(javaProject, baError.activatorClassName, "<init>", "()V", createMessageMarkerAttributes(baError, location.message), false);
-                if (md != null) {
-                    result.add(md);
-                    break;
-                }
-                //$FALL-THROUGH$
-            case IS_INTERFACE :
-            case IS_ABSTRACT :
-            case NOT_PUBLIC :
-            case NOT_AN_ACTIVATOR :
-            case DEFAULT_PACKAGE :
-            case IS_IMPORTED :
-                md = createTypeMarkerData(javaProject, baError.activatorClassName, createMessageMarkerAttributes(baError, location.message), false);
-                if (md != null)
-                    result.add(md);
-                break;
-            case NOT_ACCESSIBLE :
-            default :
-                // No file to mark
-                break;
-        }
+		MarkerData md;
+		switch (baError.errorType) {
+			case NO_SUITABLE_CONSTRUCTOR :
+				md = createMethodMarkerData(javaProject, baError.activatorClassName, "<init>", "()V",
+					createMessageMarkerAttributes(baError, location.message), false);
+				if (md != null) {
+					result.add(md);
+					break;
+				}
+				//$FALL-THROUGH$
+			case IS_INTERFACE :
+			case IS_ABSTRACT :
+			case NOT_PUBLIC :
+			case NOT_AN_ACTIVATOR :
+			case DEFAULT_PACKAGE :
+			case IS_IMPORTED :
+				md = createTypeMarkerData(javaProject, baError.activatorClassName,
+					createMessageMarkerAttributes(baError, location.message), false);
+				if (md != null)
+					result.add(md);
+				break;
+			case NOT_ACCESSIBLE :
+			default :
+				// No file to mark
+				break;
+		}
 
-        return result;
-    }
+		return result;
+	}
 
-    private Map<String, Object> createMessageMarkerAttributes(BundleActivatorError baError, String message) {
-        Map<String, Object> attribs = new HashMap<String, Object>();
-        attribs.put("BundleActivatorError.activatorClassName", baError.activatorClassName);
-        attribs.put("BundleActivatorError.errorType", baError.errorType.toString());
-        attribs.put(IMarker.MESSAGE, message.trim());
-        return attribs;
-    }
+	private Map<String, Object> createMessageMarkerAttributes(BundleActivatorError baError, String message) {
+		Map<String, Object> attribs = new HashMap<>();
+		attribs.put("BundleActivatorError.activatorClassName", baError.activatorClassName);
+		attribs.put("BundleActivatorError.errorType", baError.errorType.toString());
+		attribs.put(IMarker.MESSAGE, message.trim());
+		return attribs;
+	}
 
-    @Override
-    public List<IMarkerResolution> getResolutions(IMarker marker) {
-        // TODO Auto-generated method stub
-        return null;
-    }
+	@Override
+	public List<IMarkerResolution> getResolutions(IMarker marker) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-    @Override
-    public List<ICompletionProposal> getProposals(IMarker marker) {
-        // TODO Auto-generated method stub
-        return null;
-    }
+	@Override
+	public List<ICompletionProposal> getProposals(IMarker marker) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

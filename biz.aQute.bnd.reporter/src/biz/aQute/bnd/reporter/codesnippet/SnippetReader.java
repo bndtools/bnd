@@ -35,7 +35,7 @@ abstract class SnippetReader {
 	 * Generate a unique Id given the base Id in argument.
 	 * <p>
 	 * Should be used to generated Ids of snippets.
-	 * 
+	 *
 	 * @param baseId the base Id
 	 * @return the new Id to be used.
 	 */
@@ -45,7 +45,7 @@ abstract class SnippetReader {
 
 	/**
 	 * Read a file and extract snippets from it.
-	 * 
+	 *
 	 * @param file the file to analyze
 	 * @return an ordered list of snippets
 	 * @throws Exception if any error occures

@@ -2,7 +2,7 @@ package aQute.bnd.component.error;
 
 public class DeclarativeServicesAnnotationError {
 
-	public static enum ErrorType {
+	public enum ErrorType {
 		ACTIVATE_SIGNATURE_ERROR,
 		DEACTIVATE_SIGNATURE_ERROR,
 		MODIFIED_SIGNATURE_ERROR,

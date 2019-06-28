@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  ******************************************************************************/
@@ -19,25 +19,25 @@ import org.eclipse.core.runtime.CoreException;
 
 public class CompositeResourceDeltaVisitor implements IResourceDeltaVisitor {
 
-    private final List<IResourceDeltaVisitor> delegates = new LinkedList<IResourceDeltaVisitor>();
+	private final List<IResourceDeltaVisitor> delegates = new LinkedList<>();
 
-    public void addDelegate(IResourceDeltaVisitor delegate) {
-        this.delegates.add(delegate);
-    }
+	public void addDelegate(IResourceDeltaVisitor delegate) {
+		this.delegates.add(delegate);
+	}
 
-    public void removeDelegate(IResourceDeltaVisitor delegate) {
-        this.delegates.remove(delegate);
-    }
+	public void removeDelegate(IResourceDeltaVisitor delegate) {
+		this.delegates.remove(delegate);
+	}
 
-    @Override
-    public boolean visit(IResourceDelta delta) throws CoreException {
-        boolean recurse = false;
+	@Override
+	public boolean visit(IResourceDelta delta) throws CoreException {
+		boolean recurse = false;
 
-        for (IResourceDeltaVisitor delegate : delegates) {
-            recurse = delegate.visit(delta) || recurse;
-        }
+		for (IResourceDeltaVisitor delegate : delegates) {
+			recurse = delegate.visit(delta) || recurse;
+		}
 
-        return recurse;
-    }
+		return recurse;
+	}
 
 }

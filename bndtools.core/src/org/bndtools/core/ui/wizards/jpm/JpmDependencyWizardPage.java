@@ -11,13 +11,9 @@ import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
-import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
@@ -45,288 +41,285 @@ import bndtools.central.Central;
 
 public class JpmDependencyWizardPage extends WizardPage {
 
-    private static final String DEFAULT_MESSAGE = "Review the following supplied dependencies supplied before adding them.";
+	private static final String		DEFAULT_MESSAGE	= "Review the following supplied dependencies supplied before adding them.";
 
-    private final URI originUri;
+	private final URI				originUri;
 
-    private TableViewer viewerDirect;
-    private CheckboxTableViewer viewerIndirect;
-    private boolean queried = false;
+	private TableViewer				viewerDirect;
+	private CheckboxTableViewer		viewerIndirect;
+	private boolean					queried			= false;
 
-    private SearchableRepository repository;
+	private SearchableRepository	repository;
 
-    private String errorText;
-    private Set<ResourceDescriptor> directResources;
-    private Set<ResourceDescriptor> indirectResources;
-    private Set<ResourceDescriptor> selectedIndirectResources;
+	private String					errorText;
+	private Set<ResourceDescriptor>	directResources;
+	private Set<ResourceDescriptor>	indirectResources;
+	private Set<ResourceDescriptor>	selectedIndirectResources;
 
-    private ResourceDescriptor selection;
+	private ResourceDescriptor		selection;
 
-    public JpmDependencyWizardPage(URI originUri) {
-        super("jpmDependencies");
-        this.originUri = originUri;
+	public JpmDependencyWizardPage(URI originUri) {
+		super("jpmDependencies");
+		this.originUri = originUri;
 
-        setTitle("Add Dependencies from Searchable Repository");
-    }
+		setTitle("Add Dependencies from Searchable Repository");
+	}
 
-    @Override
-    @SuppressWarnings("unused")
-    public void createControl(Composite parent) {
-        // CREATE CONTROLS
-        Composite container = new Composite(parent, SWT.NULL);
-        setControl(container);
+	@Override
+	@SuppressWarnings("unused")
+	public void createControl(Composite parent) {
+		// CREATE CONTROLS
+		Composite container = new Composite(parent, SWT.NULL);
+		setControl(container);
 
-        Label lblDirect = new Label(container, SWT.NONE);
-        lblDirect.setFont(JFaceResources.getBannerFont());
-        lblDirect.setText("Direct Dependencies:");
+		Label lblDirect = new Label(container, SWT.NONE);
+		lblDirect.setFont(JFaceResources.getBannerFont());
+		lblDirect.setText("Direct Dependencies:");
 
-        Table tblDirect = new Table(container, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER | SWT.V_SCROLL);
-        viewerDirect = new TableViewer(tblDirect);
-        viewerDirect.setContentProvider(ArrayContentProvider.getInstance());
-        viewerDirect.setLabelProvider(new ResourceDescriptorLabelProvider());
+		Table tblDirect = new Table(container, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER | SWT.V_SCROLL);
+		viewerDirect = new TableViewer(tblDirect);
+		viewerDirect.setContentProvider(ArrayContentProvider.getInstance());
+		viewerDirect.setLabelProvider(new ResourceDescriptorLabelProvider());
 
-        createHelpLabel(container, "The above dependencies will be added to the project and, if necessary, to the Searchable Repository local index.");
+		createHelpLabel(container,
+			"The above dependencies will be added to the project and, if necessary, to the Searchable Repository local index.");
 
-        Label separator = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
+		Label separator = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
 
-        Label lblIndirect = new Label(container, SWT.NONE);
-        lblIndirect.setFont(JFaceResources.getBannerFont());
-        lblIndirect.setText("Transitive Dependencies:");
+		Label lblIndirect = new Label(container, SWT.NONE);
+		lblIndirect.setFont(JFaceResources.getBannerFont());
+		lblIndirect.setText("Transitive Dependencies:");
 
-        Composite cmpIndirect = new Composite(container, SWT.NONE);
-        Table tblIndirect = new Table(cmpIndirect, SWT.CHECK | SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER | SWT.V_SCROLL);
-        viewerIndirect = new CheckboxTableViewer(tblIndirect);
-        viewerIndirect.setContentProvider(ArrayContentProvider.getInstance());
-        viewerIndirect.setLabelProvider(new ResourceDescriptorLabelProvider());
+		Composite cmpIndirect = new Composite(container, SWT.NONE);
+		Table tblIndirect = new Table(cmpIndirect,
+			SWT.CHECK | SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER | SWT.V_SCROLL);
+		viewerIndirect = new CheckboxTableViewer(tblIndirect);
+		viewerIndirect.setContentProvider(ArrayContentProvider.getInstance());
+		viewerIndirect.setLabelProvider(new ResourceDescriptorLabelProvider());
 
-        Button btnSelectAll = new Button(cmpIndirect, SWT.PUSH);
-        btnSelectAll.setText("All");
+		Button btnSelectAll = new Button(cmpIndirect, SWT.PUSH);
+		btnSelectAll.setText("All");
 
-        Button btnSelectNone = new Button(cmpIndirect, SWT.PUSH);
-        btnSelectNone.setText("None");
+		Button btnSelectNone = new Button(cmpIndirect, SWT.PUSH);
+		btnSelectNone.setText("None");
 
-        new Label(cmpIndirect, SWT.NONE);
+		new Label(cmpIndirect, SWT.NONE);
 
-        createHelpLabel(container, "The above dependencies will be added to the Searchable Repository local index. Checked dependencies will also be added directly to the project.");
+		createHelpLabel(container,
+			"The above dependencies will be added to the Searchable Repository local index. Checked dependencies will also be added directly to the project.");
 
-        // LISTENERS
+		// LISTENERS
 
-        // Query JPM and show results *after* dialog is shown. This ensures progress is visible in the dialog's
-        // progress bar
-        getContainer().getShell()
-            .addShellListener(new ShellAdapter() {
-                @Override
-                public void shellActivated(ShellEvent e) {
-                    runQuery();
-                }
-            });
-        viewerIndirect.addCheckStateListener(new ICheckStateListener() {
-            @Override
-            public void checkStateChanged(CheckStateChangedEvent ev) {
-                if (selectedIndirectResources == null)
-                    selectedIndirectResources = new HashSet<ResourceDescriptor>();
+		// Query JPM and show results *after* dialog is shown. This ensures
+		// progress is visible in the dialog's
+		// progress bar
+		getContainer().getShell()
+			.addShellListener(new ShellAdapter() {
+				@Override
+				public void shellActivated(ShellEvent e) {
+					runQuery();
+				}
+			});
+		viewerIndirect.addCheckStateListener(ev -> {
+			if (selectedIndirectResources == null)
+				selectedIndirectResources = new HashSet<>();
 
-                ResourceDescriptor resource = (ResourceDescriptor) ev.getElement();
-                if (ev.getChecked())
-                    selectedIndirectResources.add(resource);
-                else
-                    selectedIndirectResources.remove(resource);
-            }
-        });
-        btnSelectAll.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                selectedIndirectResources.addAll(indirectResources);
-                updateSelectedCheckboxes();
-            }
-        });
-        btnSelectNone.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                selectedIndirectResources.clear();
-                updateSelectedCheckboxes();
-            }
-        });
+			ResourceDescriptor resource = (ResourceDescriptor) ev.getElement();
+			if (ev.getChecked())
+				selectedIndirectResources.add(resource);
+			else
+				selectedIndirectResources.remove(resource);
+		});
+		btnSelectAll.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				selectedIndirectResources.addAll(indirectResources);
+				updateSelectedCheckboxes();
+			}
+		});
+		btnSelectNone.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				selectedIndirectResources.clear();
+				updateSelectedCheckboxes();
+			}
+		});
 
-        viewerDirect.addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                ISelection sel = event.getSelection();
-                if (sel.isEmpty())
-                    selection = (ResourceDescriptor) ((IStructuredSelection) viewerIndirect.getSelection()).getFirstElement();
-                else
-                    selection = (ResourceDescriptor) ((IStructuredSelection) sel).getFirstElement();
-                getContainer().updateMessage();
-            }
-        });
-        viewerIndirect.addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                ISelection sel = event.getSelection();
-                if (sel.isEmpty())
-                    selection = (ResourceDescriptor) ((IStructuredSelection) viewerDirect.getSelection()).getFirstElement();
-                else
-                    selection = (ResourceDescriptor) ((IStructuredSelection) sel).getFirstElement();
-                getContainer().updateMessage();
-            }
-        });
+		viewerDirect.addSelectionChangedListener(event -> {
+			ISelection sel = event.getSelection();
+			if (sel.isEmpty())
+				selection = (ResourceDescriptor) ((IStructuredSelection) viewerIndirect.getSelection())
+					.getFirstElement();
+			else
+				selection = (ResourceDescriptor) ((IStructuredSelection) sel).getFirstElement();
+			getContainer().updateMessage();
+		});
+		viewerIndirect.addSelectionChangedListener(event -> {
+			ISelection sel = event.getSelection();
+			if (sel.isEmpty())
+				selection = (ResourceDescriptor) ((IStructuredSelection) viewerDirect.getSelection()).getFirstElement();
+			else
+				selection = (ResourceDescriptor) ((IStructuredSelection) sel).getFirstElement();
+			getContainer().updateMessage();
+		});
 
-        // LAYOUT
-        GridLayout layout;
-        GridData gd;
+		// LAYOUT
+		GridLayout layout;
+		GridData gd;
 
-        layout = new GridLayout(1, true);
-        container.setLayout(layout);
+		layout = new GridLayout(1, true);
+		container.setLayout(layout);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        gd.heightHint = 30;
-        tblDirect.setLayoutData(gd);
+		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+		gd.heightHint = 30;
+		tblDirect.setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        separator.setLayoutData(gd);
+		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+		separator.setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        cmpIndirect.setLayoutData(gd);
+		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+		cmpIndirect.setLayoutData(gd);
 
-        layout = new GridLayout(2, false);
-        layout.marginHeight = 0;
-        layout.marginWidth = 0;
-        layout.horizontalSpacing = 2;
-        layout.verticalSpacing = 2;
-        cmpIndirect.setLayout(layout);
+		layout = new GridLayout(2, false);
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+		layout.horizontalSpacing = 2;
+		layout.verticalSpacing = 2;
+		cmpIndirect.setLayout(layout);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3);
-        gd.heightHint = 100;
-        tblIndirect.setLayoutData(gd);
+		gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3);
+		gd.heightHint = 100;
+		tblIndirect.setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, false, false);
-        btnSelectAll.setLayoutData(gd);
+		gd = new GridData(SWT.FILL, SWT.FILL, false, false);
+		btnSelectAll.setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, false, false);
-        btnSelectNone.setLayoutData(gd);
-    }
+		gd = new GridData(SWT.FILL, SWT.FILL, false, false);
+		btnSelectNone.setLayoutData(gd);
+	}
 
-    private Control createHelpLabel(Composite container, String text) {
-        Label label = new Label(container, SWT.WRAP);
-        label.setText(text);
+	private Control createHelpLabel(Composite container, String text) {
+		Label label = new Label(container, SWT.WRAP);
+		label.setText(text);
 
-        ControlDecoration decoration = new ControlDecoration(label, SWT.LEFT, container);
-        Image imgInfo = FieldDecorationRegistry.getDefault()
-            .getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
-            .getImage();
-        decoration.setImage(imgInfo);
+		ControlDecoration decoration = new ControlDecoration(label, SWT.LEFT, container);
+		Image imgInfo = FieldDecorationRegistry.getDefault()
+			.getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
+			.getImage();
+		decoration.setImage(imgInfo);
 
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        gd.horizontalIndent = imgInfo.getBounds().width;
-        gd.widthHint = 100;
-        label.setLayoutData(gd);
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+		gd.horizontalIndent = imgInfo.getBounds().width;
+		gd.widthHint = 100;
+		label.setLayoutData(gd);
 
-        return label;
-    }
+		return label;
+	}
 
-    private void runQuery() {
-        if (!queried) {
-            errorText = null;
-            try {
-                Workspace workspace = Central.getWorkspace();
-                repository = workspace.getPlugin(SearchableRepository.class);
-                if (repository == null)
-                    throw new Exception("No searchable repository is configured in the workspace.");
+	private void runQuery() {
+		if (!queried) {
+			errorText = null;
+			try {
+				Workspace workspace = Central.getWorkspace();
+				repository = workspace.getPlugin(SearchableRepository.class);
+				if (repository == null)
+					throw new Exception("No searchable repository is configured in the workspace.");
 
-                QueryJpmDependenciesRunnable query = new QueryJpmDependenciesRunnable(originUri, repository);
-                getContainer().run(true, true, query);
-                queried = true;
-                errorText = query.getError();
-                directResources = query.getDirectResources();
-                indirectResources = query.getIndirectResources();
-                selectedIndirectResources = new HashSet<ResourceDescriptor>();
-            } catch (InvocationTargetException e) {
-                errorText = Exceptions.unrollCause(e, InvocationTargetException.class)
-                    .getMessage();
-            } catch (InterruptedException e) {
-                // ignore
-            } catch (Exception e) {
-                errorText = e.getMessage();
-            } finally {
-                updateUi();
-            }
-        }
-    }
+				QueryJpmDependenciesRunnable query = new QueryJpmDependenciesRunnable(originUri, repository);
+				getContainer().run(true, true, query);
+				queried = true;
+				errorText = query.getError();
+				directResources = query.getDirectResources();
+				indirectResources = query.getIndirectResources();
+				selectedIndirectResources = new HashSet<>();
+			} catch (InvocationTargetException e) {
+				errorText = Exceptions.unrollCause(e, InvocationTargetException.class)
+					.getMessage();
+			} catch (InterruptedException e) {
+				// ignore
+			} catch (Exception e) {
+				errorText = e.getMessage();
+			} finally {
+				updateUi();
+			}
+		}
+	}
 
-    private void updateUi() {
-        viewerDirect.setInput(directResources);
-        viewerIndirect.setInput(indirectResources);
-        updateSelectedCheckboxes();
-        getContainer().updateButtons();
-        getContainer().updateMessage();
-    }
+	private void updateUi() {
+		viewerDirect.setInput(directResources);
+		viewerIndirect.setInput(indirectResources);
+		updateSelectedCheckboxes();
+		getContainer().updateButtons();
+		getContainer().updateMessage();
+	}
 
-    private void updateSelectedCheckboxes() {
-        Object[] selectedArray = selectedIndirectResources != null ? selectedIndirectResources.toArray() : new Object[0];
-        viewerIndirect.setCheckedElements(selectedArray);
-    }
+	private void updateSelectedCheckboxes() {
+		Object[] selectedArray = selectedIndirectResources != null ? selectedIndirectResources.toArray()
+			: new Object[0];
+		viewerIndirect.setCheckedElements(selectedArray);
+	}
 
-    @Override
-    public boolean isPageComplete() {
-        return queried && errorText == null;
-    }
+	@Override
+	public boolean isPageComplete() {
+		return queried && errorText == null;
+	}
 
-    @Override
-    public String getErrorMessage() {
-        return errorText;
-    }
+	@Override
+	public String getErrorMessage() {
+		return errorText;
+	}
 
-    @Override
-    public String getMessage() {
-        if (selection != null) {
-            return selection.description;
-        }
+	@Override
+	public String getMessage() {
+		if (selection != null) {
+			return selection.description;
+		}
 
-        return DEFAULT_MESSAGE;
-    }
+		return DEFAULT_MESSAGE;
+	}
 
-    public Set<ResourceDescriptor> getDirectResources() {
-        return Collections.unmodifiableSet(directResources);
-    }
+	public Set<ResourceDescriptor> getDirectResources() {
+		return Collections.unmodifiableSet(directResources);
+	}
 
-    public Set<ResourceDescriptor> getIndirectResources() {
-        return Collections.unmodifiableSet(indirectResources);
-    }
+	public Set<ResourceDescriptor> getIndirectResources() {
+		return Collections.unmodifiableSet(indirectResources);
+	}
 
-    public Set<ResourceDescriptor> getSelectedIndirectResources() {
-        return Collections.unmodifiableSet(selectedIndirectResources);
-    }
+	public Set<ResourceDescriptor> getSelectedIndirectResources() {
+		return Collections.unmodifiableSet(selectedIndirectResources);
+	}
 
-    public SearchableRepository getRepository() {
-        return repository;
-    }
+	public SearchableRepository getRepository() {
+		return repository;
+	}
 
-    public URI getOriginUri() {
-        return originUri;
-    }
+	public URI getOriginUri() {
+		return originUri;
+	}
 
-    private static class ResourceDescriptorLabelProvider extends StyledCellLabelProvider {
+	private static class ResourceDescriptorLabelProvider extends StyledCellLabelProvider {
 
-        private final Image imgJar = Icons.desc("jar")
-            .createImage();
+		private final Image imgJar = Icons.desc("jar")
+			.createImage();
 
-        @Override
-        public void update(ViewerCell cell) {
-            ResourceDescriptor descriptor = (ResourceDescriptor) cell.getElement();
-            StyledString label = new StyledString(descriptor.bsn + " ");
-            if (descriptor.version != null)
-                label.append(descriptor.version.toString(), StyledString.COUNTER_STYLER);
+		@Override
+		public void update(ViewerCell cell) {
+			ResourceDescriptor descriptor = (ResourceDescriptor) cell.getElement();
+			StyledString label = new StyledString(descriptor.bsn + " ");
+			if (descriptor.version != null)
+				label.append(descriptor.version.toString(), StyledString.COUNTER_STYLER);
 
-            cell.setText(label.toString());
-            cell.setStyleRanges(label.getStyleRanges());
+			cell.setText(label.toString());
+			cell.setStyleRanges(label.getStyleRanges());
 
-            cell.setImage(imgJar);
-        }
+			cell.setImage(imgJar);
+		}
 
-        @Override
-        public void dispose() {
-            imgJar.dispose();
-        }
-    }
+		@Override
+		public void dispose() {
+			imgJar.dispose();
+		}
+	}
 
 }

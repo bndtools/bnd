@@ -5,13 +5,13 @@ import java.util.Map;
 
 public class TypePath {
 	@A
-	Map<@B ? extends @C String, @D List<@E Object>>		b;
+	Map<@B ? extends @C String, @D List<@E Object>>				b;
 
 	@I
-	String @F [] @G [] @H []							c;
+	String @F [] @G [] @H []									c;
 
 	@A
-	List<@B Comparable<@F Object @C [] @D [] @E []>>	d;
+	List<@B Comparable<@F Object @C [] @D [] @E []>>			d;
 
 	@C
 	OuterE.@B Middle.@A Inner									e;

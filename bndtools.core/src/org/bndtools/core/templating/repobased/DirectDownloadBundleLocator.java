@@ -8,13 +8,13 @@ import aQute.lib.io.IO;
 // TODO need to use some kind of cache to avoid repeated downloads
 public class DirectDownloadBundleLocator implements BundleLocator {
 
-    @Override
-    public File locate(String bsn, String hash, String algo, URI location) throws Exception {
-        File tempFile = File.createTempFile("download", "jar");
-        tempFile.deleteOnExit();
+	@Override
+	public File locate(String bsn, String hash, String algo, URI location) throws Exception {
+		File tempFile = File.createTempFile("download", "jar");
+		tempFile.deleteOnExit();
 
-        IO.copy(location.toURL(), tempFile);
-        return tempFile;
-    }
+		IO.copy(location.toURL(), tempFile);
+		return tempFile;
+	}
 
 }

@@ -9,43 +9,43 @@ import org.eclipse.swt.graphics.Image;
 
 public class URLLabelProvider extends StyledCellLabelProvider {
 
-    private final Image linkImg;
-    private final Image fileImg;
+	private final Image	linkImg;
+	private final Image	fileImg;
 
-    public URLLabelProvider(Device device) {
-        linkImg = Icons.desc("link")
-            .createImage(device);
-        fileImg = Icons.desc("file")
-            .createImage();
-    }
+	public URLLabelProvider(Device device) {
+		linkImg = Icons.desc("link")
+			.createImage(device);
+		fileImg = Icons.desc("file")
+			.createImage();
+	}
 
-    @Override
-    public void update(ViewerCell cell) {
-        Image img;
-        String text;
+	@Override
+	public void update(ViewerCell cell) {
+		Image img;
+		String text;
 
-        Object element = cell.getElement();
-        if (element instanceof OBRLink) {
-            StyledString label = ((OBRLink) element).getLabel();
-            cell.setStyleRanges(label.getStyleRanges());
-            text = label.getString();
-        } else {
-            text = (element == null ? "null" : element.toString());
-        }
+		Object element = cell.getElement();
+		if (element instanceof OBRLink) {
+			StyledString label = ((OBRLink) element).getLabel();
+			cell.setStyleRanges(label.getStyleRanges());
+			text = label.getString();
+		} else {
+			text = (element == null ? "null" : element.toString());
+		}
 
-        if (text.startsWith("file:"))
-            img = fileImg;
-        else
-            img = linkImg;
+		if (text.startsWith("file:"))
+			img = fileImg;
+		else
+			img = linkImg;
 
-        cell.setText(text);
-        cell.setImage(img);
-    }
+		cell.setText(text);
+		cell.setImage(img);
+	}
 
-    @Override
-    public void dispose() {
-        super.dispose();
-        linkImg.dispose();
-        fileImg.dispose();
-    }
+	@Override
+	public void dispose() {
+		super.dispose();
+		linkImg.dispose();
+		fileImg.dispose();
+	}
 }

@@ -11,7 +11,7 @@ public interface RepositoryListenerPlugin {
 
 	/**
 	 * Called when a bundle is added to a repository.
-	 * 
+	 *
 	 * @param repository
 	 * @param jar
 	 * @param file
@@ -20,7 +20,7 @@ public interface RepositoryListenerPlugin {
 
 	/**
 	 * Called when a bundle removed from a repository.
-	 * 
+	 *
 	 * @param repository
 	 * @param jar
 	 * @param file
@@ -30,7 +30,7 @@ public interface RepositoryListenerPlugin {
 	/**
 	 * Called when a large or unknown set of changes have occurred in the
 	 * repository.
-	 * 
+	 *
 	 * @param repository
 	 */
 	void repositoryRefreshed(RepositoryPlugin repository);
