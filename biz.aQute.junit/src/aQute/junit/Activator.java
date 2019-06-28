@@ -16,7 +16,8 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Vector;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.regex.Pattern;
 
 import org.junit.runner.Description;
@@ -192,7 +193,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	void automatic(File reportDir) throws IOException {
-		final List<Bundle> queue = new Vector<>();
+		BlockingDeque<Bundle> queue = new LinkedBlockingDeque<>();
 
 		trace("adding Bundle Listener for getting test bundle events");
 		context.addBundleListener((SynchronousBundleListener) event -> {
@@ -210,32 +211,24 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 		trace("starting queue");
 		int result = 0;
-		outer: while (active) {
-			Bundle bundle;
-			synchronized (queue) {
-				while (queue.isEmpty() && active) {
-					try {
-						queue.wait();
-					} catch (InterruptedException e) {
-						trace("tests bundle queue interrupted");
-						thread.interrupt();
-						break outer;
-					}
-				}
-			}
+		while (active()) {
 			try {
-				bundle = queue.remove(0);
+				Bundle bundle = queue.takeFirst();
 				trace("received bundle to test: %s", bundle.getLocation());
 				try (Writer report = getReportWriter(reportDir, bundleReportName(bundle))) {
 					trace("test will run");
 					result += test(bundle, bundle.getHeaders()
 						.get(aQute.bnd.osgi.Constants.TESTCASES), report);
 					trace("test ran");
-					if (queue.isEmpty() && !continuous) {
-						trace("queue " + queue);
-						System.exit(result);
-					}
 				}
+				if (queue.isEmpty() && !continuous) {
+					trace("queue " + queue);
+					System.exit(result);
+				}
+			} catch (InterruptedException e) {
+				trace("tests bundle queue interrupted");
+				thread.interrupt();
+				break;
 			} catch (Exception e) {
 				error("Not sure what happened anymore %s", e);
 				System.exit(254);
@@ -243,18 +236,14 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		}
 	}
 
-	void checkBundle(List<Bundle> queue, Bundle bundle) {
+	void checkBundle(BlockingDeque<Bundle> queue, Bundle bundle) {
 		Bundle host = findHost(bundle);
-
 		if (host != null && (host.getState() == Bundle.ACTIVE || host.getState() == Bundle.STARTING)) {
 			String testcases = bundle.getHeaders()
 				.get(aQute.bnd.osgi.Constants.TESTCASES);
 			if (testcases != null) {
 				trace("found active bundle with test cases %s : %s", bundle, testcases);
-				synchronized (queue) {
-					queue.add(bundle);
-					queue.notifyAll();
-				}
+				queue.offerLast(bundle);
 			}
 		}
 	}
