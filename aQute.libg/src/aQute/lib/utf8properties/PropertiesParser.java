@@ -47,7 +47,7 @@ final class PropertiesParser {
 	private Properties	properties;
 	private boolean		validKey;
 	private boolean		continuation	= true;
-	private String[]	syntaxHeaders		= new String[0];
+	private String[]	syntaxHeaders	= new String[0];
 
 	PropertiesParser(String source, String file, Reporter reporter, Properties properties) {
 		this.source = source.toCharArray();
@@ -201,7 +201,7 @@ final class PropertiesParser {
 		}
 	}
 
-	private final String token(byte delimeters, boolean check) {
+	private String token(byte delimeters, boolean check) {
 		StringBuilder sb = new StringBuilder();
 		char quote = 0;
 		boolean expectDelimeter = false;
@@ -307,7 +307,7 @@ final class PropertiesParser {
 			error("Non breaking space found [%s] at (line=%s,pos=%s)", type, line, pos);
 	}
 
-	private final String key() {
+	private String key() {
 		StringBuilder sb = new StringBuilder();
 		while (!isIn(KEY)) {
 			if (isIn(NOKEY))
@@ -326,13 +326,13 @@ final class PropertiesParser {
 		return sb.toString();
 	}
 
-	private final boolean isIn(byte delimeters) {
+	private boolean isIn(byte delimeters) {
 		if (current < MIN_DELIMETER || current > MAX_DELIMETER)
 			return false;
 		return (INFO[current] & delimeters) != 0;
 	}
 
-	private final char backslash() {
+	private char backslash() {
 		char c;
 		c = next();
 		switch (c) {

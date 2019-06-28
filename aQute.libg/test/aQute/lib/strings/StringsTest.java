@@ -30,8 +30,7 @@ public class StringsTest extends TestCase {
 
 	public void testCompareExcept() {
 
-		assertThat(
-			Strings.compareExcept("foox", "foo", Pattern.compile("(x+)"))).isFalse();
+		assertThat(Strings.compareExcept("foox", "foo", Pattern.compile("(x+)"))).isFalse();
 
 		assertThat(
 			Strings.compareExcept("xfooxfooxxfooxxxfooxxxx", "xxxxxfooxfooxxxxxxxfooxfoox", Pattern.compile("(x+)")))
@@ -43,7 +42,6 @@ public class StringsTest extends TestCase {
 		assertThat(Strings.compareExcept("fooxxxxxxxx", "foox", Pattern.compile("(x+)"))).isTrue();
 		assertThat(Strings.compareExcept("abcxxxxxxxdefxxxxxghixxjkl",
 			"abcxdefxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxghixxjkl", Pattern.compile("(x+)"))).isTrue();
-
 
 		assertThat(Strings.compareExcept("<foo increment=\"1234567\"><xyz/></foo>",
 			"<foo increment=\"8907\"><xyz/></foo>", Pattern.compile("increment=\"([0-9]+)\""))).isTrue();

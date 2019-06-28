@@ -21,8 +21,7 @@ public interface RunnableWithException {
 		return () -> {
 			try {
 				run();
-			} catch (Exception e) {
-			}
+			} catch (Exception e) {}
 		};
 	}
 

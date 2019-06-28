@@ -49,7 +49,7 @@ public class Aspects {
 	/**
 	 * A builder to create a proxy that delegates to another object but can
 	 * intercept calls, put something before, after and around calls.
-	 * 
+	 *
 	 * @param <T> the delegate type
 	 */
 	public interface InterceptBuilder<T> {
@@ -58,7 +58,7 @@ public class Aspects {
 		 * Intercept a method call with a lambda. This is the generic form. For
 		 * 0, 1, and 2 argument forms there are more convenient shortcuts. The
 		 * number of types and the given arguments to the lambda must match
-		 * 
+		 *
 		 * @param intercept the lambda to intercept
 		 * @param name the method name
 		 * @param types the types
@@ -68,7 +68,7 @@ public class Aspects {
 
 		/**
 		 * Intercept a no method call
-		 * 
+		 *
 		 * @param intercept the no method lambda
 		 * @param name the name of the method without arguments
 		 */
@@ -76,7 +76,7 @@ public class Aspects {
 
 		/**
 		 * Intercept a no method call
-		 * 
+		 *
 		 * @param intercept the no method lambda
 		 * @param name the name of the method without arguments
 		 */
@@ -84,7 +84,7 @@ public class Aspects {
 
 		/**
 		 * Intercept a one argument method call
-		 * 
+		 *
 		 * @param intercept the one argument method lambda
 		 * @param name the name of the method with one argument
 		 */
@@ -92,7 +92,7 @@ public class Aspects {
 
 		/**
 		 * Intercept a two argument method call
-		 * 
+		 *
 		 * @param intercept the two argument method lambda
 		 * @param name the name of the method with two arguments
 		 */
@@ -105,7 +105,7 @@ public class Aspects {
 		 * as a callable. The around should setup whatever it wants to setup,
 		 * call the callable, tear down what was setup and then return the
 		 * result of the callable. Exceptions can be passed upwards.
-		 * 
+		 *
 		 * @param around the around advice (the argument is a callable that
 		 *            should be calle
 		 */
@@ -117,7 +117,7 @@ public class Aspects {
 		 * null). The consumer may change these arguments but should of course
 		 * be extremely careful to not change the types in a way that would make
 		 * the method call impossible.
-		 * 
+		 *
 		 * @param before advice
 		 */
 		InterceptBuilder<T> before(ConsumerWithException<Invocation> before);
@@ -127,14 +127,14 @@ public class Aspects {
 		 * given parameter to the function are the arguments and the result of
 		 * the previous methods. The function should return the result, modified
 		 * if so needed.
-		 * 
+		 *
 		 * @param after advice
 		 */
 		InterceptBuilder<T> after(BiFunctionWithException<Invocation, Object, Object> after);
 
 		/**
 		 * Called when an exception occurs
-		 * 
+		 *
 		 * @param exception the throw exception
 		 */
 		InterceptBuilder<T> onException(BiFunctionWithException<Invocation, Throwable, Object> exception);
@@ -147,7 +147,7 @@ public class Aspects {
 
 	/**
 	 * Create an intercepting proxy using a builder
-	 * 
+	 *
 	 * @param type the type of the proxy
 	 * @param delegate the delegate to delegate to
 	 * @return a builder
@@ -159,12 +159,11 @@ public class Aspects {
 		assert Objects.nonNull(delegate);
 
 		return new InterceptBuilder<T>() {
-			final Map<Method, FunctionWithException<Invocation, Object>>				methods		= new HashMap<>();
-			ConsumerWithException<Invocation>											before		= null;
-			BiFunctionWithException<Invocation, Callable<Object>, Object>	around		= (x, c) -> c
-				.call();
-			BiFunctionWithException<Invocation, Object, Object>							after		= null;
-			BiFunctionWithException<Invocation, Throwable, Object>						exceptions	= null;
+			final Map<Method, FunctionWithException<Invocation, Object>>	methods		= new HashMap<>();
+			ConsumerWithException<Invocation>								before		= null;
+			BiFunctionWithException<Invocation, Callable<Object>, Object>	around		= (x, c) -> c.call();
+			BiFunctionWithException<Invocation, Object, Object>				after		= null;
+			BiFunctionWithException<Invocation, Throwable, Object>			exceptions	= null;
 
 			{
 				try {
@@ -225,8 +224,7 @@ public class Aspects {
 			}
 
 			@Override
-			public InterceptBuilder<T> around(
-				BiFunctionWithException<Invocation, Callable<Object>, Object> around) {
+			public InterceptBuilder<T> around(BiFunctionWithException<Invocation, Callable<Object>, Object> around) {
 				if (this.around == null) {
 					this.around = around;
 				} else {
@@ -245,7 +243,7 @@ public class Aspects {
 					this.before = (args) -> {
 						previous.accept(args);
 						before.accept(args);
-						;
+
 					};
 				}
 				return this;
@@ -322,7 +320,6 @@ public class Aspects {
 
 					if (result != NORETURN)
 						return result;
-
 
 					throw t;
 				}

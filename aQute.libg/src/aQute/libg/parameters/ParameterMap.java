@@ -16,8 +16,7 @@ public class ParameterMap extends LinkedHashMap<String, Attributes> {
 	private static final char	DUPLICATE_MARKER	= '~';
 	private static final long	serialVersionUID	= 1L;
 
-	public ParameterMap() {
-	}
+	public ParameterMap() {}
 
 	/**
 	 * <pre>
@@ -26,7 +25,7 @@ public class ParameterMap extends LinkedHashMap<String, Attributes> {
 	 * key    ::= NAME ( ':' type )
 	 * type   ::= List<String>, ...
 	 * </pre>
-	 * 
+	 *
 	 * @param parameters
 	 */
 	public ParameterMap(String parameters) {
@@ -133,6 +132,7 @@ public class ParameterMap extends LinkedHashMap<String, Attributes> {
 		return super.put(key, (attrs == null) ? new Attributes() : new Attributes(attrs));
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		append(sb);

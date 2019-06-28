@@ -36,7 +36,7 @@ public interface Sink {
 
 	/**
 	 * Create a new area
-	 * 
+	 *
 	 * @param areaId area id, or null for a new area
 	 */
 	Area createArea(String areaId) throws Exception;

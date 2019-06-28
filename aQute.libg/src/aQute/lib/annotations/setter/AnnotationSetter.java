@@ -28,7 +28,7 @@ public class AnnotationSetter<T> {
 		}
 	}
 
-	final Map<String,Object>	map	= new HashMap<>();
+	final Map<String, Object>	map	= new HashMap<>();
 	final Class<T>				type;
 	final T						proxy;
 
@@ -38,7 +38,7 @@ public class AnnotationSetter<T> {
 	public AnnotationSetter(Class<T> type) {
 		this.type = type;
 		proxy = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {
-				type
+			type
 		}, new InvocationHandler() {
 
 			@Override
@@ -55,11 +55,13 @@ public class AnnotationSetter<T> {
 			public String toString() {
 				StringBuilder sb = new StringBuilder();
 
-				sb.append("@").append(getFQN(type));
+				sb.append("@")
+					.append(getFQN(type));
 				String del = "(";
-				for (Map.Entry<String,Object> e : map.entrySet()) {
+				for (Map.Entry<String, Object> e : map.entrySet()) {
 					sb.append(del);
-					sb.append(e.getKey()).append("=");
+					sb.append(e.getKey())
+						.append("=");
 					print(sb, e.getValue());
 					del = ",";
 				}
@@ -69,8 +71,8 @@ public class AnnotationSetter<T> {
 				return sb.toString();
 			}
 
-			private String getFQN(Class< ? > type) {
-				Class< ? > enclosingClass = type.getEnclosingClass();
+			private String getFQN(Class<?> type) {
+				Class<?> enclosingClass = type.getEnclosingClass();
 				if (enclosingClass == null)
 					return type.getName();
 				else
@@ -83,7 +85,8 @@ public class AnnotationSetter<T> {
 					escape(sb, (String) value);
 					sb.append("\"");
 
-				} else if (value.getClass().isArray()) {
+				} else if (value.getClass()
+					.isArray()) {
 					int length = Array.getLength(value);
 					if (length != 1)
 						sb.append("{");
@@ -99,8 +102,10 @@ public class AnnotationSetter<T> {
 				} else if (value instanceof Wrapper) {
 					sb.append(((Wrapper) value).value);
 				} else if (value instanceof Enum) {
-					String name = ((Enum< ? >) value).name();
-					sb.append(getFQN(value.getClass())).append(".").append(name);
+					String name = ((Enum<?>) value).name();
+					sb.append(getFQN(value.getClass()))
+						.append(".")
+						.append(name);
 				} else {
 					sb.append(value);
 				}

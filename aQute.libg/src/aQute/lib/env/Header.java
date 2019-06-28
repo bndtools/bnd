@@ -252,7 +252,7 @@ public class Header implements Map<String, Props> {
 	 * ::= clause ( ',' clause ) + clause ::= name ( ';' name ) (';' key '='
 	 * value ) This is mapped to a Map { name => Map { attr|directive => value }
 	 * }
-	 * 
+	 *
 	 * @param value A string
 	 * @return a Map<String,Map<String,String>>
 	 */

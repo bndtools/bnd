@@ -251,7 +251,7 @@ public class Strings {
 
 	/**
 	 * Split a string into a base and an extension.
-	 * 
+	 *
 	 * @param s the string that contains an extension
 	 * @return null if no extension or an array of 2 elements, first is the
 	 *         prefix and second is the extension without a '.'
@@ -262,7 +262,7 @@ public class Strings {
 
 	/**
 	 * Split a path (/ based) into a prefix and a last segment
-	 * 
+	 *
 	 * @param s the string that contains a path
 	 * @return null if no extension or an array of 2 elements, first is the
 	 *         prefix and second is the last segment without a '/' at the start
@@ -274,7 +274,7 @@ public class Strings {
 	/**
 	 * Split a string into a prefix and a suffix based on the last time the
 	 * separator appears
-	 * 
+	 *
 	 * @param s the string that contains a path
 	 * @return null if no extension or an array of 2 elements, first is the
 	 *         prefix and second is the last segment without the separator at
@@ -357,7 +357,7 @@ public class Strings {
 	/**
 	 * This method is the same as String.format but it makes sure that any
 	 * arrays are transformed to strings.
-	 * 
+	 *
 	 * @param string
 	 * @param parms
 	 */
@@ -392,16 +392,16 @@ public class Strings {
 	 * Compare two strings except for where the first group in pattern. The
 	 * patterns is matched in the strings using find(). Only group 1 is ignored.
 	 * Use ignored groups {@code(?:...)} to ignore irrelevant groups.
-	 * 
+	 *
 	 * <pre>
 	 * 		a = "abcdefxxxxghixxxxx678"
 	 * 		b = "abcdefxxghix678"
 	 * 		Pattern "(x+)"
 	 * </pre>
-	 * 
+	 *
 	 * First developed to compare two XML files that only differed in their
 	 * increment number, which was a time long.
-	 * 
+	 *
 	 * @param a the first string to compare
 	 * @param b the second string to compare
 	 * @param pattern where first group should be ignored in the comparison

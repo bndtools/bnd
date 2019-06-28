@@ -71,24 +71,19 @@ public class TestForker extends TestCase {
 		final Forker<Integer> forker = new Forker<>();
 		final Collection<Integer> result = Collections.synchronizedList(new ArrayList<Integer>());
 
-		forker.doWhen(EMPTY, 4, new Runnable() {
-
-			@Override
-			public void run() {
-				synchronized (result) {
-					try {
-						System.err.println("starting to wait");
-						result.wait(TIMEOUT);
-						System.err.println("finished wait");
-					} catch (Exception e) {
-						System.err.println("exception");
-						e.printStackTrace();
-					} finally {
-						System.err.println("leaving task");
-					}
+		forker.doWhen(EMPTY, 4, () -> {
+			synchronized (result) {
+				try {
+					System.err.println("starting to wait");
+					result.wait(TIMEOUT);
+					System.err.println("finished wait");
+				} catch (Exception e) {
+					System.err.println("exception");
+					e.printStackTrace();
+				} finally {
+					System.err.println("leaving task");
 				}
 			}
-
 		});
 		forker.start(-1);
 		Thread.sleep(1000);

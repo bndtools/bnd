@@ -37,7 +37,7 @@ public class DomDTOParser {
 	 * parse the given XML file based on the type as the schema. Attributes and
 	 * elements are mapped to fields in an object of this type. If the field is
 	 * a collection or a DTO type, the parse will be recursive.
-	 * 
+	 *
 	 * @param type the type acting as scheme
 	 * @param doc the file
 	 * @return a DTO of type
@@ -51,7 +51,7 @@ public class DomDTOParser {
 	 * parse the given XML file based on the type as the schema. Attributes and
 	 * elements are mapped to fields in an object of this type. If the field is
 	 * a collection or a DTO type, the parse will be recursive.
-	 * 
+	 *
 	 * @param type the type acting as scheme
 	 * @param doc the file
 	 * @return a DTO of type
@@ -189,8 +189,8 @@ public class DomDTOParser {
 		} catch (Exception e) {
 			for (Field field : class1.getFields()) {
 				if (name.equals(getName(field))) {
-						return field;
-					}
+					return field;
+				}
 			}
 		}
 		return null;

@@ -2,8 +2,7 @@ package aQute.lib.env;
 
 import java.io.File;
 import java.io.InputStream;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Map;
@@ -242,55 +241,49 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 	 * converted to strings using the toString methods.
 	 * <p/>
 	 * Example:
-	 * 
+	 *
 	 * <pre>
 	 *  interface MyConfig { int level(); MyConfig level(int level);
 	 * Pattern pattern(); MyConfig pattern(String p); } Env env = ... MyConfig c
 	 * = env.config(MyConfig.class, "myconfig.");
 	 * </pre>
-	 * 
+	 *
 	 * @param front the fronting interface
 	 * @param prefix the prefix in the properties
 	 * @return an interface that can be used to get and set properties
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> T config(Class<?> front, final String prefix) {
-		final Env THIS = this;
-
-		return (T) java.lang.reflect.Proxy.newProxyInstance(front.getClassLoader(), new Class[] {
+		return (T) Proxy.newProxyInstance(front.getClassLoader(), new Class[] {
 			front
-		}, new InvocationHandler() {
-
-			@Override
-			public Object invoke(Object target, Method method, Object[] parameters) throws Throwable {
-				String name = mangleMethodName(prefix, method.getName());
-				if (parameters == null || parameters.length == 0) {
-					String value = getProperty(name);
-					if (value == null) {
-						if (method.getReturnType()
-							.isPrimitive())
-							return Converter.cnv(method.getReturnType(), null);
-						else
-							return null;
-					}
+		}, (target, method, parameters) -> {
+			String name = mangleMethodName(prefix, method.getName());
+			if (parameters == null || parameters.length == 0) {
+				String value = getProperty(name);
+				if (value == null) {
 					if (method.getReturnType()
-						.isInstance(value))
-						return value;
-
-					return Converter.cnv(method.getGenericReturnType(), value);
-				} else if (parameters.length == 1) {
-					Object arg = parameters[0].toString();
-					if (arg == null)
-						removeProperty(name);
+						.isPrimitive())
+						return Converter.cnv(method.getReturnType(), null);
 					else
-						setProperty(name, arg.toString());
-					if (method.getReturnType()
-						.isInstance(THIS))
-						return THIS;
-					return Converter.cnv(method.getReturnType(), null);
+						return null;
 				}
-				throw new IllegalArgumentException("Too many arguments: " + Arrays.toString(parameters));
+				if (method.getReturnType()
+					.isInstance(value))
+					return value;
+
+				return Converter.cnv(method.getGenericReturnType(), value);
+			} else if (parameters.length == 1) {
+				Object arg = parameters[0].toString();
+				if (arg == null)
+					removeProperty(name);
+				else
+					setProperty(name, arg.toString());
+				if (method.getReturnType()
+					.isInstance(this))
+					return this;
+				return Converter.cnv(method.getReturnType(), null);
 			}
+			throw new IllegalArgumentException("Too many arguments: " + Arrays.toString(parameters));
 		});
 	}
 

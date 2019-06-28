@@ -18,7 +18,7 @@ import aQute.lib.collections.MultiMap;
  */
 public class DOT<Vertex> {
 
-	static interface Attribute {
+	interface Attribute {
 		void render(Formatter f);
 	}
 

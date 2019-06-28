@@ -40,7 +40,7 @@ public abstract class AbstractConsoleApp extends Env {
 
 	/**
 	 * Default constructor
-	 * 
+	 *
 	 * @throws UnsupportedEncodingException
 	 */
 
@@ -56,7 +56,7 @@ public abstract class AbstractConsoleApp extends Env {
 
 	/**
 	 * Main entry
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void run(String args[]) throws Exception {
@@ -105,7 +105,7 @@ public abstract class AbstractConsoleApp extends Env {
 
 	/**
 	 * Initialize the repository and other global vars.
-	 * 
+	 *
 	 * @param opts the options
 	 * @throws IOException
 	 */

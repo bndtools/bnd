@@ -43,7 +43,7 @@ public class Justif {
 	 * position</li>
 	 * <li>A form feed in a tabbed colum will break but stay in the column</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param sb
 	 */
 	public void wrap(StringBuilder sb) {

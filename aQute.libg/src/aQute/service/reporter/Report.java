@@ -26,21 +26,21 @@ public interface Report {
 
 	/**
 	 * Return the warnings. This list must not be changed and may be immutable.
-	 * 
+	 *
 	 * @return the warnings
 	 */
 	List<String> getWarnings();
 
 	/**
 	 * Return the errors. This list must not be changed and may be immutable.
-	 * 
+	 *
 	 * @return the errors
 	 */
 	List<String> getErrors();
 
 	/**
 	 * Return the errors for the given error or warning. Can return null.
-	 * 
+	 *
 	 * @param msg The message
 	 * @return null or the location of the message
 	 */
@@ -50,7 +50,7 @@ public interface Report {
 	 * Check if this report has any relevant errors that should make the run
 	 * associated with this report invalid. I.e. if this returns false then the
 	 * run should be disregarded.
-	 * 
+	 *
 	 * @return true if this run should be disregarded due to errors
 	 */
 

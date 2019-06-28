@@ -101,7 +101,7 @@ public class Attributes implements Map<String, String> {
 
 	private final Map<String, String>			map;
 	private final Map<String, Type>				types;
-	public static final Attributes					EMPTY_ATTRS		= new Attributes(Collections.emptyMap(),
+	public static final Attributes				EMPTY_ATTRS		= new Attributes(Collections.emptyMap(),
 		Collections.emptyMap());
 
 	private Attributes(Map<String, String> map, Map<String, Type> types) {

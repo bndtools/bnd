@@ -6,13 +6,13 @@ import java.util.regex.Pattern;
 
 /*
  * Hex converter.
- * 
+ *
  * TODO Implement string to byte[]
  */
 public class Hex {
 	private final static Pattern	HEX_P	= Pattern.compile("(?:\\p{XDigit}{2})+");
 
-	final static char[]	HEX		= {
+	final static char[]				HEX		= {
 		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 	};
 
@@ -99,9 +99,9 @@ public class Hex {
 	}
 
 	public static String separated(byte[] bytes, String separator) {
-		String del="";
+		String del = "";
 		StringBuilder sb = new StringBuilder();
-		for ( byte x : bytes) {
+		for (byte x : bytes) {
 			sb.append(del);
 			sb.append(toHex(x));
 			del = separator;

@@ -153,7 +153,7 @@ public class Decoder implements Closeable {
 
 	/**
 	 * Skip any whitespace.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	int skipWs() throws Exception {
@@ -164,7 +164,7 @@ public class Decoder implements Closeable {
 
 	/**
 	 * Skip any whitespace.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	int next() throws Exception {

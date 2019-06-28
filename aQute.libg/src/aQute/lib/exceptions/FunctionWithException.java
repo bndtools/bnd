@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 /**
  * Function interface that allows exceptions.
- * 
+ *
  * @param <T> the type of the argument
  * @param <R> the result type
  */

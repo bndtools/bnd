@@ -138,7 +138,7 @@ public class DirectoryInputStream extends InputStream {
 
 	/**
 	 * Local file header:
-	 * 
+	 *
 	 * <pre>
 	 *  local file header signature 4 bytes (0x04034b50)
 	 * version needed to extract 2 bytes general purpose bit flag 2 bytes

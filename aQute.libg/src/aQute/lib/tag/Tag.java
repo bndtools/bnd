@@ -190,22 +190,22 @@ public class Tag {
 	 * appended to to it)</li>
 	 * </ul>
 	 * <h3>Example:</h3>
-	 * 
+	 *
 	 * <pre>
 	 * fromDTO("things", "element", `[{"FRIEND": ["Amy"]},{"children": ["Emily"]},["Bob", "Bill"]]`)
 	 * </pre>
-	 * 
+	 *
 	 * gives
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * <things>
 	 *    <thing>
 	 *       <FRIEND>
-	 *          <FRIEND_ELEMENT>Amy</FRIEND_ELEMENT>               
+	 *          <FRIEND_ELEMENT>Amy</FRIEND_ELEMENT>
 	 *       </FRIEND>
 	 *       <children>
-	 *          <childrenElement>Emily</childrenElement>               
+	 *          <childrenElement>Emily</childrenElement>
 	 *       </children>
 	 *    </thing>
 	 *    <thing>
@@ -217,7 +217,7 @@ public class Tag {
 	 * </pre>
 	 * <p>
 	 * {@code null} values are ignored.
-	 * 
+	 *
 	 * @param rootName the name of the root tag, may be {@code null}.
 	 * @param arrayElementName a generic name for elements in lists, if
 	 *            {@code null} or empty, the default value "element" will be
@@ -252,22 +252,22 @@ public class Tag {
 	 * capitalized and an '_' is first appended to to it)</li>
 	 * </ul>
 	 * <h3>Example:</h3>
-	 * 
+	 *
 	 * <pre>
 	 * fromDTO("things", "element", `[{"FRIEND": ["Amy"]},{"children": ["Emily"]},["Bob", "Bill"]]`)
 	 * </pre>
-	 * 
+	 *
 	 * gives
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * <things>
 	 *    <thing>
 	 *       <FRIEND>
-	 *          <FRIEND_ELEMENT>Amy</FRIEND_ELEMENT>               
+	 *          <FRIEND_ELEMENT>Amy</FRIEND_ELEMENT>
 	 *       </FRIEND>
 	 *       <children>
-	 *          <childrenElement>Emily</childrenElement>               
+	 *          <childrenElement>Emily</childrenElement>
 	 *       </children>
 	 *    </thing>
 	 *    <thing>
@@ -279,7 +279,7 @@ public class Tag {
 	 * </pre>
 	 * <p>
 	 * {@code null} values are ignored.
-	 * 
+	 *
 	 * @param rootName the name of the root tag, may be {@code null}.
 	 * @param dto the DTO to convert, if {@code null} an empty element is
 	 *            returned.

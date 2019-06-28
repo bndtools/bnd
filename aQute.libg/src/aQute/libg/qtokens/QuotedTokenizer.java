@@ -215,7 +215,7 @@ public class QuotedTokenizer implements Iterable<String> {
 	 * Quote a string when it is not a token (OSGi). If the string is already
 	 * quoted (or backslash quoted) then these are removed before inspection to
 	 * see if it is a token.
-	 * 
+	 *
 	 * @param sb the output
 	 * @param value the value to quote
 	 */
