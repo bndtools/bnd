@@ -113,26 +113,30 @@ public class DistroCommandTest extends TestCase {
 		distroArgs.add("1.0.0");
 		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
 
-		new RemoteCommand(bnd, remoteOptions)._distro(distroOptions);
+		try (RemoteCommand rc = new RemoteCommand(bnd, remoteOptions)) {
+			rc._distro(distroOptions);
+		}
 
 		assertTrue(distro.exists());
 
 		ResourceBuilder builder = new ResourceBuilder();
 
-		Domain manifest = Domain.domain(new Jar(distro).getManifest());
+		try (Jar jar = new Jar(distro)) {
+			Domain manifest = Domain.domain(jar.getManifest());
 
-		builder.addManifest(manifest);
+			builder.addManifest(manifest);
 
-		Resource resource = builder.build();
+			Resource resource = builder.build();
 
-		assertEquals("1.4.0", resource.getCapabilities("osgi.wiring.package")
-			.stream()
-			.map(Capability::getAttributes)
-			.filter(atts -> ((String) atts.get("osgi.wiring.package")).equals("org.osgi.service.log"))
-			.findAny()
-			.map(atts -> atts.get("version"))
-			.map(String::valueOf)
-			.get());
+			assertEquals("1.4.0", resource.getCapabilities("osgi.wiring.package")
+				.stream()
+				.map(Capability::getAttributes)
+				.filter(atts -> ((String) atts.get("osgi.wiring.package")).equals("org.osgi.service.log"))
+				.findAny()
+				.map(atts -> atts.get("version"))
+				.map(String::valueOf)
+				.get());
+		}
 	}
 
 	public void testMultipleCapabilitiesPerNamespace() throws Exception {
@@ -150,18 +154,22 @@ public class DistroCommandTest extends TestCase {
 		distroArgs.add("1.0.0");
 		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
 
-		new RemoteCommand(bnd, remoteOptions)._distro(distroOptions);
+		try (RemoteCommand rc = new RemoteCommand(bnd, remoteOptions)) {
+			rc._distro(distroOptions);
+		}
 
 		assertTrue(distro.exists());
 
 		ResourceBuilder builder = new ResourceBuilder();
 
-		Domain manifest = Domain.domain(new Jar(distro).getManifest());
+		try (Jar jar = new Jar(distro)) {
+			Domain manifest = Domain.domain(jar.getManifest());
 
-		builder.addManifest(manifest);
+			builder.addManifest(manifest);
 
-		Resource resource = builder.build();
-		verifyResource(resource);
+			Resource resource = builder.build();
+			verifyResource(resource);
+		}
 	}
 
 	public void testXmlOutput() throws Exception {
@@ -179,17 +187,20 @@ public class DistroCommandTest extends TestCase {
 		distroArgs.add("test.distro");
 		distroArgs.add("1.0.0");
 		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
-		new RemoteCommand(bnd, remoteOptions)._distro(distroOptions);
+		try (RemoteCommand rc = new RemoteCommand(bnd, remoteOptions)) {
+			rc._distro(distroOptions);
+		}
 
 		assertTrue(distro.exists());
 
-		XMLResourceParser parser = new XMLResourceParser(distro);
-		List<Resource> resources = parser.parse();
-		assertThat(resources).hasSize(1);
+		try (XMLResourceParser parser = new XMLResourceParser(distro)) {
+			List<Resource> resources = parser.parse();
+			assertThat(resources).hasSize(1);
 
-		Resource resource = resources.get(0);
-		assertThat(resource.getRequirements(null)).isEmpty();
-		verifyResource(resource);
+			Resource resource = resources.get(0);
+			assertThat(resource.getRequirements(null)).isEmpty();
+			verifyResource(resource);
+		}
 	}
 
 	public void verifyResource(Resource resource) {
@@ -245,7 +256,9 @@ public class DistroCommandTest extends TestCase {
 		distroArgs.add("1.0.0");
 		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
 
-		new RemoteCommand(bnd, remoteOptions)._distro(distroOptions);
+		try (RemoteCommand rc = new RemoteCommand(bnd, remoteOptions)) {
+			rc._distro(distroOptions);
+		}
 
 		assertTrue(distro.exists());
 
@@ -286,7 +299,9 @@ public class DistroCommandTest extends TestCase {
 		distroArgs.add("1.0.0");
 		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
 
-		new RemoteCommand(bnd, remoteOptions)._distro(distroOptions);
+		try (RemoteCommand rc = new RemoteCommand(bnd, remoteOptions)) {
+			rc._distro(distroOptions);
+		}
 
 		assertTrue(distro.exists());
 
@@ -323,7 +338,9 @@ public class DistroCommandTest extends TestCase {
 		distroArgs.add("1.0.0");
 		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
 
-		new RemoteCommand(bnd, remoteOptions)._distro(distroOptions);
+		try (RemoteCommand rc = new RemoteCommand(bnd, remoteOptions)) {
+			rc._distro(distroOptions);
+		}
 
 		assertTrue(distro.exists());
 

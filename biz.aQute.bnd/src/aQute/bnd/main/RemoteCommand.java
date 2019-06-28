@@ -202,9 +202,8 @@ class RemoteCommand extends Processor {
 	}
 
 	private File checkFile(String file) {
-		try {
-			File f = new File(file);
-			Jar jar = new Jar(f);
+		File f = new File(file);
+		try (Jar jar = new Jar(f)) {
 			// check if the jar is a bundle
 			if (jar.getBsn() != null) {
 				return f;

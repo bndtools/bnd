@@ -122,7 +122,7 @@ public class RepoCommand {
 
 	/**
 	 * Called from the command line
-	 * 
+	 *
 	 * @param bnd
 	 * @param opts
 	 * @throws Exception
@@ -304,7 +304,7 @@ public class RepoCommand {
 
 	/**
 	 * get a file from the repo
-	 * 
+	 *
 	 * @param opts
 	 */
 	@Description("Get an artifact from a repository.")
@@ -785,28 +785,29 @@ public class RepoCommand {
 			.endsWith(".zip")
 			|| src.getName()
 				.endsWith(".par")) {
-			ZipFile zipFile = new ZipFile(src);
-			Enumeration<? extends ZipEntry> entries = zipFile.entries();
-			while (entries.hasMoreElements()) {
-				ZipEntry entry = entries.nextElement();
-				String name = entry.getName();
-				int n = name.lastIndexOf('.');
-				String ext = name.substring(n);
+			try (ZipFile zipFile = new ZipFile(src)) {
+				Enumeration<? extends ZipEntry> entries = zipFile.entries();
+				while (entries.hasMoreElements()) {
+					ZipEntry entry = entries.nextElement();
+					String name = entry.getName();
+					int n = name.lastIndexOf('.');
+					String ext = name.substring(n);
 
-				if (".jar".equals(ext) || ".par".equals(ext)) {
-					try (InputStream in = zipFile.getInputStream(entry)) {
-						Path tmpFile = Files.createTempFile("zip", ext);
-						try {
-							IO.copy(in, tmpFile);
-							copyit(dry, dest, spec, tmpFile.toFile());
-						} finally {
-							Files.delete(tmpFile);
+					if (".jar".equals(ext) || ".par".equals(ext)) {
+						try (InputStream in = zipFile.getInputStream(entry)) {
+							Path tmpFile = Files.createTempFile("zip", ext);
+							try {
+								IO.copy(in, tmpFile);
+								copyit(dry, dest, spec, tmpFile.toFile());
+							} finally {
+								Files.delete(tmpFile);
+							}
 						}
+					} else {
+						bnd.progress("skip %s", name);
 					}
-				} else {
-					bnd.progress("skip %s", name);
-				}
 
+				}
 			}
 
 		} else {
@@ -851,7 +852,7 @@ public class RepoCommand {
 	/**
 	 * Read a repository and turn all bundles that have a pom into a dependency
 	 * POM
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void _topom(PomOptions opts) throws Exception {
