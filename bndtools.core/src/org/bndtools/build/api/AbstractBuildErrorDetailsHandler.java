@@ -313,8 +313,6 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
      *
      * @param javaProject
      * @param className - the fully qualified class name (e.g java.lang.String)
-     * @param methodName
-     * @param methodSignature - signatures are in "internal form" e.g. (Ljava.lang.Integer;[Ljava/lang/String;Z)V
      * @param markerAttributes - attributes that should be included in the marker, typically a message. The start and
      *            end points for the marker are added by this method.
      * @param hasResolutions - true if the marker will have resolutions

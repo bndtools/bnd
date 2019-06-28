@@ -29,7 +29,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -335,22 +334,19 @@ public class Central implements IStartupParticipant {
 
     private static void addCnfChangeListener(final Workspace workspace) {
         ResourcesPlugin.getWorkspace()
-            .addResourceChangeListener(new IResourceChangeListener() {
-                @Override
-                public void resourceChanged(IResourceChangeEvent event) {
-                    if (Central.getInstance() == null) { // plugin is not active
-                        return;
-                    }
-                    if (event.getType() != IResourceChangeEvent.POST_CHANGE) {
-                        return;
-                    }
-                    IResourceDelta rootDelta = event.getDelta();
-                    if (isCnfChanged(workspace, rootDelta)) {
-                        logger.logInfo("cnf changed; refreshing workspace", null);
-                        workspace.refresh();
-                    }
-                }
-            });
+            .addResourceChangeListener(event -> {
+			    if (Central.getInstance() == null) { // plugin is not active
+			        return;
+			    }
+			    if (event.getType() != IResourceChangeEvent.POST_CHANGE) {
+			        return;
+			    }
+			    IResourceDelta rootDelta = event.getDelta();
+			    if (isCnfChanged(workspace, rootDelta)) {
+			        logger.logInfo("cnf changed; refreshing workspace", null);
+			        workspace.refresh();
+			    }
+			});
     }
 
     private static boolean isCnfChanged(Workspace workspace, IResourceDelta rootDelta) {
@@ -585,7 +581,6 @@ public class Central implements IStartupParticipant {
      * Return the IResource associated with a file
      *
      * @param file
-     * @return
      */
 
     public static IResource toResource(File file) {
