@@ -51,7 +51,7 @@ public class EmbeddedLauncher {
 	 * Runs the Launcher like the main method, but returns an usable exit Code.
 	 * This Method was introduced to enable compatibility with the Equinox
 	 * native executables.
-	 * 
+	 *
 	 * @param args the arguments to run the Launcher with
 	 * @return an exit code
 	 * @throws Throwable
@@ -268,6 +268,7 @@ public class EmbeddedLauncher {
 			super(urls, parent);
 		}
 
+		@Override
 		public void addURL(URL url) {
 			super.addURL(url);
 		}

@@ -52,7 +52,7 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * There shouldn't be "Duplicate name..." warnings with pedantic flag set to
 	 * true #2803 https://github.com/bndtools/bnd/issues/2803
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -100,7 +100,7 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * Test the detection of usage of old components
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -273,7 +273,7 @@ public class BuilderTest extends BndTestCase {
 	 * the bundle exports the org.osgi.util.promise and org.osgi.util.function
 	 * packages. org.osgi.util.promise uses org.osgi.util.function. bnd
 	 * correctly exports both packages but only imports org.osgi.util.promise.
-	 * 
+	 *
 	 * <pre>
 	 *  Export-Package:
 	 * org.osgi.service.async;version="1.0";uses:="org.osgi.framework,org.osgi.
@@ -286,7 +286,7 @@ public class BuilderTest extends BndTestCase {
 	 * osgi.util.promise;version="[1.0,1.1)",org.osgi.util.tracker;version="[1.5
 	 * ,2)" Tool: Bnd-3.0.0.201506011706
 	 * </pre>
-	 * 
+	 *
 	 * So effectively the offer to import org.osgi.util.promise is broken. If
 	 * the framework wanted to resolve the bundle by importing
 	 * org.osgi.util.promise, that package has a uses constraint on
@@ -297,12 +297,12 @@ public class BuilderTest extends BndTestCase {
 	 * additional bundle attempting the same thing. bnd fails to also import
 	 * org.osgi.util.function. This issue exists in bnd 2.4.1 and master. We
 	 * have 4 packages
-	 * 
+	 *
 	 * <pre>
 	 * p1 -> p2 exported (makes p2 importable) p2 -> none exported (force to
 	 * import by p1) p3 -> p1 private (makes p1 importable) p4 -> p3 exported
 	 * (p4 cannot be imported due to private ref)
-	 * 
+	 *
 	 * <pre>
 	 */
 
@@ -418,7 +418,7 @@ public class BuilderTest extends BndTestCase {
 	 * information for a.b to "nothing". The learnPackage() method must be
 	 * adapted so that "empty" package do not occupy a position This was
 	 * diagnosed by Balázs Zsoldos balazs.zsoldos@everit.biz
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -499,7 +499,7 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * A Require-Bundle should remove imports that are exported by its target(s)
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -582,7 +582,7 @@ public class BuilderTest extends BndTestCase {
 	 * Hargrave: I am getting this on the latest bnd.master in the OSGi test
 	 * projects
 	 * </pre>
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -608,14 +608,14 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * Bundle ActivationPolicy
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testBundleActivationPolicy() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("bin_test"));
-			;
+
 			b.setProperty("Bundle-ActivationPolicy", "lazy");
 			b.setProperty("Export-Package", "test.activator");
 			b.build();
@@ -627,7 +627,7 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * #388 Manifest header to get GIT head
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	public void testGitHead() throws IOException {
@@ -666,7 +666,7 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * An old osgi 3.0.0 jar had an old packageinfo in it. This included some
 	 * never well developed syntax which now clashes with the proprty syntax.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testVeryOldPackageInfo() throws Exception {
@@ -824,7 +824,7 @@ public class BuilderTest extends BndTestCase {
 	 * arguments [classes;CONCRETE;ANNOTATION;javax.persistence.Entity] My bnd
 	 * file does have the following line ... Hibernate-Db =
 	 * ${classes;CONCRETE;ANNOTATION;javax.persistence.Entity}
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -849,7 +849,7 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * Check if we can create digests
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -910,7 +910,7 @@ public class BuilderTest extends BndTestCase {
 	 * instruction is given with a specific package name (i.e. not a wildcard),
 	 * and that package does not exist or is empty, then bnd should fail or
 	 * print an error.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testPrivatePackageNonExistent() throws Exception {
@@ -1034,20 +1034,20 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * bnd issues Consider the following descriptor file:
-	 * 
+	 *
 	 * <pre>
 	 * Bundle-Activator: org.example.Activator Private-Package: org.example
 	 * </pre>
-	 * 
+	 *
 	 * Now suppose that at build time, bnd cannot find the package org.example,
 	 * or it is empty. Bnd sees the Bundle-Activator instruction as creating a
 	 * dependency, so it generates a manifest containing an import for that
 	 * package:
-	 * 
+	 *
 	 * <pre>
 	 *  Import-Package: org.example
 	 * </pre>
-	 * 
+	 *
 	 * This is unexpected. If a Private-Package instruction is given with a
 	 * specific package name (i.e. not a wildcard), and that package does not
 	 * exist or is empty, then bnd should fail or print an error.
@@ -1158,7 +1158,7 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * Check of the use of x- directives are not skipped. bnd allows x-
 	 * directives in the import/export clauses but strips other ones.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testXDirectives() throws Exception {
@@ -1179,7 +1179,7 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * Check of SNAPSHOT is replaced with the -snapshot instr
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testSnapshot() throws Exception {
@@ -1262,7 +1262,7 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * bnd seems to pick the wrong version if a packageinfo is available
 	 * multiple times.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -1391,7 +1391,7 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * Test where the version comes from: Manifest or packageinfo
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testExportVersionSource() throws Exception {
@@ -1447,7 +1447,7 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * Test where the version comes from: Manifest or packageinfo
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testImportVersionSource() throws Exception {
@@ -1755,7 +1755,7 @@ public class BuilderTest extends BndTestCase {
 	 * #196 StringIndexOutOfBoundsException in Builder.getClasspathEntrySuffix
 	 * If a class path entry was changed the isInScope threw an exception
 	 * because it assumed all cpes were directories.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testInScopeClasspathEntry() throws Exception {
@@ -1860,7 +1860,7 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * This test checks if
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -1931,7 +1931,7 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * Test private imports. We first build a jar with a import:=private packge.
 	 * Then place it
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -2195,7 +2195,7 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * There is an error that gives a split package when you export a package
 	 * that is also private I think.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testSplitOnExportAndPrivate() throws Exception {
@@ -2236,7 +2236,7 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * Export a package that was loaded with resources
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testExportSyntheticPackage() throws Exception {
@@ -2262,7 +2262,7 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * Exporting packages in META-INF
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testMETAINF() throws Exception {
@@ -2293,7 +2293,7 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * Bnd cleans up versions if they do not follow the OSGi rule. Check a
 	 * number of those versions.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testVersionCleanup() throws Exception {
@@ -2499,7 +2499,7 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * Test Resource inclusion that do not exist
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testResourceNotFound() throws Exception {
@@ -2580,7 +2580,7 @@ public class BuilderTest extends BndTestCase {
 	 * We are only adding privately the core equinox ds package. We then add
 	 * conditionally all packages that should belong to this as well as any OSGi
 	 * interfaces.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testConditional() throws Exception {
@@ -2786,7 +2786,7 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * Check that the activator is found.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testFindActivator() throws Exception {
@@ -2881,7 +2881,7 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * Check if can find an activator in the bundle while using a complex bundle
 	 * classpath.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testBundleClasspath3() throws Exception {
@@ -2914,7 +2914,7 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * Check if can find an activator in a embedded jar while using a complex
 	 * bundle classpath.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testBundleClasspath2() throws Exception {

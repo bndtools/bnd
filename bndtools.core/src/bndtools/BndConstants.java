@@ -14,13 +14,13 @@ import aQute.bnd.osgi.Constants;
 
 public interface BndConstants extends Constants {
 
-    public static final String OUTPUT = "-output";
-    public static final String RUNFW = "-runfw";
-    public static final String BACKUP_RUNBUNDLES = "-runbundles-old";
+	String	OUTPUT						= "-output";
+	String	RUNFW						= "-runfw";
+	String	BACKUP_RUNBUNDLES			= "-runbundles-old";
 
-    /**
-     * The URI to which a resource was resolved by OBR
-     */
-    public static final String RESOLUTION_URI_ATTRIBUTE = "resolution";
-    public static final String RESOLVE_MODE = "-resolve";
+	/**
+	 * The URI to which a resource was resolved by OBR
+	 */
+	String	RESOLUTION_URI_ATTRIBUTE	= "resolution";
+	String	RESOLVE_MODE				= "-resolve";
 }

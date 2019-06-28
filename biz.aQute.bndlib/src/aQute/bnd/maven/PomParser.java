@@ -123,7 +123,7 @@ public class PomParser extends Processor {
 	/**
 	 * The maven POM is quite straightforward, it is basically a structured
 	 * property file.
-	 * 
+	 *
 	 * @param name
 	 * @param parent
 	 * @param p

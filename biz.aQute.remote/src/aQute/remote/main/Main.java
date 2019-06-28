@@ -33,7 +33,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private void run(String[] args) throws Exception {
 		String execute = commandLine.execute(this, "run", new ExtList<>(args));

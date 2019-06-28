@@ -7,9 +7,9 @@ import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 
 public class PackageInfoDocumentProvider extends TextFileDocumentProvider {
 
-    @Override
-    protected IAnnotationModel createAnnotationModel(IFile file) {
-        return new BndResourceMarkerAnnotationModel(file);
-    }
+	@Override
+	protected IAnnotationModel createAnnotationModel(IFile file) {
+		return new BndResourceMarkerAnnotationModel(file);
+	}
 
 }

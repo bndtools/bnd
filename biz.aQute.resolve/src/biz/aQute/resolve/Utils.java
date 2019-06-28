@@ -49,20 +49,20 @@ public class Utils {
 
 	@BaselineIgnore("4.3.0")
 	public static final Pattern	RESOLVE_MESSAGE_P		= Pattern.compile(		//
-		"(?:org\\.osgi\\.service\\.resolver\\.ResolutionException: )?"		//
-			+ "(?<msg>[^:]+): # prefix\n"									//
-			+ "(?<bsn>[^\\s]+)  # the bsn\n"								//
-			+ "(?<version>[^:]+): # version\n"								//
-			+ "missing requirement Require\\[ # upto the requirement\n"		//
-			+ "(?<ns>[^\\]]+)\\] # namespace\n"								//
-			+ "\\{(?<attrs>[^}]*)\\} # attrs\n"								//
-			+ "\\{(?<directives>[^}]*)\\} # dirs\n"							//
+		"(?:org\\.osgi\\.service\\.resolver\\.ResolutionException: )?"			//
+			+ "(?<msg>[^:]+): # prefix\n"										//
+			+ "(?<bsn>[^\\s]+)  # the bsn\n"									//
+			+ "(?<version>[^:]+): # version\n"									//
+			+ "missing requirement Require\\[ # upto the requirement\n"			//
+			+ "(?<ns>[^\\]]+)\\] # namespace\n"									//
+			+ "\\{(?<attrs>[^}]*)\\} # attrs\n"									//
+			+ "\\{(?<directives>[^}]*)\\} # dirs\n"								//
 			+ "(?<cause>\\[caused by:)?",
 		Pattern.COMMENTS | Pattern.CASE_INSENSITIVE);
 
 	@BaselineIgnore("4.3.0")
 	public static final Pattern	RESOLVE_DIRECTIVES_P	= Pattern.compile(		//
-		"(?:^|.*,)filter=(?<filter>[^,]+)(?:$|,.*)",						//
+		"(?:^|.*,)filter=(?<filter>[^,]+)(?:$|,.*)",							//
 		Pattern.COMMENTS | Pattern.CASE_INSENSITIVE);
 
 	public static List<ResolveTrace> parseException(String message) {

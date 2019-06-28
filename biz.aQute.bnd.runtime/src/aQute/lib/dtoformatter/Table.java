@@ -263,7 +263,7 @@ public class Table implements Cell {
 	 * Select matching rows. Each row is translated to a map and then run
 	 * against the given predicate. If the predicate matches the row is included
 	 * in the output.
-	 * 
+	 *
 	 * @param predicate
 	 * @return a new table with only the matching rows
 	 */
@@ -351,7 +351,7 @@ public class Table implements Cell {
 		int col = findHeader(sort);
 		if (col < 0)
 			return;
-		Comparator<Cell[]> cmp = (Cell[]a, Cell[]b) -> {
+		Comparator<Cell[]> cmp = (Cell[] a, Cell[] b) -> {
 
 			Object aa = a[col].original();
 			Object bb = b[col].original();
@@ -365,7 +365,7 @@ public class Table implements Cell {
 
 			String aaa = aa.toString();
 			String bbb = bb.toString();
-			
+
 			try {
 				long la = Long.parseLong(aaa);
 				long lb = Long.parseLong(bbb);

@@ -98,7 +98,7 @@ class ComponentDef extends ExtensionDef {
 	/**
 	 * Called to prepare. If will look for any errors or inconsistencies in the
 	 * setup.
-	 * 
+	 *
 	 * @param analyzer the analyzer to report errors and create references
 	 * @throws Exception
 	 */
@@ -164,7 +164,7 @@ class ComponentDef extends ExtensionDef {
 
 	/**
 	 * Returns a tag describing the component element.
-	 * 
+	 *
 	 * @return a component element
 	 */
 	Tag getTag() {

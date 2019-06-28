@@ -6,8 +6,7 @@ import java.io.IOException;
 public class DeprecatedAttribute implements Attribute {
 	public static final String NAME = "Deprecated";
 
-	public DeprecatedAttribute() {
-	}
+	public DeprecatedAttribute() {}
 
 	@Override
 	public String name() {

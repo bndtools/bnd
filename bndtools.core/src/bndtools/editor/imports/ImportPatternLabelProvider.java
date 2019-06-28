@@ -8,10 +8,10 @@ import bndtools.editor.pkgpatterns.HeaderClauseLabelProvider;
 
 public class ImportPatternLabelProvider extends HeaderClauseLabelProvider<ImportPattern> {
 
-    @Override
-    protected void decorate(StyledString label, ImportPattern pattern) {
-        if (pattern.isOptional())
-            label.append(" <optional>", ItalicStyler.INSTANCE_QUALIFIER);
-    }
+	@Override
+	protected void decorate(StyledString label, ImportPattern pattern) {
+		if (pattern.isOptional())
+			label.append(" <optional>", ItalicStyler.INSTANCE_QUALIFIER);
+	}
 
 }

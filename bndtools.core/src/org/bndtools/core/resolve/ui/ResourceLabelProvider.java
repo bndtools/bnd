@@ -14,41 +14,41 @@ import org.osgi.resource.Resource;
 
 public class ResourceLabelProvider extends StyledCellLabelProvider {
 
-    private final Image bundleImg = Icons.desc("bundle")
-        .createImage();
+	private final Image bundleImg = Icons.desc("bundle")
+		.createImage();
 
-    @Override
-    public void update(ViewerCell cell) {
-        Resource resource = (Resource) cell.getElement();
+	@Override
+	public void update(ViewerCell cell) {
+		Resource resource = (Resource) cell.getElement();
 
-        StyledString label = new StyledString();
-        try {
-            Capability identityCap = ResourceUtils.getIdentityCapability(resource);
+		StyledString label = new StyledString();
+		try {
+			Capability identityCap = ResourceUtils.getIdentityCapability(resource);
 
-            String name = ResourceUtils.getIdentity(identityCap);
-            label.append(name);
+			String name = ResourceUtils.getIdentity(identityCap);
+			label.append(name);
 
-            Version version = ResourceUtils.getVersion(identityCap);
-            label.append(" " + version, StyledString.COUNTER_STYLER);
-        } catch (IllegalArgumentException e) {
-            label.append("<unknown>");
-        }
+			Version version = ResourceUtils.getVersion(identityCap);
+			label.append(" " + version, StyledString.COUNTER_STYLER);
+		} catch (IllegalArgumentException e) {
+			label.append("<unknown>");
+		}
 
-        try {
-            URI uri = ResourceUtils.getURI(ResourceUtils.getContentCapability(resource));
-            label.append(" [" + uri + "]", StyledString.QUALIFIER_STYLER);
-        } catch (IllegalArgumentException e) {
-            // ignore
-        }
+		try {
+			URI uri = ResourceUtils.getURI(ResourceUtils.getContentCapability(resource));
+			label.append(" [" + uri + "]", StyledString.QUALIFIER_STYLER);
+		} catch (IllegalArgumentException e) {
+			// ignore
+		}
 
-        cell.setText(label.getString());
-        cell.setStyleRanges(label.getStyleRanges());
-        cell.setImage(bundleImg);
-    }
+		cell.setText(label.getString());
+		cell.setStyleRanges(label.getStyleRanges());
+		cell.setImage(bundleImg);
+	}
 
-    @Override
-    public void dispose() {
-        super.dispose();
-        bundleImg.dispose();
-    }
+	@Override
+	public void dispose() {
+		super.dispose();
+		bundleImg.dispose();
+	}
 }

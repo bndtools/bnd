@@ -15,23 +15,23 @@ public interface ReportTransformerPlugin {
 	/**
 	 * Get the set of file extension names corresponding to the template format
 	 * that this plugin support.
-	 * 
+	 *
 	 * @return one or multiple extensions name, never {@code null}
 	 */
-	public String[] getHandledTemplateExtensions();
+	String[] getHandledTemplateExtensions();
 
 	/**
 	 * Get the set of file extension names corresponding to the model format
 	 * that this plugin support.
-	 * 
+	 *
 	 * @return one or multiple extensions name, never {@code null}
 	 */
-	public String[] getHandledModelExtensions();
+	String[] getHandledModelExtensions();
 
 	/**
 	 * Transform the model by applying the template on it and write the result
 	 * to the output stream.
-	 * 
+	 *
 	 * @param model an input stream that contains the model, must not be
 	 *            {@code null}
 	 * @param template an input stream that contains the template, must not be
@@ -42,6 +42,6 @@ public interface ReportTransformerPlugin {
 	 *            provided to the template engine, must not be {@code null}
 	 * @throws Exception if any errors occur during the transformation process
 	 */
-	public void transform(InputStream model, InputStream template, OutputStream output, Map<String,String> parameters)
-			throws Exception;
+	void transform(InputStream model, InputStream template, OutputStream output, Map<String, String> parameters)
+		throws Exception;
 }

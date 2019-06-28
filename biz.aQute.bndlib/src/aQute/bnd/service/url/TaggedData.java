@@ -17,7 +17,7 @@ import aQute.lib.io.IO;
 /**
  * Represents a data stream that has a tag associated with it; the primary
  * use-case is an HTTP response stream with an ETag header.
- * 
+ *
  * @author Neil Bartlett
  */
 public class TaggedData implements Closeable {
@@ -177,7 +177,7 @@ public class TaggedData implements Closeable {
 
 	/**
 	 * Returns the input stream containing the resource data.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	public InputStream getInputStream() throws IOException {

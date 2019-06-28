@@ -215,7 +215,7 @@ public class HttpClientProxyTest extends TestCase {
 	}
 
 	/*
-	 * 
+	 *
 	 */
 
 	private HttpProxyServer				httpProxy;
@@ -415,8 +415,7 @@ public class HttpClientProxyTest extends TestCase {
 
 	@SuppressWarnings("resource")
 	void assertHttpProxy(String password, String protocol, boolean proxyCalled, boolean authenticationCalled,
-		int response)
-		throws MalformedURLException, Exception {
+		int response) throws MalformedURLException, Exception {
 		try (Processor p = new Processor(); HttpClient hc = new HttpClient()) {
 			p.setProperty("-connectionsettings", "" + false);
 			ConnectionSettings cs = new ConnectionSettings(p, hc);

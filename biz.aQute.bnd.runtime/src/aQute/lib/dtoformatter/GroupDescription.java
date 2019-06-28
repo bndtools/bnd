@@ -5,10 +5,10 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class GroupDescription {
-	String						title;
+	String								title;
 	final Map<String, ItemDescription>	items		= new LinkedHashMap<>();
-	String						separator	= ",";
-	String						prefix		= "[";
-	String						suffix		= "]";
-	public Function<Object, String>	format;
+	String								separator	= ",";
+	String								prefix		= "[";
+	String								suffix		= "]";
+	public Function<Object, String>		format;
 }

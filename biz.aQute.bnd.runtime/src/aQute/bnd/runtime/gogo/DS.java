@@ -43,8 +43,7 @@ public class DS implements Closeable {
 	public DS(BundleContext context, DTOFormatter formatter) {
 		this.context = context;
 		dtos(formatter);
-		scr = new ServiceTracker<ServiceComponentRuntime, ServiceComponentRuntime>(context,
-			ServiceComponentRuntime.class, null);
+		scr = new ServiceTracker<>(context, ServiceComponentRuntime.class, null);
 		scr.open();
 	}
 
@@ -113,7 +112,7 @@ public class DS implements Closeable {
 		if (ds == null)
 			return null;
 
-		Why why = why(ds, new HashSet<Object>());
+		Why why = why(ds, new HashSet<>());
 		return why.references;
 	}
 

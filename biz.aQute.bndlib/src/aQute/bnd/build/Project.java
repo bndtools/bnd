@@ -113,7 +113,6 @@ import aQute.libg.generics.Create;
 import aQute.libg.glob.Glob;
 import aQute.libg.qtokens.QuotedTokenizer;
 import aQute.libg.reporter.ReporterMessages;
-import aQute.libg.sed.Replacer;
 import aQute.libg.sed.Sed;
 import aQute.libg.tuple.Pair;
 
@@ -860,7 +859,7 @@ public class Project extends Processor {
 
 	/**
 	 * Return the full transitive dependencies of this project.
-	 * 
+	 *
 	 * @return A set of the full transitive dependencies of this project.
 	 * @throws Exception
 	 */
@@ -871,7 +870,7 @@ public class Project extends Processor {
 
 	/**
 	 * Return the direct build dependencies of this project.
-	 * 
+	 *
 	 * @return A set of the direct build dependencies of this project.
 	 * @throws Exception
 	 */
@@ -885,7 +884,7 @@ public class Project extends Processor {
 	 * <p>
 	 * The result includes the direct build dependencies of this project as
 	 * well, so the result is a super set of {@link #getBuildDependencies()}.
-	 * 
+	 *
 	 * @return A set of the test build dependencies of this project.
 	 * @throws Exception
 	 */
@@ -903,7 +902,7 @@ public class Project extends Processor {
 	 * Since the full transitive dependents of this project is updated during
 	 * the computation of other project dependencies, until all projects are
 	 * prepared, the dependents result may be partial.
-	 * 
+	 *
 	 * @return A set of the transitive set of projects which depend on this
 	 *         project.
 	 * @throws Exception
@@ -2504,12 +2503,7 @@ public class Project extends Processor {
 
 	boolean replace(File f, String pattern, String replacement) throws IOException {
 		final Macro macro = getReplacer();
-		Sed sed = new Sed(new Replacer() {
-			@Override
-			public String process(String line) {
-				return macro.process(line);
-			}
-		}, f);
+		Sed sed = new Sed(line -> macro.process(line), f);
 		sed.replace(pattern, replacement);
 		return sed.doIt() > 0;
 	}
@@ -2747,7 +2741,7 @@ public class Project extends Processor {
 	 * @return A list of builders.
 	 * @throws Exception
 	 * @deprecated As of 3.4. Replace with
-	 * 
+	 *
 	 *             <pre>
 	 *             try (ProjectBuilder pb = getBuilder(null)) {
 	 *             	for (Builder b : pb.getSubBuilders()) {

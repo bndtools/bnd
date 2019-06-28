@@ -30,7 +30,7 @@ import aQute.libg.qtokens.QuotedTokenizer;
  * To define the task library, load property from <code>build.bnd</code> and
  * prepare the workspace:
  * </p>
- * 
+ *
  * <pre>
  *  &lt;target name="init" unless="initialized"&gt; &lt;taskdef
  * classpath="${path.to.bnd.jar}"
@@ -41,7 +41,7 @@ import aQute.libg.qtokens.QuotedTokenizer;
  * <p>
  * To recursively build dependency projects, before building this project:
  * </p>
- * 
+ *
  * <pre>
  * &lt;target name="dependencies" depends="init" if="project.dependson"
  * unless="donotrecurse"&gt; &lt;subant target="build" inheritAll="false"
@@ -51,7 +51,7 @@ import aQute.libg.qtokens.QuotedTokenizer;
  * <p>
  * To build a bundle:
  * </p>
- * 
+ *
  * <pre>
  *  &lt;target name="build" depends="compile"&gt; &lt;mkdir
  * dir="${target}"/&gt; &lt;bnd command="build" exceptions="true"
@@ -60,7 +60,7 @@ import aQute.libg.qtokens.QuotedTokenizer;
  * <p>
  * To pass properties into bnd from ANT:
  * </p>
- * 
+ *
  * <pre>
  *  &lt;target name="build" depends="compile"&gt;
  * &lt;mkdir dir="${target}"/&gt; &lt;bnd command="build" exceptions="true"
@@ -69,7 +69,7 @@ import aQute.libg.qtokens.QuotedTokenizer;
  * on the bnd Workspace: --&gt; &lt;wsproperty name="foo" value="bar"/&gt;
  * &lt;/bnd&gt; &lt;/target&gt;
  * </pre>
- * 
+ *
  * @see DeployTask
  * @see ReleaseTask
  */
@@ -166,7 +166,7 @@ public class BndTask extends BaseTask {
 
 	/**
 	 * Set the base directory of the project. This property MUST be set.
-	 * 
+	 *
 	 * @param basedir
 	 */
 	public void setBasedir(File basedir) {
@@ -401,7 +401,7 @@ public class BndTask extends BaseTask {
 
 	/**
 	 * validate required parameters before starting execution
-	 * 
+	 *
 	 * @throws BuildException , if build is impossible
 	 */
 	protected void validate() {

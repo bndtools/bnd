@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  * aQute.bnd.xmlattribute package.
  * <p>
  * For example:
- * 
+ *
  * <pre>
  * &#064;XMLAttribute(namespace = &quot;org.foo.extensions.v1&quot;, prefix =
  * &quot;foo&quot;, embedIn = &quot;*&quot;)
@@ -27,9 +27,9 @@ import java.lang.annotation.Target;
  * &#064;OCDTestExtensions(stringAttr = &quot;ocd&quot;, fooAttr = Foo.A) public
  * static interface TestExtensions {}
  * </pre>
- * 
+ *
  * results in
- * 
+ *
  * <pre>
  *  <metatype:MetaData
  * xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.3.0"
@@ -48,7 +48,7 @@ public @interface XMLAttribute {
 
 	/**
 	 * xml namespace for the emitted attritrbutes
-	 * 
+	 *
 	 * @return xml namespace for the emitted attritrbutes
 	 */
 	String namespace();
@@ -56,14 +56,14 @@ public @interface XMLAttribute {
 	/**
 	 * Suggested prefix for the specified namespace. This will be modified as
 	 * necessary to avoid conflicts.
-	 * 
+	 *
 	 * @return suggested prefix for the specified namespace.
 	 */
 	String prefix() default "ns";
 
 	/**
 	 * Array of document namespaces this annotation should embed attributes in.
-	 * 
+	 *
 	 * @return array of applicable xml namespaces
 	 */
 	String[] embedIn() default {
@@ -75,7 +75,7 @@ public @interface XMLAttribute {
 	 * member and the value is the xml attribute name to use for that member's
 	 * value. For instance, "value=simple" causes @Simple("foo") to emit
 	 * ns:simple="foo".
-	 * 
+	 *
 	 * @return Array of member-name to xml-attribute-name mappings.
 	 * @since 1.1
 	 */

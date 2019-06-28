@@ -2,8 +2,7 @@ package aQute.bnd.annotation.spi;
 
 public final class Constants {
 
-	private Constants() {
-	}
+	private Constants() {}
 
 	public static final String	SERVICELOADER_PROCESSOR	= "osgi.serviceloader.processor";
 	public static final String	SERVICELOADER_REGISTRAR	= "osgi.serviceloader.registrar";

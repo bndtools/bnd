@@ -42,8 +42,7 @@ public class JunitXmlReport implements TestReporter {
 		this.basic = basic;
 	}
 
-	public void setProgress(boolean progress) {
-	}
+	public void setProgress(boolean progress) {}
 
 	@Override
 	public void setup(Bundle fw, Bundle targetBundle) {

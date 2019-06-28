@@ -33,7 +33,7 @@ class OCDReader {
 	final Analyzer				analyzer;
 	private final Clazz			clazz;
 	final Set<Options>			options;
-	private final Set<TypeRef>	analyzed	= new HashSet<>();;
+	private final Set<TypeRef>	analyzed	= new HashSet<>();
 	private final OCDDef		ocd;
 	final XMLAttributeFinder	finder;
 

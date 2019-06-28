@@ -12,7 +12,7 @@ import aQute.lib.collections.MultiMap;
 
 class FilterListener implements ListenerHook {
 	private final static Pattern				LISTENER_INFO_PATTERN	= Pattern.compile("\\(objectClass=([^)]+)\\)");
-	final MultiMap<String, BundleContext>		listenerContexts		= new MultiMap<String, BundleContext>();
+	final MultiMap<String, BundleContext>		listenerContexts		= new MultiMap<>();
 
 	volatile boolean							quiting;
 	private ServiceRegistration<ListenerHook>	lhook;

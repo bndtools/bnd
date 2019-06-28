@@ -96,7 +96,7 @@ public interface RepositoryPlugin {
 	 * There is <b>no guarantee</b> that the artifact on the input stream has
 	 * not been modified after it's been put in the repository since that is
 	 * dependent on the implementation of the repository.
-	 * 
+	 *
 	 * @param stream The input stream with the artifact
 	 * @param options The put options. See {@link RepositoryPlugin.PutOptions},
 	 *            can be {@code null}, which will then take the default options
@@ -122,7 +122,7 @@ public interface RepositoryPlugin {
 		/**
 		 * Called when the file is successfully downloaded from a remote
 		 * repository.
-		 * 
+		 *
 		 * @param file The file that was downloaded
 		 * @throws Exception , are logged and ignored
 		 */
@@ -131,7 +131,7 @@ public interface RepositoryPlugin {
 		/**
 		 * Called when the file could not be downloaded from a remote
 		 * repository.
-		 * 
+		 *
 		 * @param file The file that was intended to be downloaded.
 		 * @throws Exception , are logged and ignored
 		 */
@@ -142,7 +142,7 @@ public interface RepositoryPlugin {
 		 * Indicates how far the download has progressed in percents. Since
 		 * downloads can be restarted, it is possible that the percentage
 		 * decreases.
-		 * 
+		 *
 		 * @param file The file that was intended to be downloaded
 		 * @param percentage Percentage of file downloaded (can go down)
 		 * @return true if the download should continue, fails if it should be
@@ -164,7 +164,7 @@ public interface RepositoryPlugin {
 	 * references to files that do not yet exist but are to be downloaded. If
 	 * the downloads were done synchronously in the call, then no overlap of
 	 * downloads could take place.
-	 * 
+	 *
 	 * @param bsn Bundle-SymbolicName of the searched bundle
 	 * @param version Version requested
 	 * @param listeners Zero or more download listener that will be notified of
@@ -178,14 +178,14 @@ public interface RepositoryPlugin {
 
 	/**
 	 * Answer if this repository can be used to store files.
-	 * 
+	 *
 	 * @return true if writable
 	 */
 	boolean canWrite();
 
 	/**
 	 * Return a list of bsns that are present in the repository.
-	 * 
+	 *
 	 * @param pattern A
 	 *            <ahref="https://en.wikipedia.org/wiki/Glob_%28programming%29">
 	 *            glob pattern</a> to be matched against bsns present in the
@@ -199,7 +199,7 @@ public interface RepositoryPlugin {
 
 	/**
 	 * Return a list of versions.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 

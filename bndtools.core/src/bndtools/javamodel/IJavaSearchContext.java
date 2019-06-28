@@ -14,7 +14,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.operation.IRunnableContext;
 
 public interface IJavaSearchContext {
-    IJavaProject getJavaProject();
+	IJavaProject getJavaProject();
 
-    IRunnableContext getRunContext();
+	IRunnableContext getRunContext();
 }

@@ -26,14 +26,14 @@ public interface ReportExporterService {
 	 * @return the list of report destination file paths which can be extracted,
 	 *         never {@code null}
 	 */
-	public List<String> getAvailableReportsOf(Object source);
+	List<String> getAvailableReportsOf(Object source);
 
 	/**
 	 * Export the reports of the specified source object.
-	 * 
+	 *
 	 * @param source the source object to report, may be {@code null}
 	 * @return a map whose key are the user defined destination file path and
 	 *         value are the resulting report resource, never {@code null}
 	 */
-	public Map<String, Resource> exportReportsOf(Object source);
+	Map<String, Resource> exportReportsOf(Object source);
 }

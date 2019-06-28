@@ -133,7 +133,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 
 	/**
 	 * A Meta annotated class
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testStdAnnotationsMetaAnnotated() throws Exception {
@@ -306,7 +306,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 	/**
 	 * Overriding directives and attributes at many levels for the Requirement
 	 * and Capability annotation
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testStdAnnotationsOverrideAttrsAndDirectives() throws Exception {
@@ -393,7 +393,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 
 	/**
 	 * A Meta annotated class using Repeatable annotations
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testStdRepeatableMetaAnnotated() throws Exception {

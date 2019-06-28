@@ -90,8 +90,8 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 
 	private final Project							project;
 	private Map<Resource, List<Wire>>				resolution;
-	private final ReporterLogger					log			= new ReporterLogger(0);
-	private final Collection<ResolutionCallback>	cbs			= new ArrayList<>();
+	private final ReporterLogger					log	= new ReporterLogger(0);
+	private final Collection<ResolutionCallback>	cbs	= new ArrayList<>();
 
 	public ProjectResolver(Project project) {
 		super(project);
@@ -147,7 +147,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 
 	/**
 	 * Validate the current project for resolving.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 

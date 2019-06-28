@@ -13,7 +13,7 @@ public class VersionHelper {
 
 	/**
 	 * Convert a string representation of a version range into a DTO.
-	 * 
+	 *
 	 * @param versionRange the version range to convert
 	 * @return the version range DTO or {@code null} if the version range in
 	 *         argument is {@code null} or is not a version range
@@ -28,7 +28,7 @@ public class VersionHelper {
 
 	/**
 	 * Convert a version range into a DTO.
-	 * 
+	 *
 	 * @param versionRange the version range to convert
 	 * @return the version range DTO
 	 */
@@ -76,7 +76,7 @@ public class VersionHelper {
 
 	/**
 	 * Convert a version into a DTO.
-	 * 
+	 *
 	 * @param version the version to convert
 	 * @return the version DTO or {@code null} if the version in argument is
 	 *         {@code null} or is not a version
@@ -102,7 +102,7 @@ public class VersionHelper {
 
 	/**
 	 * Create the default version range [0.0.0,inf)
-	 * 
+	 *
 	 * @return the version range
 	 */
 	static public VersionRangeDTO createDefaultRange() {
@@ -119,7 +119,7 @@ public class VersionHelper {
 
 	/**
 	 * Create the default version 0.0.0
-	 * 
+	 *
 	 * @return the version
 	 */
 	static public VersionDTO createDefaultVersion() {

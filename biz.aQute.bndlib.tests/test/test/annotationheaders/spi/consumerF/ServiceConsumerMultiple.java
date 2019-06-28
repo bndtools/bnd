@@ -5,5 +5,4 @@ import test.annotationheaders.spi.SPIService;
 
 @ServiceConsumer(Integer.class)
 @ServiceConsumer(SPIService.class)
-public class ServiceConsumerMultiple {
-}
+public class ServiceConsumerMultiple {}

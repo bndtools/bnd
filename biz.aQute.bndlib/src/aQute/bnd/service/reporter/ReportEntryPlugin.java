@@ -29,29 +29,29 @@ public interface ReportEntryPlugin<T> {
 	 * {@link ReportEntryPlugin#extract(Object, Locale)} method is added to a
 	 * report.
 	 */
-	static public final String	ENTRY_NAME_PROPERTY		= "entryName";
+	String	ENTRY_NAME_PROPERTY		= "entryName";
 
 	/**
 	 * The class name of the source object that a {@link ReportEntryPlugin} can
 	 * extract.
 	 */
-	static public final String	SOURCE_CLASS_PROPERTY	= "sourceClass";
+	String	SOURCE_CLASS_PROPERTY	= "sourceClass";
 
 	/**
 	 * Extracts a piece of information from the source in arguments.
 	 * <p>
 	 * If the source contains localized data, it will be extracted for the
 	 * specified locale or a less specific if not found.
-	 * 
+	 *
 	 * @param source the source to inspect, must not be {@code null}
 	 * @param locale the {@code String} representation of a {@code Locale}, must
 	 *            not be {@code null}
 	 * @return a DTO representation or {@code null} if no data is available
 	 */
-	public Object extract(T source, Locale locale) throws Exception;
+	Object extract(T source, Locale locale) throws Exception;
 
 	/**
 	 * @return a map of properties, never {@code null}
 	 */
-	public Map<String, String> getProperties();
+	Map<String, String> getProperties();
 }

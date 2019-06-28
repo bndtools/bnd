@@ -37,7 +37,7 @@ public class DependencyResolver {
 
 	private final boolean						includeTransitive;
 	private final MavenProject					project;
-	final Collection<String>							scopes;
+	final Collection<String>					scopes;
 	private final RepositorySystemSession		session;
 	private final RepositorySystem				system;
 	private final ProjectDependenciesResolver	resolver;

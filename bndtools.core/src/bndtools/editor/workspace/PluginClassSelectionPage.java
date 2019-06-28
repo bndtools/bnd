@@ -7,11 +7,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.wizard.WizardPage;
@@ -26,145 +22,137 @@ import bndtools.Plugin;
 
 public class PluginClassSelectionPage extends WizardPage {
 
-    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+	private final PropertyChangeSupport	propSupport			= new PropertyChangeSupport(this);
 
-    private Table table;
-    private TableViewer viewer;
-    // private ScrolledFormText txtDescription;
+	private Table						table;
+	private TableViewer					viewer;
+	// private ScrolledFormText txtDescription;
 
-    private IConfigurationElement selectedElement;
-    private boolean programmaticChange = false;
+	private IConfigurationElement		selectedElement;
+	private boolean						programmaticChange	= false;
 
-    public PluginClassSelectionPage() {
-        super("pluginClassSelection");
-    }
+	public PluginClassSelectionPage() {
+		super("pluginClassSelection");
+	}
 
-    @Override
-    public void createControl(Composite parent) {
-        setTitle("Plug-in Type");
-        setDescription("Select from one of the following known plug-in types.");
+	@Override
+	public void createControl(Composite parent) {
+		setTitle("Plug-in Type");
+		setDescription("Select from one of the following known plug-in types.");
 
-        // Create controls
-        Composite composite = new Composite(parent, SWT.NONE);
-        table = new Table(composite, SWT.FULL_SELECTION | SWT.BORDER);
-        viewer = new TableViewer(table);
-        viewer.setContentProvider(ArrayContentProvider.getInstance());
-        viewer.setComparator(new PluginClassSorter());
-        viewer.setLabelProvider(new PluginDeclarationLabelProvider());
+		// Create controls
+		Composite composite = new Composite(parent, SWT.NONE);
+		table = new Table(composite, SWT.FULL_SELECTION | SWT.BORDER);
+		viewer = new TableViewer(table);
+		viewer.setContentProvider(ArrayContentProvider.getInstance());
+		viewer.setComparator(new PluginClassSorter());
+		viewer.setLabelProvider(new PluginDeclarationLabelProvider());
 
-        // txtDescription = new ScrolledFormText(composite, true);
+		// txtDescription = new ScrolledFormText(composite, true);
 
-        // Load data
-        IConfigurationElement[] elements = Platform.getExtensionRegistry()
-            .getConfigurationElementsFor(Plugin.PLUGIN_ID, "bndPlugins");
-        viewer.setInput(elements);
+		// Load data
+		IConfigurationElement[] elements = Platform.getExtensionRegistry()
+			.getConfigurationElementsFor(Plugin.PLUGIN_ID, "bndPlugins");
+		viewer.setInput(elements);
 
-        // Listeners
-        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                if (!programmaticChange) {
-                    try {
-                        programmaticChange = true;
-                        IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
-                        setSelectedElement((IConfigurationElement) sel.getFirstElement());
-                    } finally {
-                        programmaticChange = false;
-                    }
-                }
-            }
-        });
-        viewer.addDoubleClickListener(new IDoubleClickListener() {
-            @Override
-            public void doubleClick(DoubleClickEvent event) {
-                getContainer().showPage(getNextPage());
-            }
-        });
+		// Listeners
+		viewer.addSelectionChangedListener(event -> {
+			if (!programmaticChange) {
+				try {
+					programmaticChange = true;
+					IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
+					setSelectedElement((IConfigurationElement) sel.getFirstElement());
+				} finally {
+					programmaticChange = false;
+				}
+			}
+		});
+		viewer.addDoubleClickListener(event -> getContainer().showPage(getNextPage()));
 
-        // Layout
-        GridLayout layout;
-        GridData gd;
+		// Layout
+		GridLayout layout;
+		GridData gd;
 
-        layout = new GridLayout(1, false);
-        composite.setLayout(layout);
+		layout = new GridLayout(1, false);
+		composite.setLayout(layout);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        table.setLayoutData(gd);
+		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+		table.setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-        gd.heightHint = 150;
-        // txtDescription.setLayoutData(gd);
+		gd = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		gd.heightHint = 150;
+		// txtDescription.setLayoutData(gd);
 
-        setControl(composite);
-    }
+		setControl(composite);
+	}
 
-    public IConfigurationElement getSelectedElement() {
-        return selectedElement;
-    }
+	public IConfigurationElement getSelectedElement() {
+		return selectedElement;
+	}
 
-    public void setSelectedElement(IConfigurationElement selectedElement) {
-        IConfigurationElement old = this.selectedElement;
-        this.selectedElement = selectedElement;
-        if (Display.getCurrent() != null && table != null && !table.isDisposed()) {
-            if (!programmaticChange) {
-                try {
-                    programmaticChange = true;
-                    if (selectedElement == null)
-                        viewer.setSelection(StructuredSelection.EMPTY);
-                    else
-                        viewer.setSelection(new StructuredSelection(selectedElement), true);
-                } finally {
-                    programmaticChange = false;
-                }
-            }
-            // updateDescription();
-            validate();
-            getContainer().updateButtons();
-        }
-        propSupport.firePropertyChange("selectedElement", old, selectedElement);
-    }
+	public void setSelectedElement(IConfigurationElement selectedElement) {
+		IConfigurationElement old = this.selectedElement;
+		this.selectedElement = selectedElement;
+		if (Display.getCurrent() != null && table != null && !table.isDisposed()) {
+			if (!programmaticChange) {
+				try {
+					programmaticChange = true;
+					if (selectedElement == null)
+						viewer.setSelection(StructuredSelection.EMPTY);
+					else
+						viewer.setSelection(new StructuredSelection(selectedElement), true);
+				} finally {
+					programmaticChange = false;
+				}
+			}
+			// updateDescription();
+			validate();
+			getContainer().updateButtons();
+		}
+		propSupport.firePropertyChange("selectedElement", old, selectedElement);
+	}
 
-    // private void updateDescription() {
-    // String description = null;
-    // if (selectedElement != null)
-    // description = selectedElement.getValue();
-    //
-    // if (description == null)
-    // description = "";
-    // txtDescription.setText(description);
-    // }
+	// private void updateDescription() {
+	// String description = null;
+	// if (selectedElement != null)
+	// description = selectedElement.getValue();
+	//
+	// if (description == null)
+	// description = "";
+	// txtDescription.setText(description);
+	// }
 
-    private void validate() {
-        String warning = null;
+	private void validate() {
+		String warning = null;
 
-        if (selectedElement != null) {
-            String deprecationMsg = selectedElement.getAttribute("deprecated");
-            if (deprecationMsg != null)
-                warning = "Plugin is deprecated: " + deprecationMsg;
-        }
+		if (selectedElement != null) {
+			String deprecationMsg = selectedElement.getAttribute("deprecated");
+			if (deprecationMsg != null)
+				warning = "Plugin is deprecated: " + deprecationMsg;
+		}
 
-        setMessage(warning, IMessageProvider.WARNING);
-    }
+		setMessage(warning, IMessageProvider.WARNING);
+	}
 
-    @Override
-    public boolean isPageComplete() {
-        return selectedElement != null;
-    }
+	@Override
+	public boolean isPageComplete() {
+		return selectedElement != null;
+	}
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propSupport.addPropertyChangeListener(listener);
-    }
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		propSupport.addPropertyChangeListener(listener);
+	}
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propSupport.removePropertyChangeListener(listener);
-    }
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		propSupport.removePropertyChangeListener(listener);
+	}
 
-    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        propSupport.addPropertyChangeListener(propertyName, listener);
-    }
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		propSupport.addPropertyChangeListener(propertyName, listener);
+	}
 
-    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        propSupport.removePropertyChangeListener(propertyName, listener);
-    }
+	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		propSupport.removePropertyChangeListener(propertyName, listener);
+	}
 
 }

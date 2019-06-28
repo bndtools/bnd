@@ -24,146 +24,150 @@ import aQute.bnd.version.Version;
 import bndtools.central.Central;
 
 public class RepositoryTargetLocation extends BndTargetLocation {
-    static final String TYPE = "BndRepositoryLocation";
+	static final String			TYPE									= "BndRepositoryLocation";
 
-    static final String MESSAGE_UNABLE_TO_RESOLVE_REPOSITORIES = "Unable to resolve Bnd repository plugins";
+	static final String			MESSAGE_UNABLE_TO_RESOLVE_REPOSITORIES	= "Unable to resolve Bnd repository plugins";
 
-    static final String ELEMENT_REPOSITORY = "repository";
-    static final String ATTRIBUTE_REPOSITORY_NAME = "name";
+	static final String			ELEMENT_REPOSITORY						= "repository";
+	static final String			ATTRIBUTE_REPOSITORY_NAME				= "name";
 
-    private String repositoryName;
-    private RepositoryPlugin repository;
+	private String				repositoryName;
+	private RepositoryPlugin	repository;
 
-    public RepositoryTargetLocation() {
-        super(TYPE, "database.png");
-    }
+	public RepositoryTargetLocation() {
+		super(TYPE, "database.png");
+	}
 
-    public RepositoryTargetLocation setRepository(String repositoryName) {
-        this.repositoryName = repositoryName;
-        this.repository = null;
-        clearResolutionStatus();
-        return this;
-    }
+	public RepositoryTargetLocation setRepository(String repositoryName) {
+		this.repositoryName = repositoryName;
+		this.repository = null;
+		clearResolutionStatus();
+		return this;
+	}
 
-    public RepositoryTargetLocation setRepository(RepositoryPlugin repository) {
-        this.repositoryName = repository.getName();
-        this.repository = repository;
-        clearResolutionStatus();
-        return this;
-    }
+	public RepositoryTargetLocation setRepository(RepositoryPlugin repository) {
+		this.repositoryName = repository.getName();
+		this.repository = repository;
+		clearResolutionStatus();
+		return this;
+	}
 
-    public RepositoryPlugin getRepository() {
-        return repository;
-    }
+	public RepositoryPlugin getRepository() {
+		return repository;
+	}
 
-    @Override
-    public String getText(Object element) {
-        return repositoryName;
-    }
+	@Override
+	public String getText(Object element) {
+		return repositoryName;
+	}
 
-    @Override
-    public IWizard getEditWizard(ITargetDefinition target, ITargetLocation targetLocation) {
-        RepositoryTargetLocationWizard wizard = new RepositoryTargetLocationWizard();
-        wizard.setTarget(target);
-        wizard.setTargetLocation(this);
-        return wizard;
-    }
+	@Override
+	public IWizard getEditWizard(ITargetDefinition target, ITargetLocation targetLocation) {
+		RepositoryTargetLocationWizard wizard = new RepositoryTargetLocationWizard();
+		wizard.setTarget(target);
+		wizard.setTargetLocation(this);
+		return wizard;
+	}
 
-    @Override
-    protected TargetBundle[] resolveBundles(ITargetDefinition definition, IProgressMonitor monitor) throws CoreException {
-        resolveRepository();
+	@Override
+	protected TargetBundle[] resolveBundles(ITargetDefinition definition, IProgressMonitor monitor)
+		throws CoreException {
+		resolveRepository();
 
-        try {
-            List<TargetBundle> bundles = new ArrayList<>();
+		try {
+			List<TargetBundle> bundles = new ArrayList<>();
 
-            List<String> bsns = repository.list("*");
-            monitor.beginTask("Resolving Bundles", bsns.size());
+			List<String> bsns = repository.list("*");
+			monitor.beginTask("Resolving Bundles", bsns.size());
 
-            int i = 0;
-            for (String bsn : bsns) {
-                Version version = repository.versions(bsn)
-                    .last();
-                File download = repository.get(bsn, version, new HashMap<String, String>(), new RepositoryPlugin.DownloadListener[] {});
-                try {
-                    bundles.add(new TargetBundle(download));
-                } catch (Exception e) {
-                    throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, "Invalid plugin in repository: " + bsn + " @ " + getLocation(false), e));
-                }
+			int i = 0;
+			for (String bsn : bsns) {
+				Version version = repository.versions(bsn)
+					.last();
+				File download = repository.get(bsn, version, new HashMap<String, String>(),
+					new RepositoryPlugin.DownloadListener[] {});
+				try {
+					bundles.add(new TargetBundle(download));
+				} catch (Exception e) {
+					throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID,
+						"Invalid plugin in repository: " + bsn + " @ " + getLocation(false), e));
+				}
 
-                if (monitor.isCanceled())
-                    return null;
-                monitor.worked(++i);
-            }
+				if (monitor.isCanceled())
+					return null;
+				monitor.worked(++i);
+			}
 
-            monitor.done();
+			monitor.done();
 
-            return bundles.toArray(new TargetBundle[0]);
-        } catch (CoreException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, MESSAGE_UNABLE_TO_RESOLVE_BUNDLES, e));
-        }
-    }
+			return bundles.toArray(new TargetBundle[0]);
+		} catch (CoreException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, MESSAGE_UNABLE_TO_RESOLVE_BUNDLES, e));
+		}
+	}
 
-    private void resolveRepository() throws CoreException {
-        Workspace workspace;
-        try {
-            workspace = Central.getWorkspace();
-        } catch (Exception e) {
-            throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, MESSAGE_UNABLE_TO_LOCATE_WORKSPACE, e));
-        }
+	private void resolveRepository() throws CoreException {
+		Workspace workspace;
+		try {
+			workspace = Central.getWorkspace();
+		} catch (Exception e) {
+			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, MESSAGE_UNABLE_TO_LOCATE_WORKSPACE, e));
+		}
 
-        try {
-            if (repositoryName.equals(workspace.getWorkspaceRepository()
-                .getName())) {
-                this.repository = workspace.getWorkspaceRepository();
-            } else {
-                for (RepositoryPlugin repository : workspace.getPlugins(RepositoryPlugin.class))
-                    if (repositoryName.equalsIgnoreCase(repository.getName()))
-                        this.repository = repository;
-            }
-        } catch (Exception e) {
-            throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, MESSAGE_UNABLE_TO_RESOLVE_REPOSITORIES, e));
-        }
+		try {
+			if (repositoryName.equals(workspace.getWorkspaceRepository()
+				.getName())) {
+				this.repository = workspace.getWorkspaceRepository();
+			} else {
+				for (RepositoryPlugin repository : workspace.getPlugins(RepositoryPlugin.class))
+					if (repositoryName.equalsIgnoreCase(repository.getName()))
+						this.repository = repository;
+			}
+		} catch (Exception e) {
+			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, MESSAGE_UNABLE_TO_RESOLVE_REPOSITORIES, e));
+		}
 
-        if (this.repository == null)
-            throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, "Unable to locate the named repository: " + repositoryName));
-    }
+		if (this.repository == null)
+			throw new CoreException(
+				new Status(IStatus.ERROR, PLUGIN_ID, "Unable to locate the named repository: " + repositoryName));
+	}
 
-    @Override
-    public String getLocation(boolean resolve) throws CoreException {
-        if (resolve)
-            resolveRepository();
-        return repository != null ? repository.getLocation() : "";
-    }
+	@Override
+	public String getLocation(boolean resolve) throws CoreException {
+		if (resolve)
+			resolveRepository();
+		return repository != null ? repository.getLocation() : "";
+	}
 
-    @Override
-    protected void serialize(Document document, Element locationElement) {
-        Element repositoryElement = document.createElement(ELEMENT_REPOSITORY);
-        repositoryElement.setAttribute(ATTRIBUTE_REPOSITORY_NAME, repositoryName);
-        locationElement.appendChild(repositoryElement);
-    }
+	@Override
+	protected void serialize(Document document, Element locationElement) {
+		Element repositoryElement = document.createElement(ELEMENT_REPOSITORY);
+		repositoryElement.setAttribute(ATTRIBUTE_REPOSITORY_NAME, repositoryName);
+		locationElement.appendChild(repositoryElement);
+	}
 
-    public static class Factory extends BndTargetLocationFactory {
-        public Factory() {
-            super(TYPE);
-        }
+	public static class Factory extends BndTargetLocationFactory {
+		public Factory() {
+			super(TYPE);
+		}
 
-        @Override
-        public ITargetLocation getTargetLocation(Element locationElement) throws CoreException {
-            NodeList children = locationElement.getChildNodes();
+		@Override
+		public ITargetLocation getTargetLocation(Element locationElement) throws CoreException {
+			NodeList children = locationElement.getChildNodes();
 
-            for (int i = 0; i < children.getLength(); ++i) {
-                Node node = children.item(i);
+			for (int i = 0; i < children.getLength(); ++i) {
+				Node node = children.item(i);
 
-                if (isElement(node, ELEMENT_REPOSITORY)) {
-                    String name = ((Element) node).getAttribute(ATTRIBUTE_REPOSITORY_NAME);
+				if (isElement(node, ELEMENT_REPOSITORY)) {
+					String name = ((Element) node).getAttribute(ATTRIBUTE_REPOSITORY_NAME);
 
-                    return new RepositoryTargetLocation().setRepository(name);
-                }
-            }
+					return new RepositoryTargetLocation().setRepository(name);
+				}
+			}
 
-            throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, "No repository name specified"));
-        }
-    }
+			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, "No repository name specified"));
+		}
+	}
 }

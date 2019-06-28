@@ -12,34 +12,34 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 
 public class RefreshFileJob extends WorkspaceJob {
-    private final boolean derived;
-    private final List<File> files;
+	private final boolean		derived;
+	private final List<File>	files;
 
-    public RefreshFileJob(File file, boolean derived) throws Exception {
-        this(Collections.singletonList(file), derived);
-    }
+	public RefreshFileJob(File file, boolean derived) throws Exception {
+		this(Collections.singletonList(file), derived);
+	}
 
-    public RefreshFileJob(List<File> filesToRefresh, boolean derived) {
-        super("Refreshing files");
-        this.derived = derived;
-        this.files = filesToRefresh;
-    }
+	public RefreshFileJob(List<File> filesToRefresh, boolean derived) {
+		super("Refreshing files");
+		this.derived = derived;
+		this.files = filesToRefresh;
+	}
 
-    public boolean needsToSchedule() {
-        return !files.isEmpty();
-    }
+	public boolean needsToSchedule() {
+		return !files.isEmpty();
+	}
 
-    @Override
-    public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-        SubMonitor progress = SubMonitor.convert(monitor, getName(), files.size());
-        for (File file : files) {
-            if (file != null) {
-                Central.refreshFile(file, progress.split(1), derived);
-            } else {
-                progress.worked(1);
-            }
-        }
-        progress.done();
-        return Status.OK_STATUS;
-    }
+	@Override
+	public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+		SubMonitor progress = SubMonitor.convert(monitor, getName(), files.size());
+		for (File file : files) {
+			if (file != null) {
+				Central.refreshFile(file, progress.split(1), derived);
+			} else {
+				progress.worked(1);
+			}
+		}
+		progress.done();
+		return Status.OK_STATUS;
+	}
 }

@@ -291,7 +291,6 @@ public class OSGiRepository extends BaseRepository
 		}
 	}
 
-
 	@Override
 	public File getRoot() throws Exception {
 		return getIndex().getCache();

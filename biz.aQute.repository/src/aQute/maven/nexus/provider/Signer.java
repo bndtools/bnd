@@ -11,8 +11,8 @@ import aQute.libg.command.Command;
 
 public class Signer {
 	private static Logger	logger	= LoggerFactory.getLogger(Signer.class);
-	private String	passphrase;
-	private String	cmd;
+	private String			passphrase;
+	private String			cmd;
 
 	public Signer(String passphrase, String cmd) {
 		this.passphrase = passphrase;
@@ -44,7 +44,7 @@ public class Signer {
 
 	/**
 	 * Sign the given file with gpg.
-	 * 
+	 *
 	 * @param f the file to sign
 	 * @param cmdName the name of the gpg command
 	 * @param passphrase the passphrase to use

@@ -11,51 +11,51 @@ import aQute.bnd.build.Workspace;
 @Component
 public class MavenWorkspaceRunListener implements MavenRunListenerHelper, RunListener {
 
-    @Override
-    public void create(Run run) throws Exception {
-        IResource resource = getResource(run);
+	@Override
+	public void create(Run run) throws Exception {
+		IResource resource = getResource(run);
 
-        if (!isMavenProject(resource)) {
-            return;
-        }
+		if (!isMavenProject(resource)) {
+			return;
+		}
 
-        Workspace workspace = run.getWorkspace();
+		Workspace workspace = run.getWorkspace();
 
-        RunMode runMode = RunMode.get(run);
+		RunMode runMode = RunMode.get(run);
 
-        if ((runMode == RunMode.LAUNCH) || (runMode == RunMode.TEST)) {
-            MavenWorkspaceRepository repo = workspace.getPlugin(MavenWorkspaceRepository.class);
+		if ((runMode == RunMode.LAUNCH) || (runMode == RunMode.TEST)) {
+			MavenWorkspaceRepository repo = workspace.getPlugin(MavenWorkspaceRepository.class);
 
-            if (repo == null) {
-                repo = new MavenWorkspaceRepository();
-                workspace.getRepositories()
-                    .add(0, repo);
-                workspace.addBasicPlugin(repo);
-            }
-        }
-    }
+			if (repo == null) {
+				repo = new MavenWorkspaceRepository();
+				workspace.getRepositories()
+					.add(0, repo);
+				workspace.addBasicPlugin(repo);
+			}
+		}
+	}
 
-    @Override
-    public void end(Run run) throws Exception {
-        IResource resource = getResource(run);
+	@Override
+	public void end(Run run) throws Exception {
+		IResource resource = getResource(run);
 
-        if (!isMavenProject(resource)) {
-            return;
-        }
+		if (!isMavenProject(resource)) {
+			return;
+		}
 
-        Workspace workspace = run.getWorkspace();
+		Workspace workspace = run.getWorkspace();
 
-        RunMode runMode = RunMode.get(run);
+		RunMode runMode = RunMode.get(run);
 
-        if ((runMode == RunMode.LAUNCH) || (runMode == RunMode.TEST)) {
-            MavenWorkspaceRepository repo = workspace.getPlugin(MavenWorkspaceRepository.class);
+		if ((runMode == RunMode.LAUNCH) || (runMode == RunMode.TEST)) {
+			MavenWorkspaceRepository repo = workspace.getPlugin(MavenWorkspaceRepository.class);
 
-            if (repo != null) {
-                workspace.getRepositories()
-                    .remove(repo);
-                workspace.removeBasicPlugin(repo);
-                repo.cleanup();
-            }
-        }
-    }
+			if (repo != null) {
+				workspace.getRepositories()
+					.remove(repo);
+				workspace.removeBasicPlugin(repo);
+				repo.cleanup();
+			}
+		}
+	}
 }

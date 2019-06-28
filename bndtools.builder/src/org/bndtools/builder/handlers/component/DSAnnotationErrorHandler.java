@@ -18,40 +18,41 @@ import aQute.service.reporter.Report.Location;
 
 public class DSAnnotationErrorHandler extends AbstractBuildErrorDetailsHandler {
 
-    @Override
-    public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
-        List<MarkerData> result = new ArrayList<MarkerData>();
+	@Override
+	public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
+		List<MarkerData> result = new ArrayList<>();
 
-        DeclarativeServicesAnnotationError dsError = (DeclarativeServicesAnnotationError) location.details;
+		DeclarativeServicesAnnotationError dsError = (DeclarativeServicesAnnotationError) location.details;
 
-        IJavaProject javaProject = JavaCore.create(project);
+		IJavaProject javaProject = JavaCore.create(project);
 
-        Map<String, Object> attribs = new HashMap<String, Object>();
-        attribs.put(IMarker.MESSAGE, location.message.trim());
+		Map<String, Object> attribs = new HashMap<>();
+		attribs.put(IMarker.MESSAGE, location.message.trim());
 
-        MarkerData md = null;
-        if (dsError.className != null) {
-            if (dsError.methodName != null && dsError.methodSignature != null) {
-                md = createMethodMarkerData(javaProject, dsError.className, dsError.methodName, dsError.methodSignature, attribs, false);
-            }
+		MarkerData md = null;
+		if (dsError.className != null) {
+			if (dsError.methodName != null && dsError.methodSignature != null) {
+				md = createMethodMarkerData(javaProject, dsError.className, dsError.methodName, dsError.methodSignature,
+					attribs, false);
+			}
 
-            if (dsError.fieldName != null) {
-                md = createFieldMarkerData(javaProject, dsError.className, dsError.fieldName, attribs, false);
-            }
+			if (dsError.fieldName != null) {
+				md = createFieldMarkerData(javaProject, dsError.className, dsError.fieldName, attribs, false);
+			}
 
-            if (md == null) {
-                md = createTypeMarkerData(javaProject, dsError.className, attribs, false);
-            }
-        }
+			if (md == null) {
+				md = createTypeMarkerData(javaProject, dsError.className, attribs, false);
+			}
+		}
 
-        if (md != null) {
-            result.add(md);
-        } else {
-            // No other marker could be created, so add a marker to the bnd file
-            result.add(new MarkerData(getDefaultResource(project), attribs, false));
-        }
+		if (md != null) {
+			result.add(md);
+		} else {
+			// No other marker could be created, so add a marker to the bnd file
+			result.add(new MarkerData(getDefaultResource(project), attribs, false));
+		}
 
-        return result;
-    }
+		return result;
+	}
 
 }

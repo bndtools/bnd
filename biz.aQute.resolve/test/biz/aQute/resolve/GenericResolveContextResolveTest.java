@@ -28,7 +28,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 	/**
 	 * Simple basic resolve. We use a small index with gogo + framework and then
 	 * try to see if we can resolve the runtime from the shell requirement.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testSimpleResolve() throws Exception {
@@ -52,7 +52,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 
 	/**
 	 * Check default directive
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testResolveRequirementNoDirective() throws Exception {
@@ -73,7 +73,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 
 	/**
 	 * Check expressly set directive
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testResolveRequirementResolveDirective() throws Exception {

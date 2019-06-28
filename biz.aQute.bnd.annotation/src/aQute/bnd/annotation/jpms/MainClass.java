@@ -20,5 +20,4 @@ import org.osgi.annotation.bundle.Header;
 @Retention(CLASS)
 @Target(TYPE)
 @Header(name = MAIN_CLASS, value = CLASS_MACRO)
-public @interface MainClass {
-}
+public @interface MainClass {}

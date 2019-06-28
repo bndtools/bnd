@@ -58,7 +58,6 @@ import aQute.lib.base64.Base64;
 import aQute.lib.collections.Iterables;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.ExtendedFilter;
-import aQute.lib.filter.Get;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -83,17 +82,17 @@ public class Macro {
 	private final static Pattern	NUMERIC_P		= Pattern.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
 	private final static Pattern	PRINTF_P		= Pattern.compile(
 		"%(?:(\\d+)\\$)?(-|\\+|0|\\(|,|\\^|#| )*(\\d*)?(?:\\.(\\d+))?(a|A|b|B|h|H|d|f|c|s|x|X|u|o|z|Z|e|E|g|G|p|n|b|B|%)");
-	Processor				domain;
-	Reporter				reporter;
-	Object					targets[];
-	boolean					flattening;
-	String					profile;
-	private boolean			nosystem;
-	ScriptEngine			engine			= null;
-	ScriptContext			context			= null;
-	Bindings				bindings		= null;
-	StringWriter			stdout			= new StringWriter();
-	StringWriter			stderr			= new StringWriter();
+	Processor						domain;
+	Reporter						reporter;
+	Object							targets[];
+	boolean							flattening;
+	String							profile;
+	private boolean					nosystem;
+	ScriptEngine					engine			= null;
+	ScriptContext					context			= null;
+	Bindings						bindings		= null;
+	StringWriter					stdout			= new StringWriter();
+	StringWriter					stderr			= new StringWriter();
 
 	public Macro(Processor domain, Object... targets) {
 		this.domain = domain;
@@ -306,7 +305,7 @@ public class Macro {
 	 * ':'.
 	 */
 	// Handle up to 4 sequential backslashes in the negative lookbehind.
-	private static final String		ESCAPING	= "(?<!(?<!(?<!(?<!\\\\)\\\\)\\\\)\\\\)";
+	private static final String		ESCAPING			= "(?<!(?<!(?<!(?<!\\\\)\\\\)\\\\)\\\\)";
 	private static final String		SEMICOLON			= ";";
 	private static final String		ESCAPED_SEMICOLON	= "\\\\" + SEMICOLON;
 	private static final Pattern	SEMICOLON_P			= Pattern.compile(ESCAPING + SEMICOLON);
@@ -864,9 +863,8 @@ public class Macro {
 				String.format("the ${%s} macro directory parameter does not exist: %s", args[0], dir));
 
 		if (!dir.isDirectory())
-			throw new IllegalArgumentException(
-				String.format("the ${%s} macro directory parameter points to a file instead of a directory: %s",
-					args[0], dir));
+			throw new IllegalArgumentException(String.format(
+				"the ${%s} macro directory parameter points to a file instead of a directory: %s", args[0], dir));
 
 		File[] array = dir.listFiles();
 		if ((array == null) || (array.length == 0)) {
@@ -922,9 +920,9 @@ public class Macro {
 	private final static String		MASK_STRING			= MASK_M + "(?:" + MASK_M + "(?:" + MASK_M + "(?:" + MASK_Q
 		+ ")?)?)?";
 	private final static Pattern	VERSION_MASK		= Pattern.compile(MASK_STRING);
-	final static String		_versionmaskHelp	= "${versionmask;<mask>;<version>}, modify a version\n"
+	final static String				_versionmaskHelp	= "${versionmask;<mask>;<version>}, modify a version\n"
 		+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
-	final static String		_versionHelp		= _versionmaskHelp;
+	final static String				_versionHelp		= _versionmaskHelp;
 	final static Pattern[]			_versionPattern		= new Pattern[] {
 		null, VERSION_MASK
 	};
@@ -1019,9 +1017,9 @@ public class Macro {
 
 	private static final Pattern	RANGE_MASK		= Pattern
 		.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING + ")(\\]|\\))");
-	static final String		_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookup ${@}\n"
+	static final String				_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookup ${@}\n"
 		+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
-	static final Pattern	_rangePattern[]	= new Pattern[] {
+	static final Pattern			_rangePattern[]	= new Pattern[] {
 		null, RANGE_MASK
 	};
 
@@ -1068,9 +1066,10 @@ public class Macro {
 	}
 
 	private static final String		LOCALTARGET_NAME	= "@[^${}\\[\\]()<>«»‹›]*";
-	private static final Pattern	LOCALTARGET_P	= Pattern
+	private static final Pattern	LOCALTARGET_P		= Pattern
 		.compile("\\$(\\{" + LOCALTARGET_NAME + "\\}|\\[" + LOCALTARGET_NAME + "\\]|\\(" + LOCALTARGET_NAME + "\\)|<"
 			+ LOCALTARGET_NAME + ">|«" + LOCALTARGET_NAME + "»|‹" + LOCALTARGET_NAME + "›)");
+
 	boolean isLocalTarget(String string) {
 		return LOCALTARGET_P.matcher(string)
 			.matches();
@@ -1131,6 +1130,7 @@ public class Macro {
 	}
 
 	static final String _catHelp = "${cat;<in>}, get the content of a file";
+
 	/**
 	 * Get the contents of a file.
 	 *
@@ -1157,6 +1157,7 @@ public class Macro {
 	}
 
 	static final String _base64Help = "${base64;<file>[;fileSizeLimit]}, get the Base64 encoding of a file";
+
 	/**
 	 * Get the Base64 encoding of a file.
 	 *
@@ -1178,6 +1179,7 @@ public class Macro {
 	}
 
 	static final String _digestHelp = "${digest;<algo>;<in>}, get a digest (e.g. MD5, SHA-256) of a file";
+
 	/**
 	 * Get a digest of a file.
 	 *
@@ -1306,9 +1308,10 @@ public class Macro {
 					String value = source.getProperty(key);
 					if (value == null) {
 						Object raw = source.get(key);
-						reporter.warning("Key '%s' has a non-String value: %s:%s", key, raw == null ? ""
-							: raw.getClass()
-								.getName(),
+						reporter.warning("Key '%s' has a non-String value: %s:%s", key,
+							raw == null ? ""
+								: raw.getClass()
+									.getName(),
 							raw);
 					} else {
 						if (ignoreInstructions && key.startsWith("-"))
@@ -1324,7 +1327,7 @@ public class Macro {
 		}
 	}
 
-	public final static String _fileHelp = "${file;<base>;<paths>...}, create correct OS dependent path";
+	public final static String	_fileHelp	= "${file;<base>;<paths>...}, create correct OS dependent path";
 
 	static final String			_osfileHelp	= "${osfile;<base>;<path>}, create correct OS dependent path";
 
@@ -2080,16 +2083,12 @@ public class Macro {
 
 	public boolean doCondition(String arg) throws Exception {
 		ExtendedFilter f = new ExtendedFilter(arg);
-		return f.match(new Get() {
-
-			@Override
-			public Object get(String key) throws Exception {
-				if (key.endsWith("[]")) {
-					key = key.substring(0, key.length() - 2);
-					return Strings.split(domain.getProperty(key));
-				} else
-					return domain.getProperty(key);
-			}
+		return f.match(key -> {
+			if (key.endsWith("[]")) {
+				key = key.substring(0, key.length() - 2);
+				return Strings.split(domain.getProperty(key));
+			} else
+				return domain.getProperty(key);
 		});
 	}
 

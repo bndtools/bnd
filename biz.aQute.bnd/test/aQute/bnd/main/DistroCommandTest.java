@@ -68,8 +68,7 @@ public class DistroCommandTest extends TestCase {
 		String[] bundles = {
 			"../biz.aQute.remote/generated/biz.aQute.remote.agent.jar",
 			"testdata/bundles/com.liferay.dynamic.data.mapping.taglib.jar",
-			"testdata/bundles/com.liferay.item.selector.taglib.jar",
-			"testdata/bundles/org.apache.felix.log-1.2.0.jar",
+			"testdata/bundles/com.liferay.item.selector.taglib.jar", "testdata/bundles/org.apache.felix.log-1.2.0.jar",
 			"testdata/bundles/org.apache.felix.log-1.0.1.jar"
 		};
 

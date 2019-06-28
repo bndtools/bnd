@@ -143,8 +143,7 @@ class RemoteCommand extends Processor {
 	@Arguments(arg = {
 		"bundleId..."
 	})
-	interface BundleOptions extends Options {
-	}
+	interface BundleOptions extends Options {}
 
 	@Description("Start the specified bundles")
 	public void _start(BundleOptions options) throws Exception {
@@ -168,8 +167,7 @@ class RemoteCommand extends Processor {
 	@Arguments(arg = {
 		"filespec", "location"
 	})
-	interface InstallOptions extends Options {
-	}
+	interface InstallOptions extends Options {}
 
 	@Description("Install/update the specified bundle")
 	public void _install(InstallOptions options) throws Exception {

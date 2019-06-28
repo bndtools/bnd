@@ -19,30 +19,30 @@ import bndtools.Plugin;
 
 public class TestCaseLabelProvider extends LabelProvider {
 
-    private Image junitImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/test.gif")
-        .createImage();
+	private Image junitImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/test.gif")
+		.createImage();
 
-    @Override
-    public String getText(Object element) {
-        String result;
-        if (element instanceof String)
-            result = (String) element;
-        else if (element instanceof IPath)
-            result = ((IPath) element).toString()
-                .replace('/', '.');
-        else
-            result = "<error>"; //$NON-NLS-1$
-        return result;
-    }
+	@Override
+	public String getText(Object element) {
+		String result;
+		if (element instanceof String)
+			result = (String) element;
+		else if (element instanceof IPath)
+			result = ((IPath) element).toString()
+				.replace('/', '.');
+		else
+			result = "<error>"; //$NON-NLS-1$
+		return result;
+	}
 
-    @Override
-    public Image getImage(Object element) {
-        return junitImg;
-    }
+	@Override
+	public Image getImage(Object element) {
+		return junitImg;
+	}
 
-    @Override
-    public void dispose() {
-        super.dispose();
-        junitImg.dispose();
-    }
+	@Override
+	public void dispose() {
+		super.dispose();
+		junitImg.dispose();
+	}
 }

@@ -13,8 +13,6 @@ import java.util.regex.Pattern;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkEvent;
-import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.Version;
 import org.osgi.framework.wiring.FrameworkWiring;
 
@@ -26,7 +24,7 @@ import aQute.lib.regex.PatternConstants;
  * it quick and easy to update the constellation.
  */
 public class EmbeddedActivator implements BundleActivator {
-	final List<Bundle>			bundles			= new ArrayList<>();
+	final List<Bundle>				bundles			= new ArrayList<>();
 	private final static String		VERSION_S		= "(?:\\d{1,9})(?:\\.(?:\\d{1,9})(?:\\.(?:\\d{1,9})(?:\\.(?:"
 		+ PatternConstants.TOKEN + "))?)?)?";
 
@@ -157,13 +155,7 @@ public class EmbeddedActivator implements BundleActivator {
 		FrameworkWiring framework = bundle.adapt(FrameworkWiring.class);
 		final Semaphore s = new Semaphore(0);
 
-		framework.refreshBundles(toStop, new FrameworkListener() {
-
-			@Override
-			public void frameworkEvent(FrameworkEvent event) {
-				s.release();
-			}
-		});
+		framework.refreshBundles(toStop, event -> s.release());
 
 		s.tryAcquire(10, TimeUnit.SECONDS);
 	}

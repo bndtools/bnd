@@ -21,7 +21,7 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.filter.Filter;
 
 public class ResourcesRepository extends BaseRepository {
-	final Set<Resource> resources = new LinkedHashSet<>();
+	final Set<Resource>			resources	= new LinkedHashSet<>();
 	final Map<String, Filter>	cache		= new ConcurrentHashMap<>();
 
 	public ResourcesRepository(Resource resource) {

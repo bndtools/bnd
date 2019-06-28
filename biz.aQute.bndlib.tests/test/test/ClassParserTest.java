@@ -91,7 +91,7 @@ public class ClassParserTest extends TestCase {
 
 	/**
 	 * Java Type & Parameter annotations
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -147,7 +147,7 @@ public class ClassParserTest extends TestCase {
 
 	/**
 	 * Test the constant values
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -408,7 +408,7 @@ public class ClassParserTest extends TestCase {
 	 * even if there are still bytes left. It seems to be able to stop skipping
 	 * if it is at the end of a buffer or so :-( Idiots. The
 	 * DataInputStream.skipBytes works correctly.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	public void testLargeClass() throws IOException {

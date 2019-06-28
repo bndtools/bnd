@@ -10,37 +10,46 @@ import org.eclipse.jface.viewers.ViewerFilter;
 
 public class LatestTemplateFilter extends ViewerFilter {
 
-    @Override
-    public Object[] filter(Viewer viewer, Object parent, Object[] elements) {
-        Object[] result;
-        if (parent instanceof Category) {
-            Map<String, Template> selected = new LinkedHashMap<>(); // Preserves the order of names, as they were
-                                                                    // already sorted by the content provider.
-            for (Object element : elements) {
-                Template template = (Template) element;
-                Template existing = selected.get(template.getName());
+	@Override
+	public Object[] filter(Viewer viewer, Object parent, Object[] elements) {
+		Object[] result;
+		if (parent instanceof Category) {
+			Map<String, Template> selected = new LinkedHashMap<>(); // Preserves
+																	// the order
+																	// of names,
+																	// as they
+																	// were
+																	// already
+																	// sorted by
+																	// the
+																	// content
+																	// provider.
+			for (Object element : elements) {
+				Template template = (Template) element;
+				Template existing = selected.get(template.getName());
 
-                if (existing == null)
-                    // no selected template for this name -> add
-                    selected.put(template.getName(), template);
+				if (existing == null)
+					// no selected template for this name -> add
+					selected.put(template.getName(), template);
 
-                else if (template.getVersion()
-                    .compareTo(existing.getVersion()) > 0)
-                    // existing selected template for this name is lower -> replace
-                    selected.put(template.getName(), template);
-            }
-            result = selected.values()
-                .toArray();
-        } else {
-            result = elements;
-        }
-        return result;
-    }
+				else if (template.getVersion()
+					.compareTo(existing.getVersion()) > 0)
+					// existing selected template for this name is lower ->
+					// replace
+					selected.put(template.getName(), template);
+			}
+			result = selected.values()
+				.toArray();
+		} else {
+			result = elements;
+		}
+		return result;
+	}
 
-    @Override
-    public boolean select(Viewer viewer, Object parentElement, Object element) {
-        // not invoked
-        throw new UnsupportedOperationException();
-    }
+	@Override
+	public boolean select(Viewer viewer, Object parentElement, Object element) {
+		// not invoked
+		throw new UnsupportedOperationException();
+	}
 
 }

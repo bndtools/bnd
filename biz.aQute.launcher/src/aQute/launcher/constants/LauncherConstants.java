@@ -125,7 +125,7 @@ public class LauncherConstants {
 
 	/**
 	 * Create a constants from properties.
-	 * 
+	 *
 	 * @param p
 	 */
 	public LauncherConstants(Properties p) {

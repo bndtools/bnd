@@ -6,7 +6,7 @@ import aQute.lib.io.IO;
 
 public class LaunchpadWorkspace {
 	@SuppressWarnings("unused")
-	private static Workspace ws;
+	private static Workspace	ws;
 
 	static LaunchpadBuilder		builder	= new LaunchpadBuilder().runfw("org.apache.felix.framework;version=@5");
 

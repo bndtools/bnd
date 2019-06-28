@@ -21,12 +21,11 @@ public class ReportExporterBuilder {
 	private Processor				_processor	= null;
 	private ReportGeneratorService	_generator	= null;
 
-	private ReportExporterBuilder() {
-	}
+	private ReportExporterBuilder() {}
 
 	/**
 	 * Create a new builder.
-	 * 
+	 *
 	 * @return the builder
 	 */
 	public static ReportExporterBuilder create() {
@@ -36,7 +35,7 @@ public class ReportExporterBuilder {
 	/**
 	 * Set a scope for the exporter service. If set, the exporter will ignore
 	 * report instructions with a different scope.
-	 * 
+	 *
 	 * @param scopeName the scope name, may be {@code null}
 	 * @return the builder
 	 */
@@ -52,7 +51,7 @@ public class ReportExporterBuilder {
 	 * <p>
 	 * If not set, a default processor is used but the created service will be
 	 * useless because no instructions will be provided.
-	 * 
+	 *
 	 * @param processor the processor to use.
 	 * @return the builder
 	 */
@@ -66,7 +65,7 @@ public class ReportExporterBuilder {
 	 * Set the generator which will be used to generate the reports.
 	 * <p>
 	 * If not set a default generator will be used.
-	 * 
+	 *
 	 * @param generator the generator service to use
 	 * @return the builder
 	 */
@@ -78,7 +77,7 @@ public class ReportExporterBuilder {
 
 	/**
 	 * Build the service.
-	 * 
+	 *
 	 * @return the service
 	 */
 	public ReportExporterService build() {

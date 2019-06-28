@@ -4,7 +4,7 @@ package biz.aQute.bnd.reporter.codesnippet;
 import biz.aQute.bnd.reporter.codesnippet.geneimport.MyClass;
 
 /**
- * 
+ *
  */
 public class WithoutDeclarationMethod {
 

@@ -12,7 +12,7 @@ import aQute.bnd.osgi.Constants;
  * pattern. We parse the resource and and the imports to the builder. Parsing is
  * done with XSLT (first time I see the use of having XML for the Spring
  * configuration files!).
- * 
+ *
  * @author aqute
  */
 @BndPlugin(name = "blueprint")

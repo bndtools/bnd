@@ -45,7 +45,7 @@ import aQute.bnd.maven.lib.resolve.BndrunContainer;
 import aQute.bnd.maven.lib.resolve.Operation;
 import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.Constants;
-import biz.aQute.resolve.Bndrun;
+import aQute.bnd.osgi.Processor;
 
 @Mojo(name = "run", defaultPhase = LifecyclePhase.PACKAGE, requiresDirectInvocation = true, requiresProject = true, requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 public class RunMojo extends AbstractMojo {
@@ -58,7 +58,7 @@ public class RunMojo extends AbstractMojo {
 	private RepositorySystemSession								repositorySession;
 
 	@Parameter
-	private File 												bndrun;
+	private File												bndrun;
 
 	@Parameter(required = false)
 	private Bundles												bundles	= new Bundles();
@@ -127,60 +127,65 @@ public class RunMojo extends AbstractMojo {
 			final Semaphore semaphore = new Semaphore(1);
 
 			try (final ProjectLauncher pl = run.getProjectLauncher();
-				WatchService watcher = FileSystems.getDefault().newWatchService()) {
+				WatchService watcher = FileSystems.getDefault()
+					.newWatchService()) {
 				final Set<Path> watchedPaths = ConcurrentHashMap.newKeySet();
 				Path filePath = file.toPath();
 				watchedPaths.add(filePath);
-				filePath.getParent().register(watcher, ENTRY_MODIFY);
+				filePath.getParent()
+					.register(watcher, ENTRY_MODIFY);
 				for (String runbundle : pl.getRunpath()) {
 					filePath = Paths.get(runbundle);
-					filePath.getParent().register(watcher, ENTRY_MODIFY);
+					filePath.getParent()
+						.register(watcher, ENTRY_MODIFY);
 					watchedPaths.add(filePath);
 				}
 				for (Container runbundle : run.getRunbundles()) {
-					filePath = runbundle.getFile().toPath();
-					filePath.getParent().register(watcher, ENTRY_MODIFY);
+					filePath = runbundle.getFile()
+						.toPath();
+					filePath.getParent()
+						.register(watcher, ENTRY_MODIFY);
 					watchedPaths.add(filePath);
 				}
 
-				ForkJoinPool.commonPool().submit(() -> {
-					WatchKey key;
-					for (;;) {
-						try {
-							key = watcher.take();
-						} catch (InterruptedException x) {
-							continue;
-						}
+				ForkJoinPool.commonPool()
+					.submit(() -> {
+						WatchKey key;
+						for (;;) {
+							try {
+								key = watcher.take();
+							} catch (InterruptedException x) {
+								continue;
+							}
 
-						for (WatchEvent<?> event : key.pollEvents()) {
-							@SuppressWarnings("unchecked")
-							WatchEvent<Path> eventPath = (WatchEvent<Path>)event;
-							Path dir = (Path)key.watchable();
-							Path path = dir.resolve(eventPath.context());
-							if (watchedPaths.contains(path) && semaphore.tryAcquire()) {
-								scheduledExecutor.schedule(() -> {
-									try {
-										logger.info("Detected change to {}. Reloading.", path);
-										pl.update();
-									} catch (Exception e) {
-										logger.error("Error on update {}", e);
-									}
-									finally {
-										semaphore.release();
-									}
-								}, 600, TimeUnit.MILLISECONDS);
+							for (WatchEvent<?> event : key.pollEvents()) {
+								@SuppressWarnings("unchecked")
+								WatchEvent<Path> eventPath = (WatchEvent<Path>) event;
+								Path dir = (Path) key.watchable();
+								Path path = dir.resolve(eventPath.context());
+								if (watchedPaths.contains(path) && semaphore.tryAcquire()) {
+									scheduledExecutor.schedule(() -> {
+										try {
+											logger.info("Detected change to {}. Reloading.", path);
+											pl.update();
+										} catch (Exception e) {
+											logger.error("Error on update {}", e);
+										} finally {
+											semaphore.release();
+										}
+									}, 600, TimeUnit.MILLISECONDS);
+								}
+							}
+
+							boolean valid = key.reset();
+							if (!valid) {
+								logger.debug("Watch key invalid {}, quitting", key);
+								break;
 							}
 						}
+					});
 
-						boolean valid = key.reset();
-						if (!valid) {
-							logger.debug("Watch key invalid {}, quitting", key);
-							break;
-						}
-					}
-				});
-
-				pl.setTrace(run.isTrace() || Bndrun.isTrue(run.getProperty(Constants.RUNTRACE)));
+				pl.setTrace(run.isTrace() || Processor.isTrue(run.getProperty(Constants.RUNTRACE)));
 				pl.launch();
 			} finally {
 				scheduledExecutor.shutdownNow();

@@ -68,7 +68,7 @@ public class RemoteWorkspaceServer implements Closeable {
 	 * {@code cnf/cache/remotews/<portnr>}. That is, it is possible to have
 	 * multiple workspaces open on the system workspace. (Locking between
 	 * workspaces is not handled though.)
-	 * 
+	 *
 	 * @param workspace the given workspace
 	 */
 	public RemoteWorkspaceServer(Workspace workspace) throws UnknownHostException, IOException {
@@ -243,7 +243,6 @@ public class RemoteWorkspaceServer implements Closeable {
 						if (buildFiles == null)
 							throw new IllegalStateException(projectPath + ": merge requested but has no build JAR");
 
-
 						Glob glob = new Glob(spec.testBundle);
 						boolean found = false;
 						buildfiles: for (File f : buildFiles) {
@@ -302,7 +301,7 @@ public class RemoteWorkspaceServer implements Closeable {
 
 		/**
 		 * Calculate the builder with the properly inheritance structure.
-		 * 
+		 *
 		 * @param project The context project
 		 * @param parent The comma separated parent string. The last entry may
 		 *            be either PROJECT or WORKSPACE

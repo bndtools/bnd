@@ -13,105 +13,107 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 /**
- * A {@link FormEditor} that allows updating of tab titles, images and overlay images.
- * 
+ * A {@link FormEditor} that allows updating of tab titles, images and overlay
+ * images.
+ *
  * @author Neil Bartlett
  */
 public abstract class ExtendedFormEditor extends FormEditor {
 
-    private ITextEditor sourcePage;
+	private ITextEditor		sourcePage;
 
-    private ImageDescriptor baseImageDescriptor;
-    private Image titleImage;
+	private ImageDescriptor	baseImageDescriptor;
+	private Image			titleImage;
 
-    private ImageDescriptor overlaidTitleImageDescriptor;
-    private Image overlaidTitleImage;
+	private ImageDescriptor	overlaidTitleImageDescriptor;
+	private Image			overlaidTitleImage;
 
-    @Override
-    public void setInitializationData(IConfigurationElement cfig, String propertyName, Object data) {
-        super.setInitializationData(cfig, propertyName, data);
+	@Override
+	public void setInitializationData(IConfigurationElement cfig, String propertyName, Object data) {
+		super.setInitializationData(cfig, propertyName, data);
 
-        String strIcon = cfig.getAttribute("icon");//$NON-NLS-1$
-        if (strIcon == null) {
-            return;
-        }
+		String strIcon = cfig.getAttribute("icon");//$NON-NLS-1$
+		if (strIcon == null) {
+			return;
+		}
 
-        baseImageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(cfig.getContributor()
-            .getName(), strIcon);
-        if (baseImageDescriptor == null) {
-            return;
-        }
+		baseImageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(cfig.getContributor()
+			.getName(), strIcon);
+		if (baseImageDescriptor == null) {
+			return;
+		}
 
-        titleImage = JFaceResources.getResources()
-            .createImageWithDefault(baseImageDescriptor);
-    }
+		titleImage = JFaceResources.getResources()
+			.createImageWithDefault(baseImageDescriptor);
+	}
 
-    @Override
-    public Image getTitleImage() {
-        if (overlaidTitleImage != null) {
-            return overlaidTitleImage;
-        }
+	@Override
+	public Image getTitleImage() {
+		if (overlaidTitleImage != null) {
+			return overlaidTitleImage;
+		}
 
-        if (titleImage != null) {
-            return titleImage;
-        }
+		if (titleImage != null) {
+			return titleImage;
+		}
 
-        return getDefaultImage();
-    }
+		return getDefaultImage();
+	}
 
-    @Override
-    public void dispose() {
-        super.dispose();
-        if (baseImageDescriptor != null)
-            JFaceResources.getResources()
-                .destroyImage(baseImageDescriptor);
-        if (overlaidTitleImageDescriptor != null)
-            JFaceResources.getResources()
-                .destroyImage(overlaidTitleImageDescriptor);
-    }
+	@Override
+	public void dispose() {
+		super.dispose();
+		if (baseImageDescriptor != null)
+			JFaceResources.getResources()
+				.destroyImage(baseImageDescriptor);
+		if (overlaidTitleImageDescriptor != null)
+			JFaceResources.getResources()
+				.destroyImage(overlaidTitleImageDescriptor);
+	}
 
-    public void setOverlayTitleImage(ImageDescriptor overlay) {
-        if (overlay == null) {
-            overlaidTitleImage = null;
-            firePropertyChange(PROP_TITLE);
-            if (overlaidTitleImageDescriptor != null)
-                JFaceResources.getResources()
-                    .destroyImage(overlaidTitleImageDescriptor);
-            overlaidTitleImageDescriptor = null;
-        } else {
-            DecorationOverlayIcon newOverlaidDesc = new DecorationOverlayIcon(titleImage, overlay, IDecoration.BOTTOM_LEFT);
-            overlaidTitleImage = JFaceResources.getResources()
-                .createImage(newOverlaidDesc);
-            firePropertyChange(PROP_TITLE);
-            if (overlaidTitleImageDescriptor != null)
-                JFaceResources.getResources()
-                    .destroyImage(overlaidTitleImageDescriptor);
-            overlaidTitleImageDescriptor = newOverlaidDesc;
-        }
-    }
+	public void setOverlayTitleImage(ImageDescriptor overlay) {
+		if (overlay == null) {
+			overlaidTitleImage = null;
+			firePropertyChange(PROP_TITLE);
+			if (overlaidTitleImageDescriptor != null)
+				JFaceResources.getResources()
+					.destroyImage(overlaidTitleImageDescriptor);
+			overlaidTitleImageDescriptor = null;
+		} else {
+			DecorationOverlayIcon newOverlaidDesc = new DecorationOverlayIcon(titleImage, overlay,
+				IDecoration.BOTTOM_LEFT);
+			overlaidTitleImage = JFaceResources.getResources()
+				.createImage(newOverlaidDesc);
+			firePropertyChange(PROP_TITLE);
+			if (overlaidTitleImageDescriptor != null)
+				JFaceResources.getResources()
+					.destroyImage(overlaidTitleImageDescriptor);
+			overlaidTitleImageDescriptor = newOverlaidDesc;
+		}
+	}
 
-    public void updatePageTitle(IFormPage page) {
-        int index = pages != null ? pages.indexOf(page) : -1;
-        if (index != -1) {
-            setPageImage(index, page.getTitleImage());
-            setPageText(index, page.getTitle());
-        }
-    }
+	public void updatePageTitle(IFormPage page) {
+		int index = pages != null ? pages.indexOf(page) : -1;
+		if (index != -1) {
+			setPageImage(index, page.getTitleImage());
+			setPageText(index, page.getTitle());
+		}
+	}
 
-    @Override
-    protected void configurePage(int index, IFormPage page) throws PartInitException {
-        super.configurePage(index, page);
-        Image image = page.getTitleImage();
-        if (image != null)
-            setPageImage(index, page.getTitleImage());
-    }
+	@Override
+	protected void configurePage(int index, IFormPage page) throws PartInitException {
+		super.configurePage(index, page);
+		Image image = page.getTitleImage();
+		if (image != null)
+			setPageImage(index, page.getTitleImage());
+	}
 
-    public ITextEditor getSourcePage() {
-        return sourcePage;
-    }
+	public ITextEditor getSourcePage() {
+		return sourcePage;
+	}
 
-    protected void setSourcePage(ITextEditor sourcePage) {
-        this.sourcePage = sourcePage;
-    }
+	protected void setSourcePage(ITextEditor sourcePage) {
+		this.sourcePage = sourcePage;
+	}
 
 }

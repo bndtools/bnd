@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Clazz;
-import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Instructions;
@@ -34,7 +33,7 @@ public class XRefCommand {
 
 	@Description("Show a cross references for all classes in a set of jars.")
 	@Arguments(arg = {
-			"<jar path>", "[...]"
+		"<jar path>", "[...]"
 	})
 	interface xrefOptions extends Options {
 		@Description("Show classes instead of packages")
@@ -61,8 +60,8 @@ public class XRefCommand {
 	}
 
 	static public class All {
-		public Map<TypeRef,List<TypeRef>>		classes		= new HashMap<Descriptors.TypeRef,List<TypeRef>>();
-		public Map<PackageRef,List<PackageRef>>	packages	= new HashMap<Descriptors.PackageRef,List<PackageRef>>();
+		public Map<TypeRef, List<TypeRef>>			classes		= new HashMap<>();
+		public Map<PackageRef, List<PackageRef>>	packages	= new HashMap<>();
 	}
 
 	XRefCommand(aQute.bnd.main.bnd bnd) {
@@ -71,20 +70,22 @@ public class XRefCommand {
 
 	void xref(xrefOptions options) throws FileNotFoundException {
 		Analyzer analyzer = new Analyzer();
-		final MultiMap<TypeRef,TypeRef> table = new MultiMap<TypeRef,TypeRef>();
-		final MultiMap<PackageRef,PackageRef> packages = new MultiMap<PackageRef,PackageRef>();
+		final MultiMap<TypeRef, TypeRef> table = new MultiMap<>();
+		final MultiMap<PackageRef, PackageRef> packages = new MultiMap<>();
 		Set<TypeRef> set = Create.set();
 
 		Instructions filter = new Instructions(options.match());
 		Instructions source = new Instructions(options.source());
 		Instructions destination = new Instructions(options.destination());
-		bnd.getLogger().info(" sources {}", source);
+		bnd.getLogger()
+			.info(" sources {}", source);
 
 		for (String arg : options._arguments()) {
 			try {
 				File file = bnd.getFile(arg);
 				try (Jar jar = new Jar(file.getName(), file)) {
-					for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
+					for (Map.Entry<String, Resource> entry : jar.getResources()
+						.entrySet()) {
 						String key = entry.getKey();
 						Resource r = entry.getValue();
 						if (key.endsWith(".class")) {
@@ -92,7 +93,8 @@ public class XRefCommand {
 							String fqn = ref.getFQN();
 
 							if (filter.matches(fqn) && source.matches(fqn)) {
-								bnd.getLogger().info("# include {}", fqn);
+								bnd.getLogger()
+									.info("# include {}", fqn);
 								set.add(ref);
 
 								try (InputStream in = r.openInputStream()) {
@@ -134,8 +136,7 @@ public class XRefCommand {
 
 		if (options.classes()) {
 			if (options.referrredTo() != null) {
-				printReferred(options.referrredTo(), Strings.join("\n",
-						flatten(table)));
+				printReferred(options.referrredTo(), Strings.join("\n", flatten(table)));
 			}
 
 			if (to)
@@ -144,8 +145,7 @@ public class XRefCommand {
 				printxref(table.transpose(), "<");
 		} else {
 			if (options.referrredTo() != null) {
-				printReferred(options.referrredTo(), Strings.join("\n",
-						flatten(packages)));
+				printReferred(options.referrredTo(), Strings.join("\n", flatten(packages)));
 			}
 			if (to)
 				printxref(packages, ">");
@@ -154,8 +154,11 @@ public class XRefCommand {
 		}
 	}
 
-	private <T> Set<T> flatten(final MultiMap<T,T> packages) {
-		return new TreeSet<>(packages.values().stream().flatMap(l -> l.stream()).collect(Collectors.toSet()));
+	private <T> Set<T> flatten(final MultiMap<T, T> packages) {
+		return packages.values()
+			.stream()
+			.flatMap(List::stream)
+			.collect(Collectors.toCollection(TreeSet::new));
 	}
 
 	private void printReferred(String referrredTo, String joined) throws FileNotFoundException {
@@ -163,7 +166,8 @@ public class XRefCommand {
 		boolean toConsole = referrredTo.equals("--");
 		if (!toConsole) {
 			File file = bnd.getFile(referrredTo);
-			if (!file.getParentFile().mkdirs()) {
+			if (!file.getParentFile()
+				.mkdirs()) {
 				bnd.error("Cannot make parent directory for referred output file %s", referrredTo);
 			}
 			out = new PrintStream(file);
@@ -173,19 +177,20 @@ public class XRefCommand {
 			out.close();
 	}
 
-	private void printxref(MultiMap< ? , ? > map, String direction) {
-		SortedList< ? > labels = new SortedList<Object>(map.keySet(), null);
+	private void printxref(MultiMap<?, ?> map, String direction) {
+		SortedList<?> labels = new SortedList<Object>(map.keySet(), null);
 		for (Object element : labels) {
-			List< ? > e = map.get(element);
+			List<?> e = map.get(element);
 			if (e == null) {
 				// ignore
 			} else {
-				Set<Object> set = new LinkedHashSet<Object>(e);
+				Set<Object> set = new LinkedHashSet<>(e);
 				set.remove(element);
-				Iterator< ? > row = set.iterator();
+				Iterator<?> row = set.iterator();
 				String first = "";
 				if (row.hasNext())
-					first = row.next().toString();
+					first = row.next()
+						.toString();
 				bnd.out.printf("%50s %s %s\n", element, direction, first);
 				while (row.hasNext()) {
 					bnd.out.printf("%50s   %s\n", "", row.next());

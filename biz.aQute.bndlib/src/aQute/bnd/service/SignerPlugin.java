@@ -5,7 +5,7 @@ import aQute.bnd.osgi.Builder;
 public interface SignerPlugin {
 	/**
 	 * Sign the current jar. The alias is the given certificate keystore.
-	 * 
+	 *
 	 * @param builder The current builder that contains the jar to sign
 	 * @param alias The keystore certificate alias
 	 * @throws Exception When anything goes wrong

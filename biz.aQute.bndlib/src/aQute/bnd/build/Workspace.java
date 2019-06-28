@@ -141,7 +141,7 @@ public class Workspace extends Processor {
 	/**
 	 * This static method finds the workspace and creates a project (or returns
 	 * an existing project)
-	 * 
+	 *
 	 * @param projectDir
 	 */
 	public static Project getProject(File projectDir) throws Exception {
@@ -409,7 +409,7 @@ public class Workspace extends Processor {
 
 	/**
 	 * Inform any listeners that we changed a file (created/deleted/changed).
-	 * 
+	 *
 	 * @param f The changed file
 	 */
 	public void changedFile(File f) {
@@ -642,7 +642,7 @@ public class Workspace extends Processor {
 
 	/**
 	 * Add any extensions listed
-	 * 
+	 *
 	 * @param list
 	 */
 	@Override
@@ -747,7 +747,7 @@ public class Workspace extends Processor {
 
 	/**
 	 * Provide access to the global settings of this machine.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -1048,7 +1048,7 @@ public class Workspace extends Processor {
 
 	/**
 	 * Add a plugin
-	 * 
+	 *
 	 * @param plugin
 	 * @throws Exception
 	 */
@@ -1157,7 +1157,7 @@ public class Workspace extends Processor {
 
 	/**
 	 * Create a workspace that does not inherit from a cnf directory etc.
-	 * 
+	 *
 	 * @param run
 	 */
 	public static Workspace createStandaloneWorkspace(Processor run, URI base) throws Exception {
@@ -1279,7 +1279,7 @@ public class Workspace extends Processor {
 
 	/**
 	 * Create a new Workspace
-	 * 
+	 *
 	 * @param wsdir
 	 * @throws Exception
 	 */
@@ -1302,7 +1302,7 @@ public class Workspace extends Processor {
 	/**
 	 * Lock the workspace and its corresponding projects for reading. The r
 	 * parameter when called can freely use any read function in the workspace.
-	 * 
+	 *
 	 * @param r the lambda to run
 	 * @param timeoutInMs the timeout in milliseconds
 	 * @return the value of the lambda
@@ -1318,7 +1318,7 @@ public class Workspace extends Processor {
 	/**
 	 * Lock the workspace and its corresponding projects for all functions. The
 	 * r parameter when called can freely use any function in the workspace.
-	 * 
+	 *
 	 * @param r the lambda to run
 	 * @param timeoutInMs the timeout in milliseconds
 	 * @return the value of the lambda
@@ -1348,13 +1348,13 @@ public class Workspace extends Processor {
 	 * a macro. This macro checks for cycles since I am not sure if calling
 	 * getAllProjects is safe for some macros in all cases. I.e. the primary use
 	 * case wants to use it in -dependson
-	 * 
+	 *
 	 * <pre>
 	 *      ${projectswhere;key;glob}
 	 * </pre>
 	 */
 
-	static final String			_projectswhereHelp		= "${projectswhere[;<key>;<glob>]} - Make sure this cannot be called recursively at startup";
+	static final String							_projectswhereHelp		= "${projectswhere[;<key>;<glob>]} - Make sure this cannot be called recursively at startup";
 	private static final ThreadLocal<Boolean>	projectswhereCycleCheck	= new ThreadLocal<>();
 
 	public String _projectswhere(String args[]) {

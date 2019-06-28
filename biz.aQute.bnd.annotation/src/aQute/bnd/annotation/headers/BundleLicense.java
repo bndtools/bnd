@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  * OSGi Framework.
  * <p>
  * The syntax for this header is as follows:
- * 
+ *
  * <pre>
  * Bundle-License ::= ’&lt;&lt;EXTERNAL&gt;&gt;’ | ( license ( ’,’ license ) * )
  * license ::= name ( ’;’ license-attr )
@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * description ::= ’description’ ’=’ string
  * link ::= ’link’ ’=’ &lt;url&gt;
  * </pre>
- * 
+ *
  * This header has the following attributes:
  * <ul>
  * <li>{@code name} – Provides a globally unique name for this license,
@@ -45,11 +45,11 @@ import java.lang.annotation.Target;
  * the license. It is recommended to use URLs from
  * <a href="http://opensource.org/">Open Source Initiative</a>. Other licenses
  * should use the following structure, but this is not mandated:
- * 
+ *
  * <pre>
  * http://&lt;domain-name&gt;/licenses/&lt;license-name&gt;-&lt;version&gt;.&lt;extension&gt;
  * </pre>
- * 
+ *
  * <li>{@code description} – (optional) Provide the description of the license.
  * This is a short description that is usable in a list box on a UI to select
  * more information about the license.

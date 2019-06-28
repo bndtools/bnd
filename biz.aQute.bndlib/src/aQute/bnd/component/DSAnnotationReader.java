@@ -398,7 +398,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private void doActivate(Annotation annotation) {
 		String memberDescriptor = member.getDescriptor()
@@ -464,7 +464,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private void doDeactivate(Annotation annotation) {
 		switch (annotation.elementType()) {
@@ -489,7 +489,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private void doModified(Annotation annotation) {
 		switch (annotation.elementType()) {

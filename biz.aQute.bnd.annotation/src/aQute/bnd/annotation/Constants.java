@@ -2,8 +2,7 @@ package aQute.bnd.annotation;
 
 public final class Constants {
 
-	private Constants() {
-	}
+	private Constants() {}
 
 	/**
 	 * Not emitted if default is used

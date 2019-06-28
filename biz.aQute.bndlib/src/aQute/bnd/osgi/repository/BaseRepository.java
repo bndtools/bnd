@@ -40,13 +40,7 @@ public abstract class BaseRepository implements Repository {
 			IdentityNamespace.IDENTITY_NAMESPACE);
 		rb.addFilter("(" + IdentityNamespace.IDENTITY_NAMESPACE + "=*)");
 		final Requirement requireAll = rb.synthetic();
-		all = new IdentityExpression() {
-
-			@Override
-			public Requirement getRequirement() {
-				return requireAll;
-			}
-		};
+		all = () -> requireAll;
 	}
 
 	@Override
@@ -151,13 +145,7 @@ public abstract class BaseRepository implements Repository {
 			public OrExpression or(RequirementExpression expr1, RequirementExpression expr2,
 				RequirementExpression... moreExprs) {
 				final List<RequirementExpression> exprs = combine(expr1, expr2, moreExprs);
-				return new OrExpression() {
-
-					@Override
-					public List<RequirementExpression> getRequirementExpressions() {
-						return exprs;
-					}
-				};
+				return () -> exprs;
 			}
 
 			List<RequirementExpression> combine(RequirementExpression expr1, RequirementExpression expr2,
@@ -178,24 +166,12 @@ public abstract class BaseRepository implements Repository {
 
 			@Override
 			public NotExpression not(final RequirementExpression expr) {
-				return new NotExpression() {
-
-					@Override
-					public RequirementExpression getRequirementExpression() {
-						return expr;
-					}
-				};
+				return () -> expr;
 			}
 
 			@Override
 			public IdentityExpression identity(final Requirement req) {
-				return new IdentityExpression() {
-
-					@Override
-					public Requirement getRequirement() {
-						return req;
-					}
-				};
+				return () -> req;
 			}
 
 			@Override
@@ -204,13 +180,7 @@ public abstract class BaseRepository implements Repository {
 
 				final List<RequirementExpression> exprs = combine(expr1, expr2, moreExprs);
 
-				return new AndExpression() {
-
-					@Override
-					public List<RequirementExpression> getRequirementExpressions() {
-						return exprs;
-					}
-				};
+				return () -> exprs;
 			}
 
 			@Override
@@ -250,14 +220,10 @@ public abstract class BaseRepository implements Repository {
 
 			@Override
 			public IdentityExpression buildExpression() {
-				return new IdentityExpression() {
-
-					@Override
-					public Requirement getRequirement() {
-						if (rb.getResource() == null)
-							return rb.buildSyntheticRequirement();
-						return rb.build();
-					}
+				return () -> {
+					if (rb.getResource() == null)
+						return rb.buildSyntheticRequirement();
+					return rb.build();
 				};
 			}
 

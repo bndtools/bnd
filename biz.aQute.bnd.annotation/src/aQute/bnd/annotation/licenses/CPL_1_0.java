@@ -18,5 +18,4 @@ import aQute.bnd.annotation.headers.BundleLicense;
 	ElementType.PACKAGE, ElementType.TYPE
 })
 @BundleLicense(name = "CPL-1.0", link = "https://opensource.org/licenses/CPL-1.0", description = "Common Public License, Version 1.0")
-public @interface CPL_1_0 {
-}
+public @interface CPL_1_0 {}

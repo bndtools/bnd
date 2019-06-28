@@ -17,52 +17,52 @@ import org.osgi.framework.FrameworkUtil;
 
 public class ImageCachingLabelProvider extends StyledCellLabelProvider {
 
-    private static final Bundle bundle = FrameworkUtil.getBundle(ImageCachingLabelProvider.class);
+	private static final Bundle			bundle	= FrameworkUtil.getBundle(ImageCachingLabelProvider.class);
 
-    private final Map<String, Image> cache = new HashMap<String, Image>();
-    private final String pluginId;
+	private final Map<String, Image>	cache	= new HashMap<>();
+	private final String				pluginId;
 
-    private final ILog log;
+	private final ILog					log;
 
-    public ImageCachingLabelProvider(String pluginId) {
-        this.pluginId = pluginId;
+	public ImageCachingLabelProvider(String pluginId) {
+		this.pluginId = pluginId;
 
-        this.log = (bundle != null) ? InternalPlatform.getDefault()
-            .getLog(bundle) : null;
-    }
+		this.log = (bundle != null) ? InternalPlatform.getDefault()
+			.getLog(bundle) : null;
+	}
 
-    protected synchronized Image getImage(String path, boolean returnMissingImageOnError) {
-        Image image = cache.get(path);
-        if (image != null)
-            return image;
+	protected synchronized Image getImage(String path, boolean returnMissingImageOnError) {
+		Image image = cache.get(path);
+		if (image != null)
+			return image;
 
-        ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(pluginId, path);
-        if (descriptor == null) {
-            String error = String.format("Missing image descriptor for plugin ID %s, path %s", pluginId, path);
-            if (returnMissingImageOnError) {
-                if (log != null)
-                    log.log(new Status(IStatus.ERROR, pluginId, 0, error, null));
-                descriptor = ImageDescriptor.getMissingImageDescriptor();
-            } else {
-                throw new IllegalArgumentException(error);
-            }
-        }
-        image = descriptor.createImage(returnMissingImageOnError);
-        cache.put(path, image);
+		ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(pluginId, path);
+		if (descriptor == null) {
+			String error = String.format("Missing image descriptor for plugin ID %s, path %s", pluginId, path);
+			if (returnMissingImageOnError) {
+				if (log != null)
+					log.log(new Status(IStatus.ERROR, pluginId, 0, error, null));
+				descriptor = ImageDescriptor.getMissingImageDescriptor();
+			} else {
+				throw new IllegalArgumentException(error);
+			}
+		}
+		image = descriptor.createImage(returnMissingImageOnError);
+		cache.put(path, image);
 
-        return image;
-    }
+		return image;
+	}
 
-    @Override
-    public void dispose() {
-        super.dispose();
+	@Override
+	public void dispose() {
+		super.dispose();
 
-        synchronized (this) {
-            for (Entry<String, Image> entry : cache.entrySet()) {
-                Image image = entry.getValue();
-                if (!image.isDisposed())
-                    image.dispose();
-            }
-        }
-    }
+		synchronized (this) {
+			for (Entry<String, Image> entry : cache.entrySet()) {
+				Image image = entry.getValue();
+				if (!image.isDisposed())
+					image.dispose();
+			}
+		}
+	}
 }

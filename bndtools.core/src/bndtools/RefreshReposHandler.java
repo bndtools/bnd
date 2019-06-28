@@ -14,25 +14,25 @@ import bndtools.central.Central;
 
 public class RefreshReposHandler extends AbstractHandler {
 
-    @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        new WorkspaceJob("Refresing repositories...") {
+	@Override
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		new WorkspaceJob("Refresing repositories...") {
 
-            @Override
-            public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-                if (monitor == null)
-                    monitor = new NullProgressMonitor();
+			@Override
+			public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+				if (monitor == null)
+					monitor = new NullProgressMonitor();
 
-                try {
-                    Central.refreshPlugins();
-                } catch (Exception e) {
-                    return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "Failed to refresh repositories", e);
-                }
+				try {
+					Central.refreshPlugins();
+				} catch (Exception e) {
+					return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "Failed to refresh repositories", e);
+				}
 
-                return Status.OK_STATUS;
-            }
-        }.schedule();
+				return Status.OK_STATUS;
+			}
+		}.schedule();
 
-        return null;
-    }
+		return null;
+	}
 }

@@ -8,18 +8,18 @@ import org.eclipse.ui.texteditor.ResourceMarkerAnnotationModel;
 
 public class BndResourceMarkerAnnotationModel extends ResourceMarkerAnnotationModel {
 
-    public BndResourceMarkerAnnotationModel(IResource resource) {
-        super(resource);
-    }
+	public BndResourceMarkerAnnotationModel(IResource resource) {
+		super(resource);
+	}
 
-    @Override
-    protected MarkerAnnotation createMarkerAnnotation(IMarker marker) {
-        MarkerAnnotation annotation = super.createMarkerAnnotation(marker);
+	@Override
+	protected MarkerAnnotation createMarkerAnnotation(IMarker marker) {
+		MarkerAnnotation annotation = super.createMarkerAnnotation(marker);
 
-        boolean fixable = marker.getAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, false);
-        annotation.setQuickFixable(fixable);
+		boolean fixable = marker.getAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, false);
+		annotation.setQuickFixable(fixable);
 
-        return annotation;
-    }
+		return annotation;
+	}
 
 }

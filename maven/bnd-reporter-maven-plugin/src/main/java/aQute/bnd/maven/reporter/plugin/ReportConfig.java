@@ -57,7 +57,7 @@ public class ReportConfig {
 
 	/**
 	 * Convert this Mojo configuration into a bnd instruction.
-	 * 
+	 *
 	 * @return the bnd instruction content
 	 * @throws MojoExecutionException if a mandatory field is missing
 	 */

@@ -34,7 +34,7 @@ public class SimpleIndexer {
 	 */
 	@ConsumerType
 	@FunctionalInterface
-	public static interface FileAnalyzer {
+	public interface FileAnalyzer {
 
 		/**
 		 * <p>
@@ -77,7 +77,7 @@ public class SimpleIndexer {
 
 	/**
 	 * Adds files to be indexed.
-	 * 
+	 *
 	 * @param files the files to include in the index
 	 */
 	public SimpleIndexer files(Collection<File> files) {
@@ -131,7 +131,7 @@ public class SimpleIndexer {
 
 	/**
 	 * Generate the index to the specified output stream.
-	 * 
+	 *
 	 * @param outputStream the output stream to write the index file
 	 * @throws IOException if a file cannot be indexed
 	 */
@@ -141,7 +141,7 @@ public class SimpleIndexer {
 
 	/**
 	 * Generate the index to the specified file.
-	 * 
+	 *
 	 * @param file the file to write the index file
 	 * @throws IOException if a file cannot be indexed
 	 */
@@ -151,7 +151,7 @@ public class SimpleIndexer {
 
 	/**
 	 * Return the resources so far.
-	 * 
+	 *
 	 * @return the set of resources handled so far.
 	 */
 	public List<Resource> getResources() {

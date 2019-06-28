@@ -15,8 +15,7 @@ public class TestSelfBuild extends TestCase {
 
 	public static void testSelfBuild() throws Throwable {
 		try (Workspace workspace = new Workspace(new File("").getAbsoluteFile()
-			.getParentFile()); Project project = workspace
-			.getProject("biz.aQute.bndlib")) {
+			.getParentFile()); Project project = workspace.getProject("biz.aQute.bndlib")) {
 			project.setPedantic(true);
 			try (ProjectBuilder pb = project.getBuilder(null)) {
 				List<Builder> subBuilders = pb.getSubBuilders();

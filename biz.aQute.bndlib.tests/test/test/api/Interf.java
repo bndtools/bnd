@@ -11,11 +11,11 @@ public interface Interf {
 	 * Test if a change in generic type is detected. The original has a String
 	 */
 
-	public Collection<Integer> foo();
+	Collection<Integer> foo();
 
-	public int fooInt();
+	int fooInt();
 
-	public String fooString();
+	String fooString();
 
 	<X extends List<String>, Y> X foo(Y bla);
 

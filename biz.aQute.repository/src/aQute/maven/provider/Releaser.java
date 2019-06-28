@@ -143,7 +143,7 @@ class Releaser implements Release {
 	/**
 	 * Nexus does not like us to update the program metadata but we should do
 	 * this for file repos
-	 * 
+	 *
 	 * @return
 	 */
 	protected boolean isUpdateProgramMetadata() {

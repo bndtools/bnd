@@ -9,42 +9,42 @@ import aQute.bnd.build.model.BndEditModel;
 import biz.aQute.resolve.RunResolution;
 
 public class ResolutionWizard extends Wizard {
-    private final ResolutionResultsWizardPage resultsPage;
-    private final BndEditModel model;
-    private boolean preserveRunBundleUnresolved;
+	private final ResolutionResultsWizardPage	resultsPage;
+	private final BndEditModel					model;
+	private boolean								preserveRunBundleUnresolved;
 
-    @SuppressWarnings("unused")
-    public ResolutionWizard(BndEditModel model, IFile file, ResolutionResult result) {
-        this.model = model;
+	@SuppressWarnings("unused")
+	public ResolutionWizard(BndEditModel model, IFile file, ResolutionResult result) {
+		this.model = model;
 
-        resultsPage = new ResolutionResultsWizardPage(model);
-        resultsPage.setResult(result);
+		resultsPage = new ResolutionResultsWizardPage(model);
+		resultsPage.setResult(result);
 
-        setWindowTitle("Resolve");
-        setNeedsProgressMonitor(true);
+		setWindowTitle("Resolve");
+		setNeedsProgressMonitor(true);
 
-        addPage(resultsPage);
-    }
+		addPage(resultsPage);
+	}
 
-    @Override
-    public boolean performFinish() {
-        ResolutionResult result = resultsPage.getResult();
-        if (result != null && result.getOutcome() == ResolutionResult.Outcome.Resolved) {
-            RunResolution resolution = result.getResolution();
-            resolution.updateBundles(model);
-        } else {
-            if (!preserveRunBundleUnresolved)
-                model.setRunBundles(Collections.emptyList());
-        }
-        return true;
-    }
+	@Override
+	public boolean performFinish() {
+		ResolutionResult result = resultsPage.getResult();
+		if (result != null && result.getOutcome() == ResolutionResult.Outcome.Resolved) {
+			RunResolution resolution = result.getResolution();
+			resolution.updateBundles(model);
+		} else {
+			if (!preserveRunBundleUnresolved)
+				model.setRunBundles(Collections.emptyList());
+		}
+		return true;
+	}
 
-    public void setAllowFinishUnresolved(boolean allowFinishUnresolved) {
-        resultsPage.setAllowCompleteUnresolved(allowFinishUnresolved);
-    }
+	public void setAllowFinishUnresolved(boolean allowFinishUnresolved) {
+		resultsPage.setAllowCompleteUnresolved(allowFinishUnresolved);
+	}
 
-    public void setPreserveRunBundlesUnresolved(boolean preserve) {
-        this.preserveRunBundleUnresolved = preserve;
-    }
+	public void setPreserveRunBundlesUnresolved(boolean preserve) {
+		this.preserveRunBundleUnresolved = preserve;
+	}
 
 }

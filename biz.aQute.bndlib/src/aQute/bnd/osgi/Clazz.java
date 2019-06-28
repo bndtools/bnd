@@ -130,7 +130,7 @@ public class Clazz {
 		}
 	}
 
-	public static enum JAVA {
+	public enum JAVA {
 		JDK1_1(45, "JRE-1.1", "(&(osgi.ee=JavaSE)(version=1.1))"), //
 		JDK1_2(46, "J2SE-1.2", "(&(osgi.ee=JavaSE)(version=1.2))"), //
 		JDK1_3(47, "J2SE-1.3", "(&(osgi.ee=JavaSE)(version=1.3))"), //
@@ -221,7 +221,7 @@ public class Clazz {
 		}
 	}
 
-	public static enum QUERY {
+	public enum QUERY {
 		IMPLEMENTS,
 		EXTENDS,
 		IMPORTS,
@@ -930,7 +930,7 @@ public class Clazz {
 	/**
 	 * Find a method reference in the pool that points to the given class,
 	 * methodname and descriptor.
-	 * 
+	 *
 	 * @param clazz
 	 * @param methodname
 	 * @param descriptor
@@ -1581,7 +1581,7 @@ public class Clazz {
 
 	/**
 	 * Add a new package reference.
-	 * 
+	 *
 	 * @param packageRef A '.' delimited package name
 	 */
 	private void referTo(TypeRef typeRef, int modifiers) {

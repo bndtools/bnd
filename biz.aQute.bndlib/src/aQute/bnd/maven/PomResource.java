@@ -353,7 +353,7 @@ public class PomResource extends WriteResource {
 
 	/**
 	 * Utility function to print a tag from a map
-	 * 
+	 *
 	 * @param parent
 	 * @param attrs
 	 * @param key

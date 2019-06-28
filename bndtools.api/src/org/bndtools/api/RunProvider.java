@@ -6,6 +6,6 @@ import org.eclipse.core.resources.IResource;
 
 public interface RunProvider {
 
-    Run create(IResource targetResource, RunMode mode) throws Exception;
+	Run create(IResource targetResource, RunMode mode) throws Exception;
 
 }

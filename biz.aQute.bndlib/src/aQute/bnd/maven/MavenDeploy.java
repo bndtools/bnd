@@ -139,8 +139,7 @@ public class MavenDeploy implements Deploy, Plugin {
 		optional(command, "keyname", keyname);
 		optional(command, "homedir", homedir);
 		optional(command, "classifier", classifier);
-		optional(command, "pomFile", pomFile == null ? null
-			: IO.absolutePath(pomFile));
+		optional(command, "pomFile", pomFile == null ? null : IO.absolutePath(pomFile));
 
 		StringBuilder stdout = new StringBuilder();
 		StringBuilder stderr = new StringBuilder();

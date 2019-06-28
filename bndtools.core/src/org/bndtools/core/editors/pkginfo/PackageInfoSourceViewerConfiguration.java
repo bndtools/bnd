@@ -8,13 +8,13 @@ import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 public class PackageInfoSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
-    @Override
-    public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
-        QuickAssistAssistant assistant = new QuickAssistAssistant();
+	@Override
+	public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
+		QuickAssistAssistant assistant = new QuickAssistAssistant();
 
-        assistant.setQuickAssistProcessor(new BndMarkerQuickAssistProcessor());
+		assistant.setQuickAssistProcessor(new BndMarkerQuickAssistProcessor());
 
-        return assistant;
-    }
+		return assistant;
+	}
 
 }

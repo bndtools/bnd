@@ -6,6 +6,7 @@ public class ItemDescription {
 	ItemDescription(String name) {
 		this.label = name;
 	}
+
 	Function<Object, Object>	member;
 	String						label;
 	int							maxWidth	= Integer.MAX_VALUE;

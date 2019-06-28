@@ -11,7 +11,6 @@ import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 import aQute.bnd.osgi.Constants;
@@ -42,7 +41,7 @@ public class MavenEntry implements Closeable {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param maven
 	 * @param path
 	 */
@@ -71,7 +70,7 @@ public class MavenEntry implements Closeable {
 
 	/**
 	 * This is the method to get the POM for a cached entry.
-	 * 
+	 *
 	 * @param urls The allowed URLs
 	 * @return a CachedPom for this maven entry
 	 * @throws Exception If something goes haywire
@@ -122,16 +121,11 @@ public class MavenEntry implements Closeable {
 
 					if (download(url, pomPath)) {
 						if (verify(url, pomPath)) {
-							artifact = new FutureTask<>(new Callable<File>() {
-
-								@Override
-								public File call() throws Exception {
-									if (download(url, artifactPath)) {
-										verify(url, artifactPath);
-									}
-									return artifactFile;
+							artifact = new FutureTask<>(() -> {
+								if (download(url, artifactPath)) {
+									verify(url, artifactPath);
 								}
-
+								return artifactFile;
 							});
 							maven.executor.execute(artifact);
 							return createPom(url);
@@ -148,7 +142,7 @@ public class MavenEntry implements Closeable {
 
 	/**
 	 * Download a resource from the given repo.
-	 * 
+	 *
 	 * @param url The base url for the repo
 	 * @param path The path part
 	 * @throws MalformedURLException
@@ -169,7 +163,7 @@ public class MavenEntry implements Closeable {
 
 	/**
 	 * Converts a repo + path to a URL..
-	 * 
+	 *
 	 * @param base The base repo
 	 * @param path The path in the directory + url
 	 * @return a URL that points to the file in the repo
@@ -187,7 +181,7 @@ public class MavenEntry implements Closeable {
 	/**
 	 * Check if this is a valid cache directory, might probably need some more
 	 * stuff.
-	 * 
+	 *
 	 * @return true if valid
 	 */
 	private boolean isValid() {
@@ -196,7 +190,7 @@ public class MavenEntry implements Closeable {
 
 	/**
 	 * We maintain a set of bnd properties in the cache directory.
-	 * 
+	 *
 	 * @param key The key for the property
 	 * @param value The value for the property
 	 */
@@ -226,7 +220,7 @@ public class MavenEntry implements Closeable {
 
 	/**
 	 * Answer a property.
-	 * 
+	 *
 	 * @param key The key
 	 * @return The value
 	 */
@@ -248,7 +242,7 @@ public class MavenEntry implements Closeable {
 
 	/**
 	 * Help function to create the POM and record its source.
-	 * 
+	 *
 	 * @param url the repo from which it was constructed
 	 * @return the new pom
 	 * @throws Exception
@@ -264,7 +258,7 @@ public class MavenEntry implements Closeable {
 	/**
 	 * Verify that the repo has a checksum file for the given path and that this
 	 * checksum matchs.
-	 * 
+	 *
 	 * @param repo The repo
 	 * @param path The file id
 	 * @return true if there is a digest and it matches one of the algorithms
@@ -280,7 +274,7 @@ public class MavenEntry implements Closeable {
 
 	/**
 	 * Verify the path against its digest for the given algorithm.
-	 * 
+	 *
 	 * @param repo
 	 * @param path
 	 * @param algorithm

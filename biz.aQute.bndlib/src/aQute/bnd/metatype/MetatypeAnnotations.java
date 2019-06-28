@@ -75,7 +75,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 			}
 
 		}
-	};
+	}
 
 	static class VersionSettings {
 		MetatypeVersion minVersion = MetatypeVersion.VERSION_1_2;

@@ -33,6 +33,7 @@ public class BasicAuthentication extends DefaultURLConnectionHandler {
 
 	interface Config extends DefaultURLConnectionHandler.Config {
 		String user();
+
 		String _password();
 	}
 

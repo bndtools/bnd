@@ -27,68 +27,71 @@ import bndtools.central.WorkspaceR5Repository;
 
 public class BuiltBundleIndexer extends AbstractBuildListener {
 
-    private static final String INDEX_FILENAME = ".index";
+	private static final String	INDEX_FILENAME	= ".index";
 
-    private final ILogger logger = Logger.getLogger(BuiltBundleIndexer.class);
+	private final ILogger		logger			= Logger.getLogger(BuiltBundleIndexer.class);
 
-    @Override
-    public void builtBundles(final IProject project, IPath[] paths) {
-        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace()
-            .getRoot();
-        final URI workspaceRootUri = wsroot.getLocationURI();
+	@Override
+	public void builtBundles(final IProject project, IPath[] paths) {
+		IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace()
+			.getRoot();
+		final URI workspaceRootUri = wsroot.getLocationURI();
 
-        Set<File> files = new HashSet<File>();
-        for (IPath path : paths) {
-            try {
-                IFile ifile = wsroot.getFile(path);
-                IPath location = ifile.getLocation();
-                if (location != null)
-                    files.add(location.toFile());
-            } catch (IllegalArgumentException e) {
-                System.err.println("### Error processing path: " + path);
-                e.printStackTrace();
-            }
-        }
+		Set<File> files = new HashSet<>();
+		for (IPath path : paths) {
+			try {
+				IFile ifile = wsroot.getFile(path);
+				IPath location = ifile.getLocation();
+				if (location != null)
+					files.add(location.toFile());
+			} catch (IllegalArgumentException e) {
+				System.err.println("### Error processing path: " + path);
+				e.printStackTrace();
+			}
+		}
 
-        // Generate the index file
-        File indexFile;
-        try {
-            Project model = Central.getProject(project);
-            File target = model.getTarget();
-            indexFile = new File(target, INDEX_FILENAME);
+		// Generate the index file
+		File indexFile;
+		try {
+			Project model = Central.getProject(project);
+			File target = model.getTarget();
+			indexFile = new File(target, INDEX_FILENAME);
 
-            IFile indexPath = wsroot.getFile(Central.toPath(indexFile));
+			IFile indexPath = wsroot.getFile(Central.toPath(indexFile));
 
-            new SimpleIndexer().files(files)
-                .base(project.getLocation()
-                    .toFile()
-                    .toURI())
-                .name(project.getName())
-                .analyzer((f, rb) -> {
-                    Capability cap = new CapabilityBuilder("bndtools.workspace").addAttribute("bndtools.workspace", workspaceRootUri.toString())
-                        .addAttribute("project.path", project.getFullPath()
-                            .toString())
-                        .buildSyntheticCapability();
-                    rb.addCapability(cap);
-                })
-                .index(indexFile);
-            indexPath.refreshLocal(IResource.DEPTH_ZERO, null);
-            if (indexPath.exists())
-                indexPath.setDerived(true, null);
-        } catch (Exception e) {
-            logger.logError(MessageFormat.format("Failed to generate index file for bundles in project {0}.", project.getName()), e);
-            return;
-        }
+			new SimpleIndexer().files(files)
+				.base(project.getLocation()
+					.toFile()
+					.toURI())
+				.name(project.getName())
+				.analyzer((f, rb) -> {
+					Capability cap = new CapabilityBuilder("bndtools.workspace")
+						.addAttribute("bndtools.workspace", workspaceRootUri.toString())
+						.addAttribute("project.path", project.getFullPath()
+							.toString())
+						.buildSyntheticCapability();
+					rb.addCapability(cap);
+				})
+				.index(indexFile);
+			indexPath.refreshLocal(IResource.DEPTH_ZERO, null);
+			if (indexPath.exists())
+				indexPath.setDerived(true, null);
+		} catch (Exception e) {
+			logger.logError(
+				MessageFormat.format("Failed to generate index file for bundles in project {0}.", project.getName()),
+				e);
+			return;
+		}
 
-        // Parse the index and add to the workspace repository
-        try (InputStream input = IO.stream(indexFile)) {
-            WorkspaceR5Repository workspaceRepo = Central.getWorkspaceR5Repository();
-            workspaceRepo.loadProjectIndex(project, input, project.getLocation()
-                .toFile()
-                .toURI());
-        } catch (Exception e) {
-            logger.logError("Failed to update workspace index.", e);
-        }
-    }
+		// Parse the index and add to the workspace repository
+		try (InputStream input = IO.stream(indexFile)) {
+			WorkspaceR5Repository workspaceRepo = Central.getWorkspaceR5Repository();
+			workspaceRepo.loadProjectIndex(project, input, project.getLocation()
+				.toFile()
+				.toURI());
+		} catch (Exception e) {
+			logger.logError("Failed to update workspace index.", e);
+		}
+	}
 
 }

@@ -17,7 +17,7 @@ import aQute.bnd.runtime.api.SnapshotProvider;
 
 public class ConfigurationFacade implements SnapshotProvider {
 
-	final BundleContext												context;
+	final BundleContext context;
 
 	public static class ConfigurationsDTO extends DTO {
 		public Map<String, ConfigurationDTO>	configurations	= new TreeMap<>();
@@ -83,7 +83,6 @@ public class ConfigurationFacade implements SnapshotProvider {
 	}
 
 	@Override
-	public void close() throws IOException {
-	}
+	public void close() throws IOException {}
 
 }

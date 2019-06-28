@@ -11,5 +11,5 @@
 package bndtools.internal.pkgselection;
 
 public interface IPackageLister {
-    public String[] getPackages(boolean includeNonSource, IPackageFilter filter) throws PackageListException;
+	String[] getPackages(boolean includeNonSource, IPackageFilter filter) throws PackageListException;
 }

@@ -31,16 +31,16 @@ public class DSAnnotationExtrasTest extends BndTestCase {
 	public static class DS13reference_cardinalities {
 
 		@Reference
-		void setLogService(LogService log) {};
+		void setLogService(LogService log) {}
 
 		@Reference(cardinality = ReferenceCardinality.OPTIONAL)
-		void setEventAdmin(EventAdmin ea) {};
+		void setEventAdmin(EventAdmin ea) {}
 
 		@Reference(cardinality = ReferenceCardinality.MULTIPLE)
-		void setConfigAdmin(ConfigurationAdmin cm) {};
+		void setConfigAdmin(ConfigurationAdmin cm) {}
 
 		@Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE)
-		void setMetatype(MetaTypeService metatype) {};
+		void setMetatype(MetaTypeService metatype) {}
 	}
 
 	public void testRequireCapabilityCardinality() throws Exception {

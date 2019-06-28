@@ -17,7 +17,7 @@ public class RedirectInput extends InputStream {
 
 	/**
 	 * Create a redirector input stream with an original input stream
-	 * 
+	 *
 	 * @param in the original
 	 */
 	public RedirectInput(InputStream in) throws IOException {
@@ -31,7 +31,7 @@ public class RedirectInput extends InputStream {
 
 	/**
 	 * Get the original inputstream, potentially null
-	 * 
+	 *
 	 * @return null or the original input stream
 	 */
 	public InputStream getOrg() {
@@ -40,7 +40,7 @@ public class RedirectInput extends InputStream {
 
 	/**
 	 * Provide the string that should be treated as input for the running code.
-	 * 
+	 *
 	 * @param s the string
 	 */
 	public synchronized void add(String s) throws IOException {

@@ -17,7 +17,7 @@ import aQute.service.reporter.Reporter;
 
 /**
  * Builds up a request
- * 
+ *
  * @param <T>
  */
 public class HttpRequest<T> {

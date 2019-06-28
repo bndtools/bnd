@@ -7,7 +7,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.lib.xpath.XPathParser;
 
 public class SettingsParser extends XPathParser {
-	final SettingsDTO settings = new SettingsDTO();
+	final SettingsDTO	settings	= new SettingsDTO();
 	private final Macro	replacer	= new Processor().getReplacer();
 
 	/*

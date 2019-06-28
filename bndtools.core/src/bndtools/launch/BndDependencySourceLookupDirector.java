@@ -10,25 +10,25 @@ import org.eclipse.jdt.launching.sourcelookup.containers.JavaSourceLookupPartici
 
 public class BndDependencySourceLookupDirector extends AbstractSourceLookupDirector {
 
-    @Override
-    public void initializeParticipants() {
-        addParticipants(new ISourceLookupParticipant[] {
-            new JavaSourceLookupParticipant()
-        });
-    }
+	@Override
+	public void initializeParticipants() {
+		addParticipants(new ISourceLookupParticipant[] {
+			new JavaSourceLookupParticipant()
+		});
+	}
 
-    @Override
-    public synchronized ISourceContainer[] getSourceContainers() {
-        return super.getSourceContainers();
-    }
+	@Override
+	public synchronized ISourceContainer[] getSourceContainers() {
+		return super.getSourceContainers();
+	}
 
-    @Override
-    public void initializeDefaults(ILaunchConfiguration configuration) throws CoreException {
-        dispose();
-        setLaunchConfiguration(configuration);
-        setSourceContainers(new ISourceContainer[] {
-            new DefaultSourceContainer(), new BndDependencySourceContainer()
-        });
-        initializeParticipants();
-    }
+	@Override
+	public void initializeDefaults(ILaunchConfiguration configuration) throws CoreException {
+		dispose();
+		setLaunchConfiguration(configuration);
+		setSourceContainers(new ISourceContainer[] {
+			new DefaultSourceContainer(), new BndDependencySourceContainer()
+		});
+		initializeParticipants();
+	}
 }

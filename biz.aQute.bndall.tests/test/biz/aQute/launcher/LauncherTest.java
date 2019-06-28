@@ -37,13 +37,13 @@ public class LauncherTest {
 		prior = new Properties();
 		prior.putAll(System.getProperties());
 	}
+
 	/**
 	 * Testing the embedded launcher is quite tricky. This test uses a
 	 * prefabricated packaged jar. Notice that you need to reexport that jar for
 	 * every change in the launcher since it embeds the launcher. This jar is
 	 * run twice to see if the second run will not reinstall the bundles.
 	 */
-
 
 	@After
 	public void after() {
@@ -90,7 +90,6 @@ public class LauncherTest {
 			.remove("launch.properties");
 		File file = buildPackage("order-03.bndrun");
 
-
 		System.setProperty("test.cmd", "quit.no.exit");
 
 		String result = runFramework(file);
@@ -127,7 +126,7 @@ public class LauncherTest {
 	/**
 	 * Tests the EmbeddedLauncher by creating an instance and calling the run
 	 * method. We Check if the expected exit value is printed in the result.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -148,7 +147,7 @@ public class LauncherTest {
 
 	/**
 	 * Tests the EmbeddedLauncher without any trace logging
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -171,7 +170,7 @@ public class LauncherTest {
 
 	/**
 	 * Tests the EmbeddedLauncher without trace logging
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test

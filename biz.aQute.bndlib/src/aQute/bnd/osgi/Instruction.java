@@ -11,9 +11,9 @@ public class Instruction {
 
 	public static class Filter implements FileFilter {
 		private final static Pattern	DEFAULT_DO_NOT_COPY_P	= Pattern.compile(Constants.DEFAULT_DO_NOT_COPY);
-		private Instruction	instruction;
-		private boolean		recursive;
-		private Pattern		doNotCopy;
+		private Instruction				instruction;
+		private boolean					recursive;
+		private Pattern					doNotCopy;
 
 		public Filter(Instruction instruction, boolean recursive, Pattern doNotCopy) {
 			this.instruction = instruction;

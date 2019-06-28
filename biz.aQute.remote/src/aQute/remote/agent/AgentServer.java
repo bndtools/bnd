@@ -94,7 +94,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	/**
 	 * An agent server is based on a context and takes a name and cache
 	 * directory
-	 * 
+	 *
 	 * @param name the name of the agent's framework
 	 * @param context a bundle context of the framework
 	 * @param cache the directory for caching
@@ -627,13 +627,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 				.adapt(FrameworkWiring.class);
 			if (f != null) {
 				refresh = new CountDownLatch(1);
-				f.refreshBundles(null, new FrameworkListener() {
-
-					@Override
-					public void frameworkEvent(FrameworkEvent event) {
-						refresh.countDown();
-					}
-				});
+				f.refreshBundles(null, event -> refresh.countDown());
 
 				if (async)
 					return;

@@ -86,7 +86,7 @@ public class P2IndexerTest extends TestCase {
 
 			File input = IO.getFile("testdata/p2/macbadge");
 			assertThat(input).as("%s must be dir", input)
-			.isDirectory();
+				.isDirectory();
 
 			try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client, input.toURI(),
 				getName())) {
@@ -96,11 +96,11 @@ public class P2IndexerTest extends TestCase {
 				System.out.println(bsns);
 
 				assertThat(p2.versions("name.njbartlett.eclipse.macbadge"))
-				.containsExactly(new Version("1.0.0.201110100042"));
+					.containsExactly(new Version("1.0.0.201110100042"));
 
 				File f = p2.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null);
 				assertThat(f).isNotNull()
-				.hasName("name.njbartlett.eclipse.macbadge-1.0.0.201110100042.jar");
+					.hasName("name.njbartlett.eclipse.macbadge-1.0.0.201110100042.jar");
 				assertThat(f.length()).isEqualTo(4672);
 
 				String sha256 = SHA256.digest(f)
@@ -125,31 +125,31 @@ public class P2IndexerTest extends TestCase {
 				p2.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null,
 					new RepositoryPlugin.DownloadListener() {
 
-					@Override
-					public void success(File file) throws Exception {
-						try {} catch (Throwable e) {
-							result.set(e);
-						} finally {
-							sem.release();
+						@Override
+						public void success(File file) throws Exception {
+							try {} catch (Throwable e) {
+								result.set(e);
+							} finally {
+								sem.release();
+							}
 						}
-					}
 
-					@Override
-					public void failure(File file, String reason) throws Exception {
-						try {
-							fail(reason);
-						} catch (Throwable e) {
-							result.set(e);
-						} finally {
-							sem.release();
+						@Override
+						public void failure(File file, String reason) throws Exception {
+							try {
+								fail(reason);
+							} catch (Throwable e) {
+								result.set(e);
+							} finally {
+								sem.release();
+							}
 						}
-					}
 
-					@Override
-					public boolean progress(File file, int percentage) throws Exception {
-						return true;
-					}
-				});
+						@Override
+						public boolean progress(File file, int percentage) throws Exception {
+							return true;
+						}
+					});
 
 				sem.acquire();
 				if (result.get() != null)
@@ -165,7 +165,7 @@ public class P2IndexerTest extends TestCase {
 				"test")) {
 				File f = p3.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null);
 				assertThat(f).isNotNull()
-				.hasName("name.njbartlett.eclipse.macbadge-1.0.0.201110100042.jar");
+					.hasName("name.njbartlett.eclipse.macbadge-1.0.0.201110100042.jar");
 				assertThat(f.length()).isEqualTo(4672);
 			}
 		}
@@ -201,7 +201,7 @@ public class P2IndexerTest extends TestCase {
 
 			try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client,
 				targetFile.getAbsoluteFile()
-				.toURI(),
+					.toURI(),
 				getName())) {
 				List<String> bsns = p2.list(null);
 				assertThat(bsns).containsExactly("name.njbartlett.eclipse.macbadge");
@@ -209,11 +209,11 @@ public class P2IndexerTest extends TestCase {
 				System.out.println(bsns);
 
 				assertThat(p2.versions("name.njbartlett.eclipse.macbadge"))
-				.containsExactly(new Version("1.0.0.201110100042"));
+					.containsExactly(new Version("1.0.0.201110100042"));
 
 				File f = p2.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null);
 				assertThat(f).isNotNull()
-				.hasName("name.njbartlett.eclipse.macbadge-1.0.0.201110100042.jar");
+					.hasName("name.njbartlett.eclipse.macbadge-1.0.0.201110100042.jar");
 				assertThat(f.length()).isEqualTo(4672);
 
 				String sha256 = SHA256.digest(f)
@@ -238,31 +238,31 @@ public class P2IndexerTest extends TestCase {
 				p2.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null,
 					new RepositoryPlugin.DownloadListener() {
 
-					@Override
-					public void success(File file) throws Exception {
-						try {} catch (Throwable e) {
-							result.set(e);
-						} finally {
-							sem.release();
+						@Override
+						public void success(File file) throws Exception {
+							try {} catch (Throwable e) {
+								result.set(e);
+							} finally {
+								sem.release();
+							}
 						}
-					}
 
-					@Override
-					public void failure(File file, String reason) throws Exception {
-						try {
-							fail(reason);
-						} catch (Throwable e) {
-							result.set(e);
-						} finally {
-							sem.release();
+						@Override
+						public void failure(File file, String reason) throws Exception {
+							try {
+								fail(reason);
+							} catch (Throwable e) {
+								result.set(e);
+							} finally {
+								sem.release();
+							}
 						}
-					}
 
-					@Override
-					public boolean progress(File file, int percentage) throws Exception {
-						return true;
-					}
-				});
+						@Override
+						public boolean progress(File file, int percentage) throws Exception {
+							return true;
+						}
+					});
 
 				sem.acquire();
 				if (result.get() != null)
@@ -278,7 +278,7 @@ public class P2IndexerTest extends TestCase {
 				getName())) {
 				File f = p3.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null);
 				assertThat(f).isNotNull()
-				.hasName("name.njbartlett.eclipse.macbadge-1.0.0.201110100042.jar");
+					.hasName("name.njbartlett.eclipse.macbadge-1.0.0.201110100042.jar");
 				assertThat(f.length()).isEqualTo(4672);
 			}
 		}

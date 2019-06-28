@@ -287,7 +287,6 @@ class JavaSnippetReader extends SnippetReader {
 		public String	parentGroup;
 		public String	groupName;
 
-		CodeSnippetConfig() {
-		}
+		CodeSnippetConfig() {}
 	}
 }

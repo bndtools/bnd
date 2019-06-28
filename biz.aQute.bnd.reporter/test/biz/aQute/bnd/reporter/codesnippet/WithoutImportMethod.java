@@ -7,7 +7,7 @@ public class WithoutImportMethod {
 
   /**
    * ${snippet includeImports=false}
-   * 
+   *
    * My Comment.
    */
   public void print() {

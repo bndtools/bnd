@@ -21,10 +21,8 @@ import aQute.lib.strings.Strings;
 
 public class GraphCommand implements AutoCloseable {
 
-	final bnd				bnd;
-	final Workspace			workspace;
-	@SuppressWarnings("unused")
-	private GraphOptions	options;
+	final bnd		bnd;
+	final Workspace	workspace;
 
 	@Description("Provide access to a dependency graph")
 	interface GraphOptions extends Options {
@@ -33,7 +31,6 @@ public class GraphCommand implements AutoCloseable {
 
 	GraphCommand(bnd bnd, GraphOptions options) throws Exception {
 		this.bnd = bnd;
-		this.options = options;
 		this.workspace = bnd.getWorkspace();
 	}
 
@@ -45,10 +42,10 @@ public class GraphCommand implements AutoCloseable {
 
 	@Description("Find the roots in a set of bundles. A root is a resource that is present but not dependent on by any other resource in the set")
 	public void _roots(RootOptions options) {
-		
+
 		FileSet set = new FileSet(bnd.getBase(), Strings.join(options._arguments()));
 		Set<File> files = set.getFiles();
-		if ( files.isEmpty()) {
+		if (files.isEmpty()) {
 			bnd.warning("No matching files found for %s", set);
 			return;
 		}
@@ -74,7 +71,6 @@ public class GraphCommand implements AutoCloseable {
 	}
 
 	@Override
-	public void close() throws Exception {
-	}
+	public void close() throws Exception {}
 
 }

@@ -47,7 +47,7 @@ public interface ResourceRepository {
 	/**
 	 * Get the list of Resource Descriptors. This contains all the descriptors
 	 * that are n the file, regardless of cache.
-	 * 
+	 *
 	 * @param filter An OSGi filter matched against the
 	 *            {@link ResourceDescriptor}
 	 * @return an immutable list of resource descriptors

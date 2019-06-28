@@ -15,7 +15,7 @@ public class ConversionCheck {
 		};
 	}
 
-	public static enum Foo {
+	public enum Foo {
 		FOO,
 		BAR,
 		BAZ

@@ -23,7 +23,7 @@ import aQute.service.reporter.Reporter;
 /**
  * Sign the jar file. -sign : <alias> [ ';' 'password:=' <password> ] [ ';'
  * 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )*
- * 
+ *
  * @author aqute
  */
 

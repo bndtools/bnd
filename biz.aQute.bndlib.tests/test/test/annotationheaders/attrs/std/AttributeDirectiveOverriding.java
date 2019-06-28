@@ -60,4 +60,3 @@ public class AttributeDirectiveOverriding {}
 	@Attribute
 	String[] foo();
 }
-

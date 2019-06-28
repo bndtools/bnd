@@ -8,7 +8,7 @@ public interface URLConnector {
 
 	/**
 	 * Connect to the specified URL.
-	 * 
+	 *
 	 * @param url
 	 * @throws IOException
 	 * @throws Exception
@@ -17,7 +17,7 @@ public interface URLConnector {
 
 	/**
 	 * Connect to the specified URL, also returning the ETag if available.
-	 * 
+	 *
 	 * @param url The remote URL.
 	 * @return An instance of {@link TaggedData}; note that the
 	 *         {@link TaggedData#getTag()} method <strong>may</strong> return
@@ -30,7 +30,7 @@ public interface URLConnector {
 	 * Connect to the specified URL while providing the last known tag for the
 	 * remote resource; the response will be {@code null} if the remote resource
 	 * is unchanged.
-	 * 
+	 *
 	 * @param url The remote URL.
 	 * @param tag The last known tag value for the resource.
 	 * @return An instance of {@link TaggedData}, or {@code null} if the

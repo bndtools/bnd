@@ -13,73 +13,76 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
-public class HeadlessBuildManagerTracker extends ServiceTracker<HeadlessBuildManager, HeadlessBuildManager> implements HeadlessBuildManager {
-    private final AtomicReference<ServiceReference<HeadlessBuildManager>> managerReference = new AtomicReference<ServiceReference<HeadlessBuildManager>>();
-    private final AtomicReference<HeadlessBuildManager> manager = new AtomicReference<HeadlessBuildManager>();
+public class HeadlessBuildManagerTracker extends ServiceTracker<HeadlessBuildManager, HeadlessBuildManager>
+	implements HeadlessBuildManager {
+	private final AtomicReference<ServiceReference<HeadlessBuildManager>>	managerReference	= new AtomicReference<>();
+	private final AtomicReference<HeadlessBuildManager>						manager				= new AtomicReference<>();
 
-    public HeadlessBuildManagerTracker(BundleContext context) {
-        super(context, HeadlessBuildManager.class, null);
-    }
+	public HeadlessBuildManagerTracker(BundleContext context) {
+		super(context, HeadlessBuildManager.class, null);
+	}
 
-    /*
-     * ServiceTracker
-     */
+	/*
+	 * ServiceTracker
+	 */
 
-    @Override
-    public HeadlessBuildManager addingService(ServiceReference<HeadlessBuildManager> reference) {
-        HeadlessBuildManager manager = super.addingService(reference);
-        this.managerReference.set(reference);
-        this.manager.set(manager);
-        return manager;
-    }
+	@Override
+	public HeadlessBuildManager addingService(ServiceReference<HeadlessBuildManager> reference) {
+		HeadlessBuildManager manager = super.addingService(reference);
+		this.managerReference.set(reference);
+		this.manager.set(manager);
+		return manager;
+	}
 
-    @Override
-    public void remove(ServiceReference<HeadlessBuildManager> reference) {
-        if (managerReference.compareAndSet(reference, null)) {
-            manager.set(null);
-        }
+	@Override
+	public void remove(ServiceReference<HeadlessBuildManager> reference) {
+		if (managerReference.compareAndSet(reference, null)) {
+			manager.set(null);
+		}
 
-        super.remove(reference);
-    }
+		super.remove(reference);
+	}
 
-    @Override
-    public void close() {
-        manager.set(null);
-        managerReference.set(null);
-        super.close();
-    }
+	@Override
+	public void close() {
+		manager.set(null);
+		managerReference.set(null);
+		super.close();
+	}
 
-    /*
-     * HeadlessBuildManager
-     */
+	/*
+	 * HeadlessBuildManager
+	 */
 
-    @Override
-    public Collection<NamedPlugin> getAllPluginsInformation() {
-        HeadlessBuildManager manager = this.manager.get();
-        if (manager == null) {
-            return Collections.emptySet();
-        }
+	@Override
+	public Collection<NamedPlugin> getAllPluginsInformation() {
+		HeadlessBuildManager manager = this.manager.get();
+		if (manager == null) {
+			return Collections.emptySet();
+		}
 
-        return manager.getAllPluginsInformation();
-    }
+		return manager.getAllPluginsInformation();
+	}
 
-    @Override
-    public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins, List<String> warnings) {
-        HeadlessBuildManager manager = this.manager.get();
-        if (manager == null) {
-            return;
-        }
-        manager.setup(plugins, cnf, projectDir, add, enabledIgnorePlugins, warnings);
-    }
+	@Override
+	public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins,
+		List<String> warnings) {
+		HeadlessBuildManager manager = this.manager.get();
+		if (manager == null) {
+			return;
+		}
+		manager.setup(plugins, cnf, projectDir, add, enabledIgnorePlugins, warnings);
+	}
 
-    @Override
-    @Deprecated
-    public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) {
-        HeadlessBuildManager manager = this.manager.get();
-        if (manager == null) {
-            return;
-        }
+	@Override
+	@Deprecated
+	public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add,
+		Set<String> enabledIgnorePlugins) {
+		HeadlessBuildManager manager = this.manager.get();
+		if (manager == null) {
+			return;
+		}
 
-        manager.setup(plugins, cnf, projectDir, add, enabledIgnorePlugins);
-    }
+		manager.setup(plugins, cnf, projectDir, add, enabledIgnorePlugins);
+	}
 }

@@ -195,15 +195,12 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		final List<Bundle> queue = new Vector<>();
 
 		trace("adding Bundle Listener for getting test bundle events");
-		context.addBundleListener(new SynchronousBundleListener() {
-			@Override
-			public void bundleChanged(BundleEvent event) {
-				switch (event.getType()) {
-					case BundleEvent.STARTED :
-					case BundleEvent.RESOLVED :
-						checkBundle(queue, event.getBundle());
-						break;
-				}
+		context.addBundleListener((SynchronousBundleListener) event -> {
+			switch (event.getType()) {
+				case BundleEvent.STARTED :
+				case BundleEvent.RESOLVED :
+					checkBundle(queue, event.getBundle());
+					break;
 			}
 		});
 
@@ -276,6 +273,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		Version v = bundle.getVersion();
 		return bundle.getSymbolicName() + "-" + v.getMajor() + "." + v.getMinor() + "." + v.getMicro();
 	}
+
 	/**
 	 * The main test routine.
 	 *
@@ -374,7 +372,6 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		if (bundle == null)
 			return null;
 
-
 		List<Bundle> hosts = new ArrayList<>();
 		BundleWiring wiring = bundle.adapt(BundleWiring.class);
 		// Bundle isn't resolved.
@@ -382,8 +379,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			System.err.println("unresolved bundle: " + bundle);
 			return null;
 		}
-		List<BundleWire> wires = wiring
-			.getRequiredWires(HostNamespace.HOST_NAMESPACE);
+		List<BundleWire> wires = wiring.getRequiredWires(HostNamespace.HOST_NAMESPACE);
 		System.err.println("required wires for " + bundle + " " + wires);
 
 		for (BundleWire wire : wires) {

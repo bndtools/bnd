@@ -182,16 +182,15 @@ class P2Indexer implements Closeable {
 						return promiseFactory.resolved(knownResources.get(id));
 					}
 				}
-				return fetch(a, 2, 1000L)
-					.map(tag -> {
-						ResourceBuilder rb = new ResourceBuilder();
-						rb.addFile(tag.getFile(), a.uri);
-						if (a.md5 != null) {
-							rb.addCapability(
-								new CapabilityBuilder(P2_CAPABILITY_NAMESPACE).addAttribute(MD5_ATTRIBUTE, a.md5));
-						}
-						return rb.build();
-					})
+				return fetch(a, 2, 1000L).map(tag -> {
+					ResourceBuilder rb = new ResourceBuilder();
+					rb.addFile(tag.getFile(), a.uri);
+					if (a.md5 != null) {
+						rb.addCapability(
+							new CapabilityBuilder(P2_CAPABILITY_NAMESPACE).addAttribute(MD5_ATTRIBUTE, a.md5));
+					}
+					return rb.build();
+				})
 					.recover(failed -> {
 						logger.info("{}: Failed to create resource for {}", name, a.uri, failed.getFailure());
 						return RECOVERY;

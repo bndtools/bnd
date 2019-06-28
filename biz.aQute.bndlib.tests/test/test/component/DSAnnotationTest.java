@@ -121,8 +121,7 @@ public class DSAnnotationTest extends BndTestCase {
 		b.addClasspath(new File("bin_test"));
 		b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
 		Jar jar = b.build();
-		assertTrue(b.check(
-			"component 1.3.0 version test.component.DSAnnotationTest\\$RequiresV1_3 exceeds"));
+		assertTrue(b.check("component 1.3.0 version test.component.DSAnnotationTest\\$RequiresV1_3 exceeds"));
 
 		System.out.println(jar.getResources()
 			.keySet());
@@ -193,6 +192,7 @@ public class DSAnnotationTest extends BndTestCase {
 			assertThat(importPackages).containsKeys("test.component.ds14");
 		}
 	}
+
 	/**
 	 * Property test
 	 */
@@ -1719,9 +1719,9 @@ public class DSAnnotationTest extends BndTestCase {
 		@SuppressWarnings("unused")
 		private List<LogService>	logField;
 
-		protected void setLogMethod(LogService logService) {};
+		protected void setLogMethod(LogService logService) {}
 
-		protected void updatedLogMethod(LogService logService) {};
+		protected void updatedLogMethod(LogService logService) {}
 
 		protected void unsetLogMethod(LogService logService) {}
 
@@ -2202,15 +2202,13 @@ public class DSAnnotationTest extends BndTestCase {
 		"short:Short=3", "integer:Integer=3", "long:Long=3", "float:Float=3.0", "double:Double=3e7", "string:String=%",
 		"wrongInteger:Integer=blabla", "\n\r\t \u0343\u0344\u0345\u0346\n:Integer=3"
 	}, factoryProperties = "factory.properties")
-	public static class FactoryProperties {
-	}
+	public static class FactoryProperties {}
 
 	public void testFactoryProperties() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryProperties");
 			b.setProperty("Private-Package", "test.component");
-			b.setProperty("-includeresource.factoryprops",
-				"factory.properties;literal=\"\"");
+			b.setProperty("-includeresource.factoryprops", "factory.properties;literal=\"\"");
 			b.addClasspath(new File("bin_test"));
 
 			Jar jar = b.build();
@@ -3223,10 +3221,10 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@TestRefExtensions(stringAttr2 = "bax", fooAttr2 = Foo.A)
 		@Reference
-		protected void setLogServiceB(LogService ls) {};
+		protected void setLogServiceB(LogService ls) {}
 
 		@Reference
-		protected void setLogServicec(LogService ls) {};
+		protected void setLogServicec(LogService ls) {}
 
 		@TestRefExtensions(stringAttr2 = "ignore", fooAttr2 = Foo.A)
 		@Override
@@ -3289,7 +3287,7 @@ public class DSAnnotationTest extends BndTestCase {
 	/**
 	 * test that an extension attribute will ensure at least a 1.1 namespace, so
 	 * the extension namespace is meaningful
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testExtraAttributes10() throws Exception {
@@ -3351,10 +3349,10 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@TestRefExtensions(stringAttr2 = "bax", fooAttr2 = Foo.A)
 		@Reference
-		protected void setLogServiceB(LogService ls) {};
+		protected void setLogServiceB(LogService ls) {}
 
 		@Reference
-		protected void setLogServicec(LogService ls) {};
+		protected void setLogServicec(LogService ls) {}
 
 		@TestRefExtensions(stringAttr2 = "ignore", fooAttr2 = Foo.A)
 		@Override
@@ -3575,7 +3573,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component
 	static class FinalDynamicCollectionField {
 		@Reference(policy = ReferencePolicy.DYNAMIC)
-		private final List<LogService>	logs1	= new CopyOnWriteArrayList<>();
+		private final List<LogService>					logs1	= new CopyOnWriteArrayList<>();
 
 		@Reference(policy = ReferencePolicy.DYNAMIC)
 		private final CopyOnWriteArrayList<LogService>	logs2	= new CopyOnWriteArrayList<>();
@@ -3762,7 +3760,13 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@SuppressWarnings("serial")
 	@Component(service = HashMap.class)
-	static class NotAMap3 extends TreeMap<String, String> {}
+	static class NotAMap3 extends TreeMap<String, String> {
+
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+	}
 
 	public void testNotImplementedService() throws Exception {
 		checkClass(NotAMap1.class, 1);
@@ -3772,29 +3776,65 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@SuppressWarnings("serial")
 	@Component(service = Map.class)
-	static class IsAMap1 extends HashMap<String, String> {}
+	static class IsAMap1 extends HashMap<String, String> {
+
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+	}
 
 	@SuppressWarnings("serial")
-	static class MyHashMap1<K, V> extends HashMap<K, V> {}
+	static class MyHashMap1<K, V> extends HashMap<K, V> {
+
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+	}
 
 	@SuppressWarnings("serial")
 	@Component(service = HashMap.class)
-	static class IsAMap2 extends MyHashMap1<String, String> {}
+	static class IsAMap2 extends MyHashMap1<String, String> {
 
-	static interface MyMap<K, V> extends Map<K, V> {};
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+	}
+
+	interface MyMap<K, V> extends Map<K, V> {}
 
 	@SuppressWarnings("serial")
-	static class MyHashMap2<K, V> extends HashMap<K, V> implements MyMap<K, V> {}
+	static class MyHashMap2<K, V> extends HashMap<K, V> implements MyMap<K, V> {
+
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+	}
 
 	@SuppressWarnings("serial")
 	@Component(service = Map.class)
-	static class IsAMap3 extends MyHashMap2<String, String> {}
+	static class IsAMap3 extends MyHashMap2<String, String> {
 
-	static interface Marker {}
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+	}
+
+	interface Marker {}
 
 	@SuppressWarnings("serial")
 	@Component(service = Map.class)
-	static class IsAMap3a extends MyHashMap2<String, String> implements Marker {}
+	static class IsAMap3a extends MyHashMap2<String, String> implements Marker {
+
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+	}
 
 	@Component(service = Map.class)
 	static class IsAMap4 implements MyMap<String, String> {
@@ -3874,7 +3914,7 @@ public class DSAnnotationTest extends BndTestCase {
 		assertOk(b, i, 0);
 	}
 
-	public static interface GenericMarker<K> extends Marker {}
+	public interface GenericMarker<K> extends Marker {}
 
 	@Component
 	public static class RefType {
@@ -4125,8 +4165,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component
 	public static class ConstructorInjection {
 		@Activate
-		public ConstructorInjection(ComponentContext cc, @Reference LogService log,
-			ConstructorConfig myId) {}
+		public ConstructorInjection(ComponentContext cc, @Reference LogService log, ConstructorConfig myId) {}
 
 		@Activate
 		Map<String, Object> componentProps;

@@ -12,51 +12,51 @@ import biz.aQute.resolve.RunResolution;
 
 public class ResolutionResult {
 
-    private final Outcome outcome;
-    private final IStatus status;
-    private final RunResolution resolution;
+	private final Outcome		outcome;
+	private final IStatus		status;
+	private final RunResolution	resolution;
 
-    public static enum Outcome {
-        Resolved,
-        Unresolved,
-        Error,
-        Cancelled
-    }
+	public enum Outcome {
+		Resolved,
+		Unresolved,
+		Error,
+		Cancelled
+	}
 
-    public ResolutionResult(Outcome outcome, RunResolution resolution, IStatus status) {
-        this.outcome = outcome;
-        this.resolution = resolution;
-        this.status = status;
-    }
+	public ResolutionResult(Outcome outcome, RunResolution resolution, IStatus status) {
+		this.outcome = outcome;
+		this.resolution = resolution;
+		this.status = status;
+	}
 
-    public Outcome getOutcome() {
-        return outcome;
-    }
+	public Outcome getOutcome() {
+		return outcome;
+	}
 
-    public Map<Resource, List<Wire>> getResourceWirings() {
-        return resolution.required;
-    }
+	public Map<Resource, List<Wire>> getResourceWirings() {
+		return resolution.required;
+	}
 
-    public Map<Resource, List<Wire>> getOptionalResources() {
-        return resolution.optional;
-    }
+	public Map<Resource, List<Wire>> getOptionalResources() {
+		return resolution.optional;
+	}
 
-    public ResolutionException getResolutionException() {
-        if (resolution.exception instanceof ResolutionException)
-            return (ResolutionException) resolution.exception;
-        return null;
-    }
+	public ResolutionException getResolutionException() {
+		if (resolution.exception instanceof ResolutionException)
+			return (ResolutionException) resolution.exception;
+		return null;
+	}
 
-    public IStatus getStatus() {
-        return status;
-    }
+	public IStatus getStatus() {
+		return status;
+	}
 
-    public String getLog() {
-        return resolution.log;
-    }
+	public String getLog() {
+		return resolution.log;
+	}
 
-    public RunResolution getResolution() {
-        return resolution;
-    }
+	public RunResolution getResolution() {
+		return resolution;
+	}
 
 }

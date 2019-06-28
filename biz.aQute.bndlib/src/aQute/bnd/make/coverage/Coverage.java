@@ -2,7 +2,6 @@ package aQute.bnd.make.coverage;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -21,7 +20,7 @@ public class Coverage {
 
 	/**
 	 * Create a cross reference table from source to dest.
-	 * 
+	 *
 	 * @param source The methods that refer to dest
 	 * @param dest The methods that are being referred to
 	 * @return A mapping of source methods to destination methods.
@@ -77,13 +76,8 @@ public class Coverage {
 	}
 
 	private static Map<MethodDef, List<MethodDef>> buildCatalog(Collection<Clazz> sources) throws Exception {
-		final Map<MethodDef, List<MethodDef>> catalog = new TreeMap<>(new Comparator<MethodDef>() {
-			@Override
-			public int compare(MethodDef a, MethodDef b) {
-				return a.getName()
-					.compareTo(b.getName());
-			}
-		});
+		final Map<MethodDef, List<MethodDef>> catalog = new TreeMap<>((a, b) -> a.getName()
+			.compareTo(b.getName()));
 		for (final Clazz clazz : sources) {
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
 

@@ -17,17 +17,17 @@ import org.osgi.service.cdi.reference.BeanServiceObjects;
 @Bean
 @SingleComponent
 public class ServiceB implements Foo, Serializable {
-	private static final long serialVersionUID = 809092323563388531L;
+	private static final long				serialVersionUID	= 809092323563388531L;
 
 	// level A
 	@Reference
-	Character					c_value;
+	Character								c_value;
 
 	@Reference
-	ServiceReference<Integer>		i_value;
+	ServiceReference<Integer>				i_value;
 
 	@Reference(Long.class)
-	Map<String, Object>				l_value;
+	Map<String, Object>						l_value;
 
 	@Reference
 	Map.Entry<Map<String, Object>, Boolean>	b_value;
@@ -39,8 +39,7 @@ public class ServiceB implements Foo, Serializable {
 	@Reference
 	Optional<Bar>							bar;
 
-	void set(@Reference @MinimumCardinality(2) List<Baz> bazi, @Reference Bif bif) {
-	}
+	void set(@Reference @MinimumCardinality(2) List<Baz> bazi, @Reference Bif bif) {}
 
 	public ServiceB(@Reference Provider<Fum> value, @Reference Provider<List<Glum>> glums) {}
 }

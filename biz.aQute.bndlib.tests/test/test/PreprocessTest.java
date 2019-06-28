@@ -37,7 +37,7 @@ public class PreprocessTest extends TestCase {
 
 	/**
 	 * Check if we can override
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testPreProcessExcludeExtensionGlobal() throws Exception {
@@ -46,7 +46,7 @@ public class PreprocessTest extends TestCase {
 		b.setProperty(Constants.INCLUDE_RESOURCE,
 			"{test/test/builder-preprocess.txt},{test/test/builder-preprocess.txt2}");
 		b.setProperty("var", "Yes!");
-		;
+
 		b.build();
 		assertTrue(b.check());
 		System.out.println("testPreProcessExcludeExtensionsGlobal");
@@ -71,9 +71,10 @@ public class PreprocessTest extends TestCase {
 	 */
 	public static void testPreProcessExcludeExtensionLocal() throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Constants.INCLUDE_RESOURCE, "{test/test/builder-preprocess.txt};-preprocessmatchers='!*.TXT:i,*'");
+		b.setProperty(Constants.INCLUDE_RESOURCE,
+			"{test/test/builder-preprocess.txt};-preprocessmatchers='!*.TXT:i,*'");
 		b.setProperty("var", "Yes!");
-		;
+
 		b.build();
 		assertTrue(b.check());
 
@@ -89,7 +90,7 @@ public class PreprocessTest extends TestCase {
 
 	/**
 	 * Spaces at the end of a clause cause the preprocess to fail.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testPreProcess() throws Exception {

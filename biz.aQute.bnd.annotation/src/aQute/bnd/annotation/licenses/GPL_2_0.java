@@ -10,7 +10,7 @@ import aQute.bnd.annotation.headers.BundleLicense;
 /**
  * An annotation to indicate that the type depends on the GNU General Public
  * License v2.0. Applying this annotation will add a Bundle-License clause.
- * 
+ *
  * @deprecated Replaced by {@link GPL_2_0_only} or {@link GPL_2_0_or_later}.
  */
 @Deprecated

@@ -41,7 +41,7 @@ public class ClassDataCollector {
 
 	/**
 	 * The EnclosingMethod attribute
-	 * 
+	 *
 	 * @param cName The name of the enclosing class, never null. Name is with
 	 *            slashes.
 	 * @param mName The name of the enclosing method in the class with cName or
@@ -54,7 +54,7 @@ public class ClassDataCollector {
 
 	/**
 	 * The InnerClass attribute
-	 * 
+	 *
 	 * @param innerClass The name of the inner class (with slashes). Can be
 	 *            null.
 	 * @param outerClass The name of the outer class (with slashes) Can be null.
@@ -78,7 +78,7 @@ public class ClassDataCollector {
 	/**
 	 * A reference to a type from method or field. The modifiers indicate the
 	 * access level of the parent method/field.
-	 * 
+	 *
 	 * @param typeRef
 	 * @param modifiers
 	 */

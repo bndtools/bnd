@@ -55,7 +55,6 @@ public class LaunchpadRunner extends BlockJUnit4ClassRunner {
 		}
 	}
 
-
 	@SuppressWarnings("deprecation")
 	@Override
 	protected Statement methodBlock(FrameworkMethod method) {
@@ -83,7 +82,6 @@ public class LaunchpadRunner extends BlockJUnit4ClassRunner {
 			Class<?> actualClassInBundle = tb.loadClass(getTestClass().getJavaClass()
 				.getName());
 
-
 			FrameworkMethod actualFrameworkMethod = getFrameworkMethod(actualClassInBundle, method);
 
 			Object actualInstance = actualClassInBundle.newInstance();
@@ -99,7 +97,6 @@ public class LaunchpadRunner extends BlockJUnit4ClassRunner {
 
 			List<FrameworkMethod> afters = actualClass.getAnnotatedMethods(After.class);
 			statement = afters.isEmpty() ? statement : new RunAfters(statement, afters, actualInstance);
-
 
 			Statement inner = statement;
 

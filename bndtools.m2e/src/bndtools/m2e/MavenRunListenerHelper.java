@@ -21,84 +21,88 @@ import aQute.lib.exceptions.Exceptions;
 
 public interface MavenRunListenerHelper {
 
-    final IMaven maven = MavenPlugin.getMaven();
-    final IMavenProjectRegistry mavenProjectRegistry = MavenPlugin.getMavenProjectRegistry();
+	IMaven					maven					= MavenPlugin.getMaven();
+	IMavenProjectRegistry	mavenProjectRegistry	= MavenPlugin.getMavenProjectRegistry();
 
-    default IResource getResource(Run run) {
-        File propertiesFile = run.getPropertiesFile();
-        IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        IWorkspaceRoot root = workspace.getRoot();
-        IFile[] locations = root.findFilesForLocationURI(propertiesFile.toURI());
-        IFile shortest = null;
-        for (IFile f : locations) {
-            if (shortest == null || (f.getProjectRelativePath()
-                .segmentCount() < shortest.getProjectRelativePath()
-                    .segmentCount())) {
-                shortest = f;
-            }
-        }
-        return shortest;
-    }
+	default IResource getResource(Run run) {
+		File propertiesFile = run.getPropertiesFile();
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		IWorkspaceRoot root = workspace.getRoot();
+		IFile[] locations = root.findFilesForLocationURI(propertiesFile.toURI());
+		IFile shortest = null;
+		for (IFile f : locations) {
+			if (shortest == null || (f.getProjectRelativePath()
+				.segmentCount() < shortest.getProjectRelativePath()
+					.segmentCount())) {
+				shortest = f;
+			}
+		}
+		return shortest;
+	}
 
-    default MavenProject getMavenProject(IMavenProjectFacade mavenProjectFacade) {
-        try {
-            return mavenProjectFacade.getMavenProject(new NullProgressMonitor());
-        } catch (CoreException e) {
-            throw Exceptions.duck(e);
-        }
-    }
+	default MavenProject getMavenProject(IMavenProjectFacade mavenProjectFacade) {
+		try {
+			return mavenProjectFacade.getMavenProject(new NullProgressMonitor());
+		} catch (CoreException e) {
+			throw Exceptions.duck(e);
+		}
+	}
 
-    default IMavenProjectFacade getMavenProjectFacade(IResource resource) {
-        return mavenProjectRegistry.getProject(resource.getProject());
-    }
+	default IMavenProjectFacade getMavenProjectFacade(IResource resource) {
+		return mavenProjectRegistry.getProject(resource.getProject());
+	}
 
-    default boolean isMavenProject(IResource resource) {
-        if ((resource != null) && (resource.getProject() != null) && (getMavenProjectFacade(resource) != null)) {
-            return true;
-        }
+	default boolean isMavenProject(IResource resource) {
+		if ((resource != null) && (resource.getProject() != null) && (getMavenProjectFacade(resource) != null)) {
+			return true;
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    default boolean hasBndMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
-        return projectFacade.getMojoExecutions("biz.aQute.bnd", "bnd-maven-plugin", new NullProgressMonitor(), "bnd-process")
-            .stream()
-            .findFirst()
-            .isPresent();
-    }
+	default boolean hasBndMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
+		return projectFacade
+			.getMojoExecutions("biz.aQute.bnd", "bnd-maven-plugin", new NullProgressMonitor(), "bnd-process")
+			.stream()
+			.findFirst()
+			.isPresent();
+	}
 
-    default boolean hasBndResolverMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
-        return projectFacade.getMojoExecutions("biz.aQute.bnd", "bnd-resolver-maven-plugin", new NullProgressMonitor(), "resolve")
-            .stream()
-            .findFirst()
-            .isPresent();
-    }
+	default boolean hasBndResolverMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
+		return projectFacade
+			.getMojoExecutions("biz.aQute.bnd", "bnd-resolver-maven-plugin", new NullProgressMonitor(), "resolve")
+			.stream()
+			.findFirst()
+			.isPresent();
+	}
 
-    default boolean hasBndTestingMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
-        return projectFacade.getMojoExecutions("biz.aQute.bnd", "bnd-testing-maven-plugin", new NullProgressMonitor(), "testing")
-            .stream()
-            .findFirst()
-            .isPresent();
-    }
+	default boolean hasBndTestingMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
+		return projectFacade
+			.getMojoExecutions("biz.aQute.bnd", "bnd-testing-maven-plugin", new NullProgressMonitor(), "testing")
+			.stream()
+			.findFirst()
+			.isPresent();
+	}
 
-    default boolean isOffline() {
-        try {
-            return maven.getSettings()
-                .isOffline();
-        } catch (CoreException e) {
-            throw Exceptions.duck(e);
-        }
-    }
+	default boolean isOffline() {
+		try {
+			return maven.getSettings()
+				.isOffline();
+		} catch (CoreException e) {
+			throw Exceptions.duck(e);
+		}
+	}
 
-    default <T> T lookupComponent(Class<T> clazz) {
-        try {
-            Method lookupComponentMethod = maven.getClass()
-                .getMethod("lookupComponent", Class.class);
+	default <T> T lookupComponent(Class<T> clazz) {
+		try {
+			Method lookupComponentMethod = maven.getClass()
+				.getMethod("lookupComponent", Class.class);
 
-            return clazz.cast(lookupComponentMethod.invoke(maven, clazz));
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            return null;
-        }
-    }
+			return clazz.cast(lookupComponentMethod.invoke(maven, clazz));
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+			| SecurityException e) {
+			return null;
+		}
+	}
 
 }

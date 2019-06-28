@@ -189,8 +189,7 @@ public class TargetImpl implements ArtifactProvider {
 		// and add any matching bundle to the result.
 		//
 
-		nextArtifact:
-		for (Artifact artifact : artifacts) {
+		nextArtifact: for (Artifact artifact : artifacts) {
 
 			if (artifact.classifier == Classifier.FEATURE)
 				continue;
@@ -202,9 +201,9 @@ public class TargetImpl implements ArtifactProvider {
 				logger.debug("bundle not selected in any feature", artifact.id);
 				continue;
 			}
-			
+
 			logger.debug("bundle selected in a feature", artifact.id);
-			
+
 			for (Version pluginVersion : list) {
 				if (pluginVersion.equals(ZERO) || pluginVersion.equals(artifact.version)) {
 					logger.debug("Adding bundle {} because feature selects {}", artifact, pluginVersion);

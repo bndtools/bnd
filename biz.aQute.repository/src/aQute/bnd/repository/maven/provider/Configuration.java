@@ -26,14 +26,14 @@ public interface Configuration {
 
 	/**
 	 * The name of this repository
-	 * 
+	 *
 	 * @param deflt
 	 */
 	String name(String deflt);
 
 	/**
 	 * The path to the index file
-	 * 
+	 *
 	 * @param deflt
 	 */
 	String index(String deflt);
@@ -69,7 +69,6 @@ public interface Configuration {
 
 	/**
 	 * Extensions for files that contain multiple JARs
-	 * 
 	 */
 	String multi();
 }

@@ -4,5 +4,5 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 public interface DataOutputWriter {
-	public void write(DataOutput out) throws IOException;
+	void write(DataOutput out) throws IOException;
 }

@@ -46,10 +46,13 @@ public class CommonInfoPluginTest extends TestCase {
 		final CommonInfoPlugin plugin = new CommonInfoPlugin();
 
 		MavenProjectWrapper p = getProject();
-		
-		p.getProject().setDescription("test2");
-		p.getProject().setUrl("test3");
-		p.getProject().setName("test4");
+
+		p.getProject()
+			.setDescription("test2");
+		p.getProject()
+			.setUrl("test3");
+		p.getProject()
+			.setName("test4");
 
 		DistributionManagement di = new DistributionManagement();
 		di.setDownloadUrl("test5");
@@ -76,13 +79,12 @@ public class CommonInfoPluginTest extends TestCase {
 		s.setUrl("test11");
 		p.getProject()
 			.setScm(s);
-		p.getProject().setVersion("1.0.0");
+		p.getProject()
+			.setVersion("1.0.0");
 
-		
-		final CommonInfoDTO infoDto = plugin.extract(p,
-			Locale.forLanguageTag("und"));
+		final CommonInfoDTO infoDto = plugin.extract(p, Locale.forLanguageTag("und"));
 
-		assertNull( infoDto.copyright);
+		assertNull(infoDto.copyright);
 		assertEquals("test2", infoDto.description);
 		assertEquals("test3", infoDto.docURL);
 		assertEquals("test4", infoDto.name);

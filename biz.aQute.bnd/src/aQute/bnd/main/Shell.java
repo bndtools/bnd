@@ -34,7 +34,7 @@ public class Shell implements AutoCloseable {
 
 	/**
 	 * Show the value of a macro
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Description("Show macro value")

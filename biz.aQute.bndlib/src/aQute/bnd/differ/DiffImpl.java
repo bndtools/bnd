@@ -77,7 +77,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 	/**
 	 * Compares the newer against the older, traversing the children if
 	 * necessary.
-	 * 
+	 *
 	 * @param newer The newer Element
 	 * @param older The older Element
 	 */

@@ -131,7 +131,6 @@ public class RunResolutionTest {
 		Bndrun bndrun = Bndrun.createBndrun(workspace,
 			IO.getFile("testdata/pre-buildworkspace/test.simple/resolve.bndrun"));
 
-
 		// First do not fail on changes
 		bndrun.getModel()
 			.setRunBundles(Collections.emptyList());

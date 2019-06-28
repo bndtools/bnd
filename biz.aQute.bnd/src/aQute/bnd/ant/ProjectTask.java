@@ -32,7 +32,7 @@ public class ProjectTask extends BaseTask {
 
 	/**
 	 * Set the base directory of the project. This property MUST be set.
-	 * 
+	 *
 	 * @param basedir
 	 */
 	public void setBasedir(File basedir) {

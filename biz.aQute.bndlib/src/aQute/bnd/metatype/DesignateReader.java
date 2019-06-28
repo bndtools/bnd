@@ -80,19 +80,19 @@ public class DesignateReader extends ClassDataCollector {
 		try {
 			switch (annotation.getName()
 				.getFQN()) {
-				case "org.osgi.service.metatype.annotations.Designate":
+				case "org.osgi.service.metatype.annotations.Designate" :
 					designate = annotation;
 					break;
 				case "org.osgi.service.component.annotations.Component" :
 					doComponent(annotation, annotation.getAnnotation(Component.class));
 
 					break;
-					default:
-						XMLAttribute xmlAttr = finder.getXMLAttribute(annotation);
-						if (xmlAttr != null) {
-							doXmlAttribute(annotation, xmlAttr);
-						}
-						break;
+				default :
+					XMLAttribute xmlAttr = finder.getXMLAttribute(annotation);
+					if (xmlAttr != null) {
+						doXmlAttribute(annotation, xmlAttr);
+					}
+					break;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -107,8 +107,8 @@ public class DesignateReader extends ClassDataCollector {
 		}
 		if (pids == null || "$".equals(pid)) {
 			pid = a.containsKey("name") ? c.name()
-					: clazz.getClassName()
-						.getFQN();
+				: clazz.getClassName()
+					.getFQN();
 		}
 	}
 

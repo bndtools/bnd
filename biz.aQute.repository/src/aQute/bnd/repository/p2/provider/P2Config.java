@@ -11,7 +11,7 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface P2Config {
 	/**
 	 * Name of the repository
-	 * 
+	 *
 	 * @param will be used if no name set
 	 */
 	String name(String defaultName);

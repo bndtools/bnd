@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * An annotation to indicate that the type depends on the MIT License. Applying
  * this annotation will add a Bundle-License clause.
- * 
+ *
  * @deprecated Replaced by {@link MIT}.
  */
 @Deprecated

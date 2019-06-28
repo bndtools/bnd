@@ -39,10 +39,11 @@ public class View {
 
 		Collection<?> something) {
 
-		return convert(session, columns, where, sort, ascent,something);
+		return convert(session, columns, where, sort, ascent, something);
 	}
 
-	private Cell convert(CommandSession session, String columns, String where, String sort,boolean ascent, Object something) {
+	private Cell convert(CommandSession session, String columns, String where, String sort, boolean ascent,
+		Object something) {
 		Cell cell = formatter.cell(something, (src, level, nxt) -> session.format(src, level));
 		if (!(cell instanceof Table))
 			return cell;

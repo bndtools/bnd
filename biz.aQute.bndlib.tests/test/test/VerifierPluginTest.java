@@ -3,7 +3,6 @@ package test;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Jar;
@@ -17,20 +16,15 @@ public class VerifierPluginTest extends TestCase {
 	public static void testNoVerifierPluginExecution() throws Exception {
 		final AtomicBoolean executedCheck = new AtomicBoolean(false);
 
-		AnalyzerPlugin analyzerPlugin = new AnalyzerPlugin() {
+		AnalyzerPlugin analyzerPlugin = analyzer -> {
+			// The following is null when AnalyzerPlugins execute
+			Packages exports = analyzer.getExports();
 
-			@Override
-			public boolean analyzeJar(Analyzer analyzer) throws Exception {
-				// The following is null when AnalyzerPlugins execute
-				Packages exports = analyzer.getExports();
-
-				if (exports == null) {
-					executedCheck.set(true);
-				}
-
-				return false;
+			if (exports == null) {
+				executedCheck.set(true);
 			}
 
+			return false;
 		};
 
 		try (Builder b = new Builder()) {
@@ -49,21 +43,16 @@ public class VerifierPluginTest extends TestCase {
 	public static void testVerifierPluginExecution() throws Exception {
 		final AtomicBoolean executedCheck = new AtomicBoolean(false);
 
-		VerifierPlugin verifier = new VerifierPlugin() {
+		VerifierPlugin verifier = analyzer -> {
+			// the following is true only after the jar and manifest have
+			// been analyzed
+			Packages exports = analyzer.getExports();
 
-			@Override
-			public void verify(Analyzer analyzer) throws Exception {
-				// the following is true only after the jar and manifest have
-				// been analyzed
-				Packages exports = analyzer.getExports();
+			PackageRef packageRef = analyzer.getPackageRef("test/activator");
 
-				PackageRef packageRef = analyzer.getPackageRef("test/activator");
-
-				if (exports.containsKey(packageRef)) {
-					executedCheck.set(true);
-				}
+			if (exports.containsKey(packageRef)) {
+				executedCheck.set(true);
 			}
-
 		};
 
 		try (Builder b = new Builder()) {

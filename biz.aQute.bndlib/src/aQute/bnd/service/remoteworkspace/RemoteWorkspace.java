@@ -28,7 +28,7 @@ public interface RemoteWorkspace extends Closeable {
 	/**
 	 * Parse a bndrun file (which can also a plain bnd file with -run*
 	 * instructions) and provide the resulting run specification.
-	 * 
+	 *
 	 * @param pathToBndOrBndrun the path to a bnd or bndrun file, never null
 	 */
 	RunSpecification getRun(String pathToBndOrBndrun);
@@ -41,7 +41,7 @@ public interface RemoteWorkspace extends Closeable {
 	 * this allows the classes from the JUnit tests to reside outside the
 	 * framework but leverage the same classes inside. This significantly
 	 * changes testing.
-	 * 
+	 *
 	 * @param projectDir the absolute path in
 	 */
 	RunSpecification analyzeTestSetup(String projectDir);
@@ -50,7 +50,7 @@ public interface RemoteWorkspace extends Closeable {
 	 * Get the latest bundles from a specification. The specification is in the
 	 * format used for a -buildpath/-testpath/-runbundles, etc. It can contain
 	 * multiple bundles.
-	 * 
+	 *
 	 * @param projectDir The absolute path to the project directory where
 	 *            {@link Project#getBundles(aQute.bnd.service.Strategy, String, String)}
 	 *            is called.
@@ -63,7 +63,7 @@ public interface RemoteWorkspace extends Closeable {
 	/**
 	 * Build a bundle based on a BuilderSpecification. This allows the remote
 	 * controller to create bundles on the fly using project specific context.
-	 * 
+	 *
 	 * @param projectPath The path to the project
 	 * @param spec the specification for a Builder, see
 	 *            {@link Builder#from(BuilderSpecification)}.
@@ -73,7 +73,7 @@ public interface RemoteWorkspace extends Closeable {
 
 	/**
 	 * Get a list of all projects.
-	 * 
+	 *
 	 * @return the list of all projects
 	 */
 	List<String> getProjects();

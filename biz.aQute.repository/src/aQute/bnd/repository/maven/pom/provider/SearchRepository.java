@@ -120,7 +120,7 @@ class SearchRepository extends InnerRepository {
 	}
 
 	public static class SearchResult {
-		public SearchResult() throws Exception {};
+		public SearchResult() throws Exception {}
 
 		public long getLastModified() {
 			return Arrays.stream(response.docs)

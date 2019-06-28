@@ -2,8 +2,7 @@ package aQute.bnd.annotation.jpms;
 
 public class Constants {
 
-	private Constants() {
-	}
+	private Constants() {}
 
 	public static final String	MAIN_CLASS	= "Main-Class";
 

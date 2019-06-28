@@ -16,16 +16,11 @@ import org.osgi.annotation.bundle.Requirement;
 	PACKAGE, TYPE
 })
 @Repeatable(CustomAs.class)
-@Requirement(
-	attribute = {
-		"${if;${is;${#cardinality};SINGLE};;cardinality:=${tolower;${#cardinality}}}",
-		"${if;${is;${#effective};resolve};;effective:=${tolower;${#effective}}}",
-		"${if;${is;${#resolution};MANDATORY};;resolution:=${tolower;${#resolution}}}",
-		"osgi.serviceloader=${#value}"
-	},
-	name = "${#value}",
-	namespace = "osgi.serviceloader", version = "1.0.0"
-)
+@Requirement(attribute = {
+	"${if;${is;${#cardinality};SINGLE};;cardinality:=${tolower;${#cardinality}}}",
+	"${if;${is;${#effective};resolve};;effective:=${tolower;${#effective}}}",
+	"${if;${is;${#resolution};MANDATORY};;resolution:=${tolower;${#resolution}}}", "osgi.serviceloader=${#value}"
+}, name = "${#value}", namespace = "osgi.serviceloader", version = "1.0.0")
 public @interface CustomA {
 	/**
 	 * The <em>type</em> of the service. If not set, use the type to which the

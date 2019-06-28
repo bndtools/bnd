@@ -7,7 +7,7 @@ public class FullOnMethod {
 
   /**
    * ${snippet id=myPrint,title=Test, description="test
-   * 
+   *
    * test."}
    */
   public void print() {

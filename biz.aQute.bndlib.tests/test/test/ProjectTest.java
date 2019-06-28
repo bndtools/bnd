@@ -104,7 +104,7 @@ public class ProjectTest extends TestCase {
 
 	/**
 	 * Test -stalecheck
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testStaleChecks() throws Exception {

@@ -35,7 +35,7 @@ public interface URLConnectionHandler {
 	/**
 	 * If the corresponding URL matches, modify the connection in the
 	 * parameterized way.
-	 * 
+	 *
 	 * @param connection The connection to modify
 	 * @throws Exception
 	 */
@@ -43,7 +43,7 @@ public interface URLConnectionHandler {
 
 	/**
 	 * Answer if this handler matches the given URL
-	 * 
+	 *
 	 * @param url the url to match
 	 * @return true if matched, false if not.
 	 */

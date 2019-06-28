@@ -27,128 +27,129 @@ import bndtools.Plugin;
 
 public class PackageInfoEditor extends TextEditor implements IResourceChangeListener {
 
-    private static final ILogger LOGGER = Logger.getLogger(PackageInfoEditor.class);
+	private static final ILogger	LOGGER	= Logger.getLogger(PackageInfoEditor.class);
 
-    private Image imgTitleBase;
-    private Image imgTitleWarning;
-    private Image imgTitleError;
+	private Image					imgTitleBase;
+	private Image					imgTitleWarning;
+	private Image					imgTitleError;
 
-    private Image titleImage;
+	private Image					titleImage;
 
-    @Override
-    public void setInitializationData(IConfigurationElement cfig, String propertyName, Object data) {
-        super.setInitializationData(cfig, propertyName, data);
+	@Override
+	public void setInitializationData(IConfigurationElement cfig, String propertyName, Object data) {
+		super.setInitializationData(cfig, propertyName, data);
 
-        String strIcon = cfig.getAttribute("icon");
+		String strIcon = cfig.getAttribute("icon");
 
-        // Load the icons
-        ImageDescriptor baseImageDesc = strIcon != null ? AbstractUIPlugin.imageDescriptorFromPlugin(cfig.getContributor()
-            .getName(), strIcon) : null;
-        imgTitleBase = baseImageDesc != null ? baseImageDesc.createImage() : getDefaultImage();
+		// Load the icons
+		ImageDescriptor baseImageDesc = strIcon != null
+			? AbstractUIPlugin.imageDescriptorFromPlugin(cfig.getContributor()
+				.getName(), strIcon)
+			: null;
+		imgTitleBase = baseImageDesc != null ? baseImageDesc.createImage() : getDefaultImage();
 
-        ImageDescriptor imgWarningOverlay = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_co.gif");
-        DecorationOverlayIcon warningImageDesc = new DecorationOverlayIcon(imgTitleBase, imgWarningOverlay, IDecoration.BOTTOM_LEFT);
-        imgTitleWarning = warningImageDesc.createImage();
+		ImageDescriptor imgWarningOverlay = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID,
+			"icons/warning_co.gif");
+		DecorationOverlayIcon warningImageDesc = new DecorationOverlayIcon(imgTitleBase, imgWarningOverlay,
+			IDecoration.BOTTOM_LEFT);
+		imgTitleWarning = warningImageDesc.createImage();
 
-        ImageDescriptor imgErrorOverlay = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/error_co.gif");
-        DecorationOverlayIcon errorImageDesc = new DecorationOverlayIcon(imgTitleBase, imgErrorOverlay, IDecoration.BOTTOM_LEFT);
-        imgTitleError = errorImageDesc.createImage();
+		ImageDescriptor imgErrorOverlay = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID,
+			"icons/error_co.gif");
+		DecorationOverlayIcon errorImageDesc = new DecorationOverlayIcon(imgTitleBase, imgErrorOverlay,
+			IDecoration.BOTTOM_LEFT);
+		imgTitleError = errorImageDesc.createImage();
 
-        titleImage = imgTitleBase;
-    }
+		titleImage = imgTitleBase;
+	}
 
-    @Override
-    protected void initializeEditor() {
-        super.initializeEditor();
-        setDocumentProvider(new PackageInfoDocumentProvider());
-        setRulerContextMenuId("#PackageInfoRuleContext");
-        setSourceViewerConfiguration(new PackageInfoSourceViewerConfiguration());
+	@Override
+	protected void initializeEditor() {
+		super.initializeEditor();
+		setDocumentProvider(new PackageInfoDocumentProvider());
+		setRulerContextMenuId("#PackageInfoRuleContext");
+		setSourceViewerConfiguration(new PackageInfoSourceViewerConfiguration());
 
-    }
+	}
 
-    @Override
-    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
-        super.init(site, input);
+	@Override
+	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+		super.init(site, input);
 
-        updateTitleIcon();
+		updateTitleIcon();
 
-        IResource resource = ResourceUtil.getResource(getEditorInput());
-        if (resource != null)
-            resource.getWorkspace()
-                .addResourceChangeListener(this);
-    }
+		IResource resource = ResourceUtil.getResource(getEditorInput());
+		if (resource != null)
+			resource.getWorkspace()
+				.addResourceChangeListener(this);
+	}
 
-    void updateTitleIcon() {
-        IResource resource = ResourceUtil.getResource(getEditorInput());
-        if (resource == null)
-            return;
+	void updateTitleIcon() {
+		IResource resource = ResourceUtil.getResource(getEditorInput());
+		if (resource == null)
+			return;
 
-        int severity = IMarker.SEVERITY_INFO;
-        try {
-            IMarker[] markers = resource.findMarkers(BndtoolsConstants.MARKER_BND_PROBLEM, true, 0);
-            if (markers != null) {
-                for (IMarker marker : markers)
-                    severity = Math.max(severity, marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO));
-            }
-        } catch (CoreException e) {
-            LOGGER.logError("Error updating packageinfo editor title icon", e);
-        }
+		int severity = IMarker.SEVERITY_INFO;
+		try {
+			IMarker[] markers = resource.findMarkers(BndtoolsConstants.MARKER_BND_PROBLEM, true, 0);
+			if (markers != null) {
+				for (IMarker marker : markers)
+					severity = Math.max(severity, marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO));
+			}
+		} catch (CoreException e) {
+			LOGGER.logError("Error updating packageinfo editor title icon", e);
+		}
 
-        if (severity >= IMarker.SEVERITY_ERROR) {
-            titleImage = imgTitleError;
-        } else if (severity >= IMarker.SEVERITY_WARNING) {
-            titleImage = imgTitleWarning;
-        } else {
-            titleImage = imgTitleBase;
-        }
-        firePropertyChange(PROP_TITLE);
-    }
+		if (severity >= IMarker.SEVERITY_ERROR) {
+			titleImage = imgTitleError;
+		} else if (severity >= IMarker.SEVERITY_WARNING) {
+			titleImage = imgTitleWarning;
+		} else {
+			titleImage = imgTitleBase;
+		}
+		firePropertyChange(PROP_TITLE);
+	}
 
-    @Override
-    public Image getTitleImage() {
-        if (titleImage != null)
-            return titleImage;
-        return getDefaultImage();
-    }
+	@Override
+	public Image getTitleImage() {
+		if (titleImage != null)
+			return titleImage;
+		return getDefaultImage();
+	}
 
-    @Override
-    public void dispose() {
-        IResource resource = ResourceUtil.getResource(getEditorInput());
+	@Override
+	public void dispose() {
+		IResource resource = ResourceUtil.getResource(getEditorInput());
 
-        super.dispose();
+		super.dispose();
 
-        if (resource != null)
-            resource.getWorkspace()
-                .removeResourceChangeListener(this);
+		if (resource != null)
+			resource.getWorkspace()
+				.removeResourceChangeListener(this);
 
-        if (imgTitleBase != null)
-            imgTitleBase.dispose();
-        if (imgTitleWarning != null)
-            imgTitleWarning.dispose();
-        if (imgTitleError != null)
-            imgTitleError.dispose();
+		if (imgTitleBase != null)
+			imgTitleBase.dispose();
+		if (imgTitleWarning != null)
+			imgTitleWarning.dispose();
+		if (imgTitleError != null)
+			imgTitleError.dispose();
 
-    }
+	}
 
-    @Override
-    public void resourceChanged(IResourceChangeEvent event) {
-        IResource resource = ResourceUtil.getResource(getEditorInput());
-        IResourceDelta delta = event.getDelta();
-        if (delta == null)
-            return;
+	@Override
+	public void resourceChanged(IResourceChangeEvent event) {
+		IResource resource = ResourceUtil.getResource(getEditorInput());
+		IResourceDelta delta = event.getDelta();
+		if (delta == null)
+			return;
 
-        IPath path = resource.getFullPath();
-        delta = delta.findMember(path);
-        if (delta == null)
-            return;
+		IPath path = resource.getFullPath();
+		delta = delta.findMember(path);
+		if (delta == null)
+			return;
 
-        if ((delta.getFlags() & IResourceDelta.MARKERS) != 0)
-            SWTConcurrencyUtil.execForControl(getEditorSite().getShell(), true, new Runnable() {
-                @Override
-                public void run() {
-                    updateTitleIcon();
-                }
-            });
-    }
+		if ((delta.getFlags() & IResourceDelta.MARKERS) != 0)
+			SWTConcurrencyUtil.execForControl(getEditorSite().getShell(), true, () -> updateTitleIcon());
+	}
 
 }

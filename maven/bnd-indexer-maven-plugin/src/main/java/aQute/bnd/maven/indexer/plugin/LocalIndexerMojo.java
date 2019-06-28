@@ -84,8 +84,10 @@ public class LocalIndexerMojo extends AbstractMojo {
 			List<File> toIndex = indexFiles.getFiles(inputDir, "**/*.jar");
 			if (absolute) {
 				toIndex = toIndex.stream()
-						.map(f -> f.toPath().normalize().toFile())
-						.collect(Collectors.toList());
+					.map(f -> f.toPath()
+						.normalize()
+						.toFile())
+					.collect(Collectors.toList());
 			}
 			logger.debug("Included files: {}", toIndex);
 			IO.mkdirs(outputFile.getParentFile());

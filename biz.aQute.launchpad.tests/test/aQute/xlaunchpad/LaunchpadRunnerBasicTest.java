@@ -27,7 +27,7 @@ public class LaunchpadRunnerBasicTest {
 	public static class X {}
 
 	@Service
-	Launchpad lp;
+	Launchpad				lp;
 
 	@Service
 	ServiceComponentRuntime	scr;

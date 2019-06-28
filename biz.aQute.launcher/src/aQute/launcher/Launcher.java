@@ -68,7 +68,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkEvent;
-import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
 import org.osgi.framework.launch.Framework;
@@ -200,6 +199,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	private static final Pattern QUOTED_P = Pattern.compile("^([\"'])(.*)\\1$");
+
 	public void init(String... args) throws Throwable {
 
 		final InputStream in;
@@ -1134,18 +1134,14 @@ public class Launcher implements ServiceListener {
 
 		try {
 			systemBundle.getBundleContext()
-				.addFrameworkListener(new FrameworkListener() {
+				.addFrameworkListener(event -> {
+					switch (event.getType()) {
+						case FrameworkEvent.ERROR :
+							error(event.toString(), event.getThrowable());
+							break;
+						case FrameworkEvent.WAIT_TIMEDOUT :
+							trace("Refresh will end due to error or timeout %s", event.toString());
 
-					@Override
-					public void frameworkEvent(FrameworkEvent event) {
-						switch (event.getType()) {
-							case FrameworkEvent.ERROR :
-								error(event.toString(), event.getThrowable());
-								break;
-							case FrameworkEvent.WAIT_TIMEDOUT :
-								trace("Refresh will end due to error or timeout %s", event.toString());
-
-						}
 					}
 				});
 		} catch (Exception e) {

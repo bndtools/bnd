@@ -49,8 +49,8 @@ public class LaunchpadTest {
 	@Rule
 	public final JUnitSoftAssertions	softly	= new JUnitSoftAssertions();
 
-	LaunchpadBuilder	builder;
-	File				tmp;
+	LaunchpadBuilder					builder;
+	File								tmp;
 
 	@Before
 	public void before() throws Exception {
@@ -88,9 +88,9 @@ public class LaunchpadTest {
 		}
 	}
 
-
 	static final CountDownLatch	activatedMyActivator	= new CountDownLatch(1);
 	static final CountDownLatch	deactivatedMyActivator	= new CountDownLatch(1);
+
 	public static class MyActivator implements BundleActivator {
 
 		@Override
@@ -198,6 +198,7 @@ public class LaunchpadTest {
 
 	static final CountDownLatch	activatedComp	= new CountDownLatch(1);
 	static final CountDownLatch	deactivatedComp	= new CountDownLatch(1);
+
 	@Component(immediate = true, service = Comp.class)
 	public static class Comp {
 

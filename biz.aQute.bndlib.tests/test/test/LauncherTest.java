@@ -23,7 +23,6 @@ import org.assertj.core.util.Files;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
-import aQute.bnd.build.ProjectLauncher.NotificationListener;
 import aQute.bnd.build.ProjectLauncher.NotificationType;
 import aQute.bnd.build.ProjectTester;
 import aQute.bnd.build.Run;
@@ -196,7 +195,7 @@ public class LauncherTest extends TestCase {
 
 	/**
 	 * Test the packager for remote
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testRemotePackager() throws Exception {
@@ -236,7 +235,7 @@ public class LauncherTest extends TestCase {
 	/**
 	 * Gradle Problems exporting an executable jar #980 Test the packager's
 	 * difference between plan export in gradle & from bndtools
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testPackagerDifference() throws Exception {
@@ -345,7 +344,7 @@ public class LauncherTest extends TestCase {
 
 	/**
 	 * junit 4 "unrooted" tests with parametrized tests #661
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testJunit4Tester() throws Exception {
@@ -477,7 +476,7 @@ public class LauncherTest extends TestCase {
 
 	/**
 	 * Test the java agent
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testAgent() throws Exception {
@@ -493,7 +492,7 @@ public class LauncherTest extends TestCase {
 
 	/**
 	 * Test env variables
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testEnv() throws Exception {
@@ -511,7 +510,7 @@ public class LauncherTest extends TestCase {
 	 * Tests if the properties are cleaned up. This requires some knowledge of
 	 * the launcher unfortunately. It is also not sure if the file is not just
 	 * deleted by the onExit ...
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testCleanup() throws Exception {
@@ -545,7 +544,7 @@ public class LauncherTest extends TestCase {
 	/**
 	 * The properties file is an implementation detail ... so this is white box
 	 * testing.
-	 * 
+	 *
 	 * @param project
 	 * @throws Exception
 	 */
@@ -573,7 +572,7 @@ public class LauncherTest extends TestCase {
 
 	/**
 	 * Test the packager
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testPackager() throws Exception {
@@ -597,7 +596,7 @@ public class LauncherTest extends TestCase {
 	 * snapshots of the launcher and tester, and when copied they are not there
 	 * in that workspace. So we need another demo project that does not use OSGi
 	 * and has not special deps. Then the following code can be used.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	// public void testWorkspaceWithSpace() throws Exception {
@@ -678,7 +677,7 @@ public class LauncherTest extends TestCase {
 
 	/**
 	 * Allowing Runnable and Callable, with Callable as priority
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testMainThread() throws Exception {
@@ -744,12 +743,9 @@ public class LauncherTest extends TestCase {
 			ProjectTester tester = run.getProjectTester();
 			ProjectLauncher l = tester.getProjectLauncher();
 			AtomicReference<String> error = new AtomicReference<>();
-			l.registerForNotifications(new NotificationListener() {
-				@Override
-				public void notify(NotificationType type, final String notification) {
-					if (type == NotificationType.ERROR) {
-						error.set(notification);
-					}
+			l.registerForNotifications((type, notification) -> {
+				if (type == NotificationType.ERROR) {
+					error.set(notification);
 				}
 			});
 			l.setTimeout(25000, TimeUnit.MILLISECONDS);

@@ -38,7 +38,7 @@ import aQute.libg.glob.Glob;
 
 public class Core {
 
-	final BundleContext									context;
+	final BundleContext																								context;
 	@SuppressWarnings("deprecation")
 	final ServiceTracker<org.osgi.service.startlevel.StartLevel, org.osgi.service.startlevel.StartLevel>			startLevelService;
 	@SuppressWarnings("deprecation")

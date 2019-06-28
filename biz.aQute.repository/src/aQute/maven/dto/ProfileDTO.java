@@ -81,7 +81,7 @@ public class ProfileDTO extends DTO {
 	public RepositoryDTO[]				pluginRepositories;
 
 	/**
-	 * 
+	 *
 	 */
 	public ReportingDTO					reporting;
 }

@@ -29,8 +29,7 @@ public class TargetImplTest {
 	@Test
 	public void jmdns() throws Exception {
 		TargetImpl impl = new TargetImpl(new HttpClient(), TargetImplTest.class.getResource("jmdns.target")
-			.toURI(), 
-			Processor.getPromiseFactory());
+			.toURI(), Processor.getPromiseFactory());
 
 		List<Artifact> artifacts = impl.getAllArtifacts();
 		artifacts.stream()

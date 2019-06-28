@@ -10,7 +10,7 @@ import org.osgi.service.http.HttpService;
 import org.osgi.service.log.LogService;
 import org.osgi.service.wireadmin.Wire;
 
-// 000: Export test.referApi,  has private references [org.osgi.service.http, org.osgi.service.component, org.osgi.service.condpermadmin, org.osgi.service.wireadmin, org.osgi.service.event, org.osgi.service.log, org.osgi.service.device], 
+// 000: Export test.referApi,  has private references [org.osgi.service.http, org.osgi.service.component, org.osgi.service.condpermadmin, org.osgi.service.wireadmin, org.osgi.service.event, org.osgi.service.log, org.osgi.service.device],
 
 @SuppressWarnings("unused")
 public abstract class APIReferrer extends AtomicReference<Device> implements EventAdmin {

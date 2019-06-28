@@ -201,7 +201,7 @@ public class HeaderReader extends Processor {
 
 	/**
 	 * Check if we need to use the v1.1 namespace (or later).
-	 * 
+	 *
 	 * @param info
 	 * @param cd TODO
 	 * @param descriptors TODO
@@ -223,8 +223,7 @@ public class HeaderReader extends Processor {
 		}
 		for (String key : info.keySet()) {
 			if (SET_COMPONENT_DIRECTIVES_1_2.contains(key)) {
-				cd.updateVersion(V1_2,
-					"uses 1.2 component directives like " + SET_COMPONENT_DIRECTIVES_1_2);
+				cd.updateVersion(V1_2, "uses 1.2 component directives like " + SET_COMPONENT_DIRECTIVES_1_2);
 				return;
 			}
 		}
@@ -255,7 +254,7 @@ public class HeaderReader extends Processor {
 
 	/**
 	 * Print the Service-Component properties element
-	 * 
+	 *
 	 * @param cd
 	 * @param info
 	 */
@@ -310,7 +309,7 @@ public class HeaderReader extends Processor {
 	 * rates the methods according to the scale in 112.5.8 (compendium 4.3, ds
 	 * 1.2), also returning "6" for invalid methods We don't look at return
 	 * values yet due to proposal to all them for setting service properties.
-	 * 
+	 *
 	 * @param test methodDef to examine for suitability as a DS lifecycle method
 	 * @param allowedParams TODO
 	 * @return rating; 6 if invalid, lower is better
@@ -340,7 +339,7 @@ public class HeaderReader extends Processor {
 	/**
 	 * see 112.3.2. We can't distinguish the bind type, so we just accept
 	 * anything.
-	 * 
+	 *
 	 * @param test
 	 */
 	int rateBind(MethodDef test) {

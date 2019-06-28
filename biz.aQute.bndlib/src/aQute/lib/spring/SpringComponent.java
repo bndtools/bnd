@@ -31,12 +31,12 @@ import aQute.lib.io.IO;
  * pattern. We parse the resource and and the imports to the builder. Parsing is
  * done with XSLT (first time I see the use of having XML for the Spring
  * configuration files!).
- * 
+ *
  * @author aqute
  */
 @BndPlugin(name = "spring")
 public class SpringComponent implements AnalyzerPlugin {
-	static Transformer	transformer;
+	static Transformer				transformer;
 	private final static Pattern	SPRING_SOURCE	= Pattern.compile("META-INF/spring/.*\\.xml");
 	private final static Pattern	QN				= Pattern
 		.compile("[_A-Za-z$][_A-Za-z0-9$]*(\\.[_A-Za-z$][_A-Za-z0-9$]*)*");

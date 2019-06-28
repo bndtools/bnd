@@ -88,6 +88,7 @@ public class ResolverMojo extends AbstractMojo {
 	@SuppressWarnings("deprecation")
 	private org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
 
+	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (skip) {
 			logger.debug("skip project as configured");

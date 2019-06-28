@@ -52,7 +52,7 @@ import aQute.lib.strings.Strings;
  */
 public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
-	private static final Logger		logger				= LoggerFactory.getLogger(JPMSModuleInfoPlugin.class);
+	private static final Logger		logger						= LoggerFactory.getLogger(JPMSModuleInfoPlugin.class);
 
 	private static final Pattern	mangledModuleName			= Pattern.compile("(.*)-\\d.*");
 
@@ -145,8 +145,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		writer.write(bbout);
 
 		analyzer.getJar()
-			.putResource(MODULE_INFO_CLASS,
-				new EmbeddedResource(bbout.toByteBuffer(), analyzer.lastModified()));
+			.putResource(MODULE_INFO_CLASS, new EmbeddedResource(bbout.toByteBuffer(), analyzer.lastModified()));
 	}
 
 	private String getModuleName(Analyzer analyzer, Jar jar) throws Exception {
@@ -350,8 +349,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 			});
 	}
 
-	private void serviceLoaderProviders(Parameters provideCapabilities, Analyzer analyzer,
-		ModuleInfoWriter writer) {
+	private void serviceLoaderProviders(Parameters provideCapabilities, Analyzer analyzer, ModuleInfoWriter writer) {
 		provideCapabilities.entrySet()
 			.stream()
 			.filter(entry -> Header.removeDuplicateMarker(entry.getKey())

@@ -3,7 +3,7 @@ package aQute.bnd.build.model.conversions;
 /**
  * Turns newlines to textual escaped newlines and orphaned backslashes to double
  * backslashes.
- * 
+ *
  * @author aqute
  */
 public class NewlineEscapedStringFormatter implements Converter<String, String> {

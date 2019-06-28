@@ -82,7 +82,7 @@ public class NanoHTTPD {
 	 * Override this to customize the server.
 	 * <p>
 	 * (By default, this delegates to serveFile() and allows directory listing.)
-	 * 
+	 *
 	 * @param uri Percent-decoded URI without parameters, for example
 	 *            "/index.cgi"
 	 * @param method "GET", "POST" etc.
@@ -202,14 +202,11 @@ public class NanoHTTPD {
 		myTcpPort = port;
 		this.myRootDir = wwwroot;
 		myServerSocket = new ServerSocket(myTcpPort);
-		myThread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					while (true)
-						new HTTPSession(myServerSocket.accept());
-				} catch (IOException ioe) {}
-			}
+		myThread = new Thread(() -> {
+			try {
+				while (true)
+					new HTTPSession(myServerSocket.accept());
+			} catch (IOException ioe) {}
 		});
 		myThread.setDaemon(true);
 		myThread.start();

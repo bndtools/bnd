@@ -26,10 +26,10 @@ import org.osgi.service.component.runtime.dto.UnsatisfiedReferenceDTO;
 import aQute.bnd.runtime.api.SnapshotProvider;
 
 public class ServiceComponentRuntimeFacade implements SnapshotProvider {
-	static AtomicLong														templateCounter	= new AtomicLong();
-	static Map<ID, Long>													templateMap		= new HashMap<>();
+	static AtomicLong		templateCounter	= new AtomicLong();
+	static Map<ID, Long>	templateMap		= new HashMap<>();
 
-	final BundleContext														context;
+	final BundleContext		context;
 
 	public static class TemplateDTO extends DTO {
 		public long									id;
@@ -251,8 +251,7 @@ public class ServiceComponentRuntimeFacade implements SnapshotProvider {
 	}
 
 	@Override
-	public void close() throws IOException {
-	}
+	public void close() throws IOException {}
 
 	@Override
 	public Object getSnapshot() throws Exception {

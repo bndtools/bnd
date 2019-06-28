@@ -45,7 +45,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 
 	/**
 	 * The well defined launcher
-	 * 
+	 *
 	 * @param project the project or Run
 	 */
 	public RemoteProjectLauncherPlugin(Project project) throws Exception {

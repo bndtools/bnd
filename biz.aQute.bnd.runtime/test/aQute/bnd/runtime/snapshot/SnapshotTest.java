@@ -68,7 +68,6 @@ public class SnapshotTest {
 		try (Launchpad fw = builder.create()
 			.inject(this)) {
 
-
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			ByteArrayInputStream in = new ByteArrayInputStream(new byte[0]);
 

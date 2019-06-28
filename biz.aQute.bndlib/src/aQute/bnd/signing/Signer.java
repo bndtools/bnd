@@ -32,15 +32,15 @@ import aQute.lib.io.IOConstants;
  * signature. -sign: md5, sha1
  */
 public class Signer extends Processor {
-	static final int	BUFFER_SIZE		= IOConstants.PAGE_SIZE * 1;
+	static final int				BUFFER_SIZE		= IOConstants.PAGE_SIZE * 1;
 
 	private final static Pattern	METAINFDIR		= Pattern.compile("META-INF/[^/]*");
-	String				digestNames[]	= new String[] {
+	String							digestNames[]	= new String[] {
 		"MD5"
 	};
-	File				keystoreFile	= new File("keystore");
-	String				password;
-	String				alias;
+	File							keystoreFile	= new File("keystore");
+	String							password;
+	String							alias;
 
 	public void signJar(Jar jar) {
 		if (digestNames == null || digestNames.length == 0)

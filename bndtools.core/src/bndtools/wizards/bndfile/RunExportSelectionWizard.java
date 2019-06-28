@@ -8,19 +8,19 @@ import aQute.bnd.build.model.BndEditModel;
 
 public class RunExportSelectionWizard extends Wizard {
 
-    private final RunExportSelectionPage selectionPage;
+	private final RunExportSelectionPage selectionPage;
 
-    public RunExportSelectionWizard(IConfigurationElement[] configElems, BndEditModel model, Project bndProject) {
-        selectionPage = new RunExportSelectionPage("selection", configElems, model, bndProject);
-        setForcePreviousAndNextButtons(true);
-        setNeedsProgressMonitor(true);
+	public RunExportSelectionWizard(IConfigurationElement[] configElems, BndEditModel model, Project bndProject) {
+		selectionPage = new RunExportSelectionPage("selection", configElems, model, bndProject);
+		setForcePreviousAndNextButtons(true);
+		setNeedsProgressMonitor(true);
 
-        addPage(selectionPage);
-    }
+		addPage(selectionPage);
+	}
 
-    @Override
-    public boolean performFinish() {
-        return false;
-    }
+	@Override
+	public boolean performFinish() {
+		return false;
+	}
 
 }
