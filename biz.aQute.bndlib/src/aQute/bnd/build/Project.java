@@ -246,11 +246,9 @@ public class Project extends Processor {
 	 * clear any cached results.
 	 */
 	public void setChanged() {
-		// if (refresh()) {
 		preparedPaths.set(false);
 		files = null;
 		revision.getAndIncrement();
-		// }
 	}
 
 	public Workspace getWorkspace() {
@@ -2132,8 +2130,7 @@ public class Project extends Processor {
 	@Override
 	public void propertiesChanged() {
 		super.propertiesChanged();
-		preparedPaths.set(false);
-		files = null;
+		setChanged();
 		makefile = null;
 		versionMap.clear();
 		data = new RefreshData();

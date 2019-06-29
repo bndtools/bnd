@@ -302,8 +302,6 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 				}
 
 				if (update.get()) {
-					project.forceRefresh();
-					project.setChanged();
 					bndLauncher.update();
 				}
 			} catch (Exception e) {
