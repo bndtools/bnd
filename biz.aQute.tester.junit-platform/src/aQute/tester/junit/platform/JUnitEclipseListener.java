@@ -4,9 +4,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -64,6 +69,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		}
 		message("%FAILED ", test, "@AssumptionFailure: ");
 		message("%TRACES ");
+		info(() -> "JUnitEclipseListener: Skipped: " + reason);
 		out.println("Skipped: " + reason);
 		message("%TRACEE ");
 		if (!test.isContainer()) {
@@ -71,35 +77,111 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		}
 	}
 
-	private final BufferedReader	in;
-	private final PrintWriter		out;
+	private final Socket			controlSock;
+	private final OutputStream		controlOut;
+	private final DataInputStream	controlIn;
+	private Socket					sock;
+	private BufferedReader			in;
+	private PrintWriter				out;
 	private long					startTime;
 	private TestPlan				testPlan;
 	private boolean					verbose	= false;
 
 	public JUnitEclipseListener(int port) throws Exception {
+		this(port, false);
+	}
+
+	private Socket connectRetry(int port) throws Exception {
 		Socket socket = null;
 		ConnectException e = null;
 		for (int i = 0; socket == null && i < 30; i++) {
 			try {
-				socket = new Socket(InetAddress.getByName(null), port);
+				return new Socket(InetAddress.getByName(null), port);
 			} catch (ConnectException ce) {
 				e = ce;
 				Thread.sleep(i * 100);
 			}
 		}
-		if (socket == null) {
-			info("JUnitEclipseListener: Cannot open the JUnit Port: " + port + " " + e);
+		if (e != null) {
+			throw e;
+		}
+		return null;
+	}
+
+	public JUnitEclipseListener(int port, boolean rerunIDE) throws Exception {
+		try {
+			Socket socket = connectRetry(port);
+
+			if (rerunIDE) {
+				controlSock = socket;
+				controlIn = new DataInputStream(socket.getInputStream());
+				controlOut = socket.getOutputStream();
+			} else {
+				controlSock = null;
+				controlIn = null;
+				controlOut = null;
+				setupJUnitSocket(socket);
+			}
+		} catch (ConnectException e) {
+			info("JUnitEclipseListener: Cannot open the JUnit control Port: " + port + " " + e);
 			System.exit(254);
 			throw new AssertionError("unreachable");
 		}
+	}
 
-		in = new BufferedReader(new InputStreamReader(socket.getInputStream(), UTF_8));
-		out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), UTF_8));
+	private void setupJUnitSocket(Socket junitSocket) throws IOException {
+		info("Opening streams");
+		sock = junitSocket;
+		in = new BufferedReader(new InputStreamReader(junitSocket.getInputStream(), UTF_8));
+		out = new PrintWriter(new OutputStreamWriter(junitSocket.getOutputStream(), UTF_8));
+	}
+
+	private void setNullStreams() {
+		in = new BufferedReader(new Reader() {
+			@Override
+			public int read(char[] cbuf, int off, int len) {
+				return -1;
+			}
+
+			@Override
+			public void close() {}
+		});
+		out = new PrintWriter(new Writer() {
+			@Override
+			public void write(char[] cbuf, int off, int len) {}
+
+			@Override
+			public void flush() throws IOException {}
+
+			@Override
+			public void close() throws IOException {}
+		});
 	}
 
 	@Override
 	public void testPlanExecutionStarted(TestPlan testPlan) {
+		info("testPlanExecution started, closing existing connection (if any)");
+		if (controlSock != null) {
+			safeClose(in);
+			safeClose(out);
+			safeClose(sock);
+			try {
+				info("Notifying controller that we're starting a new session");
+				controlOut.write(1);
+				controlOut.flush();
+				info("Retrieving new JUnit port");
+				int junitPort = controlIn.readInt();
+				info(() -> "Attempting to connect to port: " + junitPort);
+				Socket junitSocket = connectRetry(junitPort);
+
+				setupJUnitSocket(junitSocket);
+			} catch (Exception e) {
+				System.err.println("Error trying to connect to JUnit session: " + e);
+				info("Setting up dummy io");
+				setNullStreams();
+			}
+		}
+
 		final long realCount = testPlan.countTestIdentifiers(x -> x.isTest());
 		info("JUnitEclipseListener: testPlanExecutionStarted: " + testPlan + ", realCount: " + realCount);
 		message("%TESTC  ", realCount + " v2");
@@ -116,6 +198,9 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	public void testPlanExecutionFinished(TestPlan testPlan) {
 		message("%RUNTIME", "" + (System.currentTimeMillis() - startTime));
 		out.flush();
+		if (controlSock == null) {
+			setNullStreams();
+		}
 	}
 
 	private void sendTrace(Throwable t) {
@@ -162,7 +247,8 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 					info("JUnitEclipseListener: throwable: " + exception);
 
 					if (assumptionFailed || exception instanceof AssertionError) {
-						info("JUnitEclipseListener: failed: " + exception + " assumptionFailed: " + assumptionFailed);
+						info(() -> "JUnitEclipseListener: failed: " + exception + " assumptionFailed: "
+							+ assumptionFailed);
 						message("%FAILED ", test, (assumptionFailed ? "@AssumptionFailure: " : ""));
 
 						sendExpectedAndActual(exception);
@@ -410,22 +496,27 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		}
 	}
 
+	private void safeClose(Closeable io) {
+		if (io == null) {
+			return;
+		}
+		try {
+			io.close();
+		} catch (IOException e) {}
+	}
+
 	@Override
 	public void close() {
 		info(() -> idMap.entrySet()
 			.stream()
 			.map(x -> x.getKey() + " => " + x.getValue())
 			.collect(Collectors.joining(",\n")));
-		try {
-			in.close();
-		} catch (Exception ioe) {
-			// ignore
-		}
-		try {
-			out.close();
-		} catch (Exception ioe) {
-			// ignore
-		}
+		safeClose(in);
+		safeClose(out);
+		safeClose(sock);
+		safeClose(controlIn);
+		safeClose(controlOut);
+		safeClose(controlSock);
 	}
 
 	private void info(Supplier<CharSequence> message) {

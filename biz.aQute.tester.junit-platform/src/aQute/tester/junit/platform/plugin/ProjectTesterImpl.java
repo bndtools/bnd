@@ -1,6 +1,7 @@
 package aQute.tester.junit.platform.plugin;
 
 import static aQute.junit.constants.TesterConstants.TESTER_CONTINUOUS;
+import static aQute.junit.constants.TesterConstants.TESTER_CONTROLPORT;
 import static aQute.junit.constants.TesterConstants.TESTER_DIR;
 import static aQute.junit.constants.TesterConstants.TESTER_HOST;
 import static aQute.junit.constants.TesterConstants.TESTER_NAMES;
@@ -19,7 +20,8 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.EclipseJUnitTester;
 
 public class ProjectTesterImpl extends ProjectTester implements EclipseJUnitTester {
-	int					port	= -1;
+	int					port		= -1;
+	int					controlPort	= -1;
 	String				host;
 	boolean				prepared;
 	private Container	me;
@@ -35,13 +37,19 @@ public class ProjectTesterImpl extends ProjectTester implements EclipseJUnitTest
 			prepared = true;
 			super.prepare();
 			ProjectLauncher launcher = getProjectLauncher();
-			if (port > 0) {
+			if (controlPort > 0) {
+				launcher.getRunProperties()
+					.put(TESTER_CONTROLPORT, "" + controlPort);
+				if (host != null)
+					launcher.getRunProperties()
+						.put(TESTER_HOST, "" + host);
+
+			} else if (port > 0) {
 				launcher.getRunProperties()
 					.put(TESTER_PORT, "" + port);
 				if (host != null)
 					launcher.getRunProperties()
 						.put(TESTER_HOST, "" + host);
-
 			}
 			launcher.getRunProperties()
 				.put(TESTER_UNRESOLVED, getProject().getProperty(Constants.TESTUNRESOLVED, "true"));
@@ -89,4 +97,8 @@ public class ProjectTesterImpl extends ProjectTester implements EclipseJUnitTest
 		this.port = port;
 	}
 
+	@Override
+	public void setControlPort(int port) {
+		this.controlPort = port;
+	}
 }

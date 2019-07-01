@@ -321,6 +321,21 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 		return builder.toString();
 	}
 
+	/**
+	 * This was first always overriding -runkeep. Now it can only override it if
+	 * -runkeep is set to false. However, I think this option should go away in
+	 * bndtools. Anyway, removed the actual clearing since this was already done
+	 * in the launcher.
+	 */
+	protected void configureLauncher(ILaunchConfiguration configuration) throws CoreException {
+		if (getProjectLauncher().isKeep() == false) {
+			boolean clean = configuration.getAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN);
+
+			getProjectLauncher().setKeep(!clean);
+		}
+		enableTraceOptionIfSetOnConfiguration(configuration, getProjectLauncher());
+	}
+
 	protected static void enableTraceOptionIfSetOnConfiguration(ILaunchConfiguration configuration,
 		ProjectLauncher launcher) throws CoreException {
 		if (configuration.hasAttribute(LaunchConstants.ATTR_TRACE)) {

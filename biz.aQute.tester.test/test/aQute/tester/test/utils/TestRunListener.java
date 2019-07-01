@@ -12,10 +12,10 @@ import org.eclipse.jdt.internal.junit.model.ITestRunListener2;
 
 public class TestRunListener implements ITestRunListener2 {
 
-	private TestRunData		data;
-	private CountDownLatch	flag	= new CountDownLatch(1);
-	private SoftAssertions	softly;
-	private boolean			verbose	= false;
+	private volatile TestRunData	data;
+	private CountDownLatch			flag	= new CountDownLatch(1);
+	private SoftAssertions			softly;
+	private boolean					verbose	= false;
 
 	public TestRunListener(SoftAssertions softly, boolean verbose) {
 		this.softly = softly;

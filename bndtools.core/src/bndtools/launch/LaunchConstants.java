@@ -25,6 +25,8 @@ public interface LaunchConstants {
 	String	ATTR_OLD_JUNIT_KEEP_ALIVE	= "bndtools.runtime.junit.keepAlive";
 	String	ATTR_JUNIT_KEEP_ALIVE		= "junit.keepAlive";
 	boolean	DEFAULT_JUNIT_KEEP_ALIVE	= false;
+	String	ATTR_RERUN_IDE				= "junit.rerunIDE";
+	boolean	DEFAULT_RERUN_IDE			= false;
 
 	int		LAUNCH_STATUS_JUNIT			= 999;
 }

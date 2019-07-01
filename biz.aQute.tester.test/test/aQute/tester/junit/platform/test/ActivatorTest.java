@@ -1,10 +1,17 @@
 package aQute.tester.junit.platform.test;
 
+import static aQute.junit.constants.TesterConstants.TESTER_CONTINUOUS;
+import static aQute.junit.constants.TesterConstants.TESTER_CONTROLPORT;
+import static aQute.junit.constants.TesterConstants.TESTER_PORT;
 import static aQute.junit.constants.TesterConstants.TESTER_UNRESOLVED;
 import static aQute.tester.test.utils.TestRunData.nameOf;
 import static org.eclipse.jdt.internal.junit.model.ITestRunListener2.STATUS_FAILURE;
 
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.InputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -143,6 +150,119 @@ public class ActivatorTest extends AbstractActivatorTest {
 			.hasSuccessfulTest(JUnit5Test.class, "somethingElseAgain")
 			;
 		// @formatter:on
+	}
+
+	private void readWithTimeout(InputStream inStr) throws Exception {
+		long endTime = System.currentTimeMillis() + 10000;
+		int available;
+		while ((available = inStr.available()) == 0 && System.currentTimeMillis() < endTime) {
+			Thread.sleep(10);
+		}
+		if (available == 0) {
+			Assertions.fail("Timeout waiting for data");
+		}
+		assertThat(available).as("control signal")
+			.isEqualTo(1);
+		int value = inStr.read();
+		assertThat(value).as("control value")
+			.isNotEqualTo(-1);
+	}
+
+	@Test
+	public void eclipseListener_worksInContinuousMode_withControlSocket() throws Exception {
+		try (ServerSocket controlSock = new ServerSocket(0)) {
+			controlSock.setSoTimeout(10000);
+			int controlPort = controlSock.getLocalPort();
+			builder.set("launch.services", "true")
+				.set(TESTER_CONTINUOUS, "true")
+				// This value should be ignored
+				.set(TESTER_PORT, Integer.toString(controlPort - 2))
+				.set(TESTER_CONTROLPORT, Integer.toString(controlPort));
+			createLP();
+			addTestBundle(With2Failures.class, JUnit4Test.class);
+
+			runTester();
+			try (Socket sock = controlSock.accept()) {
+				InputStream inStr = sock.getInputStream();
+				DataOutputStream outStr = new DataOutputStream(sock.getOutputStream());
+
+				readWithTimeout(inStr);
+				TestRunListener listener = startEclipseJUnitListener();
+				outStr.writeInt(eclipseJUnitPort);
+				outStr.flush();
+				listener.waitForClientToFinish(10000);
+
+				TestRunData result = listener.getLatestRunData();
+
+				if (result == null) {
+					fail("Result was null" + listener);
+					// To prevent NPE and allow any soft assertions to be
+					// displayed.
+					return;
+				}
+
+				assertThat(result.getTestCount()).as("testCount")
+					.isEqualTo(5);
+
+				// @formatter:off
+				assertThat(result.getNameMap()
+					.keySet()).as("executed")
+				.contains(
+					nameOf(With2Failures.class),
+					nameOf(With2Failures.class, "test1"),
+					nameOf(With2Failures.class, "test2"),
+					nameOf(With2Failures.class, "test3"),
+					nameOf(JUnit4Test.class),
+					nameOf(JUnit4Test.class, "somethingElse"),
+					nameOf(testBundles.get(0))
+					);
+
+				assertThat(result).as("result")
+					.hasFailedTest(With2Failures.class, "test1", AssertionError.class)
+					.hasSuccessfulTest(With2Failures.class, "test2")
+					.hasFailedTest(With2Failures.class, "test3", CustomAssertionError.class)
+					.hasSuccessfulTest(JUnit4Test.class, "somethingElse")
+					;
+				// @formatter:on
+				addTestBundle(With1Error1Failure.class, JUnit5Test.class);
+
+				readWithTimeout(inStr);
+				listener = startEclipseJUnitListener();
+				outStr.writeInt(eclipseJUnitPort);
+				outStr.flush();
+				listener.waitForClientToFinish(10000);
+
+				result = listener.getLatestRunData();
+
+				if (result == null) {
+					fail("Eclipse didn't capture output from the second run");
+					return;
+				}
+				int i = 2;
+				assertThat(result.getTestCount()).as("testCount:" + i)
+					.isEqualTo(4);
+
+				// @formatter:off
+				assertThat(result.getNameMap()
+					.keySet()).as("executed:2")
+				.contains(
+					nameOf(With1Error1Failure.class),
+					nameOf(With1Error1Failure.class, "test1"),
+					nameOf(With1Error1Failure.class, "test2"),
+					nameOf(With1Error1Failure.class, "test3"),
+					nameOf(JUnit5Test.class, "somethingElseAgain"),
+					nameOf(testBundles.get(1))
+					);
+
+				assertThat(result).as("result:2")
+					.hasErroredTest(With1Error1Failure.class, "test1", RuntimeException.class)
+					.hasSuccessfulTest(With1Error1Failure.class, "test2")
+					.hasFailedTest(With1Error1Failure.class, "test3", AssertionError.class)
+					.hasSuccessfulTest(JUnit5Test.class, "somethingElseAgain")
+					;
+					// @formatter:on
+			}
+		}
 	}
 
 	@Test

@@ -1,6 +1,7 @@
 package aQute.tester.junit.platform;
 
 import static aQute.junit.constants.TesterConstants.TESTER_CONTINUOUS;
+import static aQute.junit.constants.TesterConstants.TESTER_CONTROLPORT;
 import static aQute.junit.constants.TesterConstants.TESTER_DIR;
 import static aQute.junit.constants.TesterConstants.TESTER_NAMES;
 import static aQute.junit.constants.TesterConstants.TESTER_PORT;
@@ -127,14 +128,23 @@ public class Activator implements BundleActivator, Runnable {
 
 		String testcases = context.getProperty(TESTER_NAMES);
 		trace("test cases %s", testcases);
-		if (context.getProperty(TESTER_PORT) != null) {
-			int port = Integer.parseInt(context.getProperty(TESTER_PORT));
+		int port = -1;
+		boolean rerunIDE = false;
+		if (context.getProperty(TESTER_CONTROLPORT) != null) {
+			port = Integer.parseInt(context.getProperty(TESTER_CONTROLPORT));
+			rerunIDE = true;
+		} else if (context.getProperty(TESTER_PORT) != null) {
+			port = Integer.parseInt(context.getProperty(TESTER_PORT));
+		}
+
+		if (port > 0) {
 			try {
-				trace("using port %s", port);
-				jUnitEclipseListener = new JUnitEclipseListener(port);
+				trace("using control port %s, rerun IDE?: %s", port, rerunIDE);
+				jUnitEclipseListener = new JUnitEclipseListener(port, rerunIDE);
 				listenerList.add(jUnitEclipseListener);
 			} catch (Exception e) {
-				System.err.println("Cannot create link Eclipse JUnit on port " + port);
+				System.err.println(
+					"Cannot create link Eclipse JUnit control on port " + port + " (rerunIDE: " + rerunIDE + ')');
 				System.exit(254);
 			}
 		}
@@ -153,6 +163,7 @@ public class Activator implements BundleActivator, Runnable {
 		// be disabled with -testunresolved=false
 		//
 		unresolved = context.getProperty(TESTER_UNRESOLVED);
+
 		trace("run unresolved %s", unresolved);
 
 		if (!reportDir.exists() && !reportDir.mkdirs()) {

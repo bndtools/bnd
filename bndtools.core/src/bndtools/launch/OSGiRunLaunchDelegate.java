@@ -212,21 +212,6 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 	}
 
 	/**
-	 * This was first always overriding -runkeep. Now it can only override it if
-	 * -runkeep is set to false. However, I think this option should go away in
-	 * bndtools. Anyway, removed the actual clearing since this was already done
-	 * in the launcher.
-	 */
-	private void configureLauncher(ILaunchConfiguration configuration) throws CoreException {
-		if (bndLauncher.isKeep() == false) {
-			boolean clean = configuration.getAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN);
-
-			bndLauncher.setKeep(!clean);
-		}
-		enableTraceOptionIfSetOnConfiguration(configuration, bndLauncher);
-	}
-
-	/**
 	 * Registers a resource listener with the project model file to update the
 	 * launcher when the model or any of the run-bundles changes. The resource
 	 * listener is automatically unregistered when the launched process
@@ -333,5 +318,4 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 				new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd launcher was not initialised.", null));
 		return bndLauncher;
 	}
-
 }

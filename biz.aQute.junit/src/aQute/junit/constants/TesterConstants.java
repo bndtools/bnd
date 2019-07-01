@@ -2,8 +2,17 @@ package aQute.junit.constants;
 
 public interface TesterConstants {
 	/**
+	 * The control port used for the bi-directional control protocol for
+	 * continuous testing support in the IDE. A tester may silently ignore this
+	 * setting if it does not support it. If this property is set and the tester
+	 * supports it, then {@link #TESTER_PORT} is ignored and instead the value
+	 * of the JUnit port is sent over the control channel.
+	 */
+	String	TESTER_CONTROLPORT		= "tester.controlport";
+
+	/**
 	 * The port to send the JUnit information to in a format defined by Eclipse.
-	 * If this property is not set, no information is send but tests are still
+	 * If this property is not set, no information is sent but tests are still
 	 * run.
 	 */
 	String	TESTER_PORT				= "tester.port";
