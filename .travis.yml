@@ -5,6 +5,7 @@ language: java
 
 env:
   global:
+    - GRADLE_OPTS=-Dorg.gradle.parallel=true
 
 matrix:
   include:
@@ -33,10 +34,6 @@ matrix:
         - "cd docs"
       script: 
         - "./build.sh"
-    - name: "Parallel"
-      env: ALLOW_FAILURE=true
-      script: 
-        - "./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue --parallel :build :maven:deploy"
   allow_failures:
     - env: ALLOW_FAILURE=true
 
