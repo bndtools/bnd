@@ -7,4 +7,4 @@
 	
 -runkeep: true
 -runtrace: true
--runstorage: generated/keepfw
+-runstorage: ${.}/generated/keepfw

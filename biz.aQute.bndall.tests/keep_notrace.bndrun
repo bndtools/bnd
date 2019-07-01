@@ -6,4 +6,4 @@
 	org.apache.servicemix.bundles.junit;version='[4.11.0,5)'
 	
 -runkeep: true
--runstorage: generated/keepfw
+-runstorage: ${.}/generated/keepfw
