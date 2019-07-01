@@ -79,8 +79,25 @@ public class LaunchpadRunner extends BlockJUnit4ClassRunner {
 
 			doProbeBundle(launchpad);
 
-			Class<?> actualClassInBundle = tb.loadClass(getTestClass().getJavaClass()
-				.getName());
+			if (builder.isDebug()) {
+				launchpad.report();
+			}
+
+			Class<?> actualClassInBundle;
+			try {
+				actualClassInBundle = tb.loadClass(getTestClass().getJavaClass()
+					.getName());
+			} catch (ClassNotFoundException e) {
+				int state = tb.getState();
+				if (state == Bundle.INSTALLED) {
+					try {
+						tb.start();
+					} catch (Exception ee) {
+						return new Fail(ee);
+					}
+				}
+				return new Fail(e);
+			}
 
 			FrameworkMethod actualFrameworkMethod = getFrameworkMethod(actualClassInBundle, method);
 
@@ -121,6 +138,7 @@ public class LaunchpadRunner extends BlockJUnit4ClassRunner {
 				}
 			};
 		} catch (Throwable e) {
+			e.printStackTrace();
 			return new Fail(e);
 		}
 	}
@@ -150,13 +168,15 @@ public class LaunchpadRunner extends BlockJUnit4ClassRunner {
 	}
 
 	private void debug(Bundle tb) throws IOException {
-		Enumeration<URL> entryPaths = tb.findEntries("/", "*", true);
-		while (entryPaths.hasMoreElements())
-			System.out.println(entryPaths.nextElement()
-				.getPath());
-		URL entry = tb.getEntry("META-INF/MANIFEST.MF");
-		Manifest mf = new Manifest(entry.openStream());
-		mf.write(System.out);
+		if (builder.isDebug()) {
+			Enumeration<URL> entryPaths = tb.findEntries("/", "*", true);
+			while (entryPaths.hasMoreElements())
+				System.err.println(entryPaths.nextElement()
+					.getPath());
+			URL entry = tb.getEntry("META-INF/MANIFEST.MF");
+			Manifest mf = new Manifest(entry.openStream());
+			mf.write(System.err);
+		}
 	}
 
 	public byte[] getTestBundle() {

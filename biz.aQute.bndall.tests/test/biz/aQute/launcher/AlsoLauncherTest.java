@@ -1,6 +1,11 @@
-package test;
+package biz.aQute.launcher;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -16,9 +21,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.assertj.core.util.Files;
+import org.junit.After;
+import org.junit.Test;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -34,14 +42,14 @@ import aQute.bnd.service.Strategy;
 import aQute.launcher.constants.LauncherConstants;
 import aQute.lib.io.IO;
 import aQute.libg.command.Command;
-import junit.framework.TestCase;
 
-public class LauncherTest extends TestCase {
+@SuppressWarnings("restriction")
+public class AlsoLauncherTest {
 
 	private Workspace	workspace;
 	private Project		project;
 
-	@Override
+	@After
 	@SuppressWarnings("restriction")
 	public void tearDown() throws IOException {
 		if (project != null) {
@@ -56,6 +64,7 @@ public class LauncherTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testExecutableJarWithStripping() throws Exception {
 		Project project = getProject();
 
@@ -89,6 +98,7 @@ public class LauncherTest extends TestCase {
 	 * Test the rejar and strip properties of the -executable instruction
 	 */
 
+	@Test
 	public void testExecutableWithRejarringAndStripping() throws Exception {
 
 		long storedStored = makeExec(false, false, false);
@@ -170,7 +180,7 @@ public class LauncherTest extends TestCase {
 	 * command that quits but does not call System.exit(). That is, if this
 	 * returns normally all went ok.
 	 */
-
+	@Test
 	public void testExpandedJarLauncher() throws Exception {
 		Project project = getProject();
 		project.setProperty(Constants.RUNPROPERTIES, "test.cmd=quit.no.exit");
@@ -198,6 +208,7 @@ public class LauncherTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testRemotePackager() throws Exception {
 		Project project = getProject();
 		project.clear();
@@ -212,6 +223,7 @@ public class LauncherTest extends TestCase {
 	/**
 	 * Try out the new tester that does not contain JUnit
 	 */
+	@Test
 	public void testJUnitLessTester() throws Exception {
 		Project project = getProject();
 
@@ -238,6 +250,7 @@ public class LauncherTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testPackagerDifference() throws Exception {
 
 		//
@@ -347,6 +360,7 @@ public class LauncherTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testJunit4Tester() throws Exception {
 		Project project = getProject();
 		project.clear();
@@ -371,6 +385,7 @@ public class LauncherTest extends TestCase {
 	/**
 	 * Test if we can keep the framework state.
 	 */
+	@Test
 	public void testRunKeep() throws Exception {
 
 		//
@@ -431,6 +446,7 @@ public class LauncherTest extends TestCase {
 
 	}
 
+	@Test
 	public void testNoReferences() throws Exception {
 		Project project = getProject();
 		project.setProperty("-runnoreferences", true + "");
@@ -445,6 +461,7 @@ public class LauncherTest extends TestCase {
 	/**
 	 * Try launching a workspace with spaces
 	 */
+	@Test
 	public void testSpaces() throws Exception {
 		File f = new File("t m p");
 		try {
@@ -479,6 +496,7 @@ public class LauncherTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testAgent() throws Exception {
 		Project project = getProject();
 		project.clear();
@@ -495,6 +513,7 @@ public class LauncherTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testEnv() throws Exception {
 		Project project = getProject();
 		project.clear();
@@ -513,6 +532,7 @@ public class LauncherTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testCleanup() throws Exception {
 		Project project = getProject();
 		File target = project.getTarget();
@@ -560,6 +580,7 @@ public class LauncherTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testSimple() throws Exception {
 		Project project = getProject();
 		ProjectLauncher l = project.getProjectLauncher();
@@ -575,6 +596,7 @@ public class LauncherTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testPackager() throws Exception {
 		Project project = getProject();
 		project.clear();
@@ -640,6 +662,7 @@ public class LauncherTest extends TestCase {
 		return project;
 	}
 
+	@Test
 	public void testTester() throws Exception {
 		Project project = getProject();
 		project.clear();
@@ -652,6 +675,7 @@ public class LauncherTest extends TestCase {
 		assertEquals(2, pt.test());
 	}
 
+	@Test
 	public void testTimeoutActivator() throws Exception {
 		Project project = getProject();
 		project.clear();
@@ -663,6 +687,7 @@ public class LauncherTest extends TestCase {
 
 	}
 
+	@Test
 	public void testTimeout() throws Exception {
 		Project project = getProject();
 		project.clear();
@@ -680,26 +705,32 @@ public class LauncherTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testMainThread() throws Exception {
 		assertExitCode("main.thread", ProjectLauncher.OK);
 	}
 
+	@Test
 	public void testMainThreadBoth() throws Exception {
 		assertExitCode("main.thread.both", 43);
 	}
 
+	@Test
 	public void testMainThreadCallableNull() throws Exception {
 		assertExitCode("main.thread.callablenull", 0);
 	}
 
+	@Test
 	public void testMainThreadInvalidType() throws Exception {
 		assertExitCode("main.thread.callableinvalidtype", 0);
 	}
 
+	@Test
 	public void testMainThreadCallable() throws Exception {
 		assertExitCode("main.thread.callable", 42);
 	}
 
+	@Test
 	public void testFrameworkStop() throws Exception {
 		assertExitCode("framework.stop", ProjectLauncher.STOPPED);
 	}
@@ -709,31 +740,43 @@ public class LauncherTest extends TestCase {
 		project.clear();
 
 		ProjectLauncher l = project.getProjectLauncher();
-		l.setTimeout(15000, TimeUnit.MILLISECONDS);
+		l.setTimeout(25000, TimeUnit.MILLISECONDS);
 		l.setTrace(true);
 		l.getRunProperties()
 			.put("test.cmd", cmd);
 		assertEquals(rv, l.launch());
 	}
 
-	public void testUnresolved() throws Exception {
+	@Test
+	public void testUnresolvedReporting() throws Exception {
 		Project project = getProject();
 		project.clear();
 		project.setProperty(Constants.RUNTRACE, "true");
 
-		String mandatorynoversion = IO.getFile("jar/mandatorynoversion.jar")
-			.getAbsolutePath();
 		String runbundles = project.getProperty(Constants.RUNBUNDLES);
-		project.setProperty(Constants.RUNBUNDLES, runbundles + "," + mandatorynoversion + ";version=file");
+		project.refresh();
+		project.setProperty(Constants.RUNBUNDLES,
+			runbundles + "," + "../" + IO.work.getName() + "/jar/mandatorynoversion.jar;version=file");
 		ProjectTester tester = project.getProjectTester();
-		tester.prepare();
 		ProjectLauncher l = tester.getProjectLauncher();
-		l.addRunBundle(mandatorynoversion);
 		l.setTimeout(25000, TimeUnit.MILLISECONDS);
 		l.setTrace(true);
-		assertEquals(1, l.launch());
+		AtomicBoolean reported = new AtomicBoolean(false);
+		tester.registerForNotifications((a, b) -> {
+			reported.set(true);
+		});
+		assertTrue(project.check());
+		assertEquals(1, tester.test());
+		assertThat(reported).isTrue();
+
 	}
 
+	/**
+	 * I do not understand this test? It seems to wait 25 seconds and if it did
+	 * not get an error through the notifier it is fine. Do we need this?
+	 */
+	// @Ignore("Just seems to wait for no obvious reason")
+	@Test
 	public void testFrameworkExtension() throws Exception {
 		Project project = getProject();
 		project.clear();
@@ -743,12 +786,12 @@ public class LauncherTest extends TestCase {
 			ProjectTester tester = run.getProjectTester();
 			ProjectLauncher l = tester.getProjectLauncher();
 			AtomicReference<String> error = new AtomicReference<>();
-			l.registerForNotifications((type, notification) -> {
-				if (type == NotificationType.ERROR) {
-					error.set(notification);
-				}
+			l.registerForNotifications((NotificationType type, final String notification) -> {
+					if (type == NotificationType.ERROR) {
+						error.set(notification);
+					}
 			});
-			l.setTimeout(25000, TimeUnit.MILLISECONDS);
+			l.setTimeout(5000, TimeUnit.MILLISECONDS);
 			l.setTrace(true);
 			l.launch();
 
@@ -759,6 +802,7 @@ public class LauncherTest extends TestCase {
 	File	base					= new File("").getAbsoluteFile();
 	String	GENERATED_PACKAGED_JAR	= "generated/packaged.jar";
 
+	@Test
 	public void testOlderLauncherOnRunpath() throws Exception {
 		Project project = getProject();
 		project.clear();

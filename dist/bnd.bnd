@@ -16,6 +16,7 @@
             biz.aQute.bndlib.tests, \
             biz.aQute.bndall.tests, \
             biz.aQute.bndlib.comm.tests, \
+            biz.aQute.http.testservers, \
             biz.aQute.junit, \
             biz.aQute.launcher, \
             biz.aQute.launchpad, \

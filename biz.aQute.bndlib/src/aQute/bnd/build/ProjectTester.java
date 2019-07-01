@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import aQute.bnd.build.ProjectLauncher.NotificationListener;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.io.IO;
 
@@ -79,4 +80,8 @@ public abstract class ProjectTester {
 	}
 
 	public abstract int test() throws Exception;
+
+	public void registerForNotifications(NotificationListener listener) {
+		getProjectLauncher().registerForNotifications(listener);
+	}
 }

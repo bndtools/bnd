@@ -51,6 +51,24 @@ public class LauncherTest {
 	}
 
 	@Test
+	public void testRunOrder_0_no_start_levels() throws Exception {
+		File file = buildPackage("order-00.bndrun");
+
+		System.setProperty("test.cmd", "quit.no.exit");
+
+		String result = runFramework(file);
+
+		System.out.println(result);
+		assertThat(result).containsPattern("startlevel: not handled");
+		assertThat(result).containsPattern("Startlevel\\s+1");
+		assertThat(result).containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle");
+		assertThat(result).containsPattern("1\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log");
+		assertThat(result).containsPattern("1\\s+ACTIV\\s+<>\\s+jar/.?demo.jar");
+		assertThat(result).containsPattern("1\\s+ACTIV\\s+<>\\s+jar/.?org.apache.servicemix.bundles.junit");
+		assertThat(result).containsPattern("1\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.configadmin");
+	}
+
+	@Test
 	public void testRunOrder_1_basic() throws Exception {
 		File file = buildPackage("order-01.bndrun");
 
@@ -59,12 +77,16 @@ public class LauncherTest {
 		String result = runFramework(file);
 
 		System.out.println(result);
-		assertThat(result).containsPattern("Startlevel\\s+21");
+		assertThat(result).containsPattern("handled \\[-1, 10, 20, -1, 5\\]");
+		assertThat(result).containsPattern("Startlevel\\s+22");
 		assertThat(result).containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle");
 		assertThat(result).containsPattern("21\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log");
 		assertThat(result).containsPattern("10\\s+ACTIV\\s+<>\\s+jar/.?demo.jar");
 		assertThat(result).containsPattern("20\\s+ACTIV\\s+<>\\s+jar/.?org.apache.servicemix.bundles.junit");
 		assertThat(result).containsPattern("5\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.configadmin");
+		assertThat(result).containsPattern("startlevel: default=21, beginning=22, now moving to 1");
+		assertThat(result).containsPattern("startlevel: beginning level 22");
+		assertThat(result).containsPattern("startlevel: notified reached final level 22");
 	}
 
 	@Test
@@ -76,12 +98,15 @@ public class LauncherTest {
 		String result = runFramework(file);
 
 		System.out.println(result);
-		assertThat(result).containsPattern("Startlevel\\s+22");
+		assertThat(result).containsPattern("Startlevel\\s+23");
 		assertThat(result).containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle");
 		assertThat(result).containsPattern("22\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log");
 		assertThat(result).containsPattern("11\\s+ACTIV\\s+<>\\s+jar/.?demo.jar");
 		assertThat(result).containsPattern("21\\s+ACTIV\\s+<>\\s+jar/.?org.apache.servicemix.bundles.junit");
 		assertThat(result).containsPattern("6\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.configadmin");
+		assertThat(result).containsPattern("startlevel: default=22, beginning=23, now moving to 1");
+		assertThat(result).containsPattern("startlevel: beginning level 23");
+		assertThat(result).containsPattern("startlevel: notified reached final level 23");
 	}
 
 	@Test
@@ -102,8 +127,9 @@ public class LauncherTest {
 		assertThat(result).containsPattern("21\\s+RSLVD\\s+<>\\s+jar/.?org.apache.servicemix.bundles.junit");
 		assertThat(result).containsPattern("6\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.configadmin");
 
-		assertThat(result).containsPattern("start level set through properties:\\s+12");
-
+		assertThat(result).containsPattern("startlevel: default=22, beginning=12, now moving to 1");
+		assertThat(result).containsPattern("startlevel: beginning level 12");
+		assertThat(result).containsPattern("startlevel: notified reached final level 12");
 	}
 
 	@Test

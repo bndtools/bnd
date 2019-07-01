@@ -166,6 +166,10 @@ public class Link<L, R> extends Thread implements Closeable {
 			remote = (R) Proxy.newProxyInstance(remoteClass.getClassLoader(), new Class<?>[] {
 				remoteClass
 			}, (target, method, args) -> {
+
+				if (quit.get())
+					throw new IllegalStateException("Already closed");
+
 				Object hash = new Object();
 
 				try {
@@ -181,7 +185,7 @@ public class Link<L, R> extends Thread implements Closeable {
 						}
 					} catch (Exception e1) {
 						terminate(e1);
-						return null;
+						throw e1;
 					}
 
 					return waitForResult(msgId, method.getGenericReturnType());
@@ -547,7 +551,7 @@ public class Link<L, R> extends Thread implements Closeable {
 					});
 				} catch (Exception e) {
 					terminate(e);
-					return;
+					throw e;
 				}
 			} catch (Throwable t) {
 				t = Exceptions.unrollCause(t, InvocationTargetException.class);
@@ -558,7 +562,7 @@ public class Link<L, R> extends Thread implements Closeable {
 					});
 				} catch (Exception e) {
 					terminate(e);
-					return;
+					throw e;
 				}
 			}
 		}
