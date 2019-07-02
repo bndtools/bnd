@@ -1,3 +1,6 @@
+variables:
+  GRADLE_OPTS: -Dorg.gradle.parallel=true
+
 jobs:
 
 - job: OpenJDK8
