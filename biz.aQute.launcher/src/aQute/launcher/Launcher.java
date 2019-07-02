@@ -254,6 +254,7 @@ public class Launcher implements ServiceListener {
 			if (v != null)
 				properties.put(key, v);
 		}
+
 	}
 
 	/*
@@ -318,6 +319,9 @@ public class Launcher implements ServiceListener {
 
 	private int launch(String args[]) throws Throwable {
 		try {
+
+			System.getProperties()
+				.putAll(this.properties);
 
 			this.parms = new LauncherConstants(properties);
 			this.startLevelhandler = StartLevelHandler.create(this, properties, parms.startlevels);
