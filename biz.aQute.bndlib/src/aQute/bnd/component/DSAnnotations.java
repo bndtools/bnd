@@ -3,6 +3,7 @@ package aQute.bnd.component;
 import static aQute.bnd.component.DSAnnotationReader.V1_0;
 import static aQute.bnd.component.DSAnnotationReader.V1_3;
 import static aQute.bnd.component.DSAnnotationReader.VMAX;
+import static aQute.lib.strings.Strings.joining;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
@@ -28,7 +29,8 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Descriptors.PackageRef;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Processor;
@@ -179,15 +181,8 @@ public class DSAnnotations implements AnalyzerPlugin {
 					analyzer.getJar()
 						.putResource(path, new TagResource(definition.getTag()));
 
-					if (definition.service != null && !options.contains(Options.nocapabilities)) {
-						String[] objectClass = new String[definition.service.length];
-
-						for (int i = 0; i < definition.service.length; i++) {
-							Descriptors.TypeRef tr = definition.service[i];
-							objectClass[i] = tr.getFQN();
-						}
-						Arrays.sort(objectClass);
-						addServiceCapability(objectClass, provides);
+					if (!options.contains(Options.nocapabilities)) {
+						addServiceCapability(definition.service, provides);
 					}
 
 					if (!options.contains(Options.norequirements)) {
@@ -278,22 +273,32 @@ public class DSAnnotations implements AnalyzerPlugin {
 		return actual;
 	}
 
-	private void addServiceCapability(String[] objectClass, Set<String> provides) {
-		if (objectClass.length > 0) {
-			Parameters p = new Parameters();
-			Attrs a = new Attrs();
-			StringBuilder sb = new StringBuilder();
-			String sep = "";
-			for (String oc : objectClass) {
-				sb.append(sep)
-					.append(oc);
-				sep = ",";
-			}
-			a.put("objectClass:List<String>", sb.toString());
-			p.put("osgi.service", a);
-			String s = p.toString();
-			provides.add(s);
+	private void addServiceCapability(TypeRef[] services, Set<String> provides) {
+		if (services == null) {
+			return;
 		}
+		String objectClass = Arrays.stream(services)
+			.map(TypeRef::getFQN)
+			.sorted()
+			.collect(joining());
+		if (objectClass.isEmpty()) {
+			return;
+		}
+		Attrs a = new Attrs();
+		a.put(ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE + ":List<String>", objectClass);
+		String uses = Arrays.stream(services)
+			.map(TypeRef::getPackageRef)
+			.filter(pkg -> !pkg.isJava() && !pkg.isMetaData())
+			.map(PackageRef::getFQN)
+			.sorted()
+			.collect(joining());
+		if (!uses.isEmpty()) {
+			a.put(Constants.USES_DIRECTIVE, uses);
+		}
+		Parameters p = new Parameters();
+		p.put(ServiceNamespace.SERVICE_NAMESPACE, a);
+		String s = p.toString();
+		provides.add(s);
 	}
 
 	private void addServiceRequirement(ReferenceDef ref, MergedRequirement requires) {
