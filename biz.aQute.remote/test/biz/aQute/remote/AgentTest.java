@@ -1,7 +1,10 @@
 package biz.aQute.remote;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.net.ConnectException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,18 +38,17 @@ public class AgentTest extends TestCase {
 	private File			t1;
 	private File			t2;
 	private File			t3;
-	private File			t4;
 	private TestSupervisor	supervisor;
 
 	@Override
 	protected void setUp() throws Exception {
 		tmp = IO.getFile("generated/tmp");
+		IO.delete(tmp);
 		tmp.mkdirs();
 
 		t1 = create("bsn-1", new Version(1, 0, 0));
 		t2 = create("bsn-2", new Version(2, 0, 0));
 		t3 = create("bsn-3", new Version(3, 0, 0));
-		t4 = create("bsn-4", new Version(4, 0, 0));
 
 		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(FrameworkFactory.class, this.getClass()
 			.getClassLoader());
@@ -74,7 +76,7 @@ public class AgentTest extends TestCase {
 			.toString();
 		agent = context.installBundle(location);
 		agent.start();
-
+		System.out.println(Arrays.toString(context.getBundles()));
 		supervisor = new TestSupervisor();
 		supervisor.connect("localhost", Agent.DEFAULT_PORT);
 
@@ -127,6 +129,17 @@ public class AgentTest extends TestCase {
 		String sha = supervisor.addFile(t3);
 		BundleDTO bundle = supervisor.getAgent()
 			.install(t3.getAbsolutePath(), sha);
+
+		assertNotNull(bundle);
+		assertEquals(4, bundle.id);
+		assertEquals("bsn-3", bundle.symbolicName);
+		assertEquals("3.0.0", bundle.version);
+	}
+
+	public void testAgentInstallBundleWithData() throws Exception {
+		byte[] t3data = IO.read(t3);
+		BundleDTO bundle = supervisor.getAgent()
+			.installWithData(t3.getAbsolutePath(), t3data);
 
 		assertNotNull(bundle);
 		assertEquals(4, bundle.id);
@@ -242,56 +255,31 @@ public class AgentTest extends TestCase {
 		} catch (IllegalArgumentException e) {}
 	}
 
-	public void testAgentInstallBundleSinceNoExistingBundleMathcesBsnAndVersion() throws Exception {
-		BundleDTO bundle = supervisor.getAgent()
-			.install(t4.getAbsolutePath(), IO.read(t4));
-
-		assertNotNull(bundle);
-		assertEquals(4, bundle.id);
-		assertEquals("bsn-4", bundle.symbolicName);
-		assertEquals("4.0.0", bundle.version);
-	}
-
-	public void testAgentUpdateBundleSinceBsnAndVersionMatchFound() throws Exception {
-		BundleDTO t4Bundle = supervisor.getAgent()
-			.getBundles(4)
-			.get(0);
-
-		long previousModified = t4Bundle.lastModified;
-
-		File t3prime = create("bsn-4", new Version(4, 0, 1));
-
-		assertNotNull(supervisor.getAgent()
-			.install(t4.getAbsolutePath(), IO.read(t4)));
-
-		t4Bundle = supervisor.getAgent()
-			.getBundles(4)
-			.get(0);
-
-		assertTrue(previousModified != t4Bundle.lastModified);
-	}
-
 	/**
 	 * Launches against main
 	 */
 	private File create(String bsn, Version v) throws Exception {
 		String name = bsn + "-" + v;
-		Builder b = new Builder();
-		b.setBundleSymbolicName(bsn);
-		b.setBundleVersion(v);
-		b.setProperty("Random", random++ + "");
-		b.setProperty("-resourceonly", true + "");
-		b.setIncludeResource("foo;literal='foo'");
-		Jar jar = b.build();
-		assertTrue(b.check());
+		try (Builder b = new Builder()) {
+			b.setBundleSymbolicName(bsn);
+			b.setBundleVersion(v);
+			b.setProperty("Random", random++ + "");
+			b.setProperty("-resourceonly", true + "");
+			b.setIncludeResource("foo;literal='foo'");
+			Jar jar = b.build();
+			assertTrue(b.check());
 
-		File file = IO.getFile(tmp, name + ".jar");
-		file.getParentFile()
-			.mkdirs();
-		jar.updateModified(System.currentTimeMillis(), "Force it to now");
-		jar.write(file);
-		b.close();
-		return file;
+			File file = IO.getFile(tmp, name + ".jar");
+			file.getParentFile()
+				.mkdirs();
+			jar.updateModified(System.currentTimeMillis(), "Force it to now");
+			jar.write(file);
+			jar.close();
+
+			assertThat(file).isFile()
+				.canRead();
+			return file;
+		}
 	}
 
 	static class TestSupervisor extends AgentSupervisor<Supervisor, Agent> implements Supervisor {

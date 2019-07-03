@@ -221,7 +221,7 @@ class RemoteCommand extends Processor {
 			error("Error occurred while parsing the location identifier");
 			return;
 		}
-		BundleDTO dto = agent.install(location, data);
+		BundleDTO dto = agent.installWithData(location, data);
 		bnd.out.println(dto);
 	}
 

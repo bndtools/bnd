@@ -120,7 +120,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	}
 
 	@Override
-	public BundleDTO install(String location, byte[] data) throws Exception {
+	public BundleDTO installWithData(String location, byte[] data) throws Exception {
 		Bundle installedBundle = null;
 		try (InputStream stream = new ByteArrayInputStream(data)) {
 			installedBundle = context.getBundle(location);
@@ -658,6 +658,8 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			bundles = new Bundle[bundleId.length];
 			for (int i = 0; i < bundleId.length; i++) {
 				bundles[i] = context.getBundle(bundleId[i]);
+				if (bundles[i] == null)
+					throw new IllegalArgumentException("No such bundle " + bundleId[i]);
 			}
 		}
 

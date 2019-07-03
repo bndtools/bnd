@@ -10,9 +10,13 @@ aQute.agent.server.port = 29998
 	osgi.core;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
-	biz.aQute.junit;version=latest,\
-	org.apache.felix.framework;version=latest;packages=*,\
-	org.apache.felix.gogo.runtime;version=latest
+    org.apache.felix.gogo.runtime;version=latest
+
+-testpath: \
+    ${junit},\
+    slf4j.api;version=latest, \
+    slf4j.simple;version=latest,\
+    org.apache.felix.framework;version=latest;packages=*
 
 -sub: *.bnd
 
@@ -25,12 +29,6 @@ aQute.agent.server.port = 29998
 	aQute.configurable.*,\
 	aQute.service.reporter,\
 	aQute.bnd.util.*
-
-#
-# TODO Some tests were hanging on Travis. They ran fine on the mac
-# likely network issues.
-#
--nojunit: true
 
 -builderignore: testdata
 
