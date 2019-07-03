@@ -353,6 +353,11 @@ public abstract class ProjectLauncher extends Processor {
 		getProject().refresh();
 	}
 
+	@Override
+	public String getJavaExecutable(String java) {
+		return getProject().getJavaExecutable(java);
+	}
+
 	public int launch() throws Exception {
 		prepare();
 		java = new Command();
@@ -366,9 +371,8 @@ public abstract class ProjectLauncher extends Processor {
 			java.var(e.getKey(), e.getValue());
 		}
 
-		java.add(getJavaExecutable());
-		String javaagent = project.getProperty(Constants.JAVAAGENT);
-		if (Processor.isTrue(javaagent)) {
+		java.add(getJavaExecutable("java"));
+		if (getProject().is(Constants.JAVAAGENT)) {
 			for (String agent : agents) {
 				java.add("-javaagent:" + agent);
 			}
@@ -413,27 +417,6 @@ public abstract class ProjectLauncher extends Processor {
 			cleanup();
 			listeners.clear();
 		}
-	}
-
-	private String getJavaExecutable() {
-		String javaExecutable = project.getProperty("java");
-		String javaExecutableDeflt = getJavaExecutable0();
-		if ((javaExecutable == null) || "java".equals(javaExecutable) && (javaExecutableDeflt != null)) {
-			javaExecutable = javaExecutableDeflt;
-		}
-		return javaExecutable;
-	}
-
-	private String getJavaExecutable0() {
-		String javaHome = System.getenv("JAVA_HOME");
-		if (javaHome == null) {
-			javaHome = System.getProperty("java.home");
-			if (javaHome == null) {
-				return null;
-			}
-		}
-		File java = new File(javaHome, "bin/java");
-		return IO.absolutePath(java);
 	}
 
 	/**

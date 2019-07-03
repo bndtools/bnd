@@ -3,6 +3,7 @@ package aQute.bnd.osgi;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.lang.invoke.MethodType.methodType;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 import java.io.Closeable;
@@ -2911,5 +2912,29 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			allowFail = true;
 		}
 		return system(allowFail, command, null);
+	}
+
+	public String getJavaExecutable(String java) {
+		String path = getProperty(requireNonNull(java));
+		if ((path == null) || path.equals(java)) {
+			return getJavaHomeExecutable(java);
+		}
+		return path;
+	}
+
+	private static String getJavaHomeExecutable(String java) {
+		String command = "bin/" + java;
+		File executable = new File(IO.JAVA_HOME, command);
+		if (executable.exists()) {
+			return IO.absolutePath(executable);
+		}
+		if (IO.JAVA_HOME.getName()
+			.equals("jre")) {
+			executable = new File(IO.JAVA_HOME.getParentFile(), command);
+		}
+		if (executable.exists()) {
+			return IO.absolutePath(executable);
+		}
+		return java;
 	}
 }

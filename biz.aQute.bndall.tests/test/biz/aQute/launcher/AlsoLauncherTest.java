@@ -174,8 +174,7 @@ public class AlsoLauncherTest {
 				System.out.println();
 
 				Command cmd = new Command();
-				String java = System.getProperty("java", "java");
-				cmd.add(java);
+				cmd.add(l.getJavaExecutable("java"));
 				cmd.add("-jar");
 				cmd.add(tmp.getAbsolutePath());
 
@@ -522,9 +521,6 @@ public class AlsoLauncherTest {
 	/**
 	 * The properties file is an implementation detail ... so this is white box
 	 * testing.
-	 *
-	 * @param project
-	 * @throws Exception
 	 */
 	private void assertNoProperties(File target) throws Exception {
 		if (!target.exists())

@@ -60,6 +60,7 @@ public class IO {
 	static final public File							work					= new File(
 		System.getProperty("user.dir"));
 	static final public File							home;
+	static final public File							JAVA_HOME;
 	private static final EnumSet<StandardOpenOption>	writeOptions			= EnumSet.of(StandardOpenOption.WRITE,
 		StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 	private static final EnumSet<StandardOpenOption>	readOptions				= EnumSet.of(StandardOpenOption.READ);
@@ -67,6 +68,7 @@ public class IO {
 	static {
 		EnvironmentCalculator hc = new EnvironmentCalculator(isWindows);
 		home = hc.getHome();
+		JAVA_HOME = hc.getJavaHome();
 	}
 
 	public static String getExtension(String fileName, String deflt) {
@@ -1315,37 +1317,32 @@ public class IO {
 			return getSystemEnv(key, null);
 		}
 
-		String getSystemEnv(String key, Set<String> visited) {
-
+		private String getSystemEnv(String key, Set<String> visited) {
 			String value = getenv(key);
 			if (value == null || !iswindows) {
 				return value;
 			}
 			if (visited == null) {
 				visited = new HashSet<>();
-			} else if (visited.contains(key))
+			}
+			if (!visited.add(key)) {
 				return key;
+			}
 
-			visited.add(key);
-
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			Matcher matcher = WINDOWS_MACROS.matcher(value);
-			int append = 0;
-			while (matcher.find(append)) {
+			int start = 0;
+			while (matcher.find(start)) {
 				String name = matcher.group(1);
 				String replacement = getSystemEnv(name, visited);
-				while (append < matcher.start()) {
-					sb.append(value.charAt(append));
-					append++;
-				}
-				sb.append(replacement);
-				append = matcher.end();
+				sb.append(value, start, matcher.start())
+					.append(replacement);
+				start = matcher.end();
 			}
-			while (append < value.length()) {
-				sb.append(value.charAt(append));
-				append++;
+			if (start == 0) {
+				return value;
 			}
-
+			sb.append(value, start, value.length());
 			return sb.toString();
 		}
 
@@ -1354,21 +1351,28 @@ public class IO {
 		}
 
 		File getHome() {
-			File tmp = testFile(getSystemEnv("HOME"));
-
-			if (tmp == null || !tmp.isDirectory()) {
-				tmp = testFile(System.getProperty("user.home"));
+			File home = testFile(getSystemEnv("HOME"));
+			if ((home == null) || !home.isDirectory()) {
+				home = testFile(System.getProperty("user.home"));
 			}
-			assert tmp != null;
-			return tmp;
+			assert home != null;
+			return home;
 		}
 
-		File testFile(String path) {
+		File getJavaHome() {
+			File javaHome = testFile(getSystemEnv("JAVA_HOME"));
+			if ((javaHome == null) || !javaHome.isDirectory()) {
+				javaHome = testFile(System.getProperty("java.home"));
+			}
+			assert javaHome != null;
+			return javaHome;
+		}
+
+		private File testFile(String path) {
 			if (path == null)
 				return null;
 
 			return new File(path);
 		}
-
 	}
 }

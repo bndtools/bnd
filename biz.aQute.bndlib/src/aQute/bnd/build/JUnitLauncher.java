@@ -61,7 +61,7 @@ public class JUnitLauncher extends ProjectLauncher {
 	@Override
 	public int launch() throws Exception {
 		java = new Command();
-		java.add(project.getProperty("java", "java"));
+		java.add(getJavaExecutable("java"));
 
 		java.add("-cp");
 		java.add(cp.toString());
