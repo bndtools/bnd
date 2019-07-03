@@ -65,6 +65,7 @@ public class AlsoLauncherTest {
 			IO.copy(new File("..", folder), tgt);
 			IO.delete(new File(tgt, "generated/buildfiles"));
 		}
+		IO.delete(new File(wsRoot, "cnf/cache"));
 		workspace = new Workspace(wsRoot);
 		project = workspace.getProject("demo");
 		project.setTrace(true);

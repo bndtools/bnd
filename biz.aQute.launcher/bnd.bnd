@@ -14,6 +14,7 @@
 	slf4j.simple;version=latest
 
 Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
+Timestamp: ${_@tstamp}
 
 -conditionalpackage: aQute.lib*
 -includepackage: \

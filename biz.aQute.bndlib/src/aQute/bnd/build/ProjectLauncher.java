@@ -5,11 +5,13 @@ import static aQute.lib.exceptions.FunctionWithException.asFunction;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,7 +19,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Manifest;
@@ -53,13 +54,13 @@ public abstract class ProjectLauncher extends Processor {
 	public static final String			EMBEDDED_RUNPATH	= "Embedded-Runpath";
 	public static final String			LAUNCHER_CLASS		= "aQute.launcher.Launcher";
 	public static final String			LAUNCHER_PATH		= "launcher.runpath";
-	public static final String			preJar				= "pre.jar";
+	static final String					PRE_JAR				= "pre.jar";
 
 	private final static Logger			logger				= LoggerFactory.getLogger(ProjectLauncher.class);
 	private final Project				project;
 	private long						timeout				= 0;
-	private final List<String>			launcherpath		= new ArrayList<>();
-	private final List<String>			classpath			= new ArrayList<>();
+	private final List<String>			classpath		= new ArrayList<>();
+	private final List<String>			runpath			= new ArrayList<>();
 	private List<String>				runbundles			= Create.list();
 	private List<Integer>				startlevels			= Create.list();
 	private final List<String>			runvm				= new ArrayList<>();
@@ -99,41 +100,7 @@ public abstract class ProjectLauncher extends Processor {
 
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
-
 		updateFromProject();
-
-		Optional<Jar> launcher = project.getBundles(Strategy.HIGHEST, Constants.DEFAULT_LAUNCHER_BSN, null)
-			.stream()
-			.findFirst()
-			.map(Container::getFile)
-			.filter(File::exists)
-			.map(asFunction(Jar::new));
-
-		if (launcher.isPresent()) {
-			Optional<Resource> embeddedPreJar = launcher.map(jar -> jar.getResource(preJar));
-
-			Version version = new Version(launcher.get()
-				.getVersion());
-			String prePath = "bnd-cache/" + Constants.DEFAULT_LAUNCHER_BSN + ".pre/" + Constants.DEFAULT_LAUNCHER_BSN
-				+ ".pre-" + version.getWithoutQualifier() + ".jar";
-
-			File cachedPre = this.project.getWorkspace()
-				.getCache(prePath);
-
-			embeddedPreJar.ifPresent(asConsumer(embeddedPre -> {
-				if (cachedPre.exists() && embeddedPre.lastModified() > cachedPre.lastModified()) {
-					Files.copy(embeddedPre.openInputStream(), cachedPre.toPath(), StandardCopyOption.REPLACE_EXISTING);
-					cachedPre.setLastModified(embeddedPre.lastModified());
-				} else if (!cachedPre.exists()) {
-					cachedPre.getParentFile()
-						.mkdirs();
-					Files.copy(embeddedPre.openInputStream(), cachedPre.toPath());
-					cachedPre.setLastModified(embeddedPre.lastModified());
-				}
-			}));
-
-			addClasspath(new Container(project, cachedPre), launcherpath);
-		}
 	}
 
 	/**
@@ -143,13 +110,57 @@ public abstract class ProjectLauncher extends Processor {
 	 * @throws Exception
 	 */
 	protected void updateFromProject() throws Exception {
-		setCwd(project.getBase());
+		setCwd(getProject().getBase());
 
 		// pkr: could not use this because this is killing the runtests.
-		// project.refresh();
+		// getProject().refresh();
 		runbundles.clear();
 		startlevels.clear();
-		Collection<Container> run = project.getRunbundles();
+
+		getProject().getBundles(Strategy.HIGHEST, Constants.DEFAULT_LAUNCHER_BSN, null)
+			.stream()
+			.map(Container::getFile)
+			.filter(File::exists)
+			.findFirst()
+			.ifPresent(asConsumer(file -> {
+				try (Jar jar = new Jar(file)) {
+					Resource embeddedPre = jar.getResource(PRE_JAR);
+					if (embeddedPre == null) {
+						return;
+					}
+					FileTime modifiedTime = FileTime.fromMillis(System.currentTimeMillis());
+					Manifest manifest = jar.getManifest();
+					if (manifest != null) {
+						String timestamp = manifest.getMainAttributes()
+							.getValue("Timestamp");
+						if (timestamp != null) {
+							// truncate to seconds since file system can discard
+							// milliseconds
+							long seconds = TimeUnit.MILLISECONDS.toSeconds(Long.parseLong(timestamp));
+							modifiedTime = FileTime.from(seconds, TimeUnit.SECONDS);
+						}
+					}
+					String version = new Version(jar.getVersion()).getWithoutQualifier()
+						.toString();
+					String prePath = "cache/" + version + "/" + Workspace.BND_CACHE_REPONAME + "/"
+						+ Constants.DEFAULT_LAUNCHER_BSN + ".pre/" + Constants.DEFAULT_LAUNCHER_BSN + ".pre-" + version
+						+ ".jar";
+					Path cachedPre = new File(getProject().getWorkspace()
+						.getBuildDir(), prePath)
+						.toPath();
+					if (!Files.isRegularFile(cachedPre) || Files.getLastModifiedTime(cachedPre)
+						.compareTo(modifiedTime) < 0) {
+						IO.mkdirs(cachedPre.getParent());
+						try (OutputStream out = IO.outputStream(cachedPre)) {
+							embeddedPre.write(out);
+						}
+						Files.setLastModifiedTime(cachedPre, modifiedTime);
+					}
+					addClasspath(new Container(getProject(), cachedPre.toFile()), classpath);
+				}
+			}));
+
+		Collection<Container> run = getProject().getRunbundles();
 
 		for (Container container : run) {
 			File file = container.getFile();
@@ -159,26 +170,27 @@ public abstract class ProjectLauncher extends Processor {
 
 				doStartLevel(container, bundleIndex);
 			} else {
-				project.error("Bundle file \"%s\" does not exist, given error is %s", file, container.getError());
+				getProject().error("Bundle file \"%s\" does not exist, given error is %s", file, container.getError());
 			}
 		}
 
-		if (project.getRunBuilds()) {
-			File[] builds = project.getBuildFiles(true);
+		if (getProject().getRunBuilds()) {
+			File[] builds = getProject().getBuildFiles(true);
 			if (builds != null)
 				for (File file : builds)
 					runbundles.add(IO.absolutePath(file));
 		}
 
-		Collection<Container> runpath = project.getRunpath();
-		runsystempackages = new Parameters(project.mergeProperties(Constants.RUNSYSTEMPACKAGES), project);
-		runsystemcapabilities = new Parameters(project.mergeProperties(Constants.RUNSYSTEMCAPABILITIES), project);
-		framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
+		Collection<Container> runpath = getProject().getRunpath();
+		runsystempackages = new Parameters(getProject().mergeProperties(Constants.RUNSYSTEMPACKAGES), getProject());
+		runsystemcapabilities = new Parameters(getProject().mergeProperties(Constants.RUNSYSTEMCAPABILITIES),
+			getProject());
+		framework = getRunframework(getProject().getProperty(Constants.RUNFRAMEWORK));
 
-		timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT), 0);
-		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
+		timeout = Processor.getDuration(getProject().getProperty(Constants.RUNTIMEOUT), 0);
+		trace = Processor.isTrue(getProject().getProperty(Constants.RUNTRACE));
 
-		runpath.addAll(project.getRunFw());
+		runpath.addAll(getProject().getRunFw());
 
 		// Detect if there's a launcher on the runpath
 		try (URLClassLoader findLauncherClassLoader = new URLClassLoader(runpath.stream()
@@ -200,13 +212,13 @@ public abstract class ProjectLauncher extends Processor {
 			addClasspath(c);
 		}
 
-		runvm.addAll(project.getRunVM());
-		runprogramargs.addAll(project.getRunProgramArgs());
-		runproperties = project.getRunProperties();
+		runvm.addAll(getProject().getRunVM());
+		runprogramargs.addAll(getProject().getRunProgramArgs());
+		runproperties = getProject().getRunProperties();
 
-		storageDir = project.getRunStorage();
+		storageDir = getProject().getRunStorage();
 
-		setKeep(project.getRunKeep());
+		setKeep(getProject().getRunKeep());
 	}
 
 	private void doStartLevel(Container container, int bundleIndex) {
@@ -215,11 +227,11 @@ public abstract class ProjectLauncher extends Processor {
 			String startlevel = attributes.get(Constants.RUNBUNDLES_STARTLEVEL_ATTRIBUTE);
 			if (startlevel != null) {
 				if (!Verifier.isNumber(startlevel)) {
-					project.error("Startlevel on %s is not a number but %s", container, startlevel);
+					getProject().error("Startlevel on %s is not a number but %s", container, startlevel);
 				} else {
 					int sl = Integer.parseInt(startlevel);
 					if (sl < 1) {
-						project.error("Startlevel on %s is less than 1: %s", container, startlevel);
+						getProject().error("Startlevel on %s is less than 1: %s", container, startlevel);
 					} else {
 						while (startlevels.size() <= bundleIndex)
 							startlevels.add(-1);
@@ -241,12 +253,13 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	public void addClasspath(Container container) throws Exception {
-		addClasspath(container, classpath);
+		addClasspath(container, runpath);
 	}
 
 	private void addClasspath(Container container, List<String> pathlist) throws Exception {
 		if (container.getError() != null) {
-			project.error("Cannot launch because %s has reported %s", container.getProject(), container.getError());
+			getProject().error("Cannot launch because %s has reported %s", container.getProject(),
+				container.getError());
 		} else {
 			Collection<Container> members = container.getMembers();
 			for (Container m : members) {
@@ -271,7 +284,7 @@ public abstract class ProjectLauncher extends Processor {
 							agents.add(agent);
 						}
 
-						Parameters exports = project.parseHeader(manifest.getMainAttributes()
+						Parameters exports = getProject().parseHeader(manifest.getMainAttributes()
 							.getValue(Constants.EXPORT_PACKAGE));
 						for (Entry<String, Attrs> e : exports.entrySet()) {
 							if (!runsystempackages.containsKey(e.getKey()))
@@ -317,11 +330,11 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	public List<String> getRunpath() {
-		return classpath;
+		return runpath;
 	}
 
 	public Collection<String> getClasspath() {
-		return launcherpath;
+		return classpath;
 	}
 
 	public Collection<String> getRunVM() {
@@ -394,7 +407,7 @@ public abstract class ProjectLauncher extends Processor {
 		java.addAll(split(System.getenv("JAVA_OPTS"), "\\s+"));
 
 		java.add("-cp");
-		java.add(Processor.join(getClasspath(), File.pathSeparator));
+		java.add(join(getClasspath(), File.pathSeparator));
 		java.addAll(getRunVM());
 		java.add(getMainTypeName());
 		java.addAll(getRunProgramArgs());
@@ -488,18 +501,18 @@ public abstract class ProjectLauncher extends Processor {
 				logger.debug("Command terminated normal {}", java);
 				break;
 			case TIMEDOUT :
-				project.error("Launch timedout: %s", java);
+				getProject().error("Launch timedout: %s", java);
 				break;
 
 			case ERROR :
-				project.error("Launch errored: %s", java);
+				getProject().error("Launch errored: %s", java);
 				break;
 
 			case WARNING :
-				project.warning("Launch had a warning %s", java);
+				getProject().warning("Launch had a warning %s", java);
 				break;
 			default :
-				project.error("Exit code remote process %d: %s", result, java);
+				getProject().error("Exit code remote process %d: %s", result, java);
 				break;
 		}
 	}
@@ -590,7 +603,7 @@ public abstract class ProjectLauncher extends Processor {
 	 * @param defaultSpec The default spec for default jars
 	 */
 	public void addDefault(String defaultSpec) throws Exception {
-		Collection<Container> deflts = project.getBundles(Strategy.HIGHEST, defaultSpec, null);
+		Collection<Container> deflts = getProject().getBundles(Strategy.HIGHEST, defaultSpec, null);
 		for (Container c : deflts)
 			addClasspath(c);
 	}
@@ -612,11 +625,11 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	public String getRunJdb() {
-		return project.getProperty(Constants.RUNJDB);
+		return getProject().getProperty(Constants.RUNJDB);
 	}
 
 	public Map<String, String> getRunEnv() {
-		String runenv = project.getProperty(Constants.RUNENV);
+		String runenv = getProject().getProperty(Constants.RUNENV);
 		if (runenv != null) {
 			return OSGiHeader.parseProperties(runenv);
 		}
