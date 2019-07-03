@@ -29,6 +29,7 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
@@ -285,6 +286,15 @@ public class DSAnnotations implements AnalyzerPlugin {
 		}
 		Attrs a = new Attrs();
 		a.put(ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE + ":List<String>", objectClass);
+		String uses = Arrays.stream(services)
+			.map(TypeRef::getPackageRef)
+			.filter(pkg -> !pkg.isJava() && !pkg.isMetaData())
+			.map(PackageRef::getFQN)
+			.sorted()
+			.collect(joining());
+		if (!uses.isEmpty()) {
+			a.put(Constants.USES_DIRECTIVE, uses);
+		}
 		Parameters p = new Parameters();
 		p.put(ServiceNamespace.SERVICE_NAMESPACE, a);
 		String s = p.toString();
