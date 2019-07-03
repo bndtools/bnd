@@ -136,6 +136,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		if (prepared)
 			return;
 		prepared = true;
+		super.prepare();
 		writeProperties();
 	}
 

@@ -32,6 +32,7 @@ public class JUnitLauncher extends ProjectLauncher {
 	@Override
 	public void prepare() throws Exception {
 		Pattern tests = Pattern.compile(project.getProperty(Constants.TESTSOURCES, "(.*).java"));
+		super.prepare();
 
 		String testDirName = project.getProperty("testsrc", "test");
 		File testSrc = project.getFile(testDirName)

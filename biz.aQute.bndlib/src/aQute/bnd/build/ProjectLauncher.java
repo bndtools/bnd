@@ -568,7 +568,9 @@ public abstract class ProjectLauncher extends Processor {
 	 *
 	 * @throws Exception
 	 */
-	public abstract void prepare() throws Exception;
+	public void prepare() throws Exception {
+		// noop
+	}
 
 	public Project getProject() {
 		return project;
