@@ -23,7 +23,7 @@ public class InstructionTest extends TestCase {
 	public void testDecorate() {
 		Instructions instrs = new Instructions("a;x=1,b*;y=2, literal;n=1, foo.com.example.bar;startlevel=10");
 		Parameters params = new Parameters("foo.com.example.bar;version=1, a;v=0, bbb;v=1");
-		instrs.decorate(params);
+		instrs.decorate(params, true);
 		System.out.println(params);
 		assertThat(params.get("a")).isNotNull()
 			.containsEntry("v", "0")
