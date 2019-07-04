@@ -17,7 +17,6 @@ import aQute.libg.command.Command;
 public class JUnitLauncher extends ProjectLauncher {
 	private final static Logger	logger	= LoggerFactory.getLogger(JUnitLauncher.class);
 	boolean						junit4Main;
-	final Project				project;
 	private Classpath			cp;
 	private Command				java;
 	private long				timeout;
@@ -26,15 +25,15 @@ public class JUnitLauncher extends ProjectLauncher {
 
 	public JUnitLauncher(Project project) throws Exception {
 		super(project);
-		this.project = project;
 	}
 
 	@Override
 	public void prepare() throws Exception {
-		Pattern tests = Pattern.compile(project.getProperty(Constants.TESTSOURCES, "(.*).java"));
+		super.prepare();
+		Pattern tests = Pattern.compile(getProject().getProperty(Constants.TESTSOURCES, "(.*).java"));
 
-		String testDirName = project.getProperty("testsrc", "test");
-		File testSrc = project.getFile(testDirName)
+		String testDirName = getProject().getProperty("testsrc", "test");
+		File testSrc = getProject().getFile(testDirName)
 			.getAbsoluteFile();
 		if (!testSrc.isDirectory()) {
 			logger.debug("no test src directory");
@@ -46,25 +45,26 @@ public class JUnitLauncher extends ProjectLauncher {
 			return;
 		}
 
-		timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT), 0);
-		// trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
-		cp = new Classpath(project, "junit");
-		addClasspath(project.getTestpath());
-		File output = project.getOutput();
+		timeout = Processor.getDuration(getProject().getProperty(Constants.RUNTIMEOUT), 0);
+		// trace =
+		// Processor.isTrue(getProject().getProperty(Constants.RUNTRACE));
+		cp = new Classpath(getProject(), "junit");
+		addClasspath(getProject().getTestpath());
+		File output = getProject().getOutput();
 		if (output.exists()) {
-			addClasspath(new Container(project, output));
+			addClasspath(new Container(getProject(), output));
 		}
-		addClasspath(project.getBuildpath());
+		addClasspath(getProject().getBuildpath());
 	}
 
 	@Override
 	public int launch() throws Exception {
 		java = new Command();
-		java.add(project.getProperty("java", "java"));
+		java.add(getJavaExecutable("java"));
 
 		java.add("-cp");
 		java.add(cp.toString());
-		java.addAll(project.getRunVM());
+		java.addAll(getProject().getRunVM());
 		java.add(getMainTypeName());
 		java.addAll(fqns);
 		if (timeout != 0)

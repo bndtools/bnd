@@ -92,6 +92,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 			return;
 
 		prepared = true;
+		super.prepare();
 
 		updateFromProject();
 

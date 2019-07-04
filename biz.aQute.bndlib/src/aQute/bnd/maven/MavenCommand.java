@@ -430,7 +430,7 @@ public class MavenCommand extends Processor {
 		IO.mkdirs(tmp);
 
 		Command command = new Command();
-		command.add(getProperty("javadoc", "javadoc"));
+		command.add(getJavaExecutable("javadoc"));
 		command.add("-quiet");
 		command.add("-protected");
 		// command.add("-classpath");

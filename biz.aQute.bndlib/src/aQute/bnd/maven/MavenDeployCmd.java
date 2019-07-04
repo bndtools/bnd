@@ -191,7 +191,7 @@ public class MavenDeployCmd extends Processor {
 	private Jar javadoc(File tmp, Project b, Set<String> exports) throws Exception {
 		Command command = new Command();
 
-		command.add(b.getProperty("javadoc", "javadoc"));
+		command.add(b.getJavaExecutable("javadoc"));
 		command.add("-d");
 		command.add(IO.absolutePath(tmp));
 		command.add("-sourcepath");

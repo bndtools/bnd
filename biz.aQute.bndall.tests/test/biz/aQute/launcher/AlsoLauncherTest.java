@@ -65,6 +65,7 @@ public class AlsoLauncherTest {
 			IO.copy(new File("..", folder), tgt);
 			IO.delete(new File(tgt, "generated/buildfiles"));
 		}
+		IO.delete(new File(wsRoot, "cnf/cache"));
 		workspace = new Workspace(wsRoot);
 		project = workspace.getProject("demo");
 		project.setTrace(true);
@@ -174,8 +175,7 @@ public class AlsoLauncherTest {
 				System.out.println();
 
 				Command cmd = new Command();
-				String java = System.getProperty("java", "java");
-				cmd.add(java);
+				cmd.add(l.getJavaExecutable("java"));
 				cmd.add("-jar");
 				cmd.add(tmp.getAbsolutePath());
 
@@ -522,9 +522,6 @@ public class AlsoLauncherTest {
 	/**
 	 * The properties file is an implementation detail ... so this is white box
 	 * testing.
-	 *
-	 * @param project
-	 * @throws Exception
 	 */
 	private void assertNoProperties(File target) throws Exception {
 		if (!target.exists())

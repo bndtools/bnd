@@ -158,7 +158,7 @@ public class Tool extends Processor {
 		}
 
 		Command command = new Command();
-		command.add(getProperty("javadoc", "javadoc"));
+		command.add(getJavaExecutable("javadoc"));
 		command.add("@" + fileName(javadocOptions));
 		StringBuilder out = new StringBuilder();
 		StringBuilder err = new StringBuilder();

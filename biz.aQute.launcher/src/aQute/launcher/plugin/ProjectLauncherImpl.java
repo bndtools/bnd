@@ -11,6 +11,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -136,6 +137,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		if (prepared)
 			return;
 		prepared = true;
+		super.prepare();
 		writeProperties();
 	}
 
@@ -178,11 +180,12 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 					while (!socket.isClosed()) {
 						try {
 							socket.receive(packet);
-							DataInput dai = ByteBufferDataInput.wrap(packet.getData(), packet.getOffset(),
+							ByteBuffer bb = ByteBuffer.wrap(packet.getData(), packet.getOffset(),
 								packet.getLength());
+							DataInput dai = ByteBufferDataInput.wrap(bb);
 							NotificationType type = NotificationType.values()[dai.readInt()];
 							String message = dai.readUTF();
-							if (type == NotificationType.ERROR) {
+							if ((type == NotificationType.ERROR) && bb.hasRemaining()) {
 								message += "\n" + dai.readUTF();
 							}
 							for (NotificationListener listener : getNotificationListeners()) {

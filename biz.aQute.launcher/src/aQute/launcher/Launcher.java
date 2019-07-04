@@ -10,7 +10,6 @@ import static java.lang.invoke.MethodType.methodType;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,7 +79,7 @@ import aQute.launcher.agent.LauncherAgent;
 import aQute.launcher.constants.LauncherConstants;
 import aQute.launcher.minifw.MiniFramework;
 import aQute.launcher.pre.EmbeddedLauncher;
-import aQute.lib.io.ByteBufferOutputStream;
+import aQute.lib.io.ByteBufferDataOutput;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 
@@ -1488,15 +1487,14 @@ public class Launcher implements ServiceListener {
 				return;
 			}
 
-			try (ByteBufferOutputStream outputStream = new ByteBufferOutputStream();
-				DataOutputStream dos = new DataOutputStream(outputStream)) {
+			try {
+				ByteBufferDataOutput dos = new ByteBufferDataOutput();
 				dos.writeInt(severity);
 				dos.writeUTF(message.substring(2));
 				if (e != null) {
 					dos.writeUTF(toString(e));
 				}
-
-				ByteBuffer bb = outputStream.toByteBuffer();
+				ByteBuffer bb = dos.toByteBuffer();
 				socket.send(new DatagramPacket(bb.array(), bb.arrayOffset(), bb.remaining()));
 			} catch (IOException ioe) {
 				out.println("! Unable to send notification to " + socket.getRemoteSocketAddress());

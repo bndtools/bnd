@@ -3150,7 +3150,7 @@ public class Project extends Processor {
 
 	private Command getCommonJavac(boolean test) throws Exception {
 		Command javac = new Command();
-		javac.add(getProperty("javac", "javac"));
+		javac.add(getJavaExecutable("javac"));
 		String target = getProperty("javac.target", "1.6");
 		String profile = getProperty("javac.profile", "");
 		String source = getProperty("javac.source", "1.6");
