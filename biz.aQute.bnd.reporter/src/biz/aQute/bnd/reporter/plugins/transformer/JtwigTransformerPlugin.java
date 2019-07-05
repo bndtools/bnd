@@ -1,5 +1,6 @@
 package biz.aQute.bnd.reporter.plugins.transformer;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
@@ -11,8 +12,10 @@ import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
 import org.jtwig.environment.EnvironmentConfigurationBuilder;
 import org.jtwig.resource.exceptions.ResourceNotFoundException;
+import org.jtwig.resource.loader.FileResourceLoader;
 import org.jtwig.resource.loader.ResourceLoader;
 import org.jtwig.resource.loader.TypedResourceLoader;
+import org.jtwig.resource.reference.ResourceReference;
 
 import com.google.common.base.Optional;
 
@@ -39,6 +42,12 @@ public class JtwigTransformerPlugin implements ReportTransformerPlugin {
 
 		final EnvironmentConfigurationBuilder eb = EnvironmentConfigurationBuilder.configuration();
 
+		eb.resources()
+			.resourceLoaders()
+			.add(new TypedResourceLoader("default", new DefaultResourceLoader()));
+		eb.resources()
+			.resourceLoaders()
+			.add(new TypedResourceLoader(ResourceReference.FILE, new FileResourceLoader(new File("."))));
 		eb.resources()
 			.resourceLoaders()
 			.add(new TypedResourceLoader("http", new HttpResourceLoader()));
@@ -138,6 +147,42 @@ public class JtwigTransformerPlugin implements ReportTransformerPlugin {
 			} catch (@SuppressWarnings("unused")
 			final MalformedURLException exception) {
 				return Optional.absent();
+			}
+		}
+	}
+
+	class DefaultResourceLoader implements ResourceLoader {
+
+		@SuppressWarnings("unused")
+		@Override
+		public boolean exists(final String path) {
+			if (path.startsWith("/")) {
+				return JtwigTransformerPlugin.class.getResource("templates" + path) != null;
+			} else {
+				return JtwigTransformerPlugin.class.getResource("templates/" + path) != null;
+			}
+		}
+
+		@Override
+		public Optional<Charset> getCharset(final String path) {
+			return Optional.absent();
+		}
+
+		@Override
+		public InputStream load(final String path) {
+			if (path.startsWith("/")) {
+				return JtwigTransformerPlugin.class.getResourceAsStream("templates" + path);
+			} else {
+				return JtwigTransformerPlugin.class.getResourceAsStream("templates/" + path);
+			}
+		}
+
+		@Override
+		public Optional<URL> toUrl(final String path) {
+			if (path.startsWith("/")) {
+				return Optional.of(JtwigTransformerPlugin.class.getResource("templates" + path));
+			} else {
+				return Optional.of(JtwigTransformerPlugin.class.getResource("templates/" + path));
 			}
 		}
 	}

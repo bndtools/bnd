@@ -96,6 +96,35 @@ public class ReportExporterTest extends TestCase {
 		assertTrue(processor.isOk());
 	}
 
+	public void testExportWithDefaultTemplate() throws Exception {
+		final Jar jar = new Jar("jar");
+		final Manifest manifest = new Manifest();
+		jar.setManifest(manifest);
+		manifest.getMainAttributes()
+			.putValue("Bundle-SymbolicName", "test");
+		final Processor processor = new Processor();
+
+		processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION,
+			"readme.md;template=default:readme.twig");
+
+		final Map<String, Resource> result = ReportExporterBuilder.create()
+			.setProcessor(processor)
+			.setGenerator(ReportGeneratorBuilder.create()
+				.addPlugin(ManifestPlugin.class.getCanonicalName())
+				.build())
+			.build()
+			.exportReportsOf(jar);
+
+		assertEquals(1, result.size());
+		assertTrue(new String(result.values()
+			.stream()
+			.findFirst()
+			.get()
+			.buffer()
+			.array()).startsWith("# test"));
+		assertTrue(processor.isOk());
+	}
+
 	public void testExportWithTemplateOverride() throws Exception {
 		final Jar jar = new Jar("jar");
 		final Manifest manifest = new Manifest();
