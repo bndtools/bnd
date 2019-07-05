@@ -812,9 +812,6 @@ public class Builder extends Analyzer {
 	/**
 	 * Analyze the classpath for a split package
 	 *
-	 * @param pack
-	 * @param classpath
-	 * @param source
 	 */
 	private String diagnostic(String pack, List<Jar> culprits) {
 		// Default is like merge-first, but with a warning
