@@ -85,7 +85,7 @@ public class Macro {
 	private final static String		LITERALVALUE	= "017a3ddbfc0fcd27bcdb2590cdb713a379ae59ef";
 	private final static Pattern	NUMERIC_P		= Pattern.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
 	private final static Pattern	PRINTF_P		= Pattern.compile(
-		"%(?:(\\d+)\\$)?(-|\\+|0|\\(|,|\\^|#| )*(\\d*)?(?:\\.(\\d+))?(a|A|b|B|h|H|d|f|c|s|x|X|u|o|z|Z|e|E|g|G|p|n|b|B|t|T%)");
+		"%(?:(\\d+)\\$)?(-|\\+|0|\\(|,|\\^|#| )*(\\d*)?(?:\\.(\\d+))?(a|A|b|B|h|H|d|f|c|s|x|X|u|o|z|Z|e|E|g|G|p|n|b|B|(?:[tT][HIklMSLNpzZsQBbhAaCYyjmdeRTrDFc])|%)");
 	Processor						domain;
 	Reporter						reporter;
 	Object							targets[];
@@ -1963,6 +1963,7 @@ public class Macro {
 						throw new IllegalArgumentException("Illegal Date Format " + inputDate);
 					}
 					args2[n - 2] = date;
+					n++;
 					break;
 
 				case 'n' :
