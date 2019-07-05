@@ -38,4 +38,28 @@ public class JtwigTransformerPluginTest extends TestCase {
 			"twig", "jtwig"
 		});
 	}
+
+	public void testJtwigTransformerDefault() throws Exception {
+		final JtwigTransformerPlugin t = new JtwigTransformerPlugin();
+
+		final Map<String, Object> report = new HashMap<>();
+		final Map<String, Object> manifest = new HashMap<>();
+		final Map<String, String> bundleSymbolicName = new HashMap<>();
+
+		bundleSymbolicName.put("symbolicName", "test");
+		manifest.put("bundleSymbolicName", bundleSymbolicName);
+		report.put("manifest", manifest);
+
+		final ByteArrayOutputStream model = new ByteArrayOutputStream();
+		new JsonReportSerializerPlugin().serialize(report, model);
+
+		final ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+		t.transform(IO.stream(model.toByteArray()),
+			JtwigTransformerPlugin.class.getResourceAsStream("templates/readme.twig"),
+			output,
+			new HashMap<String, String>());
+
+		assertTrue(new String(output.toByteArray()).contains("# test"));
+	}
 }

@@ -128,6 +128,35 @@ class ReportExporter implements ReportExporterService {
 					_processor.exception(e, "Failed to read the template file at %s", tPpath);
 					return null;
 				}
+			} else if (instruction.template()
+				.isPresent()
+				&& instruction.template()
+					.get()
+					.startsWith("default:")) {
+				try {
+					InputStream embeddedTemplate = this.getClass()
+						.getClassLoader()
+						.getResourceAsStream(
+							"biz/aQute/bnd/reporter/plugins/transformer/templates/" + instruction.template()
+							.get()
+							.substring(8));
+
+					if (embeddedTemplate == null) {
+						throw new IOException("Resource " + instruction.template()
+							.get() + " not found.");
+					}
+
+					templateResource = new EmbeddedResource(IO.read(embeddedTemplate),
+						0L);
+					templateExtension = FileHelper.getExtension(templateFile);
+					templateExtension = instruction.templateType()
+						.orElse(templateExtension);
+					return new AbstractMap.SimpleEntry<>(templateExtension, templateResource);
+				} catch (final IOException e) {
+					_processor.exception(e, "Failed to read the embedded template file at %s", instruction.template()
+						.get());
+					return null;
+				}
 			} else {
 				try {
 					final URL url;

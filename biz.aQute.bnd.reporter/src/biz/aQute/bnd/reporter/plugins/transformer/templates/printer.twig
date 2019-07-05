@@ -1,0 +1,386 @@
+{# 
+# TITLE
+#}
+{% macro printTitle (title, level, iconUrl) -%}
+{% for i in [1..level] %}#{% endfor %} {{(not empty(iconUrl))?'![]('~iconUrl~') ':''}}{{- trim(title) }}
+{%- endmacro %}
+
+{# 
+# MAVEN COORDINATE
+#}
+{% macro printMavenCoordinate (mavenCoordinate, prefix) -%}
+```xml
+{{ prefix }}<dependency>
+{{ prefix }}    <groupId>{{ trim(mavenCoordinate.groupId) }}</groupId>
+{{ prefix }}    <artifactId>{{ trim(mavenCoordinate.artifactId) }}</artifactId>
+{{ prefix }}    <version>{{ trim(mavenCoordinate.version) }}</version>
+{{ prefix }}</dependency>
+{{ prefix }}```
+{%- endmacro %}
+
+{# 
+# OSGI COORDINATE
+#}
+{% macro printOsgiCoordinate (symbolicName, version, prefix) -%}
+{% import _self as this -%}
+```
+{{ prefix }}Bundle Symbolic Name: {{ trim(symbolicName) }}
+{{ prefix }}Version             : {{ this.printOsgiVersion(version) }}
+{{ prefix }}```
+{%- endmacro %}
+
+{# 
+# OSGI VERSION
+#}
+{% macro printOsgiVersion (osgiVersion) -%}
+{{ osgiVersion.major }}{{ '.'~osgiVersion.minor }}{{ '.'~osgiVersion.micro }}
+{%- if not empty(osgiVersion.qualifier) %}
+{{- '.'~osgiVersion.qualifier }}
+{%- endif %}
+{%- endmacro %}
+
+{# 
+# TABLE HEADER
+#}
+{% macro printTableHeaders (headers, layout, prefix) -%}
+{% for h in headers %}{{ (loop.first) ? '|'~trim(h)~' |' : trim(h)~' |' }}{% endfor %}
+{% if empty (layout) -%}
+{{ prefix }}{% for h in headers %}{{ (loop.first) ? '|--- |' : '--- |' }}{% endfor %}
+{%- else %}
+{%- set layoutTab = split(layout, '') -%}
+{{ prefix }}{% for l in layoutTab %}
+{%- if l == 'r' -%}
+{{ (loop.first) ? '|---: |' : '---: |' }}
+{%- elseif l == 'c' -%}
+{{ (loop.first) ? '|:---: |' : ':---: |' }}
+{%- else -%}
+{{ (loop.first) ? '|--- |' : '--- |' }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endmacro %}
+
+{# 
+# PROPERTY TYPE
+#}
+{% macro printPropertyType (type, multiValue) -%}
+{{ type }}{{ (multiValue) ? '[]' : ''}}
+{%- endmacro %}
+
+{# 
+# PROPERTY VALUES
+#}
+{% macro printPropertyValues (type, values, multiValue) -%}
+{%- if multiValue -%}
+{{ '[' }}{% for v in values %}{{ (loop.first) ? '' : ', ' }}{{ (type == 'String' ) ? '"'~v~'"' : v}}{% endfor %}{{ ']' }}
+{%- else -%}
+{{ (type == 'String' ) ? '"'~(values[0])~'"' : values[0] }}
+{%- endif -%}
+{%- endmacro %}
+
+{# 
+# OPTION
+#}
+{% macro printOptions (option) -%}
+{% for o in option %}{{ (loop.first) ? '' : ', ' }}{{ '"'~o.value~'"' }}{% endfor %}
+{%- endmacro %}
+
+{# 
+# COMPONENTS
+#}
+{% macro printComponents (components, metatypes) -%}
+{%- import _self as this -%}
+{%- for c in components -%}
+{%- if not (loop.first) -%}{{ '\n\n---\n\n' }}{%- endif -%}
+{{ this._printComponentTitle(c) }}
+
+{{ this._printComponentServices(c) }}
+
+{{ this._printComponentProperties(c) }}
+
+{{ this._printComponentConfiguration(c, metatypes) }}
+{%- endfor -%}
+{%- endmacro %}
+
+{# 
+# COMPONENT TITLE
+#}
+{% macro _printComponentTitle (c) -%}
+{%- import _self as this -%}
+{{ this.printTitle(c.name,3) }} - *state = {{ (c.defaultEnabled) ? 'enabled' : 'not enabled' }}, activation = {{ (c.immediate) ? 'immediate' : 'delayed' }}*
+{%- endmacro %}
+
+{# 
+# COMPONENT SERVICES
+#}
+{% macro _printComponentServices (c) -%}
+{%- import _self as this -%}
+{%- if not empty(c.serviceInterfaces) -%}
+{{ this.printTitle('Services - *scope = '~c.scope~'*',4) }}
+
+{{ this.printTableHeaders(['Interface name']) }}
+{%- for s in c.serviceInterfaces -%}
+{{ '\n' }}|{{ s }} |
+{%- endfor -%}
+{%- else -%}
+{{ this.printTitle('Services',4) }}
+
+No services.
+{%- endif -%}
+{%- endmacro %}
+
+{# 
+# COMPONENT PROPERTIES
+#}
+{% macro _printComponentProperties (c) -%}
+{%- import _self as this -%}
+{{ this.printTitle('Properties',4) }}{{ '\n\n' }}
+{%- if not empty(c.properties) > 0 -%}
+{{ this.printTableHeaders(['Name','Type','Value']) }}
+{%- for key, value in c.properties -%}
+{{ '\n' }}|{{key}} |{{ this.printPropertyType(value.type,value.multiValue)}} |{{ this.printPropertyValues(value.type,value.values,value.multiValue) }} |
+{%- endfor -%}
+{%- else -%}
+No properties.
+{%- endif -%}
+{%- endmacro %}
+
+{# 
+# COMPONENT CONFIGURATION
+#}
+{% macro _printComponentConfiguration (c, metatypes) -%}
+{%- import _self as this -%}
+{%- if not (c.factory is null) -%}
+{{ this.printTitle('Configuration - *factory*',4) }}
+
+Factory name: {{ '`'~c.factory~'`'}}
+{%- elseif c.configurationPolicy == 'ignore' -%}
+{{ this.printTitle('Configuration',4) }}
+
+No configuration.
+{%- else -%}
+{{ this.printTitle('Configuration - *policy = '~c.configurationPolicy~'*',4) }}{{ '\n\n' }}
+{%- for pid in c.configurationPid -%}
+{%- if not (loop.first) -%}{{ '\n\n' }}{%- endif -%}
+{%- set pidOcd = "notset" -%}
+{%- set factoryPidOcd = "notset" -%}
+{%- for ocd in metatypes -%}
+{%- if pid in ocd.pids -%}
+{%- set pidOcd = ocd -%}
+{%- elseif pid in ocd.factoryPids -%}
+{%- set factoryPidOcd = ocd -%}
+{%- endif -%}
+{%- endfor -%}
+{%- set o = "notset" -%}
+{%- if pidOcd != 'notset' -%}
+{{ this.printTitle('Pid: `'~pid~'`',5) }}{{ '\n\n' }}
+{%- set o = pidOcd -%}
+{%- elseif factoryPidOcd != 'notset' -%}
+{{ this.printTitle('Factory Pid: `'~pid~'`',5) }}{{ '\n\n' }}
+{%- set o = factoryPidOcd -%}
+{%- else -%}
+{{ this.printTitle('Pid: `'~pid~'`',5) }}
+
+No information available.
+{%- endif -%}
+{%- if o != 'notset' -%}
+{%- for a in o.attributes -%}
+{%- if not (loop.first) -%}{{ '\n\n' }}{%- endif -%}
+{{ this.printTableHeaders(['Attribute','Value']) }}
+|Id |`{{a.id}}` |
+|Required |**{{a.required}}** |
+|Type |**{{ this.printPropertyType(a.type,(a.cardinality != 0)) }}** |
+{%- if length(a.description) > 0 -%}
+{{ '\n' }}|Description |{{ a.description }} |
+{%- endif -%}
+{%- if length(a.values) > 0 -%}
+{{ '\n' }}|Default |{{ this.printPropertyValues(a.type,a.values,(a.cardinality != 0)) }} |
+{%- endif -%}
+{%- if (not empty(a.max)) or (not empty(a.min)) -%}
+{{ '\n' }}|Value range |
+{%- if (not empty(a.max)) and (not empty(a.min)) -%}
+`min = {{a.min}}` / `max = {{a.max}}` |
+{%- elseif not empty(a.max) -%}
+`max = {{a.max}}` |
+{%- else -%}
+`min = {{a.min}}` |
+{%- endif -%}
+{%- elseif length(a.options) > 0 -%}
+{{ '\n' }}|Value range |{{ this.printOptions(a.options) }} |
+{%- endif -%}
+{%- endfor -%}
+{%- endif -%}
+{%- endfor -%}
+{%- endif -%}
+{%- endmacro %}
+
+{# 
+# DEVELOPERS
+#}
+{% macro printDevelopers (developers) -%}
+{%- for d in developers -%}
+{%- if not (loop.first) -%}{{ '\n' }}{%- endif -%}
+{%- set email=d.email -%}
+{%- set id=d.identifier -%}
+{%- if empty(email) and id.contains('@') -%}
+{%- set email=id -%}
+{%- set id=null -%}
+{%- endif -%}
+{%- if empty(id) -%}
+{%- if empty(d.name) -%}
+* [{{ trim(email) }}](mailto:{{ trim(email) }})
+{%- else -%}
+* **{{ trim(d.name) }}** / [{{ trim(email) }}](mailto:{{ trim(email) }})
+{%- endif -%}
+{%- else -%}
+{%- if empty(d.name) -%}
+{%- if empty(email) -%}
+* {{ trim(id) }}
+{%- else -%}
+* {{ trim(id) }} / [{{ trim(email) }}](mailto:{{ trim(email) }})
+{%- endif -%}
+{%- else -%}
+{%- if empty(email) -%}
+* **{{ trim(d.name) }}** ({{ trim(id) }})
+{%- else -%}
+* **{{ trim(d.name) }}** ({{ trim(id) }}) / [{{ trim(email) }}](mailto:{{ trim(email) }})
+{%- endif -%}
+{%- endif -%}
+{%- endif -%}
+{%- if not empty(d.organization) and not empty(d.organizationUrl) -%}
+{{ ' @ ' }}[{{ trim(d.organization) }}]({{ trim(d.organizationUrl) }})
+{%- elseif not empty(d.organization) and empty(d.organizationUrl) -%}
+{{ ' @ ' }}{{ trim(d.organization) }}
+ {%- elseif empty(d.organization) and not empty(d.organizationUrl) -%}
+{{ ' @ ' }}[{{ trim(d.organizationUrl) }}]({{ trim(d.organizationUrl) }})
+{%- endif -%}
+{%- if length(d.roles) > 0 -%}
+{{ ' - ' }}{%- for r in d.roles -%}*{{ trim(r) }}*{{ (loop.last) ? '' : ', '}}{%- endfor -%}
+{%- endif -%}
+{%- endfor -%}
+{%- endmacro %}
+
+{# 
+# LICENCES
+#}
+{% macro printLicenses (licenses) -%}
+{%- for l in licenses -%}
+{%- if not (loop.first) -%}{{ '\n\n' }}{%- endif -%}
+**{{ trim(l.name) }}**
+{%- if not empty(l.description) -%}
+{{ '\n  ' }}> {{ trim(l.description) }}
+{%- endif -%}
+{%- if not empty(l.link) -%}
+{{ '\n  ' }}>
+{{ '  ' }}> For more information see [{{ trim(l.link) }}]({{ trim(l.link) }}).
+{%- endif -%}
+{%- endfor -%}
+{%- endmacro %}
+
+{# 
+# ARTIFACTS
+#}
+{% macro printArtifacts (report) -%}
+{%- import _self as this -%}
+{{- this._printArtifactsRecursive(report,'', '') -}}
+{%- endmacro %}
+
+{# 
+# ARTIFACTS RECURSIVE
+#}
+{% macro _printArtifactsRecursive (report, prefix, path) -%}
+{% import _self as this -%}
+{%- if not empty(report.projects) -%}
+{%- for p in report.projects -%}
+{%- if not (loop.first) -%}{{ '\n' }}{%- endif -%}
+{%- set bundle = null -%}
+{%- if not empty(p.bundles) -%}
+{%- set bundle = p.bundles[0] -%}
+{%- endif -%}
+{%- set title = default(bundle.manifest.bundleName,p.commonInfo.name) -%}
+{%- set title = default(title,bundle.manifest.bundleSymbolicName.symbolicName) -%}
+{%- set title = trim(default(title,p.fileName)) -%}
+{%- set description = trim(default(bundle.manifest.bundleDescription,p.commonInfo.description)) -%}
+{%- if length(p.bundles) > 1 -%}
+{%- set title = trim(default(p.commonInfo.name,p.fileName)) -%}
+{%- set description = trim(p.commonInfo.description) -%}
+{%- endif -%}
+{{prefix}}* [**{{title}}**]({{ path~p.fileName }}){{ (length(description) > 0) ? ': '~description : ''}}
+{%- if not empty(p.projects) or length(p.bundles) > 1 -%}
+{{ '\n' }}{{ this._printArtifactsRecursive(p, prefix~'  ', path~p.fileName~'/') }}
+{%- endif -%}
+{%- endfor -%}
+{%- elseif length(report.bundles) > 1 -%}
+{%- for b in report.bundles -%}
+{%- if not (loop.first) -%}{{ '\n' }}{%- endif -%}
+{%- set title = trim(default(b.manifest.bundleName,b.manifest.bundleSymbolicName.symbolicName)) -%}
+{%- set description = trim(b.manifest.bundleDescription) -%}
+{%- if b.manifest.bundleSymbolicName.symbolicName.startsWith(report.fileName) -%}
+{%- set readmeFile = 'readme'~b.manifest.bundleSymbolicName.symbolicName.substring(length(report.fileName))~'.md' -%}
+{%- else -%}
+{%- set readmeFile = 'readme.'~b.manifest.bundleSymbolicName.symbolicName~'.md' -%}
+{%- endif -%}
+{{prefix}}* [**{{title}}**]({{ path }}{{ readmeFile }}){{ (length(description) > 0) ? ': '~description : ''}}
+{%- endfor -%}
+{%- endif -%}
+{%- endmacro %}
+
+{# 
+# CODE SNIPPETS
+#}
+{% macro printCodeSnippets (codeSnippets, level) -%}
+{% import _self as this -%}
+{%- set topLevel= default(level,3) -%}
+{%- for cs in codeSnippets -%}
+{%- if not (loop.first) -%}{{ '\n\n' }}{%- endif -%}
+{%- if not empty(cs.title) -%}
+{{ this.printTitle(trim(cs.title), topLevel)~'\n\n' }}
+{%- endif -%}
+{%- if not empty(cs.description) -%}
+{{ trim(cs.description)~'\n\n' }}
+{%- endif -%}
+{%- if empty(cs.steps) -%}
+```{{ trim(cs.programmingLanguage) }}
+{{ trim(cs.codeSnippet) }}
+```
+{%- else -%}
+{%- for s in cs.steps -%}
+{%- if not (loop.first) -%}{{ '\n\n' }}{%- endif -%}
+{%- if not empty(s.title) -%}
+{{ this.printTitle(trim(s.title), topLevel+1)~'\n\n' }}
+{%- endif -%}
+{%- if not empty(s.description) -%}
+{{ trim(s.description)~'\n\n' }}
+{%- endif -%}
+```{{ trim(s.programmingLanguage) }}
+{{ trim(s.codeSnippet) }}
+```
+{%- endfor -%}
+{%- endif -%}
+{%- endfor -%}
+{%- endmacro %}
+
+{# 
+# VENDOR
+#}
+{% macro printVendor (vendor, address) -%}
+{%- import _self as this -%}
+{%- if length(vendor) == 0 -%}
+{%- if address.type == 'postal' -%}
+{{ address.address }}
+{%- else -%}
+[{{ address.address }}]({{ address.address }})
+{%- endif -%}
+{%- elseif empty(address) -%}
+{{ vendor }}
+{%- else -%}
+{{ vendor }} -
+{%- if address.type == 'url' -%}
+{{ ' ' }}[{{ address.address }}]({{ address.address }})
+{%- elseif address.type == 'email' -%}
+{{ ' ' }}[{{ address.address }}](mailto:{{ address.address }})
+{%- else -%}
+{{ ' ' }}{{ address.address -}}
+{%- endif -%}
+{%- endif -%}
+{%- endmacro %}

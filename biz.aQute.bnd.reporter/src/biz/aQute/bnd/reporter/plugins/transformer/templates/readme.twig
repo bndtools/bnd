@@ -1,0 +1,93 @@
+{%- set templateDir = default(templateDir,'default:') %}
+{%- import concat(templateDir,'/blocks.twig') as blocks -%}
+{%- import concat(templateDir,'/printer.twig') as printer -%}
+{%- if length(report.bundles) == 1 or (length(report.bundles) > 1 and not empty(currentBsn)) -%}
+{%- set myBundle = report.bundles[0] -%}
+{%- if not empty(currentBsn) -%}
+{%- for r in report.bundles -%}
+{%- if currentBsn == r.manifest.bundleSymbolicName.symbolicName -%}
+{%- set myBundle = r -%}
+{%- endif -%}
+{%- endfor -%}
+{%- endif -%}
+{%- do report.putAll(myBundle) -%}
+{%- do report.get('bundles').clear() -%}
+{%- endif -%}
+
+{%- block beforeTitle %}{% endblock -%}
+
+{%- block title -%}
+{{ blocks.titleBlock(printer, report, iconUrl) }}
+{%- endblock -%}
+
+{%- block beforeOverview %}{% endblock -%}
+
+{%- block overview -%}
+{{ blocks.overviewBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block beforeDocumentation %}{% endblock -%}
+
+{%- block documentation -%}
+{{ blocks.documentationBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block beforeSourceRepository %}{% endblock -%}
+
+{%- block sourceRepository -%}
+{{ blocks.sourceRepositoryBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block beforeArtifactRepository %}{% endblock -%}
+
+{%- block artifactRepository -%}
+{{ blocks.artifactRepositoryBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block beforeCoordinates %}{% endblock -%}
+
+{%- block coordinates -%}
+{{ blocks.coordinatesBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block beforeArtifacts %}{% endblock -%}
+
+{%- block artifacts -%}
+{{ blocks.artifactsBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block beforeCodeUsage %}{% endblock -%}
+
+{%- block codeUsage -%}
+{{ blocks.codeUsageBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block beforeComponents %}{% endblock -%}
+
+{%- block components -%}
+{{ blocks.componentsBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block beforeDevelopers %}{% endblock -%}
+
+{%- block developers -%}
+{{ blocks.developersBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block beforeLicenses %}{% endblock -%}
+
+{%- block licenses -%}
+{{ blocks.licensesBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block beforeCopyright %}{% endblock -%}
+
+{%- block copyright -%}
+{{ blocks.copyrightBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block beforeVendor %}{% endblock -%}
+
+{%- block vendor -%}
+{{ blocks.vendorBlock(printer, report) }}
+{%- endblock %}
