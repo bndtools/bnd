@@ -48,15 +48,15 @@ mavencentral:           https://repo.maven.apache.org/maven2
         readOnly=true
 
 # m2e debug repos
-#-plugin.m2e.debug:\
-#    aQute.bnd.repository.p2.provider.P2Repository; \
-#        name="Eclipse EMF 2.13"; \
-#        url="https://download.eclipse.org/modeling/emf/emf/builds/release/2.13";\
-#        location="${workspace}/cnf/cache/stable/EclipseEMF",\
-#    aQute.bnd.repository.p2.provider.P2Repository; \
-#        name="Eclipse Webtools 3.6.3"; \
-#        url="https://download.eclipse.org/webtools/downloads/drops/R3.6.3/R-3.6.3-20150216091848/repository/";\
-#        location="${workspace}/cnf/cache/stable/EclipseWTP",\
+-plugin.m2e.debug:\
+    aQute.bnd.repository.p2.provider.P2Repository; \
+        name="Eclipse EMF 2.13"; \
+        url="https://download.eclipse.org/modeling/emf/emf/builds/release/2.13";\
+        location="${workspace}/cnf/cache/stable/EclipseEMF",\
+    aQute.bnd.repository.p2.provider.P2Repository; \
+        name="Eclipse Webtools 3.9.1a"; \
+        url="https://download.eclipse.org/webtools/downloads/drops/R3.9.1a/R-3.9.1a-20171004113814/repository/";\
+        location="${workspace}/cnf/cache/stable/EclipseWTP"
 
 -buildrepo: Local
 -releaserepo: Release

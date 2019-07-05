@@ -88,16 +88,22 @@ m2e.bundles:\
 
 m2e.debug.bundles:\
 	com.google.guava;version='[21,22)',\
-	org.apache.xerces,\
+	javax.xml,\
+	org.apache.xerces;version='[2.9.0,3.0.0)',\
 	org.apache.xml.resolver,\
 	org.apache.xml.serializer,\
 	org.eclipse.core.externaltools,\
 	org.eclipse.emf.ecore.edit,\
 	org.eclipse.emf.edit,\
+	org.eclipse.equinox.p2.discovery,\
+	org.eclipse.equinox.p2.discovery.compatibility,\
+	org.eclipse.equinox.p2.transport.ecf,\
+	org.eclipse.equinox.p2.ui.discovery,\
 	org.eclipse.jem.util,\
 	org.eclipse.m2e.archetype.common,\
 	org.eclipse.m2e.core,\
 	org.eclipse.m2e.core.ui,\
+	org.eclipse.m2e.discovery,\
 	org.eclipse.m2e.editor,\
 	org.eclipse.m2e.editor.xml,\
 	org.eclipse.m2e.jdt,\
@@ -115,6 +121,7 @@ m2e.debug.bundles:\
 	org.eclipse.wst.common.core,\
 	org.eclipse.wst.common.ui,\
 	org.eclipse.wst.common.emf,\
+	org.eclipse.wst.common.emfworkbench.integration,\
 	org.eclipse.wst.common.environment,\
 	org.eclipse.wst.common.frameworks,\
 	org.eclipse.wst.common.frameworks.ui,\
@@ -175,7 +182,7 @@ crossplatform.bundles: \
 	${help.bundles},\
 	${p2.bundles},\
 	${pde.bundles},\
-	${m2e.bundles},\
+	${m2e.debug.bundles},\
 	${workspace.bundles},\
 	${gogo.bundles},\
 	com.ibm.icu,\
