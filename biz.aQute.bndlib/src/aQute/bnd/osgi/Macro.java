@@ -31,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
@@ -50,12 +51,15 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor.FileLine;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.Iterables;
+import aQute.lib.date.DateUtil;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.ExtendedFilter;
 import aQute.lib.hex.Hex;
@@ -81,18 +85,18 @@ public class Macro {
 	private final static String		LITERALVALUE	= "017a3ddbfc0fcd27bcdb2590cdb713a379ae59ef";
 	private final static Pattern	NUMERIC_P		= Pattern.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
 	private final static Pattern	PRINTF_P		= Pattern.compile(
-		"%(?:(\\d+)\\$)?(-|\\+|0|\\(|,|\\^|#| )*(\\d*)?(?:\\.(\\d+))?(a|A|b|B|h|H|d|f|c|s|x|X|u|o|z|Z|e|E|g|G|p|n|b|B|%)");
+		"%(?:(\\d+)\\$)?(-|\\+|0|\\(|,|\\^|#| )*(\\d*)?(?:\\.(\\d+))?(a|A|b|B|h|H|d|f|c|s|x|X|u|o|z|Z|e|E|g|G|p|n|b|B|t|T%)");
 	Processor						domain;
 	Reporter						reporter;
 	Object							targets[];
 	boolean							flattening;
-	String							profile;
 	private boolean					nosystem;
 	ScriptEngine					engine			= null;
 	ScriptContext					context			= null;
 	Bindings						bindings		= null;
 	StringWriter					stdout			= new StringWriter();
 	StringWriter					stderr			= new StringWriter();
+	public boolean					inTest;
 
 	public Macro(Processor domain, Object... targets) {
 		this.domain = domain;
@@ -182,23 +186,30 @@ public class Macro {
 	}
 
 	protected String getMacro(String key, Link link) {
-		return getMacro(key, link, '{', '}', null);
+		return getMacro(key, link, '{', '}');
 	}
 
-	private String getMacro(String key, Link link, char begin, char end, String profile) {
+	private String getMacro(String key, Link link, char begin, char end) {
 		if (link != null && link.contains(key))
 			return "${infinite:" + link.toString() + "}";
 
 		if (key != null) {
 			key = key.trim();
-			if (!key.isEmpty()) {
-				String keyins = key;
-				if (profile != null) {
-					key = "[" + profile + "]" + key;
-					keyins = "\\[" + profile + "\\]" + keyins;
-				}
-				if (key.indexOf(';') < 0) {
-					Instruction ins = new Instruction(keyins);
+			String[] args = SEMICOLON_P.split(key, 0);
+			if (!args[0].isEmpty()) {
+
+				//
+				// If the profile is set, we try to get the key first with the
+				// profile prefix. If this fails we try to get the correct one.
+				//
+
+				//
+				// Check if we have a wildcard key. In that case
+				// we go through all the matching keys and append the values
+				//
+
+				if (args.length == 1) {
+					Instruction ins = new Instruction(args[0]);
 					if (!ins.isLiteral()) {
 						String keyname = key;
 						return domain.stream()
@@ -208,18 +219,35 @@ public class Macro {
 							.filter(Objects::nonNull)
 							.collect(Strings.joining());
 					}
-					key = ins.getLiteral();
+
+					//
+					// NOTE: To access parameters with wildcard in them you need
+					// to escape them, e.g. foo\[3\]. The following removes the
+					// escapes
+					//
+
+					args[0] = ins.getLiteral();
 				}
 
-				for (Processor source = domain; source != null; source = source.getParent()) {
-					String value = source.getProperties()
-						.getProperty(key);
-					if (value != null) {
-						return process(value, new Link(source, link, key));
+				//
+				// Check if the macro is defined as a raw property
+				//
+
+				String value = domain.getUnexpandedProperty(args[0]);
+				if (value != null) {
+					Link next = new Link(domain, link, key);
+					if (args.length > 1) {
+						return processWithArgs(value, args, next);
+					} else {
+						return process(value, next);
 					}
 				}
 
-				String value = doCommands(key, link);
+				//
+				// Not found, look it up as a command
+				//
+
+				value = doCommands(args, link);
 				if (value != null) {
 					if (value == NULLVALUE)
 						return null;
@@ -228,61 +256,71 @@ public class Macro {
 					return process(value, new Link(domain, link, key));
 				}
 
-				if (key != null && key.trim()
-					.length() > 0) {
-					value = System.getProperty(key);
-					if ((value == null) && key.startsWith("env.")) {
-						value = System.getenv(key.substring(4));
-					}
+				//
+				// Last resort, try to find it as a system property
+				// or environment variable
+				//
+
+				if (args.length == 1) {
+					value = System.getProperty(args[0]);
 					if (value != null)
 						return value;
+					if (key.startsWith("env.")) {
+						value = System.getenv(args[0].substring(4));
+						if (value != null)
+							return value;
+					}
 				}
 
-				if (key != null && key.indexOf(';') >= 0) {
-					String parts[] = SEMICOLON_P.split(key, 0);
-					if (parts.length > 1) {
-						if (parts.length >= 16) {
-							reporter.error("too many arguments for template: %s, max is 16", key);
-						}
+				if (!args[0].startsWith("[")) {
 
-						String template = domain.getProperties()
-							.getProperty(parts[0]);
-						if (template != null) {
-							domain = new Processor(domain);
-							for (int i = 0; i < 16; i++) {
-								domain.setProperty("" + i, i < parts.length ? parts[i] : "null");
-							}
-							String joined = Arrays.stream(parts, 1, parts.length)
-								.collect(Strings.joining());
-							domain.setProperty("#", joined);
-							try {
-								value = process(template, new Link(domain, link, key));
-								if (value != null)
-									return value;
-							} finally {
-								domain = domain.getParent();
+					String profile = domain.getUnexpandedProperty(Constants.PROFILE);
+
+					if (profile != null) {
+						profile = process(profile, link);
+						String profiledKey = "[" + profile + "]" + args[0];
+						value = domain.getUnexpandedProperty(profiledKey);
+						if (value != null) {
+							Link next = new Link(domain, link, key);
+							if (args.length > 1) {
+								return processWithArgs(value, args, next);
+							} else {
+								return process(value, next);
 							}
 						}
 					}
 				}
+
 			} else {
-				reporter.warning("Found empty macro key");
+				reporter.warning("Found empty macro key '%s'", key);
 			}
 		} else {
 			reporter.warning("Found null macro key");
 		}
 
-		// Prevent recursion, but try to get a profiled variable
-		if (key != null && !key.startsWith("[") && !key.equals(Constants.PROFILE)) {
-			if (profile == null)
-				profile = domain.getProperty(Constants.PROFILE);
-			if (profile != null) {
-				String replace = getMacro(key, link, begin, end, profile);
-				if (replace != null)
-					return replace;
-			}
-		}
 		return null;
+	}
+
+	/*
+	 * Process the template but setup local arguments and # for the joined list
+	 */
+
+	private String processWithArgs(String template, String[] args, Link next) {
+		try (Processor custom = new Processor(domain)) {
+
+			for (int i = 0; i < 16; i++) {
+				custom.setProperty(Integer.toString(i), i < args.length ? args[i] : "null");
+			}
+
+			String joinedArgs = Arrays.stream(args, 1, args.length)
+				.collect(Strings.joining());
+			custom.setProperty("#", joinedArgs);
+			return custom.getReplacer()
+				.process(template, next);
+
+		} catch (IOException e) {
+			throw Exceptions.duck(e);
+		}
 	}
 
 	public String replace(String key, Link link) {
@@ -290,7 +328,7 @@ public class Macro {
 	}
 
 	private String replace(String key, Link link, char begin, char end) {
-		String value = getMacro(key, link, begin, end, null);
+		String value = getMacro(key, link, begin, end);
 		if (value != LITERALVALUE) {
 			if (value != null)
 				return value;
@@ -312,8 +350,7 @@ public class Macro {
 	private static final Pattern	ESCAPED_SEMICOLON_P	= Pattern.compile(ESCAPING + ESCAPED_SEMICOLON);
 
 	@SuppressWarnings("resource")
-	private String doCommands(String key, Link source) {
-		String[] args = SEMICOLON_P.split(key, 0);
+	private String doCommands(String[] args, Link source) {
 		if (args == null || args.length == 0)
 			return null;
 
@@ -582,7 +619,7 @@ public class Macro {
 				return now.getTime();
 
 			DateFormat df = new SimpleDateFormat(args[1], Locale.US);
-			df.setTimeZone(TimeZone.getTimeZone("UTC"));
+			df.setTimeZone(DateUtil.UTC_TIME_ZONE);
 			return df.format(now);
 		}
 		return now;
@@ -812,7 +849,7 @@ public class Macro {
 		if (args.length > 2) {
 			tz = TimeZone.getTimeZone(args[2]);
 		} else {
-			tz = TimeZone.getTimeZone("UTC");
+			tz = DateUtil.UTC_TIME_ZONE;
 		}
 		if (args.length > 3) {
 			now = Long.parseLong(args[3]);
@@ -1886,19 +1923,22 @@ public class Macro {
 					break;
 
 				case 'c' :
-					if (args[n].length() != 1)
-						throw new IllegalArgumentException("Character expected but found '" + args[n] + "'");
-					args2[n - 2] = args[n].charAt(0);
+					if (args[n].length() == 1)
+						args2[n - 2] = args[n].charAt(0);
+					else {
+						try {
+							int parseInt = Integer.parseInt(args[n]);
+							args2[n - 2] = parseInt;
+						} catch (NumberFormatException ne) {
+							throw new IllegalArgumentException("Character expected but found '" + args[n] + "'");
+						}
+					}
 					n++;
 					break;
 
 				case 'b' :
 					String v = args[n].toLowerCase();
-					if (v == null || v.equals("false") || v.isEmpty() || (NUMERIC_P.matcher(v)
-						.matches() && Double.parseDouble(v) == 0.0D))
-						args2[n - 2] = false;
-					else
-						args2[n - 2] = false;
+					args2[n - 1] = isTruthy(v);
 					n++;
 					break;
 
@@ -1912,39 +1952,17 @@ public class Macro {
 
 				case 't' :
 				case 'T' :
-					String dt = args[n];
+					String inputDate = args[n];
 
-					if (NUMERIC_P.matcher(dt)
-						.matches()) {
-						args2[n - 2] = Long.parseLong(dt);
-					} else {
-						DateFormat df;
-						switch (args[n].length()) {
-							case 6 :
-								df = new SimpleDateFormat("yyMMdd", Locale.US);
-								break;
-
-							case 8 :
-								df = new SimpleDateFormat("yyyyMMdd", Locale.US);
-								break;
-
-							case 12 :
-								df = new SimpleDateFormat("yyyyMMddHHmm", Locale.US);
-								break;
-
-							case 14 :
-								df = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-								break;
-							case 19 :
-								df = new SimpleDateFormat("yyyyMMddHHmmss.SSSZ", Locale.US);
-								break;
-
-							default :
-								throw new IllegalArgumentException("Unknown dateformat " + args[n]);
-						}
-						df.setTimeZone(TimeZone.getTimeZone("UTC"));
-						args2[n - 2] = df.parse(args[n]);
+					if ("now".equals(inputDate)) {
+						inputDate = _tstamp(new String[0]);
 					}
+
+					Date date = DateUtil.parse(inputDate);
+					if (date == null) {
+						throw new IllegalArgumentException("Illegal Date Format " + inputDate);
+					}
+					args2[n - 2] = date;
 					break;
 
 				case 'n' :
@@ -2092,6 +2110,11 @@ public class Macro {
 		});
 	}
 
+	/**
+	 * Get all the commands available
+	 *
+	 * @return a map with commands and their help
+	 */
 	public Map<String, String> getCommands() {
 		Set<Object> targets = new LinkedHashSet<>();
 		targets.addAll(Arrays.asList(targets));
@@ -2116,12 +2139,97 @@ public class Macro {
 						f.setAccessible(true);
 						MethodHandle mh = publicLookup().unreflectGetter(f);
 						return (String) mh.invoke();
-					} catch (Error e) {
-						throw e;
-					} catch (Throwable e) {
+					} catch (NoSuchFieldException nsfe) {
 						return "";
+					} catch (Exception e) {
+						return "";
+					} catch (Throwable e) {
+						throw Exceptions.duck(e);
 					}
 				}, (u, v) -> u, TreeMap::new));
 	}
 
+	/**
+	 * Take a macro name that maps to a Parameters and expand its entries using
+	 * a template. The macro takes a macro name. It will merge and decorate this
+	 * name before it applies it to the template. Each entry is mapped to the
+	 * template. The template can use {@code ${@}} for the key and
+	 * {@code ${@attribute}} for attributes.
+	 * <p>
+	 * It would be nice to take the parameters value directly but this is really
+	 * hard to do with the quoting. That is why we use a name. It is always
+	 * possible to have an intermediate macro
+	 *
+	 * @param args 'template', macro-name of Parameters, template, separator=','
+	 * @return the expanded template.
+	 * @throws IOException
+	 */
+
+	public String _template(String args[]) throws IOException {
+		verifyCommand(args, _templateHelp, null, 3, 4);
+
+		String propertyKey = args[1];
+		String template = args[2];
+		String separator = args.length < 4 ? "," : args[3];
+
+		Parameters parameters = domain.decorated(propertyKey);
+		StringBuilder sb = new StringBuilder();
+		String del = "";
+
+		try (Processor scope = new Processor(domain)) {
+			for (Map.Entry<String, Attrs> entry : parameters.entrySet()) {
+				String key = entry.getKey();
+				key = Processor.removeDuplicateMarker(key);
+				scope.setProperty("@", key);
+				for (Entry<String, String> attr : entry.getValue()
+					.entrySet()) {
+					scope.setProperty("@" + attr.getKey(), attr.getValue());
+				}
+				String instance = scope.getReplacer()
+					.process(template);
+
+				sb.append(del)
+					.append(instance);
+				del = separator;
+			}
+		}
+		return sb.toString();
+	}
+
+	final static String _templateHelp = "${template;macro-name;template[;separator=,]}";
+
+	/**
+	 * Return the merged and decorated value of a macro
+	 */
+
+	public String _decorated(String args[]) throws Exception {
+		verifyCommand(args, _decoratedHelp, null, 2, 3);
+		boolean literals = args.length < 3 ? false : isTruthy(args[2]);
+		Parameters decorated = domain.decorated(args[1], literals);
+		return decorated.toString();
+	}
+
+	final static String _decoratedHelp = "${decorated;macro-name[;literals]}";
+
+	/**
+	 * Test macro to have exceptions, only active when {@link #inTest} is
+	 * active.
+	 *
+	 * @param args currently only 'exception'
+	 * @return nothing of valeue
+	 * @throws ClassNotFoundException
+	 */
+	@SuppressWarnings("unchecked")
+	public String __testdebug(String[] args) throws Throwable {
+		if (inTest) {
+			if ("exception".equals(args[1])) {
+				Class<? extends Throwable> c = args.length > 2 ? (Class<Throwable>) Class.forName(args[2])
+					: RuntimeException.class;
+				Throwable e = args.length > 3 ? c.getConstructor(String.class)
+					.newInstance(args[3]) : c.newInstance();
+				throw e;
+			}
+		}
+		return null;
+	}
 }

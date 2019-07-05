@@ -63,7 +63,6 @@ public class LauncherTest {
 
 		String result = runFramework(file);
 
-		System.out.println(result);
 		assertThat(result).containsPattern("startlevel: not handled")
 			.containsPattern("Startlevel\\s+1")
 			.containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle")
@@ -81,7 +80,6 @@ public class LauncherTest {
 
 		String result = runFramework(file);
 
-		System.out.println(result);
 		assertThat(result).containsPattern("handled \\[-1, 10, 20, -1, 5\\]")
 			.containsPattern("Startlevel\\s+22")
 			.containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle")
@@ -102,13 +100,11 @@ public class LauncherTest {
 
 		String result = runFramework(file);
 
-		System.out.println(result);
 		assertThat(result).containsPattern("Startlevel\\s+23")
 			.containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle")
 			.containsPattern("22\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log")
 			.containsPattern("11\\s+ACTIV\\s+<>\\s+jar/.?demo.jar")
 			.containsPattern("21\\s+ACTIV\\s+<>\\s+jar/.?org.apache.servicemix.bundles.junit")
-			.containsPattern("6\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.configadmin")
 			.containsPattern("startlevel: default=22, beginning=23, now moving to 1")
 			.containsPattern("startlevel: beginning level 23")
 			.containsPattern("startlevel: notified reached final level 23");
@@ -124,7 +120,6 @@ public class LauncherTest {
 
 		String result = runFramework(file);
 
-		System.out.println(result);
 		assertThat(result).containsPattern("Startlevel\\s+12")
 			.containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle")
 			.containsPattern("22\\s+RSLVD\\s+<>\\s+jar/.?org.apache.felix.log")

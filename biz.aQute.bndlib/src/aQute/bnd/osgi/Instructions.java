@@ -328,11 +328,23 @@ public class Instructions implements Map<Instruction, Attrs> {
 	/**
 	 * Match the instruction against the parameters and merge the attributes if
 	 * matches. Remove any negated instructions. Literal unmatched instructions
-	 * are added
+	 * are not added
 	 *
-	 * @param parameters
+	 * @param parameters the parameters to decorate
 	 */
 	public void decorate(Parameters parameters) {
+		decorate(parameters, false);
+	}
+
+	/**
+	 * Match the instruction against the parameters and merge the attributes if
+	 * matches. Remove any negated instructions. Literal unmatched instructions
+	 * are added if the addLiterals is true
+	 *
+	 * @param parameters the parameters to decorate
+	 * @param addLiterals add literals to the output
+	 */
+	public void decorate(Parameters parameters, boolean addLiterals) {
 		Iterator<Map.Entry<String, Attrs>> it = parameters.entrySet()
 			.iterator();
 		Set<Instruction> used = new HashSet<>(keySet());
@@ -351,13 +363,16 @@ public class Instructions implements Map<Instruction, Attrs> {
 				}
 			}
 		}
-		//
-		// Add the literals
-		used.stream()
-			.filter(Instruction::isLiteral)
-			.forEach(i -> {
-				parameters.put(i.getLiteral(), new Attrs(get(i)));
-			});
+
+		if (addLiterals) {
+			//
+			// Add the literals
+			used.stream()
+				.filter(Instruction::isLiteral)
+				.forEach(i -> {
+					parameters.put(i.getLiteral(), new Attrs(get(i)));
+				});
+		}
 	}
 
 }

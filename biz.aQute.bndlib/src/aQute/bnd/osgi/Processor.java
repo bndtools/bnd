@@ -1068,6 +1068,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return getProperty(key, null);
 	}
 
+	public String getUnexpandedProperty(String key) {
+		String raw = getProperties().getProperty(key);
+		if (raw == null && parent != null) {
+			raw = parent.getUnexpandedProperty(key);
+		}
+		return raw;
+	}
+
 	public void mergeProperties(File file, boolean override) {
 		if (file.isFile()) {
 			try {
@@ -1276,7 +1284,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			changed |= !file.exists() || updateModified(file.lastModified(), "include file: " + file);
 		}
 
-		profile = getProperty(PROFILE); // Used in property access
+		profile = null; // Used in property access
 
 		if (changed) {
 			forceRefresh();
@@ -2936,5 +2944,31 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return IO.absolutePath(executable);
 		}
 		return java;
+	}
+
+	/**
+	 * Return a parameters that contains the merged properties of the given key
+	 * and that is decorated by the merged properties of the key + '+'
+	 *
+	 * @param key The key of the property
+	 */
+
+	public Parameters decorated(String key, boolean literalsIncluded) {
+		Parameters parameters = new Parameters(mergeProperties(key), this);
+		Instructions decorator = new Instructions(mergeProperties(key + "+"));
+		decorator.decorate(parameters, literalsIncluded);
+		return parameters;
+	}
+
+	public Parameters decorated(String key) {
+		return decorated(key, false);
+	}
+
+	public synchronized String getProfile() {
+		if (profile == null) {
+			profile = "cycle";
+			profile = getProperty(Constants.PROFILE);
+		}
+		return profile;
 	}
 }
