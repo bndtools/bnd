@@ -21,6 +21,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 public class EmbeddedLauncher {
@@ -31,6 +33,8 @@ public class EmbeddedLauncher {
 
 	public static final String	EMBEDDED_RUNPATH	= "Embedded-Runpath";
 	public static final String	LAUNCHER_PATH		= "launcher.runpath";
+	private static final Pattern	QUOTED_P			= Pattern.compile("^([\"'])(.*)\\1$");
+
 	public static Manifest		MANIFEST;
 
 	public static void main(String... args) throws Throwable {
@@ -85,20 +89,19 @@ public class EmbeddedLauncher {
 		throws Throwable {
 		ClassLoader cl = EmbeddedLauncher.class.getClassLoader();
 		if (isVerbose)
-			log("looking for META-INF/MANIFEST.MF");
+			log("looking for " + EMBEDDED_RUNPATH + " in META-INF/MANIFEST.MF");
 		Enumeration<URL> manifests = cl.getResources("META-INF/MANIFEST.MF");
 		while (manifests.hasMoreElements()) {
-			if (isVerbose)
-				log("found one");
-
 			URL murl = manifests.nextElement();
+			if (isVerbose)
+				log("found manifest %s", murl);
 
 			Manifest m = new Manifest(murl.openStream());
 			String runpath = m.getMainAttributes()
 				.getValue(EMBEDDED_RUNPATH);
-			if (isVerbose)
-				log("Going through the following runpath %s", runpath);
 			if (runpath != null) {
+				if (isVerbose)
+					log("Going through the following " + EMBEDDED_RUNPATH + " %s", runpath);
 				MANIFEST = m;
 				return executeWithRunPath(isVerbose, methodName, returnType, cl, runpath, false, args);
 			}
@@ -107,8 +110,12 @@ public class EmbeddedLauncher {
 			log("looking for -D" + LAUNCHER_PATH);
 		String runpath = System.getProperty(LAUNCHER_PATH);
 		if (runpath != null) {
+			Matcher matcher = QUOTED_P.matcher(runpath);
+			if (matcher.matches()) {
+				runpath = matcher.group(2);
+			}
 			if (isVerbose)
-				log("Going through the following runpath %s", runpath);
+				log("Going through the following -D" + LAUNCHER_PATH + " %s", runpath);
 			return executeWithRunPath(isVerbose, methodName, returnType, cl, runpath, true, args);
 		}
 

@@ -1616,26 +1616,23 @@ public class MacroTest extends TestCase {
 			// keep time constant in build
 			processor.setProperty(Constants.TSTAMP, "1562252413579");
 
-			assertEquals("Thursday", processor.getReplacer()
-				.process("${format;%tA;190704}"));
+			assertEquals("201907", processor.getReplacer()
+				.process("${format;%TY%tm;190704;190704}"));
 
-			assertEquals("Thursday", processor.getReplacer()
-				.process("${format;%tA;190704}"));
+			assertEquals("201907", processor.getReplacer()
+				.process("${format;%tY%Tm;20190704;20190704}"));
 
-			assertEquals("Thursday", processor.getReplacer()
-				.process("${format;%tA;20190704}"));
+			assertEquals("07", processor.getReplacer()
+				.process("${format;%tm;201907042359}"));
 
-			assertEquals("Thursday", processor.getReplacer()
-				.process("${format;%tA;201907041500}"));
+			assertEquals("04", processor.getReplacer()
+				.process("${format;%td;20190704235923}"));
 
-			assertEquals("Thursday", processor.getReplacer()
-				.process("${format;%tA;20190704150023}"));
+			assertEquals("2019", processor.getReplacer()
+				.process("${format;%tY;now}"));
 
-			assertEquals("Thursday", processor.getReplacer()
-				.process("${format;%tA;now}"));
-
-			assertEquals("Thursday", processor.getReplacer()
-				.process("${format;%tA;1562252413579}"));
+			assertEquals("2019", processor.getReplacer()
+				.process("${format;%tY;1562252413579}"));
 
 			assertEquals("foo", processor.getReplacer()
 				.process("${format;%s;foo}"));

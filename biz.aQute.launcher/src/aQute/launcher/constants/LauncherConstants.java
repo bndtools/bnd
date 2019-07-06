@@ -136,7 +136,7 @@ public class LauncherConstants {
 		noreferences = Boolean.valueOf(p.getProperty(LAUNCH_NOREFERENCES));
 		keep = Boolean.valueOf(p.getProperty(LAUNCH_KEEP));
 		runbundles.addAll(split(p.getProperty(LAUNCH_RUNBUNDLES), ","));
-		startlevels.addAll(split(p.getProperty(LAUNCH_STARTLEVELS), ",").stream()
+		startlevels.addAll(split(p.getProperty(LAUNCH_STARTLEVELS, ""), ",").stream()
 			.map(Integer::parseInt)
 			.collect(Collectors.toList()));
 

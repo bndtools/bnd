@@ -2370,11 +2370,6 @@ public class Analyzer extends Processor {
 		}
 
 		super.close();
-
-		if (classpath != null)
-			for (Jar jar : classpath) {
-				jar.close();
-			}
 	}
 
 	/**
@@ -2492,6 +2487,7 @@ public class Analyzer extends Processor {
 
 	@Override
 	public void clear() {
+		// TODO remove classpath entries from to-be-closed set?
 		classpath.clear();
 	}
 

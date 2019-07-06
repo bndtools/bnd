@@ -14,7 +14,6 @@
 	slf4j.simple;version=latest
 
 Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
-Timestamp: ${_@tstamp}
 
 -conditionalpackage: aQute.lib*
 -includepackage: \
@@ -23,7 +22,7 @@ Timestamp: ${_@tstamp}
 	aQute.launcher.minifw,\
 	aQute.launcher.plugin
 -includeresource: \
-	pre.jar
+	${p}.pre.jar
 
 -builderignore: testresources
 

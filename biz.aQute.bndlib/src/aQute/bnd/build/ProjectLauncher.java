@@ -1,17 +1,9 @@
 package aQute.bnd.build;
 
-import static aQute.lib.exceptions.ConsumerWithException.asConsumer;
-import static aQute.lib.exceptions.FunctionWithException.asFunction;
-
 import java.io.File;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,10 +25,8 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
-import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.Strategy;
-import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.libg.command.Command;
 import aQute.libg.generics.Create;
@@ -51,16 +41,11 @@ import aQute.libg.generics.Create;
  */
 public abstract class ProjectLauncher extends Processor {
 	public static final String			EMBEDDED_ACTIVATOR	= "Embedded-Activator";
-	public static final String			EMBEDDED_RUNPATH	= "Embedded-Runpath";
-	public static final String			LAUNCHER_CLASS		= "aQute.launcher.Launcher";
-	public static final String			LAUNCHER_PATH		= "launcher.runpath";
-	static final String					PRE_JAR				= "pre.jar";
 
 	private final static Logger			logger				= LoggerFactory.getLogger(ProjectLauncher.class);
 	private final Project				project;
 	private long						timeout				= 0;
 	private final List<String>			classpath		= new ArrayList<>();
-	private final List<String>			runpath			= new ArrayList<>();
 	private List<String>				runbundles			= Create.list();
 	private List<Integer>				startlevels			= Create.list();
 	private final List<String>			runvm				= new ArrayList<>();
@@ -100,12 +85,11 @@ public abstract class ProjectLauncher extends Processor {
 
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
-		updateFromProject();
 	}
 
 	/**
 	 * Collect all the aspect from the project and set the local fields from
-	 * them. Should be called
+	 * them. Should be called after constructor has been called.
 	 *
 	 * @throws Exception
 	 */
@@ -116,49 +100,6 @@ public abstract class ProjectLauncher extends Processor {
 		// getProject().refresh();
 		runbundles.clear();
 		startlevels.clear();
-
-		getProject().getBundles(Strategy.HIGHEST, Constants.DEFAULT_LAUNCHER_BSN, null)
-			.stream()
-			.map(Container::getFile)
-			.filter(File::exists)
-			.findFirst()
-			.ifPresent(asConsumer(file -> {
-				try (Jar jar = new Jar(file)) {
-					Resource embeddedPre = jar.getResource(PRE_JAR);
-					if (embeddedPre == null) {
-						return;
-					}
-					FileTime modifiedTime = FileTime.fromMillis(System.currentTimeMillis());
-					Manifest manifest = jar.getManifest();
-					if (manifest != null) {
-						String timestamp = manifest.getMainAttributes()
-							.getValue("Timestamp");
-						if (timestamp != null) {
-							// truncate to seconds since file system can discard
-							// milliseconds
-							long seconds = TimeUnit.MILLISECONDS.toSeconds(Long.parseLong(timestamp));
-							modifiedTime = FileTime.from(seconds, TimeUnit.SECONDS);
-						}
-					}
-					String version = new Version(jar.getVersion()).getWithoutQualifier()
-						.toString();
-					String prePath = "cache/" + version + "/" + Workspace.BND_CACHE_REPONAME + "/"
-						+ Constants.DEFAULT_LAUNCHER_BSN + ".pre/" + Constants.DEFAULT_LAUNCHER_BSN + ".pre-" + version
-						+ ".jar";
-					Path cachedPre = new File(getProject().getWorkspace()
-						.getBuildDir(), prePath)
-						.toPath();
-					if (!Files.isRegularFile(cachedPre) || Files.getLastModifiedTime(cachedPre)
-						.compareTo(modifiedTime) < 0) {
-						IO.mkdirs(cachedPre.getParent());
-						try (OutputStream out = IO.outputStream(cachedPre)) {
-							embeddedPre.write(out);
-						}
-						Files.setLastModifiedTime(cachedPre, modifiedTime);
-					}
-					addClasspath(new Container(getProject(), cachedPre.toFile()), classpath);
-				}
-			}));
 
 		Collection<Container> run = getProject().getRunbundles();
 
@@ -192,21 +133,6 @@ public abstract class ProjectLauncher extends Processor {
 
 		runpath.addAll(getProject().getRunFw());
 
-		// Detect if there's a launcher on the runpath
-		try (URLClassLoader findLauncherClassLoader = new URLClassLoader(runpath.stream()
-			.map(Container::getFile)
-			.map(File::toURI)
-			.map(asFunction(URI::toURL))
-			.toArray(URL[]::new), null)) {
-
-			findLauncherClassLoader.loadClass(LAUNCHER_CLASS);
-		} catch (ClassNotFoundException cnfe) {
-			// Add a launcher to the runpath
-			getProject().getBundles(Strategy.HIGHEST, Constants.DEFAULT_LAUNCHER_BSN, null)
-				.stream()
-				.findFirst()
-				.ifPresent(runpath::add);
-		}
 
 		for (Container c : runpath) {
 			addClasspath(c);
@@ -253,10 +179,10 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	public void addClasspath(Container container) throws Exception {
-		addClasspath(container, runpath);
+		addClasspath(container, classpath);
 	}
 
-	private void addClasspath(Container container, List<String> pathlist) throws Exception {
+	protected void addClasspath(Container container, List<String> pathlist) throws Exception {
 		if (container.getError() != null) {
 			getProject().error("Cannot launch because %s has reported %s", container.getProject(),
 				container.getError());
@@ -265,11 +191,8 @@ public abstract class ProjectLauncher extends Processor {
 			for (Container m : members) {
 				String path = IO.absolutePath(m.getFile());
 				if (!pathlist.contains(path)) {
-
 					Manifest manifest = m.getManifest();
-
 					if (manifest != null) {
-
 						// We are looking for any agents, used if
 						// -javaagent=true is set
 						String agentClassName = manifest.getMainAttributes()
@@ -292,10 +215,8 @@ public abstract class ProjectLauncher extends Processor {
 						}
 
 						// Allow activators on the runpath. They are called
-						// after
-						// the framework is completely initialized wit the
-						// system
-						// context.
+						// after the framework is completely initialized
+						// with the system context.
 						String activator = manifest.getMainAttributes()
 							.getValue(EMBEDDED_ACTIVATOR);
 						if (activator != null)
@@ -330,7 +251,7 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	public List<String> getRunpath() {
-		return runpath;
+		return classpath;
 	}
 
 	public Collection<String> getClasspath() {
@@ -338,9 +259,7 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	public Collection<String> getRunVM() {
-		List<String> list = new ArrayList<>(runvm);
-		list.add("-D" + LAUNCHER_PATH + "=" + Processor.join(getRunpath()));
-		return list;
+		return runvm;
 	}
 
 	@Deprecated
@@ -438,6 +357,9 @@ public abstract class ProjectLauncher extends Processor {
 	final static Pattern IGNORE = Pattern.compile("org[./]osgi[./]resource.*");
 
 	public int start(ClassLoader parent) throws Exception {
+		// FIXME This seems kinda broken. I think ProjectLauncherImpl will need
+		// to implement this since only it will know the main class name of the
+		// non-pre jar
 
 		prepare();
 
@@ -478,7 +400,7 @@ public abstract class ProjectLauncher extends Processor {
 
 		String[] args = getRunProgramArgs().toArray(new String[0]);
 
-		Class<?> main = cl.loadClass(LAUNCHER_CLASS);
+		Class<?> main = cl.loadClass(getMainTypeName());
 		return invoke(main, args);
 	}
 

@@ -52,12 +52,17 @@ public class AlsoLauncherTest {
 
 	private Workspace			workspace;
 	private Project				project;
+	private Properties			prior;
+
 
 	@Before
 	public void setUp() throws Exception {
 		testDir = new File(TMPDIR, testName.getMethodName());
 		IO.delete(testDir);
 		IO.mkdirs(testDir);
+		prior = new Properties();
+		prior.putAll(System.getProperties());
+
 		File wsRoot = new File(testDir, "test ws");
 		for (String folder : Arrays.asList("cnf", "demo", "biz.aQute.launcher", "biz.aQute.junit",
 			"biz.aQute.tester")) {
@@ -77,12 +82,7 @@ public class AlsoLauncherTest {
 	public void tearDown() throws Exception {
 		IO.close(project);
 		IO.close(workspace);
-		System.getProperties()
-			.remove("test.cmd");
-		for (String key : aQute.launcher.constants.LauncherConstants.LAUNCHER_PROPERTY_KEYS) {
-			System.getProperties()
-				.remove(key);
-		}
+		System.setProperties(prior);
 	}
 
 	@Test

@@ -28,6 +28,7 @@ import java.util.jar.Manifest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.header.Parameters;
@@ -53,8 +54,15 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.glob.Glob;
 
 public class ProjectLauncherImpl extends ProjectLauncher {
-	private final static Logger		logger					= LoggerFactory.getLogger(ProjectLauncherImpl.class);
-	private static final String		EMBEDDED_LAUNCHER_FQN	= "aQute.launcher.pre.EmbeddedLauncher";
+	private final static Logger		logger				= LoggerFactory.getLogger(ProjectLauncherImpl.class);
+	private static final String		EMBEDDED_RUNPATH	= "Embedded-Runpath";
+	private static final String		LAUNCHER_PATH		= "launcher.runpath";
+	private static final String		EMBEDDED_LAUNCHER	= "aQute.launcher.pre.EmbeddedLauncher";
+	static final String				PRE_JAR				= "biz.aQute.launcher.pre.jar";
+	private final Container			container;
+	private final List<String>		launcherpath		= new ArrayList<>();
+
+	private File					preTemp;
 	private BuilderInstructions		builderInstrs;
 	private LauncherInstructions	launcherInstrs;
 
@@ -63,8 +71,9 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	DatagramSocket					listenerComms;
 
-	public ProjectLauncherImpl(Project project) throws Exception {
+	public ProjectLauncherImpl(Project project, Container container) throws Exception {
 		super(project);
+		this.container = container;
 
 		builderInstrs = project.getInstructions(BuilderInstructions.class);
 		launcherInstrs = project.getInstructions(LauncherInstructions.class);
@@ -80,6 +89,34 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			project.warning(
 				"The noframework property in -runproperties is replaced by a project setting: '-runframework: none'");
 		}
+	}
+
+	@Override
+	protected void updateFromProject() throws Exception {
+		super.updateFromProject();
+
+		File launcher = container.getFile();
+
+		// Pre file will likely be next to launcher in embedded repo
+		File pre = new File(launcher.getParentFile(), PRE_JAR);
+
+		if (!pre.isFile()) {
+			if (preTemp != null) {
+				IO.delete(preTemp);
+			}
+			preTemp = pre = File.createTempFile("pre", ".jar");
+			try (Jar jar = new Jar(launcher)) {
+				Resource embeddedPre = jar.getResource(PRE_JAR);
+				try (OutputStream out = IO.outputStream(pre)) {
+					embeddedPre.write(out);
+				}
+			}
+		}
+		launcherpath.clear();
+		addClasspath(new Container(getProject(), pre), launcherpath);
+
+		// Make sure the launcher is on the runpath
+		addClasspath(container);
 	}
 
 	//
@@ -104,10 +141,14 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	@Override
 	public void cleanup() {
-		launchPropertiesFile.delete();
+		IO.delete(launchPropertiesFile);
 		if (listenerComms != null) {
 			listenerComms.close();
 			listenerComms = null;
+		}
+		if (preTemp != null) {
+			IO.delete(preTemp);
+			preTemp = null;
 		}
 		prepared = false;
 		logger.debug("Deleted {}", launchPropertiesFile.getAbsolutePath());
@@ -116,7 +157,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	@Override
 	public String getMainTypeName() {
-		return EMBEDDED_LAUNCHER_FQN;
+		return EMBEDDED_LAUNCHER;
 	}
 
 	@Override
@@ -124,6 +165,26 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		super.update();
 		updateFromProject();
 		writeProperties();
+	}
+
+	/**
+	 * We override getClasspath to use it just for the embedded launcher.
+	 */
+	@Override
+	public Collection<String> getClasspath() {
+		return launcherpath;
+	}
+
+	/**
+	 * We override getRunVM to use it to add the runpath to the JVM execution as
+	 * a system property to be processed by the embedded launcher.
+	 */
+	@Override
+	public Collection<String> getRunVM() {
+		List<String> list = new ArrayList<>(super.getRunVM());
+		list.add(getRunpath().stream()
+			.collect(Strings.joining(",", "-D" + LAUNCHER_PATH + "=\"", "\"", "")));
+		return list;
 	}
 
 	@Override
@@ -325,17 +386,17 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		logger.debug("Use Embedded launcher");
 		m.getMainAttributes()
-			.putValue("Main-Class", EMBEDDED_LAUNCHER_FQN);
+			.putValue("Main-Class", EMBEDDED_LAUNCHER);
 		m.getMainAttributes()
-			.putValue(EMBEDDED_RUNPATH, Processor.join(classpath));
+			.putValue(EMBEDDED_RUNPATH, join(classpath));
 
 		Resource preJar = Resource.fromURL(this.getClass()
-			.getResource("/pre.jar"));
-		try (Jar pre = new Jar("pre", preJar.openInputStream(), preJar.lastModified())) {
+			.getResource("/" + PRE_JAR));
+		try (Jar pre = Jar.fromResource("pre", preJar)) {
 			jar.addAll(pre);
 		}
 
-		doStart(jar, EMBEDDED_LAUNCHER_FQN);
+		doStart(jar, EMBEDDED_LAUNCHER);
 		if (getProject().getProperty(Constants.DIGESTS) != null)
 			jar.setDigestAlgorithms(getProject().getProperty(Constants.DIGESTS)
 				.trim()

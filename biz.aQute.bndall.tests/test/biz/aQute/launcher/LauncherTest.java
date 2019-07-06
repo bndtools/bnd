@@ -182,7 +182,7 @@ public class LauncherTest {
 
 		String result = runFrameworkWithRunMethod(file);
 		assertThat(result).contains("quit.no.exit")
-			.doesNotContain("[EmbeddedLauncher] looking for META-INF/MANIFEST.MF");
+			.doesNotContain("[EmbeddedLauncher] looking for Embedded-Runpath in META-INF/MANIFEST.MF");
 	}
 
 	/**
@@ -200,7 +200,8 @@ public class LauncherTest {
 		System.setProperty("launch.trace", "true");
 
 		String result = runFrameworkWithRunMethod(file);
-		assertThat(result).contains("installing jar/demo.jar", "[EmbeddedLauncher] looking for META-INF/MANIFEST.MF");
+		assertThat(result).contains("installing jar/demo.jar",
+			"[EmbeddedLauncher] looking for Embedded-Runpath in META-INF/MANIFEST.MF");
 	}
 
 	private File buildPackage(String bndrun) throws Exception {

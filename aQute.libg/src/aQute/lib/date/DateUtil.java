@@ -1,6 +1,8 @@
 package aQute.lib.date;
 
-import java.text.ParseException;
+import static aQute.lib.exceptions.FunctionWithException.asFunctionOrElse;
+import static aQute.lib.exceptions.SupplierWithException.asSupplierOrElse;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,7 +16,7 @@ import aQute.lib.strings.Strings;
 public class DateUtil {
 	private static final Map<Pattern, SimpleDateFormat>	DATE_FORMAT_REGEXPS	= new HashMap<Pattern, SimpleDateFormat>();
 	public static final TimeZone						UTC_TIME_ZONE		= TimeZone.getTimeZone("UTC");
-	public static Pattern								IS_NUMMERIC_P		= Pattern.compile("[+-]?\\d+");
+	private static final Pattern						IS_NUMERIC_P		= Pattern.compile("[+-]?\\d+");
 
 	static {
 		put("\\d{6}", "yyMMdd");
@@ -75,31 +77,22 @@ public class DateUtil {
 	}
 
 	public static Date parse(String dateString) {
-		Date date = determineDateFormat(dateString).map(df -> {
-			try {
-				synchronized (df) {
-					df.setTimeZone(UTC_TIME_ZONE);
-					return df.parse(dateString);
+		Date date = determineDateFormat(dateString).map(asFunctionOrElse(df -> {
+			synchronized (df) {
+				df.setTimeZone(UTC_TIME_ZONE);
+				return df.parse(dateString);
+			}
+		}, null))
+			.orElseGet(asSupplierOrElse(() -> {
+				if (IS_NUMERIC_P.matcher(dateString)
+					.matches()) {
+					long ldate = Long.parseLong(dateString);
+					return new Date(ldate);
 				}
-			} catch (ParseException e) {
 				return null;
-			}
-		})
-			.orElse(null);
+			}, null));
 
-		if (date != null)
-			return date;
-
-		if (IS_NUMMERIC_P.matcher(dateString)
-			.matches()) {
-			try {
-				long ldate = Long.parseLong(dateString);
-				return new Date(ldate);
-			} catch (NumberFormatException nfe) {
-				// ok, we've no clue what it is
-			}
-		}
-		return null;
+		return date;
 	}
 
 }
