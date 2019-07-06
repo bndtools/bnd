@@ -2387,6 +2387,7 @@ public class Project extends Processor {
 	public void junit() throws Exception {
 		@SuppressWarnings("resource")
 		JUnitLauncher launcher = new JUnitLauncher(this);
+		launcher.updateFromProject();
 		launcher.launch();
 	}
 
@@ -2803,7 +2804,12 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public ProjectLauncher getProjectLauncher() throws Exception {
-		return getHandler(ProjectLauncher.class, getRunpath(), LAUNCHER_PLUGIN, "biz.aQute.launcher");
+		ProjectLauncher launcher = getHandler(ProjectLauncher.class, getRunpath(), LAUNCHER_PLUGIN,
+			"biz.aQute.launcher");
+
+		launcher.updateFromProject(); // we need to do after constructor
+
+		return launcher;
 	}
 
 	public ProjectTester getProjectTester() throws Exception {
