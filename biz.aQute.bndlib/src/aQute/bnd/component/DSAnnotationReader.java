@@ -869,35 +869,37 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 		private String identifierToPropertyName(String name) {
 			Matcher m = IDENTIFIERTOPROPERTY.matcher(name);
-			if (!m.find()) {
-				return name;
-			}
-			StringBuffer b = new StringBuffer();
-			do {
+			StringBuilder sb = new StringBuilder();
+			int start = 0;
+			for (; m.find(start); start = m.end()) {
+				String replacement;
 				switch (m.group()) {
 					case "__" : // __ to _
-						m.appendReplacement(b, "_");
+						replacement = "_";
 						break;
 					case "_" : // _ to .
-						m.appendReplacement(b, ".");
+						replacement = ".";
 						break;
 					case "$_$" : // $_$ to -
-						m.appendReplacement(b, "-");
+						replacement = "-";
 						break;
 					case "$$" : // $$ to $
-						m.appendReplacement(b, "\\$");
+						replacement = "$";
 						break;
 					case "$" : // $ removed
-						m.appendReplacement(b, "");
+						replacement = "";
 						break;
 					default : // unknown!
-						m.appendReplacement(b, m.group());
+						replacement = m.group();
 						analyzer.error("unknown mapping %s in property name %s", m.group(), name);
 						break;
 				}
-			} while (m.find());
-			m.appendTail(b);
-			return b.toString();
+				sb.append(name, start, m.start())
+					.append(replacement);
+			}
+			return (start == 0) ? name
+				: sb.append(name, start, name.length())
+				.toString();
 		}
 	}
 

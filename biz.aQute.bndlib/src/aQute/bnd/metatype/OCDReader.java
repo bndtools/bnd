@@ -527,25 +527,38 @@ class OCDReader {
 
 		private String identifierToPropertyName(String name) {
 			Matcher m = IDENTIFIERTOPROPERTY.matcher(name);
-			StringBuffer b = new StringBuffer();
-			while (m.find()) {
-				String replacement;// null;
-				if (m.group(1) != null) // __ to _
-					replacement = "_";
-				else if (m.group(2) != null) // _ to .
-					replacement = ".";
-				else if (m.group(3) != null) { // $_$ to -
-					replacement = "-";
-					ocd.updateVersion(MetatypeVersion.VERSION_1_4);
-				} else if (m.group(4) != null) // $$ to $
-					replacement = "\\$";
-				else // $ removed.
-					replacement = "";
-
-				m.appendReplacement(b, replacement);
+			StringBuilder sb = new StringBuilder();
+			int start = 0;
+			for (; m.find(start); start = m.end()) {
+				String replacement;
+				switch (m.group()) {
+					case "__" : // __ to _
+						replacement = "_";
+						break;
+					case "_" : // _ to .
+						replacement = ".";
+						break;
+					case "$_$" : // $_$ to -
+						replacement = "-";
+						ocd.updateVersion(MetatypeVersion.VERSION_1_4);
+						break;
+					case "$$" : // $$ to $
+						replacement = "$";
+						break;
+					case "$" : // $ removed
+						replacement = "";
+						break;
+					default : // unknown!
+						replacement = m.group();
+						analyzer.error("unknown mapping %s in property name %s", m.group(), name);
+						break;
+				}
+				sb.append(name, start, m.start())
+					.append(replacement);
 			}
-			m.appendTail(b);
-			return b.toString();
+			return (start == 0) ? name
+				: sb.append(name, start, name.length())
+					.toString();
 		}
 
 		private String space(String name) {

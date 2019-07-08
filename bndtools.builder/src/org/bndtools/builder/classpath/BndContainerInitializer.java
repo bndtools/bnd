@@ -1,5 +1,7 @@
 package org.bndtools.builder.classpath;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.service.reporter.Reporter.SetLocation;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
@@ -508,20 +511,21 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 				.get("packages");
 			if (packageList != null) {
 				// Use packages=* for full access
-				List<IAccessRule> accessRules = new ArrayList<>();
-				for (String exportPkg : packageList.trim()
-					.split("\\s*,\\s*")) {
-					Matcher m = packagePattern.matcher(exportPkg);
-					StringBuffer pathStr = new StringBuffer(exportPkg.length() + 1);
-					while (m.find()) {
-						m.appendReplacement(pathStr, m.group()
-							.equals("*") ? "**" : "/");
-					}
-					m.appendTail(pathStr)
-						.append("/*");
-					accessRules.add(JavaCore.newAccessRule(new Path(pathStr.toString()), IAccessRule.K_ACCESSIBLE));
-				}
-				return accessRules;
+				return Strings.splitAsStream(packageList)
+					.map(exportPkg -> {
+						Matcher m = packagePattern.matcher(exportPkg);
+						StringBuilder pathStr = new StringBuilder(exportPkg.length() + 1);
+						int start = 0;
+						for (; m.find(start); start = m.end()) {
+							pathStr.append(exportPkg, start, m.start())
+								.append(m.group()
+									.equals("*") ? "**" : "/");
+						}
+						pathStr.append(exportPkg, start, exportPkg.length())
+							.append("/*");
+						return JavaCore.newAccessRule(new Path(pathStr.toString()), IAccessRule.K_ACCESSIBLE);
+					})
+					.collect(toList());
 			}
 
 			switch (c.getType()) {
