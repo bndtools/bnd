@@ -693,27 +693,26 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 	private void replaceParameters(Attrs attrs) throws IllegalArgumentException {
 		for (Entry<String, String> entry : attrs.entrySet()) {
-			boolean modified = false;
-			StringBuffer sb = new StringBuffer();
-
-			Matcher matcher = SIMPLE_PARAM_PATTERN.matcher(entry.getValue());
-			while (matcher.find()) {
-				modified = true;
+			StringBuilder sb = new StringBuilder();
+			String value = entry.getValue();
+			Matcher matcher = SIMPLE_PARAM_PATTERN.matcher(value);
+			int start = 0;
+			for (; matcher.find(start); start = matcher.end()) {
 				String key = matcher.group(1);
-				String substitution = attrs.get(key);
-				if (substitution == null) {
-					matcher.appendReplacement(sb, "");
-					sb.append(matcher.group(0));
-				} else if (SIMPLE_PARAM_PATTERN.matcher(substitution)
-					.find())
+				String replacement = attrs.get(key);
+				if (replacement == null) {
+					replacement = matcher.group(0);
+				} else if (SIMPLE_PARAM_PATTERN.matcher(replacement)
+					.find()) {
 					throw new IllegalArgumentException("nested substitutions not permitted");
-				else
-					matcher.appendReplacement(sb, substitution);
+				}
+				sb.append(value, start, matcher.start())
+					.append(replacement);
 			}
 
-			if (modified) {
-				matcher.appendTail(sb);
-				entry.setValue(sb.toString());
+			if (start != 0) {
+				entry.setValue(sb.append(value, start, value.length())
+					.toString());
 			}
 		}
 	}

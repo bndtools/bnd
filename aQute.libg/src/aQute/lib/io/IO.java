@@ -1332,18 +1332,15 @@ public class IO {
 			StringBuilder sb = new StringBuilder();
 			Matcher matcher = WINDOWS_MACROS.matcher(value);
 			int start = 0;
-			while (matcher.find(start)) {
+			for (; matcher.find(start); start = matcher.end()) {
 				String name = matcher.group(1);
 				String replacement = getSystemEnv(name, visited);
 				sb.append(value, start, matcher.start())
 					.append(replacement);
-				start = matcher.end();
 			}
-			if (start == 0) {
-				return value;
-			}
-			sb.append(value, start, value.length());
-			return sb.toString();
+			return (start == 0) ? value
+				: sb.append(value, start, value.length())
+					.toString();
 		}
 
 		String getenv(String key) {

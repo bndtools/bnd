@@ -70,7 +70,7 @@ public class TaggedData implements Closeable {
 			if (h.getResponseCode() / 100 < 4)
 				return null;
 
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 
 			try {
 				InputStream in = con.getInputStream();
@@ -103,19 +103,21 @@ public class TaggedData implements Closeable {
 			.replaceAll("");
 		sb = NEWLINES_P.matcher(sb)
 			.replaceAll("\n");
-		StringBuffer x = new StringBuffer();
+		StringBuilder x = new StringBuilder();
 		Matcher m = ENTITIES_P.matcher(sb);
-		while (m.find()) {
+		int start = 0;
+		for (; m.find(start); start = m.end()) {
+			x.append(sb, start, m.start());
 			if (m.group("nr") != null) {
 				char c = (char) Integer.parseInt(m.group("nr"));
-				m.appendReplacement(x, "");
 				x.append(c);
 			} else {
-				m.appendReplacement(x, entity(m.group("name")));
+				x.append(entity(m.group("name")));
 			}
 		}
-		m.appendTail(x);
-		return x.toString();
+		return (start == 0) ? sb.toString()
+			: x.append(sb, start, sb.length())
+				.toString();
 	}
 
 	private String entity(String name) {

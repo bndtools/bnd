@@ -55,23 +55,18 @@ class SourceFS {
 	}
 
 	public String transform(String s) throws Exception {
-
 		Matcher m = LOCAL_P.matcher(s);
-		StringBuffer sb = new StringBuffer();
-		boolean found = false;
-
-		while (m.find()) {
+		StringBuilder sb = new StringBuilder();
+		int start = 0;
+		for (; m.find(start); start = m.end()) {
 			FileDescription fd = toRemote(m.group(0));
 			fd.touched = true;
-			m.appendReplacement(sb, fd.path);
-			found = true;
+			sb.append(s, start, m.start())
+				.append(fd.path);
 		}
-
-		if (!found)
-			return s;
-
-		m.appendTail(sb);
-		return sb.toString();
+		return (start == 0) ? s
+			: sb.append(s, start, s.length())
+				.toString();
 	}
 
 	private FileDescription toRemote(String localPath) throws Exception {
