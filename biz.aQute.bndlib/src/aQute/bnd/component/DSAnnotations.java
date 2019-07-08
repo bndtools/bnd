@@ -140,6 +140,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 			.length() > 0) {
 			componentPaths.add(sc);
 		}
+		boolean nouses = analyzer.is(Constants.NOUSES);
 
 		MultiMap<String, ComponentDef> definitionsByName = new MultiMap<>();
 
@@ -182,7 +183,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 						.putResource(path, new TagResource(definition.getTag()));
 
 					if (!options.contains(Options.nocapabilities)) {
-						addServiceCapability(definition.service, provides);
+						addServiceCapability(definition.service, provides, nouses);
 					}
 
 					if (!options.contains(Options.norequirements)) {
@@ -273,7 +274,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 		return actual;
 	}
 
-	private void addServiceCapability(TypeRef[] services, Set<String> provides) {
+	private void addServiceCapability(TypeRef[] services, Set<String> provides, boolean nouses) {
 		if (services == null) {
 			return;
 		}
@@ -286,15 +287,18 @@ public class DSAnnotations implements AnalyzerPlugin {
 		}
 		Attrs a = new Attrs();
 		a.put(ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE + ":List<String>", objectClass);
-		String uses = Arrays.stream(services)
-			.map(TypeRef::getPackageRef)
-			.filter(pkg -> !pkg.isJava() && !pkg.isMetaData())
-			.map(PackageRef::getFQN)
-			.sorted()
-			.collect(joining());
-		if (!uses.isEmpty()) {
-			a.put(Constants.USES_DIRECTIVE, uses);
+		if (!nouses) {
+			String uses = Arrays.stream(services)
+				.map(TypeRef::getPackageRef)
+				.filter(pkg -> !pkg.isJava() && !pkg.isMetaData())
+				.map(PackageRef::getFQN)
+				.sorted()
+				.collect(joining());
+			if (!uses.isEmpty()) {
+				a.put(Constants.USES_DIRECTIVE, uses);
+			}
 		}
+
 		Parameters p = new Parameters();
 		p.put(ServiceNamespace.SERVICE_NAMESPACE, a);
 		String s = p.toString();

@@ -538,7 +538,9 @@ public class Syntax implements Constants {
 		new Syntax(NOMANIFEST, "Do not safe the manifest in the JAR.", NOMANIFEST + "=true", "true,false",
 			Verifier.TRUEORFALSEPATTERN),
 
-		new Syntax(NOUSES, "Do not calculate the " + USES_DIRECTIVE + " directive on exports.", NOUSES + "=true",
+		new Syntax(NOUSES,
+			"Do not calculate the " + USES_DIRECTIVE + " directive on package exports or on capabilities.",
+			NOUSES + "=true",
 			"true,false", Verifier.TRUEORFALSEPATTERN),
 
 		new Syntax(NOEE, "Do not calculate the osgi.ee name space Execution Environment from the class file version.",
