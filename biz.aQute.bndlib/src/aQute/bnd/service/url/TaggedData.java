@@ -106,7 +106,7 @@ public class TaggedData implements Closeable {
 		StringBuilder x = new StringBuilder();
 		Matcher m = ENTITIES_P.matcher(sb);
 		int start = 0;
-		for (; m.find(start); start = m.end()) {
+		for (; m.find(); start = m.end()) {
 			x.append(sb, start, m.start());
 			if (m.group("nr") != null) {
 				char c = (char) Integer.parseInt(m.group("nr"));

@@ -529,32 +529,29 @@ class OCDReader {
 			Matcher m = IDENTIFIERTOPROPERTY.matcher(name);
 			StringBuilder sb = new StringBuilder();
 			int start = 0;
-			for (; m.find(start); start = m.end()) {
-				String replacement;
+			for (; m.find(); start = m.end()) {
+				sb.append(name, start, m.start());
 				switch (m.group()) {
 					case "__" : // __ to _
-						replacement = "_";
+						sb.append('_');
 						break;
 					case "_" : // _ to .
-						replacement = ".";
+						sb.append('.');
 						break;
 					case "$_$" : // $_$ to -
-						replacement = "-";
+						sb.append('-');
 						ocd.updateVersion(MetatypeVersion.VERSION_1_4);
 						break;
 					case "$$" : // $$ to $
-						replacement = "$";
+						sb.append('$');
 						break;
 					case "$" : // $ removed
-						replacement = "";
 						break;
 					default : // unknown!
-						replacement = m.group();
+						sb.append(m.group());
 						analyzer.error("unknown mapping %s in property name %s", m.group(), name);
 						break;
 				}
-				sb.append(name, start, m.start())
-					.append(replacement);
 			}
 			return (start == 0) ? name
 				: sb.append(name, start, name.length())

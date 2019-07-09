@@ -58,7 +58,7 @@ class SourceFS {
 		Matcher m = LOCAL_P.matcher(s);
 		StringBuilder sb = new StringBuilder();
 		int start = 0;
-		for (; m.find(start); start = m.end()) {
+		for (; m.find(); start = m.end()) {
 			FileDescription fd = toRemote(m.group(0));
 			fd.touched = true;
 			sb.append(s, start, m.start())

@@ -94,7 +94,7 @@ public class ADDef extends ExtensionDef {
 	private void escape(String defaultValue, StringBuilder sb) {
 		Matcher m = escapes.matcher(defaultValue);
 		int start = 0;
-		for (; m.find(start); start = m.end()) {
+		for (; m.find(); start = m.end()) {
 			sb.append(defaultValue, start, m.start())
 				.append('\\')
 				.append(m.group());
