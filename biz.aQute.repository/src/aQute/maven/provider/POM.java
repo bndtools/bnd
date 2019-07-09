@@ -340,7 +340,7 @@ public class POM implements IPom {
 		Matcher m = MACRO_P.matcher(value);
 		StringBuilder sb = new StringBuilder();
 		int start = 0;
-		for (; m.find(start); start = m.end()) {
+		for (; m.find(); start = m.end()) {
 			String key = m.group("key");
 			String property = (m.group("env") != null) ? System.getenv(key) : this.properties.getProperty(key);
 			if (property != null && property.indexOf('$') >= 0) {

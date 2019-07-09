@@ -1332,7 +1332,7 @@ public class IO {
 			StringBuilder sb = new StringBuilder();
 			Matcher matcher = WINDOWS_MACROS.matcher(value);
 			int start = 0;
-			for (; matcher.find(start); start = matcher.end()) {
+			for (; matcher.find(); start = matcher.end()) {
 				String name = matcher.group(1);
 				String replacement = getSystemEnv(name, visited);
 				sb.append(value, start, matcher.start())

@@ -697,7 +697,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			String value = entry.getValue();
 			Matcher matcher = SIMPLE_PARAM_PATTERN.matcher(value);
 			int start = 0;
-			for (; matcher.find(start); start = matcher.end()) {
+			for (; matcher.find(); start = matcher.end()) {
 				String key = matcher.group(1);
 				String replacement = attrs.get(key);
 				if (replacement == null) {

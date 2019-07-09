@@ -516,7 +516,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 						Matcher m = packagePattern.matcher(exportPkg);
 						StringBuilder pathStr = new StringBuilder(exportPkg.length() + 1);
 						int start = 0;
-						for (; m.find(start); start = m.end()) {
+						for (; m.find(); start = m.end()) {
 							pathStr.append(exportPkg, start, m.start())
 								.append(m.group()
 									.equals("*") ? "**" : "/");
