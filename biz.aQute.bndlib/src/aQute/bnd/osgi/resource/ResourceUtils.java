@@ -102,8 +102,6 @@ public class ResourceUtils {
 
 			if (o1 instanceof ResourceImpl && o2 instanceof ResourceImpl) {
 				return ((ResourceImpl) o1).compareTo(o2);
-			} else {
-
 			}
 
 			return o1.toString()

@@ -14,6 +14,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -48,7 +49,6 @@ import aQute.maven.api.Revision;
 import aQute.maven.provider.FakeNexus;
 import aQute.maven.provider.MavenRepository;
 import aQute.maven.provider.POM;
-import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 /*
@@ -308,6 +308,16 @@ public class MavenBndRepoTest extends TestCase {
 		map.put("releaseUrl", remote.toURI()
 			.toString());
 		config(map);
+		Requirement wc = ResourceUtils.createWildcardRequirement();
+		Collection<Capability> caps = repo.findProviders(Collections.singleton(wc))
+			.get(wc);
+		Set<Resource> resources = ResourceUtils.getResources(caps);
+		assertThat(resources)
+			.extracting(ResourceUtils::getIdentityCapability)
+			.filteredOn(Objects::nonNull)
+			.extracting(IdentityCapability::osgi_identity)
+			.containsExactlyInAnyOrder("org.osgi.dto", "org.apache.commons.cli");
+
 		File jar = IO.getFile("testresources/release.jar");
 		PutResult put = repo.put(new FileInputStream(jar), null);
 
@@ -315,14 +325,14 @@ public class MavenBndRepoTest extends TestCase {
 		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.pom", 1470);
 		put = repo.put(new FileInputStream(jar), null);
 
-		Requirement wc = ResourceUtils.createWildcardRequirement();
-		Collection<Capability> caps = repo.findProviders(Collections.singleton(wc))
+		caps = repo.findProviders(Collections.singleton(wc))
 			.get(wc);
-		Set<Resource> resources = ResourceUtils.getResources(caps);
-		assertThat(resources).hasSize(3);
-		IdentityCapability bc = ResourceUtils.getIdentityCapability(resources.iterator()
-			.next());
-		assertEquals("biz.aQute.bnd.maven", bc.osgi_identity());
+		resources = ResourceUtils.getResources(caps);
+		assertThat(resources)
+			.extracting(ResourceUtils::getIdentityCapability)
+			.filteredOn(Objects::nonNull)
+			.extracting(IdentityCapability::osgi_identity)
+			.containsExactlyInAnyOrder("org.osgi.dto", "org.apache.commons.cli", "biz.aQute.bnd.maven");
 	}
 
 	public void testPutReleaseAndThenIndex() throws Exception {
@@ -705,10 +715,11 @@ public class MavenBndRepoTest extends TestCase {
 
 	private File assertIsFile(File dir, String path, int size) throws IOException {
 		File file = IO.getFile(dir, path);
-		if (!file.isFile())
-			throw new AssertionFailedError(path + " does not exist");
+		assertThat(file).as("%s does not exist", path)
+			.isFile();
 		if (size > 0) {
-			assertEquals("Unexpected file size ", size, file.length());
+			assertThat(file.length()).as("Unexpected file size")
+				.isEqualTo(size);
 		}
 		return file;
 	}
