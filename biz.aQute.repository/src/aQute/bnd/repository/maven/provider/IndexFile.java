@@ -239,13 +239,12 @@ class IndexFile {
 				results.add(promise);
 			}
 		}
+		// snapshot archive resources
+		ResourcesRepository resourcesRepository = promiseFactory.all(results)
+				.map(ignore -> new ResourcesRepository(archives.values()))
+				.getValue();
 
-		Collection<Resource> snapshot = archives.values();
-
-		return promiseFactory.all(results)
-			.map(ignore -> {
-				return new BridgeRepository(new ResourcesRepository(snapshot));
-			});
+		return promiseFactory.submit(() -> new BridgeRepository(resourcesRepository));
 	}
 
 	private Boolean failed(Archive a, String msg) throws InterruptedException {
