@@ -326,10 +326,10 @@ class IndexFile {
 		}
 	}
 
-	boolean refresh() throws Exception {
+	boolean refresh(Runnable refreshAction) throws Exception {
 		if (indexFile.lastModified() != lastModified && last + 10000 < System.currentTimeMillis()) {
 			last = System.currentTimeMillis();
-			this.bridge = load();
+			this.bridge = load().onResolve(refreshAction);
 			return true;
 		}
 		return false;

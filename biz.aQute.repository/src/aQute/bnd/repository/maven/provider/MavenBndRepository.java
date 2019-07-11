@@ -622,11 +622,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	public boolean refresh() throws Exception {
 		init();
 
-		if (!index.refresh()) {
-			return false;
-		}
-
-		index.bridge.onResolve(() -> {
+		return index.refresh(() -> {
 			for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class)) {
 				try {
 					listener.repositoryRefreshed(this);
@@ -635,7 +631,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				}
 			}
 		});
-		return true;
 	}
 
 	@Override
