@@ -1,5 +1,6 @@
 package aQute.bnd.osgi;
 
+import static aQute.lib.exceptions.FunctionWithException.asFunction;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toMap;
@@ -59,9 +60,10 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.Iterables;
-import aQute.lib.date.DateUtil;
+import aQute.lib.date.Dates;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.ExtendedFilter;
+import aQute.lib.formatter.Formatters;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -84,8 +86,7 @@ public class Macro {
 	private final static String		NULLVALUE		= "c29e43048791e250dfd5723e7b8aa048df802c9262cfa8fbc4475b2e392a8ad2";
 	private final static String		LITERALVALUE	= "017a3ddbfc0fcd27bcdb2590cdb713a379ae59ef";
 	private final static Pattern	NUMERIC_P		= Pattern.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
-	private final static Pattern	PRINTF_P		= Pattern.compile(
-		"%(?:(\\d+)\\$)?(-|\\+|0|\\(|,|\\^|#| )*(\\d*)?(?:\\.(\\d+))?(a|A|b|B|h|H|d|f|c|s|x|X|u|o|z|Z|e|E|g|G|p|n|b|B|(?:[tT][HIklMSLNpzZsQBbhAaCYyjmdeRTrDFc])|%)");
+
 	Processor						domain;
 	Reporter						reporter;
 	Object							targets[];
@@ -113,7 +114,7 @@ public class Macro {
 		return process(line, new Link(source, null, line));
 	}
 
-	String process(String line, Link link) {
+	String process(CharSequence line, Link link) {
 		StringBuilder sb = new StringBuilder();
 		process(line, 0, '\u0000', '\u0000', sb, link);
 		return sb.toString();
@@ -612,17 +613,17 @@ public class Macro {
 
 	public Object _now(String[] args) {
 		verifyCommand(args, _nowHelp, null, 1, 2);
-		Date now = new Date();
+		long buildNow = getBuildNow();
 
 		if (args.length == 2) {
 			if ("long".equals(args[1]))
-				return now.getTime();
+				return buildNow;
 
-			DateFormat df = new SimpleDateFormat(args[1], Locale.US);
-			df.setTimeZone(DateUtil.UTC_TIME_ZONE);
-			return df.format(now);
+			DateFormat df = new SimpleDateFormat(args[1], Locale.ROOT);
+			df.setTimeZone(Dates.UTC_TIME_ZONE);
+			return df.format(new Date(buildNow));
 		}
-		return now;
+		return new Date(buildNow);
 	}
 
 	public final static String _fmodifiedHelp = "${fmodified;<list of filenames>...}, return latest modification date";
@@ -849,22 +850,12 @@ public class Macro {
 		if (args.length > 2) {
 			tz = TimeZone.getTimeZone(args[2]);
 		} else {
-			tz = DateUtil.UTC_TIME_ZONE;
+			tz = Dates.UTC_TIME_ZONE;
 		}
 		if (args.length > 3) {
 			now = Long.parseLong(args[3]);
 		} else {
-			String tstamp = domain.getProperty(Constants.TSTAMP);
-			if (tstamp != null) {
-				try {
-					now = Long.parseLong(tstamp);
-				} catch (NumberFormatException e) {
-					// ignore, just use current time
-					now = System.currentTimeMillis();
-				}
-			} else {
-				now = System.currentTimeMillis();
-			}
+			now = getBuildNow();
 		}
 		if (args.length > 4) {
 			reporter.warning("Too many arguments for tstamp: %s", Arrays.toString(args));
@@ -873,6 +864,22 @@ public class Macro {
 		SimpleDateFormat sdf = new SimpleDateFormat(format, Locale.US);
 		sdf.setTimeZone(tz);
 		return sdf.format(new Date(now));
+	}
+
+	private long getBuildNow() {
+		long now;
+		String tstamp = domain.getProperty(Constants.TSTAMP);
+		if (tstamp != null) {
+			try {
+				now = Long.parseLong(tstamp);
+			} catch (NumberFormatException e) {
+				// ignore, just use current time
+				now = System.currentTimeMillis();
+			}
+		} else {
+			now = System.currentTimeMillis();
+		}
+		return now;
 	}
 
 	static final String _lsrHelp = "${lsr;<dir>;[<selector>...]}";
@@ -1888,94 +1895,10 @@ public class Macro {
 
 	static final String _formatHelp = "${format;<format>[;args...]}";
 
-	public String _format(String[] args) throws Exception {
-		verifyCommand(args, _formatHelp, null, 2, Integer.MAX_VALUE);
+	public String _format(String[] macroArgs) throws Exception {
+		verifyCommand(macroArgs, _formatHelp, null, 2, Integer.MAX_VALUE);
 
-		Object[] args2 = new Object[args.length + 10];
-
-		Matcher m = PRINTF_P.matcher(args[1]);
-		int n = 2;
-		while (n < args.length && m.find()) {
-			char conversion = m.group(5)
-				.charAt(0);
-			switch (conversion) {
-				// d|f|c|s|h|n|x|X|u|o|z|Z|e|E|g|G|p|\n|%)");
-				case 'd' :
-				case 'u' :
-				case 'o' :
-				case 'x' :
-				case 'X' :
-				case 'z' :
-				case 'Z' :
-					args2[n - 2] = Long.parseLong(args[n]);
-					n++;
-					break;
-
-				case 'f' :
-				case 'e' :
-				case 'E' :
-				case 'g' :
-				case 'G' :
-				case 'a' :
-				case 'A' :
-					args2[n - 2] = Double.parseDouble(args[n]);
-					n++;
-					break;
-
-				case 'c' :
-					if (args[n].length() == 1)
-						args2[n - 2] = args[n].charAt(0);
-					else {
-						try {
-							int parseInt = Integer.parseInt(args[n]);
-							args2[n - 2] = parseInt;
-						} catch (NumberFormatException ne) {
-							throw new IllegalArgumentException("Character expected but found '" + args[n] + "'");
-						}
-					}
-					n++;
-					break;
-
-				case 'b' :
-					String v = args[n].toLowerCase();
-					args2[n - 1] = isTruthy(v);
-					n++;
-					break;
-
-				case 's' :
-				case 'h' :
-				case 'H' :
-				case 'p' :
-					args2[n - 2] = args[n];
-					n++;
-					break;
-
-				case 't' :
-				case 'T' :
-					String inputDate = args[n];
-
-					if ("now".equals(inputDate)) {
-						inputDate = _tstamp(new String[0]);
-					}
-
-					Date date = DateUtil.parse(inputDate);
-					if (date == null) {
-						throw new IllegalArgumentException("Illegal Date Format " + inputDate);
-					}
-					args2[n - 2] = date;
-					n++;
-					break;
-
-				case 'n' :
-				case '%' :
-					break;
-			}
-		}
-
-		try (Formatter f = new Formatter()) {
-			f.format(args[1], args2);
-			return f.toString();
-		}
+		return Formatters.format(macroArgs[1], asFunction(this::isTruthy), 2, macroArgs);
 	}
 
 	static final String _isemptyHelp = "${isempty;[<target>...]}";
@@ -2167,15 +2090,25 @@ public class Macro {
 	 */
 
 	public String _template(String args[]) throws IOException {
-		verifyCommand(args, _templateHelp, null, 3, 4);
+		verifyCommand(args, _templateHelp, null, 3, 30);
 
 		String propertyKey = args[1];
-		String template = args[2];
-		String separator = args.length < 4 ? "," : args[3];
+		String separator = ",";
+
+		StringBuilder templateBuilder = new StringBuilder();
+		String del = "";
+
+		for (int i = 2; i < args.length; i++) {
+			templateBuilder.append(del)
+				.append(args[i]);
+			del = ";";
+		}
+
+		String template = templateBuilder.toString();
 
 		Parameters parameters = domain.decorated(propertyKey);
 		StringBuilder sb = new StringBuilder();
-		String del = "";
+		del = "";
 
 		try (Processor scope = new Processor(domain)) {
 			for (Map.Entry<String, Attrs> entry : parameters.entrySet()) {
@@ -2197,7 +2130,7 @@ public class Macro {
 		return sb.toString();
 	}
 
-	final static String _templateHelp = "${template;macro-name;template[;separator=,]}";
+	final static String _templateHelp = "${template;macro-name[;template]+}";
 
 	/**
 	 * Return the merged and decorated value of a macro
