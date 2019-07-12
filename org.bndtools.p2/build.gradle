@@ -133,7 +133,7 @@ def p2 = tasks.register('p2') {
 }
 
 tasks.named('jar') {
-  dependsOn p2
+  inputs.files p2
 }
 
 tasks.named('release') {
