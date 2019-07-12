@@ -312,11 +312,12 @@ public class MavenBndRepoTest extends TestCase {
 		Collection<Capability> caps = repo.findProviders(Collections.singleton(wc))
 			.get(wc);
 		Set<Resource> resources = ResourceUtils.getResources(caps);
+		int size = resources.size();
 		assertThat(resources)
 			.extracting(ResourceUtils::getIdentityCapability)
 			.filteredOn(Objects::nonNull)
 			.extracting(IdentityCapability::osgi_identity)
-			.containsExactlyInAnyOrder("org.osgi.dto", "org.apache.commons.cli");
+			.doesNotContain("biz.aQute.bnd.maven");
 
 		File jar = IO.getFile("testresources/release.jar");
 		PutResult put = repo.put(new FileInputStream(jar), null);
@@ -332,7 +333,8 @@ public class MavenBndRepoTest extends TestCase {
 			.extracting(ResourceUtils::getIdentityCapability)
 			.filteredOn(Objects::nonNull)
 			.extracting(IdentityCapability::osgi_identity)
-			.containsExactlyInAnyOrder("org.osgi.dto", "org.apache.commons.cli", "biz.aQute.bnd.maven");
+			.contains("biz.aQute.bnd.maven")
+			.hasSize(size + 1);
 	}
 
 	public void testPutReleaseAndThenIndex() throws Exception {
