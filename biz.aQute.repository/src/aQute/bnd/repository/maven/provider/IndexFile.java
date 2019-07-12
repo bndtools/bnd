@@ -239,13 +239,12 @@ class IndexFile {
 				results.add(promise);
 			}
 		}
+		// snapshot archive resources
+		ResourcesRepository resourcesRepository = promiseFactory.all(results)
+				.map(ignore -> new ResourcesRepository(archives.values()))
+				.getValue();
 
-		Collection<Resource> snapshot = archives.values();
-
-		return promiseFactory.all(results)
-			.map(ignore -> {
-				return new BridgeRepository(new ResourcesRepository(snapshot));
-			});
+		return promiseFactory.submit(() -> new BridgeRepository(resourcesRepository));
 	}
 
 	private Boolean failed(Archive a, String msg) throws InterruptedException {
@@ -326,10 +325,10 @@ class IndexFile {
 		}
 	}
 
-	boolean refresh() throws Exception {
+	boolean refresh(Runnable refreshAction) throws Exception {
 		if (indexFile.lastModified() != lastModified && last + 10000 < System.currentTimeMillis()) {
 			last = System.currentTimeMillis();
-			this.bridge = load();
+			this.bridge = load().onResolve(refreshAction);
 			return true;
 		}
 		return false;
