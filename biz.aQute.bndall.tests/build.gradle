@@ -1,6 +1,0 @@
-import org.gradle.api.tasks.testing.logging.TestLogEvent
-tasks.named('test') {
-  testLogging {
-    events TestLogEvent.values()
-  }
-}
