@@ -2,7 +2,9 @@ package biz.aQute.bnd.reporter.gogo.dto;
 
 import java.util.List;
 
-public class GogoFunctionDTO {
+import org.osgi.dto.DTO;
+
+public class GogoFunctionDTO extends DTO {
 
 	/**
 	 * Title of this gogo funktion.

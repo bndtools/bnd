@@ -2,7 +2,9 @@ package biz.aQute.bnd.reporter.gogo.dto;
 
 import java.util.List;
 
-public class GogoMethodDTO {
+import org.osgi.dto.DTO;
+
+public class GogoMethodDTO extends DTO {
 	/**
 	 * Title of this gogo method.
 	 */

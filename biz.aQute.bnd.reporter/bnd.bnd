@@ -44,7 +44,9 @@ Export-Package: \
 	biz.aQute.bnd.reporter.generator,\
 	biz.aQute.bnd.reporter.manifest.dto,\
 	biz.aQute.bnd.reporter.codesnippet,\
-	biz.aQute.bnd.reporter.codesnippet.dto
+	biz.aQute.bnd.reporter.codesnippet.dto,\
+	biz.aQute.bnd.reporter.component.dto,\
+	biz.aQute.bnd.reporter.gogo.dto
 
 -conditionalpackage: \
 	aQute.lib.*,\

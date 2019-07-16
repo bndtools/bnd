@@ -2,7 +2,9 @@ package biz.aQute.bnd.reporter.gogo.dto;
 
 import java.util.List;
 
-public class GogoParameterDTO {
+import org.osgi.dto.DTO;
+
+public class GogoParameterDTO extends DTO {
 
 	/**
 	 * The order of the parameter.
