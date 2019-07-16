@@ -464,7 +464,10 @@ public class LaunchpadTest {
 					}
 				});
 		}
-		semaphore.acquire(n);
+		System.out.println("Waiting for the threads to finish");
+		boolean success = semaphore.tryAcquire(n, 60, TimeUnit.SECONDS);
+		softly.assertThat(success)
+			.isTrue();
 		System.out.println("Closing " + n + " frameworks");
 		l.forEach(IO::close);
 	}
