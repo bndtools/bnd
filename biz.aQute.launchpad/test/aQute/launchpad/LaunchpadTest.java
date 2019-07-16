@@ -1,7 +1,5 @@
 package aQute.launchpad;
 
-import static aQute.lib.promise.PromiseCollectors.toPromise;
-import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertNotNull;
@@ -14,11 +12,12 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
-import java.util.stream.IntStream;
 
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.junit.After;
@@ -33,8 +32,6 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.PromiseFactory;
 
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
@@ -435,41 +432,41 @@ public class LaunchpadTest {
 	}
 
 	@Test
-	public <T> void testLaunchpadStressByCreatingLotsOfFrameworksInDifferentThreads() throws Exception {
+	public void testLaunchpadStressByCreatingLotsOfFrameworksInDifferentThreads() throws Exception {
+		List<Launchpad> l = new CopyOnWriteArrayList<>();
+		List<Throwable> e = new CopyOnWriteArrayList<>();
 		Random r = new Random();
-		int n = 20;
-		PromiseFactory promiseFactory = Processor.getPromiseFactory();
-		List<Promise<Launchpad>> frameworks = IntStream.range(0, n)
-			.mapToObj(i -> promiseFactory.submit(() -> builder.bundles("org.apache.felix.log,org.apache.felix.scr")
-				.runfw("org.apache.felix.framework")
-				.create("foo", "bar")))
-			.collect(toList());
-		frameworks.stream()
-			.map(p -> p.map(fw -> {
-				Bundle bundle = fw.component(ExternalRefComp.class);
-				int sleep = Math.abs(r.nextInt() % 100) + 30;
-				System.out
-					.println(fw.runspec.properties.get(org.osgi.framework.Constants.FRAMEWORK_STORAGE) + " " + sleep);
-				Thread.sleep(sleep);
-				softly.assertThat(fw.getService(ExternalRefComp.class))
-					.isNotNull();
-				bundle.stop();
-				return fw;
-			})
-				.timeout(30000)
-				.recover(failed -> {
-					Throwable f = failed.getFailure();
-					softly.fail(f.toString(), f);
-					return null; // no recovery
-				}))
-			.collect(toPromise(promiseFactory))
-			.getFailure(); // wait for it
+		Semaphore semaphore = new Semaphore(0);
+		builder.bundles("org.apache.felix.log, org.apache.felix.scr")
+			.runfw("org.apache.felix.framework");
 
+		int n = 20;
+		for (int i = 0; i < n; i++) {
+
+			Launchpad fw = builder.create("foo", "bar");
+			l.add(fw);
+
+			Processor.getExecutor()
+				.execute(() -> {
+					try {
+						Bundle bundle = fw.component(ExternalRefComp.class);
+						int sleep = Math.abs(r.nextInt() % 100) + 30;
+						System.out.println(
+							fw.runspec.properties.get(org.osgi.framework.Constants.FRAMEWORK_STORAGE) + " " + sleep);
+						Thread.sleep(sleep);
+						softly.assertThat(fw.getService(ExternalRefComp.class))
+							.isNotNull();
+						bundle.stop();
+					} catch (Throwable ee) {
+						softly.fail(ee.toString(), ee);
+					} finally {
+						semaphore.release();
+					}
+				});
+		}
+		semaphore.acquire(n);
 		System.out.println("Closing " + n + " frameworks");
-		frameworks.stream()
-			.map(p -> p.thenAccept(IO::close))
-			.collect(toPromise(promiseFactory))
-			.getFailure(); // close frameworks
+		l.forEach(IO::close);
 	}
 
 	public static class TestClass implements Supplier<Bundle> {
