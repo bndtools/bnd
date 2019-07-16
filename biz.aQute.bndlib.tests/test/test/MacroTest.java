@@ -37,8 +37,7 @@ public class MacroTest extends TestCase {
 			p.setProperty("a", "${_testdebug;exception;java.util.IOException;foo}");
 			assertThat(p.getProperty("a")).isEqualTo("${_testdebug;exception;java.util.IOException;foo}");
 			assertTrue(
-				p.check("No translation found for macro",
-				"java.util.IOException, for cmd: _testdebug, arguments"));
+				p.check("No translation found for macro", "java.util.IOException, for cmd: _testdebug, arguments"));
 		}
 	}
 
@@ -156,12 +155,12 @@ public class MacroTest extends TestCase {
 		}
 	}
 
-	public void testTemplatesWithSeparator() throws IOException {
+	public void testTemplatesWithConcat() throws IOException {
 		try (Processor proc = new Processor()) {
 			proc.setProperty("foo", "a;v=1, b;v=2;x=3");
 			String process = proc.getReplacer()
-				.process("${template;foo;${@}=${@v}\\;xxx;|}");
-			assertThat(process).isEqualTo("a=1;xxx|b=2;xxx");
+				.process("${template;foo;${@}=${@v};xxx}");
+			assertThat(process).isEqualTo("a=1;xxx,b=2;xxx");
 		}
 	}
 
@@ -1604,20 +1603,43 @@ public class MacroTest extends TestCase {
 		}
 	}
 
-	public void testFormat() throws IOException {
+	public void testDateFormat() throws IOException {
 		try (Processor processor = new Processor()) {
-
-			assertEquals("ff", processor.getReplacer()
-				.process("${format;%x;255}"));
-
-			assertEquals("\\u00FF", processor.getReplacer()
-				.process("${format;\\u%04X;255}"));
-
 			// keep time constant in build
-			processor.setProperty(Constants.TSTAMP, "1562252413579");
+			processor.setProperty(Constants.TSTAMP, "0");
+
+			// check indexed forward
+			assertEquals("1970/01 Z", processor.getReplacer()
+				.process("${format;%2$tY/%2$tm %2$tZ;X;1970-01-01T00:00:00Z}"));
+
+			// check indexed backward
+			assertEquals("1970/01 Z", processor.getReplacer()
+				.process("${format;%2$tY/%2$tm %2$tZ;X;1970-01-01T00:00:00Z;Y}"));
+
+			assertEquals("1970/01 Z", processor.getReplacer()
+				.process("${format;%tY/%<tm %<tZ;1970-01-01T00:00:00Z}"));
+
+			assertEquals("1970/01 Z", processor.getReplacer()
+				.process("${format;%tY/%1$tm %1$tZ;1970-01-01T00:00:00Z}"));
+
+			assertEquals("1970/01 Z", processor.getReplacer()
+				.process("${format;%2$tY/%2$tm %2$tZ;X;1970-01-01T00:00:00Z}"));
+
+			assertEquals("1970/01 00 +08:00", processor.getReplacer()
+				.process("${format;%2$tY/%2$tm %<tH %2$tZ;X;1970-01-01T00:00:00+08:00}"));
+
+			assertEquals("UTC", processor.getReplacer()
+				.process("${format;%TZ;190704}"));
 
 			assertEquals("201907", processor.getReplacer()
-				.process("${format;%TY%tm;190704;190704}"));
+				.process("${format;%TY%<tm;20190704}"));
+
+
+			assertEquals("1970", processor.getReplacer()
+				.process("${format;%tY;${now}}"));
+
+			assertEquals("2019", processor.getReplacer()
+				.process("${format;%tY;1562252413579}"));
 
 			assertEquals("201907", processor.getReplacer()
 				.process("${format;%tY%Tm;20190704;20190704}"));
@@ -1627,12 +1649,32 @@ public class MacroTest extends TestCase {
 
 			assertEquals("04", processor.getReplacer()
 				.process("${format;%td;20190704235923}"));
+		}
+	}
 
-			assertEquals("2019", processor.getReplacer()
-				.process("${format;%tY;now}"));
+	public void testIndexedFormat() throws IOException {
+		try (Processor processor = new Processor()) {
+			assertEquals("3", processor.getReplacer()
+				.process("${format;%3$s;1;2;3}"));
 
-			assertEquals("2019", processor.getReplacer()
-				.process("${format;%tY;1562252413579}"));
+			assertEquals("1 2 1", processor.getReplacer()
+				.process("${format;%s %s %1$s;1;2;3}"));
+
+			assertEquals("1 2 2", processor.getReplacer()
+				.process("${format;%s %s %<s;1;2;3}"));
+
+		}
+	}
+
+	public void testFormat() throws IOException {
+		try (Processor processor = new Processor()) {
+
+			assertEquals("ff", processor.getReplacer()
+				.process("${format;%x;255}"));
+
+			assertEquals("\\u00FF", processor.getReplacer()
+				.process("${format;\\u%04X;255}"));
+
 
 			assertEquals("foo", processor.getReplacer()
 				.process("${format;%s;foo}"));
