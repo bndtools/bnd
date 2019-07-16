@@ -1,0 +1,127 @@
+{"gogoCommands":[{
+  "functions":[{
+    "methods":[{
+      "description":null,"parameters":[],"title":"methodA"
+    },{
+      "description":"DescriptionMethodA - no param","parameters":[],"title":"methodA"
+    },{
+      "description":"DescriptionMethodA - two docu params","parameters":[{
+        "absentValue":"MyPresentValue","description":"DescriptionParamA","names":["-a","--aa"],"order":0,"presentValue":"MyPresentValue","title":null
+      },{
+        "absentValue":"MyAbsentValue","description":"DescriptionParamB","names":["-y"],"order":1,"presentValue":null,"title":null
+      }],"title":"methodA"
+    }],"title":"methodA"
+  },{
+    "methods":[{
+      "description":null,"parameters":[],"title":"methodC"
+    }],"title":"methodC"
+  },{
+    "methods":[{
+      "description":null,"parameters":[],"title":"methodA"
+    },{
+      "description":"DescriptionMethodA - no param","parameters":[],"title":"methodA"
+    },{
+      "description":"DescriptionMethodA - two docu params","parameters":[{
+        "absentValue":"MyPresentValue","description":"DescriptionParamA","names":["-a","--aa"],"order":0,"presentValue":"MyPresentValue","title":null
+      },{
+        "absentValue":"MyAbsentValue","description":"DescriptionParamB","names":["-y"],"order":1,"presentValue":null,"title":null
+      }],"title":"methodA"
+    }],"title":"methodA"
+  },{
+    "methods":[{
+      "description":"DescriptionMethodB - one param","parameters":[{
+        "absentValue":null,"description":null,"names":null,"order":0,"presentValue":null,"title":null
+      }],"title":"methodB"
+    },{
+      "description":"DescriptionMethodB - two param","parameters":[{
+        "absentValue":null,"description":null,"names":null,"order":0,"presentValue":null,"title":null
+      },{
+        "absentValue":null,"description":null,"names":null,"order":1,"presentValue":null,"title":null
+      }],"title":"methodB"
+    }],"title":"methodB"
+  }],"title":"scopeA"
+},{
+  "functions":[{
+    "methods":[{
+      "description":null,"parameters":[],"title":"methodA"
+    },{
+      "description":"DescriptionMethodA - no param","parameters":[],"title":"methodA"
+    },{
+      "description":"DescriptionMethodA - two docu params","parameters":[{
+        "absentValue":"MyPresentValue","description":"DescriptionParamA","names":["-a","--aa"],"order":0,"presentValue":"MyPresentValue","title":null
+      },{
+        "absentValue":"MyAbsentValue","description":"DescriptionParamB","names":["-y"],"order":1,"presentValue":null,"title":null
+      }],"title":"methodA"
+    }],"title":"methodA"
+  },{
+    "methods":[{
+      "description":null,"parameters":[],"title":"methodC"
+    }],"title":"methodC"
+  },{
+    "methods":[{
+      "description":null,"parameters":[],"title":"methodA"
+    },{
+      "description":"DescriptionMethodA - no param","parameters":[],"title":"methodA"
+    },{
+      "description":"DescriptionMethodA - two docu params","parameters":[{
+        "absentValue":"MyPresentValue","description":"DescriptionParamA","names":["-a","--aa"],"order":0,"presentValue":"MyPresentValue","title":null
+      },{
+        "absentValue":"MyAbsentValue","description":"DescriptionParamB","names":["-y"],"order":1,"presentValue":null,"title":null
+      }],"title":"methodA"
+    }],"title":"methodA"
+  },{
+    "methods":[{
+      "description":"DescriptionMethodB - one param","parameters":[{
+        "absentValue":null,"description":null,"names":null,"order":0,"presentValue":null,"title":null
+      }],"title":"methodB"
+    },{
+      "description":"DescriptionMethodB - two param","parameters":[{
+        "absentValue":null,"description":null,"names":null,"order":0,"presentValue":null,"title":null
+      },{
+        "absentValue":null,"description":null,"names":null,"order":1,"presentValue":null,"title":null
+      }],"title":"methodB"
+    }],"title":"methodB"
+  }],"title":"scopeA"
+},{
+  "functions":[{
+    "methods":[{
+      "description":null,"parameters":[],"title":"methodA"
+    },{
+      "description":"DescriptionMethodA - no param","parameters":[],"title":"methodA"
+    },{
+      "description":"DescriptionMethodA - two docu params","parameters":[{
+        "absentValue":"MyPresentValue","description":"DescriptionParamA","names":["-a","--aa"],"order":0,"presentValue":"MyPresentValue","title":null
+      },{
+        "absentValue":"MyAbsentValue","description":"DescriptionParamB","names":["-y"],"order":1,"presentValue":null,"title":null
+      }],"title":"methodA"
+    }],"title":"methodA"
+  },{
+    "methods":[{
+      "description":null,"parameters":[],"title":"methodC"
+    }],"title":"methodC"
+  },{
+    "methods":[{
+      "description":null,"parameters":[],"title":"methodA"
+    },{
+      "description":"DescriptionMethodA - no param","parameters":[],"title":"methodA"
+    },{
+      "description":"DescriptionMethodA - two docu params","parameters":[{
+        "absentValue":"MyPresentValue","description":"DescriptionParamA","names":["-a","--aa"],"order":0,"presentValue":"MyPresentValue","title":null
+      },{
+        "absentValue":"MyAbsentValue","description":"DescriptionParamB","names":["-y"],"order":1,"presentValue":null,"title":null
+      }],"title":"methodA"
+    }],"title":"methodA"
+  },{
+    "methods":[{
+      "description":"DescriptionMethodB - one param","parameters":[{
+        "absentValue":null,"description":null,"names":null,"order":0,"presentValue":null,"title":null
+      }],"title":"methodB"
+    },{
+      "description":"DescriptionMethodB - two param","parameters":[{
+        "absentValue":null,"description":null,"names":null,"order":0,"presentValue":null,"title":null
+      },{
+        "absentValue":null,"description":null,"names":null,"order":1,"presentValue":null,"title":null
+      }],"title":"methodB"
+    }],"title":"methodB"
+  }],"title":"scopeA"
+}]}

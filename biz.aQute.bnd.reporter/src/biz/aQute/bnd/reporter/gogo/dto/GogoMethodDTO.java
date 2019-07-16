@@ -11,12 +11,12 @@ public class GogoMethodDTO extends DTO {
 	public String			title;
 
 	/**
-	 * Short description of this gogo method (optional).
+	 * Short description of this gogo method.(optional)
 	 */
 	public String			description;
 
 	/**
-	 * List of parameters of this method.
+	 * List of parameters of this method.(optional)
 	 */
-	List<GogoParameterDTO>	parameters;
+	public List<GogoParameterDTO>	parameters;
 }

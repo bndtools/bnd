@@ -11,12 +11,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,16 +27,19 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.google.common.collect.Lists;
+
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Annotation;
-import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
-import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Clazz.MethodParameter;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Descriptors.Descriptor;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.ParameterAnnotation;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.reporter.ReportEntryPlugin;
@@ -42,6 +47,7 @@ import aQute.service.reporter.Reporter;
 import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 import biz.aQute.bnd.reporter.gogo.dto.GogoFunctionDTO;
 import biz.aQute.bnd.reporter.gogo.dto.GogoMethodDTO;
+import biz.aQute.bnd.reporter.gogo.dto.GogoParameterDTO;
 import biz.aQute.bnd.reporter.gogo.dto.GogoScopeDTO;
 
 /**
@@ -66,7 +72,9 @@ public class GogoPlugin implements ReportEntryPlugin<Jar>, Plugin {
 	final private static String			SCOPE						= "osgi.command.scope";
 	final private static String			FUNCTION					= "osgi.command.function";
 
-	final private static String			ANNOTOATION_NAME_DECRIPTOR	= "org.apache.felix.service.command.Descriptor";
+	final private static String			ANNOTOATION_NAME_DESCRIPTOR	= "org.apache.felix.service.command.Descriptor";
+
+	final private static String			ANNOTOATION_NAME_PARAMETER	= "org.apache.felix.service.command.Parameter";
 
 	private Reporter					_reporter;
 	private final Map<String, String>	_properties					= new HashMap<>();
@@ -99,6 +107,7 @@ public class GogoPlugin implements ReportEntryPlugin<Jar>, Plugin {
 
 		final List<GogoScopeDTO> gogos = new LinkedList<>();
 		for (final String path : componentPaths) {
+
 			final Resource r = jar.getResource(path);
 			if (r != null) {
 				try (InputStream in = r.openInputStream()) {
@@ -245,10 +254,11 @@ public class GogoPlugin implements ReportEntryPlugin<Jar>, Plugin {
 						String pathClazz = implementationClass.replace(".", "/") + ".class";
 						Resource resClazz = jar.getResource(pathClazz);
 						Analyzer analyzer = new Analyzer();
-						Clazz clazz = new Clazz(analyzer, null, null);
+						Clazz clazz = new Clazz(analyzer, null, resClazz);
 						clazz.parseClassFile(resClazz.openInputStream());
 						gogoFunctionDTO.methods.addAll(createMethodDTO(clazz, function));
 
+						gogoScopeDTO.functions.add(gogoFunctionDTO);
 					}
 					gogos.add(gogoScopeDTO);
 				}
@@ -261,101 +271,89 @@ public class GogoPlugin implements ReportEntryPlugin<Jar>, Plugin {
 		return !gogos.isEmpty() ? gogos : null;
 	}
 
-	private Collection<GogoMethodDTO> createMethodDTO(final Clazz clazz, final String function) {
+	private Collection<GogoMethodDTO> createMethodDTO(final Clazz clazz, final String function) throws Exception {
 
-		ClassDataCollector cdc = new ClassDataCollector() {
-			@Override
-			public void method(MethodDef method) {
-				System.out.println(method);
-				super.method(method);
-			}
+		clazz.parseClassFile();
 
-			@Override
-			public void methodParameters(MethodDef method, MethodParameter[] parameters) {
-				System.out.println(method + "   " + parameters);
-
-				super.methodParameters(method, parameters);
-			}
-
-		};
-
-		// try {
-		// clazz.parseClassFileWithCollector(cdc);
-		// } catch (Exception e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		List<MethodDef> mdefs = clazz.methods()
-			.collect(Collectors.toList());
-
-		System.out.println(mdefs);
 		return clazz.methods()
 			.filter(m -> function.equals(m.getName()))
 			.map(m -> {
 
-				GogoMethodDTO dto = new GogoMethodDTO();
-				dto.title = m.getName();
-
+				GogoMethodDTO gogoMethodDTO = new GogoMethodDTO();
+				gogoMethodDTO.title = m.getName();
+				gogoMethodDTO.parameters = Lists.newArrayList();
 
 				Optional<Annotation> oDescriptorAnnotation = m.annotations("*")
-					.filter(a -> ANNOTOATION_NAME_DECRIPTOR.equals(a.getName()
+					.filter(a -> ANNOTOATION_NAME_DESCRIPTOR.equals(a.getName()
 						.toString()))
 					.findFirst();
 
 				if (oDescriptorAnnotation.isPresent()) {
 
-					dto.description = oDescriptorAnnotation.get()
+					gogoMethodDTO.description = oDescriptorAnnotation.get()
 						.get("value");
 				}
 
-				MethodParameter[] mp = m.getParameters();
+				Descriptor d = m.getDescriptor();
+				TypeRef[] trs = d.getPrototype();
 
-				for (MethodParameter methodParameter : mp) {
-					System.out.println("++++" + methodParameter.getName());
+				MethodParameter[] mps = m.getParameters();
 
-					System.out.println("----" + methodParameter);
+				List<ParameterAnnotation> methodParameters = m.parameterAnnotations("*")
+					.collect(Collectors.toList());
+
+				for (int i = 0; i < trs.length; i++) {
+
+					GogoParameterDTO gogoParameterDTO = new GogoParameterDTO();
+					gogoParameterDTO.order = i;
+
+					if (mps != null && i < mps.length) {
+						gogoParameterDTO.title = mps[i].getName();
+					}
+
+					for (ParameterAnnotation parameterAnnotation : methodParameters) {
+
+						if (parameterAnnotation.parameter() == i
+							&& ANNOTOATION_NAME_DESCRIPTOR.equals(parameterAnnotation.getName()
+								.toString())) {
+
+							gogoParameterDTO.description = parameterAnnotation.get("value");
+						}
+
+						if (parameterAnnotation.parameter() == i
+							&& ANNOTOATION_NAME_PARAMETER.equals(parameterAnnotation.getName()
+								.toString())) {
+
+							gogoParameterDTO.presentValue = parameterAnnotation.get("presentValue");
+
+							for (Entry<String, Object> entry : parameterAnnotation.entrySet()) {
+
+								if (entry.getKey()
+									.equals("absentValue")) {
+									gogoParameterDTO.absentValue = (String) entry.getValue();
+
+								} else if (entry.getKey()
+									.equals("presentValue")) {
+									gogoParameterDTO.absentValue = (String) entry.getValue();
+
+								} else if (entry.getKey()
+									.equals("names")) {
+
+									gogoParameterDTO.names = Stream.of((Object[]) entry.getValue())
+										.map(o -> o.toString())
+										.collect(Collectors.toList());
+
+								}
+							}
+
+						}
+
+					}
+					gogoMethodDTO.parameters.add(gogoParameterDTO);
+
 				}
 
-				//
-				// List<ParameterAnnotation> methodParameters =
-				// m.parameterAnnotations("*")
-				// .collect(Collectors.toList());
-
-				// System.out.println("????" + methodParameters);
-				//
-				// List<CodeAttribute> ms = m.attributes(CodeAttribute.class)
-				// .collect(Collectors.toList());
-
-				// for (CodeAttribute methodParameter : ms) {
-				// System.out.println("++" + methodParameter.name());
-				//
-				// for (Attribute attribute : methodParameter.attributes) {
-				//
-				// if (attribute instanceof LocalVariableTableAttribute) {
-				// LocalVariableTableAttribute la =
-				// (LocalVariableTableAttribute) attribute;
-				//
-				// LocalVariable[] lvs = la.local_variable_table;
-				// System.out.println("<<<" + lvs[lvs.length - 1].name);
-				// }
-				// }
-				// System.out.println("--" + methodParameter.attributes);
-				// }
-				//
-				// for (ParameterAnnotation methodParameter : methodParameters)
-				// {
-				//
-				// System.out.println(methodParameter.getName());
-				//
-				// }
-
-				// .filter(a -> {
-				// System.out.println("---" + a);
-				//
-				// return true;
-				// });
-
-				return dto;
+				return gogoMethodDTO;
 			})
 			.collect(Collectors.toList());
 	}

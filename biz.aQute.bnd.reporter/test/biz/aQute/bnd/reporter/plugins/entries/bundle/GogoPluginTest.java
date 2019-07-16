@@ -32,6 +32,9 @@ public class GogoPluginTest extends TestCase {
 		final ByteArrayOutputStream s = new ByteArrayOutputStream();
 		new JsonReportSerializerPlugin().serialize(result, s);
 
+		// TODO: remove output
+
+		System.out.println(new String(s.toByteArray()));
 		final StringBuffer ee = new StringBuffer();
 
 		for (final String l : Files.readAllLines(Paths.get("testresources/gogoEntry/result.json"),

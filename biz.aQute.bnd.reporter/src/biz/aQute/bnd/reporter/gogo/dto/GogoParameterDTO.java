@@ -12,29 +12,29 @@ public class GogoParameterDTO extends DTO {
 	public int		order;
 
 	/**
-	 * Title of this parameter.
+	 * Title of this parameter.(optional)
 	 */
 	public String	title;
 
 	/**
-	 * Description of this parameter.
+	 * Description of this parameter.(optional)
 	 */
 	public String	description;
 
 	/**
 	 * The default value of the parameter if its name is present on the command
-	 * line.
+	 * line.(optional)
 	 */
 	public String	presentValue;
 
 	/**
 	 * The default value of the parameter if its name is not present on the
-	 * command line.
+	 * command line.(optional)
 	 */
 	public String	absentValue;
 
 	/**
-	 * List of names of this parameter.
+	 * List of names of this parameter.(optional)
 	 */
-	List<String>	names;
+	public List<String>	names;
 }
