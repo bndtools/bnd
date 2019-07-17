@@ -1,5 +1,7 @@
 package aQute.remote.agent;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -7,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,6 +23,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.jar.Attributes;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -28,6 +38,7 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.Version;
 import org.osgi.framework.dto.BundleDTO;
 import org.osgi.framework.dto.FrameworkDTO;
 import org.osgi.framework.dto.ServiceReferenceDTO;
@@ -41,6 +52,7 @@ import org.osgi.resource.dto.RequirementDTO;
 
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
+import aQute.lib.io.ByteBufferInputStream;
 import aQute.libg.shacache.ShaCache;
 import aQute.libg.shacache.ShaSource;
 import aQute.remote.api.Agent;
@@ -54,7 +66,8 @@ import aQute.remote.util.Link;
  * interfaces and communicates with a Supervisor interfaces.
  */
 public class AgentServer implements Agent, Closeable, FrameworkListener {
-	AtomicInteger											sequence			= new AtomicInteger(1000);
+	private final static Pattern							BSN_P				= Pattern.compile("\\s*([^;\\s]+).*");
+	private final static AtomicInteger						sequence			= new AtomicInteger(1000);
 
 	//
 	// Constant so we do not have to repeat it
@@ -70,7 +83,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	//
 
 	@SuppressWarnings("deprecation")
-	static String											keys[]				= {
+	final static String										keys[]				= {
 		Constants.FRAMEWORK_BEGINNING_STARTLEVEL, Constants.FRAMEWORK_BOOTDELEGATION, Constants.FRAMEWORK_BSNVERSION,
 		Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_TRUST_REPOSITORIES, Constants.FRAMEWORK_COMMAND_ABSPATH,
 		Constants.FRAMEWORK_EXECPERMISSION, Constants.FRAMEWORK_EXECUTIONENVIRONMENT, Constants.FRAMEWORK_LANGUAGE,
@@ -120,9 +133,16 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	}
 
 	@Override
-	public BundleDTO install(String location, byte[] data) throws Exception {
-		Bundle installedBundle = null;
-		try (InputStream stream = new ByteArrayInputStream(data)) {
+	public BundleDTO installWithData(String location, byte[] data) throws Exception {
+		requireNonNull(data);
+
+		Bundle installedBundle;
+
+		if (location == null) {
+			location = getLocation(data);
+		}
+
+		try (InputStream stream = new ByteBufferInputStream(data)) {
 			installedBundle = context.getBundle(location);
 			if (installedBundle == null) {
 				installedBundle = context.installBundle(location, stream);
@@ -658,6 +678,8 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			bundles = new Bundle[bundleId.length];
 			for (int i = 0; i < bundleId.length; i++) {
 				bundles[i] = context.getBundle(bundleId[i]);
+				if (bundles[i] == null)
+					throw new IllegalArgumentException("Bundle " + bundleId[i] + " not installed");
 			}
 		}
 
@@ -684,6 +706,9 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			bundles = new Bundle[bundleId.length];
 			for (int i = 0; i < bundleId.length; i++) {
 				bundles[i] = context.getBundle(bundleId[i]);
+				if (bundles[i] == null) {
+					throw new IllegalArgumentException("Bundle " + bundleId[i] + " does not exist");
+				}
 			}
 		}
 
@@ -745,6 +770,59 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		rd.directives = r.getDirectives();
 		rd.attributes = r.getAttributes();
 		return rd;
+	}
+
+	private Entry<String, Version> getIdentity(byte[] data) throws IOException {
+		try (JarInputStream jin = new JarInputStream(new ByteArrayInputStream(data))) {
+			Manifest manifest = jin.getManifest();
+			if (manifest == null) {
+				throw new IllegalArgumentException("No manifest in bundle");
+			}
+			Attributes mainAttributes = manifest.getMainAttributes();
+			String value = mainAttributes.getValue(Constants.BUNDLE_SYMBOLICNAME);
+			Matcher matcher = BSN_P.matcher(value);
+
+			if (!matcher.matches()) {
+				throw new IllegalArgumentException("No proper Bundle-SymbolicName in bundle: " + value);
+			}
+
+			String bsn = matcher.group(1);
+
+			String versionString = mainAttributes.getValue(Constants.BUNDLE_VERSION);
+			if (versionString == null)
+				versionString = "0";
+
+			Version version = Version.parseVersion(versionString);
+
+			return new AbstractMap.SimpleEntry<>(bsn, version);
+		}
+	}
+
+	private Set<Bundle> findBundles(String bsn, Version version) {
+
+		return Stream.of(context.getBundles())
+			.filter(b -> bsn.equals(b.getSymbolicName()))
+			.filter(b -> version == null || version.equals(b.getVersion()))
+			.collect(Collectors.toSet());
+	}
+
+	private String getLocation(byte[] data) throws IOException {
+		Map.Entry<String, Version> entry = getIdentity(data);
+		Set<Bundle> bundles = findBundles(entry.getKey(), null);
+		switch (bundles.size()) {
+			case 0 :
+				return "manual:" + entry.getKey();
+
+			case 1 :
+				return bundles.iterator()
+					.next()
+					.getLocation();
+
+			default :
+				throw new IllegalArgumentException(
+					"No location specified but there are multiple bundles with the same bsn " + entry.getKey() + ": "
+						+ bundles);
+		}
 	}
 
 }

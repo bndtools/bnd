@@ -8,12 +8,16 @@ aQute.agent.server.port = 29998
 
 -buildpath: \
 	osgi.core;version=latest;maven-scope=provided,\
-	aQute.libg;version=project,\
-	biz.aQute.bndlib;version=latest,\
-	biz.aQute.junit;version=latest,\
-	org.apache.felix.framework;version=latest;packages=*,\
-	org.apache.felix.gogo.runtime;version=latest
+    aQute.libg;version=project,\
+    biz.aQute.bndlib;version=latest,\
+    org.apache.felix.gogo.runtime;version=latest
 
+-testpath: \
+    biz.aQute.junit;version=latest,\
+    slf4j.api, \
+    slf4j.simple,\
+    org.apache.felix.framework;version=latest;packages=*
+    
 -sub: *.bnd
 
 #

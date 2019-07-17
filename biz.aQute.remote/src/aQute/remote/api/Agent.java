@@ -95,7 +95,7 @@ public interface Agent {
 	 * @return A Bundle DTO (cannot be {@code null})
 	 * @throws Exception if the bundle cannot be installed or updated
 	 */
-	BundleDTO install(String location, byte[] data) throws Exception;
+	BundleDTO installWithData(String location, byte[] data) throws Exception;
 
 	/**
 	 * Install a new bundle at the given bundle location. The SHA identifies the
