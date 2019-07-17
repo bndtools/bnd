@@ -39,6 +39,8 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.maven.PomParser;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
+import aQute.lib.exceptions.Exceptions;
+import aQute.lib.io.ByteBufferInputStream;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.service.reporter.Reporter;
@@ -448,6 +450,36 @@ public abstract class Domain implements Iterable<String> {
 		return getParameters(Constants.PROVIDE_CAPABILITY, true);
 	}
 
+	public static Domain domain(byte[] data) {
+		try (JarInputStream jin = new JarInputStream(new ByteBufferInputStream(data))) {
+			return Domain.domain(jin);
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	public static Domain domain(JarInputStream jin) throws IOException {
+		Manifest m = jin.getManifest();
+		if (m != null) {
+			Domain domain = domain(m);
+			String path = domain.get(Constants.BUNDLE_LOCALIZATION,
+				org.osgi.framework.Constants.BUNDLE_LOCALIZATION_DEFAULT_BASENAME) + ".properties";
+			for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
+				if (entry.isDirectory()) {
+					continue;
+				}
+				if (entry.getName()
+					.equals(path)) {
+					domain.translation.load(jin);
+					break;
+				}
+			}
+			return domain;
+		}
+		return null;
+	}
+
+
 	public static Domain domain(File file) throws IOException {
 		if (file.getName()
 			.endsWith(".mf")) {
@@ -479,23 +511,7 @@ public abstract class Domain implements Iterable<String> {
 
 		// default & last. Assume JAR
 		try (JarInputStream jin = new JarInputStream(IO.stream(file))) {
-			Manifest m = jin.getManifest();
-			if (m != null) {
-				Domain domain = domain(m);
-				String path = domain.get(Constants.BUNDLE_LOCALIZATION,
-					org.osgi.framework.Constants.BUNDLE_LOCALIZATION_DEFAULT_BASENAME) + ".properties";
-				for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
-					if (entry.isDirectory()) {
-						continue;
-					}
-					if (entry.getName()
-						.equals(path)) {
-						domain.translation.load(jin);
-						break;
-					}
-				}
-				return domain;
-			}
+			domain(jin);
 		}
 
 		// BUT WAIT! Maybe it's just a zip file (bad jar, bad jar...)
@@ -552,4 +568,5 @@ public abstract class Domain implements Iterable<String> {
 	public void setIncludePackage(String value) {
 		set(Constants.INCLUDEPACKAGE, value);
 	}
+
 }

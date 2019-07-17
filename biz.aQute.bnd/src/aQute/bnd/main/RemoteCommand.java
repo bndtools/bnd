@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -165,64 +166,35 @@ class RemoteCommand extends Processor {
 
 	@Description("Communicate with the remote framework to install or update bundle")
 	@Arguments(arg = {
-		"filespec", "location"
+		"filespec..."
 	})
-	interface InstallOptions extends Options {}
+	interface InstallOptions extends Options {
+		@Description("By default the location is 'manual:<bsn>'. You can specify multiple locations when installing multiple bundles")
+		String[] location();
+	}
 
-	@Description("Install/update the specified bundle")
+	@Description("Install/update the specified bundle.")
 	public void _install(InstallOptions options) throws Exception {
 		List<String> args = options._arguments();
-		String fileSpec = args.remove(0);
-		String location = args.remove(0);
 
-		byte[] data = null;
-		URL u = checkURL(fileSpec);
-
-		if (u != null) {
-			data = IO.read(u);
-		} else {
-			File f = checkFile(fileSpec);
-			if (f != null) {
-				data = IO.read(f);
-			}
-		}
-		install(location, data);
-	}
-
-	private URL checkURL(String filespec) {
-		try {
-			URL url = new URL(filespec);
-			return url;
-		} catch (Exception e) {
-			// nothing to do
-		}
-		return null;
-	}
-
-	private File checkFile(String file) {
-		File f = new File(file);
-		try (Jar jar = new Jar(f)) {
-			// check if the jar is a bundle
-			if (jar.getBsn() != null) {
-				return f;
-			}
-		} catch (Exception e) {
-			// nothing to do
-		}
-		return null;
-	}
-
-	private void install(String location, byte[] data) throws Exception {
-		if (data == null) {
-			error("Error occurred while parsing the specified file");
+		if (args.isEmpty()) {
+			error("No bundles specified");
 			return;
 		}
-		if (location == null) {
-			error("Error occurred while parsing the location identifier");
-			return;
+
+		String[] location = options.location();
+
+		int n = 0;
+		for (String fileSpec : args) {
+			URI uri = IO.work.toURI();
+			URL url = uri.resolve(fileSpec)
+				.toURL();
+			byte data[] = IO.read(url);
+			String l = location == null || location.length <= n ? null : location[n];
+			BundleDTO dto = agent.installWithData(l, data);
+			bnd.out.println(dto);
+			n++;
 		}
-		BundleDTO dto = agent.install(location, data);
-		bnd.out.println(dto);
 	}
 
 	@Override
