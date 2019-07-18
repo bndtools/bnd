@@ -1,7 +1,7 @@
 ---
 layout: default
 class: Macro
-title: 'template;' NAME [ ';' template ]+  
+title: template ';' NAME [ ';' template ]+
 summary: Expand the entries of a merged and decorated Parameters object using a template that can refer to the key and attributes
 ---
 
