@@ -6,6 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import aQute.bnd.service.specifications.BuilderSpecification;
@@ -20,11 +22,19 @@ public class BundleBuilder implements BundleSpecBuilder, AutoCloseable {
 	final Launchpad				ws;
 	final BuilderSpecification	spec		= new BuilderSpecification();
 	final List<Closeable>		closeables	= new ArrayList<>();
+	static final Pattern		NONTOKEN	= Pattern.compile("[^-\\w]+");
+	static final Pattern		DOT			= Pattern.compile("\\.");
 
 	BundleBuilder(Launchpad ws) {
 		this.ws = ws;
 		spec.classpath.add(ws.runspec.bin_test);
-		bundleSymbolicName("t-" + LaunchpadBuilder.counter.incrementAndGet());
+
+		final String baseName = DOT.splitAsStream(ws.getClassName() + '.' + ws.getName())
+			.map(x -> NONTOKEN.matcher(x)
+				.replaceAll(""))
+			.filter(x -> !x.isEmpty())
+			.collect(Collectors.joining("."));
+		bundleSymbolicName(baseName + '-' + ws.counter.incrementAndGet());
 	}
 
 	/**
