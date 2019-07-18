@@ -24,8 +24,6 @@ matrix:
         - "./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 -Pbnd_repourl=./dist/bundles :buildscriptDependencies :build"
     - name: "Documentation"
       install:
-        - "rvm --version"
-        - "rvm use 2.4 --install --binary --fuzzy"
         - "ruby --version"
         - "gem --version"
         - "gem install bundler -v '~> 2.0'"
