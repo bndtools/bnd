@@ -238,6 +238,36 @@ public class BundleBuilderTest {
 		}
 	}
 
+	@Test
+	public void bsn_defaultsToLaunchpadName() throws Exception {
+		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+			try (Launchpad lp = builder.debug()
+				.create()) {
+				Bundle bundle1 = lp.bundle()
+					.install();
+				softly.assertThat(bundle1.getSymbolicName())
+					.as("full default")
+					.startsWith(lp.getClassName() + "." + lp.getName());
+
+				Bundle bundle2 = lp.bundle()
+					.install();
+
+				softly.assertThat(bundle2.getSymbolicName())
+					.as("full default 2")
+					.startsWith(lp.getClassName() + "." + lp.getName())
+					.isNotEqualTo(bundle1.getSymbolicName());
+			}
+			try (Launchpad lp = builder.debug()
+				.create("& noncompliant name", "Unfriendly . class .& ..name")) {
+				Bundle unfriendlyBundle = lp.bundle()
+					.install();
+				softly.assertThat(unfriendlyBundle.getSymbolicName())
+					.as("unfriendly bundle")
+					.startsWith("Unfriendly.class.name.noncompliantname");
+			}
+		}
+	}
+
 	public static class TestClass implements Supplier<Bundle> {
 		@Override
 		public Bundle get() {

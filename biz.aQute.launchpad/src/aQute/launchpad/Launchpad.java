@@ -86,7 +86,7 @@ public class Launchpad implements AutoCloseable {
 
 	public static final String					BUNDLE_PRIORITY			= "Bundle-Priority";
 	private static final long					SERVICE_DEFAULT_TIMEOUT	= 60000L;
-	static final AtomicInteger					n						= new AtomicInteger();
+	final AtomicInteger							counter					= new AtomicInteger();
 	final File									projectDir;
 
 	final Framework								framework;
