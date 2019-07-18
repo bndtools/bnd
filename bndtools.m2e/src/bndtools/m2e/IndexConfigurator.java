@@ -1,7 +1,6 @@
 package bndtools.m2e;
 
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
-import static org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -15,6 +14,8 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.repository.LocalArtifactRepository;
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.aether.repository.WorkspaceReader;
 import org.eclipse.aether.repository.WorkspaceRepository;
 import org.eclipse.core.resources.IFolder;
@@ -51,6 +52,9 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.maven.api.Archive;
 
 public class IndexConfigurator extends AbstractProjectConfigurator implements IResourceChangeListener {
+
+	private static final String	INDEXER_PLUGIN_ARTIFACT_ID	= "bnd-indexer-maven-plugin";
+	private static final String	INDEXER_PLUGIN_GROUP_ID		= "biz.aQute.bnd";
 
 	/**
 	 * We use this to replace the standard workspace repository because that
@@ -121,6 +125,8 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 
 	private static final class RebuildIndexCheck extends WorkspaceJob {
 
+		private final ILogger						logger	= Logger.getLogger(RebuildIndexCheck.class);
+
 		private final List<IResourceChangeEvent>	events	= new ArrayList<>();
 		private final IMavenProjectFacade			facade;
 
@@ -176,12 +182,33 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 				}
 
 				if (needsBuild) {
-					SubMonitor buildMonitor = SubMonitor.convert(monitor,
-						"Rebuilding index for project " + facade.getProject()
+
+					SubMonitor indexMonitor = SubMonitor.convert(monitor,
+						"Rebuilding indexes for project " + facade.getProject()
 							.getName(),
-						1);
-					facade.getProject()
-						.build(FULL_BUILD, buildMonitor);
+						2);
+					List<MojoExecution> list = facade.getMojoExecutions(INDEXER_PLUGIN_GROUP_ID,
+						INDEXER_PLUGIN_ARTIFACT_ID, indexMonitor);
+
+					if (list.isEmpty()) {
+						indexMonitor.done();
+					} else {
+						SubMonitor buildMonitor = SubMonitor.convert(monitor,
+							"Rebuilding indexes for project " + facade.getProject()
+							.getName(),
+							list.size());
+						list.forEach(me -> {
+							try {
+								MavenPlugin.getMaven()
+									.execute(getMavenProject(facade, indexMonitor), me, indexMonitor);
+							} catch (CoreException e) {
+								logger.logError(
+									"An error occurred attempting to build the index for project " + facade.getProject()
+										.getName(),
+									e);
+							}
+						});
+					}
 					break;
 				}
 			}
@@ -348,13 +375,12 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 
 			for (MojoExecutionKey key : facade.getMojoExecutionMapping()
 				.keySet()) {
-				if ("biz.aQute.bnd".equals(key.getGroupId())
-					&& "bnd-indexer-maven-plugin".equals(key.getArtifactId())) {
+				if (INDEXER_PLUGIN_GROUP_ID.equals(key.getGroupId())
+					&& INDEXER_PLUGIN_ARTIFACT_ID.equals(key.getArtifactId())) {
 
 					// This is an indexer project - if any referenced projects,
-					// or this project, were part
-					// of the change then we *may* need to trigger a rebuild of
-					// the index
+					// or this project, were part of the change then we *may*
+					// need to trigger a rebuild of the index
 					try {
 						IProject[] projects = currentProject.getReferencedProjects();
 						boolean doFullCheck = event.getDelta()
@@ -395,6 +421,8 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 					} catch (CoreException e) {
 						Exceptions.duck(e);
 					}
+					// No full check needed
+					continue projects;
 				}
 			}
 		}
