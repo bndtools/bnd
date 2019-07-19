@@ -3,11 +3,35 @@ package aQute.lib.date;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.junit.Test;
 
 public class DatesTest {
+	@Test
+	public void testMillis() {
+		final ZoneId otherZone = ZoneId.of("Australia/Eucla");
+		final long milli = System.currentTimeMillis();
+
+		String formattedCurrent = Dates.formatMillis(DateTimeFormatter.ISO_LOCAL_DATE_TIME, milli);
+		ZonedDateTime current = Dates.parse(formattedCurrent);
+		assertThat(current.getZone()).isEqualTo(Dates.UTC_ZONE_ID);
+		ZonedDateTime other = current.withZoneSameInstant(otherZone);
+		assertThat(other.getZone()).isEqualTo(otherZone);
+		String formattedOther = DateTimeFormatter.ISO_DATE_TIME.format(other);
+		long currentMillis = Dates.parseMillis(DateTimeFormatter.ISO_LOCAL_DATE_TIME, formattedCurrent);
+		assertThat(currentMillis).isEqualTo(milli);
+		long otherMillis = Dates.parseMillis(DateTimeFormatter.ISO_DATE_TIME, formattedOther);
+		assertThat(otherMillis).isEqualTo(milli);
+		LocalDateTime local = other.toLocalDateTime();
+		long localMillis = Dates.parseMillis(DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(otherZone),
+			local.toString());
+		assertThat(localMillis).isEqualTo(milli);
+	}
+
 
 	@Test
 	public void testBackAndForth() {
@@ -165,7 +189,7 @@ public class DatesTest {
 	private void check(String string) {
 		ZonedDateTime parse = Dates.parse(string);
 		assertThat(parse).isNotNull();
-		
+
 		assertThat(parse
 			.toInstant()
 			.toEpochMilli()).isEqualTo(0L);
