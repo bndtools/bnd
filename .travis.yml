@@ -52,19 +52,3 @@ before_script:
 
 script:
   - "./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy"
-
-before_cache:
-  - "git status"
-  - "rm -rf maven/target/m2/biz/aQute/bnd/"
-  - "rm -rf maven/target/m2/org/bndtools/"
-  - "rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock"
-  - "rm -rf $HOME/.gradle/caches/*/plugin-resolution/"
-
-cache:
-  directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
-    - $HOME/.m2/wrapper/
-    - cnf/cache/stable/
-    - docs/bundler/
-    - maven/target/m2/
