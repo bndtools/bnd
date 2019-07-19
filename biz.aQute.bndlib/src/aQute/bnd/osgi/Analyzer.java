@@ -33,13 +33,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,7 +45,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -56,7 +53,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringJoiner;
-import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
@@ -90,6 +86,7 @@ import aQute.lib.base64.Base64;
 import aQute.lib.collections.Iterables;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.collections.SortedList;
+import aQute.lib.date.Dates;
 import aQute.lib.filter.Filter;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
@@ -1481,27 +1478,17 @@ public class Analyzer extends Processor {
 		return getBndInfo("version", "<unknown>");
 	}
 
-	final static SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
-
-	static {
-		df.setTimeZone(TimeZone.getTimeZone("UTC"));
-	}
-
 	public long getBndLastModified() {
 		String time = getBndInfo("lastmodified", "0");
-		if (time.matches("\\d+"))
-			return Long.parseLong(time);
-
-		try {
-			synchronized (df) {
-				Date parse = df.parse(time);
-				if (parse != null)
-					return parse.getTime();
-			}
-		} catch (ParseException e) {
-			// Ignore
+		if (time.equals("0")) {
+			return 0L;
 		}
-		return 0;
+		ZonedDateTime zdt = Dates.parse(time);
+		if (zdt != null) {
+			return zdt.toInstant()
+				.toEpochMilli();
+		}
+		return 0L;
 	}
 
 	public String getBndInfo(String key, String defaultValue) {

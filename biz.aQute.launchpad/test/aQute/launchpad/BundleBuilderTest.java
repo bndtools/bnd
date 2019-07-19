@@ -7,6 +7,8 @@ import java.util.Dictionary;
 import java.util.function.Supplier;
 
 import org.assertj.core.api.AutoCloseableSoftAssertions;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleReference;
@@ -30,7 +32,20 @@ public class BundleBuilderTest {
 		}
 	}
 
-	LaunchpadBuilder builder = new LaunchpadBuilder().runfw("org.apache.felix.framework");
+	LaunchpadBuilder builder;
+
+	@Before
+	public void before() throws Exception {
+		builder = new LaunchpadBuilder();
+		builder.runfw("org.apache.felix.framework");
+		assertThat(builder.getLocal().runfw).as("runfw")
+			.isNotEmpty();
+	}
+
+	@After
+	public void after() throws Exception {
+		builder.close();
+	}
 
 	@Test
 	public void testInherit() throws Exception {

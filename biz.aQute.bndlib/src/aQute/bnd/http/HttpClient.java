@@ -27,11 +27,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Locale;
@@ -63,6 +61,7 @@ import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.service.url.URLConnector;
 import aQute.bnd.util.home.Home;
+import aQute.lib.date.Dates;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
@@ -76,10 +75,10 @@ import aQute.service.reporter.Reporter;
  */
 public class HttpClient implements Closeable, URLConnector {
 	final static Logger								logger				= LoggerFactory.getLogger(HttpClient.class);
+	@Deprecated
 	public static final SimpleDateFormat			sdf					= new SimpleDateFormat(
 		"EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
 
-	private static final ThreadLocal<DateFormat>	HTTP_DATE_FORMATTER	= new ThreadLocal<>();
 	static final long								INITIAL_TIMEOUT		= TimeUnit.MINUTES.toMillis(3);
 	static final long								FINAL_TIMEOUT		= TimeUnit.MINUTES.toMillis(5);
 	static final long								MAX_RETRY_DELAY		= TimeUnit.MINUTES.toMillis(10);
@@ -120,16 +119,6 @@ public class HttpClient implements Closeable, URLConnector {
 			}
 		});
 
-	}
-
-	static DateFormat httpDateFormat() {
-		DateFormat format = HTTP_DATE_FORMATTER.get();
-		if (format == null) {
-			format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
-			format.setTimeZone(TimeZone.getTimeZone("GMT"));
-			HTTP_DATE_FORMATTER.set(format);
-		}
-		return format;
 	}
 
 	@Override
@@ -585,12 +574,13 @@ public class HttpClient implements Closeable, URLConnector {
 			}
 
 			if (request.ifModifiedSince > 0) {
-				request.headers.put("If-Modified-Since", httpDateFormat().format(new Date(request.ifModifiedSince)));
+				request.headers.put("If-Modified-Since",
+					Dates.formatMillis(Dates.RFC_7231_DATE_TIME, request.ifModifiedSince));
 			}
 
 			if (request.ifUnmodifiedSince != 0) {
 				request.headers.put("If-Unmodified-Since",
-					httpDateFormat().format(new Date(request.ifUnmodifiedSince)));
+					Dates.formatMillis(Dates.RFC_7231_DATE_TIME, request.ifUnmodifiedSince));
 			}
 
 			setHeaders(request.headers, con);

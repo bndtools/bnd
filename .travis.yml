@@ -5,7 +5,11 @@ language: java
 
 env:
   global:
+    - LC_ALL=en_US.UTF-8
     - GRADLE_OPTS=-Dorg.gradle.parallel=true
+    - JAVA8_JDK=https://cdn.azul.com/zulu/bin/zulu8.40.0.25-ca-jdk8.0.222-linux_x64.tar.gz
+    - JAVA11_JDK=https://cdn.azul.com/zulu/bin/zulu11.33.15-ca-jdk11.0.4-linux_x64.tar.gz
+    - JAVA12_JDK=https://cdn.azul.com/zulu/bin/zulu12.3.11-ca-jdk12.0.2-linux_x64.tar.gz
 
 matrix:
   include:
@@ -14,18 +18,16 @@ matrix:
         - secure: JuFTmYTsnmzZzWTvf/hNkRDkpQhLrtl8BRLBdxGR79pzGxmoq961pgaYO615DFJUBggmZm1VkLSao3sC8eWfanTng9Qm1r1CUVsHbLiBDrIR2kwUU7DFiPOEkqwuf9YDjlTl1D4bRKwOZXPVMzlbwfWNr5yj2iRS8PSRS/76f3k=
     - name: "OpenJDK11"
       install:
-        - "source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu11.31.11-ca-jdk11.0.3-linux_x64.tar.gz"
+        - "source install-jdk.sh --url $JAVA11_JDK"
     - name: "OpenJDK12"
       install:
-        - "source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu12.2.3-ca-jdk12.0.1-linux_x64.tar.gz"
+        - "source install-jdk.sh --url $JAVA12_JDK"
     - name: "Local rebuild"
       script: 
         - "./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 :biz.aQute.bnd.gradle:build :biz.aQute.bnd.gradle:releaseNeeded"
         - "./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 -Pbnd_repourl=./dist/bundles :buildscriptDependencies :build"
     - name: "Documentation"
       install:
-        - "rvm --version"
-        - "rvm use 2.4 --install --binary --fuzzy"
         - "ruby --version"
         - "gem --version"
         - "gem install bundler -v '~> 2.0'"
@@ -42,7 +44,7 @@ before_install:
   - "curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh"
 
 install:
-  - "source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu8.38.0.13-ca-jdk8.0.212-linux_x64.tar.gz"
+  - "source install-jdk.sh --url $JAVA8_JDK"
 
 before_script:
   - "./gradlew --no-daemon --version"

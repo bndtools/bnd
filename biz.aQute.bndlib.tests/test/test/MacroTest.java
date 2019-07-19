@@ -1608,6 +1608,13 @@ public class MacroTest extends TestCase {
 			// keep time constant in build
 			processor.setProperty(Constants.TSTAMP, "0");
 
+			assertThat(processor.getReplacer()
+				.process("${format;%tY-%<tm-%<td %<tH:%<tM:%<tS %<tZ;0}")).isEqualTo("1970-01-01 00:00:00 UTC");
+			assertThat(processor.getReplacer()
+				.process("${format;%tY-%<tm-%<td %<tH:%<tM:%<tS %<tZ;${now}}")).isEqualTo("1970-01-01 00:00:00 UTC");
+			assertThat(processor.getReplacer()
+				.process("${format;%tY-%<tm-%<td %<tH:%<tM:%<tS %<tZ;${tstamp}}")).isEqualTo("1970-01-01 00:00:00 UTC");
+
 			// check indexed forward
 			assertEquals("1970/01 Z", processor.getReplacer()
 				.process("${format;%2$tY/%2$tm %2$tZ;X;1970-01-01T00:00:00Z}"));
@@ -1629,14 +1636,10 @@ public class MacroTest extends TestCase {
 				.process("${format;%2$tY/%2$tm %<tH %2$tZ;X;1970-01-01T00:00:00+08:00}"));
 
 			assertEquals("UTC", processor.getReplacer()
-				.process("${format;%TZ;190704}"));
+				.process("${format;%TZ;20190704}"));
 
 			assertEquals("201907", processor.getReplacer()
 				.process("${format;%TY%<tm;20190704}"));
-
-
-			assertEquals("1970", processor.getReplacer()
-				.process("${format;%tY;${now}}"));
 
 			assertEquals("2019", processor.getReplacer()
 				.process("${format;%tY;1562252413579}"));
@@ -1645,10 +1648,10 @@ public class MacroTest extends TestCase {
 				.process("${format;%tY%Tm;20190704;20190704}"));
 
 			assertEquals("07", processor.getReplacer()
-				.process("${format;%tm;201907042359}"));
+				.process("${format;%tm;201907040000}"));
 
 			assertEquals("04", processor.getReplacer()
-				.process("${format;%td;20190704235923}"));
+				.process("${format;%td;20190704000000}"));
 		}
 	}
 

@@ -11,12 +11,20 @@ import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalQueries;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.regex.Pattern;
 
 public class Dates {
 	public final static ZoneId					UTC_ZONE_ID				= ZoneId.of("UTC");
 	public static final TimeZone				UTC_TIME_ZONE			= TimeZone.getTimeZone("UTC");
-	private static final Pattern				IS_NUMERIC_P			= Pattern.compile("[+-]?\\d+");
+	public static final DateTimeFormatter		RFC_7231_DATE_TIME		= DateTimeFormatter
+		.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH)
+		.withZone(ZoneId.of("GMT"));
+	// old Date toString format in default Locale
+	private static final DateTimeFormatter		DATE_TOSTRING_DEFAULT_LOCALE	= DateTimeFormatter
+		.ofPattern("EEE MMM dd HH:mm:ss z yyyy");
+	// old Date toString format
+	public static final DateTimeFormatter		DATE_TOSTRING					= DATE_TOSTRING_DEFAULT_LOCALE
+		.withLocale(Locale.ROOT);
+
 	private static final DateTimeFormatter[]	DATE_TIME_FORMATTERS	= new DateTimeFormatter[] {
 		// @formatter:off
 		DateTimeFormatter.ofPattern("yyyyMMddHHmmss.SSSZ", Locale.ROOT),
@@ -27,13 +35,14 @@ public class Dates {
 		DateTimeFormatter.ISO_ORDINAL_DATE.withLocale(Locale.ROOT),
 		DateTimeFormatter.ISO_ZONED_DATE_TIME.withLocale(Locale.ROOT),
 		DateTimeFormatter.ISO_WEEK_DATE.withLocale(Locale.ROOT),
+		RFC_7231_DATE_TIME,
 		DateTimeFormatter.RFC_1123_DATE_TIME.withLocale(Locale.ROOT),
 
 		// old Date toString format
-		DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss z yyyy", Locale.ROOT),
+		DATE_TOSTRING,
 
-		// old Date toString format in current Locale
-		DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss z yyyy"),
+		// old Date toString format in default Locale
+		DATE_TOSTRING_DEFAULT_LOCALE,
 
 		DateTimeFormatter.ofPattern("yyyy[-][/][ ]MM[-][/][ ]dd[ ][HH[:]mm[[:]ss][.SSS]][X]", Locale.ROOT),
 
@@ -54,6 +63,8 @@ public class Dates {
 		// @formatter:on
 	};
 
+	private Dates() {}
+
 	/**
 	 * Return a ZonedDateTime that is set to the given datestring. This will try
 	 * all standard DateTimeFormatter formats and a bunch more. It does not
@@ -65,7 +76,6 @@ public class Dates {
 	 *         date
 	 */
 	public static ZonedDateTime parse(String dateString) {
-
 		for (DateTimeFormatter df : DATE_TIME_FORMATTERS) {
 			try {
 				return toZonedDateTime(df.parse(dateString));
@@ -73,17 +83,14 @@ public class Dates {
 				// we ignore wrong formats
 				continue;
 			}
-
 		}
 
-		if (IS_NUMERIC_P.matcher(dateString)
-			.matches()) {
-			long ldate = Long.parseLong(dateString);
-			return Instant.ofEpochMilli(ldate)
-				.atZone(UTC_ZONE_ID);
+		try {
+			long epochMilli = Long.parseLong(dateString);
+			return toZonedDateTime(epochMilli);
+		} catch (NumberFormatException e) {
+			return null;
 		}
-
-		return null;
 	}
 
 	/**
@@ -94,7 +101,6 @@ public class Dates {
 	 * @return a {@link ZonedDateTime}
 	 */
 	public static ZonedDateTime toZonedDateTime(TemporalAccessor temporal) {
-
 		if (temporal instanceof ZonedDateTime)
 			return (ZonedDateTime) temporal;
 
@@ -115,7 +121,6 @@ public class Dates {
 	 * @return a {@link ZonedDateTime}
 	 */
 	public static ZonedDateTime toZonedDateTime(LocalDate date, LocalTime time, ZoneId zone) {
-
 		if (date == null)
 			date = LocalDate.now();
 
@@ -126,5 +131,41 @@ public class Dates {
 			zone = UTC_ZONE_ID;
 
 		return ZonedDateTime.of(date, time, zone);
+	}
+
+	/**
+	 * Return a new ZonedDateTime based on a epoch milliseconds.
+	 *
+	 * @param epochMilli the number of milliseconds from 1970-01-01T00:00:00Z
+	 * @return a {@link ZonedDateTime} using UTC time zone.
+	 */
+	public static ZonedDateTime toZonedDateTime(long epochMilli) {
+		return ZonedDateTime.ofInstant(Instant.ofEpochMilli(epochMilli), UTC_ZONE_ID);
+	}
+
+	/**
+	 * Parse a string into epoch milliseconds.
+	 *
+	 * @param formatter The formatter to parse the string with.
+	 * @param time Time string to parse into epoch milliseconds.
+	 * @return The number of milliseconds from 1970-01-01T00:00:00Z.
+	 */
+	public static long parseMillis(DateTimeFormatter formatter, String time) {
+		TemporalAccessor temporal = formatter.parse(time);
+		return toZonedDateTime(temporal).toInstant()
+			.toEpochMilli();
+	}
+
+	/**
+	 * Format epoch milliseconds to a string.
+	 *
+	 * @param formatter The formatter to format the epoch milliseconds with.
+	 * @param epochMilli Number of milliseconds from 1970-01-01T00:00:00Z.
+	 * @return Time string from the epoch milliseconds.
+	 */
+	public static String formatMillis(DateTimeFormatter formatter, long epochMilli) {
+		TemporalAccessor temporal = (formatter.getZone() == null) ? toZonedDateTime(epochMilli)
+			: Instant.ofEpochMilli(epochMilli);
+		return formatter.format(temporal);
 	}
 }

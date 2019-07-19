@@ -12,11 +12,8 @@ import java.security.Signature;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.time.Instant;
 import java.util.Map;
-import java.util.TimeZone;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -24,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.lib.base64.Base64;
+import aQute.lib.date.Dates;
 import aQute.lib.hex.Hex;
 import aQute.lib.settings.Settings;
 
@@ -66,11 +64,6 @@ public class BndAuthentication extends DefaultURLConnectionHandler {
 	private static final String		PRIVATE_KEY	= "privateKey";
 	private static final String		PUBLIC_KEY	= "publicKey";
 	private static final String		EMAIL		= "email";
-	private static SimpleDateFormat	httpFormat	= new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
-
-	static {
-		httpFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-	}
 	private static final String	X_A_QUTE_AUTHORIZATION	= "X-aQute-Authorization";
 	private String				identity;
 	private String				email;
@@ -98,9 +91,7 @@ public class BndAuthentication extends DefaultURLConnectionHandler {
 
 		String dateHeader = connection.getRequestProperty("Date");
 		if (dateHeader == null) {
-			synchronized (httpFormat) {
-				dateHeader = httpFormat.format(new Date());
-			}
+			dateHeader = Dates.RFC_7231_DATE_TIME.format(Instant.now());
 			connection.setRequestProperty("Date", dateHeader);
 		}
 

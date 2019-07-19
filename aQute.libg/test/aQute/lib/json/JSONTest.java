@@ -590,6 +590,14 @@ public class JSONTest extends TestCase {
 				.$("2", 2)
 				.$("3", 3))
 			.toString());
+		// Dates
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+		Date d = sdf.parse("2012-03-01T10:23:00");
+		System.out.println(d.getTime());
+		assertEquals("\"2012-03-01T10:23:00\"", enc.to()
+			.put(d)
+			.toString());
 	}
 
 	enum E {

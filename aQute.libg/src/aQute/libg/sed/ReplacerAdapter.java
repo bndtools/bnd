@@ -13,7 +13,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,6 +25,7 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
@@ -33,6 +36,7 @@ import java.util.regex.Pattern;
 
 import aQute.lib.collections.ExtList;
 import aQute.lib.collections.SortedList;
+import aQute.lib.date.Dates;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
@@ -524,8 +528,19 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		return "";
 	}
 
+	private static final DateTimeFormatter DATE_TOSTRING = Dates.DATE_TOSTRING.withZone(Dates.UTC_ZONE_ID);
+
 	public String _now(String args[]) {
-		return new Date().toString();
+		long now = System.currentTimeMillis();
+		if (args.length == 2) {
+			if ("long".equals(args[1])) {
+				return Long.toString(now);
+			}
+			DateFormat df = new SimpleDateFormat(args[1], Locale.ROOT);
+			df.setTimeZone(Dates.UTC_TIME_ZONE);
+			return df.format(new Date(now));
+		}
+		return Dates.formatMillis(DATE_TOSTRING, now);
 	}
 
 	public final static String _fmodifiedHelp = "${fmodified;<list of filenames>...}, return latest modification date";
@@ -548,7 +563,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	public String _long2date(String args[]) {
 		try {
-			return new Date(Long.parseLong(args[1])).toString();
+			return Dates.formatMillis(DATE_TOSTRING, Long.parseLong(args[1]));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -738,7 +753,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		if (args.length > 2) {
 			tz = TimeZone.getTimeZone(args[2]);
 		} else {
-			tz = TimeZone.getTimeZone("UTC");
+			tz = Dates.UTC_TIME_ZONE;
 		}
 		if (args.length > 3) {
 			now = Long.parseLong(args[3]);
@@ -749,7 +764,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			reporter.warning("Too many arguments for tstamp: %s", Arrays.toString(args));
 		}
 
-		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		SimpleDateFormat sdf = new SimpleDateFormat(format, Locale.US);
 		sdf.setTimeZone(tz);
 		return sdf.format(new Date(now));
 	}

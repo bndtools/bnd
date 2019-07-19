@@ -3,9 +3,11 @@ package org.bndtools.api;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.eclipse.core.internal.runtime.InternalPlatform;
@@ -50,9 +52,12 @@ public class Logger implements ILogger {
 		return sw.toString();
 	}
 
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
+		.ofPattern("yyyyMMdd HHmmss.SSS", Locale.ROOT)
+		.withZone(ZoneId.systemDefault());
+
 	private String constructSysErrString(IStatus status) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd HHmmss.SSS");
-		String formattedDate = formatter.format(new Date());
+		String formattedDate = DATE_TIME_FORMATTER.format(Instant.now());
 		return String.format("%s - %s - %s - %s%n%s", formattedDate, status.getSeverity(), status.getPlugin(),
 			status.getMessage(), getStackTrace(status.getException()));
 	}

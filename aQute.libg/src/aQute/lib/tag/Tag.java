@@ -7,7 +7,8 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,7 +43,9 @@ public class Tag {
 	String							name;																																												// Name
 	final Map<String, String>		attributes			= new LinkedHashMap<>();
 	final List<Object>				content				= new ArrayList<>();																																			// Content
-	final static SimpleDateFormat	format				= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	static final DateTimeFormatter	DATE_TIME_FORMATTER	= DateTimeFormatter
+		.ofPattern("yyyyMMddHHmmss.SSS", Locale.ROOT)
+		.withZone(ZoneId.systemDefault());
 	boolean							cdata;
 
 	/**
@@ -133,14 +136,12 @@ public class Tag {
 	}
 
 	/**
-	 * Add a new date attribute. The date is formatted as the SimpleDateFormat
-	 * describes at the top of this class.
+	 * Add a new date attribute. The date is formatted by DATE_TIME_FORMATTER
+	 * described at the top of this class.
 	 */
 	public Tag addAttribute(String key, Date value) {
 		if (value != null) {
-			synchronized (format) {
-				attributes.put(key, format.format(value));
-			}
+			attributes.put(key, DATE_TIME_FORMATTER.format(value.toInstant()));
 		}
 		return this;
 	}

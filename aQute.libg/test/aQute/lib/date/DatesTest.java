@@ -3,11 +3,44 @@ package aQute.lib.date;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.junit.Test;
 
 public class DatesTest {
+	@Test
+	public void testRFC_7231() {
+		Instant now = Instant.now();
+		now = now.minusNanos(now.getNano());
+		String dateHeader = Dates.RFC_7231_DATE_TIME.format(now);
+		ZonedDateTime zdt = Dates.parse(dateHeader);
+		assertThat(zdt.toInstant()).isEqualTo(now);
+	}
+
+	@Test
+	public void testMillis() {
+		final ZoneId otherZone = ZoneId.of("Australia/Eucla");
+		final long milli = System.currentTimeMillis();
+
+		String formattedCurrent = Dates.formatMillis(DateTimeFormatter.ISO_LOCAL_DATE_TIME, milli);
+		ZonedDateTime current = Dates.parse(formattedCurrent);
+		assertThat(current.getZone()).isEqualTo(Dates.UTC_ZONE_ID);
+		ZonedDateTime other = current.withZoneSameInstant(otherZone);
+		assertThat(other.getZone()).isEqualTo(otherZone);
+		String formattedOther = DateTimeFormatter.ISO_DATE_TIME.format(other);
+		long currentMillis = Dates.parseMillis(DateTimeFormatter.ISO_LOCAL_DATE_TIME, formattedCurrent);
+		assertThat(currentMillis).isEqualTo(milli);
+		long otherMillis = Dates.parseMillis(DateTimeFormatter.ISO_DATE_TIME, formattedOther);
+		assertThat(otherMillis).isEqualTo(milli);
+		LocalDateTime local = other.toLocalDateTime();
+		long localMillis = Dates.parseMillis(DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(otherZone),
+			local.toString());
+		assertThat(localMillis).isEqualTo(milli);
+	}
+
 
 	@Test
 	public void testBackAndForth() {
@@ -67,6 +100,11 @@ public class DatesTest {
 	@Test
 	public void RFC_1123_DATE_TIME() {
 		check("Thu, 1 Jan 1970 00:00:00 GMT");
+	}
+
+	@Test
+	public void RFC_7231_DATE_TIME() {
+		check("Thu, 01 Jan 1970 00:00:00 GMT");
 	}
 
 	@Test
@@ -165,7 +203,7 @@ public class DatesTest {
 	private void check(String string) {
 		ZonedDateTime parse = Dates.parse(string);
 		assertThat(parse).isNotNull();
-		
+
 		assertThat(parse
 			.toInstant()
 			.toEpochMilli()).isEqualTo(0L);

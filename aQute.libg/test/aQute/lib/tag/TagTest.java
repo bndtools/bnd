@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -204,5 +205,16 @@ public class TagTest extends TestCase {
 			t.print(0, pw);
 		}
 		assertThat(w.toString()).contains("<![CDATA[blah blah blah blah]]>");
+	}
+
+	public void testDate() throws Exception {
+		Date now = new Date();
+		Tag t = new Tag("test");
+		t.addAttribute("date", now);
+		StringWriter w = new StringWriter();
+		try (PrintWriter pw = new PrintWriter(w)) {
+			t.print(0, pw);
+		}
+		assertThat(w.toString()).contains("<test date=\"" + Tag.DATE_TIME_FORMATTER.format(now.toInstant()) + "\"");
 	}
 }
