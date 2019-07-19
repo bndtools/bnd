@@ -37,6 +37,7 @@ public class BundleBuilderTest {
 		try (Launchpad lp = builder.create()) {
 
 			Bundle bundle = lp.bundle()
+				.header("-removeheaders.launchpadtest", "")
 				.header("-require-bnd", "'(version>=4.3.0)'")
 				.privatePackage("")
 				.exportPackage("")
@@ -50,6 +51,7 @@ public class BundleBuilderTest {
 		try (Launchpad lp = builder.create()) {
 
 			Bundle bundle = lp.bundle()
+				.header("-removeheaders.launchpadtest", "")
 				.workspace()
 				.start();
 			testHeader(bundle, "Workspace", "true");
@@ -60,6 +62,7 @@ public class BundleBuilderTest {
 		try (Launchpad lp = builder.create()) {
 
 			Bundle bundle = lp.bundle()
+				.header("-removeheaders.launchpadtest", "")
 				.project()
 				.privatePackage("") // remove any packages defined in the
 				.exportPackage("") // project file
@@ -72,6 +75,7 @@ public class BundleBuilderTest {
 		try (Launchpad lp = builder.create()) {
 
 			Bundle bundle = lp.bundle()
+				.header("-removeheaders.launchpadtest", "")
 				.parent("testresources/inherit.bnd")
 				.privatePackage("")
 				.exportPackage("")
@@ -84,6 +88,7 @@ public class BundleBuilderTest {
 		try (Launchpad lp = builder.create()) {
 
 			Bundle bundle = lp.bundle()
+				.header("-removeheaders.launchpadtest", "")
 				.parent("testresources/inherit.bnd")
 				.project()
 				.privatePackage("")
@@ -97,6 +102,7 @@ public class BundleBuilderTest {
 		try (Launchpad lp = builder.create()) {
 
 			Bundle bundle = lp.bundle()
+				.header("-removeheaders.launchpadtest", "")
 				.parent("testresources/inherit.bnd")
 				.workspace()
 				.privatePackage("")
@@ -112,7 +118,7 @@ public class BundleBuilderTest {
 	private void testHeader(Bundle bundle, String key, String value) {
 		Dictionary<String, String> headers = bundle.getHeaders();
 
-		assertThat(headers.get(key)).isEqualTo(value);
+		assertThat(headers.get(key)).isEqualToIgnoringWhitespace(value);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
