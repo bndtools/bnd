@@ -12,6 +12,15 @@ import org.junit.Test;
 
 public class DatesTest {
 	@Test
+	public void testRFC_7231() {
+		Instant now = Instant.now();
+		now = now.minusNanos(now.getNano());
+		String dateHeader = Dates.RFC_7231_DATE_TIME.format(now);
+		ZonedDateTime zdt = Dates.parse(dateHeader);
+		assertThat(zdt.toInstant()).isEqualTo(now);
+	}
+
+	@Test
 	public void testMillis() {
 		final ZoneId otherZone = ZoneId.of("Australia/Eucla");
 		final long milli = System.currentTimeMillis();
@@ -91,6 +100,11 @@ public class DatesTest {
 	@Test
 	public void RFC_1123_DATE_TIME() {
 		check("Thu, 1 Jan 1970 00:00:00 GMT");
+	}
+
+	@Test
+	public void RFC_7231_DATE_TIME() {
+		check("Thu, 01 Jan 1970 00:00:00 GMT");
 	}
 
 	@Test

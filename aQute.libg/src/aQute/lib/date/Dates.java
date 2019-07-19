@@ -15,6 +15,16 @@ import java.util.TimeZone;
 public class Dates {
 	public final static ZoneId					UTC_ZONE_ID				= ZoneId.of("UTC");
 	public static final TimeZone				UTC_TIME_ZONE			= TimeZone.getTimeZone("UTC");
+	public static final DateTimeFormatter		RFC_7231_DATE_TIME		= DateTimeFormatter
+		.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH)
+		.withZone(ZoneId.of("GMT"));
+	// old Date toString format in default Locale
+	private static final DateTimeFormatter		DATE_TOSTRING_DEFAULT_LOCALE	= DateTimeFormatter
+		.ofPattern("EEE MMM dd HH:mm:ss z yyyy");
+	// old Date toString format
+	public static final DateTimeFormatter		DATE_TOSTRING					= DATE_TOSTRING_DEFAULT_LOCALE
+		.withLocale(Locale.ROOT);
+
 	private static final DateTimeFormatter[]	DATE_TIME_FORMATTERS	= new DateTimeFormatter[] {
 		// @formatter:off
 		DateTimeFormatter.ofPattern("yyyyMMddHHmmss.SSSZ", Locale.ROOT),
@@ -25,13 +35,14 @@ public class Dates {
 		DateTimeFormatter.ISO_ORDINAL_DATE.withLocale(Locale.ROOT),
 		DateTimeFormatter.ISO_ZONED_DATE_TIME.withLocale(Locale.ROOT),
 		DateTimeFormatter.ISO_WEEK_DATE.withLocale(Locale.ROOT),
+		RFC_7231_DATE_TIME,
 		DateTimeFormatter.RFC_1123_DATE_TIME.withLocale(Locale.ROOT),
 
 		// old Date toString format
-		DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss z yyyy", Locale.ROOT),
+		DATE_TOSTRING,
 
-		// old Date toString format in current Locale
-		DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss z yyyy"),
+		// old Date toString format in default Locale
+		DATE_TOSTRING_DEFAULT_LOCALE,
 
 		DateTimeFormatter.ofPattern("yyyy[-][/][ ]MM[-][/][ ]dd[ ][HH[:]mm[[:]ss][.SSS]][X]", Locale.ROOT),
 
