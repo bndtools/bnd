@@ -91,9 +91,9 @@ public class MavenBndRepoTest extends TestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
-		domain.close();
-		repo.close();
-		fnx.close();
+		IO.close(domain);
+		IO.close(repo);
+		IO.close(fnx);
 		super.tearDown();
 	}
 

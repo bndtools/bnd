@@ -2,12 +2,10 @@ package aQute.maven.provider;
 
 import java.io.File;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -15,6 +13,7 @@ import javax.xml.stream.XMLStreamReader;
 
 import aQute.bnd.util.dto.DTO;
 import aQute.bnd.version.MavenVersion;
+import aQute.lib.date.Dates;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
 
@@ -29,14 +28,8 @@ import aQute.lib.tag.Tag;
  */
 public class MetadataParser {
 	final static XMLInputFactory	inputFactory		= XMLInputFactory.newInstance();
-	final static SimpleDateFormat	timestamp			= new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-	final static SimpleDateFormat	snapshotTimestamp	= new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.US);
-
-	static {
-		TimeZone tz = TimeZone.getTimeZone("UTC");
-		timestamp.setTimeZone(tz);
-		snapshotTimestamp.setTimeZone(tz);
-	}
+	static final DateTimeFormatter	MAVEN_DATE_TIME	= DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ROOT)
+		.withZone(Dates.UTC_ZONE_ID);
 
 	public static class Metadata extends DTO {
 		public String	modelVersion	= "1.1.0";
@@ -80,7 +73,7 @@ public class MetadataParser {
 			for (MavenVersion mv : versions) {
 				new Tag(versionsTag, "version").addContent(mv.toString());
 			}
-			new Tag(versioning, "lastUpdated", timestamp.format(new Date(lastUpdated)));
+			new Tag(versioning, "lastUpdated", Dates.formatMillis(MAVEN_DATE_TIME, lastUpdated));
 			return top;
 		}
 	}
@@ -119,7 +112,7 @@ public class MetadataParser {
 				new Tag(snapshot, "timestamp", this.snapshot.timestamp);
 			}
 
-			new Tag(versioning, "lastUpdated", timestamp.format(new Date(lastUpdated)));
+			new Tag(versioning, "lastUpdated", Dates.formatMillis(MAVEN_DATE_TIME, lastUpdated));
 
 			Tag snapshotVersions = new Tag(versioning, "snapshotVersions");
 			for (SnapshotVersion sv : this.snapshotVersions) {
@@ -128,7 +121,7 @@ public class MetadataParser {
 				if (sv.classifier != null)
 					new Tag(x, "classifier", sv.classifier);
 				new Tag(x, "value", sv.value + "");
-				new Tag(x, "updated", timestamp.format(new Date(sv.updated)));
+				new Tag(x, "updated", Dates.formatMillis(MAVEN_DATE_TIME, sv.updated));
 			}
 
 			return top;
@@ -410,14 +403,11 @@ public class MetadataParser {
 	}
 
 	private static long getTimestamp(XMLStreamReader sr) throws Exception {
-		synchronized (timestamp) {
-			String date = getText(sr);
-			if (date == null)
-				return 0;
+		String date = getText(sr);
+		if (date == null)
+			return 0;
 
-			Date parse = timestamp.parse(date.trim());
-			return parse.getTime();
-		}
+		return Dates.parseMillis(MAVEN_DATE_TIME, date.trim());
 	}
 
 	private static MavenVersion getVersion(XMLStreamReader sr) throws Exception {

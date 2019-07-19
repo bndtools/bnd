@@ -1,13 +1,12 @@
 package aQute.bnd.version;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import aQute.bnd.version.maven.ComparableVersion;
+import aQute.lib.date.Dates;
 
 public class MavenVersion implements Comparable<MavenVersion> {
 
@@ -20,11 +19,9 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	private static final Pattern			VERSIONRANGE		= Pattern
 		.compile("((\\(|\\[)" + VERSION_STRING + "," + VERSION_STRING + "(\\]|\\)))|" + VERSION_STRING);
 
-	private static final SimpleDateFormat	snapshotTimestamp;
-	static {
-		snapshotTimestamp = new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.ROOT);
-		snapshotTimestamp.setTimeZone(TimeZone.getTimeZone("UTC"));
-	}
+	private static final DateTimeFormatter	MAVEN_SNAPSHOT_DATE_TIME	= DateTimeFormatter
+		.ofPattern("yyyyMMdd.HHmmss", Locale.ROOT)
+		.withZone(Dates.UTC_ZONE_ID);
 
 	public static final MavenVersion	UNRESOLVED	= new MavenVersion("0-UNRESOLVED");
 
@@ -138,9 +135,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	public static String toDateStamp(long epoch) {
-		synchronized (snapshotTimestamp) {
-			return snapshotTimestamp.format(new Date(epoch));
-		}
+		return Dates.formatMillis(MAVEN_SNAPSHOT_DATE_TIME, epoch);
 	}
 
 	public static String toDateStamp(long epoch, String build) {

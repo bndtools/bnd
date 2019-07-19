@@ -19,6 +19,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -609,21 +610,23 @@ public class Macro {
 			&& condition.length() != 0;
 	}
 
+	private static final DateTimeFormatter	DATE_TOSTRING	= Dates.DATE_TOSTRING
+		.withZone(Dates.UTC_ZONE_ID);
 	public final static String _nowHelp = "${now;pattern|'long'}, returns current time";
 
 	public Object _now(String[] args) {
 		verifyCommand(args, _nowHelp, null, 1, 2);
-		long buildNow = getBuildNow();
+		long now = getBuildNow();
 
 		if (args.length == 2) {
-			if ("long".equals(args[1]))
-				return buildNow;
-
+			if ("long".equals(args[1])) {
+				return Long.toString(now);
+			}
 			DateFormat df = new SimpleDateFormat(args[1], Locale.ROOT);
 			df.setTimeZone(Dates.UTC_TIME_ZONE);
-			return df.format(new Date(buildNow));
+			return df.format(new Date(now));
 		}
-		return new Date(buildNow);
+		return Dates.formatMillis(DATE_TOSTRING, now);
 	}
 
 	public final static String _fmodifiedHelp = "${fmodified;<list of filenames>...}, return latest modification date";
@@ -643,7 +646,7 @@ public class Macro {
 
 	public String _long2date(String[] args) {
 		try {
-			return new Date(Long.parseLong(args[1])).toString();
+			return Dates.formatMillis(DATE_TOSTRING, Long.parseLong(args[1]));
 		} catch (Exception e) {
 			return "not a valid long";
 		}
