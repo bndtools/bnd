@@ -1,8 +1,8 @@
 variables:
   GRADLE_OPTS: -Dorg.gradle.parallel=true
-  Java8.JDK: https://cdn.azul.com/zulu/bin/zulu8.38.0.13-ca-jdk8.0.212-linux_x64.tar.gz
-  Java11.JDK: https://cdn.azul.com/zulu/bin/zulu11.31.11-ca-jdk11.0.3-linux_x64.tar.gz
-  Java12.JDK: https://cdn.azul.com/zulu/bin/zulu12.2.3-ca-jdk12.0.1-linux_x64.tar.gz
+  JAVA8_JDK: https://cdn.azul.com/zulu/bin/zulu8.38.0.13-ca-jdk8.0.212-linux_x64.tar.gz
+  JAVA11_JDK: https://cdn.azul.com/zulu/bin/zulu11.31.11-ca-jdk11.0.3-linux_x64.tar.gz
+  JAVA12_JDK: https://cdn.azul.com/zulu/bin/zulu12.2.3-ca-jdk12.0.1-linux_x64.tar.gz
 
 jobs:
 
@@ -13,7 +13,7 @@ jobs:
   - bash: |
       set -ev
       curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh
-      source install-jdk.sh --url $(Java8.JDK)
+      source install-jdk.sh --url $(JAVA8_JDK)
       ./gradlew --no-daemon --version
       ./mvnw --version
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
@@ -36,7 +36,7 @@ jobs:
   - bash: |
       set -ev
       curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh
-      source install-jdk.sh --url $(Java11.JDK)
+      source install-jdk.sh --url $(JAVA11_JDK)
       ./gradlew --no-daemon --version
       ./mvnw --version
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
@@ -49,7 +49,7 @@ jobs:
   - bash: |
       set -ev
       curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh
-      source install-jdk.sh --url $(Java12.JDK)
+      source install-jdk.sh --url $(JAVA12_JDK)
       ./gradlew --no-daemon --version
       ./mvnw --version
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
@@ -62,7 +62,7 @@ jobs:
   - bash: |
       set -ev
       curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh
-      source install-jdk.sh --url $(Java8.JDK)
+      source install-jdk.sh --url $(JAVA8_JDK)
       ./gradlew --no-daemon --version
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 :biz.aQute.bnd.gradle:build :biz.aQute.bnd.gradle:releaseNeeded
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 -Pbnd_repourl=./dist/bundles :buildscriptDependencies :build
