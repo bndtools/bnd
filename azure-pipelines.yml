@@ -1,4 +1,5 @@
 variables:
+  LC_ALL: en_US.UTF-8
   GRADLE_OPTS: -Dorg.gradle.parallel=true
   JAVA8_JDK: https://cdn.azul.com/zulu/bin/zulu8.40.0.25-ca-jdk8.0.222-linux_x64.tar.gz
   JAVA11_JDK: https://cdn.azul.com/zulu/bin/zulu11.33.15-ca-jdk11.0.4-linux_x64.tar.gz
