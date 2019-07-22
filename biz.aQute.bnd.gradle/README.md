@@ -137,7 +137,7 @@ task bundle(type: Bundle) {
 
 The normal way to instruct Bnd on how to build the bundle is to use a
 bnd file. This file will specify the Bnd instructions like
-`Export-Package`, etc. You can also use the `bnd` property of the
+`-exportcontents`, etc. You can also use the `bnd` property of the
 `BundleTaskConvention`. It can be used in several different ways. You can configure 
 the `bnd` property with a multiline string:
 
@@ -146,7 +146,7 @@ apply plugin: 'biz.aQute.bnd.builder'
 
 jar {
     bnd '''
-Export-Package: com.acme.api.*
+-exportcontents: com.acme.api.*
 -sources: true
 -include: other.bnd
 '''
@@ -159,7 +159,7 @@ You can also configure the `bnd` property with map notation:
 apply plugin: 'biz.aQute.bnd.builder'
 
 jar {
-    bnd('Export-Package': 'com.acme.api.*',
+    bnd('-exportcontents': 'com.acme.api.*',
          '-sources': 'true',
          '-include': 'other.bnd')
 }
@@ -173,7 +173,7 @@ apply plugin: 'biz.aQute.bnd.builder'
 
 jar {
     manifest {
-        attributes('Export-Package': 'com.acme.api.*',
+        attributes('-exportcontents': 'com.acme.api.*',
                    '-sources': 'true',
                    '-include': 'other.bnd')
     }
