@@ -16,6 +16,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Attrs.Type;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Processor;
 import biz.aQute.bnd.reporter.manifest.dto.ActivationPolicyDTO;
 import biz.aQute.bnd.reporter.manifest.dto.BundleSymbolicNameDTO;
 import biz.aQute.bnd.reporter.manifest.dto.ContactAddressDTO;
@@ -889,13 +890,7 @@ public class HeadersHelper {
 	}
 
 	static private String cleanKey(final String key) {
-		String result = key;
-		if (key != null) {
-			while (result.endsWith("~")) {
-				result = result.substring(0, result.length() - 1);
-			}
-		}
-		return result;
+		return Processor.removeDuplicateMarker(key);
 	}
 
 	static private List<String> cleanKey(final Set<String> keys) {

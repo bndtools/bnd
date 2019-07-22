@@ -29,7 +29,7 @@
 					</reportConfigs>
 					<reports combine.children="append">
 						<report>
-							<outputFile>readme.md</outputFile>
+							<outputFile>readmeOther.md</outputFile>
 							<templateFile>proj.twig</templateFile>
 							<configName>myConfigName</configName>
 						</report>

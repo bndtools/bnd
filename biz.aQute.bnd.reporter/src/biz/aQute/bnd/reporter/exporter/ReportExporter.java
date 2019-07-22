@@ -68,7 +68,8 @@ class ReportExporter implements ReportExporterService {
 		final Map<String, ExportReportInstruction> instructions = getScopedExportInstruction();
 		instructions.entrySet()
 			.forEach(config -> {
-				final File destination = IO.getFile(_processor.getBase(), config.getKey());
+				final File destination = IO.getFile(_processor.getBase(),
+					Processor.removeDuplicateMarker(config.getKey()));
 				final ExportReportInstruction instruction = config.getValue();
 				final Map.Entry<String, Resource> templateResource = getTemplateResource(instruction, destination,
 					_processor.getBase());
