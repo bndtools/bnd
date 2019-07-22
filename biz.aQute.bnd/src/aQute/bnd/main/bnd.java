@@ -3580,7 +3580,7 @@ public class bnd extends Processor {
 		List<File> files = new ArrayList<>();
 
 		List<String> args = options._arguments();
-		if (args.size() == 0) {
+		if (args.isEmpty()) {
 			Project p = getProject();
 			if (p == null) {
 				error("This is not a project directory and you have specified no jar files ...");

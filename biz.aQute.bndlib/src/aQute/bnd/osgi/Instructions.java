@@ -265,7 +265,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 	}
 
 	public boolean matches(String value) {
-		if (size() == 0)
+		if (isEmpty())
 			return true;
 
 		Instruction instr = matcher(value);

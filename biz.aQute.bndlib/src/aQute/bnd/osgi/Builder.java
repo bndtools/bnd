@@ -142,7 +142,7 @@ public class Builder extends Analyzer {
 			doVerify(dot);
 
 		Map<String, Resource> resources = dot.getResources();
-		if (resources.size() == 0 || ((resources.size() == 1) && resources.get("module-info.class") != null))
+		if (resources.isEmpty() || ((resources.size() == 1) && resources.get("module-info.class") != null))
 			warning(
 				"The JAR is empty: The instructions for the JAR named %s did not cause any content to be included, this is likely wrong",
 				getBsn());
@@ -239,7 +239,7 @@ public class Builder extends Analyzer {
 
 		// Check if we have sensible setup
 
-		if (getClasspath().size() == 0 && (getProperty(EXPORT_PACKAGE) != null || getProperty(PRIVATE_PACKAGE) != null
+		if (getClasspath().isEmpty() && (getProperty(EXPORT_PACKAGE) != null || getProperty(PRIVATE_PACKAGE) != null
 			|| getProperty(PRIVATEPACKAGE) != null))
 			warning("Classpath is empty. " + Constants.PRIVATE_PACKAGE + ", " + Constants.PRIVATEPACKAGE + ", and "
 				+ EXPORT_PACKAGE + " can only expand from the classpath when there is one");

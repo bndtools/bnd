@@ -86,7 +86,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		VersionSettings settings = new VersionSettings();
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS, "*"));
 		logger.debug("Analyzing for Metatype annotations: " + Constants.METATYPE_ANNOTATIONS + ": {}", header);
-		if (header.size() == 0)
+		if (header.isEmpty())
 			return false;
 
 		Parameters optionsHeader = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS_OPTIONS));

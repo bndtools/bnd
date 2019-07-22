@@ -242,7 +242,7 @@ public class Sieve implements Map<Selector, Props> {
 	}
 
 	public boolean matches(String value) {
-		if (size() == 0)
+		if (isEmpty())
 			return true;
 
 		Selector instr = matcher(value);

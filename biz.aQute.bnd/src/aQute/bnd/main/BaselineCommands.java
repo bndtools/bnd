@@ -106,7 +106,7 @@ public class BaselineCommands {
 	public void _baseline(baseLineOptions opts) throws Exception {
 
 		List<String> args = opts._arguments();
-		if (args.size() == 0) {
+		if (args.isEmpty()) {
 			Project project = bnd.getProject();
 			if (project != null) {
 				try (ProjectBuilder parentBuilder = project.getBuilder(null)) {

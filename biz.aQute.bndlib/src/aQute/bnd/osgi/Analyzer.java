@@ -552,7 +552,7 @@ public class Analyzer extends Processor {
 		//
 
 		Map<String, Resource> dir = jar.getDirectory(appendPath(prefix, packageRef.getBinary()));
-		if (dir == null || dir.size() == 0)
+		if (dir == null || dir.isEmpty())
 			return;
 
 		//

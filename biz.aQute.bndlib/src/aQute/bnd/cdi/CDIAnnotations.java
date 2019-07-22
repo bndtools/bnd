@@ -67,7 +67,7 @@ public class CDIAnnotations implements AnalyzerPlugin {
 	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.CDIANNOTATIONS, "*"));
-		if (header.size() == 0)
+		if (header.isEmpty())
 			return false;
 
 		Jar currentJar = analyzer.getJar();

@@ -109,7 +109,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 		VersionSettings settings = new VersionSettings();
 
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS, "*"));
-		if (header.size() == 0) {
+		if (header.isEmpty()) {
 			return false;
 		}
 

@@ -76,7 +76,7 @@ public class DiffCommand {
 		DiffPluginImpl di = new DiffPluginImpl();
 
 		List<String> args = options._arguments();
-		if (args.size() == 0) {
+		if (args.isEmpty()) {
 			Project project = bnd.getProject();
 			if (project != null) {
 				try (ProjectBuilder projectBuilder = project.getBuilder(null)) {

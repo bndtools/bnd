@@ -622,7 +622,7 @@ public class FilterParser {
 				if (e == TRUE)
 					i.remove();
 			}
-			if (exprs.size() == 0)
+			if (exprs.isEmpty())
 				return TRUE;
 
 			SimpleExpression lower = null;
@@ -716,7 +716,7 @@ public class FilterParser {
 				if (e == FALSE)
 					i.remove();
 			}
-			if (exprs.size() == 0)
+			if (exprs.isEmpty())
 				return FALSE;
 
 			if (exprs.size() == 1)

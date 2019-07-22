@@ -109,7 +109,7 @@ public class WorkspaceAnalyserJob extends Job {
 				mon.worked(1);
 			}
 
-			if (projectDiffs.size() == 0) {
+			if (projectDiffs.isEmpty()) {
 				Runnable runnable = () -> MessageDialog.openInformation(shell, Messages.releaseWorkspaceBundles,
 					Messages.noBundlesRequireRelease);
 				if (Display.getCurrent() == null) {
