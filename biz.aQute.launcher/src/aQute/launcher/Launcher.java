@@ -1071,7 +1071,7 @@ public class Launcher implements ServiceListener {
 			// 3) Lookup in META-INF/services
 			List<String> implementations = getMetaInfServices(loader, FrameworkFactory.class.getName());
 
-			if (implementations.size() == 0)
+			if (implementations.isEmpty())
 				error("Found no fw implementation");
 			if (implementations.size() > 1)
 				error("Found more than one framework implementations: %s", implementations);

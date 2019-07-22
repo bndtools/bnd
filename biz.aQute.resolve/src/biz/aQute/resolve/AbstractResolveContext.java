@@ -659,7 +659,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	protected void postProcessProviders(Requirement requirement, Set<Capability> wired, List<Capability> candidates) {
-		if (candidates.size() == 0)
+		if (candidates.isEmpty())
 			return;
 
 		// Call resolver hooks

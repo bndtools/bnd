@@ -1114,7 +1114,7 @@ public class Verifier extends Processor {
 
 	public boolean verifyActivationPolicy(String policy) {
 		Parameters map = parseHeader(policy);
-		if (map.size() == 0)
+		if (map.isEmpty())
 			warning(Constants.BUNDLE_ACTIVATIONPOLICY + " is set but has no argument %s", policy);
 		else if (map.size() > 1)
 			warning(Constants.BUNDLE_ACTIVATIONPOLICY + " has too many arguments %s", policy);

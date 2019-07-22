@@ -84,7 +84,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		}
 
 		Parameters moduleParameters = OSGiHeader.parseHeader(moduleProperty);
-		if (moduleParameters.size() == 0)
+		if (moduleParameters.isEmpty())
 			return;
 
 		if (moduleParameters.size() > 1)

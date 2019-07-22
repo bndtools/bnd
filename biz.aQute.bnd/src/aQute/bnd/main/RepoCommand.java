@@ -197,7 +197,7 @@ public class RepoCommand {
 		logger.debug("writable {}", w);
 
 		List<String> args = opts._arguments();
-		if (args.size() == 0) {
+		if (args.isEmpty()) {
 			// Default command
 			_repos(null);
 		} else {

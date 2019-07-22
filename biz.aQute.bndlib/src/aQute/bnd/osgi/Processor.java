@@ -1887,7 +1887,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	@Override
 	public boolean isOk() {
-		return isFailOk() || (getErrors().size() == 0);
+		return isFailOk() || getErrors().isEmpty();
 	}
 
 	/**
@@ -2008,7 +2008,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public boolean isPerfect() {
-		return getErrors().size() == 0 && getWarnings().size() == 0;
+		return getErrors().isEmpty() && getWarnings().isEmpty();
 	}
 
 	public void setForceLocal(Collection<String> local) {

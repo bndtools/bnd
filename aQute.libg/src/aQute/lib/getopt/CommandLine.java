@@ -150,7 +150,7 @@ public class CommandLine {
 			}
 		}
 		if (reporter.getErrors()
-			.size() == 0) {
+			.isEmpty()) {
 			m.setAccessible(true);
 			try {
 				MethodHandle mh = publicLookup().unreflect(m);

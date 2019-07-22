@@ -145,7 +145,7 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 		if (registry == null)
 			return inputStream;
 		final List<ProgressPlugin> progressPlugins = registry.getPlugins(ProgressPlugin.class);
-		if (progressPlugins == null || progressPlugins.size() == 0)
+		if (progressPlugins == null || progressPlugins.isEmpty())
 			return inputStream;
 
 		return new ProgressWrappingStream(inputStream, name, size, progressPlugins);

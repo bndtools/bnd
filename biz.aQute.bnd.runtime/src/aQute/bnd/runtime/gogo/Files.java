@@ -156,7 +156,7 @@ public class Files {
 				}
 				ss.setLength(0);
 				// if this is a leading star, then track it
-				if (pieces.size() == 0) {
+				if (pieces.isEmpty()) {
 					leftstar = true;
 				}
 				wasStar = true;

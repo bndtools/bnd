@@ -238,7 +238,7 @@ public class Basic {
 				while (it.hasNext()) {
 					if (it.next()
 						.getValue()
-						.size() == 0) {
+						.isEmpty()) {
 						it.remove();
 					}
 				}

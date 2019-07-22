@@ -196,7 +196,7 @@ public class SuperInterfaceSelectionDialog extends OpenTypeSelectionDialog {
 	protected void handleSelected(StructuredSelection selection) {
 		super.handleSelected(selection);
 
-		if (selection.size() == 0 && fTypeWizardPage.getSuperInterfaces()
+		if (selection.isEmpty() && fTypeWizardPage.getSuperInterfaces()
 			.size() > fOldContent.size()) {
 			// overrides updateStatus() from handleSelected() if
 			// list of super interfaces was modified

@@ -47,7 +47,7 @@ public class ConsoleRedirector implements Redirector {
 		quit = true;
 		synchronized (agents) {
 			if (agents.remove(agent)) {
-				if (agents.size() == 0) {
+				if (agents.isEmpty()) {
 					System.setOut(stdout.getOut());
 					System.setErr(stderr.getOut());
 					System.setIn(stdin.getOrg());

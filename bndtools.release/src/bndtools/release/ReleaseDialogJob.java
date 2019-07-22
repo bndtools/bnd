@@ -73,7 +73,7 @@ public class ReleaseDialogJob extends Job {
 					}
 				}
 			}
-			if (diffs.size() == 0) {
+			if (diffs.isEmpty()) {
 				// TODO: message
 				return Status.OK_STATUS;
 			}

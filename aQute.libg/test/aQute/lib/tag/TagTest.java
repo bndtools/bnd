@@ -171,7 +171,7 @@ public class TagTest extends TestCase {
 		assertTrue(elements.size() > 0);
 		assertEquals(elements.pop(), tag.getName());
 
-		if (tag.content.size() == 0 && elements.getFirst() == "") {
+		if (tag.content.isEmpty() && elements.getFirst() == "") {
 			elements.pop();
 		} else {
 			Iterator<Object> it = tag.content.iterator();

@@ -127,7 +127,7 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
 
 	@Override
 	public Object[] getElements(Object inputElement) {
-		if (frameworks.size() == 0) {
+		if (frameworks.isEmpty()) {
 			if (loadingJob == null) {
 				loadingJob = new LoadingContentJob("Refreshing OSGi Framework content...") {
 					@Override
