@@ -76,6 +76,7 @@
 					<goals>
 						<goal>install</goal>
 						<goal>bnd-reporter:export</goal>
+						<goal>bnd-reporter:readme</goal>
 					</goals>
 				</configuration>
 			</plugin>

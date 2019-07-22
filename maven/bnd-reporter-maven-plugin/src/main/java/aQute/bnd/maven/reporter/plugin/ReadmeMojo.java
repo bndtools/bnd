@@ -1,9 +1,7 @@
 package aQute.bnd.maven.reporter.plugin;
 
 import java.io.FileOutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -24,30 +22,25 @@ import aQute.bnd.service.reporter.ReportGeneratorService;
 import biz.aQute.bnd.reporter.exporter.ReportExporterBuilder;
 
 /**
- * Exports a set of user defined reports.
+ * Exports a set of readme files (template can be parametrized with system
+ * properties starting with 'bnd.reporter.*').
  */
-@Mojo(name = "export", threadSafe = true)
-public class ExportMojo extends AbstractMojo {
+@Mojo(name = "readme", threadSafe = true)
+public class ReadmeMojo extends AbstractMojo {
 
-	private static final String			AGGREGATOR_SCOPE	= "aggregator";
-	private static final String			PROJECT_SCOPE		= "project";
-
-	private static final Logger			logger				= LoggerFactory.getLogger(ExportMojo.class);
+	private static final Logger	logger		= LoggerFactory.getLogger(ReadmeMojo.class);
 
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
-	private MavenProject				project;
+	private MavenProject		project;
 
 	@Parameter(defaultValue = "${session}", readonly = true, required = true)
-	private MavenSession				session;
+	private MavenSession		session;
 
 	@Parameter(property = "bnd.reporter.skip", defaultValue = "false")
-	private boolean						skip;
+	private boolean				skip;
 
 	@Parameter
-	private List<Report>				reports				= new ArrayList<>();
-
-	@Parameter
-	private Map<String, ReportConfig>	reportConfigs		= new HashMap<>();
+	private Map<String, String>	parameters	= new HashMap<>();
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
@@ -62,26 +55,9 @@ public class ExportMojo extends AbstractMojo {
 
 			MavenProjectWrapper toAnalyze = new MavenProjectWrapper(session.getProjects(), project);
 
-			// Add the report configurations to the processor
-			for (Entry<String, ReportConfig> reportConfig : reportConfigs.entrySet()) {
-
-				String key = "-reportconfig." + reportConfig.getKey();
-				String instruction = reportConfig.getValue()
-					.toInstruction();
-
-				processor.setProperty(key, instruction);
-
-				// Add the report configuration to the analyzed object in case
-				// of aggregator.
-				toAnalyze.getReportConfig()
-					.setProperty(key, instruction);
-			}
-
-			// Add the defined reports to the processor
-			int index = 0;
-			for (Report report : reports) {
-				processor.setProperty("-exportreport." + index++, report.toInstruction());
-			}
+			// Set the readme configuration to the processor
+			processor.setProperty("-exportreport.__autoreadme",
+				"readme.md;template=default:readme.twig" + getParameters());
 
 			// Create the generator service.
 			ReportGeneratorService generator = null;
@@ -92,21 +68,18 @@ public class ExportMojo extends AbstractMojo {
 					.useCustomConfig()
 					.withAggregatorProjectDefaultPlugins()
 					.build();
-				scope = AGGREGATOR_SCOPE;
 			} else {
 				generator = ReportGeneratorFactory.create()
 					.setProcessor(processor)
 					.useCustomConfig()
 					.withProjectDefaultPlugins()
 					.build();
-				scope = PROJECT_SCOPE;
 			}
 
 			// Create the exporter service.
 			ReportExporterService reporter = ReportExporterBuilder.create()
 				.setProcessor(processor)
 				.setGenerator(generator)
-				.setScope(scope)
 				.build();
 
 			logger.info("Generating reports...");
@@ -146,5 +119,36 @@ public class ExportMojo extends AbstractMojo {
 		for (String error : processor.getErrors()) {
 			logger.error("Error   : {}", error);
 		}
+	}
+
+	private String getParameters() {
+		Map<String, String> params = new HashMap<>(parameters);
+
+		System.getProperties()
+			.stringPropertyNames()
+			.stream()
+			.filter(k -> k.startsWith("bnd.reporter."))
+			.forEach(k -> {
+				if (System.getProperty(k) != null) {
+					params.put(k, System.getProperty(k));
+				}
+			});
+
+		StringBuilder param = new StringBuilder();
+
+		if (!params.isEmpty()) {
+			param.append(";parameters='");
+		}
+
+		params.entrySet()
+			.forEach(e -> {
+				param.append(e.getKey() + "=" + e.getValue() + ",");
+			});
+
+		if (!params.isEmpty()) {
+			param.deleteCharAt(param.length() - 1);
+			param.append("'");
+		}
+		return param.toString();
 	}
 }
