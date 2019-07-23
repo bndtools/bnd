@@ -78,23 +78,39 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
 		IProject targetProject = elements.get(0)
 			.getJavaProject()
 			.getProject();
-		IPath projectPath = targetProject.getFullPath()
-			.makeRelative();
 
-		ILaunchConfiguration config = findLaunchConfig(projectPath);
-		ILaunchConfigurationWorkingCopy wc = null;
+		ILaunchConfigurationWorkingCopy wc = findLaunchConfigWC(null, targetProject);
 
-		if (config == null) {
+		if (wc == null) {
+			IPath projectPath = targetProject.getFullPath()
+				.makeRelative();
 			wc = createConfiguration(projectPath, targetProject);
-		} else {
-			wc = config.getWorkingCopy();
 		}
 
 		if (wc != null) {
 			customise(elements, wc);
-			config = wc.doSave();
-			DebugUITools.launch(config, mode);
+			DebugUITools.launch(wc.doSave(), mode);
 		}
+	}
+
+	@Override
+	protected ILaunchConfiguration findLaunchConfig(IPath targetPath, IProject targetProject) throws CoreException {
+		ILaunchConfigurationWorkingCopy wc = findLaunchConfigWC(targetPath, targetProject);
+		if (wc != null) {
+			wc.doSave();
+		}
+		return wc;
+	}
+
+	protected ILaunchConfigurationWorkingCopy findLaunchConfigWC(IPath targetPath, IProject targetProject)
+		throws CoreException {
+		ILaunchConfiguration launch = super.findLaunchConfig(targetPath, targetProject);
+		if (launch == null) {
+			return null;
+		}
+		ILaunchConfigurationWorkingCopy wc = launch.getWorkingCopy();
+		wc.removeAttribute(OSGiJUnitLaunchDelegate.ORG_BNDTOOLS_TESTNAMES);
+		return wc;
 	}
 
 	/*

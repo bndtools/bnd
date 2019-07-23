@@ -115,15 +115,14 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 		if (element != null) {
 			IJavaProject jproject = element.getJavaProject();
 			if (jproject != null) {
-				launch(jproject.getProject()
-					.getFullPath(), jproject.getProject(), mode);
+				launchProject(jproject.getProject(), mode);
 			}
 		} else {
 			IFile file = ResourceUtil.getFile(input);
 			if (file != null) {
 				if (file.getName()
 					.endsWith(LaunchConstants.EXT_BNDRUN)) {
-					launch(file.getFullPath(), file.getProject(), mode);
+					launchBndRun(file, mode);
 				} else if (file.getName()
 					.equals(Project.BNDFILE)) {
 					launch(file.getProject()
@@ -138,11 +137,11 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 		IProject targetProject = elements.get(0)
 			.getJavaProject()
 			.getProject();
-		launch(targetProject.getFullPath(), targetProject, mode);
+		launchProject(targetProject, mode);
 	}
 
 	protected void launchProject(IProject project, String mode) {
-		launch(project.getFullPath(), project, mode);
+		launch(null, project, mode);
 	}
 
 	protected void launchBndRun(IFile bndRunFile, String mode) {
@@ -150,9 +149,9 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 	}
 
 	protected void launch(IPath targetPath, IProject targetProject, String mode) {
-		IPath tp = targetPath.makeRelative();
+		IPath tp = targetPath == null ? null : targetPath.makeRelative();
 		try {
-			ILaunchConfiguration config = findLaunchConfig(tp);
+			ILaunchConfiguration config = findLaunchConfig(tp, targetProject);
 			if (config == null) {
 				ILaunchConfigurationWorkingCopy wc = createConfiguration(tp, targetProject);
 				config = wc.doSave();
@@ -163,7 +162,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 		}
 	}
 
-	protected ILaunchConfiguration findLaunchConfig(IPath targetPath) throws CoreException {
+	protected ILaunchConfiguration findLaunchConfig(IPath targetPath, IProject targetProject) throws CoreException {
 		List<ILaunchConfiguration> candidateConfigs = new ArrayList<>();
 		ILaunchManager manager = DebugPlugin.getDefault()
 			.getLaunchManager();
@@ -173,9 +172,18 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 
 		for (int i = 0; i < configs.length; i++) {
 			ILaunchConfiguration config = configs[i];
-			String configTargetName = config.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
-			if (configTargetName != null && configTargetName.equals(targetPath.toString())) {
-				candidateConfigs.add(config);
+
+			String configTargetProject = config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME,
+				(String) null);
+			if (configTargetProject != null && configTargetProject.equals(targetProject.getName())) {
+				if (targetPath != null) {
+					String configTargetName = config.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
+					if (configTargetName != null && configTargetName.equals(targetPath.toString())) {
+						candidateConfigs.add(config);
+					}
+				} else {
+					candidateConfigs.add(config);
+				}
 			}
 		}
 
