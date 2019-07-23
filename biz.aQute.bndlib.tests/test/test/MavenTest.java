@@ -39,7 +39,6 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
-import aQute.libg.map.MAP;
 import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
@@ -101,52 +100,6 @@ public class MavenTest extends TestCase {
 		return project;
 	}
 
-	/**
-	 * See if we can create a maven repostory as a plugin
-	 *
-	 * @throws Exception
-	 */
-
-	public static void testMavenRepo() throws Exception {
-		Workspace ws = Workspace.getWorkspace(cwd.getParentFile());
-		Maven maven = ws.getMaven();
-
-		Processor processor = new Processor(ws);
-		processor.setProperty(Constants.PLUGIN,
-			"aQute.bnd.maven.support.MavenRemoteRepository;repositories=testresources/ws/maven1/m2");
-
-		MavenRemoteRepository mr = processor.getPlugin(MavenRemoteRepository.class);
-		assertNotNull(mr);
-		assertEquals(maven, mr.getMaven());
-
-		// Cleanup the maven cache so we do not get random results
-		MavenEntry me = maven.getEntry("org.apache.commons", "com.springsource.org.apache.commons.beanutils", "1.6.1");
-		assertNotNull(me);
-		me.remove();
-
-		Map<String, String> map = MAP.$("groupId", "org.apache.commons");
-		File file = mr.get("com.springsource.org.apache.commons.beanutils", "1.6.1", Strategy.LOWEST, map);
-
-		assertNotNull(file);
-		assertEquals("com.springsource.org.apache.commons.beanutils-1.6.1.jar", file.getName());
-		assertTrue(file.isFile());
-
-		Map<String, String> map2 = MAP.$("groupId", "org.apache.commons")
-			.$("scope", "compile");
-
-		file = mr.get("com.springsource.org.apache.commons.beanutils", "1.6.1", Strategy.LOWEST, map2);
-		assertNotNull(file);
-		assertTrue(file.isFile());
-		assertEquals("compile.lib", file.getName());
-		String lib = IO.collect(file);
-		System.err.println(lib);
-		lib = lib.replaceAll("org.apache.commons\\+com.springsource.org.apache.commons.beanutils;version=\"1.6.1\"",
-			"1");
-		lib = lib.replaceAll("org.apache.commons\\+com.springsource.org.apache.commons.collections;version=\"2.1.1\"",
-			"2");
-		lib = lib.replaceAll("org.apache.commons\\+com.springsource.org.apache.commons.logging;version=\"1.0.4\"", "3");
-		assertEquals("1\n2\n3\n", lib);
-	}
 
 	/**
 	 * Test parsing a project pom
