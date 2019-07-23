@@ -14,7 +14,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 import aQute.bnd.build.Workspace;
-import aQute.lib.io.IO;
 
 public class HelloTest {
 	static Workspace	ws;
@@ -22,7 +21,7 @@ public class HelloTest {
 
 	@BeforeClass
 	public static void beforeClass() throws Exception {
-		ws = Workspace.findWorkspace(IO.work);
+		// ws = Workspace.findWorkspace(IO.work);
 	}
 
 	@Before

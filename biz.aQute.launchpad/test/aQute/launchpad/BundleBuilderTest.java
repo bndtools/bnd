@@ -14,22 +14,14 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleReference;
 import org.osgi.framework.FrameworkUtil;
 
-import aQute.bnd.build.Workspace;
-import aQute.lib.exceptions.Exceptions;
-import aQute.lib.io.IO;
-
 public class BundleBuilderTest {
 
 	static {
-		/*
-		 * requires new support from the driver so the workspace can be removed
-		 * later since it takes a bit of time to startup.
-		 */
-		try {
-			Workspace w = Workspace.findWorkspace(IO.work);
-		} catch (Exception e) {
-			Exceptions.duck(e);
-		}
+		// try {
+		// Workspace w = Workspace.findWorkspace(IO.work);
+		// } catch (Exception e) {
+		// Exceptions.duck(e);
+		// }
 	}
 
 	LaunchpadBuilder builder;
