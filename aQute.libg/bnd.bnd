@@ -5,7 +5,8 @@
     osgi.annotation;version=latest;maven-scope=provided,\
 	slf4j.api;version=latest,\
 	org.osgi.util.function;version=latest,\
-	org.osgi.util.promise;version=latest
+	org.osgi.util.promise;version=latest, \
+	osgi.core;version=latest
 
 -testpath: \
 	${junit},\
