@@ -4,14 +4,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
+import org.junit.Assert;
 import org.xml.sax.SAXException;
 
 import aQute.bnd.component.DSAnnotationReader;
@@ -462,7 +465,7 @@ public class ClazzTest extends TestCase {
 	public static class AnnotationsOnTypeUseImplements1 implements Serializable, @TypeUse Foo<String> {
 
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 1L;
 	}
@@ -854,5 +857,25 @@ public class ClazzTest extends TestCase {
 			clazz.parseClassFile();
 			assertThat(clazz.isInnerClass()).isTrue();
 		}
+	}
+
+	public void testMethodParams() throws Exception {
+
+		InputStream in = ClazzTest.class.getResourceAsStream(ClazzTest.class.getSimpleName() + ".class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, null, null);
+			clazz.parseClassFile(in);
+
+			Optional<MethodDef> omdWorks = clazz.methods()
+				.filter(m -> "methodWorks".equals(m.getName()))
+				.findFirst();
+
+			MethodDef mdWorks = omdWorks.get();
+			Assert.assertEquals(1, mdWorks.getParameters().length);
+		}
+	}
+
+	public void methodWorks(String parameterField) {
+		// testMethodParams trys to find this method
 	}
 }

@@ -21,7 +21,7 @@
 	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest,\
 	org.jtwig:jtwig-core;version=latest,\
- 	org.jtwig:jtwig-reflection;version=latest,\
+	org.jtwig:jtwig-reflection;version=latest,\
 	org.parboiled:parboiled-java;version=latest,\
 	org.parboiled:parboiled-core;version=latest,\
 	org.apache.commons.lang3;version="[3.4,4.0)",\
@@ -43,8 +43,7 @@ Export-Package: \
 	biz.aQute.bnd.reporter.exporter,\
 	biz.aQute.bnd.reporter.generator,\
 	biz.aQute.bnd.reporter.manifest.dto,\
-	biz.aQute.bnd.reporter.codesnippet,\
-	biz.aQute.bnd.reporter.codesnippet.dto
+	biz.aQute.bnd.reporter.codesnippet
 
 -conditionalpackage: \
 	aQute.lib.*,\

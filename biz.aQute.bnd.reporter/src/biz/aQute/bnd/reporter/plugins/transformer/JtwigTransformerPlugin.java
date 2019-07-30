@@ -40,7 +40,10 @@ public class JtwigTransformerPlugin implements ReportTransformerPlugin {
 			.from(data)
 			.get();
 
-		final EnvironmentConfigurationBuilder eb = EnvironmentConfigurationBuilder.configuration();
+		final EnvironmentConfigurationBuilder eb = EnvironmentConfigurationBuilder.configuration()
+			.functions()
+			.add(JTwigFunctions.newfunction_showSection())
+			.and();
 
 		eb.resources()
 			.resourceLoaders()
@@ -57,8 +60,9 @@ public class JtwigTransformerPlugin implements ReportTransformerPlugin {
 
 		final JtwigTemplate template = JtwigTemplate.inlineTemplate(IO.collect(templateInputStream), eb.build());
 		final JtwigModel model = JtwigModel.newModel()
-			.with("report", modelDto);
-		parameters.forEach((k, v) -> model.with(k, v));
+			.with("report", modelDto)
+			.with("allParameters", parameters);
+		parameters.forEach((k, v) -> model.with(k.replace(".", "_"), v));
 
 		template.render(model, output);
 	}

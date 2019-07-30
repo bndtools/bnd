@@ -1,5 +1,6 @@
 package biz.aQute.bnd.reporter.generator;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.jar.Manifest;
 
@@ -11,107 +12,116 @@ import junit.framework.TestCase;
 
 public class BasicReportGeneratorTest extends TestCase {
 
-	public void testNoConfiguredEntryPlugin() {
-		final Processor processor = new Processor();
-		final ReportGeneratorService generator = getGenerator(processor);
+	public void testNoConfiguredEntryPlugin() throws IOException {
+		try (final Processor processor = new Processor()) {
+			final ReportGeneratorService generator = getGenerator(processor);
 
-		assertTrue(generator.generateReportOf(new String("any"))
-			.isEmpty());
+			assertTrue(generator.generateReportOf(new String("any"))
+				.isEmpty());
+		}
 	}
 
-	public void testTypeFilter() {
-		final Processor processor = new Processor();
-		final ReportGeneratorService generator = getGenerator(processor);
+	public void testTypeFilter() throws IOException {
+		try (final Processor processor = new Processor()) {
+			final ReportGeneratorService generator = getGenerator(processor);
 
-		processor.setProperty("-plugin.ReportConfig", "biz.aQute.bnd.reporter.plugins.entries.any.AnyEntryPlugin;"
-			+ "key='test';value='valuetest'," + "biz.aQute.bnd.reporter.plugins.entries.processor.FileNamePlugin");
+			processor.setProperty("-plugin.ReportConfig", "biz.aQute.bnd.reporter.plugins.entries.any.AnyEntryPlugin;"
+				+ "key='test';value='valuetest'," + "biz.aQute.bnd.reporter.plugins.entries.processor.FileNamePlugin");
 
-		final Map<String, Object> generated = generator.generateReportOf(new String("any"));
+			final Map<String, Object> generated = generator.generateReportOf(new String("any"));
 
-		assertEquals(1, generated.size());
-		assertTrue(generated.containsKey("test"));
-		assertEquals("valuetest", generated.get("test"));
-		assertTrue(processor.isOk());
+			assertEquals(1, generated.size());
+			assertTrue(generated.containsKey("test"));
+			assertEquals("valuetest", generated.get("test"));
+			assertTrue(processor.isOk());
+		}
 	}
 
-	public void testTypeMatch() {
-		final Processor processor = new Processor();
-		final ReportGeneratorService generator = getGenerator(processor);
+	public void testTypeMatch() throws IOException {
+		try (final Processor processor = new Processor()) {
+			final ReportGeneratorService generator = getGenerator(processor);
 
-		processor.setProperty("-plugin.ReportConfig", "biz.aQute.bnd.reporter.plugins.entries.any.AnyEntryPlugin;"
-			+ "key='test';value='valuetest'," + "biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin");
+			processor.setProperty("-plugin.ReportConfig", "biz.aQute.bnd.reporter.plugins.entries.any.AnyEntryPlugin;"
+				+ "key='test';value='valuetest'," + "biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin");
 
-		final Jar jar = new Jar("jar");
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue(Constants.BUNDLE_SYMBOLICNAME, "test.test");
+			try (final Jar jar = new Jar("jar")) {
+				final Manifest manifest = new Manifest();
+				jar.setManifest(manifest);
+				manifest.getMainAttributes()
+					.putValue(Constants.BUNDLE_SYMBOLICNAME, "test.test");
 
-		final Map<String, Object> generated = generator.generateReportOf(jar);
+				final Map<String, Object> generated = generator.generateReportOf(jar);
 
-		assertEquals(2, generated.size());
-		assertTrue(generated.containsKey("test"));
-		assertTrue(generated.containsKey("manifest"));
-		assertEquals("valuetest", generated.get("test"));
-		assertTrue(processor.isOk());
+				assertEquals(2, generated.size());
+				assertTrue(generated.containsKey("test"));
+				assertTrue(generated.containsKey("manifest"));
+				assertEquals("valuetest", generated.get("test"));
+				assertTrue(processor.isOk());
+			}
+		}
 	}
 
-	public void testFilterFilter() {
-		final Processor processor = new Processor();
-		final ReportGeneratorService generator = getGenerator(processor);
+	public void testFilterFilter() throws IOException {
+		try (final Processor processor = new Processor()) {
+			final ReportGeneratorService generator = getGenerator(processor);
 
-		processor.setProperty("-plugin.ReportConfig", "biz.aQute.bnd.reporter.plugins.entries.any.AnyEntryPlugin;"
-			+ "key='test';value='valuetest'," + "biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin");
+			processor.setProperty("-plugin.ReportConfig", "biz.aQute.bnd.reporter.plugins.entries.any.AnyEntryPlugin;"
+				+ "key='test';value='valuetest'," + "biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin");
 
-		final Jar jar = new Jar("jar");
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue(Constants.BUNDLE_SYMBOLICNAME, "test.test");
+			try (final Jar jar = new Jar("jar")) {
+				final Manifest manifest = new Manifest();
+				jar.setManifest(manifest);
+				manifest.getMainAttributes()
+					.putValue(Constants.BUNDLE_SYMBOLICNAME, "test.test");
 
-		final Map<String, Object> generated = generator.generateReportOf(jar,
-			"(|(sourceClass=aQute.bnd.osgi.Jar)(scope=bundle))");
+				final Map<String, Object> generated = generator.generateReportOf(jar,
+					"(|(sourceClass=aQute.bnd.osgi.Jar)(scope=bundle))");
 
-		assertEquals(1, generated.size());
-		assertTrue(generated.containsKey("manifest"));
-		assertTrue(processor.isOk());
+				assertEquals(1, generated.size());
+				assertTrue(generated.containsKey("manifest"));
+				assertTrue(processor.isOk());
+			}
+		}
 	}
 
-	public void testFilterMatch() {
-		final Processor processor = new Processor();
-		final ReportGeneratorService generator = getGenerator(processor);
+	public void testFilterMatch() throws IOException {
+		try (final Processor processor = new Processor()) {
+			final ReportGeneratorService generator = getGenerator(processor);
 
-		processor.setProperty("-plugin.ReportConfig",
-			"biz.aQute.bnd.reporter.plugins.entries.any.AnyEntryPlugin;"
-				+ "key='test';value='valuetest';scope='bundle',"
-				+ "biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin");
+			processor.setProperty("-plugin.ReportConfig",
+				"biz.aQute.bnd.reporter.plugins.entries.any.AnyEntryPlugin;"
+					+ "key='test';value='valuetest';scope='bundle',"
+					+ "biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin");
 
-		final Jar jar = new Jar("jar");
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue(Constants.BUNDLE_SYMBOLICNAME, "test.test");
+			try (final Jar jar = new Jar("jar")) {
+				final Manifest manifest = new Manifest();
+				jar.setManifest(manifest);
+				manifest.getMainAttributes()
+					.putValue(Constants.BUNDLE_SYMBOLICNAME, "test.test");
 
-		final Map<String, Object> generated = generator.generateReportOf(jar,
-			"(|(sourceClass=aQute.bnd.osgi.Jar)(scope=bundle))");
+				final Map<String, Object> generated = generator.generateReportOf(jar,
+					"(|(sourceClass=aQute.bnd.osgi.Jar)(scope=bundle))");
 
-		assertEquals(2, generated.size());
-		assertTrue(generated.containsKey("test"));
-		assertTrue(generated.containsKey("manifest"));
-		assertEquals("valuetest", generated.get("test"));
-		assertTrue(processor.isOk());
+				assertEquals(2, generated.size());
+				assertTrue(generated.containsKey("test"));
+				assertTrue(generated.containsKey("manifest"));
+				assertEquals("valuetest", generated.get("test"));
+				assertTrue(processor.isOk());
+			}
+		}
 	}
 
-	public void testTypeBadConfig() {
-		final Processor processor = new Processor();
-		final ReportGeneratorService generator = getGenerator(processor);
+	public void testTypeBadConfig() throws IOException {
+		try (final Processor processor = new Processor()) {
+			final ReportGeneratorService generator = getGenerator(processor);
 
-		processor.setProperty("-plugin.ReportConfig",
-			"biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin;" + "sourceClass=java.lang.String");
+			processor.setProperty("-plugin.ReportConfig",
+				"biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin;" + "sourceClass=java.lang.String");
 
-		generator.generateReportOf(new String());
+			generator.generateReportOf(new String());
 
-		assertFalse(processor.isOk());
+			assertFalse(processor.isOk());
+		}
 	}
 
 	public ReportGeneratorService getGenerator(final Processor processor) {

@@ -14,16 +14,16 @@ import aQute.bnd.service.reporter.ReportEntryPlugin;
 import biz.aQute.bnd.reporter.plugins.serializer.JsonReportSerializerPlugin;
 import junit.framework.TestCase;
 
-public class MetatypesPluginTest extends TestCase {
+public class GogoPluginTest extends TestCase {
 
-	public void testMetatype() throws Exception {
+	public void testComponents() throws Exception {
 
-		try (Jar jar = new Jar("jar", "testresources/metatypesEntry/source.jar");
-			final Processor p = new Processor();) {
+		try (final Jar jar = new Jar("jar", "testresources/gogoEntry/source.jar");
+			final Processor p = new Processor()) {
 
-			final MetatypesPlugin e = new MetatypesPlugin();
-			e.setReporter(p);
+			final GogoPlugin e = new GogoPlugin();
 			final Map<String, Object> result = new HashMap<>();
+			e.setReporter(p);
 
 			result.put(e.getProperties()
 				.get(ReportEntryPlugin.ENTRY_NAME_PROPERTY), e.extract(jar, Locale.forLanguageTag("und")));
@@ -32,15 +32,16 @@ public class MetatypesPluginTest extends TestCase {
 
 			final ByteArrayOutputStream s = new ByteArrayOutputStream();
 			new JsonReportSerializerPlugin().serialize(result, s);
-
+			System.out.println(new String(s.toByteArray()));
 			final StringBuffer ee = new StringBuffer();
 
-			for (final String l : Files.readAllLines(Paths.get("testresources/metatypesEntry/result.json"),
+			for (final String l : Files.readAllLines(Paths.get("testresources/gogoEntry/result.json"),
 				StandardCharsets.UTF_8)) {
 
 				ee.append(l + "\n");
 			}
 			ee.deleteCharAt(ee.length() - 1);
+
 			assertEquals(ee.toString(), new String(s.toByteArray()));
 		}
 	}

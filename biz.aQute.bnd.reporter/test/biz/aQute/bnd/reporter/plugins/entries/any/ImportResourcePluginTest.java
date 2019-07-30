@@ -21,7 +21,7 @@ public class ImportResourcePluginTest {
 
 	@Test
 	public void testImportFilePath() throws Exception {
-		final Processor p = new Processor();
+		try (final Processor p = new Processor()) {
 		final ImportResourcePlugin plugin = new ImportResourcePlugin();
 
 		p.addBasicPlugin(new PropertiesConverterPlugin());
@@ -37,12 +37,13 @@ public class ImportResourcePluginTest {
 		assertEquals("prop", plugin.getProperties()
 			.get(ReportEntryPlugin.ENTRY_NAME_PROPERTY));
 		assertNotNull(plugin.extract(new Object(), Locale.forLanguageTag("und")));
-		assertTrue(p.isOk());
+			assertTrue(p.isOk());
+		}
 	}
 
 	@Test
 	public void testImportFileURL() throws Exception {
-		final Processor p = new Processor();
+		try (final Processor p = new Processor()) {
 		final ImportResourcePlugin plugin = new ImportResourcePlugin();
 
 		p.addBasicPlugin(new PropertiesConverterPlugin());
@@ -58,7 +59,8 @@ public class ImportResourcePluginTest {
 		assertEquals("build", plugin.getProperties()
 			.get(ReportEntryPlugin.ENTRY_NAME_PROPERTY));
 		assertNotNull(plugin.extract(new Object(), Locale.forLanguageTag("und")));
-		assertTrue(p.isOk());
+			assertTrue(p.isOk());
+		}
 	}
 
 	private File createTempFile() throws Exception {

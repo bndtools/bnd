@@ -15,12 +15,14 @@ public class JsonReportSerializerPluginTest {
 	public void testJsonSerialization() throws Exception {
 		final Map<String, Object> toSerialize = new HashMap<>();
 		toSerialize.put("test", Boolean.TRUE);
-		final ByteArrayOutputStream out = new ByteArrayOutputStream();
-		new JsonReportSerializerPlugin().serialize(toSerialize, out);
+		try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
-		assertTrue(out.size() > 0);
-		assertArrayEquals(new String[] {
-			"json"
-		}, new JsonReportSerializerPlugin().getHandledExtensions());
+			new JsonReportSerializerPlugin().serialize(toSerialize, out);
+
+			assertTrue(out.size() > 0);
+			assertArrayEquals(new String[] {
+				"json"
+			}, new JsonReportSerializerPlugin().getHandledExtensions());
+		}
 	}
 }

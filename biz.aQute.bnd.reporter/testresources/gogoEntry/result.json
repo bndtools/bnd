@@ -1,0 +1,41 @@
+{"gogoCommands":[{
+  "functions":[{
+    "methods":[{
+      "description":null,"parameters":[],"title":"methodA"
+    }],"title":"methodA"
+  }],"title":"scopeB"
+},{
+  "functions":[{
+    "methods":[{
+      "description":null,"parameters":[],"title":"methodC"
+    },{
+      "description":"DescriptionMethodC - one array param","parameters":[{
+        "absentValue":null,"description":null,"names":null,"presentValue":null,"title":null,"type":"String[]"
+      }],"title":"methodC"
+    }],"title":"methodC"
+  },{
+    "methods":[{
+      "description":null,"parameters":[],"title":"methodA"
+    },{
+      "description":"DescriptionMethodA - no param","parameters":[],"title":"methodA"
+    },{
+      "description":"DescriptionMethodA - two docu params","parameters":[{
+        "absentValue":"MyPresentValue","description":"DescriptionParamA","names":["-a","--aa"],"presentValue":"MyPresentValue","title":null,"type":"String"
+      },{
+        "absentValue":"MyAbsentValue","description":"DescriptionParamB","names":["-y"],"presentValue":null,"title":null,"type":"String"
+      }],"title":"methodA"
+    }],"title":"methodA"
+  },{
+    "methods":[{
+      "description":"DescriptionMethodB - one param","parameters":[{
+        "absentValue":null,"description":null,"names":null,"presentValue":null,"title":null,"type":"String"
+      }],"title":"methodB"
+    },{
+      "description":"DescriptionMethodB - two param","parameters":[{
+        "absentValue":null,"description":null,"names":null,"presentValue":null,"title":null,"type":"String"
+      },{
+        "absentValue":null,"description":null,"names":null,"presentValue":null,"title":null,"type":"String"
+      }],"title":"methodB"
+    }],"title":"methodB"
+  }],"title":"scopeA"
+}]}

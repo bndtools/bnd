@@ -77,6 +77,19 @@ Visit [{{ download }}]({{ download }}).
 {{ '\n\n' }}{{ printer.printTitle('OSGi',3) }}
 
 {{ printer.printOsgiCoordinate(report.manifest.bundleSymbolicName.symbolicName,report.manifest.bundleVersion) }}
+
+{%- if not empty(report.checksum) -%}
+{{ '\n\n' }}{{ printer.printTitle('Checksum',3) }}
+
+{{ printer.printChecksum(report.checksum) }}
+{%- endif -%}
+
+{%- if not empty(report.mavenCoordinate) -%}
+{{ '\n\n' }}{{ printer.printTitle('Feature-Coordinate',3) }}
+
+{{ printer.printFeatureCoordinate(report.mavenCoordinate,report.checksum) }}
+{%- endif -%}
+
 {%- endif -%}
 {%- endif -%}
 {%- endmacro %}
@@ -154,11 +167,22 @@ Visit [{{ download }}]({{ download }}).
 {# 
 # COMPONENTS
 #}
-{% macro componentsBlock (printer, report, iconUrl) -%}
+{% macro gogoCommandsBlock (printer, report, iconUrl) -%}
+{%- if not empty(report.gogoCommands) -%}
+{{ '\n\n' }}{{ printer.printTitle('Gogo Commands',2, iconUrl) }}
+
+{{ printer._printGogoCommands(report.gogoCommands) }}
+{%- endif -%}
+{%- endmacro %}
+
+{# 
+# COMPONENTS
+#}
+{% macro componentsBlock (printer, report, iconUrl, allParameters) -%}
 {%- if not empty(report.components) -%}
 {{ '\n\n' }}{{ printer.printTitle('Components',2, iconUrl) }}
 
-{{ printer.printComponents(report.components, report.metatypes) }}
+{{ printer.printComponents(report.components, report.metatypes, allParameters) }}
 {%- endif -%}
 {%- endmacro %}
 

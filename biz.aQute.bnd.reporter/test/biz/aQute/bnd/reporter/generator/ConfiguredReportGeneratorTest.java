@@ -28,7 +28,7 @@ public class ConfiguredReportGeneratorTest extends TestCase {
 		final ReportGeneratorService generator = getGenerator(processor, new ArrayList<>(),
 			Collections.singletonList(ManifestPlugin.class.getCanonicalName()));
 
-		final Jar jar = new Jar("jar");
+		try (final Jar jar = new Jar("jar")) {
 		final Manifest manifest = new Manifest();
 		jar.setManifest(manifest);
 		manifest.getMainAttributes()
@@ -38,7 +38,8 @@ public class ConfiguredReportGeneratorTest extends TestCase {
 
 		assertEquals(1, generated.size());
 		assertTrue(generated.containsKey("manifest"));
-		assertTrue(processor.isOk());
+			assertTrue(processor.isOk());
+		}
 	}
 
 	public void testNoConfiguredEntryPluginWithExtendedDefaults() {
@@ -60,7 +61,7 @@ public class ConfiguredReportGeneratorTest extends TestCase {
 
 		final ReportGeneratorService generator = getGenerator(processor);
 
-		final Jar jar = new Jar("jar");
+				try (final Jar jar = new Jar("jar")) {
 		final Manifest manifest = new Manifest();
 		jar.setManifest(manifest);
 		manifest.getMainAttributes()
@@ -72,7 +73,8 @@ public class ConfiguredReportGeneratorTest extends TestCase {
 		assertEquals(1, generated.size());
 		assertTrue(generated.containsKey("any"));
 
-		assertTrue(processor.isOk());
+			assertTrue(processor.isOk());
+		}
 	}
 
 	public void testConfiguredEntryPluginWithDuplicate() {
@@ -82,7 +84,7 @@ public class ConfiguredReportGeneratorTest extends TestCase {
 
 		final ReportGeneratorService generator = getGenerator(processor);
 
-		final Jar jar = new Jar("jar");
+				try (final Jar jar = new Jar("jar")) {
 		final Manifest manifest = new Manifest();
 		jar.setManifest(manifest);
 		manifest.getMainAttributes()
@@ -95,7 +97,8 @@ public class ConfiguredReportGeneratorTest extends TestCase {
 		assertTrue(generated.containsKey("any"));
 		assertTrue(generated.containsKey("any2"));
 
-		assertTrue(processor.isOk());
+			assertTrue(processor.isOk());
+		}
 	}
 
 	public void testConfiguredEntryPluginWithoutDefaults() {
@@ -106,7 +109,7 @@ public class ConfiguredReportGeneratorTest extends TestCase {
 		final ReportGeneratorService generator = getGenerator(processor, new ArrayList<>(),
 			Collections.singletonList(ManifestPlugin.class.getCanonicalName()));
 
-		final Jar jar = new Jar("jar");
+		try (final Jar jar = new Jar("jar")) {
 		final Manifest manifest = new Manifest();
 		jar.setManifest(manifest);
 		manifest.getMainAttributes()
@@ -119,7 +122,8 @@ public class ConfiguredReportGeneratorTest extends TestCase {
 		assertTrue(generated.containsKey("any"));
 		assertTrue(generated.containsKey("any2"));
 
-		assertTrue(processor.isOk());
+			assertTrue(processor.isOk());
+		}
 	}
 
 	public ReportGeneratorService getGenerator(final Processor processor) {

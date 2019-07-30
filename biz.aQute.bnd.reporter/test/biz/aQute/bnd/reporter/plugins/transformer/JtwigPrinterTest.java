@@ -61,6 +61,38 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	public void testSlingFeatureCoordinates() throws Exception {
+		TwigChecker checker = checker("printFeatureCoordinate");
+
+		checker.with(map().set("groupId", "groupIdTest")
+			.set("artifactId", "artifactIdTest")
+			.set("version", "versionTest"))
+			.expect("```")
+			.expect("\"bundles\": [")
+			.expect("   {")
+			.expect("    \"id\": \"groupIdTest:artifactIdTest:versionTest\"")
+			.expect("   }")
+			.expect("]")
+			.expect("```")
+			.check();
+
+		checker.with(map().set("groupId", "groupIdTest")
+			.set("artifactId", "artifactIdTest")
+			.set("version", "versionTest")
+			.set("classifier", "extra"))
+			.with(map().set("sha1", "theChecksum"))
+			.expect("```")
+			.expect("\"bundles\": [")
+			.expect("   {")
+			.expect("    \"id\": \"groupIdTest:artifactIdTest:versionTest:jar:extra\"")
+			.expect("    \"hash\": \"theChecksum\"")
+			.expect("   }")
+			.expect("]")
+			.expect("```")
+			.check();
+
+	}
+
 	public void testMavenCoordinate() throws Exception {
 		TwigChecker checker = checker("printMavenCoordinate");
 
@@ -72,6 +104,20 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("    <groupId>groupIdTest</groupId>")
 			.expect("    <artifactId>artifactIdTest</artifactId>")
 			.expect("    <version>versionTest</version>")
+			.expect("</dependency>")
+			.expect("```")
+			.check();
+
+		checker.with(map().set("groupId", "groupIdTest")
+			.set("artifactId", "artifactIdTest")
+			.set("version", "versionTest")
+			.set("classifier", "extra"))
+			.expect("```xml")
+			.expect("<dependency>")
+			.expect("    <groupId>groupIdTest</groupId>")
+			.expect("    <artifactId>artifactIdTest</artifactId>")
+			.expect("    <version>versionTest</version>")
+			.expect("    <classifier>extra</classifier>")
 			.expect("</dependency>")
 			.expect("```")
 			.check();
@@ -112,6 +158,26 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("**Bundle Symbolic Name: test")
 			.expect("**Version             : 1.0.0")
 			.expect("**```")
+			.check();
+	}
+
+	public void testChecksum() throws Exception {
+		TwigChecker checker = checker("printChecksum");
+
+		checker.with(map().set("md5", "md5Value")
+			.set("sha1", "sha1Value")
+			.set("sha256", "sha256Value"))
+			.expect("```")
+			.expect("md5:    md5Value")
+			.expect("sha1:   sha1Value")
+			.expect("sha256: sha256Value")
+			.expect("```")
+			.check();
+
+		checker.with(map().set("sha1", "sha1Value"))
+			.expect("```")
+			.expect("sha1:   sha1Value")
+			.expect("```")
 			.check();
 	}
 
@@ -272,6 +338,10 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("#### Configuration")
 			.expectBlankLine()
 			.expect("No configuration.")
+			.expectBlankLine()
+			.expect("#### Reference bindings")
+			.expectBlankLine()
+			.expect("No bindings.")
 			.check();
 
 		checker.with(list(map().set("name", "name")
@@ -293,6 +363,10 @@ public class JtwigPrinterTest extends TestCase {
 			.expectBlankLine()
 			.expect("No configuration.")
 			.expectBlankLine()
+			.expect("#### Reference bindings")
+			.expectBlankLine()
+			.expect("No bindings.")
+			.expectBlankLine()
 			.expect("---")
 			.expectBlankLine()
 			.expect("### name2 - *state = not enabled, activation = delayed*")
@@ -308,6 +382,10 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("#### Configuration")
 			.expectBlankLine()
 			.expect("No configuration.")
+			.expectBlankLine()
+			.expect("#### Reference bindings")
+			.expectBlankLine()
+			.expect("No bindings.")
 			.check();
 	}
 
@@ -565,6 +643,317 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("|Type |**Integer** |")
 			.expect("|Value range |\"VALUE\" |")
 			.check();
+	}
+
+	public void testComponentOSGiConfiguratorSnippet() throws Exception {
+		TwigChecker checker = checker("_printComponentJsonConfiguratorSnippet");
+
+		checker.with(map().set("configurationPolicy", "required")
+			.set("configurationPid", list("my.pid"))
+			.set("name", "MyComponentName"))
+			.expect("#### OSGi-Configurator")
+			.expectBlankLine()
+			.expectBlankLine()
+			.expect("```")
+			.expect("/*")
+			.expect(" * Component: MyComponentName")
+			.expect(" * policy:    required")
+			.expect(" */")
+			.expect("\"my.pid\":{")
+			.expect("        //# Component properties")
+			.expect("        // none")
+			.expectBlankLine()
+			.expect("        //# Reference bindings")
+			.expect("        // none")
+			.expectBlankLine()
+			.expect("        //# ObjectClassDefinition - Attributes")
+			.expect("        // (No PidOcd available.)")
+			.expect("}")
+			.expect("```")
+			.check();
+
+		checker.with(map().set("configurationPolicy", "required")
+			.set("configurationPid", list("my.pid"))
+			.set("name", "MyComponentName")
+			.set("properties", map().set("prop1", map().set("values", list("value1"))
+				.set("type", "String")
+				.set("multiValue", false))
+				.set("prop2", map().set("values", list("value2", "value3"))
+					.set("type", "String")
+					.set("multiValue", true)))
+			.set("references", list(map().set("cardinality", "cardinality")
+				.set("interfaceName", "interfaceName")
+				.set("name", "name")
+				.set("policy", "policy")
+				.set("policyOption", "policyOption")
+				.set("scope", "scope")
+				.set("target", "target"),
+				map().set("cardinality", "cardinality")
+					.set("interfaceName", "interfaceName")
+					.set("name", "name")
+					.set("policy", "policy")
+					.set("policyOption", "policyOption")
+					.set("scope", "scope")
+					.set("target", null))))
+			.with(list(map().set("pids", list("my.pid"))
+				.set("attributes", list(map().set("id", "myId1")
+					.set("type", "Integer")
+					.set("required", true),
+					map().set("id", "myId2")
+						.set("type", "Integer")
+						.set("description", "descriptionFooBar")
+						.set("min", "1")
+						.set("max", "10")
+						.set("cardinality", "1")
+						.set("values", list("2", "3", "4"))
+						.set("required", false)))))
+			.expect("#### OSGi-Configurator")
+			.expectBlankLine()
+			.expectBlankLine()
+			.expect("```")
+			.expect("/*")
+			.expect(" * Component: MyComponentName")
+			.expect(" * policy:    required")
+			.expect(" */")
+			.expect("\"my.pid\":{")
+			.expect("        //# Component properties")
+			.expect("        /*")
+			.expect("         * Type = String")
+			.expect("         * Default = \"value1\"")
+			.expect("         */")
+			.expect("         // \"prop1\": null,")
+			.expectBlankLine()
+			.expect("        /*")
+			.expect("         * Type = String[]")
+			.expect("         * Default = [\"value2\", \"value3\"]")
+			.expect("         */")
+			.expect("         // \"prop2\": null,")
+			.expectBlankLine()
+			.expectBlankLine()
+			.expect("        //# Reference bindings")
+			.expect("        // \"name.target\": \"target\",")
+			.expect("        // \"name.target\": \"(component.pid=*)\",")
+			.expectBlankLine()
+			.expectBlankLine()
+			.expect("        //# ObjectClassDefinition - Attributes")
+			.expect("        /*")
+			.expect("         * Required = true")
+			.expect("         * Type = Integer")
+			.expect("         */")
+			.expect("         \"myId1\": null,")
+			.expectBlankLine()
+			.expect("        /*")
+			.expect("         * Required = false")
+			.expect("         * Type = Integer[]")
+			.expect("         * Description = descriptionFooBar")
+			.expect("         * Default = [2, 3, 4]")
+			.expect("         * Value restriction = `min = 1` / `max = 10`")
+			.expect("         */")
+			.expect("         // \"myId2\": null")
+			.expect("}")
+			.expect("```")
+			.check();
+
+	}
+
+	public void testComponentReferences() throws Exception {
+		TwigChecker checker = checker("_printComponentReferences");
+
+		checker.with(map())
+			.expect("#### Reference bindings")
+			.expectBlankLine()
+			.expect("No bindings.")
+			.check();
+
+		checker.with(map().set("references", list(map().set("cardinality", "cardinality")
+			.set("interfaceName", "interfaceName")
+			.set("name", "name")
+			.set("policy", "policy")
+			.set("policyOption", "policyOption")
+			.set("scope", "scope")
+			.set("target", "target"))))
+			.expect("#### Reference bindings")
+			.expectBlankLine()
+			.expect("|Attribute |Value |")
+			.expect("|--- |--- |")
+			.expect("|name |name |")
+			.expect("|interfaceName |interfaceName |")
+			.expect("|target |target |")
+			.expect("|cardinality |cardinality |")
+			.expect("|policy |policy |")
+			.expect("|policyOption |policyOption |")
+			.expect("|scope |scope |")
+			.check();
+	}
+
+	public void testGogoCommands() throws Exception {
+		TwigChecker checker = checker("_printGogoCommands");
+
+		checker.with(list(map().set("title", "S1_title")
+			.set("functions", list(map().set("title", "S1F1_title")
+				.set("methods", list(map().set("title", "S1F1M1_title")
+					.set("description", "S1F1M1_description - NoParams")
+					.set("parameters", null),
+					map().set("title", "S1F1M2_title")
+						.set("description",
+							"S1F1M2_description - OneParam  NoNames TitleIsSet AbsendIsNotSet PresentIsNotSet")
+						.set("parameters", list(map().set("absentValue", null)
+							.set("presentValue", null)
+							.set("description", "S1F1M2P1_Description Array")
+							.set("names", null)
+							.set("type", "String[]")
+							.set("title", "S1F1M2P1_Title"))),
+					map().set("title", "S1F1M3_title")
+						.set("description",
+							"S1F1M3_description - OneParam  NoNames TitleIsNotSet AbsendIsNotSet PresentIsNotSet")
+						.set("parameters", list(map().set("absentValue", null)
+							.set("presentValue", null)
+							.set("description", "S1F1M3P1_Description")
+							.set("names", null)
+							.set("title", null))),
+					map().set("title", "S1F1M4_title")
+						.set("description",
+							"S1F1M4_description - TwoParam  NoNames TitleIsNotSet AbsendIsNotSet PresentIsNotSet")
+						.set("parameters", list(map().set("absentValue", null)
+							.set("presentValue", null)
+							.set("description", "S1F1M4P1_Description")
+							.set("names", null)
+							.set("title", null),
+							map().set("absentValue", null)
+								.set("presentValue", null)
+								.set("description", "S1F1M4P2_Description")
+								.set("names", null)
+								.set("title", null))),
+					map().set("title", "S1F1M6_title")
+						.set("description",
+							"S1F1M6_description - TwoParam (1. WithNames AbsendisSet PresentIsSet), (2. WithNames AbsendisSet PresentIsNotSet)")
+						.set("parameters", list(map().set("absentValue", "false")
+							.set("presentValue", "true")
+							.set("description", "S1F1M6P1_Description")
+							.set("names", list("--f", "-force"))
+							.set("title", "S1F1M6P1_Title"),
+							map().set("absentValue", "debug")
+								.set("presentValue", null)
+								.set("description", "S1F1M6P2_Description")
+								.set("names", list("--l", "-log"))
+								.set("title", "S1F1M6P2_Title"))),
+					map().set("title", "S1F1M7_title")
+						.set("description", "S1F1M7_description - ForeParam")
+						.set("parameters", list(map().set("absentValue", "false")
+							.set("presentValue", "true")
+							.set("description", "S1F1M7P1_Description  WithNames AbsendIsSet PresentIsSet)")
+							.set("names", list("--f", "-force"))
+							.set("title", "S1F1M7P1_Title"),
+							map().set("absentValue", "debug")
+								.set("presentValue", null)
+								.set("description", "S1F1M7P2_Description  WithNames AbsendIsSet PresentIsNull)")
+								.set("names", list("--l", "-log"))
+								.set("title", "S1F1M7P2_Title"),
+							map().set("absentValue", null)
+								.set("presentValue", null)
+								.set("description", "S1F1M7P3_Description WithNames AbsendIsNull PresentIsNull)")
+								.set("names", null)
+								.set("title", "S1F1M7P3_Title"),
+							map().set("absentValue", null)
+								.set("presentValue", null)
+								.set("description", "S1F1M7P4_Description NoNames NoTitle AbsendIsNull PresentIsNull")
+								.set("names", null)
+								.set("title", null))))))),
+			map().set("title", "S2_title")
+				.set("functions", list(map().set("title", "S2F1_title")
+					.set("methods", list(map().set("title", "S2F1M1_title")
+						.set("description", "S2F1M1_description - NoParams")
+						.set("parameters", null)))))))
+			.expect("### S1_title:S1F1_title")
+			.expectBlankLine()
+			.expect("**Synopsis**")
+			.expect("`S1_title:S1F1_title")
+			.expectBlankLine()
+			.expect("**Description**")
+			.expect("S1F1M1_description - NoParams")
+			.expectBlankLine()
+			.expectBlankLine()
+			.expect("---")
+			.expectBlankLine()
+			.expect("**Synopsis**")
+			.expect("`S1_title:S1F1_title S1F1M2P1_TITLE...`")
+			.expectBlankLine()
+			.expect("**Description**")
+			.expect("S1F1M2_description - OneParam  NoNames TitleIsSet AbsendIsNotSet PresentIsNotSet")
+			.expectBlankLine()
+			.expect("**Arguments**")
+			.expect("* `S1F1M2P1_TITLE...` S1F1M2P1_Description Array")
+			.expectBlankLine()
+			.expectBlankLine()
+			.expect("---")
+			.expectBlankLine()
+			.expect("**Synopsis**")
+			.expect("`S1_title:S1F1_title ARG0`")
+			.expectBlankLine()
+			.expect("**Description**")
+			.expect("S1F1M3_description - OneParam  NoNames TitleIsNotSet AbsendIsNotSet PresentIsNotSet")
+			.expectBlankLine()
+			.expect("**Arguments**")
+			.expect("* `ARG0` S1F1M3P1_Description")
+			.expectBlankLine()
+			.expectBlankLine()
+			.expect("---")
+			.expectBlankLine()
+			.expect("**Synopsis**")
+			.expect("`S1_title:S1F1_title ARG0 ARG1`")
+			.expectBlankLine()
+			.expect("**Description**")
+			.expect("S1F1M4_description - TwoParam  NoNames TitleIsNotSet AbsendIsNotSet PresentIsNotSet")
+			.expectBlankLine()
+			.expect("**Arguments**")
+			.expect("* `ARG0` S1F1M4P1_Description")
+			.expect("* `ARG1` S1F1M4P2_Description")
+			.expectBlankLine()
+			.expectBlankLine()
+			.expect("---")
+			.expectBlankLine()
+			.expect("**Synopsis**")
+			.expect("`S1_title:S1F1_title [OPTIONS]")
+			.expectBlankLine()
+			.expect("**Description**")
+			.expect(
+				"S1F1M6_description - TwoParam (1. WithNames AbsendisSet PresentIsSet), (2. WithNames AbsendisSet PresentIsNotSet)")
+			.expectBlankLine()
+			.expect("**Options**")
+			.expect("* `--f , -force ` S1F1M6P1_Description")
+			.expect("* `--l S1F1M6P2_TITLE, -log S1F1M6P2_TITLE` S1F1M6P2_Description")
+			.expectBlankLine()
+			.expect("---")
+			.expectBlankLine()
+			.expect("**Synopsis**")
+			.expect("`S1_title:S1F1_title [OPTIONS] S1F1M7P3_TITLE ARG3`")
+			.expectBlankLine()
+			.expect("**Description**")
+			.expect("S1F1M7_description - ForeParam")
+			.expectBlankLine()
+			.expect("**Arguments**")
+			.expect("* `S1F1M7P3_TITLE` S1F1M7P3_Description WithNames AbsendIsNull PresentIsNull)")
+			.expect("* `ARG3` S1F1M7P4_Description NoNames NoTitle AbsendIsNull PresentIsNull")
+			.expectBlankLine()
+			.expect("**Options**")
+			.expect("* `--f , -force ` S1F1M7P1_Description  WithNames AbsendIsSet PresentIsSet)")
+			.expect(
+				"* `--l S1F1M7P2_TITLE, -log S1F1M7P2_TITLE` S1F1M7P2_Description  WithNames AbsendIsSet PresentIsNull)")
+			.expectBlankLine()
+			.expect("---")
+			.expect("### S2_title:S2F1_title")
+			.expectBlankLine()
+			.expect("**Synopsis**")
+			.expect("`S2_title:S2F1_title")
+			.expectBlankLine()
+			.expect("**Description**")
+			.expect("S2F1M1_description - NoParams")
+			.expectBlankLine()
+			.expectBlankLine()
+			.expect("---")
+			.expectBlankLine()
+			.check();
+
 	}
 
 	public void testDevelopers() throws Exception {
@@ -859,7 +1248,6 @@ public class JtwigPrinterTest extends TestCase {
 		project5.set("fileName", "folder1");
 		project5.set("bundles", list(map().set("manifest", manifest3)));
 
-
 		checker.with(map().set("projects", list(project, project5)))
 			.expect("* [**CName**](folder1): CDescription")
 			.expect("  * [**CName2**](folder1/folder2): CDescription2")
@@ -875,8 +1263,7 @@ public class JtwigPrinterTest extends TestCase {
 		checker.with(list())
 			.check();
 
-		checker.with(list().xadd(map()
-			.set("programmingLanguage", "java")
+		checker.with(list().xadd(map().set("programmingLanguage", "java")
 			.set("codeSnippet", "test")))
 			.expect("```java")
 			.expect("test")
@@ -896,10 +1283,9 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("```")
 			.check();
 
-		checker.with(list().xadd(map()
-			.set("steps", list().xadd(map().set("programmingLanguage", "java")
-				.set("codeSnippet", "test1"))
-				.xadd(map().set("programmingLanguage", "java")
+		checker.with(list().xadd(map().set("steps", list().xadd(map().set("programmingLanguage", "java")
+			.set("codeSnippet", "test1"))
+			.xadd(map().set("programmingLanguage", "java")
 				.set("codeSnippet", "test2"))))
 			.xadd(map().set("programmingLanguage", "java")
 				.set("codeSnippet", "test3")))
@@ -924,7 +1310,7 @@ public class JtwigPrinterTest extends TestCase {
 				.set("steps", list().xadd(map().set("title", "SubTitle1")
 					.set("description", "SubDescription 1")
 					.set("programmingLanguage", "java")
-				.set("codeSnippet", "test1"))
+					.set("codeSnippet", "test1"))
 					.xadd(map().set("title", "SubTitle2")
 						.set("description", "SubDescription 2")
 						.set("programmingLanguage", "java")
@@ -1054,7 +1440,7 @@ public class JtwigPrinterTest extends TestCase {
 
 		checker.with("")
 			.with(map().set("type", "url")
-			.set("address", "myurl"))
+				.set("address", "myurl"))
 			.expect("[myurl](myurl)")
 			.check();
 	}

@@ -62,10 +62,16 @@
 {{ blocks.codeUsageBlock(printer, report) }}
 {%- endblock -%}
 
+{%- block beforeGogoCommands %}{% endblock -%}
+
+{%- block gogoCommands -%}
+{{ blocks.gogoCommandsBlock(printer, report) }}
+{%- endblock -%}
+
 {%- block beforeComponents %}{% endblock -%}
 
 {%- block components -%}
-{{ blocks.componentsBlock(printer, report) }}
+{{ blocks.componentsBlock(printer, report, iconUrl, allParameters) }}
 {%- endblock -%}
 
 {%- block beforeDevelopers %}{% endblock -%}

@@ -1,0 +1,7 @@
+1{% if showSection("default.noparamset",true,allParameters) %}ok{% else %}error{% endif %}
+2{% if not showSection("default.noparamset",true,allParameters) %}error{% else %}ok{% endif %}
+3{% if showSection("optional.noparamset",false,allParameters) %}error{% else %}ok{% endif %}
+4{% if showSection("default.paramsetTrue",true,allParameters) %}ok{% else %}error{% endif %}
+5{% if showSection("default.paramsetFalse",true,allParameters) %}error{% else %}ok{% endif %}
+6{% if showSection("optional.paramsetTrue",false,allParameters) %}ok{% else %}error{% endif %}
+7{% if showSection("optional.paramsetFalse",false,allParameters) %}error{% else %}ok{% endif %}
