@@ -65,7 +65,6 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	final private File				launchPropertiesFile;
 	boolean							prepared;
-	boolean							eager;
 	DatagramSocket					listenerComms;
 
 	public ProjectLauncherImpl(Project project, Container container) throws Exception {
