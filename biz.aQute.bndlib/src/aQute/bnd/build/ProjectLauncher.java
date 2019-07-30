@@ -1,6 +1,9 @@
 package aQute.bnd.build;
 
+import static org.osgi.framework.Constants.FRAMEWORK_BEGINNING_STARTLEVEL;
+
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -16,18 +19,23 @@ import java.util.concurrent.TimeUnit;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
+import org.osgi.framework.launch.FrameworkFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.help.instructions.BuilderInstructions;
+import aQute.bnd.help.instructions.LauncherInstructions;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
+import aQute.lib.startlevel.StartLevelRuntimeHandler;
 import aQute.libg.command.Command;
 import aQute.libg.generics.Create;
 
@@ -45,9 +53,9 @@ public abstract class ProjectLauncher extends Processor {
 	private final static Logger			logger				= LoggerFactory.getLogger(ProjectLauncher.class);
 	private final Project				project;
 	private long						timeout				= 0;
-	private final List<String>			classpath		= new ArrayList<>();
+	private final List<String>			classpath			= new ArrayList<>();
 	private List<String>				runbundles			= Create.list();
-	private List<Integer>				startlevels			= Create.list();
+
 	private final List<String>			runvm				= new ArrayList<>();
 	private final List<String>			runprogramargs		= new ArrayList<>();
 	private Map<String, String>			runproperties;
@@ -56,6 +64,8 @@ public abstract class ProjectLauncher extends Processor {
 	private Parameters					runsystemcapabilities;
 	private final List<String>			activators			= Create.list();
 	private File						storageDir;
+	protected BuilderInstructions		builderInstrs;
+	protected LauncherInstructions		launcherInstrs;
 
 	private boolean						trace;
 	private boolean						keep;
@@ -85,6 +95,8 @@ public abstract class ProjectLauncher extends Processor {
 
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
+		builderInstrs = project.getInstructions(BuilderInstructions.class);
+		launcherInstrs = project.getInstructions(LauncherInstructions.class);
 	}
 
 	/**
@@ -99,7 +111,6 @@ public abstract class ProjectLauncher extends Processor {
 		// pkr: could not use this because this is killing the runtests.
 		// getProject().refresh();
 		runbundles.clear();
-		startlevels.clear();
 
 		Collection<Container> run = getProject().getRunbundles();
 
@@ -108,8 +119,6 @@ public abstract class ProjectLauncher extends Processor {
 			if (file != null && (file.isFile() || file.isDirectory())) {
 				runbundles.add(IO.absolutePath(file));
 				int bundleIndex = runbundles.size() - 1;
-
-				doStartLevel(container, bundleIndex);
 			} else {
 				getProject().error("Bundle file \"%s\" does not exist, given error is %s", file, container.getError());
 			}
@@ -129,10 +138,9 @@ public abstract class ProjectLauncher extends Processor {
 		framework = getRunframework(getProject().getProperty(Constants.RUNFRAMEWORK));
 
 		timeout = Processor.getDuration(getProject().getProperty(Constants.RUNTIMEOUT), 0);
-		trace = Processor.isTrue(getProject().getProperty(Constants.RUNTRACE));
+		trace = getProject().isRunTrace();
 
 		runpath.addAll(getProject().getRunFw());
-
 
 		for (Container c : runpath) {
 			addClasspath(c);
@@ -141,32 +149,10 @@ public abstract class ProjectLauncher extends Processor {
 		runvm.addAll(getProject().getRunVM());
 		runprogramargs.addAll(getProject().getRunProgramArgs());
 		runproperties = getProject().getRunProperties();
-
 		storageDir = getProject().getRunStorage();
 
 		setKeep(getProject().getRunKeep());
-	}
-
-	private void doStartLevel(Container container, int bundleIndex) {
-		Map<String, String> attributes = container.getAttributes();
-		if (attributes != null) {
-			String startlevel = attributes.get(Constants.RUNBUNDLES_STARTLEVEL_ATTRIBUTE);
-			if (startlevel != null) {
-				if (!Verifier.isNumber(startlevel)) {
-					getProject().error("Startlevel on %s is not a number but %s", container, startlevel);
-				} else {
-					int sl = Integer.parseInt(startlevel);
-					if (sl < 1) {
-						getProject().error("Startlevel on %s is less than 1: %s", container, startlevel);
-					} else {
-						while (startlevels.size() <= bundleIndex)
-							startlevels.add(-1);
-
-						startlevels.set(bundleIndex, sl);
-					}
-				}
-			}
-		}
+		calculatedProperties(runproperties);
 	}
 
 	private int getRunframework(String property) {
@@ -613,13 +599,20 @@ public abstract class ProjectLauncher extends Processor {
 	/**
 	 * Utility to calculate the final framework properties from settings
 	 */
-	/**
-	 * This method should go to the ProjectLauncher
-	 *
-	 * @throws Exception
-	 */
 
-	public void calculatedProperties(Map<String, Object> properties) throws Exception {
+	public void calculatedProperties(Map<String, String> properties) throws Exception {
+
+		if (getTrace())
+			properties.put(Constants.LAUNCH_TRACE, "true");
+
+		boolean eager = launcherInstrs.runoptions()
+			.contains(LauncherInstructions.RunOption.eager);
+		if (eager)
+			properties.put(Constants.LAUNCH_ACTIVATION_EAGER, Boolean.toString(eager));
+
+		Collection<String> activators = getActivators();
+		if (activators.isEmpty())
+			properties.put(Constants.LAUNCH_ACTIVATORS, join(activators, ","));
 
 		if (!keep)
 			properties.put(org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN,
@@ -632,9 +625,136 @@ public abstract class ProjectLauncher extends Processor {
 		if (!runsystempackages.isEmpty())
 			properties.put(org.osgi.framework.Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, runsystempackages.toString());
 
+		setupStartlevels(properties);
 	}
 
-	public List<Integer> getStartlevels() {
-		return startlevels;
+	/**
+	 * Calculate the start level properties. This code is matched to the
+	 * aQute.lib class {@link StartLevelRuntimeHandler} that handles the runtime
+	 * details.
+	 * <p>
+	 * The -runbundles instruction can carry a `startlevel` attribute. If any
+	 * bundle has this start level attribute we control the startlevel process.
+	 * If no bundle has this attribute, then the start level handling is not
+	 * doing anything. The remaining section assumes that there is at least 1
+	 * bundle with a set startlevel attribute.
+	 * <p>
+	 * The {@link StartLevelRuntimeHandler#LAUNCH_STARTLEVEL_DEFAULT} is then
+	 * set to the maximum startlevel + 1. This signals that the
+	 * {@link StartLevelRuntimeHandler} class handles the runtime aspects.
+	 * <p>
+	 * The {@link Constants#RUNSTARTLEVEL_BEGIN} controls the beginning start
+	 * level of the framework after the framework itself is started. The user
+	 * can set this or else it is set to the maxmum startlevel+2.
+	 * <p>
+	 * During runtime, the handler must be created with
+	 * {@link StartLevelRuntimeHandler#create(aQute.lib.startlevel.Trace, Map)}
+	 * before the framework is created since it may change the properties. I.e.
+	 * the properties given to the {@link FrameworkFactory} must be the same
+	 * object as given to the create method. One thing is that it will set the
+	 * {@link Constants#RUNSTARTLEVEL_BEGIN} to ensure that all bundles are
+	 * installed at level 1.
+	 * <p>
+	 * After the framework is created, the runtime handler
+	 * {@link StartLevelRuntimeHandler#beforeStart(org.osgi.framework.launch.Framework)}
+	 * must be called. This will prepare that bundles will get their proper
+	 * start level when installed.
+	 * <p>
+	 * After the set of bundles is installed, the
+	 * {@link StartLevelRuntimeHandler#afterStart()} is called to raise the
+	 * start level to the desired level. Either the set
+	 * {@link Constants#RUNSTARTLEVEL_BEGIN} or the maximum level + 2.
+	 */
+	private void setupStartlevels(Map<String, String> properties) throws Exception, IOException {
+		Parameters runbundles = new Parameters();
+		int maxLevel = -1;
+
+		for (Container c : project.getRunbundles()) {
+			Map<String, String> attrs = c.getAttributes();
+			if (attrs == null)
+				continue;
+
+			if (c.getBundleSymbolicName() == null)
+				continue;
+
+			if (c.getError() != null)
+				continue;
+
+			if (c.getFile() == null || !c.getFile()
+				.isFile())
+				continue;
+
+			Attrs runtimeAttrs;
+			if (attrs instanceof Attrs) {
+				runtimeAttrs = new Attrs((Attrs) attrs);
+			} else {
+				runtimeAttrs = new Attrs(attrs);
+			}
+
+			String startLevelString = attrs.get(Constants.RUNBUNDLES_STARTLEVEL_ATTRIBUTE);
+			if (startLevelString == null)
+				continue;
+
+			int startlevel = -1;
+
+			if (!Verifier.isNumber(startLevelString)) {
+				error("Invalid start level on -runbundles. bsn=%s, version=%s, startlevel=%s, not a number",
+					c.getBundleSymbolicName(), c.getVersion(), startLevelString);
+				continue;
+			} else {
+				startlevel = Integer.parseInt(startLevelString);
+				if (startlevel > 0) {
+					if (startlevel > maxLevel)
+						maxLevel = startlevel;
+
+				}
+
+				Domain domain = Domain.domain(c.getFile());
+				String bsn = domain.getBundleSymbolicName()
+					.getKey();
+				String bundleVersion = domain.getBundleVersion();
+
+				if (!Verifier.isVersion(bundleVersion)) {
+					error("Invalid version on -runbundles. bsn=%s, version=%s", c.getBundleSymbolicName(),
+						c.getVersion(), startLevelString);
+					continue;
+				} else {
+					runtimeAttrs.put("version", bundleVersion);
+				}
+				runbundles.put(bsn, runtimeAttrs);
+			}
+		}
+
+		boolean areStartlevelsEnabled = maxLevel > 0;
+
+		String beginningLevelString = properties.get(FRAMEWORK_BEGINNING_STARTLEVEL);
+
+		if (!runbundles.isEmpty()) {
+			properties.put(Constants.LAUNCH_RUNBUNDLES_ATTRS, runbundles.toString());
+
+			if (areStartlevelsEnabled) {
+				int defaultLevel = maxLevel + 1;
+				int beginningLevel = maxLevel + 2;
+
+				if (!properties.containsKey(LAUNCH_STARTLEVEL_DEFAULT))
+					properties.put(LAUNCH_STARTLEVEL_DEFAULT, Integer.toString(defaultLevel));
+
+				if (beginningLevelString == null) {
+					properties.put(FRAMEWORK_BEGINNING_STARTLEVEL, Integer.toString(beginningLevel));
+				}
+			}
+
+		}
+
+		if (beginningLevelString != null) {
+			if (!Verifier.isNumber(beginningLevelString)) {
+				error("%s set to %s, not a valid startlevel (is not a number)", beginningLevelString);
+			} else {
+				int beginningStartLevel = Integer.parseInt(beginningLevelString);
+				if (beginningStartLevel < 1) {
+					error("%s set to %s, must be > 0", beginningLevelString);
+				}
+			}
+		}
 	}
 }
