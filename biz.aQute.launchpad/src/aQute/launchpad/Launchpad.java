@@ -61,6 +61,7 @@ import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.inject.Injector;
 import aQute.lib.io.IO;
+import aQute.lib.startlevel.StartLevelRuntimeHandler;
 import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 import aQute.libg.parameters.ParameterMap;
@@ -100,6 +101,7 @@ public class Launchpad implements AutoCloseable {
 	final String								className;
 	final RunSpecification						runspec;
 	final boolean								hasTestBundle;
+	final StartLevelRuntimeHandler				startlevels;
 
 	Bundle										testbundle;
 	boolean										debug;
@@ -118,6 +120,8 @@ public class Launchpad implements AutoCloseable {
 		this.hasTestBundle = hasTestBundle;
 		this.byReference = byReference;
 		this.proxyBundle = framework;
+		this.startlevels = StartLevelRuntimeHandler.create(this::report, this.runspec.properties);
+
 		try {
 			this.className = className;
 			this.name = name;
@@ -138,6 +142,7 @@ public class Launchpad implements AutoCloseable {
 			hooks = new ServiceTracker<>(framework.getBundleContext(), FindHook.class, null);
 			hooks.open();
 
+			startlevels.beforeStart(framework);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -324,6 +329,7 @@ public class Launchpad implements AutoCloseable {
 	 */
 	@Override
 	public void close() throws Exception {
+		startlevels.close();
 		report("Stop the framework");
 		framework.stop();
 		report("Stopped the framework");
@@ -772,6 +778,7 @@ public class Launchpad implements AutoCloseable {
 
 			toBeStarted.forEach(this::start);
 
+			startlevels.afterStart();
 		} catch (BundleException e) {
 			throw Exceptions.duck(e);
 		}
@@ -1369,5 +1376,9 @@ public class Launchpad implements AutoCloseable {
 		}
 		this.probe = probe;
 		return this;
+	}
+
+	public void sync() {
+		startlevels.sync();
 	}
 }
