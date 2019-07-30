@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodType;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -18,11 +19,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 
+import aQute.lib.startlevel.StartLevelRuntimeHandler;
 import aQute.remote.api.Agent;
 import aQute.remote.api.Supervisor;
 import aQute.remote.util.Link;
@@ -39,15 +40,17 @@ public class AgentDispatcher {
 	//
 	static List<Descriptor> descriptors = new CopyOnWriteArrayList<>();
 
-	static class Descriptor implements Closeable {
-		AtomicBoolean					closed		= new AtomicBoolean(false);
-		List<AgentServer>				servers		= new CopyOnWriteArrayList<>();
-		Framework						framework;
-		Map<String, Object>				configuration;
-		File							storage;
-		File							shaCache;
-		String							name;
+	// public because of testing
+	public static class Descriptor implements Closeable {
+		public AtomicBoolean			closed		= new AtomicBoolean(false);
+		public List<AgentServer>		servers		= new CopyOnWriteArrayList<>();
+		public Framework				framework;
+		public Map<String, Object>		configuration;
+		public File						storage;
+		public File						shaCache;
+		public String					name;
 		public List<BundleActivator>	activators	= new ArrayList<>();
+		public StartLevelRuntimeHandler	startlevels;
 
 		@Override
 		public void close() throws IOException {
@@ -78,6 +81,9 @@ public class AgentDispatcher {
 	/**
 	 * Create a new framework. This is reflectively called from the Envoy
 	 */
+	@SuppressWarnings({
+		"unchecked", "rawtypes"
+	})
 	public static Descriptor createFramework(String name, Map<String, Object> configuration, final File storage,
 		final File shacache) throws Exception {
 
@@ -95,6 +101,23 @@ public class AgentDispatcher {
 		if (ff == null)
 			throw new IllegalArgumentException("No framework on runpath");
 
+		Descriptor d = new Descriptor();
+		//
+		// create a new descriptor. This is returned
+		// to the envoy side as an Object and we will
+		// get this back later in toAgent. The envoy
+		// maintains a list of name -> framework
+		//
+
+		d.shaCache = shacache;
+		d.storage = storage;
+		d.configuration = configuration;
+		d.name = name;
+		boolean isTrace = configuration.get("launch.trace") != null;
+		d.startlevels = StartLevelRuntimeHandler.create(
+			!isTrace ? AgentDispatcher::dummy : AgentDispatcher::log,
+			(Map) configuration);
+
 		//
 		// Create the framework
 		//
@@ -108,22 +131,11 @@ public class AgentDispatcher {
 			.addFrameworkListener(event -> {
 				// System.err.println("FW Event " + event);
 			});
+		d.framework = framework;
 
+		d.startlevels.beforeStart(d.framework);
 		framework.start();
 
-		Descriptor d = new Descriptor();
-		//
-		// create a new descriptor. This is returned
-		// to the envoy side as an Object and we will
-		// get this back later in toAgent. The envoy
-		// maintains a list of name -> framework
-		//
-
-		d.framework = framework;
-		d.shaCache = shacache;
-		d.storage = storage;
-		d.configuration = configuration;
-		d.name = name;
 
 		String embedded = (String) configuration.get("biz.aQute.remote.embedded");
 
@@ -167,8 +179,7 @@ public class AgentDispatcher {
 		// Get the bundle context
 		//
 
-		BundleContext context = descriptor.framework.getBundleContext();
-		AgentServer as = new AgentServer(descriptor.name, context, descriptor.shaCache) {
+		AgentServer as = new AgentServer(descriptor) {
 			//
 			// Override the close se we can remote it from the list
 			//
@@ -217,4 +228,13 @@ public class AgentDispatcher {
 		}
 	}
 
+	private static void dummy(String msg, Object... args) {}
+
+	private static void log( String msg, Object ... args) {
+		try {
+			System.out.println(String.format(msg, args));
+		} catch (Exception e) {
+			System.out.println(msg + ":" + Arrays.toString(args));
+		}
+	}
 }

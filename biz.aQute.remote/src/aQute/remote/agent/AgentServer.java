@@ -53,8 +53,10 @@ import org.osgi.resource.dto.RequirementDTO;
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
 import aQute.lib.io.ByteBufferInputStream;
+import aQute.lib.startlevel.StartLevelRuntimeHandler;
 import aQute.libg.shacache.ShaCache;
 import aQute.libg.shacache.ShaSource;
+import aQute.remote.agent.AgentDispatcher.Descriptor;
 import aQute.remote.api.Agent;
 import aQute.remote.api.Event;
 import aQute.remote.api.Event.Type;
@@ -103,6 +105,8 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	private Redirector										redirector			= new NullRedirector();
 	private Link<Agent, Supervisor>							link;
 	private CountDownLatch									refresh				= new CountDownLatch(0);
+	private final StartLevelRuntimeHandler					startlevels;
+	private final int										startOptions;
 
 	/**
 	 * An agent server is based on a context and takes a name and cache
@@ -112,12 +116,25 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	 * @param context a bundle context of the framework
 	 * @param cache the directory for caching
 	 */
+
 	public AgentServer(String name, BundleContext context, File cache) {
+		this(name, context, cache, StartLevelRuntimeHandler.absent());
+	}
+
+	public AgentServer(String name, BundleContext context, File cache, StartLevelRuntimeHandler startlevels) {
 		this.context = context;
-		if (this.context != null)
-			this.context.addFrameworkListener(this);
+
+		boolean eager = context.getProperty(aQute.bnd.osgi.Constants.LAUNCH_ACTIVATION_EAGER) != null;
+		startOptions = eager ? 0 : Bundle.START_ACTIVATION_POLICY;
 
 		this.cache = new ShaCache(cache);
+		this.startlevels = startlevels;
+		if (this.context != null)
+			this.context.addFrameworkListener(this);
+	}
+
+	AgentServer(Descriptor d) {
+		this(d.name, d.framework.getBundleContext(), d.shaCache, d.startlevels);
 	}
 
 	/**
@@ -180,7 +197,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		for (long id : ids) {
 			Bundle bundle = context.getBundle(id);
 			try {
-				bundle.start();
+				bundle.start(startOptions);
 			} catch (BundleException e) {
 				sb.append(e.getMessage())
 					.append("\n");
@@ -335,7 +352,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 
 		for (Bundle b : toBeStarted) {
 			try {
-				b.start();
+				b.start(startOptions);
 			} catch (Exception e1) {
 				printStack(e1);
 				out.format("Trying to start %s: %s", b, e1);
@@ -344,11 +361,11 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 
 		String result = out.toString();
 		out.close();
+		startlevels.afterStart();
 		if (result.length() == 0) {
 			refresh(true);
 			return null;
 		}
-
 		return result;
 	}
 
@@ -544,6 +561,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	public void close() throws IOException {
 		try {
 			cleanup(-2);
+			startlevels.close();
 		} catch (Exception e) {
 			throw new IOException(e);
 		}

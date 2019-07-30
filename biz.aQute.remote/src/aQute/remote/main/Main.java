@@ -20,7 +20,7 @@ import aQute.remote.api.Agent;
  */
 public class Main extends ReporterAdapter {
 
-	private static Main		main;
+	static Main				main;
 	private CommandLine		commandLine;
 	private EnvoyDispatcher	dispatcher;
 
@@ -97,4 +97,7 @@ public class Main extends ReporterAdapter {
 		main.dispatcher.close();
 	}
 
+	static EnvoyDispatcher getDispatcher() {
+		return main.dispatcher;
+	}
 }

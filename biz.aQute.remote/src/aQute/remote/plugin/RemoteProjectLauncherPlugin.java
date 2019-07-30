@@ -96,7 +96,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 
 		updateFromProject();
 
-		Map<String, Object> properties = new HashMap<>(getRunProperties());
+		Map<String, String> properties = new HashMap<>(getRunProperties());
 
 		calculatedProperties(properties);
 

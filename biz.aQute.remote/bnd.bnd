@@ -16,7 +16,11 @@ aQute.agent.server.port = 29998
     biz.aQute.junit;version=latest,\
     slf4j.api, \
     slf4j.simple,\
-    org.apache.felix.framework;version=latest;packages=*
+    org.apache.felix.framework;version=latest;packages=*, \
+    biz.aQute.repository, \
+    org.awaitility, \
+    biz.aQute.launchpad
+    
     
 -sub: *.bnd
 
