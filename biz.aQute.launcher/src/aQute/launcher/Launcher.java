@@ -81,6 +81,7 @@ import aQute.launcher.minifw.MiniFramework;
 import aQute.launcher.pre.EmbeddedLauncher;
 import aQute.lib.io.ByteBufferDataOutput;
 import aQute.lib.io.IO;
+import aQute.lib.startlevel.StartLevelRuntimeHandler;
 import aQute.lib.strings.Strings;
 
 /**
@@ -107,7 +108,7 @@ public class Launcher implements ServiceListener {
 	private List<Bundle>					wantsToBeStarted	= new ArrayList<>();
 	private AtomicBoolean					active				= new AtomicBoolean();
 	private AtomicReference<DatagramSocket>	commsSocket			= new AtomicReference<>();
-	private StartLevelHandler				startLevelhandler;
+	private StartLevelRuntimeHandler		startLevelhandler;
 
 	/**
 	 * Called from the commandline (and via EmbeddedLauncher in the embedded
@@ -323,8 +324,10 @@ public class Launcher implements ServiceListener {
 				.putAll(this.properties);
 
 			this.parms = new LauncherConstants(properties);
-			this.startLevelhandler = StartLevelHandler.create(this, properties, parms.startlevels);
 			setupComms();
+
+			this.startLevelhandler = StartLevelRuntimeHandler.create(this::trace, properties);
+
 			watch();
 
 			trace("inited runbundles=%s activators=%s timeout=%s", parms.runbundles, parms.activators, parms.timeout);
@@ -335,6 +338,7 @@ public class Launcher implements ServiceListener {
 				report(out);
 				System.exit(status);
 			}
+
 
 			trace("framework=%s", systemBundle);
 
@@ -367,6 +371,7 @@ public class Launcher implements ServiceListener {
 			} else {
 				trace("requested to register no services");
 			}
+
 
 			// Wait until a Runnable is registered with main.thread=true.
 			// not that this will never happen when we're running on the mini fw
@@ -411,6 +416,8 @@ public class Launcher implements ServiceListener {
 		if (systemBundle == null)
 			return LauncherConstants.ERROR;
 
+		startLevelhandler.beforeStart(systemBundle);
+
 		frameworkWiring = systemBundle.adapt(FrameworkWiring.class);
 
 		active.set(true);
@@ -428,11 +435,6 @@ public class Launcher implements ServiceListener {
 		systemContext.addServiceListener(this, "(&(|(objectclass=" + Runnable.class.getName() + ")(objectclass="
 			+ Callable.class.getName() + "))(main.thread=true))");
 
-		startLevelhandler.beforeStart(systemBundle);
-
-		systemBundle.start();
-
-		trace("system bundle started ok");
 
 		// Start embedded activators
 		trace("start embedded activators");
@@ -459,7 +461,9 @@ public class Launcher implements ServiceListener {
 			if (!isImmediate(activator))
 				result = start(systemContext, result, activator);
 
-		startLevelhandler.afterStart(systemBundle);
+		systemBundle.start();
+		trace("system bundle started ok");
+		startLevelhandler.afterStart();
 
 		if (parms.trace) {
 			report(out);
@@ -630,7 +634,6 @@ public class Launcher implements ServiceListener {
 				if (f.exists()) {
 					Bundle b = install(f);
 					installedBundles.put(f, b);
-					startLevelhandler.setStartLevelByIndex(b, index);
 					tobestarted.add(b);
 				} else
 					error("should installing %s but file does not exist", f);
@@ -643,7 +646,6 @@ public class Launcher implements ServiceListener {
 				Integer index = desired.get(f);
 				if (f.exists()) {
 					Bundle b = installedBundles.get(f);
-					startLevelhandler.setStartLevelByIndex(b, index);
 
 					//
 					// Ensure we only update bundles that
@@ -807,7 +809,6 @@ public class Launcher implements ServiceListener {
 					tobestarted.add(bundle);
 				}
 			}
-			startLevelhandler.setStartLevelByIndex(bundle, n);
 			n++;
 		}
 	}
@@ -995,6 +996,7 @@ public class Launcher implements ServiceListener {
 					}
 				}
 			}
+			startLevelhandler.close();
 		}
 	}
 
@@ -1169,7 +1171,7 @@ public class Launcher implements ServiceListener {
 			row(out, "Keep", parms.keep);
 			row(out, "Security", security);
 			row(out, "Has StartLevels", startLevelhandler.hasStartLevels());
-			row(out, "Startlevel", startLevelhandler.getStartLevel(systemBundle));
+			row(out, "Startlevel", startLevelhandler.getFrameworkStartLevel(systemBundle));
 			list(out, fill("Run bundles", 40), parms.runbundles);
 			row(out, "Java Home", System.getProperty("java.home"));
 			list(out, fill("Classpath", 40), split(System.getProperty("java.class.path"), File.pathSeparator));

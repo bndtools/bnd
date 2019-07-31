@@ -91,6 +91,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 	final List<Predicate<String>>	excludeExports	= new ArrayList<>();
 	final List<String>				exports			= new ArrayList<>();
 	ClassLoader						myClassLoader;
+	String							parentLoader	= Constants.FRAMEWORK_BUNDLE_PARENT_BOOT;
 
 	/**
 	 * Start a framework assuming the current working directory is the project
@@ -264,7 +265,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 			runspec.properties.put(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA, extraCapabilities);
 			runspec.properties.put(Constants.FRAMEWORK_STORAGE, storage.getAbsolutePath());
 			runspec.properties.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
-			runspec.properties.put(Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_BUNDLE_PARENT_BOOT);
+			runspec.properties.put(Constants.FRAMEWORK_BUNDLE_PARENT, parentLoader);
 			runspec.properties.put(LAUNCHPAD_NAME, name);
 			runspec.properties.put(LAUNCHPAD_CLASSNAME, className);
 
@@ -454,5 +455,10 @@ public class LaunchpadBuilder implements AutoCloseable {
 
 	public boolean isDebug() {
 		return debug;
+	}
+
+	public LaunchpadBuilder applicationLoaderAsParent() {
+		this.parentLoader = Constants.FRAMEWORK_BUNDLE_PARENT_APP;
+		return this;
 	}
 }

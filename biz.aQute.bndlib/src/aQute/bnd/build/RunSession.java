@@ -21,7 +21,7 @@ public interface RunSession {
 
 	void cancel() throws Exception;
 
-	Map<String, Object> getProperties();
+	Map<String, ?> getProperties();
 
 	int getExitCode();
 

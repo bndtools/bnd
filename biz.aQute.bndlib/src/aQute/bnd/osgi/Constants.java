@@ -204,6 +204,9 @@ public interface Constants {
 	String				SUB											= "-sub";
 	String				REPRODUCIBLE								= "-reproducible";
 	String				RUNNOREFERENCES								= "-runnoreferences";
+	String				RUNOPTIONS									= "-runoptions";
+	String				RUNOPTIONS_EAGER							= "eager";
+
 	String				RUNPROPERTIES								= "-runproperties";
 	String				RUNSYSTEMPACKAGES							= "-runsystempackages";
 	String				RUNSYSTEMCAPABILITIES						= "-runsystemcapabilities";
@@ -292,7 +295,7 @@ public interface Constants {
 		JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND, GROUPID, STANDALONE, IGNORE_STANDALONE,
 		RUNREPOS, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE,
 		REPRODUCIBLE, INCLUDEPACKAGE, CDIANNOTATIONS, REMOTEWORKSPACE, MAVEN_DEPENDENCIES, BUILDERIGNORE, STALECHECK,
-		MAVEN_SCOPE, RUNSTARTLEVEL
+		MAVEN_SCOPE, RUNSTARTLEVEL, RUNOPTIONS
 
 	};
 
@@ -507,6 +510,15 @@ public interface Constants {
 
 	String				SERVICELOADER_REGISTER_DIRECTIVE			= "register:";
 	String				SERVICELOADER_NAMESPACE						= "osgi.serviceloader";
+
+	/**
+	 * Launch constants that should be shared by launchers
+	 */
+	String				LAUNCH_TRACE								= "launch.trace";
+	String				LAUNCH_STARTLEVEL_DEFAULT					= "launch.startlevel.default";
+	String				LAUNCH_RUNBUNDLES_ATTRS						= "launch.runbundles.attrs";
+	String				LAUNCH_ACTIVATORS							= "launch.activators";
+	String				LAUNCH_ACTIVATION_EAGER						= "launch.activation.eager";
 
 	/*
 	 * Deprecated Section

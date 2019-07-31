@@ -26,14 +26,14 @@ public class RunSessionImpl implements RunSession {
 	private LauncherSupervisor			supervisor;
 	private RemoteProjectLauncherPlugin	launcher;
 	private RunRemoteDTO				dto;
-	private Map<String, Object>			properties;
+	private Map<String, String>			properties;
 	public CountDownLatch				started	= new CountDownLatch(1);
 	private Appendable					stderr;
 	private Appendable					stdout;
 	private int							shell	= -4711;
 	public static int					jdb		= 16043;
 
-	public RunSessionImpl(RemoteProjectLauncherPlugin launcher, RunRemoteDTO dto, Map<String, Object> properties)
+	public RunSessionImpl(RemoteProjectLauncherPlugin launcher, RunRemoteDTO dto, Map<String, String> properties)
 		throws Exception {
 		this.launcher = launcher;
 		this.properties = properties;
@@ -122,16 +122,19 @@ public class RunSessionImpl implements RunSession {
 	}
 
 	@Override
-	public Map<String, Object> getProperties() {
+	public Map<String, ?> getProperties() {
 		return properties;
 	}
 
-	private boolean installFramework(Agent agent, RunRemoteDTO dto, Map<String, Object> properties) throws Exception {
+	@SuppressWarnings({
+		"unchecked", "rawtypes"
+	})
+	private boolean installFramework(Agent agent, RunRemoteDTO dto, Map<String, String> properties2) throws Exception {
 		List<String> onpath = new ArrayList<>(launcher.getRunpath());
 
 		Map<String, String> runpath = getBundles(onpath, Constants.RUNPATH);
 
-		return agent.createFramework(dto.name, runpath.values(), properties);
+		return agent.createFramework(dto.name, runpath.values(), (Map) properties2);
 	}
 
 	void update(Map<String, String> newer) throws Exception {

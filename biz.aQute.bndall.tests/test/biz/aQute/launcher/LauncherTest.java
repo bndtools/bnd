@@ -80,15 +80,14 @@ public class LauncherTest {
 
 		String result = runFramework(file);
 
-		assertThat(result).containsPattern("handled \\[-1, 10, 20, -1, 5\\]")
+		assertThat(result)
 			.containsPattern("Startlevel\\s+22")
 			.containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle")
 			.containsPattern("21\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log")
 			.containsPattern("10\\s+ACTIV\\s+<>\\s+jar/.?demo.jar")
 			.containsPattern("20\\s+ACTIV\\s+<>\\s+jar/.?org.apache.servicemix.bundles.junit")
 			.containsPattern("5\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.configadmin")
-			.containsPattern("startlevel: default=21, beginning=22, now moving to 1")
-			.containsPattern("startlevel: beginning level 22")
+			.containsPattern("startlevel: default=21, beginning=22")
 			.containsPattern("startlevel: notified reached final level 22");
 	}
 
@@ -105,8 +104,7 @@ public class LauncherTest {
 			.containsPattern("22\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log")
 			.containsPattern("11\\s+ACTIV\\s+<>\\s+jar/.?demo.jar")
 			.containsPattern("21\\s+ACTIV\\s+<>\\s+jar/.?org.apache.servicemix.bundles.junit")
-			.containsPattern("startlevel: default=22, beginning=23, now moving to 1")
-			.containsPattern("startlevel: beginning level 23")
+			.containsPattern("startlevel: default=22, beginning=23")
 			.containsPattern("startlevel: notified reached final level 23");
 	}
 
@@ -126,8 +124,7 @@ public class LauncherTest {
 			.containsPattern("11\\s+ACTIV\\s+<>\\s+jar/.?demo.jar")
 			.containsPattern("21\\s+RSLVD\\s+<>\\s+jar/.?org.apache.servicemix.bundles.junit")
 			.containsPattern("6\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.configadmin")
-			.containsPattern("startlevel: default=22, beginning=12, now moving to 1")
-			.containsPattern("startlevel: beginning level 12")
+			.containsPattern("startlevel: default=22, beginning=12")
 			.containsPattern("startlevel: notified reached final level 12");
 	}
 
@@ -213,6 +210,7 @@ public class LauncherTest {
 				assertTrue(run.check());
 				pack.write(file);
 			}
+			assertTrue(run.check());
 			return file;
 		}
 	}

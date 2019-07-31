@@ -32,8 +32,7 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.header.Parameters;
-import aQute.bnd.help.instructions.BuilderInstructions;
-import aQute.bnd.help.instructions.LauncherInstructions;
+import aQute.bnd.help.instructions.LauncherInstructions.RunOption;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.EmbeddedResource;
@@ -63,20 +62,14 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	private final List<String>		launcherpath		= new ArrayList<>();
 
 	private File					preTemp;
-	private BuilderInstructions		builderInstrs;
-	private LauncherInstructions	launcherInstrs;
 
 	final private File				launchPropertiesFile;
 	boolean							prepared;
-
 	DatagramSocket					listenerComms;
 
 	public ProjectLauncherImpl(Project project, Container container) throws Exception {
 		super(project);
 		this.container = container;
-
-		builderInstrs = project.getInstructions(BuilderInstructions.class);
-		launcherInstrs = project.getInstructions(LauncherInstructions.class);
 
 		logger.debug("created a aQute launcher plugin");
 		launchPropertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
@@ -117,6 +110,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		// Make sure the launcher is on the runpath
 		addClasspath(container);
+
 	}
 
 	//
@@ -125,7 +119,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	@Override
 	protected int invoke(Class<?> main, String args[]) throws Exception {
-		LauncherConstants lc = getConstants(getRunBundles(), getStartlevels(), false);
+		LauncherConstants lc = getConstants(getRunBundles(), false);
 
 		Method mainMethod = main.getMethod("main", args.getClass(), Properties.class);
 		Object o = mainMethod.invoke(null, args, lc.getProperties(new UTF8Properties()));
@@ -199,11 +193,12 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			return;
 		prepared = true;
 		super.prepare();
+
 		writeProperties();
 	}
 
 	void writeProperties() throws Exception {
-		LauncherConstants lc = getConstants(getRunBundles(), getStartlevels(), false);
+		LauncherConstants lc = getConstants(getRunBundles(), false);
 		try (OutputStream out = IO.outputStream(launchPropertiesFile)) {
 			lc.getProperties(new UTF8Properties())
 				.store(out, "Launching " + getProject());
@@ -215,8 +210,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	private LauncherConstants getConstants(Collection<String> runbundles, Collection<Integer> startlevels,
-		boolean exported) throws Exception, FileNotFoundException, IOException {
+	private LauncherConstants getConstants(Collection<String> runbundles, boolean exported)
+		throws Exception, FileNotFoundException, IOException {
 		logger.debug("preparing the aQute launcher plugin");
 
 		LauncherConstants lc = new LauncherConstants();
@@ -225,12 +220,13 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		lc.storageDir = getStorageDir();
 		lc.keep = isKeep();
 		lc.runbundles.addAll(runbundles);
-		lc.startlevels.addAll(startlevels);
 		lc.trace = getTrace();
 		lc.timeout = getTimeout();
 		lc.services = super.getRunFramework() == SERVICES ? true : false;
 		lc.activators.addAll(getActivators());
 		lc.name = getProject().getName();
+		lc.activationEager = launcherInstrs.runoptions()
+			.contains(RunOption.eager);
 
 		if (!exported && !getNotificationListeners().isEmpty()) {
 			if (listenerComms == null) {
@@ -359,7 +355,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			}
 		}
 
-		LauncherConstants lc = getConstants(actualPaths, getStartlevels(), true);
+		LauncherConstants lc = getConstants(actualPaths, true);
 		lc.embedded = true;
 
 		try (ByteBufferOutputStream bout = new ByteBufferOutputStream()) {

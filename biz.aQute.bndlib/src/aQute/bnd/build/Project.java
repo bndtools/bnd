@@ -2321,14 +2321,18 @@ public class Project extends Processor {
 
 	public void run() throws Exception {
 		try (ProjectLauncher pl = getProjectLauncher()) {
-			pl.setTrace(isTrace() || isTrue(getProperty(RUNTRACE)));
+			pl.setTrace(isTrace() || isRunTrace());
 			pl.launch();
 		}
 	}
 
+	public boolean isRunTrace() {
+		return isTrue(getProperty(RUNTRACE));
+	}
+
 	public void runLocal() throws Exception {
 		try (ProjectLauncher pl = getProjectLauncher()) {
-			pl.setTrace(isTrace() || isTrue(getProperty(RUNTRACE)));
+			pl.setTrace(isTrace() || isRunTrace());
 			pl.start(null);
 		}
 	}
@@ -3381,15 +3385,17 @@ public class Project extends Processor {
 	 * Return a basic type only specification of the run aspect of this project
 	 */
 	public RunSpecification getSpecification() {
+
 		RunSpecification runspecification = new RunSpecification();
 		try {
+			ProjectLauncher l = getProjectLauncher();
 			runspecification.bin = getOutput().getAbsolutePath();
 			runspecification.bin_test = getTestOutput().getAbsolutePath();
 			runspecification.target = getTarget().getAbsolutePath();
 			runspecification.errors.addAll(getErrors());
 			runspecification.extraSystemCapabilities = getRunSystemCapabilities().toBasic();
 			runspecification.extraSystemPackages = getRunSystemPackages().toBasic();
-			runspecification.properties = getRunProperties();
+			runspecification.properties = l.getRunProperties();
 			runspecification.runbundles = toPaths(runspecification.errors, getRunbundles());
 			runspecification.runfw = toPaths(runspecification.errors, getRunFw());
 			runspecification.runpath = toPaths(runspecification.errors, getRunpath());
