@@ -55,10 +55,10 @@ public class Snapshot implements BundleActivator {
 		this.context = context;
 		this.framework = context.getBundle(0);
 
+		add("framework", FrameworkFacade.class);
 		add("scr", ServiceComponentRuntimeFacade.class);
 		add("log", LogFacade.class);
 		add("cnf", ConfigurationFacade.class);
-		add("framework", FrameworkFacade.class);
 		// add("coordinator", CoordinatorFacade.class);
 
 		this.frameworkFront = new FrameworkFacade(this.context);
