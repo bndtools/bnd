@@ -72,6 +72,17 @@ public class LaunchpadTest {
 	}
 
 	@Test
+	public void testRunsystemPackages() throws Exception {
+		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+			.bndrun("runsystempackages.bndrun")
+			.create()) {
+			Set<String> p = new ParameterMap(fw.getBundleContext()
+				.getProperty("org.osgi.framework.system.packages.extra")).keySet();
+			assertThat(p).contains("sun.misc");
+		}
+	}
+
+	@Test
 	public void testConnection() throws Exception {
 		try (RemoteWorkspace remote = RemoteWorkspaceClientFactory.create(IO.work, new RemoteWorkspaceClient() {})) {
 			assertNotNull(remote);
