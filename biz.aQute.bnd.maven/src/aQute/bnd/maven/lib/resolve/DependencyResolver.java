@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.maven.RepositoryUtils;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.DefaultDependencyResolutionRequest;
@@ -150,14 +151,9 @@ public class DependencyResolver {
 			Map<File, ArtifactResult> dependencies = resolve();
 			bundles.addAll(dependencies.keySet());
 
-			// TODO Find a better way to get all the artifacts produced by this
-			// project!!!
-			File current = new File(project.getBuild()
-				.getDirectory(),
-				project.getBuild()
-					.getFinalName() + ".jar");
-			if (current.exists() && !bundles.contains(current)) {
-				bundles.add(current);
+			addArtifact(bundles, project.getArtifact());
+			for (Artifact artifact : project.getAttachedArtifacts()) {
+				addArtifact(bundles, artifact);
 			}
 		}
 
@@ -166,6 +162,17 @@ public class DependencyResolver {
 		}
 
 		return new FileSetRepository(name, bundles);
+	}
+
+	private void addArtifact(Collection<File> bundles, Artifact artifact) {
+		String classifier = artifact.getClassifier();
+		if ("javadoc".equals(classifier) || "sources".equals(classifier) || artifact.getFile() == null
+			|| !artifact.getFile()
+				.exists()) {
+
+			return;
+		}
+		bundles.add(artifact.getFile());
 	}
 
 	private void discoverArtifacts(Map<File, ArtifactResult> files, List<DependencyNode> nodes, String parent,
