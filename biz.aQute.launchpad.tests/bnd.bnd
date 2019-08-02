@@ -8,4 +8,5 @@
     slf4j.api, \
     slf4j.simple, \
 	${junit},\
-	biz.aQute.launchpad;version=latest
+	biz.aQute.launchpad;version=latest, \
+	aQute.libg;version=project

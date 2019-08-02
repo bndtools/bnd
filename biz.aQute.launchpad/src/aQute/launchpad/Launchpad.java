@@ -529,7 +529,7 @@ public class Launchpad implements AutoCloseable {
 		Stream.of(framework.getBundleContext()
 			.getBundles())
 			.forEach(bb -> {
-				report("%4s %s", bundleStateToString(bb.getState()), bb);
+				report("%4s %4s %s", bundleStateToString(bb.getState()), startlevels.getBundleStartLevel(bb), bb);
 			});
 	}
 
