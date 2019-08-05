@@ -59,7 +59,7 @@ The return type `Class<?>` is particularly useful when it comes to making your c
 class Bar { ... }
 ```
 
-What if you want the default to be _the annotated class_ itself? Bnd made this possible by using a type which was unlikely to be a real argument. The type selected was `java.lang.Target`because it is guaranteed to be accessible, is unlikely to be a real argument, will not require an additional dependency, and it's nomenclature proved the most expressive for the use case.
+What if you want the default to be _the annotated class_ itself? Bnd made this possible by using a type which was unlikely to be a real argument. The type selected was `java.lang.annotation.Target`because it is guaranteed to be accessible, is unlikely to be a real argument, will not require an additional dependency, and it's nomenclature proved the most expressive for the use case.
 
 ```java
 @Capability(
@@ -76,7 +76,7 @@ What if you want the default to be _the annotated class_ itself? Bnd made this p
 class Bar { ... }
 ```
 
-Instances of `java.lang.Target.class` found in the return value of `Class<?>` or `Class<?>[]` methods will be replaced by the annotated type prior to string conversion.
+Instances of `java.lang.annotation.Target.class` found in the return value of `Class<?>` or `Class<?>[]` methods will be replaced by the annotated type prior to string conversion.
 
 #### Cardinality
 
