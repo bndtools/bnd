@@ -3,7 +3,7 @@
 
 Bundle-Description:	    Shared logic used by bnd maven plugins
 
--exportcontents: aQute.bnd.maven.lib.*
+-includepackage: aQute.bnd.maven.lib.*
 
 Import-Package: \
 	org.apache.maven.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
