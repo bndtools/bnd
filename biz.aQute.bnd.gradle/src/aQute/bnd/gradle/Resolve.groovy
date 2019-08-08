@@ -17,13 +17,17 @@
  * <p>
  * Properties:
  * <ul>
+ * <li>ignoreFailures - If true the task will not fail if the execution
+ * fails. The default is false.</li>
  * <li>failOnChanges - If true the task will fail if the resolve process
  * results in a different value for -runbundles than the current value.
  * The default is false.</li>
  * <li>bndrun - This is the bndrun file to be resolved.
  * This property must be set.</li>
+ * <li>workingDir - This is the directory for the resolve process.
+ * The default for workingDir is temporaryDir.</li>
  * <li>bundles - This is the collection of files to use for locating
- * bundles during the bndrun execution. The default is
+ * bundles during the resolve process. The default is
  * 'sourceSets.main.runtimeClasspath' plus
  * 'configurations.archives.artifacts.files'.</li>
  * <li>reportOptional - If true failure reports will include
@@ -35,21 +39,15 @@ package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.logReport
 
-import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
-import aQute.bnd.osgi.Processor
-import biz.aQute.resolve.Bndrun
 import biz.aQute.resolve.ResolveProcess
 
-import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.TaskAction
 
 import org.osgi.service.resolver.ResolutionException
 
-public class Resolve extends DefaultTask {
+public class Resolve extends Bndrun {
   /**
    * Whether resolve changes should fail the task.
    *
@@ -59,7 +57,7 @@ public class Resolve extends DefaultTask {
    * <code>false</code>.
    */
   @Input
-  boolean failOnChanges
+  boolean failOnChanges = false
 
   /**
    * Whether to report optional requirements.
@@ -72,89 +70,37 @@ public class Resolve extends DefaultTask {
   @Input
   boolean reportOptional = true
 
-  private File bndrun
-  private final def bndWorkspace
-
   /**
    * Create a Resolve task.
-   *
    */
   public Resolve() {
     super()
-    bndWorkspace = project.findProperty('bndWorkspace')
-    failOnChanges = false
-    if (bndWorkspace == null) {
-      convention.plugins.bundles = new FileSetRepositoryConvention(this)
-    }
   }
 
   /**
-   * Return the bndrun file to be resolved.
-   *
+   * Create the Bndrun object.
    */
-  @InputFile
-  public File getBndrun() {
-    return bndrun
+  protected def createRun(def workspace, File bndrun) {
+    Class runClass = workspace ? Class.forName(biz.aQute.resolve.Bndrun.class.getName(), true, workspace.getClass().getClassLoader()) : biz.aQute.resolve.Bndrun.class
+    return runClass.createBndrun(workspace, bndrun)
   }
 
   /**
-   * Set the bndfile to be resolved.
-   *
-   * <p>
-   * The argument will be handled using
-   * Project.file().
+   * Resolve the Bndrun object.
    */
-  public void setBndrun(Object file) {
-    bndrun = project.file(file)
-  }
-
-  /**
-   * Resolve the bndrun file.
-   *
-   */
-  @TaskAction
-  void resolve() {
-    def workspace = bndWorkspace
-    Class runClass = workspace ? Class.forName(Bndrun.class.getName(), true, workspace.getClass().getClassLoader()) : Bndrun.class
-    runClass.createBndrun(workspace, bndrun).withCloseable { run ->
-      def runWorkspace = run.getWorkspace()
-      Properties gradleProperties = new PropertiesWrapper()
-      gradleProperties.put('task', this)
-      gradleProperties.put('project', project)
-      Class processorClass = workspace ? Class.forName(Processor.class.getName(), true, workspace.getClass().getClassLoader()) : Processor.class
-      run.setParent(processorClass.newInstance([runWorkspace, gradleProperties, false] as Object[]))
-      run.setBase(temporaryDir)
-      if (run.isStandalone()) {
-        runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)
-        File cnf = new File(temporaryDir, Workspace.CNFDIR)
-        project.mkdir(cnf)
-        runWorkspace.setBuildDir(cnf)
-        if (convention.findPlugin(FileSetRepositoryConvention)) {
-          runWorkspace.addBasicPlugin(getFileSetRepository(name))
-          runWorkspace.getRepositories().each { repo ->
-            repo.list(null)
-          }
-        }
-      }
-      run.getInfo(runWorkspace)
+  protected void worker(def run) {
+    logger.info 'Resolving runbundles required for {}', run.getPropertiesFile()
+    try {
+      def result = run.resolve(failOnChanges, true)
+      logger.info '{}: {}', Constants.RUNBUNDLES, result
+    } catch (ResolutionException e) {
+      logger.error ResolveProcess.format(e, reportOptional)
+      throw new GradleException("${run.getPropertiesFile()} resolution exception", e)
+    } finally {
       logReport(run, logger)
-      if (!run.isOk()) {
-        throw new GradleException("${run.getPropertiesFile()} workspace errors")
-      }
-
-      try {
-        logger.info 'Resolving runbundles required for {}', run.getPropertiesFile()
-        def result = run.resolve(failOnChanges, true)
-        logger.info '{}: {}', Constants.RUNBUNDLES, result
-      } catch (ResolutionException e) {
-        logger.error ResolveProcess.format(e, reportOptional)
-        throw new GradleException("${run.getPropertiesFile()} resolution exception", e)
-      } finally {
-        logReport(run, logger)
-      }
-      if (!run.isOk()) {
-        throw new GradleException("${run.getPropertiesFile()} resolution failure")
-      }
+    }
+    if (!ignoreFailures && !run.isOk()) {
+      throw new GradleException("${run.getPropertiesFile()} resolution failure")
     }
   }
 }
