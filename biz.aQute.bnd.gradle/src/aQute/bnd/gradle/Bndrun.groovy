@@ -33,6 +33,10 @@ package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.logReport
 
+import java.util.concurrent.Executors
+import java.util.concurrent.ForkJoinPool
+import java.util.concurrent.ScheduledExecutorService
+
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Processor
 
@@ -163,9 +167,16 @@ public class Bndrun extends DefaultTask {
    */
   protected void worker(def run) {
     logger.info 'Running {} in {}', run.getPropertiesFile(), run.getBase()
+    ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor()
     try {
-      run.run();
+      run.getProjectLauncher().withCloseable() { pl ->
+        pl.liveCoding(ForkJoinPool.commonPool(), scheduledExecutor).withCloseable() {
+          pl.setTrace(run.isTrace() || run.isRunTrace())
+          pl.launch()
+        }
+      }
     } finally {
+      scheduledExecutor.shutdownNow()
       logReport(run, logger)
     }
     if (!ignoreFailures && !run.isOk()) {
