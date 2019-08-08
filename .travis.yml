@@ -29,6 +29,7 @@ matrix:
     - name: "Documentation"
       install:
         - "ruby --version"
+        - "gem update --system"
         - "gem --version"
         - "gem install bundler -v '~> 2.0'"
         - "bundle --version"
