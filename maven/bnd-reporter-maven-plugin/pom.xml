@@ -60,10 +60,14 @@
 			<groupId>biz.aQute.bnd</groupId>
 			<artifactId>biz.aQute.bnd.reporter</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
 		</dependency>
 	</dependencies>
 
