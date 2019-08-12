@@ -33,7 +33,6 @@ package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.logReport
 
-import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Processor
 
@@ -53,7 +52,7 @@ public class Bndrun extends DefaultTask {
    * <code>false</code>.
    */
   @Input
-  boolean ignoreFailures
+  boolean ignoreFailures = false
 
   private File workingDir
   private File bndrun
@@ -66,7 +65,6 @@ public class Bndrun extends DefaultTask {
   public Bndrun() {
     super()
     bndWorkspace = project.findProperty('bndWorkspace')
-    ignoreFailures = false
     if (bndWorkspace == null) {
       convention.plugins.bundles = new FileSetRepositoryConvention(this)
     }
@@ -112,18 +110,16 @@ public class Bndrun extends DefaultTask {
   }
 
   /**
-   * Execute the bndrun file.
-   *
+   * Setup the Run object and call worker on it.
    */
   @TaskAction
   void bndrun() {
     def workspace = bndWorkspace
-    if (workspace != null && bndrun == project.bnd.project.getPropertiesFile()) {
+    if ((workspace != null) && (bndrun == project.bnd.project.getPropertiesFile())) {
       worker(project.bnd.project)
       return
     }
-    Class runClass = workspace ? Class.forName(Run.class.getName(), true, workspace.getClass().getClassLoader()) : Run.class
-    runClass.createRun(workspace, bndrun).withCloseable { run ->
+    createRun(workspace, bndrun).withCloseable { run ->
       def runWorkspace = run.getWorkspace()
       project.mkdir(workingDir)
       Properties gradleProperties = new PropertiesWrapper()
@@ -134,7 +130,7 @@ public class Bndrun extends DefaultTask {
       run.setBase(workingDir)
       if (run.isStandalone()) {
         runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)
-        File cnf = new File(temporaryDir, Workspace.CNFDIR)
+        File cnf = new File(workingDir, Workspace.CNFDIR)
         project.mkdir(cnf)
         runWorkspace.setBuildDir(cnf)
         if (convention.findPlugin(FileSetRepositoryConvention)) {
@@ -154,9 +150,20 @@ public class Bndrun extends DefaultTask {
     }
   }
 
+  /**
+   * Create the Run object.
+   */
+  protected def createRun(def workspace, File bndrun) {
+    Class runClass = workspace ? Class.forName(aQute.bnd.build.Run.class.getName(), true, workspace.getClass().getClassLoader()) : aQute.bnd.build.Run.class
+    return runClass.createRun(workspace, bndrun)
+  }
+
+  /**
+   * Execute the Run object.
+   */
   protected void worker(def run) {
+    logger.info 'Running {} in {}', run.getPropertiesFile(), run.getBase()
     try {
-      logger.info 'Running {} in {}', run.getPropertiesFile(), run.getBase()
       run.run();
     } finally {
       logReport(run, logger)

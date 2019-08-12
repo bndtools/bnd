@@ -21,17 +21,21 @@
  * <p>
  * Properties:
  * <ul>
+ * <li>ignoreFailures - If true the task will not fail if the export
+ * fails. The default is false.</li>
  * <li>exporter - The name of the exporter plugin to use.
  * Bnd has two built-in exporter plugins. 'bnd.executablejar'
  * exports an executable jar and 'bnd.runbundles' exports the
  * -runbundles files. The default is 'bnd.executablejar'.</li>
- * <li>bndrun - This is the bndrun file to be resolved.
+ * <li>bndrun - This is the bndrun file to be exported.
  * This property must be set.</li>
  * <li>destinationDir - This is the directory for the output.
  * The default for destinationDir is project.distsDir/'executable'
  * if the exporter is 'bnd.executablejar', project.distsDir/'runbundles'/bndrun
  * if the exporter is 'bnd.runbundles', and project.distsDir/task.name
  * for all other exporters.</li>
+ * <li>workingDir - This is the directory for the export operation.
+ * The default for workingDir is temporaryDir.</li>
  * <li>bundles - This is the collection of files to use for locating
  * bundles during the bndrun execution. The default is
  * 'sourceSets.main.runtimeClasspath' plus
@@ -45,37 +49,29 @@ import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
 import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES
 import static aQute.bnd.gradle.BndUtils.logReport
 
-import aQute.bnd.build.Run
-import aQute.bnd.build.Workspace
-import aQute.bnd.osgi.Processor
 import aQute.lib.io.IO
 
-import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.TaskAction
 
-public class Export extends DefaultTask {
+public class Export extends Bndrun {
   /**
-   * This property is replace by exporter.
+   * This property is replaced by exporter.
    * This property is only used when the exporter
    * property is not specified.
    *
    * <p>
    * If <code>true</code>, then the exporter defaults to
    * 'bnd.runbundles'. Otherwise the expoter defaults to
-   * 'bnd.executablejar'. The default is  <code>false</code>.
+   * 'bnd.executablejar'. The default is <code>false</code>.
    */
   @Input
-  boolean bundlesOnly
+  boolean bundlesOnly = false
 
-  private File bndrun
   private File destinationDir
   private String exporter
-  private final def bndWorkspace
 
   /**
    * Create a Export task.
@@ -83,31 +79,6 @@ public class Export extends DefaultTask {
    */
   public Export() {
     super()
-    bndWorkspace = project.findProperty('bndWorkspace')
-    bundlesOnly = false
-    if (bndWorkspace == null) {
-      convention.plugins.bundles = new FileSetRepositoryConvention(this)
-    }
-  }
-
-  /**
-   * Return the bndrun file to be exported.
-   *
-   */
-  @InputFile
-  public File getBndrun() {
-    return bndrun
-  }
-
-  /**
-   * Set the bndfile to be exported.
-   *
-   * <p>
-   * The argument will be handled using
-   * Project.file().
-   */
-  public void setBndrun(Object file) {
-    bndrun = project.file(file)
   }
 
   /**
@@ -181,61 +152,31 @@ public class Export extends DefaultTask {
   }
 
   /**
-   * Export the bndrun file.
-   *
+   * Export the Run object.
    */
-  @TaskAction
-  void export() {
-    def workspace = bndWorkspace
-    Class runClass = workspace ? Class.forName(Run.class.getName(), true, workspace.getClass().getClassLoader()) : Run.class
-    runClass.createRun(workspace, bndrun).withCloseable { run ->
-      def runWorkspace = run.getWorkspace()
-      Properties gradleProperties = new PropertiesWrapper()
-      gradleProperties.put('task', this)
-      gradleProperties.put('project', project)
-      Class processorClass = workspace ? Class.forName(Processor.class.getName(), true, workspace.getClass().getClassLoader()) : Processor.class
-      run.setParent(processorClass.newInstance([runWorkspace, gradleProperties, false] as Object[]))
-      run.setBase(temporaryDir)
-      if (run.isStandalone()) {
-        runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)
-        File cnf = new File(temporaryDir, Workspace.CNFDIR)
-        project.mkdir(cnf)
-        runWorkspace.setBuildDir(cnf)
-        if (convention.findPlugin(FileSetRepositoryConvention)) {
-          runWorkspace.addBasicPlugin(getFileSetRepository(name))
-          runWorkspace.getRepositories().each { repo ->
-            repo.list(null)
+  @Override
+  protected void worker(def run) {
+    logger.info 'Exporting {} to {} with exporter {}', run.getPropertiesFile(), destinationDir, exporter
+    try {
+      def export = run.export(exporter, [:])
+      if (exporter == RUNBUNDLES) {
+        export?.value.withCloseable { jr ->
+          jr.getJar().writeFolder(destinationDir)
+        }
+      } else {
+        export?.value.withCloseable { r ->
+          File exported = IO.getBasedFile(destinationDir, export.key)
+          exported.withOutputStream { out ->
+            r.write(out)
           }
+          exported.setLastModified(r.lastModified())
         }
       }
-      run.getInfo(runWorkspace)
+    } finally {
       logReport(run, logger)
-      if (!run.isOk()) {
-        throw new GradleException("${run.getPropertiesFile()} workspace errors")
-      }
-
-      try {
-        logger.info 'Exporting {} to {} with exporter {}', run.getPropertiesFile(), destinationDir, exporter
-        def export = run.export(exporter, [:])
-        if (exporter == RUNBUNDLES) {
-          export?.value.withCloseable { jr ->
-            jr.getJar().writeFolder(destinationDir)
-          }
-        } else {
-          export?.value.withCloseable { r ->
-            File exported = IO.getBasedFile(destinationDir, export.key)
-            exported.withOutputStream { out ->
-              r.write(out)
-            }
-            exported.setLastModified(r.lastModified())
-          }
-        }
-      } finally {
-        logReport(run, logger)
-      }
-      if (!run.isOk()) {
-        throw new GradleException("${run.getPropertiesFile()} export failure")
-      }
+    }
+    if (!ignoreFailures && !run.isOk()) {
+      throw new GradleException("${run.getPropertiesFile()} export failure")
     }
   }
 }

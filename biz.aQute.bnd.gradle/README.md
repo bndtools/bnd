@@ -304,23 +304,32 @@ task resolve(type: Resolve) {
 }
 ```
 
-There are four properties which can be configured for a Resolve task:
+There are six properties which can be configured for a Resolve task:
+
+### ignoreFailures
+
+If `true` the task will not fail due to resolution failures; instead an
+error message will be logged. Otherwise, the task will fail. The
+default is `false`.
 
 ### failOnChanges
 
-If `true` the build will fail if the resolve operation changes the value of the
+If `true` the build will fail if the resolve process changes the value of the
 `-runbundles` property. The default is `false`.
 
 ### bndrun
 
 The bndrun to be resolved. It can be anything that `Project.file(Object)`
-can accept. This property must be set. The bndrun file must be a standalone bndrun
-file since this is not a Workspace Build.
+can accept. This property must be set.
+
+### workingDir
+
+The directory for the resolve process. The default is _${temporaryDir}_.
 
 ### bundles
 
 The collection of files to use for locating bundles during the
-bndrun resolution. The default is _${project.sourceSets.main.runtimeClasspath}_
+resolve process. The default is _${project.sourceSets.main.runtimeClasspath}_
 plus _${project.configurations.archives.artifacts.files}_.
 
 ### reportOptional
@@ -341,7 +350,13 @@ task export(type: Export) {
 }
 ```
 
-There are three properties which can be configured for an Export task:
+There are five properties which can be configured for an Export task:
+
+### ignoreFailures
+
+If `true` the task will not fail due to export failures; instead an
+error message will be logged. Otherwise, the task will fail. The
+default is `false`.
 
 ### exporter
 
@@ -353,8 +368,7 @@ plugin. The default is `bnd.executablejar`.
 ### bndrun
 
 The bndrun to be exported. It can be anything that `Project.file(Object)`
-can accept. This property must be set. The bndrun file must be a standalone bndrun
-file since this is not a Workspace Build.
+can accept. This property must be set.
 
 ### destinationDir
 
@@ -363,6 +377,10 @@ _${project.distsDir}_/executable if the exporter is `bnd.executablejar`,
 _${project.distsDir}_/runbundles/_${bndrun.name - '.bndrun'}_ if
 the exporter is `bnd.runbundles`, and _${project.distsDir}_/_${task.name}_
 for all other exporters.
+
+### workingDir
+
+The directory for the export operation. The default is _${temporaryDir}_.
 
 ### bundles
 
@@ -394,8 +412,7 @@ default is `false`.
 ### bndrun
 
 The bndrun to be tested. It can be anything that `Project.file(Object)`
-can accept. This property must be set. The bndrun file must be a standalone bndrun
-file since this is not a Workspace Build.
+can accept. This property must be set.
 
 ### workingDir
 
@@ -468,8 +485,7 @@ can accept. This property must be set.
 
 ## Create a task of the `Bndrun` type
 
-The `Bndrun` task type
-will execute a standalone bndrun file. For example:
+The `Bndrun` task type will execute a bndrun file. For example:
 
 ```groovy
 import aQute.bnd.gradle.Bndrun
@@ -490,8 +506,7 @@ default is `false`.
 ### bndrun
 
 The bndrun to be executed. It can be anything that `Project.file(Object)`
-can accept. This property must be set. The bndrun file must be a standalone bndrun
-file since this is not a Workspace Build.
+can accept. This property must be set.
 
 ### workingDir
 

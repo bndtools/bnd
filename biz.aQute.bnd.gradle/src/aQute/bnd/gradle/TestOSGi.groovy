@@ -17,14 +17,14 @@
  * Properties:
  * <ul>
  * <li>ignoreFailures - If true the task will not fail if the any
- * test cases fail. Otherwise, the task will fail is any test case
+ * test cases fail. Otherwise, the task will fail if any test case
  * fails. The default is false.</li>
  * <li>bndrun - This is the bndrun file to be tested.
  * This property must be set.</li>
  * <li>workingDir - This is the directory for the test case execution.
  * The default for workingDir is temporaryDir.</li>
  * <li>bundles - This is the collection of files to use for locating
- * bundles during the bndrun execution. The default is
+ * bundles during the test case execution. The default is
  * 'sourceSets.main.runtimeClasspath' plus
  * 'configurations.archives.artifacts.files'.</li>
  * <li>resultsDir (read only) - This is the directory
@@ -84,10 +84,13 @@ public class TestOSGi extends Bndrun {
       return tests;
   }
 
+  /**
+   * Test the Run object.
+   */
   @Override
   protected void worker(def run) {
+    logger.info 'Running tests for {} in {}', run.getPropertiesFile(), run.getBase()
     try {
-      logger.info 'Running tests for {} in {}', run.getPropertiesFile(), run.getBase()
       run.test(resultsDir, tests);
     } finally {
       logReport(run, logger)

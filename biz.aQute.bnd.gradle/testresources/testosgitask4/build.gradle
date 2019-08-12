@@ -23,6 +23,7 @@ dependencies {
 task testosgiIgnoreFail(type: TestOSGi) {
    description "OSGi Test ${name}.bndrun"
    group 'test'
+   inputs.files jar
    bndrun "${name}.bndrun"
    ignoreFailures = true
 }
@@ -30,6 +31,7 @@ task testosgiIgnoreFail(type: TestOSGi) {
 task testosgiFail(type: TestOSGi) {
    description "OSGi Test ${name}.bndrun"
    group 'test'
+   inputs.files jar
    bndrun "${name}.bndrun"
    ignoreFailures = false
 }

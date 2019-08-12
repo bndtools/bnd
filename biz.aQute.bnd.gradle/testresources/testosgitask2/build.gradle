@@ -27,6 +27,7 @@ dependencies {
 task testosgi(type: TestOSGi) {
    description "OSGi Test ${name}.bndrun"
    group 'test'
+   inputs.files jar
    bndrun "${name}.bndrun"
    bundles configurations.framework
    workingDir new File(temporaryDir, 'temptemp')
