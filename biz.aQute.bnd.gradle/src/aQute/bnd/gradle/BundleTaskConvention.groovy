@@ -230,6 +230,11 @@ class BundleTaskConvention {
           throw new GradleException('Sub-bundles are not supported by this task')
         }
 
+        // Gradle 5.1 deprecates Jar task properties
+        File archivePath = task.hasProperty('archiveFile') ? task.archiveFile.get().asFile : task.archivePath
+        String archiveName = task.hasProperty('archiveFileName') ? task.archiveFileName.get() : task.archiveName
+        String version = task.hasProperty('archiveVersion') ? task.archiveVersion.get() : task.version
+
         // Include entire contents of Jar task generated jar (except the manifest)
         project.copy {
           from archivePath
@@ -290,7 +295,7 @@ class BundleTaskConvention {
         if (!builder.isOk()) {
           // if we already have an error; fail now
           logReport(builder, logger)
-          failBuild("Bundle ${archiveName} has errors")
+          failBuild("Bundle ${archiveName} has errors", archivePath)
         }
 
         // Write out the bundle
@@ -300,14 +305,14 @@ class BundleTaskConvention {
 
         logReport(builder, logger)
         if (!builder.isOk()) {
-          failBuild("Bundle ${archiveName} has errors")
+          failBuild("Bundle ${archiveName} has errors", archivePath)
         }
       }
     }
   }
 
-  private void failBuild(String msg) {
-    project.delete(task.archivePath)
+  private void failBuild(String msg, File archivePath) {
+    project.delete(archivePath)
     throw new GradleException(msg)
   }
 
