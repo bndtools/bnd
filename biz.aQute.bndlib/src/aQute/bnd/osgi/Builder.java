@@ -1230,15 +1230,20 @@ public class Builder extends Analyzer {
 		List<Jar> src = getJarsFromName(source, Constants.INCLUDE_RESOURCE + " " + source);
 		if (!src.isEmpty()) {
 			for (Jar j : src) {
-				String quoted = j.getSource() != null ? j.getSource()
-					.getName() : j.getName();
-				// Do not touch the manifest so this also
-				// works for signed files.
-				j.setDoNotTouchManifest();
-				JarResource jarResource = new JarResource(j);
+				File sourceFile = j.getSource();
+				String quoted = (sourceFile != null) ? sourceFile.getName() : j.getName();
+				Resource resource;
+				if ((sourceFile != null) && sourceFile.isFile()) {
+					resource = new FileResource(sourceFile);
+				} else {
+					// Do not touch the manifest so this also
+					// works for signed files.
+					j.setDoNotTouchManifest();
+					resource = new JarResource(j);
+				}
 				String path = destinationPath.replace(source, quoted);
 				logger.debug("copy d={} s={} path={}", jar, j, path);
-				copy(jar, path, jarResource, extra);
+				copy(jar, path, resource, extra);
 			}
 		} else {
 			Resource lastChance = make.process(source);
