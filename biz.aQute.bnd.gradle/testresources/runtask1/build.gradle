@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.osgi:osgi.core:5.0.0'
+    compileOnly 'org.osgi:osgi.core:5.0.0'
     runtime 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
 }
 

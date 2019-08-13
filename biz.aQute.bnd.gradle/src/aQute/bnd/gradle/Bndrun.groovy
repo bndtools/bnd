@@ -119,7 +119,7 @@ public class Bndrun extends DefaultTask {
   @TaskAction
   void bndrun() {
     def workspace = bndWorkspace
-    if ((workspace != null) && (bndrun == project.bnd.project.getPropertiesFile())) {
+    if ((workspace != null) && project.plugins.hasPlugin(BndPlugin.PLUGINID) && (bndrun == project.bnd.project.getPropertiesFile())) {
       worker(project.bnd.project)
       return
     }

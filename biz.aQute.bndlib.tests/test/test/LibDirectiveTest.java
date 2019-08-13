@@ -1,47 +1,64 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.File;
 import java.util.jar.Manifest;
+
+import org.junit.Test;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
-import junit.framework.TestCase;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
+import aQute.lib.strings.Strings;
+import aQute.libg.cryptography.SHA1;
 
-public class LibDirectiveTest extends TestCase {
+public class LibDirectiveTest {
 
+	@Test
 	public void testLibDirective() throws Exception {
-		Builder b = new Builder();
-		try {
+		File asmjar = new File("jar/asm.jar");
+		try (Builder b = new Builder()) {
 			b.setProperty("Bundle-ClassPath", ".");
-			b.setProperty("-includeresource", "lib/=jar/asm.jar;lib:=true");
+			// -includeresource from the classpath
+			b.setProperty("-includeresource", "lib/asm.jar=asm.jar;lib:=true");
+			b.addClasspath(asmjar);
 			b.build();
-			assertTrue(b.check());
-			Manifest m = b.getJar()
-				.getManifest();
-
-			assertNotNull(m.getMainAttributes()
-				.getValue(Constants.BUNDLE_CLASSPATH));
-			assertEquals(".,lib/asm.jar", m.getMainAttributes()
-				.getValue(Constants.BUNDLE_CLASSPATH));
-		} finally {
-			b.close();
+			assertThat(b.check()).isTrue();
+			Jar jar = b.getJar();
+			assertThat(jar).isNotNull();
+			Manifest m = jar.getManifest();
+			assertThat(m).isNotNull();
+			String bcp = m.getMainAttributes()
+				.getValue(Constants.BUNDLE_CLASSPATH);
+			assertThat(bcp).isNotNull();
+			assertThat(Strings.split(bcp)).containsExactly(".", "lib/asm.jar");
+			Resource resource = jar.getResource("lib/asm.jar");
+			assertThat(resource).isNotNull();
+			assertThat(SHA1.digest(asmjar)).isEqualTo(SHA1.digest(resource.openInputStream()));
 		}
 	}
 
+	@Test
 	public void testLibDirectiveWithDefaultedBundleClassPath() throws Exception {
-		Builder b = new Builder();
-		try {
+		File asmjar = new File("jar/asm.jar");
+		try (Builder b = new Builder()) {
+			// -includeresource from a file
 			b.setProperty("-includeresource", "lib/=jar/asm.jar;lib:=true");
 			b.build();
-			assertTrue(b.check());
-			Manifest m = b.getJar()
-				.getManifest();
-
-			assertNotNull(m.getMainAttributes()
-				.getValue(Constants.BUNDLE_CLASSPATH));
-			assertEquals(".,lib/asm.jar", m.getMainAttributes()
-				.getValue(Constants.BUNDLE_CLASSPATH));
-		} finally {
-			b.close();
+			assertThat(b.check()).isTrue();
+			Jar jar = b.getJar();
+			assertThat(jar).isNotNull();
+			Manifest m = jar.getManifest();
+			assertThat(m).isNotNull();
+			String bcp = m.getMainAttributes()
+				.getValue(Constants.BUNDLE_CLASSPATH);
+			assertThat(bcp).isNotNull();
+			assertThat(Strings.split(bcp)).containsExactly(".", "lib/asm.jar");
+			Resource resource = jar.getResource("lib/asm.jar");
+			assertThat(resource).isNotNull();
+			assertThat(SHA1.digest(asmjar)).isEqualTo(SHA1.digest(resource.openInputStream()));
 		}
 	}
 

@@ -50,6 +50,7 @@ import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.Glob;
 
 public class ProjectLauncherImpl extends ProjectLauncher {
@@ -479,18 +480,24 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			.keySet()));
 	}
 
-	String nonCollidingPath(File file, Jar jar) {
+	String nonCollidingPath(File file, Jar jar) throws Exception {
 		String fileName = file.getName();
 		String path = "jar/" + fileName;
-		String[] parts = Strings.extension(fileName);
-		if (parts == null) {
-			parts = new String[] {
-				fileName, ""
-			};
-		}
-		int i = 1;
-		while (jar.exists(path)) {
-			path = String.format("jar/%s[%d].%s", parts[0], i++, parts[1]);
+		Resource resource = jar.getResource(path);
+		if (resource != null) {
+			if ((file.length() == resource.size()) && (SHA1.digest(file)
+				.equals(SHA1.digest(resource.openInputStream())))) {
+				return path; // same resource
+			}
+			String[] parts = Strings.extension(fileName);
+			if (parts == null) {
+				parts = new String[] {
+					fileName, ""
+				};
+			}
+			for (int i = 1; jar.exists(path); i++) {
+				path = String.format("jar/%s[%d].%s", parts[0], i, parts[1]);
+			}
 		}
 		return path;
 	}
