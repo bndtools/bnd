@@ -1,7 +1,9 @@
 package aQute.bnd.build;
 
+import static java.util.Objects.requireNonNull;
 import static org.osgi.framework.Constants.FRAMEWORK_BEGINNING_STARTLEVEL;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +17,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
@@ -36,6 +42,8 @@ import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
 import aQute.lib.startlevel.StartLevelRuntimeHandler;
+import aQute.lib.watcher.FileWatcher;
+import aQute.lib.watcher.FileWatcher.Builder;
 import aQute.libg.command.Command;
 import aQute.libg.generics.Create;
 
@@ -50,7 +58,7 @@ import aQute.libg.generics.Create;
 public abstract class ProjectLauncher extends Processor {
 	public static final String			EMBEDDED_ACTIVATOR	= "Embedded-Activator";
 
-	private final static Logger			logger				= LoggerFactory.getLogger(ProjectLauncher.class);
+	final static Logger					logger				= LoggerFactory.getLogger(ProjectLauncher.class);
 	private final Project				project;
 	private long						timeout				= 0;
 	private final List<String>			classpath			= new ArrayList<>();
@@ -754,6 +762,79 @@ public abstract class ProjectLauncher extends Processor {
 				if (beginningStartLevel < 1) {
 					error("%s set to %s, must be > 0", beginningLevelString);
 				}
+			}
+		}
+	}
+
+	public LiveCoding liveCoding(Executor executor, ScheduledExecutorService scheduledExecutor) throws Exception {
+		return new LiveCoding(executor, scheduledExecutor);
+	}
+
+	public class LiveCoding implements Closeable {
+		private final Semaphore					semaphore			= new Semaphore(1);
+		private final AtomicBoolean				propertiesChanged	= new AtomicBoolean(false);
+		private final Executor					executor;
+		private final ScheduledExecutorService	scheduledExecutor;
+		private volatile FileWatcher			fw;
+
+		LiveCoding(Executor executor, ScheduledExecutorService scheduledExecutor) throws Exception {
+			this.executor = requireNonNull(executor);
+			this.scheduledExecutor = requireNonNull(scheduledExecutor);
+			watch();
+		}
+
+		@Override
+		public void close() {
+			FileWatcher old = fw;
+			if (old != null) {
+				old.close();
+			}
+		}
+
+		private void watch() throws IOException {
+			Builder builder = new FileWatcher.Builder().executor(executor)
+				.changed(this::changed)
+				.file(getProject().getPropertiesFile())
+				.files(getProject().getIncluded());
+			for (String runpath : getRunpath()) {
+				builder.file(new File(runpath));
+			}
+			for (String runbundle : getRunBundles()) {
+				builder.file(new File(runbundle));
+			}
+			FileWatcher old = fw;
+			fw = builder.build();
+			if (old != null) {
+				old.close();
+			}
+			logger.debug("[LiveCoding] Watching for changes...");
+		}
+
+		private void changed(File file, String kind) {
+			logger.info("[LiveCoding] Detected change to {}.", file);
+			propertiesChanged.compareAndSet(false, getProject().getPropertiesFile()
+				.equals(file)
+				|| getProject().getIncluded()
+					.contains(file));
+			if (semaphore.tryAcquire()) {
+				scheduledExecutor.schedule(() -> {
+					try {
+						logger.info("[LiveCoding] Updating ProjectLauncher.");
+						update();
+					} catch (Exception e) {
+						logger.error("[LiveCoding] Error on ProjectLauncher update", e);
+					} finally {
+						semaphore.release();
+						if (propertiesChanged.compareAndSet(true, false)) {
+							logger.info("[LiveCoding] Detected changes to bnd properties file. Replacing watcher.");
+							try {
+								watch();
+							} catch (IOException e) {
+								logger.error("[LiveCoding] Error replacing watcher {}", e);
+							}
+						}
+					}
+				}, 600, TimeUnit.MILLISECONDS);
 			}
 		}
 	}

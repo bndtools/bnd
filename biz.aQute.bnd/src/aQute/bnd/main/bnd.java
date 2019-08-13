@@ -44,6 +44,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.jar.Attributes;
@@ -72,6 +74,7 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.ProjectLauncher.LiveCoding;
 import aQute.bnd.build.ProjectTester;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
@@ -1103,10 +1106,15 @@ public class bnd extends Processor {
 			}
 		}
 		verifyDependencies(run, verify, false);
-		try {
-			run.run();
+		ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+		try (ProjectLauncher pl = run.getProjectLauncher();
+			LiveCoding liveCoding = pl.liveCoding(ForkJoinPool.commonPool(), scheduledExecutor)) {
+			pl.setTrace(run.isTrace() || run.isRunTrace());
+			pl.launch();
 		} catch (Exception e) {
 			messages.Failed__(e, "Running " + run);
+		} finally {
+			scheduledExecutor.shutdownNow();
 		}
 		getInfo(run);
 		getInfo(run.getWorkspace());
