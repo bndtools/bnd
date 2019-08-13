@@ -169,7 +169,7 @@ class TestBndPlugin extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments("-Pbnd_plugin=${pluginClasspath}", '--parallel', '--stacktrace', '--continue', ':test.simple:export', ':test.simple:runbundles', ':test.simple:export2')
+            .withArguments("-Pbnd_plugin=${pluginClasspath}", '--parallel', '--stacktrace', '--continue', ':test.simple:export', ':test.simple:runbundles', ':test.simple:export2', ':test.simple:export3')
             .forwardOutput()
             .build()
 
@@ -180,6 +180,7 @@ class TestBndPlugin extends Specification {
           result.task(':test.simple:runbundles').outcome == SUCCESS
           result.task(':test.simple:runbundles.export').outcome == SUCCESS
           result.task(':test.simple:export2').outcome == SUCCESS
+          result.task(':test.simple:export3').outcome == SUCCESS
 
           File distributions = new File(testProjectDir, 'test.simple/generated/distributions')
           new File(distributions, 'runbundles/export/test.simple.jar').isFile()
@@ -205,6 +206,11 @@ class TestBndPlugin extends Specification {
 
         when:
           executable = new File(distributions, 'executable/export2.jar')
+        then:
+          executable.isFile()
+
+        when:
+          executable = new File(distributions, 'executable/test.simple.jar')
         then:
           executable.isFile()
     }

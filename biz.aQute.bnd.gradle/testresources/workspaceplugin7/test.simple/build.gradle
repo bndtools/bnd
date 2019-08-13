@@ -6,3 +6,9 @@ task('export2', type: Export) {
   bndrun = 'export2.bndrun'
   exporter = EXECUTABLE_JAR
 }
+
+task('export3', type: Export) {
+  dependsOn assemble
+  bndrun = 'bnd.bnd'
+  exporter = EXECUTABLE_JAR
+}
