@@ -1252,10 +1252,7 @@ public class Jar implements Closeable {
 	private static final Predicate<String> pomXmlFilter = new PathSet("META-INF/maven/*/*/pom.xml").matches();
 
 	public Stream<Resource> getPomXmlResources() {
-		return getResources().keySet()
-			.stream()
-			.filter(pomXmlFilter)
-			.map(this::getResource);
+		return getResources(pomXmlFilter);
 	}
 
 }
