@@ -258,7 +258,29 @@ public class IO {
 	}
 
 	public static OutputStream copy(ByteBuffer bb, OutputStream out) throws IOException {
-		if (bb.hasArray()) {
+		if (out instanceof ByteBufferOutputStream) {
+			ByteBufferOutputStream bbout = (ByteBufferOutputStream) out;
+			bbout.write(bb);
+		} else if (bb.hasArray()) {
+			out.write(bb.array(), bb.arrayOffset() + bb.position(), bb.remaining());
+			bb.position(bb.limit());
+		} else {
+			int length = Math.min(bb.remaining(), BUFFER_SIZE);
+			byte[] buffer = new byte[length];
+			while (length > 0) {
+				bb.get(buffer, 0, length);
+				out.write(buffer, 0, length);
+				length = Math.min(bb.remaining(), buffer.length);
+			}
+		}
+		return out;
+	}
+
+	public static DataOutput copy(ByteBuffer bb, DataOutput out) throws IOException {
+		if (out instanceof ByteBufferDataOutput) {
+			ByteBufferDataOutput bbout = (ByteBufferDataOutput) out;
+			bbout.write(bb);
+		} else if (bb.hasArray()) {
 			out.write(bb.array(), bb.arrayOffset() + bb.position(), bb.remaining());
 			bb.position(bb.limit());
 		} else {
