@@ -36,5 +36,5 @@ exclude:
   - '.project'
   - 'build.sh'
   - '/examples'
-  - '/bundler'
+  - '/vendor'
   - '/.settings'
