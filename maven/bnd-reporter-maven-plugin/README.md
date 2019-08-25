@@ -4,11 +4,12 @@ The `bnd-reporter-maven-plugin` is a bnd based plugin that generates and exports
 
 ## What does the `bnd-reporter-maven-plugin` do?
 
-This plugin generate and export reports of maven projects. The primary usage is to automate the documentation of projects.
+This plugin generate and export reports of maven projects. See [here](https://bnd.bndtools.org/chapters/395-generating-documentation.html) for a general introduction
+of the feature.
 
-This plugin aggregate data from a single project or a multi-modules project and export them into one file (XML or JSON). The resulting files can then be used by any external programs (such as Jekyll to generate a static site) or a template file can be specified to transform the data before they are written (to generate a readme file for example).
+## Export operation
 
-This plugin provides the feature of the `-exportreport` bnd instruction, further information can be found [here](https://bnd.bndtools.org/instructions/exportreport.html).
+The `export` goal exports custom reports.
 
 ### Example
 
@@ -173,17 +174,17 @@ The resulting `metadata.json` file could be:
 }
 ```
 
-## Executing the export operation
+### Executing the export operation
 
-Since the export operation is not associated with any maven build phase, it must in invoked manually.
+Since the export operation is not associated with any maven build phase, it must be invoked manually.
 
-Here's an example invocation:
+Here's an invocation example:
 
 ```
 mvn bnd-reporter:export
 ```
 
-## Configuration Properties
+### Configuration Properties
 
 Main configuration:
 
@@ -213,3 +214,24 @@ Main configuration:
 | `clearDefaults`        | Indicates to not include default report plugins. Default is `false`.                                                                                                                              |
 | `reportPlugins`        | Can contain `reportPlugin` child elements. Each `reportPlugin` element must define the `pluginName` property and can define an arbitrary map of plugin properties under the `properties` element. |
 | `variables`            | An arbitrary map of variables and their value.                                                                                                                                                    |
+
+## Readme operation
+
+The `readme` goal exports a set of readme files.
+
+### Executing the readme operation
+
+Since the readme operation is not associated with any maven build phase, it must be invoked manually.
+
+Here's an invocation example:
+
+```
+mvn bnd-reporter:readme
+```
+
+### Configuration Properties
+
+| Configuration Property | Description                                                                        |
+|------------------------|------------------------------------------------------------------------------------|
+| `parameters`           | Can contain arbitrary parameters, See [here](https://bnd.bndtools.org/chapters/395-generating-documentation.html) for a complete list of parameters. |
+| `skip`                 | Skip the project. Defaults to `false`. Override with property `bnd.reporter.skip`. |

@@ -5,9 +5,7 @@ title: -exportreport report-def ( ',' report-def )*
 summary: Configure a list of reports to be exported.
 ---
 
-The purpose of the `-exportreport` instruction is to configure a list of reports of the current state of the workspace and/or its projects, which can then be exported by the build tool. The primary usage is to automate the documentation of projects. 
-
-Based on this instruction, a tool can aggregate data from a source (a specific project or the entire workspace) and export them into one file (`XML` or `JSON`). The resulting files can then be used by any external programs (such as *Jekyll* to generate a static site) or a template file can be specified to transform the data before they are written (to generate a *readme* file for example).
+The purpose of the `-exportreport` instruction is to configure a list of reports of the current state of the workspace and/or its projects, which can then be exported by the build tool. The primary usage is to automate the documentation of projects. An introduction to this feature can be found [here](../chapters/395-generating-documentation.html).
 
 *See [-exportreport](../commands/exportreport.html) command documentation to export the reports.*
 
