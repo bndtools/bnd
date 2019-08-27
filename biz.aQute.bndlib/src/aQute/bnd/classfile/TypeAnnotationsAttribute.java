@@ -1,6 +1,7 @@
 package aQute.bnd.classfile;
 
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.function.Function;
@@ -26,5 +27,26 @@ public abstract class TypeAnnotationsAttribute implements Attribute {
 		}
 
 		return constructor.apply(type_annotations);
+	}
+
+	@Override
+	public void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+		int attribute_name_index = constant_pool.utf8Info(name());
+		int attribute_length = attribute_length();
+		out.writeShort(attribute_name_index);
+		out.writeInt(attribute_length);
+		out.writeShort(type_annotations.length);
+		for (TypeAnnotationInfo type_annotation : type_annotations) {
+			type_annotation.write(out, constant_pool);
+		}
+	}
+
+	@Override
+	public int attribute_length() {
+		int attribute_length = 1 * Short.BYTES;
+		for (TypeAnnotationInfo type_annotation : type_annotations) {
+			attribute_length += type_annotation.value_length();
+		}
+		return attribute_length;
 	}
 }

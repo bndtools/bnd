@@ -1,6 +1,7 @@
 package aQute.bnd.classfile;
 
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -31,6 +32,28 @@ public class InnerClassesAttribute implements Attribute {
 		return new InnerClassesAttribute(classes);
 	}
 
+	@Override
+	public void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+		int attribute_name_index = constant_pool.utf8Info(name());
+		int attribute_length = attribute_length();
+		out.writeShort(attribute_name_index);
+		out.writeInt(attribute_length);
+
+		out.writeShort(classes.length);
+		for (InnerClass inner : classes) {
+			inner.write(out, constant_pool);
+		}
+	}
+
+	@Override
+	public int attribute_length() {
+		int attribute_length = 1 * Short.BYTES;
+		for (InnerClass inner : classes) {
+			attribute_length += inner.value_length();
+		}
+		return attribute_length;
+	}
+
 	public static class InnerClass {
 		public final String	inner_class;
 		public final String	outer_class;
@@ -59,6 +82,20 @@ public class InnerClassesAttribute implements Attribute {
 			String outer_class = (outer_class_info_index != 0) ? constant_pool.className(outer_class_info_index) : null;
 			String inner_name = (inner_name_index != 0) ? constant_pool.utf8(inner_name_index) : null;
 			return new InnerClass(inner_class, outer_class, inner_name, inner_class_access_flags);
+		}
+
+		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+			int inner_class_info_index = constant_pool.classInfo(inner_class);
+			int outer_class_info_index = (outer_class != null) ? constant_pool.classInfo(outer_class) : 0;
+			int inner_name_index = (inner_name != null) ? constant_pool.utf8Info(inner_name) : 0;
+			out.writeShort(inner_class_info_index);
+			out.writeShort(outer_class_info_index);
+			out.writeShort(inner_name_index);
+			out.writeShort(inner_access);
+		}
+
+		int value_length() {
+			return 4 * Short.BYTES;
 		}
 	}
 }

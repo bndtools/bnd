@@ -1,6 +1,7 @@
 package aQute.bnd.classfile;
 
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.function.BiFunction;
@@ -35,6 +36,23 @@ public class AnnotationInfo {
 		return constructor.apply(constant_pool.utf8(type_index), element_value_pairs);
 	}
 
+	void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+		int type_index = constant_pool.utf8Info(type);
+		out.writeShort(type_index);
+		out.writeShort(values.length);
+		for (ElementValueInfo value : values) {
+			value.write(out, constant_pool);
+		}
+	}
+
+	int value_length() {
+		int value_length = 2 * Short.BYTES;
+		for (ElementValueInfo value : values) {
+			value_length += value.value_length();
+		}
+		return value_length;
+	}
+
 	static AnnotationInfo[] readInfos(DataInput in, ConstantPool constant_pool) throws IOException {
 		int num_annotations = in.readUnsignedShort();
 		AnnotationInfo[] annotations = new AnnotationInfo[num_annotations];
@@ -42,5 +60,21 @@ public class AnnotationInfo {
 			annotations[i] = AnnotationInfo.read(in, constant_pool);
 		}
 		return annotations;
+	}
+
+	static void writeInfos(DataOutput out, ConstantPool constant_pool, AnnotationInfo[] annotations)
+		throws IOException {
+		out.writeShort(annotations.length);
+		for (AnnotationInfo annotation : annotations) {
+			annotation.write(out, constant_pool);
+		}
+	}
+
+	static int infos_length(AnnotationInfo[] annotations) {
+		int attribute_length = 1 * Short.BYTES;
+		for (AnnotationInfo annotation : annotations) {
+			attribute_length += annotation.value_length();
+		}
+		return attribute_length;
 	}
 }

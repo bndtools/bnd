@@ -1,6 +1,7 @@
 package aQute.bnd.classfile;
 
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 
 import org.osgi.annotation.versioning.ProviderType;
@@ -10,6 +11,10 @@ import aQute.lib.io.LimitedDataInput;
 @ProviderType
 public interface Attribute {
 	String name();
+
+	void write(DataOutput out, ConstantPool constant_pool) throws IOException;
+
+	int attribute_length();
 
 	static Attribute[] readAttributes(DataInput in, ConstantPool constant_pool) throws IOException {
 		int attributes_count = in.readUnsignedShort();
@@ -115,5 +120,21 @@ public interface Attribute {
 				return UnrecognizedAttribute.read(in, attribute_name, attribute_length);
 			}
 		}
+	}
+
+	static void writeAttributes(DataOutput out, ConstantPool constant_pool, Attribute[] attributes) throws IOException {
+		out.writeShort(attributes.length);
+		for (Attribute attribute : attributes) {
+			attribute.write(out, constant_pool);
+		}
+	}
+
+	static int attributes_length(Attribute[] attributes) {
+		int attribute_length = 1 * Short.BYTES;
+		for (Attribute attribute : attributes) {
+			attribute_length += 1 * Short.BYTES + 1 * Integer.BYTES
+				+ attribute.attribute_length();
+		}
+		return attribute_length;
 	}
 }

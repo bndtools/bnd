@@ -1,8 +1,11 @@
 package aQute.bnd.classfile;
 
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
+import aQute.lib.io.IO;
 
 public class UnrecognizedAttribute implements Attribute {
 	public final String		name;
@@ -29,5 +32,22 @@ public class UnrecognizedAttribute implements Attribute {
 		}
 		ByteBuffer value = ClassFile.slice(in, attribute_length);
 		return new UnrecognizedAttribute(name, value);
+	}
+
+	@Override
+	public void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+		int attribute_name_index = constant_pool.utf8Info(name());
+		int attribute_length = attribute_length();
+		out.writeShort(attribute_name_index);
+		out.writeInt(attribute_length);
+		ByteBuffer duplicate = value.duplicate();
+		duplicate.rewind();
+		IO.copy(duplicate, out);
+	}
+
+	@Override
+	public int attribute_length() {
+		int attribute_length = value.limit();
+		return attribute_length;
 	}
 }

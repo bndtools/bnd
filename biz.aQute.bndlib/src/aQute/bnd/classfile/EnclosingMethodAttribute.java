@@ -1,6 +1,7 @@
 package aQute.bnd.classfile;
 
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 
 import aQute.bnd.classfile.ConstantPool.NameAndTypeInfo;
@@ -42,5 +43,24 @@ public class EnclosingMethodAttribute implements Attribute {
 			method_descriptor = null;
 		}
 		return new EnclosingMethodAttribute(class_name, method_name, method_descriptor);
+	}
+
+	@Override
+	public void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+		int attribute_name_index = constant_pool.utf8Info(name());
+		int attribute_length = attribute_length();
+		out.writeShort(attribute_name_index);
+		out.writeInt(attribute_length);
+
+		int class_index = constant_pool.classInfo(class_name);
+		int method_index = (method_name != null) ? constant_pool.nameAndTypeInfo(method_name, method_descriptor) : 0;
+		out.writeShort(class_index);
+		out.writeShort(method_index);
+	}
+
+	@Override
+	public int attribute_length() {
+		int attribute_length = 2 * Short.BYTES;
+		return attribute_length;
 	}
 }

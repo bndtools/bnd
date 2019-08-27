@@ -1,6 +1,7 @@
 package aQute.bnd.classfile;
 
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -22,5 +23,13 @@ public class ParameterAnnotationInfo {
 		throws IOException {
 		AnnotationInfo[] annotations = AnnotationInfo.readInfos(in, constant_pool);
 		return new ParameterAnnotationInfo(parameter, annotations);
+	}
+
+	void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+		AnnotationInfo.writeInfos(out, constant_pool, annotations);
+	}
+
+	int value_length() {
+		return AnnotationInfo.infos_length(annotations);
 	}
 }
