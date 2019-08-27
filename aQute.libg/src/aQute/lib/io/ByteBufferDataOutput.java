@@ -180,4 +180,18 @@ public class ByteBufferDataOutput implements DataOutput {
 			}
 		}
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(getClass().getName());
+		sb.append("[pos=");
+		sb.append(bb.position());
+		sb.append(" lim=");
+		sb.append(bb.limit());
+		sb.append(" cap=");
+		sb.append(bb.capacity());
+		sb.append("]");
+		return sb.toString();
+	}
 }
