@@ -15,7 +15,11 @@ public class ElementValueInfo {
 
 	@Override
 	public String toString() {
-		return name + "=" + ((value instanceof Object[]) ? Arrays.toString((Object[]) value) : value);
+		return name + "=" + toString(value);
+	}
+
+	static String toString(Object value) {
+		return (value instanceof Object[]) ? Arrays.toString((Object[]) value) : value.toString();
 	}
 
 	static ElementValueInfo read(DataInput in, ConstantPool constant_pool) throws IOException {

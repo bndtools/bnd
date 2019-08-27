@@ -18,7 +18,7 @@ public class AnnotationDefaultAttribute implements Attribute {
 
 	@Override
 	public String toString() {
-		return NAME + " " + value;
+		return NAME + " " + ElementValueInfo.toString(value);
 	}
 
 	static AnnotationDefaultAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
