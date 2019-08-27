@@ -1,9 +1,7 @@
-package aQute.bnd.classfile.writer;
+package aQute.bnd.classfile.builder;
 
 import static java.util.Objects.requireNonNull;
 
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -15,8 +13,10 @@ import java.util.Set;
 
 import aQute.bnd.classfile.ClassFile;
 import aQute.bnd.classfile.ModuleAttribute;
+import aQute.bnd.classfile.ModuleMainClassAttribute;
+import aQute.bnd.classfile.ModulePackagesAttribute;
 
-public class ModuleInfoWriter implements DataOutputWriter {
+public class ModuleInfoBuilder {
 	private final int									major_version;
 	private final String								module_name;
 	private final int									module_flags;
@@ -29,7 +29,7 @@ public class ModuleInfoWriter implements DataOutputWriter {
 	private String										mainClass;
 	private final Set<String>							packages	= new LinkedHashSet<>();
 
-	public ModuleInfoWriter(int major_version, String module_name, String module_version, boolean open) {
+	public ModuleInfoBuilder(int major_version, String module_name, String module_version, boolean open) {
 		this.major_version = major_version;
 		this.module_name = module_name;
 		module_flags = open ? ModuleAttribute.ACC_OPEN : 0;
@@ -37,14 +37,14 @@ public class ModuleInfoWriter implements DataOutputWriter {
 		requires("java.base", ModuleAttribute.Require.ACC_MANDATED, null);
 	}
 
-	public ModuleInfoWriter requires(String moduleName, int flags, String moduleVersion) {
+	public ModuleInfoBuilder requires(String moduleName, int flags, String moduleVersion) {
 		requireNonNull(moduleName);
 		ModuleAttribute.Require require = new ModuleAttribute.Require(moduleName, flags, moduleVersion);
 		requires.put(moduleName, require);
 		return this;
 	}
 
-	public ModuleInfoWriter exports(String binaryPackageName, int flags, Set<String> toModules) {
+	public ModuleInfoBuilder exports(String binaryPackageName, int flags, Set<String> toModules) {
 		requireNonNull(binaryPackageName);
 		toModules.forEach(Objects::requireNonNull);
 		ModuleAttribute.Export export = new ModuleAttribute.Export(binaryPackageName, flags,
@@ -54,15 +54,15 @@ public class ModuleInfoWriter implements DataOutputWriter {
 		return this;
 	}
 
-	public ModuleInfoWriter exports(String binaryPackageName, int flags, String toModule) {
+	public ModuleInfoBuilder exports(String binaryPackageName, int flags, String toModule) {
 		return exports(binaryPackageName, flags, Collections.singleton(toModule));
 	}
 
-	public ModuleInfoWriter exports(String binaryPackageName, int flags, String... toModules) {
+	public ModuleInfoBuilder exports(String binaryPackageName, int flags, String... toModules) {
 		return exports(binaryPackageName, flags, new HashSet<>(Arrays.asList(toModules)));
 	}
 
-	public ModuleInfoWriter opens(String binaryPackageName, int flags, Set<String> toModules) {
+	public ModuleInfoBuilder opens(String binaryPackageName, int flags, Set<String> toModules) {
 		requireNonNull(binaryPackageName);
 		toModules.forEach(Objects::requireNonNull);
 		ModuleAttribute.Open open = new ModuleAttribute.Open(binaryPackageName, flags,
@@ -72,29 +72,29 @@ public class ModuleInfoWriter implements DataOutputWriter {
 		return this;
 	}
 
-	public ModuleInfoWriter opens(String binaryPackageName, int flags, String toModule) {
+	public ModuleInfoBuilder opens(String binaryPackageName, int flags, String toModule) {
 		return opens(binaryPackageName, flags, Collections.singleton(toModule));
 	}
 
-	public ModuleInfoWriter opens(String binaryPackageName, int flags, String... toModules) {
+	public ModuleInfoBuilder opens(String binaryPackageName, int flags, String... toModules) {
 		return opens(binaryPackageName, flags, new HashSet<>(Arrays.asList(toModules)));
 	}
 
-	public ModuleInfoWriter uses(Set<String> binaryClassNames) {
+	public ModuleInfoBuilder uses(Set<String> binaryClassNames) {
 		binaryClassNames.forEach(Objects::requireNonNull);
 		uses.addAll(binaryClassNames);
 		return this;
 	}
 
-	public ModuleInfoWriter uses(String... binaryClassNames) {
+	public ModuleInfoBuilder uses(String... binaryClassNames) {
 		return uses(new HashSet<>(Arrays.asList(binaryClassNames)));
 	}
 
-	public ModuleInfoWriter uses(String binaryClassName) {
+	public ModuleInfoBuilder uses(String binaryClassName) {
 		return uses(Collections.singleton(binaryClassName));
 	}
 
-	public ModuleInfoWriter provides(String binaryClassName, Set<String> binaryWithClassNames) {
+	public ModuleInfoBuilder provides(String binaryClassName, Set<String> binaryWithClassNames) {
 		requireNonNull(binaryClassName);
 		if (binaryWithClassNames.isEmpty()) {
 			throw new IllegalArgumentException("No module names specified");
@@ -113,46 +113,51 @@ public class ModuleInfoWriter implements DataOutputWriter {
 		return this;
 	}
 
-	public ModuleInfoWriter provides(String binaryClassName, String binaryWithClassName) {
+	public ModuleInfoBuilder provides(String binaryClassName, String binaryWithClassName) {
 		return provides(binaryClassName, Collections.singleton(binaryWithClassName));
 	}
 
-	public ModuleInfoWriter provides(String binaryClassName, String... binaryWithClassNames) {
+	public ModuleInfoBuilder provides(String binaryClassName, String... binaryWithClassNames) {
 		return provides(binaryClassName, new HashSet<>(Arrays.asList(binaryWithClassNames)));
 	}
 
-	public ModuleInfoWriter mainClass(String binaryClassName) {
+	public ModuleInfoBuilder mainClass(String binaryClassName) {
 		this.mainClass = requireNonNull(binaryClassName);
 		return this;
 	}
 
-	public ModuleInfoWriter packages(Set<String> binaryPackageNames) {
+	public ModuleInfoBuilder packages(Set<String> binaryPackageNames) {
 		binaryPackageNames.forEach(Objects::requireNonNull);
 		packages.addAll(binaryPackageNames);
 		return this;
 	}
 
-	public ModuleInfoWriter packages(String... binaryPackageNames) {
+	public ModuleInfoBuilder packages(String... binaryPackageNames) {
 		return packages(new HashSet<>(Arrays.asList(binaryPackageNames)));
 	}
 
-	public ModuleInfoWriter packages(String binaryPackageName) {
+	public ModuleInfoBuilder packages(String binaryPackageName) {
 		return packages(Collections.singleton(binaryPackageName));
 	}
 
-	@Override
-	public void write(DataOutput out) throws IOException {
-		ConstantPoolWriter constantPool = new ConstantPoolWriter();
-		ClassFileWriter classFile = new ClassFileWriter(constantPool, ClassFile.ACC_MODULE, major_version, 0,
-			"module-info", null);
-		classFile.attributes(new ModuleAttributeWriter(constantPool, module_name, module_flags, module_version,
-			requires.values(), exports.values(), opens.values(), uses, provides.values()));
+	public ClassFile build() {
+		ClassFileBuilder classFile = new ClassFileBuilder(ClassFile.ACC_MODULE, major_version, 0, "module-info", null);
+		classFile.attribute(new ModuleAttribute(module_name, module_flags, module_version, //
+			requires.values()
+				.toArray(new ModuleAttribute.Require[0]),
+			exports.values()
+				.toArray(new ModuleAttribute.Export[0]),
+			opens.values()
+				.toArray(new ModuleAttribute.Open[0]),
+			uses.toArray(ClassFileBuilder.EMPTY_STRING_ARRAY), //
+			provides.values()
+				.toArray(new ModuleAttribute.Provide[0])));
 		if (!packages.isEmpty()) {
-			classFile.attributes(new ModulePackagesAttributeWriter(constantPool, packages));
+			classFile.attribute(new ModulePackagesAttribute(packages.toArray(ClassFileBuilder.EMPTY_STRING_ARRAY)));
 		}
 		if (mainClass != null) {
-			classFile.attributes(new ModuleMainClassAttributeWriter(constantPool, mainClass));
+			classFile.attribute(new ModuleMainClassAttribute(mainClass));
 		}
-		classFile.write(out);
+		return classFile.build();
 	}
 }

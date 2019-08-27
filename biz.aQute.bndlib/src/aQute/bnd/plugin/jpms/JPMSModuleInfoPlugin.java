@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.model.EE;
 import aQute.bnd.classfile.ModuleAttribute;
-import aQute.bnd.classfile.writer.ModuleInfoWriter;
+import aQute.bnd.classfile.builder.ModuleInfoBuilder;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -128,21 +128,22 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 				});
 		}
 
-		ModuleInfoWriter writer = nameAccessAndVersion(moduleInstructions, requireCapabilities, analyzer);
+		ModuleInfoBuilder builder = nameAccessAndVersion(moduleInstructions, requireCapabilities, analyzer);
 
-		requires(moduleInstructions, analyzer, index, writer);
-		exportPackages(analyzer, writer);
-		openPackages(analyzer, writer);
-		serviceLoaderProviders(provideCapabilities, analyzer, writer);
-		serviceLoaderUses(requireCapabilities, analyzer, writer);
-		mainClass(analyzer, writer);
+		requires(moduleInstructions, analyzer, index, builder);
+		exportPackages(analyzer, builder);
+		openPackages(analyzer, builder);
+		serviceLoaderProviders(provideCapabilities, analyzer, builder);
+		serviceLoaderUses(requireCapabilities, analyzer, builder);
+		mainClass(analyzer, builder);
 
 		// TODO use annotations to store other header info???
 		// AnnotationVisitor visitAnnotation = classWriter.visitAnnotation(...,
 		// false);
 
 		ByteBufferDataOutput bbout = new ByteBufferDataOutput();
-		writer.write(bbout);
+		builder.build()
+			.write(bbout);
 
 		analyzer.getJar()
 			.putResource(MODULE_INFO_CLASS, new EmbeddedResource(bbout.toByteBuffer(), analyzer.lastModified()));
@@ -180,7 +181,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		return analyzer.getProperty(AUTOMATIC_MODULE_NAME, analyzer.getBsn());
 	}
 
-	private void exportPackages(Analyzer analyzer, ModuleInfoWriter writer) {
+	private void exportPackages(Analyzer analyzer, ModuleInfoBuilder builder) {
 		Packages contained = analyzer.getContained();
 
 		analyzer.getExports()
@@ -196,21 +197,21 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 				// TODO Do we want to handle access? I can't think of a reason.
 				// Allowed: 0 | ACC_SYNTHETIC | ACC_MANDATED
 
-				writer.exports(packageRef.getBinary(), 0, targets);
+				builder.exports(packageRef.getBinary(), 0, targets);
 			});
 	}
 
-	private void mainClass(Analyzer analyzer, ModuleInfoWriter writer) {
+	private void mainClass(Analyzer analyzer, ModuleInfoBuilder builder) {
 		String mainClass = analyzer.getProperty(MAIN_CLASS);
 
 		if (mainClass != null) {
 			TypeRef typeRef = analyzer.getTypeRefFromFQN(mainClass);
 
-			writer.mainClass(typeRef.getBinary());
+			builder.mainClass(typeRef.getBinary());
 		}
 	}
 
-	private ModuleInfoWriter nameAccessAndVersion(Entry<String, Attrs> instruction, Parameters requireCapability,
+	private ModuleInfoBuilder nameAccessAndVersion(Entry<String, Attrs> instruction, Parameters requireCapability,
 		Analyzer analyzer) {
 		Attrs attrs = instruction.getValue();
 
@@ -219,11 +220,11 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		String access = attrs.computeIfAbsent("access", k -> String.valueOf(access(requireCapability)));
 		String version = attrs.computeIfAbsent("version", k -> analyzer.getVersion());
 
-		return new ModuleInfoWriter(Clazz.JAVA.OpenJDK9.getMajor(), name, version,
+		return new ModuleInfoBuilder(Clazz.JAVA.OpenJDK9.getMajor(), name, version,
 			Integer.parseInt(access) == ModuleAttribute.ACC_OPEN);
 	}
 
-	private void openPackages(Analyzer analyzer, ModuleInfoWriter writer) {
+	private void openPackages(Analyzer analyzer, ModuleInfoBuilder builder) {
 		analyzer.getContained()
 			.entrySet()
 			.stream()
@@ -239,12 +240,12 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 				// TODO Do we want to handle access? I can't think of a reason.
 				// Allowed: 0 | ACC_SYNTHETIC | ACC_MANDATED
 
-				writer.opens(packageRef.getBinary(), 0, targets);
+				builder.opens(packageRef.getBinary(), 0, targets);
 			});
 	}
 
 	private void requires(Entry<String, Attrs> instruction, Analyzer analyzer, Packages index,
-		ModuleInfoWriter writer) {
+		ModuleInfoBuilder builder) {
 
 		String eeAttribute = instruction.getValue()
 			.get("ee");
@@ -266,7 +267,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		if (manuallyRequiredModules != null) {
 			Strings.splitAsStream(manuallyRequiredModules)
 				.forEach(moduleToAdd -> {
-					writer.requires(moduleToAdd, 0, null);
+					builder.requires(moduleToAdd, 0, null);
 					requiredModules.add(moduleToAdd);
 				});
 		}
@@ -343,13 +344,13 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 				// TODO collect module version. Do we want module version? It is
 				// not checked at runtime.
 
-				writer.requires(moduleName, access, null);
+				builder.requires(moduleName, access, null);
 
 				requiredModules.add(moduleName);
 			});
 	}
 
-	private void serviceLoaderProviders(Parameters provideCapabilities, Analyzer analyzer, ModuleInfoWriter writer) {
+	private void serviceLoaderProviders(Parameters provideCapabilities, Analyzer analyzer, ModuleInfoBuilder builder) {
 		provideCapabilities.entrySet()
 			.stream()
 			.filter(entry -> Header.removeDuplicateMarker(entry.getKey())
@@ -369,11 +370,11 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 						.getBinary())
 					.toArray(String[]::new);
 
-				writer.provides(typeRef.getBinary(), impls);
+				builder.provides(typeRef.getBinary(), impls);
 			});
 	}
 
-	private void serviceLoaderUses(Parameters requireCapabilities, Analyzer analyzer, ModuleInfoWriter writer) {
+	private void serviceLoaderUses(Parameters requireCapabilities, Analyzer analyzer, ModuleInfoBuilder builder) {
 		requireCapabilities.entrySet()
 			.stream()
 			.filter(entry -> Header.removeDuplicateMarker(entry.getKey())
@@ -382,7 +383,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 			.forEach(attrs -> {
 				TypeRef typeRef = analyzer.getTypeRefFromFQN(attrs.get(SERVICELOADER_NAMESPACE));
 
-				writer.uses(typeRef.getBinary());
+				builder.uses(typeRef.getBinary());
 			});
 	}
 

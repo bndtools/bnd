@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import aQute.bnd.classfile.writer.ModuleInfoWriter;
+import aQute.bnd.classfile.builder.ModuleInfoBuilder;
 import aQute.bnd.osgi.Clazz;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferDataOutput;
@@ -74,21 +74,22 @@ public class ModuleInfoTest {
 	}
 
 	@Test
-	public void testModuleInfoWriter() throws Exception {
-		ModuleInfoWriter writer = new ModuleInfoWriter(Clazz.JAVA.OpenJDK9.getMajor(), "biz.aQute.bnd.test", null,
+	public void testModuleInfoBuilder() throws Exception {
+		ModuleInfoBuilder builder = new ModuleInfoBuilder(Clazz.JAVA.OpenJDK9.getMajor(), "biz.aQute.bnd.test", null,
 			false);
-		writer.requires("java.logging", 0, null);
-		writer.requires("java.compiler", 0, null);
-		writer.requires("java.desktop", ModuleAttribute.Require.ACC_TRANSITIVE, null);
-		writer.exports("toexport", 0);
-		writer.exports("toexporttosomeone", 0, "java.logging", "java.naming");
-		writer.opens("toopen", 0);
-		writer.opens("toopentosomeone", 0, "java.logging", "java.naming");
-		writer.uses("foo/Foo");
-		writer.provides("foo/Foo", "foo/FooImpl");
-		writer.mainClass("foo/FooMain");
+		builder.requires("java.logging", 0, null);
+		builder.requires("java.compiler", 0, null);
+		builder.requires("java.desktop", ModuleAttribute.Require.ACC_TRANSITIVE, null);
+		builder.exports("toexport", 0);
+		builder.exports("toexporttosomeone", 0, "java.logging", "java.naming");
+		builder.opens("toopen", 0);
+		builder.opens("toopentosomeone", 0, "java.logging", "java.naming");
+		builder.uses("foo/Foo");
+		builder.provides("foo/Foo", "foo/FooImpl");
+		builder.mainClass("foo/FooMain");
 		ByteBufferDataOutput bbout = new ByteBufferDataOutput();
-		writer.write(bbout);
+		builder.build()
+			.write(bbout);
 		DataInput in = ByteBufferDataInput.wrap(bbout.toByteBuffer());
 
 		ClassFile module_info = ClassFile.parseClassFile(in);
