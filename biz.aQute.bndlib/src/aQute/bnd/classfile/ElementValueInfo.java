@@ -32,9 +32,20 @@ public class ElementValueInfo {
 		int tag = in.readUnsignedByte();
 		switch (tag) {
 			case 'B' : // Byte
+			{
+				int const_value_index = in.readUnsignedShort();
+				Integer const_value = constant_pool.entry(const_value_index);
+				return Byte.valueOf(const_value.byteValue());
+			}
+
 			case 'C' : // Character
+			{
+				int const_value_index = in.readUnsignedShort();
+				Integer const_value = constant_pool.entry(const_value_index);
+				return Character.valueOf((char) const_value.intValue());
+			}
+
 			case 'I' : // Integer
-			case 'S' : // Short
 			case 'D' : // Double
 			case 'F' : // Float
 			case 'J' : // Long
@@ -42,6 +53,13 @@ public class ElementValueInfo {
 			{
 				int const_value_index = in.readUnsignedShort();
 				return constant_pool.entry(const_value_index);
+			}
+
+			case 'S' : // Short
+			{
+				int const_value_index = in.readUnsignedShort();
+				Integer const_value = constant_pool.entry(const_value_index);
+				return Short.valueOf(const_value.shortValue());
 			}
 
 			case 'Z' : // Boolean
