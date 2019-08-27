@@ -48,7 +48,7 @@ public class ByteBufferDataOutput implements DataOutput {
 
 	@Override
 	public void write(int b) {
-		bb(1).put((byte) b);
+		bb(Byte.BYTES).put((byte) b);
 	}
 
 	@Override
@@ -85,49 +85,49 @@ public class ByteBufferDataOutput implements DataOutput {
 
 	@Override
 	public void writeBoolean(boolean v) {
-		bb(1).put(v ? (byte) 1 : (byte) 0);
+		bb(Byte.BYTES).put(v ? (byte) 1 : (byte) 0);
 
 	}
 
 	@Override
 	public void writeByte(int v) {
-		bb(1).put((byte) v);
+		bb(Byte.BYTES).put((byte) v);
 	}
 
 	@Override
 	public void writeShort(int v) {
-		bb(Short.SIZE / Byte.SIZE).putShort((short) v);
+		bb(Short.BYTES).putShort((short) v);
 	}
 
 	@Override
 	public void writeChar(int v) {
-		bb(Character.SIZE / Byte.SIZE).putChar((char) v);
+		bb(Character.BYTES).putChar((char) v);
 	}
 
 	@Override
 	public void writeInt(int v) {
-		bb(Integer.SIZE / Byte.SIZE).putInt(v);
+		bb(Integer.BYTES).putInt(v);
 	}
 
 	@Override
 	public void writeLong(long v) {
-		bb(Long.SIZE / Byte.SIZE).putLong(v);
+		bb(Long.BYTES).putLong(v);
 	}
 
 	@Override
 	public void writeFloat(float v) {
-		bb(Float.SIZE / Byte.SIZE).putFloat(v);
+		bb(Float.BYTES).putFloat(v);
 	}
 
 	@Override
 	public void writeDouble(double v) {
-		bb(Double.SIZE / Byte.SIZE).putDouble(v);
+		bb(Double.BYTES).putDouble(v);
 	}
 
 	@Override
 	public void writeBytes(String s) {
 		final int len = s.length();
-		ByteBuffer b = bb(len);
+		ByteBuffer b = bb(len * Byte.BYTES);
 		for (int i = 0; i < len; i++) {
 			b.put((byte) s.charAt(i));
 		}
@@ -136,7 +136,7 @@ public class ByteBufferDataOutput implements DataOutput {
 	@Override
 	public void writeChars(String s) {
 		final int len = s.length();
-		ByteBuffer b = bb(len * (Character.SIZE / Byte.SIZE));
+		ByteBuffer b = bb(len * Character.BYTES);
 		for (int i = 0; i < len; i++) {
 			b.putChar(s.charAt(i));
 		}
@@ -158,7 +158,7 @@ public class ByteBufferDataOutput implements DataOutput {
 			throw new UTFDataFormatException("encoding too long: " + size);
 		}
 
-		ByteBuffer b = bb((Short.SIZE / Byte.SIZE) + size);
+		ByteBuffer b = bb(Short.BYTES + size);
 		b.putShort((short) size);
 		if (size == len) { // all chars single byte
 			for (int i = 0; i < len; i++) {

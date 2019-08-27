@@ -47,7 +47,7 @@ public class ByteBufferOutputStream extends OutputStream {
 
 	@Override
 	public void write(int b) {
-		bb(1).put((byte) b);
+		bb(Byte.BYTES).put((byte) b);
 	}
 
 	@Override
