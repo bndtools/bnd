@@ -29,10 +29,10 @@ public class CodeAttribute implements Attribute {
 
 	@Override
 	public String toString() {
-		return NAME + " " + Arrays.toString(attributes);
+		return NAME + " (" + code.limit() + " bytes) " + Arrays.toString(attributes);
 	}
 
-	static CodeAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static CodeAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int max_stack = in.readUnsignedShort();
 		int max_locals = in.readUnsignedShort();
 		int code_length = in.readInt();
@@ -42,7 +42,7 @@ public class CodeAttribute implements Attribute {
 		for (int i = 0; i < exception_table_length; i++) {
 			exception_table[i] = ExceptionHandler.read(in, constant_pool);
 		}
-		Attribute[] attributes = ClassFile.readAttributes(in, constant_pool);
+		Attribute[] attributes = Attribute.readAttributes(in, constant_pool);
 		return new CodeAttribute(max_stack, max_locals, code, exception_table, attributes);
 	}
 

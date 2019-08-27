@@ -18,7 +18,7 @@ public class SyntheticAttribute implements Attribute {
 		return NAME;
 	}
 
-	static SyntheticAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static SyntheticAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		return new SyntheticAttribute();
 	}
 }

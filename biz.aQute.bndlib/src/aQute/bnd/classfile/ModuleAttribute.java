@@ -40,7 +40,7 @@ public class ModuleAttribute implements Attribute {
 		return NAME + " " + module_name + " " + module_version + " " + module_flags;
 	}
 
-	static ModuleAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static ModuleAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int module_name_index = in.readUnsignedShort();
 		int module_flags = in.readUnsignedShort();
 		int module_version_index = in.readUnsignedShort();

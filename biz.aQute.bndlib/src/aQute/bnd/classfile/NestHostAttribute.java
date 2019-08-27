@@ -21,7 +21,7 @@ public class NestHostAttribute implements Attribute {
 		return NAME + " " + host_class;
 	}
 
-	static NestHostAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static NestHostAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int host_class_index = in.readUnsignedShort();
 		return new NestHostAttribute(constant_pool.className(host_class_index));
 	}

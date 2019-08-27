@@ -22,7 +22,7 @@ public class ModulePackagesAttribute implements Attribute {
 		return NAME + " " + Arrays.toString(packages);
 	}
 
-	static ModulePackagesAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static ModulePackagesAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int package_count = in.readUnsignedShort();
 		String[] packages = new String[package_count];
 		for (int i = 0; i < package_count; i++) {

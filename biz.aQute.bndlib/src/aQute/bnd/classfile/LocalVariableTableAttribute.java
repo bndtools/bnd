@@ -22,7 +22,7 @@ public class LocalVariableTableAttribute implements Attribute {
 		return NAME + " " + Arrays.toString(local_variable_table);
 	}
 
-	static LocalVariableTableAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static LocalVariableTableAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int local_variable_table_length = in.readUnsignedShort();
 		LocalVariable[] local_variable_table = new LocalVariable[local_variable_table_length];
 		for (int i = 0; i < local_variable_table_length; i++) {

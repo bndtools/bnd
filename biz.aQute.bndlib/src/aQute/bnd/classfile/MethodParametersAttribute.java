@@ -22,7 +22,7 @@ public class MethodParametersAttribute implements Attribute {
 		return NAME + " " + Arrays.toString(parameters);
 	}
 
-	static MethodParametersAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static MethodParametersAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int parameters_count = in.readUnsignedByte();
 		MethodParameter[] parameters = new MethodParameter[parameters_count];
 		for (int i = 0; i < parameters_count; i++) {

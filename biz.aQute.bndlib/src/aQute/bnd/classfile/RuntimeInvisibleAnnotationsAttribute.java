@@ -15,7 +15,8 @@ public class RuntimeInvisibleAnnotationsAttribute extends AnnotationsAttribute {
 		return NAME;
 	}
 
-	static RuntimeInvisibleAnnotationsAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static RuntimeInvisibleAnnotationsAttribute read(DataInput in, ConstantPool constant_pool)
+		throws IOException {
 		return read(in, constant_pool, RuntimeInvisibleAnnotationsAttribute::new);
 	}
 }

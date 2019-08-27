@@ -27,16 +27,16 @@ public class EnclosingMethodAttribute implements Attribute {
 		return NAME + " " + class_name + "." + method_name + method_descriptor;
 	}
 
-	static EnclosingMethodAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static EnclosingMethodAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int class_index = in.readUnsignedShort();
 		int method_index = in.readUnsignedShort();
 		String class_name = constant_pool.className(class_index);
 		String method_name;
 		String method_descriptor;
 		if (method_index != 0) {
-			NameAndTypeInfo nameAndTyoe = constant_pool.entry(method_index);
-			method_name = constant_pool.utf8(nameAndTyoe.name_index);
-			method_descriptor = constant_pool.utf8(nameAndTyoe.descriptor_index);
+			NameAndTypeInfo nameAndType = constant_pool.entry(method_index);
+			method_name = constant_pool.utf8(nameAndType.name_index);
+			method_descriptor = constant_pool.utf8(nameAndType.descriptor_index);
 		} else {
 			method_name = null;
 			method_descriptor = null;

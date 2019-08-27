@@ -21,7 +21,7 @@ public class AnnotationDefaultAttribute implements Attribute {
 		return NAME + " " + ElementValueInfo.toString(value);
 	}
 
-	static AnnotationDefaultAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static AnnotationDefaultAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		Object value = ElementValueInfo.readValue(in, constant_pool);
 		return new AnnotationDefaultAttribute(value);
 	}

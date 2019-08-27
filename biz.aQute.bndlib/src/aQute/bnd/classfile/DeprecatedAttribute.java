@@ -18,7 +18,7 @@ public class DeprecatedAttribute implements Attribute {
 		return NAME;
 	}
 
-	static DeprecatedAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static DeprecatedAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		return new DeprecatedAttribute();
 	}
 }

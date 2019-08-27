@@ -30,7 +30,7 @@ public class StackMapTableAttribute implements Attribute {
 		return NAME + " " + Arrays.toString(entries);
 	}
 
-	static StackMapTableAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static StackMapTableAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int number_of_entries = in.readUnsignedShort();
 		StackMapFrame[] entries = new StackMapFrame[number_of_entries];
 		for (int i = 0; i < number_of_entries; i++) {

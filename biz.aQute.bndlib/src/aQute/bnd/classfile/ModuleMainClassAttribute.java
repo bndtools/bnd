@@ -21,7 +21,7 @@ public class ModuleMainClassAttribute implements Attribute {
 		return NAME + " " + main_class;
 	}
 
-	static ModuleMainClassAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static ModuleMainClassAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int main_class_index = in.readUnsignedShort();
 		return new ModuleMainClassAttribute(constant_pool.className(main_class_index));
 	}

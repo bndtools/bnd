@@ -15,7 +15,7 @@ public class FieldInfo extends MemberInfo {
 		return toString(Modifier.fieldModifiers());
 	}
 
-	static FieldInfo read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static FieldInfo read(DataInput in, ConstantPool constant_pool) throws IOException {
 		return read(in, constant_pool, FieldInfo::new);
 	}
 }

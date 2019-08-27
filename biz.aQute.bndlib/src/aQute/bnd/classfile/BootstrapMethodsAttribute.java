@@ -22,7 +22,7 @@ public class BootstrapMethodsAttribute implements Attribute {
 		return NAME + " " + Arrays.toString(bootstrap_methods);
 	}
 
-	static BootstrapMethodsAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static BootstrapMethodsAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int num_bootstrap_methods = in.readUnsignedShort();
 		BootstrapMethod[] bootstrap_methods = new BootstrapMethod[num_bootstrap_methods];
 		for (int i = 0; i < num_bootstrap_methods; i++) {

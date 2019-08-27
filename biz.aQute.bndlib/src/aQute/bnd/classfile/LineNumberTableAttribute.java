@@ -22,7 +22,7 @@ public class LineNumberTableAttribute implements Attribute {
 		return NAME + " " + Arrays.toString(line_number_table);
 	}
 
-	static LineNumberTableAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static LineNumberTableAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int line_number_table_length = in.readUnsignedShort();
 		LineNumber[] line_number_table = new LineNumber[line_number_table_length];
 		for (int i = 0; i < line_number_table_length; i++) {

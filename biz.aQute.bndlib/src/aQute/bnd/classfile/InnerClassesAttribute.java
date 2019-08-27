@@ -22,7 +22,7 @@ public class InnerClassesAttribute implements Attribute {
 		return NAME + " " + Arrays.toString(classes);
 	}
 
-	static InnerClassesAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static InnerClassesAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int number_of_classes = in.readUnsignedShort();
 		InnerClass[] classes = new InnerClass[number_of_classes];
 		for (int i = 0; i < number_of_classes; i++) {

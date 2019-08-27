@@ -41,7 +41,7 @@ public class ConstantPool {
 	}
 
 	public int tag(int index) {
-		Object entry = pool[index];
+		Object entry = entry(index);
 		if (entry instanceof Info) {
 			return ((Info) entry).tag();
 		} else if (entry instanceof String) {
@@ -60,7 +60,7 @@ public class ConstantPool {
 	}
 
 	public String utf8(int utf8_index) {
-		return (String) pool[utf8_index];
+		return entry(utf8_index);
 	}
 
 	public String className(int class_info_index) {
@@ -88,7 +88,7 @@ public class ConstantPool {
 		return Arrays.toString(pool);
 	}
 
-	static ConstantPool read(DataInput in) throws IOException {
+	public static ConstantPool read(DataInput in) throws IOException {
 		int constant_pool_count = in.readUnsignedShort();
 		Object[] pool = new Object[constant_pool_count];
 		for (int index = 1; index < constant_pool_count; index++) {
@@ -187,22 +187,22 @@ public class ConstantPool {
 
 	static Integer readIntegerInfo(DataInput in) throws IOException {
 		int constant = in.readInt();
-		return Integer.valueOf(constant);
+		return constant;
 	}
 
 	static Float readFloatInfo(DataInput in) throws IOException {
 		float constant = in.readFloat();
-		return Float.valueOf(constant);
+		return constant;
 	}
 
 	static Long readLongInfo(DataInput in) throws IOException {
 		long constant = in.readLong();
-		return Long.valueOf(constant);
+		return constant;
 	}
 
 	static Double readDoubleInfo(DataInput in) throws IOException {
 		double constant = in.readDouble();
-		return Double.valueOf(constant);
+		return constant;
 	}
 
 	@ProviderType

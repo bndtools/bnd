@@ -21,7 +21,7 @@ public class SignatureAttribute implements Attribute {
 		return NAME + " " + signature;
 	}
 
-	static SignatureAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static SignatureAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int signature_index = in.readUnsignedShort();
 		return new SignatureAttribute(constant_pool.utf8(signature_index));
 	}

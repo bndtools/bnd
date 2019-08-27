@@ -39,7 +39,7 @@ public abstract class MemberInfo extends ElementInfo {
 		int access_flags = in.readUnsignedShort();
 		int name_index = in.readUnsignedShort();
 		int descriptor_index = in.readUnsignedShort();
-		Attribute[] attributes = ClassFile.readAttributes(in, constant_pool);
+		Attribute[] attributes = Attribute.readAttributes(in, constant_pool);
 
 		return constructor.apply(access_flags, constant_pool.utf8(name_index), constant_pool.utf8(descriptor_index),
 			attributes);

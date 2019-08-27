@@ -21,13 +21,8 @@ public abstract class ParameterAnnotationsAttribute implements Attribute {
 		Function<ParameterAnnotationInfo[], A> constructor) throws IOException {
 		int num_parameters = in.readUnsignedByte();
 		ParameterAnnotationInfo[] parameter_annotations = new ParameterAnnotationInfo[num_parameters];
-		for (int p = 0; p < num_parameters; p++) {
-			int num_annotations = in.readUnsignedShort();
-			AnnotationInfo[] annotations = new AnnotationInfo[num_annotations];
-			for (int i = 0; i < num_annotations; i++) {
-				annotations[i] = AnnotationInfo.read(in, constant_pool);
-			}
-			parameter_annotations[p] = new ParameterAnnotationInfo(p, annotations);
+		for (int parameter = 0; parameter < num_parameters; parameter++) {
+			parameter_annotations[parameter] = ParameterAnnotationInfo.read(in, constant_pool, parameter);
 		}
 
 		return constructor.apply(parameter_annotations);

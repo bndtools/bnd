@@ -34,4 +34,13 @@ public class AnnotationInfo {
 
 		return constructor.apply(constant_pool.utf8(type_index), element_value_pairs);
 	}
+
+	static AnnotationInfo[] readInfos(DataInput in, ConstantPool constant_pool) throws IOException {
+		int num_annotations = in.readUnsignedShort();
+		AnnotationInfo[] annotations = new AnnotationInfo[num_annotations];
+		for (int i = 0; i < num_annotations; i++) {
+			annotations[i] = AnnotationInfo.read(in, constant_pool);
+		}
+		return annotations;
+	}
 }

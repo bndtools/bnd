@@ -15,7 +15,8 @@ public class RuntimeInvisibleTypeAnnotationsAttribute extends TypeAnnotationsAtt
 		return NAME;
 	}
 
-	static RuntimeInvisibleTypeAnnotationsAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static RuntimeInvisibleTypeAnnotationsAttribute read(DataInput in, ConstantPool constant_pool)
+		throws IOException {
 		return read(in, constant_pool, RuntimeInvisibleTypeAnnotationsAttribute::new);
 	}
 }

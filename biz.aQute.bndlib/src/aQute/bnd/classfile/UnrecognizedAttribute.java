@@ -23,7 +23,7 @@ public class UnrecognizedAttribute implements Attribute {
 		return name();
 	}
 
-	static UnrecognizedAttribute read(DataInput in, String name, int attribute_length) throws IOException {
+	public static UnrecognizedAttribute read(DataInput in, String name, int attribute_length) throws IOException {
 		if (attribute_length < 0) {
 			throw new IOException("attribute length > 2Gb");
 		}

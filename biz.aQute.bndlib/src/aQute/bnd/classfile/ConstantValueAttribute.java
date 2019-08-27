@@ -23,7 +23,7 @@ public class ConstantValueAttribute implements Attribute {
 		return NAME + "=" + value;
 	}
 
-	static ConstantValueAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static ConstantValueAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int constantvalue_index = in.readUnsignedShort();
 		Object value = constant_pool.entry(constantvalue_index);
 		if (value instanceof StringInfo) {

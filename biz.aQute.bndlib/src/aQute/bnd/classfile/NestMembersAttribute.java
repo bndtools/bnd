@@ -22,7 +22,7 @@ public class NestMembersAttribute implements Attribute {
 		return NAME + " " + Arrays.toString(classes);
 	}
 
-	static NestMembersAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static NestMembersAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int number_of_classes = in.readUnsignedShort();
 		String[] classes = new String[number_of_classes];
 		for (int i = 0; i < number_of_classes; i++) {

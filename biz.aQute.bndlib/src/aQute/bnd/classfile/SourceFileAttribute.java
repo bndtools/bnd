@@ -21,7 +21,7 @@ public class SourceFileAttribute implements Attribute {
 		return NAME + " " + sourcefile;
 	}
 
-	static SourceFileAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static SourceFileAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int sourcefile_index = in.readUnsignedShort();
 		return new SourceFileAttribute(constant_pool.utf8(sourcefile_index));
 	}

@@ -19,12 +19,7 @@ public abstract class AnnotationsAttribute implements Attribute {
 
 	static <A extends AnnotationsAttribute> A read(DataInput in, ConstantPool constant_pool,
 		Function<AnnotationInfo[], A> constructor) throws IOException {
-		int num_annotations = in.readUnsignedShort();
-		AnnotationInfo[] annotations = new AnnotationInfo[num_annotations];
-		for (int i = 0; i < num_annotations; i++) {
-			annotations[i] = AnnotationInfo.read(in, constant_pool);
-		}
-
+		AnnotationInfo[] annotations = AnnotationInfo.readInfos(in, constant_pool);
 		return constructor.apply(annotations);
 	}
 }
