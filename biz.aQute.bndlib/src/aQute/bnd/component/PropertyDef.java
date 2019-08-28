@@ -163,7 +163,8 @@ public class PropertyDef {
 					break;
 				case "Char" :
 				case "Character" :
-					Integer.valueOf(v);
+					// DS spec requires Unicode value for char
+					v = Integer.toString(v.charAt(0));
 					break;
 				case "Short" :
 					Short.valueOf(v);

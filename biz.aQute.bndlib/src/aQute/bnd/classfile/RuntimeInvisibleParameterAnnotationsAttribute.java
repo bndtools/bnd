@@ -15,7 +15,7 @@ public class RuntimeInvisibleParameterAnnotationsAttribute extends ParameterAnno
 		return NAME;
 	}
 
-	static RuntimeInvisibleParameterAnnotationsAttribute read(DataInput in, ConstantPool constant_pool)
+	public static RuntimeInvisibleParameterAnnotationsAttribute read(DataInput in, ConstantPool constant_pool)
 		throws IOException {
 		return read(in, constant_pool, RuntimeInvisibleParameterAnnotationsAttribute::new);
 	}

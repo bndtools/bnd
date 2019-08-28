@@ -1,8 +1,13 @@
 package aQute.bnd.classfile;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -41,7 +46,7 @@ public class ConstantPool {
 	}
 
 	public int tag(int index) {
-		Object entry = pool[index];
+		Object entry = entry(index);
 		if (entry instanceof Info) {
 			return ((Info) entry).tag();
 		} else if (entry instanceof String) {
@@ -60,7 +65,7 @@ public class ConstantPool {
 	}
 
 	public String utf8(int utf8_index) {
-		return (String) pool[utf8_index];
+		return entry(utf8_index);
 	}
 
 	public String className(int class_info_index) {
@@ -88,7 +93,7 @@ public class ConstantPool {
 		return Arrays.toString(pool);
 	}
 
-	static ConstantPool read(DataInput in) throws IOException {
+	public static ConstantPool read(DataInput in) throws IOException {
 		int constant_pool_count = in.readUnsignedShort();
 		Object[] pool = new Object[constant_pool_count];
 		for (int index = 1; index < constant_pool_count; index++) {
@@ -185,29 +190,56 @@ public class ConstantPool {
 		return constant.intern();
 	}
 
+	static void writeUtf8Info(DataOutput out, String constant) throws IOException {
+		out.writeByte(CONSTANT_Utf8);
+		out.writeUTF(constant);
+	}
+
 	static Integer readIntegerInfo(DataInput in) throws IOException {
 		int constant = in.readInt();
-		return Integer.valueOf(constant);
+		return constant;
+	}
+
+	static void writeIntegerInfo(DataOutput out, Integer constant) throws IOException {
+		out.writeByte(CONSTANT_Integer);
+		out.writeInt(constant);
 	}
 
 	static Float readFloatInfo(DataInput in) throws IOException {
 		float constant = in.readFloat();
-		return Float.valueOf(constant);
+		return constant;
+	}
+
+	static void writeFloatInfo(DataOutput out, Float constant) throws IOException {
+		out.writeByte(CONSTANT_Float);
+		out.writeFloat(constant);
 	}
 
 	static Long readLongInfo(DataInput in) throws IOException {
 		long constant = in.readLong();
-		return Long.valueOf(constant);
+		return constant;
+	}
+
+	static void writeLongInfo(DataOutput out, Long constant) throws IOException {
+		out.writeByte(CONSTANT_Long);
+		out.writeLong(constant);
 	}
 
 	static Double readDoubleInfo(DataInput in) throws IOException {
 		double constant = in.readDouble();
-		return Double.valueOf(constant);
+		return constant;
+	}
+
+	static void writeDoubleInfo(DataOutput out, Double constant) throws IOException {
+		out.writeByte(CONSTANT_Double);
+		out.writeDouble(constant);
 	}
 
 	@ProviderType
 	public interface Info {
 		int tag();
+
+		void write(DataOutput out) throws IOException;
 	}
 
 	public static class ClassInfo implements Info {
@@ -225,6 +257,12 @@ public class ConstantPool {
 		@Override
 		public int tag() {
 			return CONSTANT_Class;
+		}
+
+		@Override
+		public void write(DataOutput out) throws IOException {
+			out.writeByte(tag());
+			out.writeShort(class_index);
 		}
 
 		@Override
@@ -251,6 +289,12 @@ public class ConstantPool {
 		}
 
 		@Override
+		public void write(DataOutput out) throws IOException {
+			out.writeByte(tag());
+			out.writeShort(string_index);
+		}
+
+		@Override
 		public String toString() {
 			return "StringInfo:" + string_index;
 		}
@@ -274,6 +318,13 @@ public class ConstantPool {
 			int class_index = in.readUnsignedShort();
 			int name_and_type_index = in.readUnsignedShort();
 			return constructor.apply(class_index, name_and_type_index);
+		}
+
+		@Override
+		public void write(DataOutput out) throws IOException {
+			out.writeByte(tag());
+			out.writeShort(class_index);
+			out.writeShort(name_and_type_index);
 		}
 	}
 
@@ -358,6 +409,13 @@ public class ConstantPool {
 		}
 
 		@Override
+		public void write(DataOutput out) throws IOException {
+			out.writeByte(tag());
+			out.writeShort(name_index);
+			out.writeShort(descriptor_index);
+		}
+
+		@Override
 		public String toString() {
 			return "NameAndTypeInfo:" + name_index + ":" + descriptor_index;
 		}
@@ -393,6 +451,13 @@ public class ConstantPool {
 		}
 
 		@Override
+		public void write(DataOutput out) throws IOException {
+			out.writeByte(tag());
+			out.writeByte(reference_kind);
+			out.writeShort(reference_index);
+		}
+
+		@Override
 		public String toString() {
 			return "MethodHandleInfo:" + reference_kind + ":" + reference_index;
 		}
@@ -416,6 +481,12 @@ public class ConstantPool {
 		}
 
 		@Override
+		public void write(DataOutput out) throws IOException {
+			out.writeByte(tag());
+			out.writeShort(descriptor_index);
+		}
+
+		@Override
 		public String toString() {
 			return "MethodTypeInfo:" + descriptor_index;
 		}
@@ -434,6 +505,13 @@ public class ConstantPool {
 			int bootstrap_method_attr_index = in.readUnsignedShort();
 			int name_and_type_index = in.readUnsignedShort();
 			return constructor.apply(bootstrap_method_attr_index, name_and_type_index);
+		}
+
+		@Override
+		public void write(DataOutput out) throws IOException {
+			out.writeByte(tag());
+			out.writeShort(bootstrap_method_attr_index);
+			out.writeShort(name_and_type_index);
 		}
 	}
 
@@ -495,6 +573,12 @@ public class ConstantPool {
 		}
 
 		@Override
+		public void write(DataOutput out) throws IOException {
+			out.writeByte(tag());
+			out.writeShort(name_index);
+		}
+
+		@Override
 		public String toString() {
 			return "ModuleInfo:" + name_index;
 		}
@@ -518,8 +602,289 @@ public class ConstantPool {
 		}
 
 		@Override
+		public void write(DataOutput out) throws IOException {
+			out.writeByte(tag());
+			out.writeShort(name_index);
+		}
+
+		@Override
 		public String toString() {
 			return "PackageInfo:" + name_index;
+		}
+	}
+
+	<I> int index(Class<I> infoType, Predicate<I> match, Supplier<I> supplier) {
+		for (int index = 1, len = size(); index < len; index++) {
+			Object entry = entry(index);
+			if (infoType.isInstance(entry) && match.test(infoType.cast(entry))) {
+				return index;
+			}
+		}
+		return addIndex(infoType, supplier);
+	}
+
+	protected <I> int addIndex(Class<I> infoType, Supplier<I> supplier) {
+		throw new UnsupportedOperationException(
+			"Constant Pool is not writeable; trying to add entry of type " + infoType);
+	}
+
+	// CONSTANT_Integer
+	public int integerInfo(int constant) {
+		return index(Integer.class, other -> equalsInteger(constant, other), () -> constant);
+	}
+
+	public int integerInfo(Integer constant) {
+		int const_value = constant.intValue();
+		return index(Integer.class, other -> equalsInteger(const_value, other), () -> constant);
+	}
+
+	public int integerInfo(Byte constant) {
+		int const_value = constant.intValue();
+		return index(Integer.class, other -> equalsInteger(const_value, other), () -> const_value);
+	}
+
+	public int integerInfo(Character constant) {
+		int const_value = constant.charValue();
+		return index(Integer.class, other -> equalsInteger(const_value, other), () -> const_value);
+	}
+
+	public int integerInfo(Short constant) {
+		int const_value = constant.intValue();
+		return index(Integer.class, other -> equalsInteger(const_value, other), () -> const_value);
+	}
+
+	public int integerInfo(Boolean constant) {
+		int const_value = constant.booleanValue() ? 1 : 0;
+		return index(Integer.class, other -> equalsInteger(const_value, other), () -> const_value);
+	}
+
+	private boolean equalsInteger(int a, int b) {
+		return Integer.compare(a, b) == 0;
+	}
+
+	// CONSTANT_Long
+	public int longInfo(Long constant) {
+		long const_value = constant.longValue();
+		return index(Long.class, other -> equalsLong(const_value, other), () -> constant);
+	}
+
+	public int longInfo(long constant) {
+		return index(Long.class, other -> equalsLong(constant, other), () -> constant);
+	}
+
+	private boolean equalsLong(long a, long b) {
+		return Long.compare(a, b) == 0;
+	}
+
+	// CONSTANT_Float
+	public int floatInfo(Float constant) {
+		float const_value = constant.floatValue();
+		return index(Float.class, other -> equalsFloat(const_value, other), () -> constant);
+	}
+
+	public int floatInfo(float constant) {
+		return index(Float.class, other -> equalsFloat(constant, other), () -> constant);
+	}
+
+	private boolean equalsFloat(float a, float b) {
+		return Float.compare(a, b) == 0;
+	}
+
+	// CONSTANT_Double
+	public int doubleInfo(Double constant) {
+		double const_value = constant.doubleValue();
+		return index(Double.class, other -> equalsDouble(const_value, other), () -> constant);
+	}
+
+	public int doubleInfo(double constant) {
+		return index(Double.class, other -> equalsDouble(constant, other), () -> constant);
+	}
+
+	private boolean equalsDouble(double a, double b) {
+		return Double.compare(a, b) == 0;
+	}
+
+	// CONSTANT_Utf8
+	public int utf8Info(String utf8) {
+		requireNonNull(utf8);
+		return index(String.class, utf8::equals, () -> utf8.intern());
+	}
+
+	// CONSTANT_String
+	public int stringInfo(String string) {
+		requireNonNull(string);
+		return index(StringInfo.class, other -> equalsStringInfo(string, other),
+			() -> new StringInfo(utf8Info(string)));
+	}
+
+	private boolean equalsStringInfo(String string, StringInfo stringInfo) {
+		return string.equals(entry(stringInfo.string_index));
+	}
+
+	// CONSTANT_Module
+	public int moduleInfo(String module_name) {
+		requireNonNull(module_name);
+		return index(ModuleInfo.class, other -> equalsModuleInfo(module_name, other),
+			() -> new ModuleInfo(utf8Info(module_name)));
+	}
+
+	private boolean equalsModuleInfo(String module_name, ModuleInfo moduleInfo) {
+		return module_name.equals(entry(moduleInfo.name_index));
+	}
+
+	// CONSTANT_Package
+	public int packageInfo(String package_name) {
+		requireNonNull(package_name);
+		return index(PackageInfo.class, other -> equalsPackageInfo(package_name, other),
+			() -> new PackageInfo(utf8Info(package_name)));
+	}
+
+	private boolean equalsPackageInfo(String package_name, PackageInfo packageInfo) {
+		return package_name.equals(entry(packageInfo.name_index));
+	}
+
+	// CONSTANT_Class
+	public int classInfo(String class_name) {
+		requireNonNull(class_name);
+		return index(ClassInfo.class, other -> equalsClassInfo(class_name, other),
+			() -> new ClassInfo(utf8Info(class_name)));
+	}
+
+	private boolean equalsClassInfo(String class_name, ClassInfo classInfo) {
+		return class_name.equals(entry(classInfo.class_index));
+	}
+
+	@FunctionalInterface
+	public interface AbstractRefInfoFunction {
+		int apply(String class_name, String name, String descriptor);
+	}
+
+	// CONSTANT_Fieldref
+	public int fieldrefInfo(String class_name, String name, String descriptor) {
+		requireNonNull(class_name);
+		requireNonNull(name);
+		requireNonNull(descriptor);
+		return index(FieldrefInfo.class, other -> equalsAbstractRefInfo(class_name, name, descriptor, other),
+			() -> new FieldrefInfo(classInfo(class_name), nameAndTypeInfo(name, descriptor)));
+	}
+
+	private boolean equalsAbstractRefInfo(String class_name, String name, String descriptor, AbstractRefInfo refInfo) {
+		return equalsClassInfo(class_name, entry(refInfo.class_index))
+			&& equalsNameAndTypeInfo(name, descriptor, entry(refInfo.name_and_type_index));
+	}
+
+	// CONSTANT_Methodref
+	public int methodrefInfo(String class_name, String name, String descriptor) {
+		requireNonNull(class_name);
+		requireNonNull(name);
+		requireNonNull(descriptor);
+		return index(MethodrefInfo.class, other -> equalsAbstractRefInfo(class_name, name, descriptor, other),
+			() -> new MethodrefInfo(classInfo(class_name), nameAndTypeInfo(name, descriptor)));
+	}
+
+	// CONSTANT_InterfaceMethodref
+	public int interfacemethodrefInfo(String class_name, String name, String descriptor) {
+		requireNonNull(class_name);
+		requireNonNull(name);
+		requireNonNull(descriptor);
+		return index(InterfaceMethodrefInfo.class, other -> equalsAbstractRefInfo(class_name, name, descriptor, other),
+			() -> new InterfaceMethodrefInfo(classInfo(class_name), nameAndTypeInfo(name, descriptor)));
+	}
+
+	// CONSTANT_NameAndType
+	public int nameAndTypeInfo(String name, String descriptor) {
+		requireNonNull(name);
+		requireNonNull(descriptor);
+		return index(NameAndTypeInfo.class, other -> equalsNameAndTypeInfo(name, descriptor, other),
+			() -> new NameAndTypeInfo(utf8Info(name), utf8Info(descriptor)));
+	}
+
+	private boolean equalsNameAndTypeInfo(String name, String descriptor, NameAndTypeInfo nameAndTypeInfo) {
+		return name.equals(entry(nameAndTypeInfo.name_index))
+			&& descriptor.equals(entry(nameAndTypeInfo.descriptor_index));
+	}
+
+	// CONSTANT_MethodHandle
+	public int methodHandleInfo(int reference_kind, String class_name, String name, String descriptor,
+		AbstractRefInfoFunction abstractRefInfo) {
+		requireNonNull(class_name);
+		requireNonNull(name);
+		requireNonNull(descriptor);
+		requireNonNull(abstractRefInfo);
+		return index(MethodHandleInfo.class,
+			other -> equalsMethodHandleInfo(reference_kind, class_name, name, descriptor, other),
+			() -> new MethodHandleInfo(reference_kind, abstractRefInfo.apply(class_name, name, descriptor)));
+	}
+
+	private boolean equalsMethodHandleInfo(int reference_kind, String class_name, String name, String descriptor,
+		MethodHandleInfo methodHandleInfo) {
+		return equalsInteger(reference_kind, methodHandleInfo.reference_index)
+			&& equalsAbstractRefInfo(class_name, name, descriptor, entry(methodHandleInfo.reference_index));
+	}
+
+	// CONSTANT_MethodType
+	public int methodTypeInfo(String descriptor) {
+		requireNonNull(descriptor);
+		return index(MethodTypeInfo.class, other -> equalsMethodTypeInfo(descriptor, other),
+			() -> new MethodTypeInfo(utf8Info(descriptor)));
+	}
+
+	private boolean equalsMethodTypeInfo(String descriptor, MethodTypeInfo methodTypeInfo) {
+		return descriptor.equals(entry(methodTypeInfo.descriptor_index));
+	}
+
+	// CONSTANT_Dynamic
+	public int dynamicInfo(int bootstrap_method_attr_index, String name, String descriptor) {
+		requireNonNull(name);
+		requireNonNull(descriptor);
+		return index(DynamicInfo.class,
+			other -> equalsAbstractDynamicInfo(bootstrap_method_attr_index, name, descriptor, other),
+			() -> new DynamicInfo(bootstrap_method_attr_index, nameAndTypeInfo(name, descriptor)));
+	}
+
+	private boolean equalsAbstractDynamicInfo(int bootstrap_method_attr_index, String name, String descriptor,
+		AbstractDynamicInfo abstractDynamicInfo) {
+		return equalsInteger(bootstrap_method_attr_index, abstractDynamicInfo.bootstrap_method_attr_index)
+			&& equalsNameAndTypeInfo(name, descriptor, entry(abstractDynamicInfo.name_and_type_index));
+	}
+
+	// CONSTANT_InvokeDynamic
+	public int invokeDynamicInfo(int bootstrap_method_attr_index, String name, String descriptor) {
+		requireNonNull(name);
+		requireNonNull(descriptor);
+		return index(InvokeDynamicInfo.class,
+			other -> equalsAbstractDynamicInfo(bootstrap_method_attr_index, name, descriptor, other),
+			() -> new InvokeDynamicInfo(bootstrap_method_attr_index, nameAndTypeInfo(name, descriptor)));
+	}
+
+	public void write(DataOutput out) throws IOException {
+		int constant_pool_count = size();
+		out.writeShort(constant_pool_count);
+		for (int index = 1; index < constant_pool_count; index++) {
+			Object entry = entry(index);
+			if (entry instanceof Info) {
+				((Info) entry).write(out);
+			} else if (entry instanceof String) {
+				writeUtf8Info(out, (String) entry);
+			} else if (entry instanceof Integer) {
+				writeIntegerInfo(out, (Integer) entry);
+			} else if (entry instanceof Long) {
+				writeLongInfo(out, (Long) entry);
+				// For some insane optimization reason, the Long(5) and
+				// Double(6) entries take two slots in the constant pool.
+				// See 4.4.5
+				index++;
+			} else if (entry instanceof Float) {
+				writeFloatInfo(out, (Float) entry);
+			} else if (entry instanceof Double) {
+				writeDoubleInfo(out, (Double) entry);
+				// For some insane optimization reason, the Long(5) and
+				// Double(6) entries take two slots in the constant pool.
+				// See 4.4.5
+				index++;
+			} else {
+				throw new IOException("Unrecognized constant pool entry " + entry + " at index " + index);
+			}
 		}
 	}
 }

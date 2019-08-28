@@ -15,7 +15,7 @@ public class RuntimeVisibleParameterAnnotationsAttribute extends ParameterAnnota
 		return NAME;
 	}
 
-	static RuntimeVisibleParameterAnnotationsAttribute read(DataInput in, ConstantPool constant_pool)
+	public static RuntimeVisibleParameterAnnotationsAttribute read(DataInput in, ConstantPool constant_pool)
 		throws IOException {
 		return read(in, constant_pool, RuntimeVisibleParameterAnnotationsAttribute::new);
 	}

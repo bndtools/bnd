@@ -190,8 +190,8 @@ public class CustomAnnotationsTest {
 			assertEquals(1, req.size());
 			Props p = req.get("type");
 			assertNotNull(p);
-			assertEquals("100", p.get("value"));
-			assertEquals("120,15", p.get("array"));
+			assertEquals("a", p.get("value"));
+			assertEquals("[,]", p.get("array"));
 		}
 	}
 

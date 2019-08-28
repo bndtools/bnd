@@ -9,6 +9,7 @@ import static aQute.bnd.classfile.StackMapTableAttribute.StackMapFrame.SAME_FRAM
 import static aQute.bnd.classfile.StackMapTableAttribute.StackMapFrame.SAME_LOCALS_1_STACK_ITEM_EXTENDED;
 
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -30,7 +31,7 @@ public class StackMapTableAttribute implements Attribute {
 		return NAME + " " + Arrays.toString(entries);
 	}
 
-	static StackMapTableAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static StackMapTableAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int number_of_entries = in.readUnsignedShort();
 		StackMapFrame[] entries = new StackMapFrame[number_of_entries];
 		for (int i = 0; i < number_of_entries; i++) {
@@ -78,6 +79,27 @@ public class StackMapTableAttribute implements Attribute {
 		return new StackMapTableAttribute(entries);
 	}
 
+	@Override
+	public void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+		int attribute_name_index = constant_pool.utf8Info(name());
+		int attribute_length = attribute_length();
+		out.writeShort(attribute_name_index);
+		out.writeInt(attribute_length);
+		out.writeShort(entries.length);
+		for (StackMapFrame entry : entries) {
+			entry.write(out, constant_pool);
+		}
+	}
+
+	@Override
+	public int attribute_length() {
+		int attribute_length = 1 * Short.BYTES;
+		for (StackMapFrame entry : entries) {
+			attribute_length += entry.value_length();
+		}
+		return attribute_length;
+	}
+
 	public abstract static class StackMapFrame {
 		public static final int	SAME								= 63;
 		public static final int	SAME_LOCALS_1_STACK_ITEM			= 127;
@@ -98,6 +120,14 @@ public class StackMapTableAttribute implements Attribute {
 		@Override
 		public String toString() {
 			return Integer.toString(tag);
+		}
+
+		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+			out.writeByte(tag);
+		}
+
+		int value_length() {
+			return 1 * Byte.BYTES;
 		}
 	}
 
@@ -129,6 +159,17 @@ public class StackMapTableAttribute implements Attribute {
 		public String toString() {
 			return tag + "/" + stack;
 		}
+
+		@Override
+		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+			out.writeByte(tag);
+			stack.write(out, constant_pool);
+		}
+
+		@Override
+		int value_length() {
+			return 1 * Byte.BYTES + stack.value_length();
+		}
 	}
 
 	public static class SameLocals1StackItemFrameExtended extends StackMapFrame {
@@ -150,6 +191,18 @@ public class StackMapTableAttribute implements Attribute {
 		public String toString() {
 			return tag + "/" + delta + "/" + stack;
 		}
+
+		@Override
+		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+			out.writeByte(tag);
+			out.writeShort(delta);
+			stack.write(out, constant_pool);
+		}
+
+		@Override
+		int value_length() {
+			return 1 * Byte.BYTES + 1 * Short.BYTES + stack.value_length();
+		}
 	}
 
 	public static class ChopFrame extends StackMapFrame {
@@ -169,6 +222,17 @@ public class StackMapTableAttribute implements Attribute {
 		public String toString() {
 			return tag + "/" + delta;
 		}
+
+		@Override
+		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+			out.writeByte(tag);
+			out.writeShort(delta);
+		}
+
+		@Override
+		int value_length() {
+			return 1 * Byte.BYTES + 1 * Short.BYTES;
+		}
 	}
 
 	public static class SameFrameExtended extends StackMapFrame {
@@ -187,6 +251,17 @@ public class StackMapTableAttribute implements Attribute {
 		@Override
 		public String toString() {
 			return tag + "/" + delta;
+		}
+
+		@Override
+		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+			out.writeByte(tag);
+			out.writeShort(delta);
+		}
+
+		@Override
+		int value_length() {
+			return 1 * Byte.BYTES + 1 * Short.BYTES;
 		}
 	}
 
@@ -208,6 +283,24 @@ public class StackMapTableAttribute implements Attribute {
 		@Override
 		public String toString() {
 			return tag + "/" + delta + "/" + Arrays.toString(locals);
+		}
+
+		@Override
+		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+			out.writeByte(tag);
+			out.writeShort(delta);
+			for (VerificationTypeInfo local : locals) {
+				local.write(out, constant_pool);
+			}
+		}
+
+		@Override
+		int value_length() {
+			int value_length = 1 * Byte.BYTES + 1 * Short.BYTES;
+			for (VerificationTypeInfo local : locals) {
+				value_length += local.value_length();
+			}
+			return value_length;
 		}
 	}
 
@@ -231,6 +324,32 @@ public class StackMapTableAttribute implements Attribute {
 		@Override
 		public String toString() {
 			return tag + "/" + delta + "/" + Arrays.toString(locals) + "/" + Arrays.toString(stack);
+		}
+
+		@Override
+		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+			out.writeByte(tag);
+			out.writeShort(delta);
+			out.writeShort(locals.length);
+			for (VerificationTypeInfo local : locals) {
+				local.write(out, constant_pool);
+			}
+			out.writeShort(stack.length);
+			for (VerificationTypeInfo stack_item : stack) {
+				stack_item.write(out, constant_pool);
+			}
+		}
+
+		@Override
+		int value_length() {
+			int value_length = 1 * Byte.BYTES + 3 * Short.BYTES;
+			for (VerificationTypeInfo local : locals) {
+				value_length += local.value_length();
+			}
+			for (VerificationTypeInfo stack_item : stack) {
+				value_length += stack_item.value_length();
+			}
+			return value_length;
 		}
 	}
 
@@ -283,6 +402,14 @@ public class StackMapTableAttribute implements Attribute {
 		public String toString() {
 			return Integer.toString(tag);
 		}
+
+		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+			out.writeByte(tag);
+		}
+
+		int value_length() {
+			return 1 * Byte.BYTES;
+		}
 	}
 
 	public static class ObjectVariableInfo extends VerificationTypeInfo {
@@ -297,6 +424,18 @@ public class StackMapTableAttribute implements Attribute {
 		public String toString() {
 			return tag + ":" + type;
 		}
+
+		@Override
+		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+			out.writeByte(tag);
+			int cpool_index = constant_pool.classInfo(type);
+			out.writeShort(cpool_index);
+		}
+
+		@Override
+		int value_length() {
+			return 1 * Byte.BYTES + 1 * Short.BYTES;
+		}
 	}
 
 	public static class UninitializedVariableInfo extends VerificationTypeInfo {
@@ -310,6 +449,17 @@ public class StackMapTableAttribute implements Attribute {
 		@Override
 		public String toString() {
 			return tag + ":" + offset;
+		}
+
+		@Override
+		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+			out.writeByte(tag);
+			out.writeShort(offset);
+		}
+
+		@Override
+		int value_length() {
+			return 1 * Byte.BYTES + 1 * Short.BYTES;
 		}
 	}
 }

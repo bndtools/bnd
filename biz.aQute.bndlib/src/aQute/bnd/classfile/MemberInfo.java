@@ -1,6 +1,7 @@
 package aQute.bnd.classfile;
 
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -39,9 +40,18 @@ public abstract class MemberInfo extends ElementInfo {
 		int access_flags = in.readUnsignedShort();
 		int name_index = in.readUnsignedShort();
 		int descriptor_index = in.readUnsignedShort();
-		Attribute[] attributes = ClassFile.readAttributes(in, constant_pool);
+		Attribute[] attributes = Attribute.readAttributes(in, constant_pool);
 
 		return constructor.apply(access_flags, constant_pool.utf8(name_index), constant_pool.utf8(descriptor_index),
 			attributes);
+	}
+
+	public void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+		int name_index = constant_pool.utf8Info(name);
+		int descriptor_index = constant_pool.utf8Info(descriptor);
+		out.writeShort(access);
+		out.writeShort(name_index);
+		out.writeShort(descriptor_index);
+		Attribute.writeAttributes(out, constant_pool, attributes);
 	}
 }

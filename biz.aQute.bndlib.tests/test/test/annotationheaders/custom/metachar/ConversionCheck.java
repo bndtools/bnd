@@ -8,10 +8,10 @@ public class ConversionCheck {
 		"value=${#value}", "array='${#array}'"
 	}, namespace = "type")
 	public static @interface Meta {
-		char value() default 100;
+		char value() default 'a';
 
 		char[] array() default {
-			120, 15
+			'[', ']'
 		};
 	}
 }

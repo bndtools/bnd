@@ -1,6 +1,7 @@
 package aQute.bnd.classfile;
 
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -40,7 +41,7 @@ public class ModuleAttribute implements Attribute {
 		return NAME + " " + module_name + " " + module_version + " " + module_flags;
 	}
 
-	static ModuleAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+	public static ModuleAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int module_name_index = in.readUnsignedShort();
 		int module_flags = in.readUnsignedShort();
 		int module_version_index = in.readUnsignedShort();
@@ -80,6 +81,64 @@ public class ModuleAttribute implements Attribute {
 			constant_pool.utf8(module_version_index), requires, exports, opens, uses, provides);
 	}
 
+	@Override
+	public void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+		int attribute_name_index = constant_pool.utf8Info(name());
+		int attribute_length = attribute_length();
+		out.writeShort(attribute_name_index);
+		out.writeInt(attribute_length);
+
+		int module_name_index = constant_pool.moduleInfo(module_name);
+		int module_version_index = (module_version != null) ? constant_pool.utf8Info(module_version) : 0;
+		out.writeShort(module_name_index);
+		out.writeShort(module_flags);
+		out.writeShort(module_version_index);
+
+		out.writeShort(requires.length);
+		for (Require require : requires) {
+			require.write(out, constant_pool);
+		}
+
+		out.writeShort(exports.length);
+		for (Export export : exports) {
+			export.write(out, constant_pool);
+		}
+
+		out.writeShort(opens.length);
+		for (Open open : opens) {
+			open.write(out, constant_pool);
+		}
+
+		out.writeShort(uses.length);
+		for (String use : uses) {
+			int uses_index = constant_pool.classInfo(use);
+			out.writeShort(uses_index);
+		}
+
+		out.writeShort(provides.length);
+		for (Provide provide : provides) {
+			provide.write(out, constant_pool);
+		}
+	}
+
+	@Override
+	public int attribute_length() {
+		int attribute_length = (8 + uses.length) * Short.BYTES;
+		for (Require require : requires) {
+			attribute_length += require.value_length();
+		}
+		for (Export export : exports) {
+			attribute_length += export.value_length();
+		}
+		for (Open open : opens) {
+			attribute_length += open.value_length();
+		}
+		for (Provide provide : provides) {
+			attribute_length += provide.value_length();
+		}
+		return attribute_length;
+	}
+
 	public static class Require {
 		public static final int	ACC_TRANSITIVE		= 0x0020;
 		public static final int	ACC_STATIC_PHASE	= 0x0040;
@@ -106,6 +165,16 @@ public class ModuleAttribute implements Attribute {
 			int requires_version_index = in.readUnsignedShort();
 			return new Require(constant_pool.moduleName(requires_index), requires_flags,
 				constant_pool.utf8(requires_version_index));
+		}
+
+		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+			out.writeShort(constant_pool.moduleInfo(requires));
+			out.writeShort(requires_flags);
+			out.writeShort((requires_version != null) ? constant_pool.utf8Info(requires_version) : 0);
+		}
+
+		int value_length() {
+			return 3 * Short.BYTES;
 		}
 	}
 
@@ -138,6 +207,19 @@ public class ModuleAttribute implements Attribute {
 			}
 			return new Export(constant_pool.packageName(exports_index), exports_flags, exports_to);
 		}
+
+		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+			out.writeShort(constant_pool.packageInfo(exports));
+			out.writeShort(exports_flags);
+			out.writeShort(exports_to.length);
+			for (String to : exports_to) {
+				out.writeShort(constant_pool.moduleInfo(to));
+			}
+		}
+
+		int value_length() {
+			return (3 + exports_to.length) * Short.BYTES;
+		}
 	}
 
 	public static class Open {
@@ -169,6 +251,19 @@ public class ModuleAttribute implements Attribute {
 			}
 			return new Open(constant_pool.packageName(opens_index), opens_flags, opens_to);
 		}
+
+		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+			out.writeShort(constant_pool.packageInfo(opens));
+			out.writeShort(opens_flags);
+			out.writeShort(opens_to.length);
+			for (String to : opens_to) {
+				out.writeShort(constant_pool.moduleInfo(to));
+			}
+		}
+
+		int value_length() {
+			return (3 + opens_to.length) * Short.BYTES;
+		}
 	}
 
 	public static class Provide {
@@ -194,6 +289,18 @@ public class ModuleAttribute implements Attribute {
 				provides_with[i] = constant_pool.className(provides_with_index);
 			}
 			return new Provide(constant_pool.className(provides_index), provides_with);
+		}
+
+		void write(DataOutput out, ConstantPool constant_pool) throws IOException {
+			out.writeShort(constant_pool.classInfo(provides));
+			out.writeShort(provides_with.length);
+			for (String with : provides_with) {
+				out.writeShort(constant_pool.classInfo(with));
+			}
+		}
+
+		int value_length() {
+			return (2 + provides_with.length) * Short.BYTES;
 		}
 	}
 }

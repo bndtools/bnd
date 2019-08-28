@@ -2,7 +2,6 @@ package aQute.lib.io;
 
 import java.io.DataInput;
 import java.io.IOException;
-import java.io.UTFDataFormatException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
@@ -115,50 +114,20 @@ public class ByteBufferDataInput implements DataInput {
 
 	@Override
 	public String readUTF() throws IOException {
-		int size = readUnsignedShort();
-		char[] string = new char[size];
-		int len = 0;
-		for (int i = 0; i < size; i++, len++) {
-			int b = readUnsignedByte();
-			if ((b > 0x00) && (b < 0x80)) {
-				string[len] = (char) b;
-			} else {
-				switch (b >> 4) {
-					// 2 byte encoding
-					case 0b1100 :
-					case 0b1101 : {
-						if (bb.remaining() < 1) {
-							throw new UTFDataFormatException("partial multi byte charater at end");
-						}
-						int b2 = readUnsignedByte();
-						if ((b2 & 0b1100_0000) != 0b1000_0000) {
-							throw new UTFDataFormatException("bad encoding at byte: " + i);
-						}
-						string[len] = (char) (((b & 0x1F) << 6) | (b2 & 0x3F));
-						i++;
-						break;
-					}
-					// 3 byte encoding
-					case 0b1110 : {
-						if (bb.remaining() < 2) {
-							throw new UTFDataFormatException("partial multi byte charater at end");
-						}
-						int b2 = readUnsignedByte();
-						int b3 = readUnsignedByte();
-						if (((b2 & 0b1100_0000) != 0b1000_0000) || ((b3 & 0b1100_0000) != 0b1000_0000)) {
-							throw new UTFDataFormatException("bad encoding at byte: " + i);
-						}
-						string[len] = (char) (((b & 0x0F) << 12) | ((b2 & 0x3F) << 6) | (b3 & 0x3F));
-						i += 2;
-						break;
-					}
-					// invalid encoding
-					default : {
-						throw new UTFDataFormatException("bad encoding at byte: " + i);
-					}
-				}
-			}
-		}
-		return new String(string, 0, len);
+		return IO.readUTF(this);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(getClass().getName());
+		sb.append("[pos=");
+		sb.append(bb.position());
+		sb.append(" lim=");
+		sb.append(bb.limit());
+		sb.append(" cap=");
+		sb.append(bb.capacity());
+		sb.append("]");
+		return sb.toString();
 	}
 }

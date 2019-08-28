@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,6 +17,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UTFDataFormatException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -258,7 +260,29 @@ public class IO {
 	}
 
 	public static OutputStream copy(ByteBuffer bb, OutputStream out) throws IOException {
-		if (bb.hasArray()) {
+		if (out instanceof ByteBufferOutputStream) {
+			ByteBufferOutputStream bbout = (ByteBufferOutputStream) out;
+			bbout.write(bb);
+		} else if (bb.hasArray()) {
+			out.write(bb.array(), bb.arrayOffset() + bb.position(), bb.remaining());
+			bb.position(bb.limit());
+		} else {
+			int length = Math.min(bb.remaining(), BUFFER_SIZE);
+			byte[] buffer = new byte[length];
+			while (length > 0) {
+				bb.get(buffer, 0, length);
+				out.write(buffer, 0, length);
+				length = Math.min(bb.remaining(), buffer.length);
+			}
+		}
+		return out;
+	}
+
+	public static DataOutput copy(ByteBuffer bb, DataOutput out) throws IOException {
+		if (out instanceof ByteBufferDataOutput) {
+			ByteBufferDataOutput bbout = (ByteBufferDataOutput) out;
+			bbout.write(bb);
+		} else if (bb.hasArray()) {
 			out.write(bb.array(), bb.arrayOffset() + bb.position(), bb.remaining());
 			bb.position(bb.limit());
 		} else {
@@ -1372,4 +1396,53 @@ public class IO {
 			return new File(path);
 		}
 	}
+
+	public static String readUTF(DataInput in) throws IOException {
+		int size = in.readUnsignedShort();
+		char[] string = new char[size];
+		int len = 0;
+		for (int i = 0; i < size; i++, len++) {
+			int b = in.readUnsignedByte();
+			if ((b > 0x00) && (b < 0x80)) {
+				string[len] = (char) b;
+			} else {
+				switch (b >> 4) {
+					// 2 byte encoding
+					case 0b1100 :
+					case 0b1101 : {
+						i++;
+						if (i >= size) {
+							throw new UTFDataFormatException("partial multi byte charater at end");
+						}
+						int b2 = in.readUnsignedByte();
+						if ((b2 & 0b1100_0000) != 0b1000_0000) {
+							throw new UTFDataFormatException("bad encoding at byte: " + (i - 1));
+						}
+						string[len] = (char) (((b & 0x1F) << 6) | (b2 & 0x3F));
+						break;
+					}
+					// 3 byte encoding
+					case 0b1110 : {
+						i += 2;
+						if (i >= size) {
+							throw new UTFDataFormatException("partial multi byte charater at end");
+						}
+						int b2 = in.readUnsignedByte();
+						int b3 = in.readUnsignedByte();
+						if (((b2 & 0b1100_0000) != 0b1000_0000) || ((b3 & 0b1100_0000) != 0b1000_0000)) {
+							throw new UTFDataFormatException("bad encoding at byte: " + (i - 2));
+						}
+						string[len] = (char) (((b & 0x0F) << 12) | ((b2 & 0x3F) << 6) | (b3 & 0x3F));
+						break;
+					}
+					// invalid encoding
+					default : {
+						throw new UTFDataFormatException("bad encoding at byte: " + i);
+					}
+				}
+			}
+		}
+		return new String(string, 0, len);
+	}
+
 }
