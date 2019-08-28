@@ -201,12 +201,6 @@ using your real name. Sorry, no pseudonyms or anonymous contributions.
 Many Git UI tools have support for adding the `Signed-off-by` line to the end of your commit
 message. This line can be automatically added by the `git commit` command by using the `-s` option.
 
-#### Small patch exception
-
-There are some exceptions to the signing requirement. Currently these are:
-
-* Your patch fixes spelling or grammar errors.
-
 ### Merge approval
 
 The Bnd/Bndtools maintainers will review your pull request and, if approved, will merge into

@@ -10,8 +10,11 @@ information about Bndtools can be found at <https://bndtools.org>.
 The git repository contains all code. 
 
 ## License
-Most code is Apache 2.0 Licensed unless otherwise stated by the LICENSE file in the project
-folder. Those projects are licensed under the Eclipse Public License.
+This program and the accompanying materials are made available under the
+terms of the Apache License, Version 2.0 which is available at
+<https://www.apache.org/licenses/LICENSE-2.0>, or
+the Eclipse Public License 2.0 which is available at
+<http://www.eclipse.org/legal/epl-2.0>.
 
 ## API
 Though we am usually pretty good at backward compatibility, there is no guarantee. This
