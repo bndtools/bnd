@@ -17,20 +17,20 @@ import aQute.bnd.classfile.FieldInfo;
 import aQute.bnd.classfile.MethodInfo;
 
 public class ClassFileBuilder {
-	public static final String[]		EMPTY_STRING_ARRAY		= new String[0];
-	public static final FieldInfo[]		EMPTY_FIELD_ARRAY		= new FieldInfo[0];
-	public static final MethodInfo[]	EMPTY_METHOD_ARRAY		= new MethodInfo[0];
-	public static final Attribute[]		EMPTY_ATTRIBUTE_ARRAY	= new Attribute[0];
-	private int							minor_version;
-	private int							major_version;
+	static final String[]			EMPTY_STRING_ARRAY		= new String[0];
+	static final FieldInfo[]		EMPTY_FIELD_ARRAY		= new FieldInfo[0];
+	static final MethodInfo[]		EMPTY_METHOD_ARRAY		= new MethodInfo[0];
+	static final Attribute[]		EMPTY_ATTRIBUTE_ARRAY	= new Attribute[0];
+	private int						minor_version;
+	private int						major_version;
 	private MutableConstantPool		constant_pool;
-	private int							access;
-	private String						this_class;
-	private String						super_class;
-	private final List<String>			interfaces				= new ArrayList<>();
-	private final List<FieldInfo>		fields					= new ArrayList<>();
-	private final List<MethodInfo>		methods					= new ArrayList<>();
-	private final List<Attribute>		attributes				= new ArrayList<>();
+	private int						access;
+	private String					this_class;
+	private String					super_class;
+	private final List<String>		interfaces				= new ArrayList<>();
+	private final List<FieldInfo>	fields					= new ArrayList<>();
+	private final List<MethodInfo>	methods					= new ArrayList<>();
+	private final List<Attribute>	attributes				= new ArrayList<>();
 
 	public ClassFileBuilder(int access_flags, int major_version, int minor_version, String this_class,
 		String super_class, Set<String> interfaces) {
