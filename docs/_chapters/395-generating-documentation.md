@@ -66,7 +66,20 @@ Write your own markdown text here.
 Inside an `embed` tag one can only specify block tags which will override the parent template included. 
 Here, the parent template is the readme template file built-in into Bnd available at the `default:readme.twig` URL (see the file [here](https://raw.githubusercontent.com/bndtools/bnd/master/biz.aQute.bnd.reporter/src/biz/aQute/bnd/reporter/plugins/transformer/templates/readme.twig)). This file defines a set of blocks that you can override with your own text. 
 In the above snippet, we override the `beforeTitle` block. You can add multiple blocks depending on where you want to insert your text, here is a list of available blocks:
-`beforeTitle`, `beforeOverview`, `beforeLinks`, `beforeCoordinates`, `beforeArtifacts`, `beforeCodeUsage`, `beforeComponents`, `beforeDevelopers`, `beforeLicenses`, `beforeCopyright`, `beforeVendor`.
+
+* `beforeTitle`, `afterTitle`
+* `beforeOverview`, `afterOverview`
+* `beforeLinks`, `afterLinks`
+* `beforeCoordinates`, `afterCoordinates`
+* `beforeArtifacts`, `afterArtifacts`
+* `beforeCodeUsage`, `afterCodeUsage`
+* `beforeComponents`, `afterComponents`
+* `beforeDevelopers`, `afterDevelopers`
+* `beforeLicenses`, `afterLicenses`
+* `beforeCopyright`, `afterCopyright`
+* `beforeVendor`, `afterVendor`
+
+`before*` blocks are shown between the title of a section and the generated content. `after*` blocks are shown at the end of a section, after the generated content. 
 
 #### Parameters
 
