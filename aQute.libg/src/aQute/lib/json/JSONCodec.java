@@ -124,8 +124,12 @@ public class JSONCodec {
 	 */
 	Handler getHandler(Type type, Class<?> actual) throws Exception {
 
-		// First the static hard coded handlers for the common types.
+		// Use the local handlers for the common types if exist.
+		Handler h = localHandlers.get(type);
+		if (h != null)
+			return h;
 
+		// Use the static hard coded handlers for the common types.
 		if (type == String.class)
 			return sh;
 
@@ -156,15 +160,10 @@ public class JSONCodec {
 				return byteh;
 		}
 
-		Handler h;
 		synchronized (handlers) {
 			h = handlers.get(type);
 		}
 
-		if (h != null)
-			return h;
-
-		h = localHandlers.get(type);
 		if (h != null)
 			return h;
 
