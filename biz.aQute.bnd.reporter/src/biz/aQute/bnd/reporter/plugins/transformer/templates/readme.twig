@@ -26,22 +26,10 @@
 {{ blocks.overviewBlock(printer, report) }}
 {%- endblock -%}
 
-{%- block beforeDocumentation %}{% endblock -%}
+{%- block beforeLinks %}{% endblock -%}
 
-{%- block documentation -%}
-{{ blocks.documentationBlock(printer, report) }}
-{%- endblock -%}
-
-{%- block beforeSourceRepository %}{% endblock -%}
-
-{%- block sourceRepository -%}
-{{ blocks.sourceRepositoryBlock(printer, report) }}
-{%- endblock -%}
-
-{%- block beforeArtifactRepository %}{% endblock -%}
-
-{%- block artifactRepository -%}
-{{ blocks.artifactRepositoryBlock(printer, report) }}
+{%- block links -%}
+{{ blocks.linksBlock(printer, report) }}
 {%- endblock -%}
 
 {%- block beforeCoordinates %}{% endblock -%}

@@ -19,46 +19,28 @@
 {%- endmacro %}
 
 {# 
-# DOCUMENTATION
+# LINKS
 #}
-{% macro documentationBlock (printer, report, iconUrl) -%}
+{% macro linksBlock (printer, report, iconUrl) -%}
 {%- set docUrl = default(report.manifest.bundleDocURL,report.commonInfo.docURL) -%}
-{%- if not empty(docUrl) -%}
-{{ '\n\n' }}{{ printer.printTitle('Documentation', 2, iconUrl) }}
-
-Visit [{{ docUrl }}]({{ docUrl }}).
-{%- endif -%}
-{%- endmacro %}
-
-{# 
-# SOURCE REPOSITORY
-#}
-{% macro sourceRepositoryBlock (printer, report, iconUrl) -%}
 {%- set codeBrowse = default(report.manifest.bundleSCM.url,report.commonInfo.scm.url) -%}
 {%- set codeDev = default(report.manifest.bundleSCM.developerConnection,report.commonInfo.scm.developerConnection) -%}
-{%- if not empty(codeBrowse) or not empty(codeDev) -%}
-{{ '\n\n' }}{{ printer.printTitle('Source Repository', 2, iconUrl) }}
-{%- if empty(codeDev) -%}
-{{ '\n\n' }}**Browse**: [{{ codeBrowse }}]({{ codeBrowse }}).
-{%- elseif empty(codeBrowse) -%}
-{{ '\n\n' }}**Clone**: [{{ codeDev }}]({{ codeDev }}).
-{%- else -%}
-{{ '\n\n' }}**Browse**: [{{ codeBrowse }}]({{ codeBrowse }}).
-
-**Clone**: [{{ codeDev }}]({{ codeDev }}).
-{%- endif -%}
-{%- endif -%}
-{% endmacro %}
-
-{# 
-# ARTIFACT REPOSITORY
-#}
-{% macro artifactRepositoryBlock (printer, report, iconUrl) -%}
 {%- set download = default(report.manifest.bundleUpdateLocation,report.commonInfo.updateLocation) -%}
+{%- if not empty(docUrl) or not empty(codeBrowse) or not empty(codeDev) or not empty(download) -%}
+{{ '\n\n' }}{{ printer.printTitle('Links', 2, iconUrl) }}{{ '\n' }}
+{%- if not empty(docUrl) -%}
+{{ '\n' }}* [Documentation]({{ docUrl }})
+{%- endif -%}
+{%- if not empty(codeBrowse) and not empty(codeDev) -%}
+{{ '\n' }}* [Source Code]({{ codeBrowse }}) (clone with `{{ codeDev }}`)
+{%- elseif not empty(codeBrowse) -%}
+{{ '\n' }}* [Source Code]({{ codeBrowse }})
+{%- else -%}
+{{ '\n' }}* Clone source code with `{{ codeDev }}`
+{%- endif -%}
 {%- if not empty(download) -%}
-{{ '\n\n' }}{{ printer.printTitle('Artifact Repository', 2, iconUrl) }}
-
-Visit [{{ download }}]({{ download }}).
+{{ '\n' }}* [Artifact(s)]({{ download }})
+{%- endif -%}
 {%- endif -%}
 {%- endmacro %}
 
