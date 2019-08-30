@@ -300,11 +300,6 @@ public class ConstantPool {
 		}
 	}
 
-	@FunctionalInterface
-	interface IntBiFunction<R> {
-		R apply(int a, int b);
-	}
-
 	public abstract static class AbstractRefInfo implements Info {
 		public final int	class_index;
 		public final int	name_and_type_index;
@@ -314,10 +309,15 @@ public class ConstantPool {
 			this.name_and_type_index = name_and_type_index;
 		}
 
-		static <R extends AbstractRefInfo> R read(DataInput in, IntBiFunction<R> constructor) throws IOException {
+		@FunctionalInterface
+		public interface Constructor<R extends AbstractRefInfo> {
+			R init(int class_index, int name_and_type_index);
+		}
+
+		static <R extends AbstractRefInfo> R read(DataInput in, Constructor<R> constructor) throws IOException {
 			int class_index = in.readUnsignedShort();
 			int name_and_type_index = in.readUnsignedShort();
-			return constructor.apply(class_index, name_and_type_index);
+			return constructor.init(class_index, name_and_type_index);
 		}
 
 		@Override
@@ -501,10 +501,15 @@ public class ConstantPool {
 			this.name_and_type_index = name_and_type_index;
 		}
 
-		static <D extends AbstractDynamicInfo> D read(DataInput in, IntBiFunction<D> constructor) throws IOException {
+		@FunctionalInterface
+		public interface Constructor<D extends AbstractDynamicInfo> {
+			D init(int bootstrap_method_attr_index, int name_and_type_index);
+		}
+
+		static <D extends AbstractDynamicInfo> D read(DataInput in, Constructor<D> constructor) throws IOException {
 			int bootstrap_method_attr_index = in.readUnsignedShort();
 			int name_and_type_index = in.readUnsignedShort();
-			return constructor.apply(bootstrap_method_attr_index, name_and_type_index);
+			return constructor.init(bootstrap_method_attr_index, name_and_type_index);
 		}
 
 		@Override

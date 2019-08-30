@@ -4,7 +4,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.function.BiFunction;
 
 public class AnnotationInfo {
 	public final String				type;
@@ -24,8 +23,13 @@ public class AnnotationInfo {
 		return read(in, constant_pool, AnnotationInfo::new);
 	}
 
+	@FunctionalInterface
+	public interface Constructor<A extends AnnotationInfo> {
+		A init(String type, ElementValueInfo[] values);
+	}
+
 	static <A extends AnnotationInfo> A read(DataInput in, ConstantPool constant_pool,
-		BiFunction<String, ElementValueInfo[], A> constructor) throws IOException {
+		Constructor<A> constructor) throws IOException {
 		int type_index = in.readUnsignedShort();
 		int num_element_value_pairs = in.readUnsignedShort();
 		ElementValueInfo[] element_value_pairs = new ElementValueInfo[num_element_value_pairs];
@@ -33,7 +37,7 @@ public class AnnotationInfo {
 			element_value_pairs[i] = ElementValueInfo.read(in, constant_pool);
 		}
 
-		return constructor.apply(constant_pool.utf8(type_index), element_value_pairs);
+		return constructor.init(constant_pool.utf8(type_index), element_value_pairs);
 	}
 
 	void write(DataOutput out, ConstantPool constant_pool) throws IOException {

@@ -4,7 +4,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.function.Function;
 
 public abstract class ParameterAnnotationsAttribute implements Attribute {
 	public final ParameterAnnotationInfo[] parameter_annotations;
@@ -18,15 +17,20 @@ public abstract class ParameterAnnotationsAttribute implements Attribute {
 		return name() + " " + Arrays.toString(parameter_annotations);
 	}
 
+	@FunctionalInterface
+	public interface Constructor<A extends ParameterAnnotationsAttribute> {
+		A init(ParameterAnnotationInfo[] parameter_annotations);
+	}
+
 	static <A extends ParameterAnnotationsAttribute> A read(DataInput in, ConstantPool constant_pool,
-		Function<ParameterAnnotationInfo[], A> constructor) throws IOException {
+		Constructor<A> constructor) throws IOException {
 		int num_parameters = in.readUnsignedByte();
 		ParameterAnnotationInfo[] parameter_annotations = new ParameterAnnotationInfo[num_parameters];
 		for (int parameter = 0; parameter < num_parameters; parameter++) {
 			parameter_annotations[parameter] = ParameterAnnotationInfo.read(in, constant_pool, parameter);
 		}
 
-		return constructor.apply(parameter_annotations);
+		return constructor.init(parameter_annotations);
 	}
 
 	@Override

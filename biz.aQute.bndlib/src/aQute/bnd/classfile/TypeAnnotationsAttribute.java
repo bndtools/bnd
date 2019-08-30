@@ -4,7 +4,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.function.Function;
 
 public abstract class TypeAnnotationsAttribute implements Attribute {
 	public final TypeAnnotationInfo[] type_annotations;
@@ -18,15 +17,20 @@ public abstract class TypeAnnotationsAttribute implements Attribute {
 		return name() + " " + Arrays.toString(type_annotations);
 	}
 
+	@FunctionalInterface
+	public interface Constructor<A extends TypeAnnotationsAttribute> {
+		A init(TypeAnnotationInfo[] type_annotations);
+	}
+
 	static <A extends TypeAnnotationsAttribute> A read(DataInput in, ConstantPool constant_pool,
-		Function<TypeAnnotationInfo[], A> constructor) throws IOException {
+		Constructor<A> constructor) throws IOException {
 		int num_annotations = in.readUnsignedShort();
 		TypeAnnotationInfo[] type_annotations = new TypeAnnotationInfo[num_annotations];
 		for (int i = 0; i < num_annotations; i++) {
 			type_annotations[i] = TypeAnnotationInfo.read(in, constant_pool);
 		}
 
-		return constructor.apply(type_annotations);
+		return constructor.init(type_annotations);
 	}
 
 	@Override
