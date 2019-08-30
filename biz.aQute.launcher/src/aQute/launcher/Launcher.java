@@ -531,7 +531,7 @@ public class Launcher implements ServiceListener {
 			for (Bundle b : installedBundles.values()) {
 				try {
 					if (b.getState() == Bundle.INSTALLED) {
-						b.start();
+						start(b);
 					}
 				} catch (Exception e) {
 					failed.add(b.getSymbolicName() + "-" + b.getVersion() + " " + e + "\n");
@@ -549,18 +549,11 @@ public class Launcher implements ServiceListener {
 		// Add all bundles that we've tried to start but failed
 		all.addAll(wantsToBeStarted);
 
-		int startOptions = Bundle.START_ACTIVATION_POLICY;
-
-		// when activationEager remove start activation policy
-		if (parms.activationEager) {
-			startOptions &= ~Bundle.START_ACTIVATION_POLICY;
-		}
 
 		for (Bundle b : tobestarted) {
 			try {
 				trace("starting %s", b.getSymbolicName());
-				if (!isFragment(b))
-					b.start(startOptions);
+				start(b);
 				trace("started  %s", b.getSymbolicName());
 			} catch (BundleException e) {
 				wantsToBeStarted.add(b);
@@ -568,6 +561,25 @@ public class Launcher implements ServiceListener {
 			}
 		}
 
+	}
+
+	void start(Bundle b) throws BundleException {
+		if (isFragment(b))
+			return;
+
+		int startOptions = Bundle.START_ACTIVATION_POLICY;
+
+		// when activationEager remove start activation policy
+		if (parms.activationEager) {
+			startOptions &= ~Bundle.START_ACTIVATION_POLICY;
+		}
+		b.start(startOptions);
+	}
+
+	void stop(Bundle b) throws BundleException {
+		if (isFragment(b))
+			return;
+		b.stop();
 	}
 
 	private void refresh() throws InterruptedException {
@@ -656,9 +668,9 @@ public class Launcher implements ServiceListener {
 					if (f.lastModified() <= before) {
 						if (b.getLastModified() < f.lastModified()) {
 							trace("updating %s", f);
-							if (b.getState() == Bundle.ACTIVE) {
+							if (b.getState() == Bundle.ACTIVE || b.getState() == Bundle.STARTING) {
 								tobestarted.add(b);
-								b.stop();
+								stop(b);
 							}
 							b.update();
 						} else
@@ -670,6 +682,7 @@ public class Launcher implements ServiceListener {
 				error("Failed to update bundle %s, exception %s", f, e);
 			}
 	}
+
 
 	/**
 	 * Convert a path to native when it contains a macro. This is needed for the
@@ -799,7 +812,7 @@ public class Launcher implements ServiceListener {
 					} else {
 						if (mustUpdate(digest, bundle)) {
 							trace("updating %s, digest=%s", path, digest);
-							bundle.stop();
+							stop(bundle);
 							bundle.update(in);
 							updateDigest(digest, bundle);
 						} else {
