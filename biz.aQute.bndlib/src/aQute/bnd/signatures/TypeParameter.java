@@ -18,7 +18,8 @@ public class TypeParameter {
 	public final ReferenceTypeSignature		classBound;
 	public final ReferenceTypeSignature[]	interfaceBounds;
 
-	TypeParameter(String identifier, ReferenceTypeSignature classBound, ReferenceTypeSignature[] interfaceBounds) {
+	public TypeParameter(String identifier, ReferenceTypeSignature classBound,
+		ReferenceTypeSignature[] interfaceBounds) {
 		this.identifier = identifier;
 		this.classBound = classBound;
 		this.interfaceBounds = interfaceBounds;
