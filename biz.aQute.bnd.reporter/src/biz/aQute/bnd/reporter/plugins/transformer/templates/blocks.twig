@@ -5,6 +5,7 @@
 {%- set title = default(report.manifest.bundleName,report.commonInfo.name) -%}
 {%- set title = default(title,report.manifest.bundleSymbolicName.symbolicName) -%}
 {%- set title = default(title,report.fileName) -%}
+{%- block beforeTitle %}{% endblock -%}
 {{ printer.printTitle(title,1,iconUrl) }}
 {%- endmacro %}
 
@@ -14,7 +15,9 @@
 {% macro overviewBlock (printer, report) -%}
 {%- set description = default(report.manifest.bundleDescription,report.commonInfo.description) -%}
 {%- if not empty(description) -%}
-{{ '\n\n' }}{{ description }}
+{{ '\n\n' }}
+{%- block beforeOverview %}{% endblock -%}
+{{ description }}
 {%- endif -%}
 {%- endmacro %}
 
@@ -28,6 +31,7 @@
 {%- set download = default(report.manifest.bundleUpdateLocation,report.commonInfo.updateLocation) -%}
 {%- if not empty(docUrl) or not empty(codeBrowse) or not empty(codeDev) or not empty(download) -%}
 {{ '\n\n' }}{{ printer.printTitle('Links', 2, iconUrl) }}{{ '\n' }}
+{%- block beforeLinks %}{% endblock -%}
 {%- if not empty(docUrl) -%}
 {{ '\n' }}* [Documentation]({{ docUrl }})
 {%- endif -%}
@@ -50,6 +54,7 @@
 {% macro coordinatesBlock (printer, report, iconUrl) -%}
 {%- if not empty(report.mavenCoordinate) or not empty(report.manifest) -%}
 {{ '\n\n' }}{{ printer.printTitle('Coordinates',2, iconUrl) }}
+{%- block beforeCoordinates %}{% endblock -%}
 {%- if not empty(report.mavenCoordinate) -%}
 {{ '\n\n' }}{{ printer.printTitle('Maven',3) }}
 
@@ -71,6 +76,7 @@
 {%- if not empty(developers) -%}
 {{ '\n\n' }}{{ printer.printTitle('Developers',2, iconUrl) }}
 
+{% block beforeDevelopers %}{% endblock -%}
 {{ printer.printDevelopers(developers) }}
 {%- endif -%}
 {%- endmacro %}
@@ -83,6 +89,7 @@
 {%- if not empty(licenses) -%}
 {{ '\n\n' }}{{ printer.printTitle('Licenses',2, iconUrl) }}
 
+{% block beforeLicenses %}{% endblock -%}
 {{ printer.printLicenses(licenses) }}
 {%- endif -%}
 {%- endmacro %}
@@ -95,6 +102,7 @@
 {%- if not empty(copyright) -%}
 {{ '\n\n' }}{{ printer.printTitle('Copyright',2, iconUrl) }}
 
+{% block beforeCopyright %}{% endblock -%}
 {{ copyright }}
 {%- endif -%}
 {% endmacro %}
@@ -107,6 +115,7 @@
 {%- set address = default(report.manifest.bundleContactAddress,report.commonInfo.contactAddress) -%}
 {%- if not empty(vendor) or not empty(address) -%}
 {{ '\n\n' }}---
+{% block beforeVendor %}{% endblock -%}
 {{ printer.printVendor(vendor, address) }}
 {%- endif -%}
 {%- endmacro %}
@@ -118,6 +127,7 @@
 {% if not empty(report.projects) or length(report.bundles) > 1 -%}
 {{ '\n\n' }}{{ printer.printTitle('Built Artifacts',2, iconUrl) }}
 
+{% block beforeArtifacts %}{% endblock -%}
 {{ printer.printArtifacts(report) }}
 {%- endif -%}
 {%- endmacro %}
@@ -129,6 +139,7 @@
 {%- if not empty(report.codeSnippets) -%}
 {{ '\n\n' }}{{ printer.printTitle('Code Usage',2, iconUrl) }}
 
+{% block beforeCodeUsage %}{% endblock -%}
 {{ printer.printCodeSnippets(report.codeSnippets) }}
 {%- endif -%}
 {%- endmacro %}
@@ -140,6 +151,7 @@
 {%- if not empty(report.components) -%}
 {{ '\n\n' }}{{ printer.printTitle('Components',2, iconUrl) }}
 
+{% block beforeComponents %}{% endblock -%}
 {{ printer.printComponents(report.components, report.metatypes) }}
 {%- endif -%}
 {%- endmacro %}

@@ -14,68 +14,68 @@
 {%- do report.get('bundles').clear() -%}
 {%- endif -%}
 
-{%- block beforeTitle %}{% endblock -%}
-
 {%- block title -%}
 {{ blocks.titleBlock(printer, report, iconUrl) }}
 {%- endblock -%}
 
-{%- block beforeOverview %}{% endblock -%}
+{%- block afterTitle %}{% endblock -%}
 
 {%- block overview -%}
 {{ blocks.overviewBlock(printer, report) }}
 {%- endblock -%}
 
-{%- block beforeLinks %}{% endblock -%}
+{%- block afterOverview %}{% endblock -%}
 
 {%- block links -%}
 {{ blocks.linksBlock(printer, report) }}
 {%- endblock -%}
 
-{%- block beforeCoordinates %}{% endblock -%}
+{%- block afterLinks %}{% endblock -%}
 
 {%- block coordinates -%}
 {{ blocks.coordinatesBlock(printer, report) }}
 {%- endblock -%}
 
-{%- block beforeArtifacts %}{% endblock -%}
+{%- block afterCoordinates %}{% endblock -%}
 
 {%- block artifacts -%}
 {{ blocks.artifactsBlock(printer, report) }}
 {%- endblock -%}
 
-{%- block beforeCodeUsage %}{% endblock -%}
+{%- block afterArtifacts %}{% endblock -%}
 
 {%- block codeUsage -%}
 {{ blocks.codeUsageBlock(printer, report) }}
 {%- endblock -%}
 
-{%- block beforeComponents %}{% endblock -%}
+{%- block afterCodeUsage %}{% endblock -%}
 
 {%- block components -%}
 {{ blocks.componentsBlock(printer, report) }}
 {%- endblock -%}
 
-{%- block beforeDevelopers %}{% endblock -%}
+{%- block afterComponents %}{% endblock -%}
 
 {%- block developers -%}
 {{ blocks.developersBlock(printer, report) }}
 {%- endblock -%}
 
-{%- block beforeLicenses %}{% endblock -%}
+{%- block afterDevelopers %}{% endblock -%}
 
 {%- block licenses -%}
 {{ blocks.licensesBlock(printer, report) }}
 {%- endblock -%}
 
-{%- block beforeCopyright %}{% endblock -%}
+{%- block afterLicenses %}{% endblock -%}
 
 {%- block copyright -%}
 {{ blocks.copyrightBlock(printer, report) }}
 {%- endblock -%}
 
-{%- block beforeVendor %}{% endblock -%}
+{%- block afterCopyright %}{% endblock -%}
 
 {%- block vendor -%}
 {{ blocks.vendorBlock(printer, report) }}
 {%- endblock %}
+
+{%- block afterVendor %}{% endblock -%}
