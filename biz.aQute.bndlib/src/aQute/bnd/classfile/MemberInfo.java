@@ -10,7 +10,7 @@ public abstract class MemberInfo extends ElementInfo {
 	public final String	name;
 	public final String	descriptor;
 
-	MemberInfo(int access, String name, String descriptor, Attribute[] attributes) {
+	protected MemberInfo(int access, String name, String descriptor, Attribute[] attributes) {
 		super(access, attributes);
 		this.name = name;
 		this.descriptor = descriptor;

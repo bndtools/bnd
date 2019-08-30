@@ -8,7 +8,7 @@ import java.util.Arrays;
 public abstract class ParameterAnnotationsAttribute implements Attribute {
 	public final ParameterAnnotationInfo[] parameter_annotations;
 
-	ParameterAnnotationsAttribute(ParameterAnnotationInfo[] parameter_annotations) {
+	protected ParameterAnnotationsAttribute(ParameterAnnotationInfo[] parameter_annotations) {
 		this.parameter_annotations = parameter_annotations;
 	}
 

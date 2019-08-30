@@ -8,7 +8,7 @@ import java.util.Arrays;
 public abstract class AnnotationsAttribute implements Attribute {
 	public final AnnotationInfo[] annotations;
 
-	AnnotationsAttribute(AnnotationInfo[] annotations) {
+	protected AnnotationsAttribute(AnnotationInfo[] annotations) {
 		this.annotations = annotations;
 	}
 

@@ -8,7 +8,7 @@ import java.util.Arrays;
 public abstract class TypeAnnotationsAttribute implements Attribute {
 	public final TypeAnnotationInfo[] type_annotations;
 
-	TypeAnnotationsAttribute(TypeAnnotationInfo[] type_annotations) {
+	protected TypeAnnotationsAttribute(TypeAnnotationInfo[] type_annotations) {
 		this.type_annotations = type_annotations;
 	}
 

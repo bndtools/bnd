@@ -304,7 +304,7 @@ public class ConstantPool {
 		public final int	class_index;
 		public final int	name_and_type_index;
 
-		AbstractRefInfo(int class_index, int name_and_type_index) {
+		protected AbstractRefInfo(int class_index, int name_and_type_index) {
 			this.class_index = class_index;
 			this.name_and_type_index = name_and_type_index;
 		}
@@ -496,7 +496,7 @@ public class ConstantPool {
 		public final int	bootstrap_method_attr_index;
 		public final int	name_and_type_index;
 
-		AbstractDynamicInfo(int bootstrap_method_attr_index, int name_and_type_index) {
+		protected AbstractDynamicInfo(int bootstrap_method_attr_index, int name_and_type_index) {
 			this.bootstrap_method_attr_index = bootstrap_method_attr_index;
 			this.name_and_type_index = name_and_type_index;
 		}
@@ -760,8 +760,8 @@ public class ConstantPool {
 	}
 
 	@FunctionalInterface
-	public interface AbstractRefInfoFunction {
-		int apply(String class_name, String name, String descriptor);
+	public interface RefInfoFunction {
+		int index(String class_name, String name, String descriptor);
 	}
 
 	// CONSTANT_Fieldref
@@ -788,7 +788,7 @@ public class ConstantPool {
 	}
 
 	// CONSTANT_InterfaceMethodref
-	public int interfacemethodrefInfo(String class_name, String name, String descriptor) {
+	public int interfaceMethodrefInfo(String class_name, String name, String descriptor) {
 		requireNonNull(class_name);
 		requireNonNull(name);
 		requireNonNull(descriptor);
@@ -811,14 +811,14 @@ public class ConstantPool {
 
 	// CONSTANT_MethodHandle
 	public int methodHandleInfo(int reference_kind, String class_name, String name, String descriptor,
-		AbstractRefInfoFunction abstractRefInfo) {
+		RefInfoFunction refInfoFunction) {
 		requireNonNull(class_name);
 		requireNonNull(name);
 		requireNonNull(descriptor);
-		requireNonNull(abstractRefInfo);
+		requireNonNull(refInfoFunction);
 		return index(MethodHandleInfo.class,
 			other -> equalsMethodHandleInfo(reference_kind, class_name, name, descriptor, other),
-			() -> new MethodHandleInfo(reference_kind, abstractRefInfo.apply(class_name, name, descriptor)));
+			() -> new MethodHandleInfo(reference_kind, refInfoFunction.index(class_name, name, descriptor)));
 	}
 
 	private boolean equalsMethodHandleInfo(int reference_kind, String class_name, String name, String descriptor,
