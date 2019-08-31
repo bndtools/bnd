@@ -33,7 +33,6 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
-import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -220,8 +219,10 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		String access = attrs.computeIfAbsent("access", k -> String.valueOf(access(requireCapability)));
 		String version = attrs.computeIfAbsent("version", k -> analyzer.getVersion());
 
-		return new ModuleInfoBuilder(Clazz.JAVA.OpenJDK9.getMajor(), name, version,
-			Integer.parseInt(access) == ModuleAttribute.ACC_OPEN);
+		ModuleInfoBuilder builder = new ModuleInfoBuilder().module_name(name)
+			.module_version(version)
+			.module_flags(Integer.parseInt(access));
+		return builder;
 	}
 
 	private void openPackages(Analyzer analyzer, ModuleInfoBuilder builder) {
