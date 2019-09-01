@@ -9,7 +9,7 @@ import aQute.lib.stringrover.StringRover;
 public class ArrayTypeSignature implements ReferenceTypeSignature {
 	public final JavaTypeSignature component;
 
-	ArrayTypeSignature(JavaTypeSignature component) {
+	public ArrayTypeSignature(JavaTypeSignature component) {
 		this.component = component;
 	}
 

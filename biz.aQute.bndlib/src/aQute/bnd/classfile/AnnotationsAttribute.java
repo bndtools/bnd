@@ -4,12 +4,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.function.Function;
 
 public abstract class AnnotationsAttribute implements Attribute {
 	public final AnnotationInfo[] annotations;
 
-	AnnotationsAttribute(AnnotationInfo[] annotations) {
+	protected AnnotationsAttribute(AnnotationInfo[] annotations) {
 		this.annotations = annotations;
 	}
 
@@ -18,10 +17,15 @@ public abstract class AnnotationsAttribute implements Attribute {
 		return name() + " " + Arrays.toString(annotations);
 	}
 
+	@FunctionalInterface
+	public interface Constructor<A extends AnnotationsAttribute> {
+		A init(AnnotationInfo[] annotations);
+	}
+
 	static <A extends AnnotationsAttribute> A read(DataInput in, ConstantPool constant_pool,
-		Function<AnnotationInfo[], A> constructor) throws IOException {
+		Constructor<A> constructor) throws IOException {
 		AnnotationInfo[] annotations = AnnotationInfo.readInfos(in, constant_pool);
-		return constructor.apply(annotations);
+		return constructor.init(annotations);
 	}
 
 	@Override

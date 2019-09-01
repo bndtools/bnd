@@ -9,7 +9,7 @@ public class ParameterAnnotationInfo {
 	public final int				parameter;
 	public final AnnotationInfo[]	annotations;
 
-	ParameterAnnotationInfo(int parameter, AnnotationInfo[] annotations) {
+	public ParameterAnnotationInfo(int parameter, AnnotationInfo[] annotations) {
 		this.parameter = parameter;
 		this.annotations = annotations;
 	}

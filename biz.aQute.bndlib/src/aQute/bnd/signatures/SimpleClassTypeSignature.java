@@ -16,7 +16,7 @@ public class SimpleClassTypeSignature {
 	public final String						identifier;
 	public final TypeArgument[]				typeArguments;
 
-	SimpleClassTypeSignature(String identifier, TypeArgument[] typeArguments) {
+	public SimpleClassTypeSignature(String identifier, TypeArgument[] typeArguments) {
 		this.identifier = identifier;
 		this.typeArguments = typeArguments;
 	}

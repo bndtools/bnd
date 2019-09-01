@@ -25,7 +25,7 @@ public class SourceDebugExtensionAttribute implements Attribute {
 		return NAME;
 	}
 
-	static SourceDebugExtensionAttribute read(DataInput in, int attribute_length) throws IOException {
+	public static SourceDebugExtensionAttribute read(DataInput in, int attribute_length) throws IOException {
 		if (attribute_length < 0) {
 			throw new IOException("attribute length > 2Gb");
 		}

@@ -10,7 +10,7 @@ public abstract class MemberInfo extends ElementInfo {
 	public final String	name;
 	public final String	descriptor;
 
-	MemberInfo(int access, String name, String descriptor, Attribute[] attributes) {
+	protected MemberInfo(int access, String name, String descriptor, Attribute[] attributes) {
 		super(access, attributes);
 		this.name = name;
 		this.descriptor = descriptor;
@@ -31,8 +31,8 @@ public abstract class MemberInfo extends ElementInfo {
 	}
 
 	@FunctionalInterface
-	interface Constructor<M> {
-		M apply(int access_flags, String name, String descriptor, Attribute[] attributes);
+	public interface Constructor<M extends MemberInfo> {
+		M init(int access_flags, String name, String descriptor, Attribute[] attributes);
 	}
 
 	static <M extends MemberInfo> M read(DataInput in, ConstantPool constant_pool, Constructor<M> constructor)
@@ -42,7 +42,7 @@ public abstract class MemberInfo extends ElementInfo {
 		int descriptor_index = in.readUnsignedShort();
 		Attribute[] attributes = Attribute.readAttributes(in, constant_pool);
 
-		return constructor.apply(access_flags, constant_pool.utf8(name_index), constant_pool.utf8(descriptor_index),
+		return constructor.init(access_flags, constant_pool.utf8(name_index), constant_pool.utf8(descriptor_index),
 			attributes);
 	}
 

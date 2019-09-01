@@ -2,12 +2,13 @@ package aQute.bnd.classfile.builder;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.Map;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Set;
 
@@ -16,42 +17,102 @@ import aQute.bnd.classfile.ModuleAttribute;
 import aQute.bnd.classfile.ModuleMainClassAttribute;
 import aQute.bnd.classfile.ModulePackagesAttribute;
 
-public class ModuleInfoBuilder {
-	private final int									major_version;
-	private final String								module_name;
-	private final int									module_flags;
-	private final String								module_version;
-	private final Map<String, ModuleAttribute.Require>	requires	= new LinkedHashMap<>();
-	private final Map<String, ModuleAttribute.Export>	exports		= new LinkedHashMap<>();
-	private final Map<String, ModuleAttribute.Open>		opens		= new LinkedHashMap<>();
-	private final Set<String>							uses		= new LinkedHashSet<>();
-	private final Map<String, ModuleAttribute.Provide>	provides	= new LinkedHashMap<>();
-	private String										mainClass;
-	private final Set<String>							packages	= new LinkedHashSet<>();
+public class ModuleInfoBuilder extends ClassFileBuilder {
+	static final ModuleAttribute.Require[]		EMPTY_REQUIRE_ARRAY	= new ModuleAttribute.Require[0];
+	static final ModuleAttribute.Export[]		EMPTY_EXPORT_ARRAY	= new ModuleAttribute.Export[0];
+	static final ModuleAttribute.Open[]			EMPTY_OPEN_ARRAY	= new ModuleAttribute.Open[0];
+	static final ModuleAttribute.Provide[]		EMPTY_PROVIDE_ARRAY	= new ModuleAttribute.Provide[0];
+	private String								module_name;
+	private int									module_flags;
+	private String								module_version;
+	private final List<ModuleAttribute.Require>	requires			= new ArrayList<>();
+	private final List<ModuleAttribute.Export>	exports				= new ArrayList<>();
+	private final List<ModuleAttribute.Open>	opens				= new ArrayList<>();
+	private final List<String>					uses				= new ArrayList<>();
+	private final List<ModuleAttribute.Provide>	provides			= new ArrayList<>();
+	private String								mainClass;
+	private final List<String>					packages			= new ArrayList<>();
 
-	public ModuleInfoBuilder(int major_version, String module_name, String module_version, boolean open) {
-		this.major_version = major_version;
-		this.module_name = module_name;
-		module_flags = open ? ModuleAttribute.ACC_OPEN : 0;
+	public ModuleInfoBuilder() {
+		super(ClassFile.ACC_MODULE, 53, 0, "module-info", null);
+		requires.add(new ModuleAttribute.Require("java.base", ModuleAttribute.Require.ACC_MANDATED, null));
+	}
+
+	public String module_name() {
+		return module_name;
+	}
+
+	public ModuleInfoBuilder module_name(String module_name) {
+		this.module_name = requireNonNull(module_name);
+		return this;
+	}
+
+	public String module_version() {
+		return module_version;
+	}
+
+	public ModuleInfoBuilder module_version(String module_version) {
 		this.module_version = module_version;
-		requires("java.base", ModuleAttribute.Require.ACC_MANDATED, null);
+		return this;
+	}
+
+	public int module_flags() {
+		return module_flags;
+	}
+
+	public ModuleInfoBuilder module_flags(int module_flags) {
+		this.module_flags = module_flags;
+		return this;
+	}
+
+	public List<ModuleAttribute.Require> requires() {
+		return requires;
+	}
+
+	public ModuleInfoBuilder requires(String moduleName, int flags) {
+		return requires(moduleName, flags, null);
 	}
 
 	public ModuleInfoBuilder requires(String moduleName, int flags, String moduleVersion) {
 		requireNonNull(moduleName);
+		for (ListIterator<ModuleAttribute.Require> iter = requires.listIterator(); iter.hasNext();) {
+			ModuleAttribute.Require entry = iter.next();
+			if (entry.requires.equals(moduleName)) {
+				iter.remove();
+				break;
+			}
+		}
 		ModuleAttribute.Require require = new ModuleAttribute.Require(moduleName, flags, moduleVersion);
-		requires.put(moduleName, require);
+		requires.add(require);
 		return this;
 	}
 
-	public ModuleInfoBuilder exports(String binaryPackageName, int flags, Set<String> toModules) {
+	public List<ModuleAttribute.Export> exports() {
+		return exports;
+	}
+
+	public ModuleInfoBuilder exports(String binaryPackageName, int flags, Collection<String> toModules) {
 		requireNonNull(binaryPackageName);
 		toModules.forEach(Objects::requireNonNull);
+		for (ListIterator<ModuleAttribute.Export> iter = exports.listIterator(); iter.hasNext();) {
+			ModuleAttribute.Export entry = iter.next();
+			if (entry.exports.equals(binaryPackageName)) {
+				iter.remove();
+				break;
+			}
+		}
+		if (!(toModules instanceof Set)) {
+			toModules = new LinkedHashSet<>(toModules);
+		}
 		ModuleAttribute.Export export = new ModuleAttribute.Export(binaryPackageName, flags,
-			toModules.toArray(new String[0]));
-		exports.put(binaryPackageName, export);
+			toModules.toArray(EMPTY_STRING_ARRAY));
+		exports.add(export);
 		packages(binaryPackageName);
 		return this;
+	}
+
+	public ModuleInfoBuilder exports(String binaryPackageName, int flags) {
+		return exports(binaryPackageName, flags, Collections.emptySet());
 	}
 
 	public ModuleInfoBuilder exports(String binaryPackageName, int flags, String toModule) {
@@ -59,17 +120,35 @@ public class ModuleInfoBuilder {
 	}
 
 	public ModuleInfoBuilder exports(String binaryPackageName, int flags, String... toModules) {
-		return exports(binaryPackageName, flags, new HashSet<>(Arrays.asList(toModules)));
+		return exports(binaryPackageName, flags, Arrays.asList(toModules));
 	}
 
-	public ModuleInfoBuilder opens(String binaryPackageName, int flags, Set<String> toModules) {
+	public List<ModuleAttribute.Open> opens() {
+		return opens;
+	}
+
+	public ModuleInfoBuilder opens(String binaryPackageName, int flags, Collection<String> toModules) {
 		requireNonNull(binaryPackageName);
 		toModules.forEach(Objects::requireNonNull);
+		for (ListIterator<ModuleAttribute.Open> iter = opens.listIterator(); iter.hasNext();) {
+			ModuleAttribute.Open entry = iter.next();
+			if (entry.opens.equals(binaryPackageName)) {
+				iter.remove();
+				break;
+			}
+		}
+		if (!(toModules instanceof Set)) {
+			toModules = new LinkedHashSet<>(toModules);
+		}
 		ModuleAttribute.Open open = new ModuleAttribute.Open(binaryPackageName, flags,
-			toModules.toArray(new String[0]));
-		opens.put(binaryPackageName, open);
+			toModules.toArray(EMPTY_STRING_ARRAY));
+		opens.add(open);
 		packages(binaryPackageName);
 		return this;
+	}
+
+	public ModuleInfoBuilder opens(String binaryPackageName, int flags) {
+		return opens(binaryPackageName, flags, Collections.emptySet());
 	}
 
 	public ModuleInfoBuilder opens(String binaryPackageName, int flags, String toModule) {
@@ -77,32 +156,64 @@ public class ModuleInfoBuilder {
 	}
 
 	public ModuleInfoBuilder opens(String binaryPackageName, int flags, String... toModules) {
-		return opens(binaryPackageName, flags, new HashSet<>(Arrays.asList(toModules)));
+		return opens(binaryPackageName, flags, Arrays.asList(toModules));
 	}
 
-	public ModuleInfoBuilder uses(Set<String> binaryClassNames) {
-		binaryClassNames.forEach(Objects::requireNonNull);
-		uses.addAll(binaryClassNames);
-		return this;
-	}
-
-	public ModuleInfoBuilder uses(String... binaryClassNames) {
-		return uses(new HashSet<>(Arrays.asList(binaryClassNames)));
+	public List<String> uses() {
+		return uses;
 	}
 
 	public ModuleInfoBuilder uses(String binaryClassName) {
-		return uses(Collections.singleton(binaryClassName));
+		requireNonNull(binaryClassName);
+		if (!uses.contains(binaryClassName)) {
+			uses.add(binaryClassName);
+		}
+		return this;
 	}
 
-	public ModuleInfoBuilder provides(String binaryClassName, Set<String> binaryWithClassNames) {
+	public ModuleInfoBuilder uses(Collection<String> binaryClassNames) {
+		for (String u : binaryClassNames) {
+			uses(u);
+		}
+		return this;
+	}
+
+	public ModuleInfoBuilder uses(String[] binaryClassNames) {
+		for (String u : binaryClassNames) {
+			uses(u);
+		}
+		return this;
+	}
+
+	public ModuleInfoBuilder uses(String binaryClassName, String... binaryClassNames) {
+		uses(binaryClassName);
+		uses(binaryClassNames);
+		return this;
+	}
+
+	public List<ModuleAttribute.Provide> provides() {
+		return provides;
+	}
+
+	public ModuleInfoBuilder provides(String binaryClassName, Collection<String> binaryWithClassNames) {
 		requireNonNull(binaryClassName);
 		if (binaryWithClassNames.isEmpty()) {
 			throw new IllegalArgumentException("No module names specified");
 		}
 		binaryWithClassNames.forEach(Objects::requireNonNull);
+		for (ListIterator<ModuleAttribute.Provide> iter = provides.listIterator(); iter.hasNext();) {
+			ModuleAttribute.Provide entry = iter.next();
+			if (entry.provides.equals(binaryClassName)) {
+				iter.remove();
+				break;
+			}
+		}
+		if (!(binaryWithClassNames instanceof Set)) {
+			binaryWithClassNames = new LinkedHashSet<>(binaryWithClassNames);
+		}
 		ModuleAttribute.Provide provide = new ModuleAttribute.Provide(binaryClassName,
-			binaryWithClassNames.toArray(new String[0]));
-		provides.put(binaryClassName, provide);
+			binaryWithClassNames.toArray(EMPTY_STRING_ARRAY));
+		provides.add(provide);
 		binaryWithClassNames.forEach(c -> {
 			int i = c.lastIndexOf('/');
 			if (i > 0) {
@@ -118,7 +229,11 @@ public class ModuleInfoBuilder {
 	}
 
 	public ModuleInfoBuilder provides(String binaryClassName, String... binaryWithClassNames) {
-		return provides(binaryClassName, new HashSet<>(Arrays.asList(binaryWithClassNames)));
+		return provides(binaryClassName, Arrays.asList(binaryWithClassNames));
+	}
+
+	public String mainClass() {
+		return mainClass;
 	}
 
 	public ModuleInfoBuilder mainClass(String binaryClassName) {
@@ -126,38 +241,52 @@ public class ModuleInfoBuilder {
 		return this;
 	}
 
-	public ModuleInfoBuilder packages(Set<String> binaryPackageNames) {
-		binaryPackageNames.forEach(Objects::requireNonNull);
-		packages.addAll(binaryPackageNames);
-		return this;
-	}
-
-	public ModuleInfoBuilder packages(String... binaryPackageNames) {
-		return packages(new HashSet<>(Arrays.asList(binaryPackageNames)));
+	public List<String> packages() {
+		return packages;
 	}
 
 	public ModuleInfoBuilder packages(String binaryPackageName) {
-		return packages(Collections.singleton(binaryPackageName));
+		requireNonNull(binaryPackageName);
+		if (!packages.contains(binaryPackageName)) {
+			packages.add(binaryPackageName);
+		}
+		return this;
 	}
 
+	public ModuleInfoBuilder packages(Collection<String> binaryPackageNames) {
+		for (String p : binaryPackageNames) {
+			packages(p);
+		}
+		return this;
+	}
+
+	public ModuleInfoBuilder packages(String[] binaryPackageNames) {
+		for (String p : binaryPackageNames) {
+			packages(p);
+		}
+		return this;
+	}
+
+	public ModuleInfoBuilder packages(String binaryPackageName, String... binaryPackageNames) {
+		packages(binaryPackageName);
+		packages(binaryPackageNames);
+		return this;
+	}
+
+	@Override
 	public ClassFile build() {
-		ClassFileBuilder classFile = new ClassFileBuilder(ClassFile.ACC_MODULE, major_version, 0, "module-info", null);
-		classFile.attribute(new ModuleAttribute(module_name, module_flags, module_version, //
-			requires.values()
-				.toArray(new ModuleAttribute.Require[0]),
-			exports.values()
-				.toArray(new ModuleAttribute.Export[0]),
-			opens.values()
-				.toArray(new ModuleAttribute.Open[0]),
-			uses.toArray(ClassFileBuilder.EMPTY_STRING_ARRAY), //
-			provides.values()
-				.toArray(new ModuleAttribute.Provide[0])));
-		if (!packages.isEmpty()) {
-			classFile.attribute(new ModulePackagesAttribute(packages.toArray(ClassFileBuilder.EMPTY_STRING_ARRAY)));
+		attributes(new ModuleAttribute(module_name(), module_flags(), module_version(), //
+			requires().toArray(EMPTY_REQUIRE_ARRAY), //
+			exports().toArray(EMPTY_EXPORT_ARRAY), //
+			opens().toArray(EMPTY_OPEN_ARRAY), //
+			uses().toArray(EMPTY_STRING_ARRAY), //
+			provides().toArray(EMPTY_PROVIDE_ARRAY)));
+		if (!packages().isEmpty()) {
+			attributes(new ModulePackagesAttribute(packages().toArray(EMPTY_STRING_ARRAY)));
 		}
-		if (mainClass != null) {
-			classFile.attribute(new ModuleMainClassAttribute(mainClass));
+		if (mainClass() != null) {
+			attributes(new ModuleMainClassAttribute(mainClass()));
 		}
-		return classFile.build();
+		return super.build();
 	}
 }

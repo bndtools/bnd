@@ -22,7 +22,7 @@ public class ClassSignature implements Signature {
 		return parseClassSignature(new StringRover(signature));
 	}
 
-	ClassSignature(TypeParameter[] typeParameters, ClassTypeSignature superClass,
+	public ClassSignature(TypeParameter[] typeParameters, ClassTypeSignature superClass,
 		ClassTypeSignature[] superInterfaces) {
 		this.typeParameters = typeParameters;
 		this.superClass = superClass;

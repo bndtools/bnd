@@ -111,7 +111,7 @@ public class StackMapTableAttribute implements Attribute {
 		public static final int	FULL_FRAME							= 255;
 		public final int		tag;
 
-		StackMapFrame(int tag) {
+		protected StackMapFrame(int tag) {
 			this.tag = tag;
 		}
 

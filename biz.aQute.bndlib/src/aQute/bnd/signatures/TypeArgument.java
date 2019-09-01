@@ -12,7 +12,7 @@ public class TypeArgument {
 	public final WildcardIndicator		wildcard;
 	public final ReferenceTypeSignature	type;
 
-	TypeArgument(WildcardIndicator wildcard, ReferenceTypeSignature type) {
+	public TypeArgument(WildcardIndicator wildcard, ReferenceTypeSignature type) {
 		this.wildcard = wildcard;
 		this.type = type;
 	}

@@ -19,7 +19,7 @@ public class ClassTypeSignature implements ReferenceTypeSignature, ThrowsSignatu
 	public final SimpleClassTypeSignature[]	innerTypes;
 	public final String						binary;
 
-	ClassTypeSignature(String binary, String packageSpecifier, SimpleClassTypeSignature classType,
+	public ClassTypeSignature(String binary, String packageSpecifier, SimpleClassTypeSignature classType,
 		SimpleClassTypeSignature[] innerTypes) {
 		this.binary = binary;
 		this.packageSpecifier = packageSpecifier;

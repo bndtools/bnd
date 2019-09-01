@@ -78,7 +78,8 @@ public class ModuleAttribute implements Attribute {
 		}
 
 		return new ModuleAttribute(constant_pool.moduleName(module_name_index), module_flags,
-			constant_pool.utf8(module_version_index), requires, exports, opens, uses, provides);
+			(module_version_index != 0) ? constant_pool.utf8(module_version_index) : null, requires, exports, opens,
+			uses, provides);
 	}
 
 	@Override
@@ -164,7 +165,7 @@ public class ModuleAttribute implements Attribute {
 			int requires_flags = in.readUnsignedShort();
 			int requires_version_index = in.readUnsignedShort();
 			return new Require(constant_pool.moduleName(requires_index), requires_flags,
-				constant_pool.utf8(requires_version_index));
+				(requires_version_index != 0) ? constant_pool.utf8(requires_version_index) : null);
 		}
 
 		void write(DataOutput out, ConstantPool constant_pool) throws IOException {

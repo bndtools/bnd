@@ -36,6 +36,11 @@ public class MutableConstantPool extends ConstantPool {
 		return (T) pool.get(index);
 	}
 
+	@SuppressWarnings("unchecked")
+	public <T> T entry(int index, Object entry) {
+		return (T) pool.set(index, entry);
+	}
+
 	@Override
 	public String toString() {
 		return pool.toString();

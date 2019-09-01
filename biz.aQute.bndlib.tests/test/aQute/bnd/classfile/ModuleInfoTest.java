@@ -1,6 +1,7 @@
 package aQute.bnd.classfile;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -11,7 +12,6 @@ import java.util.Arrays;
 import org.junit.Test;
 
 import aQute.bnd.classfile.builder.ModuleInfoBuilder;
-import aQute.bnd.osgi.Clazz;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferDataOutput;
 import aQute.lib.io.IO;
@@ -33,37 +33,53 @@ public class ModuleInfoTest {
 			assertThat(moduleAttribute.module_name).isEqualTo("com.example.foo");
 			assertThat(moduleAttribute.module_version).isNull();
 
-			assertThat(moduleAttribute.requires).hasSize(4)
-				.anyMatch(e -> e.requires.equals("java.base"))
-				.anyMatch(e -> e.requires.equals("java.logging"))
-				.anyMatch(e -> e.requires.equals("java.compiler"))
-				.anyMatch(e -> e.requires.equals("java.desktop"));
-			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("java.desktop"))
-				.flatExtracting(e -> Arrays.asList(e.requires_flags))
-				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
-
-			assertThat(moduleAttribute.exports).hasSize(2)
-				.anyMatch(e -> e.exports.equals("toexport"))
-				.anyMatch(e -> e.exports.equals("toexporttosomeone"));
-			assertThat(moduleAttribute.exports).filteredOn(e -> e.exports.equals("toexporttosomeone"))
-				.flatExtracting(e -> Arrays.asList(e.exports_to))
-				.containsExactlyInAnyOrder("java.logging", "java.naming");
-
-			assertThat(moduleAttribute.opens).hasSize(2)
-				.anyMatch(e -> e.opens.equals("toopen"))
-				.anyMatch(e -> e.opens.equals("toopentosomeone"));
-			assertThat(moduleAttribute.opens).filteredOn(e -> e.opens.equals("toopentosomeone"))
-				.flatExtracting(e -> Arrays.asList(e.opens_to))
-				.containsExactlyInAnyOrder("java.logging", "java.naming");
-
-			assertThat(moduleAttribute.uses).hasSize(1)
-				.containsExactlyInAnyOrder("foo/Foo");
-
-			assertThat(moduleAttribute.provides).hasSize(1)
-				.allMatch(e -> e.provides.equals("foo/Foo"));
-			assertThat(moduleAttribute.provides).flatExtracting(e -> Arrays.asList(e.provides_with))
-				.containsExactlyInAnyOrder("foo/FooImpl");
-
+			assertSoftly(softly -> {
+				softly.assertThat(moduleAttribute.requires)
+					.hasSize(4)
+					.anyMatch(e -> e.requires.equals("java.base"))
+					.anyMatch(e -> e.requires.equals("java.logging"))
+					.anyMatch(e -> e.requires.equals("java.compiler"))
+					.anyMatch(e -> e.requires.equals("java.desktop"));
+			});
+			assertSoftly(softly -> {
+				softly.assertThat(moduleAttribute.requires)
+					.filteredOn(e -> e.requires.equals("java.desktop"))
+					.flatExtracting(e -> Arrays.asList(e.requires_flags))
+					.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
+			});
+			assertSoftly(softly -> {
+				softly.assertThat(moduleAttribute.exports)
+					.hasSize(2)
+					.anyMatch(e -> e.exports.equals("toexport"))
+					.anyMatch(e -> e.exports.equals("toexporttosomeone"));
+				softly.assertThat(moduleAttribute.exports)
+					.filteredOn(e -> e.exports.equals("toexporttosomeone"))
+					.flatExtracting(e -> Arrays.asList(e.exports_to))
+					.containsExactlyInAnyOrder("java.logging", "java.naming");
+			});
+			assertSoftly(softly -> {
+				softly.assertThat(moduleAttribute.opens)
+					.hasSize(2)
+					.anyMatch(e -> e.opens.equals("toopen"))
+					.anyMatch(e -> e.opens.equals("toopentosomeone"));
+				softly.assertThat(moduleAttribute.opens)
+					.filteredOn(e -> e.opens.equals("toopentosomeone"))
+					.flatExtracting(e -> Arrays.asList(e.opens_to))
+					.containsExactlyInAnyOrder("java.logging", "java.naming");
+			});
+			assertSoftly(softly -> {
+				softly.assertThat(moduleAttribute.uses)
+					.hasSize(1)
+					.containsExactlyInAnyOrder("foo/Foo");
+			});
+			assertSoftly(softly -> {
+				softly.assertThat(moduleAttribute.provides)
+					.hasSize(1)
+					.allMatch(e -> e.provides.equals("foo/Foo"));
+				softly.assertThat(moduleAttribute.provides)
+					.flatExtracting(e -> Arrays.asList(e.provides_with))
+					.containsExactlyInAnyOrder("foo/FooImpl");
+			});
 			ModuleMainClassAttribute moduleMainClassAttribute = Arrays.stream(module_info.attributes)
 				.filter(ModuleMainClassAttribute.class::isInstance)
 				.map(ModuleMainClassAttribute.class::cast)
@@ -75,11 +91,10 @@ public class ModuleInfoTest {
 
 	@Test
 	public void testModuleInfoBuilder() throws Exception {
-		ModuleInfoBuilder builder = new ModuleInfoBuilder(Clazz.JAVA.OpenJDK9.getMajor(), "biz.aQute.bnd.test", null,
-			false);
-		builder.requires("java.logging", 0, null);
-		builder.requires("java.compiler", 0, null);
-		builder.requires("java.desktop", ModuleAttribute.Require.ACC_TRANSITIVE, null);
+		ModuleInfoBuilder builder = new ModuleInfoBuilder().module_name("biz.aQute.bnd.test");
+		builder.requires("java.logging", 0);
+		builder.requires("java.compiler", 0);
+		builder.requires("java.desktop", ModuleAttribute.Require.ACC_TRANSITIVE);
 		builder.exports("toexport", 0);
 		builder.exports("toexporttosomeone", 0, "java.logging", "java.naming");
 		builder.opens("toopen", 0);
@@ -104,37 +119,51 @@ public class ModuleInfoTest {
 		assertThat(moduleAttribute.module_name).isEqualTo("biz.aQute.bnd.test");
 		assertThat(moduleAttribute.module_version).isNull();
 
-		assertThat(moduleAttribute.requires).hasSize(4)
-			.anyMatch(e -> e.requires.equals("java.base"))
-			.anyMatch(e -> e.requires.equals("java.logging"))
-			.anyMatch(e -> e.requires.equals("java.compiler"))
-			.anyMatch(e -> e.requires.equals("java.desktop"));
-		assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("java.desktop"))
-			.flatExtracting(e -> Arrays.asList(e.requires_flags))
-			.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
-
-		assertThat(moduleAttribute.exports).hasSize(2)
-			.anyMatch(e -> e.exports.equals("toexport"))
-			.anyMatch(e -> e.exports.equals("toexporttosomeone"));
-		assertThat(moduleAttribute.exports).filteredOn(e -> e.exports.equals("toexporttosomeone"))
-			.flatExtracting(e -> Arrays.asList(e.exports_to))
-			.containsExactlyInAnyOrder("java.logging", "java.naming");
-
-		assertThat(moduleAttribute.opens).hasSize(2)
-			.anyMatch(e -> e.opens.equals("toopen"))
-			.anyMatch(e -> e.opens.equals("toopentosomeone"));
-		assertThat(moduleAttribute.opens).filteredOn(e -> e.opens.equals("toopentosomeone"))
-			.flatExtracting(e -> Arrays.asList(e.opens_to))
-			.containsExactlyInAnyOrder("java.logging", "java.naming");
-
-		assertThat(moduleAttribute.uses).hasSize(1)
-			.containsExactlyInAnyOrder("foo/Foo");
-
-		assertThat(moduleAttribute.provides).hasSize(1)
-			.allMatch(e -> e.provides.equals("foo/Foo"));
-		assertThat(moduleAttribute.provides).flatExtracting(e -> Arrays.asList(e.provides_with))
-			.containsExactlyInAnyOrder("foo/FooImpl");
-
+		assertSoftly(softly -> {
+			softly.assertThat(moduleAttribute.requires)
+				.hasSize(4)
+				.anyMatch(e -> e.requires.equals("java.base"))
+				.anyMatch(e -> e.requires.equals("java.logging"))
+				.anyMatch(e -> e.requires.equals("java.compiler"))
+				.anyMatch(e -> e.requires.equals("java.desktop"));
+			softly.assertThat(moduleAttribute.requires)
+				.filteredOn(e -> e.requires.equals("java.desktop"))
+				.flatExtracting(e -> Arrays.asList(e.requires_flags))
+				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
+		});
+		assertSoftly(softly -> {
+			softly.assertThat(moduleAttribute.exports)
+				.hasSize(2)
+				.anyMatch(e -> e.exports.equals("toexport"))
+				.anyMatch(e -> e.exports.equals("toexporttosomeone"));
+			softly.assertThat(moduleAttribute.exports)
+				.filteredOn(e -> e.exports.equals("toexporttosomeone"))
+				.flatExtracting(e -> Arrays.asList(e.exports_to))
+				.containsExactlyInAnyOrder("java.logging", "java.naming");
+		});
+		assertSoftly(softly -> {
+			softly.assertThat(moduleAttribute.opens)
+				.hasSize(2)
+				.anyMatch(e -> e.opens.equals("toopen"))
+				.anyMatch(e -> e.opens.equals("toopentosomeone"));
+			softly.assertThat(moduleAttribute.opens)
+				.filteredOn(e -> e.opens.equals("toopentosomeone"))
+				.flatExtracting(e -> Arrays.asList(e.opens_to))
+				.containsExactlyInAnyOrder("java.logging", "java.naming");
+		});
+		assertSoftly(softly -> {
+			softly.assertThat(moduleAttribute.uses)
+				.hasSize(1)
+				.containsExactlyInAnyOrder("foo/Foo");
+		});
+		assertSoftly(softly -> {
+			softly.assertThat(moduleAttribute.provides)
+				.hasSize(1)
+				.allMatch(e -> e.provides.equals("foo/Foo"));
+			softly.assertThat(moduleAttribute.provides)
+				.flatExtracting(e -> Arrays.asList(e.provides_with))
+				.containsExactlyInAnyOrder("foo/FooImpl");
+		});
 		ModuleMainClassAttribute moduleMainClassAttribute = Arrays.stream(module_info.attributes)
 			.filter(ModuleMainClassAttribute.class::isInstance)
 			.map(ModuleMainClassAttribute.class::cast)
