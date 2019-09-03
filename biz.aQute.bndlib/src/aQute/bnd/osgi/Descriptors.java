@@ -414,13 +414,15 @@ public class Descriptors {
 
 	public TypeRef getTypeRef(String binaryClassName) {
 		assert !binaryClassName.endsWith(".class");
-		if (binaryClassName.startsWith("L") && binaryClassName.endsWith(";")) {
-			binaryClassName = binaryClassName.substring(1, binaryClassName.length() - 1);
+		int length = binaryClassName.length();
+		if ((length > 1) && (binaryClassName.charAt(0) == 'L') && (binaryClassName.charAt(length - 1) == ';')) {
+			binaryClassName = binaryClassName.substring(1, length - 1);
+			length -= 2;
 		}
 
 		binaryClassName = binaryClassName.replace('.', '$');
 
-		if (binaryClassName.startsWith("[")) {
+		if ((length > 0) && (binaryClassName.charAt(0) == '[')) {
 			// We handle arrays here since computeIfAbsent does not like
 			// recursive calls starting in Java 9
 			TypeRef ref = typeRefCache.get(binaryClassName);
