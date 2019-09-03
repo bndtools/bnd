@@ -1,6 +1,7 @@
 package aQute.bnd.osgi;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
 
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -30,8 +31,11 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators.AbstractSpliterator;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -41,6 +45,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -139,6 +144,47 @@ public class Jar implements Closeable {
 			return new Jar(name, ((FileResource) resource).getFile());
 		}
 		return new Jar(name).buildFromResource(resource);
+	}
+
+	public static Stream<Resource> getResources(Resource jarResource, Predicate<String> filter) throws Exception {
+		requireNonNull(jarResource);
+		requireNonNull(filter);
+		if (jarResource instanceof JarResource) {
+			Jar jar = ((JarResource) jarResource).getJar();
+			return jar.getResources(filter);
+		}
+		ZipInputStream jin = new ZipInputStream(jarResource.openInputStream());
+		Spliterator<Resource> spliterator = new AbstractSpliterator<Resource>(Long.MAX_VALUE,
+			Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL) {
+
+			@Override
+			public boolean tryAdvance(Consumer<? super Resource> action) {
+				requireNonNull(action);
+				try {
+					for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
+						if (entry.isDirectory()) {
+							continue;
+						}
+						if (filter.test(entry.getName())) {
+							int size = (int) entry.getSize();
+							try (ByteBufferOutputStream bbos = new ByteBufferOutputStream(
+								(size == -1) ? BUFFER_SIZE : size + 1)) {
+								bbos.write(jin);
+								Resource resource = new EmbeddedResource(bbos.toByteBuffer(),
+									ZipUtil.getModifiedTime(entry));
+								action.accept(resource);
+							}
+							return true;
+						}
+					}
+					return false;
+				} catch (IOException e) {
+					return false;
+				}
+			}
+		};
+		return StreamSupport.stream(spliterator, false)
+			.onClose(() -> IO.close(jin));
 	}
 
 	public Jar(String name, String path) throws IOException {
