@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -36,7 +38,6 @@ import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
@@ -44,8 +45,8 @@ import aQute.bnd.service.AnalyzerPlugin;
 import aQute.bnd.version.Version;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.exceptions.FunctionWithException;
-import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.libg.glob.PathSet;
 
 /**
  * Analyze the class space for any classes that have an OSGi annotation for CCR.
@@ -53,6 +54,7 @@ import aQute.lib.strings.Strings;
 public class CDIAnnotations implements AnalyzerPlugin {
 	static final DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
 	static final XPathFactory			xpf	= XPathFactory.newInstance();
+	private static final Predicate<String>	beansResourceFilter	= new PathSet("META-INF/beans.xml").matches();
 
 	static {
 		try {
@@ -89,14 +91,11 @@ public class CDIAnnotations implements AnalyzerPlugin {
 			.filter(currentJar::exists)
 			.collect(toMap(path -> path, FunctionWithException.asFunction(path -> {
 				Resource resource = currentJar.getResource(path);
-				Jar jar = Jar.fromResource(path, resource);
-				try {
-					Resource beansResource = jar.getResource("META-INF/beans.xml");
+				// we need to make sure to close the stream
+				try (Stream<Resource> resources = Jar.getResources(resource, beansResourceFilter)) {
+					Resource beansResource = resources.findFirst()
+						.orElse(null);
 					return findDiscoveryMode(beansResource);
-				} finally {
-					if (!(resource instanceof JarResource)) {
-						IO.close(jar);
-					}
 				}
 			}), (u, v) -> u, HashMap::new));
 
