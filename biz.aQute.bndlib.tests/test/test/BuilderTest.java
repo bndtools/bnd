@@ -1205,7 +1205,7 @@ public class BuilderTest extends BndTestCase {
 	public void testDoNotCopy() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty("-resourceonly", "true");
-			b.setProperty("-donotcopy", ".*\\.jar|\\..*");
+			b.setProperty("-donotcopy", ".*\\.[jw]ar|\\..*");
 			b.setProperty("Include-Resource", "jar");
 			b.build();
 			assertTrue(b.check());
@@ -1214,9 +1214,11 @@ public class BuilderTest extends BndTestCase {
 				.getResources()
 				.keySet();
 			System.out.println(names);
-			assertThat(names).hasSize(15)
+			assertThat(names)
 				.contains("AnnotationWithJSR14.jclass", "mandatorynoversion.bnd", "mina.bar", "minax.bnd", "rox.bnd",
-					"WithAnnotations.jclass");
+					"WithAnnotations.jclass")
+				.noneMatch(name -> name.endsWith(".jar"))
+				.noneMatch(name -> name.endsWith(".war"));
 		}
 	}
 
