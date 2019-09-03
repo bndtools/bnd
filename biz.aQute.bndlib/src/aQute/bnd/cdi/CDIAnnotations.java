@@ -88,13 +88,19 @@ public class CDIAnnotations implements AnalyzerPlugin {
 			.stream()
 			.filter(path -> !path.equals(".") && !path.equals("/"))
 			.map(Processor::appendPath)
-			.filter(currentJar::exists)
+			.filter(path -> currentJar.exists(path) || (!path.equals("WEB-INF/classes")
+				&& !path.endsWith("/WEB-INF/classes") && currentJar.hasDirectory(path)))
 			.collect(toMap(path -> path, FunctionWithException.asFunction(path -> {
 				Resource resource = currentJar.getResource(path);
-				// we need to make sure to close the stream
-				try (Stream<Resource> resources = Jar.getResources(resource, beansResourceFilter)) {
-					Resource beansResource = resources.findFirst()
-						.orElse(null);
+				if (resource != null) {
+					// we need to make sure to close the stream
+					try (Stream<Resource> resources = Jar.getResources(resource, beansResourceFilter)) {
+						Resource beansResource = resources.findFirst()
+							.orElse(null);
+						return findDiscoveryMode(beansResource);
+					}
+				} else {
+					Resource beansResource = currentJar.getResource(Processor.appendPath(path, "META-INF/beans.xml"));
 					return findDiscoveryMode(beansResource);
 				}
 			}), (u, v) -> u, HashMap::new));
