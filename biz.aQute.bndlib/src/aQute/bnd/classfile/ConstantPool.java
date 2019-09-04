@@ -618,17 +618,17 @@ public class ConstantPool {
 		}
 	}
 
-	<I> int index(Class<I> infoType, Predicate<I> match, Supplier<I> supplier) {
+	protected <I> int index(Class<I> infoType, Predicate<I> match, Supplier<I> supplier) {
 		for (int index = 1, len = size(); index < len; index++) {
 			Object entry = entry(index);
 			if (infoType.isInstance(entry) && match.test(infoType.cast(entry))) {
 				return index;
 			}
 		}
-		return addIndex(infoType, supplier);
+		return add(infoType, supplier);
 	}
 
-	protected <I> int addIndex(Class<I> infoType, Supplier<I> supplier) {
+	protected <I> int add(Class<I> infoType, Supplier<I> supplier) {
 		throw new UnsupportedOperationException(
 			"Constant Pool is not writeable; trying to add entry of type " + infoType);
 	}
@@ -644,27 +644,23 @@ public class ConstantPool {
 	}
 
 	public int integerInfo(Byte constant) {
-		int const_value = constant.intValue();
-		return index(Integer.class, other -> equalsInteger(const_value, other), () -> const_value);
+		return integerInfo(constant.intValue());
 	}
 
 	public int integerInfo(Character constant) {
-		int const_value = constant.charValue();
-		return index(Integer.class, other -> equalsInteger(const_value, other), () -> const_value);
+		return integerInfo(constant.charValue());
 	}
 
 	public int integerInfo(Short constant) {
-		int const_value = constant.intValue();
-		return index(Integer.class, other -> equalsInteger(const_value, other), () -> const_value);
+		return integerInfo(constant.intValue());
 	}
 
 	public int integerInfo(Boolean constant) {
-		int const_value = constant.booleanValue() ? 1 : 0;
-		return index(Integer.class, other -> equalsInteger(const_value, other), () -> const_value);
+		return integerInfo(constant.booleanValue() ? 1 : 0);
 	}
 
-	private boolean equalsInteger(int a, int b) {
-		return Integer.compare(a, b) == 0;
+	private static boolean equalsInteger(int a, int b) {
+		return a == b;
 	}
 
 	// CONSTANT_Long
@@ -677,8 +673,8 @@ public class ConstantPool {
 		return index(Long.class, other -> equalsLong(constant, other), () -> constant);
 	}
 
-	private boolean equalsLong(long a, long b) {
-		return Long.compare(a, b) == 0;
+	private static boolean equalsLong(long a, long b) {
+		return a == b;
 	}
 
 	// CONSTANT_Float
@@ -691,7 +687,7 @@ public class ConstantPool {
 		return index(Float.class, other -> equalsFloat(constant, other), () -> constant);
 	}
 
-	private boolean equalsFloat(float a, float b) {
+	private static boolean equalsFloat(float a, float b) {
 		return Float.compare(a, b) == 0;
 	}
 
@@ -705,7 +701,7 @@ public class ConstantPool {
 		return index(Double.class, other -> equalsDouble(constant, other), () -> constant);
 	}
 
-	private boolean equalsDouble(double a, double b) {
+	private static boolean equalsDouble(double a, double b) {
 		return Double.compare(a, b) == 0;
 	}
 
