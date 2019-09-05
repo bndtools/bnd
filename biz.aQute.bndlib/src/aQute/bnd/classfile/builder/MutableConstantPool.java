@@ -47,7 +47,7 @@ public class MutableConstantPool extends ConstantPool {
 	}
 
 	@Override
-	protected <I> int addIndex(Class<I> infoType, Supplier<I> supplier) {
+	protected <I> int add(Class<I> infoType, Supplier<I> supplier) {
 		I entry = supplier.get();
 		int index = size(); // supplier may have added to pool
 		pool.add(entry);
