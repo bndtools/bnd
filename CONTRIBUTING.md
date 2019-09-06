@@ -145,6 +145,19 @@ same commit so that a revert would remove all traces of the feature or fix.
 Commits that fix or close an issue should include a reference like `Closes #XXX`
 or `Fixes #XXX`, which will automatically close the issue when merged.
 
+#### Large changes/Work-In-Progress
+
+Sometimes for big changes/feature additions, you may wish to submit a pull
+request before it is fully ready to merge, in order to solicit feedback from the
+core developers and ensure you're on the right track before proceeding too far.
+In this case, you can submit a pull request and mark it as a
+work-in-progress by prefixing the title of the PR with **WIP**.
+
+Once your pull request is ready for consideration to merge, remove the WIP prefix
+from the title to signal this fact to the core team. While the pull request is
+flagged as WIP the maintainers are unlikely to know that it is ready, the
+review process won't start and your branch won't get merged.
+
 ### Sign your work
 
 The sign-off is a simple line at the end of the commit message
@@ -205,6 +218,9 @@ message. This line can be automatically added by the `git commit` command by usi
 
 The Bnd/Bndtools maintainers will review your pull request and, if approved, will merge into
 the main repo.
+
+If your pull request was originally a work-in-progress, don't forget to remove WIP from its title
+to signal to the maintainers that it is ready for review.
 
 ### How can I become a maintainer?
 
