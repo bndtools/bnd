@@ -3,6 +3,9 @@ package aQute.bnd.maven;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.jar.Manifest;
@@ -25,6 +28,8 @@ public class PomResource extends WriteResource {
 	private static final String	ARTIFACTID	= "artifactid";
 	private static final String	GROUPID		= "groupid";
 	private static final String	WHERE		= "where";
+	private static final List<String>	local		= Collections
+		.unmodifiableList(Arrays.asList(VERSION, ARTIFACTID, GROUPID, WHERE, "artifactId", "groupId"));
 	final Manifest				manifest;
 	private Map<String, String>	scm;
 	final Processor				processor;
@@ -54,6 +59,7 @@ public class PomResource extends WriteResource {
 	}
 
 	public PomResource(Processor scoped, Manifest manifest, String groupId, String artifactId, String version) {
+		scoped.setForceLocal(local);
 		this.processor = scoped;
 		this.manifest = manifest;
 
