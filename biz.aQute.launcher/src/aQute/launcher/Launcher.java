@@ -17,7 +17,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.lang.instrument.Instrumentation;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
@@ -48,18 +47,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.Vector;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -97,6 +95,7 @@ public class Launcher implements ServiceListener {
 	private Framework						systemBundle;
 	private FrameworkWiring					frameworkWiring;
 	private final Properties				properties;
+	private final Properties				initialSystemProperties	= System.getProperties();
 	private boolean							security;
 	private SimplePermissionPolicy			policy;
 	private Callable<Integer>				mainThread;
@@ -199,19 +198,10 @@ public class Launcher implements ServiceListener {
 		out = System.err;
 	}
 
-	private static final Pattern QUOTED_P = Pattern.compile("^([\"'])(.*)\\1$");
-
-	private void loadPropertiesFromFileOrEmbedded() throws Throwable {
-
+	private void loadPropertiesFromFileOrEmbedded() throws Exception {
 		final InputStream in;
-
 		String path = getPropertiesPath();
 		if (path != null) {
-			Matcher matcher = QUOTED_P.matcher(path);
-			if (matcher.matches()) {
-				path = matcher.group(2);
-			}
-
 			File propertiesFile = new File(path).getAbsoluteFile();
 			if (!propertiesFile.isFile())
 				errorAndExit("Specified launch file `%s' was not found - absolutePath='%s'", path,
@@ -230,10 +220,20 @@ public class Launcher implements ServiceListener {
 	}
 
 	public String getPropertiesPath() {
-		return System.getProperty(LauncherConstants.LAUNCHER_PROPERTIES);
+		String path = System.getProperty(LauncherConstants.LAUNCHER_PROPERTIES);
+		if (path != null) {
+			int l = path.length() - 1;
+			if (l > 1) {
+				char q = path.charAt(0);
+				if (((q == '\'') || (q == '"')) && (q == path.charAt(l))) {
+					path = path.substring(1, l);
+				}
+			}
+		}
+		return path;
 	}
 
-	private void loadProperties(final InputStream in) throws UnsupportedEncodingException, IOException {
+	private void loadProperties(final InputStream in) throws IOException {
 		this.properties.clear();
 
 		try (Reader ir = IO.reader(in, UTF_8)) {
@@ -241,7 +241,7 @@ public class Launcher implements ServiceListener {
 		}
 
 		for (String key : LauncherConstants.LAUNCHER_PROPERTY_KEYS) {
-			String value = System.getProperty(key);
+			String value = initialSystemProperties.getProperty(key);
 			if (value == null)
 				continue;
 
@@ -250,43 +250,44 @@ public class Launcher implements ServiceListener {
 
 		for (Object key : properties.keySet()) {
 			String s = (String) key;
-			String v = System.getProperty(s);
+			String v = initialSystemProperties.getProperty(s);
 			if (v != null)
 				properties.put(key, v);
 		}
+	}
 
+	private void setSystemProperties() {
+		Properties sysProps = new LauncherSystemProperties(initialSystemProperties, properties);
+		System.setProperties(sysProps);
 	}
 
 	/*
 	 * If we have a properties file specified watch it and update
 	 */
 	private void watch() {
-		String propertiesPath = getPropertiesPath();
-		if (propertiesPath == null) {
+		String path = getPropertiesPath();
+		if (path == null) {
 			return;
 		}
-		File propertiesFile = new File(propertiesPath).getAbsoluteFile();
-
-		if (propertiesFile != null && parms.embedded == false) {
-			TimerTask watchdog = new TimerTask() {
-				long begin = propertiesFile.lastModified();
-
-				@Override
-				public void run() {
-					long now = propertiesFile.lastModified();
-					if (begin < now) {
-						try (InputStream in = IO.stream(propertiesFile)) {
-							loadProperties(in);
-							List<Bundle> tobestarted = update(now);
-							startBundles(tobestarted);
-						} catch (Exception e) {
-							error("Error in updating the framework from the properties: %s", e);
-						}
-						begin = now;
+		File propertiesFile = new File(path).getAbsoluteFile();
+		if (propertiesFile.isFile() && parms.embedded == false) {
+			ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+			AtomicLong lastModified = new AtomicLong(propertiesFile.lastModified());
+			scheduledExecutor.scheduleAtFixedRate(() -> {
+				long now = propertiesFile.lastModified();
+				if (lastModified.get() < now) {
+					try {
+						loadProperties(IO.stream(propertiesFile));
+						setSystemProperties();
+						parms = new LauncherConstants(properties);
+						List<Bundle> tobestarted = update(now);
+						startBundles(tobestarted);
+					} catch (Exception e) {
+						error("Error in updating the framework from the properties: %s", e);
 					}
+					lastModified.set(now);
 				}
-			};
-			new Timer(true).scheduleAtFixedRate(watchdog, 5000, 1000);
+			}, 5000, 1000, TimeUnit.MILLISECONDS);
 		}
 	}
 
@@ -319,10 +320,7 @@ public class Launcher implements ServiceListener {
 
 	private int launch(String args[]) throws Throwable {
 		try {
-
-			System.getProperties()
-				.putAll(this.properties);
-
+			setSystemProperties();
 			this.parms = new LauncherConstants(properties);
 			setupComms();
 
@@ -393,6 +391,7 @@ public class Launcher implements ServiceListener {
 		} finally {
 			deactivate();
 			trace("stopped system bundle due to leaving run body");
+			System.setProperties(initialSystemProperties);
 			// TODO should we wait here?
 		}
 	}
