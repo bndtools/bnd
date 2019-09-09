@@ -1437,10 +1437,7 @@ public class Launcher implements ServiceListener {
 					}
 				}
 
-				mainThread = () -> {
-					((Runnable) service).run();
-					return 0;
-				};
+				mainThread = Executors.callable((Runnable) service, 0);
 			} finally {
 				trace("selected main thread %s", event);
 				notifyAll();
