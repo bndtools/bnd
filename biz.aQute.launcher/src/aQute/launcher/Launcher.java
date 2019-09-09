@@ -529,7 +529,7 @@ public class Launcher implements ServiceListener {
 
 			for (Bundle b : installedBundles.values()) {
 				try {
-					if (b.getState() == Bundle.INSTALLED) {
+					if ((b.getState() & Bundle.INSTALLED) != 0) {
 						start(b);
 					}
 				} catch (Exception e) {
@@ -667,7 +667,7 @@ public class Launcher implements ServiceListener {
 					if (f.lastModified() <= before) {
 						if (b.getLastModified() < f.lastModified()) {
 							trace("updating %s", f);
-							if (b.getState() == Bundle.ACTIVE || b.getState() == Bundle.STARTING) {
+							if ((b.getState() & (Bundle.ACTIVE | Bundle.STARTING)) != 0) {
 								tobestarted.add(b);
 								stop(b);
 							}
