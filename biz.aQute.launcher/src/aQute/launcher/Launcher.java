@@ -36,6 +36,7 @@ import java.security.PermissionCollection;
 import java.security.Policy;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -47,7 +48,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -1351,7 +1351,7 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
-	static PermissionCollection all = new AllPermissionCollection();
+	static final PermissionCollection all = new AllPermissionCollection();
 
 	class AllPolicy extends Policy {
 
@@ -1372,13 +1372,9 @@ public class Launcher implements ServiceListener {
 
 	static class AllPermissionCollection extends PermissionCollection {
 		private static final long			serialVersionUID	= 1L;
-		private static Vector<Permission>	list				= new Vector<>();
+		private static final List<Permission>	PERMISSIONS			= Collections.singletonList(new AllPermission());
 
-		static {
-			list.add(new AllPermission());
-		}
-
-		{
+		AllPermissionCollection() {
 			setReadOnly();
 		}
 
@@ -1387,7 +1383,7 @@ public class Launcher implements ServiceListener {
 
 		@Override
 		public Enumeration<Permission> elements() {
-			return list.elements();
+			return Collections.enumeration(PERMISSIONS);
 		}
 
 		@Override
