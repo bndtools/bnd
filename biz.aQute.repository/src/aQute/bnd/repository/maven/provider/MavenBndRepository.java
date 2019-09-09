@@ -60,6 +60,7 @@ import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
+import aQute.lib.exceptions.FunctionWithException;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
@@ -415,30 +416,22 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		.matches();
 
 	private PomResource createPomFromFirstMavenPropertiesInJar(Jar jar, Processor context) throws Exception {
-		return jar.getResources()
-			.keySet()
-			.stream()
-			.filter(pomPropertiesFilter)
+		return jar.getResources(pomPropertiesFilter)
 			.findFirst()
-			.map(path -> {
-				Resource r = jar.getResource(path);
+			.map(FunctionWithException.asFunction(r -> {
 				UTF8Properties utf8p = new UTF8Properties();
 				try (InputStream in = r.openInputStream()) {
 					utf8p.load(in);
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
 				}
 				String version = utf8p.getProperty("version");
 				String groupId = utf8p.getProperty("groupId");
 				String artifactId = utf8p.getProperty("artifactId");
 
-				try (Processor ctx = new Processor(context)) {
-					ctx.addProperties(utf8p);
-					return new PomResource(ctx, jar.getManifest(), groupId, artifactId, version);
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
+				try (Processor scoped = new Processor(context)) {
+					scoped.addProperties(utf8p);
+					return new PomResource(scoped, jar.getManifest(), groupId, artifactId, version);
 				}
-			})
+			}))
 			.orElse(null);
 	}
 

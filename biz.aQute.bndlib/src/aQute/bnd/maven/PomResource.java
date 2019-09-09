@@ -3,6 +3,9 @@ package aQute.bnd.maven;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.jar.Manifest;
@@ -25,6 +28,8 @@ public class PomResource extends WriteResource {
 	private static final String	ARTIFACTID	= "artifactid";
 	private static final String	GROUPID		= "groupid";
 	private static final String	WHERE		= "where";
+	private static final List<String>	local		= Collections
+		.unmodifiableList(Arrays.asList(VERSION, ARTIFACTID, GROUPID, WHERE, "artifactId", "groupId"));
 	final Manifest				manifest;
 	private Map<String, String>	scm;
 	final Processor				processor;
@@ -39,22 +44,23 @@ public class PomResource extends WriteResource {
 		this(new Processor(), manifest);
 	}
 
-	public PomResource(Map<String, String> b, Manifest manifest) {
-		this(asProcessor(b), manifest);
+	public PomResource(Map<String, String> map, Manifest manifest) {
+		this(asProcessor(map), manifest);
 	}
 
-	private static Processor asProcessor(Map<String, String> b) {
-		Processor p = new Processor();
-		p.addProperties(b);
-		return p;
+	private static Processor asProcessor(Map<String, String> map) {
+		Processor scoped = new Processor();
+		scoped.addProperties(map);
+		return scoped;
 	}
 
-	public PomResource(Processor b, Manifest manifest) {
-		this(b, manifest, null, null, null);
+	public PomResource(Processor scoped, Manifest manifest) {
+		this(scoped, manifest, null, null, null);
 	}
 
-	public PomResource(Processor p, Manifest manifest, String groupId, String artifactId, String version) {
-		this.processor = p;
+	public PomResource(Processor scoped, Manifest manifest, String groupId, String artifactId, String version) {
+		scoped.setForceLocal(local);
+		this.processor = scoped;
 		this.manifest = manifest;
 
 		Domain domain = Domain.domain(manifest);
@@ -72,25 +78,25 @@ public class PomResource extends WriteResource {
 			}
 		}
 
-		String where = processor.get(WHERE);
+		String where = processor.getProperty(WHERE);
 
 		if (groupId == null) {
-			groupId = processor.get(GROUPID);
+			groupId = processor.getProperty(GROUPID);
 		}
 
 		if (groupId == null) {
-			groupId = processor.get(Constants.GROUPID);
+			groupId = processor.getProperty(Constants.GROUPID);
 		}
 
 		if (groupId == null) {
-			groupId = processor.get("groupId");
+			groupId = processor.getProperty("groupId");
 		}
 
 		if (artifactId == null) {
-			artifactId = processor.get(ARTIFACTID);
+			artifactId = processor.getProperty(ARTIFACTID);
 		}
 		if (artifactId == null) {
-			artifactId = processor.get("artifactId");
+			artifactId = processor.getProperty("artifactId");
 		}
 
 		if (groupId != null) {
@@ -127,7 +133,7 @@ public class PomResource extends WriteResource {
 		}
 
 		if (version == null) {
-			version = processor.get(VERSION);
+			version = processor.getProperty(VERSION);
 		}
 		if (version == null) {
 			version = domain.getBundleVersion();
