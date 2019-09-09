@@ -12,6 +12,11 @@ These plugins requires at least Gradle 4.0 for Java 8, at least
 Gradle 4.2.1 for Java 9, at least Gradle 4.7 for Java 10, and at
 least Gradle 5.0 for Java 11.
 
+This README represents the capabilities and features of the Bnd Gradle Plugins in
+the branch containing this README. So for the `master` branch, this will be
+the [latest development SNAPSHOT build](#using-the-latest-development-snapshot-build-of-the-bnd-gradle-plugins). See the appropriate Git tag for the README for the
+Bnd Gradle Plugin version you are using.
+
 # Gradle Plugin for non-Bnd Workspace Builds
 
 Bnd offers [Gradle][1] support for building bundles in
