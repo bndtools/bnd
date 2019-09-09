@@ -145,7 +145,7 @@ same commit so that a revert would remove all traces of the feature or fix.
 Commits that fix or close an issue should include a reference like `Closes #XXX`
 or `Fixes #XXX`, which will automatically close the issue when merged.
 
-#### Large changes/Work-In-Progress
+### Large changes/Work-In-Progress
 
 Sometimes for big changes/feature additions, you may wish to submit a pull
 request before it is fully ready to merge, in order to solicit feedback from the
