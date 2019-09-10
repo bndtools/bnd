@@ -58,6 +58,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	private static final String		EMBEDDED_RUNPATH		= "Embedded-Runpath";
 	private static final String 	EMBEDDED_LAUNCHER 		= "Embedded-Launcher";
 	private static final String		LAUNCHER_PATH			= "launcher.runpath";
+	private static final String		LAUNCHER_TYPE			= "launcher.type";
 	private static final String		EMBEDDED_LAUNCHER_TYPE	= "aQute.launcher.pre.EmbeddedLauncher";
 	static final String				PRE_JAR					= "biz.aQute.launcher.pre.jar";
 	private final Container			container;
@@ -189,6 +190,10 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		List<String> list = new ArrayList<>(super.getRunVM());
 		list.add(getRunpath().stream()
 			.collect(Strings.joining(",", "-D" + LAUNCHER_PATH + "=\"", "\"", "")));
+		String launcherTypeName  = this.getLauncherTypeName();
+		if(launcherTypeName  != null){
+			list.add("-D" + LAUNCHER_TYPE + "=\"" + launcherTypeName + "\"");
+		}
 		return list;
 	}
 
