@@ -91,21 +91,15 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	protected void updateFromProject() throws Exception {
 		super.updateFromProject();
 
-		File launcher = container.getFile();
-
-		// Pre file will likely be next to launcher in embedded repo
-		File pre = new File(launcher.getParentFile(), PRE_JAR);
+		File pre = this.getPreLauncherJarFile();
 
 		if (!pre.isFile()) {
 			if (preTemp != null) {
 				IO.delete(preTemp);
 			}
 			preTemp = pre = File.createTempFile("pre", ".jar");
-			try (Jar jar = new Jar(launcher)) {
-				Resource embeddedPre = jar.getResource(PRE_JAR);
-				try (OutputStream out = IO.outputStream(pre)) {
-					embeddedPre.write(out);
-				}
+			try (OutputStream out = IO.outputStream(pre)) {
+				writePreLauncherJar(out);
 			}
 		}
 		launcherpath.clear();
@@ -164,6 +158,29 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 */
 	public String getLauncherTypeName() {
 		return null;
+	}
+
+	// called from updateFromProject()
+	protected File getPreLauncherJarFile() {
+		File launcher = container.getFile();
+		// Pre file will likely be next to launcher in embedded repo
+		return new File(launcher.getParentFile(), PRE_JAR);
+	}
+
+	// called from updateFromProject()
+	protected void writePreLauncherJar(OutputStream out) throws Exception {
+		File launcher = container.getFile();
+		try (Jar jar = new Jar(launcher)) {
+			Resource embeddedPre = jar.getResource(PRE_JAR);
+			embeddedPre.write(out);
+		}
+	}
+
+	// called from executable()
+	protected Jar getPreLauncherJar() throws Exception {
+		Resource preJar = Resource.fromURL(this.getClass()
+			.getResource("/" + PRE_JAR));
+		return Jar.fromResource("pre", preJar);
 	}
 
 	@Override
@@ -409,9 +426,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 				.putValue(EMBEDDED_LAUNCHER, launcherTypeName);
 		}
 
-		Resource preJar = Resource.fromURL(this.getClass()
-			.getResource("/" + PRE_JAR));
-		try (Jar pre = Jar.fromResource("pre", preJar)) {
+		try (Jar pre = getPreLauncherJar()) {
 			jar.addAll(pre);
 		}
 
