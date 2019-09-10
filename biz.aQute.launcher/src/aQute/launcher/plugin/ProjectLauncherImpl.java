@@ -54,13 +54,14 @@ import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.Glob;
 
 public class ProjectLauncherImpl extends ProjectLauncher {
-	private final static Logger		logger				= LoggerFactory.getLogger(ProjectLauncherImpl.class);
-	private static final String		EMBEDDED_RUNPATH	= "Embedded-Runpath";
-	private static final String		LAUNCHER_PATH		= "launcher.runpath";
-	private static final String		EMBEDDED_LAUNCHER	= "aQute.launcher.pre.EmbeddedLauncher";
-	static final String				PRE_JAR				= "biz.aQute.launcher.pre.jar";
+	private final static Logger		logger					= LoggerFactory.getLogger(ProjectLauncherImpl.class);
+	private static final String		EMBEDDED_RUNPATH		= "Embedded-Runpath";
+	private static final String 	EMBEDDED_LAUNCHER 		= "Embedded-Launcher";
+	private static final String		LAUNCHER_PATH			= "launcher.runpath";
+	private static final String		EMBEDDED_LAUNCHER_TYPE	= "aQute.launcher.pre.EmbeddedLauncher";
+	static final String				PRE_JAR					= "biz.aQute.launcher.pre.jar";
 	private final Container			container;
-	private final List<String>		launcherpath		= new ArrayList<>();
+	private final List<String>		launcherpath			= new ArrayList<>();
 
 	private File					preTemp;
 
@@ -152,7 +153,16 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	@Override
 	public String getMainTypeName() {
-		return EMBEDDED_LAUNCHER;
+		return EMBEDDED_LAUNCHER_TYPE;
+	}
+
+	/**
+	 * The class name of the main launcher which should be started by the EmbeddedLauncher.
+	 *
+	 * @return if null the default Launcher will be used
+	 */
+	public String getLauncherTypeName() {
+		return null;
 	}
 
 	@Override
@@ -381,11 +391,17 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		main.keySet()
 			.removeAll(result);
 
+		String launcherTypeName = this.getLauncherTypeName();
+
 		logger.debug("Use Embedded launcher");
 		m.getMainAttributes()
-			.putValue("Main-Class", EMBEDDED_LAUNCHER);
+			.putValue("Main-Class", EMBEDDED_LAUNCHER_TYPE);
 		m.getMainAttributes()
 			.putValue(EMBEDDED_RUNPATH, join(classpath));
+		if (launcherTypeName != null) {
+			m.getMainAttributes()
+				.putValue(EMBEDDED_LAUNCHER, launcherTypeName);
+		}
 
 		Resource preJar = Resource.fromURL(this.getClass()
 			.getResource("/" + PRE_JAR));
@@ -393,7 +409,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			jar.addAll(pre);
 		}
 
-		doStart(jar, EMBEDDED_LAUNCHER);
+		doStart(jar, EMBEDDED_LAUNCHER_TYPE);
 		if (getProject().getProperty(Constants.DIGESTS) != null)
 			jar.setDigestAlgorithms(getProject().getProperty(Constants.DIGESTS)
 				.trim()

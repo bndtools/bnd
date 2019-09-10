@@ -30,9 +30,12 @@ public class EmbeddedLauncher {
 	private static final File	CWD					= new File(System.getProperty("user.dir"));
 	private static final String	LAUNCH_TRACE		= "launch.trace";
 	private static final int	BUFFER_SIZE			= 4096 * 16;
+	private static final String DEFAULT_LAUNCHER 	= "aQute.launcher.Launcher";
 
 	public static final String	EMBEDDED_RUNPATH	= "Embedded-Runpath";
+	public static final String	EMBEDDED_LAUNCHER	= "Embedded-Launcher";
 	public static final String	LAUNCHER_PATH		= "launcher.runpath";
+	public static final String	LAUNCHER_TYPE		= "launcher.type";
 	private static final Pattern	QUOTED_P			= Pattern.compile("^([\"'])(.*)\\1$");
 
 	public static Manifest		MANIFEST;
@@ -99,16 +102,21 @@ public class EmbeddedLauncher {
 			Manifest m = new Manifest(murl.openStream());
 			String runpath = m.getMainAttributes()
 				.getValue(EMBEDDED_RUNPATH);
+			String className = m.getMainAttributes().getValue(EMBEDDED_LAUNCHER);
+			if(className == null){
+				className = DEFAULT_LAUNCHER;
+			}
 			if (runpath != null) {
 				if (isVerbose)
 					log("Going through the following " + EMBEDDED_RUNPATH + " %s", runpath);
 				MANIFEST = m;
-				return executeWithRunPath(isVerbose, methodName, returnType, cl, runpath, false, args);
+				return executeWithRunPath(isVerbose, className, methodName, returnType, cl, runpath, false, args);
 			}
 		}
 		if (isVerbose)
 			log("looking for -D" + LAUNCHER_PATH);
 		String runpath = System.getProperty(LAUNCHER_PATH);
+		String className = System.getProperty(LAUNCHER_TYPE, DEFAULT_LAUNCHER);
 		if (runpath != null) {
 			Matcher matcher = QUOTED_P.matcher(runpath);
 			if (matcher.matches()) {
@@ -116,14 +124,14 @@ public class EmbeddedLauncher {
 			}
 			if (isVerbose)
 				log("Going through the following -D" + LAUNCHER_PATH + " %s", runpath);
-			return executeWithRunPath(isVerbose, methodName, returnType, cl, runpath, true, args);
+			return executeWithRunPath(isVerbose, className, methodName, returnType, cl, runpath, true, args);
 		}
 
 		throw new RuntimeException(
 			"Found Nothing to launch. Maybe no " + EMBEDDED_RUNPATH + " or -D" + LAUNCHER_PATH + " was set");
 	}
 
-	private static <T> T executeWithRunPath(boolean isVerbose, String methodName, Class<T> returnType, ClassLoader cl,
+	private static <T> T executeWithRunPath(boolean isVerbose, String className, String methodName, Class<T> returnType, ClassLoader cl,
 		String runpath, boolean pathExternal, String... args) throws Throwable {
 		List<URL> classpath = new ArrayList<>();
 
@@ -142,12 +150,12 @@ public class EmbeddedLauncher {
 		try (Loader urlc = new Loader(classpath.toArray(new URL[0]), cl)) {
 			if (isVerbose)
 				log("Try to load aQute.launcher.Launcher");
-			Class<?> aQutelauncherLauncher = urlc.loadClass("aQute.launcher.Launcher");
+			Class<?> launcherClass = urlc.loadClass(className);
 			if (isVerbose)
 				log("looking for method %s with return type %s", methodName, returnType.toString());
 
 			MethodHandle mh = MethodHandles.publicLookup()
-				.findStatic(aQutelauncherLauncher, methodName, MethodType.methodType(returnType, String[].class));
+				.findStatic(launcherClass, methodName, MethodType.methodType(returnType, String[].class));
 			try {
 				if (isVerbose)
 					log("found method and start executing");
