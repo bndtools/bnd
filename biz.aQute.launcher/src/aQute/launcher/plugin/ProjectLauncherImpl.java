@@ -396,11 +396,12 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		main.keySet()
 			.removeAll(result);
 
+		String preLauncherTypeName = this.getMainTypeName();
 		String launcherTypeName = this.getLauncherTypeName();
 
 		logger.debug("Use Embedded launcher");
 		m.getMainAttributes()
-			.putValue("Main-Class", EMBEDDED_LAUNCHER_TYPE);
+			.putValue("Main-Class", preLauncherTypeName);
 		m.getMainAttributes()
 			.putValue(EMBEDDED_RUNPATH, join(classpath));
 		if (launcherTypeName != null) {
@@ -414,7 +415,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			jar.addAll(pre);
 		}
 
-		doStart(jar, EMBEDDED_LAUNCHER_TYPE);
+		doStart(jar, preLauncherTypeName);
 		if (getProject().getProperty(Constants.DIGESTS) != null)
 			jar.setDigestAlgorithms(getProject().getProperty(Constants.DIGESTS)
 				.trim()
