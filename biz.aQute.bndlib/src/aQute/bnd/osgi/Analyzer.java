@@ -579,7 +579,7 @@ public class Analyzer extends Processor {
 		// it.
 		//
 		if (map != classpathExports || since(About._2_3)) {
-			Resource resource = jar.getResource(prefix + packageRef.getBinary() + "/package-info.class");
+			Resource resource = jar.getResource(prefix + packageRef.getPath());
 			if (resource != null) {
 				Attrs info = parsePackageInfoClass(resource);
 				if (info != null && info.containsKey(VERSION_ATTRIBUTE)) {
@@ -2853,9 +2853,8 @@ public class Analyzer extends Processor {
 		for (Entry<PackageRef, Attrs> entry : scope.entrySet()) {
 			PackageRef pkg = entry.getKey();
 
-			TypeRef pkgInfoTypeRef = getTypeRefFromFQN(pkg.getFQN() + ".package-info");
+			TypeRef pkgInfoTypeRef = descriptors.getPackageInfo(pkg);
 			Clazz pkgInfo = classspace.get(pkgInfoTypeRef);
-
 			boolean accept = false;
 			if (queryType != null) {
 				switch (queryType) {
@@ -3342,7 +3341,8 @@ public class Analyzer extends Processor {
 			IO.mkdirs(op);
 			if (source != null && output.getCanonicalPath()
 				.equals(source.getCanonicalPath())) {
-				File bak = new File(source.getParentFile(), source.getName() + ".bak");
+				File bak = new File(source.getParentFile(), source.getName()
+					.concat(".bak"));
 				try {
 					IO.rename(source, bak);
 				} catch (IOException e) {

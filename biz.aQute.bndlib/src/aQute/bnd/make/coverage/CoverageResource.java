@@ -92,7 +92,7 @@ public class CoverageResource extends WriteResource {
 		tag.addAttribute("constructor", method.isConstructor());
 		if (!method.isConstructor())
 			tag.addAttribute("name", method.getName());
-		tag.addAttribute("descriptor", method.getDescriptor());
+		tag.addAttribute("descriptor", method.descriptor());
 		return tag;
 	}
 }

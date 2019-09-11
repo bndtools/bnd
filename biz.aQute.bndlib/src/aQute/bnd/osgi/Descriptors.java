@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +60,7 @@ public class Descriptors {
 	}
 
 	public Descriptors() {
-		packageRefCache.put("", DEFAULT_PACKAGE);
+		packageRefCache.put(DEFAULT_PACKAGE.getBinary(), DEFAULT_PACKAGE);
 	}
 
 	@ProviderType
@@ -99,13 +101,9 @@ public class Descriptors {
 		final boolean	java;
 
 		PackageRef(String binaryName) {
-			this.binaryName = fqnToBinary(binaryName);
+			this.binaryName = requireNonNull(binaryName);
 			this.fqn = binaryToFQN(binaryName);
-			this.java = this.fqn.startsWith("java."); // &&
-														// !this.fqn.equals("java.sql)"
-
-			// For some reason I excluded java.sql but the classloader will
-			// delegate anyway. So lost the understanding why I did it??
+			this.java = this.fqn.startsWith("java.");
 		}
 
 		PackageRef() {
@@ -127,7 +125,11 @@ public class Descriptors {
 		}
 
 		public String getPath() {
-			return binaryName;
+			return binaryName.concat("/package-info.class");
+		}
+
+		public String getSourcePath() {
+			return binaryName.concat("/package-info.java");
 		}
 
 		public boolean isJava() {
@@ -185,17 +187,17 @@ public class Descriptors {
 		final PackageRef	packageRef;
 
 		ConcreteRef(PackageRef packageRef, String binaryName) {
-			this.binaryName = binaryName;
+			this.binaryName = requireNonNull(binaryName);
 			this.fqn = binaryToFQN(binaryName);
 			this.primitive = false;
-			this.packageRef = packageRef;
+			this.packageRef = requireNonNull(packageRef);
 		}
 
-		ConcreteRef(String binaryName, String fqn, PackageRef pref) {
+		ConcreteRef(String binaryName, String fqn, PackageRef packageRef) {
 			this.binaryName = binaryName;
 			this.fqn = fqn;
 			this.primitive = true;
-			this.packageRef = pref;
+			this.packageRef = packageRef;
 		}
 
 		@Override
@@ -205,12 +207,12 @@ public class Descriptors {
 
 		@Override
 		public String getPath() {
-			return binaryName + ".class";
+			return binaryName.concat(".class");
 		}
 
 		@Override
 		public String getSourcePath() {
-			return binaryName + ".java";
+			return binaryName.concat(".java");
 		}
 
 		@Override
@@ -306,17 +308,18 @@ public class Descriptors {
 		final TypeRef component;
 
 		ArrayRef(TypeRef component) {
-			this.component = component;
+			this.component = requireNonNull(component);
 		}
 
 		@Override
 		public String getBinary() {
-			return "[" + component.getBinary();
+			return "[".concat(component.getBinary());
 		}
 
 		@Override
 		public String getFQN() {
-			return component.getFQN() + "[]";
+			return component.getFQN()
+				.concat("[]");
 		}
 
 		@Override
@@ -359,7 +362,8 @@ public class Descriptors {
 
 		@Override
 		public String getShortName() {
-			return component.getShortName() + "[]";
+			return component.getShortName()
+				.concat("[]");
 		}
 
 		@Override
@@ -369,7 +373,8 @@ public class Descriptors {
 
 		@Override
 		public String toString() {
-			return component.toString() + "[]";
+			return component.toString()
+				.concat("[]");
 		}
 
 		@Override
@@ -414,15 +419,15 @@ public class Descriptors {
 
 	public TypeRef getTypeRef(String binaryClassName) {
 		assert !binaryClassName.endsWith(".class");
-		int length = binaryClassName.length();
-		if ((length > 1) && (binaryClassName.charAt(0) == 'L') && (binaryClassName.charAt(length - 1) == ';')) {
-			binaryClassName = binaryClassName.substring(1, length - 1);
-			length -= 2;
+		int last = binaryClassName.length() - 1;
+		if ((last > 0) && (binaryClassName.charAt(0) == 'L') && (binaryClassName.charAt(last) == ';')) {
+			binaryClassName = binaryClassName.substring(1, last);
+			last -= 2;
 		}
 
 		binaryClassName = binaryClassName.replace('.', '$');
 
-		if ((length > 0) && (binaryClassName.charAt(0) == '[')) {
+		if ((last >= 0) && (binaryClassName.charAt(0) == '[')) {
 			// We handle arrays here since computeIfAbsent does not like
 			// recursive calls starting in Java 9
 			TypeRef ref = typeRefCache.get(binaryClassName);
@@ -466,12 +471,13 @@ public class Descriptors {
 	}
 
 	public TypeRef getPackageInfo(PackageRef packageRef) {
-		String bin = packageRef.getBinary() + "/package-info";
+		String bin = packageRef.getBinary()
+			.concat("/package-info");
 		return getTypeRef(bin);
 	}
 
 	public PackageRef getPackageRef(String binaryPackName) {
-		binaryPackName = binaryPackName.replace('.', '/');
+		binaryPackName = fqnToBinary(binaryPackName);
 		//
 		// Check here if a package is actually a nested class
 		// com.example.Foo.Bar should have package com.example,
@@ -611,46 +617,40 @@ public class Descriptors {
 	public static String getPackage(String binaryNameOrFqn) {
 		int n = binaryNameOrFqn.lastIndexOf('/');
 		if (n >= 0)
-			return binaryNameOrFqn.substring(0, n)
-				.replace('/', '.');
+			return binaryToFQN(binaryNameOrFqn.substring(0, n));
 
 		n = binaryNameOrFqn.lastIndexOf('.');
 		if (n >= 0)
 			return binaryNameOrFqn.substring(0, n);
 
-		return ".";
+		return DEFAULT_PACKAGE.getFQN();
 	}
 
 	public static String fqnToPath(String s) {
-		return fqnToBinary(s) + ".class";
+		return fqnToBinary(s).concat(".class");
 	}
 
 	public TypeRef getTypeRefFromFQN(String fqn) {
-		if (fqn.equals("boolean"))
-			return BOOLEAN;
-
-		if (fqn.equals("byte"))
-			return BOOLEAN;
-
-		if (fqn.equals("char"))
-			return CHAR;
-
-		if (fqn.equals("short"))
-			return SHORT;
-
-		if (fqn.equals("int"))
-			return INTEGER;
-
-		if (fqn.equals("long"))
-			return LONG;
-
-		if (fqn.equals("float"))
-			return FLOAT;
-
-		if (fqn.equals("double"))
-			return DOUBLE;
-
-		return getTypeRef(fqnToBinary(fqn));
+		switch (fqn) {
+			case "boolean" :
+				return BOOLEAN;
+			case "byte" :
+				return BOOLEAN;
+			case "char" :
+				return CHAR;
+			case "short" :
+				return SHORT;
+			case "int" :
+				return INTEGER;
+			case "long" :
+				return LONG;
+			case "float" :
+				return FLOAT;
+			case "double" :
+				return DOUBLE;
+			default :
+				return getTypeRef(fqnToBinary(fqn));
+		}
 	}
 
 	public TypeRef getTypeRefFromPath(String path) {

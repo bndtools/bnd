@@ -119,10 +119,8 @@ public class CalltreeResource extends WriteResource {
 		int r = a.getName()
 			.compareTo(b.getName());
 		return r != 0 ? r
-			: a.getDescriptor()
-				.toString()
-				.compareTo(b.getDescriptor()
-					.toString());
+			: a.descriptor()
+				.compareTo(b.descriptor());
 	};
 
 	static void xref(Map<Clazz.MethodDef, Set<Clazz.MethodDef>> references, Clazz.MethodDef source,
@@ -158,7 +156,7 @@ public class CalltreeResource extends WriteResource {
 		out.println("      <" + element + " class='" + source.getContainingClass()
 			.getFQN() + "'" + getAccess(source.getAccess())
 			+ (source.isConstructor() ? "" : " name='" + source.getName() + "'") + " descriptor='"
-			+ source.getDescriptor() + "' pretty='" + source.toString() + "'" + closeElement);
+			+ source.descriptor() + "' pretty='" + source.toString() + "'" + closeElement);
 	}
 
 	private static String getAccess(int access) {

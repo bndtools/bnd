@@ -254,7 +254,7 @@ public class Clazz {
 	}
 
 	public abstract class Def {
-		final int access;
+		private final int access;
 
 		public Def(int access) {
 			this.access = access;
@@ -265,59 +265,59 @@ public class Clazz {
 		}
 
 		public boolean isEnum() {
-			return (access & ACC_ENUM) != 0;
+			return Clazz.isEnum(getAccess());
 		}
 
 		public boolean isPublic() {
-			return Modifier.isPublic(access);
+			return Modifier.isPublic(getAccess());
 		}
 
 		public boolean isAbstract() {
-			return Modifier.isAbstract(access);
+			return Modifier.isAbstract(getAccess());
 		}
 
 		public boolean isProtected() {
-			return Modifier.isProtected(access);
+			return Modifier.isProtected(getAccess());
 		}
 
 		public boolean isFinal() {
-			return Modifier.isFinal(access);
+			return Modifier.isFinal(getAccess());
 		}
 
 		public boolean isStatic() {
-			return Modifier.isStatic(access);
+			return Modifier.isStatic(getAccess());
 		}
 
 		public boolean isPrivate() {
-			return Modifier.isPrivate(access);
+			return Modifier.isPrivate(getAccess());
 		}
 
 		public boolean isNative() {
-			return Modifier.isNative(access);
+			return Modifier.isNative(getAccess());
 		}
 
 		public boolean isTransient() {
-			return Modifier.isTransient(access);
+			return Modifier.isTransient(getAccess());
 		}
 
 		public boolean isVolatile() {
-			return Modifier.isVolatile(access);
+			return Modifier.isVolatile(getAccess());
 		}
 
 		public boolean isInterface() {
-			return Modifier.isInterface(access);
+			return Modifier.isInterface(getAccess());
 		}
 
 		public boolean isSynthetic() {
-			return Clazz.isSynthetic(access);
+			return Clazz.isSynthetic(getAccess());
 		}
 
 		public boolean isModule() {
-			return Clazz.isModule(access);
+			return Clazz.isModule(getAccess());
 		}
 
 		public boolean isAnnotation() {
-			return Clazz.isAnnotation(access);
+			return Clazz.isAnnotation(getAccess());
 		}
 
 		@Deprecated
@@ -341,11 +341,15 @@ public class Clazz {
 	}
 
 	abstract class ElementDef extends Def {
-		final Attribute[] attributes;
+		private final Attribute[] attributes;
 
 		ElementDef(int access, Attribute[] attributes) {
 			super(access);
 			this.attributes = attributes;
+		}
+
+		Attribute[] attributes() {
+			return attributes;
 		}
 
 		public boolean isDeprecated() {
@@ -361,7 +365,7 @@ public class Clazz {
 
 		<A extends Attribute> Stream<A> attributes(Class<A> attributeType) {
 			@SuppressWarnings("unchecked")
-			Stream<A> stream = (Stream<A>) Arrays.stream(attributes)
+			Stream<A> stream = (Stream<A>) Arrays.stream(attributes())
 				.filter(attributeType::isInstance);
 			return stream;
 		}
@@ -379,10 +383,10 @@ public class Clazz {
 			ElementType elementType = elementType();
 			Stream<Annotation> runtimeAnnotations = annotationInfos(RuntimeVisibleAnnotationsAttribute.class)
 				.filter(matches)
-				.map(a -> newAnnotation(a, elementType, RetentionPolicy.RUNTIME, access));
+				.map(a -> newAnnotation(a, elementType, RetentionPolicy.RUNTIME, getAccess()));
 			Stream<Annotation> classAnnotations = annotationInfos(RuntimeInvisibleAnnotationsAttribute.class)
 				.filter(matches)
-				.map(a -> newAnnotation(a, elementType, RetentionPolicy.CLASS, access));
+				.map(a -> newAnnotation(a, elementType, RetentionPolicy.CLASS, getAccess()));
 			return Stream.concat(runtimeAnnotations, classAnnotations);
 		}
 
@@ -403,10 +407,10 @@ public class Clazz {
 			ElementType elementType = elementType();
 			Stream<TypeAnnotation> runtimeTypeAnnotations = typeAnnotationInfos(
 				RuntimeVisibleTypeAnnotationsAttribute.class).filter(matches)
-					.map(a -> newTypeAnnotation(a, elementType, RetentionPolicy.RUNTIME, access));
+					.map(a -> newTypeAnnotation(a, elementType, RetentionPolicy.RUNTIME, getAccess()));
 			Stream<TypeAnnotation> classTypeAnnotations = typeAnnotationInfos(
 				RuntimeInvisibleTypeAnnotationsAttribute.class).filter(matches)
-					.map(a -> newTypeAnnotation(a, elementType, RetentionPolicy.CLASS, access));
+					.map(a -> newTypeAnnotation(a, elementType, RetentionPolicy.CLASS, getAccess()));
 			return Stream.concat(runtimeTypeAnnotations, classTypeAnnotations);
 		}
 
@@ -496,20 +500,20 @@ public class Clazz {
 	}
 
 	public class FieldDef extends ElementDef {
-		final String		name;
-		final Descriptor	descriptor;
+		private final String	name;
+		private final String	descriptor;
 
 		@Deprecated
 		public FieldDef(int access, String name, String descriptor) {
 			super(access, new Attribute[0]);
 			this.name = name;
-			this.descriptor = analyzer.getDescriptor(descriptor);
+			this.descriptor = descriptor;
 		}
 
 		FieldDef(MemberInfo memberInfo) {
 			super(memberInfo.access, memberInfo.attributes);
 			this.name = memberInfo.name;
-			this.descriptor = analyzer.getDescriptor(memberInfo.descriptor);
+			this.descriptor = memberInfo.descriptor;
 		}
 
 		@Override
@@ -519,7 +523,7 @@ public class Clazz {
 
 		@Override
 		public TypeRef getType() {
-			return descriptor.getType();
+			return getDescriptor().getType();
 		}
 
 		@Deprecated
@@ -529,8 +533,12 @@ public class Clazz {
 			return getClassName();
 		}
 
-		public Descriptor getDescriptor() {
+		public String descriptor() {
 			return descriptor;
+		}
+
+		public Descriptor getDescriptor() {
+			return analyzer.getDescriptor(descriptor());
 		}
 
 		@Deprecated
@@ -543,7 +551,7 @@ public class Clazz {
 
 		public String getGenericReturnType() {
 			String signature = getSignature();
-			FieldSignature sig = analyzer.getFieldSignature((signature != null) ? signature : descriptor.toString());
+			FieldSignature sig = analyzer.getFieldSignature((signature != null) ? signature : descriptor());
 			return sig.type.toString();
 		}
 
@@ -599,6 +607,7 @@ public class Clazz {
 		}
 
 		public boolean isConstructor() {
+			String name = getName();
 			return name.equals("<init>") || name.equals("<clinit>");
 		}
 
@@ -609,17 +618,17 @@ public class Clazz {
 
 		@Override
 		public TypeRef[] getPrototype() {
-			return descriptor.getPrototype();
+			return getDescriptor().getPrototype();
 		}
 
 		public boolean isBridge() {
-			return (access & ACC_BRIDGE) != 0;
+			return (getAccess() & ACC_BRIDGE) != 0;
 		}
 
 		@Override
 		public String getGenericReturnType() {
 			String signature = getSignature();
-			MethodSignature sig = analyzer.getMethodSignature((signature != null) ? signature : descriptor.toString());
+			MethodSignature sig = analyzer.getMethodSignature((signature != null) ? signature : descriptor());
 			return sig.resultType.toString();
 		}
 
@@ -630,7 +639,7 @@ public class Clazz {
 
 		@Override
 		public Object getConstant() {
-			return attribute(AnnotationDefaultAttribute.class).map(a -> annotationDefault(a, access))
+			return attribute(AnnotationDefaultAttribute.class).map(a -> annotationDefault(a, getAccess()))
 				.orElse(null);
 		}
 
@@ -656,7 +665,7 @@ public class Clazz {
 			int parameter = parameterAnnotationInfo.parameter;
 			return Arrays.stream(parameterAnnotationInfo.annotations)
 				.filter(matches)
-				.map(a -> newParameterAnnotation(parameter, a, elementType, policy, access));
+				.map(a -> newParameterAnnotation(parameter, a, elementType, policy, getAccess()));
 		}
 
 		/**
@@ -676,7 +685,7 @@ public class Clazz {
 
 		@Override
 		ElementType elementType() {
-			return name.equals("<init>") ? ElementType.CONSTRUCTOR : ElementType.METHOD;
+			return getName().equals("<init>") ? ElementType.CONSTRUCTOR : ElementType.METHOD;
 		}
 	}
 
@@ -716,8 +725,8 @@ public class Clazz {
 		}
 	}
 
-	public static final Comparator<Clazz>	NAME_COMPARATOR					= (Clazz a, Clazz b) -> a.classDef.getType()
-		.compareTo(b.classDef.getType());
+	public static final Comparator<Clazz>	NAME_COMPARATOR					= (Clazz a,
+		Clazz b) -> a.classFile.this_class.compareTo(b.classFile.this_class);
 
 	private boolean							hasRuntimeAnnotations;
 	private boolean							hasClassAnnotations;
@@ -859,8 +868,7 @@ public class Clazz {
 		// efficiently during code inspection.
 		forName = analyzer.is(Constants.NOCLASSFORNAME) ? -1
 			: findMethodReference("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
-		class$ = findMethodReference(classDef.getType()
-			.getBinary(), "class$", "(Ljava/lang/String;)Ljava/lang/Class;");
+		class$ = findMethodReference(classFile.this_class, "class$", "(Ljava/lang/String;)Ljava/lang/Class;");
 
 		for (MethodInfo methodInfo : classFile.methods) {
 			referTo(methodInfo.descriptor, methodInfo.access);
@@ -1024,7 +1032,7 @@ public class Clazz {
 		if (elementDef.isDeprecated()) {
 			cd.deprecated();
 		}
-		for (Attribute attribute : elementDef.attributes) {
+		for (Attribute attribute : elementDef.attributes()) {
 			switch (attribute.name()) {
 				case RuntimeVisibleAnnotationsAttribute.NAME :
 					visitAnnotations(cd, (AnnotationsAttribute) attribute, elementType, RetentionPolicy.RUNTIME,
@@ -1848,6 +1856,10 @@ public class Clazz {
 
 	static boolean isModule(int access) {
 		return (access & ACC_MODULE) != 0;
+	}
+
+	static boolean isEnum(int access) {
+		return (access & ACC_ENUM) != 0;
 	}
 
 	public JAVA getFormat() {
