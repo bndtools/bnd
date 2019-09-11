@@ -497,19 +497,19 @@ public class Clazz {
 
 	public class FieldDef extends ElementDef {
 		final String		name;
-		final Descriptor	descriptor;
+		private final String	descriptor;
 
 		@Deprecated
 		public FieldDef(int access, String name, String descriptor) {
 			super(access, new Attribute[0]);
 			this.name = name;
-			this.descriptor = analyzer.getDescriptor(descriptor);
+			this.descriptor = descriptor;
 		}
 
 		FieldDef(MemberInfo memberInfo) {
 			super(memberInfo.access, memberInfo.attributes);
 			this.name = memberInfo.name;
-			this.descriptor = analyzer.getDescriptor(memberInfo.descriptor);
+			this.descriptor = memberInfo.descriptor;
 		}
 
 		@Override
@@ -519,7 +519,7 @@ public class Clazz {
 
 		@Override
 		public TypeRef getType() {
-			return descriptor.getType();
+			return getDescriptor().getType();
 		}
 
 		@Deprecated
@@ -529,8 +529,12 @@ public class Clazz {
 			return getClassName();
 		}
 
-		public Descriptor getDescriptor() {
+		public String descriptor() {
 			return descriptor;
+		}
+
+		public Descriptor getDescriptor() {
+			return analyzer.getDescriptor(descriptor());
 		}
 
 		@Deprecated
@@ -543,7 +547,7 @@ public class Clazz {
 
 		public String getGenericReturnType() {
 			String signature = getSignature();
-			FieldSignature sig = analyzer.getFieldSignature((signature != null) ? signature : descriptor.toString());
+			FieldSignature sig = analyzer.getFieldSignature((signature != null) ? signature : descriptor());
 			return sig.type.toString();
 		}
 
@@ -609,7 +613,7 @@ public class Clazz {
 
 		@Override
 		public TypeRef[] getPrototype() {
-			return descriptor.getPrototype();
+			return getDescriptor().getPrototype();
 		}
 
 		public boolean isBridge() {
@@ -619,7 +623,7 @@ public class Clazz {
 		@Override
 		public String getGenericReturnType() {
 			String signature = getSignature();
-			MethodSignature sig = analyzer.getMethodSignature((signature != null) ? signature : descriptor.toString());
+			MethodSignature sig = analyzer.getMethodSignature((signature != null) ? signature : descriptor());
 			return sig.resultType.toString();
 		}
 

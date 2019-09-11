@@ -251,8 +251,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 			// We need to include the method name in the warning or it may be
 			// ignored as duplicate (from another non-match)
 			for (MethodDef method : methods.get(value)) {
-				analyzer.warning("  methodname: %s descriptor: %s", value, method.getDescriptor()
-					.toString())
+				analyzer.warning("  methodname: %s descriptor: %s", value, method.descriptor())
 					.details(getDetails(rdef, ErrorType.UNSET_OR_MODIFY_WITH_WRONG_SIGNATURE));
 			}
 		}
@@ -308,8 +307,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 		switch (annotation.elementType()) {
 			case METHOD :
 				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
-					member.getDescriptor()
-						.toString(),
+					member.descriptor(),
 					ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
 				break;
 			case FIELD :
@@ -401,8 +399,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	 *
 	 */
 	private void doActivate(Annotation annotation) {
-		String memberDescriptor = member.getDescriptor()
-			.toString();
+		String memberDescriptor = member.descriptor();
 		switch (annotation.elementType()) {
 			case METHOD : {
 				DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
@@ -434,7 +431,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 					}
 				}
 				analyzer
-					.error("Invalid activation object, type %s for field %s", member.getDescriptor(), details.fieldName)
+					.error("Invalid activation object, type %s for field %s", member.descriptor(), details.fieldName)
 					.details(details);
 
 				break;
@@ -469,8 +466,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	private void doDeactivate(Annotation annotation) {
 		switch (annotation.elementType()) {
 			case METHOD : {
-				String memberDescriptor = member.getDescriptor()
-					.toString();
+				String memberDescriptor = member.descriptor();
 				DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
 					member.getName(), memberDescriptor, ErrorType.DEACTIVATE_SIGNATURE_ERROR);
 				component.deactivate = member.getName();
@@ -494,8 +490,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	private void doModified(Annotation annotation) {
 		switch (annotation.elementType()) {
 			case METHOD : {
-				String memberDescriptor = member.getDescriptor()
-					.toString();
+				String memberDescriptor = member.descriptor();
 				DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
 					member.getName(), memberDescriptor, ErrorType.MODIFIED_SIGNATURE_ERROR);
 				component.modified = member.getName();
@@ -547,8 +542,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	 * extract properties from an activation object
 	 */
 	private void processConstructorActivationArgs(int toArg) {
-		String memberDescriptor = member.getDescriptor()
-			.toString();
+		String memberDescriptor = member.descriptor();
 		DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
 			member.getName(), memberDescriptor, ErrorType.CONSTRUCTOR_SIGNATURE_ERROR);
 		MethodResolver resolver = new MethodResolver(classSig, constructorSig);
@@ -963,8 +957,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 		switch (annotation.elementType()) {
 			case METHOD : {
-				def.bindDescriptor = member.getDescriptor()
-					.toString();
+				def.bindDescriptor = member.descriptor();
 				def.bind = member.getName();
 				if (def.name == null) {
 					Matcher m = BINDNAME.matcher(member.getName());
@@ -981,7 +974,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 				if (def.service == null) {
 					analyzer
 						.error("In component %s, method %s,  cannot recognize the signature of the descriptor: %s",
-							component.effectiveName(), def.name, member.getDescriptor())
+							component.effectiveName(), def.name, member.descriptor())
 						.details(getDetails(def, ErrorType.REFERENCE));
 				}
 				break;
@@ -1054,7 +1047,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 				} else {
 					analyzer
 						.error("In component %s, field %s cannot recognize the signature of the descriptor: %s",
-							className, def.field, member.getDescriptor())
+							className, def.field, member.descriptor())
 						.details(getDetails(def, ErrorType.REFERENCE));
 				}
 				break;
@@ -1122,7 +1115,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 				} else {
 					analyzer.error(
 						"In component %s, constructor argument %s, cannot recognize the signature of the descriptor: %s",
-						className, def.parameter, member.getDescriptor())
+						className, def.parameter, member.descriptor())
 						.details(getDetails(def, ErrorType.REFERENCE));
 				}
 				break;
@@ -1562,8 +1555,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 		if (signature != null) {
 			return analyzer.getFieldSignature(signature);
 		}
-		signature = field.getDescriptor()
-			.toString();
+		signature = field.descriptor();
 		switch (signature.charAt(0)) {
 			case 'L' : // ClassTypeSignature
 			case 'T' : // TypeVariableSignature
@@ -1597,8 +1589,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	private MethodSignature getMethodSignature(MethodDef method) {
 		String signature = method.getSignature();
 		return analyzer.getMethodSignature((signature != null) ? signature
-			: method.getDescriptor()
-				.toString());
+			: method.descriptor());
 	}
 
 	@Override

@@ -38,8 +38,7 @@ public class ResolverTest {
 			Map<String, FieldSignature> fieldSigs = fields.stream()
 				.collect(toMap(FieldDef::getName,
 					defined -> a.getFieldSignature((defined.getSignature() != null) ? defined.getSignature()
-						: defined.getDescriptor()
-							.toString())));
+						: defined.descriptor())));
 			System.out.printf("FieldSignature[%s]: %s\n", c, fieldSigs);
 
 			FieldSignature fieldSig;
@@ -144,8 +143,7 @@ public class ResolverTest {
 			Map<String, MethodSignature> methodSigs = methods.stream()
 				.collect(toMap(MethodDef::getName,
 					defined -> a.getMethodSignature((defined.getSignature() != null) ? defined.getSignature()
-						: defined.getDescriptor()
-							.toString())));
+						: defined.descriptor())));
 			System.out.printf("MethodSignature[%s]: %s\n", c, methodSigs);
 
 			MethodSignature methodSig;

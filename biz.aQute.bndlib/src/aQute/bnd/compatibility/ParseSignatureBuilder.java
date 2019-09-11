@@ -68,10 +68,10 @@ public class ParseSignatureBuilder {
 					String descriptor;
 					Kind kind;
 					if (defined.isConstructor()) {
-						descriptor = ":" + defined.getDescriptor();
+						descriptor = ":" + defined.descriptor();
 						kind = Kind.CONSTRUCTOR;
 					} else {
-						descriptor = defined.getName() + ":" + defined.getDescriptor();
+						descriptor = defined.getName() + ":" + defined.descriptor();
 						kind = Kind.METHOD;
 					}
 					Scope m = s.getScope(descriptor);
@@ -83,7 +83,7 @@ public class ParseSignatureBuilder {
 
 				@Override
 				public void field(Clazz.FieldDef defined) {
-					String descriptor = defined.getName() + ":" + defined.getDescriptor();
+					String descriptor = defined.getName() + ":" + defined.descriptor();
 					Kind kind = Kind.FIELD;
 					Scope m = s.getScope(descriptor);
 					m.access = Access.modifier(defined.getAccess());

@@ -197,8 +197,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 		this.member = method;
 
 		String signature = (member.getSignature() != null) ? member.getSignature()
-			: member.getDescriptor()
-				.toString();
+			: member.descriptor();
 		MethodSignature methodSig = analyzer.getMethodSignature(signature);
 		MethodResolver resolver = new MethodResolver(classSig, methodSig);
 		if (methodSig.parameterTypes.length != 1)
@@ -269,8 +268,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 		switch (reference.elementType()) {
 			case PARAMETER : {
 				String signature = (member.getSignature() != null) ? member.getSignature()
-					: member.getDescriptor()
-						.toString();
+					: member.descriptor();
 				MethodSignature methodSig = analyzer.getMethodSignature(signature);
 				resolver = new MethodResolver(classSig, methodSig);
 				JavaTypeSignature parameterType = ((MethodResolver) resolver).resolveParameter(parameter);
@@ -287,8 +285,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 				String signature = member.getSignature();
 				if (signature == null) {
 					try {
-						fieldSig = analyzer.getFieldSignature(member.getDescriptor()
-							.toString());
+						fieldSig = analyzer.getFieldSignature(member.descriptor());
 					} catch (IllegalArgumentException iae) {
 						fieldSig = null;
 					}
@@ -297,7 +294,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 				}
 				if (fieldSig == null) {
 					analyzer.error("In bean %s, field %s has an incompatible type for @Reference: %s", clazz,
-						member.getName(), member.getDescriptor());
+						member.getName(), member.descriptor());
 					return;
 				}
 				resolver = new FieldResolver(classSig, fieldSig);
@@ -392,8 +389,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 				String signature = member.getSignature();
 				if (signature == null) {
 					try {
-						fieldSig = analyzer.getFieldSignature(member.getDescriptor()
-							.toString());
+						fieldSig = analyzer.getFieldSignature(member.descriptor());
 					} catch (IllegalArgumentException iae) {
 						fieldSig = null;
 					}
@@ -402,14 +398,14 @@ public class CDIAnnotationReader extends ClassDataCollector {
 				}
 				if (fieldSig == null) {
 					analyzer.error("In bean %s, field %s has an incompatible type for @Service: %s", clazz,
-						fieldDef.getName(), member.getDescriptor());
+						fieldDef.getName(), member.descriptor());
 					return;
 				}
 				FieldResolver resolver = new FieldResolver(classSig, fieldSig);
 				ReferenceTypeSignature type = resolver.resolveField();
 				if (!(type instanceof ClassTypeSignature)) {
 					analyzer.error("In bean %s, field %s has an incompatible type for @Service: %s", clazz,
-						fieldDef.getName(), member.getDescriptor());
+						fieldDef.getName(), member.descriptor());
 					return;
 				}
 
@@ -423,19 +419,18 @@ public class CDIAnnotationReader extends ClassDataCollector {
 			case METHOD : {
 				Clazz.MethodDef methodDef = (Clazz.MethodDef) member;
 				String signature = (member.getSignature() != null) ? member.getSignature()
-					: member.getDescriptor()
-						.toString();
+					: member.descriptor();
 				MethodSignature methodSig = analyzer.getMethodSignature(signature);
 				MethodResolver resolver = new MethodResolver(classSig, methodSig);
 				Result result = resolver.resolveResult();
 				if (result instanceof VoidDescriptor) {
 					analyzer.error("In bean %s, method %s has @Service and returns void: %s", clazz,
-						methodDef.getName(), member.getDescriptor());
+						methodDef.getName(), member.descriptor());
 					return;
 				}
 				if (!(result instanceof ClassTypeSignature)) {
 					analyzer.error("In bean %s, method %s has an incompatible return type for @Service: %s", clazz,
-						methodDef.getName(), member.getDescriptor());
+						methodDef.getName(), member.descriptor());
 					return;
 				}
 				ClassTypeSignature returnType = (ClassTypeSignature) result;
