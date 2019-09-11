@@ -433,7 +433,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 								Object object = getOrDefault(method);
 								if (object == null)
 									return;
-								a.put("#" + method.name, object);
+								a.put("#" + method.getName(), object);
 							}));
 					}
 					if (!attributesAndDirectives.isEmpty()) {
@@ -453,12 +453,12 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 
 		private void handleAttributeOrDirective(Annotation a) {
-			Object o = annotation.get(lastMethodSeen.name);
+			Object o = annotation.get(lastMethodSeen.getName());
 
 			if (o != null) {
 				String attributeName = a.get("value");
 				if (attributeName == null) {
-					attributeName = lastMethodSeen.name;
+					attributeName = lastMethodSeen.getName();
 				}
 				if (STD_DIRECTIVE.equals(a.getName()
 					.getFQN())) {
@@ -487,12 +487,12 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 
 		private Object getOrDefault(MethodDef method) {
-			Object object = annotation.get(method.name);
+			Object object = annotation.get(method.getName());
 
 			if (object == null) {
 				try {
 					object = c.getDefaults()
-						.get(method.name);
+						.get(method.getName());
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
 				}
