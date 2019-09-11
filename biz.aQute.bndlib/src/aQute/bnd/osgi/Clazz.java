@@ -725,8 +725,8 @@ public class Clazz {
 		}
 	}
 
-	public static final Comparator<Clazz>	NAME_COMPARATOR					= (Clazz a, Clazz b) -> a.classDef.getType()
-		.compareTo(b.classDef.getType());
+	public static final Comparator<Clazz>	NAME_COMPARATOR					= (Clazz a,
+		Clazz b) -> a.classFile.this_class.compareTo(b.classFile.this_class);
 
 	private boolean							hasRuntimeAnnotations;
 	private boolean							hasClassAnnotations;
@@ -868,8 +868,7 @@ public class Clazz {
 		// efficiently during code inspection.
 		forName = analyzer.is(Constants.NOCLASSFORNAME) ? -1
 			: findMethodReference("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
-		class$ = findMethodReference(classDef.getType()
-			.getBinary(), "class$", "(Ljava/lang/String;)Ljava/lang/Class;");
+		class$ = findMethodReference(classFile.this_class, "class$", "(Ljava/lang/String;)Ljava/lang/Class;");
 
 		for (MethodInfo methodInfo : classFile.methods) {
 			referTo(methodInfo.descriptor, methodInfo.access);
