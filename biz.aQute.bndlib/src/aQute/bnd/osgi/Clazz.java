@@ -850,12 +850,15 @@ public class Clazz {
 			processAttributes(fieldInfo.attributes, elementType(fieldInfo), fieldInfo.access);
 		}
 
-		/*
-		 * We crawl the code to find the ldc(_w) <string constant> invokestatic
-		 * Class.forName if so, calculate the method ref index so we can do this
-		 * efficiently
-		 */
-		forName = findMethodReference("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
+		// We crawl the code to find the instruction sequence:
+		//
+		// ldc(_w) <string constant>
+		// invokestatic Class.forName(String)
+		//
+		// We calculate the method reference index so we can do this
+		// efficiently during code inspection.
+		forName = analyzer.is(Constants.NOCLASSFORNAME) ? -1
+			: findMethodReference("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
 		class$ = findMethodReference(classDef.getType()
 			.getBinary(), "class$", "(Ljava/lang/String;)Ljava/lang/Class;");
 
