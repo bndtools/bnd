@@ -127,7 +127,11 @@ public class Descriptors {
 		}
 
 		public String getPath() {
-			return binaryName;
+			return binaryName.concat("/package-info.class");
+		}
+
+		public String getSourcePath() {
+			return binaryName.concat("/package-info.java");
 		}
 
 		public boolean isJava() {
