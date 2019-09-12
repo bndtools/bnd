@@ -579,7 +579,7 @@ public class Analyzer extends Processor {
 		// it.
 		//
 		if (map != classpathExports || since(About._2_3)) {
-			Resource resource = jar.getResource(prefix + packageRef.getPath());
+			Resource resource = jar.getResource(prefix + packageRef.getBinary() + "/package-info.class");
 			if (resource != null) {
 				Attrs info = parsePackageInfoClass(resource);
 				if (info != null && info.containsKey(VERSION_ATTRIBUTE)) {
