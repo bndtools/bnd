@@ -551,7 +551,8 @@ public class Analyzer extends Processor {
 		// not take the package slot. See #708
 		//
 
-		Map<String, Resource> dir = jar.getDirectory(appendPath(prefix, packageRef.getBinary()));
+		String packagePath = appendPath(prefix, packageRef.getBinary());
+		Map<String, Resource> dir = jar.getDirectory(packagePath);
 		if (dir == null || dir.isEmpty())
 			return;
 
@@ -579,7 +580,7 @@ public class Analyzer extends Processor {
 		// it.
 		//
 		if (map != classpathExports || since(About._2_3)) {
-			Resource resource = jar.getResource(prefix + packageRef.getBinary() + "/package-info.class");
+			Resource resource = jar.getResource(packagePath.concat("/package-info.class"));
 			if (resource != null) {
 				Attrs info = parsePackageInfoClass(resource);
 				if (info != null && info.containsKey(VERSION_ATTRIBUTE)) {
@@ -591,8 +592,7 @@ public class Analyzer extends Processor {
 			}
 		}
 
-		String path = prefix + packageRef.getBinary() + "/packageinfo";
-		Resource resource = jar.getResource(path);
+		Resource resource = jar.getResource(packagePath.concat("/packageinfo"));
 		if (resource != null) {
 			Attrs info = parsePackageinfo(packageRef, resource);
 			if (info != null) {
@@ -2540,7 +2540,7 @@ public class Analyzer extends Processor {
 							warning(Constants.BUNDLE_CLASSPATH
 								+ " uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
 								path);
-						analyzeJar(dot, path + "/", true, path);
+						analyzeJar(dot, path.concat("/"), true, path);
 					} else {
 						Attrs info = bcp.get(path);
 						if (!"optional".equals(info.get(RESOLUTION_DIRECTIVE)))
