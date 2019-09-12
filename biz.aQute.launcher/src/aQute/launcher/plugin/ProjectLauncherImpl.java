@@ -152,7 +152,11 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	@Override
 	public String getMainTypeName() {
-		return EMBEDDED_LAUNCHER;
+		Instructions instructions = new Instructions(getProject().getProperty(Constants.REMOVEHEADERS));
+		if (!instructions.isEmpty() && instructions.matches(MAIN_CLASS)) {
+			return EMBEDDED_LAUNCHER;
+		}
+		return getProject().getProperty(MAIN_CLASS, EMBEDDED_LAUNCHER);
 	}
 
 	@Override
@@ -366,26 +370,21 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 				new EmbeddedResource(bout.toByteBuffer(), 0L));
 		}
 
+		Properties flattenedProperties = getProject().getFlattenedProperties();
+		Instructions instructions = new Instructions(getProject().getProperty(Constants.REMOVEHEADERS));
+		Collection<Object> result = instructions.select(flattenedProperties.keySet(), false);
+		flattenedProperties.keySet()
+			.removeAll(result);
+
 		Manifest m = new Manifest();
 		Attributes main = m.getMainAttributes();
-
-		for (Entry<Object, Object> e : getProject().getFlattenedProperties()
-			.entrySet()) {
+		main.putValue(MAIN_CLASS, EMBEDDED_LAUNCHER);
+		main.putValue(EMBEDDED_RUNPATH, join(classpath));
+		for (Entry<Object, Object> e : flattenedProperties.entrySet()) {
 			String key = (String) e.getKey();
 			if (key.length() > 0 && Character.isUpperCase(key.charAt(0)))
 				main.putValue(key, (String) e.getValue());
 		}
-
-		Instructions instructions = new Instructions(getProject().getProperty(Constants.REMOVEHEADERS));
-		Collection<Object> result = instructions.select(main.keySet(), false);
-		main.keySet()
-			.removeAll(result);
-
-		logger.debug("Use Embedded launcher");
-		m.getMainAttributes()
-			.putValue("Main-Class", EMBEDDED_LAUNCHER);
-		m.getMainAttributes()
-			.putValue(EMBEDDED_RUNPATH, join(classpath));
 
 		Resource preJar = Resource.fromURL(this.getClass()
 			.getResource("/" + PRE_JAR));
@@ -393,7 +392,9 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			jar.addAll(pre);
 		}
 
-		doStart(jar, EMBEDDED_LAUNCHER);
+		String embeddedLauncherName = main.getValue(MAIN_CLASS);
+		logger.debug("Use '{}' launcher class", embeddedLauncherName);
+		doStart(jar, embeddedLauncherName);
 		if (getProject().getProperty(Constants.DIGESTS) != null)
 			jar.setDigestAlgorithms(getProject().getProperty(Constants.DIGESTS)
 				.trim()
