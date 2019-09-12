@@ -400,9 +400,9 @@ public class Builder extends Analyzer {
 		addClose(jar);
 		for (PackageRef pref : referred) {
 			for (Jar cpe : getClasspath()) {
-				Map<String, Resource> map = cpe.getDirectory(pref.getBinary());
+				Map<String, Resource> map = cpe.getDirectory(pref.getPath());
 				if (map != null) {
-					copy(jar, cpe, pref.getBinary(), false);
+					copy(jar, cpe, pref.getPath(), false);
 					break;
 				}
 			}
@@ -523,7 +523,7 @@ public class Builder extends Analyzer {
 		for (TypeRef typeRef : getClassspace().keySet()) {
 			PackageRef packageRef = typeRef.getPackageRef();
 			String sourcePath = typeRef.getSourcePath();
-			String packagePath = packageRef.getBinary();
+			String packagePath = packageRef.getPath();
 
 			boolean found = false;
 			String[] fixed = {
