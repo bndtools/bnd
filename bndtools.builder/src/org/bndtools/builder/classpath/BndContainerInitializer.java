@@ -174,7 +174,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 		}
 		try {
 			return serializationHelper.readClasspathContainer(containerFile);
-		} catch (IOException | ClassNotFoundException e) {
+		} catch (Exception e) {
+			logger.logError("Unable to load serialized classpath container from file " + containerFile, e);
+			IO.delete(containerFile);
 			return new BndContainer.Builder().build();
 		}
 	}
@@ -183,8 +185,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 		File containerFile = getContainerFile(project);
 		try {
 			serializationHelper.writeClasspathContainer(container, containerFile);
-		} catch (IOException e) {
-			logger.logError("Unable to store classpath container", e);
+		} catch (Exception e) {
+			logger.logError("Unable to store serialized classpath container in file " + containerFile, e);
 			IO.delete(containerFile);
 		}
 	}
