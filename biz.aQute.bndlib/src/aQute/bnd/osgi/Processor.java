@@ -2483,7 +2483,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	public FileLine getHeader(String header) throws Exception {
 		return getHeader(
-			Pattern.compile("^[ \t]*" + Pattern.quote(header), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE));
+			Pattern.compile("^[ \t]*".concat(Pattern.quote(header)), Pattern.MULTILINE | Pattern.CASE_INSENSITIVE));
 	}
 
 	public static Pattern toFullHeaderPattern(String header) {
@@ -2493,9 +2493,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			.append(")(\\.[^\\s:=]*)?[ \t]*[ \t:=][ \t]*");
 		sb.append("[^\\\\\n\r]*(\\\\\n[^\\\\\n\r]*)*");
 		try {
-			return Pattern.compile(sb.toString(), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE);
+			return Pattern.compile(sb.toString(), Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 		} catch (Exception e) {
-			return Pattern.compile("^[ \t]*" + Pattern.quote(header), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE);
+			return Pattern.compile("^[ \t]*".concat(Pattern.quote(header)),
+				Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 		}
 	}
 
@@ -2564,7 +2565,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public static FileLine findHeader(File f, String header) throws IOException {
 		return findHeader(f,
-			Pattern.compile("^[ \t]*" + Pattern.quote(header), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE));
+			Pattern.compile("^[ \t]*".concat(Pattern.quote(header)), Pattern.MULTILINE | Pattern.CASE_INSENSITIVE));
 	}
 
 	public static FileLine findHeader(File f, Pattern header) throws IOException {
@@ -2838,7 +2839,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	void tree(List<String> list, File current, String path, Instruction instr) {
 		if (path.length() > 0)
-			path = path + "/";
+			path = path.concat("/");
 
 		String subs[] = current.list();
 		if (subs != null) {
@@ -2931,7 +2932,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	private static String getJavaHomeExecutable(String java) {
-		String command = "bin/" + java;
+		String command = "bin/".concat(java);
 		File executable = new File(IO.JAVA_HOME, command);
 		if (executable.exists()) {
 			return IO.absolutePath(executable);
