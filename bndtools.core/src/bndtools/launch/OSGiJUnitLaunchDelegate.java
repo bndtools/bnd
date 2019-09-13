@@ -40,7 +40,7 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 		+ "\\("																												//
 		+ "     (" + JNAME_S + "(?:\\." + JNAME_S + ")*)          # fqn class name\n"										//
 		+ "\\)$                                                   # close\n",												//
-		Pattern.UNIX_LINES + Pattern.MULTILINE + Pattern.COMMENTS);
+		Pattern.UNIX_LINES | Pattern.MULTILINE | Pattern.COMMENTS);
 	public static final String		ORG_BNDTOOLS_TESTNAMES	= "org.bndtools.testnames";
 	private static final String		JDT_JUNIT_BSN			= "org.eclipse.jdt.junit";
 	private static final String		ATTR_JUNIT_PORT			= "org.eclipse.jdt.junit.PORT";

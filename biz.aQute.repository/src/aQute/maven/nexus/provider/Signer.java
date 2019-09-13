@@ -20,8 +20,7 @@ public class Signer {
 	}
 
 	private String getDefault() {
-		boolean windows = File.separatorChar == '\\';
-		if (windows) {
+		if (IO.isWindows()) {
 			return "gpg";
 		}
 		return "gpg";

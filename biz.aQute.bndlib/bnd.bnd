@@ -51,7 +51,7 @@ Export-Package: \
 	!org.osgi.annotation.*,\
 	org.osgi.*
 
-Import-Package: junit.framework;resolution:=optional,\
+Import-Package: \
 	org.osgi.service.repository,\
 	org.osgi.service.log,\
 	${replacelist;${retainall;${packages;CONDITIONAL};${packages;NAMED;org.osgi.*}};$;\\;provide:=false},\

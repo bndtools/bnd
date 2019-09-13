@@ -19,11 +19,10 @@ import aQute.libg.remote.Sink;
 
 class SourceFS {
 	private final static Pattern				WINDOWS_PREFIX	= Pattern.compile("(\\p{Alpha}):\\\\(.*)");
-	private final static Pattern				WINDOWS_FILE_P	= Pattern
-		.compile("(?:\\p{Alpha}:|\\\\)(\\\\[\\p{Alnum}-_+.~@$%&=]+)*");
-	private final static Pattern				UNIX_FILE_P		= Pattern.compile("(/[\\p{Alnum}-_+.~@$%&=]+)+");
-	private final static Pattern				LOCAL_P			= File.separatorChar == '\\' ? WINDOWS_FILE_P
-		: UNIX_FILE_P;
+	private final static String					WINDOWS_FILE	= "(?:\\p{Alpha}:|\\\\)(\\\\[\\p{Alnum}-_+.~@$%&=]+)*";
+	private final static String					UNIX_FILE		= "(/[\\p{Alnum}-_+.~@$%&=]+)+";
+	private final static Pattern				LOCAL_P			= Pattern
+		.compile(IO.isWindows() ? WINDOWS_FILE : UNIX_FILE);
 
 	private MultiMap<String, File>				shas			= new MultiMap<>();
 	private final Map<File, FileDescription>	files			= new HashMap<>();
@@ -109,7 +108,7 @@ class SourceFS {
 			while (remotePath.startsWith(File.separator))
 				remotePath = remotePath.substring(1);
 		} else {
-			if (File.separatorChar == '\\') {
+			if (IO.isWindows()) {
 
 				//
 				// Why is windows always 10x more complicated??

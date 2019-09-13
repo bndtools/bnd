@@ -29,7 +29,7 @@ public class BundleResourceCopier {
 
 	private void addOrRemoveDirectoryRecursive(File dstDir, String bundleDir, String relativePath, CopyMode mode,
 		List<File> affected) throws IOException {
-		String resourcePath = formatBundleEntryPath(new File(bundleDir, relativePath).getPath());
+		String resourcePath = IO.normalizePath(new File(bundleDir, relativePath));
 		Enumeration<String> resourcePathEntries = bundle.getEntryPaths(resourcePath);
 		if (resourcePathEntries != null) {
 			while (resourcePathEntries.hasMoreElements()) {
@@ -87,7 +87,7 @@ public class BundleResourceCopier {
 			if (dstFile.exists() && mode == CopyMode.ADD) {
 				affected.add(relativeDstFile);
 			} else {
-				String resourcePath = formatBundleEntryPath(new File(bundleDir, relativePath).getPath());
+				String resourcePath = IO.normalizePath(new File(bundleDir, relativePath));
 				URL resourceUrl = bundle.getEntry(resourcePath);
 				if (resourceUrl == null)
 					throw new IOException(
@@ -194,14 +194,5 @@ public class BundleResourceCopier {
 		for (String templatePath : relativePaths) {
 			addOrRemoveDirectory(dstDir, bundleDir, templatePath, mode);
 		}
-	}
-
-	private String formatBundleEntryPath(String path) {
-		// Bundle.getEntry* doesn't grok backslashes
-		if (File.separatorChar != '\\') {
-			return path;
-		}
-
-		return path.replace('\\', '/');
 	}
 }

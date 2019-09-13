@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import aQute.lib.stringrover.StringRover;
 import aQute.libg.glob.Glob;
 
 public class IO {
@@ -649,18 +650,18 @@ public class IO {
 	}
 
 	public static File getFile(File base, String file) {
-		if (file.startsWith("~/")) {
-			file = file.substring(2);
-			if (!file.startsWith("~/")) {
-				return getFile(home, file);
+		StringRover rover = new StringRover(file);
+		if (rover.startsWith("~/")) {
+			rover.increment(2);
+			if (!rover.startsWith("~/")) {
+				return getFile(home, rover.substring(0));
 			}
 		}
-		if (file.startsWith("~")) {
-			file = file.substring(1);
-			return getFile(home.getParentFile(), file);
+		if (rover.startsWith("~")) {
+			return getFile(home.getParentFile(), rover.substring(1));
 		}
 
-		File f = new File(file);
+		File f = new File(rover.substring(0));
 		if (f.isAbsolute()) {
 			return f;
 		}
@@ -669,30 +670,24 @@ public class IO {
 			base = work;
 		}
 
-		for (f = base.getAbsoluteFile(); !file.isEmpty();) {
-			String first;
-			int n = file.indexOf('/');
-			if (n != -1) {
-				first = file.substring(0, n);
-				file = file.substring(n + 1);
+		for (f = base.getAbsoluteFile(); !rover.isEmpty();) {
+			int n = rover.indexOf('/');
+			if (n < 0) {
+				n = rover.length();
+			}
+			if ((n == 0) || ((n == 1) && (rover.charAt(0) == '.'))) {
+				// case "" or "."
+			} else if ((n == 2) && (rover.charAt(0) == '.') && (rover.charAt(1) == '.')) {
+				// case ".."
+				File parent = f.getParentFile();
+				if (parent != null) {
+					f = parent;
+				}
 			} else {
-				first = file;
-				file = "";
+				String segment = rover.substring(0, n);
+				f = new File(f, segment);
 			}
-			switch (first) {
-				case "" :
-				case "." :
-					break;
-				case ".." :
-					File parent = f.getParentFile();
-					if (parent != null) {
-						f = parent;
-					}
-					break;
-				default :
-					f = new File(f, first);
-					break;
-			}
+			rover.increment(n + 1);
 		}
 
 		return f.getAbsoluteFile();
@@ -713,19 +708,19 @@ public class IO {
 	}
 
 	public static Path getPath(Path base, String file) {
-		if (file.startsWith("~/")) {
-			file = file.substring(2);
-			if (!file.startsWith("~/")) {
-				return getPath(home.toPath(), file);
+		StringRover rover = new StringRover(file);
+		if (rover.startsWith("~/")) {
+			rover.increment(2);
+			if (!rover.startsWith("~/")) {
+				return getPath(home.toPath(), rover.substring(0));
 			}
 		}
-		if (file.startsWith("~")) {
-			file = file.substring(1);
+		if (rover.startsWith("~")) {
 			return getPath(home.toPath()
-				.getParent(), file);
+				.getParent(), rover.substring(1));
 		}
 
-		Path f = new File(file).toPath();
+		Path f = new File(rover.substring(0)).toPath();
 		if (f.isAbsolute()) {
 			return f;
 		}
@@ -735,18 +730,15 @@ public class IO {
 		}
 
 		for (f = base.normalize()
-			.toAbsolutePath(); !file.isEmpty();) {
-			String first;
-			int n = file.indexOf('/');
-			if (n != -1) {
-				first = file.substring(0, n);
-				file = file.substring(n + 1);
-			} else {
-				first = file;
-				file = "";
+			.toAbsolutePath(); !rover.isEmpty();) {
+			int n = rover.indexOf('/');
+			if (n < 0) {
+				n = rover.length();
 			}
-			f = f.resolve(first)
+			String segment = rover.substring(0, n);
+			f = f.resolve(segment)
 				.normalize();
+			rover.increment(n + 1);
 		}
 
 		return f.toAbsolutePath();

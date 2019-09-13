@@ -124,7 +124,7 @@ public class ProjectTest extends TestCase {
 		f = testStaleCheck(project, "foo.bar;newer=older/;warning=FOO", "FOO");
 		assertThat(f).isNotNull();
 
-		if (isLinuxy()) {
+		if (!IO.isWindows()) {
 			f = testStaleCheck(project, "foo.bar;newer=older;command='cp foo.bar older/'");
 			try (Jar t = new Jar(f)) {
 				assertThat(t.getResource("b/c/foo.txt")).isNotNull();
@@ -140,10 +140,6 @@ public class ProjectTest extends TestCase {
 		testStaleCheck(project, "older/;newer=foo.bar", "detected");
 		testStaleCheck(project, "older/;newer=foo.bar;error=FOO", "FOO");
 		testStaleCheck(project, "older/;newer=foo.bar;warning=FOO", "FOO");
-	}
-
-	private boolean isLinuxy() {
-		return File.separatorChar == '/';
 	}
 
 	File testStaleCheck(Project project, String clauses, String... check) throws Exception {
