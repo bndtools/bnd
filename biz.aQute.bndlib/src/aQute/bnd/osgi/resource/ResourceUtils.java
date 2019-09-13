@@ -119,7 +119,7 @@ public class ResourceUtils {
 			bundle(IdentityNamespace.TYPE_BUNDLE),
 			fragment(IdentityNamespace.TYPE_FRAGMENT),
 			unknown(IdentityNamespace.TYPE_UNKNOWN);
-			private final String s;
+			private String s;
 
 			private Type(String s) {
 				this.s = s;
@@ -590,6 +590,12 @@ public class ResourceUtils {
 			return 1;
 
 		return myVersion.compareTo(theirVersion);
+	}
+
+	public static List<Resource> sort(Collection<Resource> a) {
+		List<Resource> list = new ArrayList<>(a);
+		Collections.sort(list, ResourceUtils::compareTo);
+		return list;
 	}
 
 	/**
