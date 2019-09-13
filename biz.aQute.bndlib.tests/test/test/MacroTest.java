@@ -1004,7 +1004,7 @@ public class MacroTest extends TestCase {
 
 	public void testSystem() throws Exception {
 		// disable this test on windows
-		if (!"/".equals(File.separator))
+		if (IO.isWindows())
 			return;
 
 		Processor p = new Processor();

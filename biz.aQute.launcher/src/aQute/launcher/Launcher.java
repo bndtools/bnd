@@ -701,7 +701,7 @@ public class Launcher implements ServiceListener {
 			char c = s.charAt(i);
 			switch (c) {
 				case '/' :
-					sb.append(File.separator);
+					sb.append(File.separatorChar);
 					break;
 
 				case '$' :
@@ -904,17 +904,13 @@ public class Launcher implements ServiceListener {
 	}
 
 	private boolean useReferences() {
-		return !isWindows() && !parms.noreferences;
+		return !IO.isWindows() && !parms.noreferences;
 	}
 
 	private String getReferenceUrl(File f) throws MalformedURLException {
 		return "reference:" + f.toURI()
 			.toURL()
 			.toExternalForm();
-	}
-
-	private boolean isWindows() {
-		return File.separatorChar == '\\';
 	}
 
 	private void doTimeoutHandler() {

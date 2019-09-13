@@ -30,7 +30,7 @@ public class ResourcesTest extends TestCase {
 	 */
 
 	public void testCommand() throws Exception {
-		if (!onWindows()) {
+		if (!IO.isWindows()) {
 			Builder b = new Builder();
 			b.setProperty("Include-Resource", "xkeystore; requires='testresources/keystore';cmd='echo ${@requires}', ");
 			b.setProperty("-resourceonly", "true");
@@ -50,7 +50,7 @@ public class ResourcesTest extends TestCase {
 	 */
 
 	public static void testOnTheFlyMerge() throws Exception {
-		if (!onWindows()) {
+		if (!IO.isWindows()) {
 			Builder b = new Builder();
 			b.setIncludeResource("count;for='1,2,3';cmd='echo YES_${@}'");
 			b.setProperty("-resourceonly", "true");
@@ -71,7 +71,7 @@ public class ResourcesTest extends TestCase {
 	 */
 
 	public static void testOnTheFlySingle() throws Exception {
-		if (onWindows())
+		if (IO.isWindows())
 			return;
 
 		Builder b = new Builder();
@@ -91,7 +91,7 @@ public class ResourcesTest extends TestCase {
 	 */
 
 	public static void testOnTheFlySingleError() throws Exception {
-		if (onWindows())
+		if (IO.isWindows())
 			return;
 
 		Builder b = new Builder();
@@ -109,7 +109,7 @@ public class ResourcesTest extends TestCase {
 	 */
 
 	public static void testOnTheFlyMultiple() throws Exception {
-		if (onWindows())
+		if (IO.isWindows())
 			return;
 		Builder b = new Builder();
 		b.setIncludeResource("count/${@};for='1,2,3';cmd='echo YES_${@}'");
@@ -530,10 +530,6 @@ public class ResourcesTest extends TestCase {
 			.size());
 		assertEquals(0, processor.getWarnings()
 			.size());
-	}
-
-	private static boolean onWindows() {
-		return File.separatorChar == '\\';
 	}
 
 }

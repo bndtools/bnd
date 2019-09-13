@@ -2880,7 +2880,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public String system(boolean allowFail, String command, String input) throws IOException, InterruptedException {
 
-		if (File.separatorChar == '\\')
+		if (IO.isWindows())
 			command = "cmd /c \"" + command + "\"";
 
 		Process process = Runtime.getRuntime()
