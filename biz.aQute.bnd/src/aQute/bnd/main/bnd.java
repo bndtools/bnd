@@ -4777,4 +4777,16 @@ public class bnd extends Processor {
 		mc.run(options);
 		getInfo(mc);
 	}
+
+	@Description("Maintain Maven Bnd Repository GAV files")
+	public void _mbr(MbrCommand.MrOptions options) throws Exception {
+		MbrCommand c = new MbrCommand(this, options);
+		CommandLine cl = new CommandLine(this);
+		String s = cl.subCmd(options, c);
+		if (s != null) {
+			out.println(s);
+		}
+		getInfo(c);
+	}
+
 }

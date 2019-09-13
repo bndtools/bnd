@@ -239,4 +239,8 @@ public class Archive implements Comparable<Archive> {
 	public Archive getOther(String extension, String classifier) {
 		return getRevision().archive(extension, classifier);
 	}
+
+	public Archive update(MavenVersion version) {
+		return new Archive(new Revision(revision.program, version), version, extension, classifier);
+	}
 }
