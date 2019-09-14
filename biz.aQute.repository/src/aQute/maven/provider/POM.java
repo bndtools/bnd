@@ -213,10 +213,10 @@ public class POM implements IPom {
 		for (int i = 0; i < props.getLength(); i++)
 			index((Element) props.item(i), "");
 
-		String group = get("project.groupId", parentGroup);
-		String artifact = getNoInheritance("project.artifactId", null);
-		String version = get("project.version", parentVersion);
-		this.packaging = getNoInheritance("project.packaging", "jar");
+		String group = getOrSet("project.groupId", parentGroup);
+		String artifact = getOrSetNoInheritance("project.artifactId", null);
+		String version = getOrSet("project.version", parentVersion);
+		this.packaging = getOrSetNoInheritance("project.packaging", "jar");
 
 		Program program = Program.valueOf(group, artifact);
 		if (program == null)
@@ -315,10 +315,14 @@ public class POM implements IPom {
 		return Strings.trim(replaceMacros(value));
 	}
 
-	private String get(String key, String deflt) {
+	private String getOrSet(String key, String deflt) {
 		String value = properties.getProperty(key);
-		if (value == null)
+		if (value == null) {
 			value = deflt;
+			if (value != null) {
+				properties.setProperty(key, value);
+			}
+		}
 
 		if (value == null)
 			return null;
@@ -326,10 +330,14 @@ public class POM implements IPom {
 		return replaceMacros(value);
 	}
 
-	private String getNoInheritance(String key, String deflt) {
+	private String getOrSetNoInheritance(String key, String deflt) {
 		String value = (String) properties.get(key);
-		if (value == null)
+		if (value == null) {
 			value = deflt;
+			if (value != null) {
+				properties.setProperty(key, value);
+			}
+		}
 
 		return replaceMacros(value);
 	}
