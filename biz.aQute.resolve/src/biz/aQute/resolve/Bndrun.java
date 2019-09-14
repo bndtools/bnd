@@ -119,6 +119,18 @@ public class Bndrun extends Run {
 		return resolution;
 	}
 
+	public String resolveCLI(boolean failOnChanges, boolean writeOnChanges) throws Exception {
+		RunResolution resolution = RunResolution.resolve(this, this, null, false);
+
+		if (!resolution.isOK()) {
+			throw resolution.exception;
+		}
+
+		update(resolution, failOnChanges, writeOnChanges);
+
+		return runbundlesListFormatter.convert(model.getRunBundles());
+	}
+
 	public boolean update(RunResolution resolution, boolean failOnChanges, boolean writeOnChanges) throws Exception {
 		if (resolution.updateBundles(model)) {
 			if (failOnChanges) {

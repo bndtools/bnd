@@ -61,6 +61,23 @@ public class RunResolution {
 	 */
 	public static RunResolution resolve(Project project, Processor actualProperties,
 		Collection<ResolutionCallback> callbacks) {
+		return resolve(project, actualProperties, callbacks, true);
+	}
+
+	/**
+	 * The main workhorse to resolve
+	 *
+	 * @param project used for reporting errors
+	 * @param actualProperties the actual properties used for resolving. This
+	 *            can be the project in builders that do not use the
+	 *            {@link BndEditModel}, otherwise it is generally the
+	 *            {@link BndEditModel}.
+	 * @param callbacks any callbacks
+	 * @param addResolutionException add ResolutionException to the project errors or not
+	 * @return a Resolution
+	 */
+	public static RunResolution resolve(Project project, Processor actualProperties,
+		Collection<ResolutionCallback> callbacks, boolean addResolutionException) {
 		if (callbacks == null)
 			callbacks = Collections.emptyList();
 
@@ -72,7 +89,9 @@ public class RunResolution {
 				return new RunResolution(project, actualProperties, resolve.getRequiredWiring(),
 					resolve.getOptionalWiring(), logger.getLog());
 			} catch (ResolutionException e) {
-				project.error("No resolution %s", e.getMessage());
+				if (addResolutionException) {
+					project.error("No resolution %s", e.getMessage());
+				}
 				return new RunResolution(project, actualProperties, e, logger.getLog());
 			} catch (Exception e) {
 				project.exception(e, "Resolution failed unexpectedly");

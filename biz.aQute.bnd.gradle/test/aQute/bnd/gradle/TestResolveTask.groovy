@@ -143,7 +143,8 @@ class TestResolveTask extends Specification {
 
         then:
           result.task(":${taskname}").outcome == FAILED
-          result.output =~ /${taskname}\.bndrun resolution failure/
+          result.output =~ /Resolution failed\. Capabilities satisfying the following requirements could not be found:/
+          result.output =~ /osgi\.identity: \(osgi\.identity=org\.apache\.felix\.foo\)/
           bndrun.isFile()
           props.load(bndrun, reporter)
           !props.getProperty('-runbundles')

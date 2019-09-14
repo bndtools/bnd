@@ -121,7 +121,7 @@ public class ResolverMojo extends AbstractMojo {
 	private Operation getOperation() {
 		return (file, runName, run) -> {
 			try {
-				run.resolve(failOnChanges, true);
+				run.resolveCLI(failOnChanges, true);
 			} catch (ResolutionException re) {
 				logger.error(ResolveProcess.format(re, reportOptional));
 				throw re;

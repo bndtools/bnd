@@ -91,7 +91,7 @@ public class Resolve extends Bndrun {
   protected void worker(def run) {
     logger.info 'Resolving runbundles required for {}', run.getPropertiesFile()
     try {
-      def result = run.resolve(failOnChanges, true)
+      def result = run.resolveCLI(failOnChanges, true)
       logger.info '{}: {}', Constants.RUNBUNDLES, result
     } catch (ResolutionException e) {
       logger.error ResolveProcess.format(e, reportOptional)
