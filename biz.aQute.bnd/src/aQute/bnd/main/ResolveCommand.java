@@ -70,8 +70,8 @@ public class ResolveCommand extends Processor {
 			Workspace workspace = p == null ? bnd.getWorkspace(options.workspace()) : p.getWorkspace();
 
 			Run run = new Run(workspace, p != null ? p.getBase() : IO.work, IO.getFile(bndrun));
-			biz.aQute.resolve.RunResolution resolution = biz.aQute.resolve.RunResolution.resolve(run, null);
-
+			biz.aQute.resolve.RunResolution resolution = biz.aQute.resolve.RunResolution.resolve(run, null)
+				.reportException();
 			bnd.out.println("Resolved " + run);
 			for (Container c : resolution.getContainers()) {
 				bnd.out.printf("%-30s %-20s %-6s %s\n", c.getBundleSymbolicName(), c.getVersion(), c.getType(),

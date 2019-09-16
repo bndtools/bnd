@@ -72,23 +72,10 @@ public class RunResolution {
 				return new RunResolution(project, actualProperties, resolve.getRequiredWiring(),
 					resolve.getOptionalWiring(), logger.getLog());
 			} catch (ResolutionException e) {
-				project.error("No resolution %s", e.getMessage());
 				return new RunResolution(project, actualProperties, e, logger.getLog());
 			} catch (Exception e) {
-				project.exception(e, "Resolution failed unexpectedly");
 				return new RunResolution(project, actualProperties, e, logger.getLog());
 			}
-		} finally {
-			// System.out.println(" Project : " + project + " " +
-			// project.getBase());
-			// System.out.println(" Workspace : " + project.getWorkspace() + " "
-			// + project.getWorkspace()
-			// .getBase());
-			// System.out.println(" Properties: " +
-			// actualProperties.getFlattenedProperties());
-			// System.out.println(" Repos: " + project.getWorkspace()
-			// .getPlugins(Repository.class));
-
 		}
 	}
 
@@ -332,6 +319,17 @@ public class RunResolution {
 				return null;
 			}
 		});
+	}
+
+	public RunResolution reportException() {
+		if (!isOK()) {
+			if (exception instanceof ResolutionException) {
+				project.error("Resolution failed %s", exception.getMessage());
+			} else {
+				project.exception(exception, "Resolution failed unexpectedly");
+			}
+		}
+		return this;
 	}
 
 	public String report(boolean optionals) {

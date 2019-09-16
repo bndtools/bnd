@@ -581,7 +581,8 @@ public class ResolveTest extends TestCase {
 	public void testDot() throws Exception {
 		File f = IO.getFile("testdata/enroute/resolver.bndrun");
 		try (Bndrun bndrun = Bndrun.createBndrun(null, f)) {
-			RunResolution resolution = RunResolution.resolve(bndrun, null);
+			RunResolution resolution = RunResolution.resolve(bndrun, null)
+				.reportException();
 			assertThat(resolution.exception).isNull();
 
 			Map<Resource, List<Wire>> required = resolution.required;
