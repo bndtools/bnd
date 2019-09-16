@@ -122,7 +122,8 @@ public class ProjectResolverTest extends TestCase {
 				System.out.println(run.getWorkspace()
 					.getPlugins(Repository.class));
 
-				RunResolution r = RunResolution.resolve(run, null);
+				RunResolution r = RunResolution.resolve(run, null)
+					.reportException();
 				assertTrue(run.check());
 				List<VersionedClause> runbundles = r.getRunBundles();
 				assertThat(runbundles).hasSize(1);
