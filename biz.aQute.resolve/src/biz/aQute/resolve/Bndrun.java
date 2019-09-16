@@ -3,7 +3,6 @@ package biz.aQute.resolve;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.osgi.resource.Requirement;
 import org.osgi.service.resolver.ResolutionException;
@@ -88,28 +87,25 @@ public class Bndrun extends Run {
 	public <T> T resolve(boolean failOnChanges, boolean writeOnChanges,
 		Converter<T, Collection<? extends HeaderClause>> runbundlesFormatter) throws Exception {
 
-		RunResolution resolution = resolve();
+		RunResolution resolution = RunResolution.resolve(this, this, null);
 
-		if (isOk()) {
-			update(resolution, failOnChanges, writeOnChanges);
-			return runbundlesFormatter.convert(model.getRunBundles());
-		} else {
-			logger.info(getErrors().toString());
+		if (!resolution.isOK()) {
+			throw resolution.exception;
 		}
-		return runbundlesFormatter.convert(Collections.emptyList());
+		update(resolution, failOnChanges, writeOnChanges);
+		return runbundlesFormatter.convert(model.getRunBundles());
 	}
 
 	public RunResolution resolve(ResolutionCallback... callbacks) throws Exception {
-		RunResolution resolution = RunResolution.resolve(this, this, Arrays.asList(callbacks));
-		if (resolution.exception != null) {
+		RunResolution resolution = RunResolution.resolve(this, this, Arrays.asList(callbacks))
+			.reportException();
+		if (!resolution.isOK()) {
 			if (resolution.exception instanceof ResolutionException) {
 				ResolutionException re = (ResolutionException) resolution.exception;
 				FilterParser filterParser = new FilterParser();
-
-				error("Resolution failed %s", resolution.exception.getMessage());
 				for (Requirement r : re.getUnresolvedRequirements()) {
 					Expression parse = filterParser.parse(r);
-					error(" -> %s : %s", r.getNamespace(), filterParser.parse(r));
+					error(" -> %s : %s", r.getNamespace(), parse);
 				}
 				error("  log: %s", resolution.log);
 				return resolution;
