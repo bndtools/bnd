@@ -920,21 +920,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * @deprecated Use SLF4J Logger.debug instead.
+	 * Used to provide verbose commands
 	 */
 	@Override
-	@Deprecated
 	public void trace(String msg, Object... parms) {
+
 		Processor p = current();
-		Logger l = p.getLogger();
 		if (p.trace) {
-			if (l.isInfoEnabled()) {
-				l.info("{}", formatArrays(msg, parms));
-			}
-		} else {
-			if (l.isDebugEnabled()) {
-				l.debug("{}", formatArrays(msg, parms));
-			}
+			String s = formatArrays(msg, parms);
+			System.out.println(s);
 		}
 	}
 

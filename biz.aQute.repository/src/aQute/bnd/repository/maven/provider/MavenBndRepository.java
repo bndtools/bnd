@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -68,6 +69,7 @@ import aQute.libg.glob.PathSet;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.IPom;
+import aQute.maven.api.Program;
 import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
@@ -99,6 +101,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private String				name;
 	private HttpClient			client;
 	private ReleasePluginImpl	releasePlugin		= new ReleasePluginImpl(this, null);
+	private File				base;
 
 	/**
 	 * Put result
@@ -519,14 +522,14 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			storage = new MavenRepository(localRepo, getName(), release, snapshot, client.promiseFactory()
 				.executor(), reporter);
 
-			File base = IO.work;
+			base = IO.work;
 			if (registry != null) {
 				Workspace ws = registry.getPlugin(Workspace.class);
 				if (ws != null)
 					base = ws.getBuildDir();
 			}
 
-			File indexFile = IO.getFile(base, configuration.index(name.toLowerCase() + ".mvn"));
+			File indexFile = getIndexFile();
 			String tmp = configuration.multi();
 			String[] multi;
 			if (tmp == null) {
@@ -844,4 +847,16 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			return promise.getValue();
 	}
 
+	public File getIndexFile() {
+		return IO.getFile(base, configuration.index(name.toLowerCase() + ".mvn"));
+	}
+
+	public Set<Archive> getArchives() {
+		init();
+		return index.archives.keySet();
+	}
+
+	public List<Revision> getRevisions(Program program) throws Exception {
+		return storage.getRevisions(program);
+	}
 }

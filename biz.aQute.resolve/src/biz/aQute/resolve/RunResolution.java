@@ -178,6 +178,7 @@ public class RunResolution {
 
 		Collection<? extends Collection<Resource>> topologicalSort = Tarjan.tarjan(dependencies);
 		return topologicalSort.stream()
+			.map(ResourceUtils::sort)
 			.flatMap(Collection::stream)
 			.filter(r -> !ResourceUtils.isInitialRequirement(r))
 			.collect(Collectors.toList());
