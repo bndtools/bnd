@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -37,6 +38,7 @@ import java.security.Policy;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -114,11 +116,22 @@ public class Launcher implements ServiceListener {
 	 * mode.)
 	 */
 	public static void main(String[] args) {
+		Launcher.main(args, (Runnable) null);
+	}
+
+	/**
+	 * Called by the Eclispe Styled Launcher, that can handle a SplashScreen
+	 *
+	 * @param args
+	 * @param endSplashHandler a {@link Runnable} that ends the SplashScreen if
+	 *            run is called
+	 */
+	public static void main(String[] args, Runnable endSplashHandler) {
 		try {
 			int exitcode = 0;
 			try {
 
-				exitcode = Launcher.run(args);
+				exitcode = Launcher.run(args, endSplashHandler);
 			} catch (Throwable t) {
 				exitcode = 127;
 				// Last resort ... errors should be handled lower
@@ -135,12 +148,19 @@ public class Launcher implements ServiceListener {
 	}
 
 	/*
-	 * Without exit and properties are read. Called reflectively from embedded
+	 * We keep this in because this might be called reflectily anywhere
 	 */
 	public static int run(String args[]) throws Throwable {
+		return run(args, null);
+	}
+
+	/*
+	 * Without exit and properties are read. Called reflectively from embedded
+	 */
+	public static int run(String args[], Runnable endSplashHandler) throws Throwable {
 		Launcher target = new Launcher();
 		target.loadPropertiesFromFileOrEmbedded();
-		return target.launch(args);
+		return target.launch(args, endSplashHandler);
 	}
 
 	/**
@@ -148,7 +168,7 @@ public class Launcher implements ServiceListener {
 	 */
 	public static int main(String[] args, Properties p) throws Throwable {
 		Launcher target = new Launcher(p);
-		return target.launch(args);
+		return target.launch(args, null);
 	}
 
 	private static String getVersion() {
@@ -187,6 +207,30 @@ public class Launcher implements ServiceListener {
 	private static void errorAndExit(String message, Object... args) {
 		System.err.println(Strings.format(message, args));
 		System.exit(ERROR);
+	}
+
+	/**
+	 * Regsiters the given Runnable as endSplashHandler
+	 * 
+	 * @param endSplashHandler
+	 * @param systemContext
+	 */
+	private static void publishSplashScreen(final Runnable endSplashHandler, BundleContext systemContext) {
+		if (endSplashHandler == null)
+			return;
+		// register the output stream to the launcher if it exists
+		try {
+			Method method = endSplashHandler.getClass().getMethod("getOutputStream", new Class[0]); //$NON-NLS-1$
+			Object outputStream = method.invoke(endSplashHandler, new Object[0]);
+			if (outputStream instanceof OutputStream) {
+				Dictionary<String, Object> osProperties = new Hashtable<>();
+				osProperties.put("name", "splashstream"); //$NON-NLS-1$//$NON-NLS-2$
+				systemContext.registerService(OutputStream.class.getName(), outputStream, osProperties);
+			}
+		} catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException
+			| InvocationTargetException ex) {
+			// Okay, this is no Equinox SplashHandler, we will just ignore it
+		}
 	}
 
 	public Launcher() throws Exception {
@@ -318,7 +362,7 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
-	private int launch(String args[]) throws Throwable {
+	private int launch(String args[], Runnable endSplashHandler) throws Throwable {
 		try {
 			setSystemProperties();
 			this.parms = new LauncherConstants(properties);
@@ -331,7 +375,7 @@ public class Launcher implements ServiceListener {
 			trace("inited runbundles=%s activators=%s timeout=%s", parms.runbundles, parms.activators, parms.timeout);
 			trace("version %s", getVersion());
 
-			int status = activate();
+			int status = activate(endSplashHandler);
 			if (status != 0) {
 				report(out);
 				System.exit(status);
@@ -408,7 +452,7 @@ public class Launcher implements ServiceListener {
 		return list;
 	}
 
-	private int activate() throws Exception {
+	private int activate(Runnable endSplashHandler) throws Exception {
 		Policy.setPolicy(new AllPolicy());
 
 		systemBundle = createFramework();
@@ -425,11 +469,12 @@ public class Launcher implements ServiceListener {
 
 		doSecurity();
 
+		BundleContext systemContext = systemBundle.getBundleContext();
+		publishSplashScreen(endSplashHandler, systemContext);
+
 		List<Bundle> tobestarted = update(System.currentTimeMillis() + 100);
 
 		int result = LauncherConstants.OK;
-
-		BundleContext systemContext = systemBundle.getBundleContext();
 
 		systemContext.addServiceListener(this, "(&(|(objectclass=" + Runnable.class.getName() + ")(objectclass="
 			+ Callable.class.getName() + "))(main.thread=true))");
