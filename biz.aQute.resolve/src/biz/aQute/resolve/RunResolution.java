@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.osgi.resource.Resource;
@@ -187,7 +188,12 @@ public class RunResolution {
 	 * @return a topologically sorted list of resources
 	 */
 	public List<Resource> sortByDependencies(Map<Resource, List<Wire>> resolution) {
-		Map<Resource, List<Resource>> dependencies = getGraph(resolution);
+		Map<Resource, List<Resource>> dependencies = new TreeMap<>(getGraph(resolution));
+
+		// make a canonical representation as input to Tarjan
+		// so that the output is deterministic
+		dependencies.entrySet()
+			.forEach(e -> Collections.sort(e.getValue(), ResourceUtils::compareTo));
 
 		Collection<? extends Collection<Resource>> topologicalSort = Tarjan.tarjan(dependencies);
 		return topologicalSort.stream()
@@ -345,5 +351,9 @@ public class RunResolution {
 		} else {
 			return "";
 		}
+	}
+
+	public Map<Resource, List<Wire>> getRequired() {
+		return required;
 	}
 }

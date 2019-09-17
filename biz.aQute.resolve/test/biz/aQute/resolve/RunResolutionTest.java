@@ -4,12 +4,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.osgi.resource.Resource;
+import org.osgi.resource.Wire;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.clauses.VersionedClause;
+import aQute.bnd.help.instructions.ResolutionInstructions.Runorder;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.io.IO;
 
@@ -32,6 +37,30 @@ public class RunResolutionTest {
 	}
 
 	@Test
+	public void testOrdering() throws Exception {
+		Bndrun bndrun = Bndrun.createBndrun(workspace,
+			IO.getFile("testdata/ordering.bndrun"));
+		RunResolution resolution = bndrun.resolve();
+		assertThat(bndrun.check()).isTrue();
+
+		RunResolution resolution2 = bndrun.resolve();
+		assertThat(bndrun.check()).isTrue();
+
+		List<Resource> l1 = resolution.getOrderedResources(resolution.getRequired(), Runorder.LEASTDEPENDENCIESFIRST);
+		List<Resource> l2 = resolution2.getOrderedResources(permutate(resolution.getRequired()),
+			Runorder.LEASTDEPENDENCIESFIRST);
+
+		assertThat(l1).isEqualTo(l2);
+	}
+
+	private Map<Resource, List<Wire>> permutate(Map<Resource, List<Wire>> required) {
+		TreeMap<Resource, List<Wire>> map = new TreeMap<>(required);
+		map.entrySet()
+			.forEach(e -> Collections.shuffle(e.getValue()));
+		return map;
+	}
+
+	@Test
 	public void testUpdateBundles() throws Exception {
 		Bndrun bndrun = Bndrun.createBndrun(workspace,
 			IO.getFile("testdata/pre-buildworkspace/test.simple/resolve.bndrun"));
@@ -44,7 +73,6 @@ public class RunResolutionTest {
 			.setRunBundles(Collections.emptyList());
 		assertThat(resolution.updateBundles(bndrun.getModel())).isTrue();
 	}
-
 	@Test
 	public void testStartLevelsLeastDependenciesFirst() throws Exception {
 		Bndrun bndrun = Bndrun.createBndrun(workspace,
