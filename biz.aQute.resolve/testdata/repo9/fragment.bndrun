@@ -1,0 +1,3 @@
+-runrequires: osgi.identity;filter:='(osgi.identity=com.liferay.osb.community.blogs.web.fragment)'
+-resolve.effective: active
+-standalone: ${.}/index.xml
