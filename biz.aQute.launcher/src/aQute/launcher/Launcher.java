@@ -211,13 +211,19 @@ public class Launcher implements ServiceListener {
 
 	/**
 	 * Regsiters the given Runnable as endSplashHandler
-	 * 
+	 *
 	 * @param endSplashHandler
 	 * @param systemContext
 	 */
 	private static void publishSplashScreen(final Runnable endSplashHandler, BundleContext systemContext) {
 		if (endSplashHandler == null)
 			return;
+
+		// register the splashHandler
+		Dictionary<String, Object> splashProperties = new Hashtable<>();
+		splashProperties.put("name", "endSplashHandler"); //$NON-NLS-1$//$NON-NLS-2$
+		systemContext.registerService(Runnable.class.getName(), endSplashHandler, splashProperties);
+
 		// register the output stream to the launcher if it exists
 		try {
 			Method method = endSplashHandler.getClass().getMethod("getOutputStream", new Class[0]); //$NON-NLS-1$
