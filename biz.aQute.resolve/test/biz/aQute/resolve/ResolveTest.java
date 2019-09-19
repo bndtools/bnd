@@ -318,6 +318,62 @@ public class ResolveTest extends TestCase {
 		}
 	}
 
+	/**
+	 * Test if we can resolve fragment with a distro without whitelisting the
+	 * 'osgi.wiring.host' capabilities on the system resource. Should FAIL
+	 */
+	public void testResolveFragmentWithDistro_FAIL() throws Exception {
+		File f = IO.getFile("testdata/repo9/fragment.bndrun");
+		File distro = IO.getFile("testdata/release.dxp.distro-7.2.10.jar");
+
+		try (Run run = Run.createRun(null, f)) {
+			run.setProperty("-distro", distro.getAbsolutePath() + ";version=file");
+
+			BndrunResolveContext context = new BndrunResolveContext(run, run, run.getWorkspace(), log);
+			context.setLevel(0);
+			context.init();
+
+			RunResolution resolution = RunResolution.resolve(run, null);
+			if (resolution.isOK()) {
+				fail(
+					"should have failed because there are no 'osgi.wiring.host' capablities added to the system resource");
+			}
+		}
+	}
+
+	/**
+	 * Test if we can resolve fragment with a distro when whitelisting the
+	 * 'osgi.wiring.host' capabilities on the system resource. Should NOT fail
+	 */
+	public void testResolveFragmentWithDistro() throws Exception {
+		File f = IO.getFile("testdata/repo9/fragment.bndrun");
+		File distro = IO.getFile("testdata/release.dxp.distro-7.2.10.jar");
+
+		try (Run run = Run.createRun(null, f)) {
+			run.setProperty("-distro", distro.getAbsolutePath() + ";version=file;x-whitelist=osgi.wiring.host");
+
+			BndrunResolveContext context = new BndrunResolveContext(run, run, run.getWorkspace(), log);
+			context.setLevel(0);
+			context.init();
+
+			RunResolution resolution = RunResolution.resolve(run, null);
+			if (!resolution.isOK()) {
+				fail("should NOT have failed because 'osgi.wiring.host' capablities are added to the system resource");
+			}
+			Map<Resource, List<Wire>> runbundles = resolution.required;
+			assertEquals(1, runbundles.size());
+			Resource resource = runbundles.entrySet()
+				.iterator()
+				.next()
+				.getKey();
+			List<Capability> capabilities = resource.getCapabilities("osgi.identity");
+			assertEquals(1, capabilities.size());
+			assertEquals("com.liferay.osb.community.blogs.web.fragment", capabilities.get(0)
+				.getAttributes()
+				.get("osgi.identity"));
+		}
+	}
+
 	// public void testResolveWithLargeDistroRepeated() throws Exception {
 	// for (int i = 0; i < 1000; i++) {
 	// System.out.println("iteration " + i);
