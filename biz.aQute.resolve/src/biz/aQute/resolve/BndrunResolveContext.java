@@ -49,6 +49,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.lib.converter.Converter;
+import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 
 /**
@@ -61,6 +62,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	private static final String	BND_AUGMENT					= "bnd.augment";
 	public static final String	RUN_EFFECTIVE_INSTRUCTION	= "-resolve.effective";
 	public static final String	PROP_RESOLVE_PREFERENCES	= "-resolve.preferences";
+	private static final String	NAMESPACE_WHITELIST			= "x-whitelist";
 
 	private Registry			registry;
 	private Parameters			resolvePrefs;
@@ -287,12 +289,16 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			List<Container> containers = Container.flatten(project.getBundles(Strategy.HIGHEST, path, what));
 
 			for (Container c : containers) {
+				HashSet<String> ignoredNamespaces = new HashSet<>(IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES);
+				Strings.splitAsStream(c.getAttributes()
+					.get(NAMESPACE_WHITELIST))
+					.forEach(ignoredNamespaces::remove);
 
 				Manifest manifest = c.getManifest();
 				if (manifest != null) {
 					ResourceBuilder rb = new ResourceBuilder();
 					rb.addManifest(Domain.domain(manifest));
-					addSystemResource(system, rb.build());
+					system.copyCapabilities(ignoredNamespaces, rb.build());
 				}
 
 			}

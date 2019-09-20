@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<repository xmlns="http://www.osgi.org/xmlns/repository/v1.0.0" name="repo9" increment="1568994044968">
+  <resource>
+    <capability namespace="osgi.identity">
+      <attribute name="osgi.identity" value="com.liferay.osb.community.blogs.web.fragment"/>
+      <attribute name="type" value="osgi.fragment"/>
+      <attribute name="version" value="1.0.0" type="Version"/>
+    </capability>
+    <capability namespace="osgi.content">
+      <attribute name="size" value="2483" type="Long"/>
+      <attribute name="url" value="com.liferay.osb.community.blogs.web.fragment-1.0.0.jar"/>
+      <attribute name="mime" value="application/vnd.osgi.bundle"/>
+      <attribute name="osgi.content" value="AC869E1BF78C18AD9BF3AA0D3824D295E1CDA4B9F48D3A8AF6A3E6ED53ECA1A9"/>
+    </capability>
+    <requirement namespace="osgi.wiring.host">
+      <directive name="filter" value="(&amp;(osgi.wiring.host=com.liferay.blogs.web)(bundle-version&gt;=4.0.17))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=javax.servlet))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=javax.servlet.http))"/>
+    </requirement>
+  </resource>
+</repository>
