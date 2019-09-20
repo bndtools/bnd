@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
@@ -81,6 +82,19 @@ public class CDIAnnotations implements AnalyzerPlugin {
 				Discover discover = findDiscoveryMode(beansXml);
 				attrs.put("discover", discover.toString());
 			}
+		}
+
+		// If, after removing every instruction where 'discover=none', there are
+		// no items left we should just return.
+		if (header.entrySet()
+			.stream()
+			.map(e -> e.getValue()
+				.get("discover"))
+			.filter(Objects::nonNull)
+			.filter(discover -> Discover.valueOf(discover) == Discover.none)
+			.count() == 0) {
+
+			return false;
 		}
 
 		Map<String, Discover> discoverPerBCPEntry = analyzer.getBundleClassPath()
