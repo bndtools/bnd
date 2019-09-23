@@ -55,6 +55,7 @@
 				<artifactId>maven-invoker-plugin</artifactId>
 				<configuration>
 					<goals>
+						<goal>--no-transfer-progress</goal>
 						<goal>deploy</goal>
 					</goals>
 				</configuration>

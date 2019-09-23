@@ -78,6 +78,7 @@
 				<artifactId>maven-invoker-plugin</artifactId>
 				<configuration>
 					<goals>
+						<goal>--no-transfer-progress</goal>
 						<goal>install</goal>
 						<goal>bnd-reporter:export</goal>
 						<goal>bnd-reporter:readme</goal>
