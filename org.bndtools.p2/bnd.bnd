@@ -13,7 +13,6 @@ timestamp: ${tstamp}
     bndtools.m2e, \
     bndtools.pde, \
     bndtools.release, \
-    org.bndtools.embeddedrepo, \
     org.bndtools.headless.build.manager, \
     org.bndtools.headless.build.plugin.ant, \
     org.bndtools.headless.build.plugin.gradle, \
@@ -21,6 +20,7 @@ timestamp: ${tstamp}
     org.bndtools.versioncontrol.ignores.plugin.git, \
     org.bndtools.templating, \
     org.bndtools.templating.gitrepo, \
+    biz.aQute.bnd.embedded-repo, \
     biz.aQute.bnd.maven, \
     biz.aQute.bndlib, \
     biz.aQute.repository, \

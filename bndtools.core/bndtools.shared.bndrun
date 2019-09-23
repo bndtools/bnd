@@ -18,7 +18,7 @@ workspace.bundles: \
 	bndtools.pde;version=snapshot,\
 	bndtools.release;version=snapshot,\
 	org.bndtools.applaunch;version=snapshot,\
-	org.bndtools.embeddedrepo;version=snapshot,\
+	biz.aQute.bnd.embedded-repo;version=snapshot,\
 	org.bndtools.headless.build.manager;version=snapshot,\
 	org.bndtools.headless.build.plugin.ant;version=snapshot,\
 	org.bndtools.headless.build.plugin.gradle;version=snapshot,\

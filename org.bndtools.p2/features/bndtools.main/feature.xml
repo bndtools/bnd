@@ -572,10 +572,10 @@ version(s), and exceptions or additional permissions here}.&quot;
          unpack="false"/>
 
    <plugin
-         id="org.bndtools.embeddedrepo"
+         id="biz.aQute.bnd.embedded-repo"
          download-size="0"
          install-size="0"
-         version="@org.bndtools.embeddedrepo-version@"
+         version="@biz.aQute.bnd.embedded-repo-version@"
          unpack="false"/>
 
    <plugin
