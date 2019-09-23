@@ -13,7 +13,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,7 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -43,8 +41,6 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.naming.TimeLimitExceededException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +57,7 @@ import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.remoteworkspace.server.RemoteWorkspaceServer;
 import aQute.bnd.resource.repository.ResourceRepositoryImpl;
@@ -102,8 +99,6 @@ public class Workspace extends Processor {
 
 	static final int			BUFFER_SIZE						= IOConstants.PAGE_SIZE * 16;
 	private static final String	PLUGIN_STANDALONE				= "-plugin.standalone_";
-	final static Pattern		EMBEDDED_REPO_TESTING_PATTERN	= Pattern
-		.compile(".*biz\\.aQute\\.bnd\\.embedded-repo(-.*)?\\.jar");
 
 	static class WorkspaceData {
 		List<RepositoryPlugin>	repositories;
@@ -473,43 +468,32 @@ public class Workspace extends Processor {
 
 		@Override
 		protected boolean init() throws Exception {
-			if (lock.tryLock(50, TimeUnit.SECONDS) == false)
-				throw new TimeLimitExceededException("Cached File Repo is locked and can't acquire it");
-			try {
-				if (super.init()) {
-					inited = true;
-					IO.mkdirs(root);
-					if (!root.isDirectory())
-						throw new IllegalArgumentException("Cache directory " + root + " not a directory");
+			if (lock.tryLock(50, TimeUnit.SECONDS)) {
+				try {
+					if (super.init()) {
+						inited = true;
+						IO.mkdirs(root);
+						if (!root.isDirectory())
+							throw new IllegalArgumentException("Cache directory " + root + " not a directory");
 
-					try (InputStream in = getClass().getResourceAsStream(EMBEDDED_REPO)) {
-						if (in != null) {
-							unzip(in, root.toPath());
-							return true;
-						}
-					}
-					// We may be in unit test, look for
-					// biz.aQute.bnd.embedded-repo.jar on the
-					// classpath
-					StringTokenizer classPathTokenizer = new StringTokenizer(System.getProperty("java.class.path", ""),
-						File.pathSeparator);
-					while (classPathTokenizer.hasMoreTokens()) {
-						String classPathEntry = classPathTokenizer.nextToken()
-							.trim();
-						if (EMBEDDED_REPO_TESTING_PATTERN.matcher(classPathEntry)
-							.matches()) {
-							try (InputStream in = IO.stream(Paths.get(classPathEntry))) {
-								unzip(in, root.toPath());
-								return true;
+						URL url = getClass().getResource(EMBEDDED_REPO);
+						if (url != null) {
+							try (Resource resource = Resource.fromURL(url);
+								InputStream in = resource.openInputStream()) {
+								if (in != null) {
+									unzip(in, root.toPath());
+									return true;
+								}
 							}
 						}
+						error("Could not find " + EMBEDDED_REPO + " as a resource on the classpath");
 					}
-					error("Couldn't find biz.aQute.bnd.embedded-repo on the classpath");
 					return false;
-				} else
-					return false;
-			} finally {
-				lock.unlock();
+				} finally {
+					lock.unlock();
+				}
+			} else {
+				throw new TimeoutException("Cannot acquire Cached File Repo lock");
 			}
 		}
 

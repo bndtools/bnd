@@ -89,3 +89,19 @@ def deployJFrog = tasks.register('deployJFrog', Exec.class) {
 deploy.configure {
   finalizedBy deployJFrog
 }
+
+tasks.named('clean') {
+  doFirst {
+    exec {
+      if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        executable 'cmd'
+        args '/c', rootProject.file('mvnw.cmd')
+      } else {
+        executable rootProject.file('mvnw')
+      }
+      args '--batch-mode'
+      args '--no-transfer-progress'
+      args 'clean'
+    }.assertNormalExitValue()
+  }
+}

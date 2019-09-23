@@ -3,8 +3,6 @@
 # for the bnd_version for the test cases.
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/gradle.properties
 
--dependson: biz.aQute.bnd.embedded-repo
-
 -includepackage: \
 	aQute.bnd.gradle.*
 
@@ -20,14 +18,14 @@ Bundle-Description: The Bnd Gradle plugin.
 	aQute.libg;version=project, \
 	biz.aQute.bndlib;version=latest, \
 	biz.aQute.resolve;version=latest, \
-	biz.aQute.repository;version=latest
+	biz.aQute.repository;version=latest, \
+	biz.aQute.bnd.embedded-repo;version=latest
 
 bnd_version: ${replace;${bnd_plugin};.*:(.*);$1}
 
 -includeresource: \
 	OSGI-OPT/src=src, \
-	resources, \
-	embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}
+	resources
 
 -builderignore: testresources
 

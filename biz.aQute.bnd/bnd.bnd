@@ -21,11 +21,11 @@
 
 -includeresource: \
 	${workspace}/LICENSE, \
-	embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}, \
 	templates=templates, \
 	@${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.repository;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.bnd.embedded-repo;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.bnd.exporters;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.bnd.reporter;latest}!/!META-INF/*, \
  	@${repo;biz.aQute.launchpad;latest}!/!META-INF/*, \

@@ -6,7 +6,6 @@
 
 -include: ${workspace}/cnf/includes/jdt.bnd
 
--dependson: biz.aQute.bnd.embedded-repo
 -nobundles: true
 
 -testpath: \

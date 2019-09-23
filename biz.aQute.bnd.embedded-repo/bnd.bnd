@@ -3,16 +3,15 @@
 
 -resourceonly: true
 
+Fragment-Host: biz.aQute.bndlib;bundle-version="${range;[===,=+0);${base.version}}"
+
 Bundle-Description: Embedded Repo for bnd workspace.
-Timestamp: ${_@tstamp}
+
+-buildpath: aQute.libg;version=project,\
+    biz.aQute.bndlib;version=latest;maven-optional=true
 
 -includeresource: \
-	biz.aQute.launcher/biz.aQute.launcher-${base.version}.jar=${repo;biz.aQute.launcher;snapshot}, \
-	biz.aQute.launcher=@${repo;biz.aQute.launcher;snapshot}!/biz.aQute.launcher.pre.jar, \
-	biz.aQute.remote.launcher/biz.aQute.remote.launcher-${base.version}.jar=${repo;biz.aQute.remote.launcher;snapshot}, \
-	biz.aQute.junit/biz.aQute.junit-${base.version}.jar=${repo;biz.aQute.junit;snapshot}, \
-	biz.aQute.tester/biz.aQute.tester-${base.version}.jar=${repo;biz.aQute.tester;snapshot}
-
+    embedded-repo.jar
 
 -dependson: \
 	biz.aQute.junit, \
@@ -20,6 +19,7 @@ Timestamp: ${_@tstamp}
 	biz.aQute.remote, \
 	biz.aQute.tester
 
--digests: MD5, SHA1
-
--releaserepo:
+Import-Package: \
+    javax.management,\
+    javax.management.openmbean,\
+    javax.management.remote
