@@ -86,6 +86,7 @@
 				</dependencies>
 				<configuration>
 					<goals>
+						<goal>--no-transfer-progress</goal>
 						<goal>integration-test</goal>
 					</goals>
 				</configuration>
