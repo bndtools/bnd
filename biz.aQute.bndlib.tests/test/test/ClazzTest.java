@@ -855,4 +855,17 @@ public class ClazzTest extends TestCase {
 			assertThat(clazz.isInnerClass()).isTrue();
 		}
 	}
+
+	public static class AnonymousClassHolder {
+		Object anon = new Object() {};
+	}
+
+	public void testInnerAnonymousClass() throws Exception {
+		File file = IO.getFile("bin_test/test/ClazzTest$AnonymousClassHolder$1.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertThat(clazz.isInnerClass()).isTrue();
+		}
+	}
 }
