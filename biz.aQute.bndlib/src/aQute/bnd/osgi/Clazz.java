@@ -472,8 +472,7 @@ public class Clazz {
 		boolean isInnerClass() {
 			String binary = type.getBinary();
 			return attributes(InnerClassesAttribute.class).flatMap(a -> Arrays.stream(a.classes))
-				.anyMatch(inner -> (inner.inner_name != null) && !Modifier.isStatic(inner.inner_access)
-					&& inner.inner_class.equals(binary));
+				.anyMatch(inner -> inner.inner_class.equals(binary) && !Modifier.isStatic(inner.inner_access));
 		}
 
 		@Override
