@@ -16,13 +16,20 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.assertj.core.util.Files;
 import org.junit.After;
 import org.junit.Before;
@@ -39,6 +46,7 @@ import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
@@ -53,7 +61,6 @@ public class AlsoLauncherTest {
 	private Workspace			workspace;
 	private Project				project;
 	private Properties			prior;
-
 
 	@Before
 	public void setUp() throws Exception {
@@ -516,6 +523,67 @@ public class AlsoLauncherTest {
 				.put("test.cmd", "timeout");
 			l.launch();
 			assertNoProperties(target);
+		}
+	}
+
+	@Test
+	public void testReporting_notUsingReferences() throws Exception {
+		try (ProjectLauncher l = project.getProjectLauncher()) {
+			project.setProperty("-runnoreferences", "true");
+			doTestReporting(l);
+		}
+	}
+
+	@Test
+	public void testReporting_usingReferences() throws Exception {
+		try (ProjectLauncher l = project.getProjectLauncher()) {
+			project.setProperty("-runnoreferences", "false");
+			doTestReporting(l);
+		}
+	}
+
+	private void doTestReporting(ProjectLauncher l) throws Exception {
+		l.setTrace(true);
+		StringBuilder out = new StringBuilder();
+		StringBuilder err = new StringBuilder();
+		l.setStreams(out, err);
+		l.getRunProperties()
+			.put("test.cmd", "framework.stop");
+
+		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+			Macro r = project.getReplacer();
+
+			String[] expected = {
+				"org.apache.felix.scr", "org.apache.servicemix.bundles.junit", "org.assertj.core", "demo"
+			};
+
+			l.launch();
+
+			// High-level test; cuts down our search space for subsequent tests
+			// which makes the output more readable in the event of a subsequent
+			// assertion failure.
+			Matcher match = Pattern.compile("^Id\\s+\\s+Levl\\s+State.*?(?=^#)", Pattern.DOTALL | Pattern.MULTILINE)
+				.matcher(err);
+			assertThat(match.find()).as("report block")
+				.isTrue();
+			final String report = match.group();
+
+			softly.assertThat(report)
+				.as("System Bundle")
+				.containsPattern("\\n0\\s+\\d+\\s*ACTIV\\s+[<][>]\\s+System Bundle");
+
+			final DateTimeFormatter f = DateTimeFormatter.ofPattern("YYYYMMddHHmm")
+				.withZone(ZoneOffset.UTC);
+
+			for (String bundle : expected) {
+				final Path file = Paths.get(r.process("${repo;" + bundle + ";latest}"));
+				final String lastModified = f.format(java.nio.file.Files.getLastModifiedTime(file)
+					.toInstant());
+
+				softly.assertThat(report)
+					.as(bundle)
+					.containsPattern("ACTIV\\s+" + lastModified + "\\s+.*?\\Q" + file.getFileName() + "\\E");
+			}
 		}
 	}
 

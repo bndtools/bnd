@@ -29,13 +29,16 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.Permission;
 import java.security.PermissionCollection;
 import java.security.Policy;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Formatter;
@@ -46,6 +49,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
@@ -81,6 +85,7 @@ import aQute.lib.io.ByteBufferDataOutput;
 import aQute.lib.io.IO;
 import aQute.lib.startlevel.StartLevelRuntimeHandler;
 import aQute.lib.strings.Strings;
+import aQute.libg.uri.URIUtil;
 
 /**
  * This is the primary bnd launcher. It implements a launcher that runs on Java
@@ -1199,16 +1204,19 @@ public class Launcher implements ServiceListener {
 					out.println("Id    Levl State Modified      Location");
 
 					for (int i = 0; i < bundles.length; i++) {
+						String lastModified = "<>";
 						String loc = bundles[i].getLocation();
-						loc = loc.replaceAll("\\w+:", "");
-						File f = new File(loc);
+						Optional<Path> p = URIUtil.pathFromURI(loc);
+						if (p.isPresent() && Files.exists(p.get())) {
+							lastModified = FORMAT.format(Files.getLastModifiedTime(p.get())
+								.toInstant());
+							loc = p.get()
+								.toString();
+						}
 						out.print(fill(Long.toString(bundles[i].getBundleId()), 6));
 						out.print(fill(startLevelhandler.getBundleStartLevel(bundles[i]) + "", 4));
 						out.print(fill(toState(bundles[i].getState()), 6));
-						if (f.exists())
-							out.print(fill(toDate(f.lastModified()), 14));
-						else
-							out.print(fill("<>", 14));
+						out.print(fill(lastModified, 14));
 
 						if (errors.containsKey(bundles[i])) {
 							out.print(fill(loc, 50));
@@ -1238,16 +1246,8 @@ public class Launcher implements ServiceListener {
 		out.println();
 	}
 
-	String toDate(long t) {
-		Calendar c = Calendar.getInstance();
-		c.setTimeInMillis(t);
-		return fill(c.get(Calendar.YEAR), 4) + fill(c.get(Calendar.MONTH), 2) + fill(c.get(Calendar.DAY_OF_MONTH), 2)
-			+ fill(c.get(Calendar.HOUR_OF_DAY), 2) + fill(c.get(Calendar.MINUTE), 2);
-	}
-
-	private String fill(int n, int width) {
-		return fill(Integer.toString(n), width, '0', -1);
-	}
+	static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("YYYYMMddHHmm")
+		.withZone(ZoneOffset.UTC);
 
 	private String fill(String s, int width) {
 		return fill(s, width, ' ', -1);
