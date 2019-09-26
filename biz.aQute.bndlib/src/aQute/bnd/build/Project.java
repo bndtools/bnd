@@ -270,7 +270,7 @@ public class Project extends Processor {
 			return;
 		}
 
-		synchronized (preparedPaths) {
+		synchronized (this) {
 			if (preparedPaths.get()) {
 				// ensure output folders exist
 				getSrcOutput0();
