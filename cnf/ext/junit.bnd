@@ -1,6 +1,15 @@
-junit: org.apache.servicemix.bundles.junit;version="[4.11,5)",\
- org.assertj.core;version="[3,4)"
+junit: org.junit.platform:junit-platform-commons;version=latest,\
+	org.junit.platform:junit-platform-engine;version=latest,\
+	org.assertj.core;version="[3,4)",\
+	org.opentest4j:opentest4j;version=latest,\
+	org.apiguardian:apiguardian-api;version=latest,\
+	org.junit.jupiter:junit-jupiter-api;version=latest,\
+	org.junit.jupiter:junit-jupiter-engine;version=latest,\
+	org.junit.jupiter:junit-jupiter-params;version=latest,\
+	org.apache.servicemix.bundles.junit;version="[4.11,5)",\
+	org.junit.vintage:junit-vintage-engine;version=latest
+
 mockito: org.mockito.mockito-core;version="[2,3)",\
-  net.bytebuddy.byte-buddy;version="[1,2)",\
-  org.objenesis;version="[2,3)"
+	net.bytebuddy.byte-buddy;version="[1,2)",\
+	org.objenesis;version="[2,3)"
 -runsystempackages.objenesis: sun.misc,sun.reflect

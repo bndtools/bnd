@@ -1,7 +1,13 @@
 package aQute.lib.io;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,11 +15,24 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+
 import aQute.lib.io.IO.EnvironmentCalculator;
-import junit.framework.TestCase;
 
-public class IOTest extends TestCase {
+public class IOTest {
 
+	private String testName;
+
+	@BeforeEach
+	public void before(TestInfo info) {
+		testName = info.getTestMethod()
+			.map(Method::getName)
+			.get();
+	}
+
+	@Test
 	public void testEnvVarsForHome() throws Exception {
 		Map<String, String> map = new HashMap<>();
 
@@ -46,6 +65,7 @@ public class IOTest extends TestCase {
 		assertEquals("C:\\Documents and Settings\\foobar", ec2.getSystemEnv("HOME"));
 	}
 
+	@Test
 	public void testSafeFileName() {
 		if (IO.isWindows()) {
 			assertEquals("abc%def", IO.toSafeFileName("abc:def"));
@@ -58,6 +78,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testFilesetCopy() throws Exception {
 		File destDir = new File("generated/fileset-copy-test");
 
@@ -78,6 +99,7 @@ public class IOTest extends TestCase {
 		assertTrue(new File(destDir, "root").exists());
 	}
 
+	@Test
 	public void testCopyURLToByteArray() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -91,6 +113,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToExactHeapByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -105,6 +128,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToSmallerHeapByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -118,6 +142,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToLargerHeapByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -131,6 +156,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToExactDirectByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -145,6 +171,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToSmallerDirectByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -158,6 +185,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToLargerDirectByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -171,6 +199,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToHugeDirectByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -184,6 +213,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToOffsetHeapByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -206,6 +236,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDestDirIsChildOfSource() throws Exception {
 		File parentDir = new File("generated/test/parentDir");
 
@@ -226,6 +257,7 @@ public class IOTest extends TestCase {
 		} catch (IllegalArgumentException e) {}
 	}
 
+	@Test
 	public void testIfCreateSymlinkOrCopyFileDependingOnOS() throws Exception {
 		File link = new File("generated/test/target.dat");
 
@@ -248,6 +280,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testOnlyCopyIfReallyNeededOnWindows() throws Exception {
 		if (IO.isWindows()) {
 			File link = new File("generated/test/target.dat");
@@ -273,6 +306,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCreateSymlinkOrCopyWillDeleteOriginalLink() throws Exception {
 		File originalSource = new File("testresources/unzipped.dat");
 		File link = new File("generated/test/originalLink");
@@ -297,8 +331,9 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCreateDirectory_Symlink() throws Exception {
-		Path rootDirectory = Paths.get("generated/tmp/test/" + getName());
+		Path rootDirectory = Paths.get("generated/tmp/test/" + testName);
 		IO.delete(rootDirectory);
 		rootDirectory = Files.createDirectories(rootDirectory);
 
@@ -317,8 +352,9 @@ public class IOTest extends TestCase {
 			.exists());
 	}
 
+	@Test
 	public void testCreateDirectory_SymlinkMissingTarget() throws Exception {
-		Path rootDirectory = Paths.get("generated/tmp/test/" + getName());
+		Path rootDirectory = Paths.get("generated/tmp/test/" + testName);
 		IO.delete(rootDirectory);
 		rootDirectory = Files.createDirectories(rootDirectory);
 
