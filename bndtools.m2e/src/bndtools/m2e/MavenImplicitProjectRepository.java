@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.apache.maven.execution.MavenSession;
@@ -20,7 +21,6 @@ import org.bndtools.api.Logger;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.IMavenExecutionContext;
 import org.eclipse.m2e.core.internal.MavenPluginActivator;
@@ -68,19 +68,23 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
 		this.bndrunFile = bndrunFile;
 		this.run = run;
 
-		createRepo(projectFacade, new NullProgressMonitor());
-
 		mavenProjectRegistry.addMavenProjectChangedListener(this);
 	}
 
 	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
+		if (fileSetRepository == null) {
+			return Collections.emptyMap();
+		}
 		return fileSetRepository.findProviders(requirements);
 	}
 
 	@Override
 	public File get(final String bsn, final Version version, Map<String, String> properties,
 		final DownloadListener... listeners) throws Exception {
+		if (fileSetRepository == null) {
+			return null;
+		}
 		return fileSetRepository.get(bsn, version, properties, listeners);
 	}
 
@@ -97,6 +101,9 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
 
 	@Override
 	public List<String> list(String pattern) throws Exception {
+		if (fileSetRepository == null) {
+			return Collections.emptyList();
+		}
 		return fileSetRepository.list(pattern);
 	}
 
@@ -126,13 +133,13 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
 
 	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
+		if (fileSetRepository == null) {
+			return new TreeSet<Version>();
+		}
 		return fileSetRepository.versions(bsn);
 	}
 
-	@SuppressWarnings({
-		"deprecation", "unchecked"
-	})
-	private void createRepo(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
+	protected void createRepo(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
 		MavenProject mavenProject = getMavenProject(projectFacade);
 		try {
 			ResolverConfiguration resolverConfiguration = configurationManager
@@ -147,6 +154,7 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
 			MavenSession mavenSession = sessions.getKey();
 			mavenSession.setCurrentProject(mavenProject);
 
+			@SuppressWarnings("deprecation")
 			Builder containerBuilder = new BndrunContainer.Builder(mavenProject, mavenSession, sessions.getValue(),
 				lookupComponent(ProjectDependenciesResolver.class),
 				lookupComponent(org.apache.maven.artifact.factory.ArtifactFactory.class),
