@@ -5,7 +5,13 @@ import java.nio.file.Paths;
 
 import org.apache.maven.project.MavenProject;
 import org.bndtools.api.RunListener;
+import org.bndtools.api.RunMode;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
@@ -27,9 +33,9 @@ public class MavenImplicitProjectRunListener implements MavenRunListenerHelper, 
 
 		Workspace workspace = run.getWorkspace();
 
-		MavenImplicitProjectRepository implicitRepo = workspace.getPlugin(MavenImplicitProjectRepository.class);
+		RunMode runMode = RunMode.get(run);
 
-		if (implicitRepo == null) {
+		if (workspace.getPlugin(MavenImplicitProjectRepository.class) == null) {
 			IMavenProjectFacade projectFacade = getMavenProjectFacade(resource);
 			MavenProject mavenProject = getMavenProject(projectFacade);
 
@@ -45,7 +51,21 @@ public class MavenImplicitProjectRunListener implements MavenRunListenerHelper, 
 			workspace.setBuildDir(cnf);
 			workspace.setOffline(isOffline());
 
-			implicitRepo = new MavenImplicitProjectRepository(projectFacade, run.getPropertiesFile(), run);
+			final MavenImplicitProjectRepository implicitRepo = new MavenImplicitProjectRepository(projectFacade,
+				run.getPropertiesFile(), run);
+
+			if (runMode == RunMode.EDIT) {
+				new Job("Create implicit repo") {
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						implicitRepo.createRepo(projectFacade, monitor);
+						return Status.OK_STATUS;
+					}
+				}.schedule();
+			} else {
+				implicitRepo.createRepo(projectFacade, new NullProgressMonitor());
+			}
+
 			workspace.getRepositories()
 				.add(0, implicitRepo);
 			workspace.addBasicPlugin(implicitRepo);
