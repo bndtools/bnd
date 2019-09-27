@@ -267,6 +267,65 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	public void testHostnameVerification() throws Exception {
+		try (Processor p = new Processor()) {
+
+			//
+			// This should fail as the CN of the service cert does not equal the hostname ("localhost")
+			//
+
+			Config configs = new Config();
+			configs.https = true;
+			try (Httpbin extraServer = new Httpbin(configs, "somehost")) {
+				extraServer.start();
+
+                                p.setProperty("-connection-settings", "server;id=\"" + extraServer.getBaseURI() + "\";verify=" + true
+				        + ";trust=\"" + Strings.join(extraServer.getTrustedCertificateFiles(tmp)) + "\"");
+			        HttpClient client = new HttpClient();
+			        client.setReporter(p);
+			        ConnectionSettings cs = new ConnectionSettings(p, client);
+			        cs.readSettings();
+
+				TaggedData go3 = client.build()
+					.retries(0)
+					.asTag()
+					.go(extraServer.getBaseURI("get/foo"));
+
+				assertEquals(526, go3.getResponseCode());
+			}
+		}
+	}
+
+	public void testHostnameVerificationDisabled() throws Exception {
+		try (Processor p = new Processor()) {
+
+			//
+			// This should pass even though the CN of the service cert does not equal the hostname ("localhost"),
+			// because verification is disabled
+			//
+
+			Config configs = new Config();
+			configs.https = true;
+			try (Httpbin extraServer = new Httpbin(configs, "somehost")) {
+				extraServer.start();
+
+                                p.setProperty("-connection-settings", "server;id=\"" + extraServer.getBaseURI() + "\";verify=" + false
+				        + ";trust=\"" + Strings.join(extraServer.getTrustedCertificateFiles(tmp)) + "\"");
+			        HttpClient client = new HttpClient();
+			        client.setReporter(p);
+			        ConnectionSettings cs = new ConnectionSettings(p, client);
+			        cs.readSettings();
+
+				TaggedData go3 = client.build()
+					.retries(0)
+					.asTag()
+					.go(extraServer.getBaseURI("get/foo"));
+
+				assertEquals(200, go3.getResponseCode());
+			}
+		}
+	}
+
 	public void testTimeout() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			try {
