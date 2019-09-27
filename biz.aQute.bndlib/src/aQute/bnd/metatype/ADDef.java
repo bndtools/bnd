@@ -70,14 +70,14 @@ public class ADDef extends ExtensionDef {
 		}
 
 		if (defaults != null) {
-			StringBuffer b = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			String sep = "";
 			for (String defaultValue : defaults) {
-				b.append(sep);
-				escape(defaultValue, b);
+				sb.append(sep);
+				escape(defaultValue, sb);
 				sep = ",";
 			}
-			ad.addAttribute("default", b.toString());
+			ad.addAttribute("default", sb.toString());
 		}
 
 		for (OptionDef option : options) {
@@ -89,18 +89,17 @@ public class ADDef extends ExtensionDef {
 		return ad;
 	}
 
-	private static final Pattern escapes = Pattern.compile("[ ,\\\\]");
+	private static final Pattern escapes = Pattern.compile("[\\\\ ,]");
 
-	private void escape(String defaultValue, StringBuffer b) {
+	private void escape(String defaultValue, StringBuilder sb) {
 		Matcher m = escapes.matcher(defaultValue);
-		while (m.find()) {
-			String match = m.group();
-			if (match.equals("\\"))
-				m.appendReplacement(b, "\\\\\\\\");
-			else
-				m.appendReplacement(b, "\\\\" + match);
+		int start = 0;
+		for (; m.find(); start = m.end()) {
+			sb.append(defaultValue, start, m.start())
+				.append('\\')
+				.append(m.group());
 		}
-		m.appendTail(b);
+		sb.append(defaultValue, start, defaultValue.length());
 	}
 
 }

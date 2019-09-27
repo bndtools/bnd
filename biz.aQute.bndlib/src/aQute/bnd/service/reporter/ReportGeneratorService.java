@@ -15,16 +15,16 @@ public interface ReportGeneratorService {
 
 	/**
 	 * Generate a DTO report of the source object.
-	 * 
+	 *
 	 * @param source the source object from which the report is generated, if
 	 *            {@code null} an empty report is returned.
 	 * @return the report, never {@code null}
 	 */
-	public Map<String, Object> generateReportOf(Object source);
+	Map<String, Object> generateReportOf(Object source);
 
 	/**
 	 * Generate a DTO report of the source object.
-	 * 
+	 *
 	 * @param source the source object from which the report is generated, if
 	 *            {@code null} an empty report is returned.
 	 * @param filter a LDAP filter used to filter the {@link ReportEntryPlugin}
@@ -33,24 +33,24 @@ public interface ReportGeneratorService {
 	 *            the source object type will contribute.
 	 * @return the report, never {@code null}
 	 */
-	public Map<String, Object> generateReportOf(Object source, String filter);
+	Map<String, Object> generateReportOf(Object source, String filter);
 
 	/**
 	 * Generate a DTO report of the source object, data will be localized for
 	 * the specified locale if any.
-	 * 
+	 *
 	 * @param source the source object from which the report is generated, if
 	 *            {@code null} an empty report is returned.
 	 * @param locale a locale to localized extracted data, if not specified data
 	 *            will be unlocalized.
 	 * @return the report, never {@code null}
 	 */
-	public Map<String, Object> generateReportOf(Object source, Locale locale);
+	Map<String, Object> generateReportOf(Object source, Locale locale);
 
 	/**
 	 * Generate a DTO report of the source object, data will be localized for
 	 * the specified locale if any.
-	 * 
+	 *
 	 * @param source the source object from which the report is generated, if
 	 *            {@code null} an empty report is returned.
 	 * @param locale a locale to localized extracted data, if not specified data
@@ -61,5 +61,5 @@ public interface ReportGeneratorService {
 	 *            the source object type will contribute.
 	 * @return the report, never {@code null}
 	 */
-	public Map<String, Object> generateReportOf(Object source, Locale locale, String filter);
+	Map<String, Object> generateReportOf(Object source, Locale locale, String filter);
 }

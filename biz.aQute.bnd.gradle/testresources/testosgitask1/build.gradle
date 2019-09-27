@@ -11,18 +11,22 @@ plugins {
 version = '1.0.0'
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
-    compile 'org.osgi:osgi.enroute.junit.wrapper:4.12.0'
-    compile 'org.osgi:osgi.enroute.hamcrest.wrapper:1.3.0'
+    compile "biz.aQute.bnd:biz.aQute.junit:${bnd_version}"
     runtime 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
 }
 
+ext {
+	osgiIdentity = 'testosgitask1'
+}
 task testosgi(type: TestOSGi) {
    description "OSGi Test ${name}.bndrun"
    group 'test'
+   inputs.files jar
    bndrun "${name}.bndrun"
 }
 

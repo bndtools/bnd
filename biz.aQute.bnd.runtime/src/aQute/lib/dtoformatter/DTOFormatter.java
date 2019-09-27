@@ -93,7 +93,6 @@ public class DTOFormatter implements ObjectFormatter {
 			return this;
 		}
 
-
 	}
 
 	public interface GroupBuilder<T> extends DTOFormatterBuilder<T> {
@@ -308,14 +307,7 @@ public class DTOFormatter implements ObjectFormatter {
 		dto.clazz = clazz;
 		descriptors.put(clazz, dto);
 
-		return new DTOFormatterBuilder<T>() {
-
-			@Override
-			public DTODescription zdto() {
-				return dto;
-			}
-
-		};
+		return () -> dto;
 	}
 
 	/*********************************************************************************************/
@@ -520,7 +512,6 @@ public class DTOFormatter implements ObjectFormatter {
 
 		if (o == null)
 			return null;
-
 
 		if (isSpecial(o)) {
 			return cell(o, formatter).toString();

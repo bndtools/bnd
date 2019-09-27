@@ -8,24 +8,24 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class CollectionUtil {
-    public static <K, V> Map<V, Set<K>> invertMapOfCollection(Map<K, ? extends Collection<V>> mapOfCollection) {
-        Map<V, Set<K>> result = new TreeMap<V, Set<K>>();
+	public static <K, V> Map<V, Set<K>> invertMapOfCollection(Map<K, ? extends Collection<V>> mapOfCollection) {
+		Map<V, Set<K>> result = new TreeMap<>();
 
-        for (Entry<K, ? extends Collection<V>> inputEntry : mapOfCollection.entrySet()) {
-            K inputKey = inputEntry.getKey();
-            Collection<V> inputCollection = inputEntry.getValue();
+		for (Entry<K, ? extends Collection<V>> inputEntry : mapOfCollection.entrySet()) {
+			K inputKey = inputEntry.getKey();
+			Collection<V> inputCollection = inputEntry.getValue();
 
-            for (V inputValue : inputCollection) {
-                Set<K> resultSet = result.get(inputValue);
-                if (resultSet == null) {
-                    resultSet = new TreeSet<K>();
-                    result.put(inputValue, resultSet);
-                }
-                resultSet.add(inputKey);
-            }
-        }
+			for (V inputValue : inputCollection) {
+				Set<K> resultSet = result.get(inputValue);
+				if (resultSet == null) {
+					resultSet = new TreeSet<>();
+					result.put(inputValue, resultSet);
+				}
+				resultSet.add(inputKey);
+			}
+		}
 
-        return result;
-    }
+		return result;
+	}
 
 }

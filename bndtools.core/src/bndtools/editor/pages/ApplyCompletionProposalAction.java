@@ -9,38 +9,39 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 public class ApplyCompletionProposalAction extends Action {
 
-    private final ICompletionProposal proposal;
-    private final ITextEditor textEditor;
-    private final FormEditor mainEditor;
-    private final String switchToPageId;
+	private final ICompletionProposal	proposal;
+	private final ITextEditor			textEditor;
+	private final FormEditor			mainEditor;
+	private final String				switchToPageId;
 
-    public ApplyCompletionProposalAction(ICompletionProposal proposal, ITextEditor textEditor, FormEditor mainEditor, String switchToPageId) {
-        this.proposal = proposal;
-        this.textEditor = textEditor;
-        this.mainEditor = mainEditor;
-        this.switchToPageId = switchToPageId;
-    }
+	public ApplyCompletionProposalAction(ICompletionProposal proposal, ITextEditor textEditor, FormEditor mainEditor,
+		String switchToPageId) {
+		this.proposal = proposal;
+		this.textEditor = textEditor;
+		this.mainEditor = mainEditor;
+		this.switchToPageId = switchToPageId;
+	}
 
-    @Override
-    public String getText() {
-        return proposal.getDisplayString();
-    }
+	@Override
+	public String getText() {
+		return proposal.getDisplayString();
+	}
 
-    @Override
-    public void run() {
-        assert (proposal != null);
-        assert (textEditor != null);
-        assert (mainEditor != null);
-        assert (switchToPageId != null);
+	@Override
+	public void run() {
+		assert (proposal != null);
+		assert (textEditor != null);
+		assert (mainEditor != null);
+		assert (switchToPageId != null);
 
-        mainEditor.setActivePage(switchToPageId);
+		mainEditor.setActivePage(switchToPageId);
 
-        IDocument document = textEditor.getDocumentProvider()
-            .getDocument(mainEditor.getEditorInput());
-        proposal.apply(document);
+		IDocument document = textEditor.getDocumentProvider()
+			.getDocument(mainEditor.getEditorInput());
+		proposal.apply(document);
 
-        Point selection = proposal.getSelection(document);
-        if (selection != null)
-            textEditor.selectAndReveal(selection.x, 0);
-    }
+		Point selection = proposal.getSelection(document);
+		if (selection != null)
+			textEditor.selectAndReveal(selection.x, 0);
+	}
 }

@@ -5,11 +5,9 @@ title: -exportreport report-def ( ',' report-def )*
 summary: Configure a list of reports to be exported.
 ---
 
-The purpose of the `-exportreport` instruction is to configure a list of reports of the current state of the workspace and/or its projects, which can then be exported by the build tool. The primary usage is to automate the documentation of projects. 
+The purpose of the `-exportreport` instruction is to configure a list of reports of the current state of the workspace and/or its projects, which can then be exported by the build tool. The primary usage is to automate the documentation of projects. An introduction to this feature can be found [here](../chapters/395-generating-documentation.html).
 
-Based on this instruction, a tool can aggregate data from a source (a specific project or the entire workspace) and export them into one file (`XML` or `JSON`). The resulting files can then be used by any external programs (such as *Jekyll* to generate a static site) or a template file can be specified to transform the data before they are written (to generate a *readme* file for example).
-
-*See [-exportreport](../commands/exportreport.md) command documentation to export the reports.*
+*See [-exportreport](../commands/exportreport.html) command documentation to export the reports.*
 
 ## Syntax
 
@@ -90,13 +88,13 @@ The `locale` attribute can be used to extract the data for a specific locale. Fo
     -exportreport: report.json;locale=fr-FR
 
 
-### Customisation of the Report Content
+### Customization of the Report Content
 
 In some case, it may be necessary to control what data should be present in the report, for example if you use external plugins to contribute to the extraction and aggregation phase. For this you can use the `-reportconfig` instruction to create named configuration of reports.
 
 With the `configName` attribute you can reference the configuration name that will be used to extract and aggregate the data of the report.
 
-*See the [-reportconfig](./reportconfig.md) instruction documentation for more information.*
+*See the [-reportconfig](./reportconfig.html) instruction documentation for more information.*
 
 ### Case of Sub-Projects
 

@@ -1,5 +1,7 @@
 package aQute.bnd.repository.maven.provider;
 
+import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,7 +16,9 @@ import java.util.Collection;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +28,7 @@ import java.util.jar.Manifest;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
+import org.osgi.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,9 +57,11 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.service.maven.ToDependencyPom;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
+import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
+import aQute.lib.exceptions.FunctionWithException;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
@@ -62,6 +69,7 @@ import aQute.libg.glob.PathSet;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.IPom;
+import aQute.maven.api.Program;
 import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
@@ -75,6 +83,7 @@ import aQute.service.reporter.Reporter;
 @BndPlugin(name = "MavenBndRepository")
 public class MavenBndRepository extends BaseRepository implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable,
 	Refreshable, Actionable, ToDependencyPom, ReleaseBracketingPlugin {
+
 	private final static Logger	logger				= LoggerFactory.getLogger(MavenBndRepository.class);
 	private static final int	DEFAULT_POLL_TIME	= 5;
 
@@ -92,6 +101,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private String				name;
 	private HttpClient			client;
 	private ReleasePluginImpl	releasePlugin		= new ReleasePluginImpl(this, null);
+	private File				base;
 
 	/**
 	 * Put result
@@ -110,7 +120,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		init();
 		File binaryFile = File.createTempFile("put", ".jar");
-		File pomFile = File.createTempFile("pom", ".xml");
+		File pomFile = File.createTempFile(Archive.POM_EXTENSION, ".xml");
 		LocalPutResult result = new LocalPutResult();
 		try {
 
@@ -175,6 +185,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 						logger.debug("Already released {}", pom.getRevision());
 						return result;
 					}
+
+					if (instructions.passphrase != null && !instructions.passphrase.trim()
+						.isEmpty()) {
+						releaser.setPassphrase(instructions.passphrase);
+					}
 					if (instructions.snapshot >= 0)
 						releaser.setBuild(instructions.snapshot, null);
 
@@ -189,22 +204,20 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					releaser.add(binaryArchive, binaryFile);
 
 					if (!isLocal(instructions)) {
-
 						try (Tool tool = new Tool(options.context, binary)) {
+							if (instructions.sources != null) {
+								if (!NONE.equals(instructions.sources.path)) {
+									try (Jar jar = getSources(tool, options.context, instructions.sources.path)) {
+										save(releaser, pom.getRevision(), jar);
+									}
+								}
+							}
 
 							if (instructions.javadoc != null) {
 								if (!NONE.equals(instructions.javadoc.path)) {
 									try (Jar jar = getJavadoc(tool, options.context, instructions.javadoc.path,
 										instructions.javadoc.options,
 										instructions.javadoc.packages == JavadocPackages.EXPORT)) {
-										save(releaser, pom.getRevision(), jar);
-									}
-								}
-							}
-
-							if (instructions.sources != null) {
-								if (!NONE.equals(instructions.sources.path)) {
-									try (Jar jar = getSources(tool, options.context, instructions.sources.path)) {
 										save(releaser, pom.getRevision(), jar);
 									}
 								}
@@ -231,14 +244,18 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		if (instructions.pom.path != null) {
 			if (instructions.pom.path.equals("JAR")) {
-				pom = getPomResource(binary);
+				pom = binary.getPomXmlResources()
+					.findFirst()
+					.orElse(null);
 			} else {
 				pom = createPomFromFile(options.context.getFile(instructions.pom.path));
 			}
 		} else {
 			if (!configuration.ignore_metainf_maven()) {
 				if (options.context.is(Constants.POM)) {
-					pom = getPomResource(binary);
+					pom = binary.getPomXmlResources()
+						.findFirst()
+						.orElse(null);
 				} else {
 					pom = createPomFromFirstMavenPropertiesInJar(binary, options.context);
 				}
@@ -274,11 +291,13 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	private Jar getSources(Tool tool, Processor context, String path) throws Exception {
 		Jar jar = toJar(context, path);
-		if (jar == null) {
+		if (jar != null) {
+			tool.setSources(jar, "");
+		} else {
 			jar = tool.doSource();
 		}
 		jar.ensureManifest();
-		jar.setName("sources"); // set jar name to classifier
+		jar.setName(Archive.SOURCES_CLASSIFIER); // set jar name to classifier
 		tool.addClose(jar);
 		return jar;
 	}
@@ -290,7 +309,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			jar = tool.doJavadoc(options, exports);
 		}
 		jar.ensureManifest();
-		jar.setName("javadoc"); // set jar name to classifier
+		jar.setName(Archive.JAVADOC_CLASSIFIER); // set jar name to classifier
 		tool.addClose(jar);
 		return jar;
 	}
@@ -347,11 +366,22 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		Attrs javadoc = p.remove("javadoc");
 		if (javadoc != null) {
-			release.javadoc.path = javadoc.get("path");
+			release.javadoc.path = javadoc.remove("path");
 			if (NONE.equals(release.javadoc.path)) {
 				release.javadoc = null;
-			} else
+			} else {
+				String packages = javadoc.remove("packages");
+				if (packages != null) {
+					try {
+						release.javadoc.packages = JavadocPackages.valueOf(packages.toUpperCase(Locale.ROOT));
+					} catch (Exception e) {
+						reporter.warning(
+							"The -maven-release instruction contains unrecognized javadoc packages option: %s",
+							packages);
+					}
+				}
 				release.javadoc.options = javadoc;
+			}
 		}
 
 		Attrs sources = p.remove("sources");
@@ -364,6 +394,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		Attrs pom = p.remove("pom");
 		if (pom != null) {
 			release.pom.path = pom.get("path");
+		}
+
+		Attrs sign = p.remove("sign");
+		if (sign != null) {
+			release.passphrase = sign.get("passphrase");
 		}
 
 		if (!p.isEmpty()) {
@@ -380,44 +415,26 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return new FileResource(file);
 	}
 
-	private static final Predicate<String> pomXmlFilter = new PathSet("META-INF/maven/*/*/pom.xml").matches();
-	private Resource getPomResource(Jar jar) {
-		return jar.getResources()
-			.keySet()
-			.stream()
-			.filter(pomXmlFilter)
-			.findFirst()
-			.map(jar::getResource)
-			.orElse(null);
-	}
-
 	private static final Predicate<String> pomPropertiesFilter = new PathSet("META-INF/maven/*/*/pom.properties")
 		.matches();
+
 	private PomResource createPomFromFirstMavenPropertiesInJar(Jar jar, Processor context) throws Exception {
-		return jar.getResources()
-			.keySet()
-			.stream()
-			.filter(pomPropertiesFilter)
+		return jar.getResources(pomPropertiesFilter)
 			.findFirst()
-			.map(path -> {
-				Resource r = jar.getResource(path);
+			.map(FunctionWithException.asFunction(r -> {
 				UTF8Properties utf8p = new UTF8Properties();
 				try (InputStream in = r.openInputStream()) {
 					utf8p.load(in);
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
 				}
 				String version = utf8p.getProperty("version");
 				String groupId = utf8p.getProperty("groupId");
 				String artifactId = utf8p.getProperty("artifactId");
 
-				try (Processor ctx = new Processor(context)) {
-					ctx.addProperties(utf8p);
-					return new PomResource(ctx, jar.getManifest(), groupId, artifactId, version);
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
+				try (Processor scoped = new Processor(context)) {
+					scoped.addProperties(utf8p);
+					return new PomResource(scoped, jar.getManifest(), groupId, artifactId, version);
 				}
-			})
+			}))
 			.orElse(null);
 	}
 
@@ -441,7 +458,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		Archive archive = index.find(bsn, version);
 		if (archive == null) {
-			return null;
+			return trySources(bsn, version, listeners);
 		}
 
 		File f = storage.toLocalFile(archive);
@@ -505,14 +522,14 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			storage = new MavenRepository(localRepo, getName(), release, snapshot, client.promiseFactory()
 				.executor(), reporter);
 
-			File base = IO.work;
+			base = IO.work;
 			if (registry != null) {
 				Workspace ws = registry.getPlugin(Workspace.class);
 				if (ws != null)
 					base = ws.getBuildDir();
 			}
 
-			File indexFile = IO.getFile(base, configuration.index(name.toLowerCase() + ".mvn"));
+			File indexFile = getIndexFile();
 			String tmp = configuration.multi();
 			String[] multi;
 			if (tmp == null) {
@@ -521,7 +538,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				multi = tmp.trim()
 					.split("\\s*,\\s*");
 			}
-			this.index = new IndexFile(reporter, indexFile, storage, client.promiseFactory(), multi);
+			Processor domain = (registry != null) ? registry.getPlugin(Processor.class) : null;
+			String source = configuration.source();
+			if (source != null) {
+				source = source.replaceAll("(\\s|,|;|\n|\r)+", "\n");
+			}
+			this.index = new IndexFile(domain, reporter, indexFile, source, storage, client.promiseFactory(), multi);
 			this.index.open();
 
 			startPoll();
@@ -596,11 +618,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	public boolean refresh() throws Exception {
 		init();
 
-		if (!index.refresh()) {
-			return false;
-		}
-
-		index.bridge.onResolve(() -> {
+		return index.refresh(() -> {
 			for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class)) {
 				try {
 					listener.repositoryRefreshed(this);
@@ -609,7 +627,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				}
 			}
 		});
-		return true;
 	}
 
 	@Override
@@ -735,8 +752,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		if (filePath != null) {
 			Archive archive = Archive.fromFilepath(filePath);
 			if (archive != null) {
-				if (archive.extension.equals("pom"))
-					archive = archive.revision.archive("jar", null);
+				if (archive.extension.equals(Archive.POM_EXTENSION))
+					archive = archive.revision.archive(Archive.JAR_EXTENSION, null);
 				index.add(archive);
 				return true;
 			}
@@ -788,12 +805,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public void end(Project p) {
-		System.out.println("Project ending is " + p);
 		try {
 			releasePlugin.end(p, storage);
 		} catch (Exception e) {
-			e.printStackTrace();
-			p.error("Could not end the release", e);
+			p.exception(e, "Could not end the release for project %s", releasePlugin.indexProject);
+		} finally {
+			releasePlugin = new ReleasePluginImpl(this, null);
 		}
 	}
 
@@ -802,4 +819,44 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		throw new UnsupportedOperationException();
 	}
 
+	/*
+	 * Bndtools ask for a JAR with a bsn that as ".source" appended to get the
+	 * source code. We can automate that by looking for it. The bsn - ".source"
+	 * must exist in the index
+	 */
+	private File trySources(String sourceBsn, Version version, DownloadListener... listeners) throws Exception {
+		if (!sourceBsn.endsWith(BSN_SOURCE_SUFFIX))
+			return null;
+
+		String originalBsn = sourceBsn.substring(0, sourceBsn.length() - BSN_SOURCE_SUFFIX.length());
+
+		Archive primaryArchive = index.find(originalBsn, version);
+		if (primaryArchive == null)
+			return null; // don't get sources when not in index
+
+		Archive sources = primaryArchive.getOther("jar", Archive.SOURCES_CLASSIFIER);
+		if (sources == null)
+			return null;
+
+		Promise<File> promise = storage.get(primaryArchive);
+		if (listeners.length != 0) {
+			new DownloadListenerPromise(reporter, "Get sources " + sourceBsn + "-" + version + " for " + getName(),
+				promise, listeners);
+			return storage.toLocalFile(primaryArchive);
+		} else
+			return promise.getValue();
+	}
+
+	public File getIndexFile() {
+		return IO.getFile(base, configuration.index(name.toLowerCase() + ".mvn"));
+	}
+
+	public Set<Archive> getArchives() {
+		init();
+		return index.archives.keySet();
+	}
+
+	public List<Revision> getRevisions(Program program) throws Exception {
+		return storage.getRevisions(program);
+	}
 }

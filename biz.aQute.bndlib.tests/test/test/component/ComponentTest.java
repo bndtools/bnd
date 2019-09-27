@@ -10,9 +10,7 @@ import java.util.Properties;
 import java.util.jar.Manifest;
 
 import javax.xml.namespace.NamespaceContext;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -46,45 +44,43 @@ public class ComponentTest extends TestCase {
 
 	static final DocumentBuilderFactory	dbf			= DocumentBuilderFactory.newInstance();
 	static final XPathFactory			xpathf		= XPathFactory.newInstance();
-	static final XPath					xpath		= xpathf.newXPath();
-	static DocumentBuilder				db;
+	XPath								xpath;
 
 	static {
-		try {
-			dbf.setNamespaceAware(true);
-			db = dbf.newDocumentBuilder();
-			xpath.setNamespaceContext(new NamespaceContext() {
+		dbf.setNamespaceAware(true);
+	}
 
-				@Override
-				public Iterator<String> getPrefixes(String namespaceURI) {
-					return Arrays.asList("md", "scr")
-						.iterator();
-				}
+	@Override
+	protected void setUp() {
+		xpath = xpathf.newXPath();
+		xpath.setNamespaceContext(new NamespaceContext() {
 
-				@Override
-				public String getPrefix(String namespaceURI) {
-					if (namespaceURI.equals("http://www.osgi.org/xmlns/metatype/v1.1.0"))
-						return "md";
-					if (namespaceURI.equals("http://www.osgi.org/xmlns/scr/v1.1.0"))
-						return "scr";
+			@Override
+			public Iterator<String> getPrefixes(String namespaceURI) {
+				return Arrays.asList("md", "scr")
+					.iterator();
+			}
 
+			@Override
+			public String getPrefix(String namespaceURI) {
+				if (namespaceURI.equals("http://www.osgi.org/xmlns/metatype/v1.1.0"))
+					return "md";
+				if (namespaceURI.equals("http://www.osgi.org/xmlns/scr/v1.1.0"))
+					return "scr";
+
+				return null;
+			}
+
+			@Override
+			public String getNamespaceURI(String prefix) {
+				if (prefix.equals("md"))
+					return "http://www.osgi.org/xmlns/metatype/v1.1.0";
+				else if (prefix.equals("scr"))
+					return "http://www.osgi.org/xmlns/scr/v1.1.0";
+				else
 					return null;
-				}
-
-				@Override
-				public String getNamespaceURI(String prefix) {
-					if (prefix.equals("md"))
-						return "http://www.osgi.org/xmlns/metatype/v1.1.0";
-					else if (prefix.equals("scr"))
-						return "http://www.osgi.org/xmlns/scr/v1.1.0";
-					else
-						return null;
-				}
-			});
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-			throw new ExceptionInInitializerError(e);
-		}
+			}
+		});
 	}
 
 	public static class ReferenceOrder {
@@ -101,7 +97,7 @@ public class ComponentTest extends TestCase {
 	/**
 	 * 112.5.7 says refeence order is used to order binding services, so from
 	 * headers we preserve order.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testHeaderReferenceOrder() throws Exception {
@@ -115,7 +111,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Test to see if we ignore scala.ScalaObject as interface
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testScalaObject() throws Exception {
@@ -184,7 +180,7 @@ public class ComponentTest extends TestCase {
 		assertNull(component);
 	}
 
-	public static void assertAttribute(Document doc, String value, String expr) throws XPathExpressionException {
+	void assertAttribute(Document doc, String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, doc, XPathConstants.STRING);
 		if (o == null) {
@@ -198,7 +194,8 @@ public class ComponentTest extends TestCase {
 		Jar jar = b.getJar();
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
 		assertNotNull(r);
-		Document doc = db.parse(r.openInputStream());
+		Document doc = dbf.newDocumentBuilder()
+			.parse(r.openInputStream());
 		r.write(System.err);
 		return doc;
 	}
@@ -278,9 +275,10 @@ public class ComponentTest extends TestCase {
 		String path = "OSGI-INF/" + className + ".xml";
 		print(b.getJar()
 			.getResource(path), System.err);
-		Document doc = db.parse(new InputSource(b.getJar()
-			.getResource(path)
-			.openInputStream()));
+		Document doc = dbf.newDocumentBuilder()
+			.parse(new InputSource(b.getJar()
+				.getResource(path)
+				.openInputStream()));
 
 		return doc;
 	}
@@ -332,8 +330,9 @@ public class ComponentTest extends TestCase {
 
 		Jar jar = b.getJar();
 
-		Document doc = db.parse(new InputSource(jar.getResource("OSGI-INF/silly.name.xml")
-			.openInputStream()));
+		Document doc = dbf.newDocumentBuilder()
+			.parse(new InputSource(jar.getResource("OSGI-INF/silly.name.xml")
+				.openInputStream()));
 
 		assertEquals("test.activator.Activator", doc.getElementsByTagName("implementation")
 			.item(0)
@@ -349,7 +348,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Standard activator with reference to http.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testProperties() throws Exception {
@@ -373,7 +372,8 @@ public class ComponentTest extends TestCase {
 		Resource resource = jar.getResource("OSGI-INF/test.activator.Activator.xml");
 		IO.copy(resource.openInputStream(), System.out);
 
-		Document doc = db.parse(new InputSource(resource.openInputStream()));
+		Document doc = dbf.newDocumentBuilder()
+			.parse(new InputSource(resource.openInputStream()));
 
 		NodeList l = doc.getElementsByTagName("property");
 		assertEquals(2, l.getLength());
@@ -418,7 +418,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Check if all the directives work
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testUnknownDirective() throws Exception {
@@ -446,7 +446,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Check if all the directives work
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testDirectives() throws Exception {
@@ -467,7 +467,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Check if a bad filter on a service component causes an error.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testBadFilter() throws Exception {
@@ -495,7 +495,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Check if we can set a target filter
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testFilter() throws Exception {
@@ -516,7 +516,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Standard activator with reference to http.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testSimple() throws Exception {
@@ -538,7 +538,7 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * Standard activator with reference to http.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testQuestion() throws Exception {

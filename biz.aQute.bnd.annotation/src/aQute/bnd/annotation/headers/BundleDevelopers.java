@@ -12,12 +12,12 @@ import java.lang.annotation.Target;
  * This annotation can be used directly on a type or it can 'color' an
  * annotation. This coloring allows custom annotations that define a specific
  * developer. For example:
- * 
+ *
  * <pre>
  *  &#64;BundleContributor("Peter.Kriens@aQute.biz") @interface pkriens
  * {} @pkriens public class MyFoo { ... }
  * </pre>
- * 
+ *
  * Duplicates are removed before the header is generated and the coloring does
  * not create an entry in the header, only an annotation on an actual type is
  * counted. This makes it possible to make a library of developers without then

@@ -2,6 +2,13 @@
 
 The Maven Plugins require at least Maven 3.1.0. This is because bndlib uses SLF4J and Maven 3.1.0 or later [provides the SLF4J API][6].
 
+This README, and the READMEs in the individual Bnd Maven Plugin folders,
+represent the capabilities and features of the Bnd Maven Plugins in
+the branch containing the READMEs. So for the `master` branch, this will be
+the [latest development SNAPSHOT build](#using-the-latest-development-snapshot-build-of-the-bnd-maven-plugins).
+See the appropriate Git tag for the README for the
+Bnd Maven Plugin version you are using.
+
 ## bnd-plugin-parent
 
 This project builds the various Maven plugins provided by the Bnd project,
@@ -44,12 +51,42 @@ A plugin to resolve bndrun files.
 
 A plugin to run integration tests from bndrun files.
 
+## [bnd-run-maven-plugin][9]
+
+A plugin to run a bndrun file.
+
+## [bnd-reporter-maven-plugin][10]
+
+A plugin to generate and export reports of projects.
+
 # Building the Maven Plugins
 
 See the [.travis.yml][5] file in the root of the repo for the `script` section
 detailing the commands to build the Maven plugins. You must first run `./gradlew`
 to build the Bnd bundles and install them in your local maven repo. You can then
 run Maven to build the Maven plugins.
+
+---
+
+# Using the latest development SNAPSHOT build of the Bnd Maven Plugins
+
+If you want to try the latest development SNAPSHOT build of the
+Bnd Maven Plugins, you will need to adjust your pom to refer to the snapshot
+repository and select the latest version of the plugins. For example, edit the
+pom's `pluginManagement` section, to configure the repository:
+
+```xml
+<pluginRepositories>
+	<pluginRepository>
+		<id>bnd-snapshots</id>
+		<url>https://bndtools.jfrog.io/bndtools/libs-snapshot/</url>
+		<layout>default</layout>
+		<releases>
+			<enabled>false</enabled>
+		</releases>
+	</pluginRepository>
+</pluginRepositories>
+```
 
 [1]: bnd-maven-plugin/README.md
 [2]: bnd-indexer-maven-plugin/README.md
@@ -59,4 +96,5 @@ run Maven to build the Maven plugins.
 [6]: https://maven.apache.org/maven-logging.html
 [7]: bnd-resolver-maven-plugin/README.md
 [8]: bnd-testing-maven-plugin/README.md
-
+[9]: bnd-run-maven-plugin/README.md
+[10]: bnd-reporter-maven-plugin/README.md

@@ -5,6 +5,6 @@ import org.eclipse.aether.resolution.ArtifactResult;
 
 public interface PostProcessor {
 
-	public ArtifactResult postProcessResult(ArtifactResult resolvedArtifact) throws MojoExecutionException;
+	ArtifactResult postProcessResult(ArtifactResult resolvedArtifact) throws MojoExecutionException;
 
 }

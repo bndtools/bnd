@@ -1,9 +1,9 @@
 package aQute.libg.tarjan;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 
 import aQute.lib.collections.MultiMap;
 import junit.framework.TestCase;
@@ -19,9 +19,9 @@ public class TestTarjan extends TestCase {
 		assertEquals(2, scc.size());
 		for (Collection<String> set : scc) {
 			if (set.size() == 3)
-				assertEquals(new HashSet<>(Arrays.asList("E", "C", "D")), set);
+				assertThat(set).containsExactlyInAnyOrder("E", "C", "D");
 			else if (set.size() == 2)
-				assertEquals(new HashSet<>(Arrays.asList("B", "A")), set);
+				assertThat(set).containsExactlyInAnyOrder("B", "A");
 			else
 				fail();
 		}

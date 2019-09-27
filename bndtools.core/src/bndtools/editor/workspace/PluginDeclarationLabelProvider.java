@@ -15,41 +15,42 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class PluginDeclarationLabelProvider extends StyledCellLabelProvider {
 
-    private List<Image> images = new LinkedList<Image>();
+	private List<Image> images = new LinkedList<>();
 
-    @Override
-    public void update(ViewerCell cell) {
-        IConfigurationElement element = (IConfigurationElement) cell.getElement();
+	@Override
+	public void update(ViewerCell cell) {
+		IConfigurationElement element = (IConfigurationElement) cell.getElement();
 
-        boolean deprecated = element.getAttribute("deprecated") != null;
+		boolean deprecated = element.getAttribute("deprecated") != null;
 
-        Styler mainStyler = deprecated ? new StrikeoutStyler(null) : null;
-        StyledString label = new StyledString(element.getAttribute("name"), mainStyler);
+		Styler mainStyler = deprecated ? new StrikeoutStyler(null) : null;
+		StyledString label = new StyledString(element.getAttribute("name"), mainStyler);
 
-        Styler classStyle = deprecated ? new StrikeoutStyler(StyledString.QUALIFIER_STYLER) : StyledString.QUALIFIER_STYLER;
-        label.append(" [" + element.getAttribute("class") + "]", classStyle);
+		Styler classStyle = deprecated ? new StrikeoutStyler(StyledString.QUALIFIER_STYLER)
+			: StyledString.QUALIFIER_STYLER;
+		label.append(" [" + element.getAttribute("class") + "]", classStyle);
 
-        cell.setText(label.toString());
-        cell.setStyleRanges(label.getStyleRanges());
+		cell.setText(label.toString());
+		cell.setStyleRanges(label.getStyleRanges());
 
-        String iconPath = element.getAttribute("icon");
-        if (iconPath != null) {
-            ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element.getContributor()
-                .getName(), iconPath);
-            if (descriptor != null) {
-                Image image = descriptor.createImage();
-                images.add(image);
-                cell.setImage(image);
-            }
-        }
-    }
+		String iconPath = element.getAttribute("icon");
+		if (iconPath != null) {
+			ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element.getContributor()
+				.getName(), iconPath);
+			if (descriptor != null) {
+				Image image = descriptor.createImage();
+				images.add(image);
+				cell.setImage(image);
+			}
+		}
+	}
 
-    @Override
-    public void dispose() {
-        super.dispose();
-        for (Image image : images) {
-            image.dispose();
-        }
-    }
+	@Override
+	public void dispose() {
+		super.dispose();
+		for (Image image : images) {
+			image.dispose();
+		}
+	}
 
 }

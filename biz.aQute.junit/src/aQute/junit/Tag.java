@@ -8,11 +8,13 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
-import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -36,7 +38,8 @@ public class Tag {
 																								// elements
 	boolean							cdata;
 
-	final static SimpleDateFormat	format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	static final DateTimeFormatter	DATE_TIME_FORMATTER	= DateTimeFormatter.ofPattern("yyyyMMddHHmmss.SSS", Locale.ROOT)
+		.withZone(ZoneId.systemDefault());
 
 	/**
 	 * Construct a new Tag with a name.
@@ -100,13 +103,11 @@ public class Tag {
 	}
 
 	/**
-	 * Add a new date attribute. The date is formatted as the SimpleDateFormat
-	 * describes at the top of this class.
+	 * Add a new date attribute. The date is formatted by DATE_TIME_FORMATTER
+	 * described at the top of this class.
 	 */
 	public void addAttribute(String key, Date value) {
-		synchronized (format) {
-			attributes.put(key, format.format(value));
-		}
+		attributes.put(key, DATE_TIME_FORMATTER.format(value.toInstant()));
 	}
 
 	/**

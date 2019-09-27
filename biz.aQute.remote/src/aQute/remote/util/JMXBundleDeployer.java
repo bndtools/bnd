@@ -62,7 +62,7 @@ public class JMXBundleDeployer {
 	/**
 	 * Gets the current list of installed bsns, compares it to the bsn provided.
 	 * If bsn doesn't exist, then install it. If it does exist then update it.
-	 * 
+	 *
 	 * @param bsn Bundle-SymbolicName of bundle you are wanting to deploy
 	 * @param bundle the bundle
 	 * @return the id of the updated or installed bundle
@@ -146,7 +146,7 @@ public class JMXBundleDeployer {
 
 	/**
 	 * Calls osgi.core bundleState MBean listBundles operation
-	 * 
+	 *
 	 * @return array of bundles in framework
 	 */
 	public BundleDTO[] listBundles() {
@@ -217,7 +217,7 @@ public class JMXBundleDeployer {
 	/**
 	 * Uninstall a bundle by passing in its Bundle-SymbolicName. If bundle
 	 * doesn't exist, this is a NOP.
-	 * 
+	 *
 	 * @param bsn bundle symbolic name
 	 * @throws Exception
 	 */
@@ -236,7 +236,7 @@ public class JMXBundleDeployer {
 	/**
 	 * Calls through directly to the OSGi frameworks MBean uninstallBundle
 	 * operation
-	 * 
+	 *
 	 * @param id id of bundle to uninstall
 	 * @throws Exception
 	 */

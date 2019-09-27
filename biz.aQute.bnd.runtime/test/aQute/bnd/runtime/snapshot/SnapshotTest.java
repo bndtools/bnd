@@ -1,81 +1,99 @@
 package aQute.bnd.runtime.snapshot;
 
-import org.junit.Test;
-import org.osgi.framework.Bundle;
-import org.osgi.service.cm.ConfigurationAdmin;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import aQute.bnd.remote.junit.JUnitFramework;
-import aQute.bnd.remote.junit.JUnitFrameworkBuilder;
-import aQute.bnd.remote.junit.Service;
-import exported_not_imported.ExportedNotImported;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+
+import org.apache.felix.service.command.CommandProcessor;
+import org.apache.felix.service.command.CommandSession;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import aQute.launchpad.Launchpad;
+import aQute.launchpad.LaunchpadBuilder;
+import aQute.launchpad.Service;
+import aQute.lib.io.IO;
 
 public class SnapshotTest {
+	static File tmp = IO.getFile("generated/snapshot");
 
-	JUnitFrameworkBuilder builder = new JUnitFrameworkBuilder().bundles(
-		"biz.aQute.bnd.runtime.snapshot, org.apache.felix.log, org.apache.felix.configadmin, org.apache.felix.scr, biz.aQute.bnd.runtime.gogo");
+	@BeforeClass
+	static public void before() {
+		IO.delete(tmp);
+		tmp.mkdirs();
+		System.setProperty("snapshot.dir", tmp.getAbsolutePath());
+	}
+
+	@AfterClass
+	static public void after() {
+		System.getProperties()
+			.remove("snapshot.dir");
+	}
+	// static Workspace w;
+	// static {
+	// try {
+	// Workspace.findWorkspace(IO.work);
+	// } catch (Exception e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	// }
+
+	LaunchpadBuilder	builder	= new LaunchpadBuilder().runfw("org.apache.felix.framework")
+		.bundles(
+			"biz.aQute.bnd.runtime.snapshot, org.apache.felix.log, org.apache.felix.configadmin, org.apache.felix.scr, org.apache.felix.gogo.runtime");
+
+	@Service
+	CommandProcessor	gogo;
 
 	@Test
 	public void testMinimum() throws Exception {
-		try (JUnitFramework fw = builder.gogo()
-			.create()) {
+		try (Launchpad fw = builder.create()) {
 
 		}
 		System.out.println();
 
-	}
-
-	@Service
-	ConfigurationAdmin configAdmin;
-
-	@Test
-	public void testMoreExtensive() throws Exception {
-		try (JUnitFramework fw = builder.gogo()
-			.closeTimeout(0)
-			.create()) {
-			Bundle start1 = fw.bundle()
-				.addResource(Comp.class)
-				.start();
-			Bundle start2 = fw.bundle()
-				.addResource(Comp.class)
-				.start();
-			Thread.sleep(1000);
-		}
-		System.out.println();
-
-	}
-
-	/**
-	 * Test a built in commponent
-	 */
-
-	@Component(immediate = true, service = Comp.class)
-	public static class Comp {
-
-		@Activate
-		void activate() {
-			System.out.println("Activate");
-		}
-
-		@Deactivate
-		void deactivate() {
-			System.out.println("Deactivate");
-		}
 	}
 
 	@Test
-	public void testNonImportedExportConflicts() throws Exception {
-		try (JUnitFramework fw = builder.gogo()
-			.closeTimeout(0)
-			.create()) {
-			Bundle start1 = fw.bundle()
-				.exportPackage(ExportedNotImported.class.getPackage()
-					.getName())
-				.start();
+	public void testSnapshotCommand() throws Exception {
+		File f1 = new File(tmp, "foo.json");
+		assertThat(f1).doesNotExist();
+		File f2 = new File(tmp, "snapshottest-testSnapshotCommand.json");
+		assertThat(f2).doesNotExist();
+
+		try (Launchpad fw = builder.create()
+			.inject(this)) {
+
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			ByteArrayInputStream in = new ByteArrayInputStream(new byte[0]);
+
+			try (CommandSession session = gogo.createSession(in, out, out)) {
+				session.execute("snapshot " + f1.getAbsoluteFile()
+					.toURI()
+					.getPath());
+				assertThat(f1).isFile();
+			}
 		}
-		System.out.println();
+
+		assertThat(f2).isFile();
 
 	}
+
+	@Test
+	public void testSnapshotDefaultName() throws Exception {
+		File f = new File("generated/snapshot/snapshottest-testSnapshotDefaultName.json");
+		f.delete();
+		assertThat(f).doesNotExist();
+
+		try (Launchpad fw = builder.create()) {
+
+		}
+		assertThat(f).isFile();
+
+	}
+
 }

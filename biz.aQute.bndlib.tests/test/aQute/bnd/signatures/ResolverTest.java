@@ -24,21 +24,21 @@ public class ResolverTest {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
 			List<FieldDef> fields = new ArrayList<>();
-			c.parseClassFile(IO.stream(new File("bin_test/aQute/bnd/signatures/TypeUser1.class")), new ClassDataCollector() {
+			c.parseClassFile(IO.stream(new File("bin_test/aQute/bnd/signatures/TypeUser1.class")),
+				new ClassDataCollector() {
 
-				@Override
-				public void field(FieldDef defined) {
-					fields.add(defined);
-				}
-			});
+					@Override
+					public void field(FieldDef defined) {
+						fields.add(defined);
+					}
+				});
 
 			ClassSignature classSig = a.getClassSignature(c.getClassSignature());
 			System.out.printf("ClassSignature[%s]: %s\n", c, classSig);
 			Map<String, FieldSignature> fieldSigs = fields.stream()
 				.collect(toMap(FieldDef::getName,
 					defined -> a.getFieldSignature((defined.getSignature() != null) ? defined.getSignature()
-						: defined.getDescriptor()
-							.toString())));
+						: defined.descriptor())));
 			System.out.printf("FieldSignature[%s]: %s\n", c, fieldSigs);
 
 			FieldSignature fieldSig;
@@ -128,13 +128,14 @@ public class ResolverTest {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
 			List<MethodDef> methods = new ArrayList<>();
-			c.parseClassFile(IO.stream(new File("bin_test/aQute/bnd/signatures/TypeUser1.class")), new ClassDataCollector() {
+			c.parseClassFile(IO.stream(new File("bin_test/aQute/bnd/signatures/TypeUser1.class")),
+				new ClassDataCollector() {
 
-				@Override
-				public void method(MethodDef defined) {
-					methods.add(defined);
-				}
-			});
+					@Override
+					public void method(MethodDef defined) {
+						methods.add(defined);
+					}
+				});
 
 			ClassSignature classSig = a.getClassSignature(c.getClassSignature());
 			System.out.printf("ClassSignature[%s]: %s\n", c, classSig);
@@ -142,8 +143,7 @@ public class ResolverTest {
 			Map<String, MethodSignature> methodSigs = methods.stream()
 				.collect(toMap(MethodDef::getName,
 					defined -> a.getMethodSignature((defined.getSignature() != null) ? defined.getSignature()
-						: defined.getDescriptor()
-							.toString())));
+						: defined.descriptor())));
 			System.out.printf("MethodSignature[%s]: %s\n", c, methodSigs);
 
 			MethodSignature methodSig;

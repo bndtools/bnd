@@ -85,7 +85,7 @@ public class ProjectBuildOrderTask extends BaseTask {
 	/**
 	 * Sets character (or string) separator between projects in resultant ant
 	 * property.
-	 * 
+	 *
 	 * @param separator character (or string) separator
 	 */
 	public void setSeparator(String separator) {
@@ -94,7 +94,7 @@ public class ProjectBuildOrderTask extends BaseTask {
 
 	/**
 	 * Sets Bnd workspace location.
-	 * 
+	 *
 	 * @param workspaceLocation Bnd workspace location.
 	 */
 	public void setWorkspaceLocation(File workspaceLocation) {
@@ -104,7 +104,7 @@ public class ProjectBuildOrderTask extends BaseTask {
 	/**
 	 * Sets whether to use project names or full absolute paths to projects in
 	 * the resultant ant property. Default is project names.
-	 * 
+	 *
 	 * @param fullpath true for full absolete paths to project, false for
 	 *            project names.
 	 */
@@ -116,7 +116,7 @@ public class ProjectBuildOrderTask extends BaseTask {
 	 * Sets the project directory which contains the bndFile. Must be used with
 	 * the bndFile parameter. Default is unset (null), which instructions
 	 * ProjectBuildOrderTask to acquire the build order for the entire workspace
-	 * 
+	 *
 	 * @param projectLocation Bnd project directory
 	 */
 	public void setProjectDir(File projectLocation) {
@@ -132,7 +132,7 @@ public class ProjectBuildOrderTask extends BaseTask {
 	 * order from. Default is bnd.bnd. Default is unset (null), which
 	 * instructions ProjectBuildOrderTask to acquire the build order for the
 	 * entire workspace
-	 * 
+	 *
 	 * @param bndFileParam bnd file
 	 */
 	public void setBndFile(String bndFileParam) {
@@ -146,7 +146,7 @@ public class ProjectBuildOrderTask extends BaseTask {
 	/**
 	 * Sets the ant property that will contain the list of projects in build
 	 * order. If not provided, the default ant property name is buildorder.
-	 * 
+	 *
 	 * @param newProperty ant property name
 	 */
 	public void setProperty(String newProperty) {
@@ -160,7 +160,7 @@ public class ProjectBuildOrderTask extends BaseTask {
 	/**
 	 * Set true to ignore runbundles dependencies. Set false to include
 	 * runbundles dependencies in buildorder.
-	 * 
+	 *
 	 * @param b true/false
 	 */
 	public void setDelayRunDependencies(boolean b) {

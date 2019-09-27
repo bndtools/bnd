@@ -221,7 +221,7 @@ public class P2Impl implements ArtifactProvider {
  	 *  artifact.repository.factory.order = compositeArtifacts.xml,\!
 	 * @formatter:on
 	 * @param artifacts
-	 * @param cycles 
+	 * @param cycles
 	 * @param base
 	 * @throws Exception
 	 */

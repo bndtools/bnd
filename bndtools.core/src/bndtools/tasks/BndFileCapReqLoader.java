@@ -15,65 +15,65 @@ import bndtools.central.Central;
 
 public class BndFileCapReqLoader extends BndBuilderCapReqLoader {
 
-    private Builder builder;
+	private Builder builder;
 
-    public BndFileCapReqLoader(File bndFile) {
-        super(bndFile);
-    }
+	public BndFileCapReqLoader(File bndFile) {
+		super(bndFile);
+	}
 
-    @Override
-    protected synchronized Builder getBuilder() throws Exception {
-        if (builder == null) {
-            Builder b;
+	@Override
+	protected synchronized Builder getBuilder() throws Exception {
+		if (builder == null) {
+			Builder b;
 
-            IFile[] wsfiles = FileUtils.getWorkspaceFiles(file);
-            if (wsfiles == null || wsfiles.length == 0)
-                throw new Exception("Unable to determine project owner for Bnd file: " + file.getAbsolutePath());
+			IFile[] wsfiles = FileUtils.getWorkspaceFiles(file);
+			if (wsfiles == null || wsfiles.length == 0)
+				throw new Exception("Unable to determine project owner for Bnd file: " + file.getAbsolutePath());
 
-            IProject project = wsfiles[0].getProject();
+			IProject project = wsfiles[0].getProject();
 
-            // Calculate the manifest
-            Project bndProject = Central.getInstance()
-                .getModel(JavaCore.create(project));
-            if (bndProject == null)
-                return null;
-            if (file.getName()
-                .equals(Project.BNDFILE)) {
-                ProjectBuilder pb = bndProject.getBuilder(null);
-                boolean close = true;
-                try {
-                    b = pb.getSubBuilders()
-                        .get(0);
-                    if (b == pb) {
-                        close = false;
-                    } else {
-                        pb.removeClose(b);
-                    }
-                } finally {
-                    if (close) {
-                        pb.close();
-                    }
-                }
-            } else {
-                b = bndProject.getSubBuilder(file);
-            }
+			// Calculate the manifest
+			Project bndProject = Central.getInstance()
+				.getModel(JavaCore.create(project));
+			if (bndProject == null)
+				return null;
+			if (file.getName()
+				.equals(Project.BNDFILE)) {
+				ProjectBuilder pb = bndProject.getBuilder(null);
+				boolean close = true;
+				try {
+					b = pb.getSubBuilders()
+						.get(0);
+					if (b == pb) {
+						close = false;
+					} else {
+						pb.removeClose(b);
+					}
+				} finally {
+					if (close) {
+						pb.close();
+					}
+				}
+			} else {
+				b = bndProject.getSubBuilder(file);
+			}
 
-            if (b == null) {
-                b = new Builder();
-                b.setProperties(file);
-            }
-            b.build();
+			if (b == null) {
+				b = new Builder();
+				b.setProperties(file);
+			}
+			b.build();
 
-            builder = b;
-        }
-        return builder;
-    }
+			builder = b;
+		}
+		return builder;
+	}
 
-    @Override
-    public synchronized void close() throws IOException {
-        if (builder != null)
-            builder.close();
-        builder = null;
-    }
+	@Override
+	public synchronized void close() throws IOException {
+		if (builder != null)
+			builder.close();
+		builder = null;
+	}
 
 }

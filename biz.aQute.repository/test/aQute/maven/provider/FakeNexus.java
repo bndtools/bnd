@@ -2,11 +2,9 @@ package aQute.maven.provider;
 
 import java.io.File;
 import java.net.HttpURLConnection;
-import java.text.ParseException;
-import java.util.Date;
 
-import aQute.bnd.http.HttpClient;
 import aQute.http.testservers.Httpbin;
+import aQute.lib.date.Dates;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA1;
 
@@ -58,7 +56,7 @@ public class FakeNexus extends Httpbin {
 						}
 					}
 
-					rsp.headers.put("Last-Modified", totHttpDate(f.lastModified()));
+					rsp.headers.put("Last-Modified", toHttpDate(f.lastModified()));
 					rsp.headers.put("ETag", SHA1.digest(f)
 						.asHex());
 					return f;
@@ -85,7 +83,7 @@ public class FakeNexus extends Httpbin {
 					f.getParentFile()
 						.mkdirs();
 					IO.copy(rq.content, f);
-					rsp.headers.put("Last-Modified", totHttpDate(f.lastModified()));
+					rsp.headers.put("Last-Modified", toHttpDate(f.lastModified()));
 					rsp.headers.put("ETag", SHA1.digest(f)
 						.asHex());
 					rsp.code = 201;
@@ -113,13 +111,13 @@ public class FakeNexus extends Httpbin {
 		return null;
 	}
 
-	private String totHttpDate(long lastModified) {
-		return HttpClient.sdf.format(new Date(lastModified));
+	private String toHttpDate(long lastModified) {
+		return Dates.formatMillis(Dates.RFC_7231_DATE_TIME, lastModified);
 	}
 
-	private long fromHttpDate(String string) throws ParseException {
-		return HttpClient.sdf.parse(string)
-			.getTime();
+
+	private long fromHttpDate(String string) {
+		return Dates.parseMillis(Dates.RFC_7231_DATE_TIME, string);
 	}
 
 }

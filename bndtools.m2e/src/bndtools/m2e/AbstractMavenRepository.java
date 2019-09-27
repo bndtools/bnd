@@ -18,72 +18,74 @@ import org.osgi.service.repository.Repository;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.service.RepositoryPlugin;
 
-public abstract class AbstractMavenRepository extends BaseRepository implements MavenRunListenerHelper, Repository, RepositoryPlugin, IMavenProjectChangedListener {
+public abstract class AbstractMavenRepository extends BaseRepository
+	implements MavenRunListenerHelper, Repository, RepositoryPlugin, IMavenProjectChangedListener {
 
-    final IMavenProjectRegistry mavenProjectRegistry = MavenPlugin.getMavenProjectRegistry();
+	final IMavenProjectRegistry mavenProjectRegistry = MavenPlugin.getMavenProjectRegistry();
 
-    @Override
-    public boolean canWrite() {
-        return false;
-    }
+	@Override
+	public boolean canWrite() {
+		return false;
+	}
 
-    @Override
-    public String getLocation() {
-        Location location = Platform.getInstanceLocation();
+	@Override
+	public String getLocation() {
+		Location location = Platform.getInstanceLocation();
 
-        if (location != null) {
-            return location.getURL()
-                .toString();
-        }
+		if (location != null) {
+			return location.getURL()
+				.toString();
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    @Override
-    public PutResult put(InputStream stream, PutOptions options) throws Exception {
-        throw new IllegalStateException(getName() + " is read-only");
-    }
+	@Override
+	public PutResult put(InputStream stream, PutOptions options) throws Exception {
+		throw new IllegalStateException(getName() + " is read-only");
+	}
 
-    File guessBundleFile(IMavenProjectFacade projectFacade) {
-        String buildDirectoryGuess;
+	File guessBundleFile(IMavenProjectFacade projectFacade) {
+		String buildDirectoryGuess;
 
-        IProject project = projectFacade.getProject();
-        IPath outputLocation = projectFacade.getOutputLocation();
+		IProject project = projectFacade.getProject();
+		IPath outputLocation = projectFacade.getOutputLocation();
 
-        if (outputLocation.segment(0)
-            .equals(project.getFullPath()
-                .segment(0))) {
-            outputLocation = outputLocation.removeFirstSegments(1);
-        }
+		if (outputLocation.segment(0)
+			.equals(project.getFullPath()
+				.segment(0))) {
+			outputLocation = outputLocation.removeFirstSegments(1);
+		}
 
-        IFolder folder = project.getFolder(outputLocation.toString());
+		IFolder folder = project.getFolder(outputLocation.toString());
 
-        if (folder.exists()) {
-            outputLocation = folder.getLocation();
-        }
+		if (folder.exists()) {
+			outputLocation = folder.getLocation();
+		}
 
-        if (outputLocation != null) {
-            if (outputLocation.lastSegment()
-                .equals("classes")) {
-                outputLocation = outputLocation.removeLastSegments(1);
-            }
+		if (outputLocation != null) {
+			if (outputLocation.lastSegment()
+				.equals("classes")) {
+				outputLocation = outputLocation.removeLastSegments(1);
+			}
 
-            buildDirectoryGuess = outputLocation.toOSString();
-        } else {
-            buildDirectoryGuess = projectFacade.getProject()
-                .getLocation()
-                .toOSString() + "/target";
-        }
+			buildDirectoryGuess = outputLocation.toOSString();
+		} else {
+			buildDirectoryGuess = projectFacade.getProject()
+				.getLocation()
+				.toOSString() + "/target";
+		}
 
-        ArtifactKey artifactKey = projectFacade.getArtifactKey();
+		ArtifactKey artifactKey = projectFacade.getArtifactKey();
 
-        String finalNameGuess = buildDirectoryGuess + "/" + artifactKey.getArtifactId() + "-" + artifactKey.getVersion() + ".jar";
+		String finalNameGuess = buildDirectoryGuess + "/" + artifactKey.getArtifactId() + "-" + artifactKey.getVersion()
+			+ ".jar";
 
-        return new File(finalNameGuess);
-    }
+		return new File(finalNameGuess);
+	}
 
-    void cleanup() {
-        mavenProjectRegistry.removeMavenProjectChangedListener(this);
-    }
+	void cleanup() {
+		mavenProjectRegistry.removeMavenProjectChangedListener(this);
+	}
 
 }

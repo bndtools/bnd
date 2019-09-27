@@ -8,10 +8,10 @@ import bndtools.editor.pkgpatterns.HeaderClauseLabelProvider;
 
 public class ExportedPackageLabelProvider extends HeaderClauseLabelProvider<ExportedPackage> {
 
-    @Override
-    protected void decorate(StyledString label, ExportedPackage clause) {
-        if (clause.isProvided())
-            label.append(" <provide>", ItalicStyler.INSTANCE_QUALIFIER);
-    }
+	@Override
+	protected void decorate(StyledString label, ExportedPackage clause) {
+		if (clause.isProvided())
+			label.append(" <provide>", ItalicStyler.INSTANCE_QUALIFIER);
+	}
 
 }

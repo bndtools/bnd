@@ -7,7 +7,8 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,7 +43,9 @@ public class Tag {
 	String							name;																																												// Name
 	final Map<String, String>		attributes			= new LinkedHashMap<>();
 	final List<Object>				content				= new ArrayList<>();																																			// Content
-	final static SimpleDateFormat	format				= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	static final DateTimeFormatter	DATE_TIME_FORMATTER	= DateTimeFormatter
+		.ofPattern("yyyyMMddHHmmss.SSS", Locale.ROOT)
+		.withZone(ZoneId.systemDefault());
 	boolean							cdata;
 
 	/**
@@ -133,14 +136,12 @@ public class Tag {
 	}
 
 	/**
-	 * Add a new date attribute. The date is formatted as the SimpleDateFormat
-	 * describes at the top of this class.
+	 * Add a new date attribute. The date is formatted by DATE_TIME_FORMATTER
+	 * described at the top of this class.
 	 */
 	public Tag addAttribute(String key, Date value) {
 		if (value != null) {
-			synchronized (format) {
-				attributes.put(key, format.format(value));
-			}
+			attributes.put(key, DATE_TIME_FORMATTER.format(value.toInstant()));
 		}
 		return this;
 	}
@@ -190,22 +191,22 @@ public class Tag {
 	 * appended to to it)</li>
 	 * </ul>
 	 * <h3>Example:</h3>
-	 * 
+	 *
 	 * <pre>
 	 * fromDTO("things", "element", `[{"FRIEND": ["Amy"]},{"children": ["Emily"]},["Bob", "Bill"]]`)
 	 * </pre>
-	 * 
+	 *
 	 * gives
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * <things>
 	 *    <thing>
 	 *       <FRIEND>
-	 *          <FRIEND_ELEMENT>Amy</FRIEND_ELEMENT>               
+	 *          <FRIEND_ELEMENT>Amy</FRIEND_ELEMENT>
 	 *       </FRIEND>
 	 *       <children>
-	 *          <childrenElement>Emily</childrenElement>               
+	 *          <childrenElement>Emily</childrenElement>
 	 *       </children>
 	 *    </thing>
 	 *    <thing>
@@ -217,7 +218,7 @@ public class Tag {
 	 * </pre>
 	 * <p>
 	 * {@code null} values are ignored.
-	 * 
+	 *
 	 * @param rootName the name of the root tag, may be {@code null}.
 	 * @param arrayElementName a generic name for elements in lists, if
 	 *            {@code null} or empty, the default value "element" will be
@@ -252,22 +253,22 @@ public class Tag {
 	 * capitalized and an '_' is first appended to to it)</li>
 	 * </ul>
 	 * <h3>Example:</h3>
-	 * 
+	 *
 	 * <pre>
 	 * fromDTO("things", "element", `[{"FRIEND": ["Amy"]},{"children": ["Emily"]},["Bob", "Bill"]]`)
 	 * </pre>
-	 * 
+	 *
 	 * gives
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * <things>
 	 *    <thing>
 	 *       <FRIEND>
-	 *          <FRIEND_ELEMENT>Amy</FRIEND_ELEMENT>               
+	 *          <FRIEND_ELEMENT>Amy</FRIEND_ELEMENT>
 	 *       </FRIEND>
 	 *       <children>
-	 *          <childrenElement>Emily</childrenElement>               
+	 *          <childrenElement>Emily</childrenElement>
 	 *       </children>
 	 *    </thing>
 	 *    <thing>
@@ -279,7 +280,7 @@ public class Tag {
 	 * </pre>
 	 * <p>
 	 * {@code null} values are ignored.
-	 * 
+	 *
 	 * @param rootName the name of the root tag, may be {@code null}.
 	 * @param dto the DTO to convert, if {@code null} an empty element is
 	 *            returned.

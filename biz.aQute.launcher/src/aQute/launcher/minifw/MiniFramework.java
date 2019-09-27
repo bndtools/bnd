@@ -24,7 +24,9 @@ import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceListener;
+import org.osgi.framework.ServiceObjects;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
@@ -235,12 +237,12 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	}
 
 	@Override
-	public ServiceReference[] getRegisteredServices() {
+	public ServiceReference<?>[] getRegisteredServices() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public ServiceReference[] getServicesInUse() {
+	public ServiceReference<?>[] getServicesInUse() {
 		throw new UnsupportedOperationException();
 	}
 
@@ -290,17 +292,17 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	}
 
 	@Override
-	public ServiceReference[] getAllServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
+	public ServiceReference<?>[] getAllServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public ServiceReference getServiceReference(String clazz) {
+	public ServiceReference<?> getServiceReference(String clazz) {
 		return null;
 	}
 
 	@Override
-	public ServiceReference[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
+	public ServiceReference<?>[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
 		return null;
 	}
 
@@ -338,49 +340,71 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		}
 	}
 
+	@Override
 	public int compareTo(Bundle var0) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public ServiceRegistration registerService(String[] clazzes, Object service, Dictionary properties) {
+	public ServiceRegistration<?> registerService(String[] clazzes, Object service, Dictionary<String, ?> properties) {
 		return null;
 	}
 
 	@Override
-	public ServiceRegistration registerService(String clazz, Object service, Dictionary properties) {
+	public ServiceRegistration<?> registerService(String clazz, Object service, Dictionary<String, ?> properties) {
 		return null;
 	}
 
-	public <S> ServiceRegistration registerService(Class<S> clazz, S service, Dictionary<String, ?> properties) {
+	@Override
+	public <S> ServiceRegistration<S> registerService(Class<S> clazz, S service, Dictionary<String, ?> properties) {
 		return null;
 	}
 
-	public <S> ServiceReference getServiceReference(Class<S> clazz) {
+	@Override
+	public <S> ServiceReference<S> getServiceReference(Class<S> clazz) {
 		return null;
 	}
 
-	public <S> Collection<ServiceReference> getServiceReferences(Class<S> clazz, String filter)
+	@Override
+	public <S> Collection<ServiceReference<S>> getServiceReferences(Class<S> clazz, String filter)
 		throws InvalidSyntaxException {
 		return null;
 	}
 
 	@Override
-	public Object getService(ServiceReference reference) {
+	public <S> S getService(ServiceReference<S> reference) {
 		return null;
 	}
 
 	@Override
-	public boolean ungetService(ServiceReference reference) {
+	public boolean ungetService(ServiceReference<?> reference) {
 		return false;
 	}
 
+	@Override
 	public Bundle getBundle(String location) {
 		return null;
 	}
 
+	@Override
 	public <A> A adapt(Class<A> type) {
 		return null;
+	}
+
+	@Override
+	public <S> ServiceRegistration<S> registerService(Class<S> clazz, ServiceFactory<S> factory,
+		Dictionary<String, ?> properties) {
+		return null;
+	}
+
+	@Override
+	public <S> ServiceObjects<S> getServiceObjects(ServiceReference<S> reference) {
+		return null;
+	}
+
+	@Override
+	public void init(FrameworkListener... listeners) throws BundleException {
+
 	}
 }

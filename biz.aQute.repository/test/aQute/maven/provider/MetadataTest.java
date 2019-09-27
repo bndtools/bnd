@@ -33,7 +33,7 @@ public class MetadataTest extends TestCase {
 			assertNotNull(parse);
 			assertEquals("commons.dbcp", parse.group);
 			assertEquals("commons-dbcp", parse.artifact);
-			assertEquals(MavenVersion.parseString("1.4.1-SNAPSHOT"), parse.version);
+			assertEquals(MavenVersion.parseMavenString("1.4.1-SNAPSHOT"), parse.version);
 
 			assertNotNull(parse.snapshot);
 			assertEquals("13", parse.snapshot.buildNumber);
@@ -45,14 +45,14 @@ public class MetadataTest extends TestCase {
 			assertNotNull(snapshotVersion);
 			assertEquals("bin", snapshotVersion.classifier);
 			assertEquals("tar.gz", snapshotVersion.extension);
-			assertEquals(MavenVersion.parseString("1.4.1-20140107.141700-13"), snapshotVersion.value);
+			assertEquals(MavenVersion.parseMavenString("1.4.1-20140107.141700-13"), snapshotVersion.value);
 			assertEquals(1389104220000L, snapshotVersion.updated);
 
 			snapshotVersion = parse.snapshotVersions.get(9);
 			assertNotNull(snapshotVersion);
 			assertNull(snapshotVersion.classifier);
 			assertEquals("pom", snapshotVersion.extension);
-			assertEquals(MavenVersion.parseString("1.4.1-20140107.141700-13"), snapshotVersion.value);
+			assertEquals(MavenVersion.parseMavenString("1.4.1-20140107.141700-13"), snapshotVersion.value);
 			assertEquals(1389104220000L, snapshotVersion.updated);
 		}
 	}

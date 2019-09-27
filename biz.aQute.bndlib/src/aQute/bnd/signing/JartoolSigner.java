@@ -23,7 +23,7 @@ import aQute.service.reporter.Reporter;
 /**
  * Sign the jar file. -sign : <alias> [ ';' 'password:=' <password> ] [ ';'
  * 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )*
- * 
+ *
  * @author aqute
  */
 
@@ -168,8 +168,7 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 		Jar signed = new Jar(tmp);
 		builder.addClose(signed);
 
-		Map<String, Resource> dir = signed.getDirectories()
-			.get("META-INF");
+		Map<String, Resource> dir = signed.getDirectory("META-INF");
 		for (Entry<String, Resource> entry : dir.entrySet()) {
 			String path = entry.getKey();
 			if (path.matches(".*\\.(DSA|RSA|SF|MF)$")) {

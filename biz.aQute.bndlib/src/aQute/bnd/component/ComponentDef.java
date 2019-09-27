@@ -33,7 +33,7 @@ import aQute.lib.tag.Tag;
  * hold the references.
  */
 class ComponentDef extends ExtensionDef {
-	final static String				NAMESPACE_STEM	= "http://www.osgi.org/xmlns/scr";
+	final static String						NAMESPACE_STEM					= "http://www.osgi.org/xmlns/scr";
 	/**
 	 * We use a SortedMap and a key set which controls the <a href=
 	 * "https://osgi.org/specification/osgi.cmpn/7.0.0/service.component.html#service.component-ordering.generated.properties">
@@ -51,26 +51,27 @@ class ComponentDef extends ExtensionDef {
 	 * This is an alias to the PropertyDef object in {@link #propertyDefs} under
 	 * the {@link #PROPERTYDEF_COMPONENT} key.
 	 */
-	final PropertyDef				property;
-	final PropertiesDef				properties;
-	final PropertyDef				factoryProperty;
-	final PropertiesDef				factoryProperties;
-	final Map<String, ReferenceDef>	references		= new LinkedHashMap<>();
-	Version							version;
-	String							name;
-	String							factory;
-	Boolean							immediate;
-	ServiceScope					scope;
-	ConfigurationPolicy				configurationPolicy;
-	TypeRef							implementation;
-	TypeRef							service[];
-	String							activate;
-	List<String>					activation_fields	= new ArrayList<>();
-	String							deactivate;
-	String							modified;
-	Boolean							enabled;
-	String							xmlns;
-	String[]						configurationPid;
+	final PropertyDef						property;
+	final PropertiesDef						properties;
+	final PropertyDef						factoryProperty;
+	final PropertiesDef						factoryProperties;
+	final Map<String, ReferenceDef>			references						= new LinkedHashMap<>();
+	Version									version;
+	String									versionReason					= "base";
+	String									name;
+	String									factory;
+	Boolean									immediate;
+	ServiceScope							scope;
+	ConfigurationPolicy						configurationPolicy;
+	TypeRef									implementation;
+	TypeRef									service[];
+	String									activate;
+	List<String>							activation_fields				= new ArrayList<>();
+	String									deactivate;
+	String									modified;
+	Boolean									enabled;
+	String									xmlns;
+	String[]								configurationPid;
 	Integer									init;
 	private final Analyzer					analyzer;
 
@@ -97,7 +98,7 @@ class ComponentDef extends ExtensionDef {
 	/**
 	 * Called to prepare. If will look for any errors or inconsistencies in the
 	 * setup.
-	 * 
+	 *
 	 * @param analyzer the analyzer to report errors and create references
 	 * @throws Exception
 	 */
@@ -110,38 +111,49 @@ class ComponentDef extends ExtensionDef {
 			return;
 		}
 
-		analyzer.referTo(implementation);
+		analyzer.nonClassReferTo(implementation);
 
 		if (name == null)
 			name = implementation.getFQN();
 
 		if (service != null && service.length > 0) {
 			for (TypeRef interfaceName : service)
-				analyzer.referTo(interfaceName);
+				analyzer.nonClassReferTo(interfaceName);
 		} else if (scope != null && scope != ServiceScope.BUNDLE)
 			analyzer.warning("The servicefactory:=true directive is set but no service is provided, ignoring it");
 
 		if (factory == null && (!factoryProperty.isEmpty() || !factoryProperties.isEmpty())) {
 			analyzer.error("The factoryProperty and/or factoryProperies elements are used on a non-factory component");
 		}
+
+		properties.stream()
+			.filter(p -> !analyzer.getJar()
+				.exists(p))
+			.forEach(p -> analyzer.warning("The properties entry \"%s\" is not found in the jar", p));
+		factoryProperties.stream()
+			.filter(p -> !analyzer.getJar()
+				.exists(p))
+			.forEach(p -> analyzer.warning("The factoryProperties entry \"%s\" is not found in the jar", p));
 	}
 
 	private void prepareVersion(Analyzer analyzer) throws Exception {
 
 		for (ReferenceDef ref : references.values()) {
 			ref.prepare(analyzer);
-			updateVersion(ref.version);
+			updateVersion(ref.version, ref.name + ":" + ref.reasonForVersion);
 		}
 		if (configurationPolicy != null)
-			updateVersion(V1_1);
+			updateVersion(V1_1, "configurationPolicy");
 		if (configurationPid != null)
-			updateVersion(V1_2);
+			updateVersion(V1_2, "configurationPid");
 		if (modified != null)
-			updateVersion(V1_1);
-		if (!factoryProperty.isEmpty() || !factoryProperties.isEmpty()) {
-			updateVersion(V1_4);
+			updateVersion(V1_1, "modified");
+		if (!factoryProperty.isEmpty()) {
+			updateVersion(V1_4, "factoryProperty");
 		}
-
+		if (!factoryProperties.isEmpty()) {
+			updateVersion(V1_4, "factoryProperties");
+		}
 	}
 
 	void sortReferences() {
@@ -152,7 +164,7 @@ class ComponentDef extends ExtensionDef {
 
 	/**
 	 * Returns a tag describing the component element.
-	 * 
+	 *
 	 * @return a component element
 	 */
 	Tag getTag() {
@@ -182,7 +194,6 @@ class ComponentDef extends ExtensionDef {
 			component.addAttribute("activate", activate)
 				.addAttribute("deactivate", deactivate);
 		}
-
 
 		component.addAttribute("modified", modified);
 
@@ -245,8 +256,12 @@ class ComponentDef extends ExtensionDef {
 		return "$".equals(v) ? name : v;
 	}
 
-	void updateVersion(Version version) {
-		this.version = max(this.version, version);
+	void updateVersion(Version version, String reason) {
+		if (this.version.compareTo(version) >= 0)
+			return;
+
+		this.versionReason = this.version + ":" + version + ":" + reason;
+		this.version = version;
 	}
 
 	static <T extends Comparable<T>> T max(T a, T b) {

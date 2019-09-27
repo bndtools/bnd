@@ -1,0 +1,11 @@
+# Configure Repositories
+-plugin: \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		releaseUrl=https://repo.maven.apache.org/maven2/; \
+		index=${.}/central.maven; \
+		name="Central",\
+    aQute.bnd.repository.osgi.OSGiRepository; \
+        name='Local'; \
+        locations="${fileuri;${build}/repo/index.xml}"; \
+        poll.time=-1; \
+        cache=${workspace}/cnf/cache/Local

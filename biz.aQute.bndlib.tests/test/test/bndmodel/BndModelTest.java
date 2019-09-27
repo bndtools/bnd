@@ -24,7 +24,7 @@ public class BndModelTest extends TestCase {
 
 	/**
 	 * Test escaping of backslashes.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 

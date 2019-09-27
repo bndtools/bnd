@@ -49,7 +49,7 @@ public class SpecMetatypeTest extends TestCase {
 	 */
 
 	@ObjectClassDefinition
-	public static interface Naming {
+	public interface Naming {
 		String secret();
 
 		String _secret(); // .secret
@@ -245,7 +245,7 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	@ObjectClassDefinition
-	public static interface ADCollision {
+	public interface ADCollision {
 
 		String a$$(); // a$
 
@@ -264,12 +264,12 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	@ObjectClassDefinition(id = "duplicate")
-	public static interface DupOCDId1 {
+	public interface DupOCDId1 {
 
 	}
 
 	@ObjectClassDefinition(id = "duplicate")
-	public static interface DupOCDId2 {
+	public interface DupOCDId2 {
 
 	}
 
@@ -288,28 +288,28 @@ public class SpecMetatypeTest extends TestCase {
 	@ObjectClassDefinition(pid = {
 		"1"
 	})
-	public static interface DupPid1 {
+	public interface DupPid1 {
 
 	}
 
 	@ObjectClassDefinition(pid = {
 		"1"
 	})
-	public static interface DupPid2 {
+	public interface DupPid2 {
 
 	}
 
 	@ObjectClassDefinition(factoryPid = {
 		"2"
 	})
-	public static interface DupPid3 {
+	public interface DupPid3 {
 
 	}
 
 	@ObjectClassDefinition(factoryPid = {
 		"2"
 	})
-	public static interface DupPid4 {
+	public interface DupPid4 {
 
 	}
 
@@ -318,21 +318,21 @@ public class SpecMetatypeTest extends TestCase {
 	}, factoryPid = {
 		"3"
 	})
-	public static interface DupPid5 {
+	public interface DupPid5 {
 
 	}
 
 	@ObjectClassDefinition(pid = {
 		"4"
 	})
-	public static interface DupPid6 {
+	public interface DupPid6 {
 
 	}
 
 	@ObjectClassDefinition(factoryPid = {
 		"4"
 	})
-	public static interface DupPid7 {
+	public interface DupPid7 {
 
 	}
 
@@ -505,7 +505,7 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	@ObjectClassDefinition
-	static interface CollectionsTest {
+	interface CollectionsTest {
 		Collection<String> collection();
 
 		List<String> list();
@@ -564,7 +564,7 @@ public class SpecMetatypeTest extends TestCase {
 	 */
 
 	@ObjectClassDefinition
-	public static interface Enums {
+	public interface Enums {
 		enum X {
 			requireConfiguration,
 			optionalConfiguration,
@@ -617,42 +617,42 @@ public class SpecMetatypeTest extends TestCase {
 	@ObjectClassDefinition(pid = {
 		"ocdEmptyPid"
 	})
-	public static interface OCDEmpty {}
+	public interface OCDEmpty {}
 
 	@ObjectClassDefinition(description = "description", pid = {
 		"ocdDescriptionPid"
 	})
-	public static interface OCDDescription {}
+	public interface OCDDescription {}
 
 	@ObjectClassDefinition(pid = {
 		"ocdDesignatePidOnlyPid"
 	})
-	public static interface OCDDesignatePidOnly {}
+	public interface OCDDesignatePidOnly {}
 
 	@ObjectClassDefinition(factoryPid = {
 		"ocdDesignatePidFactoryFactoryPid"
 	})
-	public static interface OCDDesignatePidFactory {}
+	public interface OCDDesignatePidFactory {}
 
 	@ObjectClassDefinition(id = "id", pid = {
 		"ocdIdPid"
 	})
-	public static interface OCDId {}
+	public interface OCDId {}
 
 	@ObjectClassDefinition(id = "id2", pid = {
 		"ocdId2Pid"
 	})
-	public static interface OCDIdWithPid {}
+	public interface OCDIdWithPid {}
 
 	@ObjectClassDefinition(localization = "localization", pid = {
 		"ocdLocalizationPid"
 	})
-	public static interface OCDLocalization {}
+	public interface OCDLocalization {}
 
 	@ObjectClassDefinition(name = "name", pid = {
 		"ocdNamePid"
 	})
-	public static interface OCDName {}
+	public interface OCDName {}
 
 	public void testOCD() throws Exception {
 		Builder b = new Builder();
@@ -724,7 +724,7 @@ public class SpecMetatypeTest extends TestCase {
 	 */
 
 	@ObjectClassDefinition(description = "advariations")
-	public static interface TestAD {
+	public interface TestAD {
 		@AttributeDefinition
 		String noSettings();
 
@@ -854,20 +854,19 @@ public class SpecMetatypeTest extends TestCase {
 	 */
 
 	@ObjectClassDefinition(description = "adinheritance-super-one")
-	public static interface TestADWithInheritanceSuperOne {
+	public interface TestADWithInheritanceSuperOne {
 		@AttributeDefinition
 		String fromSuperOne();
 	}
 
 	@ObjectClassDefinition(description = "adinheritance-super")
-	public static interface TestADWithInheritanceSuperTwo {
+	public interface TestADWithInheritanceSuperTwo {
 		@AttributeDefinition
 		String fromSuperTwo();
 	}
 
 	@ObjectClassDefinition(description = "adinheritance-child")
-	public static interface TestADWithInheritanceChild
-		extends TestADWithInheritanceSuperOne, TestADWithInheritanceSuperTwo {
+	public interface TestADWithInheritanceChild extends TestADWithInheritanceSuperOne, TestADWithInheritanceSuperTwo {
 		@AttributeDefinition
 		String fromChild();
 	}
@@ -939,7 +938,7 @@ public class SpecMetatypeTest extends TestCase {
 	 * Test all the return types.
 	 */
 	@ObjectClassDefinition(description = "simple", name = "TestSimple")
-	public static interface TestReturnTypes {
+	public interface TestReturnTypes {
 		boolean rpBoolean();
 
 		byte rpByte();
@@ -1143,13 +1142,13 @@ public class SpecMetatypeTest extends TestCase {
 
 	/**
 	 * Test simple
-	 * 
+	 *
 	 * @author aqute
 	 */
 	@ObjectClassDefinition(description = "simple", name = "TestSimple", pid = {
 		"simplePid", "$"
 	})
-	public static interface TestSimple {
+	public interface TestSimple {
 		@AttributeDefinition
 		String simple();
 
@@ -1471,7 +1470,7 @@ public class SpecMetatypeTest extends TestCase {
 	}, intArrayAttr = {
 		1, 2, 3
 	})
-	public static interface TestExtensions {
+	public interface TestExtensions {
 		@AttributeDefinition
 		String simple();
 
@@ -1681,7 +1680,7 @@ public class SpecMetatypeTest extends TestCase {
 
 	@Mapping
 	@Meta.OCD
-	static interface C {
+	interface C {
 		@Meta.AD(required = false)
 		Integer port();
 	}

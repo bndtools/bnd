@@ -1,0 +1,3 @@
+-runfw              org.apache.felix.framework
+-runbundles         org.osgi.service.cm
+-runsystempackages  sun.misc

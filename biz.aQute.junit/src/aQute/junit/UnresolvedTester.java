@@ -13,8 +13,8 @@ import junit.framework.TestCase;
  * Verify that all bundles are resolved
  */
 public class UnresolvedTester extends TestCase {
-	BundleContext	context;
-	static Pattern	IP_P	= Pattern
+	BundleContext					context;
+	private final static Pattern	IP_P	= Pattern
 		.compile(" \\(&\\(osgi.wiring.package=([^)]+)\\)\\(version>=([^)]+)\\)\\(!\\(version>=([^)]+)\\)\\)\\)");
 
 	public void setBundleContext(BundleContext context) {

@@ -20,7 +20,6 @@ import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
@@ -63,7 +62,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 
 	/**
 	 * Initialize the SSL Context, factory and verifier.
-	 * 
+	 *
 	 * @throws NoSuchAlgorithmException
 	 * @throws KeyManagementException
 	 * @throws IOException
@@ -84,12 +83,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 			context.init(null, trustManagers, new SecureRandom());
 			factory = context.getSocketFactory();
 
-			verifier = new HostnameVerifier() {
-				@Override
-				public boolean verify(String string, SSLSession session) {
-					return verify;
-				}
-			};
+			verifier = (string, session) -> verify;
 		}
 	}
 

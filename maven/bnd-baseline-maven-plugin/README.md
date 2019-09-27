@@ -48,7 +48,7 @@ build log.
 
 ### What versions should I use?
 
-The [Semantic Versioning Whitepaper](http://www.osgi.org/wp-content/uploads/SemanticVersioning1.pdf)
+The [Semantic Versioning Whitepaper](https://www.osgi.org/wp-content/uploads/Semantic-Versioning-20190110.pdf)
 defines the rules for semantic versions. In summary for a version `X.Y.Z`:
 
 1. A change which breaks backward compatibility for consumers necessitates a major version change 

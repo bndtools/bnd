@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
@@ -7,7 +8,7 @@
 		<version>0.0.2</version>
 	</parent>
 	<artifactId>test.api.bundle</artifactId>
-    <name>Test API Bundle</name>
+	<name>Test API Bundle</name>
 	<version>0.0.1</version>
 
 	<dependencies>
@@ -28,7 +29,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
+				<version>3.8.0</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -37,13 +38,13 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.7</version>
+				<version>3.1.0</version>
 			</plugin>
-            <plugin>
-                <groupId>biz.aQute.bnd</groupId>
-                <artifactId>bnd-maven-plugin</artifactId>
-                <configuration>
-                    <bnd><![CDATA[
+			<plugin>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-maven-plugin</artifactId>
+				<configuration>
+					<bnd><![CDATA[
 -exportcontents: \
     org.example.api,\
     org.example.types
@@ -51,8 +52,8 @@
 Bundle-Version: ${project.version}.bndqual
 Here: ${.}
 ]]></bnd>
-                </configuration>
-            </plugin>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

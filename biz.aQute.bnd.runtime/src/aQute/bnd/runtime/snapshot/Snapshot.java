@@ -52,13 +52,13 @@ public class Snapshot implements BundleActivator {
 
 	@Override
 	public void start(BundleContext context) throws Exception {
+		this.context = context;
 		this.framework = context.getBundle(0);
-		this.context = this.framework.getBundleContext();
 
+		add("framework", FrameworkFacade.class);
 		add("scr", ServiceComponentRuntimeFacade.class);
 		add("log", LogFacade.class);
 		add("cnf", ConfigurationFacade.class);
-		add("framework", FrameworkFacade.class);
 		// add("coordinator", CoordinatorFacade.class);
 
 		this.frameworkFront = new FrameworkFacade(this.context);
@@ -66,7 +66,7 @@ public class Snapshot implements BundleActivator {
 			.addShutdownHook(snapshotThread);
 
 		Filter filter = FrameworkUtil.createFilter("(snapshot=*)");
-		tracker = new ServiceTracker<Object, Object>(context, filter, null);
+		tracker = new ServiceTracker<>(context, filter, null);
 		tracker.open();
 
 		this.context.addBundleListener(new SynchronousBundleListener() {
@@ -107,6 +107,7 @@ public class Snapshot implements BundleActivator {
 			.removeShutdownHook(snapshotThread);
 		providers.values()
 			.forEach(IO::close);
+		tracker.close();
 	}
 
 	@Descriptor("Create a snapshot of the framework state")
@@ -145,10 +146,30 @@ public class Snapshot implements BundleActivator {
 
 	private File flush(Map<String, Object> top, String name) throws IOException, Exception {
 		if (name == null) {
-			name = "snapshot-" + DATE_TIME_FORMAT.format(Instant.now()
-				.atOffset(ZoneOffset.UTC)) + ".json";
+			name = context.getProperty("launchpad.name");
+			if (name != null) {
+				String className = context.getProperty("launchpad.className");
+				if (className != null) {
+					int x = className.lastIndexOf('.');
+					className = className.substring(x + 1);
+					name = className.toLowerCase() + "-" + name;
+				}
+				name += ".json";
+			} else
+				name = "snapshot-" + DATE_TIME_FORMAT.format(Instant.now()
+					.atOffset(ZoneOffset.UTC)) + ".json";
 		}
 		File file = new File(name);
+
+		if (!file.isAbsolute()) {
+			String dirName = context.getProperty("snapshot.dir");
+			if (dirName != null) {
+				File dir = new File(dirName).getAbsoluteFile();
+				dir.mkdirs();
+				file = new File(dir, name);
+			}
+		}
+
 		JSON_CODEC.indent("\t")
 			.writeDefaults()
 			.to(file)

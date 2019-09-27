@@ -14,7 +14,7 @@ public class ClasspathTest extends TestCase {
 	/**
 	 * Test if we can refer to the jars on the classpath by their file name (
 	 * ignoring the path)
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testBundleClasspath() throws Exception {
@@ -30,7 +30,7 @@ public class ClasspathTest extends TestCase {
 	/**
 	 * Test if we can refer to the jars on the classpath by their file name (
 	 * ignoring the path)
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testFindJarOnClasspath() throws Exception {
@@ -50,7 +50,7 @@ public class ClasspathTest extends TestCase {
 
 	/**
 	 * Test if we can use URLs on the classpath
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testSimple() throws Exception {

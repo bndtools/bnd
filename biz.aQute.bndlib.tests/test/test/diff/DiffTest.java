@@ -1,5 +1,7 @@
 package test.diff;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -161,6 +163,38 @@ public class DiffTest extends TestCase {
 		b.close();
 	}
 
+	public void testBaselineOverride() throws Exception {
+		try (Jar older = new Jar(IO.getFile("../demo/generated/demo.jar")); Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setExportPackage("test.api");
+			b.build();
+			assertTrue(b.check());
+			Jar newer = b.getJar();
+
+			Processor processor = new Processor();
+
+			DiffPluginImpl differ = new DiffPluginImpl();
+			Baseline baseline = new Baseline(processor, differ);
+
+			Info info = baseline.baseline(newer, older, null)
+				.iterator()
+				.next();
+
+			Diff diff = info.packageDiff;
+			assertThat(diff.getDelta()).isEqualTo(Delta.MAJOR);
+			diff = info.packageDiff.get("test.api.A");
+			assertThat(diff.getDelta()).isEqualTo(Delta.MINOR);
+			diff = info.packageDiff.get("test.api.B");
+			assertThat(diff.getDelta()).isEqualTo(Delta.UNCHANGED);
+			diff = info.packageDiff.get("test.api.C");
+			assertThat(diff.getDelta()).isEqualTo(Delta.MAJOR);
+			diff = info.packageDiff.get("test.api.Interf");
+			assertThat(diff.getDelta()).isEqualTo(Delta.MAJOR);
+			assertThat(info.mismatch).isFalse();
+			show(info.packageDiff, 2);
+		}
+	}
+
 	public void testInheritanceII() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("bin_test"));
@@ -180,7 +214,7 @@ public class DiffTest extends TestCase {
 	 * actual diff is not consistent. Tested with several versions of bnd
 	 * (including master HEAD) as well as several versions of the guava bundles
 	 * from maven central. Reproduced by @bnd .
-	 * 
+	 *
 	 * <pre>
 	 *  $ java -jar
 	 * biz.aQute.bnd.jar diff guava-14.0.1.jar guava-14.0.1.jar MINOR PACKAGE
@@ -197,7 +231,7 @@ public class DiffTest extends TestCase {
 	 * java.util.Collection ADDED RETURN java.util.Collection ADDED RETURN
 	 * java.util.Set
 	 * </pre>
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -215,12 +249,12 @@ public class DiffTest extends TestCase {
 	 * diffs
 	 * <p>
 	 * The trigger is a class-level annotations of the form
-	 * 
+	 *
 	 * <pre>
 	 * {@literal @}Properties(value = { {@literal @}Property(name = "some.key",
 	 * value = "some.value") })
 	 * </pre>
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testNestedExportedAnnotations() throws Exception {
@@ -241,12 +275,12 @@ public class DiffTest extends TestCase {
 	 * diffs
 	 * <p>
 	 * The trigger is a class-level annotations of the form
-	 * 
+	 *
 	 * <pre>
 	 * {@literal @}Properties(value = { {@literal @}Property(name = "some.key",
 	 * value = "some.value") })
 	 * </pre>
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testNestedExportedAnnotations2() throws Exception {
@@ -317,7 +351,7 @@ public class DiffTest extends TestCase {
 		b.close();
 	}
 
-	public static interface Intf {
+	public interface Intf {
 		void foo();
 	}
 
@@ -327,7 +361,7 @@ public class DiffTest extends TestCase {
 		public void foo() {}
 	}
 
-	static interface A extends Comparable<Object>, Serializable {
+	interface A extends Comparable<Object>, Serializable {
 
 	}
 

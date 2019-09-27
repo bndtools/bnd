@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -216,7 +215,7 @@ public class JSONTest extends TestCase {
 
 	/**
 	 * test the hex/base64 encoding
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testBase64AndHex() throws Exception {
@@ -281,20 +280,14 @@ public class JSONTest extends TestCase {
 
 	/**
 	 * Test conversion of iterable
-	 * 
+	 *
 	 * @throws Exception
 	 * @throws IOException
 	 */
 
 	public void testIterable() throws IOException, Exception {
 		final List<String> l = Arrays.asList("a", "b", "c");
-		Iterable<String> i = new Iterable<String>() {
-
-			@Override
-			public Iterator<String> iterator() {
-				return l.iterator();
-			}
-		};
+		Iterable<String> i = () -> l.iterator();
 
 		String s = codec.enc()
 			.to()
@@ -331,7 +324,7 @@ public class JSONTest extends TestCase {
 
 	/**
 	 * Test escaping
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -347,7 +340,7 @@ public class JSONTest extends TestCase {
 
 	/**
 	 * Test maps
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -362,7 +355,7 @@ public class JSONTest extends TestCase {
 
 	/**
 	 * Test maps
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -379,7 +372,7 @@ public class JSONTest extends TestCase {
 
 	/**
 	 * Test primitive arrays
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testPrimitiveArrays() throws Exception {
@@ -519,7 +512,7 @@ public class JSONTest extends TestCase {
 
 	/**
 	 * Test byte arrays
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testByteArrays() throws Exception {
@@ -552,7 +545,7 @@ public class JSONTest extends TestCase {
 
 	/**
 	 * Basic tests to see if the default types returns something useful
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testEncodeBasic() throws Exception {
@@ -596,6 +589,14 @@ public class JSONTest extends TestCase {
 			.put(MAP.$("1", 1)
 				.$("2", 2)
 				.$("3", 3))
+			.toString());
+		// Dates
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+		Date d = sdf.parse("2012-03-01T10:23:00");
+		System.out.println(d.getTime());
+		assertEquals("\"2012-03-01T10:23:00\"", enc.to()
+			.put(d)
 			.toString());
 	}
 
@@ -1081,7 +1082,7 @@ public class JSONTest extends TestCase {
 
 	}
 
-	public static interface C {}
+	public interface C {}
 
 	public static class D extends LinkedHashMap<Object, Object> implements C {
 		private static final long serialVersionUID = 1L;

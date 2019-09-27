@@ -19,7 +19,7 @@ public class BeanProperties extends Properties {
 
 	private static final Pattern	KEY_P				= Pattern
 		.compile("(?<name>[^\\.\\[]+)(?:\\[(?<index>\\d+)\\])?\\.?");
-	private static final long serialVersionUID = 1L;
+	private static final long		serialVersionUID	= 1L;
 
 	@Override
 	public String getProperty(String key) {

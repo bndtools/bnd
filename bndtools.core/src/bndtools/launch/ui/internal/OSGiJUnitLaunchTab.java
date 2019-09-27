@@ -11,43 +11,43 @@ import bndtools.launch.ui.ProjectLaunchTabPiece;
 
 public class OSGiJUnitLaunchTab extends GenericStackedLaunchTab {
 
-    private Image image = null;
+	private Image image = null;
 
-    @Override
-    protected ILaunchTabPiece[] createStack() {
-        return new ILaunchTabPiece[] {
-            new ProjectLaunchTabPiece(), new JUnitTestParamsLaunchTabPiece()
-        };
-    }
+	@Override
+	protected ILaunchTabPiece[] createStack() {
+		return new ILaunchTabPiece[] {
+			new ProjectLaunchTabPiece(), new JUnitTestParamsLaunchTabPiece()
+		};
+	}
 
-    @Override
-    public String getName() {
-        return "OSGi Tests";
-    }
+	@Override
+	public String getName() {
+		return "OSGi Tests";
+	}
 
-    @Override
-    public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-        super.performApply(configuration);
-        configuration.setAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, false);
-    }
+	@Override
+	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
+		super.performApply(configuration);
+		configuration.setAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, false);
+	}
 
-    @Override
-    public Image getImage() {
-        synchronized (this) {
-            if (image == null) {
-                image = Icons.desc("bundle")
-                    .createImage();
-            }
-            return image;
-        }
-    }
+	@Override
+	public Image getImage() {
+		synchronized (this) {
+			if (image == null) {
+				image = Icons.desc("bundle")
+					.createImage();
+			}
+			return image;
+		}
+	}
 
-    @Override
-    public void dispose() {
-        super.dispose();
-        synchronized (this) {
-            if (image != null)
-                image.dispose();
-        }
-    }
+	@Override
+	public void dispose() {
+		super.dispose();
+		synchronized (this) {
+			if (image != null)
+				image.dispose();
+		}
+	}
 }

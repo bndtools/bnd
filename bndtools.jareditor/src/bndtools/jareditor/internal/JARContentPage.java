@@ -1,13 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2010 Neil Bartlett.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Neil Bartlett - initial API and implementation
- *******************************************************************************/
 package bndtools.jareditor.internal;
 
 import org.eclipse.swt.SWT;
@@ -25,75 +15,77 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class JARContentPage extends FormPage {
 
-    private Image titleImg;
-    private JARContentTreePart contentTreePart;
-    private JAREntryPart entryPart;
+	private Image				titleImg;
+	private JARContentTreePart	contentTreePart;
+	private JAREntryPart		entryPart;
 
-    private String[] selectedPath;
+	private String[]			selectedPath;
 
-    public JARContentPage(FormEditor editor, String id, String title) {
-        super(editor, id, title);
-    }
+	public JARContentPage(FormEditor editor, String id, String title) {
+		super(editor, id, title);
+	}
 
-    @Override
-    protected void createFormContent(IManagedForm managedForm) {
-        managedForm.setInput(getEditorInput());
+	@Override
+	protected void createFormContent(IManagedForm managedForm) {
+		managedForm.setInput(getEditorInput());
 
-        FormToolkit toolkit = managedForm.getToolkit();
-        ScrolledForm form = managedForm.getForm();
-        form.setText("JAR File Viewer");
-        toolkit.decorateFormHeading(form.getForm());
+		FormToolkit toolkit = managedForm.getToolkit();
+		ScrolledForm form = managedForm.getForm();
+		form.setText("JAR File Viewer");
+		toolkit.decorateFormHeading(form.getForm());
 
-        titleImg = AbstractUIPlugin.imageDescriptorFromPlugin(PluginConstants.PLUGIN_ID, "/icons/jar_obj.gif")
-            .createImage(form.getDisplay());
-        form.setImage(titleImg);
+		titleImg = AbstractUIPlugin.imageDescriptorFromPlugin(PluginConstants.PLUGIN_ID, "/icons/jar_obj.gif")
+			.createImage(form.getDisplay());
+		form.setImage(titleImg);
 
-        // CREATE CONTROLS
-        Composite body = form.getBody();
+		// CREATE CONTROLS
+		Composite body = form.getBody();
 
-        SashForm sashForm = new SashForm(body, SWT.HORIZONTAL);
+		SashForm sashForm = new SashForm(body, SWT.HORIZONTAL);
 
-        Composite treePanel = toolkit.createComposite(sashForm);
-        contentTreePart = new JARContentTreePart(treePanel, managedForm);
-        managedForm.addPart(contentTreePart);
+		Composite treePanel = toolkit.createComposite(sashForm);
+		contentTreePart = new JARContentTreePart(treePanel, managedForm);
+		managedForm.addPart(contentTreePart);
 
-        Composite detailsPanel = toolkit.createComposite(sashForm);
-        entryPart = new JAREntryPart(getEditor(), detailsPanel, toolkit);
-        managedForm.addPart(entryPart);
+		Composite detailsPanel = toolkit.createComposite(sashForm);
+		entryPart = new JAREntryPart(getEditor(), detailsPanel, toolkit);
+		managedForm.addPart(entryPart);
 
-        if (selectedPath != null)
-            contentTreePart.setSelectedPath(selectedPath);
+		if (selectedPath != null)
+			contentTreePart.setSelectedPath(selectedPath);
 
-        // LAYOUT
-        GridLayout layout;
-        layout = new GridLayout();
-        layout.marginHeight = 0;
-        layout.marginWidth = 0;
-        body.setLayout(layout);
+		// LAYOUT
+		GridLayout layout;
+		layout = new GridLayout();
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+		body.setLayout(layout);
 
-        sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        // treeSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        // detailsPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-    }
+		sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		// treeSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
+		// true));
+		// detailsPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
+		// true));
+	}
 
-    @Override
-    public void dispose() {
-        super.dispose();
-        titleImg.dispose();
-    }
+	@Override
+	public void dispose() {
+		super.dispose();
+		titleImg.dispose();
+	}
 
-    void setSelectedPath(String[] path) {
-        this.selectedPath = path;
-        if (contentTreePart != null) {
-            contentTreePart.setSelectedPath(path);
-        }
-    }
+	void setSelectedPath(String[] path) {
+		this.selectedPath = path;
+		if (contentTreePart != null) {
+			contentTreePart.setSelectedPath(path);
+		}
+	}
 
-    String[] getSelectedPath() {
-        if (contentTreePart != null) {
-            return contentTreePart.getSelectedPath();
-        }
+	String[] getSelectedPath() {
+		if (contentTreePart != null) {
+			return contentTreePart.getSelectedPath();
+		}
 
-        return null;
-    }
+		return null;
+	}
 }

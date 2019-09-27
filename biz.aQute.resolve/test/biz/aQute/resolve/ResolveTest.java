@@ -1,5 +1,6 @@
 package biz.aQute.resolve;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static test.lib.Utils.createRepo;
 
 import java.io.File;
@@ -38,7 +39,10 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.repository.osgi.OSGiRepository;
+import aQute.lib.dot.DOT;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
 import junit.framework.TestCase;
@@ -151,7 +155,7 @@ public class ResolveTest extends TestCase {
 
 	/**
 	 * Test if we can augment
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -218,7 +222,7 @@ public class ResolveTest extends TestCase {
 
 	/**
 	 * Test minimal setup
-	 * 
+	 *
 	 * @throws URISyntaxException
 	 * @throws MalformedURLException
 	 */
@@ -256,7 +260,7 @@ public class ResolveTest extends TestCase {
 
 	/**
 	 * Test if we can resolve with a distro
-	 * 
+	 *
 	 * @throws ResolutionException
 	 */
 	public void testResolveWithDistro() throws Exception {
@@ -283,6 +287,99 @@ public class ResolveTest extends TestCase {
 			assertNotNull(shell);
 		}
 	}
+
+	/**
+	 * Test if we can resolve with a distro
+	 *
+	 * @throws ResolutionException
+	 */
+	public void testResolveWithLargeDistro() throws Exception {
+
+		MockRegistry registry = new MockRegistry();
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
+
+		BndEditModel model = new BndEditModel();
+		model.setDistro(Arrays.asList("testdata/release.dxp.distro-7.2.10.jar;version=file"));
+		List<Requirement> requires = new ArrayList<>();
+		CapReqBuilder capReq = CapReqBuilder.createBundleRequirement("org.apache.felix.gogo.shell", "[0,1)");
+		requires.add(capReq.buildSyntheticRequirement());
+
+		model.setRunRequires(requires);
+		BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
+		context.setLevel(0);
+		context.init();
+		try (ResolverLogger logger = new ResolverLogger(4)) {
+			Resolver resolver = new BndResolver(logger);
+
+			Map<Resource, List<Wire>> resolved = resolver.resolve(context);
+			Set<Resource> resources = resolved.keySet();
+			Resource shell = getResource(resources, "org.apache.felix.gogo.shell", "0.10.0");
+			assertNotNull(shell);
+		}
+	}
+
+	/**
+	 * Test if we can resolve fragment with a distro without whitelisting the
+	 * 'osgi.wiring.host' capabilities on the system resource. Should FAIL
+	 */
+	public void testResolveFragmentWithDistro_FAIL() throws Exception {
+		File f = IO.getFile("testdata/repo9/fragment.bndrun");
+		File distro = IO.getFile("testdata/release.dxp.distro-7.2.10.jar");
+
+		try (Run run = Run.createRun(null, f)) {
+			run.setProperty("-distro", distro.getAbsolutePath() + ";version=file");
+
+			BndrunResolveContext context = new BndrunResolveContext(run, run, run.getWorkspace(), log);
+			context.setLevel(0);
+			context.init();
+
+			RunResolution resolution = RunResolution.resolve(run, null);
+			if (resolution.isOK()) {
+				fail(
+					"should have failed because there are no 'osgi.wiring.host' capablities added to the system resource");
+			}
+		}
+	}
+
+	/**
+	 * Test if we can resolve fragment with a distro when whitelisting the
+	 * 'osgi.wiring.host' capabilities on the system resource. Should NOT fail
+	 */
+	public void testResolveFragmentWithDistro() throws Exception {
+		File f = IO.getFile("testdata/repo9/fragment.bndrun");
+		File distro = IO.getFile("testdata/release.dxp.distro-7.2.10.jar");
+
+		try (Run run = Run.createRun(null, f)) {
+			run.setProperty("-distro", distro.getAbsolutePath() + ";version=file;x-whitelist=osgi.wiring.host");
+
+			BndrunResolveContext context = new BndrunResolveContext(run, run, run.getWorkspace(), log);
+			context.setLevel(0);
+			context.init();
+
+			RunResolution resolution = RunResolution.resolve(run, null);
+			if (!resolution.isOK()) {
+				fail("should NOT have failed because 'osgi.wiring.host' capablities are added to the system resource");
+			}
+			Map<Resource, List<Wire>> runbundles = resolution.getRequired();
+			assertEquals(1, runbundles.size());
+			Resource resource = runbundles.entrySet()
+				.iterator()
+				.next()
+				.getKey();
+			List<Capability> capabilities = resource.getCapabilities("osgi.identity");
+			assertEquals(1, capabilities.size());
+			assertEquals("com.liferay.osb.community.blogs.web.fragment", capabilities.get(0)
+				.getAttributes()
+				.get("osgi.identity"));
+		}
+	}
+
+	// public void testResolveWithLargeDistroRepeated() throws Exception {
+	// for (int i = 0; i < 1000; i++) {
+	// System.out.println("iteration " + i);
+	// testResolveWithLargeDistro();
+	// }
+	// }
 
 	/**
 	 * This is a basic test of resolving. This test is paired with
@@ -418,7 +515,7 @@ public class ResolveTest extends TestCase {
 
 	/**
 	 * Simple test that resolves a requirement
-	 * 
+	 *
 	 * @throws ResolutionException
 	 */
 	public void testMultipleOptionsNotDuplicated() throws Exception {
@@ -471,7 +568,7 @@ public class ResolveTest extends TestCase {
 
 	/**
 	 * Test that latest bundle is selected when namespace is 'osgi.service'
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testLatestBundleServiceNamespace() throws Exception {
@@ -506,4 +603,57 @@ public class ResolveTest extends TestCase {
 			}
 		}
 	}
+
+	public void testFrameworkFragmentResolve() throws Exception {
+		String wspath = "framework-fragment/";
+		String genWsPath = "generated/tmp/test/" + getName() + "/" + wspath;
+		File wsRoot = IO.getFile(genWsPath);
+		IO.delete(wsRoot);
+		IO.copy(IO.getFile("testdata/" + wspath), wsRoot);
+
+		File f = IO.getFile(wsRoot, "test.log/fragment.bndrun");
+		try (Workspace ws = new Workspace(wsRoot); Bndrun bndrun = Bndrun.createBndrun(ws, f)) {
+			String runbundles = bndrun.resolve(false, false);
+
+			System.out.println(runbundles);
+			assertThat(bndrun.check()).isTrue();
+			Parameters p = new Parameters(runbundles);
+			assertThat(p.keySet()).hasSize(5)
+				.contains("org.apache.felix.scr", "test.log", "org.apache.felix.log.extension",
+					"org.apache.felix.gogo.command", "org.apache.felix.gogo.runtime");
+		}
+	}
+
+	public void testResolveWithDependencyOrdering() throws Exception {
+		File f = IO.getFile("testdata/enroute/resolver.bndrun");
+		try (Bndrun bndrun = Bndrun.createBndrun(null, f)) {
+			bndrun.setProperty("-runorder", "leastdependencieslast");
+			String runbundles = bndrun.resolve(false, false);
+			System.out.println(runbundles);
+			assertThat(bndrun.check()).isTrue();
+		}
+	}
+
+	public void testDot() throws Exception {
+		File f = IO.getFile("testdata/enroute/resolver.bndrun");
+		try (Bndrun bndrun = Bndrun.createBndrun(null, f)) {
+			RunResolution resolution = RunResolution.resolve(bndrun, null)
+				.reportException();
+			assertThat(resolution.exception).isNull();
+
+			Map<Resource, List<Wire>> required = resolution.required;
+			Map<Resource, List<Resource>> resolve = resolution.getGraph(required);
+			assertThat(bndrun.check()).isTrue();
+			DOT<Resource> dot = new DOT<>("test", resolve);
+			int n = 0;
+			Collection<Resource> sortByDependencies = resolution.sortByDependencies(required);
+			for (Resource r : sortByDependencies) {
+				IdentityCapability ic = ResourceUtils.getIdentityCapability(r);
+				dot.name(r, ic.osgi_identity());
+				n++;
+			}
+			System.out.println(dot.render());
+		}
+	}
+
 }

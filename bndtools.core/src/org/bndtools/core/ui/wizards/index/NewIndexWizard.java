@@ -15,42 +15,43 @@ import org.eclipse.ui.IWorkbench;
 
 public class NewIndexWizard extends Wizard implements INewWizard {
 
-    private final IndexerWizardPage indexPage = new IndexerWizardPage();
+	private final IndexerWizardPage indexPage = new IndexerWizardPage();
 
-    @Override
-    public void init(IWorkbench workbench, IStructuredSelection selection) {
-        Object firstSelElem = selection.getFirstElement();
-        if (firstSelElem instanceof IFolder) {
-            File dir = ((IFolder) firstSelElem).getLocation()
-                .toFile();
-            indexPage.setBaseDir(dir);
-        }
-    }
+	@Override
+	public void init(IWorkbench workbench, IStructuredSelection selection) {
+		Object firstSelElem = selection.getFirstElement();
+		if (firstSelElem instanceof IFolder) {
+			File dir = ((IFolder) firstSelElem).getLocation()
+				.toFile();
+			indexPage.setBaseDir(dir);
+		}
+	}
 
-    @Override
-    public void addPages() {
-        addPage(indexPage);
-    }
+	@Override
+	public void addPages() {
+		addPage(indexPage);
+	}
 
-    @Override
-    public boolean performFinish() {
-        File baseDir = indexPage.getBaseDir();
-        Path basePath = baseDir.toPath();
-        List<Path> paths = indexPage.getInputPaths();
-        Set<File> inputFiles = new HashSet<>(paths.size());
-        for (Path path : paths)
-            inputFiles.add(basePath.resolve(path)
-                .toFile());
+	@Override
+	public boolean performFinish() {
+		File baseDir = indexPage.getBaseDir();
+		Path basePath = baseDir.toPath();
+		List<Path> paths = indexPage.getInputPaths();
+		Set<File> inputFiles = new HashSet<>(paths.size());
+		for (Path path : paths)
+			inputFiles.add(basePath.resolve(path)
+				.toFile());
 
-        // Setup index config
-        Boolean compressed = Boolean.valueOf(indexPage.getOutputStyle() == IndexFormatStyle.COMPRESSED);
+		// Setup index config
+		Boolean compressed = Boolean.valueOf(indexPage.getOutputStyle() == IndexFormatStyle.COMPRESSED);
 
-        // Create the job
-        GenerateIndexJob job = new GenerateIndexJob(inputFiles, indexPage.getOutputFile(), baseDir.toURI(), compressed, null);
-        job.setUser(true);
-        job.schedule();
+		// Create the job
+		GenerateIndexJob job = new GenerateIndexJob(inputFiles, indexPage.getOutputFile(), baseDir.toURI(), compressed,
+			null);
+		job.setUser(true);
+		job.schedule();
 
-        return true;
-    }
+		return true;
+	}
 
 }

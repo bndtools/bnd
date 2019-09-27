@@ -13,17 +13,19 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
@@ -34,6 +36,7 @@ import java.util.regex.Pattern;
 
 import aQute.lib.collections.ExtList;
 import aQute.lib.collections.SortedList;
+import aQute.lib.date.Dates;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
@@ -51,13 +54,13 @@ import aQute.service.reporter.Reporter;
  * ${parameter##word} Remove largest prefix pattern.
  */
 public class ReplacerAdapter extends ReporterAdapter implements Replacer {
-	static final Random	random		= new Random();
-	static Pattern		WILDCARD	= Pattern.compile("[*?|[\\\\]\\(\\)]");
-	Domain				domain;
-	List<Object>		targets		= new ArrayList<>();
-	boolean				flattening;
-	File				base		= new File(System.getProperty("user.dir"));
-	Reporter			reporter	= this;
+	static final Random				random		= new Random();
+	private final static Pattern	WILDCARD	= Pattern.compile("[*?|({\\[]");
+	Domain							domain;
+	List<Object>					targets		= new ArrayList<>();
+	boolean							flattening;
+	File							base		= new File(System.getProperty("user.dir"));
+	Reporter						reporter	= this;
 
 	public ReplacerAdapter(Domain domain) {
 		this.domain = domain;
@@ -146,7 +149,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	/**
 	 * Traverses a string to find a macro. It can handle nested brackets.
-	 * 
+	 *
 	 * @param line The line with the macro
 	 * @param index Points to the character after the '$'
 	 * @return the end position
@@ -333,7 +336,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	 * Parse the key as a command. A command consist of parameters separated by
 	 * ':'.
 	 */
-	static Pattern commands = Pattern.compile("(?<!\\\\);");
+	private final static Pattern commands = Pattern.compile("(?<!\\\\);");
 
 	private String doCommands(String key, Link source) {
 		String[] args = commands.split(key);
@@ -480,24 +483,20 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		for (int i = 1; i < args.length; i++) {
 			result.addAll(ExtList.from(args[i]));
 		}
-		Collections.sort(result, new Comparator<String>() {
+		Collections.sort(result, (a, b) -> {
+			while (a.startsWith("0"))
+				a = a.substring(1);
 
-			@Override
-			public int compare(String a, String b) {
-				while (a.startsWith("0"))
-					a = a.substring(1);
+			while (b.startsWith("0"))
+				b = b.substring(1);
 
-				while (b.startsWith("0"))
-					b = b.substring(1);
+			if (a.length() == b.length())
+				return a.compareTo(b);
+			else if (a.length() > b.length())
+				return 1;
+			else
+				return -1;
 
-				if (a.length() == b.length())
-					return a.compareTo(b);
-				else if (a.length() > b.length())
-					return 1;
-				else
-					return -1;
-
-			}
 		});
 		return result.join();
 	}
@@ -529,8 +528,19 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		return "";
 	}
 
+	private static final DateTimeFormatter DATE_TOSTRING = Dates.DATE_TOSTRING.withZone(Dates.UTC_ZONE_ID);
+
 	public String _now(String args[]) {
-		return new Date().toString();
+		long now = System.currentTimeMillis();
+		if (args.length == 2) {
+			if ("long".equals(args[1])) {
+				return Long.toString(now);
+			}
+			DateFormat df = new SimpleDateFormat(args[1], Locale.ROOT);
+			df.setTimeZone(Dates.UTC_TIME_ZONE);
+			return df.format(new Date(now));
+		}
+		return Dates.formatMillis(DATE_TOSTRING, now);
 	}
 
 	public final static String _fmodifiedHelp = "${fmodified;<list of filenames>...}, return latest modification date";
@@ -553,7 +563,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	public String _long2date(String args[]) {
 		try {
-			return new Date(Long.parseLong(args[1])).toString();
+			return Dates.formatMillis(DATE_TOSTRING, Long.parseLong(args[1]));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -580,7 +590,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	/**
 	 * replace ; <list> ; regex ; replace
-	 * 
+	 *
 	 * @param args
 	 * @return result
 	 */
@@ -743,7 +753,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		if (args.length > 2) {
 			tz = TimeZone.getTimeZone(args[2]);
 		} else {
-			tz = TimeZone.getTimeZone("UTC");
+			tz = Dates.UTC_TIME_ZONE;
 		}
 		if (args.length > 3) {
 			now = Long.parseLong(args[3]);
@@ -754,7 +764,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			reporter.warning("Too many arguments for tstamp: %s", Arrays.toString(args));
 		}
 
-		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		SimpleDateFormat sdf = new SimpleDateFormat(format, Locale.US);
 		sdf.setTimeZone(tz);
 		return sdf.format(new Date(now));
 	}
@@ -763,7 +773,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	 * Wildcard a directory. The lists can contain Instruction that are matched
 	 * against the given directory ${lsr;<dir>;<list>(;<list>)*} ${lsa;<dir>;
 	 * <list>(;<list>)*}
-	 * 
+	 *
 	 * @author aqute
 	 */
 
@@ -799,8 +809,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 		ExtList<String> result = new ExtList<>();
 		for (File file : files)
-			result.add(relative ? file.getName()
-				: IO.absolutePath(file));
+			result.add(relative ? file.getName() : IO.absolutePath(file));
 
 		return result.join(",");
 	}
@@ -876,7 +885,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	/**
 	 * Get the contents of a file.
-	 * 
+	 *
 	 * @return contents of file
 	 * @throws IOException
 	 */
@@ -974,7 +983,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	 * takes the set properties and traverse them over all entries, including
 	 * the default properties for that properties. The values no longer contain
 	 * macros.
-	 * 
+	 *
 	 * @return A new Properties with the flattened values
 	 */
 	public Map<String, String> getFlattenedProperties() {

@@ -1,0 +1,3 @@
+Workspace                       true    
+LaunchPadInheritTest            Workspace
+-removeheaders.launchpadtest    Workspace,Project, LaunchPadInheritTest, Inherit

@@ -110,7 +110,7 @@ public class DiffPluginImpl implements Differ {
 
 	/**
 	 * Create an element representing a bundle from the Jar.
-	 * 
+	 *
 	 * @param infos
 	 * @param jar The Jar to be analyzed
 	 * @return the elements that should be compared
@@ -134,7 +134,7 @@ public class DiffPluginImpl implements Differ {
 	/**
 	 * Create an element representing all resources in the JAR
 	 */
-	static Pattern META_INF_P = Pattern.compile("META-INF/([^/]+\\.(MF|SF|DSA|RSA))|(SIG-.*)");
+	private final static Pattern META_INF_P = Pattern.compile("META-INF/([^/]+\\.(MF|SF|DSA|RSA))|(SIG-.*)");
 
 	private Element resourcesElement(Analyzer analyzer) throws Exception {
 		Jar jar = analyzer.getJar();
@@ -222,7 +222,7 @@ public class DiffPluginImpl implements Differ {
 	 * Create an element for each manifest header. There are
 	 * {@link #IGNORE_HEADERS} and {@link #MAJOR_HEADERS} that will be treated
 	 * differently.
-	 * 
+	 *
 	 * @param manifest
 	 * @return the created {@code Element}
 	 */

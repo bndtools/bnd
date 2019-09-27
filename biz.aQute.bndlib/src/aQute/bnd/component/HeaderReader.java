@@ -35,7 +35,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.tag.Tag;
 
 public class HeaderReader extends Processor {
-	final static Pattern				PROPERTY_PATTERN	= Pattern
+	private final static Pattern		PROPERTY_PATTERN	= Pattern
 		.compile("(([^=:@]+)([:@](Boolean|Byte|Char|Short|Integer|Long|Float|Double|String))?)\\s*=(.*)");
 	private final static Set<String>	LIFECYCLE_METHODS	= new HashSet<>(
 		Arrays.asList("activate", "deactivate", "modified"));
@@ -201,7 +201,7 @@ public class HeaderReader extends Processor {
 
 	/**
 	 * Check if we need to use the v1.1 namespace (or later).
-	 * 
+	 *
 	 * @param info
 	 * @param cd TODO
 	 * @param descriptors TODO
@@ -215,7 +215,7 @@ public class HeaderReader extends Processor {
 		if (version != null) {
 			try {
 				Version v = new Version(version);
-				cd.updateVersion(v);
+				cd.updateVersion(v, "set XML namespace version: " + version);
 			} catch (Exception e) {
 				error("version: specified on component header but not a valid version: %s", version);
 				return;
@@ -223,20 +223,20 @@ public class HeaderReader extends Processor {
 		}
 		for (String key : info.keySet()) {
 			if (SET_COMPONENT_DIRECTIVES_1_2.contains(key)) {
-				cd.updateVersion(V1_2);
+				cd.updateVersion(V1_2, "uses 1.2 component directives like " + SET_COMPONENT_DIRECTIVES_1_2);
 				return;
 			}
 		}
 		for (ReferenceDef rd : cd.references.values()) {
 			if (rd.updated != null) {
-				cd.updateVersion(V1_2);
+				cd.updateVersion(V1_2, "updated");
 				return;
 			}
 		}
 		// among other things this picks up any specified lifecycle methods
 		for (String key : info.keySet()) {
 			if (SET_COMPONENT_DIRECTIVES_1_1.contains(key)) {
-				cd.updateVersion(V1_1);
+				cd.updateVersion(V1_1, "1.1 component directives like " + SET_COMPONENT_DIRECTIVES_1_1);
 				return;
 			}
 		}
@@ -246,7 +246,7 @@ public class HeaderReader extends Processor {
 			MethodDef test = descriptors.get(lifecycle);
 			if (descriptors.containsKey(lifecycle) && (!(test.isPublic() || test.isProtected())
 				|| rateLifecycle(test, "deactivate".equals(lifecycle) ? allowedDeactivate : allowed) > 1)) {
-				cd.updateVersion(V1_1);
+				cd.updateVersion(V1_1, "base lifecyle methods " + LIFECYCLE_METHODS);
 				return;
 			}
 		}
@@ -254,7 +254,7 @@ public class HeaderReader extends Processor {
 
 	/**
 	 * Print the Service-Component properties element
-	 * 
+	 *
 	 * @param cd
 	 * @param info
 	 */
@@ -294,7 +294,7 @@ public class HeaderReader extends Processor {
 				String interfaceName = st.nextToken();
 				TypeRef ref = analyzer.getTypeRefFromFQN(interfaceName);
 				provide.add(ref);
-				analyzer.referTo(ref);
+				analyzer.nonClassReferTo(ref);
 
 				// TODO verifies the impl. class extends or implements the
 				// interface
@@ -309,7 +309,7 @@ public class HeaderReader extends Processor {
 	 * rates the methods according to the scale in 112.5.8 (compendium 4.3, ds
 	 * 1.2), also returning "6" for invalid methods We don't look at return
 	 * values yet due to proposal to all them for setting service properties.
-	 * 
+	 *
 	 * @param test methodDef to examine for suitability as a DS lifecycle method
 	 * @param allowedParams TODO
 	 * @return rating; 6 if invalid, lower is better
@@ -339,7 +339,7 @@ public class HeaderReader extends Processor {
 	/**
 	 * see 112.3.2. We can't distinguish the bind type, so we just accept
 	 * anything.
-	 * 
+	 *
 	 * @param test
 	 */
 	int rateBind(MethodDef test) {
@@ -475,7 +475,7 @@ public class HeaderReader extends Processor {
 				target = m.group(2);
 			}
 			TypeRef ref = analyzer.getTypeRefFromFQN(interfaceName);
-			analyzer.referTo(ref);
+			analyzer.nonClassReferTo(ref);
 			ReferenceDef rd = new ReferenceDef(null);
 			rd.name = referenceName;
 			rd.service = interfaceName;

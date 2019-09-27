@@ -14,17 +14,17 @@ import aQute.bnd.build.Workspace;
  * To release into the <em>default</em> repository (defined by
  * <code>-releaserepo</code> in <code>build.bnd</code>):
  * </p>
- * 
+ *
  * <pre>
  *  &lt;bndrelease/&gt;
  * </pre>
  * <p>
  * To release into a specific named repository:
- * 
+ *
  * <pre>
  *  &lt;bndrelease releaserepo="My Repository"/&gt;
  * </pre>
- * 
+ *
  * @author Neil Bartlett
  * @see BndTask for setup instructions.
  */

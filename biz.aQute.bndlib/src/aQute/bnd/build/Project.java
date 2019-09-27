@@ -1,6 +1,7 @@
 package aQute.bnd.build;
 
 import static aQute.bnd.build.Container.toPaths;
+import static java.util.stream.Collectors.toList;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -31,6 +32,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
@@ -59,6 +62,8 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.help.Syntax;
+import aQute.bnd.help.instructions.ProjectInstructions;
+import aQute.bnd.help.instructions.ProjectInstructions.StaleTest;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.maven.support.Pom;
 import aQute.bnd.maven.support.ProjectPom;
@@ -97,7 +102,9 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.ExtList;
 import aQute.lib.collections.Iterables;
 import aQute.lib.converter.Converter;
+import aQute.lib.exceptions.ConsumerWithException;
 import aQute.lib.exceptions.Exceptions;
+import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -106,7 +113,6 @@ import aQute.libg.generics.Create;
 import aQute.libg.glob.Glob;
 import aQute.libg.qtokens.QuotedTokenizer;
 import aQute.libg.reporter.ReporterMessages;
-import aQute.libg.sed.Replacer;
 import aQute.libg.sed.Sed;
 import aQute.libg.tuple.Pair;
 
@@ -158,6 +164,7 @@ public class Project extends Processor {
 	private Makefile				makefile;
 	private volatile RefreshData	data							= new RefreshData();
 	public Map<String, Container>	unreferencedClasspathEntries	= new HashMap<>();
+	public ProjectInstructions		instructions					= getInstructions(ProjectInstructions.class);
 
 	public Project(Workspace workspace, File unused, File buildFile) {
 		super(workspace);
@@ -239,11 +246,9 @@ public class Project extends Processor {
 	 * clear any cached results.
 	 */
 	public void setChanged() {
-		// if (refresh()) {
 		preparedPaths.set(false);
 		files = null;
 		revision.getAndIncrement();
-		// }
 	}
 
 	public Workspace getWorkspace() {
@@ -585,8 +590,11 @@ public class Project extends Processor {
 	 */
 
 	public List<Container> getBundles(Strategy strategyx, String spec, String source) throws Exception {
+		Instructions decorator = new Instructions(mergeProperties(source + "+"));
+
 		List<Container> result = new ArrayList<>();
 		Parameters bundles = new Parameters(spec, this);
+		decorator.decorate(bundles);
 
 		try {
 			for (Iterator<Entry<String, Attrs>> i = bundles.entrySet()
@@ -849,7 +857,7 @@ public class Project extends Processor {
 
 	/**
 	 * Return the full transitive dependencies of this project.
-	 * 
+	 *
 	 * @return A set of the full transitive dependencies of this project.
 	 * @throws Exception
 	 */
@@ -860,7 +868,7 @@ public class Project extends Processor {
 
 	/**
 	 * Return the direct build dependencies of this project.
-	 * 
+	 *
 	 * @return A set of the direct build dependencies of this project.
 	 * @throws Exception
 	 */
@@ -874,7 +882,7 @@ public class Project extends Processor {
 	 * <p>
 	 * The result includes the direct build dependencies of this project as
 	 * well, so the result is a super set of {@link #getBuildDependencies()}.
-	 * 
+	 *
 	 * @return A set of the test build dependencies of this project.
 	 * @throws Exception
 	 */
@@ -892,7 +900,7 @@ public class Project extends Processor {
 	 * Since the full transitive dependents of this project is updated during
 	 * the computation of other project dependencies, until all projects are
 	 * prepared, the dependents result may be partial.
-	 * 
+	 *
 	 * @return A set of the transitive set of projects which depend on this
 	 *         project.
 	 * @throws Exception
@@ -1673,6 +1681,7 @@ public class Project extends Processor {
 		}
 
 		logger.debug("building {}", this);
+
 		File[] files = buildLocal(underTest);
 		install(files);
 
@@ -1806,7 +1815,7 @@ public class Project extends Processor {
 				List<File> list = newList();
 				for (String s = rdr.readLine(); s != null; s = rdr.readLine()) {
 					s = s.trim();
-					File ff = new File(s);
+					File ff = getFile(getTarget(), s);
 					if (!ff.isFile()) {
 						// Originally we warned the user
 						// but lets just rebuild. That way
@@ -1836,6 +1845,8 @@ public class Project extends Processor {
 		if (isNoBundles()) {
 			return files = null;
 		}
+
+		preBuildChecks();
 
 		versionMap.clear();
 		getMakefile().make();
@@ -1880,8 +1891,8 @@ public class Project extends Processor {
 					return null;
 				}
 				builtFiles.add(file);
-				if (lastModified < file.lastModified()) {
-					lastModified = file.lastModified();
+				if (lastModified < jar.lastModified()) {
+					lastModified = jar.lastModified();
 				}
 			}
 
@@ -1982,11 +1993,10 @@ public class Project extends Processor {
 					break swtch;
 
 				case "windows-only-disposable-names" :
-					boolean isWindows = File.separatorChar == '\\';
-					if (!isWindows) {
+					if (!IO.isWindows()) {
 						IO.deleteWithException(outputFile);
 						jar.write(outputFile);
-						break;
+						break swtch;
 					}
 					// Fall through
 
@@ -2120,8 +2130,7 @@ public class Project extends Processor {
 	@Override
 	public void propertiesChanged() {
 		super.propertiesChanged();
-		preparedPaths.set(false);
-		files = null;
+		setChanged();
 		makefile = null;
 		versionMap.clear();
 		data = new RefreshData();
@@ -2312,14 +2321,18 @@ public class Project extends Processor {
 
 	public void run() throws Exception {
 		try (ProjectLauncher pl = getProjectLauncher()) {
-			pl.setTrace(isTrace() || isTrue(getProperty(RUNTRACE)));
+			pl.setTrace(isTrace() || isRunTrace());
 			pl.launch();
 		}
 	}
 
+	public boolean isRunTrace() {
+		return isTrue(getProperty(RUNTRACE));
+	}
+
 	public void runLocal() throws Exception {
 		try (ProjectLauncher pl = getProjectLauncher()) {
-			pl.setTrace(isTrace() || isTrue(getProperty(RUNTRACE)));
+			pl.setTrace(isTrace() || isRunTrace());
 			pl.start(null);
 		}
 	}
@@ -2378,6 +2391,7 @@ public class Project extends Processor {
 	public void junit() throws Exception {
 		@SuppressWarnings("resource")
 		JUnitLauncher launcher = new JUnitLauncher(this);
+		launcher.updateFromProject();
 		launcher.launch();
 	}
 
@@ -2491,12 +2505,7 @@ public class Project extends Processor {
 
 	boolean replace(File f, String pattern, String replacement) throws IOException {
 		final Macro macro = getReplacer();
-		Sed sed = new Sed(new Replacer() {
-			@Override
-			public String process(String line) {
-				return macro.process(line);
-			}
-		}, f);
+		Sed sed = new Sed(line -> macro.process(line), f);
 		sed.replace(pattern, replacement);
 		return sed.doIt() > 0;
 	}
@@ -2734,7 +2743,7 @@ public class Project extends Processor {
 	 * @return A list of builders.
 	 * @throws Exception
 	 * @deprecated As of 3.4. Replace with
-	 * 
+	 *
 	 *             <pre>
 	 *             try (ProjectBuilder pb = getBuilder(null)) {
 	 *             	for (Builder b : pb.getSubBuilders()) {
@@ -2799,7 +2808,12 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public ProjectLauncher getProjectLauncher() throws Exception {
-		return getHandler(ProjectLauncher.class, getRunpath(), LAUNCHER_PLUGIN, "biz.aQute.launcher");
+		ProjectLauncher launcher = getHandler(ProjectLauncher.class, getRunpath(), LAUNCHER_PLUGIN,
+			"biz.aQute.launcher");
+
+		launcher.updateFromProject(); // we need to do after constructor
+
+		return launcher;
 	}
 
 	public ProjectTester getProjectTester() throws Exception {
@@ -2845,7 +2859,7 @@ public class Project extends Processor {
 								return (constructor.getParameterCount() == 1) ? constructor.newInstance(this)
 									: constructor.newInstance(this, c);
 							} catch (InvocationTargetException e) {
-								throw Exceptions.duck(e.getCause());
+								throw Exceptions.duck(Exceptions.unrollCause(e, InvocationTargetException.class));
 							}
 						}
 					}
@@ -3146,7 +3160,7 @@ public class Project extends Processor {
 
 	private Command getCommonJavac(boolean test) throws Exception {
 		Command javac = new Command();
-		javac.add(getProperty("javac", "javac"));
+		javac.add(getJavaExecutable("javac"));
 		String target = getProperty("javac.target", "1.6");
 		String profile = getProperty("javac.profile", "");
 		String source = getProperty("javac.source", "1.6");
@@ -3371,25 +3385,33 @@ public class Project extends Processor {
 	 * Return a basic type only specification of the run aspect of this project
 	 */
 	public RunSpecification getSpecification() {
+
 		RunSpecification runspecification = new RunSpecification();
 		try {
+			ProjectLauncher l = getProjectLauncher();
 			runspecification.bin = getOutput().getAbsolutePath();
 			runspecification.bin_test = getTestOutput().getAbsolutePath();
 			runspecification.target = getTarget().getAbsolutePath();
 			runspecification.errors.addAll(getErrors());
 			runspecification.extraSystemCapabilities = getRunSystemCapabilities().toBasic();
 			runspecification.extraSystemPackages = getRunSystemPackages().toBasic();
-			runspecification.properties = getRunProperties();
+			runspecification.properties = l.getRunProperties();
 			runspecification.runbundles = toPaths(runspecification.errors, getRunbundles());
 			runspecification.runfw = toPaths(runspecification.errors, getRunFw());
 			runspecification.runpath = toPaths(runspecification.errors, getRunpath());
+
+			for (String key : Iterables.iterable(getProperties().propertyNames(), String.class::cast)) {
+				// skip non instructions to prevent macro expansions we do not
+				// want
+				if (key.startsWith("-"))
+					runspecification.instructions.put(key, getProperty(key));
+			}
 		} catch (Exception e) {
 			runspecification.errors.add(e.toString());
 		}
 		runspecification.errors.addAll(getErrors());
 		return runspecification;
 	}
-
 
 	public Parameters getRunSystemPackages() {
 		return new Parameters(mergeProperties(Constants.RUNSYSTEMPACKAGES));
@@ -3399,4 +3421,106 @@ public class Project extends Processor {
 		return new Parameters(mergeProperties(Constants.RUNSYSTEMCAPABILITIES));
 	}
 
+	/**
+	 * Check prebuild things.
+	 */
+	protected void preBuildChecks() {
+		instructions.stalecheck()
+			.forEach(this::staleCheck);
+	}
+
+	/*
+	 * Check if a set of files is out of date with another set of files. If so,
+	 * generate an error or warning, or execute a command
+	 */
+
+	private void staleCheck(String src, StaleTest st) {
+		try {
+			String useSrc = Strings.trim(Processor.removeDuplicateMarker(src));
+			if (useSrc.isEmpty() || useSrc.equals(Constants.EMPTY_HEADER))
+				return;
+
+			if (st.newer() == null) {
+				setLocation(Constants.STALECHECK, Pattern.quote(useSrc),
+					warning("No `newer=...` files spec for src= '%s' found in %s", useSrc, Constants.STALECHECK));
+				return;
+			}
+
+			FileTree tree = new FileTree();
+
+			OptionalLong newest = tree.getFiles(getBase(), Strings.split(useSrc))
+				.stream()
+				.filter(File::isFile)
+				.mapToLong(File::lastModified)
+				.max();
+
+			if (!newest.isPresent()) {
+				setLocation(Constants.STALECHECK, Pattern.quote(useSrc),
+					warning("No source files '%s' found for %s", useSrc, Constants.STALECHECK));
+				return;
+			}
+
+			long time = newest.getAsLong();
+
+			List<String> defaultIncludes = Strings.splitAsStream(st.newer())
+				.map(p -> getFile(p).isDirectory() && !p.endsWith("/") ? p + "/" : p)
+				.collect(toList());
+
+			List<File> dependentFiles = tree.getFiles(getBase(), defaultIncludes)
+				.stream()
+				.filter(File::isFile)
+				.filter(f -> f.lastModified() < time)
+				.sorted()
+				.collect(toList());
+
+			boolean staleFiles = !dependentFiles.isEmpty();
+
+			if (staleFiles) {
+				String qsrc = Pattern.quote(useSrc);
+
+				Optional<String> warning = st.warning();
+				if (!warning.isPresent() && !st.error()
+					.isPresent()
+					&& !st.command()
+						.isPresent()) {
+					warning = Optional.ofNullable("detected stale files");
+				}
+
+				st.error()
+					.ifPresent(msg -> setLocation(Constants.STALECHECK, qsrc,
+						error("%s : %s > %s", msg, useSrc, dependentFiles)));
+				warning.ifPresent(msg -> setLocation(Constants.STALECHECK, qsrc,
+					warning("%s : %s > %s", msg, useSrc, dependentFiles)));
+
+				st.command()
+					.ifPresent(ConsumerWithException.asConsumer(cmd -> system(cmd, null)));
+			}
+
+		} catch (Exception e) {
+			exception(e, "unexpected exception in %s", Constants.STALECHECK);
+		}
+	}
+
+	public Container getBundle(org.osgi.resource.Resource r) throws Exception {
+		IdentityCapability identity = ResourceUtils.getIdentityCapability(r);
+		if (identity == null)
+			return Container.error(this, r.toString());
+
+		if (r.getCapabilities(ResourceUtils.WORKSPACE_NAMESPACE) != null) {
+			Container bundle = getBundle(identity.osgi_identity(), "snapshot", Strategy.HIGHEST, null);
+			if (bundle != null)
+				return bundle;
+		}
+
+		Container bundle = getBundle(identity.osgi_identity(), identity.version()
+			.toString(), Strategy.EXACT, null);
+		if (bundle != null)
+			return bundle;
+
+		return Container.error(this, identity.osgi_identity() + "-" + identity.version());
+	}
+
+	public boolean isStandalone() {
+		return getWorkspace().getLayout() == WorkspaceLayout.STANDALONE;
+	}
 }

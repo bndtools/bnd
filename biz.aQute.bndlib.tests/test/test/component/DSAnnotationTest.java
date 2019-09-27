@@ -55,6 +55,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
@@ -62,6 +63,7 @@ import aQute.bnd.test.BndTestCase;
 import aQute.bnd.test.XmlTester;
 import aQute.bnd.version.Version;
 import aQute.lib.filter.Filter;
+import aQute.lib.io.IO;
 import junit.framework.AssertionFailedError;
 
 /**
@@ -88,6 +90,46 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component()
 	public static class ValidNSVersion {
 
+	}
+
+	public void testExceedsVersion() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ValidNSVersion");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;maximum=1.2.0");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin_test"));
+		b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+		Jar jar = b.build();
+		assertTrue(b.check(
+			"component 1.3.0 version test.component.DSAnnotationTest.ValidNSVersion exceeds -dsannotations-options version;maximum version 1.2.0 because base"));
+	}
+
+	@Component()
+	public static class RequiresV1_3 {
+
+		@Reference(service = String.class)
+		void setX(Map<String, Object> map) {
+
+		}
+	}
+
+	public void testRequires1_3() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*RequiresV1_3");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.2.0;maximum=1.2.0");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin_test"));
+		b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+		Jar jar = b.build();
+		assertTrue(b.check("component 1.3.0 version test.component.DSAnnotationTest\\$RequiresV1_3 exceeds"));
+
+		System.out.println(jar.getResources()
+			.keySet());
+
+		Resource resource = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$RequiresV1_3.xml");
+		assertThat(resource).isNotNull();
+		String s = IO.collect(resource.openInputStream());
+		System.out.println(s);
 	}
 
 	public void testValidNamespaceVersion() throws Exception {
@@ -120,16 +162,37 @@ public class DSAnnotationTest extends BndTestCase {
 
 			if (!b.check())
 				fail();
-			String reqcap = jar.getManifest()
-				.getMainAttributes()
-				.getValue(Constants.REQUIRE_CAPABILITY);
-			Parameters reqs = new Parameters(reqcap);
+			Domain domain = Domain.domain(jar.getManifest());
+			Parameters exportPackages = domain.getExportPackage();
+			assertThat(exportPackages).isEmpty();
+			Parameters importPackages = domain.getImportPackage();
+			assertThat(importPackages).doesNotContainKeys("test.component.ds14");
+			Parameters reqs = domain.getRequireCapability();
 			System.out.println(reqs);
 			assertThat(reqs).containsOnlyKeys("osgi.extender", "osgi.ee");
 			assertThat(reqs.get("osgi.extender")).containsOnlyKeys("filter:");
 			checkExtenderVersion(reqs, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
 		}
 	}
+
+	// #2876
+	public void testExportComponentImplPackage() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.ds14.*");
+			b.setProperty("Export-Package", "test.component.ds14");
+			b.addClasspath(new File("bin_test"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+			Domain domain = Domain.domain(jar.getManifest());
+			Parameters exportPackages = domain.getExportPackage();
+			assertThat(exportPackages).containsOnlyKeys("test.component.ds14");
+			Parameters importPackages = domain.getImportPackage();
+			assertThat(importPackages).containsKeys("test.component.ds14");
+		}
+	}
+
 	/**
 	 * Property test
 	 */
@@ -506,6 +569,7 @@ public class DSAnnotationTest extends BndTestCase {
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*_basic");
 		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.0.0");
 		b.setProperty("Private-Package", "test.component");
+		b.setProperty("-includeresource.resourceprops", "resource.props;literal=\"\"");
 		b.addClasspath(new File("bin_test"));
 
 		Jar jar = b.build();
@@ -1655,9 +1719,9 @@ public class DSAnnotationTest extends BndTestCase {
 		@SuppressWarnings("unused")
 		private List<LogService>	logField;
 
-		protected void setLogMethod(LogService logService) {};
+		protected void setLogMethod(LogService logService) {}
 
-		protected void updatedLogMethod(LogService logService) {};
+		protected void updatedLogMethod(LogService logService) {}
 
 		protected void unsetLogMethod(LogService logService) {}
 
@@ -2138,13 +2202,13 @@ public class DSAnnotationTest extends BndTestCase {
 		"short:Short=3", "integer:Integer=3", "long:Long=3", "float:Float=3.0", "double:Double=3e7", "string:String=%",
 		"wrongInteger:Integer=blabla", "\n\r\t \u0343\u0344\u0345\u0346\n:Integer=3"
 	}, factoryProperties = "factory.properties")
-	public static class FactoryProperties {
-	}
+	public static class FactoryProperties {}
 
 	public void testFactoryProperties() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryProperties");
 			b.setProperty("Private-Package", "test.component");
+			b.setProperty("-includeresource.factoryprops", "factory.properties;literal=\"\"");
 			b.addClasspath(new File("bin_test"));
 
 			Jar jar = b.build();
@@ -3157,10 +3221,10 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@TestRefExtensions(stringAttr2 = "bax", fooAttr2 = Foo.A)
 		@Reference
-		protected void setLogServiceB(LogService ls) {};
+		protected void setLogServiceB(LogService ls) {}
 
 		@Reference
-		protected void setLogServicec(LogService ls) {};
+		protected void setLogServicec(LogService ls) {}
 
 		@TestRefExtensions(stringAttr2 = "ignore", fooAttr2 = Foo.A)
 		@Override
@@ -3223,7 +3287,7 @@ public class DSAnnotationTest extends BndTestCase {
 	/**
 	 * test that an extension attribute will ensure at least a 1.1 namespace, so
 	 * the extension namespace is meaningful
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testExtraAttributes10() throws Exception {
@@ -3285,10 +3349,10 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@TestRefExtensions(stringAttr2 = "bax", fooAttr2 = Foo.A)
 		@Reference
-		protected void setLogServiceB(LogService ls) {};
+		protected void setLogServiceB(LogService ls) {}
 
 		@Reference
-		protected void setLogServicec(LogService ls) {};
+		protected void setLogServicec(LogService ls) {}
 
 		@TestRefExtensions(stringAttr2 = "ignore", fooAttr2 = Foo.A)
 		@Override
@@ -3509,7 +3573,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component
 	static class FinalDynamicCollectionField {
 		@Reference(policy = ReferencePolicy.DYNAMIC)
-		private final List<LogService>	logs1	= new CopyOnWriteArrayList<>();
+		private final List<LogService>					logs1	= new CopyOnWriteArrayList<>();
 
 		@Reference(policy = ReferencePolicy.DYNAMIC)
 		private final CopyOnWriteArrayList<LogService>	logs2	= new CopyOnWriteArrayList<>();
@@ -3546,6 +3610,24 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("dynamic", "scr:component/reference[2]/@policy");
 		xt.assertAttribute("update", "scr:component/reference[2]/@field-option");
 
+	}
+
+	@Component
+	public static final class FinalClassNonFinalField {
+		@Reference
+		private LogService logService;
+	}
+
+	// A field in a final class is not final:
+	// https://github.com/bndtools/bnd/issues/2928
+	public void testFinalFieldReference() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.*FinalClassNonFinalField*");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+			b.build();
+			assertOk(b);
+		}
 	}
 
 	@Component
@@ -3678,7 +3760,13 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@SuppressWarnings("serial")
 	@Component(service = HashMap.class)
-	static class NotAMap3 extends TreeMap<String, String> {}
+	static class NotAMap3 extends TreeMap<String, String> {
+
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+	}
 
 	public void testNotImplementedService() throws Exception {
 		checkClass(NotAMap1.class, 1);
@@ -3688,29 +3776,65 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@SuppressWarnings("serial")
 	@Component(service = Map.class)
-	static class IsAMap1 extends HashMap<String, String> {}
+	static class IsAMap1 extends HashMap<String, String> {
+
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+	}
 
 	@SuppressWarnings("serial")
-	static class MyHashMap1<K, V> extends HashMap<K, V> {}
+	static class MyHashMap1<K, V> extends HashMap<K, V> {
+
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+	}
 
 	@SuppressWarnings("serial")
 	@Component(service = HashMap.class)
-	static class IsAMap2 extends MyHashMap1<String, String> {}
+	static class IsAMap2 extends MyHashMap1<String, String> {
 
-	static interface MyMap<K, V> extends Map<K, V> {};
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+	}
+
+	interface MyMap<K, V> extends Map<K, V> {}
 
 	@SuppressWarnings("serial")
-	static class MyHashMap2<K, V> extends HashMap<K, V> implements MyMap<K, V> {}
+	static class MyHashMap2<K, V> extends HashMap<K, V> implements MyMap<K, V> {
+
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+	}
 
 	@SuppressWarnings("serial")
 	@Component(service = Map.class)
-	static class IsAMap3 extends MyHashMap2<String, String> {}
+	static class IsAMap3 extends MyHashMap2<String, String> {
 
-	static interface Marker {}
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+	}
+
+	interface Marker {}
 
 	@SuppressWarnings("serial")
 	@Component(service = Map.class)
-	static class IsAMap3a extends MyHashMap2<String, String> implements Marker {}
+	static class IsAMap3a extends MyHashMap2<String, String> implements Marker {
+
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+	}
 
 	@Component(service = Map.class)
 	static class IsAMap4 implements MyMap<String, String> {
@@ -3790,7 +3914,7 @@ public class DSAnnotationTest extends BndTestCase {
 		assertOk(b, i, 0);
 	}
 
-	public static interface GenericMarker<K> extends Marker {}
+	public interface GenericMarker<K> extends Marker {}
 
 	@Component
 	public static class RefType {
@@ -4041,8 +4165,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component
 	public static class ConstructorInjection {
 		@Activate
-		public ConstructorInjection(ComponentContext cc, @Reference LogService log,
-			ConstructorConfig myId) {}
+		public ConstructorInjection(ComponentContext cc, @Reference LogService log, ConstructorConfig myId) {}
 
 		@Activate
 		Map<String, Object> componentProps;

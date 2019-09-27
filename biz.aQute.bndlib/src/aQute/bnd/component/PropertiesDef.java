@@ -9,7 +9,7 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.lib.tag.Tag;
 
 public class PropertiesDef {
-	private final List<String>				properties			= new ArrayList<>();
+	private final List<String> properties = new ArrayList<>();
 
 	PropertiesDef(Analyzer analyzer) {}
 
@@ -27,6 +27,10 @@ public class PropertiesDef {
 	Stream<Tag> propertiesTags(String element) {
 		return properties.stream()
 			.map(p -> new Tag(element).addAttribute("entry", p));
+	}
+
+	Stream<String> stream() {
+		return properties.stream();
 	}
 
 	@Override

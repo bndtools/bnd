@@ -62,7 +62,7 @@ public class CollectionsTest extends TestCase {
 	}
 
 	public void testSortedList() throws Exception {
-		SortedList<String> sl = new SortedList<String>("f", "a", "b", "c", "d", "c", "e");
+		SortedList<String> sl = new SortedList<>("f", "a", "b", "c", "d", "c", "e");
 		assertEquals("[a, b, c, c, d, e, f]", sl.toString());
 
 		SortedSet<String> tail = sl.tailSet("c");
@@ -97,7 +97,7 @@ public class CollectionsTest extends TestCase {
 	}
 
 	public void testFailures() {
-		SortedList<String> sl = new SortedList<String>("f", "a", "b", "c", "d", "c", "e");
+		SortedList<String> sl = new SortedList<>("f", "a", "b", "c", "d", "c", "e");
 		try {
 			sl.get(1000);
 			fail();

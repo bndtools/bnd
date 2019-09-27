@@ -56,11 +56,11 @@ public class Basic {
 	@Descriptor("Displays available commands for a given scope")
 	public Set<String> scope(
 	//@formatter:off
-		
+
 		@Descriptor("The scope name of a command, can be globbed")
 		String scope
-		
-		
+
+
 	//@formatter:on
 	) {
 		if (scope == null)
@@ -238,7 +238,7 @@ public class Basic {
 				while (it.hasNext()) {
 					if (it.next()
 						.getValue()
-						.size() == 0) {
+						.isEmpty()) {
 						it.remove();
 					}
 				}

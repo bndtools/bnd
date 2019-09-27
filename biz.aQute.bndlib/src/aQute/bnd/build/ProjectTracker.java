@@ -79,7 +79,7 @@ class ProjectTracker implements AutoCloseable {
 						if (project != null) {
 							older.remove(name);
 							if (directory.equals(project.getBase()
-								.toPath())) {
+								.toPath()) && project.isValid()) {
 								return project;
 							}
 							IO.close(project);

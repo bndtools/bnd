@@ -9,23 +9,23 @@ import org.osgi.resource.Wire;
 
 public class ResolutionTreeItem {
 
-    private final Capability capability;
-    private final List<Wire> wires = new LinkedList<Wire>();
+	private final Capability	capability;
+	private final List<Wire>	wires	= new LinkedList<>();
 
-    public ResolutionTreeItem(Capability capability) {
-        this.capability = capability;
-    }
+	public ResolutionTreeItem(Capability capability) {
+		this.capability = capability;
+	}
 
-    public Capability getCapability() {
-        return capability;
-    }
+	public Capability getCapability() {
+		return capability;
+	}
 
-    public void addWire(Wire wire) {
-        wires.add(wire);
-    }
+	public void addWire(Wire wire) {
+		wires.add(wire);
+	}
 
-    public List<Wire> getWires() {
-        return Collections.unmodifiableList(wires);
-    }
+	public List<Wire> getWires() {
+		return Collections.unmodifiableList(wires);
+	}
 
 }

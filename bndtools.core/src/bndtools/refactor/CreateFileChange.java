@@ -20,74 +20,74 @@ import org.eclipse.ltk.core.refactoring.resource.ResourceChange;
 
 public class CreateFileChange extends ResourceChange {
 
-    private final IPath path;
-    private final InputStream source;
-    private final int updateFlags;
-    private final String encoding;
+	private final IPath			path;
+	private final InputStream	source;
+	private final int			updateFlags;
+	private final String		encoding;
 
-    /**
-     * Construct a CreateFileChange object.
-     * 
-     * @param path The path of the new file.
-     * @param source Provides the content of the new file.
-     * @param updateFlags Flags for creation (for possible values see
-     *            {@link IFile#create(InputStream, int, IProgressMonitor)}).
-     */
-    public CreateFileChange(IPath path, InputStream source, int updateFlags, String encoding) {
-        this.path = path;
-        this.source = source;
-        this.updateFlags = updateFlags;
-        this.encoding = encoding;
-    }
+	/**
+	 * Construct a CreateFileChange object.
+	 *
+	 * @param path The path of the new file.
+	 * @param source Provides the content of the new file.
+	 * @param updateFlags Flags for creation (for possible values see
+	 *            {@link IFile#create(InputStream, int, IProgressMonitor)}).
+	 */
+	public CreateFileChange(IPath path, InputStream source, int updateFlags, String encoding) {
+		this.path = path;
+		this.source = source;
+		this.updateFlags = updateFlags;
+		this.encoding = encoding;
+	}
 
-    @Override
-    protected IResource getModifiedResource() {
-        return ResourcesPlugin.getWorkspace()
-            .getRoot()
-            .getFile(path);
-    }
+	@Override
+	protected IResource getModifiedResource() {
+		return ResourcesPlugin.getWorkspace()
+			.getRoot()
+			.getFile(path);
+	}
 
-    @Override
-    public String getName() {
-        return String.format("Create file %s", path.toString());
-    }
+	@Override
+	public String getName() {
+		return String.format("Create file %s", path.toString());
+	}
 
-    @Override
-    public Change perform(IProgressMonitor monitor) throws CoreException {
-        SubMonitor progress = SubMonitor.convert(monitor, encoding != null ? 2 : 1);
+	@Override
+	public Change perform(IProgressMonitor monitor) throws CoreException {
+		SubMonitor progress = SubMonitor.convert(monitor, encoding != null ? 2 : 1);
 
-        IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
-            .getRoot();
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
+			.getRoot();
 
-        IFile file = root.getFile(path);
-        file.create(source, updateFlags, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+		IFile file = root.getFile(path);
+		file.create(source, updateFlags, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
-        if (encoding != null)
-            file.setCharset(encoding, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+		if (encoding != null)
+			file.setCharset(encoding, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
-        return new DeleteResourceChange(path, true);
-    }
+		return new DeleteResourceChange(path, true);
+	}
 
-    @Override
-    public RefactoringStatus isValid(IProgressMonitor pm) throws CoreException {
-        RefactoringStatus result = new RefactoringStatus();
-        IFile file = ResourcesPlugin.getWorkspace()
-            .getRoot()
-            .getFile(path);
+	@Override
+	public RefactoringStatus isValid(IProgressMonitor pm) throws CoreException {
+		RefactoringStatus result = new RefactoringStatus();
+		IFile file = ResourcesPlugin.getWorkspace()
+			.getRoot()
+			.getFile(path);
 
-        URI location = file.getLocationURI();
-        if (location == null) {
-            result.addFatalError(String.format("The location for file %s is unknown", path));
-            return result;
-        }
+		URI location = file.getLocationURI();
+		if (location == null) {
+			result.addFatalError(String.format("The location for file %s is unknown", path));
+			return result;
+		}
 
-        IFileInfo jFile = EFS.getStore(location)
-            .fetchInfo();
-        if (jFile.exists()) {
-            result.addFatalError(String.format("File %s already exists", path));
-            return result;
-        }
-        return result;
-    }
+		IFileInfo jFile = EFS.getStore(location)
+			.fetchInfo();
+		if (jFile.exists()) {
+			result.addFatalError(String.format("File %s already exists", path));
+			return result;
+		}
+		return result;
+	}
 
 }

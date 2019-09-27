@@ -29,7 +29,7 @@ public class Program implements Comparable<Program> {
 
 	/**
 	 * Create a revision by giving it a version
-	 * 
+	 *
 	 * @param version the version
 	 * @return the revision
 	 */
@@ -40,7 +40,7 @@ public class Program implements Comparable<Program> {
 
 	/**
 	 * Create a revision by giving it a version
-	 * 
+	 *
 	 * @param version the version
 	 * @return the revision
 	 */
@@ -73,7 +73,7 @@ public class Program implements Comparable<Program> {
 
 	/**
 	 * Validate if this is a valid g:a pair.
-	 * 
+	 *
 	 * @param string the g:a pair
 	 * @return true if valid, false otherwise
 	 */
@@ -119,7 +119,7 @@ public class Program implements Comparable<Program> {
 
 	/**
 	 * Creates a program out of a g:a
-	 * 
+	 *
 	 * @param group the g
 	 * @param artifact the a
 	 * @return the Program

@@ -2,7 +2,6 @@ package aQute.remote.agent;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
@@ -35,7 +34,7 @@ public class GogoRedirector implements Redirector {
 
 	/**
 	 * Create a redirector
-	 * 
+	 *
 	 * @param agentServer the server
 	 * @param context the context, needed to get the
 	 */
@@ -105,20 +104,16 @@ public class GogoRedirector implements Redirector {
 
 		return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class<?>[] {
 			clazz
-		}, new InvocationHandler() {
+		}, (proxy, method, args) -> {
+			Method targetMethod = targetClass.getMethod(method.getName(), method.getParameterTypes());
+			Object result = targetMethod.invoke(target, args);
+			if (result != null && method.getReturnType()
+				.isInterface() && targetMethod.getReturnType() != method.getReturnType())
 
-			@Override
-			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-				Method targetMethod = targetClass.getMethod(method.getName(), method.getParameterTypes());
-				Object result = targetMethod.invoke(target, args);
-				if (result != null && method.getReturnType()
-					.isInterface() && targetMethod.getReturnType() != method.getReturnType())
-
-					try {
-						return proxy(method.getReturnType(), result);
-					} catch (Exception e) {}
-				return result;
-			}
+				try {
+					return proxy(method.getReturnType(), result);
+				} catch (Exception e) {}
+			return result;
 		});
 	}
 

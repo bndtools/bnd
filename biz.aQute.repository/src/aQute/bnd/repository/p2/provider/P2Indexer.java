@@ -42,9 +42,12 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
+import aQute.bnd.service.url.State;
+import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
+import aQute.libg.cryptography.MD5;
 import aQute.p2.api.Artifact;
 import aQute.p2.api.ArtifactProvider;
 import aQute.p2.provider.P2Impl;
@@ -179,21 +182,17 @@ class P2Indexer implements Closeable {
 						return promiseFactory.resolved(knownResources.get(id));
 					}
 				}
-
-				return client.build()
-					.useCache(MAX_STALE)
-					.async(a.uri)
-					.map(file -> {
-						ResourceBuilder rb = new ResourceBuilder();
-						rb.addFile(file, a.uri);
-						if (a.md5 != null) {
-							rb.addCapability(
-								new CapabilityBuilder(P2_CAPABILITY_NAMESPACE).addAttribute(MD5_ATTRIBUTE, a.md5));
-						}
-						return rb.build();
-					})
+				return fetch(a, 2, 1000L).map(tag -> {
+					ResourceBuilder rb = new ResourceBuilder();
+					rb.addFile(tag.getFile(), a.uri);
+					if (a.md5 != null) {
+						rb.addCapability(
+							new CapabilityBuilder(P2_CAPABILITY_NAMESPACE).addAttribute(MD5_ATTRIBUTE, a.md5));
+					}
+					return rb.build();
+				})
 					.recover(failed -> {
-						logger.debug("{}: Failed to create resource for {}", name, a, failed.getFailure());
+						logger.info("{}: Failed to create resource for {}", name, a.uri, failed.getFailure());
 						return RECOVERY;
 					});
 			})
@@ -204,6 +203,60 @@ class P2Indexer implements Closeable {
 			.filter(resource -> resource != RECOVERY)
 			.collect(toResourcesRepository()))
 			.getValue();
+	}
+
+	private Promise<TaggedData> fetch(Artifact a, int retries, long delay) {
+		return client.build()
+			.useCache(MAX_STALE)
+			.asTag()
+			.async(a.uri)
+			.then(success -> success.thenAccept(tag -> checkDownload(a, tag))
+				.recoverWith(failed -> {
+					if (retries < 1) {
+						return null; // no recovery
+					}
+					logger.info("Retrying invalid download: {}. delay={}, retries={}", failed.getFailure()
+						.getMessage(), delay, retries);
+					@SuppressWarnings("unchecked")
+					Promise<TaggedData> delayed = (Promise<TaggedData>) failed.delay(delay);
+					return delayed
+						.recoverWith(f -> fetch(a, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
+				}));
+	}
+
+	private void checkDownload(Artifact a, TaggedData tag) throws Exception {
+		if (tag.getState() != State.UPDATED) {
+			return;
+		}
+		File file = tag.getFile();
+		String remoteDigest = a.md5;
+		if (remoteDigest != null) {
+			String fileDigest = MD5.digest(file)
+				.asHex();
+			int start = 0;
+			while (start < remoteDigest.length() && Character.isWhitespace(remoteDigest.charAt(start))) {
+				start++;
+			}
+			for (int i = 0; i < fileDigest.length(); i++) {
+				if (start + i < remoteDigest.length()) {
+					char us = fileDigest.charAt(i);
+					char them = remoteDigest.charAt(start + i);
+					if (us == them || Character.toLowerCase(us) == Character.toLowerCase(them)) {
+						continue;
+					}
+				}
+				IO.delete(file);
+				throw new IOException(
+					String.format("Invalid content checksum %s for %s; expected %s", fileDigest, a.uri, remoteDigest));
+			}
+		} else if (a.download_size != -1L) {
+			long download_size = file.length();
+			if (download_size != a.download_size) {
+				IO.delete(file);
+				throw new IOException(String.format("Invalid content size %s for %s; expected %s", download_size, a.uri,
+					a.download_size));
+			}
+		}
 	}
 
 	private Repository save(Repository repository) throws IOException, Exception {

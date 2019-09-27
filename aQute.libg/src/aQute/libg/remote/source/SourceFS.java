@@ -18,12 +18,11 @@ import aQute.libg.remote.Delta;
 import aQute.libg.remote.Sink;
 
 class SourceFS {
-	static Pattern								WINDOWS_PREFIX	= Pattern.compile("(\\p{Alpha}):\\\\(.*)");
-	static Pattern								WINDOWS_FILE_P	= Pattern
-		.compile("(?:\\p{Alpha}:|\\\\)(\\\\[\\p{Alnum}-_+.~@$%&=]+)*");
-	static Pattern								UNIX_FILE_P		= Pattern.compile("(/[\\p{Alnum}-_+.~@$%&=]+)+");
-	static Pattern								LOCAL_P			= File.separatorChar == '\\' ? WINDOWS_FILE_P
-		: UNIX_FILE_P;
+	private final static Pattern				WINDOWS_PREFIX	= Pattern.compile("(\\p{Alpha}):\\\\(.*)");
+	private final static String					WINDOWS_FILE	= "(?:\\p{Alpha}:|\\\\)(\\\\[\\p{Alnum}-_+.~@$%&=]+)*";
+	private final static String					UNIX_FILE		= "(/[\\p{Alnum}-_+.~@$%&=]+)+";
+	private final static Pattern				LOCAL_P			= Pattern
+		.compile(IO.isWindows() ? WINDOWS_FILE : UNIX_FILE);
 
 	private MultiMap<String, File>				shas			= new MultiMap<>();
 	private final Map<File, FileDescription>	files			= new HashMap<>();
@@ -55,23 +54,18 @@ class SourceFS {
 	}
 
 	public String transform(String s) throws Exception {
-
 		Matcher m = LOCAL_P.matcher(s);
-		StringBuffer sb = new StringBuffer();
-		boolean found = false;
-
-		while (m.find()) {
+		StringBuilder sb = new StringBuilder();
+		int start = 0;
+		for (; m.find(); start = m.end()) {
 			FileDescription fd = toRemote(m.group(0));
 			fd.touched = true;
-			m.appendReplacement(sb, fd.path);
-			found = true;
+			sb.append(s, start, m.start())
+				.append(fd.path);
 		}
-
-		if (!found)
-			return s;
-
-		m.appendTail(sb);
-		return sb.toString();
+		return (start == 0) ? s
+			: sb.append(s, start, s.length())
+				.toString();
 	}
 
 	private FileDescription toRemote(String localPath) throws Exception {
@@ -114,7 +108,7 @@ class SourceFS {
 			while (remotePath.startsWith(File.separator))
 				remotePath = remotePath.substring(1);
 		} else {
-			if (File.separatorChar == '\\') {
+			if (IO.isWindows()) {
 
 				//
 				// Why is windows always 10x more complicated??

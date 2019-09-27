@@ -10,7 +10,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -246,8 +245,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	Registry								registry;
 	boolean									createLatest		= true;
 	boolean									canWrite			= true;
-	Pattern									REPO_FILE			= Pattern.compile(
-		"(?:([-a-zA-z0-9_\\.]+)-)(" + Version.VERSION_STRING + "|" + Constants.VERSION_ATTR_LATEST + ")\\.(jar|lib)");
+	private final static Pattern			REPO_FILE			= Pattern
+		.compile("(?:([-.\\w]+)-)(" + Version.VERSION_STRING + "|" + Constants.VERSION_ATTR_LATEST + ")\\.(jar|lib)");
 	Reporter								reporter;
 	boolean									dirty				= true;
 	String									name;
@@ -269,7 +268,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/**
 	 * Initialize the repository Subclasses should first call this method and
 	 * then if it returns true, do their own initialization
-	 * 
+	 *
 	 * @return true if initialized, false if already had been initialized.
 	 * @throws Exception
 	 */
@@ -355,7 +354,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * </p>
 	 * It is allowed to rename the file, the tmp file must be beneath the root
 	 * directory to prevent rename problems.
-	 * 
+	 *
 	 * @param tmpFile source file
 	 * @param digest
 	 * @return a File that contains the content of the tmpFile
@@ -619,15 +618,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public Map<String, Runnable> actions(Object... target) throws Exception {
 		if (target == null || target.length == 0) {
 			Map<String, Runnable> actions = new LinkedHashMap<>();
-			actions.put("Rebuild Resource Index", new Runnable() {
-
-				@Override
-				public void run() {
-					try {
-						refresh();
-					} catch (Exception e) {
-						throw new RuntimeException(e);
-					}
+			actions.put("Rebuild Resource Index", () -> {
+				try {
+					refresh();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
 				}
 			});
 			return actions; // no default actions
@@ -642,15 +637,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				return null;
 
 			Map<String, Runnable> actions = new HashMap<>();
-			actions.put("Delete " + bsn + "-" + status(bsn, version), new Runnable() {
-				@Override
-				public void run() {
-					IO.delete(f);
-					if (f.getParentFile()
-						.list().length == 0)
-						IO.delete(f.getParentFile());
-					afterAction(f, "delete");
-				};
+			actions.put("Delete " + bsn + "-" + status(bsn, version), () -> {
+				IO.delete(f);
+				if (f.getParentFile()
+					.list().length == 0)
+					IO.delete(f.getParentFile());
+				afterAction(f, "delete");
 			});
 			return actions;
 		} catch (Exception e) {
@@ -851,7 +843,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/**
 	 * Execute a command. Used in different stages so that the repository can be
 	 * synced with external tools.
-	 * 
+	 *
 	 * @param line
 	 * @param target
 	 */
@@ -930,7 +922,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	/**
 	 * Delete an entry from the repository and cleanup the directory
-	 * 
+	 *
 	 * @param bsn
 	 * @param version
 	 * @throws Exception
@@ -943,7 +935,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (version == null)
 			versions = versions(bsn);
 		else
-			versions = new SortedList<Version>(version);
+			versions = new SortedList<>(version);
 
 		for (Version v : versions) {
 			File f = getLocal(bsn, version, null);
@@ -972,40 +964,36 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public SortedSet<ResourceDescriptor> getResources() throws Exception {
 		init();
 		if (hasIndex) {
-			TreeSet<ResourceDescriptor> resources = new TreeSet<>(new Comparator<ResourceDescriptor>() {
+			TreeSet<ResourceDescriptor> resources = new TreeSet<>((a, b) -> {
+				if (a == b)
+					return 0;
 
-				@Override
-				public int compare(ResourceDescriptor a, ResourceDescriptor b) {
-					if (a == b)
-						return 0;
+				int r = a.bsn.compareTo(b.bsn);
+				if (r != 0)
+					return r;
 
-					int r = a.bsn.compareTo(b.bsn);
-					if (r != 0)
-						return r;
-
-					if (a.version != b.version) {
-						if (a.version == null)
-							return 1;
-						if (b.version == null)
-							return -1;
-
-						r = a.version.compareTo(b.version);
-						if (r != 0)
-							return r;
-					}
-					if (a.id.length > b.id.length)
+				if (a.version != b.version) {
+					if (a.version == null)
 						return 1;
-					if (a.id.length < b.id.length)
+					if (b.version == null)
 						return -1;
 
-					for (int i = 0; i < a.id.length; i++) {
-						if (a.id[i] > b.id[i])
-							return 1;
-						if (a.id[i] < b.id[i])
-							return 1;
-					}
-					return 0;
+					r = a.version.compareTo(b.version);
+					if (r != 0)
+						return r;
 				}
+				if (a.id.length > b.id.length)
+					return 1;
+				if (a.id.length < b.id.length)
+					return -1;
+
+				for (int i = 0; i < a.id.length; i++) {
+					if (a.id[i] > b.id[i])
+						return 1;
+					if (a.id[i] < b.id[i])
+						return 1;
+				}
+				return 0;
 			});
 			for (ResourceDescriptor rd : index.values()) {
 				resources.add(rd);

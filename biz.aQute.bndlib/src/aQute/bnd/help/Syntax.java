@@ -63,15 +63,29 @@ public class Syntax implements Constants {
 				"Directory with sha artifacts. The sha is the name of the "
 					+ "directory, it contains the artifact with a normal bsn-version.jar name",
 				null, null, null)),
+		new Syntax(AUTOMATIC_MODULE_NAME,
+			"The module name of an automatic module is derived from the JAR file used to include the artifact if it has the attribute "
+				+ AUTOMATIC_MODULE_NAME + " in its main manifest entry.",
+			AUTOMATIC_MODULE_NAME + ": com.foo.bar", null, Verifier.SYMBOLICNAME),
+		new Syntax(BASELINE, "The " + BASELINE
+			+ " instruction controls what bundles are enabled for baselining and optionally specify the baseline version or file.",
+			BASELINE + ": com.example.*", null, null),
+		new Syntax(BND_ADDXMLTOTEST,
+			"The " + BND_ADDXMLTOTEST
+				+ " instruction adds XML resources from the tested bundle to the output of a test report.",
+			BND_ADDXMLTOTEST + ": a.xml", null, null),
 		new Syntax(BUNDLE_ACTIVATIONPOLICY,
 			"The " + BUNDLE_ACTIVATIONPOLICY
 				+ " header specifies how the framework should activate the bundle once started.",
 			BUNDLE_ACTIVATIONPOLICY + ": lazy", "lazy", Pattern.compile("lazy")),
-
 		new Syntax(BUNDLE_ACTIVATOR,
 			"The " + BUNDLE_ACTIVATOR + " header specifies the name of the class used to start and stop the bundle.",
 			BUNDLE_ACTIVATOR + ": com.acme.foo.Activator", "${classes;implementing;org.osgi.framework.BundleActivator}",
 			Verifier.FQNPATTERN),
+		new Syntax(BUNDLE_BLUEPRINT,
+			"The " + BUNDLE_BLUEPRINT
+				+ " header specifies the location of the blueprint descriptor files in the bundle",
+			BUNDLE_BLUEPRINT + ": /blueprint/*.xml", null, null),
 		new Syntax(BUNDLE_CATEGORY,
 			"The " + BUNDLE_CATEGORY + " header holds a comma-separated list of category names.",
 			BUNDLE_CATEGORY + ": test", "osgi,test,game,util,eclipse,netbeans,jdk,specification", null),
@@ -175,6 +189,9 @@ public class Syntax implements Constants {
 		new Syntax(BUNDLE_VERSION, "The " + BUNDLE_VERSION + " header specifies the version of this bundle.",
 			BUNDLE_VERSION + ": 1.23.4.build200903221000", null, Verifier.VERSION),
 
+		new Syntax(CLASSPATH, "The " + CLASSPATH + " instruction adds class path entries to a bnd file’s processing.",
+			BASELINE + ": jar/foo.jar, jar/bar.jar", null, null),
+
 		new Syntax(COMPRESSION, "Set the compression for writing JARs. Default is deflate", COMPRESSION + "=store",
 			"deflate,store", Pattern.compile("deflate|store")),
 
@@ -203,18 +220,27 @@ public class Syntax implements Constants {
 			new Syntax(IMPORT_DIRECTIVE, "Experimental.", "", null, null)
 
 		),
+		new Syntax(TESTCASES, "The " + TESTCASES + " instruction is used to specify the list of test cases to run.",
+			TESTCASES + ": com.foo.bar.MyTest", null, Verifier.FQNPATTERN),
 		new Syntax(CONDITIONAL_PACKAGE, "The " + CONDITIONAL_PACKAGE
 			+ " works as private package but will only include the packages when they are imported. When this header is used, bnd will recursively add packages that match the patterns until there are no more additions.",
 			CONDITIONAL_PACKAGE + ": com.*", "${packages}", null),
 		new Syntax(CONDITIONALPACKAGE, "The " + CONDITIONALPACKAGE
 			+ " works as private package but will only include the packages when they are imported. When this header is used, bnd will recursively add packages that match the patterns until there are no more additions.",
 			CONDITIONALPACKAGE + ": com.*", "${packages}", null),
-		new Syntax(PRIVATE_PACKAGE, "The " + PRIVATE_PACKAGE
-			+ " header contains a declaration of packages to be included in the resulting bundle, the only difference is, is that these packages will not be exported.",
-			PRIVATE_PACKAGE + ": com.*", "${packages}", null),
+		new Syntax(META_PERSISTENCE,
+			"A bundle is regarded as a persistence bundle if it contains the header " + META_PERSISTENCE
+				+ " in it's Manifest.",
+			META_PERSISTENCE + ": persistence/myPu.xml", null, null),
 		new Syntax(PRIVATEPACKAGE, "The " + PRIVATEPACKAGE
 			+ " header contains a declaration of packages to be included in the resulting bundle, the only difference is, is that these packages will not be exported.",
 			PRIVATEPACKAGE + ": com.*", "${packages}", null),
+		new Syntax(PRIVATE_PACKAGE, "The " + PRIVATE_PACKAGE
+			+ " header contains a declaration of packages to be included in the resulting bundle, the only difference is, is that these packages will not be exported.",
+			PRIVATE_PACKAGE + ": com.*", "${packages}", null),
+		new Syntax(IGNORE_PACKAGE,
+			"The " + IGNORE_PACKAGE + " is used to ignore a package from being packaged inside the bundle.",
+			IGNORE_PACKAGE + ": com.foo.bar", "${packages}", null),
 		new Syntax(EXPORT_SERVICE, "Deprecated.", EXPORT_SERVICE + ": org.osgi.service.log.LogService",
 			"${classes;implementing;*}", null),
 		new Syntax(FRAGMENT_HOST, "The " + FRAGMENT_HOST + " header defines the host bundle for this fragment.",
@@ -287,11 +313,65 @@ public class Syntax implements Constants {
 			new Syntax(FILTER_DIRECTIVE,
 				" (Filter) A filter expression that is asserted on the Capabilities belonging to the given namespace. The matching of the filter against the Capability is done on one Capability at a time. A filter like (&(a=1)(b=2)) matches only a Capability that specifies both attributes at the required value, not two capabilties that each specify one of the attributes correctly. A filter is optional, if no filter directive is specified the Requirement always matches.",
 				FILTER_DIRECTIVE + "= (&(a=1)(b=2))", null, null)),
+		new Syntax(AUGMENT, "The " + AUGMENT
+			+ " instruction can be used to augment resources in the repositories. Augmenting is adding additional capabilities and requirements",
+			AUGMENT
+				+ ": com.example.prime; capability:='osgi.extender; osgi.extender=osgi.component; version:Version=1.2'",
+			null, Verifier.WILDCARDNAMEPATTERN,
+
+			new Syntax(AUGMENT_CAPABILITY_DIRECTIVE,
+				"This directive specifies a Provide-Capability instruction, this will therefore likely have to be quoted. Any number of clauses can be specified.",
+				AUGMENT_CAPABILITY_DIRECTIVE + "=osgi.extender; osgi.extender=osgi.component; version:Version=1.2",
+				null, null),
+
+			new Syntax(AUGMENT_REQUIREMENT_DIRECTIVE, "The directive specifies a Require-Capability instruction",
+				AUGMENT_REQUIREMENT_DIRECTIVE + "=osgi.identity;filter:=\"(osgi.identity=a.b.c)\"", null, null),
+
+			new Syntax(AUGMENT_RANGE_ATTRIBUTE,
+				" A version range. If a single version is given it will be used as [<version>,∞). The version range can be prefixed with an ‘@’ for a consumer range (to the next major) or a provider range (to the next minor) when the ‘@’ is a suffix of the version. The range can restrict the augmentation to a limited set of bundles.",
+				null, null, null)),
 		new Syntax(BUILDPATH,
 			"Provides the class path for building the jar. The entries are references to the repository.",
 			BUILDPATH + "=osgi;version=4.1", "${repo;bsns}", Verifier.SYMBOLICNAME, path_version),
+		new Syntax(BUILDREPO, "After building a JAR, release the JAR to the given repositories.", BUILDREPO + "=Local",
+			null, null),
+		new Syntax(BUILDERIGNORE,
+			"List of project-relative directories to be ignored by the builder. This is processed by the Bndtools builder in Eclipse and the Bnd Gradle plugin for workspace model builds.",
+			BUILDERIGNORE + "=${if;${driver;gradle};bin,bin_test,generated;build}", null, null),
 		new Syntax(BUMPPOLICY, "Sets the version bump policy. This is a parameter to the ${version} macro.",
 			BUMPPOLICY + "==+0", "==+,=+0,+00", Pattern.compile("[=+-0][=+-0][=+-0]")),
+		new Syntax(BUNDLEANNOTATIONS, "Selects the classes that need processing for standard OSGi Bundle annotations.",
+			BUNDLEANNOTATIONS + ": com.foo.bar.MyClazz", null, Verifier.FQNPATTERN),
+
+		new Syntax(BASELINEREPO, "Define the repository to calculate baselining against.", BASELINEREPO + "=Baseline",
+			null, null),
+		new Syntax(BNDDRIVER, "Sets the driver property.", BNDDRIVER + ":" + BNDDRIVER_ECLIPSE,
+			"(" + BNDDRIVER_ANT + " | " + BNDDRIVER_GRADLE + "|" + BNDDRIVER_ECLIPSE + BNDDRIVER_BND
+				+ BNDDRIVER_GRADLE_NATIVE + BNDDRIVER_INTELLIJ + BNDDRIVER_MAVEN + BNDDRIVER_OSMORC + BNDDRIVER_SBT
+				+ ")",
+			null),
+		new Syntax(CHECK, "Enable additional checking.", CHECK + "=EXPORTS", "(ALL|EXPORTS|IMPORTS)", null),
+		new Syntax(CONTRACT, "Establishes a link to a contract and handles the low level details.",
+			CONTRACT + "!Servlet,*", null, Verifier.WILDCARDNAMEPATTERN),
+		new Syntax(CONSUMER_POLICY,
+			"Specify the default version bump policy for a consumer when a binary incompatible change is detected.",
+			CONSUMER_POLICY + "${range;[==,+)}", null, null),
+		new Syntax(PROVIDER_POLICY,
+			"Specify the default version bump policy for a provider when a binary incompatible change is detected.",
+			PROVIDER_POLICY + "${range;[==,=+)}", null, null),
+
+		new Syntax(CDIANNOTATIONS, "The " + CDIANNOTATIONS
+			+ " instruction tells bnd which bundle classes, if any, to search for OSGI CDI Integration (or plain CDI) annotation.",
+			CDIANNOTATIONS + ": *;discover=all", null, Verifier.WILDCARDNAMEPATTERN,
+
+			new Syntax("discover", "Bean Discovery Mode.", "discover=all", "(all|annotated|annotated_by_bean|none)",
+				null),
+
+			new Syntax("noservicecapabilities", "indicates that no service capabilities will be added for matches.",
+				"noservicecapabilities=true", "true, false", Pattern.compile("true|false"))),
+
+		new Syntax(CONNECTION_SETTINGS, "Setting up the communications for bnd.",
+			CONNECTION_SETTINGS + "= ~/.bnd/connection-settings.xml", null, null),
 
 		new Syntax(CONDUIT, "Allows a bnd file to point to files which will be returned when the bnd file is build.",
 			CONDUIT + "= jar/osgi.jar", null, null),
@@ -303,20 +383,97 @@ public class Syntax implements Constants {
 		new Syntax(DEPLOYREPO, "Specifies to which repo the project should be deployed.", DEPLOYREPO + "=cnf",
 			"${repos}", null),
 
+		new Syntax(DIFFIGNORE, "Manifest header names and resource paths to ignore during baseline comparison.",
+			DIFFIGNORE + "=Bundle-Version", null, null),
+
+		new Syntax(DIFFPACKAGES, "The names of exported packages to baseline.", DIFFPACKAGES + "=!*.internal.*, *",
+			null, null),
+
+		new Syntax(DIGESTS, "Set the digest algorithms to use.", DIGESTS + ": SHA-1 ", null, null),
+
+		new Syntax(DISTRO, "Resolve against pre-defined system capabilities.", DISTRO + ": karaf-4.1.jar;version=file",
+			null, null),
+
 		new Syntax(DONOTCOPY,
 			"Regular expression for names of files and directories that should not be copied when discovered.",
 			DONOTCOPY + "=(CVS|\\.svn)", null, null),
+
+		new Syntax(DSANNOTATIONS, "The " + DSANNOTATIONS
+			+ " instruction tells bnd which bundle classes, if any, to search for Declarative Services (DS) annotations. bnd will then process those classes into DS XML descriptors.",
+			DSANNOTATIONS + ": *", null, Verifier.FQNPATTERN),
+
+		new Syntax(DEFAULT_PROP_SRC_DIR,
+			"The " + DEFAULT_PROP_SRC_DIR + " instructs bnd to look for sources in the specified source directories",
+			DEFAULT_PROP_SRC_DIR + ": src/main/java, src/main/resources", null, null),
+
+		new Syntax(DEFAULT_PROP_BIN_DIR,
+			"The " + DEFAULT_PROP_BIN_DIR + " is used to specify the directory to generate the output binaries.",
+			DEFAULT_PROP_BIN_DIR + ": target/classes", null, null),
+
+		new Syntax(DEFAULT_PROP_TESTSRC_DIR,
+			"The " + DEFAULT_PROP_TESTSRC_DIR + " instructs bnd to look for test sources in the specified directories",
+			DEFAULT_PROP_TESTSRC_DIR + ": src/test/java", null, null),
+
+		new Syntax(DEFAULT_PROP_TESTBIN_DIR,
+			"The " + DEFAULT_PROP_TESTBIN_DIR
+				+ " is used to specify the directory to generate the output binaries for test sources.",
+			DEFAULT_PROP_TESTBIN_DIR + ": target/test-classes", null, null),
+
+		new Syntax(DEFAULT_PROP_TARGET_DIR,
+			"The " + DEFAULT_PROP_TARGET_DIR + " is used to specify the directory to generate output JAR.",
+			DEFAULT_PROP_TARGET_DIR + ": target", null, null),
+
+		new Syntax(DSANNOTATIONS_OPTIONS,
+			"The " + DSANNOTATIONS_OPTIONS
+				+ " instruction configures how DS component annotations are processed and what metadata is generated.",
+			DSANNOTATIONS_OPTIONS + ": version;minimum=1.2.0",
+			"(inherit|felixExtensions|extender|nocapabilities|norequirements|version)", null),
+
+		new Syntax(EXPORT, "The " + EXPORT + " instruction turns a bndrun file into its deployable format.",
+			EXPORT + ": launcher.jar", "FILE ( ';' PARAMETER )* ( ',' FILE ( ';' PARAMETER )* )*", null),
+
+		new Syntax(METATYPE_ANNOTATIONS, "The " + METATYPE_ANNOTATIONS
+			+ " instruction tells bnd which bundle classes, if any, to search for Metatype annotations. bnd will then process those classes into Metatype XML descriptors.",
+			METATYPE_ANNOTATIONS + ": *", null, Verifier.FQNPATTERN),
+
+		new Syntax(METATYPE_ANNOTATIONS_OPTIONS,
+			"The " + DSANNOTATIONS_OPTIONS
+				+ " instruction configures how Metatype annotations are processed and what metadata is generated.",
+			METATYPE_ANNOTATIONS_OPTIONS + ": version;minimum=1.2.0",
+			"(inherit|felixExtensions|extender|nocapabilities|norequirements|version)", null),
+
+		new Syntax(EEPROFILE, "Provides control over what Java 8 profile to use.", EEPROFILE + ": name=\"a,b,c\"",
+			"name=\"a,b,c\", auto", null),
+
+		new Syntax(EXTENSION,
+			"A plugin that is loaded to its url, downloaded and then provides a header used instantiate the plugin.",
+			null, null, null),
+
+		new Syntax(EXECUTABLE,
+			"Process an executable jar to strip optional directories of the contained bundles and/or change their compression.",
+			EXECUTABLE + ": rejar=STORE, strip='OSGI-OPT,*.map'",
+			"( rejar= STORE | DEFLATE ) ( ',' strip= matcher ( ',' matcher )* )", null),
 
 		new Syntax(EXPORT_CONTENTS,
 			"Build the JAR in the normal way but use this header for the " + EXPORT_PACKAGE
 				+ " header manifest generation, same format.",
 			EXPORT_CONTENTS + "=!*impl*,*;version=3.0", null, null),
 
+		new Syntax(EXPORTTYPE, "This specifies the type of the exported content",
+			EXPORTTYPE + "=bnd.executablejar;foo=bnd, bnd.runbundles;bar=bnd", null, null),
+
 		new Syntax(FAIL_OK, "Return with an ok status (0) even if the build generates errors.", FAIL_OK + "=true",
 			"true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(FIXUPMESSAGES,
 			"Rearrange and/or replace errors and warnings. Errors that should be ignore or be warnings (and vice versa for warnings) can be moved or rewritten by specifying a globbing pattern for the message.",
 			FIXUPMESSAGES + "='Version mismatch';replace:='************* ${@}';restrict:=error", null, null),
+		new Syntax(GESTALT, "provides access to the gestalt properties that describe the environment",
+			GESTALT + "=interactive",
+			"(" + GESTALT_INTERACTIVE + "|" + GESTALT_BATCH + "|" + GESTALT_CI + "|" + GESTALT_OFFLINE + "|"
+				+ GESTALT_SHELL + ")",
+			null),
+		new Syntax(GROUPID, "Specifies the Maven Group ID to be used for bundles", GROUPID + "=com.foo.bar", null,
+			null),
 		new Syntax(INCLUDE,
 			"Include files. If an entry starts with '-', it does not have to exist. If it starts with '~', it must not overwrite any existing properties.",
 			INCLUDE + ": -${java.user}/.bnd", null, null),
@@ -325,12 +482,24 @@ public class Syntax implements Constants {
 				+ " The intention is to provide a check for files and directories that cannot be used on Windows. However, it can also be used "
 				+ "on other platforms. You can specify the ${@} macro to refer to the default regular expressions used for this.",
 			INVALIDFILENAMES + ":" + Verifier.ReservedFileNames, null, null),
+		new Syntax(INCLUDEPACKAGE, "Include a number of packages from the class path.",
+			INCLUDEPACKAGE + ": !com.foo.bar, com.foo.* ", null, Verifier.WILDCARDNAMEPATTERN),
 		new Syntax(INCLUDERESOURCE,
 			"Include resources from the file system. You can specify a directory, or file. All files are copied to the root, unless a destination directory is indicated.",
 			INCLUDERESOURCE + ": lib=jar", null, null),
 		new Syntax(INCLUDE_RESOURCE,
 			"Include resources from the file system. You can specify a directory, or file. All files are copied to the root, unless a destination directory is indicated.",
 			INCLUDE_RESOURCE + ": lib=jar", null, null),
+		new Syntax(INIT, "Executes macros while initializing the project for building", INIT + ": ${my_macro} ", null,
+			null),
+		new Syntax(JAVAAGENT, "Specify if classpath jars with Premain-Class headers are to be used as java agents.",
+			JAVAAGENT + ": true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(JAVAC, "Java Compiler Specific Settings.", null, null, null),
+		new Syntax(JAVAC_ENCODING, "Sets the Java Compiler Encoding Type.", JAVAC_ENCODING + ": UTF-8", null, null),
+		new Syntax(JAVAC_SOURCE, "Sets the Java source compatibility version.", JAVAC_SOURCE + ": 1.8", null, null),
+		new Syntax(JAVAC_PROFILE, "When using compact profiles, this option specifies the profile name when compiling.",
+			JAVAC_PROFILE + ": compact1", null, null),
+		new Syntax(JAVAC_TARGET, "Sets the Java target compatibility version.", JAVAC_TARGET + ": 1.8", null, null),
 
 		new Syntax(MAKE,
 			"Set patterns for make plugins. These patterns are used to find a plugin that can make a resource that can not be found.",
@@ -339,17 +508,55 @@ public class Syntax implements Constants {
 			new Syntax("recipe", "Recipe for the plugin, can use back references.", "recipe=\"bnd/$1.bnd\"", "bnd",
 				null)),
 
+		new Syntax(MAVEN_RELEASE, "Set the Maven release options for the Maven Bnd Repository.",
+			MAVEN_RELEASE + ": local", "(local|remote)", null),
+
+		new Syntax(MAVEN_SCOPE, "Set the default Maven scope for dependencies in the generated POM.",
+			MAVEN_SCOPE + ": compile", "(compile|provided)", null),
+
 		new Syntax(MANIFEST, "Directly include a manifest, do not use the calculated manifest.",
 			MANIFEST + "=META-INF/MANIFEST.MF", null, null),
+
+		new Syntax(NOBUILDINCACHE, "Do not use a build in cache for the launcher and JUnit.", NOBUILDINCACHE + "=true",
+			"true,false", Verifier.TRUEORFALSEPATTERN),
+
+		new Syntax(NOBUNDLES, "Do not create a target JAR for the project", NOBUNDLES + "=true", "true,false",
+			Verifier.TRUEORFALSEPATTERN),
+
+		new Syntax(NODEFAULTVERSION, "Do not add a default version to exported packages when no version is present.",
+			NODEFAULTVERSION + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 
 		new Syntax(NOEXTRAHEADERS, "Do not generate housekeeping headers.", NOEXTRAHEADERS + "=true", "true,false",
 			Verifier.TRUEORFALSEPATTERN),
 
-		new Syntax(NOUSES, "Do not calculate the " + USES_DIRECTIVE + " directive on exports.", NOUSES + "=true",
+		new Syntax(NOJUNIT, "Indicates that this project does not have JUnit tests", NOJUNIT + "=true", "true,false",
+			Verifier.TRUEORFALSEPATTERN),
+
+		new Syntax(NOJUNITOSGI, "Indicates that this project does not have JUnit OSGi tests", NOJUNITOSGI + "=true",
 			"true,false", Verifier.TRUEORFALSEPATTERN),
 
-		new Syntax(NOEE, "Do not calculate the osgi.ee name space Execution Environment from the class file version",
+		new Syntax(NOMANIFEST, "Do not safe the manifest in the JAR.", NOMANIFEST + "=true", "true,false",
+			Verifier.TRUEORFALSEPATTERN),
+
+		new Syntax(NOUSES,
+			"Do not calculate the " + USES_DIRECTIVE + " directive on package exports or on capabilities.",
+			NOUSES + "=true",
+			"true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(NOCLASSFORNAME,
+			"Do not calculate " + IMPORT_PACKAGE
+				+ " references for 'Class.forName(\"some.Class\")' usage found in method bodies during class processing.",
+			NOCLASSFORNAME + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+
+		new Syntax(NOEE, "Do not calculate the osgi.ee name space Execution Environment from the class file version.",
 			NOEE + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(NAMESECTION,
+			"Create a name section (second part of manifest) with optional property expansion and addition of custom attributes.",
+			NAMESECTION + "=*;baz=true, abc/def/bar/X.class=3", null, null),
+		new Syntax(OUTPUT, "Specify the output directory or file.", OUTPUT + "=my_directory", null, null),
+		new Syntax(OUTPUTMASK,
+			"If set, is used a template to calculate the output file. It can use any macro but the ${@bsn} and ${@version} macros refer to the current JAR being saved. The default is bsn + \".jar\".",
+			OUTPUTMASK + "=my_file.zip", null, null),
+		new Syntax(PACKAGEINFOTYPE, "Sets the different types of package info.", PACKAGEINFOTYPE + "=osgi", null, null),
 		new Syntax(PEDANTIC, "Warn about things that are not really wrong but still not right.", PEDANTIC + "=true",
 			"true,false", Verifier.TRUEORFALSEPATTERN),
 
@@ -359,6 +566,8 @@ public class Syntax implements Constants {
 			PLUGINPATH + "=${workspace}/cnf/cache/plugins-2.2.0.jar", null, null,
 			new Syntax(PLUGINPATH_URL_ATTR, "Specify a URL to download this file from if it does not exist",
 				"url=http://example.com/download/plugins-2.2.0.jar", null, null)),
+		new Syntax(PREPROCESSMATCHERS, "Specify which files can be preprocessed.",
+			PREPROCESSMATCHERS + "=!OSGI-INF/*,* ", null, null),
 
 		new Syntax(SERVICE_COMPONENT, "The header for Declarative Services.",
 			SERVICE_COMPONENT + "=com.acme.Foo?;activate='start'", null, null),
@@ -374,9 +583,22 @@ public class Syntax implements Constants {
 		new Syntax(REPRODUCIBLE, "Use a fixed timestamp for all jar entries.", REPRODUCIBLE + "=true", "true,false",
 			Verifier.TRUEORFALSEPATTERN),
 
+		new Syntax("-resolve.effective",
+			"Each requirement and capability has an effective or is effective=resolve. An effective of resolve is always processed by the resolver.",
+			"-resolve.effective=resolve,active", "qname (',' qname )", null),
+
+		new Syntax("-resolve.preferences", "Override the default order and selection of repositories.",
+			"-resolve.preferences=com.example.bundle.most.priority", "${packages}", null),
+
+		new Syntax(RUNTIMEOUT, "Specifies the test execution timeout.", RUNTIMEOUT + "=10000", null, null),
+		new Syntax(REQUIRE_BND, "Require a specific version of bnd.", REQUIRE_BND + "=\"(version>=4.1)\"",
+			"(FILTER ( ',' FILTER )* )?", null),
+
 		new Syntax(RESOURCEONLY,
 			"Normally bnd warns when the JAR does not contain any classes, this option suppresses this warning.",
 			RESOURCEONLY + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(SAVEMANIFEST, "Write out the manifest to a separate file after it has been calculated.",
+			SAVEMANIFEST + "=file.txt", null, null),
 		new Syntax(SOURCES, "Include sources in the jar.", SOURCES + "=true", "true,false",
 			Verifier.TRUEORFALSEPATTERN),
 		new Syntax(SOURCEPATH, "List of directory names that used to source sources for " + SOURCES + ".",
@@ -387,32 +609,116 @@ public class Syntax implements Constants {
 		new Syntax(TESTER,
 			"The name of the tester. The preferred default is biz.aQute.tester, old style is biz.aQute.junit",
 			"-tester=biz.aQute.tester;version=latest", null, null),
+		new Syntax(TESTER_PLUGIN,
+			"It points to a class that must extend the aQute.bnd.build.ProjectTester class. This class is loaded in the bnd environment and not in the target environment. This ProjectTester plugin then gets a chance to configure the launcher as it sees fit. It can get properties from the project and set these in the Project Launcher so they can be picked up in the target environment.",
+			TESTER_PLUGIN + "= a.b.c.MyTester", null, Verifier.FQNPATTERN),
 		new Syntax(SUB,
 			"Build a set of bnd files that use this bnd file as a basis. The list of bnd file can be specified with wildcards.",
 			SUB + "=com.acme.*.bnd", null, null),
+		new Syntax(REPORTNEWER, "Report any entries that were added to the build since the last JAR was made.",
+			REPORTNEWER + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(RUNPROPERTIES, "Properties that are set as system properties before the framework is started.",
 			RUNPROPERTIES + "= foo=3, bar=4", null, null),
+		new Syntax(RUNREMOTE, "It provides remote debugging support for bnd projects.",
+			RUNREMOTE + "= local; shell=4003; jdb=1044; host=localhost ", null, null),
+		new Syntax(RUNSTORAGE, "Define the directory to use for the framework's work area.", RUNSTORAGE + "= foo", null,
+			null),
 		new Syntax(RUNSYSTEMPACKAGES, "Add additional system packages to a framework run.",
 			RUNSYSTEMPACKAGES + "=com.acme.foo,javax.management", null, null),
+		new Syntax(RUNSYSTEMCAPABILITIES, "Define extra capabilities for the remote VM.",
+			RUNSYSTEMCAPABILITIES + "=some.namespace; some.namespace=foo", null, null),
+		new Syntax(RUNPROVIDEDCAPABILITIES, "Extra capabilities for a distro resolve.",
+			RUNPROVIDEDCAPABILITIES + "=some.namespace; some.namespace=foo", null, null),
+		new Syntax(RUNTIMEOUT, "Define extra capabilities for the remote VM.",
+			RUNSYSTEMCAPABILITIES + "=some.namespace; some.namespace=foo", null, null),
+		new Syntax(RUNBUILDS,
+			"Defines if this should add the bundles build by this project to the " + RUNBUNDLES
+				+ ". For a bndrun file this is default false, for a bnd file this is default true.",
+			RUNBUILDS + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(RUNBUNDLES,
 			"Add additional bundles, specified with their bsn and version like in " + BUILDPATH
 				+ ", that are started before the project is run.",
 			RUNBUNDLES + "=osgi;version=\"[4.1,4.2)\", junit.junit, com.acme.foo;version=project", null,
 			Verifier.SYMBOLICNAME, path_version),
+		new Syntax(RUNFRAMEWORK,
+			"Sets the type of framework to run. If 'none', an internal dummy framework is used. Otherwise the Java META-INF/services model is used for the FrameworkFactory interface name.",
+			RUNFW + ": none", "(none | services | ANY)", null),
+		new Syntax(RUNENV, "Specify runtime properties for the framework.",
+			RUNENV + ": org.osgi.service.http.port=9999, org.osgi.framework.bootdelegation=\"sun.*,com.sun.*,\"", null,
+			null),
+		new Syntax(RUNFW, "The " + RUNFW + " instruction sets the framework to use.",
+			RUNFW + ": org.eclipse.osgi; version=3.10", null, null),
+		new Syntax(RUNJDB,
+			"Specify a JDB port on invocation when launched outside a debugger so the debugger can attach later.",
+			RUNJDB + ": 10001", null, null),
+		new Syntax(RUNKEEP, "Decides to keep the framework storage directory between launching.", RUNKEEP + ": true",
+			"true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(RUNPATH, "Additional JARs for the VM path, can include a framework",
 			RUNPATH + "=org.eclipse.osgi;version=3.5", null, null, path_version),
+		new Syntax(RUNNOREFERENCES,
+			"Do not use the reference url for installing a bundle in the installer. This is the default for windows because it is quite obstinate about open files, on other platforms the more efficient reference urls are used.",
+			RUNNOREFERENCES + ": true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(RUNTRACE, "Trace the launched process in detail.", RUNTRACE + ": true", "true,false",
+			Verifier.TRUEORFALSEPATTERN),
+		new Syntax(REMOTEWORKSPACE,
+			"This setting enables the workspace to be available over a remote procedure call interface.",
+			REMOTEWORKSPACE + ": true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(RUNVM,
 			"Additional arguments for the VM invocation. Keys that start with a - are added as options, otherwise they are treated as -D properties for the VM.",
 			RUNVM + "=-Xmax=30, secondOption=secondValue", null, null),
 		new Syntax(RUNPROGRAMARGS, "Additional arguments for the program invocation.",
 			RUNPROGRAMARGS + "=/some/file /another/file some_argument", null, null),
+		new Syntax(RUNREPOS, "The " + RUNREPOS + " instruction is used to restrict or order the available repositories",
+			RUNREPOS + "=Maven Central, Main, Distro, ...", null, null),
+		new Syntax(RUNREQUIRES, "Comma seperated list of root requirements for a resolve operation.",
+			RUNREQUIRES + "=osgi.identity;filter:='(osgi.identity=<bsn>)', ...", null, null),
+		new Syntax(RUNBLACKLIST,
+			"A set of requirements that is then removed from any result from the repositories, effectively making it impossible to use.",
+			RUNBLACKLIST + "=osgi.identity;filter:='(osgi.identity=<bsn>)', ...", null, null),
+		new Syntax(RUNEE,
+			"Adds the capabilities of an execution environment to the system capabilities for a resolve operation.",
+			RUNEE + "=JavaSE-1.8", null, null),
+		new Syntax(SIGN, "Sign the Jar File", SIGN + "=alias",
+			"<alias> [ ';' 'password:=' <password> ] [ ';'* 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )*",
+			null),
+		new Syntax(SNAPSHOT,
+			"When the bundle version’s qualifier equals 'SNAPSHOT' or ends with '-SNAPSHOT', the STRING value of the -snapshot instruction is substituted for 'SNAPSHOT'.",
+			SNAPSHOT + "=${tstamp}", null, null),
 		new Syntax(STANDALONE,
 			"Used in bndrun files. Disconnects the bndrun file from the workspace and defines its own Capabilities repositories.",
 			STANDALONE + "=index.html;name=..., ...", null, null),
+		new Syntax(STRICT, "If set to true, then extra verification is done.", STRICT + "=true", "true,false",
+			Verifier.TRUEORFALSEPATTERN),
+		new Syntax(SYSTEMPROPERTIES, "Properties that are set as system properties.",
+			SYSTEMPROPERTIES + "= foo=3, bar=4", null, null),
+		new Syntax(TESTCONTINUOUS,
+			"Do not exit after running the test suites but keep watching the bundles and rerun the test cases if the bundle is updated.",
+			TESTCONTINUOUS + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(TESTSOURCES,
+			"Specification to find JUnit test cases by traversing the test src directory and looking for java classes.",
+			TESTSOURCES + "=*.java", "REGEX ( ',' REGEX )*", null),
+		new Syntax(TESTPACKAGES,
+			"It automatically adds the test packages if and only if " + UNDERTEST + " has been set to true",
+			TESTPACKAGES + "=test;presence:=optional", null, null),
+		new Syntax(TESTUNRESOLVED,
+			"Will execute a JUnit testcase ahead of any other test case that will abort if there are any unresolved bundles.",
+			TESTUNRESOLVED + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 
-		// Upto
+		new Syntax(UNDERTEST,
+			"Will be set by the project when it builds a JAR in test mode, intended to be used by plugins.",
+			UNDERTEST + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+
 		new Syntax(UPTO, "Limit bnd's behavior like it was up to the given version", "-upto: 2.3.1", null,
-			Version.VERSION)
+			Version.VERSION),
+
+		new Syntax(WAB, "Create a Web Archive Bundle (WAB) or a WAR.", WAB + "=static-pages/", null, null),
+		new Syntax(WABLIB, "Specify the libraries that must be included in a Web Archive Bundle (WAB) or WAR.",
+			WABLIB + "=lib/a.jar, lib/b.jar", null, null),
+		new Syntax(WORKINGSET, "Groups the workspace into different working sets.",
+			WORKINGSET + "=Implementations, Drivers", null, null),
+		new Syntax("-x-overwritestrategy",
+			"On windows we sometimes cannot delete a file because someone holds a lock in our or another process. So if we set the -overwritestrategy flag we use an avoiding strategy.",
+			"-x-overwritestrategy=gc", "(classic|delay|gc|windows-only-disposable-names|disposable-names)", null)
 	};
 
 	public final static Map<String, Syntax>	HELP					= new HashMap<>();
@@ -494,10 +800,8 @@ public class Syntax implements Constants {
 				assert optionalType instanceof Class : "Generic types in optional not supported";
 				rtype = (Class<?>) optionalType;
 			}
-			if (rtype
-				.isEnum()) {
-				Object[] enumConstants = rtype
-					.getEnumConstants();
+			if (rtype.isEnum()) {
+				Object[] enumConstants = rtype.getEnumConstants();
 				values = Strings.join(enumConstants);
 			} else if (Boolean.class.isAssignableFrom(rtype)) {
 				values = "true,false";
@@ -519,8 +823,7 @@ public class Syntax implements Constants {
 			} else if (Iterable.class.isAssignableFrom(rtype)) {
 				// list
 				syntaxes.add(new Syntax(name, lead, example, values, pattern));
-			} else if (rtype
-				.isInterface()) {
+			} else if (rtype.isInterface()) {
 				// properties
 				Syntax[] clauses = create(rtype, Syntax::toProperty, false);
 				syntaxes.add(new Syntax(name, lead, example, values, pattern, clauses));
@@ -595,6 +898,7 @@ public class Syntax implements Constants {
 		return header;
 	}
 
+	@Override
 	public String toString() {
 		return header;
 	}

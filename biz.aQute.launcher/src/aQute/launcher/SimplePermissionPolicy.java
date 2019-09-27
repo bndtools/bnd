@@ -22,13 +22,13 @@ import aQute.lib.io.IO;
 /**
  * Implements a permissionpolicy. It will tried to read a resource from the
  * bundle. This resource should have the following format:
- * 
+ *
  * <pre>
  *  '('
  * permission-class [ '&quot;' name-parameter '&quot;' [ '&quot;' action [ ','
  * action ] ... '&quot;' ] ] ')' Or '#' *
  * </pre>
- * 
+ *
  * Each valid line is translated into a PermissionInfo object and these objects
  * together form the permissions for a specific bundle. The class will also
  * attempt to read a file called "default.perm" from the current bundle that
@@ -160,7 +160,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 	}
 
 	private PermissionAdmin getPermissionAdmin() {
-		ServiceReference ref = context.getServiceReference(PermissionAdmin.class.getName());
+		ServiceReference<?> ref = context.getServiceReference(PermissionAdmin.class.getName());
 		if (ref == null)
 			return null;
 

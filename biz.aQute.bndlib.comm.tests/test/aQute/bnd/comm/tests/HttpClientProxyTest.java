@@ -1,5 +1,7 @@
 package aQute.bnd.comm.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
@@ -191,39 +193,29 @@ public class HttpClientProxyTest extends TestCase {
 	public void testSecureSocksAuthenticatingWithGoodUserSecure() throws Exception {
 		createSecureSocks5();
 		createSecureServer();
-		assertSocks5Proxy("good", true);
+		assertThat(assertSocks5Proxy("good", true)).isBetween(200, 299);
 	}
 
 	public void testSecureSocksAuthenticatingWithBadUserSecure() throws Exception {
-		try {
-			createSecureSocks5();
-			createSecureServer();
-			assertSocks5Proxy("bad", true);
-			fail("Expected the transfer to fail");
-		} catch (Exception e) {
-			// ok
-		}
+		createSecureSocks5();
+		createSecureServer();
+		assertThat(assertSocks5Proxy("bad", true)).isGreaterThanOrEqualTo(500);
 	}
 
 	public void testSecureSocksAuthenticatingWithGoodUser() throws Exception {
 		createSecureSocks5();
 		createUnsecureServer();
-		assertSocks5Proxy("good", true);
+		assertThat(assertSocks5Proxy("good", true)).isBetween(200, 299);
 	}
 
 	public void testSecureSocksAuthenticatingWithBadUser() throws Exception {
-		try {
-			createSecureSocks5();
-			createUnsecureServer();
-			assertSocks5Proxy("bad", true);
-			fail("Expected the transfer to fail");
-		} catch (Exception e) {
-			// ok
-		}
+		createSecureSocks5();
+		createUnsecureServer();
+		assertThat(assertSocks5Proxy("bad", true)).isGreaterThanOrEqualTo(500);
 	}
 
 	/*
-	 * 
+	 *
 	 */
 
 	private HttpProxyServer				httpProxy;
@@ -423,8 +415,7 @@ public class HttpClientProxyTest extends TestCase {
 
 	@SuppressWarnings("resource")
 	void assertHttpProxy(String password, String protocol, boolean proxyCalled, boolean authenticationCalled,
-		int response)
-		throws MalformedURLException, Exception {
+		int response) throws MalformedURLException, Exception {
 		try (Processor p = new Processor(); HttpClient hc = new HttpClient()) {
 			p.setProperty("-connectionsettings", "" + false);
 			ConnectionSettings cs = new ConnectionSettings(p, hc);
@@ -470,7 +461,7 @@ public class HttpClientProxyTest extends TestCase {
 	}
 
 	@SuppressWarnings("resource")
-	void assertSocks5Proxy(String password, boolean authenticationCalled) throws MalformedURLException, Exception {
+	int assertSocks5Proxy(String password, boolean authenticationCalled) throws MalformedURLException, Exception {
 		try (Processor p = new Processor(); HttpClient hc = new HttpClient()) {
 			p.setProperty("-connectionsettings", "" + false);
 			ConnectionSettings cs = new ConnectionSettings(p, hc);
@@ -497,16 +488,23 @@ public class HttpClientProxyTest extends TestCase {
 			cs.add(server);
 
 			URL url = new URL(httpTestServer.getBaseURI() + "/get-tag/ABCDEFGH");
-			TaggedData tag = hc.connectTagged(url);
+			TaggedData tag = hc.build()
+				.get(TaggedData.class)
+				.retries(0)
+				.go(url);
 			assertNotNull(tag);
-			assertEquals("ABCDEFGH", tag.getTag());
-			String s = IO.collect(tag.getInputStream());
-			assertNotNull(s);
-			assertTrue(s.trim()
-				.startsWith("{"));
-			assertTrue(proxyCalled.get());
-			// assertTrue(this.authenticationCalled.get() ==
-			// authenticationCalled);
+			int code = tag.getResponseCode();
+			if (code / 100 == 2) {
+				assertEquals("ABCDEFGH", tag.getTag());
+				String s = IO.collect(tag.getInputStream());
+				assertNotNull(s);
+				assertTrue(s.trim()
+					.startsWith("{"));
+				assertTrue(proxyCalled.get());
+				// assertTrue(this.authenticationCalled.get() ==
+				// authenticationCalled);
+			}
+			return code;
 		}
 	}
 

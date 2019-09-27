@@ -2,6 +2,7 @@
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 gittag: ${first;${system-allow-fail;git describe --abbrev=0},${base.version}.DEV}
+timestamp: ${tstamp}
 
 # Plugins to be included in the Bndtools p2 update repository
 -dependson: \
@@ -12,7 +13,6 @@ gittag: ${first;${system-allow-fail;git describe --abbrev=0},${base.version}.DEV
     bndtools.m2e, \
     bndtools.pde, \
     bndtools.release, \
-    org.bndtools.embeddedrepo, \
     org.bndtools.headless.build.manager, \
     org.bndtools.headless.build.plugin.ant, \
     org.bndtools.headless.build.plugin.gradle, \
@@ -20,6 +20,7 @@ gittag: ${first;${system-allow-fail;git describe --abbrev=0},${base.version}.DEV
     org.bndtools.versioncontrol.ignores.plugin.git, \
     org.bndtools.templating, \
     org.bndtools.templating.gitrepo, \
+    biz.aQute.bnd.embedded-repo, \
     biz.aQute.bnd.maven, \
     biz.aQute.bndlib, \
     biz.aQute.repository, \
@@ -27,7 +28,7 @@ gittag: ${first;${system-allow-fail;git describe --abbrev=0},${base.version}.DEV
 
 other: org.slf4j.api
 
-plugins: ${map;repo;${replace;${-dependson},${other};$;\\\\\\;latest}}
+plugins: ${map;repo;${replacelist;${-dependson},${other};$;\\\\\\;latest}}
 
 -includeresource: ${target}/p2
 -resourceonly: true

@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -20,63 +21,83 @@ import bndtools.Plugin;
 
 public class ResolveJob extends Job {
 
-    private final BndEditModel model;
-    private final List<ResolutionCallback> callbacks = new LinkedList<ResolutionCallback>();
+	private final BndEditModel				model;
+	private final IResource					inputResource;
+	private final List<ResolutionCallback>	callbacks	= new LinkedList<>();
 
-    private ResolutionResult result;
+	private ResolutionResult				result;
 
-    public ResolveJob(BndEditModel model) {
-        super("Resolving " + model.getBndResourceName());
-        this.model = model;
-    }
+	public ResolveJob(BndEditModel model, IResource inputResource) {
+		super("Resolving " + model.getBndResourceName());
+		this.model = model;
+		this.inputResource = inputResource;
+	}
 
-    public IStatus validateBeforeRun() {
-        try {
+	public IStatus validateBeforeRun() {
+		try {
 
-            //
-            // The BndEdit model does not do property expansion. So
-            // get the processor to get the expansions.
-            //
+			//
+			// The BndEdit model does not do property expansion. So
+			// get the processor to get the expansions.
+			//
 
-            Processor p = model.getProperties();
+			Processor p = model.getProperties();
 
-            String runfw = p.getProperty(Constants.RUNFW);
-            if (runfw == null)
-                return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
+			String runfw = p.getProperty(Constants.RUNFW);
+			if (runfw == null)
+				return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
+					Messages.ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
 
-            String eeStr = p.getProperty(Constants.RUNEE);
-            if (eeStr == null)
-                return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
+			try {
+				if (Arrays.stream(inputResource.getProject()
+					.getDescription()
+					.getNatureIds())
+					.anyMatch(natureId -> "org.eclipse.m2e.core.maven2Nature".equals(natureId))) {
 
-            EE ee = EE.parse(eeStr);
-            if (ee == null) {
-                String supportedEEs = Arrays.stream(EE.values())
-                    .map(EE::getEEName)
-                    .collect(Collectors.joining(",\n - "));
-                return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Unrecognized Execution Environment: \"{0}\".\n\nSupported values are:\n - {1}", eeStr, supportedEEs), null);
-            }
+					return Status.OK_STATUS;
+				}
+			} catch (Exception e) {
+				// ignore this
+			}
 
-            return Status.OK_STATUS;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+			String eeStr = p.getProperty(Constants.RUNEE);
+			if (eeStr == null)
+				return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
+					Messages.ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
 
-    @Override
-    protected IStatus run(IProgressMonitor monitor) {
-        ResolveOperation operation = new ResolveOperation(model, callbacks);
-        operation.run(monitor);
-        result = operation.getResult();
+			EE ee = EE.parse(eeStr);
+			if (ee == null) {
+				String supportedEEs = Arrays.stream(EE.values())
+					.map(EE::getEEName)
+					.collect(Collectors.joining(",\n - "));
+				return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
+					MessageFormat.format(
+						"Unrecognized Execution Environment: \"{0}\".\n\nSupported values are:\n - {1}", eeStr,
+						supportedEEs),
+					null);
+			}
 
-        return Status.OK_STATUS;
-    }
+			return Status.OK_STATUS;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-    public ResolutionResult getResolutionResult() {
-        return result;
-    }
+	@Override
+	protected IStatus run(IProgressMonitor monitor) {
+		ResolveOperation operation = new ResolveOperation(model, callbacks);
+		operation.run(monitor);
+		result = operation.getResult();
 
-    public void addCallback(ResolutionCallback callback) {
-        callbacks.add(callback);
-    }
+		return Status.OK_STATUS;
+	}
+
+	public ResolutionResult getResolutionResult() {
+		return result;
+	}
+
+	public void addCallback(ResolutionCallback callback) {
+		callbacks.add(callback);
+	}
 
 }

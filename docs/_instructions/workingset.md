@@ -35,3 +35,11 @@ As you could see in the syntax, you can also specify a `member` attribute on the
       test;member=${filter;${p};.*\.test}
 
 The feature will create working sets as demanded but will reuse existing working set with the matching name. If no `-workingset` instruction is given, the working sets are not touched in any way for that project. That is, they are then not removed from existing sets.
+
+## Manual Workingsets
+
+In some cases it is necessary to maintain a working set manual. Such a workingset is then stored in Eclipse and not shared with the team. To
+create a manual working set, use a name that is outside the specified NAME pattern. For example, use a name that starts with a 
+dot (`.`) like `.Private`. Since you cannot use these names in the `-workingset` instruction (they generate an error)
+bnd will never look at workingsets with such a name.
+

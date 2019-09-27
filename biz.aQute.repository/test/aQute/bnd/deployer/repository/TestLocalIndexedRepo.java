@@ -1,5 +1,7 @@
 package aQute.bnd.deployer.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -8,6 +10,7 @@ import java.util.Map;
 
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
+import aQute.libg.cryptography.SHA1;
 import junit.framework.TestCase;
 import test.lib.NanoHTTPD;
 
@@ -47,10 +50,35 @@ public class TestLocalIndexedRepo extends TestCase {
 			.size());
 		assertEquals(new File(outputDir, "index.xml.gz").toURI(), repo.getIndexLocations()
 			.get(0));
-		assertEquals(0, reporter.getErrors()
+		assertTrue(reporter.check());
+	}
+
+	public void testLocalIndexLocationWithPretty() throws Exception {
+		Processor reporter = new Processor();
+		LocalIndexedRepo repo = new LocalIndexedRepo();
+		Map<String, String> config = new HashMap<>();
+		config.put("local", outputDir.getAbsolutePath());
+		config.put("pretty", true + "");
+		repo.setProperties(config);
+		repo.setReporter(reporter);
+
+		assertEquals(1, repo.getIndexLocations()
 			.size());
-		assertEquals(0, reporter.getWarnings()
+		File indexFile = new File(outputDir, "index.xml");
+		assertEquals(indexFile.toURI(), repo.getIndexLocations()
+			.get(0));
+		assertTrue(reporter.check());
+
+		SHA1 digest = SHA1.digest(indexFile);
+
+		Thread.sleep(1000);
+		repo.refresh();
+
+		assertEquals(1, repo.getIndexLocations()
 			.size());
+
+		// Check file not touched
+		assertThat(indexFile).hasDigest("SHA1", digest.digest());
 	}
 
 	public void testLocalAndRemoteIndexLocations() throws Exception {

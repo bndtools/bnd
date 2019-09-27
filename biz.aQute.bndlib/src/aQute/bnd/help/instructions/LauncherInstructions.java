@@ -2,6 +2,9 @@ package aQute.bnd.help.instructions;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 import aQute.bnd.help.SyntaxAnnotation;
 import aQute.bnd.osgi.Jar;
@@ -9,6 +12,7 @@ import aQute.bnd.osgi.Jar;
 /**
  * Instructions for the launcher
  */
+@ProviderType
 public interface LauncherInstructions {
 
 	interface Executable {
@@ -22,4 +26,11 @@ public interface LauncherInstructions {
 
 	@SyntaxAnnotation(lead = "Options for the export of an executable", example = "rejar=STORE")
 	Executable executable();
+
+	enum RunOption {
+		eager
+	}
+
+	@SyntaxAnnotation(lead = "Options for the launch", example = "-runoptions eager")
+	Set<RunOption> runoptions();
 }

@@ -47,6 +47,7 @@ class AttrsHandler implements InvocationHandler {
 		}, new AttrsHandler(attrs));
 	}
 
+	@Override
 	public String toString() {
 		return attrs.toString() + "'";
 	}

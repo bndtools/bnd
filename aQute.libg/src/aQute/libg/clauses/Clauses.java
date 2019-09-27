@@ -17,7 +17,7 @@ public class Clauses extends LinkedHashMap<String, Map<String, String>> {
 	 * ::= clause ( ',' clause ) + clause ::= name ( ';' name ) (';' key '='
 	 * value ) This is mapped to a Map { name => Map { attr|directive => value }
 	 * }
-	 * 
+	 *
 	 * @param value
 	 * @return parsed clauses
 	 */

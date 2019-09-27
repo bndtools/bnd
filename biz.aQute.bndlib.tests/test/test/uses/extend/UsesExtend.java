@@ -8,7 +8,11 @@ import javax.security.auth.callback.NameCallback;
 })
 public class UsesExtend extends NameCallback {
 
-	private Subject subject;
+	private Subject				subject;
+	/**
+	 * 
+	 */
+	private static final long	serialVersionUID	= 1L;
 
 	public UsesExtend(String arg0) {
 		super(arg0);

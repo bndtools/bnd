@@ -1,0 +1,7 @@
+-runrequires: osgi.identity;filter:='(osgi.identity=demo)'
+-runfw: org.apache.felix.framework;version='[5.6.10,6)'
+-runee: JavaSE-1.8
+-runpath: ${.}/testresources/biz.aQute.launcher-4.1.0.jar;version=file
+-runbundles: \
+	demo;version=snapshot,\
+	org.apache.servicemix.bundles.junit;version='[4.11.0,5)'

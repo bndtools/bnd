@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * the list of dependencies, the object is the target, and the runnable is run
  * to update the target. The runnable will only run when all its dependencies
  * have ran their associated runnable.
- * 
+ *
  * @author aqute
  * @param <T>
  */
@@ -83,7 +83,7 @@ public class Forker<T> {
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param executor
 	 */
 	public Forker(Executor executor) {
@@ -100,7 +100,7 @@ public class Forker<T> {
 	/**
 	 * Schedule a job for execution when the dependencies are done of target are
 	 * done.
-	 * 
+	 *
 	 * @param dependencies the dependencies that must have run
 	 * @param target the target, is removed from all the dependencies when it
 	 *            ran
@@ -169,7 +169,7 @@ public class Forker<T> {
 
 	/**
 	 * Called when the target has ran by the Job.
-	 * 
+	 *
 	 * @param done
 	 */
 	void done(Job done) {
@@ -195,7 +195,7 @@ public class Forker<T> {
 
 	/**
 	 * Cancel the forker.
-	 * 
+	 *
 	 * @throws InterruptedException
 	 */
 	public void cancel(long ms) throws InterruptedException {

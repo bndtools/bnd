@@ -37,12 +37,12 @@ import aQute.service.reporter.Reporter;
  */
 @SuppressWarnings("unchecked")
 public class CommandLine {
-	static int			LINELENGTH	= 60;
-	static Pattern		ASSIGNMENT	= Pattern.compile("(\\w[\\w\\d]*+)\\s*=\\s*([^\\s]+)\\s*");
-	Reporter			reporter;
-	Justif				justif		= new Justif(80, 30, 32, 70);
-	CommandLineMessages	msg;
-	private Object		result;
+	final static int				LINELENGTH	= 60;
+	private final static Pattern	ASSIGNMENT	= Pattern.compile("(\\w++)\\s*=\\s*(\\S+)\\s*");
+	Reporter						reporter;
+	Justif							justif		= new Justif(80, 30, 32, 70);
+	CommandLineMessages				msg;
+	private Object					result;
 
 	class Option {
 		public char		shortcut;
@@ -150,7 +150,7 @@ public class CommandLine {
 			}
 		}
 		if (reporter.getErrors()
-			.size() == 0) {
+			.isEmpty()) {
 			m.setAccessible(true);
 			try {
 				MethodHandle mh = publicLookup().unreflect(m);
@@ -360,7 +360,7 @@ public class CommandLine {
 	/**
 	 * Assign an option, must handle flags, parameters, and parameters that can
 	 * happen multiple times.
-	 * 
+	 *
 	 * @param options The command line map
 	 * @param args the args input
 	 * @param m the selected method for this option
@@ -489,7 +489,7 @@ public class CommandLine {
 		return sb.toString();
 	}
 
-	static Pattern LAST_PART = Pattern.compile(".*[\\$\\.]([^\\$\\.]+)");
+	private final static Pattern LAST_PART = Pattern.compile(".*[.$]([^.$]+)");
 
 	private static String lastPart(String name) {
 		Matcher m = LAST_PART.matcher(name);
@@ -552,7 +552,7 @@ public class CommandLine {
 
 	/**
 	 * Parse a class and return a list of command names
-	 * 
+	 *
 	 * @param target
 	 * @return command names
 	 */

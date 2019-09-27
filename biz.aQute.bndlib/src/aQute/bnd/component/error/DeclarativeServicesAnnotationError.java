@@ -2,7 +2,7 @@ package aQute.bnd.component.error;
 
 public class DeclarativeServicesAnnotationError {
 
-	public static enum ErrorType {
+	public enum ErrorType {
 		ACTIVATE_SIGNATURE_ERROR,
 		DEACTIVATE_SIGNATURE_ERROR,
 		MODIFIED_SIGNATURE_ERROR,
@@ -26,7 +26,8 @@ public class DeclarativeServicesAnnotationError {
 		MISSING_REFERENCE_NAME,
 		COMPONENT_PROPERTY_ANNOTATION_PROBLEM,
 		INVALID_COMPONENT_TYPE,
-		CONSTRUCTOR_SIGNATURE_ERROR;
+		CONSTRUCTOR_SIGNATURE_ERROR,
+		VERSION_MISMATCH;
 	}
 
 	public final String		className;

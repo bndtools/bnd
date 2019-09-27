@@ -16,6 +16,7 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import aQute.bnd.annotation.baseline.BaselineIgnore;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -26,6 +27,7 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
 import aQute.lib.filter.Filter;
 import aQute.lib.io.IO;
+import aQute.lib.regex.PatternConstants;
 import aQute.libg.cryptography.Digester;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.qtokens.QuotedTokenizer;
@@ -36,102 +38,51 @@ import aQute.libg.qtokens.QuotedTokenizer;
 
 public class Verifier extends Processor {
 
-	private final Jar		dot;
-	private final Manifest	manifest;
-	private final Domain	main;
+	private final Jar			dot;
+	private final Manifest		manifest;
+	private final Domain		main;
 
-	private boolean			r3;
-	private boolean			usesRequire;
+	private boolean				r3;
+	private boolean				usesRequire;
 
-	final static int		V1_1	= 45;
-	final static int		V1_2	= 46;
-	final static int		V1_3	= 47;
-	final static int		V1_4	= 48;
-	final static int		V1_5	= 49;
-	final static int		V1_6	= 50;
-	final static int		V1_7	= 51;
-	final static int		V1_8	= 52;
-	final static int		V9_0	= 53;
-	final static int		V10_0	= 54;
-	final static int		V11_0	= 55;
-
-	static class EE {
-		String	name;
-		int		target;
-
-		EE(String name, @SuppressWarnings("unused") int source, int target) {
-			this.name = name;
-			this.target = target;
-		}
-
-		@Override
-		public String toString() {
-			return name + "(" + target + ")";
-		}
-	}
-
-	final static EE[]			ees								= {
-		new EE("CDC-1.0/Foundation-1.0", V1_3, V1_1),																						//
-		new EE("CDC-1.1/Foundation-1.1", V1_3, V1_2),																						//
-		new EE("OSGi/Minimum-1.0", V1_3, V1_1),																								//
-		new EE("OSGi/Minimum-1.1", V1_3, V1_2),																								//
-		new EE("OSGi/Minimum-1.2", V1_3, V1_2),																								//
-		new EE("JRE-1.1", V1_1, V1_1),																										//
-		new EE("J2SE-1.2", V1_2, V1_1),																										//
-		new EE("J2SE-1.3", V1_3, V1_1),																										//
-		new EE("J2SE-1.4", V1_3, V1_2),																										//
-		new EE("J2SE-1.5", V1_5, V1_5),																										//
-		new EE("JavaSE-1.6", V1_6, V1_6),																									//
-		new EE("JavaSE-1.7", V1_7, V1_7),																									//
-		new EE("JavaSE-1.8", V1_8, V1_8),																									//
-		new EE("JavaSE-9", V9_0, V9_0),																										//
-		new EE("JavaSE-10", V10_0, V10_0),																									//
-		new EE("JavaSE-11", V11_0, V11_0),																													//
-		new EE("PersonalJava-1.1", V1_1, V1_1),																								//
-		new EE("PersonalJava-1.2", V1_1, V1_1),																								//
-		new EE("CDC-1.0/PersonalBasis-1.0", V1_3, V1_1),																					//
-		new EE("CDC-1.0/PersonalJava-1.0", V1_3, V1_1),																						//
-		new EE("CDC-1.1/PersonalBasis-1.1", V1_3, V1_2),																					//
-		new EE("CDC-1.1/PersonalJava-1.1", V1_3, V1_2)
-	};
-
-	final static Pattern		EENAME							= Pattern.compile(															//
-		"CDC-1\\.0/Foundation-1\\.0"																										//
-			+ "|CDC-1\\.1/Foundation-1\\.1"																									//
-			+ "|OSGi/Minimum-1\\.[0-2]"																										//
-			+ "|JRE-1\\.1"																													//
-			+ "|J2SE-1\\.[2-5]"																												//
-			+ "|JavaSE-1\\.[6-8]"																											//
-			+ "|JavaSE-9"																													//
-			+ "|JavaSE-10"																													//
-			+ "|JavaSE-11"																																	//
-			+ "|PersonalJava-1\\.[12]"																										//
-			+ "|CDC-1\\.0/PersonalBasis-1\\.0"																								//
-			+ "|CDC-1\\.0/PersonalJava-1\\.0"																								//
-			+ "|CDC-1\\.1/PersonalBasis-1\\.1"																								//
+	final static Pattern		EENAME							= Pattern.compile(																			//
+		"CDC-1\\.0/Foundation-1\\.0"																														//
+			+ "|CDC-1\\.1/Foundation-1\\.1"																													//
+			+ "|OSGi/Minimum-1\\.[0-2]"																														//
+			+ "|JRE-1\\.1"																																	//
+			+ "|J2SE-1\\.[2-5]"																																//
+			+ "|JavaSE-1\\.[6-8]"																															//
+			+ "|JavaSE-9"																																	//
+			+ "|JavaSE-[1-9][0-9]"																															//
+			+ "|PersonalJava-1\\.[12]"																														//
+			+ "|CDC-1\\.0/PersonalBasis-1\\.0"																												//
+			+ "|CDC-1\\.0/PersonalJava-1\\.0"																												//
+			+ "|CDC-1\\.1/PersonalBasis-1\\.1"																												//
 			+ "|CDC-1\\.1/PersonalJava-1\\.1");
-	public final static String	EES[]							= {																			//
-		"CDC-1.0/Foundation-1.0",																											//
-		"CDC-1.1/Foundation-1.1",																											//
-		"OSGi/Minimum-1.0",																													//
-		"OSGi/Minimum-1.1",																													//
-		"OSGi/Minimum-1.2",																													//
-		"JRE-1.1",																															//
-		"J2SE-1.2",																															//
-		"J2SE-1.3",																															//
-		"J2SE-1.4",																															//
-		"J2SE-1.5",																															//
-		"JavaSE-1.6",																														//
-		"JavaSE-1.7",																														//
-		"JavaSE-1.8",																														//
-		"JavaSE-9",																															//
-		"JavaSE-10",																														//
+	public final static String	EES[]							= {																							//
+		"CDC-1.0/Foundation-1.0",																															//
+		"CDC-1.1/Foundation-1.1",																															//
+		"OSGi/Minimum-1.0",																																	//
+		"OSGi/Minimum-1.1",																																	//
+		"OSGi/Minimum-1.2",																																	//
+		"JRE-1.1",																																			//
+		"J2SE-1.2",																																			//
+		"J2SE-1.3",																																			//
+		"J2SE-1.4",																																			//
+		"J2SE-1.5",																																			//
+		"JavaSE-1.6",																																		//
+		"JavaSE-1.7",																																		//
+		"JavaSE-1.8",																																		//
+		"JavaSE-9",																																			//
+		"JavaSE-10",																																		//
 		"JavaSE-11",																																		//
-		"PersonalJava-1.1",																													//
-		"PersonalJava-1.2",																													//
-		"CDC-1.0/PersonalBasis-1.0",																										//
-		"CDC-1.0/PersonalJava-1.0",																											//
-		"CDC-1.1/PersonalBasis-1.1",																										//
+		"JavaSE-12",																																		//
+		"JavaSE-13",																																		//
+		"PersonalJava-1.1",																																	//
+		"PersonalJava-1.2",																																	//
+		"CDC-1.0/PersonalBasis-1.0",																														//
+		"CDC-1.0/PersonalJava-1.0",																															//
+		"CDC-1.1/PersonalBasis-1.1",																														//
 		"CDC-1.1/PersonalJava-1.1"
 	};
 	public final static Pattern	ReservedFileNames				= Pattern
@@ -142,26 +93,44 @@ public class Verifier extends Processor {
 	final static Pattern		CARDINALITY_PATTERN				= Pattern.compile("single|multiple");
 	final static Pattern		RESOLUTION_PATTERN				= Pattern.compile("optional|mandatory");
 	final static Pattern		BUNDLEMANIFESTVERSION			= Pattern.compile("2");
-	public final static String	SYMBOLICNAME_STRING				= "[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)*";
+
+	public final static Pattern	TOKEN							= Pattern.compile(PatternConstants.TOKEN);
+	@BaselineIgnore("4.3.0")
+	public final static String	EXTENDED_S						= "[-.\\w]+";
+	@BaselineIgnore("4.3.0")
+	public final static Pattern	EXTENDED_P						= Pattern.compile(EXTENDED_S);
+	@BaselineIgnore("4.3.0")
+	public final static String	QUOTEDSTRING					= "\"[^\"]*\"";
+	@BaselineIgnore("4.3.0")
+	public final static Pattern	QUOTEDSTRING_P					= Pattern.compile(QUOTEDSTRING);
+	@BaselineIgnore("4.3.0")
+	public final static String	ARGUMENT_S						= "(:?" + EXTENDED_S + ")|(?:" + QUOTEDSTRING + ")";
+	@BaselineIgnore("4.3.0")
+	public final static Pattern	ARGUMENT_P						= Pattern.compile(ARGUMENT_S);
+	public final static String	SYMBOLICNAME_STRING				= PatternConstants.SYMBOLICNAME;
 	public final static Pattern	SYMBOLICNAME					= Pattern.compile(SYMBOLICNAME_STRING);
 
-	public final static String	VERSION_STRING					= "[0-9]{1,9}(\\.[0-9]{1,9}(\\.[0-9]{1,9}(\\.[0-9A-Za-z_-]+)?)?)?";
+	public final static String	VERSION_STRING					= "\\d{1,9}(\\.\\d{1,9}(\\.\\d{1,9}(\\."
+		+ PatternConstants.TOKEN + ")?)?)?";
+	public final static String	VERSION_S						= "\\d{1,9}(:?\\.\\d{1,9}(:?\\.\\d{1,9}(:?\\."
+		+ PatternConstants.TOKEN + ")?)?)?";
 	public final static Pattern	VERSION							= Pattern.compile(VERSION_STRING);
-	final static Pattern		FILTEROP						= Pattern.compile("=|<=|>=|~=");
-	public final static Pattern	VERSIONRANGE					= Pattern.compile("((\\(|\\[)"
+	public final static Pattern	VERSION_P						= Pattern.compile(VERSION_S);
+	public final static Pattern	VERSIONRANGE					= Pattern
+		.compile("((\\(|\\[)" + VERSION_STRING + "," + VERSION_STRING + "(\\]|\\)))|" + VERSION_STRING);
+	public final static String	VERSION_RANGE_S					= "(?:(:?\\(|\\[)" + VERSION_S + "," + VERSION_S
+		+ "(\\]|\\)))|" + VERSION_S;
+	public final static Pattern	VERSIONRANGE_P					= VERSIONRANGE;
 
-		+ VERSION_STRING + "," + VERSION_STRING + "(\\]|\\)))|" + VERSION_STRING);
+	final static Pattern		FILTEROP						= Pattern.compile("=|<=|>=|~=");
 	final static Pattern		FILE							= Pattern
 		.compile("/?[^/\"\n\r\u0000]+(/[^/\"\n\r\u0000]+)*");
-	final static Pattern		WILDCARDPACKAGE					= Pattern
-		.compile("((\\p{Alnum}|_)+(\\.(\\p{Alnum}|_)+)*(\\.\\*)?)|\\*");
-	public final static Pattern	ISO639							= Pattern.compile("[A-Z][A-Z]");
-	public final static Pattern	HEADER_PATTERN					= Pattern.compile("[A-Za-z0-9][-a-zA-Z0-9_]+");
-	public final static Pattern	TOKEN							= Pattern.compile("[-a-zA-Z0-9_]+");
-
+	final static Pattern		WILDCARDPACKAGE					= Pattern.compile("((\\w)+(\\.(\\w)+)*(\\.\\*)?)|\\*");
+	public final static Pattern	ISO639							= Pattern.compile("\\p{Upper}{2}");
+	public final static Pattern	HEADER_PATTERN					= Pattern
+		.compile("\\p{Alnum}" + PatternConstants.TOKEN);
 	public final static Pattern	NUMBERPATTERN					= Pattern.compile("\\d+");
-	public final static Pattern	FLOATPATTERN					= Pattern
-		.compile("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?");
+	public final static Pattern	FLOATPATTERN					= Pattern.compile("[-+]?\\d*\\.?\\d+([eE][-+]?\\d+)?");
 	public final static Pattern	BOOLEANPATTERN					= Pattern.compile("true|false",
 		Pattern.CASE_INSENSITIVE);
 	public final static Pattern	PACKAGEPATTERN					= Pattern.compile(
@@ -175,130 +144,118 @@ public class Verifier extends Processor {
 	public final static Pattern	ANYPATTERN						= Pattern.compile(".*");
 	public final static Pattern	FILTERPATTERN					= Pattern.compile(".*");
 	public final static Pattern	TRUEORFALSEPATTERN				= Pattern.compile("true|false|TRUE|FALSE");
-	public static final Pattern	WILDCARDNAMEPATTERN				= Pattern.compile(".*");
-	public static final Pattern	BUNDLE_ACTIVATIONPOLICYPATTERN	= Pattern.compile("lazy");
-
-	public final static String	VERSION_S						= "[0-9]{1,9}(:?\\.[0-9]{1,9}(:?\\.[0-9]{1,9}(:?\\.[0-9A-Za-z_-]+)?)?)?";
-	public final static Pattern	VERSION_P						= Pattern.compile(VERSION_S);
-	public final static String	VERSION_RANGE_S					= "(?:(:?\\(|\\[)" + VERSION_S + "," + VERSION_S
-		+ "(\\]|\\)))|" + VERSION_S;
-	public final static Pattern	VERSIONRANGE_P					= VERSIONRANGE;
-	public static String		EXTENDED_S						= "[-a-zA-Z0-9_.]+";
-	public static Pattern		EXTENDED_P						= Pattern.compile(EXTENDED_S);
-	public static String		QUOTEDSTRING					= "\"[^\"]*\"";
-	public static Pattern		QUOTEDSTRING_P					= Pattern.compile(QUOTEDSTRING);
-	public static String		ARGUMENT_S						= "(:?" + EXTENDED_S + ")|(?:" + QUOTEDSTRING + ")";
-	public static Pattern		ARGUMENT_P						= Pattern.compile(ARGUMENT_S);
+	public final static Pattern	WILDCARDNAMEPATTERN				= Pattern.compile(".*");
+	public final static Pattern	BUNDLE_ACTIVATIONPOLICYPATTERN	= Pattern.compile("lazy");
 
 	public final static String	OSNAMES[]						= {
-		"AIX",																																// IBM
-		"DigitalUnix",																														// Compaq
-		"Embos",																															// Segger
-																																			// Embedded
-																																			// Software
-																																			// Solutions
-		"Epoc32",																															// SymbianOS
-																																			// Symbian
-																																			// OS
-		"FreeBSD",																															// Free
-																																			// BSD
-		"HPUX",																																// hp-ux
-																																			// Hewlett
-																																			// Packard
-		"IRIX",																																// Silicon
-																																			// Graphics
-		"Linux",																															// Open
-																																			// source
-		"MacOS",																															// Apple
-		"NetBSD",																															// Open
-																																			// source
-		"Netware",																															// Novell
-		"OpenBSD",																															// Open
-																																			// source
-		"OS2",																																// OS/2
-																																			// IBM
-		"QNX",																																// procnto
-																																			// QNX
-		"Solaris",																															// Sun
-																																			// (almost
-																																			// an
-																																			// alias
-																																			// of
-																																			// SunOS)
-		"SunOS",																															// Sun
-																																			// Microsystems
-		"VxWorks",																															// WindRiver
-																																			// Systems
-		"Windows95", "Win32", "Windows98", "WindowsNT", "WindowsCE", "Windows2000",															// Win2000
-		"Windows2003",																														// Win2003
+		"AIX",																																				// IBM
+		"DigitalUnix",																																		// Compaq
+		"Embos",																																			// Segger
+																																							// Embedded
+																																							// Software
+																																							// Solutions
+		"Epoc32",																																			// SymbianOS
+																																							// Symbian
+																																							// OS
+		"FreeBSD",																																			// Free
+																																							// BSD
+		"HPUX",																																				// hp-ux
+																																							// Hewlett
+																																							// Packard
+		"IRIX",																																				// Silicon
+																																							// Graphics
+		"Linux",																																			// Open
+																																							// source
+		"MacOS",																																			// Apple
+		"NetBSD",																																			// Open
+																																							// source
+		"Netware",																																			// Novell
+		"OpenBSD",																																			// Open
+																																							// source
+		"OS2",																																				// OS/2
+																																							// IBM
+		"QNX",																																				// procnto
+																																							// QNX
+		"Solaris",																																			// Sun
+																																							// (almost
+																																							// an
+																																							// alias
+																																							// of
+																																							// SunOS)
+		"SunOS",																																			// Sun
+																																							// Microsystems
+		"VxWorks",																																			// WindRiver
+																																							// Systems
+		"Windows95", "Win32", "Windows98", "WindowsNT", "WindowsCE", "Windows2000",																			// Win2000
+		"Windows2003",																																		// Win2003
 		"WindowsXP", "WindowsVista",
 	};
 
-	public final static String	PROCESSORNAMES[]				= {																			//
+	public final static String	PROCESSORNAMES[]				= {																							//
 		//
-		"68k",																																// Motorola
-																																			// 68000
-		"ARM_LE",																															// Intel
-																																			// Strong
-																																			// ARM.
-																																			// Deprecated
-																																			// because
-																																			// it
-																																			// does
-																																			// not
+		"68k",																																				// Motorola
+																																							// 68000
+		"ARM_LE",																																			// Intel
+																																							// Strong
+																																							// ARM.
+																																							// Deprecated
+																																							// because
+																																							// it
+																																							// does
+																																							// not
 		// specify the endianness. See the following two rows.
-		"arm_le",																															// Intel
-																																			// Strong
-																																			// ARM
-																																			// Little
-																																			// Endian
-																																			// mode
-		"arm_be",																															// Intel
-																																			// String
-																																			// ARM
-																																			// Big
-																																			// Endian
-																																			// mode
-		"Alpha",																															//
-		"ia64n",																															// Hewlett
-																																			// Packard
-																																			// 32
-																																			// bit
-		"ia64w",																															// Hewlett
-																																			// Packard
-																																			// 64
-																																			// bit
-																																			// mode
-		"Ignite",																															// psc1k
-																																			// PTSC
-		"Mips",																																// SGI
-		"PArisc",																															// Hewlett
-																																			// Packard
-		"PowerPC",																															// power
-																																			// ppc
-																																			// Motorola/IBM
-																																			// Power
-																																			// PC
-		"Sh4",																																// Hitachi
-		"Sparc",																															// SUN
-		"Sparcv9",																															// SUN
-		"S390",																																// IBM
-																																			// Mainframe
-																																			// 31
-																																			// bit
-		"S390x",																															// IBM
-																																			// Mainframe
-																																			// 64-bit
-		"V850E",																															// NEC
-																																			// V850E
-		"x86",																																// pentium
-																																			// i386
-		"i486",																																// i586
-																																			// i686
-																																			// Intel&
-																																			// AMD
-																																			// 32
-																																			// bit
+		"arm_le",																																			// Intel
+																																							// Strong
+																																							// ARM
+																																							// Little
+																																							// Endian
+																																							// mode
+		"arm_be",																																			// Intel
+																																							// String
+																																							// ARM
+																																							// Big
+																																							// Endian
+																																							// mode
+		"Alpha",																																			//
+		"ia64n",																																			// Hewlett
+																																							// Packard
+																																							// 32
+																																							// bit
+		"ia64w",																																			// Hewlett
+																																							// Packard
+																																							// 64
+																																							// bit
+																																							// mode
+		"Ignite",																																			// psc1k
+																																							// PTSC
+		"Mips",																																				// SGI
+		"PArisc",																																			// Hewlett
+																																							// Packard
+		"PowerPC",																																			// power
+																																							// ppc
+																																							// Motorola/IBM
+																																							// Power
+																																							// PC
+		"Sh4",																																				// Hitachi
+		"Sparc",																																			// SUN
+		"Sparcv9",																																			// SUN
+		"S390",																																				// IBM
+																																							// Mainframe
+																																							// 31
+																																							// bit
+		"S390x",																																			// IBM
+																																							// Mainframe
+																																							// 64-bit
+		"V850E",																																			// NEC
+																																							// V850E
+		"x86",																																				// pentium
+																																							// i386
+		"i486",																																				// i586
+																																							// i686
+																																							// Intel&
+																																							// AMD
+																																							// 32
+																																							// bit
 		"x86-64",
 	};
 
@@ -307,13 +264,12 @@ public class Verifier extends Processor {
 	private boolean				frombuilder;
 
 	public Verifier(Jar jar) throws Exception {
-		this.analyzer = new Analyzer(this);
-		this.analyzer.use(this);
-		addClose(analyzer);
-		this.analyzer.setJar(jar);
-		this.manifest = this.analyzer.calcManifest();
-		this.main = Domain.domain(manifest);
+		super(new Analyzer(jar));
+		this.analyzer = (Analyzer) getParent();
 		this.dot = jar;
+		this.manifest = analyzer.calcManifest();
+		this.main = Domain.domain(manifest);
+		addClose(analyzer);
 		getInfo(analyzer);
 	}
 
@@ -419,7 +375,7 @@ public class Verifier extends Processor {
 		}
 	}
 
-	public static enum ActivatorErrorType {
+	public enum ActivatorErrorType {
 		IS_INTERFACE,
 		IS_ABSTRACT,
 		NOT_PUBLIC,
@@ -564,7 +520,7 @@ public class Verifier extends Processor {
 	 * by the manifest and that are not part of our bundle class path. The are
 	 * calculated by removing all the imported packages and contained from the
 	 * referred packages.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void verifyUnresolvedReferences() throws Exception {
@@ -1105,7 +1061,7 @@ public class Verifier extends Processor {
 					else
 						hpat = Pattern.compile(header);
 
-					FileLine fileLine = analyzer.getHeader(hpat, Pattern.compile(Pattern.quote(pname)));
+					FileLine fileLine = analyzer.getHeader(hpat, Pattern.compile(pname, Pattern.LITERAL));
 					fileLine.set(l);
 					l.context(pname);
 				}
@@ -1119,8 +1075,9 @@ public class Verifier extends Processor {
 						if (m.matches())
 							continue;
 
-						warning("Unknown directive %s in %s, allowed directives are %s, and 'x-*'.", key, header,
-							pattern.toString()
+						warning(
+							"Unknown directive '%s' for namespace '%s' in '%s'. Allowed directives are [%s], and 'x-*'.",
+							key, pname, header, pattern.toString()
 								.replace('|', ','));
 					}
 				}
@@ -1157,7 +1114,7 @@ public class Verifier extends Processor {
 
 	public boolean verifyActivationPolicy(String policy) {
 		Parameters map = parseHeader(policy);
-		if (map.size() == 0)
+		if (map.isEmpty())
 			warning(Constants.BUNDLE_ACTIVATIONPOLICY + " is set but has no argument %s", policy);
 		else if (map.size() > 1)
 			warning(Constants.BUNDLE_ACTIVATIONPOLICY + " has too many arguments %s", policy);
@@ -1174,15 +1131,14 @@ public class Verifier extends Processor {
 
 	public void verifyBundleClasspath() {
 		Parameters bcp = main.getBundleClassPath();
-		if (bcp.isEmpty() || bcp.containsKey("."))
+		if (bcp.isEmpty() || bcp.containsKey(".") || bcp.containsKey("/"))
 			return;
 
 		for (String path : bcp.keySet()) {
 			if (path.endsWith("/"))
 				error("A " + Constants.BUNDLE_CLASSPATH + " entry must not end with '/': %s", path);
 
-			if (dot.getDirectories()
-				.containsKey(path))
+			if (dot.hasDirectory(path))
 				// We assume that any classes are in a directory
 				// and therefore do not care when the bundle is included
 				return;
@@ -1203,10 +1159,10 @@ public class Verifier extends Processor {
 	 * <pre>
 	 *          DynamicImport-Package ::= dynamic-description
 	 *              ( ',' dynamic-description )*
-	 *              
+	 *
 	 *          dynamic-description::= wildcard-names ( ';' parameter )*
 	 *          wildcard-names ::= wildcard-name ( ';' wildcard-name )*
-	 *          wildcard-name ::= package-name 
+	 *          wildcard-name ::= package-name
 	 *                         | ( package-name '.*' ) // See 1.4.2
 	 *                         | '*'
 	 * </pre>
@@ -1286,7 +1242,7 @@ public class Verifier extends Processor {
 	 *         final ::= () | value
 	 *         value ::= &lt;see text&gt;
 	 * </pre>
-	 * 
+	 *
 	 * @param expr the {@code String} to test
 	 * @param index the index within {@code expr} to start with
 	 * @return the index of the last character within {@code expr} that was
@@ -1495,7 +1451,7 @@ public class Verifier extends Processor {
 	 */
 	/**
 	 * Verify the checksums from the manifest against the real thing.
-	 * 
+	 *
 	 * @param all {@code true} if each resource must be digested, otherwise
 	 *            {@code false}
 	 * @throws Exception
@@ -1542,7 +1498,7 @@ public class Verifier extends Processor {
 
 	/**
 	 * Verify the EXTENDED_S syntax
-	 * 
+	 *
 	 * @param key the {@code String} to test
 	 * @return {@code true} if the given {@code String} matches the EXTENDED_S
 	 *         syntax, otherwise {@code false}
@@ -1557,7 +1513,7 @@ public class Verifier extends Processor {
 
 	/**
 	 * Verify the ARGUMENT_S syntax
-	 * 
+	 *
 	 * @param arg the {@code String} to test
 	 * @return {@code true} if the given {@code String} matches the ARGUMENT_S
 	 *         syntax, otherwise {@code false}
@@ -1569,7 +1525,7 @@ public class Verifier extends Processor {
 
 	/**
 	 * Verify the QUOTEDSTRING syntax
-	 * 
+	 *
 	 * @param s the {@code String} to test
 	 * @return {@code true} if the given {@code String} matches the QUOTEDSTRING
 	 *         syntax, otherwise {@code false}
@@ -1581,7 +1537,7 @@ public class Verifier extends Processor {
 
 	/**
 	 * Verify the VERSION_RANGE_S syntax
-	 * 
+	 *
 	 * @param range the {@code String} to test
 	 * @return {@code true} if the given {@code String} matches the
 	 *         VERSION_RANGE_S syntax, otherwise {@code false}
@@ -1593,7 +1549,7 @@ public class Verifier extends Processor {
 
 	/**
 	 * Verify the Meta-Persistence header
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -1639,5 +1595,10 @@ public class Verifier extends Processor {
 	 */
 	public void setFrombuilder(boolean frombuilder) {
 		this.frombuilder = frombuilder;
+	}
+
+	public static boolean isNumber(String number) {
+		return NUMBERPATTERN.matcher(number)
+			.matches();
 	}
 }

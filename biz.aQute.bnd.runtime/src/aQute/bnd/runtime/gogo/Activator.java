@@ -2,7 +2,6 @@ package aQute.bnd.runtime.gogo;
 
 import java.io.Closeable;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -98,12 +97,8 @@ public class Activator implements BundleActivator {
 					((Closeable) service).close();
 				}
 			});
-
-		} catch (InvocationTargetException e) {
-			e.getTargetException()
-				.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (Throwable e) {
+			// ignore
 		}
 	}
 

@@ -1,0 +1,16 @@
+# baseline.version is set in cnf/build.bnd
+biz.aQute.bnd:aQute.libg:${baseline.version}
+biz.aQute.bnd:biz.aQute.bnd.exporters:${baseline.version}
+biz.aQute.bnd:biz.aQute.bnd.reporter:${baseline.version}
+biz.aQute.bnd:biz.aQute.bndlib:${baseline.version}
+biz.aQute.bnd:biz.aQute.junit:${baseline.version}
+biz.aQute.bnd:biz.aQute.launcher:${baseline.version}
+biz.aQute.bnd:biz.aQute.launchpad:${baseline.version}
+biz.aQute.bnd:biz.aQute.remote.agent:${baseline.version}
+biz.aQute.bnd:biz.aQute.remote.api:${baseline.version}
+biz.aQute.bnd:biz.aQute.remote.gc:${baseline.version}
+biz.aQute.bnd:biz.aQute.remote.launcher:${baseline.version}
+biz.aQute.bnd:biz.aQute.remote.main:${baseline.version}
+biz.aQute.bnd:biz.aQute.repository:${baseline.version}
+biz.aQute.bnd:biz.aQute.resolve:${baseline.version}
+biz.aQute.bnd:biz.aQute.tester:${baseline.version}

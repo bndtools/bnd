@@ -17,23 +17,24 @@ import java.lang.annotation.Target;
  * the requirement may be parameterised with values from the user-defined
  * annotation. For example, given the following declarations:
  * </p>
- * 
+ *
  * <pre>
- * &#64;RequireCapability( ns = "com.acme.engine", effective = "active", filter = "(com.acme.engine=${type})") 
+ * &#64;RequireCapability( ns = "com.acme.engine", effective = "active", filter = "(com.acme.engine=${type})")
  * public &#64;interface Engine { String type(); }
  * &#64;Engine(type = "wankel") public class Vehicle { ... }
  * </pre>
  * <p>
  * ... the following header will be generated in MANIFEST.MF:
  * </p>
- * 
+ *
  * <pre>
  * Require-Capability:\ com.acme.engine; \ effective:=active; \
  *  filter:="(com.acme.engine=wankel)",\ ...
  * </pre>
- * 
- * {@link About}
+ *
+ * @deprecated see {@code org.osgi.annotation.bundle.Requirement}
  */
+@Deprecated
 @Retention(RetentionPolicy.CLASS)
 @Target({
 	ElementType.ANNOTATION_TYPE, ElementType.TYPE
@@ -78,7 +79,9 @@ public @interface RequireCapability {
 	 * when this Requirement cannot be resolved, this can result in Class Not
 	 * Found Exceptions when the bundle attempts to use a package that was not
 	 * resolved because it was optional.
+	 *
+	 * @deprecated
 	 */
-	Resolution resolution() default Resolution.mandatory;
+	aQute.bnd.annotation.headers.Resolution resolution() default aQute.bnd.annotation.headers.Resolution.mandatory;
 
 }

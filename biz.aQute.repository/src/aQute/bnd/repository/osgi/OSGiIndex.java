@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -33,9 +34,11 @@ import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
+import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
+import aQute.libg.cryptography.SHA256;
 
 class OSGiIndex {
 	private final static Logger				logger	= LoggerFactory.getLogger(OSGiIndex.class);
@@ -72,7 +75,7 @@ class OSGiIndex {
 
 	/**
 	 * Return the bridge repository in {@link Promise} form.
-	 * 
+	 *
 	 * @return promise representing the repository
 	 */
 	Promise<BridgeRepository> getBridgeRepository() {
@@ -151,9 +154,52 @@ class OSGiIndex {
 			return null;
 		}
 
-		return client.build()
+		String remoteDigest = content.osgi_content();
+		return get(url, file, remoteDigest, 2, 1000L).map(TaggedData::getFile);
+	}
+
+	private Promise<TaggedData> get(URI url, File file, String remoteDigest, int retries, long delay) {
+		Promise<TaggedData> promise = client.build()
 			.useCache(file, staleTime)
+			.asTag()
 			.async(url);
+		if (remoteDigest == null) {
+			return promise;
+		}
+		return promise.then(success -> success.thenAccept(tag -> {
+			if (tag.getState() != State.UPDATED) {
+				return;
+			}
+			String fileDigest = SHA256.digest(file)
+				.asHex();
+			int start = 0;
+			while (start < remoteDigest.length() && Character.isWhitespace(remoteDigest.charAt(start))) {
+				start++;
+			}
+			for (int i = 0; i < fileDigest.length(); i++) {
+				if (start + i < remoteDigest.length()) {
+					char us = fileDigest.charAt(i);
+					char them = remoteDigest.charAt(start + i);
+					if (us == them || Character.toLowerCase(us) == Character.toLowerCase(them)) {
+						continue;
+					}
+				}
+				IO.delete(file);
+				throw new IOException(
+					String.format("Invalid content checksum %s for %s; expected %s", fileDigest, url, remoteDigest));
+			}
+		})
+			.recoverWith(failed -> {
+				if (retries < 1) {
+					return null; // no recovery
+				}
+				logger.info("Retrying invalid download: {}. delay={}, retries={}", failed.getFailure()
+					.getMessage(), delay, retries);
+				@SuppressWarnings("unchecked")
+				Promise<TaggedData> delayed = (Promise<TaggedData>) failed.delay(delay);
+				return delayed.recoverWith(f -> get(url, file, remoteDigest, retries - 1,
+					Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
+			}));
 	}
 
 	BridgeRepository getBridge() throws Exception {
@@ -166,7 +212,7 @@ class OSGiIndex {
 
 	/**
 	 * Check any of the URL indexes are stale.
-	 * 
+	 *
 	 * @return
 	 * @throws Exception
 	 */

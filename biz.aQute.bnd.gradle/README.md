@@ -12,6 +12,11 @@ These plugins requires at least Gradle 4.0 for Java 8, at least
 Gradle 4.2.1 for Java 9, at least Gradle 4.7 for Java 10, and at
 least Gradle 5.0 for Java 11.
 
+This README represents the capabilities and features of the Bnd Gradle Plugins in
+the branch containing this README. So for the `master` branch, this will be
+the [latest development SNAPSHOT build](#using-the-latest-development-snapshot-build-of-the-bnd-gradle-plugins). See the appropriate Git tag for the README for the
+Bnd Gradle Plugin version you are using.
+
 # Gradle Plugin for non-Bnd Workspace Builds
 
 Bnd offers [Gradle][1] support for building bundles in
@@ -37,7 +42,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.2.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.4.0'
   }
 }
 ```
@@ -137,7 +142,7 @@ task bundle(type: Bundle) {
 
 The normal way to instruct Bnd on how to build the bundle is to use a
 bnd file. This file will specify the Bnd instructions like
-`Export-Package`, etc. You can also use the `bnd` property of the
+`-exportcontents`, etc. You can also use the `bnd` property of the
 `BundleTaskConvention`. It can be used in several different ways. You can configure 
 the `bnd` property with a multiline string:
 
@@ -146,7 +151,7 @@ apply plugin: 'biz.aQute.bnd.builder'
 
 jar {
     bnd '''
-Export-Package: com.acme.api.*
+-exportcontents: com.acme.api.*
 -sources: true
 -include: other.bnd
 '''
@@ -159,7 +164,7 @@ You can also configure the `bnd` property with map notation:
 apply plugin: 'biz.aQute.bnd.builder'
 
 jar {
-    bnd('Export-Package': 'com.acme.api.*',
+    bnd('-exportcontents': 'com.acme.api.*',
          '-sources': 'true',
          '-include': 'other.bnd')
 }
@@ -173,7 +178,7 @@ apply plugin: 'biz.aQute.bnd.builder'
 
 jar {
     manifest {
-        attributes('Export-Package': 'com.acme.api.*',
+        attributes('-exportcontents': 'com.acme.api.*',
                    '-sources': 'true',
                    '-include': 'other.bnd')
     }
@@ -202,12 +207,9 @@ For example:
 jar {
     manifest { // the manifest of the default jar is of type OsgiManifest
         name = 'overwrittenSpecialOsgiName'
-        instruction 'Private-Package',
-            'org.mycomp.package1',
-            'org.mycomp.package2'
         instruction 'Bundle-Vendor', 'MyCompany'
         instruction 'Bundle-Description', 'Platform2: Metrics 2 Measures Framework'
-        instruction 'Bundle-DocURL', 'http://www.mycompany.com'
+        instruction 'Bundle-DocURL', 'https://www.mycompany.com'
     }
 }
 ```
@@ -217,11 +219,9 @@ becomes:
 ```groovy
 jar {
     bnd ('Bundle-Name': 'overwrittenSpecialOsgiName',
-         'Private-Package': 'org.mycomp.package1,org.mycomp.package2',
          'Bundle-Vendor': 'MyCompany',
          'Bundle-Description': 'Platform2: Metrics 2 Measures Framework',
-         'Bundle-DocURL': 'http://www.mycompany.com')
-    }
+         'Bundle-DocURL': 'https://www.mycompany.com')
 }
 ```
 
@@ -309,23 +309,32 @@ task resolve(type: Resolve) {
 }
 ```
 
-There are four properties which can be configured for a Resolve task:
+There are six properties which can be configured for a Resolve task:
+
+### ignoreFailures
+
+If `true` the task will not fail due to resolution failures; instead an
+error message will be logged. Otherwise, the task will fail. The
+default is `false`.
 
 ### failOnChanges
 
-If `true` the build will fail if the resolve operation changes the value of the
+If `true` the build will fail if the resolve process changes the value of the
 `-runbundles` property. The default is `false`.
 
 ### bndrun
 
 The bndrun to be resolved. It can be anything that `Project.file(Object)`
-can accept. This property must be set. The bndrun file must be a standalone bndrun
-file since this is not a Workspace Build.
+can accept. This property must be set.
+
+### workingDir
+
+The directory for the resolve process. The default is _${temporaryDir}_.
 
 ### bundles
 
 The collection of files to use for locating bundles during the
-bndrun resolution. The default is _${project.sourceSets.main.runtimeClasspath}_
+resolve process. The default is _${project.sourceSets.main.runtimeClasspath}_
 plus _${project.configurations.archives.artifacts.files}_.
 
 ### reportOptional
@@ -346,7 +355,13 @@ task export(type: Export) {
 }
 ```
 
-There are three properties which can be configured for an Export task:
+There are five properties which can be configured for an Export task:
+
+### ignoreFailures
+
+If `true` the task will not fail due to export failures; instead an
+error message will be logged. Otherwise, the task will fail. The
+default is `false`.
 
 ### exporter
 
@@ -358,8 +373,7 @@ plugin. The default is `bnd.executablejar`.
 ### bndrun
 
 The bndrun to be exported. It can be anything that `Project.file(Object)`
-can accept. This property must be set. The bndrun file must be a standalone bndrun
-file since this is not a Workspace Build.
+can accept. This property must be set.
 
 ### destinationDir
 
@@ -368,6 +382,10 @@ _${project.distsDir}_/executable if the exporter is `bnd.executablejar`,
 _${project.distsDir}_/runbundles/_${bndrun.name - '.bndrun'}_ if
 the exporter is `bnd.runbundles`, and _${project.distsDir}_/_${task.name}_
 for all other exporters.
+
+### workingDir
+
+The directory for the export operation. The default is _${temporaryDir}_.
 
 ### bundles
 
@@ -399,8 +417,7 @@ default is `false`.
 ### bndrun
 
 The bndrun to be tested. It can be anything that `Project.file(Object)`
-can accept. This property must be set. The bndrun file must be a standalone bndrun
-file since this is not a Workspace Build.
+can accept. This property must be set.
 
 ### workingDir
 
@@ -473,8 +490,7 @@ can accept. This property must be set.
 
 ## Create a task of the `Bndrun` type
 
-The `Bndrun` task type
-will execute a standalone bndrun file. For example:
+The `Bndrun` task type will execute a bndrun file. For example:
 
 ```groovy
 import aQute.bnd.gradle.Bndrun
@@ -495,8 +511,7 @@ default is `false`.
 ### bndrun
 
 The bndrun to be executed. It can be anything that `Project.file(Object)`
-can accept. This property must be set. The bndrun file must be a standalone bndrun
-file since this is not a Workspace Build.
+can accept. This property must be set.
 
 ### workingDir
 
@@ -560,7 +575,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.2.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.4.0'
   }
 }
 apply plugin: 'biz.aQute.bnd.workspace'
@@ -594,7 +609,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.2.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.4.0'
   }
 }
 apply plugin: 'biz.aQute.bnd.workspace'
@@ -778,9 +793,9 @@ Gradle stops using the prior version of the plugin.
 For full details on what the Bnd Gradle Plugins do, check out the
 [source code][10].
 
-[1]: http://gradle.org/
+[1]: https://gradle.org/
 [2]: https://github.com/bndtools/bnd/tree/master/biz.aQute.bnd.gradle
-[3]: http://gradle.org/docs/current/userguide/java_plugin.html
+[3]: https://gradle.org/docs/current/userguide/java_plugin.html
 [4]: https://bnd.bndtools.org/instructions/buildpath.html
 [5]: https://bnd.bndtools.org/instructions/testpath.html
 [6]: https://bnd.bndtools.org/instructions/releaserepo.html

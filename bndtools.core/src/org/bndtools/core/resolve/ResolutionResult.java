@@ -8,53 +8,55 @@ import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 import org.osgi.service.resolver.ResolutionException;
 
+import biz.aQute.resolve.RunResolution;
+
 public class ResolutionResult {
 
-    private final Outcome outcome;
-    private final Map<Resource, List<Wire>> resourceWirings;
-    private final Map<Resource, List<Wire>> optionalResources;
-    private final IStatus status;
-    private final String log;
-    private final ResolutionException resolutionException;
+	private final Outcome		outcome;
+	private final IStatus		status;
+	private final RunResolution	resolution;
 
-    public static enum Outcome {
-        Resolved,
-        Unresolved,
-        Error,
-        Cancelled
-    }
+	public enum Outcome {
+		Resolved,
+		Unresolved,
+		Error,
+		Cancelled
+	}
 
-    public ResolutionResult(Outcome outcome, Map<Resource, List<Wire>> resourceWirings, Map<Resource, List<Wire>> optionalResources, ResolutionException resolutionExceptoin, IStatus status, String log) {
-        this.outcome = outcome;
-        this.resourceWirings = resourceWirings;
-        this.optionalResources = optionalResources;
-        this.resolutionException = resolutionExceptoin;
-        this.status = status;
-        this.log = log;
-    }
+	public ResolutionResult(Outcome outcome, RunResolution resolution, IStatus status) {
+		this.outcome = outcome;
+		this.resolution = resolution;
+		this.status = status;
+	}
 
-    public Outcome getOutcome() {
-        return outcome;
-    }
+	public Outcome getOutcome() {
+		return outcome;
+	}
 
-    public Map<Resource, List<Wire>> getResourceWirings() {
-        return resourceWirings;
-    }
+	public Map<Resource, List<Wire>> getResourceWirings() {
+		return resolution.required;
+	}
 
-    public Map<Resource, List<Wire>> getOptionalResources() {
-        return optionalResources;
-    }
+	public Map<Resource, List<Wire>> getOptionalResources() {
+		return resolution.optional;
+	}
 
-    public ResolutionException getResolutionException() {
-        return resolutionException;
-    }
+	public ResolutionException getResolutionException() {
+		if (resolution.exception instanceof ResolutionException)
+			return (ResolutionException) resolution.exception;
+		return null;
+	}
 
-    public IStatus getStatus() {
-        return status;
-    }
+	public IStatus getStatus() {
+		return status;
+	}
 
-    public String getLog() {
-        return log;
-    }
+	public String getLog() {
+		return resolution.log;
+	}
+
+	public RunResolution getResolution() {
+		return resolution;
+	}
 
 }

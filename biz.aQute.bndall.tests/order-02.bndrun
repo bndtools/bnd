@@ -1,0 +1,16 @@
+-runrequires: osgi.identity;filter:='(osgi.identity=demo)'
+-runfw: org.apache.felix.framework;version='[5.6.10,6)'
+-runee: JavaSE-1.8
+-runbundles: \
+	org.apache.servicemix.bundles.junit;version='[4.12.0,4.12.1)';startlevel=100,\
+	org.apache.felix.log, \
+	demo;version='[1.0.0,1.0.1)';startlevel=110
+
+-runstartlevel: order=leastdependenciesfirst, begin=100, step=10 
+
+-runbundles+: \
+    demo;startlevel=11,\
+    org.apache.servicemix.bundles.junit;startlevel=21, \
+    org.apache.felix.configadmin;startlevel=6
+    
+-runtrace: true

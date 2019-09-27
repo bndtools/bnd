@@ -36,9 +36,9 @@ import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 import biz.aQute.resolve.ResolveProcess;
 
-@Mojo(name = "testing", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+@Mojo(name = "testing", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true)
 public class TestingMojo extends AbstractMojo {
-	private static final Logger			logger	= LoggerFactory.getLogger(TestingMojo.class);
+	private static final Logger									logger	= LoggerFactory.getLogger(TestingMojo.class);
 
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
 	private MavenProject										project;
@@ -59,19 +59,19 @@ public class TestingMojo extends AbstractMojo {
 	private Bndruns												bndruns	= new Bndruns();
 
 	@Parameter(defaultValue = "${project.build.directory}/test", readonly = true)
-	private File						cwd;
+	private File												cwd;
 
 	@Parameter(defaultValue = "${project.build.directory}/test-reports", readonly = true)
-	private File						reportsDir;
+	private File												reportsDir;
 
 	@Parameter(defaultValue = "${testing.select}", readonly = true)
-	private File						testingSelect;
+	private File												testingSelect;
 
 	@Parameter(defaultValue = "${testing}", readonly = true)
-	private String						testing;
+	private String												testing;
 
 	@Parameter(property = "test")
-	private String						test;
+	private String												test;
 
 	@Parameter(required = false)
 	private Bundles												bundles	= new Bundles();
@@ -80,7 +80,7 @@ public class TestingMojo extends AbstractMojo {
 	private boolean												useMavenDependencies;
 
 	@Parameter(defaultValue = "false")
-	private boolean						resolve;
+	private boolean												resolve;
 
 	@Parameter(defaultValue = "true")
 	private boolean												reportOptional;
@@ -111,7 +111,7 @@ public class TestingMojo extends AbstractMojo {
 	@SuppressWarnings("deprecation")
 	private org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
 
-	private Glob				glob	= new Glob("*");
+	private Glob												glob	= new Glob("*");
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {

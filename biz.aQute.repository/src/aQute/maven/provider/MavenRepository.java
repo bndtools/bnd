@@ -36,7 +36,7 @@ import aQute.maven.api.Revision;
 import aQute.service.reporter.Reporter;
 
 public class MavenRepository implements IMavenRepo, Closeable {
-	private final static Logger					logger		= LoggerFactory.getLogger(MavenRepository.class);
+	final static Logger							logger		= LoggerFactory.getLogger(MavenRepository.class);
 	private final File							base;
 	private final String						id;
 	private final List<MavenBackingRepository>	release		= new ArrayList<>();
@@ -193,7 +193,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 				case OTHER :
 					error = State.OTHER;
 					logger.error("Fetching artifact gives error {} : {} {}", remotePath, fetch.getResponseCode(),
-							fetch);
+						fetch);
 					break;
 
 				case UNMODIFIED :
@@ -358,7 +358,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public boolean exists(Archive archive) throws Exception {
-		File file = File.createTempFile("pom", ".xml");
+		File file = File.createTempFile(Archive.POM_EXTENSION, ".xml");
 		try {
 			File result = getFile(archive.getPomArchive(), file);
 			return result != null;

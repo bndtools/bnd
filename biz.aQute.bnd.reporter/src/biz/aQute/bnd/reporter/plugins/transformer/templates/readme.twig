@@ -1,0 +1,81 @@
+{%- set templateDir = default(templateDir,'default:') %}
+{%- import concat(templateDir,'/blocks.twig') as blocks -%}
+{%- import concat(templateDir,'/printer.twig') as printer -%}
+{%- if length(report.bundles) == 1 or (length(report.bundles) > 1 and not empty(currentBsn)) -%}
+{%- set myBundle = report.bundles[0] -%}
+{%- if not empty(currentBsn) -%}
+{%- for r in report.bundles -%}
+{%- if currentBsn == r.manifest.bundleSymbolicName.symbolicName -%}
+{%- set myBundle = r -%}
+{%- endif -%}
+{%- endfor -%}
+{%- endif -%}
+{%- do report.putAll(myBundle) -%}
+{%- do report.get('bundles').clear() -%}
+{%- endif -%}
+
+{%- block title -%}
+{{ blocks.titleBlock(printer, report, iconUrl) }}
+{%- endblock -%}
+
+{%- block afterTitle %}{% endblock -%}
+
+{%- block overview -%}
+{{ blocks.overviewBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block afterOverview %}{% endblock -%}
+
+{%- block links -%}
+{{ blocks.linksBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block afterLinks %}{% endblock -%}
+
+{%- block coordinates -%}
+{{ blocks.coordinatesBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block afterCoordinates %}{% endblock -%}
+
+{%- block artifacts -%}
+{{ blocks.artifactsBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block afterArtifacts %}{% endblock -%}
+
+{%- block codeUsage -%}
+{{ blocks.codeUsageBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block afterCodeUsage %}{% endblock -%}
+
+{%- block components -%}
+{{ blocks.componentsBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block afterComponents %}{% endblock -%}
+
+{%- block developers -%}
+{{ blocks.developersBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block afterDevelopers %}{% endblock -%}
+
+{%- block licenses -%}
+{{ blocks.licensesBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block afterLicenses %}{% endblock -%}
+
+{%- block copyright -%}
+{{ blocks.copyrightBlock(printer, report) }}
+{%- endblock -%}
+
+{%- block afterCopyright %}{% endblock -%}
+
+{%- block vendor -%}
+{{ blocks.vendorBlock(printer, report) }}
+{%- endblock %}
+
+{%- block afterVendor %}{% endblock -%}

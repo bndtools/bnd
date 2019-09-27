@@ -11,14 +11,18 @@ public class AntGlob extends Glob {
 	}
 
 	public AntGlob(String globString, int flags) {
-		super(globString, Pattern.compile(convertAntGlobToRegEx(globString), flags));
+		super(globString, toPattern(globString, flags));
 	}
 
 	// match forward slash or back slash (windows)
-	private static final String	SLASHY		= "[/\\\\]";
-	private static final String	NOT_SLASHY	= "[^/\\\\]";
+	private static final String	SLASHY		= "[\\\\/]";
+	private static final String	NOT_SLASHY	= "[^\\\\/]";
 
-	private static String convertAntGlobToRegEx(String line) {
+	public static Pattern toPattern(String line) {
+		return toPattern(line, 0);
+	}
+
+	public static Pattern toPattern(String line, int flags) {
 		line = line.trim();
 		int strLen = line.length();
 		StringBuilder sb = new StringBuilder(strLen << 2);
@@ -77,23 +81,10 @@ public class AntGlob extends Glob {
 			}
 			previousChar = currentChar;
 		}
-		return sb.toString();
+		return Pattern.compile(sb.toString(), flags);
 	}
 
 	private static boolean isSlashy(char c) {
 		return c == '/' || c == '\\';
-	}
-
-	public static Pattern toPattern(String s) {
-		return toPattern(s, 0);
-	}
-
-	public static Pattern toPattern(String s, int flags) {
-		try {
-			return Pattern.compile(convertAntGlobToRegEx(s), flags);
-		} catch (Exception e) {
-			// ignore
-		}
-		return null;
 	}
 }

@@ -7,6 +7,7 @@
     org.osgi.namespace.service;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
     biz.aQute.bndlib;version=latest,\
+    biz.aQute.resolve;version=latest,\
 	biz.aQute.repository;version=latest,\
 	bndtools.api;version=latest,\
 	bndtools.utils;version=project;packages=*,\
@@ -22,6 +23,7 @@
 	org.eclipse.text,\
 	org.eclipse.ui.ide,\
 	org.eclipse.ui.workbench,\
+    org.eclipse.debug.core,\
 	org.eclipse.jdt.core,\
 	org.eclipse.jdt.launching,\
 	org.eclipse.jdt.ui,\
@@ -31,6 +33,10 @@
 	org.eclipse.equinox.registry,\
 	org.eclipse.equinox.preferences,\
 	org.eclipse.swt
+
+-testpath: \
+    ${junit},\
+    ${mockito}
 
 # Headers
 Bundle-SymbolicName: bndtools.builder; singleton:=true

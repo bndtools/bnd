@@ -1,5 +1,7 @@
 package biz.aQute.remote;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.net.ConnectException;
 import java.util.HashMap;
@@ -11,6 +13,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.dto.BundleDTO;
+import org.osgi.framework.dto.FrameworkDTO;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.framework.wiring.dto.BundleRevisionDTO;
@@ -35,6 +38,8 @@ public class AgentTest extends TestCase {
 	private File			t1;
 	private File			t2;
 	private File			t3;
+	private File			t4;
+	private File			t41;
 	private TestSupervisor	supervisor;
 
 	@Override
@@ -45,6 +50,8 @@ public class AgentTest extends TestCase {
 		t1 = create("bsn-1", new Version(1, 0, 0));
 		t2 = create("bsn-2", new Version(2, 0, 0));
 		t3 = create("bsn-3", new Version(3, 0, 0));
+		t4 = create("bsn-4", new Version(4, 0, 0));
+		t41 = create("bsn-4", new Version(4, 1, 0));
 
 		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(FrameworkFactory.class, this.getClass()
 			.getClassLoader());
@@ -90,6 +97,25 @@ public class AgentTest extends TestCase {
 		super.tearDown();
 	}
 
+	public void testFrameworkDTO() throws Exception {
+		FrameworkDTO fw = supervisor.getAgent()
+			.getFramework();
+
+		assertThat(fw).isNotNull();
+		assertThat(fw.bundles).hasSize(4);
+	}
+
+	public void testStartStop() throws Exception {
+
+		String start = supervisor.getAgent()
+			.start(1);
+		assertThat(start).isNull();
+
+		String stop = supervisor.getAgent()
+			.stop(1);
+		assertThat(stop).isNull();
+	}
+
 	public void testAgentGetBundles() throws Exception {
 		List<BundleDTO> bundles = supervisor.getAgent()
 			.getBundles();
@@ -121,6 +147,19 @@ public class AgentTest extends TestCase {
 		assertEquals("osgi.wiring.package", reqs.get(0).namespace);
 	}
 
+	public void testAgentGetBundleRevisionsById() throws Exception {
+		List<BundleRevisionDTO> bundleRevisions = supervisor.getAgent()
+			.getBundleRevisons(2, 3);
+
+		assertNotNull(bundleRevisions);
+		assertEquals(2, bundleRevisions.size());
+
+		List<RequirementDTO> reqs = bundleRevisions.get(1).requirements; // agent
+		assertNotNull(reqs);
+		assertTrue(reqs.size() > 0);
+		assertEquals("osgi.wiring.package", reqs.get(0).namespace);
+	}
+
 	public void testAgentInstallBundle() throws Exception {
 		String sha = supervisor.addFile(t3);
 		BundleDTO bundle = supervisor.getAgent()
@@ -130,6 +169,85 @@ public class AgentTest extends TestCase {
 		assertEquals(4, bundle.id);
 		assertEquals("bsn-3", bundle.symbolicName);
 		assertEquals("3.0.0", bundle.version);
+	}
+
+	public void testAgentInstallBundleWithData() throws Exception {
+		BundleDTO bundle = supervisor.getAgent()
+			.installWithData("FOO", IO.read(t3));
+
+		assertNotNull(bundle);
+		assertEquals(4, bundle.id);
+		assertEquals("bsn-3", bundle.symbolicName);
+		assertEquals("3.0.0", bundle.version);
+
+		Bundle b = framework.getBundleContext()
+			.getBundle("FOO");
+
+		assertThat(b).isNotNull();
+	}
+
+	public void testAgentInstallBundleWithDataAndNullLocation() throws Exception {
+		BundleDTO bundle = supervisor.getAgent()
+			.installWithData(null, IO.read(t3));
+
+		assertNotNull(bundle);
+		assertEquals(4, bundle.id);
+		assertEquals("bsn-3", bundle.symbolicName);
+		assertEquals("3.0.0", bundle.version);
+		Bundle b = framework.getBundleContext()
+			.getBundle("manual:" + bundle.symbolicName);
+
+		assertThat(b).isNotNull();
+	}
+
+	public void testAgentUpdateBundleWithData() throws Exception {
+		BundleDTO bundle = supervisor.getAgent()
+			.installWithData("FOO", IO.read(t4));
+
+		Bundle b = framework.getBundleContext()
+			.getBundle("FOO");
+
+		assertThat(b).isNotNull();
+
+		BundleDTO bt41 = supervisor.getAgent()
+			.installWithData("FOO", IO.read(t41));
+
+		assertThat(bt41.version).isEqualTo("4.1.0");
+		assertThat(b.getVersion()
+			.toString()).isEqualTo("4.1.0");
+	}
+
+	public void testAgentUpdateBundleWithDataAndNullLocation() throws Exception {
+		BundleDTO bt4 = supervisor.getAgent()
+			.installWithData(null, IO.read(t4));
+
+		Bundle b = framework.getBundleContext()
+			.getBundle("manual:" + bt4.symbolicName);
+
+		assertThat(b).isNotNull();
+
+		BundleDTO bt41 = supervisor.getAgent()
+			.installWithData(null, IO.read(t41));
+
+		assertThat(bt41.version).isEqualTo("4.1.0");
+		assertThat(b.getVersion()
+			.toString()).isEqualTo("4.1.0");
+	}
+
+	public void testAgentUpdateBundleWithWithNullLocationAndMultipleChoice() throws Exception {
+		try {
+			BundleDTO b4 = supervisor.getAgent()
+				.installWithData("b4", IO.read(t4));
+
+			BundleDTO b41 = supervisor.getAgent()
+				.installWithData("b41", IO.read(t41));
+
+			b41 = supervisor.getAgent()
+				.installWithData(null, IO.read(t41));
+			fail();
+		} catch (RuntimeException e) {
+			// ok
+		}
 	}
 
 	public void testAgentInstallBundleFromURL() throws Exception {
@@ -240,6 +358,20 @@ public class AgentTest extends TestCase {
 		} catch (IllegalArgumentException e) {}
 	}
 
+	public void testAgentInstallBundleSinceNoExistingBundleMathcesBsnAndVersion() throws Exception {
+		BundleDTO bundle = supervisor.getAgent()
+			.installWithData(t4.getAbsolutePath(), IO.read(t4));
+
+		assertNotNull(bundle);
+		assertEquals(4, bundle.id);
+		assertEquals("bsn-4", bundle.symbolicName);
+		assertEquals("4.0.0", bundle.version);
+	}
+
+	public void testPing() {
+		assertThat(supervisor.getAgent()
+			.ping()).isTrue();
+	}
 	/**
 	 * Launches against main
 	 */

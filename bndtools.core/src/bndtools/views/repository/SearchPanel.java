@@ -13,58 +13,58 @@ import org.osgi.resource.Requirement;
 
 public abstract class SearchPanel implements IPersistable {
 
-    public static final String PROP_VALUE = "requirement";
-    public final String PROP_ERROR = "error";
+	public static final String			PROP_VALUE	= "requirement";
+	public final String					PROP_ERROR	= "error";
 
-    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+	private final PropertyChangeSupport	propSupport	= new PropertyChangeSupport(this);
 
-    private String error;
-    private Requirement requirement;
+	private String						error;
+	private Requirement					requirement;
 
-    public abstract Control createControl(Composite parent);
+	public abstract Control createControl(Composite parent);
 
-    public abstract void setFocus();
+	public abstract void setFocus();
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propSupport.addPropertyChangeListener(listener);
-    }
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		propSupport.addPropertyChangeListener(listener);
+	}
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propSupport.removePropertyChangeListener(listener);
-    }
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		propSupport.removePropertyChangeListener(listener);
+	}
 
-    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        propSupport.addPropertyChangeListener(propertyName, listener);
-    }
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		propSupport.addPropertyChangeListener(propertyName, listener);
+	}
 
-    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        propSupport.removePropertyChangeListener(propertyName, listener);
-    }
+	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		propSupport.removePropertyChangeListener(propertyName, listener);
+	}
 
-    public String getError() {
-        return this.error;
-    }
+	public String getError() {
+		return this.error;
+	}
 
-    protected void setError(String error) {
-        String oldError = this.error;
-        this.error = error;
-        propSupport.firePropertyChange(PROP_ERROR, oldError, error);
-    }
+	protected void setError(String error) {
+		String oldError = this.error;
+		this.error = error;
+		propSupport.firePropertyChange(PROP_ERROR, oldError, error);
+	}
 
-    public Requirement getRequirement() {
-        return this.requirement;
-    }
+	public Requirement getRequirement() {
+		return this.requirement;
+	}
 
-    protected void setRequirement(Requirement requirement) {
-        Requirement oldRequiremenmt = this.requirement;
-        this.requirement = requirement;
-        propSupport.firePropertyChange(PROP_VALUE, oldRequiremenmt, requirement);
-    }
+	protected void setRequirement(Requirement requirement) {
+		Requirement oldRequiremenmt = this.requirement;
+		this.requirement = requirement;
+		propSupport.firePropertyChange(PROP_VALUE, oldRequiremenmt, requirement);
+	}
 
-    public Image createImage(@SuppressWarnings("unused") Device device) {
-        return null;
-    }
+	public Image createImage(@SuppressWarnings("unused") Device device) {
+		return null;
+	}
 
-    public abstract void restoreState(IMemento memento);
+	public abstract void restoreState(IMemento memento);
 
 }

@@ -16,68 +16,68 @@ import bndtools.Plugin;
 
 public class ConfigElementLabelProvider extends StyledCellLabelProvider {
 
-    private final Device device;
-    private final Image defaultImg;
+	private final Device						device;
+	private final Image							defaultImg;
 
-    private final Map<ImageDescriptor, Image> imgCache = new HashMap<ImageDescriptor, Image>();
+	private final Map<ImageDescriptor, Image>	imgCache	= new HashMap<>();
 
-    public ConfigElementLabelProvider(Device device, String defaultIconPath) {
-        this.device = device;
-        if (defaultIconPath != null)
-            defaultImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, defaultIconPath)
-                .createImage(device);
-        else
-            defaultImg = null;
-    }
+	public ConfigElementLabelProvider(Device device, String defaultIconPath) {
+		this.device = device;
+		if (defaultIconPath != null)
+			defaultImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, defaultIconPath)
+				.createImage(device);
+		else
+			defaultImg = null;
+	}
 
-    @Override
-    public void update(ViewerCell cell) {
-        Image icon = defaultImg;
-        ImageDescriptor iconDescriptor;
+	@Override
+	public void update(ViewerCell cell) {
+		Image icon = defaultImg;
+		ImageDescriptor iconDescriptor;
 
-        Object data = cell.getElement();
-        if (data instanceof ConfigurationElementCategory) {
-            ConfigurationElementCategory category = (ConfigurationElementCategory) data;
-            cell.setText(category.toString());
-            iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/fldr_obj.gif");
-        } else if (data instanceof IConfigurationElement) {
-            IConfigurationElement element = (IConfigurationElement) data;
-            cell.setText(element.getAttribute("name"));
+		Object data = cell.getElement();
+		if (data instanceof ConfigurationElementCategory) {
+			ConfigurationElementCategory category = (ConfigurationElementCategory) data;
+			cell.setText(category.toString());
+			iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/fldr_obj.gif");
+		} else if (data instanceof IConfigurationElement) {
+			IConfigurationElement element = (IConfigurationElement) data;
+			cell.setText(element.getAttribute("name"));
 
-            String iconPath = element.getAttribute("icon");
-            if (iconPath != null)
-                iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element.getContributor()
-                    .getName(), iconPath);
-            else
-                iconDescriptor = null;
-        } else {
-            cell.setText("<<ERROR>>");
-            iconDescriptor = null;
-        }
+			String iconPath = element.getAttribute("icon");
+			if (iconPath != null)
+				iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element.getContributor()
+					.getName(), iconPath);
+			else
+				iconDescriptor = null;
+		} else {
+			cell.setText("<<ERROR>>");
+			iconDescriptor = null;
+		}
 
-        if (iconDescriptor != null) {
-            icon = imgCache.get(iconDescriptor);
-            if (icon == null) {
-                icon = iconDescriptor.createImage(device);
-                imgCache.put(iconDescriptor, icon);
-            }
-        }
+		if (iconDescriptor != null) {
+			icon = imgCache.get(iconDescriptor);
+			if (icon == null) {
+				icon = iconDescriptor.createImage(device);
+				imgCache.put(iconDescriptor, icon);
+			}
+		}
 
-        if (icon != null)
-            cell.setImage(icon);
-    }
+		if (icon != null)
+			cell.setImage(icon);
+	}
 
-    @Override
-    public void dispose() {
-        super.dispose();
-        safeDispose(defaultImg);
-        for (Image cached : imgCache.values()) {
-            safeDispose(cached);
-        }
-    }
+	@Override
+	public void dispose() {
+		super.dispose();
+		safeDispose(defaultImg);
+		for (Image cached : imgCache.values()) {
+			safeDispose(cached);
+		}
+	}
 
-    private void safeDispose(Image img) {
-        if (img != null && !img.isDisposed())
-            img.dispose();
-    }
+	private void safeDispose(Image img) {
+		if (img != null && !img.isDisposed())
+			img.dispose();
+	}
 }

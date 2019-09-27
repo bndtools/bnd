@@ -42,9 +42,9 @@ public class ClazzTest extends TestCase {
 	 * aQute.bnd.osgi.Clazz.classConstRef(Clazz.java:1880) [bnd] at
 	 * aQute.bnd.osgi.Clazz.crawl(Clazz.java:1185)
 	 * </pre>
-	 * 
+	 *
 	 * This happened on the Jini platform
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -80,7 +80,8 @@ public class ClazzTest extends TestCase {
 	public void testCaughtExceptions() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
-			c.parseClassFile(new FileInputStream("bin_test/test/ClazzTest$Catching.class"), new ClassDataCollector() {});
+			c.parseClassFile(new FileInputStream("bin_test/test/ClazzTest$Catching.class"),
+				new ClassDataCollector() {});
 			assertTrue(c.getReferred()
 				.toString()
 				.contains("org.xml.sax"));
@@ -124,7 +125,7 @@ public class ClazzTest extends TestCase {
 
 	/**
 	 * Complaint from Groovy that the dynamic instruction fails.
-	 * 
+	 *
 	 * <pre>
 	 *  [bndwrap]
 	 * java.lang.ArrayIndexOutOfBoundsException: 15 [bndwrap] at
@@ -388,7 +389,8 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
-	public static interface Foo<T> {}
+	public interface Foo<T> {}
+
 	public static class Bar {}
 
 	@Target(ElementType.TYPE_USE)
@@ -457,7 +459,13 @@ public class ClazzTest extends TestCase {
 	}
 
 	@SuppressWarnings("serial")
-	public static class AnnotationsOnTypeUseImplements1 implements Serializable, @TypeUse Foo<String> {}
+	public static class AnnotationsOnTypeUseImplements1 implements Serializable, @TypeUse Foo<String> {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+	}
 
 	public void testAnnotationsOnTypeUseImplements1() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$AnnotationsOnTypeUseImplements1.class");
@@ -500,7 +508,7 @@ public class ClazzTest extends TestCase {
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
-				MethodDef member;
+				MethodDef	member;
 				int			parameter;
 
 				@Override
@@ -512,6 +520,7 @@ public class ClazzTest extends TestCase {
 				public void method(MethodDef member) {
 					this.member = member;
 				}
+
 				@Override
 				public void memberEnd() {
 					member = null;
@@ -541,7 +550,7 @@ public class ClazzTest extends TestCase {
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
-				MethodDef member;
+				MethodDef	member;
 				int			parameter;
 
 				@Override
@@ -553,6 +562,7 @@ public class ClazzTest extends TestCase {
 				public void method(MethodDef member) {
 					this.member = member;
 				}
+
 				@Override
 				public void memberEnd() {
 					member = null;
@@ -582,7 +592,7 @@ public class ClazzTest extends TestCase {
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
-				MethodDef member;
+				MethodDef	member;
 				int			parameter;
 
 				@Override
@@ -594,6 +604,7 @@ public class ClazzTest extends TestCase {
 				public void method(MethodDef member) {
 					this.member = member;
 				}
+
 				@Override
 				public void memberEnd() {
 					member = null;
@@ -623,7 +634,7 @@ public class ClazzTest extends TestCase {
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
-				MethodDef member;
+				MethodDef	member;
 				int			parameter;
 
 				@Override
@@ -635,6 +646,7 @@ public class ClazzTest extends TestCase {
 				public void method(MethodDef member) {
 					this.member = member;
 				}
+
 				@Override
 				public void memberEnd() {
 					member = null;
@@ -664,17 +676,19 @@ public class ClazzTest extends TestCase {
 			List<String> tested = new ArrayList<>();
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
-				FieldDef member;
-				byte[] type_path;
+				FieldDef	member;
+				byte[]		type_path;
 
 				@Override
 				public void typeuse(int target_type, int target_index, byte[] target_info, byte[] type_path) {
 					this.type_path = type_path;
 				}
+
 				@Override
 				public void field(FieldDef member) {
 					this.member = member;
 				}
+
 				@Override
 				public void memberEnd() {
 					member = null;
@@ -841,5 +855,17 @@ public class ClazzTest extends TestCase {
 			assertThat(clazz.isInnerClass()).isTrue();
 		}
 	}
-}
 
+	public static class AnonymousClassHolder {
+		Object anon = new Object() {};
+	}
+
+	public void testInnerAnonymousClass() throws Exception {
+		File file = IO.getFile("bin_test/test/ClazzTest$AnonymousClassHolder$1.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertThat(clazz.isInnerClass()).isTrue();
+		}
+	}
+}

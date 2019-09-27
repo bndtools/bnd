@@ -2,10 +2,14 @@ package aQute.bnd.build.model;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Optional;
 
 import aQute.bnd.header.Parameters;
 import aQute.bnd.version.Version;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.utf8properties.UTF8Properties;
 
 public enum EE {
@@ -46,6 +50,8 @@ public enum EE {
 
 	JavaSE_12_0("JavaSE-12", "JavaSE", new Version("12"), JavaSE_11_0),
 
+	JavaSE_13_0("JavaSE-13", "JavaSE", new Version("13"), JavaSE_12_0),
+
 	UNKNOWN("Unknown", "unknown", new Version(0));
 
 	private final String			eeName;
@@ -54,6 +60,7 @@ public enum EE {
 	private final EE[]				compatible;
 	private transient EnumSet<EE>	compatibleSet;
 	private transient Parameters	packages	= null;
+	private transient Parameters	modules		= null;
 
 	EE(String name, String capabilityName, Version capabilityVersion, EE... compatible) {
 		this.eeName = name;
@@ -97,6 +104,14 @@ public enum EE {
 		return capabilityVersion;
 	}
 
+	public static Optional<EE> highestFromTargetVersion(String targetVersion) {
+		Version version = new Version(targetVersion);
+		return Arrays.stream(values())
+			.filter(ee -> ee.capabilityVersion.compareTo(version) == 0)
+			.sorted(Collections.reverseOrder())
+			.findFirst();
+	}
+
 	public static EE parse(String str) {
 		for (EE ee : values()) {
 			if (ee.eeName.equals(str))
@@ -107,20 +122,45 @@ public enum EE {
 
 	/**
 	 * Return the list of packages
-	 * 
-	 * @throws IOException
+	 *
+	 * @throws IOException (Unchecked via {@link Exceptions})
 	 */
-	public Parameters getPackages() throws IOException {
+	@SuppressWarnings("javadoc")
+	public Parameters getPackages() {
 		if (packages == null) {
-			try (InputStream stream = EE.class.getResourceAsStream(name() + ".properties")) {
-				if (stream == null)
-					return new Parameters();
-				UTF8Properties props = new UTF8Properties();
-				props.load(stream);
-				String exports = props.getProperty("org.osgi.framework.system.packages");
-				packages = new Parameters(exports);
-			}
+			init();
 		}
 		return packages;
+	}
+
+	/**
+	 * Return the list of modules
+	 *
+	 * @throws IOException (Unchecked via {@link Exceptions})
+	 */
+	@SuppressWarnings("javadoc")
+	public Parameters getModules() {
+		if (modules == null) {
+			init();
+		}
+		return modules;
+	}
+
+	private void init() {
+		try (InputStream stream = EE.class.getResourceAsStream(name() + ".properties")) {
+			if (stream == null) {
+				packages = new Parameters();
+				modules = new Parameters();
+				return;
+			}
+			UTF8Properties props = new UTF8Properties();
+			props.load(stream);
+			String packagesProp = props.getProperty("org.osgi.framework.system.packages");
+			packages = new Parameters(packagesProp);
+			String modulesProp = props.getProperty("jpms.modules");
+			modules = new Parameters(modulesProp);
+		} catch (IOException ioe) {
+			throw Exceptions.duck(ioe);
+		}
 	}
 }

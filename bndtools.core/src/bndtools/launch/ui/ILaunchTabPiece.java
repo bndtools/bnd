@@ -9,19 +9,19 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
 public interface ILaunchTabPiece {
-    Control createControl(Composite parent);
+	Control createControl(Composite parent);
 
-    void addPropertyChangeListener(PropertyChangeListener listener);
+	void addPropertyChangeListener(PropertyChangeListener listener);
 
-    void removePropertyChangeListener(PropertyChangeListener listener);
+	void removePropertyChangeListener(PropertyChangeListener listener);
 
-    boolean isDirty();
+	boolean isDirty();
 
-    void setDefaults(ILaunchConfigurationWorkingCopy configuration);
+	void setDefaults(ILaunchConfigurationWorkingCopy configuration);
 
-    void initializeFrom(ILaunchConfiguration configuration) throws CoreException;
+	void initializeFrom(ILaunchConfiguration configuration) throws CoreException;
 
-    void performApply(ILaunchConfigurationWorkingCopy configuration);
+	void performApply(ILaunchConfigurationWorkingCopy configuration);
 
-    String checkForError();
+	String checkForError();
 }

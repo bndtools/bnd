@@ -3,7 +3,7 @@ package aQute.bnd.build.model.conversions;
 /**
  * Formatter for booleans with a default value; if the input value matches the
  * default then it is formatted to <code>null</code>.
- * 
+ *
  * @author Neil Bartlett
  */
 public class DefaultBooleanFormatter implements Converter<String, Boolean> {

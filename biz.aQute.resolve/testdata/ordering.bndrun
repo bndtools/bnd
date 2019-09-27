@@ -1,0 +1,55 @@
+-standalone ${.}/big-index.xml
+
+-resolve.effective = active,resolve
+-runstartlevel: order=leastdependenciesfirst, begin=-1
+ 
+-runrequires: osgi.identity;filter:='(osgi.identity=com.example.product.luther.application.runtime-devtools)'
+-runfw: org.apache.felix.framework
+-runee: JavaSE-1.8
+-runbundles: \
+	com.qivicon.product.luther.application.runtime-devtools;version='[1.187.0,1.187.1)',\
+	com.eclipsesource.jaxrs.jersey-min;version='[2.22.1,2.22.2)',\
+	com.google.guava;version='[15.0.0,15.0.1)',\
+	com.qivicon.binding.bosch;version='[1.187.0,1.187.1)',\
+	com.qivicon.binding.commons.datasource;version='[1.187.0,1.187.1)',\
+	com.qivicon.binding.commons.utils;version='[1.187.0,1.187.1)',\
+	com.qivicon.binding.homematic.configflow;version='[1.187.0,1.187.1)',\
+	com.qivicon.gateway.logger.forwarder;version='[1.187.0,1.187.1)',\
+	com.qivicon.oauth.manager;version='[1.187.0,1.187.1)',\
+	com.qivicon.product.luther.application.runtime-core;version='[1.187.0,1.187.1)',\
+	com.qivicon.runtime.json.api;version='[1.187.0,1.187.1)',\
+	com.qivicon.service;version='[1.187.0,1.187.1)',\
+	com.qivicon.service.hal;version='[1.187.0,1.187.1)',\
+	com.qivicon.smarthome;version='[1.187.0,1.187.1)',\
+	com.qivicon.smarthome.config.core;version='[1.187.0,1.187.1)',\
+	com.qivicon.smarthome.config.flow;version='[1.187.0,1.187.1)',\
+	com.qivicon.smarthome.config.system.backup;version='[1.187.0,1.187.1)',\
+	com.qivicon.wrapper.gogo.runtime;version='[1.187.0,1.187.1)',\
+	com.qivicon.wrapper.gson;version='[1.187.0,1.187.1)',\
+	javax.jmdns;version='[3.5.5,3.5.6)',\
+	javax.measure.unit-api;version='[1.0.0,1.0.1)',\
+	json;version='[20180813.0.0,20180813.0.1)',\
+	org.apache.commons.commons-codec;version='[1.12.0,1.12.1)',\
+	org.apache.commons.io;version='[2.6.0,2.6.1)',\
+	org.apache.commons.lang;version='[2.6.0,2.6.1)',\
+	org.apache.felix.configadmin;version='[1.9.16,1.9.17)',\
+	org.apache.felix.eventadmin;version='[1.5.0,1.5.1)',\
+	org.apache.felix.http.jetty;version='[4.0.14,4.0.15)',\
+	org.apache.felix.http.servlet-api;version='[1.1.2,1.1.3)',\
+	org.apache.felix.metatype;version='[1.2.2,1.2.3)',\
+	org.apache.felix.scr;version='[2.1.16,2.1.17)',\
+	org.eclipse.smarthome.config.core;version='[1.187.0,1.187.1)',\
+	org.eclipse.smarthome.config.discovery;version='[1.187.0,1.187.1)',\
+	org.eclipse.smarthome.config.discovery.mdns;version='[1.187.0,1.187.1)',\
+	org.eclipse.smarthome.core;version='[1.187.0,1.187.1)',\
+	org.eclipse.smarthome.core.thing;version='[1.187.0,1.187.1)',\
+	org.eclipse.smarthome.io.console;version='[1.187.0,1.187.1)',\
+	org.eclipse.smarthome.io.net;version='[1.187.0,1.187.1)',\
+	org.eclipse.smarthome.io.rest;version='[1.187.0,1.187.1)',\
+	org.eclipse.smarthome.io.transport.mdns;version='[1.187.0,1.187.1)',\
+	org.osgi.util.function;version='[1.1.0,1.1.1)',\
+	org.osgi.util.promise;version='[1.1.1,1.1.2)',\
+	tec.uom.lib.uom-lib-common;version='[1.0.3,1.0.4)',\
+	tec.uom.se;version='[1.0.10,1.0.11)'
+
+-runsystempackages: sun.misc, sun.net, com.sun.management

@@ -1,11 +1,8 @@
 package aQute.bnd.component;
 
-import static java.lang.invoke.MethodHandles.publicLookup;
-import static java.lang.invoke.MethodType.methodType;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 
-import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -151,27 +148,43 @@ public class PropertyDef {
 	}
 
 	private String check(String type, String v) {
-		if (type == null) {
+		// Boolean|Byte|Character|Short|Integer|Long|Float|Double|String
+		if ((type == null) || type.equals("String")) {
 			return v;
 		}
+		v = v.trim();
 		try {
-			if (type.equals("Char")) {
-				type = "Character";
+			switch (type) {
+				case "Boolean" :
+					Boolean.valueOf(v);
+					break;
+				case "Byte" :
+					Byte.valueOf(v);
+					break;
+				case "Char" :
+				case "Character" :
+					// DS spec requires Unicode value for char
+					v = Integer.toString(v.charAt(0));
+					break;
+				case "Short" :
+					Short.valueOf(v);
+					break;
+				case "Integer" :
+					Integer.valueOf(v);
+					break;
+				case "Long" :
+					Long.valueOf(v);
+					break;
+				case "Float" :
+					Float.valueOf(v);
+					break;
+				case "Double" :
+					Double.valueOf(v);
+					break;
+				default :
+					analyzer.error("Invalid data type %s", type);
+					break;
 			}
-			Class<?> c = Class.forName("java.lang." + type);
-			if (c == String.class) {
-				return v;
-			}
-			v = v.trim();
-			if (c == Character.class) {
-				c = Integer.class;
-			}
-			MethodHandle mh = publicLookup().findStatic(c, "valueOf", methodType(c, String.class));
-			Object result = mh.invoke(v);
-		} catch (ClassNotFoundException e) {
-			analyzer.error("Invalid data type %s", type);
-		} catch (NoSuchMethodException e) {
-			analyzer.error("Cannot convert data %s to type %s", v, type);
 		} catch (NumberFormatException e) {
 			analyzer.error("Not a valid number %s for %s, %s", v, type, e.getMessage());
 		} catch (Throwable e) {

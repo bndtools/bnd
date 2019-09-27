@@ -1,6 +1,7 @@
 package aQute.bnd.osgi;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
 
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -30,8 +31,11 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators.AbstractSpliterator;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -41,6 +45,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -59,6 +64,7 @@ import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.lib.zip.ZipUtil;
+import aQute.libg.glob.PathSet;
 
 public class Jar implements Closeable {
 	private static final int	BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
@@ -140,6 +146,47 @@ public class Jar implements Closeable {
 		return new Jar(name).buildFromResource(resource);
 	}
 
+	public static Stream<Resource> getResources(Resource jarResource, Predicate<String> filter) throws Exception {
+		requireNonNull(jarResource);
+		requireNonNull(filter);
+		if (jarResource instanceof JarResource) {
+			Jar jar = ((JarResource) jarResource).getJar();
+			return jar.getResources(filter);
+		}
+		ZipInputStream jin = new ZipInputStream(jarResource.openInputStream());
+		Spliterator<Resource> spliterator = new AbstractSpliterator<Resource>(Long.MAX_VALUE,
+			Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL) {
+
+			@Override
+			public boolean tryAdvance(Consumer<? super Resource> action) {
+				requireNonNull(action);
+				try {
+					for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
+						if (entry.isDirectory()) {
+							continue;
+						}
+						if (filter.test(entry.getName())) {
+							int size = (int) entry.getSize();
+							try (ByteBufferOutputStream bbos = new ByteBufferOutputStream(
+								(size == -1) ? BUFFER_SIZE : size + 1)) {
+								bbos.write(jin);
+								Resource resource = new EmbeddedResource(bbos.toByteBuffer(),
+									ZipUtil.getModifiedTime(entry));
+								action.accept(resource);
+							}
+							return true;
+						}
+					}
+					return false;
+				} catch (IOException e) {
+					return false;
+				}
+			}
+		};
+		return StreamSupport.stream(spliterator, false)
+			.onClose(() -> IO.close(jin));
+	}
+
 	public Jar(String name, String path) throws IOException {
 		this(name, new File(path));
 	}
@@ -150,7 +197,7 @@ public class Jar implements Closeable {
 
 	/**
 	 * Make the JAR file name the project name if we get a src or bin directory.
-	 * 
+	 *
 	 * @param f
 	 */
 	private static String getName(File f) {
@@ -185,13 +232,19 @@ public class Jar implements Closeable {
 							return FileVisitResult.SKIP_SUBTREE;
 						}
 					}
-					updateModified(attrs.lastModifiedTime()
-						.toMillis(), "Dir change " + dir);
 					return FileVisitResult.CONTINUE;
 				}
 
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					if (doNotCopy != null) {
+						String name = file.getFileName()
+							.toString();
+						if (doNotCopy.matcher(name)
+							.matches()) {
+							return FileVisitResult.CONTINUE;
+						}
+					}
 					String relativePath = IO.normalizePath(baseDir.relativize(file));
 					putResource(relativePath, new FileResource(file, attrs), true);
 					return FileVisitResult.CONTINUE;
@@ -259,11 +312,18 @@ public class Jar implements Closeable {
 		return putResource(path, resource, true);
 	}
 
+	private static String cleanPath(String path) {
+		int start = 0;
+		int end = path.length();
+		while ((start < end) && (path.charAt(start) == '/')) {
+			start++;
+		}
+		return path.substring(start);
+	}
+
 	public boolean putResource(String path, Resource resource, boolean overwrite) {
 		check();
-		updateModified(resource.lastModified(), path);
-		while (path.startsWith("/"))
-			path = path.substring(1);
+		path = cleanPath(path);
 
 		if (path.equals(manifestName)) {
 			manifest = null;
@@ -272,9 +332,9 @@ public class Jar implements Closeable {
 		} else if (path.equals(Constants.MODULE_INFO_CLASS)) {
 			moduleAttribute = null;
 		}
-		Map<String, Resource> s = directories.computeIfAbsent(getDirectory(path), dir -> {
+		Map<String, Resource> s = directories.computeIfAbsent(getParent(path), dir -> {
 			// make ancestor directories
-			for (int n = dir.lastIndexOf('/'); n > 0; n = dir.lastIndexOf('/')) {
+			for (int n; (n = dir.lastIndexOf('/')) > 0;) {
 				dir = dir.substring(0, n);
 				if (directories.containsKey(dir))
 					break;
@@ -286,12 +346,14 @@ public class Jar implements Closeable {
 		if (!duplicate || overwrite) {
 			resources.put(path, resource);
 			s.put(path, resource);
+			updateModified(resource.lastModified(), path);
 		}
 		return duplicate;
 	}
 
 	public Resource getResource(String path) {
 		check();
+		path = cleanPath(path);
 		return resources.get(path);
 	}
 
@@ -303,7 +365,7 @@ public class Jar implements Closeable {
 			.map(resources::get);
 	}
 
-	private String getDirectory(String path) {
+	private String getParent(String path) {
 		check();
 		int n = path.lastIndexOf('/');
 		if (n < 0)
@@ -315,6 +377,12 @@ public class Jar implements Closeable {
 	public Map<String, Map<String, Resource>> getDirectories() {
 		check();
 		return directories;
+	}
+
+	public Map<String, Resource> getDirectory(String path) {
+		check();
+		path = cleanPath(path);
+		return directories.get(path);
 	}
 
 	public Map<String, Resource> getResources() {
@@ -340,8 +408,9 @@ public class Jar implements Closeable {
 
 	Optional<Manifest> manifest() {
 		check();
-		if (manifest != null) {
-			return manifest;
+		Optional<Manifest> optional = manifest;
+		if (optional != null) {
+			return optional;
 		}
 		try {
 			Resource manifestResource = getResource(manifestName);
@@ -358,8 +427,9 @@ public class Jar implements Closeable {
 
 	Optional<ModuleAttribute> moduleAttribute() throws Exception {
 		check();
-		if (moduleAttribute != null) {
-			return moduleAttribute;
+		Optional<ModuleAttribute> optional = moduleAttribute;
+		if (optional != null) {
+			return optional;
 		}
 		Resource module_info_resource = getResource(Constants.MODULE_INFO_CLASS);
 		if (module_info_resource == null) {
@@ -398,6 +468,7 @@ public class Jar implements Closeable {
 
 	public boolean exists(String path) {
 		check();
+		path = cleanPath(path);
 		return resources.containsKey(path);
 	}
 
@@ -611,7 +682,7 @@ public class Jar implements Closeable {
 	/**
 	 * Cleanup the manifest for writing. Cleaning up consists of adding a space
 	 * after any \n to prevent the manifest to see this newline as a delimiter.
-	 * 
+	 *
 	 * @param out Output
 	 * @throws IOException
 	 */
@@ -635,14 +706,14 @@ public class Jar implements Closeable {
 	 * bug in the manifest code. It tries to handle UTF-8 but the way it does it
 	 * it makes the bytes platform dependent. So the following code outputs the
 	 * manifest. A Manifest consists of
-	 * 
+	 *
 	 * <pre>
 	 *  'Manifest-Version: 1.0\r\n'
 	 * main-attributes * \r\n name-section main-attributes ::= attributes
 	 * attributes ::= key ': ' value '\r\n' name-section ::= 'Name: ' name
 	 * '\r\n' attributes
 	 * </pre>
-	 * 
+	 *
 	 * Lines in the manifest should not exceed 72 bytes (! this is where the
 	 * manifest screwed up as well when 16 bit unicodes were used).
 	 * <p>
@@ -657,7 +728,7 @@ public class Jar implements Closeable {
 
 	/**
 	 * Main function to output a manifest properly in UTF-8.
-	 * 
+	 *
 	 * @param manifest The manifest to output
 	 * @param out The output stream
 	 * @throws IOException when something fails
@@ -692,7 +763,7 @@ public class Jar implements Closeable {
 
 	/**
 	 * Convert a string to bytes with UTF-8 and then output in max 72 bytes
-	 * 
+	 *
 	 * @param out the output string
 	 * @param width the current width
 	 * @param s the string to output
@@ -708,7 +779,7 @@ public class Jar implements Closeable {
 	 * Write the bytes but ensure that the line length does not exceed 72
 	 * characters. If it is more than 70 characters, we just put a cr/lf +
 	 * space.
-	 * 
+	 *
 	 * @param out The output stream
 	 * @param width The nr of characters output in a line before this method
 	 *            started
@@ -732,7 +803,7 @@ public class Jar implements Closeable {
 
 	/**
 	 * Output an Attributes map. We will sort this map before outputing.
-	 * 
+	 *
 	 * @param value the attrbutes
 	 * @param out the output stream
 	 * @throws IOException when something fails
@@ -865,7 +936,7 @@ public class Jar implements Closeable {
 
 	/**
 	 * Add all the resources in the given jar that match the given filter.
-	 * 
+	 *
 	 * @param sub the jar
 	 * @param filter a pattern that should match the resoures in sub to be added
 	 */
@@ -875,7 +946,7 @@ public class Jar implements Closeable {
 
 	/**
 	 * Add all the resources in the given jar that match the given filter.
-	 * 
+	 *
 	 * @param sub the jar
 	 * @param filter a pattern that should match the resoures in sub to be added
 	 */
@@ -897,9 +968,8 @@ public class Jar implements Closeable {
 	public void close() {
 		this.closed = true;
 		IO.close(zipFile);
-		for (Resource r : resources.values()) {
-			IO.close(r);
-		}
+		resources.values()
+			.forEach(IO::close);
 		resources.clear();
 		directories.clear();
 		manifest = null;
@@ -923,7 +993,8 @@ public class Jar implements Closeable {
 
 	public boolean hasDirectory(String path) {
 		check();
-		return directories.get(path) != null;
+		path = cleanPath(path);
+		return directories.containsKey(path);
 	}
 
 	public List<String> getPackages() {
@@ -957,9 +1028,10 @@ public class Jar implements Closeable {
 
 	public Resource remove(String path) {
 		check();
+		path = cleanPath(path);
 		Resource resource = resources.remove(path);
 		if (resource != null) {
-			String dir = getDirectory(path);
+			String dir = getParent(path);
 			Map<String, Resource> mdir = directories.get(dir);
 			// must be != null
 			mdir.remove(path);
@@ -1035,12 +1107,12 @@ public class Jar implements Closeable {
 		}
 	}
 
-	private final static Pattern BSN = Pattern.compile("\\s*([-\\w\\d\\._]+)\\s*;?.*");
+	private final static Pattern BSN = Pattern.compile("\\s*([-.\\w]+)\\s*;?.*");
 
 	/**
 	 * Get the jar bsn from the {@link Constants#BUNDLE_SYMBOLICNAME} manifest
 	 * header.
-	 * 
+	 *
 	 * @return null when the jar has no manifest, when the manifest has no
 	 *         {@link Constants#BUNDLE_SYMBOLICNAME} header, or when the value
 	 *         of the header is not a valid bsn according to {@link #BSN}.
@@ -1060,7 +1132,7 @@ public class Jar implements Closeable {
 	/**
 	 * Get the jar version from the {@link Constants#BUNDLE_VERSION} manifest
 	 * header.
-	 * 
+	 *
 	 * @return null when the jar has no manifest or when the manifest has no
 	 *         {@link Constants#BUNDLE_VERSION} header
 	 * @throws Exception when the jar is closed or when the manifest could not
@@ -1075,7 +1147,7 @@ public class Jar implements Closeable {
 
 	/**
 	 * Expand the JAR file to a directory.
-	 * 
+	 *
 	 * @param dir the dst directory, is not required to exist
 	 * @throws Exception if anything does not work as expected.
 	 */
@@ -1085,7 +1157,7 @@ public class Jar implements Closeable {
 
 	/**
 	 * Make sure we have a manifest
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void ensureManifest() throws Exception {
@@ -1112,8 +1184,7 @@ public class Jar implements Closeable {
 
 	public void copy(Jar srce, String path, boolean overwrite) {
 		check();
-		addDirectory(srce.getDirectories()
-			.get(path), overwrite);
+		addDirectory(srce.getDirectory(path), overwrite);
 	}
 
 	public void setCompression(Compression compression) {
@@ -1131,7 +1202,7 @@ public class Jar implements Closeable {
 
 	/**
 	 * Return a data uri from the JAR. The data must be less than 32k
-	 * 
+	 *
 	 * @param path the path in the jar
 	 * @param mime the mime type
 	 * @return a URI or null if conversion could not take place
@@ -1187,10 +1258,11 @@ public class Jar implements Closeable {
 		return md.digest();
 	}
 
-	static Pattern SIGNER_FILES_P = Pattern.compile("(.+\\.(SF|DSA|RSA))|(.*/SIG-.*)", Pattern.CASE_INSENSITIVE);
+	private final static Pattern SIGNER_FILES_P = Pattern.compile("(.+\\.(SF|DSA|RSA))|(.*/SIG-.*)",
+		Pattern.CASE_INSENSITIVE);
 
 	public void stripSignatures() {
-		Map<String, Resource> map = getDirectories().get("META-INF");
+		Map<String, Resource> map = getDirectory("META-INF");
 		if (map != null) {
 			for (String file : new HashSet<>(map.keySet())) {
 				if (SIGNER_FILES_P.matcher(file)
@@ -1201,6 +1273,7 @@ public class Jar implements Closeable {
 	}
 
 	public void removePrefix(String prefixLow) {
+		prefixLow = cleanPath(prefixLow);
 		String prefixHigh = prefixLow + "\uFFFF";
 		resources.subMap(prefixLow, prefixHigh)
 			.clear();
@@ -1213,6 +1286,7 @@ public class Jar implements Closeable {
 	}
 
 	public void removeSubDirs(String dir) {
+		dir = cleanPath(dir);
 		if (!dir.endsWith("/")) {
 			dir = dir + "/";
 		}
@@ -1220,4 +1294,11 @@ public class Jar implements Closeable {
 			.keySet());
 		subDirs.forEach(subDir -> removePrefix(subDir + "/"));
 	}
+
+	private static final Predicate<String> pomXmlFilter = new PathSet("META-INF/maven/*/*/pom.xml").matches();
+
+	public Stream<Resource> getPomXmlResources() {
+		return getResources(pomXmlFilter);
+	}
+
 }

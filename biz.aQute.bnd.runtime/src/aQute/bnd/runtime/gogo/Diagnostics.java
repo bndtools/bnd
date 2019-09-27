@@ -40,6 +40,7 @@ public class Diagnostics implements Closeable, Converter {
 		this.fl = new FilterListener(context);
 	}
 
+	@Override
 	public void close() {
 		fl.close();
 	}

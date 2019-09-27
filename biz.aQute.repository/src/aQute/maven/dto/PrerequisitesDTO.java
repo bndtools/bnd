@@ -17,5 +17,5 @@ public class PrerequisitesDTO extends DTO {
 	 * "https://maven.apache.org/enforcer/enforcer-rules/requireMavenVersion.html">
 	 * <code>requireMavenVersion</code></a> rule instead.
 	 */
-	public MavenVersion maven = MavenVersion.parseString("2.0");
+	public MavenVersion maven = MavenVersion.parseMavenString("2.0");
 }

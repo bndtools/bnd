@@ -16,45 +16,49 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 
 public class BundleClassCompletionProposalComputer implements IJavaCompletionProposalComputer {
 
-    @Override
-    public List<ICompletionProposal> computeCompletionProposals(ContentAssistInvocationContext context, IProgressMonitor monitor) {
-        List<ICompletionProposal> result = new LinkedList<ICompletionProposal>();
+	@Override
+	public List<ICompletionProposal> computeCompletionProposals(ContentAssistInvocationContext context,
+		IProgressMonitor monitor) {
+		List<ICompletionProposal> result = new LinkedList<>();
 
-        if (!(context instanceof JavaContentAssistInvocationContext)) {
-            return Collections.emptyList();
-        }
+		if (!(context instanceof JavaContentAssistInvocationContext)) {
+			return Collections.emptyList();
+		}
 
-        try {
-            int offset = context.getInvocationOffset();
-            CharSequence prefix = context.computeIdentifierPrefix();
+		try {
+			int offset = context.getInvocationOffset();
+			CharSequence prefix = context.computeIdentifierPrefix();
 
-            result.add(new CompletionProposal("foobar", offset - prefix.length(), prefix.length(), offset - prefix.length() + 6));
-            result.add(new CompletionProposal("fizzbuzz", offset - prefix.length(), prefix.length(), offset - prefix.length() + 8));
-        } catch (BadLocationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+			result.add(new CompletionProposal("foobar", offset - prefix.length(), prefix.length(),
+				offset - prefix.length() + 6));
+			result.add(new CompletionProposal("fizzbuzz", offset - prefix.length(), prefix.length(),
+				offset - prefix.length() + 8));
+		} catch (BadLocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-        return result;
-    }
+		return result;
+	}
 
-    @Override
-    public List<IContextInformation> computeContextInformation(ContentAssistInvocationContext context, IProgressMonitor monitor) {
-        List<IContextInformation> result = new LinkedList<IContextInformation>();
+	@Override
+	public List<IContextInformation> computeContextInformation(ContentAssistInvocationContext context,
+		IProgressMonitor monitor) {
+		List<IContextInformation> result = new LinkedList<>();
 
-        result.add(new ContextInformation("contextDisplayString", "informationDisplayString"));
+		result.add(new ContextInformation("contextDisplayString", "informationDisplayString"));
 
-        return result;
-    }
+		return result;
+	}
 
-    @Override
-    public String getErrorMessage() {
-        return null;
-    }
+	@Override
+	public String getErrorMessage() {
+		return null;
+	}
 
-    @Override
-    public void sessionStarted() {}
+	@Override
+	public void sessionStarted() {}
 
-    @Override
-    public void sessionEnded() {}
+	@Override
+	public void sessionEnded() {}
 }

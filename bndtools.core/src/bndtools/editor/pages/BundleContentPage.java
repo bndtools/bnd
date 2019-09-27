@@ -1,13 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2010 Neil Bartlett.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Neil Bartlett - initial API and implementation
- *******************************************************************************/
 package bndtools.editor.pages;
 
 import org.bndtools.core.ui.ExtendedFormEditor;
@@ -46,166 +36,175 @@ import bndtools.utils.MessageHyperlinkAdapter;
 
 public class BundleContentPage extends FormPage {
 
-    private final BndEditModel model;
+	private final BndEditModel				model;
 
-    private PrivatePackagesPart privPkgsPart;
-    private ImportPatternsListPart importPatternListPart;
-    private ExportPatternsListPart exportPatternListPart;
+	private PrivatePackagesPart				privPkgsPart;
+	private ImportPatternsListPart			importPatternListPart;
+	private ExportPatternsListPart			exportPatternListPart;
 
-    public static final IFormPageFactory FACTORY = new IFormPageFactory() {
-        @Override
-        public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
-            return new BundleContentPage(editor, model, id, "Contents");
-        }
+	public static final IFormPageFactory	FACTORY	= new IFormPageFactory() {
+														@Override
+														public IFormPage createPage(ExtendedFormEditor editor,
+															BndEditModel model, String id)
+															throws IllegalArgumentException {
+															return new BundleContentPage(editor, model, id, "Contents");
+														}
 
-        @Override
-        public boolean supportsMode(Mode mode) {
-            return mode == Mode.bundle;
-        }
-    };
+														@Override
+														public boolean supportsMode(Mode mode) {
+															return mode == Mode.bundle;
+														}
+													};
 
-    public BundleContentPage(FormEditor editor, BndEditModel model, String id, String title) {
-        super(editor, id, title);
-        this.model = model;
-    }
+	public BundleContentPage(FormEditor editor, BndEditModel model, String id, String title) {
+		super(editor, id, title);
+		this.model = model;
+	}
 
-    @Override
-    protected void createFormContent(IManagedForm managedForm) {
-        FormToolkit toolkit = managedForm.getToolkit();
-        managedForm.setInput(model);
+	@Override
+	protected void createFormContent(IManagedForm managedForm) {
+		FormToolkit toolkit = managedForm.getToolkit();
+		managedForm.setInput(model);
 
-        ScrolledForm scrolledForm = managedForm.getForm();
-        scrolledForm.setText("Bundle Content");
+		ScrolledForm scrolledForm = managedForm.getForm();
+		scrolledForm.setText("Bundle Content");
 
-        Form form = scrolledForm.getForm();
-        toolkit.decorateFormHeading(form);
-        form.addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
-        Composite body = form.getBody();
+		Form form = scrolledForm.getForm();
+		toolkit.decorateFormHeading(form);
+		form.addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
+		Composite body = form.getBody();
 
-        // Create controls
-        MDSashForm sashForm = new MDSashForm(body, SWT.HORIZONTAL, managedForm);
-        sashForm.setSashWidth(6);
-        toolkit.adapt(sashForm, false, false);
+		// Create controls
+		MDSashForm sashForm = new MDSashForm(body, SWT.HORIZONTAL, managedForm);
+		sashForm.setSashWidth(6);
+		toolkit.adapt(sashForm, false, false);
 
-        Composite leftPanel = toolkit.createComposite(sashForm);
-        createLeftPanel(managedForm, leftPanel);
+		Composite leftPanel = toolkit.createComposite(sashForm);
+		createLeftPanel(managedForm, leftPanel);
 
-        Composite rightPanel = toolkit.createComposite(sashForm);
-        createRightPanel(managedForm, rightPanel);
+		Composite rightPanel = toolkit.createComposite(sashForm);
+		createRightPanel(managedForm, rightPanel);
 
-        sashForm.setWeights(new int[] {
-            1, 1
-        });
-        sashForm.hookResizeListener();
+		sashForm.setWeights(new int[] {
+			1, 1
+		});
+		sashForm.hookResizeListener();
 
-        // Layout
-        body.setLayout(new FillLayout());
-    }
+		// Layout
+		body.setLayout(new FillLayout());
+	}
 
-    void createLeftPanel(IManagedForm mform, Composite parent) {
-        FormToolkit toolkit = mform.getToolkit();
+	void createLeftPanel(IManagedForm mform, Composite parent) {
+		FormToolkit toolkit = mform.getToolkit();
 
-        GeneralInfoPart infoPart = new GeneralInfoPart(parent, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
-        mform.addPart(infoPart);
+		GeneralInfoPart infoPart = new GeneralInfoPart(parent, toolkit,
+			ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
+		mform.addPart(infoPart);
 
-        privPkgsPart = new PrivatePackagesPart(parent, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
-        mform.addPart(privPkgsPart);
+		privPkgsPart = new PrivatePackagesPart(parent, toolkit,
+			ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
+		mform.addPart(privPkgsPart);
 
-        exportPatternListPart = new ExportPatternsListPart(parent, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
-        mform.addPart(exportPatternListPart);
+		exportPatternListPart = new ExportPatternsListPart(parent, toolkit,
+			ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
+		mform.addPart(exportPatternListPart);
 
-        // LAYOUT
-        GridData gd;
-        GridLayout layout;
+		// LAYOUT
+		GridData gd;
+		GridLayout layout;
 
-        layout = new GridLayout(1, false);
-        parent.setLayout(layout);
+		layout = new GridLayout(1, false);
+		parent.setLayout(layout);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        infoPart.getSection()
-            .setLayoutData(gd);
+		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+		infoPart.getSection()
+			.setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        privPkgsPart.getSection()
-            .setLayoutData(gd);
+		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+		privPkgsPart.getSection()
+			.setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        exportPatternListPart.getSection()
-            .setLayoutData(gd);
-    }
+		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+		exportPatternListPart.getSection()
+			.setLayoutData(gd);
+	}
 
-    class NoSelectionPage extends AbstractFormPart implements IDetailsPage {
-        @Override
-        public void selectionChanged(IFormPart part, ISelection selection) {}
+	class NoSelectionPage extends AbstractFormPart implements IDetailsPage {
+		@Override
+		public void selectionChanged(IFormPart part, ISelection selection) {}
 
-        @Override
-        public void createContents(Composite parent) {
-            FormToolkit toolkit = getManagedForm().getToolkit();
-            // toolkit.createLabel(parent, "Nothing is selected");
+		@Override
+		public void createContents(Composite parent) {
+			FormToolkit toolkit = getManagedForm().getToolkit();
+			// toolkit.createLabel(parent, "Nothing is selected");
 
-            Section section = toolkit.createSection(parent, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
-            section.setText("Selection Details");
+			Section section = toolkit.createSection(parent,
+				ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
+			section.setText("Selection Details");
 
-            Composite composite = toolkit.createComposite(section);
-            Label label = toolkit.createLabel(composite, "Select one or more items to view or edit their details.", SWT.WRAP);
-            section.setClient(composite);
+			Composite composite = toolkit.createComposite(section);
+			Label label = toolkit.createLabel(composite, "Select one or more items to view or edit their details.",
+				SWT.WRAP);
+			section.setClient(composite);
 
-            GridLayout layout = new GridLayout();
-            parent.setLayout(layout);
+			GridLayout layout = new GridLayout();
+			parent.setLayout(layout);
 
-            GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-            section.setLayoutData(gd);
+			GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+			section.setLayoutData(gd);
 
-            layout = new GridLayout();
-            layout.marginWidth = 0;
-            layout.marginHeight = 0;
-            composite.setLayout(layout);
+			layout = new GridLayout();
+			layout.marginWidth = 0;
+			layout.marginHeight = 0;
+			composite.setLayout(layout);
 
-            gd = new GridData(SWT.LEFT, SWT.CENTER, false, false);
-            gd.widthHint = 120;
-            label.setLayoutData(gd);
-        }
-    }
+			gd = new GridData(SWT.LEFT, SWT.CENTER, false, false);
+			gd.widthHint = 120;
+			label.setLayoutData(gd);
+		}
+	}
 
-    void createRightPanel(IManagedForm mform, final Composite parent) {
-        FormToolkit toolkit = mform.getToolkit();
+	void createRightPanel(IManagedForm mform, final Composite parent) {
+		FormToolkit toolkit = mform.getToolkit();
 
-        BundleCalculatedImportsPart importsPart = new BundleCalculatedImportsPart(parent, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
-        mform.addPart(importsPart);
+		BundleCalculatedImportsPart importsPart = new BundleCalculatedImportsPart(parent, toolkit,
+			ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
+		mform.addPart(importsPart);
 
-        importPatternListPart = new ImportPatternsListPart(parent, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE);
-        mform.addPart(importPatternListPart);
+		importPatternListPart = new ImportPatternsListPart(parent, toolkit,
+			ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE);
+		mform.addPart(importPatternListPart);
 
-        GridLayout layout;
-        GridData gd;
+		GridLayout layout;
+		GridData gd;
 
-        layout = new GridLayout();
-        parent.setLayout(layout);
+		layout = new GridLayout();
+		parent.setLayout(layout);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.widthHint = 100;
-        gd.heightHint = 200;
-        importsPart.getSection()
-            .setLayoutData(gd);
+		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+		gd.widthHint = 100;
+		gd.heightHint = 200;
+		importsPart.getSection()
+			.setLayoutData(gd);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        importPatternListPart.getSection()
-            .setLayoutData(gd);
-    }
+		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+		importPatternListPart.getSection()
+			.setLayoutData(gd);
+	}
 
-    public void setSelectedExport(ExportedPackage export) {
-        exportPatternListPart.getSelectionProvider()
-            .setSelection(new StructuredSelection(export));
-    }
+	public void setSelectedExport(ExportedPackage export) {
+		exportPatternListPart.getSelectionProvider()
+			.setSelection(new StructuredSelection(export));
+	}
 
-    public void setSelectedPrivatePkg(String pkg) {
-        privPkgsPart.getSelectionProvider()
-            .setSelection(new StructuredSelection(pkg));
-    }
+	public void setSelectedPrivatePkg(String pkg) {
+		privPkgsPart.getSelectionProvider()
+			.setSelection(new StructuredSelection(pkg));
+	}
 
-    public void setSelectedImport(ImportPattern element) {
-        importPatternListPart.getSelectionProvider()
-            .setSelection(new StructuredSelection(element));
-    }
+	public void setSelectedImport(ImportPattern element) {
+		importPatternListPart.getSelectionProvider()
+			.setSelection(new StructuredSelection(element));
+	}
 
 }

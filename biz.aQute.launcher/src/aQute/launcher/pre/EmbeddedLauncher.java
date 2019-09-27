@@ -14,63 +14,158 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
-import aQute.lib.io.IOConstants;
-
 public class EmbeddedLauncher {
-	private static final File	CWD					= new File(System.getProperty("user.dir"));
 
-	static final int			BUFFER_SIZE			= IOConstants.PAGE_SIZE * 16;
+	private static final File	CWD					= new File(System.getProperty("user.dir"));
+	private static final String	LAUNCH_TRACE		= "launch.trace";
+	private static final int	BUFFER_SIZE			= 4096 * 16;
 
 	public static final String	EMBEDDED_RUNPATH	= "Embedded-Runpath";
+	public static final String	LAUNCHER_PATH		= "launcher.runpath";
+	private static final Pattern	QUOTED_P			= Pattern.compile("^([\"'])(.*)\\1$");
+
 	public static Manifest		MANIFEST;
 
-	public static void main(String... args) throws Exception {
+	public static void main(String... args) throws Throwable {
+
+		boolean isVerbose = isTrace();
 
 		if (args.length > 0 && args[0].equals("-extract")) {
+			if (isVerbose)
+				log("running in extraction mode");
 			extract(args);
 			return;
 		}
 
+		findAndExecute(isVerbose, "main", void.class, args);
+	}
+
+	/**
+	 * Runs the Launcher like the main method, but returns an usable exit Code.
+	 * This Method was introduced to enable compatibility with the Equinox
+	 * native executables.
+	 *
+	 * @param args the arguments to run the Launcher with
+	 * @return an exit code
+	 * @throws Throwable
+	 */
+	public int run(String... args) throws Throwable {
+
+		boolean isVerbose = isTrace();
+
+		if (isVerbose) {
+			log("The following arguments are given:");
+			for (String arg : args) {
+				log(arg);
+			}
+		}
+
+		String methodName = "run";
+		Class<Integer> returnType = int.class;
+
+		return findAndExecute(isVerbose, methodName, returnType, args);
+	}
+
+	/**
+	 * @param isVerbose should we log debug messages
+	 * @param methodName the method name to look for
+	 * @param returnType the expected return type
+	 * @param args the arguments for the method
+	 * @return what ever the method returns
+	 * @throws Throwable
+	 */
+	private static <T> T findAndExecute(boolean isVerbose, String methodName, Class<T> returnType, String... args)
+		throws Throwable {
 		ClassLoader cl = EmbeddedLauncher.class.getClassLoader();
+		if (isVerbose)
+			log("looking for " + EMBEDDED_RUNPATH + " in META-INF/MANIFEST.MF");
 		Enumeration<URL> manifests = cl.getResources("META-INF/MANIFEST.MF");
 		while (manifests.hasMoreElements()) {
-
 			URL murl = manifests.nextElement();
+			if (isVerbose)
+				log("found manifest %s", murl);
 
 			Manifest m = new Manifest(murl.openStream());
 			String runpath = m.getMainAttributes()
 				.getValue(EMBEDDED_RUNPATH);
 			if (runpath != null) {
+				if (isVerbose)
+					log("Going through the following " + EMBEDDED_RUNPATH + " %s", runpath);
 				MANIFEST = m;
-				List<URL> classpath = new ArrayList<>();
-
-				for (String path : runpath.split("\\s*,\\s*")) {
-					URL url = toFileURL(cl.getResource(path));
-					classpath.add(url);
-				}
-
-				try (URLClassLoader urlc = new URLClassLoader(classpath.toArray(new URL[0]), cl)) {
-					Class<?> embeddedLauncher = urlc.loadClass("aQute.launcher.Launcher");
-					MethodHandle mh = MethodHandles.publicLookup()
-						.findStatic(embeddedLauncher, "main", MethodType.methodType(void.class, String[].class));
-					try {
-						mh.invoke(args);
-					} catch (Error | Exception e) {
-						throw e;
-					} catch (Throwable e) {
-						throw new InvocationTargetException(e);
-					}
-				}
+				return executeWithRunPath(isVerbose, methodName, returnType, cl, runpath, false, args);
 			}
 		}
+		if (isVerbose)
+			log("looking for -D" + LAUNCHER_PATH);
+		String runpath = System.getProperty(LAUNCHER_PATH);
+		if (runpath != null) {
+			Matcher matcher = QUOTED_P.matcher(runpath);
+			if (matcher.matches()) {
+				runpath = matcher.group(2);
+			}
+			if (isVerbose)
+				log("Going through the following -D" + LAUNCHER_PATH + " %s", runpath);
+			return executeWithRunPath(isVerbose, methodName, returnType, cl, runpath, true, args);
+		}
+
+		throw new RuntimeException(
+			"Found Nothing to launch. Maybe no " + EMBEDDED_RUNPATH + " or -D" + LAUNCHER_PATH + " was set");
+	}
+
+	private static <T> T executeWithRunPath(boolean isVerbose, String methodName, Class<T> returnType, ClassLoader cl,
+		String runpath, boolean pathExternal, String... args) throws Throwable {
+		List<URL> classpath = new ArrayList<>();
+
+		for (String path : runpath.split("\\s*,\\s*")) {
+			URL url = !pathExternal ? toFileURL(cl.getResource(path))
+				: Paths.get(path)
+					.toUri()
+					.toURL();
+			if (isVerbose)
+				log("Adding to classpath %s", url.toString());
+			classpath.add(url);
+		}
+
+		if (isVerbose)
+			log("creating classloader using %s", Loader.class.getName());
+		try (Loader urlc = new Loader(classpath.toArray(new URL[0]), cl)) {
+			if (isVerbose)
+				log("Try to load aQute.launcher.Launcher");
+			Class<?> aQutelauncherLauncher = urlc.loadClass("aQute.launcher.Launcher");
+			if (isVerbose)
+				log("looking for method %s with return type %s", methodName, returnType.toString());
+
+			MethodHandle mh = MethodHandles.publicLookup()
+				.findStatic(aQutelauncherLauncher, methodName, MethodType.methodType(returnType, String[].class));
+			try {
+				if (isVerbose)
+					log("found method and start executing");
+				return (T) mh.invoke(args);
+			} catch (Error | Exception e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new InvocationTargetException(e);
+			}
+		}
+	}
+
+	private static void log(String message, Object... args) {
+		System.out.println("[" + EmbeddedLauncher.class.getSimpleName() + "] " + String.format(message, args));
+	}
+
+	private static boolean isTrace() {
+		return Boolean.getBoolean(LAUNCH_TRACE);
 	}
 
 	private static void extract(String... args) throws URISyntaxException, IOException {
@@ -173,6 +268,17 @@ public class EmbeddedLauncher {
 		f.deleteOnExit();
 		return f.toURI()
 			.toURL();
+	}
+
+	public static class Loader extends URLClassLoader {
+		public Loader(URL[] urls, ClassLoader parent) {
+			super(urls, parent);
+		}
+
+		@Override
+		public void addURL(URL url) {
+			super.addURL(url);
+		}
 	}
 
 }

@@ -4,6 +4,6 @@ import java.io.File;
 
 public interface RepoConstants {
 
-	static final String DEFAULT_CACHE_DIR = ".bnd" + File.separator + "cache";
+	String DEFAULT_CACHE_DIR = ".bnd" + File.separator + "cache";
 
 }

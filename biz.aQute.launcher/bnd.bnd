@@ -4,7 +4,7 @@
 -dependson: demo
 
 -buildpath: \
-	osgi.core;version=4.2;maven-scope=provided,\
+	osgi.core;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest
@@ -16,7 +16,14 @@
 Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
 
 -conditionalpackage: aQute.lib*
+-includepackage: \
+	aQute.launcher,\
+	aQute.launcher.constants,\
+	aQute.launcher.minifw,\
+	aQute.launcher.plugin
+-includeresource: \
+	${p}.pre.jar
 
-Premain-Class: aQute.launcher.agent.LauncherAgent
+-builderignore: testresources
 
 -baseline: *

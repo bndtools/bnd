@@ -148,8 +148,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		File shaFile = new File(cached.getAbsolutePath() + AbstractIndexedRepo.REPO_INDEX_SHA_EXTENSION);
 		shaFile.delete();
 
-		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new HttpClient(),
-			EXPECTED_SHA);
+		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new HttpClient(), EXPECTED_SHA);
 		NanoHTTPD httpd = new NanoHTTPD(18083, IO.getFile("testdata/http"));
 		try {
 			File result = handle.request();

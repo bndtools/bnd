@@ -33,136 +33,140 @@ import bndtools.central.Central;
 
 public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler {
 
-    private static final String PROP_SUGGESTED_VERSION = "suggestedVersion";
+	private static final String		PROP_SUGGESTED_VERSION			= "suggestedVersion";
 
-    private final static String VERSION_ACCEPTING_MACRO_STRING = "(\\d+)\\.(\\d+)\\.(\\d+)\\.([-_\\.\\$\\{\\}\\da-zA-Z]+)";//$NON-NLS-1$
-    private final static Pattern VERSION_ACCEPTING_MACRO = Pattern.compile(VERSION_ACCEPTING_MACRO_STRING);
+	private final static String		VERSION_ACCEPTING_MACRO_STRING	= "(\\d+)\\.(\\d+)\\.(\\d+)\\.([-.${}\\w]+)";		//$NON-NLS-1$
+	private final static Pattern	VERSION_ACCEPTING_MACRO			= Pattern.compile(VERSION_ACCEPTING_MACRO_STRING);
 
-    @Override
-    public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
-        List<MarkerData> result = new LinkedList<MarkerData>();
+	@Override
+	public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
+		List<MarkerData> result = new LinkedList<>();
 
-        IFile bndFile = null;
-        LineLocation loc = null;
+		IFile bndFile = null;
+		LineLocation loc = null;
 
-        BundleInfo info = (BundleInfo) location.details;
-        try (ProjectBuilder pb = model.getBuilder(null)) {
-            for (Builder builder : pb.getSubBuilders()) {
-                if (builder.getBsn()
-                    .equals(info.bsn)) {
-                    File propsFile = builder.getPropertiesFile();
-                    // Try to find in the sub-bundle file
-                    if (propsFile != null) {
-                        bndFile = project.getWorkspace()
-                            .getRoot()
-                            .getFileForLocation(new Path(propsFile.getAbsolutePath()));
-                        if (bndFile != null) {
-                            loc = findBundleVersionHeader(bndFile);
-                        }
-                    }
+		BundleInfo info = (BundleInfo) location.details;
+		try (ProjectBuilder pb = model.getBuilder(null)) {
+			for (Builder builder : pb.getSubBuilders()) {
+				if (builder.getBsn()
+					.equals(info.bsn)) {
+					File propsFile = builder.getPropertiesFile();
+					// Try to find in the sub-bundle file
+					if (propsFile != null) {
+						bndFile = project.getWorkspace()
+							.getRoot()
+							.getFileForLocation(new Path(propsFile.getAbsolutePath()));
+						if (bndFile != null) {
+							loc = findBundleVersionHeader(bndFile);
+						}
+					}
 
-                    if (loc == null) {
-                        // Not found in sub-bundle file, try bnd.bnd
-                        bndFile = project.getFile(Project.BNDFILE);
-                        loc = findBundleVersionHeader(bndFile);
-                    }
+					if (loc == null) {
+						// Not found in sub-bundle file, try bnd.bnd
+						bndFile = project.getFile(Project.BNDFILE);
+						loc = findBundleVersionHeader(bndFile);
+					}
 
-                    if (loc == null) {
-                        // Not found in bnd.bnd, try build.bnd. Marker will appear on bnd.bnd
-                        IFile buildFile = Central.getWorkspaceBuildFile();
-                        loc = findBundleVersionHeader(buildFile);
-                        if (loc != null) {
-                            loc = new LineLocation();
-                            loc.lineNum = 1;
-                            loc.start = 1;
-                            loc.end = 1;
-                        }
-                    }
+					if (loc == null) {
+						// Not found in bnd.bnd, try build.bnd. Marker will
+						// appear on bnd.bnd
+						IFile buildFile = Central.getWorkspaceBuildFile();
+						loc = findBundleVersionHeader(buildFile);
+						if (loc != null) {
+							loc = new LineLocation();
+							loc.lineNum = 1;
+							loc.start = 1;
+							loc.end = 1;
+						}
+					}
 
-                    if (loc == null) {
-                        // Not found in build.bnd, try included files. Marker will appear on bnd.bnd
-                        List<File> extensions = Central.getWorkspace()
-                            .getIncluded();
-                        if (extensions != null) {
-                            for (File extension : extensions) {
-                                loc = findBundleVersionHeader(Central.toResource(extension));
-                                if (loc != null) {
-                                    loc = new LineLocation();
-                                    loc.lineNum = 1;
-                                    loc.start = 1;
-                                    loc.end = 1;
-                                    break;
-                                }
-                            }
-                        }
-                    }
+					if (loc == null) {
+						// Not found in build.bnd, try included files. Marker
+						// will appear on bnd.bnd
+						List<File> extensions = Central.getWorkspace()
+							.getIncluded();
+						if (extensions != null) {
+							for (File extension : extensions) {
+								loc = findBundleVersionHeader(Central.toResource(extension));
+								if (loc != null) {
+									loc = new LineLocation();
+									loc.lineNum = 1;
+									loc.start = 1;
+									loc.end = 1;
+									break;
+								}
+							}
+						}
+					}
 
-                    if (loc != null) {
-                        Map<String, Object> attribs = new HashMap<String, Object>();
-                        attribs.put(IMarker.MESSAGE, location.message);
-                        attribs.put(IMarker.LINE_NUMBER, loc.lineNum);
-                        attribs.put(IMarker.CHAR_START, loc.start);
-                        attribs.put(IMarker.CHAR_END, loc.end);
+					if (loc != null) {
+						Map<String, Object> attribs = new HashMap<>();
+						attribs.put(IMarker.MESSAGE, location.message);
+						attribs.put(IMarker.LINE_NUMBER, loc.lineNum);
+						attribs.put(IMarker.CHAR_START, loc.start);
+						attribs.put(IMarker.CHAR_END, loc.end);
 
-                        String qualifier = null;
-                        String currentVersion = builder.getUnprocessedProperty(Constants.BUNDLE_VERSION, "");
-                        if (currentVersion != null) {
-                            Matcher m = VERSION_ACCEPTING_MACRO.matcher(currentVersion);
-                            if (m.matches()) {
-                                qualifier = m.group(4);
-                            }
-                        }
-                        attribs.put(PROP_SUGGESTED_VERSION, info.suggestedVersion.toString() + (qualifier != null ? '.' + qualifier : ""));
+						String qualifier = null;
+						String currentVersion = builder.getUnprocessedProperty(Constants.BUNDLE_VERSION, "");
+						if (currentVersion != null) {
+							Matcher m = VERSION_ACCEPTING_MACRO.matcher(currentVersion);
+							if (m.matches()) {
+								qualifier = m.group(4);
+							}
+						}
+						attribs.put(PROP_SUGGESTED_VERSION,
+							info.suggestedVersion.toString() + (qualifier != null ? '.' + qualifier : ""));
 
-                        result.add(new MarkerData(bndFile, attribs, true, BndtoolsConstants.MARKER_JAVA_BASELINE));
-                    }
-                }
-            }
-        }
+						result.add(new MarkerData(bndFile, attribs, true, BndtoolsConstants.MARKER_JAVA_BASELINE));
+					}
+				}
+			}
+		}
 
-        return result;
-    }
+		return result;
+	}
 
-    private LineLocation findBundleVersionHeader(IResource bndFile) throws Exception {
-        File file = bndFile.getLocation()
-            .toFile();
-        String content = IO.collect(file);
+	private LineLocation findBundleVersionHeader(IResource bndFile) throws Exception {
+		File file = bndFile.getLocation()
+			.toFile();
+		String content = IO.collect(file);
 
-        PropertiesLineReader reader = new PropertiesLineReader(content);
-        int lineNum = 1;
+		PropertiesLineReader reader = new PropertiesLineReader(content);
+		int lineNum = 1;
 
-        LineType type = reader.next();
-        while (type != LineType.eof) {
-            if (type == LineType.entry) {
-                String entryKey = reader.key();
-                if (Constants.BUNDLE_VERSION.equals(entryKey)) {
-                    LineLocation loc = new LineLocation();
-                    loc.lineNum = lineNum;
-                    IRegion region = reader.region();
-                    loc.start = region.getOffset();
-                    loc.end = region.getOffset() + region.getLength();
-                    return loc;
-                }
-            }
+		LineType type = reader.next();
+		while (type != LineType.eof) {
+			if (type == LineType.entry) {
+				String entryKey = reader.key();
+				if (Constants.BUNDLE_VERSION.equals(entryKey)) {
+					LineLocation loc = new LineLocation();
+					loc.lineNum = lineNum;
+					IRegion region = reader.region();
+					loc.start = region.getOffset();
+					loc.end = region.getOffset() + region.getLength();
+					return loc;
+				}
+			}
 
-            lineNum++;
-            type = reader.next();
-        }
+			lineNum++;
+			type = reader.next();
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    @Override
-    public List<ICompletionProposal> getProposals(IMarker marker) {
-        List<ICompletionProposal> result = new LinkedList<ICompletionProposal>();
+	@Override
+	public List<ICompletionProposal> getProposals(IMarker marker) {
+		List<ICompletionProposal> result = new LinkedList<>();
 
-        String suggestedVersion = marker.getAttribute(PROP_SUGGESTED_VERSION, null);
-        int start = marker.getAttribute(IMarker.CHAR_START, 0);
-        int end = marker.getAttribute(IMarker.CHAR_END, 0);
-        CompletionProposal proposal = new CompletionProposal(Constants.BUNDLE_VERSION + ": " + suggestedVersion, start, end - start, end, null, "Change bundle version to " + suggestedVersion, null, null);
-        result.add(proposal);
+		String suggestedVersion = marker.getAttribute(PROP_SUGGESTED_VERSION, null);
+		int start = marker.getAttribute(IMarker.CHAR_START, 0);
+		int end = marker.getAttribute(IMarker.CHAR_END, 0);
+		CompletionProposal proposal = new CompletionProposal(Constants.BUNDLE_VERSION + ": " + suggestedVersion, start,
+			end - start, end, null, "Change bundle version to " + suggestedVersion, null, null);
+		result.add(proposal);
 
-        return result;
-    }
+		return result;
+	}
 
 }

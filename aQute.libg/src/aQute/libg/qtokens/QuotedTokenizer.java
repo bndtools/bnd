@@ -9,25 +9,39 @@ import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class QuotedTokenizer implements Iterable<String> {
-	private final String	string;
-	private final String	separators;
-	private final boolean	returnTokens;
-	private int				index	= 0;
-	private String			peek;
-	private char			separator;
+import aQute.lib.regex.PatternConstants;
 
-	public QuotedTokenizer(String string, String separators, boolean returnTokens) {
+public class QuotedTokenizer implements Iterable<String> {
+	private final static Pattern	TOKEN_P	= Pattern.compile(PatternConstants.TOKEN);
+	private final String			string;
+	private final String			separators;
+	private final boolean			returnTokens;
+	private final boolean			retainQuotes;
+	private int						index	= 0;
+	private String					peek;
+	private char					separator;
+
+	public QuotedTokenizer(String string, String separators, boolean returnTokens, boolean retainQuotes) {
 		this.string = requireNonNull(string, "string argument must be not null");
 		this.separators = requireNonNull(separators, "separators argument must be not null");
 		this.returnTokens = returnTokens;
+		this.retainQuotes = retainQuotes;
+	}
+
+	public QuotedTokenizer(String string, String separators, boolean returnTokens) {
+		this(string, separators, returnTokens, false);
 	}
 
 	public QuotedTokenizer(String string, String separators) {
 		this(string, separators, false);
+	}
+
+	private QuotedTokenizer copy() {
+		return new QuotedTokenizer(string, separators, returnTokens, retainQuotes);
 	}
 
 	@Override
@@ -105,24 +119,23 @@ public class QuotedTokenizer implements Iterable<String> {
 	}
 
 	private void quotedString(StringBuilder sb, char quote) {
-		boolean embedded = sb.length() != 0;
-		if (embedded) {
+		boolean retain = retainQuotes || (sb.length() != 0);
+		if (retain) {
 			sb.append(quote);
 		}
 		while (index < string.length()) {
 			char c = string.charAt(index++);
 			if (c == quote) {
-				if (embedded) {
+				if (retain) {
 					sb.append(quote);
 				}
 				break;
 			}
 			if ((c == '\\') && (index < string.length())) {
-				char cc = string.charAt(index++);
-				if (cc != quote) {
-					sb.append("\\");
+				c = string.charAt(index++);
+				if (retain || (c != quote)) {
+					sb.append('\\');
 				}
-				c = cc;
 			}
 			sb.append(c);
 		}
@@ -141,7 +154,7 @@ public class QuotedTokenizer implements Iterable<String> {
 	}
 
 	public Stream<String> stream() {
-		return stream(new QuotedTokenizer(string, separators, returnTokens));
+		return stream(copy());
 	}
 
 	private static Stream<String> stream(QuotedTokenizer qt) {
@@ -150,11 +163,11 @@ public class QuotedTokenizer implements Iterable<String> {
 
 	@Override
 	public Spliterator<String> spliterator() {
-		return spliterator(new QuotedTokenizer(string, separators, returnTokens));
+		return spliterator(copy());
 	}
 
 	private static Spliterator<String> spliterator(QuotedTokenizer qt) {
-		return new AbstractSpliterator<String>(Long.MAX_VALUE, Spliterator.ORDERED) {
+		return new AbstractSpliterator<String>(Long.MAX_VALUE, Spliterator.ORDERED | Spliterator.NONNULL) {
 			@Override
 			public boolean tryAdvance(Consumer<? super String> action) {
 				requireNonNull(action);
@@ -170,7 +183,7 @@ public class QuotedTokenizer implements Iterable<String> {
 
 	@Override
 	public Iterator<String> iterator() {
-		return iterator(new QuotedTokenizer(string, separators, returnTokens));
+		return iterator(copy());
 	}
 
 	private static Iterator<String> iterator(QuotedTokenizer qt) {
@@ -197,4 +210,43 @@ public class QuotedTokenizer implements Iterable<String> {
 			}
 		};
 	}
+
+	/**
+	 * Quote a string when it is not a token (OSGi). If the string is already
+	 * quoted (or backslash quoted) then these are removed before inspection to
+	 * see if it is a token.
+	 *
+	 * @param sb the output
+	 * @param value the value to quote
+	 */
+	public static boolean quote(StringBuilder sb, String value) {
+		if (value.startsWith("\\\""))
+			value = value.substring(2);
+		if (value.endsWith("\\\""))
+			value = value.substring(0, value.length() - 2);
+		if (value.startsWith("\"") && value.endsWith("\""))
+			value = value.substring(1, value.length() - 1);
+
+		boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')
+			|| TOKEN_P.matcher(value)
+				.matches();
+		if (!clean)
+			sb.append("\"");
+		for (int i = 0; i < value.length(); i++) {
+			char c = value.charAt(i);
+			switch (c) {
+				case '"' :
+					sb.append('\\')
+						.append('"');
+					break;
+
+				default :
+					sb.append(c);
+			}
+		}
+		if (!clean)
+			sb.append("\"");
+		return clean;
+	}
+
 }

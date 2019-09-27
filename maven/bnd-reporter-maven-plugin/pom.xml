@@ -1,0 +1,90 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>biz.aQute.bnd</groupId>
+		<artifactId>bnd-plugin-parent</artifactId>
+		<version>${revision}</version>
+		<relativePath>..</relativePath>
+	</parent>
+	<artifactId>bnd-reporter-maven-plugin</artifactId>
+	<description>Generates and exports reports of projects</description>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<packaging>maven-plugin</packaging>
+	<url>http://bnd.bndtools.org/</url>
+	<scm>
+		<url>https://github.com/bndtools/bnd</url>
+		<connection>scm:git:https://github.com/bndtools/bnd.git</connection>
+		<developerConnection>scm:git:git@github.com:bndtools/bnd.git</developerConnection>
+	</scm>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-artifact</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-compat</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.shared</groupId>
+			<artifactId>maven-mapping</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.sonatype.plexus</groupId>
+			<artifactId>plexus-build-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+
+
+		<!-- dependencies to annotations -->
+		<dependency>
+			<groupId>org.apache.maven.plugin-tools</groupId>
+			<artifactId>maven-plugin-annotations</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>biz.aQute.bnd</groupId>
+			<artifactId>biz.aQute.bndlib</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>biz.aQute.bnd</groupId>
+			<artifactId>biz.aQute.bnd.reporter</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-invoker-plugin</artifactId>
+				<configuration>
+					<goals>
+						<goal>--no-transfer-progress</goal>
+						<goal>install</goal>
+						<goal>bnd-reporter:export</goal>
+						<goal>bnd-reporter:readme</goal>
+					</goals>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

@@ -34,7 +34,7 @@ public class Shell implements AutoCloseable {
 
 	/**
 	 * Show the value of a macro
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Description("Show macro value")
@@ -139,8 +139,7 @@ public class Shell implements AutoCloseable {
 								if (!(t instanceof Exception)) {
 									throw Exceptions.duck(t);
 								}
-								while (t instanceof InvocationTargetException)
-									t = ((InvocationTargetException) t).getTargetException();
+								t = Exceptions.unrollCause(t, InvocationTargetException.class);
 								bnd.exception(t, "%s", t);
 							}
 						} else {

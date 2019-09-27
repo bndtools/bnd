@@ -12,10 +12,10 @@ import java.util.Properties;
 import aQute.bnd.http.HttpRequestException;
 import aQute.bnd.service.url.TaggedData;
 import aQute.lib.io.IO;
-import aQute.libg.command.Command;
 import aQute.maven.api.Archive;
 import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
+import aQute.maven.nexus.provider.Signer;
 import aQute.maven.provider.MetadataParser.ProgramMetadata;
 import aQute.maven.provider.MetadataParser.RevisionMetadata;
 import aQute.maven.provider.MetadataParser.SnapshotVersion;
@@ -31,6 +31,7 @@ class Releaser implements Release {
 	protected boolean					localOnly;
 	protected MavenBackingRepository	repo;
 	private Properties					context;
+	private String						passphrase;
 
 	Releaser(MavenRepository home, Revision revision, MavenBackingRepository repo, Properties context)
 		throws Exception {
@@ -142,7 +143,7 @@ class Releaser implements Release {
 	/**
 	 * Nexus does not like us to update the program metadata but we should do
 	 * this for file repos
-	 * 
+	 *
 	 * @return
 	 */
 	protected boolean isUpdateProgramMetadata() {
@@ -158,7 +159,8 @@ class Releaser implements Release {
 		File f = home.toLocalFile(archive);
 		try {
 			repo.store(f, archive.remotePath);
-			sign(archive, f);
+			if (passphrase != null)
+				sign(archive, f);
 			uploadAll(iterator);
 		} catch (Exception e) {
 			try {
@@ -172,9 +174,17 @@ class Releaser implements Release {
 	}
 
 	public void sign(Archive archive, File f) throws Exception {
-		// File sign = sign(f);
-		// repo.store(sign, archive.remotePath + ".asc");
-		// IO.delete(sign);
+		if (passphrase == null)
+			return;
+
+		File sign = new File(archive.localPath + ".asc");
+		int result = Signer.sign(f, context.getProperty("gpg", "gpg"), passphrase.equals("DEFAULT") ? null : passphrase,
+			sign);
+		if (result == 0) {
+			repo.store(sign, archive.remotePath + ".asc");
+		} else {
+			MavenRepository.logger.error("Failed to sign {} result code {}", f, result);
+		}
 	}
 
 	@Override
@@ -235,37 +245,9 @@ class Releaser implements Release {
 		localOnly = true;
 	}
 
-	File sign(File file) throws Exception {
-		File asc = new File(file.getParentFile(), file.getName() + ".asc");
-		IO.delete(asc);
-
-		Command command = new Command();
-		command.setTrace();
-
-		command.add(context.getProperty("gpg", "gpg"));
-
-		String passphrase = getPassphrase();
-		if (passphrase != null)
-			command.add("--passphrase", passphrase);
-		else
-			throw new IOException(
-				"gpg signing %s failed because no passphrase was set (either context, System property `gpg.passphrase`, or env var GPG_PASSPHRASE");
-
-		command.add("-ab", "--sign"); // not the -b!!
-		command.add(file.getAbsolutePath());
-		System.err.println(command);
-		StringBuilder stdout = new StringBuilder();
-		StringBuilder stderr = new StringBuilder();
-		int result = command.execute(stdout, stderr);
-		if (result != 0)
-			throw new IOException("gpg signing %s failed because " + file + stdout + stderr);
-
-		return asc;
-	}
-
-	private String getPassphrase() {
-		return context.getProperty("gpg.passphrase", System.getProperties()
-			.getProperty("gpg.passphrase", System.getenv("GPG_PASSPHRASE")));
+	@Override
+	public void setPassphrase(String passphrase) {
+		this.passphrase = passphrase;
 	}
 
 }

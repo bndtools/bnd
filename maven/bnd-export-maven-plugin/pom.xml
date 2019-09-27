@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
@@ -51,28 +52,16 @@
 			<groupId>biz.aQute.bnd</groupId>
 			<artifactId>biz.aQute.repository</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>biz.aQute.bnd</groupId>
+			<artifactId>biz.aQute.bnd.embedded-repo</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<configuration>
-					<artifactItems>
-						<artifactItem>
-							<groupId>biz.aQute.bnd</groupId>
-							<artifactId>biz.aQute.bnd.embedded-repo</artifactId>
-							<version>${project.version}</version>
-							<type>jar</type>
-							<overWrite>false</overWrite>
-							<outputDirectory>${project.build.outputDirectory}</outputDirectory>
-							<destFileName>embedded-repo.jar</destFileName>
-						</artifactItem>
-					</artifactItems>
-				</configuration>
-			</plugin>
-			<plugin>
 				<artifactId>maven-invoker-plugin</artifactId>
 				<dependencies>
 					<dependency>
@@ -82,34 +71,6 @@
 						<scope>runtime</scope>
 					</dependency>
 				</dependencies>
-				<configuration>
-					<cloneProjectsTo>${project.build.directory}/integration-test/projects</cloneProjectsTo>
-					<cloneClean>true</cloneClean>
-					<projectsDirectory>src/test/resources/integration-test</projectsDirectory>
-					<settingsFile>src/test/resources/integration-test/settings.xml</settingsFile>
-					<streamLogs>true</streamLogs>
-					<localRepositoryPath>${project.build.directory}/integration-test/repo</localRepositoryPath>
-					<postBuildHookScript>verify.groovy</postBuildHookScript>
-					<properties>
-						<maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
-						<maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
-					</properties>
-					<goals>
-						<goal>package</goal>
-					</goals>
-					<scriptVariables>
-						<bndVersion>${project.version}</bndVersion>
-					</scriptVariables>
-				</configuration>
-				<executions>
-					<execution>
-						<id>integration-test</id>
-						<goals>
-							<goal>install</goal>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>

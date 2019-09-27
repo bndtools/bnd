@@ -34,17 +34,12 @@ class RepoActions {
 		Map<String, Runnable> map = new LinkedHashMap<>();
 
 		if (bsn.indexOf(':') < 0) {
-			map.put("Delete All from Index", new Runnable() {
-
-				@Override
-				public void run() {
-					try {
-						repo.index.remove(bsn);
-					} catch (Exception e) {
-						throw Exceptions.duck(e);
-					}
+			map.put("Delete All from Index", () -> {
+				try {
+					repo.index.remove(bsn);
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
 				}
-
 			});
 		}
 		return map;
@@ -52,51 +47,31 @@ class RepoActions {
 
 	Map<String, Runnable> getRevisionActions(final Archive archive) throws Exception {
 		Map<String, Runnable> map = new LinkedHashMap<>();
-		map.put("Clear from Cache", new Runnable() {
-
-			@Override
-			public void run() {
-				File dir = repo.storage.toLocalFile(archive)
-					.getParentFile();
-				IO.delete(dir);
-			}
-
+		map.put("Clear from Cache", () -> {
+			File dir = repo.storage.toLocalFile(archive)
+				.getParentFile();
+			IO.delete(dir);
 		});
-		map.put("Delete from Index", new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					repo.index.remove(archive);
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
-				}
+		map.put("Delete from Index", () -> {
+			try {
+				repo.index.remove(archive);
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
 			}
-
 		});
-		map.put("Add Compile Dependencies", new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					addDependency(archive, MavenScope.compile);
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
-				}
+		map.put("Add Compile Dependencies", () -> {
+			try {
+				addDependency(archive, MavenScope.compile);
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
 			}
-
 		});
-		map.put("Add Runtime Dependencies", new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					addDependency(archive, MavenScope.runtime);
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
-				}
+		map.put("Add Runtime Dependencies", () -> {
+			try {
+				addDependency(archive, MavenScope.runtime);
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
 			}
-
 		});
 
 		addUpdate(archive, map);
@@ -117,23 +92,20 @@ class RepoActions {
 				if (pSources.getFailure() == null) {
 					final File sources = pSources.getValue();
 					if (sources.isFile() && sources.length() > 1000) {
-						map.put("Add Sources", new Runnable() {
-							@Override
-							public void run() {
-								try {
-									try (Jar src = new Jar(sources)) {
-										try (Jar bin = new Jar(binary)) {
-											bin.setDoNotTouchManifest();
-											for (String path : src.getResources()
-												.keySet())
-												bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
-											bin.write(out);
-										}
-										out.setLastModified(System.currentTimeMillis());
+						map.put("Add Sources", () -> {
+							try {
+								try (Jar src = new Jar(sources)) {
+									try (Jar bin = new Jar(binary)) {
+										bin.setDoNotTouchManifest();
+										for (String path : src.getResources()
+											.keySet())
+											bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
+										bin.write(out);
 									}
-								} catch (Exception e) {
-									throw Exceptions.duck(e);
+									out.setLastModified(System.currentTimeMillis());
 								}
+							} catch (Exception e) {
+								throw Exceptions.duck(e);
 							}
 						});
 						return;
@@ -162,16 +134,13 @@ class RepoActions {
 				.map(Optional::get)
 				.sorted()
 				.forEachOrdered(candidate -> {
-					map.put("Update to " + candidate, new Runnable() {
-						@Override
-						public void run() {
-							try {
-								repo.index.remove(archive);
-								repo.index.add(candidate.archive(archive.extension, archive.classifier));
-								addDependency(archive, MavenScope.runtime);
-							} catch (Exception e) {
-								throw Exceptions.duck(e);
-							}
+					map.put("Update to " + candidate, () -> {
+						try {
+							repo.index.remove(archive);
+							repo.index.add(candidate.archive(archive.extension, archive.classifier));
+							addDependency(archive, MavenScope.runtime);
+						} catch (Exception e) {
+							throw Exceptions.duck(e);
 						}
 					});
 				});

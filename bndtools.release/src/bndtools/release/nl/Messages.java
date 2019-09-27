@@ -1,20 +1,10 @@
-/*******************************************************************************
- * Copyright (c) 2010 Per Kr. Soreide.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Per Kr. Soreide - initial API and implementation
- *******************************************************************************/
 package bndtools.release.nl;
 
 import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
 
-    private final static String RESOURCE_BUNDLE = Messages.class.getName();
+	private final static String	RESOURCE_BUNDLE	= Messages.class.getName();
 
     public static String releaseDialogTitle; /* bndtools.release.Activator::message */
     public static String errorExecutingStartupParticipant; /* bndtools.release.Activator::getReleaseParticipants */
@@ -84,7 +74,7 @@ public class Messages extends NLS {
     public static String macrosWillBeOverwritten1; /* bndtools.release.ui.WorkspaceReleaseDialog::okPressed */
     public static String macrosWillBeOverwritten2; /* bndtools.release.ui.WorkspaceReleaseDialog::okPressed */
 
-    static {
-        NLS.initializeMessages(RESOURCE_BUNDLE, Messages.class);
-    }
+	static {
+		NLS.initializeMessages(RESOURCE_BUNDLE, Messages.class);
+	}
 }

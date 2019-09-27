@@ -1,21 +1,20 @@
 package aQute.bnd.repository.maven.provider;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Formatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -29,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Macro;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.BridgeRepository.ResourceInfo;
 import aQute.bnd.osgi.repository.ResourcesRepository;
@@ -38,6 +39,7 @@ import aQute.bnd.osgi.resource.ResourceUtils.BundleCap;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.maven.api.Archive;
@@ -59,10 +61,14 @@ class IndexFile {
 
 	final File							indexFile;
 	final IMavenRepo					repo;
+	private final Processor				domain;
+	private final Macro					replacer;
+
 	final Reporter						reporter;
 	final PromiseFactory				promiseFactory;
 	final Map<Archive, Resource>		archives	= new ConcurrentHashMap<>();
 	final String[]						multi;
+	final String						source;
 
 	private long						lastModified;
 	private long						last		= 0L;
@@ -71,14 +77,17 @@ class IndexFile {
 	/*
 	 * Constructor
 	 */
-	IndexFile(Reporter reporter, File file, IMavenRepo repo, PromiseFactory promiseFactory, String... multi)
-		throws Exception {
+	IndexFile(Processor domain, Reporter reporter, File file, String source, IMavenRepo repo,
+		PromiseFactory promiseFactory, String... multi) throws Exception {
+		this.source = source;
+		this.domain = (domain != null) ? domain : new Processor();
+		this.replacer = this.domain.getReplacer();
 		this.reporter = reporter;
 		this.indexFile = file;
 		this.repo = repo;
 		this.promiseFactory = promiseFactory;
 		this.multi = multi;
-		bridge = null;
+		this.bridge = null;
 	}
 
 	/*
@@ -98,7 +107,7 @@ class IndexFile {
 
 		logger.debug("adding {}", archive);
 		this.bridge = update(Arrays.asList(archive));
-		save();
+		save(Collections.singleton(archive), Collections.emptySet());
 	}
 
 	/*
@@ -109,7 +118,7 @@ class IndexFile {
 		if (removeWithDerived(archive)) {
 			logger.debug("remove {}", archive);
 			this.bridge = update(null);
-			save();
+			save(Collections.emptySet(), Collections.singleton(archive));
 		}
 	}
 
@@ -121,7 +130,7 @@ class IndexFile {
 	synchronized void remove(String bsn) throws Exception {
 		logger.debug("remove bsn {}", bsn);
 
-		List<Archive> toRemove = archives.entrySet()
+		Set<Archive> toRemove = archives.entrySet()
 			.stream()
 			.filter(entry -> {
 				return isBsn(bsn, entry.getValue());
@@ -129,7 +138,7 @@ class IndexFile {
 			.map(entry -> {
 				return entry.getKey();
 			})
-			.collect(Collectors.toList());
+			.collect(Collectors.toSet());
 
 		boolean changed = false;
 
@@ -139,7 +148,7 @@ class IndexFile {
 
 		if (changed) {
 			this.bridge = update(null);
-			save();
+			save(Collections.emptySet(), toRemove);
 		}
 	}
 
@@ -171,21 +180,23 @@ class IndexFile {
 	 */
 	private synchronized Promise<BridgeRepository> load() throws Exception {
 		lastModified = indexFile.lastModified();
+		Set<Archive> toBeAdded = new HashSet<>();
+
 		if (indexFile.isFile()) {
-
-			Set<Archive> toBeAdded = read(indexFile);
-			Set<Archive> older = this.archives.keySet();
-
-			Set<Archive> toBeDeleted = new HashSet<>(older);
-			toBeDeleted.removeAll(toBeAdded);
-			toBeAdded.removeAll(older);
-
-			archives.keySet()
-				.removeAll(toBeDeleted);
-			return update(toBeAdded);
-		} else {
-			return promiseFactory.resolved(new BridgeRepository());
+			toBeAdded.addAll(read(indexFile));
 		}
+		if (source != null) {
+			toBeAdded.addAll(read(source, false));
+		}
+
+		Set<Archive> older = this.archives.keySet();
+		Set<Archive> toBeDeleted = new HashSet<>(older);
+		toBeDeleted.removeAll(toBeAdded);
+		toBeAdded.removeAll(older);
+
+		archives.keySet()
+			.removeAll(toBeDeleted);
+		return update(toBeAdded);
 
 	}
 
@@ -228,13 +239,12 @@ class IndexFile {
 				results.add(promise);
 			}
 		}
+		// snapshot archive resources
+		ResourcesRepository resourcesRepository = promiseFactory.all(results)
+				.map(ignore -> new ResourcesRepository(archives.values()))
+				.getValue();
 
-		Collection<Resource> snapshot = archives.values();
-
-		return promiseFactory.all(results)
-			.map(ignore -> {
-				return new BridgeRepository(new ResourcesRepository(snapshot));
-			});
+		return promiseFactory.submit(() -> new BridgeRepository(resourcesRepository));
 	}
 
 	private Boolean failed(Archive a, String msg) throws InterruptedException {
@@ -247,13 +257,7 @@ class IndexFile {
 	}
 
 	private String getMessage(Throwable failure) {
-		if (failure instanceof InvocationTargetException) {
-			Throwable targetException = ((InvocationTargetException) failure).getTargetException();
-			if (targetException == null)
-				return failure.toString();
-
-			return getMessage(targetException);
-		}
+		failure = Exceptions.unrollCause(failure, InvocationTargetException.class);
 		if (failure instanceof FileNotFoundException) {
 			return "Not found";
 		}
@@ -321,35 +325,25 @@ class IndexFile {
 		}
 	}
 
-	boolean refresh() throws Exception {
+	boolean refresh(Runnable refreshAction) throws Exception {
 		if (indexFile.lastModified() != lastModified && last + 10000 < System.currentTimeMillis()) {
 			last = System.currentTimeMillis();
-			this.bridge = load();
+			this.bridge = load().onResolve(refreshAction);
 			return true;
 		}
 		return false;
 	}
 
 	private Set<Archive> read(File file) throws IOException {
-
 		assert file.isFile();
+		return read(IO.collect(file), true);
+	}
 
-		Set<Archive> archives = new HashSet<>();
-		try (BufferedReader rdr = IO.reader(indexFile)) {
-			String line;
-			while ((line = rdr.readLine()) != null) {
-				line = Strings.trim(line);
-				if (line.startsWith("#") || line.isEmpty())
-					continue;
-
-				Archive a = Archive.valueOf(line);
-				if (a == null) {
-					reporter.error("MavenBndRepository: invalid entry %s in file %s", line, indexFile);
-				} else {
-					archives.add(a);
-				}
-			}
-		}
+	private Set<Archive> read(String source, boolean macro) {
+		Set<Archive> archives = Strings.splitLinesAsStream(source)
+			.map(s -> toArchive(s, macro))
+			.filter(Objects::nonNull)
+			.collect(Collectors.toSet());
 		logger.debug("loaded index {}", archives);
 		return archives;
 	}
@@ -363,24 +357,52 @@ class IndexFile {
 		return bsn.equals(osgi_wiring_bundle);
 	}
 
-	private synchronized void save() throws Exception {
-		Path index = indexFile.toPath();
-		Path tmp = Files.createTempFile(IO.mkdirs(index.getParent()), "index", null);
-		try (PrintWriter pw = IO.writer(tmp)) {
-			archives.keySet()
-				.stream()
-				.sorted()
-				.forEachOrdered(archive -> pw.println(archive));
+	private synchronized void save(Set<Archive> add, Set<Archive> remove) throws Exception {
+
+		try (Formatter f = new Formatter()) {
+
+			if (indexFile.isFile()) {
+				String content = IO.collect(indexFile);
+				Strings.splitLinesAsStream(content)
+					.filter(s -> {
+						Archive archive = toArchive(s, true);
+						if (archive == null)
+							return true;
+
+						return !remove.contains(archive);
+					})
+					.forEach(archive -> f.format("%s\n", archive));
+			}
+
+			add.forEach(archive -> f.format("%s\n", archive));
+			if (!indexFile.getParentFile()
+				.isDirectory())
+				IO.mkdirs(indexFile.getParentFile());
+			IO.store(f.toString(), indexFile);
 		}
-		IO.rename(tmp, index);
+
 		lastModified = indexFile.lastModified();
+	}
+
+	private Archive toArchive(String s, boolean macro) {
+		s = Strings.trim(s);
+		if (s.startsWith("#") || s.isEmpty())
+			return null;
+
+		if (macro)
+			s = replacer.process(s);
+		int n = s.indexOf("#");
+		if (n > 0) {
+			s = Strings.trim(s.substring(0, n));
+		}
+		return Archive.valueOf(s);
 	}
 
 	BridgeRepository getBridge() {
 		try {
 			return bridge.getValue();
 		} catch (InvocationTargetException e) {
-			reporter.exception(e.getTargetException(), "Getting bridge failed");
+			reporter.exception(Exceptions.unrollCause(e, InvocationTargetException.class), "Getting bridge failed");
 		} catch (InterruptedException e) {
 			logger.info("Interrupted");
 			Thread.currentThread()

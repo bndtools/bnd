@@ -18,7 +18,7 @@ public class ContractTest extends TestCase {
 
 	/**
 	 * Test the warnings that we have no no version
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testWarningVersion() throws Exception {
@@ -43,7 +43,7 @@ public class ContractTest extends TestCase {
 
 	/**
 	 * Test the warnings that we have no uses
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testWarningUses() throws Exception {
@@ -67,7 +67,7 @@ public class ContractTest extends TestCase {
 
 	/**
 	 * Make sure we do not add a contract if not used
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testUnused() throws Exception {
@@ -91,7 +91,7 @@ public class ContractTest extends TestCase {
 
 	/**
 	 * Test if we can select
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testSelect() throws Exception {
@@ -124,7 +124,7 @@ public class ContractTest extends TestCase {
 
 	/**
 	 * Test if we can detect an overlap, and then if we can control the overlap
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testOverlap() throws Exception {

@@ -22,16 +22,14 @@ import org.osgi.service.component.runtime.dto.ComponentDescriptionDTO;
 import org.osgi.service.component.runtime.dto.ReferenceDTO;
 import org.osgi.service.component.runtime.dto.SatisfiedReferenceDTO;
 import org.osgi.service.component.runtime.dto.UnsatisfiedReferenceDTO;
-import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.bnd.runtime.api.SnapshotProvider;
 
 public class ServiceComponentRuntimeFacade implements SnapshotProvider {
-	static AtomicLong														templateCounter	= new AtomicLong();
-	static Map<ID, Long>													templateMap		= new HashMap<>();
+	static AtomicLong		templateCounter	= new AtomicLong();
+	static Map<ID, Long>	templateMap		= new HashMap<>();
 
-	final ServiceTracker<ServiceComponentRuntime, ServiceComponentRuntime>	serviceComponentRuntimeTracker;
-	final BundleContext														context;
+	final BundleContext		context;
 
 	public static class TemplateDTO extends DTO {
 		public long									id;
@@ -95,96 +93,104 @@ public class ServiceComponentRuntimeFacade implements SnapshotProvider {
 
 	public ServiceComponentRuntimeFacade(BundleContext context) {
 		this.context = context;
-		this.serviceComponentRuntimeTracker = new ServiceTracker<>(context, ServiceComponentRuntime.class, null);
-		this.serviceComponentRuntimeTracker.open();
 	}
 
 	public ScrDTO getDTO() throws InvalidSyntaxException {
 		ScrDTO scrdto = new ScrDTO();
-		ServiceComponentRuntime service = serviceComponentRuntimeTracker.getService();
-		if (service == null) {
-			scrdto.errors.add("No ServiceComponentRuntime service visible");
-		} else {
+		ServiceComponentRuntime service = getSCR(scrdto);
+		if (service == null)
+			return scrdto;
 
-			if (serviceComponentRuntimeTracker.size() > 1) {
-				scrdto.errors.add("Multiple ServiceComponentRuntime service visible, using first");
-			}
+		for (ComponentDescriptionDTO description : service.getComponentDescriptionDTOs()) {
+			TemplateDTO template = new TemplateDTO();
+			template.name = description.name;
+			template.bundleId = description.bundle.id;
 
-			for (ComponentDescriptionDTO description : service.getComponentDescriptionDTOs()) {
-				TemplateDTO template = new TemplateDTO();
-				template.name = description.name;
-				template.bundleId = description.bundle.id;
+			template.id = toId(template.name, template.bundleId);
+			template.factory = description.factory;
+			template.scope = description.scope;
+			template.immediate = description.immediate;
+			template.implementationClass = description.implementationClass;
+			template.defaultEnabled = description.defaultEnabled;
+			template.serviceInterfaces = description.serviceInterfaces;
+			template.properties = description.properties;
+			template.references = Stream.of(description.references)
+				.map(ServiceComponentRuntimeFacade::convert)
+				.collect(Collectors.toMap(r -> r.name, r -> r));
+			template.activate = description.activate;
+			template.deactivate = description.deactivate;
+			template.modified = description.modified;
+			template.configurationPolicy = description.configurationPolicy;
+			template.configurationPid = description.configurationPid;
+			template.isEnabled = service.isComponentEnabled(description);
 
-				template.id = toId(template.name, template.bundleId);
-				template.factory = description.factory;
-				template.scope = description.scope;
-				template.immediate = description.immediate;
-				template.implementationClass = description.implementationClass;
-				template.defaultEnabled = description.defaultEnabled;
-				template.serviceInterfaces = description.serviceInterfaces;
-				template.properties = description.properties;
-				template.references = Stream.of(description.references)
-					.map(ServiceComponentRuntimeFacade::convert)
-					.collect(Collectors.toMap(r -> r.name, r -> r));
-				template.activate = description.activate;
-				template.deactivate = description.deactivate;
-				template.modified = description.modified;
-				template.configurationPolicy = description.configurationPolicy;
-				template.configurationPid = description.configurationPid;
-				template.isEnabled = service.isComponentEnabled(description);
+			for (ComponentConfigurationDTO configuration : service.getComponentConfigurationDTOs(description)) {
+				InstanceDTO instance = new InstanceDTO();
 
-				for (ComponentConfigurationDTO configuration : service.getComponentConfigurationDTOs(description)) {
-					InstanceDTO instance = new InstanceDTO();
+				instance.templateId = template.id;
+				instance.id = configuration.id;
+				instance.properties = configuration.properties;
+				instance.state = configuration.state;
 
-					instance.templateId = template.id;
-					instance.id = configuration.id;
-					instance.properties = configuration.properties;
-					instance.state = configuration.state;
-
-					ServiceReference<?>[] allServiceReferences = context.getAllServiceReferences((String) null,
-						String.format("(component.id=%s)", instance.id));
-					if (allServiceReferences != null && allServiceReferences.length == 1) {
-						instance.serviceId = (Long) allServiceReferences[0].getProperty(Constants.SERVICE_ID);
-					} else {
-						instance.serviceId = -1;
-					}
-
-					instance.references = Stream.of(configuration.satisfiedReferences)
-						.map((SatisfiedReferenceDTO sr) -> {
-							InstanceReferenceDTO ird = new InstanceReferenceDTO();
-							ird.name = sr.name;
-							ird.satisfied = true;
-							ird.target = sr.target;
-							ird.boundedServiceIds = Stream.of(sr.boundServices)
-								.map(b -> b.id)
-								.collect(Collectors.toList());
-
-							// TODO candidates and hidden
-							return ird;
-						})
-						.collect(Collectors.toMap(x -> x.name, x -> x));
-
-					instance.references.putAll(Stream.of(configuration.unsatisfiedReferences)
-						.map((UnsatisfiedReferenceDTO sr) -> {
-							InstanceReferenceDTO ird = new InstanceReferenceDTO();
-							ird.name = sr.name;
-							ird.satisfied = false;
-							ird.target = sr.target;
-							ird.boundedServiceIds = Stream.of(sr.targetServices)
-								.map(b -> b.id)
-								.collect(Collectors.toList());
-
-							// TODO candidates and hidden
-							return ird;
-						})
-						.collect(Collectors.toMap(x -> x.name, x -> x)));
-
-					scrdto.instances.put(instance.id, instance);
+				ServiceReference<?>[] allServiceReferences = context.getAllServiceReferences((String) null,
+					String.format("(component.id=%s)", instance.id));
+				if (allServiceReferences != null && allServiceReferences.length == 1) {
+					instance.serviceId = (Long) allServiceReferences[0].getProperty(Constants.SERVICE_ID);
+				} else {
+					instance.serviceId = -1;
 				}
-				scrdto.templates.put(template.id, template);
+
+				instance.references = Stream.of(configuration.satisfiedReferences)
+					.map((SatisfiedReferenceDTO sr) -> {
+						InstanceReferenceDTO ird = new InstanceReferenceDTO();
+						ird.name = sr.name;
+						ird.satisfied = true;
+						ird.target = sr.target;
+						ird.boundedServiceIds = Stream.of(sr.boundServices)
+							.map(b -> b.id)
+							.collect(Collectors.toList());
+
+						// TODO candidates and hidden
+						return ird;
+					})
+					.collect(Collectors.toMap(x -> x.name, x -> x));
+
+				instance.references.putAll(Stream.of(configuration.unsatisfiedReferences)
+					.map((UnsatisfiedReferenceDTO sr) -> {
+						InstanceReferenceDTO ird = new InstanceReferenceDTO();
+						ird.name = sr.name;
+						ird.satisfied = false;
+						ird.target = sr.target;
+						ird.boundedServiceIds = Stream.of(sr.targetServices)
+							.map(b -> b.id)
+							.collect(Collectors.toList());
+
+						// TODO candidates and hidden
+						return ird;
+					})
+					.collect(Collectors.toMap(x -> x.name, x -> x)));
+
+				scrdto.instances.put(instance.id, instance);
 			}
+			scrdto.templates.put(template.id, template);
 		}
+
 		return scrdto;
+	}
+
+	private ServiceComponentRuntime getSCR(ScrDTO scrdto) {
+		ServiceReference<ServiceComponentRuntime> ref = context.getServiceReference(ServiceComponentRuntime.class);
+		if (ref == null) {
+			scrdto.errors.add("No ServiceComponentRuntime service visible (getting ref)");
+			return null;
+		}
+
+		ServiceComponentRuntime service = context.getService(ref);
+		if (service == null) {
+			scrdto.errors.add("No ServiceComponentRuntime service visible (get service) " + ref);
+			return null;
+		}
+		return service;
 	}
 
 	public static long toId(String name, long bundle) {
@@ -245,9 +251,7 @@ public class ServiceComponentRuntimeFacade implements SnapshotProvider {
 	}
 
 	@Override
-	public void close() throws IOException {
-		serviceComponentRuntimeTracker.close();
-	}
+	public void close() throws IOException {}
 
 	@Override
 	public Object getSnapshot() throws Exception {

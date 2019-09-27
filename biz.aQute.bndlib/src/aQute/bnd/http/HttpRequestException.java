@@ -18,7 +18,11 @@ public class HttpRequestException extends RuntimeException {
 	}
 
 	public HttpRequestException(TaggedData tag) {
-		super(tag.getUrl() + ":" + tag.getResponseCode() + ":" + tag.getTag());
+		this(tag, null);
+	}
+
+	public HttpRequestException(TaggedData tag, Throwable cause) {
+		super(tag.getUrl() + ":" + tag.getResponseCode() + ":" + tag.getTag(), cause);
 		this.responseCode = tag.getResponseCode();
 	}
 

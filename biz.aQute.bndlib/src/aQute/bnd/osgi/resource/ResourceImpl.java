@@ -1,6 +1,5 @@
 package aQute.bnd.osgi.resource;
 
-import static aQute.bnd.osgi.resource.ResourceUtils.getLocations;
 import static aQute.lib.collections.Logic.retain;
 import static java.util.Collections.unmodifiableList;
 
@@ -21,8 +20,6 @@ import org.osgi.resource.Resource;
 import org.osgi.service.repository.RepositoryContent;
 
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
-import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
-import aQute.bnd.version.Version;
 
 class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent {
 
@@ -31,9 +28,9 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 	private volatile List<Requirement>				allRequirements;
 	private volatile Map<String, List<Requirement>>	requirementMap;
 
-	private transient Map<URI, String>				locations;
+	private volatile transient Map<URI, String>		locations;
 
-	void setCapabilities(List<Capability> capabilities) {
+	void setCapabilities(Collection<Capability> capabilities) {
 		Map<String, List<Capability>> prepare = new HashMap<>();
 		for (Capability capability : capabilities) {
 			List<Capability> list = prepare.get(capability.getNamespace());
@@ -49,16 +46,18 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 
 		allCapabilities = unmodifiableList(new ArrayList<>(capabilities));
 		capabilityMap = prepare;
+		locations = null; // clear so equals/hashCode can recompute
 	}
 
 	@Override
 	public List<Capability> getCapabilities(String namespace) {
-		List<Capability> caps = (namespace != null) ? capabilityMap.get(namespace) : allCapabilities;
+		List<Capability> caps = (namespace != null) ? ((capabilityMap != null) ? capabilityMap.get(namespace) : null)
+			: allCapabilities;
 
 		return (caps != null) ? caps : Collections.emptyList();
 	}
 
-	void setRequirements(List<Requirement> requirements) {
+	void setRequirements(Collection<Requirement> requirements) {
 		Map<String, List<Requirement>> prepare = new HashMap<>();
 		for (Requirement requirement : requirements) {
 			List<Requirement> list = prepare.get(requirement.getNamespace());
@@ -78,7 +77,8 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 
 	@Override
 	public List<Requirement> getRequirements(String namespace) {
-		List<Requirement> reqs = (namespace != null) ? requirementMap.get(namespace) : allRequirements;
+		List<Requirement> reqs = (namespace != null) ? ((requirementMap != null) ? requirementMap.get(namespace) : null)
+			: allRequirements;
 
 		return (reqs != null) ? reqs : Collections.emptyList();
 	}
@@ -112,37 +112,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 
 	@Override
 	public int compareTo(Resource o) {
-		IdentityCapability me = ResourceUtils.getIdentityCapability(this);
-		IdentityCapability them = ResourceUtils.getIdentityCapability(o);
-
-		String myName = me.osgi_identity();
-		String theirName = them.osgi_identity();
-		if (myName == theirName)
-			return 0;
-
-		if (myName == null)
-			return -1;
-
-		if (theirName == null)
-			return 1;
-
-		int n = myName.compareTo(theirName);
-		if (n != 0)
-			return n;
-
-		Version myVersion = me.version();
-		Version theirVersion = them.version();
-
-		if (myVersion == theirVersion)
-			return 0;
-
-		if (myVersion == null)
-			return -1;
-
-		if (theirVersion == null)
-			return 1;
-
-		return myVersion.compareTo(theirVersion);
+		return ResourceUtils.compareTo(this, o);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -154,13 +124,13 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		if (other == null || !(other instanceof Resource))
 			return false;
 
-		Map<URI, String> thisLocations = getContentURIs();
+		Map<URI, String> thisLocations = getLocations();
 		Map<URI, String> otherLocations;
 
 		if (other instanceof ResourceImpl) {
-			otherLocations = ((ResourceImpl) other).getContentURIs();
+			otherLocations = ((ResourceImpl) other).getLocations();
 		} else {
-			otherLocations = getLocations((Resource) other);
+			otherLocations = ResourceUtils.getLocations((Resource) other);
 		}
 
 		Collection<URI> overlap = retain(thisLocations.keySet(), otherLocations.keySet());
@@ -180,16 +150,17 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		return false;
 	}
 
-	public Map<URI, String> getContentURIs() {
-		if (locations == null) {
-			locations = ResourceUtils.getLocations(this);
+	private Map<URI, String> getLocations() {
+		Map<URI, String> map = locations;
+		if (map != null) {
+			return map;
 		}
-		return locations;
+		return locations = ResourceUtils.getLocations(this);
 	}
 
 	@Override
 	public int hashCode() {
-		return getContentURIs().hashCode();
+		return getLocations().hashCode();
 	}
 
 	@Override

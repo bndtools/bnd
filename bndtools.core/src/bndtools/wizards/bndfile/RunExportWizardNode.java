@@ -18,76 +18,77 @@ import bndtools.Plugin;
 
 public class RunExportWizardNode implements IWizardNode {
 
-    private final Shell shell;
-    private final IConfigurationElement config;
-    private final BndEditModel model;
-    private final Project bndProject;
+	private final Shell											shell;
+	private final IConfigurationElement							config;
+	private final BndEditModel									model;
+	private final Project										bndProject;
 
-    private final AtomicReference<IRunDescriptionExportWizard> wizardRef = new AtomicReference<IRunDescriptionExportWizard>(null);
+	private final AtomicReference<IRunDescriptionExportWizard>	wizardRef	= new AtomicReference<>(null);
 
-    public RunExportWizardNode(Shell shell, IConfigurationElement config, BndEditModel model, Project bndProject) {
-        this.shell = shell;
-        this.config = config;
-        this.model = model;
-        this.bndProject = bndProject;
-    }
+	public RunExportWizardNode(Shell shell, IConfigurationElement config, BndEditModel model, Project bndProject) {
+		this.shell = shell;
+		this.config = config;
+		this.model = model;
+		this.bndProject = bndProject;
+	}
 
-    @Override
-    public Point getExtent() {
-        return new Point(-1, -1);
-    }
+	@Override
+	public Point getExtent() {
+		return new Point(-1, -1);
+	}
 
-    @Override
-    public IWizard getWizard() {
-        IRunDescriptionExportWizard wizard = wizardRef.get();
-        if (wizard != null)
-            return wizard;
+	@Override
+	public IWizard getWizard() {
+		IRunDescriptionExportWizard wizard = wizardRef.get();
+		if (wizard != null)
+			return wizard;
 
-        try {
-            wizard = (IRunDescriptionExportWizard) config.createExecutableExtension("class");
-            wizard.setBndModel(model, bndProject);
+		try {
+			wizard = (IRunDescriptionExportWizard) config.createExecutableExtension("class");
+			wizard.setBndModel(model, bndProject);
 
-            if (!wizardRef.compareAndSet(null, wizard))
-                wizard = wizardRef.get();
+			if (!wizardRef.compareAndSet(null, wizard))
+				wizard = wizardRef.get();
 
-            return wizard;
-        } catch (Exception e) {
-            ErrorDialog.openError(shell, "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to create selected export wizard", e));
-            return null;
-        }
-    }
+			return wizard;
+		} catch (Exception e) {
+			ErrorDialog.openError(shell, "Error", null,
+				new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to create selected export wizard", e));
+			return null;
+		}
+	}
 
-    @Override
-    public boolean isContentCreated() {
-        return wizardRef.get() != null;
-    }
+	@Override
+	public boolean isContentCreated() {
+		return wizardRef.get() != null;
+	}
 
-    @Override
-    public void dispose() {}
+	@Override
+	public void dispose() {}
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((config == null) ? 0 : config.hashCode());
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((config == null) ? 0 : config.hashCode());
+		return result;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        RunExportWizardNode other = (RunExportWizardNode) obj;
-        if (config == null) {
-            if (other.config != null)
-                return false;
-        } else if (!config.equals(other.config))
-            return false;
-        return true;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RunExportWizardNode other = (RunExportWizardNode) obj;
+		if (config == null) {
+			if (other.config != null)
+				return false;
+		} else if (!config.equals(other.config))
+			return false;
+		return true;
+	}
 
 }

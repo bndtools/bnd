@@ -10,11 +10,10 @@ import org.osgi.framework.Version;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import aQute.bnd.osgi.Processor;
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
 import aQute.lib.filter.Filter;
-import aQute.libg.sed.Domain;
-import aQute.libg.sed.ReplacerAdapter;
 import aQute.p2.api.Artifact;
 import aQute.p2.api.Classifier;
 
@@ -91,66 +90,57 @@ class ArtifactRepository extends XML {
 		final Map<String, String> properties = getProperties("repository/properties/property");
 		properties.put("repoUrl", base.resolve("")
 			.toString());
-		final Domain parent = new Domain() {
+		try (Processor parent = new Processor()) {
+			parent.addProperties(properties);
 
-			@Override
-			public Map<String, String> getMap() {
-				return properties;
-			}
+			rules = getRules();
 
-			@Override
-			public Domain getParent() {
-				return null;
-			}
+			NodeList artifactNodes = getNodes("repository/artifacts/artifact");
+			for (int i = 0; i < artifactNodes.getLength(); i++) {
+				final Node artifactNode = artifactNodes.item(i)
+					.cloneNode(true);
+				final XMLArtifact xmlArtifact = getFromType(artifactNode, XMLArtifact.class);
 
-		};
+				Classifier classifier;
+				if (Classifier.BUNDLE.name.equals(xmlArtifact.classifier)) {
+					classifier = Classifier.BUNDLE;
+				} else if (Classifier.FEATURE.name.equals(xmlArtifact.classifier)) {
+					classifier = Classifier.FEATURE;
+				} else {
+					continue;
+				}
 
-		rules = getRules();
+				Map<String, String> artifactProperties = getProperties(artifactNode, "properties/property");
+				xmlArtifact.format = artifactProperties.get("format");
+				if (xmlArtifact.format != null) {
+					continue; // we do not currently support packed format
+				}
 
-		NodeList artifactNodes = getNodes("repository/artifacts/artifact");
-		for (int i = 0; i < artifactNodes.getLength(); i++) {
-			final Node artifactNode = artifactNodes.item(i)
-				.cloneNode(true);
-			final XMLArtifact xmlArtifact = getFromType(artifactNode, XMLArtifact.class);
-			final Map<String, String> map = Converter.cnv(new TypeReference<Map<String, String>>() {}, xmlArtifact);
+				Map<String, String> map = Converter.cnv(new TypeReference<Map<String, String>>() {}, xmlArtifact);
+				try (Processor domain = new Processor(parent)) {
+					domain.addProperties(map);
 
-			Classifier classifier = null;
+					for (Rule r : rules) {
+						if (r.matches(map)) {
+							String s = domain.getReplacer()
+								.process(r.output);
+							URI uri = new URI(s).normalize();
 
-			if (Classifier.BUNDLE.name.equals(xmlArtifact.classifier)) {
-				classifier = Classifier.BUNDLE;
-			} else if (Classifier.FEATURE.name.equals(xmlArtifact.classifier)) {
-				classifier = Classifier.FEATURE;
-			}
-
-			if (classifier != null) {
-				Domain domain = new Domain() {
-
-					@Override
-					public Map<String, String> getMap() {
-						return map;
-					}
-
-					@Override
-					public Domain getParent() {
-						return parent;
-					}
-
-				};
-				ReplacerAdapter ra = new ReplacerAdapter(domain);
-
-				for (Rule r : rules) {
-					if (r.matches(map)) {
-						String s = ra.process(r.output);
-						URI uri = new URI(s).normalize();
-
-						Artifact artifact = new Artifact();
-						artifact.classifier = classifier;
-						artifact.uri = uri;
-						artifact.id = xmlArtifact.id;
-						artifact.version = new Version(xmlArtifact.version);
-						artifact.md5 = getProperties(artifactNode, "properties/property").get("download.md5");
-						artifacts.add(artifact);
-						break;
+							Artifact artifact = new Artifact();
+							artifact.classifier = classifier;
+							artifact.uri = uri;
+							artifact.id = xmlArtifact.id;
+							artifact.version = new Version(xmlArtifact.version);
+							artifact.md5 = artifactProperties.get("download.md5");
+							String download_size = artifactProperties.getOrDefault("download.size", "-1L");
+							try {
+								artifact.download_size = Long.parseLong(download_size);
+							} catch (NumberFormatException e) {
+								artifact.download_size = -1L;
+							}
+							artifacts.add(artifact);
+							break;
+						}
 					}
 				}
 			}
@@ -161,7 +151,7 @@ class ArtifactRepository extends XML {
 	 * * <artifact classifier='osgi.bundle' id=
 	 * 'org.bndtools.versioncontrol.ignores.plugin.git' version=
 	 * '3.3.0.201605202157'>
-	 * 
+	 *
 	 * @param item
 	 * @return
 	 * @throws Exception

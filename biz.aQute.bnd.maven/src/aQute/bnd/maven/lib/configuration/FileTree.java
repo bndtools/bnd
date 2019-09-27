@@ -13,11 +13,12 @@ public class FileTree {
 	}
 
 	/**
-	 * Can be used by subclasses to add specific files to the return value of
-	 * {@link #getFiles(File, String)}.
+	 * Can be used to add specific files to the return value of
+	 * {@link #getFiles(File, String...)} and {@link #getFiles(File, List)}.
 	 *
 	 * @param file A file to include in the return value of
-	 *            {@link #getFiles(File, String)}.
+	 *            {@link #getFiles(File, String...)} and
+	 *            {@link #getFiles(File, List)}.
 	 */
 	public void addFile(File file) {
 		fileTree.addFile(file);
@@ -93,7 +94,7 @@ public class FileTree {
 	 * @param include Add an Ant-style glob
 	 */
 	public void setInclude(String include) {
-		addIncludes(include);
+		fileTree.addIncludes(include);
 	}
 
 	/**
@@ -102,7 +103,7 @@ public class FileTree {
 	 * @param exclude Add an Ant-style glob
 	 */
 	public void setExclude(String exclude) {
-		addExcludes(exclude);
+		fileTree.addExcludes(exclude);
 	}
 
 }

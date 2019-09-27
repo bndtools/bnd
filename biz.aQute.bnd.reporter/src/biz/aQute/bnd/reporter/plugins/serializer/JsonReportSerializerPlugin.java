@@ -10,9 +10,15 @@ import aQute.lib.json.JSONCodec;
 
 public class JsonReportSerializerPlugin implements ReportSerializerPlugin {
 
-	static private final String[] _ext = { "json" };
+	static private final String[]	_ext	= {
+		"json"
+	};
 
-	private final Encoder enc = new JSONCodec().setIgnorenull(true).enc().keepOpen().indent("  ").writeDefaults();
+	private final Encoder			enc		= new JSONCodec().setIgnorenull(true)
+		.enc()
+		.keepOpen()
+		.indent("  ")
+		.writeDefaults();
 
 	@Override
 	public String[] getHandledExtensions() {
@@ -24,6 +30,8 @@ public class JsonReportSerializerPlugin implements ReportSerializerPlugin {
 		Objects.requireNonNull(data, "data");
 		Objects.requireNonNull(output, "output");
 
-		enc.to(output).put(data).flush();
+		enc.to(output)
+			.put(data)
+			.flush();
 	}
 }

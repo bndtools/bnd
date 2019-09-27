@@ -38,7 +38,7 @@ class Makefile extends Processor {
 		String				command;
 		String				name;
 		String				make;
-		Map<String, String>	env	= new HashMap<>();;
+		Map<String, String>	env	= new HashMap<>();
 
 		void execute() {
 

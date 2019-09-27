@@ -98,6 +98,58 @@ The launcher supports _embedded activators_. These are like normal Bundle Actvia
 
     Embedded-Activator: com.example.MyActivator
 
+
+## Startlevels
+
+The `-runbundles` instruction supports an `startlevel` attribute. If one or more of the bundles listed in the `-runbundles` instruction
+uses the `startlevel` attribute then the launcher will assign a startlevel to each bundle. This is currently supported for the
+normal launcher and not for Launchpad nor the remote launcher.
+
+If a bundle has a `startlevel` attribute then this must be an integer > 0, otherwise it is ignored. Bundles that have no
+`startlevel` attribute will be assign the maximum assigned startlevel attribute + 1. For example, given the following 
+bundles:
+
+	-runbundles: \
+		org.apache.felix.configadmin;version='[1.8.8,1.8.9)',\
+		org.apache.felix.http.jetty;version='[3.2.0,3.2.1)';startlevel=10,\
+		org.apache.felix.http.servlet-api;version='[1.1.2,1.1.3)',\
+		...
+		osgi.enroute.twitter.bootstrap.webresource;version='[3.3.5,3.3.6)';startlevel=12,\
+		osgi.enroute.web.simple.provider;version='[2.1.0,2.1.1)'
+
+The `org.apache.felix.configadmin`,  `org.apache.felix.http.servlet-api`, and `osgi.enroute.web.simple.provider` do not specify 
+a `startlevel` attribute and will therefore be assigned to start level 13. This value is picked because max(10,12)= 12 + 1 = 13.
+
+Startlevels are assigned before the framework is started, they are updated on the fly if during a debug session the setup changes.
+
+Normally in OSGi the begining start level is selected with the system property `org.osgi.framework.startlevel.beginning`. If
+this `-runproperty` is not set then the launcher will set this property before starting the framework to the maximum of
+specified levels + 2. If a start level management agent is present then this property should be set, the launcher will
+then not interfere.
+
+The bundles are started at during start level 1.
+
+For example, a management agent that manages start levels is placed in start level 1 and all other bundles are placed
+at start level 100.
+
+	-runbundles: \
+		org.apache.felix.configadmin;version='[1.8.8,1.8.9)',\
+		org.apache.felix.http.jetty;version='[3.2.0,3.2.1)';startlevel=100,\
+		org.apache.felix.http.servlet-api;version='[1.1.2,1.1.3)',\
+		org.example.management.agent;startlevel=1
+		osgi.enroute.twitter.bootstrap.webresource;version='[3.3.5,3.3.6)';startlevel=100,\
+		osgi.enroute.web.simple.provider;version='[2.1.0,2.1.1)'
+
+
+The `-runproperties` specify a begining of 1:
+
+    -runproperties: \
+           org.osgi.framework.startlevel.beginning=1
+
+The launcher will install all bundles and assign them their start level. The framework is then started and moves
+to level 1. This starts the management agent. This management agent will then move the start level higher to finally
+level 100.
+
 ### Packaging
 
 Any bndrun file can be packaged by the launcher plugin. This creates an executable JAR that will contain all its dependencies.

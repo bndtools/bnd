@@ -1,0 +1,55 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>biz.aQute.bnd-test</groupId>
+		<artifactId>report-multi-project-scoped</artifactId>
+		<version>0.0.1</version>
+	</parent>
+
+	<groupId>biz.aQute.bnd-test</groupId>
+	<artifactId>projectC</artifactId>
+	<version>0.0.1</version>
+	<packaging>jar</packaging>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-reporter-maven-plugin</artifactId>
+				<configuration>
+					<reportConfigs>
+						<myConfigName>
+							<variables>
+								<myVariable>myValue</myVariable>
+							</variables>
+						</myConfigName>
+					</reportConfigs>
+					<reports combine.children="append">
+						<report>
+							<outputFile>readmeOther.md</outputFile>
+							<templateFile>proj.twig</templateFile>
+							<configName>myConfigName</configName>
+						</report>
+					</reports>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.1</version>
+				<configuration>
+					<archive>
+						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

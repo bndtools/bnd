@@ -5,6 +5,10 @@
 -runfw: org.eclipse.osgi; version=3.10
 
 workspace.bundles: \
+	biz.aQute.bndlib;version=latest,\
+	biz.aQute.bnd.maven;version=latest,\
+	biz.aQute.repository;version=latest,\
+	biz.aQute.resolve;version=latest,\
 	bndtools.api;version=snapshot,\
 	bndtools.core;version=snapshot,\
 	bndtools.builder;version=snapshot,\
@@ -13,7 +17,8 @@ workspace.bundles: \
 	bndtools.m2e.debug.fragment;version=snapshot,\
 	bndtools.pde;version=snapshot,\
 	bndtools.release;version=snapshot,\
-	org.bndtools.embeddedrepo;version=snapshot,\
+	org.bndtools.applaunch;version=snapshot,\
+	biz.aQute.bnd.embedded-repo;version=snapshot,\
 	org.bndtools.headless.build.manager;version=snapshot,\
 	org.bndtools.headless.build.plugin.ant;version=snapshot,\
 	org.bndtools.headless.build.plugin.gradle;version=snapshot,\
@@ -38,28 +43,39 @@ help.bundles: \
 	javax.el,\
 	javax.servlet,\
 	javax.servlet.jsp,\
+	org.apache.commons.fileupload,\
+	org.apache.commons.io,\
 	org.apache.commons.logging,\
-	org.apache.lucene.analysis,\
+	org.apache.commons.jxpath,\
+	org.apache.felix.scr,\
 	org.apache.lucene.core,\
+	org.apache.lucene.analyzers-common,\
+	org.apache.lucene.analyzers-smartcn,\
+	org.apache.lucene.misc,\
+	org.tukaani.xz,\
 	org.eclipse.ant.core,\
+	org.eclipse.e4.core.di.annotations,\
+	org.eclipse.e4.core.di.extensions.supplier,\
+	org.eclipse.e4.emf.xpath,\
 	org.eclipse.equinox.http.jetty,\
 	org.eclipse.equinox.http.registry,\
 	org.eclipse.equinox.http.servlet,\
 	org.eclipse.help,\
 	org.eclipse.help.base,\
 	org.eclipse.help.ui,\
+	org.eclipse.osgi.util,\
 	org.eclipse.platform.doc.user,\
 	org.eclipse.search,\
 	org.eclipse.ui.cheatsheets,\
 	org.eclipse.ui.net
 
 gogo.bundles:\
-	org.apache.felix.gogo.command,\
-	org.apache.felix.gogo.shell,\
-	org.apache.felix.gogo.runtime
+	org.apache.felix.gogo.command;version='[0,1)',\
+	org.apache.felix.gogo.shell;version='[0,1)',\
+	org.apache.felix.gogo.runtime;version='[0,1)'
 
 m2e.bundles:\
-	com.google.guava;version='[15,16)',\
+	com.google.guava;version='[21,22)',\
 	org.eclipse.m2e.archetype.common,\
 	org.eclipse.m2e.core,\
 	org.eclipse.m2e.jdt,\
@@ -71,7 +87,7 @@ m2e.bundles:\
 	org.slf4j.api
 
 m2e.debug.bundles:\
-	com.google.guava;version='[15,16)',\
+	com.google.guava;version='[21,22)',\
 	org.apache.xerces,\
 	org.apache.xml.resolver,\
 	org.apache.xml.serializer,\
@@ -156,22 +172,17 @@ pde.bundles: \
 
 # TODO: separate this morass into more coherent libs!
 crossplatform.bundles: \
-	${aQute-repository},\
-	${aQute-resolve},\
-	${bndlib},\
 	${help.bundles},\
 	${p2.bundles},\
 	${pde.bundles},\
 	${m2e.bundles},\
 	${workspace.bundles},\
 	${gogo.bundles},\
-	bndtools.runtime.eclipse.applaunch,\
 	com.ibm.icu,\
 	javax.annotation,\
 	javax.el,\
 	javax.inject,\
-	javax.xml,\
-	javax.xml.stream,\
+	javaewah,\
 	org.apache.batik.css,\
 	org.apache.batik.util,\
 	org.apache.batik.util.gui,\
@@ -236,6 +247,7 @@ crossplatform.bundles: \
 	org.eclipse.equinox.simpleconfigurator,\
 	org.eclipse.equinox.simpleconfigurator.manipulator,\
 	org.eclipse.equinox.util,\
+	org.eclipse.jdt.annotation,\
 	org.eclipse.jdt.core,\
 	org.eclipse.jdt.core.manipulation,\
 	org.eclipse.jdt.debug,\
@@ -256,6 +268,7 @@ crossplatform.bundles: \
 	org.eclipse.jface,\
 	org.eclipse.jface.databinding,\
 	org.eclipse.jface.text,\
+	org.eclipse.jgit,\
 	org.eclipse.ltk.core.refactoring,\
 	org.eclipse.ltk.ui.refactoring,\
 	org.eclipse.osgi.services,\

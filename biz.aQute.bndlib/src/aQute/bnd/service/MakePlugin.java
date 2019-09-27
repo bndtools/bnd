@@ -10,7 +10,7 @@ public interface MakePlugin {
 	/**
 	 * This plugin is called when Include-Resource detects a reference to a
 	 * resource that it can not find in the file system.
-	 * 
+	 *
 	 * @param builder The current builder
 	 * @param source The source string (i.e. the place where bnd looked)
 	 * @param arguments Any arguments on the clause in Include-Resource

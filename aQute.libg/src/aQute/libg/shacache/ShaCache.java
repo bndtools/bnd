@@ -6,19 +6,20 @@ import java.io.InputStream;
 import java.util.regex.Pattern;
 
 import aQute.lib.io.IO;
+import aQute.lib.regex.PatternConstants;
 import aQute.libg.cryptography.SHA1;
 
 /**
  * Provide a standardized cache based on the SHA-1 of a file.
  */
 public class ShaCache {
-	static Pattern		SHA_P	= Pattern.compile("[A-F0-9]{40,40}", Pattern.CASE_INSENSITIVE);
+	private final static Pattern	SHA_P	= Pattern.compile(PatternConstants.SHA1);
 
-	private final File	root;
+	private final File				root;
 
 	/**
 	 * Create a SHA-1 cache on a directory.
-	 * 
+	 *
 	 * @param root the directory
 	 */
 	public ShaCache(File root) {
@@ -34,7 +35,7 @@ public class ShaCache {
 	 * Return a stream that is associated with a SHA. If the SHA is not in the
 	 * local cache, the given sources parameter can specify a way to get the
 	 * content.
-	 * 
+	 *
 	 * @param sha the sha
 	 * @param sources objects that can retrieve the original data
 	 * @return the stream or null if not found.
@@ -113,7 +114,7 @@ public class ShaCache {
 
 	/**
 	 * Small variation on the cache that returns a file instead of a stream
-	 * 
+	 *
 	 * @param sha the SHA-1
 	 * @param sources the inputs
 	 * @return a file or null
@@ -161,7 +162,7 @@ public class ShaCache {
 
 	/**
 	 * Clean the cache
-	 * 
+	 *
 	 * @throws Exception
 	 */
 

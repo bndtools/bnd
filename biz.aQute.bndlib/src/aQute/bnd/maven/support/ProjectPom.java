@@ -149,7 +149,7 @@ public class ProjectPom extends Pom {
 	}
 
 	// Match any macros
-	final static Pattern MACRO = Pattern.compile("(\\$\\{\\s*([^}\\s]+)\\s*\\})");
+	private final static Pattern MACRO = Pattern.compile("(\\$\\{\\s*([^}\\s]+)\\s*\\})");
 
 	@Override
 	protected String replace(String in) {

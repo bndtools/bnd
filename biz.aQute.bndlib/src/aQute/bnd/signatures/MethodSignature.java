@@ -26,7 +26,7 @@ public class MethodSignature implements Signature {
 		return parseMethodSignature(new StringRover(signature));
 	}
 
-	MethodSignature(TypeParameter[] typeParameters, JavaTypeSignature[] parameterTypes, Result resultType,
+	public MethodSignature(TypeParameter[] typeParameters, JavaTypeSignature[] parameterTypes, Result resultType,
 		ThrowsSignature[] throwTypes) {
 		this.typeParameters = typeParameters;
 		this.parameterTypes = parameterTypes;

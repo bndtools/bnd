@@ -663,4 +663,12 @@ public class ResolveProcess {
 		return wires;
 	}
 
+	public Map<Resource, List<Wire>> getRequiredWiring() {
+		return Collections.unmodifiableMap(required);
+	}
+
+	public Map<Resource, List<Wire>> getOptionalWiring() {
+		return Collections.unmodifiableMap(optional);
+	}
+
 }

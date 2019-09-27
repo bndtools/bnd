@@ -1,7 +1,5 @@
 package aQute.bnd.build;
 
-import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +11,7 @@ public class LoggingProgressPlugin implements ProgressPlugin {
 
 	@Override
 	public Task startTask(final String name, final int size) {
-		logger.info(LIFECYCLE, name); // log at Gradle LIFECYCLE level
+		logger.info(name);
 
 		return new Task() {
 			@Override

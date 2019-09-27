@@ -26,17 +26,24 @@ public interface Configuration {
 
 	/**
 	 * The name of this repository
-	 * 
+	 *
 	 * @param deflt
 	 */
 	String name(String deflt);
 
 	/**
 	 * The path to the index file
-	 * 
+	 *
 	 * @param deflt
 	 */
 	String index(String deflt);
+
+	/**
+	 * Content added to the index file. Content maybe one line without CR/LF as
+	 * long as there is a comma or whitespace separating the GAVs. Further same
+	 * format as the index file.
+	 */
+	String source();
 
 	/**
 	 * Do not update the index when a file is released
@@ -62,7 +69,6 @@ public interface Configuration {
 
 	/**
 	 * Extensions for files that contain multiple JARs
-	 * 
 	 */
 	String multi();
 }

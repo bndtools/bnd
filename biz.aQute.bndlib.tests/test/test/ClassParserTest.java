@@ -1,5 +1,7 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,11 +89,20 @@ class Implemented implements Plugin {
 
 @SuppressWarnings("resource")
 public class ClassParserTest extends TestCase {
-	static Analyzer a = new Analyzer();
+	Analyzer a;
 
+	@Override
+	protected void setUp() {
+		a = new Analyzer();
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		a.close();
+	}
 	/**
 	 * Java Type & Parameter annotations
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -138,7 +149,7 @@ public class ClassParserTest extends TestCase {
 	 * the same results with v1.8.9. The problem was apparently fixed in v2.1,
 	 * using a groovy-all-2.1.0 a correct manifest file is created.
 	 */
-	public static void testCodehauseGROOVY_6169() throws Exception {
+	public void testCodehauseGROOVY_6169() throws Exception {
 		Clazz c = new Clazz(a, "foo", new FileResource(IO.getFile("jar/BugReproLoggerGroovy189.jclass")));
 		c.parseClassFile();
 		assertTrue(c.getReferred()
@@ -147,7 +158,7 @@ public class ClassParserTest extends TestCase {
 
 	/**
 	 * Test the constant values
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -186,7 +197,7 @@ public class ClassParserTest extends TestCase {
 		// values.get("clss")).getName());
 	}
 
-	public static void testGeneric() throws Exception {
+	public void testGeneric() throws Exception {
 		print(System.err, WithGenerics.class.getField("field")
 			.getGenericType());
 		System.err.println();
@@ -247,7 +258,7 @@ public class ClassParserTest extends TestCase {
 	/**
 	 * Included an aop alliance class that is not directly referenced.
 	 */
-	public static void testUnacceptableReference() throws Exception {
+	public void testUnacceptableReference() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("jar/nl.fuji.general.jar"));
 		b.addClasspath(IO.getFile("jar/spring.jar"));
@@ -294,7 +305,7 @@ public class ClassParserTest extends TestCase {
 			.contains(a.getPackageRef("aQute/bnd/osgi")));
 	}
 
-	public static void testGenericsSignature2() throws Exception {
+	public void testGenericsSignature2() throws Exception {
 		Clazz c = new Clazz(a, "genericstest", new FileResource(IO.getFile("test/test/generics.clazz")));
 		c.parseClassFile();
 		assertTrue(c.getReferred()
@@ -303,7 +314,7 @@ public class ClassParserTest extends TestCase {
 			.contains(a.getPackageRef("javax/swing")));
 	}
 
-	public static void testGenericsSignature() throws Exception {
+	public void testGenericsSignature() throws Exception {
 		Clazz c = new Clazz(a, "genericstest", new FileResource(IO.getFile("test/test/generics.clazz")));
 		c.parseClassFile();
 		assertTrue(c.getReferred()
@@ -332,7 +343,7 @@ public class ClassParserTest extends TestCase {
 	 * @throws Exception
 	 */
 
-	public static void testJQuantlib() throws Exception {
+	public void testJQuantlib() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("testresources/jquantlib-0.1.2.jar"));
 		b.setProperty("Export-Package", "*");
@@ -366,7 +377,7 @@ public class ClassParserTest extends TestCase {
 		assertTrue(set.contains(a.getPackageRef("test/annotations")));
 	}
 
-	public static void testLargeClass2() throws IOException {
+	public void testLargeClass2() throws IOException {
 		try {
 			URL url = new URL("jar:file:jar/ecj_3.2.2.jar!/org/eclipse/jdt/internal/compiler/parser/Parser.class");
 			InputStream in = url.openStream();
@@ -382,7 +393,7 @@ public class ClassParserTest extends TestCase {
 	/**
 	 * Still problems with the stuff in ecj
 	 */
-	public static void testEcj() throws Exception {
+	public void testEcj() throws Exception {
 		Builder builder = new Builder();
 		try {
 			builder.setClasspath(new File[] {
@@ -408,7 +419,7 @@ public class ClassParserTest extends TestCase {
 	 * even if there are still bytes left. It seems to be able to stop skipping
 	 * if it is at the end of a buffer or so :-( Idiots. The
 	 * DataInputStream.skipBytes works correctly.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	public void testLargeClass() throws IOException {
@@ -444,4 +455,17 @@ public class ClassParserTest extends TestCase {
 			.contains(a.getPackageRef("javax/crypto")));
 	}
 
+	public void testClassForName() throws Exception {
+		a.setProperty("-noclassforname", "false");
+		Clazz c = new Clazz(a, "test/classforname", null);
+		c.parseClassFile(getClass().getResourceAsStream("classforname/ClassForName.class"));
+		assertThat(c.getReferred()).contains(a.getPackageRef("javax.swing"));
+	}
+
+	public void testNoClassForName() throws Exception {
+		a.setProperty("-noclassforname", "true");
+		Clazz c = new Clazz(a, "test/classforname", null);
+		c.parseClassFile(getClass().getResourceAsStream("classforname/ClassForName.class"));
+		assertThat(c.getReferred()).doesNotContain(a.getPackageRef("javax.swing"));
+	}
 }

@@ -45,7 +45,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 
 	/**
 	 * The well defined launcher
-	 * 
+	 *
 	 * @param project the project or Run
 	 */
 	public RemoteProjectLauncherPlugin(Project project) throws Exception {
@@ -67,6 +67,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	 */
 	@Override
 	public void update() throws Exception {
+		super.update();
 		updateFromProject();
 
 		Parameters runremote = new Parameters(getProject().getProperty(Constants.RUNREMOTE), getProject());
@@ -91,10 +92,11 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 			return;
 
 		prepared = true;
+		super.prepare();
 
 		updateFromProject();
 
-		Map<String, Object> properties = new HashMap<>(getRunProperties());
+		Map<String, String> properties = new HashMap<>(getRunProperties());
 
 		calculatedProperties(properties);
 

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -264,7 +265,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 	}
 
 	public boolean matches(String value) {
-		if (size() == 0)
+		if (isEmpty())
 			return true;
 
 		Instruction instr = matcher(value);
@@ -278,7 +279,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 	 * base directory, which will match all files in that directory against the
 	 * specification or you can use literal instructions to get files from
 	 * anywhere.
-	 * 
+	 *
 	 * @param base The directory to list files from.
 	 * @return The map that links files to attributes
 	 */
@@ -322,6 +323,56 @@ public class Instructions implements Map<Instruction, Attrs> {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Match the instruction against the parameters and merge the attributes if
+	 * matches. Remove any negated instructions. Literal unmatched instructions
+	 * are not added
+	 *
+	 * @param parameters the parameters to decorate
+	 */
+	public void decorate(Parameters parameters) {
+		decorate(parameters, false);
+	}
+
+	/**
+	 * Match the instruction against the parameters and merge the attributes if
+	 * matches. Remove any negated instructions. Literal unmatched instructions
+	 * are added if the addLiterals is true
+	 *
+	 * @param parameters the parameters to decorate
+	 * @param addLiterals add literals to the output
+	 */
+	public void decorate(Parameters parameters, boolean addLiterals) {
+		Iterator<Map.Entry<String, Attrs>> it = parameters.entrySet()
+			.iterator();
+		Set<Instruction> used = new HashSet<>(keySet());
+
+		while (it.hasNext()) {
+			Entry<String, Attrs> next = it.next();
+
+			Instruction matching = matcher(next.getKey());
+			if (matching != null) {
+				used.remove(matching);
+				if (matching.isNegated())
+					it.remove();
+				else {
+					next.getValue()
+						.putAll(get(matching));
+				}
+			}
+		}
+
+		if (addLiterals) {
+			//
+			// Add the literals
+			used.stream()
+				.filter(Instruction::isLiteral)
+				.forEach(i -> {
+					parameters.put(i.getLiteral(), new Attrs(get(i)));
+				});
+		}
 	}
 
 }

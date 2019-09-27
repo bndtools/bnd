@@ -57,17 +57,28 @@ public class BndWorkspacePlugin implements Plugin<Object> {
       }
 
       /* Build a set of project names we need to include from the specified tasks */
-      Set<String> projectNames = startParameter.taskNames.collect { String taskName ->
+      Set<String> projectNames = new LinkedHashSet<>()
+      for (Iterator<String> iter = startParameter.taskNames.iterator(); iter.hasNext();) {
+        String taskName = iter.next()
+        if (taskName == '--tests') {
+          if (iter.hasNext()) {
+            iter.next()
+          }
+          continue
+        }
         String[] elements = taskName.split(':')
         switch (elements.length) {
           case 1:
-            return defaultProjectName
+            projectNames.add(defaultProjectName)
+            break
           case 2:
-            return elements[0].empty ? build : elements[0]
+            projectNames.add(elements[0].empty ? build : elements[0])
+            break
           default:
-            return elements[0].empty ? elements[1] : elements[0]
+            projectNames.add(elements[0].empty ? elements[1] : elements[0])
+            break
         }
-      }.toSet()
+      }
 
       /* Include the default project name if in a subproject or no tasks specified */
       if ((startParameter.currentDir != rootDir) || projectNames.empty) {

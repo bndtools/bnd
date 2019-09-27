@@ -1,0 +1,27 @@
+/*
+ *
+ */
+
+import aQute.bnd.gradle.Bndrun
+
+plugins {
+    id 'biz.aQute.bnd.builder'
+}
+
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.osgi:osgi.core:5.0.0'
+    runtime 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
+}
+
+task run(type: Bndrun) {
+   description "OSGi Bndrun ${name}.bndrun"
+   group 'export'
+   inputs.files jar
+   bndrun "${name}.bndrun"
+}

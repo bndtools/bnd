@@ -1,6 +1,9 @@
 package aQute.bnd.service.specifications;
 
+import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,10 +24,12 @@ public class RunSpecification implements Cloneable {
 	public Map<String, String>				properties				= new LinkedHashMap<>();
 	public List<String>						errors					= new ArrayList<>();
 	public List<String>						runfw					= new ArrayList<>();
+	public Map<String, String>				instructions			= new HashMap<>();
 
 	/**
 	 * Create a clone of this specification.
 	 */
+	@Override
 	public RunSpecification clone() {
 		try {
 			return (RunSpecification) super.clone();
@@ -36,7 +41,7 @@ public class RunSpecification implements Cloneable {
 	/**
 	 * Merge this specification with the given spec. The given spec will
 	 * override the values of this specification if set.
-	 * 
+	 *
 	 * @param spec the spec that overrides the values in this spec.
 	 */
 	public void mergeWith(RunSpecification spec) {
@@ -46,20 +51,23 @@ public class RunSpecification implements Cloneable {
 			bin = spec.bin;
 		if (spec.bin_test != null)
 			bin_test = spec.bin_test;
-		runfw = spec.runfw;
+		runfw.clear();
+		runfw.addAll(spec.runfw);
 		runbundles.addAll(spec.runbundles);
 		runpath.addAll(spec.runpath);
 		putAll(extraSystemCapabilities, spec.extraSystemCapabilities);
 		putAll(extraSystemPackages, spec.extraSystemPackages);
 		properties.putAll(spec.properties);
 		errors.addAll(spec.errors);
+		instructions.putAll(spec.instructions);
 	}
 
 	private void putAll(Map<String, Map<String, String>> to, Map<String, Map<String, String>> from) {
 		for (Map.Entry<String, Map<String, String>> e : from.entrySet()) {
 			String key = e.getKey();
-			while (to.containsKey(key))
-				key += "~";
+			while (to.containsKey(key)) {
+				key += DUPLICATE_MARKER;
+			}
 			to.put(key, e.getValue());
 		}
 	}

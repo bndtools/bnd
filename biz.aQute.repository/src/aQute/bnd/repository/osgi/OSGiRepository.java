@@ -278,8 +278,12 @@ public class OSGiRepository extends BaseRepository
 
 	@Override
 	public synchronized boolean refresh() {
+		return refresh(false);
+	}
+
+	boolean refresh(boolean b) {
 		try {
-			getIndex(true);
+			getIndex(b);
 			return true;
 		} catch (Exception e) {
 			logger.error("Refreshing repository {} failed", this.getName(), e);
@@ -341,4 +345,5 @@ public class OSGiRepository extends BaseRepository
 			throw Exceptions.duck(e);
 		}
 	}
+
 }

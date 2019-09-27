@@ -10,10 +10,10 @@ import aQute.libg.glob.Glob;
 public class Instruction {
 
 	public static class Filter implements FileFilter {
-
-		private Instruction	instruction;
-		private boolean		recursive;
-		private Pattern		doNotCopy;
+		private final static Pattern	DEFAULT_DO_NOT_COPY_P	= Pattern.compile(Constants.DEFAULT_DO_NOT_COPY);
+		private Instruction				instruction;
+		private boolean					recursive;
+		private Pattern					doNotCopy;
 
 		public Filter(Instruction instruction, boolean recursive, Pattern doNotCopy) {
 			this.instruction = instruction;
@@ -22,7 +22,7 @@ public class Instruction {
 		}
 
 		public Filter(Instruction instruction, boolean recursive) {
-			this(instruction, recursive, Pattern.compile(Constants.DEFAULT_DO_NOT_COPY));
+			this(instruction, recursive, DEFAULT_DO_NOT_COPY_P);
 		}
 
 		public boolean isRecursive() {

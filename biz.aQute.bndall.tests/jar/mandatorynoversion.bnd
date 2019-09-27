@@ -1,0 +1,2 @@
+-classpath: mina.jar
+Export-Package: *;mandatory:="x,y";x=1;y=2

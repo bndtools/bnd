@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.osgi.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,7 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequestException;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
+import aQute.lib.exceptions.Exceptions;
 import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
 import aQute.maven.api.Program;
@@ -40,53 +42,63 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 
 	@Override
 	public TaggedData fetch(String path, File file) throws Exception {
-		URL url = new URL(base + path);
-		int n = 0;
-		while (true)
-			try {
-				logger.debug("Fetching {}", path);
+		Promise<TaggedData> promise = fetch(path, file, 3, 1000L);
+		Throwable failure = promise.getFailure(); // wait for completion
+		if (failure != null) {
+			throw Exceptions.duck(failure);
+		}
+		return promise.getValue();
+	}
 
-				TaggedData tag = client.build()
-					.headers("User-Agent", "Bnd")
-					.useCache(file, DEFAULT_MAX_STALE)
-					.asTag()
-					.go(url);
+	private Promise<TaggedData> fetch(String path, File file, int retries, long delay) throws Exception {
+		logger.debug("Fetching {}", path);
+		return client.build()
+			.headers("User-Agent", "Bnd")
+			.useCache(file, DEFAULT_MAX_STALE)
+			.asTag()
+			.async(new URL(base + path))
+			.then(success -> success.flatMap(tag -> {
 				logger.debug("Fetched {}", tag);
-				if (tag.getState() == State.UPDATED) {
-
-					// https://issues.sonatype.org/browse/NEXUS-4900
-
-					if (!path.endsWith("/maven-metadata.xml")) {
-						URL shaUrl = new URL(base + path + ".sha1");
-						URL md5Url = new URL(base + path + ".md5");
-						String sha = client.build()
-							.asString()
-							.timeout(15000)
-							.go(shaUrl);
+				if ((tag.getState() != State.UPDATED) || path.endsWith("/maven-metadata.xml")) {
+					return success;
+				}
+				// https://issues.sonatype.org/browse/NEXUS-4900
+				return client.build()
+					.asString()
+					.timeout(15000)
+					.async(new URL(base + path + ".sha1"))
+					.flatMap(sha -> {
 						if (sha != null) {
 							String fileSha = SHA1.digest(file)
 								.asHex();
 							checkDigest(fileSha, sha, file);
-						} else {
-							String md5 = client.build()
-								.asString()
-								.timeout(15000)
-								.go(md5Url);
-							if (md5 != null) {
-								String fileMD5 = MD5.digest(file)
-									.asHex();
-								checkDigest(fileMD5, md5, file);
-							}
+							return success;
 						}
+						return client.build()
+							.asString()
+							.timeout(15000)
+							.async(new URL(base + path + ".md5"))
+							.flatMap(md5 -> {
+								if (md5 != null) {
+									String fileMD5 = MD5.digest(file)
+										.asHex();
+									checkDigest(fileMD5, md5, file);
+								}
+								return success;
+							});
+					});
+			})
+				.recoverWith(failed -> {
+					if (retries < 1) {
+						return null; // no recovery
 					}
-				}
-				return tag;
-			} catch (Exception e) {
-				n++;
-				if (n > 3)
-					throw e;
-				Thread.sleep(1000 * n);
-			}
+					logger.info("Retrying invalid download: {}. delay={}, retries={}", failed.getFailure()
+						.getMessage(), delay, retries);
+					@SuppressWarnings("unchecked")
+					Promise<TaggedData> delayed = (Promise<TaggedData>) failed.delay(delay);
+					return delayed.recoverWith(
+						f -> fetch(path, file, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
+				}));
 	}
 
 	@Override

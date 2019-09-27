@@ -34,7 +34,7 @@ import biz.aQute.resolve.ResolveProcess;
 /**
  * Resolves the <code>-runbundles</code> for the given bndrun file.
  */
-@Mojo(name = "resolve", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+@Mojo(name = "resolve", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true)
 public class ResolverMojo extends AbstractMojo {
 	private static final Logger									logger	= LoggerFactory.getLogger(ResolverMojo.class);
 
@@ -88,6 +88,7 @@ public class ResolverMojo extends AbstractMojo {
 	@SuppressWarnings("deprecation")
 	private org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
 
+	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (skip) {
 			logger.debug("skip project as configured");

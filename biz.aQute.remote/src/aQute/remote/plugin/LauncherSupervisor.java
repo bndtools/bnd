@@ -112,7 +112,7 @@ public class LauncherSupervisor extends AgentSupervisor<Supervisor, Agent> imple
 	 * <li>0 – Use the standard console
 	 * <li>else – Open a stream to that port
 	 * </ul>
-	 * 
+	 *
 	 * @param shellPort
 	 */
 	public void setShell(int shellPort) {

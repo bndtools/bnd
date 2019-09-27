@@ -1,5 +1,7 @@
 package aQute.bnd.repository.maven.provider;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -12,10 +14,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -29,6 +30,7 @@ import org.w3c.dom.Document;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
@@ -36,6 +38,7 @@ import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.service.progress.ProgressPlugin;
+import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
@@ -46,25 +49,25 @@ import aQute.maven.api.Revision;
 import aQute.maven.provider.FakeNexus;
 import aQute.maven.provider.MavenRepository;
 import aQute.maven.provider.POM;
-import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 /*
  * Create a remote and local repository with a lot of bad stuff. The repo contains:
- * 
+ *
  */
 public class MavenBndRepoTest extends TestCase {
-	final static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
-	final static XPathFactory			xpf	= XPathFactory.newInstance();
-	String						tmpName;
-	File						tmp;
-	File						local;
-	File						remote;
-	File						index;
+	private static final Version		DTO_VERSION	= Version.parseVersion("1.0.0.201505202023");
+	final static DocumentBuilderFactory	dbf			= DocumentBuilderFactory.newInstance();
+	final static XPathFactory			xpf			= XPathFactory.newInstance();
+	String								tmpName;
+	File								tmp;
+	File								local;
+	File								remote;
+	File								index;
 
-	private MavenBndRepository	repo;
-	private FakeNexus			fnx;
-	private Processor			reporter;
+	private MavenBndRepository			repo;
+	private FakeNexus					fnx;
+	private Processor					domain;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -87,37 +90,62 @@ public class MavenBndRepoTest extends TestCase {
 	}
 
 	@Override
-	protected void tearDown() throws IOException {
-		reporter.close();
-		repo.close();
-		fnx.close();
+	protected void tearDown() throws Exception {
+		IO.close(domain);
+		IO.close(repo);
+		IO.close(fnx);
+		super.tearDown();
 	}
 
 	public void testProgramRemoveFromIndex() throws Exception {
 		config(null);
-		assertNotNull(repo.get("org.apache.commons.cli", Version.parseVersion("1.2"), null));
+		assertNotNull(repo.get("org.osgi.dto", DTO_VERSION, null));
+		String indexContent = IO.collect(index);
+		assertThat(indexContent).contains("org.osgi.dto:1.0.0");
 
-		Map<String, Runnable> actions = repo.actions("org.apache.commons.cli");
+		Map<String, Runnable> actions = repo.actions("org.osgi.dto");
 		assertNotNull(actions);
 		actions.get("Delete All from Index")
 			.run();
-		assertNull(repo.get("org.apache.commons.cli", Version.parseVersion("1.2"), null));
-
+		assertNull(repo.get("org.osgi.dto", DTO_VERSION, null));
+		assertThat(repo.list("org.osgi.dto")).isEmpty();
+		indexContent = IO.collect(index);
+		assertThat(indexContent).doesNotContain("org.osgi.dto:1.0.0");
 	}
 
 	public void testRevisionRemoveFromIndex() throws Exception {
 		config(null);
-		assertNotNull(repo.get("org.apache.commons.cli", Version.parseVersion("1.2"), null));
+		assertNotNull(repo.get("org.osgi.dto", DTO_VERSION, null));
+		String indexContent = IO.collect(index);
 
-		Map<String, Runnable> actions = repo.actions("org.apache.commons.cli", new Version("1.2"));
+		Map<String, Runnable> actions = repo.actions("org.osgi.dto", DTO_VERSION);
 		assertNotNull(actions);
 		actions.get("Delete from Index")
 			.run();
-		assertNull(repo.get("org.apache.commons.cli", Version.parseVersion("1.2"), null));
-
+		assertThat(repo.list("org.osgi.dto")).isEmpty();
+		indexContent = IO.collect(index);
+		assertThat(indexContent).doesNotContain("org.osgi.dto:1.0.0");
 	}
 
-	public void testTooltiEtAlp() throws Exception {
+	public void testAdd() throws Exception {
+		config(null);
+		assertThat(repo.list("org.osgi.service.log")).isEmpty();
+		String indexContent = IO.collect(index);
+		assertThat(indexContent).doesNotContain("org.osgi.service.log");
+		repo.index.add(Archive.valueOf("org.osgi:org.osgi.service.log:1.3.0"));
+		assertThat(repo.list("org.osgi.service.log")).isNotEmpty();
+		indexContent = IO.collect(index);
+		assertThat(indexContent).contains("org.osgi.service.log:1.3.0");
+	}
+
+	public void testUseSource() throws Exception {
+		Map<String, String> config = new HashMap<>();
+		config.put("source", "org.osgi:org.osgi.service.log:1.3.0, ; \torg.osgi:org.osgi.service.log:1.2.0");
+		config(config);
+		assertThat(repo.list("org.osgi.service.log")).isNotEmpty();
+	}
+
+	public void testTooltip() throws Exception {
 		config(null);
 		String tooltip = repo.tooltip();
 		assertNotNull(tooltip);
@@ -142,8 +170,7 @@ public class MavenBndRepoTest extends TestCase {
 
 		title = repo.title("commons-cli:commons-cli", new Version("1.4.0.SNAPSHOT"));
 		assertEquals("1.4.0.SNAPSHOT [Not found]", title);
-		
-		
+
 	}
 
 	public void testZipFileWithContents() throws Exception {
@@ -153,24 +180,26 @@ public class MavenBndRepoTest extends TestCase {
 		config.put("index", index.getAbsolutePath());
 		config.put("multi", " zip , par, foo");
 		config(config);
-		File file = repo.get("group:artifact:zip:", Version.parseVersion("1.0.0"), null);
+		String multi_version = "1.0.0";
+		domain.setProperty("multi_version", multi_version);
+		File file = repo.get("group:artifact:zip:", Version.parseVersion(multi_version), null);
 		assertNotNull(file);
 		assertTrue(file.isFile());
 
 		File file2 = repo.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null);
 		assertNotNull(file2);
 
-		File file3 = repo.get("group:artifact:jar:1003", Version.parseVersion("1.0.0"), null);
+		File file3 = repo.get("group:artifact:jar:1003", Version.parseVersion(multi_version), null);
 		assertNotNull(file3);
 		assertTrue(file3.isFile());
 
 		assertTrue(file2.equals(file3));
 
-		repo.index.remove(Archive.valueOf("group:artifact:zip:1.0.0"));
+		repo.index.remove(Archive.valueOf("group:artifact:zip:" + multi_version));
 
 		file2 = repo.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null);
 		assertNull(file2);
-		file3 = repo.get("group:artifact:jar:1003", Version.parseVersion("1.0.0"), null);
+		file3 = repo.get("group:artifact:jar:1003", Version.parseVersion(multi_version), null);
 		assertNull(file3);
 	}
 
@@ -224,10 +253,36 @@ public class MavenBndRepoTest extends TestCase {
 		Collection<Capability> caps = repo.findProviders(Collections.singleton(wc))
 			.get(wc);
 		Set<Resource> resources = ResourceUtils.getResources(caps);
-		assertEquals(2, resources.size());
+		assertEquals(3, resources.size());
 		IdentityCapability bc = ResourceUtils.getIdentityCapability(resources.iterator()
 			.next());
 		assertEquals("biz.aQute.bnd.maven", bc.osgi_identity());
+	}
+
+	public void testPutMavenReleaseSources() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI()
+			.toString());
+		config(map);
+		try (Processor context = new Processor()) {
+			context.setProperty("-maven-release", "sources;path=\"testresources/src\",javadoc;packages=all");
+			File jar = IO.getFile("testresources/release.jar");
+			PutOptions options = new PutOptions();
+			options.context = context;
+			PutResult put = repo.put(new FileInputStream(jar), options);
+
+			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 140212);
+			File sources = assertIsFile(remote,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-sources.jar", 0);
+			try (Jar sourcesJar = new Jar(sources)) {
+				assertThat(sourcesJar.exists("X.java")).isTrue();
+			}
+			File javadoc = assertIsFile(remote,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-javadoc.jar", 0);
+			try (Jar javadocJar = new Jar(javadoc)) {
+				assertThat(javadocJar.exists("X.html")).isTrue();
+			}
+		}
 	}
 
 	public void testPomGenerate() throws Exception {
@@ -243,7 +298,7 @@ public class MavenBndRepoTest extends TestCase {
 		POM pom = new POM((MavenRepository) repo.storage, bin);
 
 		assertEquals(Revision.valueOf("test:test:1.0"), pom.getRevision());
-		assertEquals(3, pom.getDependencies(EnumSet.of(MavenScope.runtime), false)
+		assertEquals(4, pom.getDependencies(EnumSet.of(MavenScope.runtime), false)
 			.size());
 		System.out.println(new String(bout.toByteArray(), StandardCharsets.UTF_8));
 	}
@@ -253,6 +308,17 @@ public class MavenBndRepoTest extends TestCase {
 		map.put("releaseUrl", remote.toURI()
 			.toString());
 		config(map);
+		Requirement wc = ResourceUtils.createWildcardRequirement();
+		Collection<Capability> caps = repo.findProviders(Collections.singleton(wc))
+			.get(wc);
+		Set<Resource> resources = ResourceUtils.getResources(caps);
+		int size = resources.size();
+		assertThat(resources)
+			.extracting(ResourceUtils::getIdentityCapability)
+			.filteredOn(Objects::nonNull)
+			.extracting(IdentityCapability::osgi_identity)
+			.doesNotContain("biz.aQute.bnd.maven");
+
 		File jar = IO.getFile("testresources/release.jar");
 		PutResult put = repo.put(new FileInputStream(jar), null);
 
@@ -260,25 +326,26 @@ public class MavenBndRepoTest extends TestCase {
 		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.pom", 1470);
 		put = repo.put(new FileInputStream(jar), null);
 
-		Requirement wc = ResourceUtils.createWildcardRequirement();
-		Collection<Capability> caps = repo.findProviders(Collections.singleton(wc))
+		caps = repo.findProviders(Collections.singleton(wc))
 			.get(wc);
-		Set<Resource> resources = ResourceUtils.getResources(caps);
-		assertEquals(2, resources.size());
-		IdentityCapability bc = ResourceUtils.getIdentityCapability(resources.iterator()
-			.next());
-		assertEquals("biz.aQute.bnd.maven", bc.osgi_identity());
+		resources = ResourceUtils.getResources(caps);
+		assertThat(resources)
+			.extracting(ResourceUtils::getIdentityCapability)
+			.filteredOn(Objects::nonNull)
+			.extracting(IdentityCapability::osgi_identity)
+			.contains("biz.aQute.bnd.maven")
+			.hasSize(size + 1);
 	}
 
 	public void testPutReleaseAndThenIndex() throws Exception {
-		Workspace ws = Workspace.findWorkspace(IO.getFile("testdata/releasews"));
+		Workspace ws = new Workspace(IO.getFile("testdata/releasews"));
 		Project p1 = ws.getProject("p1");
 		Project indexProject = ws.getProject("index");
 
 		Map<String, String> map = new HashMap<>();
 		map.put("releaseUrl", remote.toURI()
 			.toString());
-		config(map);
+		config(ws, map);
 
 		repo.begin(indexProject);
 		File jar = IO.getFile("testresources/release.jar");
@@ -303,7 +370,7 @@ public class MavenBndRepoTest extends TestCase {
 		map.put("index", "generated/does_not_exist");
 		config(map);
 		repo.list(null);
-		assertTrue(reporter.check());
+		assertTrue(domain.check());
 	}
 
 	public void testGet() throws Exception {
@@ -311,6 +378,16 @@ public class MavenBndRepoTest extends TestCase {
 		File file = repo.get("commons-cli:commons-cli", new Version("1.0.0"), null);
 		assertNotNull(file);
 		assertTrue(file.isFile());
+	}
+
+	public void testGetWithSource() throws Exception {
+		config(null);
+		File jar = repo.get("org.osgi.dto", new Version("1.0.0.201505202023"), null);
+		assertThat(jar).isFile();
+
+		File sources = repo.get("org.osgi.dto.source", new Version("1.0.0.201505202023"), null);
+		assertThat(sources).isFile();
+
 	}
 
 	public void testGetFileRepo() throws Exception {
@@ -344,7 +421,7 @@ public class MavenBndRepoTest extends TestCase {
 		config(null);
 		List<String> l = repo.list(null);
 		System.out.println(l);
-		assertEquals(4, l.size());
+		assertEquals(5, l.size());
 		assertTrue(l.contains("commons-cli:commons-cli"));
 
 		SortedSet<Version> versions = repo.versions("commons-cli:commons-cli");
@@ -353,13 +430,16 @@ public class MavenBndRepoTest extends TestCase {
 		versions = repo.versions("org.apache.commons.cli");
 		assertEquals("[1.2.0]", versions.toString());
 
+		versions = repo.versions("org.osgi.dto");
+		assertEquals("[1.0.0.201505202023]", versions.toString());
+
 		Requirement all = ResourceUtils.createWildcardRequirement();
 		Collection<Capability> providers = repo.findProviders(Collections.singleton(all))
 			.get(all);
 		Set<Resource> resources = ResourceUtils.getResources(providers);
 
-		// there is only one bundle in the store
-		assertEquals(1, resources.size());
+		// there are only two bundles in the store
+		assertEquals(2, resources.size());
 	}
 
 	public void testPutDefaultLocal() throws Exception {
@@ -390,8 +470,10 @@ public class MavenBndRepoTest extends TestCase {
 
 		PutResult put = repo.put(new FileInputStream(jar), null);
 
-		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.jar", 0);
-		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.pom", 0);
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.jar",
+			0);
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.pom",
+			0);
 		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata-local.xml", 0);
 
 		String s = IO.collect(index);
@@ -408,8 +490,10 @@ public class MavenBndRepoTest extends TestCase {
 
 		PutResult put = repo.put(new FileInputStream(jar), null);
 
-		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.jar", 0);
-		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.pom", 0);
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.jar",
+			0);
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.pom",
+			0);
 
 		String s = IO.collect(index);
 		// snapshots not added to index
@@ -443,9 +527,11 @@ public class MavenBndRepoTest extends TestCase {
 			assertIsFile(remote,
 				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1.jar", 0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-sources.jar", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-sources.jar",
+				0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-javadoc.jar", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-javadoc.jar",
+				0);
 			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata.xml", 0);
 
 			File f = IO.getFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata.xml");
@@ -477,9 +563,11 @@ public class MavenBndRepoTest extends TestCase {
 			assertIsFile(remote,
 				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1.jar", 0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-sources.jar", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-sources.jar",
+				0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-javadoc.jar", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-javadoc.jar",
+				0);
 			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata.xml", 0);
 
 			assertIsFile(remote,
@@ -487,9 +575,11 @@ public class MavenBndRepoTest extends TestCase {
 			assertIsFile(remote,
 				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-2.jar", 0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-2-sources.jar", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-2-sources.jar",
+				0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-2-javadoc.jar", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-2-javadoc.jar",
+				0);
 			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata.xml", 0);
 
 			File f = IO.getFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata.xml");
@@ -527,9 +617,11 @@ public class MavenBndRepoTest extends TestCase {
 			assertIsFile(remote,
 				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1.jar", 0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-sources.jar", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-sources.jar",
+				0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-javadoc.jar", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-javadoc.jar",
+				0);
 			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata.xml", 0);
 
 			File f = IO.getFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata.xml");
@@ -562,23 +654,29 @@ public class MavenBndRepoTest extends TestCase {
 			assertIsFile(remote,
 				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1.jar", 0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-sources.jar", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-sources.jar",
+				0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-javadoc.jar", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000000-1-javadoc.jar",
+				0);
 			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata.xml", 0);
 
 			assertIsFile(remote,
 				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-2.pom", 0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-2.pom.sha1", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-2.pom.sha1",
+				0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-2.pom.md5", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-2.pom.md5",
+				0);
 			assertIsFile(remote,
 				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-2.jar", 0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-2-sources.jar", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-2-sources.jar",
+				0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-2-javadoc.jar", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-2-javadoc.jar",
+				0);
 			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata.xml", 0);
 
 			File f = IO.getFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata.xml");
@@ -603,9 +701,11 @@ public class MavenBndRepoTest extends TestCase {
 			assertIsFile(remote,
 				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000020-3.jar", 0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000020-3-sources.jar", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000020-3-sources.jar",
+				0);
 			assertIsFile(remote,
-				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000020-3-javadoc.jar", 0);
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000020-3-javadoc.jar",
+				0);
 			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata.xml", 0);
 
 			File f = IO.getFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata.xml");
@@ -617,16 +717,25 @@ public class MavenBndRepoTest extends TestCase {
 
 	private File assertIsFile(File dir, String path, int size) throws IOException {
 		File file = IO.getFile(dir, path);
-		if (!file
-			.isFile())
-			throw new AssertionFailedError(path + " does not exist");
+		assertThat(file).as("%s does not exist", path)
+			.isFile();
 		if (size > 0) {
-			assertEquals("Unexpected file size ", size, file.length());
+			assertThat(file.length()).as("Unexpected file size")
+				.isEqualTo(size);
 		}
 		return file;
 	}
 
 	void config(Map<String, String> override) throws Exception {
+		Processor domain = new Processor();
+		HttpClient client = new HttpClient();
+		client.setRegistry(domain);
+		domain.addBasicPlugin(client);
+		config(domain, override);
+	}
+
+	void config(Processor domain, Map<String, String> override) throws Exception {
+		this.domain = domain;
 		Map<String, String> config = new HashMap<>();
 		config.put("local", tmpName + "/local");
 		config.put("index", tmpName + "/index");
@@ -635,40 +744,31 @@ public class MavenBndRepoTest extends TestCase {
 		if (override != null)
 			config.putAll(override);
 
-		reporter = new Processor();
-		reporter.addBasicPlugin(new ProgressPlugin() {
+		domain.addBasicPlugin((ProgressPlugin) (name, size) -> {
+			System.out.println("Starting " + name);
+			return new Task() {
 
-			@Override
-			public Task startTask(final String name, int size) {
-				System.out.println("Starting " + name);
-				return new Task() {
+				@Override
+				public void worked(int units) {
+					System.out.println("Worked " + name + " " + units);
+				}
 
-					@Override
-					public void worked(int units) {
-						System.out.println("Worked " + name + " " + units);
-					}
+				@Override
+				public void done(String message, Throwable e) {
+					System.out.println("Done " + name + " " + message + " " + e);
+				}
 
-					@Override
-					public void done(String message, Throwable e) {
-						System.out.println("Done " + name + " " + message + " " + e);
-					}
-
-					@Override
-					public boolean isCanceled() {
-						return false;
-					}
-				};
-			}
+				@Override
+				public boolean isCanceled() {
+					return false;
+				}
+			};
 		});
-		HttpClient client = new HttpClient();
-		client.setRegistry(reporter);
-		Executor executor = Executors.newCachedThreadPool();
-		reporter.addBasicPlugin(client);
-		reporter.setTrace(true);
+		domain.setTrace(true);
 
 		repo = new MavenBndRepository();
-		repo.setReporter(reporter);
-		repo.setRegistry(reporter);
+		repo.setReporter(domain);
+		repo.setRegistry(domain);
 
 		repo.setProperties(config);
 	}

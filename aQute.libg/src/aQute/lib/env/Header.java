@@ -10,12 +10,13 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import aQute.lib.collections.SortedList;
+import aQute.lib.regex.PatternConstants;
 import aQute.libg.generics.Create;
 import aQute.libg.qtokens.QuotedTokenizer;
 import aQute.service.reporter.Reporter;
 
 public class Header implements Map<String, Props> {
-	public final static Pattern				TOKEN_P				= Pattern.compile("[-a-zA-Z0-9_]+");
+	public final static Pattern				TOKEN_P				= Pattern.compile(PatternConstants.TOKEN);
 
 	public static final char				DUPLICATE_MARKER	= '~';
 
@@ -251,7 +252,7 @@ public class Header implements Map<String, Props> {
 	 * ::= clause ( ',' clause ) + clause ::= name ( ';' name ) (';' key '='
 	 * value ) This is mapped to a Map { name => Map { attr|directive => value }
 	 * }
-	 * 
+	 *
 	 * @param value A string
 	 * @return a Map<String,Map<String,String>>
 	 */

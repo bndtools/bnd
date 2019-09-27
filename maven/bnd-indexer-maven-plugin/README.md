@@ -296,8 +296,8 @@ index. The default includes is `**/*.jar`.
 
 #### Changing relative directory
 
-All of the index URIs stored in the index use relative paths to 
-reference the bundles in the indexing folder. By default these relative 
+All of the index URIs stored in the index use relative paths (as long as `absolute` is not set to true)
+to reference the bundles in the indexing folder. By default these relative 
 paths use the index output location as their base directory, but a
 different base directory can be supplied if needed
 
@@ -324,5 +324,6 @@ different base directory can be supplied if needed
 |`indexFiles`       | A set of `include` and `exclude` child elements using Ant-style globs matching paths within the `inputDir` which should be included in the index or excluded from the index. _Defaults to `<include>**/*.jar</include>`._|
 |`outputFile`       | The name and location of the resulting index file. _Defaults to `${project.build.directory}/index.xml`._ Override with property `bnd.indexer.output.file`.|
 |`baseFile`         | See [Changing relative directory](#changing-relative-directory). Override with property `bnd.indexer.base.file`.|
+|`absolute`         | Flag to enable absolute index URIs. Override with property `bnd.indexer.absolute`.|
 |`includeGzip`      | Include a GZIP'd version of the index file adjacent to the non-GZIP'd one. _Defaults to `true`._ Override with property `bnd.indexer.include.gzip`.|
 |`skip`             | Skip the index process altogether. _Defaults to `false`._ Override with property `bnd.indexer.skip`.|

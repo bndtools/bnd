@@ -25,7 +25,7 @@ public class PathSet {
 
 	/**
 	 * Create a path set with initial Ant-style globs for the include patterns.
-	 * 
+	 *
 	 * @param includes Add Ant-style globs.
 	 */
 	public PathSet(String... includes) {
@@ -34,7 +34,7 @@ public class PathSet {
 
 	/**
 	 * Add Ant-style globs to the include patterns.
-	 * 
+	 *
 	 * @param includes Add Ant-style globs.
 	 * @return This PathSet.
 	 */
@@ -47,7 +47,7 @@ public class PathSet {
 
 	/**
 	 * Add Ant-style globs to the include patterns.
-	 * 
+	 *
 	 * @param includes Add Ant-style globs.
 	 * @return This PathSet.
 	 */
@@ -60,7 +60,7 @@ public class PathSet {
 
 	/**
 	 * Add Ant-style globs to the exclude patterns.
-	 * 
+	 *
 	 * @param excludes Add Ant-style globs.
 	 * @return This PathSet.
 	 */
@@ -73,7 +73,7 @@ public class PathSet {
 
 	/**
 	 * Add Ant-style globs to the exclude patterns.
-	 * 
+	 *
 	 * @param excludes Add Ant-style globs.
 	 * @return This PathSet.
 	 */
@@ -94,7 +94,7 @@ public class PathSet {
 	/**
 	 * Return a list of paths in the specified collection matching the
 	 * configured include and exclude Ant-style glob expressions.
-	 * 
+	 *
 	 * @param defaultIncludes The default include patterns to use if no include
 	 *            patterns were configured.
 	 * @return A list of paths in the specified collection which match the
@@ -107,7 +107,7 @@ public class PathSet {
 	/**
 	 * Return a list of paths in the specified collection matching the
 	 * configured include and exclude Ant-style glob expressions.
-	 * 
+	 *
 	 * @param defaultIncludes The default include patterns to use if no include
 	 *            patterns were configured.
 	 * @return A list of paths in the specified collection which match the
@@ -120,7 +120,7 @@ public class PathSet {
 	/**
 	 * Return a list of paths in the specified collection matching the
 	 * configured include and exclude Ant-style glob expressions.
-	 * 
+	 *
 	 * @return A list of paths in the specified collection which match the
 	 *         include and exclude Ant-style globs.
 	 */
@@ -137,7 +137,7 @@ public class PathSet {
 	/**
 	 * Return a predicate matching the configured include and exclude Ant-style
 	 * glob expressions.
-	 * 
+	 *
 	 * @param defaultIncludes The default include patterns to use if no include
 	 *            patterns were configured.
 	 * @return A predicate which matches the include and exclude Ant-style
@@ -153,7 +153,7 @@ public class PathSet {
 	/**
 	 * Return a predicate matching the configured include and exclude Ant-style
 	 * glob expressions.
-	 * 
+	 *
 	 * @param defaultIncludes The default include patterns to use if no include
 	 *            patterns were configured.
 	 * @return A predicate which matches the include and exclude Ant-style
@@ -169,7 +169,7 @@ public class PathSet {
 	/**
 	 * Return a predicate matching the configured include and exclude Ant-style
 	 * glob expressions.
-	 * 
+	 *
 	 * @return A predicate which matches the include and exclude Ant-style
 	 *         globs.
 	 */
@@ -197,8 +197,8 @@ public class PathSet {
 		return path -> includes.stream()
 			.anyMatch(include -> include.matcher(path)
 				.matches())
-			&& !excludes.stream()
-				.anyMatch(exclude -> exclude.matcher(path)
+			&& excludes.stream()
+				.noneMatch(exclude -> exclude.matcher(path)
 					.matches());
 	}
 }

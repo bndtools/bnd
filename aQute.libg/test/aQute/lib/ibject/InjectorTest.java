@@ -20,14 +20,14 @@ public class InjectorTest {
 
 	static class BaseSimpleTest {
 		@Foo
-		public int				n	= 10;
+		public int n = 10;
 
 	}
 
 	static class SimpleTest extends BaseSimpleTest {
 
 		@Foo
-		double	d	= 10;
+		double					d	= 10;
 
 		@Foo
 		protected String		ref	= "";
@@ -38,7 +38,7 @@ public class InjectorTest {
 
 	@Test
 	public void nullHandling() throws Exception {
-		Injector<Foo> inj = new Injector<Foo>(this::nullReturn, Foo.class);
+		Injector<Foo> inj = new Injector<>(this::nullReturn, Foo.class);
 		SimpleTest st = new SimpleTest();
 		inj.inject(st);
 		assertThat(st.n).isEqualTo(0);
@@ -53,7 +53,7 @@ public class InjectorTest {
 
 	@Test
 	public void valueHandling() throws Exception {
-		Injector<Foo> inj = new Injector<Foo>(this::fiveReturn, Foo.class);
+		Injector<Foo> inj = new Injector<>(this::fiveReturn, Foo.class);
 		SimpleTest st = new SimpleTest();
 		inj.inject(st);
 		assertThat(st.n).isEqualTo(5);
@@ -68,7 +68,7 @@ public class InjectorTest {
 
 	@Test
 	public void testNewInstance() throws Exception {
-		Injector<Foo> inj = new Injector<Foo>(this::fiveReturn, Foo.class);
+		Injector<Foo> inj = new Injector<>(this::fiveReturn, Foo.class);
 		SimpleTest construct = inj.newInstance(SimpleTest.class);
 		assertThat(construct).isNotNull();
 		assertThat(construct.n).isEqualTo(5);
@@ -94,7 +94,7 @@ public class InjectorTest {
 
 	@Test
 	public void testConstructorInjection() throws Exception {
-		Injector<Foo> inj = new Injector<Foo>(this::fiveReturn, Foo.class);
+		Injector<Foo> inj = new Injector<>(this::fiveReturn, Foo.class);
 		ConstructorInj construct = inj.newInstance(ConstructorInj.class);
 		assertThat(construct).isNotNull();
 		assertThat(construct.n).isEqualTo(5);

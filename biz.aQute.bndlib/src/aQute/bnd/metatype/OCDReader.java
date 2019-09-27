@@ -3,7 +3,6 @@ package aQute.bnd.metatype;
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Deque;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,12 +32,12 @@ import aQute.bnd.xmlattribute.XMLAttributeFinder;
 class OCDReader {
 	final Analyzer				analyzer;
 	private final Clazz			clazz;
-	final EnumSet<Options>		options;
-	private final Set<TypeRef>	analyzed	= new HashSet<>();;
+	final Set<Options>			options;
+	private final Set<TypeRef>	analyzed	= new HashSet<>();
 	private final OCDDef		ocd;
 	final XMLAttributeFinder	finder;
 
-	private OCDReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder,
+	private OCDReader(Analyzer analyzer, Clazz clazz, Set<Options> options, XMLAttributeFinder finder,
 		MetatypeVersion minVersion) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
@@ -47,7 +46,7 @@ class OCDReader {
 		this.ocd = new OCDDef(finder, minVersion);
 	}
 
-	static OCDDef getOCDDef(Clazz c, Analyzer analyzer, EnumSet<Options> options, XMLAttributeFinder finder,
+	static OCDDef getOCDDef(Clazz c, Analyzer analyzer, Set<Options> options, XMLAttributeFinder finder,
 		MetatypeVersion minVersion) throws Exception {
 		OCDReader r = new OCDReader(analyzer, c, options, finder, minVersion);
 		return r.getDef();
@@ -528,25 +527,35 @@ class OCDReader {
 
 		private String identifierToPropertyName(String name) {
 			Matcher m = IDENTIFIERTOPROPERTY.matcher(name);
-			StringBuffer b = new StringBuffer();
-			while (m.find()) {
-				String replacement;// null;
-				if (m.group(1) != null) // __ to _
-					replacement = "_";
-				else if (m.group(2) != null) // _ to .
-					replacement = ".";
-				else if (m.group(3) != null) { // $_$ to -
-					replacement = "-";
-					ocd.updateVersion(MetatypeVersion.VERSION_1_4);
-				} else if (m.group(4) != null) // $$ to $
-					replacement = "\\$";
-				else // $ removed.
-					replacement = "";
-
-				m.appendReplacement(b, replacement);
+			StringBuilder sb = new StringBuilder();
+			int start = 0;
+			for (; m.find(); start = m.end()) {
+				sb.append(name, start, m.start());
+				switch (m.group()) {
+					case "__" : // __ to _
+						sb.append('_');
+						break;
+					case "_" : // _ to .
+						sb.append('.');
+						break;
+					case "$_$" : // $_$ to -
+						sb.append('-');
+						ocd.updateVersion(MetatypeVersion.VERSION_1_4);
+						break;
+					case "$$" : // $$ to $
+						sb.append('$');
+						break;
+					case "$" : // $ removed
+						break;
+					default : // unknown!
+						sb.append(m.group());
+						analyzer.error("unknown mapping %s in property name %s", m.group(), name);
+						break;
+				}
 			}
-			m.appendTail(b);
-			return b.toString();
+			return (start == 0) ? name
+				: sb.append(name, start, name.length())
+					.toString();
 		}
 
 		private String space(String name) {

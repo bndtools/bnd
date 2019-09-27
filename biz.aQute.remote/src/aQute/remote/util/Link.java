@@ -7,7 +7,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -23,6 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.json.JSONCodec;
 
 /**
@@ -30,7 +30,7 @@ import aQute.lib.json.JSONCodec;
  * implemented on the remote side. The methods on this subclass are then
  * available remotely. I.e. this is a two way street. Void messages are
  * asynchronous, other messages block to a reply.
- * 
+ *
  * @param <R>
  */
 public class Link<L, R> extends Thread implements Closeable {
@@ -113,40 +113,33 @@ public class Link<L, R> extends Thread implements Closeable {
 		if (remote == null)
 			remote = (R) Proxy.newProxyInstance(remoteClass.getClassLoader(), new Class<?>[] {
 				remoteClass
-			}, new InvocationHandler() {
+			}, (target, method, args) -> {
+				Object hash = new Object();
 
-				@Override
-				public Object invoke(Object target, Method method, Object[] args) throws Throwable {
-					Object hash = new Object();
+				try {
+					if (method.getDeclaringClass() == Object.class)
+						return method.invoke(hash, args);
 
+					int msgId;
 					try {
-						if (method.getDeclaringClass() == Object.class)
-							return method.invoke(hash, args);
-
-						int msgId;
-						try {
-							msgId = send(id.getAndIncrement(), method, args);
-							if (method.getReturnType() == void.class) {
-								promises.remove(msgId);
-								return null;
-							}
-						} catch (Exception e) {
-							terminate(e);
+						msgId = send(id.getAndIncrement(), method, args);
+						if (method.getReturnType() == void.class) {
+							promises.remove(msgId);
 							return null;
 						}
-
-						return waitForResult(msgId, method.getGenericReturnType());
-					} catch (InvocationTargetException e) {
-						Throwable t = e;
-						while (t instanceof InvocationTargetException)
-							t = ((InvocationTargetException) t).getTargetException();
-						throw t;
-					} catch (InterruptedException e) {
-						interrupt();
-						throw e;
-					} catch (Exception e) {
-						throw e;
+					} catch (Exception e1) {
+						terminate(e1);
+						return null;
 					}
+
+					return waitForResult(msgId, method.getGenericReturnType());
+				} catch (InvocationTargetException e2) {
+					throw Exceptions.unrollCause(e2, InvocationTargetException.class);
+				} catch (InterruptedException e3) {
+					interrupt();
+					throw e3;
+				} catch (Exception e4) {
+					throw e4;
 				}
 			});
 		return remote;
@@ -169,18 +162,14 @@ public class Link<L, R> extends Thread implements Closeable {
 					args.add(data);
 				}
 
-				Runnable r = new Runnable() {
-					@Override
-					public void run() {
-						try {
-							msgid.set(id);
-							executeCommand(cmd, id, args);
-						} catch (Exception e) {
-							// e.printStackTrace();
-						}
-						msgid.set(-1);
+				Runnable r = () -> {
+					try {
+						msgid.set(id);
+						executeCommand(cmd, id, args);
+					} catch (Exception e) {
+						// e.printStackTrace();
 					}
-
+					msgid.set(-1);
 				};
 				executor.execute(r);
 			} catch (SocketTimeoutException ee) {
@@ -360,9 +349,7 @@ public class Link<L, R> extends Thread implements Closeable {
 					return;
 				}
 			} catch (Throwable t) {
-				while (t instanceof InvocationTargetException
-					&& ((InvocationTargetException) t).getTargetException() != null)
-					t = ((InvocationTargetException) t).getTargetException();
+				t = Exceptions.unrollCause(t, InvocationTargetException.class);
 				// t.printStackTrace();
 				try {
 					send(-id, null, new Object[] {

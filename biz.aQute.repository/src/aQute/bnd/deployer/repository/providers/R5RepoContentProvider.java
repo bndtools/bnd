@@ -67,7 +67,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 		return pretty ? INDEX_NAME_PRETTY : INDEX_NAME_COMPRESSED;
 	}
 
-	private static enum ParserState {
+	private enum ParserState {
 		beforeRoot,
 		inRoot,
 		inResource,

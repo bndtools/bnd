@@ -7,12 +7,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class VersionRange {
-	final Version	high;
-	final Version	low;
-	char			start	= '[';
-	char			end		= ']';
+	final Version					high;
+	final Version					low;
+	char							start	= '[';
+	char							end		= ']';
 
-	static Pattern	RANGE	= Pattern
+	private final static Pattern	RANGE	= Pattern
 		.compile("(\\(|\\[)\\s*(" + Version.VERSION_STRING + ")\\s*,\\s*(" + Version.VERSION_STRING + ")\\s*(\\)|\\])");
 
 	public VersionRange(String string) {

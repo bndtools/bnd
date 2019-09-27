@@ -15,8 +15,7 @@ public class MethodInfo extends MemberInfo {
 		return toString(Modifier.methodModifiers());
 	}
 
-
-	static MethodInfo parseMethodInfo(DataInput in, ConstantPool constant_pool) throws IOException {
-		return parseMemberInfo(in, constant_pool, MethodInfo::new);
+	public static MethodInfo read(DataInput in, ConstantPool constant_pool) throws IOException {
+		return read(in, constant_pool, MethodInfo::new);
 	}
 }

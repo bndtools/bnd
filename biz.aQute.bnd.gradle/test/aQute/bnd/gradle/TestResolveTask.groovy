@@ -36,7 +36,7 @@ class TestResolveTask extends Specification {
           props = new UTF8Properties()
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', taskname)
+            .withArguments('--parallel', '--stacktrace', '--debug', taskname)
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -69,7 +69,7 @@ class TestResolveTask extends Specification {
           props = new UTF8Properties()
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', taskname)
+            .withArguments('--parallel', '--stacktrace', '--debug', taskname)
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -102,7 +102,7 @@ class TestResolveTask extends Specification {
           props = new UTF8Properties()
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', taskname)
+            .withArguments('--parallel', '--stacktrace', '--debug', taskname)
             .withPluginClasspath()
             .forwardOutput()
             .buildAndFail()
@@ -136,14 +136,15 @@ class TestResolveTask extends Specification {
           props = new UTF8Properties()
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', taskname)
+            .withArguments('--parallel', '--stacktrace', '--debug', taskname)
             .withPluginClasspath()
             .forwardOutput()
             .buildAndFail()
 
         then:
           result.task(":${taskname}").outcome == FAILED
-          result.output =~ /${taskname}\.bndrun resolution exception/
+          result.output =~ /Resolution failed\. Capabilities satisfying the following requirements could not be found:/
+          result.output =~ /osgi\.identity: \(osgi\.identity=org\.apache\.felix\.foo\)/
           bndrun.isFile()
           props.load(bndrun, reporter)
           !props.getProperty('-runbundles')

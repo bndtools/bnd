@@ -9,16 +9,16 @@ import aQute.bnd.osgi.Packages;
 
 public interface IProjectDecorator {
 
-    void updateDecoration(IProject project, BndProjectInfo info) throws Exception;
+	void updateDecoration(IProject project, BndProjectInfo info) throws Exception;
 
-    static interface BndProjectInfo {
-        Collection<File> getSourcePath() throws Exception;
+	interface BndProjectInfo {
+		Collection<File> getSourcePath() throws Exception;
 
-        public Packages getExports();
+		Packages getExports();
 
-        public Packages getImports();
+		Packages getImports();
 
-        public Packages getContained();
-    }
+		Packages getContained();
+	}
 
 }

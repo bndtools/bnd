@@ -1,6 +1,6 @@
 /*
  * Copyright (c) OSGi Alliance (2016). All Rights Reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,20 +27,20 @@ import java.lang.annotation.Target;
  * Define a manifest header for a bundle.
  * <p>
  * For example:
- * 
+ *
  * <pre>
  * &#64;Header(name=Constants.BUNDLE_CATEGORY, value="osgi")
  * </pre>
  * <p>
  * This annotation is not retained at runtime. It is for use by tools to
  * generate bundle manifests.
- * 
+ *
  * @author $Id$
  */
 @Documented
 @Retention(RetentionPolicy.CLASS)
 @Target({
-		ElementType.TYPE, ElementType.PACKAGE
+	ElementType.TYPE, ElementType.PACKAGE
 })
 @Repeatable(Headers.class)
 public @interface Header {

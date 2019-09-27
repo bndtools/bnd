@@ -25,11 +25,11 @@ import aQute.lib.io.IO;
 
 public class XMLType {
 
-	Transformer		transformer;
-	Pattern			paths;
-	String			root;
+	Transformer						transformer;
+	Pattern							paths;
+	String							root;
 
-	static Pattern	QN	= Pattern.compile("[_A-Za-z$][_A-Za-z0-9$]*(\\.[_A-Za-z$][_A-Za-z0-9$]*)*");
+	private final static Pattern	QN	= Pattern.compile("[_A-Za-z$][_A-Za-z0-9$]*(\\.[_A-Za-z$][_A-Za-z0-9$]*)*");
 
 	public XMLType(URL source, String root, String paths) throws Exception {
 		transformer = getTransformer(source);
@@ -79,8 +79,7 @@ public class XMLType {
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		Jar jar = analyzer.getJar();
-		Map<String, Resource> dir = jar.getDirectories()
-			.get(root);
+		Map<String, Resource> dir = jar.getDirectory(root);
 		if (dir == null || dir.isEmpty()) {
 			Resource resource = jar.getResource(root);
 			if (resource != null)

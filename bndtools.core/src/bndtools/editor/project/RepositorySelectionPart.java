@@ -20,7 +20,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -29,15 +28,11 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
-import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
@@ -87,471 +82,466 @@ import bndtools.shared.URLDialog;
 
 public class RepositorySelectionPart extends BndEditorPart implements IResourceChangeListener {
 
-    private final Image refreshImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png")
-        .createImage();
-    private final Image bundleImg = Icons.desc("bundle")
-        .createImage();
-    private final Image nonObrRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_obj.gif")
-        .createImage();
-    private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png")
-        .createImage();
-    private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png")
-        .createImage();
-    private final Image imgLink = Icons.desc("link")
-        .createImage();
-    private final Image projectImg = PlatformUI.getWorkbench()
-        .getSharedImages()
-        .getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
-    private final Image repoImg = PlatformUI.getWorkbench()
-        .getSharedImages()
-        .getImage(ISharedImages.IMG_OBJ_FOLDER);
-    private final Object MESSAGE_KEY = new Object();
-    private final EditorPart editor;
-    private final Button btnStandaloneCheckbox;
-    private final StackLayout stackLayout;
-    private final Control saveToRefreshControl;
-    private final CheckboxTableViewer runReposViewer;
-    private final UpDownButtonBarPart upDownReposPart;
-    private RepositoriesEditModel repositories;
-    private AddRemoveButtonBarPart addRemove;
-    private Set<IFile> workspaceIndexFiles = Collections.emptySet();
+	private final Image					refreshImg			= AbstractUIPlugin
+		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png")
+		.createImage();
+	private final Image					bundleImg			= Icons.desc("bundle")
+		.createImage();
+	private final Image					nonObrRepoImg		= AbstractUIPlugin
+		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_obj.gif")
+		.createImage();
+	private final Image					imgUp				= AbstractUIPlugin
+		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png")
+		.createImage();
+	private final Image					imgDown				= AbstractUIPlugin
+		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png")
+		.createImage();
+	private final Image					imgLink				= Icons.desc("link")
+		.createImage();
+	private final Image					projectImg			= PlatformUI.getWorkbench()
+		.getSharedImages()
+		.getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
+	private final Image					repoImg				= PlatformUI.getWorkbench()
+		.getSharedImages()
+		.getImage(ISharedImages.IMG_OBJ_FOLDER);
+	private final Object				MESSAGE_KEY			= new Object();
+	private final EditorPart			editor;
+	private final Button				btnStandaloneCheckbox;
+	private final StackLayout			stackLayout;
+	private final Control				saveToRefreshControl;
+	private final CheckboxTableViewer	runReposViewer;
+	private final UpDownButtonBarPart	upDownReposPart;
+	private RepositoriesEditModel		repositories;
+	private AddRemoveButtonBarPart		addRemove;
+	private Set<IFile>					workspaceIndexFiles	= Collections.emptySet();
 
-    /**
-     * Create the SectionPart.
-     *
-     * @param parent
-     * @param toolkit
-     * @param style
-     */
-    public RepositorySelectionPart(final EditorPart editor, Composite parent, FormToolkit toolkit, int style) {
-        super(parent, toolkit, style);
-        this.editor = editor;
+	/**
+	 * Create the SectionPart.
+	 *
+	 * @param parent
+	 * @param toolkit
+	 * @param style
+	 */
+	public RepositorySelectionPart(final EditorPart editor, Composite parent, FormToolkit toolkit, int style) {
+		super(parent, toolkit, style);
+		this.editor = editor;
 
-        Section section = getSection();
-        section.setText("Repositories");
+		Section section = getSection();
+		section.setText("Repositories");
 
-        GridLayout gl;
-        GridData gd;
+		GridLayout gl;
+		GridData gd;
 
-        // Create main container with -standalone checkbox
-        Composite cmpMainContainer = toolkit.createComposite(section);
-        section.setClient(cmpMainContainer);
+		// Create main container with -standalone checkbox
+		Composite cmpMainContainer = toolkit.createComposite(section);
+		section.setClient(cmpMainContainer);
 
-        gl = new GridLayout(1, false);
-        gl.marginWidth = 0;
-        gl.marginHeight = 0;
-        cmpMainContainer.setLayout(gl);
+		gl = new GridLayout(1, false);
+		gl.marginWidth = 0;
+		gl.marginHeight = 0;
+		cmpMainContainer.setLayout(gl);
 
-        // Create -standalone checkbox
-        btnStandaloneCheckbox = toolkit.createButton(cmpMainContainer, "Standalone Mode", SWT.CHECK);
-        btnStandaloneCheckbox.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        btnStandaloneCheckbox.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                try {
-                    boolean standalone = btnStandaloneCheckbox.getSelection();
-                    repositories = repositories.setStandalone(standalone, model);
-                    markDirty();
-                    refreshFromModel();
-                } catch (Exception e1) {
-                    throw Exceptions.duck(e1);
-                }
-            }
-        });
+		// Create -standalone checkbox
+		btnStandaloneCheckbox = toolkit.createButton(cmpMainContainer, "Standalone Mode", SWT.CHECK);
+		btnStandaloneCheckbox.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		btnStandaloneCheckbox.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				try {
+					boolean standalone = btnStandaloneCheckbox.getSelection();
+					repositories = repositories.setStandalone(standalone, model);
+					markDirty();
+					refreshFromModel();
+				} catch (Exception e1) {
+					throw Exceptions.duck(e1);
+				}
+			}
+		});
 
-        // Create stacked container for the three(!) possible contents
-        Composite cmpStackContainer = toolkit.createComposite(cmpMainContainer);
-        stackLayout = new StackLayout();
-        stackLayout.marginHeight = 0;
-        stackLayout.marginWidth = 0;
-        cmpStackContainer.setLayout(stackLayout);
-        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-        gd.heightHint = 100;
-        cmpStackContainer.setLayoutData(gd);
+		// Create stacked container for the three(!) possible contents
+		Composite cmpStackContainer = toolkit.createComposite(cmpMainContainer);
+		stackLayout = new StackLayout();
+		stackLayout.marginHeight = 0;
+		stackLayout.marginWidth = 0;
+		cmpStackContainer.setLayout(stackLayout);
+		gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+		gd.heightHint = 100;
+		cmpStackContainer.setLayoutData(gd);
 
-        // Create contents for the "save to refresh" control
-        Composite cmpSaveToRefresh = toolkit.createComposite(cmpStackContainer);
-        Hyperlink btnSaveToRefresh = toolkit.createHyperlink(cmpSaveToRefresh, "Save file to reload repositories...", SWT.NONE);
-        saveToRefreshControl = cmpSaveToRefresh;
-        stackLayout.topControl = saveToRefreshControl;
-        gl = new GridLayout(1, true);
-        btnSaveToRefresh.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        cmpSaveToRefresh.setLayout(gl);
-        btnSaveToRefresh.addHyperlinkListener(new HyperlinkAdapter() {
-            @Override
-            public void linkActivated(HyperlinkEvent ev) {
-                IRunnableWithProgress runnable = new IRunnableWithProgress() {
-                    @Override
-                    public void run(IProgressMonitor monitor) {
-                        editor.doSave(monitor);
-                    }
-                };
-                try {
-                    editor.getSite()
-                        .getWorkbenchWindow()
-                        .run(false, false, runnable);
-                } catch (InterruptedException e) {
-                    // let it go
-                } catch (InvocationTargetException e) {
-                    ErrorDialog.openError(editor.getSite()
-                        .getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Save error", e.getTargetException()));
-                }
-            }
-        });
+		// Create contents for the "save to refresh" control
+		Composite cmpSaveToRefresh = toolkit.createComposite(cmpStackContainer);
+		Hyperlink btnSaveToRefresh = toolkit.createHyperlink(cmpSaveToRefresh, "Save file to reload repositories...",
+			SWT.NONE);
+		saveToRefreshControl = cmpSaveToRefresh;
+		stackLayout.topControl = saveToRefreshControl;
+		gl = new GridLayout(1, true);
+		btnSaveToRefresh.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		cmpSaveToRefresh.setLayout(gl);
+		btnSaveToRefresh.addHyperlinkListener(new HyperlinkAdapter() {
+			@Override
+			public void linkActivated(HyperlinkEvent ev) {
+				IRunnableWithProgress runnable = monitor -> editor.doSave(monitor);
+				try {
+					editor.getSite()
+						.getWorkbenchWindow()
+						.run(false, false, runnable);
+				} catch (InterruptedException e) {
+					// let it go
+				} catch (InvocationTargetException e) {
+					ErrorDialog.openError(editor.getSite()
+						.getShell(), "Error", null,
+						new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Save error",
+							Exceptions.unrollCause(e, InvocationTargetException.class)));
+				}
+			}
+		});
 
-        // Create contents for bnd layout workspace
-        Composite cmpBndLayout = toolkit.createComposite(cmpStackContainer);
-        gl = new GridLayout(2, false);
-        gl.marginWidth = 0;
-        gl.marginHeight = 0;
-        cmpBndLayout.setLayout(gl);
+		// Create contents for bnd layout workspace
+		Composite cmpBndLayout = toolkit.createComposite(cmpStackContainer);
+		gl = new GridLayout(2, false);
+		gl.marginWidth = 0;
+		gl.marginHeight = 0;
+		cmpBndLayout.setLayout(gl);
 
-        Table table = toolkit.createTable(cmpBndLayout, SWT.CHECK | SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.widthHint = 50;
-        table.setLayoutData(gd);
+		Table table = toolkit.createTable(cmpBndLayout,
+			SWT.CHECK | SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+		gd.widthHint = 50;
+		table.setLayoutData(gd);
 
-        runReposViewer = new CheckboxTableViewer(table);
-        runReposViewer.setContentProvider(ArrayContentProvider.getInstance());
-        runReposViewer.setCheckStateProvider(new ICheckStateProvider() {
-            @Override
-            public boolean isChecked(Object element) {
-                return repositories.isIncluded((Repository) element);
-            }
+		runReposViewer = new CheckboxTableViewer(table);
+		runReposViewer.setContentProvider(ArrayContentProvider.getInstance());
+		runReposViewer.setCheckStateProvider(new ICheckStateProvider() {
+			@Override
+			public boolean isChecked(Object element) {
+				return repositories.isIncluded((Repository) element);
+			}
 
-            @Override
-            public boolean isGrayed(Object element) {
-                return false;
-            }
-        });
-        runReposViewer.addCheckStateListener(new ICheckStateListener() {
+			@Override
+			public boolean isGrayed(Object element) {
+				return false;
+			}
+		});
+		runReposViewer.addCheckStateListener(
+			event -> repositories.setIncluded(event.getChecked(), (Repository) event.getElement()));
 
-            @Override
-            public void checkStateChanged(CheckStateChangedEvent event) {
-                repositories.setIncluded(event.getChecked(), (Repository) event.getElement());
-            }
-        });
+		upDownReposPart = new UpDownButtonBarPart(runReposViewer);
+		Control upDownReposControl = upDownReposPart.createControl(cmpBndLayout, SWT.FLAT | SWT.VERTICAL);
+		upDownReposControl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		upDownReposPart.setEnabledUp(false);
+		upDownReposPart.setEnabledDown(false);
+		upDownReposPart.addListener(new UpDownListener() {
+			@SuppressWarnings("unchecked")
+			@Override
+			public void changed(List<Object> order) {
+				@SuppressWarnings("rawtypes")
+				List l = order;
+				repositories.setOrder(l);
+				updateButtons();
+				markDirty();
+			}
+		});
+		addRemove = new AddRemoveButtonBarPart();
+		Control addRemoveControl = addRemove.createControl(cmpBndLayout, SWT.FLAT | SWT.HORIZONTAL);
+		addRemoveControl.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+		addRemove.setRemoveEnabled(false);
+		addRemove.setAddEnabled(false);
+		addRemove.addListener(new AddRemoveListener() {
+			@Override
+			public void addSelected() {
+				doAddStandaloneLink();
+			}
 
-        upDownReposPart = new UpDownButtonBarPart(runReposViewer);
-        Control upDownReposControl = upDownReposPart.createControl(cmpBndLayout, SWT.FLAT | SWT.VERTICAL);
-        upDownReposControl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-        upDownReposPart.setEnabledUp(false);
-        upDownReposPart.setEnabledDown(false);
-        upDownReposPart.addListener(new UpDownListener() {
-            @SuppressWarnings("unchecked")
-            @Override
-            public void changed(List<Object> order) {
-                @SuppressWarnings("rawtypes")
-                List l = order;
-                repositories.setOrder(l);
-                updateButtons();
-                markDirty();
-            }
-        });
-        addRemove = new AddRemoveButtonBarPart();
-        Control addRemoveControl = addRemove.createControl(cmpBndLayout, SWT.FLAT | SWT.HORIZONTAL);
-        addRemoveControl.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-        addRemove.setRemoveEnabled(false);
-        addRemove.setAddEnabled(false);
-        addRemove.addListener(new AddRemoveListener() {
-            @Override
-            public void addSelected() {
-                doAddStandaloneLink();
-            }
+			@Override
+			public void removeSelected() {
+				doRemoveStandaloneLink();
+			}
+		});
 
-            @Override
-            public void removeSelected() {
-                doRemoveStandaloneLink();
-            }
-        });
+		final Styler strikeoutStyler = new StrikeoutStyler(StyledString.QUALIFIER_STYLER,
+			JFaceResources.getColorRegistry()
+				.get(JFacePreferences.QUALIFIER_COLOR));
 
-        final Styler strikeoutStyler = new StrikeoutStyler(StyledString.QUALIFIER_STYLER, JFaceResources.getColorRegistry()
-            .get(JFacePreferences.QUALIFIER_COLOR));
+		runReposViewer.setLabelProvider(new StyledCellLabelProvider() {
+			@Override
+			public void update(ViewerCell cell) {
+				Object element = cell.getElement();
 
-        runReposViewer.setLabelProvider(new StyledCellLabelProvider() {
-            @Override
-            public void update(ViewerCell cell) {
-                Object element = cell.getElement();
+				String label = null;
+				Image image = null;
+				Styler styler = null;
 
-                String label = null;
-                Image image = null;
-                Styler styler = null;
+				Repository repo = (Repository) element;
+				if (repo instanceof RepositoryPlugin) {
+					label = ((RepositoryPlugin) repo).getName();
+				} else {
+					label = repo.toString();
+				}
+				image = repoImg;
 
-                Repository repo = (Repository) element;
-                if (repo instanceof RepositoryPlugin) {
-                    label = ((RepositoryPlugin) repo).getName();
-                } else {
-                    label = repo.toString();
-                }
-                image = repoImg;
+				if (repo instanceof WorkspaceR5Repository) {
+					image = projectImg;
+				}
 
-                if (repo instanceof WorkspaceR5Repository) {
-                    image = projectImg;
-                }
+				boolean included = repositories.isIncluded(repo);
+				styler = included ? null : strikeoutStyler;
 
-                boolean included = repositories.isIncluded(repo);
-                styler = included ? null : strikeoutStyler;
+				StyledString styledLabel = new StyledString(label, styler);
+				cell.setText(styledLabel.getString());
+				cell.setStyleRanges(styledLabel.getStyleRanges());
+				cell.setImage(image);
+			}
 
-                StyledString styledLabel = new StyledString(label, styler);
-                cell.setText(styledLabel.getString());
-                cell.setStyleRanges(styledLabel.getStyleRanges());
-                cell.setImage(image);
-            }
+			@Override
+			public String getToolTipText(Object element) {
+				String tooltip = null;
+				if (element instanceof Actionable) {
+					try {
+						tooltip = ((Actionable) element).tooltip(new Object[] {
+							element
+						});
+					} catch (Exception e) {
+						// ignore
+					}
+				}
+				if (tooltip != null)
+					return tooltip;
 
-            @Override
-            public String getToolTipText(Object element) {
-                String tooltip = null;
-                if (element instanceof Actionable) {
-                    try {
-                        tooltip = ((Actionable) element).tooltip(new Object[] {
-                            element
-                        });
-                    } catch (Exception e) {
-                        // ignore
-                    }
-                }
-                if (tooltip != null)
-                    return tooltip;
+				if (repositories.isIncluded((Repository) element)) {
+					tooltip = "Included for resolution.";
+				} else {
+					tooltip = "Excluded from resolution.";
+				}
+				return tooltip;
+			}
+		});
 
-                if (repositories.isIncluded((Repository) element)) {
-                    tooltip = "Included for resolution.";
-                } else {
-                    tooltip = "Excluded from resolution.";
-                }
-                return tooltip;
-            }
-        });
+		runReposViewer.addSelectionChangedListener(event -> updateButtons());
 
-        runReposViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                updateButtons();
-            }
-        });
+		ResourcesPlugin.getWorkspace()
+			.addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE | IResourceChangeEvent.POST_BUILD);
 
-        ResourcesPlugin.getWorkspace()
-            .addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE | IResourceChangeEvent.POST_BUILD);
+		stackLayout.topControl = cmpBndLayout;
+		gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+		cmpStackContainer.setLayoutData(gd);
+		cmpMainContainer.layout(true, true);
 
-        stackLayout.topControl = cmpBndLayout;
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        cmpStackContainer.setLayoutData(gd);
-        cmpMainContainer.layout(true, true);
+		ColumnViewerToolTipSupport.enableFor(runReposViewer, ToolTip.NO_RECREATE);
+	}
 
-        ColumnViewerToolTipSupport.enableFor(runReposViewer, ToolTip.NO_RECREATE);
-    }
+	void updateButtons() {
+		boolean enableDown = false;
+		boolean enableUp = false;
+		boolean remove = false;
+		boolean add = repositories.isStandalone();
 
-    void updateButtons() {
-        boolean enableDown = false;
-        boolean enableUp = false;
-        boolean remove = false;
-        boolean add = repositories.isStandalone();
+		IStructuredSelection sel = (IStructuredSelection) runReposViewer.getSelection();
+		if (!sel.isEmpty()) {
+			@SuppressWarnings({
+				"unchecked"
+			})
+			List<Repository> list = sel.toList();
 
-        IStructuredSelection sel = (IStructuredSelection) runReposViewer.getSelection();
-        if (!sel.isEmpty()) {
-            @SuppressWarnings({
-                "unchecked"
-            })
-            List<Repository> list = sel.toList();
+			List<Repository> ordered = repositories.getOrdered();
+			for (Repository r : list) {
+				int index = ordered.indexOf(r);
+				if (index > 0) {
+					enableUp = true;
+				}
+				if (index < ordered.size() - 1) {
+					enableDown = true;
+				}
 
-            List<Repository> ordered = repositories.getOrdered();
-            for (Repository r : list) {
-                int index = ordered.indexOf(r);
-                if (index > 0) {
-                    enableUp = true;
-                }
-                if (index < ordered.size() - 1) {
-                    enableDown = true;
-                }
+				if (repositories.isStandaloneRepository(r)) {
+					remove = true;
+				}
+			}
+		}
 
-                if (repositories.isStandaloneRepository(r)) {
-                    remove = true;
-                }
-            }
-        }
+		upDownReposPart.setEnabledUp(enableUp);
+		upDownReposPart.setEnabledDown(enableDown);
+		addRemove.setRemoveEnabled(remove);
+		addRemove.setAddEnabled(add);
+	}
 
-        upDownReposPart.setEnabledUp(enableUp);
-        upDownReposPart.setEnabledDown(enableDown);
-        addRemove.setRemoveEnabled(remove);
-        addRemove.setAddEnabled(add);
-    }
+	private void reloadRepos() {
+		final IMessageManager messages = getManagedForm().getMessageManager();
+		messages.removeMessage(MESSAGE_KEY, runReposViewer.getControl());
+		final List<Repository> allRepos = new ArrayList<>();
 
-    private void reloadRepos() {
-        final IMessageManager messages = getManagedForm().getMessageManager();
-        messages.removeMessage(MESSAGE_KEY, runReposViewer.getControl());
-        final List<Repository> allRepos = new ArrayList<>();
+		try {
+			allRepos.addAll(repositories.getOrdered());
+			runReposViewer.setInput(allRepos);
+		} catch (Exception e) {
+			messages.addMessage(MESSAGE_KEY, "Repository List: Unable to load OSGi Repositories. " + e.getMessage(), e,
+				IMessageProvider.ERROR, runReposViewer.getControl());
 
-        try {
-            allRepos.addAll(repositories.getOrdered());
-            runReposViewer.setInput(allRepos);
-        } catch (Exception e) {
-            messages.addMessage(MESSAGE_KEY, "Repository List: Unable to load OSGi Repositories. " + e.getMessage(), e, IMessageProvider.ERROR, runReposViewer.getControl());
+			// Load the repos and clear the error message if the Workspace is
+			// initialised later.
+			Central
+				.onWorkspace(workspace -> SWTConcurrencyUtil.execForControl(runReposViewer.getControl(), true, () -> {
+					allRepos.clear();
+					allRepos.addAll(workspace.getPlugins(Repository.class));
+					runReposViewer.setInput(allRepos);
+					messages.removeMessage(MESSAGE_KEY, runReposViewer.getControl());
+				}));
+		}
+		updateButtons();
+	}
 
-            // Load the repos and clear the error message if the Workspace is initialised later.
-            Central.onWorkspace(workspace -> SWTConcurrencyUtil.execForControl(runReposViewer.getControl(), true, () -> {
-                allRepos.clear();
-                allRepos.addAll(workspace.getPlugins(Repository.class));
-                runReposViewer.setInput(allRepos);
-                messages.removeMessage(MESSAGE_KEY, runReposViewer.getControl());
-            }));
-        }
-        updateButtons();
-    }
+	private void doAddStandaloneLink() {
+		try {
+			URLDialog dialog = new URLDialog(editor.getSite()
+				.getShell(), "Add repository URL");
+			if (dialog.open() == Window.OK) {
+				URI location = dialog.getLocation();
 
-    private void doAddStandaloneLink() {
-        try {
-            URLDialog dialog = new URLDialog(editor.getSite()
-                .getShell(), "Add repository URL");
-            if (dialog.open() == Window.OK) {
-                URI location = dialog.getLocation();
+				Attrs attrs = new Attrs();
+				if (dialog.getName() != null)
+					attrs.put("name", dialog.getName());
 
-                Attrs attrs = new Attrs();
-                if (dialog.getName() != null)
-                    attrs.put("name", dialog.getName());
+				HeaderClause clause = new HeaderClause(location.toString(), attrs);
+				repositories.add(clause);
+				refreshFromModel();
+				markDirty();
+			}
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
 
-                HeaderClause clause = new HeaderClause(location.toString(), attrs);
-                repositories.add(clause);
-                refreshFromModel();
-                markDirty();
-            }
-        } catch (Exception e) {
-            throw Exceptions.duck(e);
-        }
-    }
+	private void doRemoveStandaloneLink() {
+		try {
+			ISelection selection = runReposViewer.getSelection();
+			if (selection.isEmpty())
+				return;
 
-    private void doRemoveStandaloneLink() {
-        try {
-            ISelection selection = runReposViewer.getSelection();
-            if (selection.isEmpty())
-                return;
+			if (selection instanceof IStructuredSelection) {
+				@SuppressWarnings("unchecked")
+				List<Object> list = ((IStructuredSelection) selection).toList();
+				for (Object o : list) {
+					if (repositories.remove((Repository) o)) {
+						refreshFromModel();
+						markDirty();
+					}
+				}
+			}
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
 
-            if (selection instanceof IStructuredSelection) {
-                @SuppressWarnings("unchecked")
-                List<Object> list = ((IStructuredSelection) selection).toList();
-                for (Object o : list) {
-                    if (repositories.remove((Repository) o)) {
-                        refreshFromModel();
-                        markDirty();
-                    }
-                }
-            }
-        } catch (Exception e) {
-            throw Exceptions.duck(e);
-        }
-    }
+	@Override
+	protected String[] getProperties() {
+		return new String[] {
+			Constants.RUNREPOS, BndEditModel.PROP_WORKSPACE
+		};
+	}
 
-    @Override
-    protected String[] getProperties() {
-        return new String[] {
-            Constants.RUNREPOS, BndEditModel.PROP_WORKSPACE
-        };
-    }
+	@Override
+	protected void refreshFromModel() {
+		repositories = new RepositoriesEditModel(model);
+		boolean standalone = repositories.isStandalone();
+		btnStandaloneCheckbox.setSelection(standalone);
+		workspaceIndexFiles = standalone ? getWorkspaceIndexFiles() : Collections.emptySet();
+		updateButtons();
+		reloadRepos();
+	}
 
-    @Override
-    protected void refreshFromModel() {
-        repositories = new RepositoriesEditModel(model);
-        boolean standalone = repositories.isStandalone();
-        btnStandaloneCheckbox.setSelection(standalone);
-        workspaceIndexFiles = standalone ? getWorkspaceIndexFiles() : Collections.emptySet();
-        updateButtons();
-        reloadRepos();
-    }
+	private Set<IFile> getWorkspaceIndexFiles() {
+		Set<IFile> files = new HashSet<>();
+		for (Repository repository : repositories.getOrdered()) {
+			List<URI> locations = getRepoLocations(repository);
 
-    private Set<IFile> getWorkspaceIndexFiles() {
-        Set<IFile> files = new HashSet<>();
-        for (Repository repository : repositories.getOrdered()) {
-            List<URI> locations = getRepoLocations(repository);
+			for (URI u : locations) {
+				IFile[] found = ResourcesPlugin.getWorkspace()
+					.getRoot()
+					.findFilesForLocationURI(u, IContainer.INCLUDE_HIDDEN | IContainer.INCLUDE_TEAM_PRIVATE_MEMBERS);
+				for (IFile file : found) {
+					files.add(file);
+				}
+			}
+		}
+		return files;
+	}
 
-            for (URI u : locations) {
-                IFile[] found = ResourcesPlugin.getWorkspace()
-                    .getRoot()
-                    .findFilesForLocationURI(u, IContainer.INCLUDE_HIDDEN | IContainer.INCLUDE_TEAM_PRIVATE_MEMBERS);
-                for (IFile file : found) {
-                    files.add(file);
-                }
-            }
-        }
-        return files;
-    }
+	private List<URI> getRepoLocations(Repository repository) {
+		List<URI> locations = new ArrayList<>();
+		if (repository instanceof AbstractIndexedRepo) {
+			try {
+				locations.addAll(((AbstractIndexedRepo) repository).getIndexLocations());
+			} catch (Exception e) {
+				throw new RuntimeException(
+					"An error occurred trying to determine whether a standalone repository had changed", e);
+			}
+		}
 
-    private List<URI> getRepoLocations(Repository repository) {
-        List<URI> locations = new ArrayList<>();
-        if (repository instanceof AbstractIndexedRepo) {
-            try {
-                locations.addAll(((AbstractIndexedRepo) repository).getIndexLocations());
-            } catch (Exception e) {
-                throw new RuntimeException("An error occurred trying to determine whether a standalone repository had changed", e);
-            }
-        }
+		if (repository instanceof OSGiRepository) {
+			String loc = ((OSGiRepository) repository).getLocation();
+			if (loc != null) {
+				for (String l : loc.split(",")) {
+					try {
+						URI uri = new URI(l);
+						if ("file".equalsIgnoreCase(uri.getScheme())) {
+							locations.add(uri);
+						}
+					} catch (URISyntaxException use) {
+						// Is this a straight file path?
+						try {
+							File f = new File(((OSGiRepository) repository).getRoot(), l);
+							if (f.exists()) {
+								locations.add(f.toURI());
+							}
+						} catch (Exception e) {
+							// Just ignore this location
+						}
+					}
+				}
+			}
+		}
+		return locations;
+	}
 
-        if (repository instanceof OSGiRepository) {
-            String loc = ((OSGiRepository) repository).getLocation();
-            if (loc != null) {
-                for (String l : loc.split(",")) {
-                    try {
-                        URI uri = new URI(l);
-                        if ("file".equalsIgnoreCase(uri.getScheme())) {
-                            locations.add(uri);
-                        }
-                    } catch (URISyntaxException use) {
-                        // Is this a straight file path?
-                        try {
-                            File f = new File(((OSGiRepository) repository).getRoot(), l);
-                            if (f.exists()) {
-                                locations.add(f.toURI());
-                            }
-                        } catch (Exception e) {
-                            // Just ignore this location
-                        }
-                    }
-                }
-            }
-        }
-        return locations;
-    }
+	@Override
+	protected void commitToModel(boolean onSave) {
+		repositories.commitToModel(model);
+	}
 
-    @Override
-    protected void commitToModel(boolean onSave) {
-        repositories.commitToModel(model);
-    }
+	@Override
+	public void dispose() {
+		ResourcesPlugin.getWorkspace()
+			.removeResourceChangeListener(this);
+		refreshImg.dispose();
+		bundleImg.dispose();
+		nonObrRepoImg.dispose();
+		imgUp.dispose();
+		imgDown.dispose();
+		imgLink.dispose();
+		super.dispose();
+	}
 
-    @Override
-    public void dispose() {
-        ResourcesPlugin.getWorkspace()
-            .removeResourceChangeListener(this);
-        refreshImg.dispose();
-        bundleImg.dispose();
-        nonObrRepoImg.dispose();
-        imgUp.dispose();
-        imgDown.dispose();
-        imgLink.dispose();
-        super.dispose();
-    }
+	@Override
+	public void resourceChanged(IResourceChangeEvent event) {
+		boolean reposChanged = false;
+		for (IFile file : workspaceIndexFiles) {
+			if (event.getDelta()
+				.findMember(file.getFullPath()) != null) {
+				reposChanged = true;
+				break;
+			}
+		}
 
-    @Override
-    public void resourceChanged(IResourceChangeEvent event) {
-        boolean reposChanged = false;
-        for (IFile file : workspaceIndexFiles) {
-            if (event.getDelta()
-                .findMember(file.getFullPath()) != null) {
-                reposChanged = true;
-                break;
-            }
-        }
+		if (reposChanged) {
 
-        if (reposChanged) {
-
-            getSection().getDisplay()
-                .asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            repositories.updateStandaloneWorkspace(model);
-                        } catch (Exception e) {
-                            throw Exceptions.duck(e);
-                        }
-                    }
-                });
-        }
-    }
+			getSection().getDisplay()
+				.asyncExec(() -> {
+					try {
+						repositories.updateStandaloneWorkspace(model);
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
+				});
+		}
+	}
 
 }

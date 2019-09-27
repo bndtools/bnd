@@ -169,7 +169,6 @@ public class EnvoyDispatcher implements Closeable {
 				File.class);
 
 			info.framework = (Closeable) newFw.invoke(null, name, properties, storage, cache.getRoot());
-
 			return info;
 		}
 
@@ -262,5 +261,9 @@ public class EnvoyDispatcher implements Closeable {
 		} catch (IOException e) {
 			//
 		}
+	}
+
+	DispatcherInfo getDispatcherInfo(String name) {
+		return frameworks.get(name);
 	}
 }

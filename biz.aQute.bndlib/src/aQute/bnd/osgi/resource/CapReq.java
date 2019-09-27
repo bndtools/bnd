@@ -14,7 +14,7 @@ import org.osgi.resource.Resource;
 
 class CapReq {
 
-	static enum MODE {
+	enum MODE {
 		Capability,
 		Requirement
 	}

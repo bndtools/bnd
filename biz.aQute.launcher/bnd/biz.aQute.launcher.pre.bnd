@@ -1,0 +1,6 @@
+-includepackage: \
+	aQute.launcher.agent,\
+	aQute.launcher.pre
+
+Premain-Class: aQute.launcher.agent.LauncherAgent
+-baseline:

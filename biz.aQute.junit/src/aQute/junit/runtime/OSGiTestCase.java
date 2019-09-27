@@ -21,7 +21,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 * Framework, but it may return {@code null} if the class is not associated
 	 * by a bundle -- for example, if the Test is executed outside of an OSGi
 	 * Framework.
-	 * 
+	 *
 	 * @return The {@link BundleContext} of the receiver, or {@code
 		 * null} if the
 	 */
@@ -33,7 +33,7 @@ public abstract class OSGiTestCase extends TestCase {
 	/**
 	 * Asserts that at least one service of the specified type is currently
 	 * available. If not, an {@link AssertionFailedError} is thrown.
-	 * 
+	 *
 	 * @param service The service interface type.
 	 * @param filter An additional service filter, which may be {@code null}.
 	 */
@@ -45,7 +45,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 * Asserts that at least one service of the specified type is currently
 	 * available. If not, an {@link AssertionFailedError} is thrown with the
 	 * given message.
-	 * 
+	 *
 	 * @param message
 	 * @param service The service interface type.
 	 * @param filter An additional service filter, which may be {@code
@@ -53,7 +53,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 */
 	protected void assertSvcAvail(String message, Class<?> service, String filter) {
 		BundleContext context = getBundleContext();
-		ServiceReference[] refs = null;
+		ServiceReference<?>[] refs = null;
 		try {
 			refs = context.getServiceReferences(service.getName(), filter);
 		} catch (InvalidSyntaxException e) {
@@ -88,7 +88,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 * <p>
 	 * <strong>Example:</strong>
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * String reply = withService(HelloService.class, null, new Operation&lt;HelloService, String&gt;() {
 	 * 	public String call(HelloService service) {
@@ -96,7 +96,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 * 	}
 	 * });
 	 * </pre>
-	 * 
+	 *
 	 * @param <S> The service type.
 	 * @param <R> The result type.
 	 * @param service The service class.
@@ -117,7 +117,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 * <p>
 	 * <strong>Example:</strong>
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * String reply = withService(HelloService.class, null, 0, new Operation&lt;HelloService, String&gt;() {
 	 * 	public String call(HelloService service) {
@@ -125,7 +125,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 * 	}
 	 * });
 	 * </pre>
-	 * 
+	 *
 	 * @param <S> The service type.
 	 * @param <R> The result type.
 	 * @param service The service class.
@@ -141,18 +141,18 @@ public abstract class OSGiTestCase extends TestCase {
 		throws Exception {
 		BundleContext context = getBundleContext();
 
-		ServiceTracker tracker = null;
+		ServiceTracker<S, R> tracker = null;
 		if (filter != null) {
 			try {
 				Filter combined = FrameworkUtil
 					.createFilter("(" + Constants.OBJECTCLASS + "=" + service.getName() + ")");
-				tracker = new ServiceTracker(context, combined, null);
+				tracker = new ServiceTracker<>(context, combined, null);
 			} catch (InvalidSyntaxException e) {
 				fail("Invalid filter syntax.");
 				return null;
 			}
 		} else {
-			tracker = new ServiceTracker(context, service.getName(), null);
+			tracker = new ServiceTracker<>(context, service.getName(), null);
 		}
 		try {
 			tracker.open();

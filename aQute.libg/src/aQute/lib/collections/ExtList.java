@@ -55,11 +55,11 @@ public class ExtList<T> extends ArrayList<T> {
 	}
 
 	public String join() {
-		return join(",");
+		return Strings.join(this);
 	}
 
 	public String join(String del) {
-		return Strings.join(",", this, null, null);
+		return Strings.join(del, this);
 	}
 
 }

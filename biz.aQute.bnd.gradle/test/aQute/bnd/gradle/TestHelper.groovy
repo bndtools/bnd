@@ -16,7 +16,7 @@ class TestHelper {
 
   public static GradleRunner getGradleRunner(String version) {
     String defaultversion = gradleVersion()
-    if (MavenVersion.parseString(defaultversion).compareTo(MavenVersion.parseString(version)) > 0) {
+    if (MavenVersion.parseMavenString(defaultversion).compareTo(MavenVersion.parseMavenString(version)) > 0) {
       version = defaultversion
     }
     return GradleRunner.create()

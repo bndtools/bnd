@@ -8,9 +8,8 @@ Bundle-Description: bndlib: A Swiss Army Knife for OSGi
 	aQute.lib.spring
 
 Export-Package: \
-	aQute.bnd.annotation.*;-noimport:=true,\
 	aQute.bnd.osgi;-noimport:=true,\
-	aQute.bnd.classfile;-noimport:=true,\
+	aQute.bnd.classfile.*;-noimport:=true,\
 	aQute.bnd.signatures;-noimport:=true,\
 	aQute.bnd.service.lifecycle;-noimport:=true,\
 	aQute.bnd.osgi.resource;-noimport:=true,\
@@ -52,28 +51,30 @@ Export-Package: \
 	!org.osgi.annotation.*,\
 	org.osgi.*
 
-Import-Package: junit.framework;resolution:=optional,\
+Import-Package: \
 	org.osgi.service.repository,\
 	org.osgi.service.log,\
-	${replace;${retainall;${packages;CONDITIONAL};${packages;NAMED;org.osgi.*}};$;\\;provide:=false},\
+	${replacelist;${retainall;${packages;CONDITIONAL};${packages;NAMED;org.osgi.*}};$;\\;provide:=false},\
 	*
 
 -includeresource: ${workspace}/LICENSE, img/=img/, {readme.md}
 
+-maven-scope: provided
+
 -buildpath: \
-	osgi.annotation;version=latest;maven-scope=provided,\
-	osgi.core;version=latest;maven-scope=provided,\
-	org.osgi.namespace.contract;version=latest;maven-scope=provided,\
-	org.osgi.namespace.extender;version=latest;maven-scope=provided,\
-	org.osgi.namespace.implementation;version=latest;maven-scope=provided,\
-	org.osgi.namespace.service;version=latest;maven-scope=provided,\
-	org.osgi.service.log;version=latest;maven-scope=provided,\
-	org.osgi.service.repository;version=latest;maven-scope=provided,\
-	org.osgi.util.function;version=latest;maven-scope=provided,\
-	org.osgi.util.promise;version=latest;maven-scope=provided,\
+	osgi.annotation;version=latest,\
+	osgi.core;version=latest,\
+	org.osgi.namespace.contract;version=latest,\
+	org.osgi.namespace.extender;version=latest,\
+	org.osgi.namespace.implementation;version=latest,\
+	org.osgi.namespace.service;version=latest,\
+	org.osgi.service.log;version=latest,\
+	org.osgi.service.repository;version=latest,\
+	org.osgi.util.function;version=latest,\
+	org.osgi.util.promise;version=latest,\
 	aQute.libg;version=project, \
 	biz.aQute.bnd.annotation;version=project,\
-	slf4j.api;version=latest
+	slf4j.api;version=latest;maven-scope=compile
 
 Bundle-Icon: img/bnd-64.png;size=64
 Bundle-Developers: peter.kriens@aQute.biz, njbartlett@gmail.com
@@ -82,3 +83,4 @@ Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic
 -baseline: *
 
 -fixupmessages.converter: "Export aQute.bnd.http,* private references \\[aQute.lib.converter\\]"
+-fixupmessages.bundleversion: "The bundle version \\(4.2.0/4.4.0\\) is too low, must be at least 5.0.0";is:=ignore

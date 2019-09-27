@@ -15,27 +15,27 @@ import org.eclipse.ui.part.FileEditorInput;
 import bndtools.central.Central;
 
 public class OpenMainConfigHandler extends AbstractHandler {
-    private static final ILogger logger = Logger.getLogger(OpenMainConfigHandler.class);
+	private static final ILogger logger = Logger.getLogger(OpenMainConfigHandler.class);
 
-    @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        try {
-            IFile buildFile = Central.getWorkspaceBuildFile();
-            if (buildFile == null)
-                return null;
+	@Override
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		try {
+			IFile buildFile = Central.getWorkspaceBuildFile();
+			if (buildFile == null)
+				return null;
 
-            FileEditorInput input = new FileEditorInput(buildFile);
-            IWorkbenchPage page = HandlerUtil.getActiveWorkbenchWindowChecked(event)
-                .getActivePage();
-            page.openEditor(input, "bndtools.bndWorkspaceConfigEditor", true);
-        } catch (PartInitException e) {
-            ErrorDialog.openError(HandlerUtil.getActiveWorkbenchWindowChecked(event)
-                .getShell(), "Error", "Unable to open editor", e.getStatus());
-        } catch (Exception e) {
-            logger.logError("Error retrieving bnd configuration file", e);
-        }
+			FileEditorInput input = new FileEditorInput(buildFile);
+			IWorkbenchPage page = HandlerUtil.getActiveWorkbenchWindowChecked(event)
+				.getActivePage();
+			page.openEditor(input, "bndtools.bndWorkspaceConfigEditor", true);
+		} catch (PartInitException e) {
+			ErrorDialog.openError(HandlerUtil.getActiveWorkbenchWindowChecked(event)
+				.getShell(), "Error", "Unable to open editor", e.getStatus());
+		} catch (Exception e) {
+			logger.logError("Error retrieving bnd configuration file", e);
+		}
 
-        return null;
-    }
+		return null;
+	}
 
 }

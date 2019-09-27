@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import aQute.bnd.osgi.Constants;
+
 public class LauncherConstants {
 
 	public final static String		LAUNCHER_PROPERTIES			= "launcher.properties";
@@ -37,9 +39,7 @@ public class LauncherConstants {
 	final static String				LAUNCH_RUNBUNDLES			= "launch.bundles";
 	final static String				LAUNCH_SYSTEMPACKAGES		= "launch.system.packages";
 	final static String				LAUNCH_SYSTEMCAPABILITIES	= "launch.system.capabilities";
-	final static String				LAUNCH_TRACE				= "launch.trace";
 	final static String				LAUNCH_TIMEOUT				= "launch.timeout";
-	final static String				LAUNCH_ACTIVATORS			= "launch.activators";
 	final static String				LAUNCH_EMBEDDED				= "launch.embedded";
 	final static String				LAUNCH_NAME					= "launch.name";
 	final static String				LAUNCH_NOREFERENCES			= "launch.noreferences";
@@ -47,8 +47,9 @@ public class LauncherConstants {
 
 	public final static String[]	LAUNCHER_PROPERTY_KEYS		= {
 		LAUNCH_SERVICES, LAUNCH_STORAGE_DIR, LAUNCH_KEEP, LAUNCH_NOREFERENCES, LAUNCH_RUNBUNDLES, LAUNCH_SYSTEMPACKAGES,
-		LAUNCH_SYSTEMCAPABILITIES, LAUNCH_SYSTEMPACKAGES, LAUNCH_TRACE, LAUNCH_TIMEOUT, LAUNCH_ACTIVATORS,
-		LAUNCH_EMBEDDED, LAUNCH_NAME, LAUNCH_NOREFERENCES, LAUNCH_NOTIFICATION_PORT
+		LAUNCH_SYSTEMCAPABILITIES, LAUNCH_SYSTEMPACKAGES, Constants.LAUNCH_TRACE, LAUNCH_TIMEOUT,
+		Constants.LAUNCH_ACTIVATORS,
+		LAUNCH_EMBEDDED, LAUNCH_NAME, LAUNCH_NOREFERENCES, LAUNCH_NOTIFICATION_PORT, Constants.LAUNCH_ACTIVATION_EAGER
 	};
 	/**
 	 * The command line arguments of the launcher. Launcher are not supposed to
@@ -71,6 +72,7 @@ public class LauncherConstants {
 	public boolean					embedded					= false;
 	public String					name;
 	public int						notificationPort			= -1;
+	public boolean					activationEager				= false;
 
 	/**
 	 * Translate a constants to properties.
@@ -81,26 +83,30 @@ public class LauncherConstants {
 		if (storageDir != null)
 			p.setProperty(LAUNCH_STORAGE_DIR, storageDir.getAbsolutePath());
 		p.setProperty(LAUNCH_KEEP, keep + "");
+
 		p.setProperty(LAUNCH_RUNBUNDLES, join(runbundles, ","));
+
 		if (systemPackages != null)
 			p.setProperty(LAUNCH_SYSTEMPACKAGES, systemPackages + "");
 		if (systemCapabilities != null)
 			p.setProperty(LAUNCH_SYSTEMCAPABILITIES, systemCapabilities + "");
-		p.setProperty(LAUNCH_TRACE, trace + "");
+		p.setProperty(Constants.LAUNCH_TRACE, trace + "");
 		p.setProperty(LAUNCH_TIMEOUT, timeout + "");
-		p.setProperty(LAUNCH_ACTIVATORS, join(activators, ","));
+		p.setProperty(Constants.LAUNCH_ACTIVATORS, join(activators, ","));
 		p.setProperty(LAUNCH_EMBEDDED, embedded + "");
+
 		if (name != null)
 			p.setProperty(LAUNCH_NAME, name);
 
 		p.setProperty(LAUNCH_NOTIFICATION_PORT, String.valueOf(notificationPort));
+		p.setProperty(Constants.LAUNCH_ACTIVATION_EAGER, activationEager + "");
 
 		for (Map.Entry<String, String> entry : runProperties.entrySet()) {
 			if (entry.getValue() == null) {
 				if (entry.getKey() != null)
 					p.remove(entry.getKey());
 			} else {
-				p.put(entry.getKey(), entry.getValue());
+				p.setProperty(entry.getKey(), entry.getValue());
 			}
 
 		}
@@ -115,7 +121,7 @@ public class LauncherConstants {
 
 	/**
 	 * Create a constants from properties.
-	 * 
+	 *
 	 * @param p
 	 */
 	public LauncherConstants(Properties p) {
@@ -125,15 +131,17 @@ public class LauncherConstants {
 		noreferences = Boolean.valueOf(p.getProperty(LAUNCH_NOREFERENCES));
 		keep = Boolean.valueOf(p.getProperty(LAUNCH_KEEP));
 		runbundles.addAll(split(p.getProperty(LAUNCH_RUNBUNDLES), ","));
+
 		systemPackages = p.getProperty(LAUNCH_SYSTEMPACKAGES);
 		systemCapabilities = p.getProperty(LAUNCH_SYSTEMCAPABILITIES);
-		trace = Boolean.valueOf(p.getProperty(LAUNCH_TRACE));
+		trace = Boolean.valueOf(p.getProperty(Constants.LAUNCH_TRACE));
 		timeout = Long.parseLong(p.getProperty(LAUNCH_TIMEOUT));
-		activators.addAll(split(p.getProperty(LAUNCH_ACTIVATORS), " ,"));
+		activators.addAll(split(p.getProperty(Constants.LAUNCH_ACTIVATORS), " ,"));
 		String s = p.getProperty(LAUNCH_EMBEDDED);
 		embedded = s != null && Boolean.parseBoolean(s);
 		name = p.getProperty(LAUNCH_NAME);
 		notificationPort = Integer.valueOf(p.getProperty(LAUNCH_NOTIFICATION_PORT, "-1"));
+		activationEager = Boolean.valueOf(p.getProperty(Constants.LAUNCH_ACTIVATION_EAGER));
 		@SuppressWarnings({
 			"unchecked", "rawtypes"
 		})
@@ -151,10 +159,10 @@ public class LauncherConstants {
 		return result;
 	}
 
-	private static String join(List<String> runbundles2, String string) {
+	private static String join(List<?> runbundles2, String string) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
-		for (String r : runbundles2) {
+		for (Object r : runbundles2) {
 			sb.append(del);
 			sb.append(r);
 			del = string;

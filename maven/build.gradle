@@ -10,7 +10,7 @@ def dist = parent.project(bnd_build)
 
 def deploy = tasks.register('deploy', Exec.class) {
   def releaserepo = uri(bnd('releaserepo', dist.file('bundles'))) /* Release repository. */
-  dependsOn dist.tasks.named('jarDependencies')
+  dependsOn dist.tasks.named('releaseDependencies')
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
     args '/c', rootProject.file('mvnw.cmd')
@@ -18,6 +18,7 @@ def deploy = tasks.register('deploy', Exec.class) {
     executable rootProject.file('mvnw')
   }
   args '--batch-mode'
+  args '--no-transfer-progress'
   if (logger.isDebugEnabled()) {
     args '--debug'
   }
@@ -29,15 +30,13 @@ def deploy = tasks.register('deploy', Exec.class) {
   args 'deploy'
 }
 
-dist.tasks.named('releaseDependencies') {
-  mustRunAfter deploy
-}
-
 def deployOSSRH = tasks.register('deployOSSRH', Exec.class) {
   enabled !bnd('-releaserepo.ossrh', '').empty
   onlyIf {
-    deploy.get().state.didWork && (deploy.get().state.failure == null)
+    def state = deploy.get().state
+    state.didWork && (state.failure == null)
   }
+  dependsOn deploy
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
     args '/c', rootProject.file('mvnw.cmd')
@@ -45,6 +44,7 @@ def deployOSSRH = tasks.register('deployOSSRH', Exec.class) {
     executable rootProject.file('mvnw')
   }
   args '--batch-mode'
+  args '--no-transfer-progress'
   if (logger.isDebugEnabled()) {
     args '--debug'
   }
@@ -63,8 +63,10 @@ deploy.configure {
 def deployJFrog = tasks.register('deployJFrog', Exec.class) {
   enabled !bnd('-releaserepo.jfrog', '').empty
   onlyIf {
-    deploy.get().state.didWork && (deploy.get().state.failure == null)
+    def state = deploy.get().state
+    state.didWork && (state.failure == null)
   }
+  dependsOn deploy
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
     args '/c', rootProject.file('mvnw.cmd')
@@ -72,6 +74,7 @@ def deployJFrog = tasks.register('deployJFrog', Exec.class) {
     executable rootProject.file('mvnw')
   }
   args '--batch-mode'
+  args '--no-transfer-progress'
   if (logger.isDebugEnabled()) {
     args '--debug'
   }
@@ -85,4 +88,20 @@ def deployJFrog = tasks.register('deployJFrog', Exec.class) {
 
 deploy.configure {
   finalizedBy deployJFrog
+}
+
+tasks.named('clean') {
+  doFirst {
+    exec {
+      if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        executable 'cmd'
+        args '/c', rootProject.file('mvnw.cmd')
+      } else {
+        executable rootProject.file('mvnw')
+      }
+      args '--batch-mode'
+      args '--no-transfer-progress'
+      args 'clean'
+    }.assertNormalExitValue()
+  }
 }

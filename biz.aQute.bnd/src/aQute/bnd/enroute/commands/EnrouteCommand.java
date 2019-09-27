@@ -33,7 +33,7 @@ public class EnrouteCommand {
 		this.opts = opts;
 
 		List<String> args = opts._arguments();
-		if (args.size() == 0) {
+		if (args.isEmpty()) {
 			// Default command
 			printHelp();
 		} else {

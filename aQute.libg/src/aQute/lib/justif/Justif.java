@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 /**
  * Formatter. This formatter allows you to build up an input string and then
@@ -43,7 +44,7 @@ public class Justif {
 	 * position</li>
 	 * <li>A form feed in a tabbed colum will break but stay in the column</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param sb
 	 */
 	public void wrap(StringBuilder sb) {
@@ -218,9 +219,11 @@ public class Justif {
 		}
 	}
 
-	public void table(Map<String, Object> table, String separator) {
-		for (Entry<String, Object> e : table.entrySet()) {
-			entry(e.getKey(), separator, e.getValue());
+	public void table(Map<?, ?> table, String separator) {
+		TreeMap<?, ?> map = new TreeMap<>(table);
+		for (Entry<?, ?> e : map.entrySet()) {
+			entry(e.getKey()
+				.toString(), separator, e.getValue());
 		}
 	}
 

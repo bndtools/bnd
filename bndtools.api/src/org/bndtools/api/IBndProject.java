@@ -1,7 +1,7 @@
 package org.bndtools.api;
 
 public interface IBndProject {
-    String getProjectName();
+	String getProjectName();
 
-    void addResource(String fullPath, BndProjectResource bndProjectResource);
+	void addResource(String fullPath, BndProjectResource bndProjectResource);
 }

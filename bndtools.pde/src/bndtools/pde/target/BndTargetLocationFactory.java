@@ -15,38 +15,38 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public abstract class BndTargetLocationFactory implements ITargetLocationFactory {
-    private final String type;
+	private final String type;
 
-    public BndTargetLocationFactory(String type) {
-        this.type = Objects.requireNonNull(type);
-    }
+	public BndTargetLocationFactory(String type) {
+		this.type = Objects.requireNonNull(type);
+	}
 
-    @Override
-    public ITargetLocation getTargetLocation(String type, String serializedXML) throws CoreException {
-        if (this.type.equals(type)) {
-            Element locationElement;
-            try {
-                DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance()
-                    .newDocumentBuilder();
-                Document document = docBuilder.parse(new ByteArrayInputStream(serializedXML.getBytes("UTF-8")));
-                locationElement = document.getDocumentElement();
+	@Override
+	public ITargetLocation getTargetLocation(String type, String serializedXML) throws CoreException {
+		if (this.type.equals(type)) {
+			Element locationElement;
+			try {
+				DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance()
+					.newDocumentBuilder();
+				Document document = docBuilder.parse(new ByteArrayInputStream(serializedXML.getBytes("UTF-8")));
+				locationElement = document.getDocumentElement();
 
-                if (this.type.equals(locationElement.getAttribute(BndTargetLocation.ATTRIBUTE_LOCATION_TYPE))) {
-                    return getTargetLocation(locationElement);
-                }
-            } catch (Exception e) {
-                Logger.getLogger(getClass())
-                    .logError("Problem reading target location " + type, null);
-                return null;
-            }
-        }
-        return null;
-    }
+				if (this.type.equals(locationElement.getAttribute(BndTargetLocation.ATTRIBUTE_LOCATION_TYPE))) {
+					return getTargetLocation(locationElement);
+				}
+			} catch (Exception e) {
+				Logger.getLogger(getClass())
+					.logError("Problem reading target location " + type, null);
+				return null;
+			}
+		}
+		return null;
+	}
 
-    public boolean isElement(Node node, String elementName) {
-        return node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName()
-            .equalsIgnoreCase(elementName);
-    }
+	public boolean isElement(Node node, String elementName) {
+		return node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName()
+			.equalsIgnoreCase(elementName);
+	}
 
-    public abstract ITargetLocation getTargetLocation(Element locationElement) throws CoreException;
+	public abstract ITargetLocation getTargetLocation(Element locationElement) throws CoreException;
 }

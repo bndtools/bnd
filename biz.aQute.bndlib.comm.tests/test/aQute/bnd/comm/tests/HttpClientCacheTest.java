@@ -62,8 +62,9 @@ public class HttpClientCacheTest extends TestCase {
 	}
 
 	@Override
-	public void tearDown() {
+	public void tearDown() throws Exception {
 		IO.delete(tmp);
+		IO.close(httpServer);
 	}
 
 	public void testGetNewThenUnmodifiedThenModified() throws URISyntaxException, Exception {
@@ -115,7 +116,7 @@ public class HttpClientCacheTest extends TestCase {
 
 	/**
 	 * Use the cached form but use our own file, not one from the central cache
-	 * 
+	 *
 	 * @throws Exception
 	 */
 

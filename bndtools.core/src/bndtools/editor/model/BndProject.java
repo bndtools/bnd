@@ -10,31 +10,31 @@ import org.eclipse.core.resources.IProject;
 
 public class BndProject implements IBndProject {
 
-    private final IProject project;
+	private final IProject					project;
 
-    private Map<String, BndProjectResource> resources;
+	private Map<String, BndProjectResource>	resources;
 
-    public BndProject(IProject project) {
-        this.project = project;
-    }
+	public BndProject(IProject project) {
+		this.project = project;
+	}
 
-    @Override
-    public String getProjectName() {
-        return project.getName();
-    }
+	@Override
+	public String getProjectName() {
+		return project.getName();
+	}
 
-    @Override
-    public void addResource(String fullPath, BndProjectResource bndProjectResource) {
-        if (resources == null) {
-            resources = new LinkedHashMap<String, BndProjectResource>();
-        }
-        resources.put(fullPath, bndProjectResource);
-    }
+	@Override
+	public void addResource(String fullPath, BndProjectResource bndProjectResource) {
+		if (resources == null) {
+			resources = new LinkedHashMap<>();
+		}
+		resources.put(fullPath, bndProjectResource);
+	}
 
-    public Map<String, BndProjectResource> getResources() {
-        if (resources == null) {
-            return Collections.emptyMap();
-        }
-        return resources;
-    }
+	public Map<String, BndProjectResource> getResources() {
+		if (resources == null) {
+			return Collections.emptyMap();
+		}
+		return resources;
+	}
 }

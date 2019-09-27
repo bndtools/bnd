@@ -1,5 +1,6 @@
 package aQute.bnd.osgi;
 
+import static aQute.lib.exceptions.FunctionWithException.asFunction;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toMap;
@@ -18,49 +19,58 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Deque;
 import java.util.Formatter;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor.FileLine;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.Iterables;
-import aQute.lib.collections.SortedList;
+import aQute.lib.date.Dates;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.ExtendedFilter;
-import aQute.lib.filter.Get;
+import aQute.lib.formatter.Formatters;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.glob.Glob;
+import aQute.service.reporter.Reporter;
 import aQute.service.reporter.Reporter.SetLocation;
 
 /**
@@ -74,24 +84,25 @@ import aQute.service.reporter.Reporter.SetLocation;
  * pattern. ${parameter##word} Remove largest prefix pattern.
  */
 public class Macro {
-	final static String		NULLVALUE		= "c29e43048791e250dfd5723e7b8aa048df802c9262cfa8fbc4475b2e392a8ad2";
-	final static String		LITERALVALUE	= "017a3ddbfc0fcd27bcdb2590cdb713a379ae59ef";
-	final static Pattern	NUMERIC_P		= Pattern.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
-	final static Pattern	PRINTF_P		= Pattern.compile(
-		"%(?:(\\d+)\\$)?(-|\\+|0|\\(|,|\\^|#| )*(\\d*)?(?:\\.(\\d+))?(a|A|b|B|h|H|d|f|c|s|x|X|u|o|z|Z|e|E|g|G|p|n|b|B|%)");
-	Processor				domain;
-	Object					targets[];
-	boolean					flattening;
-	String					profile;
-	private boolean			nosystem;
-	ScriptEngine			engine			= null;
-	ScriptContext			context			= null;
-	Bindings				bindings		= null;
-	StringWriter			stdout			= new StringWriter();
-	StringWriter			stderr			= new StringWriter();
+	private final static String		NULLVALUE		= "c29e43048791e250dfd5723e7b8aa048df802c9262cfa8fbc4475b2e392a8ad2";
+	private final static String		LITERALVALUE	= "017a3ddbfc0fcd27bcdb2590cdb713a379ae59ef";
+	private final static Pattern	NUMERIC_P		= Pattern.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
+
+	Processor						domain;
+	Reporter						reporter;
+	Object							targets[];
+	boolean							flattening;
+	private boolean					nosystem;
+	ScriptEngine					engine			= null;
+	ScriptContext					context			= null;
+	Bindings						bindings		= null;
+	StringWriter					stdout			= new StringWriter();
+	StringWriter					stderr			= new StringWriter();
+	public boolean					inTest;
 
 	public Macro(Processor domain, Object... targets) {
 		this.domain = domain;
+		this.reporter = domain;
 		this.targets = targets;
 		if (targets != null) {
 			for (Object o : targets) {
@@ -104,7 +115,7 @@ public class Macro {
 		return process(line, new Link(source, null, line));
 	}
 
-	String process(String line, Link link) {
+	String process(CharSequence line, Link link) {
 		StringBuilder sb = new StringBuilder();
 		process(line, 0, '\u0000', '\u0000', sb, link);
 		return sb.toString();
@@ -177,23 +188,30 @@ public class Macro {
 	}
 
 	protected String getMacro(String key, Link link) {
-		return getMacro(key, link, '{', '}', null);
+		return getMacro(key, link, '{', '}');
 	}
 
-	private String getMacro(String key, Link link, char begin, char end, String profile) {
+	private String getMacro(String key, Link link, char begin, char end) {
 		if (link != null && link.contains(key))
 			return "${infinite:" + link.toString() + "}";
 
 		if (key != null) {
 			key = key.trim();
-			if (!key.isEmpty()) {
-				String keyins = key;
-				if (profile != null) {
-					key = "[" + profile + "]" + key;
-					keyins = "\\[" + profile + "\\]" + keyins;
-				}
-				if (key.indexOf(';') < 0) {
-					Instruction ins = new Instruction(keyins);
+			String[] args = SEMICOLON_P.split(key, 0);
+			if (!args[0].isEmpty()) {
+
+				//
+				// If the profile is set, we try to get the key first with the
+				// profile prefix. If this fails we try to get the correct one.
+				//
+
+				//
+				// Check if we have a wildcard key. In that case
+				// we go through all the matching keys and append the values
+				//
+
+				if (args.length == 1) {
+					Instruction ins = new Instruction(args[0]);
 					if (!ins.isLiteral()) {
 						String keyname = key;
 						return domain.stream()
@@ -203,18 +221,35 @@ public class Macro {
 							.filter(Objects::nonNull)
 							.collect(Strings.joining());
 					}
-					key = ins.getLiteral();
+
+					//
+					// NOTE: To access parameters with wildcard in them you need
+					// to escape them, e.g. foo\[3\]. The following removes the
+					// escapes
+					//
+
+					args[0] = ins.getLiteral();
 				}
 
-				for (Processor source = domain; source != null; source = source.getParent()) {
-					String value = source.getProperties()
-						.getProperty(key);
-					if (value != null) {
-						return process(value, new Link(source, link, key));
+				//
+				// Check if the macro is defined as a raw property
+				//
+
+				String value = domain.getUnexpandedProperty(args[0]);
+				if (value != null) {
+					Link next = new Link(domain, link, key);
+					if (args.length > 1) {
+						return processWithArgs(value, args, next);
+					} else {
+						return process(value, next);
 					}
 				}
 
-				String value = doCommands(key, link);
+				//
+				// Not found, look it up as a command
+				//
+
+				value = doCommands(args, link);
 				if (value != null) {
 					if (value == NULLVALUE)
 						return null;
@@ -223,61 +258,71 @@ public class Macro {
 					return process(value, new Link(domain, link, key));
 				}
 
-				if (key != null && key.trim()
-					.length() > 0) {
-					value = System.getProperty(key);
-					if ((value == null) && key.startsWith("env.")) {
-						value = System.getenv(key.substring(4));
-					}
+				//
+				// Last resort, try to find it as a system property
+				// or environment variable
+				//
+
+				if (args.length == 1) {
+					value = System.getProperty(args[0]);
 					if (value != null)
 						return value;
+					if (key.startsWith("env.")) {
+						value = System.getenv(args[0].substring(4));
+						if (value != null)
+							return value;
+					}
 				}
 
-				if (key != null && key.indexOf(';') >= 0) {
-					String parts[] = SEMICOLON_P.split(key, 0);
-					if (parts.length > 1) {
-						if (parts.length >= 16) {
-							domain.error("too many arguments for template: %s, max is 16", key);
-						}
+				if (!args[0].startsWith("[")) {
 
-						String template = domain.getProperties()
-							.getProperty(parts[0]);
-						if (template != null) {
-							domain = new Processor(domain);
-							for (int i = 0; i < 16; i++) {
-								domain.setProperty("" + i, i < parts.length ? parts[i] : "null");
-							}
-							String joined = Arrays.stream(parts, 1, parts.length)
-								.collect(Strings.joining());
-							domain.setProperty("#", joined);
-							try {
-								value = process(template, new Link(domain, link, key));
-								if (value != null)
-									return value;
-							} finally {
-								domain = domain.getParent();
+					String profile = domain.getUnexpandedProperty(Constants.PROFILE);
+
+					if (profile != null) {
+						profile = process(profile, link);
+						String profiledKey = "[" + profile + "]" + args[0];
+						value = domain.getUnexpandedProperty(profiledKey);
+						if (value != null) {
+							Link next = new Link(domain, link, key);
+							if (args.length > 1) {
+								return processWithArgs(value, args, next);
+							} else {
+								return process(value, next);
 							}
 						}
 					}
 				}
+
 			} else {
-				domain.warning("Found empty macro key");
+				reporter.warning("Found empty macro key '%s'", key);
 			}
 		} else {
-			domain.warning("Found null macro key");
+			reporter.warning("Found null macro key");
 		}
 
-		// Prevent recursion, but try to get a profiled variable
-		if (key != null && !key.startsWith("[") && !key.equals(Constants.PROFILE)) {
-			if (profile == null)
-				profile = domain.get(Constants.PROFILE);
-			if (profile != null) {
-				String replace = getMacro(key, link, begin, end, profile);
-				if (replace != null)
-					return replace;
-			}
-		}
 		return null;
+	}
+
+	/*
+	 * Process the template but setup local arguments and # for the joined list
+	 */
+
+	private String processWithArgs(String template, String[] args, Link next) {
+		try (Processor custom = new Processor(domain)) {
+
+			for (int i = 0; i < 16; i++) {
+				custom.setProperty(Integer.toString(i), i < args.length ? args[i] : "null");
+			}
+
+			String joinedArgs = Arrays.stream(args, 1, args.length)
+				.collect(Strings.joining());
+			custom.setProperty("#", joinedArgs);
+			return custom.getReplacer()
+				.process(template, next);
+
+		} catch (IOException e) {
+			throw Exceptions.duck(e);
+		}
 	}
 
 	public String replace(String key, Link link) {
@@ -285,12 +330,12 @@ public class Macro {
 	}
 
 	private String replace(String key, Link link, char begin, char end) {
-		String value = getMacro(key, link, begin, end, null);
+		String value = getMacro(key, link, begin, end);
 		if (value != LITERALVALUE) {
 			if (value != null)
 				return value;
 			if (!flattening && !key.startsWith("@"))
-				domain.warning("No translation found for macro: %s", key);
+				reporter.warning("No translation found for macro: %s", key);
 		}
 		return "$" + begin + key + end;
 	}
@@ -300,15 +345,14 @@ public class Macro {
 	 * ':'.
 	 */
 	// Handle up to 4 sequential backslashes in the negative lookbehind.
-	private static final String		ESCAPING	= "(?<!(?<!(?<!(?<!\\\\)\\\\)\\\\)\\\\)";
+	private static final String		ESCAPING			= "(?<!(?<!(?<!(?<!\\\\)\\\\)\\\\)\\\\)";
 	private static final String		SEMICOLON			= ";";
 	private static final String		ESCAPED_SEMICOLON	= "\\\\" + SEMICOLON;
 	private static final Pattern	SEMICOLON_P			= Pattern.compile(ESCAPING + SEMICOLON);
 	private static final Pattern	ESCAPED_SEMICOLON_P	= Pattern.compile(ESCAPING + ESCAPED_SEMICOLON);
 
 	@SuppressWarnings("resource")
-	private String doCommands(String key, Link source) {
-		String[] args = SEMICOLON_P.split(key, 0);
+	private String doCommands(String[] args, Link source) {
 		if (args == null || args.length == 0)
 			return null;
 
@@ -376,7 +420,7 @@ public class Macro {
 			try {
 				mh = publicLookup().unreflect(m);
 			} catch (Exception e) {
-				domain.warning("Exception in replace: method=%s %s ", method, Exceptions.toString(e));
+				reporter.warning("Exception in replace: method=%s %s ", method, Exceptions.toString(e));
 				return NULLVALUE;
 			}
 			try {
@@ -385,13 +429,13 @@ public class Macro {
 			} catch (Error e) {
 				throw e;
 			} catch (WrongMethodTypeException e) {
-				domain.warning("Exception in replace: method=%s %s ", method, Exceptions.toString(e));
+				reporter.warning("Exception in replace: method=%s %s ", method, Exceptions.toString(e));
 				return NULLVALUE;
 			} catch (Exception e) {
-				domain.error("%s, for cmd: %s, arguments; %s", e.getMessage(), method, Arrays.toString(args));
+				reporter.error("%s, for cmd: %s, arguments; %s", e.getMessage(), method, Arrays.toString(args));
 				return NULLVALUE;
 			} catch (Throwable e) {
-				domain.warning("Exception in replace: method=%s %s ", method, Exceptions.toString(e));
+				reporter.warning("Exception in replace: method=%s %s ", method, Exceptions.toString(e));
 				return NULLVALUE;
 			}
 		}
@@ -403,10 +447,10 @@ public class Macro {
 	 */
 	static final String _uniqHelp = "${uniq;<list> ...}";
 
-	public String _uniq(String args[]) {
+	public String _uniq(String[] args) {
 		verifyCommand(args, _uniqHelp, null, 1, Integer.MAX_VALUE);
 		String result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.distinct()
 			.collect(Strings.joining());
 		return result;
@@ -417,16 +461,16 @@ public class Macro {
 	 */
 	static final String _removeallHelp = "${removeall;<list>;<list>}";
 
-	public String _removeall(String args[]) {
+	public String _removeall(String[] args) {
 		verifyCommand(args, _removeallHelp, null, 1, 3);
 		if (args.length < 2) {
 			return "";
 		}
-		List<String> result = Strings.split(args[1]);
+		List<String> result = Strings.splitQuoted(args[1]);
 		if (args.length > 2) {
-			result.removeAll(Strings.split(args[2]));
+			result.removeAll(Strings.splitQuoted(args[2]));
 		}
-		return Processor.join(result);
+		return Strings.join(result);
 	}
 
 	/**
@@ -434,38 +478,38 @@ public class Macro {
 	 */
 	static final String _retainallHelp = "${retainall;<list>;<list>}";
 
-	public String _retainall(String args[]) {
+	public String _retainall(String[] args) {
 		verifyCommand(args, _retainallHelp, null, 1, 3);
 		if (args.length < 3) {
 			return "";
 		}
-		List<String> result = Strings.split(args[1]);
-		result.retainAll(Strings.split(args[2]));
-		return Processor.join(result);
+		List<String> result = Strings.splitQuoted(args[1]);
+		result.retainAll(Strings.splitQuoted(args[2]));
+		return Strings.join(result);
 	}
 
-	public String _pathseparator(String args[]) {
+	public String _pathseparator(String[] args) {
 		return File.pathSeparator;
 	}
 
-	public String _separator(String args[]) {
+	public String _separator(String[] args) {
 		return File.separator;
 	}
 
-	public String _filter(String args[]) {
+	public String _filter(String[] args) {
 		return filter(args, false);
 	}
 
-	public String _select(String args[]) {
+	public String _select(String[] args) {
 		return filter(args, false);
 	}
 
-	public String _filterout(String args[]) {
+	public String _filterout(String[] args) {
 		return filter(args, true);
 
 	}
 
-	public String _reject(String args[]) {
+	public String _reject(String[] args) {
 		return filter(args, true);
 
 	}
@@ -476,7 +520,7 @@ public class Macro {
 		verifyCommand(args, String.format(_filterHelp, args[0]), null, 3, 3);
 
 		Pattern pattern = Pattern.compile(args[2]);
-		String result = Strings.splitAsStream(args[1])
+		String result = Strings.splitQuotedAsStream(args[1])
 			.filter(s -> pattern.matcher(s)
 				.matches() != include)
 			.collect(Strings.joining());
@@ -485,10 +529,10 @@ public class Macro {
 
 	static final String _sortHelp = "${sort;<list>...}";
 
-	public String _sort(String args[]) {
+	public String _sort(String[] args) {
 		verifyCommand(args, _sortHelp, null, 2, Integer.MAX_VALUE);
 		String result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.sorted()
 			.collect(Strings.joining());
 		return result;
@@ -496,7 +540,7 @@ public class Macro {
 
 	static final String _nsortHelp = "${nsort;<list>...}";
 
-	public String _nsort(String args[]) {
+	public String _nsort(String[] args) {
 		verifyCommand(args, _nsortHelp, null, 2, Integer.MAX_VALUE);
 
 		String result = Arrays.stream(args, 1, args.length)
@@ -519,7 +563,7 @@ public class Macro {
 
 	static final String _joinHelp = "${join;<list>...}";
 
-	public String _join(String args[]) {
+	public String _join(String[] args) {
 		verifyCommand(args, _joinHelp, null, 1, Integer.MAX_VALUE);
 
 		String result = Arrays.stream(args, 1, args.length)
@@ -530,18 +574,18 @@ public class Macro {
 
 	static final String _sjoinHelp = "${sjoin;<separator>;<list>...}";
 
-	public String _sjoin(String args[]) throws Exception {
+	public String _sjoin(String[] args) throws Exception {
 		verifyCommand(args, _sjoinHelp, null, 2, Integer.MAX_VALUE);
 
 		String result = Arrays.stream(args, 2, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.collect(Collectors.joining(args[1]));
 		return result;
 	}
 
 	static final String _ifHelp = "${if;<condition>;<iftrue> [;<iffalse>] } condition is either a filter expression or truthy";
 
-	public String _if(String args[]) throws Exception {
+	public String _if(String[] args) throws Exception {
 		verifyCommand(args, _ifHelp, null, 2, 4);
 		String condition = args[1];
 		if (isTruthy(condition))
@@ -566,30 +610,32 @@ public class Macro {
 			&& condition.length() != 0;
 	}
 
+	private static final DateTimeFormatter	DATE_TOSTRING	= Dates.DATE_TOSTRING
+		.withZone(Dates.UTC_ZONE_ID);
 	public final static String _nowHelp = "${now;pattern|'long'}, returns current time";
 
-	public Object _now(String args[]) {
+	public Object _now(String[] args) {
 		verifyCommand(args, _nowHelp, null, 1, 2);
-		Date now = new Date();
+		long now = getBuildNow();
 
 		if (args.length == 2) {
-			if ("long".equals(args[1]))
-				return now.getTime();
-
-			DateFormat df = new SimpleDateFormat(args[1], Locale.US);
-			df.setTimeZone(TimeZone.getTimeZone("UTC"));
-			return df.format(now);
+			if ("long".equals(args[1])) {
+				return Long.toString(now);
+			}
+			DateFormat df = new SimpleDateFormat(args[1], Locale.ROOT);
+			df.setTimeZone(Dates.UTC_TIME_ZONE);
+			return df.format(new Date(now));
 		}
-		return now;
+		return Dates.formatMillis(DATE_TOSTRING, now);
 	}
 
 	public final static String _fmodifiedHelp = "${fmodified;<list of filenames>...}, return latest modification date";
 
-	public String _fmodified(String args[]) throws Exception {
+	public String _fmodified(String[] args) throws Exception {
 		verifyCommand(args, _fmodifiedHelp, null, 2, Integer.MAX_VALUE);
 
 		long time = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.map(File::new)
 			.filter(File::exists)
 			.mapToLong(File::lastModified)
@@ -598,34 +644,36 @@ public class Macro {
 		return Long.toString(time);
 	}
 
-	public String _long2date(String args[]) {
+	public String _long2date(String[] args) {
 		try {
-			return new Date(Long.parseLong(args[1])).toString();
+			return Dates.formatMillis(DATE_TOSTRING, Long.parseLong(args[1]));
 		} catch (Exception e) {
 			return "not a valid long";
 		}
 	}
 
-	public String _literal(String args[]) {
+	public String _literal(String[] args) {
 		if (args.length != 2)
 			throw new RuntimeException("Need a value for the ${literal;<value>} macro");
 		return "${" + args[1] + "}";
 	}
 
 	static final String _defHelp = "${def;<name>[;<value>]}, get the property or a default value if unset";
-	public String _def(String args[]) {
+
+	public String _def(String[] args) {
 		verifyCommand(args, _defHelp, null, 2, 3);
 
 		return domain.getProperty(args[1], args.length == 3 ? args[2] : "");
 	}
 
 	static final String _listHelp = "${list;[<name>...]}, returns a list of the values of the named properties with escaped semicolons";
-	public String _list(String args[]) {
+
+	public String _list(String[] args) {
 		verifyCommand(args, _listHelp, null, 1, Integer.MAX_VALUE);
 
 		String result = Arrays.stream(args, 1, args.length)
 			.map(domain::getProperty)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.map(element -> (element.indexOf(';') < 0) ? element
 				: SEMICOLON_P.matcher(element)
 					.replaceAll(ESCAPED_SEMICOLON))
@@ -635,40 +683,59 @@ public class Macro {
 
 	static final String _replaceHelp = "${replace;<list>;<regex>;[<replace>[;delimiter]]}";
 
-	/**
-	 * replace ; <list> ; regex ; replace
-	 *
-	 * @param args
-	 */
-	public String _replace(String args[]) {
-		verifyCommand(args, _replaceHelp, null, 3, 5);
+	public String _replace(String[] args) {
+		return replace0(_replaceHelp, Strings::splitAsStream, args);
+	}
 
+	static final String _replacelistHelp = "${replacelist;<list>;<regex>;[<replace>[;delimiter]]}";
+
+	public String _replacelist(String[] args) {
+		return replace0(_replacelistHelp, Strings::splitQuotedAsStream, args);
+	}
+
+	private String replace0(String help, Function<String, Stream<String>> splitter, String[] args) {
+		verifyCommand(args, help, null, 3, 5);
 		Pattern regex = Pattern.compile(args[2]);
 		String replace = (args.length > 3) ? args[3] : "";
 		Collector<CharSequence, ?, String> joining = (args.length > 4) ? Collectors.joining(args[4])
 			: Strings.joining();
 
-		String result = Strings.splitAsStream(args[1])
+		String result = splitter.apply(args[1])
 			.map(element -> regex.matcher(element)
 				.replaceAll(replace))
 			.collect(joining);
 		return result;
 	}
 
-	public String _warning(String args[]) throws Exception {
+	static final String _replacestringHelp = "${replacesting;<target>;<regex>;[<replace>]}";
+
+	public String _replacestring(String[] args) {
+		verifyCommand(args, _replacestringHelp, null, 3, 4);
+		Pattern regex = Pattern.compile(args[2]);
+		String replace = (args.length > 3) ? args[3] : "";
+		String result = regex.matcher(args[1])
+			.replaceAll(replace);
+		return result;
+	}
+
+	private static final Pattern	ANY			= Pattern.compile(".*");
+	private static final Pattern	ERROR_P		= Pattern.compile("\\$\\{error;");
+	private static final Pattern	WARNING_P	= Pattern.compile("\\$\\{warning;");
+
+	public String _warning(String[] args) throws Exception {
 		for (int i = 1; i < args.length; i++) {
-			SetLocation warning = domain.warning("%s", process(args[i]));
-			FileLine header = domain.getHeader(Pattern.compile(".*"), Pattern.compile("\\$\\{warning;"));
+			SetLocation warning = reporter.warning("%s", process(args[i]));
+			FileLine header = domain.getHeader(ANY, WARNING_P);
 			if (header != null)
 				header.set(warning);
 		}
 		return "";
 	}
 
-	public String _error(String args[]) throws Exception {
+	public String _error(String[] args) throws Exception {
 		for (int i = 1; i < args.length; i++) {
-			SetLocation error = domain.error("%s", process(args[i]));
-			FileLine header = domain.getHeader(Pattern.compile(".*"), Pattern.compile("\\$\\{error;"));
+			SetLocation error = reporter.error("%s", process(args[i]));
+			FileLine header = domain.getHeader(ANY, ERROR_P);
 			if (header != null)
 				header.set(error);
 		}
@@ -678,27 +745,26 @@ public class Macro {
 	/**
 	 * toclassname ; <path>.class ( , <path>.class ) *
 	 */
-	static final String _toclassnameHelp = "${classname;<list of class names>}, convert class paths to FQN class names ";
+	static final String _toclassnameHelp = "${toclassname;<list of class paths>}, convert class paths to FQN class names ";
 
-	public String _toclassname(String args[]) {
+	public String _toclassname(String[] args) {
 		verifyCommand(args, _toclassnameHelp, null, 2, 2);
-		Collection<String> paths = Processor.split(args[1]);
-
-		List<String> names = new ArrayList<>(paths.size());
-		for (String path : paths) {
-			if (path.endsWith(".class")) {
-				String name = path.substring(0, path.length() - 6)
-					.replace('/', '.');
-				names.add(name);
-			} else if (path.endsWith(".java")) {
-				String name = path.substring(0, path.length() - 5)
-					.replace('/', '.');
-				names.add(name);
-			} else {
-				domain.warning("in toclassname, %s is not a class path because it does not end in .class", args[1]);
-			}
-		}
-		return Processor.join(names);
+		String result = Strings.splitAsStream(args[1])
+			.map(path -> {
+				if (path.endsWith(".class")) {
+					return path.substring(0, path.length() - 6)
+						.replace('/', '.');
+				}
+				if (path.endsWith(".java")) {
+					return path.substring(0, path.length() - 5)
+						.replace('/', '.');
+				}
+				reporter.warning("in toclassname, %s is not a class path because it does not end in .class", path);
+				return null;
+			})
+			.filter(Objects::nonNull)
+			.collect(Strings.joining());
+		return result;
 	}
 
 	/**
@@ -707,94 +773,74 @@ public class Macro {
 
 	static final String _toclasspathHelp = "${toclasspath;<list>[;boolean]}, convert a list of class names to paths";
 
-	public String _toclasspath(String args[]) {
+	public String _toclasspath(String[] args) {
 		verifyCommand(args, _toclasspathHelp, null, 2, 3);
-		boolean cl = true;
-		if (args.length > 2)
-			cl = Boolean.valueOf(args[2]);
+		boolean cl = (args.length > 2) ? Boolean.parseBoolean(args[2]) : true;
+		Function<String, String> mapper = cl ? name -> name.replace('.', '/') + ".class"
+			: name -> name.replace('.', '/');
 
-		Collection<String> names = Processor.split(args[1]);
-		Collection<String> paths = new ArrayList<>(names.size());
-		for (String name : names) {
-			String path = name.replace('.', '/') + (cl ? ".class" : "");
-			paths.add(path);
-		}
-		return Processor.join(paths);
+		String result = Strings.splitAsStream(args[1])
+			.map(mapper)
+			.collect(Strings.joining());
+		return result;
 	}
 
-	public String _dir(String args[]) {
+	public String _dir(String[] args) {
 		if (args.length < 2) {
-			domain.warning("Need at least one file name for ${dir;...}");
+			reporter.warning("Need at least one file name for ${dir;...}");
 			return null;
 		}
-		String del = "";
-		StringBuilder sb = new StringBuilder();
-		for (int i = 1; i < args.length; i++) {
-			File f = domain.getFile(args[i]);
-			if (f.exists() && f.getParentFile()
-				.exists()) {
-				sb.append(del);
-				sb.append(IO.absolutePath(f.getParentFile()));
-				del = ",";
-			}
-		}
-		return sb.toString();
-
+		String result = Arrays.stream(args, 1, args.length)
+			.map(domain::getFile)
+			.filter(File::exists)
+			.map(File::getParentFile)
+			.filter(File::exists)
+			.map(IO::absolutePath)
+			.collect(Strings.joining());
+		return result;
 	}
 
-	public String _basename(String args[]) {
+	public String _basename(String[] args) {
 		if (args.length < 2) {
-			domain.warning("Need at least one file name for ${basename;...}");
+			reporter.warning("Need at least one file name for ${basename;...}");
 			return null;
 		}
-		String del = "";
-		StringBuilder sb = new StringBuilder();
-		for (int i = 1; i < args.length; i++) {
-			File f = domain.getFile(args[i]);
-			if (f.exists() && f.getParentFile()
-				.exists()) {
-				sb.append(del);
-				sb.append(f.getName());
-				del = ",";
-			}
-		}
-		return sb.toString();
-
+		String result = Arrays.stream(args, 1, args.length)
+			.map(domain::getFile)
+			.filter(f -> f.exists() && f.getParentFile()
+				.exists())
+			.map(File::getName)
+			.collect(Strings.joining());
+		return result;
 	}
 
-	public String _isfile(String args[]) {
+	public String _isfile(String[] args) {
 		if (args.length < 2) {
-			domain.warning("Need at least one file name for ${isfile;...}");
+			reporter.warning("Need at least one file name for ${isfile;...}");
 			return null;
 		}
-		boolean isfile = true;
-		for (int i = 1; i < args.length; i++) {
-			File f = new File(args[i]).getAbsoluteFile();
-			isfile &= f.isFile();
-		}
-		return isfile ? "true" : "false";
-
+		boolean isfile = Arrays.stream(args, 1, args.length)
+			.map(File::new)
+			.map(File::getAbsoluteFile)
+			.allMatch(File::isFile);
+		return Boolean.toString(isfile);
 	}
 
-	public String _isdir(String args[]) {
+	public String _isdir(String[] args) {
 		// if (args.length < 2) {
-		// domain.warning("Need at least one file name for ${isdir;...}");
+		// reporter.warning("Need at least one file name for ${isdir;...}");
 		// return null;
 		// }
-		boolean isdir = true;
 		// If no dirs provided, return false
-		if (args.length < 2) {
-			isdir = false;
-		}
-		for (int i = 1; i < args.length; i++) {
-			File f = new File(args[i]).getAbsoluteFile();
-			isdir &= f.isDirectory();
-		}
-		return isdir ? "true" : "false";
-
+		boolean isdir = (args.length < 2) ? false
+			: Arrays.stream(args, 1, args.length)
+				.map(File::new)
+				.map(File::getAbsoluteFile)
+				.allMatch(File::isDirectory);
+		return Boolean.toString(isdir);
 	}
 
-	public String _tstamp(String args[]) {
+	public String _tstamp(String[] args) {
 		String format;
 		long now;
 		TimeZone tz;
@@ -807,25 +853,15 @@ public class Macro {
 		if (args.length > 2) {
 			tz = TimeZone.getTimeZone(args[2]);
 		} else {
-			tz = TimeZone.getTimeZone("UTC");
+			tz = Dates.UTC_TIME_ZONE;
 		}
 		if (args.length > 3) {
 			now = Long.parseLong(args[3]);
 		} else {
-			String tstamp = domain.getProperty(Constants.TSTAMP);
-			if (tstamp != null) {
-				try {
-					now = Long.parseLong(tstamp);
-				} catch (NumberFormatException e) {
-					// ignore, just use current time
-					now = System.currentTimeMillis();
-				}
-			} else {
-				now = System.currentTimeMillis();
-			}
+			now = getBuildNow();
 		}
 		if (args.length > 4) {
-			domain.warning("Too many arguments for tstamp: %s", Arrays.toString(args));
+			reporter.warning("Too many arguments for tstamp: %s", Arrays.toString(args));
 		}
 
 		SimpleDateFormat sdf = new SimpleDateFormat(format, Locale.US);
@@ -833,52 +869,83 @@ public class Macro {
 		return sdf.format(new Date(now));
 	}
 
-	/**
-	 * Wildcard a directory. The lists can contain Instruction that are matched
-	 * against the given directory ${lsr;<dir>;<list>(;<list>)*} ${lsa;<dir>;
-	 * <list>(;<list>)*}
-	 *
-	 * @author aqute
-	 */
-
-	public String _lsr(String args[]) {
-		return ls(args, true);
+	private long getBuildNow() {
+		long now;
+		String tstamp = domain.getProperty(Constants.TSTAMP);
+		if (tstamp != null) {
+			try {
+				now = Long.parseLong(tstamp);
+			} catch (NumberFormatException e) {
+				// ignore, just use current time
+				now = System.currentTimeMillis();
+			}
+		} else {
+			now = System.currentTimeMillis();
+		}
+		return now;
 	}
 
-	public String _lsa(String args[]) {
-		return ls(args, false);
+	static final String _lsrHelp = "${lsr;<dir>;[<selector>...]}";
+
+	public String _lsr(String[] args) {
+		return ls(_lsrHelp, args, true);
 	}
 
-	String ls(String[] args, boolean relative) {
-		if (args.length < 2)
-			throw new IllegalArgumentException("the ${ls} macro must at least have a directory as parameter");
+	static final String _lsaHelp = "${lsa;<dir>;[<selector>...]}";
+
+	public String _lsa(String[] args) {
+		return ls(_lsaHelp, args, false);
+	}
+
+	private String ls(String help, String[] args, boolean relative) {
+		verifyCommand(args, help, null, 2, Integer.MAX_VALUE);
 
 		File dir = domain.getFile(args[1]);
 		if (!dir.isAbsolute())
-			throw new IllegalArgumentException("the ${ls} macro directory parameter is not absolute: " + dir);
+			throw new IllegalArgumentException(
+				String.format("the ${%s} macro directory parameter is not absolute: %s", args[0], dir));
 
 		if (!dir.exists())
-			throw new IllegalArgumentException("the ${ls} macro directory parameter does not exist: " + dir);
+			throw new IllegalArgumentException(
+				String.format("the ${%s} macro directory parameter does not exist: %s", args[0], dir));
 
 		if (!dir.isDirectory())
-			throw new IllegalArgumentException(
-				"the ${ls} macro directory parameter points to a file instead of a directory: " + dir);
+			throw new IllegalArgumentException(String.format(
+				"the ${%s} macro directory parameter points to a file instead of a directory: %s", args[0], dir));
 
-		Collection<File> files = new ArrayList<>(new SortedList<>(dir.listFiles()));
-
-		for (int i = 2; i < args.length; i++) {
-			Instructions filters = new Instructions(args[i]);
-			files = filters.select(files, true);
+		File[] array = dir.listFiles();
+		if ((array == null) || (array.length == 0)) {
+			return "";
 		}
-
-		List<String> result = new ArrayList<>();
-		for (File file : files)
-			result.add(relative ? file.getName() : IO.absolutePath(file));
-
-		return Processor.join(result);
+		Arrays.sort(array);
+		Function<File, String> mapper = relative ? File::getName : IO::absolutePath;
+		if (args.length < 3) {
+			String result = Arrays.stream(array)
+				.map(mapper)
+				.collect(Strings.joining());
+			return result;
+		}
+		List<File> files = new LinkedList<>();
+		Collections.addAll(files, array);
+		List<String> result = new ArrayList<>(array.length);
+		Arrays.stream(args, 2, args.length)
+			.flatMap(Strings::splitQuotedAsStream)
+			.map(Instruction::new)
+			.forEachOrdered(ins -> {
+				for (Iterator<File> iter = files.iterator(); iter.hasNext();) {
+					File file = iter.next();
+					if (ins.matches(file.getPath())) {
+						iter.remove();
+						if (!ins.isNegated()) {
+							result.add(mapper.apply(file));
+						}
+					}
+				}
+			});
+		return Strings.join(result);
 	}
 
-	public String _currenttime(String args[]) {
+	public String _currenttime(String[] args) {
 		return Long.toString(System.currentTimeMillis());
 	}
 
@@ -895,21 +962,24 @@ public class Macro {
 	 * qualifier version=&quot;[${version;==;${&#x40;}},${version;=+;${&#x40;}})&quot;
 	 * </pre>
 	 */
-	final static String		MASK_STRING			= "[\\-+=~0123456789]{0,3}[=~]?";
-	final static Pattern	MASK				= Pattern.compile(MASK_STRING);
-	final static String		_versionmaskHelp	= "${versionmask;<mask>;<version>}, modify a version\n"
+	private final static String		MASK_M				= "[-+=~\\d]";
+	private final static String		MASK_Q				= "[=~sS\\d]";
+	private final static String		MASK_STRING			= MASK_M + "(?:" + MASK_M + "(?:" + MASK_M + "(?:" + MASK_Q
+		+ ")?)?)?";
+	private final static Pattern	VERSION_MASK		= Pattern.compile(MASK_STRING);
+	final static String				_versionmaskHelp	= "${versionmask;<mask>;<version>}, modify a version\n"
 		+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
-	final static String		_versionHelp		= _versionmaskHelp;
-	final static Pattern	_versionPattern[]	= new Pattern[] {
-		null, null, MASK, Verifier.VERSION
+	final static String				_versionHelp		= _versionmaskHelp;
+	final static Pattern[]			_versionPattern		= new Pattern[] {
+		null, VERSION_MASK
 	};
 
-	public String _version(String args[]) {
+	public String _version(String[] args) {
 		return _versionmask(args);
 	}
 
-	public String _versionmask(String args[]) {
-		verifyCommand(args, _versionmaskHelp, null, 2, 3);
+	public String _versionmask(String[] args) {
+		verifyCommand(args, _versionmaskHelp, _versionPattern, 2, 3);
 
 		String mask = args[1];
 
@@ -992,14 +1062,15 @@ public class Macro {
 	 * </pre>
 	 */
 
-	static Pattern	RANGE_MASK		= Pattern.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING + ")(\\]|\\))");
-	static String	_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookup ${@}\n"
+	private static final Pattern	RANGE_MASK		= Pattern
+		.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING + ")(\\]|\\))");
+	static final String				_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookup ${@}\n"
 		+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
-	static Pattern	_rangePattern[]	= new Pattern[] {
+	static final Pattern			_rangePattern[]	= new Pattern[] {
 		null, RANGE_MASK
 	};
 
-	public String _range(String args[]) {
+	public String _range(String[] args) {
 		verifyCommand(args, _rangeHelp, _rangePattern, 2, 3);
 		Version version = null;
 		if (args.length >= 3) {
@@ -1036,15 +1107,16 @@ public class Macro {
 		String s = sb.toString();
 		VersionRange vr = new VersionRange(s);
 		if (!(vr.includes(vr.getHigh()) || vr.includes(vr.getLow()))) {
-			domain.error("${range} macro created an invalid range %s from %s and mask %s", s, version, spec);
+			reporter.error("${range} macro created an invalid range %s from %s and mask %s", s, version, spec);
 		}
 		return sb.toString();
 	}
 
 	private static final String		LOCALTARGET_NAME	= "@[^${}\\[\\]()<>«»‹›]*";
-	private static final Pattern	LOCALTARGET_P	= Pattern
+	private static final Pattern	LOCALTARGET_P		= Pattern
 		.compile("\\$(\\{" + LOCALTARGET_NAME + "\\}|\\[" + LOCALTARGET_NAME + "\\]|\\(" + LOCALTARGET_NAME + "\\)|<"
 			+ LOCALTARGET_NAME + ">|«" + LOCALTARGET_NAME + "»|‹" + LOCALTARGET_NAME + "›)");
+
 	boolean isLocalTarget(String string) {
 		return LOCALTARGET_P.matcher(string)
 			.matches();
@@ -1053,7 +1125,7 @@ public class Macro {
 	/**
 	 * System command. Execute a command and insert the result.
 	 */
-	public String system_internal(boolean allowFail, String args[]) throws Exception {
+	public String system_internal(boolean allowFail, String[] args) throws Exception {
 		if (nosystem)
 			throw new RuntimeException("Macros in this mode cannot excute system commands");
 
@@ -1067,39 +1139,14 @@ public class Macro {
 			input = args[2];
 		}
 
-		if (File.separatorChar == '\\')
-			command = "cmd /c \"" + command + "\"";
-
-		Process process = Runtime.getRuntime()
-			.exec(command, null, domain.getBase());
-		if (input != null) {
-			process.getOutputStream()
-				.write(input.getBytes(UTF_8));
-		}
-		process.getOutputStream()
-			.close();
-
-		String s = IO.collect(process.getInputStream(), UTF_8);
-		int exitValue = process.waitFor();
-
-		if (exitValue != 0) {
-			if (!allowFail) {
-				domain.error("System command %s failed with exit code %d", command, exitValue);
-			} else {
-				domain.warning("System command %s failed with exit code %d (allowed)", command, exitValue);
-
-			}
-			return null;
-		}
-
-		return s.trim();
+		return domain.system(allowFail, command, input);
 	}
 
-	public String _system(String args[]) throws Exception {
+	public String _system(String[] args) throws Exception {
 		return system_internal(false, args);
 	}
 
-	public String _system_allow_fail(String args[]) throws Exception {
+	public String _system_allow_fail(String[] args) throws Exception {
 		String result = "";
 		try {
 			result = system_internal(true, args);
@@ -1112,7 +1159,7 @@ public class Macro {
 
 	static final String _envHelp = "${env;<name>[;alternative]}, get the environment variable";
 
-	public String _env(String args[]) {
+	public String _env(String[] args) {
 		verifyCommand(args, _envHelp, null, 2, 3);
 
 		try {
@@ -1130,13 +1177,14 @@ public class Macro {
 	}
 
 	static final String _catHelp = "${cat;<in>}, get the content of a file";
+
 	/**
 	 * Get the contents of a file.
 	 *
 	 * @throws IOException
 	 */
 
-	public String _cat(String args[]) throws IOException {
+	public String _cat(String[] args) throws IOException {
 		verifyCommand(args, _catHelp, null, 2, 2);
 		File f = domain.getFile(args[1]);
 		if (f.isFile()) {
@@ -1156,6 +1204,7 @@ public class Macro {
 	}
 
 	static final String _base64Help = "${base64;<file>[;fileSizeLimit]}, get the Base64 encoding of a file";
+
 	/**
 	 * Get the Base64 encoding of a file.
 	 *
@@ -1177,6 +1226,7 @@ public class Macro {
 	}
 
 	static final String _digestHelp = "${digest;<algo>;<in>}, get a digest (e.g. MD5, SHA-256) of a file";
+
 	/**
 	 * Get a digest of a file.
 	 *
@@ -1305,9 +1355,10 @@ public class Macro {
 					String value = source.getProperty(key);
 					if (value == null) {
 						Object raw = source.get(key);
-						domain.warning("Key '%s' has a non-String value: %s:%s", key, raw == null ? ""
-							: raw.getClass()
-								.getName(),
+						reporter.warning("Key '%s' has a non-String value: %s:%s", key,
+							raw == null ? ""
+								: raw.getClass()
+									.getName(),
 							raw);
 					} else {
 						if (ignoreInstructions && key.startsWith("-"))
@@ -1323,29 +1374,30 @@ public class Macro {
 		}
 	}
 
-	public final static String _fileHelp = "${file;<base>;<paths>...}, create correct OS dependent path";
+	public final static String	_fileHelp	= "${file;<base>;<paths>...}, create correct OS dependent path";
 
 	static final String			_osfileHelp	= "${osfile;<base>;<path>}, create correct OS dependent path";
-	public String _osfile(String args[]) {
+
+	public String _osfile(String[] args) {
 		verifyCommand(args, _osfileHelp, null, 3, 3);
 		File base = new File(args[1]);
-		File f = Processor.getFile(base, args[2]);
+		File f = IO.getFile(base, args[2]);
 		return IO.absolutePath(f);
 	}
 
-	public String _path(String args[]) {
+	public String _path(String[] args) {
 		String result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.collect(Collectors.joining(File.pathSeparator));
 		return result;
 	}
 
 	public final static String _sizeHelp = "${size;<collection>;...}, count the number of elements (of all collections combined)";
 
-	public int _size(String args[]) {
+	public int _size(String[] args) {
 		verifyCommand(args, _sizeHelp, null, 1, Integer.MAX_VALUE);
 		long size = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.count();
 		return (int) size;
 	}
@@ -1377,7 +1429,7 @@ public class Macro {
 		return tmp;
 	}
 
-	public String _unescape(String args[]) {
+	public String _unescape(String[] args) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 1; i < args.length; i++) {
 			sb.append(args[i]);
@@ -1417,7 +1469,7 @@ public class Macro {
 
 	static final String _startswithHelp = "${startswith;<string>;<prefix>}";
 
-	public String _startswith(String args[]) throws Exception {
+	public String _startswith(String[] args) throws Exception {
 		verifyCommand(args, _startswithHelp, null, 3, 3);
 		if (args[1].startsWith(args[2]))
 			return args[1];
@@ -1427,7 +1479,7 @@ public class Macro {
 
 	static final String _endswithHelp = "${endswith;<string>;<suffix>}";
 
-	public String _endswith(String args[]) throws Exception {
+	public String _endswith(String[] args) throws Exception {
 		verifyCommand(args, _endswithHelp, null, 3, 3);
 		if (args[1].endsWith(args[2]))
 			return args[1];
@@ -1437,7 +1489,7 @@ public class Macro {
 
 	static final String _extensionHelp = "${extension;<string>}";
 
-	public String _extension(String args[]) throws Exception {
+	public String _extension(String[] args) throws Exception {
 		verifyCommand(args, _extensionHelp, null, 2, 2);
 		String name = args[1];
 		int n = name.indexOf('.');
@@ -1448,7 +1500,7 @@ public class Macro {
 
 	static final String _stemHelp = "${stem;<string>}";
 
-	public String _stem(String args[]) throws Exception {
+	public String _stem(String[] args) throws Exception {
 		verifyCommand(args, _stemHelp, null, 2, 2);
 		String name = args[1];
 		int n = name.indexOf('.');
@@ -1459,7 +1511,7 @@ public class Macro {
 
 	static final String _substringHelp = "${substring;<string>;<start>[;<end>]}";
 
-	public String _substring(String args[]) throws Exception {
+	public String _substring(String[] args) throws Exception {
 		verifyCommand(args, _substringHelp, null, 3, 4);
 
 		String string = args[1];
@@ -1484,10 +1536,10 @@ public class Macro {
 		return string.substring(start, end);
 	}
 
-	static String	_randHelp	= "${rand;[<min>[;<end>]]}";
-	static Random	random	= new Random();
+	static final String	_randHelp	= "${rand;[<min>[;<end>]]}";
+	static final Random	random		= new Random();
 
-	public long _rand(String args[]) throws Exception {
+	public long _rand(String[] args) throws Exception {
 		verifyCommand(args, _randHelp, null, 2, 3);
 
 		int min = 0;
@@ -1506,7 +1558,7 @@ public class Macro {
 
 	static final String _lengthHelp = "${length;<string>}";
 
-	public int _length(String args[]) throws Exception {
+	public int _length(String[] args) throws Exception {
 		verifyCommand(args, _lengthHelp, null, 1, 2);
 		if (args.length == 1)
 			return 0;
@@ -1516,7 +1568,7 @@ public class Macro {
 
 	static final String _getHelp = "${get;<index>;<list>}";
 
-	public String _get(String args[]) throws Exception {
+	public String _get(String[] args) throws Exception {
 		verifyCommand(args, _getHelp, null, 3, 3);
 
 		int index = Integer.parseInt(args[1]);
@@ -1528,7 +1580,7 @@ public class Macro {
 
 	static final String _sublistHelp = "${sublist;<start>;<end>[;<list>...]}";
 
-	public String _sublist(String args[]) throws Exception {
+	public String _sublist(String[] args) throws Exception {
 		verifyCommand(args, _sublistHelp, null, 4, Integer.MAX_VALUE);
 
 		int start = Integer.parseInt(args[1]);
@@ -1547,22 +1599,22 @@ public class Macro {
 			end = t;
 		}
 
-		return Processor.join(list.subList(start, end));
+		return Strings.join(list.subList(start, end));
 	}
 
 	private List<String> toList(String[] args, int startInclusive, int endExclusive) {
 		List<String> list = Arrays.stream(args, startInclusive, endExclusive)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.collect(Collectors.toList());
 		return list;
 	}
 
 	static final String _firstHelp = "${first;<list>[;<list>...]}";
 
-	public String _first(String args[]) throws Exception {
+	public String _first(String[] args) throws Exception {
 		verifyCommand(args, _firstHelp, null, 1, Integer.MAX_VALUE);
 		String result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.findFirst()
 			.orElse("");
 		return result;
@@ -1570,11 +1622,11 @@ public class Macro {
 
 	static final String _lastHelp = "${last;<list>[;<list>...]}";
 
-	public String _last(String args[]) throws Exception {
+	public String _last(String[] args) throws Exception {
 		verifyCommand(args, _lastHelp, null, 1, Integer.MAX_VALUE);
 
 		String result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.reduce((first, second) -> second)
 			.orElse("");
 		return result;
@@ -1582,11 +1634,11 @@ public class Macro {
 
 	static final String _maxHelp = "${max;<list>[;<list>...]}";
 
-	public String _max(String args[]) throws Exception {
+	public String _max(String[] args) throws Exception {
 		verifyCommand(args, _maxHelp, null, 2, Integer.MAX_VALUE);
 
 		String result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.max(String::compareTo)
 			.orElse("");
 		return result;
@@ -1594,11 +1646,11 @@ public class Macro {
 
 	static final String _minHelp = "${min;<list>[;<list>...]}";
 
-	public String _min(String args[]) throws Exception {
+	public String _min(String[] args) throws Exception {
 		verifyCommand(args, _minHelp, null, 2, Integer.MAX_VALUE);
 
 		String result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.min(String::compareTo)
 			.orElse("");
 		return result;
@@ -1606,7 +1658,7 @@ public class Macro {
 
 	static final String _nmaxHelp = "${nmax;<list>[;<list>...]}";
 
-	public String _nmax(String args[]) throws Exception {
+	public String _nmax(String[] args) throws Exception {
 		verifyCommand(args, _nmaxHelp, null, 2, Integer.MAX_VALUE);
 
 		double result = Arrays.stream(args, 1, args.length)
@@ -1619,7 +1671,7 @@ public class Macro {
 
 	static final String _nminHelp = "${nmin;<list>[;<list>...]}";
 
-	public String _nmin(String args[]) throws Exception {
+	public String _nmin(String[] args) throws Exception {
 		verifyCommand(args, _nminHelp, null, 2, Integer.MAX_VALUE);
 
 		double result = Arrays.stream(args, 1, args.length)
@@ -1632,7 +1684,7 @@ public class Macro {
 
 	static final String _sumHelp = "${sum;<list>[;<list>...]}";
 
-	public String _sum(String args[]) throws Exception {
+	public String _sum(String[] args) throws Exception {
 		verifyCommand(args, _sumHelp, null, 2, Integer.MAX_VALUE);
 
 		double result = Arrays.stream(args, 1, args.length)
@@ -1644,11 +1696,11 @@ public class Macro {
 
 	static final String _averageHelp = "${average;<list>[;<list>...]}";
 
-	public String _average(String args[]) throws Exception {
+	public String _average(String[] args) throws Exception {
 		verifyCommand(args, _sumHelp, null, 2, Integer.MAX_VALUE);
 
 		double result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.mapToDouble(Double::parseDouble)
 			.average()
 			.orElseThrow(() -> new IllegalArgumentException("No members in list to calculate average"));
@@ -1657,21 +1709,21 @@ public class Macro {
 
 	static final String _reverseHelp = "${reverse;<list>[;<list>...]}";
 
-	public String _reverse(String args[]) throws Exception {
+	public String _reverse(String[] args) throws Exception {
 		verifyCommand(args, _reverseHelp, null, 2, Integer.MAX_VALUE);
 
 		Deque<String> reversed = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.collect(Collector.of(ArrayDeque::new, (deq, t) -> deq.addFirst(t), (d1, d2) -> {
 				d2.addAll(d1);
 				return d2;
 			}));
-		return Processor.join(reversed);
+		return Strings.join(reversed);
 	}
 
 	static final String _indexofHelp = "${indexof;<value>;<list>[;<list>...]}";
 
-	public int _indexof(String args[]) throws Exception {
+	public int _indexof(String[] args) throws Exception {
 		verifyCommand(args, _indexofHelp, null, 3, Integer.MAX_VALUE);
 
 		String value = args[1];
@@ -1681,7 +1733,7 @@ public class Macro {
 
 	static final String _lastindexofHelp = "${lastindexof;<value>;<list>[;<list>...]}";
 
-	public int _lastindexof(String args[]) throws Exception {
+	public int _lastindexof(String[] args) throws Exception {
 		verifyCommand(args, _lastindexofHelp, null, 3, Integer.MAX_VALUE);
 
 		String value = args[1];
@@ -1691,7 +1743,7 @@ public class Macro {
 
 	static final String _findHelp = "${find;<target>;<searched>}";
 
-	public int _find(String args[]) throws Exception {
+	public int _find(String[] args) throws Exception {
 		verifyCommand(args, _findHelp, null, 3, 3);
 
 		return args[1].indexOf(args[2]);
@@ -1699,7 +1751,7 @@ public class Macro {
 
 	static final String _findlastHelp = "${findlast;<find>;<target>}";
 
-	public int _findlast(String args[]) throws Exception {
+	public int _findlast(String[] args) throws Exception {
 		verifyCommand(args, _findlastHelp, null, 3, 3);
 
 		return args[2].lastIndexOf(args[1]);
@@ -1707,7 +1759,7 @@ public class Macro {
 
 	static final String _splitHelp = "${split;<regex>[;<target>...]}";
 
-	public String _split(String args[]) throws Exception {
+	public String _split(String[] args) throws Exception {
 		verifyCommand(args, _splitHelp, null, 2, Integer.MAX_VALUE);
 
 		Pattern regex = Pattern.compile(args[1]);
@@ -1720,7 +1772,7 @@ public class Macro {
 
 	static final String _jsHelp = "${js [;<js expr>...]}";
 
-	public Object _js(String args[]) throws Exception {
+	public Object _js(String[] args) throws Exception {
 		verifyCommand(args, _jsHelp, null, 2, Integer.MAX_VALUE);
 
 		StringBuilder sb = new StringBuilder();
@@ -1747,7 +1799,7 @@ public class Macro {
 		Object eval = engine.eval(sb.toString(), context);
 		StringBuffer buffer = stdout.getBuffer();
 		if (buffer.length() > 0) {
-			domain.error("Executing js: %s: %s", sb, buffer);
+			reporter.error("Executing js: %s: %s", sb, buffer);
 			buffer.setLength(0);
 		}
 
@@ -1779,7 +1831,7 @@ public class Macro {
 
 	static final String _toupperHelp = "${toupper;<target>}";
 
-	public String _toupper(String args[]) throws Exception {
+	public String _toupper(String[] args) throws Exception {
 		verifyCommand(args, _tolowerHelp, null, 2, 2);
 
 		return args[1].toUpperCase();
@@ -1787,7 +1839,7 @@ public class Macro {
 
 	static final String _tolowerHelp = "${tolower;<target>}";
 
-	public String _tolower(String args[]) throws Exception {
+	public String _tolower(String[] args) throws Exception {
 		verifyCommand(args, _tolowerHelp, null, 2, 2);
 
 		return args[1].toLowerCase();
@@ -1795,7 +1847,7 @@ public class Macro {
 
 	static final String _compareHelp = "${compare;<astring>;<bstring>}";
 
-	public int _compare(String args[]) throws Exception {
+	public int _compare(String[] args) throws Exception {
 		verifyCommand(args, _compareHelp, null, 3, 3);
 		int n = args[1].compareTo(args[2]);
 		return Integer.signum(n);
@@ -1803,7 +1855,7 @@ public class Macro {
 
 	static final String _ncompareHelp = "${ncompare;<anumber>;<bnumber>}";
 
-	public int _ncompare(String args[]) throws Exception {
+	public int _ncompare(String[] args) throws Exception {
 		verifyCommand(args, _ncompareHelp, null, 3, 3);
 		double a = Double.parseDouble(args[1]);
 		double b = Double.parseDouble(args[2]);
@@ -1812,7 +1864,7 @@ public class Macro {
 
 	static final String _matchesHelp = "${matches;<target>;<regex>}";
 
-	public boolean _matches(String args[]) throws Exception {
+	public boolean _matches(String[] args) throws Exception {
 		verifyCommand(args, _matchesHelp, null, 3, 3);
 
 		return args[1].matches(args[2]);
@@ -1820,7 +1872,7 @@ public class Macro {
 
 	static final String _substHelp = "${subst;<target>;<regex>[;<replace>[;count]]}";
 
-	public StringBuffer _subst(String args[]) throws Exception {
+	public StringBuffer _subst(String[] args) throws Exception {
 		verifyCommand(args, _substHelp, null, 3, 5);
 
 		Pattern p = Pattern.compile(args[2]);
@@ -1838,7 +1890,7 @@ public class Macro {
 
 	static final String _trimHelp = "${trim;<target>}";
 
-	public String _trim(String args[]) throws Exception {
+	public String _trim(String[] args) throws Exception {
 		verifyCommand(args, _trimHelp, null, 2, 2);
 
 		return args[1].trim();
@@ -1846,117 +1898,15 @@ public class Macro {
 
 	static final String _formatHelp = "${format;<format>[;args...]}";
 
-	public String _format(String args[]) throws Exception {
-		verifyCommand(args, _formatHelp, null, 2, Integer.MAX_VALUE);
+	public String _format(String[] macroArgs) throws Exception {
+		verifyCommand(macroArgs, _formatHelp, null, 2, Integer.MAX_VALUE);
 
-		Object[] args2 = new Object[args.length + 10];
-
-		Matcher m = PRINTF_P.matcher(args[1]);
-		int n = 2;
-		while (n < args.length && m.find()) {
-			char conversion = m.group(5)
-				.charAt(0);
-			switch (conversion) {
-				// d|f|c|s|h|n|x|X|u|o|z|Z|e|E|g|G|p|\n|%)");
-				case 'd' :
-				case 'u' :
-				case 'o' :
-				case 'x' :
-				case 'X' :
-				case 'z' :
-				case 'Z' :
-					args2[n - 2] = Long.parseLong(args[n]);
-					n++;
-					break;
-
-				case 'f' :
-				case 'e' :
-				case 'E' :
-				case 'g' :
-				case 'G' :
-				case 'a' :
-				case 'A' :
-					args2[n - 2] = Double.parseDouble(args[n]);
-					n++;
-					break;
-
-				case 'c' :
-					if (args[n].length() != 1)
-						throw new IllegalArgumentException("Character expected but found '" + args[n] + "'");
-					args2[n - 2] = args[n].charAt(0);
-					n++;
-					break;
-
-				case 'b' :
-					String v = args[n].toLowerCase();
-					if (v == null || v.equals("false") || v.isEmpty() || (NUMERIC_P.matcher(v)
-						.matches() && Double.parseDouble(v) == 0.0D))
-						args2[n - 2] = false;
-					else
-						args2[n - 2] = false;
-					n++;
-					break;
-
-				case 's' :
-				case 'h' :
-				case 'H' :
-				case 'p' :
-					args2[n - 2] = args[n];
-					n++;
-					break;
-
-				case 't' :
-				case 'T' :
-					String dt = args[n];
-
-					if (NUMERIC_P.matcher(dt)
-						.matches()) {
-						args2[n - 2] = Long.parseLong(dt);
-					} else {
-						DateFormat df;
-						switch (args[n].length()) {
-							case 6 :
-								df = new SimpleDateFormat("yyMMdd", Locale.US);
-								break;
-
-							case 8 :
-								df = new SimpleDateFormat("yyyyMMdd", Locale.US);
-								break;
-
-							case 12 :
-								df = new SimpleDateFormat("yyyyMMddHHmm", Locale.US);
-								break;
-
-							case 14 :
-								df = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-								break;
-							case 19 :
-								df = new SimpleDateFormat("yyyyMMddHHmmss.SSSZ", Locale.US);
-								break;
-
-							default :
-								throw new IllegalArgumentException("Unknown dateformat " + args[n]);
-						}
-						df.setTimeZone(TimeZone.getTimeZone("UTC"));
-						args2[n - 2] = df.parse(args[n]);
-					}
-					break;
-
-				case 'n' :
-				case '%' :
-					break;
-			}
-		}
-
-		try (Formatter f = new Formatter()) {
-			f.format(args[1], args2);
-			return f.toString();
-		}
+		return Formatters.format(macroArgs[1], asFunction(this::isTruthy), 2, macroArgs);
 	}
 
 	static final String _isemptyHelp = "${isempty;[<target>...]}";
 
-	public boolean _isempty(String args[]) throws Exception {
+	public boolean _isempty(String[] args) throws Exception {
 		verifyCommand(args, _isemptyHelp, null, 1, Integer.MAX_VALUE);
 
 		boolean result = Arrays.stream(args, 1, args.length)
@@ -1967,7 +1917,7 @@ public class Macro {
 
 	static final String _isnumberHelp = "${isnumber;<target>[;<target>...]}";
 
-	public boolean _isnumber(String args[]) throws Exception {
+	public boolean _isnumber(String[] args) throws Exception {
 		verifyCommand(args, _isnumberHelp, null, 2, Integer.MAX_VALUE);
 
 		boolean result = Arrays.stream(args, 1, args.length)
@@ -1978,7 +1928,7 @@ public class Macro {
 
 	static final String _isHelp = "${is;<a>;<b>}";
 
-	public boolean _is(String args[]) throws Exception {
+	public boolean _is(String[] args) throws Exception {
 		verifyCommand(args, _isHelp, null, 3, Integer.MAX_VALUE);
 		String a = args[1];
 
@@ -1993,11 +1943,11 @@ public class Macro {
 
 	static final String _mapHelp = "${map;<macro>[;<list>...]}";
 
-	public String _map(String args[]) throws Exception {
+	public String _map(String[] args) throws Exception {
 		verifyCommand(args, _mapHelp, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
 		String result = Arrays.stream(args, 2, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.map(s -> process("${" + macro + SEMICOLON + s + "}"))
 			.collect(Strings.joining());
 		return result;
@@ -2009,7 +1959,7 @@ public class Macro {
 
 	static final String _foreachHelp = "${foreach;<macro>[;<list>...]}";
 
-	public String _foreach(String args[]) throws Exception {
+	public String _foreach(String[] args) throws Exception {
 		verifyCommand(args, _foreachHelp, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
 		List<String> list = toList(args, 2, args.length);
@@ -2025,11 +1975,11 @@ public class Macro {
 
 	static final String _applyHelp = "${apply;<macro>[;<list>...]}";
 
-	public String _apply(String args[]) throws Exception {
+	public String _apply(String[] args) throws Exception {
 		verifyCommand(args, _applyHelp, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
 		String result = Arrays.stream(args, 2, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.collect(Collectors.joining(SEMICOLON, "${" + macro + SEMICOLON, "}"));
 		return process(result);
 	}
@@ -2078,19 +2028,20 @@ public class Macro {
 
 	public boolean doCondition(String arg) throws Exception {
 		ExtendedFilter f = new ExtendedFilter(arg);
-		return f.match(new Get() {
-
-			@Override
-			public Object get(String key) throws Exception {
-				if (key.endsWith("[]")) {
-					key = key.substring(0, key.length() - 2);
-					return Processor.split(domain.getProperty(key));
-				} else
-					return domain.getProperty(key);
-			}
+		return f.match(key -> {
+			if (key.endsWith("[]")) {
+				key = key.substring(0, key.length() - 2);
+				return Strings.split(domain.getProperty(key));
+			} else
+				return domain.getProperty(key);
 		});
 	}
 
+	/**
+	 * Get all the commands available
+	 *
+	 * @return a map with commands and their help
+	 */
 	public Map<String, String> getCommands() {
 		Set<Object> targets = new LinkedHashSet<>();
 		targets.addAll(Arrays.asList(targets));
@@ -2115,12 +2066,107 @@ public class Macro {
 						f.setAccessible(true);
 						MethodHandle mh = publicLookup().unreflectGetter(f);
 						return (String) mh.invoke();
-					} catch (Error e) {
-						throw e;
-					} catch (Throwable e) {
+					} catch (NoSuchFieldException nsfe) {
 						return "";
+					} catch (Exception e) {
+						return "";
+					} catch (Throwable e) {
+						throw Exceptions.duck(e);
 					}
 				}, (u, v) -> u, TreeMap::new));
 	}
 
+	/**
+	 * Take a macro name that maps to a Parameters and expand its entries using
+	 * a template. The macro takes a macro name. It will merge and decorate this
+	 * name before it applies it to the template. Each entry is mapped to the
+	 * template. The template can use {@code ${@}} for the key and
+	 * {@code ${@attribute}} for attributes.
+	 * <p>
+	 * It would be nice to take the parameters value directly but this is really
+	 * hard to do with the quoting. That is why we use a name. It is always
+	 * possible to have an intermediate macro
+	 *
+	 * @param args 'template', macro-name of Parameters, template, separator=','
+	 * @return the expanded template.
+	 * @throws IOException
+	 */
+
+	public String _template(String args[]) throws IOException {
+		verifyCommand(args, _templateHelp, null, 3, 30);
+
+		String propertyKey = args[1];
+		String separator = ",";
+
+		StringBuilder templateBuilder = new StringBuilder();
+		String del = "";
+
+		for (int i = 2; i < args.length; i++) {
+			templateBuilder.append(del)
+				.append(args[i]);
+			del = ";";
+		}
+
+		String template = templateBuilder.toString();
+
+		Parameters parameters = domain.decorated(propertyKey);
+		StringBuilder sb = new StringBuilder();
+		del = "";
+
+		try (Processor scope = new Processor(domain)) {
+			for (Map.Entry<String, Attrs> entry : parameters.entrySet()) {
+				String key = entry.getKey();
+				key = Processor.removeDuplicateMarker(key);
+				scope.setProperty("@", key);
+				for (Entry<String, String> attr : entry.getValue()
+					.entrySet()) {
+					scope.setProperty("@" + attr.getKey(), attr.getValue());
+				}
+				String instance = scope.getReplacer()
+					.process(template);
+
+				sb.append(del)
+					.append(instance);
+				del = separator;
+			}
+		}
+		return sb.toString();
+	}
+
+	final static String _templateHelp = "${template;macro-name[;template]+}";
+
+	/**
+	 * Return the merged and decorated value of a macro
+	 */
+
+	public String _decorated(String args[]) throws Exception {
+		verifyCommand(args, _decoratedHelp, null, 2, 3);
+		boolean literals = args.length < 3 ? false : isTruthy(args[2]);
+		Parameters decorated = domain.decorated(args[1], literals);
+		return decorated.toString();
+	}
+
+	final static String _decoratedHelp = "${decorated;macro-name[;literals]}";
+
+	/**
+	 * Test macro to have exceptions, only active when {@link #inTest} is
+	 * active.
+	 *
+	 * @param args currently only 'exception'
+	 * @return nothing of valeue
+	 * @throws ClassNotFoundException
+	 */
+	@SuppressWarnings("unchecked")
+	public String __testdebug(String[] args) throws Throwable {
+		if (inTest) {
+			if ("exception".equals(args[1])) {
+				Class<? extends Throwable> c = args.length > 2 ? (Class<Throwable>) Class.forName(args[2])
+					: RuntimeException.class;
+				Throwable e = args.length > 3 ? c.getConstructor(String.class)
+					.newInstance(args[3]) : c.newInstance();
+				throw e;
+			}
+		}
+		return null;
+	}
 }

@@ -1,13 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2010 Per Kr. Soreide.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Per Kr. Soreide - initial API and implementation
- *******************************************************************************/
 package bndtools.release;
 
 import java.io.File;
@@ -33,94 +23,92 @@ import bndtools.release.ui.WorkspaceReleaseDialog;
 
 public class ReleaseDialogJob extends Job {
 
-    protected final Shell shell;
-    protected final Project project;
-    private final List<File> subBundles;
+	protected final Shell		shell;
+	protected final Project		project;
+	private final List<File>	subBundles;
 
-    public ReleaseDialogJob(Project project, List<File> subBundles) {
-        super(Messages.releaseJob);
-        this.project = project;
-        this.shell = PlatformUI.getWorkbench()
-            .getDisplay()
-            .getActiveShell();
-        this.subBundles = subBundles;
-        setUser(true);
-    }
+	public ReleaseDialogJob(Project project, List<File> subBundles) {
+		super(Messages.releaseJob);
+		this.project = project;
+		this.shell = PlatformUI.getWorkbench()
+			.getDisplay()
+			.getActiveShell();
+		this.subBundles = subBundles;
+		setUser(true);
+	}
 
-    @Override
-    protected IStatus run(IProgressMonitor monitor) {
+	@Override
+	protected IStatus run(IProgressMonitor monitor) {
 
-        try {
-            monitor.beginTask(Messages.cleaningProject, 100);
-            monitor.setTaskName(Messages.releasing);
-            monitor.worked(33);
-            monitor.subTask(Messages.checkingExported);
+		try {
+			monitor.beginTask(Messages.cleaningProject, 100);
+			monitor.setTaskName(Messages.releasing);
+			monitor.worked(33);
+			monitor.subTask(Messages.checkingExported);
 
-            final List<Baseline> diffs = new ArrayList<Baseline>();
+			final List<Baseline> diffs = new ArrayList<>();
 
-            try (ProjectBuilder pb = project.getBuilder(null)) {
-                for (Builder builder : pb.getSubBuilders()) {
+			try (ProjectBuilder pb = project.getBuilder(null)) {
+				for (Builder builder : pb.getSubBuilders()) {
 
-                    if (subBundles != null) {
-                        if (!subBundles.contains(builder.getPropertiesFile())) {
-                            continue;
-                        }
-                    }
+					if (subBundles != null) {
+						if (!subBundles.contains(builder.getPropertiesFile())) {
+							continue;
+						}
+					}
 
-                    Baseline diff = DiffHelper.createBaseline(builder);
-                    if (diff != null) {
-                        diffs.add(diff);
-                    }
-                }
-            }
-            if (diffs.size() == 0) {
-                // TODO: message
-                return Status.OK_STATUS;
-            }
-            monitor.worked(33);
+					Baseline diff = DiffHelper.createBaseline(builder);
+					if (diff != null) {
+						diffs.add(diff);
+					}
+				}
+			}
+			if (diffs.isEmpty()) {
+				// TODO: message
+				return Status.OK_STATUS;
+			}
+			monitor.worked(33);
 
-            Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    List<ProjectDiff> projectDiffs = new ArrayList<ProjectDiff>();
-                    projectDiffs.add(new ProjectDiff(project, diffs));
-                    ReleaseHelper.initializeProjectDiffs(projectDiffs);
-                    WorkspaceReleaseDialog dialog = new WorkspaceReleaseDialog(shell, projectDiffs, true);
-                    if (dialog.open() == Window.OK) {
-                        boolean runJob = false;
-                        for (ProjectDiff diff : projectDiffs) {
-                            if (diff.isRelease()) {
-                                runJob = true;
-                                break;
-                            }
-                        }
-                        if (!runJob) {
-                            return;
-                        }
-                        WorkspaceReleaseJob releaseJob = new WorkspaceReleaseJob(projectDiffs, dialog.getReleaseOption(), dialog.isShowMessage());
-                        releaseJob.setRule(ResourcesPlugin.getWorkspace()
-                            .getRoot());
-                        releaseJob.schedule();
-                    }
-                }
-            };
+			Runnable runnable = () -> {
+				List<ProjectDiff> projectDiffs = new ArrayList<>();
+				projectDiffs.add(new ProjectDiff(project, diffs));
+				ReleaseHelper.initializeProjectDiffs(projectDiffs);
+				WorkspaceReleaseDialog dialog = new WorkspaceReleaseDialog(shell, projectDiffs, true);
+				if (dialog.open() == Window.OK) {
+					boolean runJob = false;
+					for (ProjectDiff diff : projectDiffs) {
+						if (diff.isRelease()) {
+							runJob = true;
+							break;
+						}
+					}
+					if (!runJob) {
+						return;
+					}
+					WorkspaceReleaseJob releaseJob = new WorkspaceReleaseJob(projectDiffs, dialog.getReleaseOption(),
+						dialog.isShowMessage());
+					releaseJob.setRule(ResourcesPlugin.getWorkspace()
+						.getRoot());
+					releaseJob.schedule();
+				}
+			};
 
-            if (Display.getCurrent() == null) {
-                Display.getDefault()
-                    .asyncExec(runnable);
-            } else {
-                runnable.run();
-            }
+			if (Display.getCurrent() == null) {
+				Display.getDefault()
+					.asyncExec(runnable);
+			} else {
+				runnable.run();
+			}
 
-            monitor.worked(33);
-            return Status.OK_STATUS;
-        } catch (Exception e) {
-            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Error : " + e.getMessage(), e);
-        } finally {
+			monitor.worked(33);
+			return Status.OK_STATUS;
+		} catch (Exception e) {
+			return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Error : " + e.getMessage(), e);
+		} finally {
 
-            monitor.done();
-        }
+			monitor.done();
+		}
 
-    }
+	}
 
 }

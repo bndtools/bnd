@@ -11,8 +11,7 @@ import java.lang.annotation.Target;
  * <a href='http://www.osgi.org/Specifications/Reference#categories'>OSGi
  * Website</a>
  * <p>
- * All categories are merged together with any duplicates removed See
- * {@link About}
+ * All categories are merged together with any duplicates removed
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({

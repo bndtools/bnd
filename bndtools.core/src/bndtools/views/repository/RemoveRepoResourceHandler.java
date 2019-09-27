@@ -11,23 +11,23 @@ import bndtools.model.repo.RepositoryBundle;
 
 public class RemoveRepoResourceHandler extends AbstractHandler {
 
-    @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+	@Override
+	public Object execute(ExecutionEvent event) throws ExecutionException {
 
-        ISelection selection = HandlerUtil.getCurrentSelection(event);
-        if (selection instanceof IStructuredSelection) {
-            Object element = ((IStructuredSelection) selection).getFirstElement();
-            if (element instanceof RepositoryBundle) {
+		ISelection selection = HandlerUtil.getCurrentSelection(event);
+		if (selection instanceof IStructuredSelection) {
+			Object element = ((IStructuredSelection) selection).getFirstElement();
+			if (element instanceof RepositoryBundle) {
 
-                // TODO: remove the element!
+				// TODO: remove the element!
 
-                // TODO: refresh the repositories view
+				// TODO: refresh the repositories view
 
-            }
-        }
+			}
+		}
 
-        //
-        return null;
-    }
+		//
+		return null;
+	}
 
 }

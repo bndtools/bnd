@@ -18,7 +18,7 @@ import junit.framework.TestCase;
  */
 public class HttpClientServerTest extends TestCase {
 	private File	tmp;
-	private Httpbin httpsServer;
+	private Httpbin	httpsServer;
 
 	@Override
 	protected void setUp() throws Exception {

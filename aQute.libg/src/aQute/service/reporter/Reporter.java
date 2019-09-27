@@ -27,14 +27,14 @@ public interface Reporter extends Report {
 
 		/**
 		 * Set the context in the header.
-		 * 
+		 *
 		 * @param context
 		 */
 		SetLocation context(String context);
 
 		/**
 		 * Set the method where the error is reported.
-		 * 
+		 *
 		 * @param methodName
 		 */
 		SetLocation method(String methodName);
@@ -66,7 +66,7 @@ public interface Reporter extends Report {
 	 * Create an error. Implementations must ensure that the given args are not
 	 * prevented from garbage collecting. The args must have a proper toString
 	 * method.
-	 * 
+	 *
 	 * @param format The format of the error
 	 * @param args The arguments of the error
 	 * @return a SetLocation to set the location
@@ -77,7 +77,7 @@ public interface Reporter extends Report {
 	 * Create a warning. Implementations must ensure that the given args are not
 	 * prevented from garbage collecting. The args must have a proper toString
 	 * method.
-	 * 
+	 *
 	 * @param format The format of the error
 	 * @param args The arguments of the error
 	 * @return a SetLocation to set the location
@@ -88,7 +88,7 @@ public interface Reporter extends Report {
 	 * Create a warning. Implementations must ensure that the given args are not
 	 * prevented from garbage collecting. The args must have a proper toString
 	 * method.
-	 * 
+	 *
 	 * @param format The format of the error
 	 * @param args The arguments of the error
 	 */
@@ -98,7 +98,7 @@ public interface Reporter extends Report {
 	 * Create a warning. Implementations must ensure that the given args are not
 	 * prevented from garbage collecting. The args must have a proper toString
 	 * method.
-	 * 
+	 *
 	 * @param progress A value between 0 and 1 indicating the progress. 0 is
 	 *            starting and >=1 is done.
 	 * @param format The format of the error
@@ -112,17 +112,17 @@ public interface Reporter extends Report {
 
 	/**
 	 * Dedicated message for an exception.
-	 * 
+	 *
 	 * @param t The exception
 	 * @param format The format of the message
 	 * @param args The arguments
 	 */
-	public SetLocation exception(Throwable t, String format, Object... args);
+	SetLocation exception(Throwable t, String format, Object... args);
 
 	/**
 	 * The provider of the reporter wants pedantic reporting, meaning every
 	 * possible warning should be reported.
-	 * 
+	 *
 	 * @return if this is a pedantic reporter.
 	 */
 	boolean isPedantic();

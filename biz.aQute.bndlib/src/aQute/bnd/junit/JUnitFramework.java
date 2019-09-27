@@ -90,7 +90,7 @@ public class JUnitFramework implements AutoCloseable {
 
 	/**
 	 * Start a framework while providing a project directory.
-	 * 
+	 *
 	 * @param projectDir
 	 */
 	public JUnitFramework(File projectDir) {

@@ -6,7 +6,6 @@
 
 -include: ${workspace}/cnf/includes/jdt.bnd
 
--dependson: biz.aQute.bnd.embedded-repo
 -nobundles: true
 
 -testpath: \
@@ -18,10 +17,10 @@
     biz.aQute.resolve;version=latest, \
     biz.aQute.repository;version=latest, \
     biz.aQute.bnd.annotation;version=project,\
-    biz.aQute.bnd.remote.junit;version=latest,\
+    biz.aQute.launchpad;version=latest,\
 	biz.aQute.remote.api;version=latest,\
 	${junit},\
-	biz.aQute.bnd.embedded-repo; version=snapshot,\
+	biz.aQute.bnd.embedded-repo;version=snapshot,\
 	slf4j.api;version=latest, \
     slf4j.simple;version=latest
 

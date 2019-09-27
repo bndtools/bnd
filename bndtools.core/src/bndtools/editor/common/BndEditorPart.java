@@ -20,79 +20,79 @@ import bndtools.editor.BndEditor;
 
 public abstract class BndEditorPart extends SectionPart implements PropertyChangeListener {
 
-    protected BndEditModel model;
+	protected BndEditModel		model;
 
-    private final AtomicBoolean committing = new AtomicBoolean(false);
-    private final List<String> subscribedProps = new LinkedList<String>();
+	private final AtomicBoolean	committing		= new AtomicBoolean(false);
+	private final List<String>	subscribedProps	= new LinkedList<>();
 
-    public BndEditorPart(Composite parent, FormToolkit toolkit, int style) {
-        super(parent, toolkit, style);
-    }
+	public BndEditorPart(Composite parent, FormToolkit toolkit, int style) {
+		super(parent, toolkit, style);
+	}
 
-    protected abstract String[] getProperties();
+	protected abstract String[] getProperties();
 
-    protected abstract void refreshFromModel();
+	protected abstract void refreshFromModel();
 
-    protected abstract void commitToModel(boolean onSave);
+	protected abstract void commitToModel(boolean onSave);
 
-    @Override
-    public void initialize(IManagedForm form) {
-        super.initialize(form);
-        model = (BndEditModel) form.getInput();
+	@Override
+	public void initialize(IManagedForm form) {
+		super.initialize(form);
+		model = (BndEditModel) form.getInput();
 
-        for (String prop : getProperties()) {
-            subscribedProps.add(prop);
-            model.addPropertyChangeListener(prop, this);
-        }
-    }
+		for (String prop : getProperties()) {
+			subscribedProps.add(prop);
+			model.addPropertyChangeListener(prop, this);
+		}
+	}
 
-    @Override
-    public void dispose() {
-        super.dispose();
-        if (model != null)
-            for (String prop : subscribedProps) {
-                model.removePropertyChangeListener(prop, this);
-            }
-    }
+	@Override
+	public void dispose() {
+		super.dispose();
+		if (model != null)
+			for (String prop : subscribedProps) {
+				model.removePropertyChangeListener(prop, this);
+			}
+	}
 
-    @Override
-    public final void refresh() {
-        if (!Central.hasWorkspaceDirectory()) {
-            refreshFromModel();
-        } else {
-            Central.onWorkspaceAsync(workspace -> {
-                ScrolledForm form = getManagedForm().getForm();
-                if (form.isDisposed())
-                    return;
+	@Override
+	public final void refresh() {
+		if (!Central.hasWorkspaceDirectory()) {
+			refreshFromModel();
+		} else {
+			Central.onWorkspaceAsync(workspace -> {
+				ScrolledForm form = getManagedForm().getForm();
+				if (form.isDisposed())
+					return;
 
-                refreshFromModel();
+				refreshFromModel();
 
-                if (BndEditor.SYNC_MESSAGE.equals(form.getMessage())) {
-                    form.setMessage(null, IMessageProvider.NONE);
-                }
-            });
-        }
-        super.refresh();
-    }
+				if (BndEditor.SYNC_MESSAGE.equals(form.getMessage())) {
+					form.setMessage(null, IMessageProvider.NONE);
+				}
+			});
+		}
+		super.refresh();
+	}
 
-    @Override
-    public final void commit(boolean onSave) {
-        committing.compareAndSet(false, true);
-        super.commit(onSave);
-        commitToModel(onSave);
-        committing.compareAndSet(true, false);
-    }
+	@Override
+	public final void commit(boolean onSave) {
+		committing.compareAndSet(false, true);
+		super.commit(onSave);
+		commitToModel(onSave);
+		committing.compareAndSet(true, false);
+	}
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (committing.get())
-            return;
-        IFormPage page = (IFormPage) getManagedForm().getContainer();
-        if (page.isActive()) {
-            refresh();
-        } else {
-            markStale();
-        }
-    }
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if (committing.get())
+			return;
+		IFormPage page = (IFormPage) getManagedForm().getContainer();
+		if (page.isActive()) {
+			refresh();
+		} else {
+			markStale();
+		}
+	}
 
 }

@@ -30,8 +30,7 @@ public class IncludeResourceTest {
 		s = testPreprocessing("{testresources/includeresource/root.txt}", "root.txt");
 		assertEquals("6", s.trim());
 	}
-	
-	
+
 	/**
 	 */
 	@Test
@@ -43,10 +42,8 @@ public class IncludeResourceTest {
 		Set<String> flattened = testResources("testresources/includeresource/;flatten:=true", 4);
 		assertThat(flattened).contains("root.txt", "a.txt", "b.txt", "c.txt");
 
-
 		Set<String> filtered = testResources("testresources/includeresource/;filter:=c.*", 1);
 		assertThat(filtered).contains("a/c/c.txt");
-
 
 		Set<String> filteredAll = testResources("testresources/includeresource/;filter:=[abc].*", 3);
 		assertThat(filteredAll).contains("a/a.txt", "b/b.txt", "a/c/c.txt");
@@ -67,7 +64,6 @@ public class IncludeResourceTest {
 
 		Set<String> renameWithTwoSlashes = testResources("x/=testresources/includeresource/", 4);
 		assertThat(rename).contains("x/root.txt", "x/a/a.txt", "x/b/b.txt", "x/a/c/c.txt");
-
 
 	}
 
@@ -175,8 +171,7 @@ public class IncludeResourceTest {
 			if (resource2 == null)
 				return null;
 
-			return IO.collect(resource2
-				.openInputStream());
+			return IO.collect(resource2.openInputStream());
 		}
 
 	}

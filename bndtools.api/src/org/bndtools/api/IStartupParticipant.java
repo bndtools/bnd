@@ -1,7 +1,7 @@
 package org.bndtools.api;
 
 public interface IStartupParticipant {
-    void start();
+	void start();
 
-    void stop();
+	void stop();
 }

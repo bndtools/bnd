@@ -6,20 +6,27 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.EE;
 import aQute.bnd.maven.lib.configuration.BeanProperties;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
@@ -51,7 +58,12 @@ public class BndrunContainer {
 
 	private final RepositorySystem									system;
 
+	private final boolean											transitive;
+
+	private final PostProcessor										postProcessor;
+
 	private FileSetRepository										fileSetRepository;
+
 	private Processor												processor;
 
 	public static class Builder {
@@ -69,6 +81,8 @@ public class BndrunContainer {
 		private Set<Scope>												scopes						= new HashSet<>(
 			Arrays.asList(Scope.compile, Scope.runtime));
 		private boolean													useMavenDependencies		= true;
+		private boolean													transitive					= true;
+		private PostProcessor											postProcessor				= new LocalPostProcessor();
 
 		@SuppressWarnings("deprecation")
 		public Builder(MavenProject project, MavenSession session, RepositorySystemSession repositorySession,
@@ -93,8 +107,18 @@ public class BndrunContainer {
 			return this;
 		}
 
+		public Builder setPostProcessor(PostProcessor postProcessor) {
+			this.postProcessor = postProcessor;
+			return this;
+		}
+
 		public Builder setScopes(Set<Scope> scopes) {
 			this.scopes = scopes;
+			return this;
+		}
+
+		public Builder setTransitive(boolean transitive) {
+			this.transitive = transitive;
 			return this;
 		}
 
@@ -105,7 +129,7 @@ public class BndrunContainer {
 
 		public BndrunContainer build() {
 			return new BndrunContainer(project, session, resolver, repositorySession, artifactFactory, system, scopes,
-				bundles, useMavenDependencies, includeDependencyManagement);
+				bundles, useMavenDependencies, includeDependencyManagement, transitive, postProcessor);
 		}
 
 	}
@@ -126,7 +150,7 @@ public class BndrunContainer {
 	BndrunContainer(MavenProject project, MavenSession session, ProjectDependenciesResolver resolver,
 		RepositorySystemSession repositorySession, org.apache.maven.artifact.factory.ArtifactFactory artifactFactory,
 		RepositorySystem system, Set<Scope> scopes, List<File> bundles, boolean useMavenDependencies,
-		boolean includeDependencyManagement) {
+		boolean includeDependencyManagement, boolean transitive, PostProcessor postProcessor) {
 		this.project = project;
 		this.session = session;
 		this.resolver = resolver;
@@ -137,6 +161,8 @@ public class BndrunContainer {
 		this.bundles = bundles;
 		this.useMavenDependencies = useMavenDependencies;
 		this.includeDependencyManagement = includeDependencyManagement;
+		this.transitive = transitive;
+		this.postProcessor = postProcessor;
 	}
 
 	public int execute(File runFile, String task, File workingDir, Operation operation) throws Exception {
@@ -155,14 +181,16 @@ public class BndrunContainer {
 		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
 			run.setBase(temporaryDir);
 			Workspace workspace = run.getWorkspace();
-			workspace.setParent(getProcessor());
 			workspace.setBuildDir(cnf);
 			workspace.setOffline(session.getSettings()
 				.isOffline());
 			workspace.addBasicPlugin(getFileSetRepository());
+			run.setParent(getProcessor(workspace));
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);
 			}
+			setRunrequiresFromProjectArtifact(run);
+			setEEfromBuild(run);
 			run.getInfo(workspace);
 			int errors = report(run);
 			if (!run.isOk()) {
@@ -182,12 +210,45 @@ public class BndrunContainer {
 		}
 
 		DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver, system,
-			scopes);
+			scopes, transitive, postProcessor);
 
 		String name = project.getName()
 			.isEmpty() ? project.getArtifactId() : project.getName();
 
 		return fileSetRepository = dependencyResolver.getFileSetRepository(name, bundles, useMavenDependencies);
+	}
+
+	public void setRunrequiresFromProjectArtifact(Run run) {
+		String runrequires = run.getProperty(Constants.RUNREQUIRES);
+
+		if (runrequires == null && ("jar".equals(project.getPackaging()) || "war".equals(project.getPackaging()))
+			&& (project.getPlugin("biz.aQute.bnd:bnd-maven-plugin") != null)) {
+
+			Artifact artifact = project.getArtifact();
+
+			run.setProperty(Constants.RUNREQUIRES,
+				String.format("osgi.identity;filter:='(osgi.identity=%s)'", artifact.getArtifactId()));
+
+			logger.info("Bnd inferred {}: {}", Constants.RUNREQUIRES, run.getProperty(Constants.RUNREQUIRES));
+		}
+	}
+
+	public void setEEfromBuild(Run run) {
+		String runee = run.getProperty(Constants.RUNEE);
+
+		if (runee == null) {
+			Optional.ofNullable(project.getPlugin("org.apache.maven.plugins:maven-compiler-plugin"))
+				.map(Plugin::getConfiguration)
+				.map(Xpp3Dom.class::cast)
+				.map(dom -> dom.getChild("target"))
+				.map(Xpp3Dom::getValue)
+				.flatMap(EE::highestFromTargetVersion)
+				.ifPresent(ee -> {
+					run.setProperty(Constants.RUNEE, ee.getEEName());
+
+					logger.info("Bnd inferred {}: {}", Constants.RUNEE, run.getProperty(Constants.RUNEE));
+				});
+		}
 	}
 
 	private String getNamePart(File runFile) {
@@ -196,7 +257,7 @@ public class BndrunContainer {
 		return (pos > 0) ? nameExt.substring(0, pos) : nameExt;
 	}
 
-	private Processor getProcessor() {
+	private Processor getProcessor(Workspace workspace) {
 		if (processor != null) {
 			return processor;
 		}
@@ -206,7 +267,7 @@ public class BndrunContainer {
 		beanProperties.put("settings", session.getSettings());
 		Properties mavenProperties = new Properties(beanProperties);
 		mavenProperties.putAll(project.getProperties());
-		return processor = new Processor(mavenProperties, false);
+		return processor = new Processor(workspace, mavenProperties, false);
 	}
 
 	@SuppressWarnings("deprecation")

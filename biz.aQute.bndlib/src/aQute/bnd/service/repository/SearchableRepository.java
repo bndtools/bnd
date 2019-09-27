@@ -81,7 +81,7 @@ public interface SearchableRepository {
 	 * The @{code includeDependencies} parameter indicates that if possible any
 	 * mandatory compile and runtime dependencies should be added to the result
 	 * set.
-	 * 
+	 *
 	 * @param url the dropped url
 	 * @param includeDependencies Include any dependent revisions
 	 * @return null or the modifiable set of associated resource descriptors.
@@ -94,7 +94,7 @@ public interface SearchableRepository {
 	 * recognized or no results are returned an empty set should be returned.
 	 * The returned set is owned by the caller and may be modified. Returned
 	 * items are not automatically added to the repository.
-	 * 
+	 *
 	 * @param query The query syntax
 	 * @return a set of resource descriptors.
 	 * @throws Exception
@@ -105,7 +105,7 @@ public interface SearchableRepository {
 	 * Add a resource descriptors to the underlying repository. Only descriptors
 	 * recognized to be from the designated repository are added, others must be
 	 * ignored. True must be returned if this descriptor was accepted.
-	 * 
+	 *
 	 * @param resource the descriptor to add
 	 * @return true if added, false if rejected
 	 * @throws Exception
@@ -120,7 +120,7 @@ public interface SearchableRepository {
 	 * The @{code includeDependencies} parameter indicates that if possible any
 	 * mandatory compile and runtime dependencies should be added to the result
 	 * set.
-	 * 
+	 *
 	 * @param requirement The requirement to match
 	 * @param includeDependencies Include any dependent revisions
 	 * @return the set of resource descriptors that match, potentially empty
@@ -131,7 +131,7 @@ public interface SearchableRepository {
 	/**
 	 * Return the URL to a web page that allows browsing or searching of the
 	 * repository.
-	 * 
+	 *
 	 * @param searchString A search string, or null for general browsing
 	 * @return A URL that may be opened in a web browser, or null if the
 	 *         repository does not support web browsing.

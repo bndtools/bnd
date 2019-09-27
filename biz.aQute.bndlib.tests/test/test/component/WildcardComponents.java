@@ -23,7 +23,7 @@ public class WildcardComponents extends TestCase {
 
 	/**
 	 * Test to see if we ignore scala.ScalaObject as interface
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testWildcardSpecMatchingOldStyleComponents() throws Exception {

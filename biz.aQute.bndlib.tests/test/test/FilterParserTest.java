@@ -64,7 +64,7 @@ public class FilterParserTest extends TestCase {
 	/**
 	 * Since the filters are cached we need to get similar filters to check if
 	 * this works.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	public void testCache() throws IOException {

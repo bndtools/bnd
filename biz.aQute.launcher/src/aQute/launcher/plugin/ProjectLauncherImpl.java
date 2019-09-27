@@ -11,6 +11,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -27,11 +28,11 @@ import java.util.jar.Manifest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.header.Parameters;
-import aQute.bnd.help.instructions.BuilderInstructions;
-import aQute.bnd.help.instructions.LauncherInstructions;
+import aQute.bnd.help.instructions.LauncherInstructions.RunOption;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.EmbeddedResource;
@@ -43,32 +44,33 @@ import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.launcher.constants.LauncherConstants;
-import aQute.launcher.pre.EmbeddedLauncher;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.Glob;
 
 public class ProjectLauncherImpl extends ProjectLauncher {
-	private final static Logger		logger					= LoggerFactory.getLogger(ProjectLauncherImpl.class);
-	private static final String		EMBEDDED_LAUNCHER_FQN	= "aQute.launcher.pre.EmbeddedLauncher";
-	private static final String		EMBEDDED_LAUNCHER		= "aQute/launcher/pre/EmbeddedLauncher.class";
-	private BuilderInstructions		builderInstrs;
-	private LauncherInstructions	launcherInstrs;
+	private final static Logger		logger				= LoggerFactory.getLogger(ProjectLauncherImpl.class);
+	private static final String		EMBEDDED_RUNPATH	= "Embedded-Runpath";
+	private static final String		LAUNCHER_PATH		= "launcher.runpath";
+	private static final String		EMBEDDED_LAUNCHER	= "aQute.launcher.pre.EmbeddedLauncher";
+	static final String				PRE_JAR				= "biz.aQute.launcher.pre.jar";
+	private final Container			container;
+	private final List<String>		launcherpath		= new ArrayList<>();
+
+	private File					preTemp;
 
 	final private File				launchPropertiesFile;
 	boolean							prepared;
-
 	DatagramSocket					listenerComms;
 
-	public ProjectLauncherImpl(Project project) throws Exception {
+	public ProjectLauncherImpl(Project project, Container container) throws Exception {
 		super(project);
-
-		builderInstrs = project.getInstructions(BuilderInstructions.class);
-		launcherInstrs = project.getInstructions(LauncherInstructions.class);
+		this.container = container;
 
 		logger.debug("created a aQute launcher plugin");
 		launchPropertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
@@ -81,8 +83,35 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			project.warning(
 				"The noframework property in -runproperties is replaced by a project setting: '-runframework: none'");
 		}
+	}
 
-		super.addDefault(Constants.DEFAULT_LAUNCHER_BSN);
+	@Override
+	protected void updateFromProject() throws Exception {
+		super.updateFromProject();
+
+		File launcher = container.getFile();
+
+		// Pre file will likely be next to launcher in embedded repo
+		File pre = new File(launcher.getParentFile(), PRE_JAR);
+
+		if (!pre.isFile()) {
+			if (preTemp != null) {
+				IO.delete(preTemp);
+			}
+			preTemp = pre = File.createTempFile("pre", ".jar");
+			try (Jar jar = new Jar(launcher)) {
+				Resource embeddedPre = jar.getResource(PRE_JAR);
+				try (OutputStream out = IO.outputStream(pre)) {
+					embeddedPre.write(out);
+				}
+			}
+		}
+		launcherpath.clear();
+		addClasspath(new Container(getProject(), pre), launcherpath);
+
+		// Make sure the launcher is on the runpath
+		addClasspath(container);
+
 	}
 
 	//
@@ -107,10 +136,14 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	@Override
 	public void cleanup() {
-		launchPropertiesFile.delete();
+		IO.delete(launchPropertiesFile);
 		if (listenerComms != null) {
 			listenerComms.close();
 			listenerComms = null;
+		}
+		if (preTemp != null) {
+			IO.delete(preTemp);
+			preTemp = null;
 		}
 		prepared = false;
 		logger.debug("Deleted {}", launchPropertiesFile.getAbsolutePath());
@@ -119,13 +152,38 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	@Override
 	public String getMainTypeName() {
-		return "aQute.launcher.Launcher";
+		Instructions instructions = new Instructions(getProject().getProperty(Constants.REMOVEHEADERS));
+		if (!instructions.isEmpty() && instructions.matches(MAIN_CLASS)) {
+			return EMBEDDED_LAUNCHER;
+		}
+		return getProject().getProperty(MAIN_CLASS, EMBEDDED_LAUNCHER);
 	}
 
 	@Override
 	public void update() throws Exception {
+		super.update();
 		updateFromProject();
 		writeProperties();
+	}
+
+	/**
+	 * We override getClasspath to use it just for the embedded launcher.
+	 */
+	@Override
+	public Collection<String> getClasspath() {
+		return launcherpath;
+	}
+
+	/**
+	 * We override getRunVM to use it to add the runpath to the JVM execution as
+	 * a system property to be processed by the embedded launcher.
+	 */
+	@Override
+	public Collection<String> getRunVM() {
+		List<String> list = new ArrayList<>(super.getRunVM());
+		list.add(getRunpath().stream()
+			.collect(Strings.joining(",", "-D" + LAUNCHER_PATH + "=\"", "\"", "")));
+		return list;
 	}
 
 	@Override
@@ -139,6 +197,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		if (prepared)
 			return;
 		prepared = true;
+		super.prepare();
+
 		writeProperties();
 	}
 
@@ -170,27 +230,30 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		lc.services = super.getRunFramework() == SERVICES ? true : false;
 		lc.activators.addAll(getActivators());
 		lc.name = getProject().getName();
+		lc.activationEager = launcherInstrs.runoptions()
+			.contains(RunOption.eager);
 
 		if (!exported && !getNotificationListeners().isEmpty()) {
 			if (listenerComms == null) {
 				listenerComms = new DatagramSocket(new InetSocketAddress(InetAddress.getByName(null), 0));
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						DatagramSocket socket = listenerComms;
-						DatagramPacket packet = new DatagramPacket(new byte[65536], 65536);
-						while (!socket.isClosed()) {
-							try {
-								socket.receive(packet);
-								DataInput dai = ByteBufferDataInput.wrap(packet.getData(), packet.getOffset(),
-									packet.getLength());
-								NotificationType type = NotificationType.values()[dai.readInt()];
-								String message = dai.readUTF();
-								for (NotificationListener listener : getNotificationListeners()) {
-									listener.notify(type, message);
-								}
-							} catch (IOException e) {}
-						}
+				new Thread(() -> {
+					DatagramSocket socket = listenerComms;
+					DatagramPacket packet = new DatagramPacket(new byte[65536], 65536);
+					while (!socket.isClosed()) {
+						try {
+							socket.receive(packet);
+							ByteBuffer bb = ByteBuffer.wrap(packet.getData(), packet.getOffset(),
+								packet.getLength());
+							DataInput dai = ByteBufferDataInput.wrap(bb);
+							NotificationType type = NotificationType.values()[dai.readInt()];
+							String message = dai.readUTF();
+							if ((type == NotificationType.ERROR) && bb.hasRemaining()) {
+								message += "\n" + dai.readUTF();
+							}
+							for (NotificationListener listener : getNotificationListeners()) {
+								listener.notify(type, message);
+							}
+						} catch (IOException e) {}
 					}
 				}).start();
 			}
@@ -307,30 +370,31 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 				new EmbeddedResource(bout.toByteBuffer(), 0L));
 		}
 
+		Properties flattenedProperties = getProject().getFlattenedProperties();
+		Instructions instructions = new Instructions(getProject().getProperty(Constants.REMOVEHEADERS));
+		Collection<Object> result = instructions.select(flattenedProperties.keySet(), false);
+		flattenedProperties.keySet()
+			.removeAll(result);
+
 		Manifest m = new Manifest();
 		Attributes main = m.getMainAttributes();
-
-		for (Entry<Object, Object> e : getProject().getFlattenedProperties()
-			.entrySet()) {
+		main.putValue(MAIN_CLASS, EMBEDDED_LAUNCHER);
+		main.putValue(EMBEDDED_RUNPATH, join(classpath));
+		for (Entry<Object, Object> e : flattenedProperties.entrySet()) {
 			String key = (String) e.getKey();
 			if (key.length() > 0 && Character.isUpperCase(key.charAt(0)))
 				main.putValue(key, (String) e.getValue());
 		}
 
-		Instructions instructions = new Instructions(getProject().getProperty(Constants.REMOVEHEADERS));
-		Collection<Object> result = instructions.select(main.keySet(), false);
-		main.keySet()
-			.removeAll(result);
+		Resource preJar = Resource.fromURL(this.getClass()
+			.getResource("/" + PRE_JAR));
+		try (Jar pre = Jar.fromResource("pre", preJar)) {
+			jar.addAll(pre);
+		}
 
-		logger.debug("Use Embedded launcher");
-		m.getMainAttributes()
-			.putValue("Main-Class", EMBEDDED_LAUNCHER_FQN);
-		m.getMainAttributes()
-			.putValue(EmbeddedLauncher.EMBEDDED_RUNPATH, Processor.join(classpath));
-		Resource embeddedLauncher = Resource.fromURL(this.getClass()
-			.getResource("/" + EMBEDDED_LAUNCHER));
-		jar.putResource(EMBEDDED_LAUNCHER, embeddedLauncher);
-		doStart(jar, EMBEDDED_LAUNCHER_FQN);
+		String embeddedLauncherName = main.getValue(MAIN_CLASS);
+		logger.debug("Use '{}' launcher class", embeddedLauncherName);
+		doStart(jar, embeddedLauncherName);
 		if (getProject().getProperty(Constants.DIGESTS) != null)
 			jar.setDigestAlgorithms(getProject().getProperty(Constants.DIGESTS)
 				.trim()
@@ -340,6 +404,20 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 				"SHA-1", "MD-5"
 			});
 		jar.setManifest(m);
+
+		String moduleInstruction = getProject().getProperty(Constants.JPMS_MODULE_INFO);
+		if (moduleInstruction != null) {
+			String name = jar.getName();
+			try (Builder b = new Builder()) {
+				b.setProperty(Constants.JPMS_MODULE_INFO, moduleInstruction);
+				b.setJar(jar);
+				b.addClasspath(jar);
+				jar = b.build();
+				b.removeClose(jar);
+				jar.setName(name);
+			}
+		}
+
 		cleanup();
 		return jar;
 	}
@@ -403,18 +481,24 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			.keySet()));
 	}
 
-	String nonCollidingPath(File file, Jar jar) {
+	String nonCollidingPath(File file, Jar jar) throws Exception {
 		String fileName = file.getName();
 		String path = "jar/" + fileName;
-		String[] parts = Strings.extension(fileName);
-		if (parts == null) {
-			parts = new String[] {
-				fileName, ""
-			};
-		}
-		int i = 1;
-		while (jar.exists(path)) {
-			path = String.format("jar/%s[%d].%s", parts[0], i++, parts[1]);
+		Resource resource = jar.getResource(path);
+		if (resource != null) {
+			if ((file.length() == resource.size()) && (SHA1.digest(file)
+				.equals(SHA1.digest(resource.openInputStream())))) {
+				return path; // same resource
+			}
+			String[] parts = Strings.extension(fileName);
+			if (parts == null) {
+				parts = new String[] {
+					fileName, ""
+				};
+			}
+			for (int i = 1; jar.exists(path); i++) {
+				path = String.format("jar/%s[%d].%s", parts[0], i, parts[1]);
+			}
 		}
 		return path;
 	}

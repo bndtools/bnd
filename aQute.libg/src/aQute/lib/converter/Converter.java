@@ -604,7 +604,7 @@ public class Converter {
 
 	/**
 	 * Convert a map to an interface.
-	 * 
+	 *
 	 * @param interfc
 	 * @param properties
 	 * @return proxy object for map

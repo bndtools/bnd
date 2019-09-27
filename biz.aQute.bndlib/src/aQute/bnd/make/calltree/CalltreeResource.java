@@ -13,18 +13,17 @@ import java.util.TreeSet;
 
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
-import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.WriteResource;
 
 /**
  * Create an XML call tree of a set of classes. The structure of the XML is:
- * 
+ *
  * <pre>
  *  calltree ::= &lt;using&gt; &lt;usedby&gt; using ::= &lt;method&gt; *
  * usedby ::= &lt;method&gt; * method ::= &lt;ref&gt;
  * </pre>
- * 
+ *
  * The <code>using</code> element contains methods in the set of classes and
  * their references. The <code>usedby</code> element contains the used methods
  * and their references to the set of classes. The <code>ref</code> element
@@ -42,7 +41,7 @@ public class CalltreeResource extends WriteResource {
 
 	/**
 	 * Create a resource for inclusion that will print a call tree.
-	 * 
+	 *
 	 * @param values the classes for which the call tree is generated.
 	 */
 	public CalltreeResource(Collection<Clazz> values) {
@@ -76,7 +75,7 @@ public class CalltreeResource extends WriteResource {
 
 	/**
 	 * Print the call tree in XML.
-	 * 
+	 *
 	 * @param out The output writer
 	 * @param classes The set of classes
 	 * @throws Exception Any errors
@@ -116,18 +115,12 @@ public class CalltreeResource extends WriteResource {
 	/*
 	 * Add a new reference
 	 */
-	static Comparator<Clazz.MethodDef> COMPARATOR = new Comparator<Clazz.MethodDef>() {
-
-		@Override
-		public int compare(MethodDef a, MethodDef b) {
-			int r = a.getName()
-				.compareTo(b.getName());
-			return r != 0 ? r
-				: a.getDescriptor()
-					.toString()
-					.compareTo(b.getDescriptor()
-						.toString());
-		}
+	static Comparator<Clazz.MethodDef> COMPARATOR = (a, b) -> {
+		int r = a.getName()
+			.compareTo(b.getName());
+		return r != 0 ? r
+			: a.descriptor()
+				.compareTo(b.descriptor());
 	};
 
 	static void xref(Map<Clazz.MethodDef, Set<Clazz.MethodDef>> references, Clazz.MethodDef source,
@@ -163,7 +156,7 @@ public class CalltreeResource extends WriteResource {
 		out.println("      <" + element + " class='" + source.getContainingClass()
 			.getFQN() + "'" + getAccess(source.getAccess())
 			+ (source.isConstructor() ? "" : " name='" + source.getName() + "'") + " descriptor='"
-			+ source.getDescriptor() + "' pretty='" + source.toString() + "'" + closeElement);
+			+ source.descriptor() + "' pretty='" + source.toString() + "'" + closeElement);
 	}
 
 	private static String getAccess(int access) {

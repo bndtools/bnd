@@ -20,13 +20,13 @@ import aQute.lib.strings.Strings;
  * osgi.native.* bundle properties.
  */
 public class OSInformation {
-	String					osnames							= null;
-	Version					osversion						= null;
+	String							osnames							= null;
+	Version							osversion						= null;
 
-	static private String	regexQualifierNotAllowedChars	= "[^\\p{Alnum}-_]";
-	static private Pattern	digitPattern					= Pattern.compile("(\\d+).*");
+	private final static String		regexQualifierNotAllowedChars	= "[^-\\w]";
+	private final static Pattern	digitPattern					= Pattern.compile("(\\d+).*");
 
-	final static String[][]	processorFamilies				= {
+	final static String[][]			processorFamilies				= {
 		new String[] {
 			"x86-64", "amd64", "em64t", "x86_64"
 		}, new String[] {
@@ -65,7 +65,8 @@ public class OSInformation {
 			"V850e"
 		},
 	};
-	static String[]			osarch							= getProcessorAliases(System.getProperty("os.arch"));
+	final static String[]			osarch							= getProcessorAliases(
+		System.getProperty("os.arch"));
 
 	public static String[] getProcessorAliases(String osArch) {
 		for (String[] pnames : processorFamilies) {
@@ -90,7 +91,7 @@ public class OSInformation {
 	 * qualifier. Illegal characters in that qualifier are converted into
 	 * underscores to ensure that the final qualifier is valid.
 	 * </p>
-	 * 
+	 *
 	 * @param sysPropOsVersion the system property "os.version"
 	 */
 	static Version convertUnixKernelVersion(String sysPropOsVersion) {
@@ -148,7 +149,7 @@ public class OSInformation {
 
 	/**
 	 * Construct OS specific information
-	 * 
+	 *
 	 * @throws IllegalArgumentException
 	 */
 	public OSInformation() throws IllegalArgumentException {
@@ -179,7 +180,7 @@ public class OSInformation {
 
 	/**
 	 * Helper for the Processor._native_capability macro
-	 * 
+	 *
 	 * @param args the arguments of the macro
 	 * @return a provide capability clause for the native environment
 	 */

@@ -31,25 +31,25 @@ import org.osgi.framework.dto.BundleDTO;
 import org.osgi.framework.startlevel.BundleStartLevel;
 import org.osgi.framework.startlevel.FrameworkStartLevel;
 import org.osgi.framework.wiring.FrameworkWiring;
-import org.osgi.service.packageadmin.PackageAdmin;
-import org.osgi.service.startlevel.StartLevel;
 import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.lib.dtoformatter.DTOFormatter;
 import aQute.libg.glob.Glob;
 
-@SuppressWarnings("deprecation")
 public class Core {
 
-	final BundleContext									context;
-	final ServiceTracker<StartLevel, StartLevel>		startLevelService;
-	final ServiceTracker<PackageAdmin, PackageAdmin>	packageAdmin;
+	final BundleContext																								context;
+	@SuppressWarnings("deprecation")
+	final ServiceTracker<org.osgi.service.startlevel.StartLevel, org.osgi.service.startlevel.StartLevel>			startLevelService;
+	@SuppressWarnings("deprecation")
+	final ServiceTracker<org.osgi.service.packageadmin.PackageAdmin, org.osgi.service.packageadmin.PackageAdmin>	packageAdmin;
 
+	@SuppressWarnings("deprecation")
 	public Core(BundleContext context, DTOFormatter formatter) {
 		this.context = context;
-		this.startLevelService = new ServiceTracker<>(context, StartLevel.class, null);
+		this.startLevelService = new ServiceTracker<>(context, org.osgi.service.startlevel.StartLevel.class, null);
 		this.startLevelService.open();
-		this.packageAdmin = new ServiceTracker<>(context, PackageAdmin.class, null);
+		this.packageAdmin = new ServiceTracker<>(context, org.osgi.service.packageadmin.PackageAdmin.class, null);
 		this.packageAdmin.open();
 		dtos(formatter);
 	}
@@ -114,13 +114,13 @@ public class Core {
 	//@formatter:off
 	@Descriptor("set either the framework or the initial bundle start level")
 	public int startlevel(
-		
-		@Parameter(names = {"-w", "--wait"}, absentValue = "false", presentValue = "true") 
-		boolean wait, 
-		
+
+		@Parameter(names = {"-w", "--wait"}, absentValue = "false", presentValue = "true")
+		boolean wait,
+
 		Modifier modifier,
-		
-		@Descriptor("either framework or initial level. If <0 then not set, currently value returned") 
+
+		@Descriptor("either framework or initial level. If <0 then not set, currently value returned")
 		int level
 	) throws InterruptedException { //@formatter:on
 
@@ -163,18 +163,18 @@ public class Core {
 	//@formatter:off
 	@Descriptor("display bundle headers")
 	public Map<Bundle, Map<String, String>> headers(
-		
-		@Descriptor("header name, can be globbed") 
-		@Parameter(absentValue = "*", names = { "-h", "--header"}) 
+
+		@Descriptor("header name, can be globbed")
+		@Parameter(absentValue = "*", names = { "-h", "--header"})
 		String header,
-		
-		@Descriptor("filter on value, can use globbing") 
-		@Parameter(absentValue = "*", names = { "-v", "--value"}) 
-		String filter, 
-		
-		@Descriptor("target bundles, if none specified all bundles are used") 
+
+		@Descriptor("filter on value, can use globbing")
+		@Parameter(absentValue = "*", names = { "-v", "--value"})
+		String filter,
+
+		@Descriptor("target bundles, if none specified all bundles are used")
 		Bundle... bundles
-		
+
 	)		//@formatter:on
 	{
 		bundles = ((bundles == null) || (bundles.length == 0)) ? context.getBundles() : bundles;
@@ -209,14 +209,14 @@ public class Core {
 	@Descriptor("refresh bundles")
 	//@formatter:off
 	public List<Bundle> refresh(
-		
+
 			@Descriptor("Wait for refresh to finish before returning. The maxium time this will wait is 60 seconds. It will return the affected bundles")
 			@Parameter(absentValue="false", presentValue="true", names= {"-w","--wait"})
 			boolean wait,
-		
-			@Descriptor("target bundles (can be empty). If no bundles are specified then all bundles are refreshed") 
+
+			@Descriptor("target bundles (can be empty). If no bundles are specified then all bundles are refreshed")
 			Bundle ... bundles
-		
+
 		// @formatter:on
 	) {
 		List<Bundle> bs = Arrays.asList(bundles);
@@ -283,9 +283,9 @@ public class Core {
 	@Descriptor("resolve bundles")
 	public List<Bundle> resolve(
 	//@formatter:off
-		@Descriptor("to be resolved bundles. If no bundles are specified then all bundles are attempted to be resolved") 
+		@Descriptor("to be resolved bundles. If no bundles are specified then all bundles are attempted to be resolved")
 		Bundle ... bundles
-		
+
 		//@formatter:on
 	) {
 		List<Bundle> bs = Arrays.asList(bundles);
@@ -302,17 +302,17 @@ public class Core {
 	public void start(
 	//@formatter:off
 
-		@Descriptor("start bundle transiently") 
-		@Parameter(names = {"-t", "--transient"}, presentValue = "true", absentValue = "false") 
+		@Descriptor("start bundle transiently")
+		@Parameter(names = {"-t", "--transient"}, presentValue = "true", absentValue = "false")
 		boolean trans,
-		
-		@Descriptor("use declared activation policy") 
-		@Parameter(names = {"-p", "--policy"}, presentValue = "true", absentValue = "false") 
+
+		@Descriptor("use declared activation policy")
+		@Parameter(names = {"-p", "--policy"}, presentValue = "true", absentValue = "false")
 		boolean policy,
-		
-		@Descriptor("target bundle identifiers or URLs") 
+
+		@Descriptor("target bundle identifiers or URLs")
 		Bundle ... bundles
-		
+
 		//@formatter:on
 	) throws BundleException {
 		int options = 0;
@@ -336,8 +336,8 @@ public class Core {
 	public void stop(
 	// @formatter:off
 
-		@Descriptor( "stop bundle transiently") 
-		@Parameter(names = {"-t", "--transient"}, presentValue = "true", absentValue = "false") 
+		@Descriptor( "stop bundle transiently")
+		@Parameter(names = {"-t", "--transient"}, presentValue = "true", absentValue = "false")
 		boolean trans,
 
 		@Descriptor("target bundles") Bundle... bundles
@@ -357,10 +357,10 @@ public class Core {
 	@Descriptor("uninstall bundles")
 	public void uninstall(
 	//@formatter:off
-	
-		@Descriptor("the bundles to uninstall") 
+
+		@Descriptor("the bundles to uninstall")
 		Bundle ... bundles
-		
+
 		// @formatter:on
 	) throws BundleException {
 		for (Bundle bundle : bundles) {
@@ -371,10 +371,10 @@ public class Core {
 	@Descriptor("update bundle")
 	public void update(
 	//@formatter:off
-		
-		@Descriptor("the bundles to update") 
+
+		@Descriptor("the bundles to update")
 		Bundle ... bundles
-		
+
 		// @formatter:on
 	) throws BundleException {
 		for (Bundle b : bundles) {
@@ -387,10 +387,10 @@ public class Core {
 	// @formatter:off
 		CommandSession session,
 
-		@Descriptor("bundle to update") 
+		@Descriptor("bundle to update")
 		Bundle bundle,
 
-		@Descriptor("URL from where to retrieve bundle") 
+		@Descriptor("URL from where to retrieve bundle")
 		String location
 
 	//@formatter:on
@@ -407,13 +407,13 @@ public class Core {
 	@Descriptor("determines the class loader for a class name and a bundle")
 	public ClassLoader which(
 	//@formatter:off
-		
-		@Descriptor("the bundle to load the class from") 
-		Bundle bundle, 
-		
-		@Descriptor("the name of the class to load from bundle") 
+
+		@Descriptor("the bundle to load the class from")
+		Bundle bundle,
+
+		@Descriptor("the name of the class to load from bundle")
 		String className
-		
+
 		//@formatter:on
 	) throws ClassNotFoundException {
 		Objects.requireNonNull(bundle);

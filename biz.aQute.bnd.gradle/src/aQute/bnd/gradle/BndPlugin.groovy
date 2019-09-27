@@ -23,6 +23,7 @@ import static aQute.bnd.gradle.BndUtils.createTask
 import static aQute.bnd.gradle.BndUtils.namedTask
 import static aQute.bnd.osgi.Processor.isTrue
 
+import aQute.lib.strings.Strings
 import aQute.bnd.build.Container
 import aQute.bnd.build.Container.TYPE
 import aQute.bnd.build.Workspace
@@ -251,7 +252,8 @@ public class BndPlugin implements Plugin<Project> {
         project.configurations.archives.artifacts.files.find {
           t.archiveName = it.name /* use first artifact as archiveName */
         }
-        t.ext.projectDirInputsExcludes = [] /* Additional excludes for projectDir inputs */
+        /* Additional excludes for projectDir inputs */
+        t.ext.projectDirInputsExcludes = Strings.split(bndMerge(Constants.BUILDERIGNORE)).collect { it.concat('/') }
         /* all other files in the project like bnd and resources */
         t.inputs.files({
           project.fileTree(projectDir) { tree ->
@@ -270,7 +272,7 @@ public class BndPlugin implements Plugin<Project> {
         /* bnd can include from -buildpath */
         t.inputs.files(project.sourceSets.main.compileClasspath).withPropertyName('buildpath')
         /* bnd can include from -dependson */
-        t.inputs.files(buildDependencies('jar')).withPropertyName('buildDependencies')
+        t.inputs.files(getBuildDependencies('jar')).withPropertyName('buildDependencies')
         /* Workspace and project configuration changes should trigger jar task */
         t.inputs.files(bndProject.getWorkspace().getPropertiesFile(),
           bndProject.getWorkspace().getIncluded(),
@@ -282,6 +284,10 @@ public class BndPlugin implements Plugin<Project> {
           File[] built
           try {
             built = bndProject.build()
+            long now = System.currentTimeMillis()
+            built?.each {
+              it.setLastModified(now)
+            }
           } catch (Exception e) {
             throw new GradleException("Project ${bndProject.getName()} failed to build", e)
           }
@@ -292,27 +298,27 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      createTask(project, 'jarDependencies') { t ->
+      def jarDependencies = createTask(project, 'jarDependencies') { t ->
         t.description 'Jar all projects this project depends on.'
-        t.dependsOn buildDependencies('jar')
+        t.dependsOn getBuildDependencies('jar')
         t.group 'build'
       }
 
-      createTask(project, 'buildDependencies') { t ->
+      def buildDependencies = createTask(project, 'buildDependencies') { t ->
         t.description 'Assembles and tests all projects this project depends on.'
-        t.dependsOn testDependencies('buildNeeded')
+        t.dependsOn getTestDependencies('buildNeeded')
         t.group 'build'
       }
 
-      configureTask(project, 'buildNeeded') { t ->
-        t.dependsOn 'buildDependencies'
+      def buildNeeded = configureTask(project, 'buildNeeded') { t ->
+        t.dependsOn buildDependencies
       }
 
-      configureTask(project, 'buildDependents') { t ->
-        t.dependsOn dependents('buildDependents')
+      def buildDependents = configureTask(project, 'buildDependents') { t ->
+        t.dependsOn getDependents('buildDependents')
       }
 
-      createTask(project, 'release') { t ->
+      def release = createTask(project, 'release') { t ->
         t.description 'Release this project to the release repository.'
         t.group 'release'
         t.enabled !bndProject.isNoBundles() && !bnd(Constants.RELEASEREPO, 'unset').empty
@@ -327,26 +333,26 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      createTask(project, 'releaseDependencies') { t ->
+      def releaseDependencies = createTask(project, 'releaseDependencies') { t ->
         t.description 'Release all projects this project depends on.'
-        t.dependsOn buildDependencies('releaseNeeded')
+        t.dependsOn getBuildDependencies('releaseNeeded')
         t.group 'release'
       }
 
-      createTask(project, 'releaseNeeded') { t ->
+      def releaseNeeded = createTask(project, 'releaseNeeded') { t ->
         t.description 'Release this project and all projects it depends on.'
-        t.dependsOn 'releaseDependencies', 'release'
+        t.dependsOn releaseDependencies, release
         t.group 'release'
       }
 
-      configureTask(project, 'test') { t ->
+      def test = configureTask(project, 'test') { t ->
         t.enabled !bndis(Constants.NOJUNIT) && !bndis('no.junit')
         t.doFirst {
           checkErrors(t.logger, t.ignoreFailures)
         }
       }
 
-      createTask(project, 'testOSGi', TestOSGi.class) { t ->
+      def testOSGi = createTask(project, 'testOSGi', TestOSGi.class) { t ->
         t.description 'Runs the OSGi JUnit tests by launching a framework and running the tests in the launched framework.'
         t.group 'verification'
         t.enabled !bndis(Constants.NOJUNITOSGI) && !bndUnprocessed(Constants.TESTCASES, '').empty
@@ -354,36 +360,36 @@ public class BndPlugin implements Plugin<Project> {
         t.bndrun = bndProject.getPropertiesFile()
       }
 
-      configureTask(project, 'check') { t ->
-        t.dependsOn 'testOSGi'
+      def check = configureTask(project, 'check') { t ->
+        t.dependsOn testOSGi
       }
 
-      createTask(project, 'checkDependencies') { t ->
+      def checkDependencies = createTask(project, 'checkDependencies') { t ->
         t.description 'Runs all checks on all projects this project depends on.'
-        t.dependsOn testDependencies('checkNeeded')
+        t.dependsOn getTestDependencies('checkNeeded')
         t.group 'verification'
       }
 
-      createTask(project, 'checkNeeded') { t ->
+      def checkNeeded = createTask(project, 'checkNeeded') { t ->
         t.description 'Runs all checks on this project and all projects it depends on.'
-        t.dependsOn 'checkDependencies', 'check'
+        t.dependsOn checkDependencies, check
         t.group 'verification'
       }
 
-      configureTask(project, 'clean') { t ->
+      def clean = configureTask(project, 'clean') { t ->
         t.description 'Cleans the build and compiler output directories of this project.'
         t.delete project.buildDir, project.sourceSets.main.output, project.sourceSets.test.output
       }
 
-      createTask(project, 'cleanDependencies') { t ->
+      def cleanDependencies = createTask(project, 'cleanDependencies') { t ->
         t.description 'Cleans all projects this project depends on.'
-        t.dependsOn testDependencies('cleanNeeded')
+        t.dependsOn getTestDependencies('cleanNeeded')
         t.group 'build'
       }
 
-      createTask(project, 'cleanNeeded') { t ->
+      def cleanNeeded = createTask(project, 'cleanNeeded') { t ->
         t.description 'Cleans this project and all projects it depends on.'
-        t.dependsOn 'cleanDependencies', 'clean'
+        t.dependsOn cleanDependencies, clean
         t.group 'build'
       }
 
@@ -391,7 +397,7 @@ public class BndPlugin implements Plugin<Project> {
           include '*.bndrun'
       }
 
-      createTask(project, 'export') { t ->
+      def export = createTask(project, 'export') { t ->
         t.description 'Export all the bndrun files.'
         t.group 'export'
       }
@@ -409,7 +415,7 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      createTask(project, 'runbundles') { t ->
+      def runbundles = createTask(project, 'runbundles') { t ->
         t.description 'Create a distribution of the runbundles in each of the bndrun files.'
         t.group 'export'
       }
@@ -427,7 +433,7 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      createTask(project, 'resolve') { t ->
+      def resolve = createTask(project, 'resolve') { t ->
         t.description 'Resolve the runbundles required for each of the bndrun files.'
         t.group 'export'
       }
@@ -462,7 +468,7 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      createTask(project, 'echo') { t ->
+      def echo = createTask(project, 'echo') { t ->
         t.description 'Displays the bnd project information.'
         t.group 'help'
         def compileJava = project.tasks.getByName('compileJava')
@@ -496,7 +502,7 @@ javac.profile:          ${javacProfile}
         }
       }
 
-      createTask(project, 'bndproperties') { t ->
+      def bndproperties = createTask(project, 'bndproperties') { t ->
         t.description 'Displays the bnd properties.'
         t.group 'help'
         t.doLast {
@@ -525,7 +531,7 @@ Project ${project.name}
     }
   }
 
-  private Closure buildDependencies(String taskName) {
+  private Closure getBuildDependencies(String taskName) {
     return {
       bndProject.getBuildDependencies().collect { dependency ->
         namedTask(project.parent.project(dependency.getName()), taskName)
@@ -533,7 +539,7 @@ Project ${project.name}
     }
   }
 
-  private Closure testDependencies(String taskName) {
+  private Closure getTestDependencies(String taskName) {
     return {
       bndProject.getTestDependencies().collect { dependency ->
         namedTask(project.parent.project(dependency.getName()), taskName)
@@ -541,7 +547,7 @@ Project ${project.name}
     }
   }
 
-  private Closure dependents(String taskName) {
+  private Closure getDependents(String taskName) {
     return {
       bndProject.getDependents().collect { dependent ->
         namedTask(project.parent.project(dependent.getName()), taskName)

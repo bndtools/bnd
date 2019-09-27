@@ -6,7 +6,7 @@ import java.io.IOException;
 public class RuntimeInvisibleTypeAnnotationsAttribute extends TypeAnnotationsAttribute {
 	public static final String NAME = "RuntimeInvisibleTypeAnnotations";
 
-	RuntimeInvisibleTypeAnnotationsAttribute(TypeAnnotationInfo[] type_annotations) {
+	public RuntimeInvisibleTypeAnnotationsAttribute(TypeAnnotationInfo[] type_annotations) {
 		super(type_annotations);
 	}
 
@@ -15,8 +15,8 @@ public class RuntimeInvisibleTypeAnnotationsAttribute extends TypeAnnotationsAtt
 		return NAME;
 	}
 
-	static RuntimeInvisibleTypeAnnotationsAttribute parseRuntimeInvisibleTypeAnnotationsAttribute(DataInput in,
-		ConstantPool constant_pool) throws IOException {
-		return parseTypeAnnotationsAttribute(in, constant_pool, RuntimeInvisibleTypeAnnotationsAttribute::new);
+	public static RuntimeInvisibleTypeAnnotationsAttribute read(DataInput in, ConstantPool constant_pool)
+		throws IOException {
+		return read(in, constant_pool, RuntimeInvisibleTypeAnnotationsAttribute::new);
 	}
 }

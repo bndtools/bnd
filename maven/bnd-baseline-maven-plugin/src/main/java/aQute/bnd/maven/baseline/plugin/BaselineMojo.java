@@ -47,9 +47,9 @@ import aQute.service.reporter.Reporter;
 /**
  * Exports project dependencies to OSGi R5 index format.
  */
-@Mojo(name = "baseline", defaultPhase = VERIFY)
+@Mojo(name = "baseline", defaultPhase = VERIFY, threadSafe = true)
 public class BaselineMojo extends AbstractMojo {
-	private static final Logger		logger	= LoggerFactory.getLogger(BaselineMojo.class);
+	private static final Logger		logger			= LoggerFactory.getLogger(BaselineMojo.class);
 	private static final String		PACKAGING_POM	= "pom";
 
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
@@ -237,8 +237,8 @@ public class BaselineMojo extends AbstractMojo {
 		return system.resolveArtifact(session, new ArtifactRequest(toFind, aetherRepos, "baseline"));
 	}
 
-	private boolean checkFailures(Artifact artifact, ArtifactResult artifactResult, Baseline baseline, Instructions diffpackages)
-		throws Exception, IOException {
+	private boolean checkFailures(Artifact artifact, ArtifactResult artifactResult, Baseline baseline,
+		Instructions diffpackages) throws Exception, IOException {
 		StringBuffer sb = new StringBuffer();
 		try (Formatter f = new Formatter(sb, Locale.US);
 			Jar newer = new Jar(artifact.getFile());

@@ -18,8 +18,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -62,7 +60,7 @@ public class MavenCommand extends Processor {
 	/**
 	 * maven deploy [-url repo] [-passphrase passphrase] [-homedir homedir]
 	 * [-keyname keyname] bundle ...
-	 * 
+	 *
 	 * @param args
 	 * @param i
 	 * @throws Exception
@@ -128,7 +126,7 @@ public class MavenCommand extends Processor {
 
 	/**
 	 * Show the maven settings
-	 * 
+	 *
 	 * @throws FileNotFoundException
 	 * @throws Exception
 	 */
@@ -153,7 +151,7 @@ public class MavenCommand extends Processor {
 
 	/**
 	 * Create a maven bundle.
-	 * 
+	 *
 	 * @param args
 	 * @param i
 	 * @throws Exception
@@ -432,7 +430,7 @@ public class MavenCommand extends Processor {
 		IO.mkdirs(tmp);
 
 		Command command = new Command();
-		command.add(getProperty("javadoc", "javadoc"));
+		command.add(getJavaExecutable("javadoc"));
 		command.add("-quiet");
 		command.add("-protected");
 		// command.add("-classpath");
@@ -496,7 +494,7 @@ public class MavenCommand extends Processor {
 
 	/**
 	 * Generate a license string
-	 * 
+	 *
 	 * @param attr
 	 */
 	private String license(Attributes attr) {
@@ -534,7 +532,7 @@ public class MavenCommand extends Processor {
 
 	/**
 	 * Generate the copyright statement.
-	 * 
+	 *
 	 * @param attr
 	 */
 	private String copyright(Attributes attr) {
@@ -570,11 +568,10 @@ public class MavenCommand extends Processor {
 	 * View - Show the dependency details of an artifact
 	 */
 
-	static Executor	executor				= Executors.newCachedThreadPool();
-	static Pattern	GROUP_ARTIFACT_VERSION	= Pattern.compile("([^+]+)\\+([^+]+)\\+([^+]+)");
+	private final static Pattern GROUP_ARTIFACT_VERSION = Pattern.compile("([^+]+)\\+([^+]+)\\+([^+]+)");
 
 	void view(String args[], int i) throws Exception {
-		Maven maven = new Maven(executor);
+		Maven maven = new Maven(getExecutor());
 
 		List<URI> urls = new ArrayList<>();
 		Path output = null;

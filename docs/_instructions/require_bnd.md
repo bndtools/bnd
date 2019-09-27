@@ -2,30 +2,11 @@
 layout: default
 class: Project
 title: -require-bnd  (FILTER ( ',' FILTER )* )?
-summary: The filter can test aginst 'version', which will contain the bnd version. If it does not match, bnd will generate an error.  
+summary: The filter can test against 'version', which will contain the Bnd version. If it does not match, Bnd will generate an error.  
 ---
 
-	/**
-	 * Ensure that we are running on the correct bnd.
-	 */
-	void doRequireBnd() {
-		Attrs require = OSGiHeader.parseProperties(getProperty(REQUIRE_BND));
-		if (require == null || require.isEmpty())
-			return;
+Each specified filter must evaluate to true for the running version of Bnd in the `version` attribute. Since the values of the instruction are filter expressions, they need to quoted so the filter operators are not processed by Bnd.
 
-		Hashtable<String,String> map = new Hashtable<String,String>();
-		map.put(Constants.VERSION_FILTER, getBndVersion());
+This instruction can be useful when the workspace requires a feature of Bnd introduced in some version of Bnd. For example:
 
-		for (String filter : require.keySet()) {
-			try {
-				Filter f = new Filter(filter);
-				if (f.match(map))
-					continue;
-				error("%s fails %s", REQUIRE_BND, require.get(filter));
-			}
-			catch (Exception t) {
-				error("%s with value %s throws exception", t, REQUIRE_BND, require);
-			}
-		}
-	}
-
+    -require-bnd: "(version>=4.3.0)"

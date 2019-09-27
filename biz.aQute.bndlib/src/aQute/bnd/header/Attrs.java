@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -71,23 +70,15 @@ public class Attrs implements Map<String, String> {
 	public static final DataType<List<Version>>	LIST_VERSION	= () -> Type.VERSIONS;
 
 	/**
-	 * <pre>
-	 *  Provide-Capability ::= capability ::= name-space ::= typed-attr ::=
-	 * type ::= scalar ::= capability ( ',' capability )* name-space ( ’;’
-	 * directive | typed-attr )* symbolic-name extended ( ’:’ type ) ’=’
-	 * argument scalar | list ’String’ | ’Version’ | ’Long’ list ::= ’List<’
-	 * scalar ’>’
-	 * </pre>
+	 * Pattern for List with list type
 	 */
-	private static final String			EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
-	private static final String			SCALAR		= "String|Version|Long|Double";
-	private static final String			LIST		= "List\\s*<\\s*(" + SCALAR + ")\\s*>";
-	public static final Pattern			TYPED		= Pattern
-		.compile("\\s*(" + EXTENDED + ")\\s*:\\s*(" + SCALAR + "|" + LIST + ")\\s*");
+	public static final Pattern					TYPED			= Pattern
+		.compile("List\\s*<\\s*(String|Version|Long|Double)\\s*>");
 
-	private final Map<String, String>	map;
-	private final Map<String, Type>		types;
-	public static final Attrs			EMPTY_ATTRS	= new Attrs(Collections.emptyMap(), Collections.emptyMap());
+	private final Map<String, String>			map;
+	private final Map<String, Type>				types;
+	public static final Attrs					EMPTY_ATTRS		= new Attrs(Collections.emptyMap(),
+		Collections.emptyMap());
 
 	private Attrs(Map<String, String> map, Map<String, Type> types) {
 		this.map = map;
@@ -269,43 +260,65 @@ public class Attrs implements Map<String, String> {
 		if (key == null)
 			return null;
 
-		Matcher m = TYPED.matcher(key);
-		if (m.matches()) { // typed-attr
-			key = m.group(1);
-			String type = m.group(2);
-			Type t = Type.STRING;
-
-			if (type.startsWith("List")) {
-				type = m.group(3);
-				if ("String".equals(type))
-					t = Type.STRINGS;
-				else if ("Long".equals(type))
-					t = Type.LONGS;
-				else if ("Double".equals(type))
-					t = Type.DOUBLES;
-				else if ("Version".equals(type))
-					t = Type.VERSIONS;
-			} else {
-				if ("String".equals(type))
-					t = Type.STRING;
-				else if ("Long".equals(type))
-					t = Type.LONG;
-				else if ("Double".equals(type))
-					t = Type.DOUBLE;
-				else if ("Version".equals(type))
-					t = Type.VERSION;
+		int colon = key.indexOf(':');
+		if (colon >= 0) {
+			String type = key.substring(colon + 1)
+				.trim();
+			typed_attribute: if (!type.isEmpty()) { // typed attribute
+				String attribute = key.substring(0, colon)
+					.trim();
+				switch (type) {
+					case "String" :
+						types.remove(attribute);
+						break;
+					case "Long" :
+						types.put(attribute, Type.LONG);
+						break;
+					case "Double" :
+						types.put(attribute, Type.DOUBLE);
+						break;
+					case "Version" :
+						types.put(attribute, Type.VERSION);
+						break;
+					case "List" :
+					case "List<String>" :
+						types.put(attribute, Type.STRINGS);
+						break;
+					case "List<Long>" :
+						types.put(attribute, Type.LONGS);
+						break;
+					case "List<Double>" :
+						types.put(attribute, Type.DOUBLES);
+						break;
+					case "List<Version>" :
+						types.put(attribute, Type.VERSIONS);
+						break;
+					default :
+						Matcher m = TYPED.matcher(type);
+						if (!m.matches()) {
+							break typed_attribute;
+						}
+						switch (m.group(1)) {
+							case "String" :
+								types.put(attribute, Type.STRINGS);
+								break;
+							case "Long" :
+								types.put(attribute, Type.LONGS);
+								break;
+							case "Double" :
+								types.put(attribute, Type.DOUBLES);
+								break;
+							case "Version" :
+								types.put(attribute, Type.VERSIONS);
+								break;
+						}
+						break;
+				}
+				return map.put(attribute, value);
 			}
-			if (t != Type.STRING) {
-				types.put(key, t);
-			} else {
-				types.remove(key);
-			}
-
-			// TODO verify value?
-		} else {
-			types.remove(key); // default String type
 		}
-
+		// default String type
+		types.remove(key);
 		return map.put(key, value);
 	}
 
@@ -512,7 +525,7 @@ public class Attrs implements Map<String, String> {
 	}
 
 	static List<String> splitListAttribute(String input) throws IllegalArgumentException {
-		List<String> result = new LinkedList<>();
+		List<String> result = new ArrayList<>();
 
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < input.length(); i++) {

@@ -1,3 +1,10 @@
+variables:
+  LC_ALL: en_US.UTF-8
+  GRADLE_OPTS: -Dorg.gradle.parallel=false
+  JAVA8_JDK: https://cdn.azul.com/zulu/bin/zulu8.40.0.25-ca-jdk8.0.222-linux_x64.tar.gz
+  JAVA11_JDK: https://cdn.azul.com/zulu/bin/zulu11.33.15-ca-jdk11.0.4-linux_x64.tar.gz
+  JAVA12_JDK: https://cdn.azul.com/zulu/bin/zulu12.3.11-ca-jdk12.0.2-linux_x64.tar.gz
+
 jobs:
 
 - job: OpenJDK8
@@ -7,7 +14,7 @@ jobs:
   - bash: |
       set -ev
       curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh
-      source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu8.33.0.1-jdk8.0.192-linux_x64.tar.gz
+      source install-jdk.sh --url $(JAVA8_JDK)
       ./gradlew --no-daemon --version
       ./mvnw --version
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
@@ -15,6 +22,13 @@ jobs:
     env:
       JFROG_USERNAME: $(JFrog.Username)
       JFROG_PASSWORD: $(JFrog.Password)
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: |-
+        */generated/test-reports/test/TEST-*.xml
+        maven/*/target/surefire-reports/TEST-*.xml
+    condition: succeededOrFailed()
 
 - job: OpenJDK11
   pool:
@@ -23,7 +37,20 @@ jobs:
   - bash: |
       set -ev
       curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh
-      source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu11.2.3-jdk11.0.1-linux_x64.tar.gz
+      source install-jdk.sh --url $(JAVA11_JDK)
+      ./gradlew --no-daemon --version
+      ./mvnw --version
+      ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
+    displayName: Build
+
+- job: OpenJDK12
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - bash: |
+      set -ev
+      curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh
+      source install-jdk.sh --url $(JAVA12_JDK)
       ./gradlew --no-daemon --version
       ./mvnw --version
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
@@ -36,7 +63,8 @@ jobs:
   - bash: |
       set -ev
       curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh
-      source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu8.33.0.1-jdk8.0.192-linux_x64.tar.gz
+      source install-jdk.sh --url $(JAVA8_JDK)
+      ./gradlew --no-daemon --version
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 :biz.aQute.bnd.gradle:build :biz.aQute.bnd.gradle:releaseNeeded
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 -Pbnd_repourl=./dist/bundles :buildscriptDependencies :build
     displayName: Build
@@ -64,7 +92,7 @@ jobs:
       set -ev
       ruby --version
       gem --version
-      gem install bundler -v '~> 1.17'
+      gem install bundler -v '~> 2.0'
       bundle --version
       cd docs
       ./build.sh

@@ -1,17 +1,18 @@
 package biz.aQute.resolve;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.osgi.resource.Resource;
-import org.osgi.resource.Wire;
 import org.osgi.service.repository.Repository;
 
-import aQute.bnd.build.Container;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.Jar;
@@ -120,15 +121,13 @@ public class ProjectResolverTest extends TestCase {
 					.getPlugins(Repository.class));
 				System.out.println(run.getWorkspace()
 					.getPlugins(Repository.class));
-				ProjectResolver pr = new ProjectResolver(run);
-				pr.setTrace(true);
-				Map<Resource, List<Wire>> resolve = pr.resolve();
-				assertTrue(pr.check());
-				List<Container> runbundles = pr.getRunBundles();
-				assertEquals(1, runbundles.size());
-				assertTrue(run.check());
-				pr.close();
 
+				RunResolution r = RunResolution.resolve(run, null)
+					.reportException();
+				assertTrue(run.check());
+				List<VersionedClause> runbundles = r.getRunBundles();
+				assertThat(runbundles).hasSize(1);
+				assertTrue(run.check());
 			}
 		}
 	}

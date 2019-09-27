@@ -19,13 +19,13 @@ public class LineTracker {
 
 	/**
 	 * Binary search for the line at a given offset.
-	 * 
+	 *
 	 * @param offset the offset whose line should be found
 	 * @return the line of the offset
 	 */
 	private int findLine(int offset) {
 
-		if (fLines.size() == 0)
+		if (fLines.isEmpty())
 			return -1;
 
 		int left = 0;
@@ -61,7 +61,7 @@ public class LineTracker {
 
 	/**
 	 * Returns the number of lines covered by the specified text range.
-	 * 
+	 *
 	 * @param startLine the line where the text range starts
 	 * @param offset the start offset of the text range
 	 * @param length the length of the text range
@@ -253,7 +253,7 @@ public class LineTracker {
 	/**
 	 * Returns the information about the first delimiter found in the given text
 	 * starting at the given offset.
-	 * 
+	 *
 	 * @param text the text to be searched
 	 * @param offset the offset in the given text
 	 * @return the information of the first found delimiter or <code>null</code>
@@ -298,7 +298,7 @@ public class LineTracker {
 	 * Creates the line structure for the given text. Newly created lines are
 	 * inserted into the line structure starting at the given position. Returns
 	 * the number of newly created lines.
-	 * 
+	 *
 	 * @param text the text for which to create a line structure
 	 * @param insertPosition the position at which the newly created lines are
 	 *            inserted into the tracker's line structure
@@ -364,7 +364,7 @@ public class LineTracker {
 	/**
 	 * Returns the internal data structure, a {@link List} of {@link Line}s.
 	 * Used only by {@link TreeLineTracker#TreeLineTracker(ListLineTracker)} .
-	 * 
+	 *
 	 * @return the internal list of lines.
 	 */
 	final List<Line> getLines() {

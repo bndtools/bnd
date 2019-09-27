@@ -59,7 +59,7 @@ public class POM implements IPom {
 	private Map<Program, Dependency>	dependencyManagement	= new LinkedHashMap<>();
 	private XPath						xp;
 	private String[]					JAR_PACKAGING			= {
-		"bundle", "eclipse-plugin", "eclipse-test-plugin", "pom"
+		"bundle", "eclipse-plugin", "eclipse-test-plugin", Archive.POM_EXTENSION
 	};
 
 	private MavenRepository				repo;
@@ -213,10 +213,10 @@ public class POM implements IPom {
 		for (int i = 0; i < props.getLength(); i++)
 			index((Element) props.item(i), "");
 
-		String group = get("project.groupId", parentGroup);
-		String artifact = getNoInheritance("project.artifactId", null);
-		String version = get("project.version", parentVersion);
-		this.packaging = getNoInheritance("project.packaging", "jar");
+		String group = getOrSet("project.groupId", parentGroup);
+		String artifact = getOrSetNoInheritance("project.artifactId", null);
+		String version = getOrSet("project.version", parentVersion);
+		this.packaging = getOrSetNoInheritance("project.packaging", "jar");
 
 		Program program = Program.valueOf(group, artifact);
 		if (program == null)
@@ -315,10 +315,14 @@ public class POM implements IPom {
 		return Strings.trim(replaceMacros(value));
 	}
 
-	private String get(String key, String deflt) {
+	private String getOrSet(String key, String deflt) {
 		String value = properties.getProperty(key);
-		if (value == null)
+		if (value == null) {
 			value = deflt;
+			if (value != null) {
+				properties.setProperty(key, value);
+			}
+		}
 
 		if (value == null)
 			return null;
@@ -326,38 +330,40 @@ public class POM implements IPom {
 		return replaceMacros(value);
 	}
 
-	private String getNoInheritance(String key, String deflt) {
+	private String getOrSetNoInheritance(String key, String deflt) {
 		String value = (String) properties.get(key);
-		if (value == null)
+		if (value == null) {
 			value = deflt;
+			if (value != null) {
+				properties.setProperty(key, value);
+			}
+		}
 
 		return replaceMacros(value);
 	}
 
-	final static Pattern MACRO_P = Pattern.compile("\\$\\{(?<env>env\\.)?(?<key>[.a-z0-9$_-]+)\\}",
-		Pattern.CASE_INSENSITIVE);
+	private final static Pattern MACRO_P = Pattern.compile("\\$\\{(?<prop>(?<env>env\\.)?(?<key>[-.$\\w]+))\\}");
 
 	private String replaceMacros(String value) {
 		Matcher m = MACRO_P.matcher(value);
-		StringBuffer sb = new StringBuffer();
-		while (m.find()) {
+		StringBuilder sb = new StringBuilder();
+		int start = 0;
+		for (; m.find(); start = m.end()) {
 			String key = m.group("key");
-			if (m.group("env") != null)
-				m.appendReplacement(sb, replaceMacros(System.getenv(key)));
-			else {
-				String property = this.properties.getProperty(key);
-				if (property != null && property.indexOf('$') >= 0)
-					property = replaceMacros(property);
-
-				if (property == null) {
-					l.info("Undefined property in {} : key {}", this, key);
-					m.appendReplacement(sb, Matcher.quoteReplacement("${" + key + "}"));
-				} else
-					m.appendReplacement(sb, Matcher.quoteReplacement(property));
+			String property = (m.group("env") != null) ? System.getenv(key) : this.properties.getProperty(key);
+			if (property != null && property.indexOf('$') >= 0) {
+				property = replaceMacros(property);
 			}
+			if (property == null) {
+				l.info("Undefined property in {} : key {}", this, m.group("prop"));
+				property = m.group(0);
+			}
+			sb.append(value, start, m.start())
+				.append(property);
 		}
-		m.appendTail(sb);
-		return sb.toString();
+		return (start == 0) ? value
+			: sb.append(value, start, value.length())
+				.toString();
 	}
 
 	private void index(Element node, String prefix, String... names) throws XPathExpressionException {
@@ -507,7 +513,7 @@ public class POM implements IPom {
 	}
 
 	public boolean isPomOnly() {
-		return "pom".equals(packaging);
+		return Archive.POM_EXTENSION.equals(packaging);
 	}
 
 	@Override

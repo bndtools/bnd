@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
 import junit.framework.TestCase;
 
@@ -268,7 +269,7 @@ public class ReplacerTest extends TestCase {
 
 	public static void testSystem() throws Exception {
 		// disable this test on windows
-		if (!"/".equals(File.separator))
+		if (IO.isWindows())
 			return;
 
 		Processor p = new Processor();

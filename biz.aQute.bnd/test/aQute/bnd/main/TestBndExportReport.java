@@ -118,6 +118,27 @@ public class TestBndExportReport extends TestBndMainBase {
 	}
 
 	@Test
+	public void testReadmeExport() throws Exception {
+		initTestData(WORKSPACE);
+
+		executeReadmeExport();
+
+		expectNoError();
+		expectOutputContains("Workspace[" + folder.getRootPath()
+			.getFileName() + "]: " + folder.getFile("readme.md"));
+		expectOutputContains("Project[p]: " + folder.getFile("p/readme.md"));
+		expectOutputContains("Project[p2]: " + folder.getFile("p2/readme.md"));
+		expectOutputContains("Project[p3]: " + folder.getFile("p3/readme.md"));
+		expectOutputContains("Project[p4]: " + folder.getFile("p4/readme.md"));
+
+		expectFileStatus(FileStatus.CREATED, "readme.md");
+		expectFileStatus(FileStatus.CREATED, "p", "readme.md");
+		expectFileStatus(FileStatus.CREATED, "p2", "readme.md");
+		expectFileStatus(FileStatus.CREATED, "p3", "readme.md");
+		expectFileStatus(FileStatus.CREATED, "p4", "readme.md");
+	}
+
+	@Test
 	public void testExportScoped() throws Exception {
 		initTestData(WORKSPACE);
 
@@ -177,6 +198,21 @@ public class TestBndExportReport extends TestBndMainBase {
 			new String(IO.read(folder.getFile("result.txt"))));
 	}
 
+	@Test
+	public void testJarReadmeExport() throws Exception {
+		initTestData(BUNDLES);
+
+		executeBndCmd("exportreport", "jarreadme", folder.getFile("com.liferay.item.selector.taglib.jar")
+			.toString(),
+			folder.getRootPath()
+				.toString() + "/readme.md");
+
+		expectNoError();
+		expectOutput("Jar[com.liferay.item.selector.taglib]: " + folder.getFile("readme.md")
+			.toString());
+		expectFileStatus(FileStatus.CREATED, "readme.md");
+	}
+
 	public void setupExportInstruction(String path, String instruction) throws Exception {
 		Properties prop = new Properties();
 		prop.load(Files.newInputStream(folder.getFile(path)
@@ -192,6 +228,10 @@ public class TestBndExportReport extends TestBndMainBase {
 
 	public void executeExport(String... args) throws Exception {
 		execute("export", args);
+	}
+
+	public void executeReadmeExport(String... args) throws Exception {
+		execute("readme", args);
 	}
 
 	public void execute(String subCmd, String... args) throws Exception {

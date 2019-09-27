@@ -12,14 +12,17 @@ import java.nio.ByteBuffer;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.connection.settings.ConnectionSettings;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.http.URLCache;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.progress.ProgressPlugin;
+import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.url.HttpsVerification;
@@ -36,10 +39,10 @@ public class HttpClientTest extends TestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
-		super.tearDown();
-		httpServer.close();
-		httpsServer.close();
+		IO.close(httpServer);
+		IO.close(httpsServer);
 		IO.delete(tmp);
+		super.tearDown();
 	}
 
 	public static class TestServer extends Httpbin {
@@ -61,6 +64,57 @@ public class HttpClientTest extends TestCase {
 			second = true;
 		}
 
+		public String _cheshire(Request rq, Response rsp) throws Exception {
+			if (second) {
+				rsp.code = 404;
+				return "404";
+			} else {
+				rsp.code = 200;
+				return "ok";
+			}
+		}
+
+		volatile boolean firstTimeout = true;
+
+		public void _readtimeout(Request rq, Response rsp, int stage) throws InterruptedException {
+			if (stage == 1) {
+				if (firstTimeout) {
+					firstTimeout = false;
+					System.out.println("Read timeout, sleeping 2 secs");
+					TimeUnit.SECONDS.sleep(2);
+					System.out.println("Read timeout, returning after 2 secs");
+				} else {
+					System.out.println("Retry");
+					return;
+				}
+			}
+			if (stage == 2) {
+				System.out.println("Read timeout, sleeping 2 secs");
+				TimeUnit.SECONDS.sleep(2);
+				System.out.println("Read timeout, returning after 2 secs");
+			}
+		}
+
+		final AtomicInteger failCount = new AtomicInteger(3);
+
+		public void _readfail(Request rq, Response rsp, int stage) {
+			if (stage == 1) {
+				if (failCount.getAndDecrement() > 0) {
+					System.out.println("Read failure 500");
+					rsp.code = 500;
+					rsp.content = "500".getBytes();
+				} else {
+					System.out.println("Retry");
+				}
+				return;
+			}
+			if (stage == 2) {
+				System.out.println("Read failure 500");
+				rsp.code = 500;
+				rsp.content = "500".getBytes();
+				return;
+			}
+		}
 	}
 
 	@Override
@@ -79,6 +133,87 @@ public class HttpClientTest extends TestCase {
 		tmp = IO.getFile("generated/tmp");
 		IO.delete(tmp);
 		tmp.mkdirs();
+		httpServer.second = false;
+	}
+
+	public void testReadTimeOutButSucceed() throws Exception {
+		try (Processor p = new Processor()) {
+			try (HttpClient client = new HttpClient()) {
+				client.setReporter(p);
+
+				TaggedData tag = client.build()
+					.timeout(1000)
+					.retries(4)
+					.asTag()
+					.go(httpServer.getBaseURI("readtimeout/1"));
+				System.out.println(tag);
+				assertThat(tag.getResponseCode()).isEqualTo(200);
+			}
+		}
+	}
+
+	public void testNoRetriesOnPut() throws Exception {
+		try (Processor p = new Processor()) {
+			try (HttpClient client = new HttpClient()) {
+				client.setReporter(p);
+
+				TaggedData tag = client.build()
+					.timeout(1000)
+					.verb("PUT")
+					.retries(2)
+					.asTag()
+					.go(httpServer.getBaseURI("readtimeout/1"));
+				System.out.println(tag);
+				assertThat(tag.getResponseCode()).isEqualTo(HttpURLConnection.HTTP_GATEWAY_TIMEOUT);
+			}
+		}
+	}
+
+	public void testReadTimeOutButFail() throws Exception {
+		try (Processor p = new Processor()) {
+			try (HttpClient client = new HttpClient()) {
+				client.setReporter(p);
+
+				TaggedData tag = client.build()
+					.timeout(1000)
+					.retries(2)
+					.asTag()
+					.go(httpServer.getBaseURI("readtimeout/2"));
+				System.out.println(tag);
+				assertThat(tag.getResponseCode()).isEqualTo(HttpURLConnection.HTTP_GATEWAY_TIMEOUT);
+			}
+		}
+	}
+
+	public void testReadFailRetrySucceeds() throws Exception {
+		try (Processor p = new Processor()) {
+			try (HttpClient client = new HttpClient()) {
+				client.setReporter(p);
+
+				TaggedData tag = client.build()
+					.retries(4)
+					.asTag()
+					.go(httpServer.getBaseURI("readfail/1"));
+				System.out.println(tag);
+				assertThat(tag.getResponseCode()).isEqualTo(200);
+			}
+		}
+	}
+
+	public void testReadFailRetryFails() throws Exception {
+		try (Processor p = new Processor()) {
+			try (HttpClient client = new HttpClient()) {
+				client.setReporter(p);
+
+				TaggedData tag = client.build()
+					.retries(4)
+					.retryDelay(1)
+					.asTag()
+					.go(httpServer.getBaseURI("readfail/2"));
+				System.out.println(tag);
+				assertThat(tag.getResponseCode()).isEqualTo(500);
+			}
+		}
 	}
 
 	public void testHttpsVerification() throws Exception {
@@ -123,6 +258,7 @@ public class HttpClientTest extends TestCase {
 				extraServer.start();
 
 				TaggedData go3 = client.build()
+					.retries(0)
 					.asTag()
 					.go(extraServer.getBaseURI("get/foo"));
 
@@ -135,6 +271,7 @@ public class HttpClientTest extends TestCase {
 		try (HttpClient hc = new HttpClient();) {
 			try {
 				TaggedData tag = hc.build()
+					.retries(0)
 					.asTag()
 					.timeout(1000)
 					.go(httpServer.getBaseURI("timeout/60"));
@@ -148,39 +285,65 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	public void testClearCacheOn404() throws Exception {
+		try (HttpClient hc = new HttpClient();) {
+			hc.setCache(tmp);
+			URLCache cache = hc.cache();
+
+			URI cheshire = httpServer.getBaseURI("cheshire");
+			assertThat(cache.isCached(cheshire)).isFalse();
+
+			TaggedData tag = hc.build()
+				.useCache()
+				.retries(0)
+				.asTag()
+				.go(cheshire);
+			assertNotNull(tag);
+			assertEquals(200, tag.getResponseCode());
+
+			assertThat(cache.isCached(cheshire)).isTrue();
+
+			httpServer.second = true;
+
+			tag = hc.build()
+				.useCache()
+				.retries(0)
+				.asTag()
+				.go(cheshire);
+			assertNotNull(tag);
+			assertEquals(404, tag.getResponseCode());
+			assertThat(cache.isCached(cheshire)).isFalse();
+		}
+	}
+
 	public void testCancel() throws Exception {
 		final long deadline = System.currentTimeMillis() + 1000L;
 
 		try (HttpClient hc = new HttpClient();) {
 			Processor p = new Processor();
-			p.addBasicPlugin(new ProgressPlugin() {
+			p.addBasicPlugin((ProgressPlugin) (name, size) -> new Task() {
 
 				@Override
-				public Task startTask(String name, int size) {
-					return new Task() {
-
-						@Override
-						public void worked(int units) {
-							System.out.println("Worked " + units);
-						}
-
-						@Override
-						public void done(String message, Throwable e) {
-							System.out.println("Done " + message + " " + e);
-						}
-
-						@Override
-						public boolean isCanceled() {
-							System.out.println("Cancel check ");
-							return System.currentTimeMillis() > deadline;
-						}
-
-					};
+				public void worked(int units) {
+					System.out.println("Worked " + units);
 				}
+
+				@Override
+				public void done(String message, Throwable e) {
+					System.out.println("Done " + message + " " + e);
+				}
+
+				@Override
+				public boolean isCanceled() {
+					System.out.println("Cancel check ");
+					return System.currentTimeMillis() > deadline;
+				}
+
 			});
 			hc.setRegistry(p);
 
 			TaggedData tag = hc.build()
+				.retries(0)
 				.asTag()
 				.go(httpServer.getBaseURI("timeout/50"));
 			assertNotNull(tag);
@@ -201,6 +364,7 @@ public class HttpClientTest extends TestCase {
 
 			Promise<TaggedData> a = hc.build()
 				.useCache()
+				.retries(0)
 				.age(1, TimeUnit.DAYS)
 				.asTag()
 				.async(httpServer.getBaseURI("mftch"));
@@ -208,6 +372,7 @@ public class HttpClientTest extends TestCase {
 
 			Promise<TaggedData> b = hc.build()
 				.useCache()
+				.retries(0)
 				.age(1, TimeUnit.DAYS)
 				.asTag()
 				.async(httpServer.getBaseURI("mftch"));
@@ -290,6 +455,7 @@ public class HttpClientTest extends TestCase {
 			URI go = httpsServer.getBaseURI("get/foo");
 
 			TaggedData tag = hc.build()
+				.retries(0)
 				.get(TaggedData.class)
 				.go(go);
 			assertNotNull(tag);
@@ -325,15 +491,17 @@ public class HttpClientTest extends TestCase {
 
 			Config c = new Config();
 			c.https = true;
-			Httpbin httpbin = new Httpbin(c);
-			X509Certificate[] invalidChain = httpbin.getCertificateChain();
-			httpbin.close();
+			X509Certificate[] invalidChain;
+			try (Httpbin httpbin = new Httpbin(c)) {
+				invalidChain = httpbin.getCertificateChain();
+			}
 
 			HttpsVerification httpsVerification = new HttpsVerification(invalidChain, true, hc.getReporter());
 			hc.addURLConnectionHandler(httpsVerification);
 			URI go = httpsServer.getBaseURI("get/foo");
 
 			TaggedData tag = hc.build()
+				.retries(0)
 				.get(TaggedData.class)
 				.go(go);
 			assertNotNull(tag);
@@ -451,46 +619,36 @@ public class HttpClientTest extends TestCase {
 			final int[] counts = new int[2];
 			counts[0] = counts[1] = 0;
 
-			p.addBasicPlugin(new ProgressPlugin() {
+			p.addBasicPlugin((ProgressPlugin) (name, size) -> new Task() {
 				@Override
-				public Task startTask(String name, int size) {
-					return new Task() {
-						@Override
-						public void worked(int units) {
-							counts[0]++;
-						}
+				public void worked(int units) {
+					counts[0]++;
+				}
 
-						@Override
-						public void done(String message, Throwable e) {
-							counts[0]++;
-						}
+				@Override
+				public void done(String message, Throwable e) {
+					counts[0]++;
+				}
 
-						@Override
-						public boolean isCanceled() {
-							return false;
-						}
-					};
+				@Override
+				public boolean isCanceled() {
+					return false;
 				}
 			});
-			p.addBasicPlugin(new ProgressPlugin() {
+			p.addBasicPlugin((ProgressPlugin) (name, size) -> new Task() {
 				@Override
-				public Task startTask(String name, int size) {
-					return new Task() {
-						@Override
-						public void worked(int units) {
-							counts[1]++;
-						}
+				public void worked(int units) {
+					counts[1]++;
+				}
 
-						@Override
-						public void done(String message, Throwable e) {
-							counts[1]++;
-						}
+				@Override
+				public void done(String message, Throwable e) {
+					counts[1]++;
+				}
 
-						@Override
-						public boolean isCanceled() {
-							return false;
-						}
-					};
+				@Override
+				public boolean isCanceled() {
+					return false;
 				}
 			});
 			hc.setRegistry(p);
@@ -507,30 +665,26 @@ public class HttpClientTest extends TestCase {
 	public void testPut() throws URISyntaxException, Exception {
 		try (Processor p = new Processor();) {
 			final AtomicBoolean done = new AtomicBoolean();
-			p.addBasicPlugin(new ProgressPlugin() {
+			p.addBasicPlugin((ProgressPlugin) (name, size) -> {
+				System.out.println("start " + name);
+				return new Task() {
 
-				@Override
-				public Task startTask(final String name, int size) {
-					System.out.println("start " + name);
-					return new Task() {
+					@Override
+					public void worked(int units) {
+						System.out.println("worked " + name + " " + units);
+					}
 
-						@Override
-						public void worked(int units) {
-							System.out.println("worked " + name + " " + units);
-						}
+					@Override
+					public void done(String message, Throwable e) {
+						System.out.println("done " + name + " " + message + " " + e);
+						done.set(true);
+					}
 
-						@Override
-						public void done(String message, Throwable e) {
-							System.out.println("done " + name + " " + message + " " + e);
-							done.set(true);
-						}
-
-						@Override
-						public boolean isCanceled() {
-							return false;
-						}
-					};
-				}
+					@Override
+					public boolean isCanceled() {
+						return false;
+					}
+				};
 			});
 			try (HttpClient c = new HttpClient();) {
 				c.setRegistry(p);

@@ -6,7 +6,7 @@ import java.lang.reflect.Modifier;
 
 public class FieldInfo extends MemberInfo {
 
-	FieldInfo(int access_flags, String name, String descriptor, Attribute[] attributes) {
+	public FieldInfo(int access_flags, String name, String descriptor, Attribute[] attributes) {
 		super(access_flags, name, descriptor, attributes);
 	}
 
@@ -15,7 +15,7 @@ public class FieldInfo extends MemberInfo {
 		return toString(Modifier.fieldModifiers());
 	}
 
-	static FieldInfo parseFieldInfo(DataInput in, ConstantPool constant_pool) throws IOException {
-		return parseMemberInfo(in, constant_pool, FieldInfo::new);
+	public static FieldInfo read(DataInput in, ConstantPool constant_pool) throws IOException {
+		return read(in, constant_pool, FieldInfo::new);
 	}
 }

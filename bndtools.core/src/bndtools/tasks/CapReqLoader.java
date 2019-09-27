@@ -10,12 +10,12 @@ import bndtools.model.resolution.RequirementWrapper;
 
 public interface CapReqLoader extends Closeable {
 
-    String getShortLabel();
+	String getShortLabel();
 
-    String getLongLabel();
+	String getLongLabel();
 
-    Map<String, List<Capability>> loadCapabilities() throws Exception;
+	Map<String, List<Capability>> loadCapabilities() throws Exception;
 
-    Map<String, List<RequirementWrapper>> loadRequirements() throws Exception;
+	Map<String, List<RequirementWrapper>> loadRequirements() throws Exception;
 
 }

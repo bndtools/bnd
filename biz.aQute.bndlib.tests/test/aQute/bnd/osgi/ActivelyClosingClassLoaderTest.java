@@ -1,5 +1,6 @@
 package aQute.bnd.osgi;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -53,12 +54,12 @@ public class ActivelyClosingClassLoaderTest {
 
 				Enumeration<URL> resources = ac.getResources("META-INF/MANIFEST.MF");
 				int n = count(resources);
-				assertEquals(1, n);
+				assertThat(n).isGreaterThanOrEqualTo(1);
 
 				ac.add(IO.getFile("jar/ds.jar"));
 
 				resources = ac.getResources("META-INF/MANIFEST.MF");
-				assertEquals(2, count(resources));
+				assertThat(count(resources)).isEqualTo(n + 1);
 
 			}
 		}

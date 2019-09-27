@@ -2,7 +2,7 @@ package aQute.bnd.util.dto;
 
 /*
  * Copyright (c) OSGi Alliance (2012, 2017). All Rights Reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,7 +34,7 @@ import java.util.Set;
  * <p>
  * The object graph from a Data Transfer Object must be a tree to simplify
  * serialization and deserialization.
- * 
+ *
  * @author $Id$
  * @NotThreadSafe
  */
@@ -46,7 +46,7 @@ public abstract class DTO {
 	 * <p>
 	 * The format of the string representation is not specified and subject to
 	 * change.
-	 * 
+	 *
 	 * @return A string representation of this DTO suitable for use when
 	 *         debugging.
 	 */
@@ -58,7 +58,7 @@ public abstract class DTO {
 	/**
 	 * Append the specified DTO's string representation to the specified
 	 * StringBuilder.
-	 * 
+	 *
 	 * @param result StringBuilder to which the string representation is
 	 *            appended.
 	 * @param objectRefs References to "seen" objects.
@@ -99,7 +99,7 @@ public abstract class DTO {
 	 * This method handles cycles in the object graph, using path-based
 	 * references, even though the specification requires the object graph from
 	 * a DTO to be a tree.
-	 * 
+	 *
 	 * @param result StringBuilder to which the string representation is
 	 *            appended.
 	 * @param objectRefs References to "seen" objects.
@@ -160,7 +160,7 @@ public abstract class DTO {
 	/**
 	 * Append the specified array's string representation to the specified
 	 * StringBuilder.
-	 * 
+	 *
 	 * @param result StringBuilder to which the string representation is
 	 *            appended.
 	 * @param objectRefs References to "seen" objects.
@@ -185,7 +185,7 @@ public abstract class DTO {
 	/**
 	 * Append the specified iterable's string representation to the specified
 	 * StringBuilder.
-	 * 
+	 *
 	 * @param result StringBuilder to which the string representation is
 	 *            appended.
 	 * @param objectRefs References to "seen" objects.
@@ -212,7 +212,7 @@ public abstract class DTO {
 	/**
 	 * Append the specified map's string representation to the specified
 	 * StringBuilder.
-	 * 
+	 *
 	 * @param result StringBuilder to which the string representation is
 	 *            appended.
 	 * @param objectRefs References to "seen" objects.
@@ -239,7 +239,7 @@ public abstract class DTO {
 
 	/**
 	 * Append the specified string to the specified StringBuilder.
-	 * 
+	 *
 	 * @param result StringBuilder to which the string is appended.
 	 * @param string The string to be appended.
 	 * @return The specified StringBuilder.
@@ -269,7 +269,7 @@ public abstract class DTO {
 
 	/**
 	 * Compress, in length, the specified string.
-	 * 
+	 *
 	 * @param in The string to potentially compress.
 	 * @return The string compressed, if necessary.
 	 */

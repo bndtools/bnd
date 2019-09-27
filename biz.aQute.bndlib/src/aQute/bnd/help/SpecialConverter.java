@@ -74,7 +74,7 @@ class SpecialConverter extends Converter {
 	/**
 	 * Guess if this interface is a map to type interface. This is basically any
 	 * interface - interfaces that extend of Map and Iterable.
-	 * 
+	 *
 	 * @param type the type to guess
 	 * @return true if this is likely an interface that can be used for
 	 *         converting a map to a type.

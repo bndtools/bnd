@@ -1,7 +1,6 @@
 package aQute.lib.io;
 
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
@@ -108,12 +107,27 @@ public class ByteBufferDataInput implements DataInput {
 	}
 
 	@Override
+	@Deprecated
 	public String readLine() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public String readUTF() throws IOException {
-		return DataInputStream.readUTF(this);
+		return IO.readUTF(this);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(getClass().getName());
+		sb.append("[pos=");
+		sb.append(bb.position());
+		sb.append(" lim=");
+		sb.append(bb.limit());
+		sb.append(" cap=");
+		sb.append(bb.capacity());
+		sb.append("]");
+		return sb.toString();
 	}
 }

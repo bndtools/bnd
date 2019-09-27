@@ -1,7 +1,5 @@
 package aQute.bnd.maven;
 
-import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
-
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -65,7 +63,7 @@ public class MavenDeploy implements Deploy, Plugin {
 		if (maven == null)
 			return false; // we're not playing for this bundle
 
-		logger.info(LIFECYCLE, "deploying {} to Maven repo: {}", jarName, repository);
+		logger.info("deploying {} to Maven repo: {}", jarName, repository);
 		File target = project.getTarget();
 		File tmp = Processor.getFile(target, repository);
 		IO.mkdirs(tmp);
@@ -75,7 +73,7 @@ public class MavenDeploy implements Deploy, Plugin {
 			if (manifest == null)
 				project.error("Jar has no manifest: %s", original);
 			else {
-				logger.info(LIFECYCLE, "Writing pom.xml");
+				logger.info("Writing pom.xml");
 				PomResource pom = new PomResource(manifest);
 				pom.setProperties(maven);
 				File pomFile = write(tmp, pom, "pom.xml");
@@ -86,20 +84,20 @@ public class MavenDeploy implements Deploy, Plugin {
 						.getValue(Constants.EXPORT_PACKAGE));
 					File jdoc = new File(tmp, "jdoc");
 					IO.mkdirs(jdoc);
-					logger.info(LIFECYCLE, "Generating Javadoc for: {}", exports.keySet());
+					logger.info("Generating Javadoc for: {}", exports.keySet());
 					Jar javadoc = javadoc(jdoc, project, exports.keySet());
-					logger.info(LIFECYCLE, "Writing javadoc jar");
+					logger.info("Writing javadoc jar");
 					File javadocFile = write(tmp, new JarResource(javadoc), "javadoc.jar");
-					logger.info(LIFECYCLE, "Writing main file");
+					logger.info("Writing main file");
 					File mainFile = write(tmp, new JarResource(main), "main.jar");
-					logger.info(LIFECYCLE, "Writing sources file");
+					logger.info("Writing sources file");
 					File srcFile = write(tmp, new JarResource(main), "src.jar");
 
-					logger.info(LIFECYCLE, "Deploying main file");
+					logger.info("Deploying main file");
 					maven_gpg_sign_and_deploy(project, mainFile, null, pomFile);
-					logger.info(LIFECYCLE, "Deploying main sources file");
+					logger.info("Deploying main sources file");
 					maven_gpg_sign_and_deploy(project, srcFile, "sources", null);
-					logger.info(LIFECYCLE, "Deploying main javadoc file");
+					logger.info("Deploying main javadoc file");
 					maven_gpg_sign_and_deploy(project, javadocFile, "javadoc", null);
 
 				}
@@ -141,8 +139,7 @@ public class MavenDeploy implements Deploy, Plugin {
 		optional(command, "keyname", keyname);
 		optional(command, "homedir", homedir);
 		optional(command, "classifier", classifier);
-		optional(command, "pomFile", pomFile == null ? null
-			: IO.absolutePath(pomFile));
+		optional(command, "pomFile", pomFile == null ? null : IO.absolutePath(pomFile));
 
 		StringBuilder stdout = new StringBuilder();
 		StringBuilder stderr = new StringBuilder();
@@ -164,7 +161,7 @@ public class MavenDeploy implements Deploy, Plugin {
 	private Jar javadoc(File tmp, Project b, Set<String> exports) throws Exception {
 		Command command = new Command();
 
-		command.add(b.getProperty("javadoc", "javadoc"));
+		command.add(b.getJavaExecutable("javadoc"));
 		command.add("-d");
 		command.add(IO.absolutePath(tmp));
 		command.add("-sourcepath");

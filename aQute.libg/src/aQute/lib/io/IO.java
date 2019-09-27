@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,6 +17,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UTFDataFormatException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -34,6 +36,7 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -49,16 +52,18 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import aQute.lib.stringrover.StringRover;
 import aQute.libg.glob.Glob;
 
 public class IO {
-	static final Pattern								WINDOWS_MACROS			= Pattern.compile("%([^%]+)%");
-	static final int									BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
+	private static final Pattern						WINDOWS_MACROS			= Pattern.compile("%([^%]+)%");
+	private static final int							BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
 	private static final int							DIRECT_MAP_THRESHOLD	= BUFFER_SIZE;
 	private static final boolean						isWindows				= File.separatorChar == '\\';
 	static final public File							work					= new File(
 		System.getProperty("user.dir"));
 	static final public File							home;
+	static final public File							JAVA_HOME;
 	private static final EnumSet<StandardOpenOption>	writeOptions			= EnumSet.of(StandardOpenOption.WRITE,
 		StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 	private static final EnumSet<StandardOpenOption>	readOptions				= EnumSet.of(StandardOpenOption.READ);
@@ -66,6 +71,7 @@ public class IO {
 	static {
 		EnvironmentCalculator hc = new EnvironmentCalculator(isWindows);
 		home = hc.getHome();
+		JAVA_HOME = hc.getJavaHome();
 	}
 
 	public static String getExtension(String fileName, String deflt) {
@@ -255,7 +261,29 @@ public class IO {
 	}
 
 	public static OutputStream copy(ByteBuffer bb, OutputStream out) throws IOException {
-		if (bb.hasArray()) {
+		if (out instanceof ByteBufferOutputStream) {
+			ByteBufferOutputStream bbout = (ByteBufferOutputStream) out;
+			bbout.write(bb);
+		} else if (bb.hasArray()) {
+			out.write(bb.array(), bb.arrayOffset() + bb.position(), bb.remaining());
+			bb.position(bb.limit());
+		} else {
+			int length = Math.min(bb.remaining(), BUFFER_SIZE);
+			byte[] buffer = new byte[length];
+			while (length > 0) {
+				bb.get(buffer, 0, length);
+				out.write(buffer, 0, length);
+				length = Math.min(bb.remaining(), buffer.length);
+			}
+		}
+		return out;
+	}
+
+	public static DataOutput copy(ByteBuffer bb, DataOutput out) throws IOException {
+		if (out instanceof ByteBufferDataOutput) {
+			ByteBufferDataOutput bbout = (ByteBufferDataOutput) out;
+			bbout.write(bb);
+		} else if (bb.hasArray()) {
 			out.write(bb.array(), bb.arrayOffset() + bb.position(), bb.remaining());
 			bb.position(bb.limit());
 		} else {
@@ -503,11 +531,11 @@ public class IO {
 		return copy(in, new ByteBufferOutputStream()).toByteArray();
 	}
 
-	public static void write(byte[] data, OutputStream out) throws Exception {
+	public static void write(byte[] data, OutputStream out) throws IOException {
 		copy(data, out);
 	}
 
-	public static void write(byte[] data, File file) throws Exception {
+	public static void write(byte[] data, File file) throws IOException {
 		copy(data, file);
 	}
 
@@ -622,18 +650,18 @@ public class IO {
 	}
 
 	public static File getFile(File base, String file) {
-		if (file.startsWith("~/")) {
-			file = file.substring(2);
-			if (!file.startsWith("~/")) {
-				return getFile(home, file);
+		StringRover rover = new StringRover(file);
+		if (rover.startsWith("~/")) {
+			rover.increment(2);
+			if (!rover.startsWith("~/")) {
+				return getFile(home, rover.substring(0));
 			}
 		}
-		if (file.startsWith("~")) {
-			file = file.substring(1);
-			return getFile(home.getParentFile(), file);
+		if (rover.startsWith("~")) {
+			return getFile(home.getParentFile(), rover.substring(1));
 		}
 
-		File f = new File(file);
+		File f = new File(rover.substring(0));
 		if (f.isAbsolute()) {
 			return f;
 		}
@@ -642,30 +670,24 @@ public class IO {
 			base = work;
 		}
 
-		for (f = base.getAbsoluteFile(); !file.isEmpty();) {
-			String first;
-			int n = file.indexOf('/');
-			if (n != -1) {
-				first = file.substring(0, n);
-				file = file.substring(n + 1);
+		for (f = base.getAbsoluteFile(); !rover.isEmpty();) {
+			int n = rover.indexOf('/');
+			if (n < 0) {
+				n = rover.length();
+			}
+			if ((n == 0) || ((n == 1) && (rover.charAt(0) == '.'))) {
+				// case "" or "."
+			} else if ((n == 2) && (rover.charAt(0) == '.') && (rover.charAt(1) == '.')) {
+				// case ".."
+				File parent = f.getParentFile();
+				if (parent != null) {
+					f = parent;
+				}
 			} else {
-				first = file;
-				file = "";
+				String segment = rover.substring(0, n);
+				f = new File(f, segment);
 			}
-			switch (first) {
-				case "" :
-				case "." :
-					break;
-				case ".." :
-					File parent = f.getParentFile();
-					if (parent != null) {
-						f = parent;
-					}
-					break;
-				default :
-					f = new File(f, first);
-					break;
-			}
+			rover.increment(n + 1);
 		}
 
 		return f.getAbsoluteFile();
@@ -686,19 +708,19 @@ public class IO {
 	}
 
 	public static Path getPath(Path base, String file) {
-		if (file.startsWith("~/")) {
-			file = file.substring(2);
-			if (!file.startsWith("~/")) {
-				return getPath(home.toPath(), file);
+		StringRover rover = new StringRover(file);
+		if (rover.startsWith("~/")) {
+			rover.increment(2);
+			if (!rover.startsWith("~/")) {
+				return getPath(home.toPath(), rover.substring(0));
 			}
 		}
-		if (file.startsWith("~")) {
-			file = file.substring(1);
+		if (rover.startsWith("~")) {
 			return getPath(home.toPath()
-				.getParent(), file);
+				.getParent(), rover.substring(1));
 		}
 
-		Path f = new File(file).toPath();
+		Path f = new File(rover.substring(0)).toPath();
 		if (f.isAbsolute()) {
 			return f;
 		}
@@ -708,18 +730,15 @@ public class IO {
 		}
 
 		for (f = base.normalize()
-			.toAbsolutePath(); !file.isEmpty();) {
-			String first;
-			int n = file.indexOf('/');
-			if (n != -1) {
-				first = file.substring(0, n);
-				file = file.substring(n + 1);
-			} else {
-				first = file;
-				file = "";
+			.toAbsolutePath(); !rover.isEmpty();) {
+			int n = rover.indexOf('/');
+			if (n < 0) {
+				n = rover.length();
 			}
-			f = f.resolve(first)
+			String segment = rover.substring(0, n);
+			f = f.resolve(segment)
 				.normalize();
+			rover.increment(n + 1);
 		}
 
 		return f.toAbsolutePath();
@@ -862,7 +881,14 @@ public class IO {
 
 	public static Path mkdirs(Path dir) throws IOException {
 		if (Files.isSymbolicLink(dir)) {
-			return mkdirs(Files.readSymbolicLink(dir));
+			Path target = Files.readSymbolicLink(dir);
+			boolean recreateSymlink = isWindows() && !Files.exists(target, LinkOption.NOFOLLOW_LINKS);
+			Path result = mkdirs(target);
+			if (recreateSymlink) { // recreate symlink on windows
+				delete(dir);
+				createSymbolicLink(dir, target);
+			}
+			return result;
 		}
 		return Files.createDirectories(dir);
 	}
@@ -892,7 +918,7 @@ public class IO {
 		}
 	}
 
-	public static Throwable close(Closeable in) {
+	public static Throwable close(AutoCloseable in) {
 		try {
 			if (in != null)
 				in.close();
@@ -900,6 +926,11 @@ public class IO {
 			return e;
 		}
 		return null;
+	}
+
+	// This method is required for binary backwards compatibility.
+	public static Throwable close(Closeable in) {
+		return close((AutoCloseable) in);
 	}
 
 	public static URL toURL(String s, File base) throws MalformedURLException {
@@ -1089,11 +1120,11 @@ public class IO {
 		return new PrintWriter(new OutputStreamWriter(out, encoding));
 	}
 
-	public static boolean createSymbolicLink(File link, File target) throws Exception {
+	public static boolean createSymbolicLink(File link, File target) throws IOException {
 		return createSymbolicLink(link.toPath(), target.toPath());
 	}
 
-	public static boolean createSymbolicLink(Path link, Path target) throws Exception {
+	public static boolean createSymbolicLink(Path link, Path target) throws IOException {
 		if (isSymbolicLink(link)) {
 			Path linkTarget = Files.readSymbolicLink(link);
 
@@ -1272,7 +1303,7 @@ public class IO {
 		return sb.toString();
 	}
 
-	final static Pattern RESERVED_WINDOWS_P = Pattern.compile("CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]");
+	private final static Pattern RESERVED_WINDOWS_P = Pattern.compile("CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]");
 
 	public static boolean isWindows() {
 		return isWindows;
@@ -1294,7 +1325,7 @@ public class IO {
 		 * Get the value of a system environment variable. Expand any macros
 		 * (%...%) if run on windows. Generally, on Linux et. al. environment
 		 * variables are already expanded.
-		 * 
+		 *
 		 * @param key the environment variable name
 		 * @return the value with expanded macros if on windows.
 		 */
@@ -1302,38 +1333,30 @@ public class IO {
 			return getSystemEnv(key, null);
 		}
 
-		String getSystemEnv(String key, Set<String> visited) {
-
+		private String getSystemEnv(String key, Set<String> visited) {
 			String value = getenv(key);
 			if (value == null || !iswindows) {
 				return value;
 			}
 			if (visited == null) {
 				visited = new HashSet<>();
-			} else if (visited.contains(key))
+			}
+			if (!visited.add(key)) {
 				return key;
+			}
 
-			visited.add(key);
-
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			Matcher matcher = WINDOWS_MACROS.matcher(value);
-			int append = 0;
-			while (matcher.find(append)) {
+			int start = 0;
+			for (; matcher.find(); start = matcher.end()) {
 				String name = matcher.group(1);
 				String replacement = getSystemEnv(name, visited);
-				while (append < matcher.start()) {
-					sb.append(value.charAt(append));
-					append++;
-				}
-				sb.append(replacement);
-				append = matcher.end();
+				sb.append(value, start, matcher.start())
+					.append(replacement);
 			}
-			while (append < value.length()) {
-				sb.append(value.charAt(append));
-				append++;
-			}
-
-			return sb.toString();
+			return (start == 0) ? value
+				: sb.append(value, start, value.length())
+					.toString();
 		}
 
 		String getenv(String key) {
@@ -1341,21 +1364,77 @@ public class IO {
 		}
 
 		File getHome() {
-			File tmp = testFile(getSystemEnv("HOME"));
-
-			if (tmp == null || !tmp.isDirectory()) {
-				tmp = testFile(System.getProperty("user.home"));
+			File home = testFile(getSystemEnv("HOME"));
+			if ((home == null) || !home.isDirectory()) {
+				home = testFile(System.getProperty("user.home"));
 			}
-			assert tmp != null;
-			return tmp;
+			assert home != null;
+			return home;
 		}
 
-		File testFile(String path) {
+		File getJavaHome() {
+			File javaHome = testFile(getSystemEnv("JAVA_HOME"));
+			if ((javaHome == null) || !javaHome.isDirectory()) {
+				javaHome = testFile(System.getProperty("java.home"));
+			}
+			assert javaHome != null;
+			return javaHome;
+		}
+
+		private File testFile(String path) {
 			if (path == null)
 				return null;
 
 			return new File(path);
 		}
-
 	}
+
+	public static String readUTF(DataInput in) throws IOException {
+		int size = in.readUnsignedShort();
+		char[] string = new char[size];
+		int len = 0;
+		for (int i = 0; i < size; i++, len++) {
+			int b = in.readUnsignedByte();
+			if ((b > 0x00) && (b < 0x80)) {
+				string[len] = (char) b;
+			} else {
+				switch (b >> 4) {
+					// 2 byte encoding
+					case 0b1100 :
+					case 0b1101 : {
+						i++;
+						if (i >= size) {
+							throw new UTFDataFormatException("partial multi byte charater at end");
+						}
+						int b2 = in.readUnsignedByte();
+						if ((b2 & 0b1100_0000) != 0b1000_0000) {
+							throw new UTFDataFormatException("bad encoding at byte: " + (i - 1));
+						}
+						string[len] = (char) (((b & 0x1F) << 6) | (b2 & 0x3F));
+						break;
+					}
+					// 3 byte encoding
+					case 0b1110 : {
+						i += 2;
+						if (i >= size) {
+							throw new UTFDataFormatException("partial multi byte charater at end");
+						}
+						int b2 = in.readUnsignedByte();
+						int b3 = in.readUnsignedByte();
+						if (((b2 & 0b1100_0000) != 0b1000_0000) || ((b3 & 0b1100_0000) != 0b1000_0000)) {
+							throw new UTFDataFormatException("bad encoding at byte: " + (i - 2));
+						}
+						string[len] = (char) (((b & 0x0F) << 12) | ((b2 & 0x3F) << 6) | (b3 & 0x3F));
+						break;
+					}
+					// invalid encoding
+					default : {
+						throw new UTFDataFormatException("bad encoding at byte: " + i);
+					}
+				}
+			}
+		}
+		return new String(string, 0, len);
+	}
+
 }

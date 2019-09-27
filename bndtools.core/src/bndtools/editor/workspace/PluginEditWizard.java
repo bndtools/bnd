@@ -7,22 +7,22 @@ import aQute.bnd.header.Attrs;
 
 public class PluginEditWizard extends Wizard {
 
-    private final PluginPropertiesPage propertiesPage = new PluginPropertiesPage();
+	private final PluginPropertiesPage propertiesPage = new PluginPropertiesPage();
 
-    public PluginEditWizard(IConfigurationElement configElement, Attrs properties) {
-        propertiesPage.setConfigElement(configElement);
-        propertiesPage.setProperties(properties);
+	public PluginEditWizard(IConfigurationElement configElement, Attrs properties) {
+		propertiesPage.setConfigElement(configElement);
+		propertiesPage.setProperties(properties);
 
-        addPage(propertiesPage);
-    }
+		addPage(propertiesPage);
+	}
 
-    @Override
-    public boolean performFinish() {
-        return true;
-    }
+	@Override
+	public boolean performFinish() {
+		return true;
+	}
 
-    public boolean isChanged() {
-        return propertiesPage.isChanged();
-    }
+	public boolean isChanged() {
+		return propertiesPage.isChanged();
+	}
 
 }

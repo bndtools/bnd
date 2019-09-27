@@ -1,0 +1,2 @@
+-sources: true
+Bundle-Activator: run.Activator

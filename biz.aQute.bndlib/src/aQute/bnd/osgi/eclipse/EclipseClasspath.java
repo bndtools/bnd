@@ -13,7 +13,6 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -31,28 +30,27 @@ import aQute.service.reporter.Reporter;
  * problems. @version $Revision: 1.2 $
  */
 public class EclipseClasspath {
-	static DocumentBuilderFactory	documentBuilderFactory	= DocumentBuilderFactory.newInstance();
-	DocumentBuilder					db;
-	File							project;
-	File							workspace;
-	Set<File>						sources					= new LinkedHashSet<>();
-	Set<File>						allSources				= new LinkedHashSet<>();
+	static final DocumentBuilderFactory	documentBuilderFactory	= DocumentBuilderFactory.newInstance();
+	File								project;
+	File								workspace;
+	Set<File>							sources					= new LinkedHashSet<>();
+	Set<File>							allSources				= new LinkedHashSet<>();
 
-	Set<File>						classpath				= new LinkedHashSet<>();
-	List<File>						dependents				= new ArrayList<>();
-	File							output;
-	boolean							recurse					= true;
-	Set<File>						exports					= new LinkedHashSet<>();
-	Map<String, String>				properties				= new HashMap<>();
-	Reporter						reporter;
-	int								options;
-	Set<File>						bootclasspath			= new LinkedHashSet<>();
+	Set<File>							classpath				= new LinkedHashSet<>();
+	List<File>							dependents				= new ArrayList<>();
+	File								output;
+	boolean								recurse					= true;
+	Set<File>							exports					= new LinkedHashSet<>();
+	Map<String, String>					properties				= new HashMap<>();
+	Reporter							reporter;
+	int									options;
+	Set<File>							bootclasspath			= new LinkedHashSet<>();
 
-	public final static int			DO_VARIABLES			= 1;
+	public final static int				DO_VARIABLES			= 1;
 
 	/**
 	 * Parse an Eclipse project structure to discover the classpath.
-	 * 
+	 *
 	 * @param workspace Points to workspace
 	 * @param project Points to project
 	 * @throws ParserConfigurationException
@@ -65,9 +63,7 @@ public class EclipseClasspath {
 		this.project = project.getCanonicalFile();
 		this.workspace = workspace.getCanonicalFile();
 		this.reporter = reporter;
-		db = documentBuilderFactory.newDocumentBuilder();
 		parse(this.project, true);
-		db = null;
 	}
 
 	public EclipseClasspath(Reporter reporter, File workspace, File project) throws Exception {
@@ -77,7 +73,7 @@ public class EclipseClasspath {
 	/**
 	 * Recursive routine to parse the files. If a sub project is detected, it is
 	 * parsed before the parsing continues. This should give the right order.
-	 * 
+	 *
 	 * @param project Project directory
 	 * @param top If this is the top project
 	 * @throws ParserConfigurationException
@@ -89,7 +85,8 @@ public class EclipseClasspath {
 		if (!file.exists())
 			throw new FileNotFoundException(".classpath file not found: " + file.getAbsolutePath());
 
-		Document doc = db.parse(file);
+		Document doc = documentBuilderFactory.newDocumentBuilder()
+			.parse(file);
 		NodeList nodelist = doc.getDocumentElement()
 			.getElementsByTagName("classpathentry");
 
@@ -180,7 +177,7 @@ public class EclipseClasspath {
 		return result;
 	}
 
-	static Pattern PATH = Pattern.compile("([A-Z_]+)/(.*)");
+	private final static Pattern PATH = Pattern.compile("([A-Z_]+)/(.*)");
 
 	private File replaceVar(String path) {
 		if ((options & DO_VARIABLES) == 0)

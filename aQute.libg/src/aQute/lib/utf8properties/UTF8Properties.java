@@ -44,7 +44,6 @@ public class UTF8Properties extends Properties {
 	private static final List<ThreadLocal<CharsetDecoder>>	decoders			= Collections.unmodifiableList(
 		Arrays.asList(ThreadLocal.withInitial(UTF_8::newDecoder), ThreadLocal.withInitial(ISO_8859_1::newDecoder)));
 
-
 	public UTF8Properties(Properties p) {
 		super(p);
 	}
@@ -179,7 +178,7 @@ public class UTF8Properties extends Properties {
 	 * Replace a string in all the values. This can be used to preassign
 	 * variables that change. For example, the base directory ${.} for a loaded
 	 * properties.
-	 * 
+	 *
 	 * @return A new UTF8Properties with the replacement.
 	 */
 	public UTF8Properties replaceAll(String pattern, String replacement) {
@@ -198,12 +197,12 @@ public class UTF8Properties extends Properties {
 		return result;
 	}
 
-	private static final Pattern HERE_PATTERN = Pattern.compile(Pattern.quote("${.}"));
+	private static final Pattern HERE_PATTERN = Pattern.compile("${.}", Pattern.LITERAL);
 
 	/**
 	 * Replace the string "${.}" in all the values with the path of the
 	 * specified file.
-	 * 
+	 *
 	 * @return A new UTF8Properties with the replacement.
 	 */
 	public UTF8Properties replaceHere(File file) {

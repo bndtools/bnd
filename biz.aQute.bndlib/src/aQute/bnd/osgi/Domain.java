@@ -39,6 +39,8 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.maven.PomParser;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
+import aQute.lib.exceptions.Exceptions;
+import aQute.lib.io.ByteBufferInputStream;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.service.reporter.Reporter;
@@ -79,6 +81,15 @@ public abstract class Domain implements Iterable<String> {
 
 	public abstract void set(String key, String value);
 
+	public static String normalizeKey(String key) {
+		for (String header : Constants.headers) {
+			if (header.equalsIgnoreCase(key)) {
+				return header;
+			}
+		}
+		return key;
+	}
+
 	public static Domain domain(final Manifest manifest) {
 		Attributes attrs = manifest.getMainAttributes();
 		return domain(attrs);
@@ -94,7 +105,7 @@ public abstract class Domain implements Iterable<String> {
 
 			@Override
 			public void set(String key, String value) {
-				attrs.putValue(key, value);
+				attrs.putValue(normalizeKey(key), value);
 			}
 
 			@Override
@@ -169,7 +180,7 @@ public abstract class Domain implements Iterable<String> {
 
 			@Override
 			public void set(String key, String value) {
-				map.put(key, value);
+				map.put(normalizeKey(key), value);
 			}
 
 			@Override
@@ -186,6 +197,10 @@ public abstract class Domain implements Iterable<String> {
 
 	public Parameters getParameters(String key) {
 		return new Parameters(get(key));
+	}
+
+	public Parameters getParameters(String key, boolean allowDuplicates) {
+		return new Parameters(get(key), null, allowDuplicates);
 	}
 
 	public Parameters getParameters(String key, String deflt) {
@@ -205,7 +220,7 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public Parameters getExportPackage() {
-		return getParameters(EXPORT_PACKAGE);
+		return getParameters(EXPORT_PACKAGE, true);
 	}
 
 	public Parameters getBundleClassPath() {
@@ -230,7 +245,7 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public Parameters getExportContents() {
-		return getParameters(EXPORT_CONTENTS);
+		return getParameters(EXPORT_CONTENTS, true);
 	}
 
 	public String getBundleActivator() {
@@ -344,7 +359,7 @@ public abstract class Domain implements Iterable<String> {
 
 	/**
 	 * Indicates that this run should ignore errors and succeed anyway
-	 * 
+	 *
 	 * @return true if this processor should return errors
 	 */
 	public boolean isFailOk() {
@@ -353,7 +368,7 @@ public abstract class Domain implements Iterable<String> {
 
 	/**
 	 * Find an icon with the requested size in the list of icons.
-	 * 
+	 *
 	 * @param requestedSize the number of pixels desired
 	 * @return null or a the selected URI (which may be relative)
 	 */
@@ -428,12 +443,42 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public Parameters getRequireCapability() {
-		return getParameters(Constants.REQUIRE_CAPABILITY);
+		return getParameters(Constants.REQUIRE_CAPABILITY, true);
 	}
 
 	public Parameters getProvideCapability() {
-		return getParameters(Constants.PROVIDE_CAPABILITY);
+		return getParameters(Constants.PROVIDE_CAPABILITY, true);
 	}
+
+	public static Domain domain(byte[] data) {
+		try (JarInputStream jin = new JarInputStream(new ByteBufferInputStream(data))) {
+			return Domain.domain(jin);
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	public static Domain domain(JarInputStream jin) throws IOException {
+		Manifest m = jin.getManifest();
+		if (m != null) {
+			Domain domain = domain(m);
+			String path = domain.get(Constants.BUNDLE_LOCALIZATION,
+				org.osgi.framework.Constants.BUNDLE_LOCALIZATION_DEFAULT_BASENAME) + ".properties";
+			for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
+				if (entry.isDirectory()) {
+					continue;
+				}
+				if (entry.getName()
+					.equals(path)) {
+					domain.translation.load(jin);
+					break;
+				}
+			}
+			return domain;
+		}
+		return null;
+	}
+
 
 	public static Domain domain(File file) throws IOException {
 		if (file.getName()
@@ -466,23 +511,7 @@ public abstract class Domain implements Iterable<String> {
 
 		// default & last. Assume JAR
 		try (JarInputStream jin = new JarInputStream(IO.stream(file))) {
-			Manifest m = jin.getManifest();
-			if (m != null) {
-				Domain domain = domain(m);
-				String path = domain.get(Constants.BUNDLE_LOCALIZATION,
-					org.osgi.framework.Constants.BUNDLE_LOCALIZATION_DEFAULT_BASENAME) + ".properties";
-				for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
-					if (entry.isDirectory()) {
-						continue;
-					}
-					if (entry.getName()
-						.equals(path)) {
-						domain.translation.load(jin);
-						break;
-					}
-				}
-				return domain;
-			}
+			domain(jin);
 		}
 
 		// BUT WAIT! Maybe it's just a zip file (bad jar, bad jar...)
@@ -539,4 +568,5 @@ public abstract class Domain implements Iterable<String> {
 	public void setIncludePackage(String value) {
 		set(Constants.INCLUDEPACKAGE, value);
 	}
+
 }

@@ -15,7 +15,7 @@ public class FieldSignature implements Signature {
 		return parseFieldSignature(new StringRover(signature));
 	}
 
-	FieldSignature(ReferenceTypeSignature type) {
+	public FieldSignature(ReferenceTypeSignature type) {
 		this.type = type;
 	}
 

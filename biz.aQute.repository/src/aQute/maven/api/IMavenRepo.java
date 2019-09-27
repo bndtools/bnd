@@ -29,7 +29,7 @@ import aQute.maven.provider.MavenBackingRepository;
 public interface IMavenRepo extends Closeable {
 	/**
 	 * The format for an archive is:
-	 * 
+	 *
 	 * <pre>
 	 * 		group ':' artifact ( ':' extension ( ':' classifier )? )? ':' version ( '-SNAPSHOT' )?
 	 * </pre>
@@ -50,11 +50,11 @@ public interface IMavenRepo extends Closeable {
 
 	/**
 	 * Get the archive from the repository. Syntax:
-	 * 
+	 *
 	 * <pre>
 	 *  s = group ':' artifact (':' extension ( ':' classifier )?)? ':' version
 	 * </pre>
-	 * 
+	 *
 	 * @param s the archive specified as string
 	 */
 	Archive getArchive(String s) throws Exception;
@@ -64,7 +64,7 @@ public interface IMavenRepo extends Closeable {
 	 * {@code maven-metadata-xml} file in the program directory on the remote
 	 * repository (release + snapshot). For a local only repository this must
 	 * return an empty list.
-	 * 
+	 *
 	 * @param program the program to list the revisions for
 	 * @return a list of revisions in the repository
 	 */
@@ -73,7 +73,7 @@ public interface IMavenRepo extends Closeable {
 	/**
 	 * List the snapshot archives for a given revision. If the revision is not a
 	 * snapshot, the list will be empty
-	 * 
+	 *
 	 * @param revision the revisions to list from
 	 * @return the list snapshot archives
 	 */
@@ -81,7 +81,7 @@ public interface IMavenRepo extends Closeable {
 
 	/**
 	 * For a given snapshot revision, get the latest resolved archive.
-	 * 
+	 *
 	 * @param revision the revision (MUST be snapshot)
 	 * @param extension the extension of the archive
 	 * @param classifier the classifier of the archive ( may be null)
@@ -92,7 +92,7 @@ public interface IMavenRepo extends Closeable {
 
 	/**
 	 * Get the file in the repositories local cache directory.
-	 * 
+	 *
 	 * @param archive The archive to fetch
 	 * @return the file or null if not found
 	 */
@@ -100,7 +100,7 @@ public interface IMavenRepo extends Closeable {
 
 	/**
 	 * Get the last updated time for a snapshot revision.
-	 * 
+	 *
 	 * @param revision the snapshot revision to get the time from
 	 * @return the time of the snapshot revision remote update
 	 */
@@ -108,7 +108,7 @@ public interface IMavenRepo extends Closeable {
 
 	/**
 	 * Create a release object to release the revision.
-	 * 
+	 *
 	 * @param revision the revision to release
 	 * @return the Release object
 	 */
@@ -117,7 +117,7 @@ public interface IMavenRepo extends Closeable {
 	/**
 	 * Take a generic snapshot archive and resolve it to the latest released
 	 * snapshot.
-	 * 
+	 *
 	 * @param archive the archive to resolve
 	 * @return the archive or null if not found
 	 */
@@ -125,7 +125,7 @@ public interface IMavenRepo extends Closeable {
 
 	/**
 	 * Get the file object for the archive. The file does not have to exist
-	 * 
+	 *
 	 * @param archive the archive to find the file for
 	 * @return the File or null if not found
 	 */
@@ -133,7 +133,7 @@ public interface IMavenRepo extends Closeable {
 
 	/**
 	 * Get the URI to the remote archive
-	 * 
+	 *
 	 * @param archive the archive to calculate the URI for
 	 * @return the URI for the given archive
 	 */
@@ -147,7 +147,7 @@ public interface IMavenRepo extends Closeable {
 
 	/**
 	 * Get the name of this repository
-	 * 
+	 *
 	 * @return the name
 	 */
 	String getName();

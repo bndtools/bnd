@@ -5,8 +5,8 @@ repositories {
 }
 
 dependencies {
-    compile localGroovy()
-    compile gradleApi()
+    compileOnly localGroovy()
+    compileOnly gradleApi()
     testCompile gradleTestKit()
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4')  {
         exclude module: 'groovy-all'
@@ -15,12 +15,13 @@ dependencies {
 
 if (JavaVersion.current().isJava9Compatible()) {
     tasks.withType(GroovyCompile.class).configureEach {
-        groovyOptions.fork 'jvmArgs': java9options
+        groovyOptions.fork 'jvmArgs': jpmsOptions
     }
 }
 
 tasks.named('test') {
-    dependsOn 'jar'
+    inputs.files tasks.named('jar')
+    systemProperty 'bnd_version', bnd('bnd_version')
     File source = project.file('testresources')
     File target = new File(project.buildDir, 'testresources')
     doFirst { // copy test resources into build dir
@@ -32,20 +33,21 @@ tasks.named('test') {
     }
 }
 
-tasks.named('release') {
-  dependsOn 'groovydoc'
-}
-
-tasks.named('classes') {
-    inputs.property('pluginClasspath', bnd('pluginClasspath'))
-    File pluginClasspathFile = new File(tasks.getByName('compileJava').destinationDir, 'plugin-under-test-metadata.properties')
+tasks.named('testClasses') {
+    def pluginClasspath = { project.files(configurations.runtimeClasspath.allArtifacts.files, 
+       configurations.runtimeClasspath.resolvedConfiguration.files) }
+    inputs.files(pluginClasspath).withPropertyName('pluginClasspath')
+    def pluginClasspathFile = { new File(tasks.getByName('compileTestJava').destinationDir, 'plugin-under-test-metadata.properties') }
     outputs.file(pluginClasspathFile).withPropertyName('pluginClasspathFile')
     doLast {
-        def pluginClasspath = project.files(new File(project.buildDir, "${project.name}.jar"), bnd('pluginClasspath').tokenize(File.pathSeparatorChar))
         Properties properties = new Properties()
-        properties.setProperty('implementation-classpath', pluginClasspath.asPath)
-        pluginClasspathFile.withOutputStream {
+        properties.setProperty('implementation-classpath', pluginClasspath().asPath)
+        pluginClasspathFile().withOutputStream {
           properties.store(it, 'plugin-under-test-metadata')
         }
     }
+}
+
+tasks.named('release') {
+  dependsOn 'groovydoc'
 }

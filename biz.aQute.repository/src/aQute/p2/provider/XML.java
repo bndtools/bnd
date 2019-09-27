@@ -31,11 +31,12 @@ import aQute.lib.converter.Converter;
 public class XML {
 	final static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
 	final static XPathFactory			xpf	= XPathFactory.newInstance();
-	final XPath							xp	= xpf.newXPath();
+	final XPath							xp;
 	final Document						document;
 
 	public XML(Document document) {
 		this.document = document;
+		xp = xpf.newXPath();
 	}
 
 	String getAttribute(Node node, String name) {

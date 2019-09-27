@@ -143,7 +143,7 @@ public class PersistentResource extends DTO implements Resource {
 				int rqi = 0;
 				for (Requirement r : requirements)
 					ns.requirements[rqi++] = getData(true, r.getAttributes(), r.getDirectives());
-				;
+
 			}
 
 			List<Capability> capabilities = capMap.get(name);

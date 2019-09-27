@@ -5,7 +5,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -45,6 +44,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.jar.Attributes;
@@ -73,6 +74,7 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.ProjectLauncher.LiveCoding;
 import aQute.bnd.build.ProjectTester;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
@@ -122,6 +124,7 @@ import aQute.lib.base64.Base64;
 import aQute.lib.collections.ExtList;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.collections.SortedList;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.Filter;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.CommandLine;
@@ -154,7 +157,7 @@ import aQute.service.reporter.Reporter;
  */
 public class bnd extends Processor {
 	private static Logger						logger					= LoggerFactory.getLogger(bnd.class);
-	static Pattern								ASSIGNMENT				= Pattern.compile(															//
+	private final static Pattern				ASSIGNMENT				= Pattern.compile(							//
 		"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
 	Settings									settings				= new Settings(
 		Home.getUserHomeBnd() + "/settings.json");
@@ -175,13 +178,10 @@ public class bnd extends Processor {
 																		};
 	private static final String					DEFAULT_LOG_LEVEL_KEY	= "org.slf4j.simpleLogger.defaultLogLevel";
 
-	static Pattern								JARCOMMANDS				= Pattern
+	private final static Pattern				JARCOMMANDS				= Pattern
 		.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
-	static Pattern								COMMAND					= Pattern.compile("\\w[\\w\\d]+");
-	static Pattern								EMAIL_P					= Pattern.compile(
-		"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
-		Pattern.CASE_INSENSITIVE);
+	private final static Pattern				COMMAND					= Pattern.compile("\\w{2,}");
 	static final String							BND_BND					= "**/bnd.bnd";
 	static final String							BNDRUN_ALL				= "**/*.bndrun";
 
@@ -299,7 +299,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Rewrite the command line to mimic the jar command
-	 * 
+	 *
 	 * @param args
 	 * @throws Exception
 	 */
@@ -395,14 +395,14 @@ public class bnd extends Processor {
 	/**
 	 * Main command. This has options the bnd base options and will then run
 	 * another command.
-	 * 
+	 *
 	 * @param options
 	 * @throws Exception
 	 */
 	@Description("The swiss army tool for OSGi")
 	public void _bnd(bndOptions options) throws Exception {
 		try {
-			set(FAIL_OK, options.failok() + "");
+			setProperty(FAIL_OK, options.failok() + "");
 			setExceptions(options.exceptions());
 			setTrace(options.trace());
 			doLogging(options);
@@ -454,14 +454,15 @@ public class bnd extends Processor {
 				settings.load(password);
 			}
 		} catch (Throwable t) {
-			while (t instanceof InvocationTargetException)
-				t = t.getCause();
+			t = Exceptions.unrollCause(t, InvocationTargetException.class);
 			exception(t, "%s", t);
 		}
 		out.flush();
 		err.flush();
 		if (ws != null)
 			getInfo(ws);
+		if (workspace != null)
+			getInfo(workspace);
 
 		if (!check(options.ignore())) {
 			err.flush();
@@ -473,7 +474,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Setup SLF4J logging level.
-	 * 
+	 *
 	 * @param options
 	 */
 	private void doLogging(bndOptions options) {
@@ -544,14 +545,14 @@ public class bnd extends Processor {
 
 	/**
 	 * Create jar file
-	 * 
+	 *
 	 * <pre>
 	 *  jar c[v0M]f jarfile [-C dir] inputfiles [-Joption]
 	 * jar c[v0]mf manifest jarfile [-C dir] inputfiles [-Joption] jar c[v0M]
 	 * [-C dir] inputfiles [-Joption] jar c[v0]m manifest [-C dir] inputfiles
 	 * [-Joption]
 	 * </pre>
-	 * 
+	 *
 	 * @param options
 	 * @throws Exception
 	 */
@@ -613,7 +614,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Helper for the jar create function, adds files to the jar
-	 * 
+	 *
 	 * @param jar
 	 * @param base
 	 * @param path
@@ -761,7 +762,7 @@ public class bnd extends Processor {
 
 	/**
 	 * The do command interprets files and does a default action for each file
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Description("Execute a file based on its extension. Supported extensions are: bnd (build), bndrun (run), and jar (print)")
@@ -869,7 +870,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Bump a version number
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Description("Bumps the version of a project")
@@ -980,12 +981,7 @@ public class bnd extends Processor {
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
 	public void _build(final buildoptions opts) throws Exception {
 
-		perProject(opts, new PerProject() {
-			@Override
-			public void doit(Project p) throws Exception {
-				p.build(opts.test());
-			}
-		});
+		perProject(opts, p -> p.build(opts.test()));
 	}
 
 	interface CompileOptions extends ProjectWorkspaceOptions {
@@ -997,12 +993,7 @@ public class bnd extends Processor {
 
 	@Description("Compile a project or the workspace")
 	public void _compile(final CompileOptions opts) throws Exception {
-		perProject(opts, new PerProject() {
-			@Override
-			public void doit(Project p) throws Exception {
-				p.compile(opts.test());
-			}
-		});
+		perProject(opts, p -> p.compile(opts.test()));
 	}
 
 	@Description("Test a project according to an OSGi test")
@@ -1026,37 +1017,33 @@ public class bnd extends Processor {
 	@Description("Test a project according to an OSGi test")
 	public void _test(final testOptions opts) throws Exception {
 
-		perProject(opts, new PerProject() {
+		perProject(opts, project -> {
+			List<String> testNames = opts._arguments();
+			if (!testNames.isEmpty())
+				project.setProperty(TESTCASES, "");
 
-			@Override
-			public void doit(Project project) throws Exception {
-				List<String> testNames = opts._arguments();
-				if (!testNames.isEmpty())
+			if (project.is(NOJUNITOSGI) && !opts.force()) {
+				warning("%s is set to true on this bundle. Use -f/--force to try this test anyway", NOJUNITOSGI);
+				return;
+			}
+
+			if (project.getProperty(TESTCASES) == null)
+				if (opts.force())
 					project.setProperty(TESTCASES, "");
-
-				if (project.is(NOJUNITOSGI) && !opts.force()) {
-					warning("%s is set to true on this bundle. Use -f/--force to try this test anyway", NOJUNITOSGI);
+				else {
+					warning(
+						"No %s set on this bundle. Use -f/--force to try this test anyway (this works if another bundle provides the testcases)",
+						TESTCASES);
 					return;
 				}
 
-				if (project.getProperty(TESTCASES) == null)
-					if (opts.force())
-						project.setProperty(TESTCASES, "");
-					else {
-						warning(
-							"No %s set on this bundle. Use -f/--force to try this test anyway (this works if another bundle provides the testcases)",
-							TESTCASES);
-						return;
-					}
+			if (opts.continuous())
+				project.setProperty(TESTCONTINUOUS, "true");
 
-				if (opts.continuous())
-					project.setProperty(TESTCONTINUOUS, "true");
+			if (opts.trace() || isTrace())
+				project.setProperty(RUNTRACE, "true");
 
-				if (opts.trace() || isTrace())
-					project.setProperty(RUNTRACE, "true");
-
-				project.test(testNames);
-			}
+			project.test(testNames);
 		});
 
 	}
@@ -1064,13 +1051,7 @@ public class bnd extends Processor {
 	@Description("Test a project with plain JUnit")
 	public void _junit(testOptions opts) throws Exception {
 
-		perProject(opts, new PerProject() {
-
-			@Override
-			public void doit(Project p) throws Exception {
-				p.junit();
-			}
-		});
+		perProject(opts, p -> p.junit());
 	}
 
 	private boolean verifyDependencies(Project project, boolean implies, boolean test) throws Exception {
@@ -1125,10 +1106,15 @@ public class bnd extends Processor {
 			}
 		}
 		verifyDependencies(run, verify, false);
-		try {
-			run.run();
+		ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+		try (ProjectLauncher pl = run.getProjectLauncher();
+			LiveCoding liveCoding = pl.liveCoding(ForkJoinPool.commonPool(), scheduledExecutor)) {
+			pl.setTrace(run.isTrace() || run.isRunTrace());
+			pl.launch();
 		} catch (Exception e) {
 			messages.Failed__(e, "Running " + run);
+		} finally {
+			scheduledExecutor.shutdownNow();
 		}
 		getInfo(run);
 		getInfo(run.getWorkspace());
@@ -1141,13 +1127,7 @@ public class bnd extends Processor {
 
 	@Description("Clean a project or workspace")
 	public void _clean(cleanOptions opts) throws Exception {
-		perProject(opts, new PerProject() {
-
-			@Override
-			public void doit(Project p) throws Exception {
-				p.clean();
-			}
-		});
+		perProject(opts, p -> p.clean());
 	}
 
 	@Description("Access the internal bnd database of keywords and options")
@@ -1217,7 +1197,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Package a bnd or bndrun file for packaging.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Description("Package a bnd or bndrun file into a single jar that executes with java -jar <>.jar")
@@ -1338,7 +1318,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Show the value of a macro
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Description("Show macro value")
@@ -1393,7 +1373,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Release the project
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Description("Release this project")
@@ -1612,7 +1592,7 @@ public class bnd extends Processor {
 
 	/**
 	 * View files from JARs We parse the commandline and print each file on it.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Description("View a resource from a JAR file.")
@@ -1686,7 +1666,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Wrap a jar to a bundle.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Description("Wrap a jar")
@@ -1792,7 +1772,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Printout all the variables in scope.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
@@ -1866,7 +1846,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Manage the repo.
-	 * 
+	 *
 	 * <pre>
 	 *  out.println(&quot; bnd repo [--repo|-r ('maven'|
 	 * &lt;dir&gt;)]*&quot;); out.println(&quot; repos # list the
@@ -1996,10 +1976,11 @@ public class bnd extends Processor {
 
 	private void doPrint(Jar jar, int options, printOptions po) throws ZipException, IOException, Exception {
 		if ((options & VERIFY) != 0) {
-			Verifier verifier = new Verifier(jar);
-			verifier.setPedantic(isPedantic());
-			verifier.verify();
-			getInfo(verifier);
+			try (Verifier verifier = new Verifier(jar)) {
+				verifier.setPedantic(isPedantic());
+				verifier.verify();
+				getInfo(verifier);
+			}
 		}
 		if ((options & MANIFEST) != 0) {
 			Manifest manifest = jar.getManifest();
@@ -2196,7 +2177,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Print the components in this JAR.
-	 * 
+	 *
 	 * @param jar
 	 */
 	private void printComponents(PrintStream out, Jar jar) throws Exception {
@@ -2233,7 +2214,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Print the metatypes in this JAR.
-	 * 
+	 *
 	 * @param jar
 	 */
 	private void printMetatype(PrintStream out, Jar jar) throws Exception {
@@ -2337,7 +2318,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Run the tests from a prepared bnd file.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Description("Run OSGi tests and create report")
@@ -2607,7 +2588,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Verify jars.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Description("Verify jars")
@@ -2617,15 +2598,15 @@ public class bnd extends Processor {
 			if (!f.isFile()) {
 				error("No such file: %s", f);
 			} else {
-				Jar jar = new Jar(f);
-				if (jar.getManifest() == null || jar.getBsn() == null)
-					error("Not a bundle %s", f);
-				else {
-					Verifier v = new Verifier(jar);
-					getInfo(v, f.getName());
-					v.close();
+				try (Jar jar = new Jar(f)) {
+					if (jar.getManifest() == null || jar.getBsn() == null)
+						error("Not a bundle %s", f);
+					else {
+						try (Verifier v = new Verifier(jar)) {
+							getInfo(v, f.getName());
+						}
+					}
 				}
-				jar.close();
 			}
 		}
 	}
@@ -2643,7 +2624,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Merge a bundle with its source.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Description("Merge a binary jar with its sources. It is possible to specify  source path")
@@ -2681,7 +2662,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Diff two jar files
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Description("Diff jars")
@@ -2692,7 +2673,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Baseline
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -2704,7 +2685,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Create a schema of package deltas and versions
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -2936,7 +2917,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Central routine to get a JAR with error checking
-	 * 
+	 *
 	 * @param s
 	 */
 	Jar getJar(String s) {
@@ -2973,7 +2954,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Show the version of this bnd
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	@Description("Show version information about bnd")
@@ -3103,20 +3084,16 @@ public class bnd extends Processor {
 	public void _grep(grepOptions opts) throws Exception {
 		List<String> args = opts._arguments();
 		String s = args.remove(0);
-		Pattern pattern = Glob.toPattern(s);
-		if (pattern == null) {
+		Pattern pattern;
+		try {
+			pattern = Glob.toPattern(s);
+		} catch (IllegalArgumentException e) {
 			messages.InvalidGlobPattern_(s);
 			return;
 		}
 
 		if (args.isEmpty()) {
-			args = new ExtList<>(getBase().list(new FilenameFilter() {
-
-				@Override
-				public boolean accept(File dir, String name) {
-					return name.endsWith(".jar");
-				}
-			}));
+			args = new ExtList<>(getBase().list((dir, name) -> name.endsWith(".jar")));
 		}
 
 		Set<String> headers = opts.headers();
@@ -3310,7 +3287,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Set the private key in the settings for this machine
-	 * 
+	 *
 	 * @param hex
 	 * @param data
 	 * @throws Exception
@@ -3333,7 +3310,7 @@ public class bnd extends Processor {
 		SHA256,
 		SHA512,
 		TIMELESS
-	};
+	}
 
 	@Description("Digest a number of files")
 	@Arguments(arg = "file...")
@@ -3358,7 +3335,7 @@ public class bnd extends Processor {
 
 	/**
 	 * hash a file
-	 * 
+	 *
 	 * @throws Exception
 	 * @throws NoSuchAlgorithmException
 	 */
@@ -3447,7 +3424,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Maven command
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -3557,8 +3534,8 @@ public class bnd extends Processor {
 		boolean all();
 	}
 
-	static Pattern	BUG_P			= Pattern.compile("#([0-9]+)");
-	static Pattern	BND_COMMAND_P	= Pattern.compile("\\[bnd\\s+([\\w\\d]+)\\s*\\]");
+	private final static Pattern	BUG_P			= Pattern.compile("#(\\d+)");
+	private final static Pattern	BND_COMMAND_P	= Pattern.compile("\\[bnd\\s+(\\w+)\\s*\\]");
 
 	public void _changes(ChangesOptions options) {
 		boolean first = true;
@@ -3611,7 +3588,7 @@ public class bnd extends Processor {
 		List<File> files = new ArrayList<>();
 
 		List<String> args = options._arguments();
-		if (args.size() == 0) {
+		if (args.isEmpty()) {
 			Project p = getProject();
 			if (p == null) {
 				error("This is not a project directory and you have specified no jar files ...");
@@ -3724,7 +3701,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Show the class versions used in a JAR
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Description("Show the Execution Environments of a JAR")
@@ -3752,7 +3729,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Lets see if we can build in parallel
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void __par(final ParallelBuildOptions options) throws Exception {
@@ -3765,26 +3742,22 @@ public class bnd extends Processor {
 			List<Project> projects = getFilteredProjects(options);
 
 			for (final Project proj : projects) {
-				forker.doWhen(proj.getDependson(), proj, new Runnable() {
+				forker.doWhen(proj.getDependson(), proj, () -> {
+					if (!quit.get()) {
 
-					@Override
-					public void run() {
-						if (!quit.get()) {
-
-							try {
-								proj.compile(options.test());
-								if (!quit.get()) {
-									proj.build(options.test());
-								}
-								if (!proj.isOk()) {
-									quit.set(true);
-								}
-							} catch (Exception e) {
-								e.printStackTrace();
+						try {
+							proj.compile(options.test());
+							if (!quit.get()) {
+								proj.build(options.test());
 							}
+							if (!proj.isOk()) {
+								quit.set(true);
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
 						}
-						getInfo(proj, proj + ": ");
 					}
+					getInfo(proj, proj + ": ");
 				});
 			}
 			err.flush();
@@ -3798,7 +3771,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Force a cache update of the workspace
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -3822,7 +3795,7 @@ public class bnd extends Processor {
 
 	}
 
-	static Pattern LINE_P = Pattern.compile("\\s*(([^\\s]#|[^#])+)(\\s*#.*)?");
+	private final static Pattern LINE_P = Pattern.compile("\\s*((\\S#|[^#])+)(\\s*#.*)?");
 
 	public void _bsn2url(Bsn2UrlOptions opts) throws Exception {
 		Project p = getProject(opts.project());
@@ -3904,7 +3877,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Show the loaded workspace plugins
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -3926,6 +3899,7 @@ public class bnd extends Processor {
 
 			out.printf("%03d %s%n", n++, s);
 		}
+		getInfo(ws);
 
 	}
 
@@ -3971,7 +3945,7 @@ public class bnd extends Processor {
 		}
 
 		out.println(justif.wrap());
-
+		getInfo(ws);
 	}
 
 	/**
@@ -4241,7 +4215,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Resolve command
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -4257,7 +4231,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Remote command
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -4273,7 +4247,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Nexus commands
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -4292,6 +4266,7 @@ public class bnd extends Processor {
 	 */
 	interface ExportOptions extends ProjectWorkspaceOptions {
 
+		@Override
 		@Description("Use the following workspace")
 		String workspace();
 
@@ -4438,6 +4413,12 @@ public class bnd extends Processor {
 		} else {
 			ws = getWorkspace(getBase());
 		}
+
+		if (ws == null) {
+			warning("Using default workspace");
+			ws = Workspace.createDefaultWorkspace();
+		}
+
 		return ws;
 	}
 
@@ -4711,12 +4692,18 @@ public class bnd extends Processor {
 	@Description("Commands to verify the bnd communications setup")
 	public void _com(CommunicationCommands.CommunicationOptions options) throws Exception {
 		try (CommunicationCommands cc = new CommunicationCommands(this, options)) {
-			String help = options._command()
-				.subCmd(options, cc);
-			if (help != null)
-				out.println(help);
+			if (cc.isOk() && isWorkspaceOk()) {
+				String help = options._command()
+					.subCmd(options, cc);
+				if (help != null)
+					out.println(help);
+			}
 			getInfo(cc);
 		}
+	}
+
+	private boolean isWorkspaceOk() {
+		return ws == null || ws.isOk();
 	}
 
 	@Description("Commands to inspect a dependency graph of a set of bundles")
@@ -4790,4 +4777,16 @@ public class bnd extends Processor {
 		mc.run(options);
 		getInfo(mc);
 	}
+
+	@Description("Maintain Maven Bnd Repository GAV files")
+	public void _mbr(MbrCommand.MrOptions options) throws Exception {
+		MbrCommand c = new MbrCommand(this, options);
+		CommandLine cl = new CommandLine(this);
+		String s = cl.subCmd(options, c);
+		if (s != null) {
+			out.println(s);
+		}
+		getInfo(c);
+	}
+
 }

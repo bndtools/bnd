@@ -21,11 +21,11 @@ import aQute.lib.io.IO;
 
 public class CommunicationCommands extends Processor {
 
-	final bnd																		bnd;
-	final Workspace																	workspace;
-	final HttpClient																httpClient;
-	final CommunicationOptions														options;
-	final URLCache																	cache;
+	final bnd					bnd;
+	final Workspace				workspace;
+	final HttpClient			httpClient;
+	final CommunicationOptions	options;
+	final URLCache				cache;
 
 	@Description("Commands to verify and check the communications settings for the http client")
 
@@ -38,26 +38,27 @@ public class CommunicationCommands extends Processor {
 		this.options = options;
 		this.workspace = bnd.getWorkspace((String) null);
 		this.httpClient = workspace.getPlugin(HttpClient.class);
-		this.cache = httpClient.cache();
+		if (this.httpClient == null) {
+			error("No http client");
+			this.cache = null;
+		} else
+			this.cache = httpClient.cache();
 	}
 
 	@Arguments(arg = "url...")
-	@Description
-	("Show the information used by the Http Client to get aremote file")interface InfoOptions extends Options {
-		@Description
-		("Use the cache option. If this option is not used then thefile will be refreshed")
+	@Description("Show the information used by the Http Client to get aremote file")
+	interface InfoOptions extends Options {
+		@Description("Use the cache option. If this option is not used then thefile will be refreshed")
 
 		boolean cached();
 
-		@Description
-		("Save the remote content in the given file. If you use '.'then	the file shown to the output")
+		@Description("Save the remote content in the given file. If you use '.'then	the file shown to the output")
 
 		String output();
 	}
 
-	@Description
-	("Show the information used by the Http Client to get aremote file")public void _info(InfoOptions options)
-		throws Exception {
+	@Description("Show the information used by the Http Client to get aremote file")
+	public void _info(InfoOptions options) throws Exception {
 		List<String> arguments = options._arguments();
 		try (Formatter f = new Formatter()) {
 			while (!arguments.isEmpty()) {
@@ -112,14 +113,13 @@ public class CommunicationCommands extends Processor {
 		}
 	}
 
-	@Description
-	("Clear the cached file that is associated with the givenURI")interface ClearOptions extends Options {
+	@Description("Clear the cached file that is associated with the givenURI")
+	interface ClearOptions extends Options {
 
 	}
 
-	@Description
-	("Clear the cached file that is associated with the givenURI")public void _clear(ClearOptions options)
-		throws Exception {
+	@Description("Clear the cached file that is associated with the givenURI")
+	public void _clear(ClearOptions options) throws Exception {
 		List<String> arguments = options._arguments();
 		while (!arguments.isEmpty()) {
 			URI uri = new URI(arguments.remove(0));

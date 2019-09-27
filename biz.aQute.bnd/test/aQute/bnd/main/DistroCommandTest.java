@@ -1,5 +1,7 @@
 package aQute.bnd.main;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +30,7 @@ import aQute.bnd.main.testlib.MockRegistry;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.io.IO;
@@ -65,7 +68,8 @@ public class DistroCommandTest extends TestCase {
 		String[] bundles = {
 			"../biz.aQute.remote/generated/biz.aQute.remote.agent.jar",
 			"testdata/bundles/com.liferay.dynamic.data.mapping.taglib.jar",
-			"testdata/bundles/com.liferay.item.selector.taglib.jar"
+			"testdata/bundles/com.liferay.item.selector.taglib.jar", "testdata/bundles/org.apache.felix.log-1.2.0.jar",
+			"testdata/bundles/org.apache.felix.log-1.0.1.jar"
 		};
 
 		List<Bundle> toBeStarted = new ArrayList<>();
@@ -93,6 +97,47 @@ public class DistroCommandTest extends TestCase {
 		super.tearDown();
 	}
 
+	public void testMultiplePackageVersionsKeepsHighest() throws Exception {
+		bnd bnd = new bnd();
+		CommandLine cmdline = new CommandLine(null);
+		List<String> remoteArgs = new ArrayList<>();
+		RemoteOptions remoteOptions = cmdline.getOptions(RemoteOptions.class, remoteArgs);
+
+		File distro = new File("generated/tmp/test.distro.jar");
+
+		List<String> distroArgs = new ArrayList<>();
+		distroArgs.add("-o");
+		distroArgs.add(distro.getPath());
+		distroArgs.add("test.distro");
+		distroArgs.add("1.0.0");
+		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
+
+		try (RemoteCommand rc = new RemoteCommand(bnd, remoteOptions)) {
+			rc._distro(distroOptions);
+		}
+
+		assertTrue(distro.exists());
+
+		ResourceBuilder builder = new ResourceBuilder();
+
+		try (Jar jar = new Jar(distro)) {
+			Domain manifest = Domain.domain(jar.getManifest());
+
+			builder.addManifest(manifest);
+
+			Resource resource = builder.build();
+
+			assertEquals("1.4.0", resource.getCapabilities("osgi.wiring.package")
+				.stream()
+				.map(Capability::getAttributes)
+				.filter(atts -> ((String) atts.get("osgi.wiring.package")).equals("org.osgi.service.log"))
+				.findAny()
+				.map(atts -> atts.get("version"))
+				.map(String::valueOf)
+				.get());
+		}
+	}
+
 	public void testMultipleCapabilitiesPerNamespace() throws Exception {
 		bnd bnd = new bnd();
 		CommandLine cmdline = new CommandLine(null);
@@ -108,22 +153,56 @@ public class DistroCommandTest extends TestCase {
 		distroArgs.add("1.0.0");
 		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
 
-		new RemoteCommand(bnd, remoteOptions)._distro(distroOptions);
+		try (RemoteCommand rc = new RemoteCommand(bnd, remoteOptions)) {
+			rc._distro(distroOptions);
+		}
 
 		assertTrue(distro.exists());
 
 		ResourceBuilder builder = new ResourceBuilder();
 
-		Domain manifest = Domain.domain(new Jar(distro).getManifest());
+		try (Jar jar = new Jar(distro)) {
+			Domain manifest = Domain.domain(jar.getManifest());
 
-		builder.addManifest(manifest);
+			builder.addManifest(manifest);
 
-		Resource resource = builder.build();
+			Resource resource = builder.build();
+			verifyResource(resource);
+		}
+	}
 
-		List<Capability> capabilities = resource.getCapabilities(null);
+	public void testXmlOutput() throws Exception {
+		bnd bnd = new bnd();
+		CommandLine cmdline = new CommandLine(null);
+		List<String> remoteArgs = new ArrayList<>();
+		RemoteOptions remoteOptions = cmdline.getOptions(RemoteOptions.class, remoteArgs);
 
-		assertNotNull(capabilities);
+		File distro = new File("generated/tmp/test.distro.xml").getAbsoluteFile();
 
+		List<String> distroArgs = new ArrayList<>();
+		distroArgs.add("-x");
+		distroArgs.add("-o");
+		distroArgs.add(distro.getPath());
+		distroArgs.add("test.distro");
+		distroArgs.add("1.0.0");
+		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
+		try (RemoteCommand rc = new RemoteCommand(bnd, remoteOptions)) {
+			rc._distro(distroOptions);
+		}
+
+		assertTrue(distro.exists());
+
+		try (XMLResourceParser parser = new XMLResourceParser(distro)) {
+			List<Resource> resources = parser.parse();
+			assertThat(resources).hasSize(1);
+
+			Resource resource = resources.get(0);
+			assertThat(resource.getRequirements(null)).isEmpty();
+			verifyResource(resource);
+		}
+	}
+
+	public void verifyResource(Resource resource) {
 		List<Capability> extenderCaps = resource.getCapabilities(ExtenderNamespace.EXTENDER_NAMESPACE);
 
 		int jspTaglibCapabilityCount = 0;
@@ -176,7 +255,9 @@ public class DistroCommandTest extends TestCase {
 		distroArgs.add("1.0.0");
 		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
 
-		new RemoteCommand(bnd, remoteOptions)._distro(distroOptions);
+		try (RemoteCommand rc = new RemoteCommand(bnd, remoteOptions)) {
+			rc._distro(distroOptions);
+		}
 
 		assertTrue(distro.exists());
 
@@ -217,11 +298,24 @@ public class DistroCommandTest extends TestCase {
 		distroArgs.add("1.0.0");
 		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
 
-		new RemoteCommand(bnd, remoteOptions)._distro(distroOptions);
+		try (RemoteCommand rc = new RemoteCommand(bnd, remoteOptions)) {
+			rc._distro(distroOptions);
+		}
 
 		assertTrue(distro.exists());
 
 		assertTrue(distro.lastModified() > 0);
+
+		//
+		// Verify that we can parse the XML
+		// inside the JAR
+		//
+		try (Jar jar = new Jar(distro)) {
+			assertThat(jar.getResource("OSGI-OPT/obr.xml")).isNotNull();
+			List<Resource> resources = XMLResourceParser.getResources(jar.getResource("OSGI-OPT/obr.xml")
+				.openInputStream(), IO.work.toURI());
+			assertThat(resources).hasSize(1);
+		}
 	}
 
 	public void testDistroJarNotResolvable() throws Exception {
@@ -243,7 +337,9 @@ public class DistroCommandTest extends TestCase {
 		distroArgs.add("1.0.0");
 		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
 
-		new RemoteCommand(bnd, remoteOptions)._distro(distroOptions);
+		try (RemoteCommand rc = new RemoteCommand(bnd, remoteOptions)) {
+			rc._distro(distroOptions);
+		}
 
 		assertTrue(distro.exists());
 

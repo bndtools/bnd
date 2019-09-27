@@ -26,12 +26,20 @@ public class Glob {
 	}
 
 	public Glob(String globString, int flags) {
-		this(globString, Pattern.compile(convertGlobToRegEx(globString), flags));
+		this(globString, toPattern(globString, flags));
 	}
 
-	Glob(String globString, Pattern pattern) {
+	protected Glob(String globString, Pattern pattern) {
 		this.glob = globString;
 		this.pattern = pattern;
+	}
+
+	public String glob() {
+		return glob;
+	}
+
+	public Pattern pattern() {
+		return pattern;
 	}
 
 	public Matcher matcher(CharSequence input) {
@@ -43,7 +51,11 @@ public class Glob {
 		return glob;
 	}
 
-	private static String convertGlobToRegEx(String line) {
+	public static Pattern toPattern(String line) {
+		return toPattern(line, 0);
+	}
+
+	public static Pattern toPattern(String line, int flags) {
 		line = line.trim();
 		int strLen = line.length();
 		StringBuilder sb = new StringBuilder(strLen << 2);
@@ -141,7 +153,7 @@ public class Glob {
 			}
 			previousChar = currentChar;
 		}
-		return sb.toString();
+		return Pattern.compile(sb.toString(), flags);
 	}
 
 	private static boolean isStart(char c) {
@@ -165,22 +177,9 @@ public class Glob {
 		this.select((Collection<?>) objects);
 	}
 
-	public static Pattern toPattern(String s) {
-		return toPattern(s, 0);
-	}
-
-	public static Pattern toPattern(String s, int flags) {
-		try {
-			return Pattern.compile(convertGlobToRegEx(s), flags);
-		} catch (Exception e) {
-			// ignore, throw?
-		}
-		return null;
-	}
-
 	/**
 	 * Get a list of files that match the glob expression
-	 * 
+	 *
 	 * @param root the directory to get the files from
 	 * @param recursive to traverse the dirs recursive
 	 * @return file list
@@ -257,6 +256,10 @@ public class Glob {
 	}
 
 	public boolean matches(String s) {
+		return matches((CharSequence) s);
+	}
+
+	public boolean matches(CharSequence s) {
 		return matcher(s).matches();
 	}
 }

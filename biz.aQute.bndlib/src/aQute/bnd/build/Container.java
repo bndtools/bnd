@@ -82,6 +82,15 @@ public class Container {
 		this(null, file.getName(), "project", TYPE.EXTERNAL, file, null, attributes, db);
 	}
 
+	private Container(Project project, String message) {
+		this.project = project;
+		this.bsn = "<unknown>";
+		this.version = "<unknown>";
+		this.warning = message;
+		this.type = TYPE.ERROR;
+		this.path = "unknown";
+	}
+
 	public File getFile() {
 		DownloadBlocker blocker = db;
 		if (blocker != null) {
@@ -102,7 +111,7 @@ public class Container {
 	/**
 	 * Iterate over the containers and get the files they represent. If a file
 	 * is already in the list, it is not added again.
-	 * 
+	 *
 	 * @param files
 	 * @throws Exception
 	 */
@@ -201,7 +210,7 @@ public class Container {
 	 * Return the this if this is anything else but a library. If it is a
 	 * library, return the members. This could work recursively, e.g., libraries
 	 * can point to libraries.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public List<Container> getMembers() throws Exception {
@@ -231,7 +240,7 @@ public class Container {
 
 	/**
 	 * Flatten a container in the output list. (e.g. expand any libraries).
-	 * 
+	 *
 	 * @param container the container to flatten
 	 * @param list the result list
 	 */
@@ -244,7 +253,7 @@ public class Container {
 
 	/**
 	 * Take a container list and flatten it (e.g. expand any libraries).
-	 * 
+	 *
 	 * @param containers The containers to flatten, can be null
 	 * @return a list of containers guaranteed to contain no libraries
 	 */
@@ -256,7 +265,7 @@ public class Container {
 
 	/**
 	 * Take a container list and flatten it (e.g. expand any libraries).
-	 * 
+	 *
 	 * @param containers The containers to flatten, can be null
 	 * @param list of containers guaranteed to contain no libraries
 	 */
@@ -372,7 +381,7 @@ public class Container {
 	 * no error will be converted. Any errors will be collected in the errors
 	 * parameter. If the errors parameter is null, an exception is thrown for
 	 * the first erroneous container.
-	 * 
+	 *
 	 * @param errors a list of errors or null
 	 * @param containers the containers to convert.
 	 */
@@ -392,6 +401,11 @@ public class Container {
 			.map(container -> container.getFile())
 			.map(File::getAbsolutePath)
 			.collect(Collectors.toList());
+	}
+
+	public static Container error(Project project, String message) {
+
+		return new Container(project, message);
 	}
 
 }

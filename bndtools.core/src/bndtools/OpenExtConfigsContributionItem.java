@@ -26,57 +26,58 @@ import bndtools.central.Central;
 
 public class OpenExtConfigsContributionItem extends CompoundContributionItem {
 
-    private static final ILogger logger = Logger.getLogger(OpenExtConfigsContributionItem.class);
+	private static final ILogger				logger		= Logger.getLogger(OpenExtConfigsContributionItem.class);
 
-    private static final IContributionItem[] EMPTY = new IContributionItem[0];
-    private static final ImageDescriptor extFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bullet_go.png");
+	private static final IContributionItem[]	EMPTY		= new IContributionItem[0];
+	private static final ImageDescriptor		extFileImg	= AbstractUIPlugin
+		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bullet_go.png");
 
-    @Override
-    protected IContributionItem[] getContributionItems() {
-        try {
-            IFile buildFile = Central.getWorkspaceBuildFile();
-            if (buildFile == null)
-                return EMPTY;
+	@Override
+	protected IContributionItem[] getContributionItems() {
+		try {
+			IFile buildFile = Central.getWorkspaceBuildFile();
+			if (buildFile == null)
+				return EMPTY;
 
-            IContainer cnfDir = buildFile.getParent();
-            IFolder extDir = cnfDir.getFolder(new Path("ext"));
-            if (extDir == null || !extDir.exists())
-                return EMPTY;
+			IContainer cnfDir = buildFile.getParent();
+			IFolder extDir = cnfDir.getFolder(new Path("ext"));
+			if (extDir == null || !extDir.exists())
+				return EMPTY;
 
-            IResource[] extFiles = extDir.members();
-            List<IContributionItem> result = new ArrayList<IContributionItem>(extFiles.length);
+			IResource[] extFiles = extDir.members();
+			List<IContributionItem> result = new ArrayList<>(extFiles.length);
 
-            for (final IResource extFile : extFiles) {
-                if (extFile.getType() == IResource.FILE && "bnd".equalsIgnoreCase(extFile.getFileExtension())) {
-                    Action action = new Action() {
-                        @Override
-                        public void run() {
-                            try {
-                                FileEditorInput input = new FileEditorInput((IFile) extFile);
+			for (final IResource extFile : extFiles) {
+				if (extFile.getType() == IResource.FILE && "bnd".equalsIgnoreCase(extFile.getFileExtension())) {
+					Action action = new Action() {
+						@Override
+						public void run() {
+							try {
+								FileEditorInput input = new FileEditorInput((IFile) extFile);
 
-                                IWorkbenchPage page = PlatformUI.getWorkbench()
-                                    .getActiveWorkbenchWindow()
-                                    .getActivePage();
-                                page.openEditor(input, "bndtools.bndWorkspaceConfigEditor", true);
-                            } catch (PartInitException e) {
-                                ErrorDialog.openError(PlatformUI.getWorkbench()
-                                    .getActiveWorkbenchWindow()
-                                    .getShell(), "Error", "Unable to open editor", e.getStatus());
-                            }
-                        }
-                    };
-                    action.setText("Open " + extFile.getProjectRelativePath());
-                    action.setImageDescriptor(extFileImg);
-                    result.add(new ActionContributionItem(action));
-                }
-            }
+								IWorkbenchPage page = PlatformUI.getWorkbench()
+									.getActiveWorkbenchWindow()
+									.getActivePage();
+								page.openEditor(input, "bndtools.bndWorkspaceConfigEditor", true);
+							} catch (PartInitException e) {
+								ErrorDialog.openError(PlatformUI.getWorkbench()
+									.getActiveWorkbenchWindow()
+									.getShell(), "Error", "Unable to open editor", e.getStatus());
+							}
+						}
+					};
+					action.setText("Open " + extFile.getProjectRelativePath());
+					action.setImageDescriptor(extFileImg);
+					result.add(new ActionContributionItem(action));
+				}
+			}
 
-            return result.toArray(new IContributionItem[0]);
-        } catch (Exception e) {
-            logger.logError("Unable to find default config files", e);
-            return EMPTY;
-        }
+			return result.toArray(new IContributionItem[0]);
+		} catch (Exception e) {
+			logger.logError("Unable to find default config files", e);
+			return EMPTY;
+		}
 
-    }
+	}
 
 }

@@ -99,6 +99,8 @@ Import-Package: \
 	${junit},\
 	${mockito}
 
+-builderignore: testdata
+
 # Runtime Options and Variables
 -runpath: org.eclipse.osgi,\
           ${junit}

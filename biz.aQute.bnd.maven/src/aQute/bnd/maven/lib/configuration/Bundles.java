@@ -8,7 +8,8 @@ public class Bundles extends FileTree {
 	/**
 	 * Add a bundle.
 	 *
-	 * @param bundle A bundle. A relative path is relative to the project base directory.
+	 * @param bundle A bundle. A relative path is relative to the project base
+	 *            directory.
 	 */
 	public void setBundle(File bundle) {
 		addFile(bundle);

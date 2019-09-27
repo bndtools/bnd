@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -19,6 +21,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.progress.ProgressPlugin;
+import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
@@ -49,15 +52,20 @@ public class OSGiRepositoryTest extends TestCase {
 		IO.copy(IO.getFile("testdata/bundles"), IO.getFile(remote, "bundles"));
 	}
 
+	@Override
+	protected void tearDown() throws Exception {
+		IO.close(fnx);
+	}
+
 	public void testSimple() throws Exception {
-		try (OSGiRepository r = new OSGiRepository();) {
+		try (OSGiRepository r = new OSGiRepository()) {
 			assertTrue(testRepo(r));
 		}
 	}
 
 	@SuppressWarnings("deprecation")
 	public void testCompatibilityWithFixedIndexedRepo() throws Exception {
-		try (aQute.bnd.deployer.repository.FixedIndexedRepo r = new aQute.bnd.deployer.repository.FixedIndexedRepo();) {
+		try (aQute.bnd.deployer.repository.FixedIndexedRepo r = new aQute.bnd.deployer.repository.FixedIndexedRepo()) {
 			assertTrue(testRepo(r,
 				"FixedIndexedRepository is deprecated, please use aQute.bnd.repository.osgi.OSGiRepository"));
 		}
@@ -70,8 +78,7 @@ public class OSGiRepositoryTest extends TestCase {
 		map.put("cache", cache.getPath());
 		map.put("max.stale", "10000");
 		r.setProperties(map);
-		try (Processor p = new Processor()) {
-			HttpClient httpClient = new HttpClient();
+		try (Processor p = new Processor(); HttpClient httpClient = new HttpClient()) {
 			httpClient.setCache(cache);
 			httpClient.setRegistry(p);
 			p.addBasicPlugin(httpClient);
@@ -82,45 +89,41 @@ public class OSGiRepositoryTest extends TestCase {
 
 				final AtomicInteger tasks = new AtomicInteger();
 
-				p.addBasicPlugin(new ProgressPlugin() {
+				p.addBasicPlugin((ProgressPlugin) (name, size) -> {
+					System.out.println("Starting " + name);
+					tasks.incrementAndGet();
+					return new Task() {
 
-					@Override
-					public Task startTask(final String name, int size) {
-						System.out.println("Starting " + name);
-						tasks.incrementAndGet();
-						return new Task() {
+						@Override
+						public void worked(int units) {
+							System.out.println("Worked " + name + " " + units);
+						}
 
-							@Override
-							public void worked(int units) {
-								System.out.println("Worked " + name + " " + units);
-							}
+						@Override
+						public void done(String message, Throwable e) {
+							System.out.println("Done " + name + " " + message);
+						}
 
-							@Override
-							public void done(String message, Throwable e) {
-								System.out.println("Done " + name + " " + message);
-							}
-
-							@Override
-							public boolean isCanceled() {
-								return false;
-							}
-						};
-					}
+						@Override
+						public boolean isCanceled() {
+							return false;
+						}
+					};
 				});
 
-				assertEquals(0, tasks.get());
+				assertThat(tasks).hasValue(0);
 				File file = r.get("dummybundle", new Version("0"), null);
-				assertNotNull(file);
-				assertEquals(2, tasks.get()); // 2 = index + file
+				assertThat(file).exists();
+				assertThat(tasks).hasValue(2); // 2 = index + file
 				File file2 = r.get("dummybundle", new Version("0"), null);
-				assertNotNull(file2);
+				assertThat(file2).exists();
 				// second one should not have downloaded
-				assertEquals(2, tasks.get());
+				assertThat(tasks).hasValue(2);
 				r.getIndex(false);
 				File file3 = r.get("dummybundle", new Version("0"), null);
-				assertNotNull(file3);
+				assertThat(file3).exists();
 				// second one should not have downloaded
-				assertEquals(2, tasks.get());
+				assertThat(tasks).hasValue(2);
 
 				p.getInfo(workspace);
 				return p.check(checks);
@@ -129,24 +132,22 @@ public class OSGiRepositoryTest extends TestCase {
 	}
 
 	public void testNoPolling() throws Exception {
-		try {
-			Processor p = new Processor();
-			p.setProperty(Constants.GESTALT, Constants.GESTALT_BATCH);
-			Workspace workspace = Workspace.createStandaloneWorkspace(p, ws.toURI());
-			testPolling(workspace);
-			fail();
-		} catch (Error e) {
-			return;
+		try (Processor p = new Processor(); Workspace workspace = Workspace.createStandaloneWorkspace(p, ws.toURI())) {
+			workspace.setProperty(Constants.GESTALT, Constants.GESTALT_BATCH);
+			testPolling(workspace, false);
 		}
 	}
 
 	public void testPolling() throws Exception {
-		Processor p = new Processor();
-		testPolling(Workspace.createStandaloneWorkspace(p, ws.toURI()));
+		try (Processor p = new Processor(); Workspace workspace = Workspace.createStandaloneWorkspace(p, ws.toURI())) {
+			testPolling(workspace, true);
+		}
 	}
 
-	public void testPolling(Workspace workspace) throws Exception {
-		try (OSGiRepository r = new OSGiRepository();) {
+	private void testPolling(Workspace workspace, boolean polled) throws Exception {
+		try (OSGiRepository r = new OSGiRepository();
+			Processor p = new Processor();
+			HttpClient httpClient = new HttpClient()) {
 			Map<String, String> map = new HashMap<>();
 			map.put("locations", fnx.getBaseURI("/repo/minir5.xml")
 				.toString());
@@ -155,8 +156,6 @@ public class OSGiRepositoryTest extends TestCase {
 			map.put("name", "test");
 			map.put("poll.time", "1");
 			r.setProperties(map);
-			Processor p = new Processor();
-			HttpClient httpClient = new HttpClient();
 			httpClient.setCache(cache);
 			httpClient.setRegistry(p);
 			p.addBasicPlugin(httpClient);
@@ -164,39 +163,33 @@ public class OSGiRepositoryTest extends TestCase {
 			p.addBasicPlugin(workspace);
 			r.setRegistry(p);
 			final AtomicReference<RepositoryPlugin> refreshed = new AtomicReference<>();
+			CountDownLatch latch = new CountDownLatch(1);
 			p.addBasicPlugin(new RepositoryListenerPlugin() {
 
 				@Override
 				public void repositoryRefreshed(RepositoryPlugin repository) {
 					refreshed.set(repository);
+					latch.countDown();
 				}
 
 				@Override
-				public void repositoriesRefreshed() {
-					// TODO Auto-generated method stub
-
-				}
+				public void repositoriesRefreshed() {}
 
 				@Override
-				public void bundleRemoved(RepositoryPlugin repository, Jar jar, File file) {
-					// TODO Auto-generated method stub
-
-				}
+				public void bundleRemoved(RepositoryPlugin repository, Jar jar, File file) {}
 
 				@Override
-				public void bundleAdded(RepositoryPlugin repository, Jar jar, File file) {
-					// TODO Auto-generated method stub
-
-				}
+				public void bundleAdded(RepositoryPlugin repository, Jar jar, File file) {}
 			});
 			File file = r.get("dummybundle", new Version("0"), null);
-			assertNotNull(file);
-			assertNull(r.title()); // not stale, default name
+			assertThat(file).exists();
+			assertThat(r.title()).isNull(); // not stale, default name
 
 			System.out.println("1");
-			Thread.sleep(3000);
+			assertThat(latch.await(3, TimeUnit.SECONDS)).as("waiting for RepositoryListenerPlugin notification")
+				.isFalse();
 			System.out.println("2");
-			assertEquals(null, refreshed.get());
+			assertThat(refreshed).hasValue(null);
 			System.out.println("3");
 			// update the index file
 			File index = IO.getFile(remote, "minir5.xml");
@@ -206,17 +199,22 @@ public class OSGiRepositoryTest extends TestCase {
 			s += " "; // change the sha
 			IO.store(s, index);
 			System.out.println("5 " + index + " " + (index.lastModified() - time));
-			Thread.sleep(3000); // give the poller a chance
+			assertThat(latch.await(10, TimeUnit.SECONDS)).as("waiting for RepositoryListenerPlugin notification")
+				.isEqualTo(polled); // give the poller a chance
 			System.out.println("6");
 
-			assertEquals(r, refreshed.get());
-			assertEquals("test [stale]", r.title());
+			if (polled) {
+				assertThat(refreshed).hasValue(r);
+				assertThat(r.title()).isEqualTo("test [stale]");
+			}
 			System.out.println(r.tooltip());
 		}
 	}
 
 	public void testPollingWithFile() throws Exception {
-		try (OSGiRepository r = new OSGiRepository();) {
+		try (OSGiRepository r = new OSGiRepository();
+			Processor p = new Processor();
+			HttpClient httpClient = new HttpClient()) {
 			Map<String, String> map = new HashMap<>();
 			map.put("locations", IO.getFile(remote, "minir5.xml")
 				.toURI()
@@ -226,8 +224,6 @@ public class OSGiRepositoryTest extends TestCase {
 			map.put("name", "test");
 			map.put("poll.time", "1");
 			r.setProperties(map);
-			Processor p = new Processor();
-			HttpClient httpClient = new HttpClient();
 			httpClient.setCache(cache);
 			httpClient.setRegistry(p);
 			p.addBasicPlugin(httpClient);
@@ -235,37 +231,31 @@ public class OSGiRepositoryTest extends TestCase {
 			p.addBasicPlugin(Workspace.createStandaloneWorkspace(p, ws.toURI()));
 			r.setRegistry(p);
 			final AtomicReference<RepositoryPlugin> refreshed = new AtomicReference<>();
+			CountDownLatch latch = new CountDownLatch(1);
 			p.addBasicPlugin(new RepositoryListenerPlugin() {
 
 				@Override
 				public void repositoryRefreshed(RepositoryPlugin repository) {
 					refreshed.set(repository);
+					latch.countDown();
 				}
 
 				@Override
-				public void repositoriesRefreshed() {
-					// TODO Auto-generated method stub
-
-				}
+				public void repositoriesRefreshed() {}
 
 				@Override
-				public void bundleRemoved(RepositoryPlugin repository, Jar jar, File file) {
-					// TODO Auto-generated method stub
-
-				}
+				public void bundleRemoved(RepositoryPlugin repository, Jar jar, File file) {}
 
 				@Override
-				public void bundleAdded(RepositoryPlugin repository, Jar jar, File file) {
-					// TODO Auto-generated method stub
-
-				}
+				public void bundleAdded(RepositoryPlugin repository, Jar jar, File file) {}
 			});
 
 			File file = r.get("dummybundle", new Version("0"), null);
-			assertNotNull(file);
+			assertThat(file).exists();
 
-			Thread.sleep(3000);
-			assertEquals(null, refreshed.get());
+			assertThat(latch.await(3, TimeUnit.SECONDS)).as("waiting for RepositoryListenerPlugin notification")
+				.isFalse();
+			assertThat(refreshed).hasValue(null);
 
 			System.out.println("1");
 			// update the index file
@@ -276,21 +266,24 @@ public class OSGiRepositoryTest extends TestCase {
 				String s = IO.collect(index);
 				s += " "; // change the sha
 				IO.store(s, index);
-				System.out.println(index.lastModified());
+				System.out.printf("%tc%n", index.lastModified());
 			} while (index.lastModified() == time);
 
 			System.out.println("2 ");
-			Thread.sleep(3000); // give the poller a chance
+			assertThat(latch.await(10, TimeUnit.SECONDS)).as("waiting for RepositoryListenerPlugin notification")
+				.isTrue();
 			System.out.println("3 ");
 
-			assertEquals(r, refreshed.get());
-			assertEquals("test [stale]", r.title());
+			assertThat(refreshed).hasValue(r);
+			assertThat(r.title()).isEqualTo("test [stale]");
 			System.out.println(r.tooltip());
 		}
 	}
 
 	public void testRefreshable() throws Exception {
-		try (OSGiRepository testRepo = new OSGiRepository();) {
+		try (OSGiRepository testRepo = new OSGiRepository();
+			Processor p = new Processor();
+			HttpClient httpClient = new HttpClient()) {
 			Map<String, String> map = new HashMap<>();
 			File index = IO.getFile(remote, "minir5.xml");
 			map.put("locations", index.toURI()
@@ -300,8 +293,6 @@ public class OSGiRepositoryTest extends TestCase {
 			map.put("name", "test");
 			map.put("poll.time", "-1");
 			testRepo.setProperties(map);
-			Processor p = new Processor();
-			HttpClient httpClient = new HttpClient();
 			httpClient.setCache(cache);
 			httpClient.setRegistry(p);
 			p.addBasicPlugin(httpClient);
@@ -339,7 +330,7 @@ public class OSGiRepositoryTest extends TestCase {
 				IO.store(s, index);
 			} while (index.lastModified() == time);
 			// refresh through Refreshable interface
-			boolean refreshed = testRepo.refresh();
+			boolean refreshed = testRepo.refresh(true);
 			// give the Promise time to resolve
 			Thread.sleep(1000);
 			assertTrue("The cache should have been modified after the refresh", testRepo.getIndex(false)
@@ -353,14 +344,14 @@ public class OSGiRepositoryTest extends TestCase {
 	}
 
 	public void testBndRepo() throws Exception {
-		try (OSGiRepository r = new OSGiRepository();) {
+		try (OSGiRepository r = new OSGiRepository();
+			Processor p = new Processor();
+			HttpClient httpClient = new HttpClient()) {
 			Map<String, String> map = new HashMap<>();
 			map.put("locations", "https://dl.bintray.com/bnd/dist/4.1.0/index.xml.gz");
 			map.put("cache", cache.getPath());
 			map.put("max.stale", "10000");
 			r.setProperties(map);
-			Processor p = new Processor();
-			HttpClient httpClient = new HttpClient();
 			httpClient.setCache(cache);
 			httpClient.setRegistry(p);
 			p.addBasicPlugin(httpClient);
@@ -370,30 +361,26 @@ public class OSGiRepositoryTest extends TestCase {
 
 			final AtomicInteger tasks = new AtomicInteger();
 
-			p.addBasicPlugin(new ProgressPlugin() {
+			p.addBasicPlugin((ProgressPlugin) (name, size) -> {
+				System.out.println("Starting " + name);
+				tasks.incrementAndGet();
+				return new Task() {
 
-				@Override
-				public Task startTask(final String name, int size) {
-					System.out.println("Starting " + name);
-					tasks.incrementAndGet();
-					return new Task() {
+					@Override
+					public void worked(int units) {
+						System.out.println("Worked " + name + " " + units);
+					}
 
-						@Override
-						public void worked(int units) {
-							System.out.println("Worked " + name + " " + units);
-						}
+					@Override
+					public void done(String message, Throwable e) {
+						System.out.println("Done " + name + " " + message);
+					}
 
-						@Override
-						public void done(String message, Throwable e) {
-							System.out.println("Done " + name + " " + message);
-						}
-
-						@Override
-						public boolean isCanceled() {
-							return false;
-						}
-					};
-				}
+					@Override
+					public boolean isCanceled() {
+						return false;
+					}
+				};
 			});
 
 			assertThat(tasks).hasValue(0);

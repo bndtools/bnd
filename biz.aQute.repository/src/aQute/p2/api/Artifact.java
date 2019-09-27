@@ -132,9 +132,10 @@ public class Artifact extends DTO {
 	@Deprecated
 	public String		type;
 	public Classifier	classifier;
-	public URI		uri;
-	public String	id;
-	public Version	version;
-	public String	md5;
+	public URI			uri;
+	public String		id;
+	public Version		version;
+	public String		md5;
+	public long			download_size;
 
 }

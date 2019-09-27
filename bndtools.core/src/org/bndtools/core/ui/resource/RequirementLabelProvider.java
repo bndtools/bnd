@@ -10,41 +10,41 @@ import bndtools.Plugin;
 
 public class RequirementLabelProvider extends ImageCachingLabelProvider {
 
-    protected final boolean shortenNamespaces;
+	protected final boolean shortenNamespaces;
 
-    public RequirementLabelProvider() {
-        this(true);
-    }
+	public RequirementLabelProvider() {
+		this(true);
+	}
 
-    public RequirementLabelProvider(boolean shortenNamespaces) {
-        super(Plugin.PLUGIN_ID);
-        this.shortenNamespaces = shortenNamespaces;
-    }
+	public RequirementLabelProvider(boolean shortenNamespaces) {
+		super(Plugin.PLUGIN_ID);
+		this.shortenNamespaces = shortenNamespaces;
+	}
 
-    @Override
-    public void update(ViewerCell cell) {
-        Object element = cell.getElement();
-        if (element instanceof Requirement) {
-            Requirement requirement = (Requirement) element;
+	@Override
+	public void update(ViewerCell cell) {
+		Object element = cell.getElement();
+		if (element instanceof Requirement) {
+			Requirement requirement = (Requirement) element;
 
-            StyledString label = getLabel(requirement);
+			StyledString label = getLabel(requirement);
 
-            cell.setText(label.getString());
-            cell.setStyleRanges(label.getStyleRanges());
+			cell.setText(label.getString());
+			cell.setStyleRanges(label.getStyleRanges());
 
-            Image icon = getImage(R5LabelFormatter.getNamespaceImagePath(requirement.getNamespace()), true);
-            if (icon != null)
-                cell.setImage(icon);
-        }
-    }
+			Image icon = getImage(R5LabelFormatter.getNamespaceImagePath(requirement.getNamespace()), true);
+			if (icon != null)
+				cell.setImage(icon);
+		}
+	}
 
-    protected StyledString getLabel(Requirement requirement) {
-        StyledString label = new StyledString();
-        return getLabel(label, requirement);
-    }
+	protected StyledString getLabel(Requirement requirement) {
+		StyledString label = new StyledString();
+		return getLabel(label, requirement);
+	}
 
-    protected StyledString getLabel(StyledString label, Requirement requirement) {
-        R5LabelFormatter.appendRequirementLabel(label, requirement, shortenNamespaces);
-        return label;
-    }
+	protected StyledString getLabel(StyledString label, Requirement requirement) {
+		R5LabelFormatter.appendRequirementLabel(label, requirement, shortenNamespaces);
+		return label;
+	}
 }

@@ -17,8 +17,8 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.MakePlugin;
 
 public class Make {
-	private final static Logger				logger	= LoggerFactory.getLogger(Make.class);
-	Builder									builder;
+	private final static Logger	logger	= LoggerFactory.getLogger(Make.class);
+	Builder						builder;
 	Instructions				make;
 
 	public Make(Builder builder) {

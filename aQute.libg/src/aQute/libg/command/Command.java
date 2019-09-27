@@ -36,7 +36,7 @@ public class Command {
 	Map<String, String>			variables	= new LinkedHashMap<>();
 	long						timeout		= 0;
 	File						cwd			= new File("").getAbsoluteFile();
-	Process						process;
+	volatile Process			process;
 	volatile boolean			timedout;
 	String						fullCommand;
 	private boolean				useThreadForInput;
@@ -112,7 +112,7 @@ public class Command {
 		p.directory(cwd);
 		if (in == System.in)
 			p.redirectInput(ProcessBuilder.Redirect.INHERIT);
-		process = p.start();
+		Process process = this.process = p.start();
 
 		// Make sure the command will not linger when we go
 		Thread hook = new Thread(() -> process.destroy(), arguments.toString());

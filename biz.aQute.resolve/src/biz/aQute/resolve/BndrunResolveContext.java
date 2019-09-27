@@ -49,6 +49,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.lib.converter.Converter;
+import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 
 /**
@@ -61,6 +62,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	private static final String	BND_AUGMENT					= "bnd.augment";
 	public static final String	RUN_EFFECTIVE_INSTRUCTION	= "-resolve.effective";
 	public static final String	PROP_RESOLVE_PREFERENCES	= "-resolve.preferences";
+	private static final String	NAMESPACE_WHITELIST			= "x-whitelist";
 
 	private Registry			registry;
 	private Parameters			resolvePrefs;
@@ -287,12 +289,16 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			List<Container> containers = Container.flatten(project.getBundles(Strategy.HIGHEST, path, what));
 
 			for (Container c : containers) {
+				HashSet<String> ignoredNamespaces = new HashSet<>(IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES);
+				Strings.splitAsStream(c.getAttributes()
+					.get(NAMESPACE_WHITELIST))
+					.forEach(ignoredNamespaces::remove);
 
 				Manifest manifest = c.getManifest();
 				if (manifest != null) {
 					ResourceBuilder rb = new ResourceBuilder();
 					rb.addManifest(Domain.domain(manifest));
-					addSystemResource(system, rb.build());
+					system.copyCapabilities(ignoredNamespaces, rb.build());
 				}
 
 			}
@@ -335,7 +341,10 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		// Get all of the repositories from the plugin registry
 		//
 
+		ensureWorkspaceRepository();
+
 		List<Repository> allRepos = registry.getPlugins(Repository.class);
+
 		Collection<Repository> orderedRepositories;
 
 		String rn = properties.mergeProperties(Constants.RUNREPOS);
@@ -388,6 +397,24 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		}
 
 		return repositoryAugments;
+	}
+
+	/*
+	 * Ensure that the workspace has a repository that models its projects.
+	 */
+	private void ensureWorkspaceRepository() throws Exception {
+		if (project != null) {
+			if (!project.isStandalone() && project.getWorkspace()
+				.getPlugins(WorkspaceRepositoryMarker.class)
+				.isEmpty()) {
+
+				assert !project.getWorkspace()
+					.isInteractive() : "A static workspace repo cannot be used in an interactive environment";
+
+				project.getWorkspace()
+					.addBasicPlugin(new WorkspaceResourcesRepository(project.getWorkspace()));
+			}
+		}
 	}
 
 	private Processor findRepositoryAugments(Collection<Repository> orderedRepositories) {
@@ -486,7 +513,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 	@Override
 	protected void postProcessProviders(Requirement requirement, Set<Capability> wired, List<Capability> candidates) {
-		if (candidates.size() == 0)
+		if (candidates.isEmpty())
 			return;
 
 		// Call resolver hooks

@@ -11,6 +11,7 @@ class TestTestOSGiTask extends Specification {
 
     File buildDir = new File('generated')
     File testResources = new File(buildDir, 'testresources')
+    String bnd_version = System.properties['bnd_version']
 
     def "Bnd TestOSGi Task Basic Test"() {
         given:
@@ -23,7 +24,7 @@ class TestTestOSGiTask extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', 'build')
+            .withArguments("-Pbnd_version=${bnd_version}", '--parallel', '--stacktrace', '--debug', 'build')
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -96,7 +97,7 @@ class TestTestOSGiTask extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', 'build')
+            .withArguments("-Pbnd_version=${bnd_version}", '--parallel', '--stacktrace', '--debug', 'build')
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -145,7 +146,7 @@ class TestTestOSGiTask extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', 'build')
+            .withArguments("-Pbnd_version=${bnd_version}", '--parallel', '--stacktrace', '--debug', 'build')
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -192,7 +193,7 @@ class TestTestOSGiTask extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', '--continue', 'build')
+            .withArguments("-Pbnd_version=${bnd_version}", '--parallel', '--stacktrace', '--debug', '--continue', 'build')
             .withPluginClasspath()
             .forwardOutput()
             .buildAndFail()

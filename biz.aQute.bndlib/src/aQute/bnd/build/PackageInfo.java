@@ -12,7 +12,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 
 /*
- * Hides the differences and handling of packageinfo and package-info.java 
+ * Hides the differences and handling of packageinfo and package-info.java
  * where we store versions and attributes.
  */
 class PackageInfo {
@@ -32,7 +32,7 @@ class PackageInfo {
 	/**
 	 * Get the version for a package name. This traverse the source paths and
 	 * will stop at the first source directory that has a packageinfo or
-	 * 
+	 *
 	 * @param packageName
 	 * @throws Exception
 	 */
@@ -57,7 +57,7 @@ class PackageInfo {
 	 * neither exists, we create a package-info.java file. You can set the
 	 * annotation to use. Default is bnd. setting it to 'osgi' sets it to the
 	 * OSGi annotations.
-	 * 
+	 *
 	 * @param packageName The package name
 	 * @param version The new package version
 	 * @throws Exception

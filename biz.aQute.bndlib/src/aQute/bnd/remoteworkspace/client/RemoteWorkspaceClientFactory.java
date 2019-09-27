@@ -36,7 +36,7 @@ public class RemoteWorkspaceClientFactory {
 	 * for registered workspaces. (Multiple can be registered.) It will try to
 	 * contact these remote workspace servers in order of last modified, newest
 	 * first. The first one that responds will be returned.
-	 * 
+	 *
 	 * @param dir The directory of the workspace
 	 * @param client the client API
 	 * @return a RemoteWorkspace
@@ -49,7 +49,7 @@ public class RemoteWorkspaceClientFactory {
 
 	/**
 	 * Create a Remote Workspace on a specific port.
-	 * 
+	 *
 	 * @param port the port to use
 	 * @param client the client API
 	 * @return a Workspace
@@ -89,10 +89,14 @@ public class RemoteWorkspaceClientFactory {
 				Arrays.sort(portFiles, (a, b) -> Long.compare(b.lastModified(), a.lastModified()));
 				for (File portFile : portFiles)
 					try {
+						if (!portFile.getName()
+							.matches("[0-9]+")) {
+							throw new IllegalArgumentException("Port number not a number: " + portFile.getName());
+						}
 
 						int port = Integer.parseInt(portFile.getName());
 						if (port <= 0 || port >= 0xFFFF) {
-							throw new IllegalArgumentException("Invalid port number");
+							throw new IllegalArgumentException("Port number not in range 1-0xFFFF");
 						}
 
 						RemoteWorkspace rws = attach.apply(port);
@@ -100,7 +104,6 @@ public class RemoteWorkspaceClientFactory {
 						return rws;
 
 					} catch (Exception e) {
-
 						logger.warn("Found stale or wrong workspace port reference in {}", portFile);
 
 						if (portFile.lastModified() + TimeUnit.HOURS.toMillis(4) < System.currentTimeMillis()) {
@@ -121,7 +124,7 @@ public class RemoteWorkspaceClientFactory {
 
 	/**
 	 * Get the directory where the ports are registered in
-	 * 
+	 *
 	 * @param dir the directory to start from.
 	 * @param org the original directory started from
 	 * @return the directory (cnf/cache/remotews) in the first workspace

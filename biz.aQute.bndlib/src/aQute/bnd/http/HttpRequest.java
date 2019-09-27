@@ -17,10 +17,9 @@ import aQute.service.reporter.Reporter;
 
 /**
  * Builds up a request
- * 
+ *
  * @param <T>
  */
-@SuppressWarnings("unchecked")
 public class HttpRequest<T> {
 	String				verb		= "GET";
 	Object				upload;
@@ -39,14 +38,19 @@ public class HttpRequest<T> {
 	Reporter			reporter;
 	File				useCacheFile;
 	boolean				updateTag;
+	int					retries;
+	long				retryDelay;
 
 	HttpRequest(HttpClient client) {
 		this.client = client;
+		this.retries = client.retries;
+		this.retryDelay = client.retryDelay;
 	}
 
 	/**
 	 * Convert the result to a specific type
 	 */
+	@SuppressWarnings("unchecked")
 	public <X> HttpRequest<X> get(Class<X> type) {
 		this.download = type;
 		return (HttpRequest<X>) this;
@@ -55,6 +59,7 @@ public class HttpRequest<T> {
 	/**
 	 * Convert the result to a specific type
 	 */
+	@SuppressWarnings("unchecked")
 	public <X> HttpRequest<X> get(TypeReference<X> type) {
 		this.download = type.getType();
 		return (HttpRequest<X>) this;
@@ -63,6 +68,7 @@ public class HttpRequest<T> {
 	/**
 	 * Convert the result to a specific type
 	 */
+	@SuppressWarnings("unchecked")
 	public HttpRequest<Object> get(Type type) {
 		this.download = type;
 		return (HttpRequest<Object>) this;
@@ -181,7 +187,7 @@ public class HttpRequest<T> {
 
 	public T go(URL url) throws Exception {
 		this.url = url;
-		return (T) client.send(this);
+		return client.send(this);
 	}
 
 	public T go(URI url) throws Exception {
@@ -195,8 +201,7 @@ public class HttpRequest<T> {
 
 	public Promise<T> async(URL url) {
 		this.url = url;
-		return client.promiseFactory()
-			.submit(() -> (T) client.send(this));
+		return client.sendAsync(this);
 	}
 
 	public Promise<T> async(URI uri) {
@@ -239,8 +244,7 @@ public class HttpRequest<T> {
 	public HttpRequest<File> useCache(long maxStale) {
 		this.maxStale = maxStale;
 		this.cached = true;
-		download = File.class;
-		return (HttpRequest<File>) this;
+		return get(File.class);
 	}
 
 	public HttpRequest<File> useCache() {
@@ -273,6 +277,16 @@ public class HttpRequest<T> {
 
 	public HttpRequest<T> updateTag() {
 		updateTag = true;
+		return this;
+	}
+
+	public HttpRequest<T> retries(int retries) {
+		this.retries = retries;
+		return this;
+	}
+
+	public HttpRequest<T> retryDelay(int retryDelay) {
+		this.retryDelay = TimeUnit.SECONDS.toMillis(retryDelay);
 		return this;
 	}
 

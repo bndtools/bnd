@@ -13,7 +13,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,7 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -43,8 +41,6 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.naming.TimeLimitExceededException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +57,7 @@ import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.remoteworkspace.server.RemoteWorkspaceServer;
 import aQute.bnd.resource.repository.ResourceRepositoryImpl;
@@ -85,6 +82,7 @@ import aQute.lib.io.NonClosingInputStream;
 import aQute.lib.settings.Settings;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.glob.Glob;
 import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
@@ -101,8 +99,6 @@ public class Workspace extends Processor {
 
 	static final int			BUFFER_SIZE						= IOConstants.PAGE_SIZE * 16;
 	private static final String	PLUGIN_STANDALONE				= "-plugin.standalone_";
-	private final Pattern		EMBEDDED_REPO_TESTING_PATTERN	= Pattern
-		.compile(".*biz\\.aQute\\.bnd\\.embedded-repo(-.*)?\\.jar");
 
 	static class WorkspaceData {
 		List<RepositoryPlugin>	repositories;
@@ -112,9 +108,10 @@ public class Workspace extends Processor {
 	private final static Map<File, WeakReference<Workspace>>	cache				= newHashMap();
 	static Processor											defaults			= null;
 	final Map<String, Action>									commands			= newMap();
-	final Maven													maven			= new Maven(Processor.getExecutor());
+	final Maven													maven				= new Maven(
+		Processor.getExecutor());
 	private final AtomicBoolean									offline				= new AtomicBoolean();
-	Settings													settings		= new Settings(
+	Settings													settings			= new Settings(
 		Home.getUserHomeBnd() + "/settings.json");
 	WorkspaceRepository											workspaceRepo		= new WorkspaceRepository(this);
 	static String												overallDriver		= "unset";
@@ -139,7 +136,7 @@ public class Workspace extends Processor {
 	/**
 	 * This static method finds the workspace and creates a project (or returns
 	 * an existing project)
-	 * 
+	 *
 	 * @param projectDir
 	 */
 	public static Project getProject(File projectDir) throws Exception {
@@ -401,13 +398,13 @@ public class Workspace extends Processor {
 		all.putAll(commands);
 	}
 
-	public Collection<Project> getAllProjects() throws Exception {
+	public Collection<Project> getAllProjects() {
 		return projects.getAllProjects();
 	}
 
 	/**
 	 * Inform any listeners that we changed a file (created/deleted/changed).
-	 * 
+	 *
 	 * @param f The changed file
 	 */
 	public void changedFile(File f) {
@@ -471,43 +468,32 @@ public class Workspace extends Processor {
 
 		@Override
 		protected boolean init() throws Exception {
-			if (lock.tryLock(50, TimeUnit.SECONDS) == false)
-				throw new TimeLimitExceededException("Cached File Repo is locked and can't acquire it");
-			try {
-				if (super.init()) {
-					inited = true;
-					IO.mkdirs(root);
-					if (!root.isDirectory())
-						throw new IllegalArgumentException("Cache directory " + root + " not a directory");
+			if (lock.tryLock(50, TimeUnit.SECONDS)) {
+				try {
+					if (super.init()) {
+						inited = true;
+						IO.mkdirs(root);
+						if (!root.isDirectory())
+							throw new IllegalArgumentException("Cache directory " + root + " not a directory");
 
-					try (InputStream in = getClass().getResourceAsStream(EMBEDDED_REPO)) {
-						if (in != null) {
-							unzip(in, root.toPath());
-							return true;
-						}
-					}
-					// We may be in unit test, look for
-					// biz.aQute.bnd.embedded-repo.jar on the
-					// classpath
-					StringTokenizer classPathTokenizer = new StringTokenizer(System.getProperty("java.class.path", ""),
-						File.pathSeparator);
-					while (classPathTokenizer.hasMoreTokens()) {
-						String classPathEntry = classPathTokenizer.nextToken()
-							.trim();
-						if (EMBEDDED_REPO_TESTING_PATTERN.matcher(classPathEntry)
-							.matches()) {
-							try (InputStream in = IO.stream(Paths.get(classPathEntry))) {
-								unzip(in, root.toPath());
-								return true;
+						URL url = getClass().getResource(EMBEDDED_REPO);
+						if (url != null) {
+							try (Resource resource = Resource.fromURL(url);
+								InputStream in = resource.openInputStream()) {
+								if (in != null) {
+									unzip(in, root.toPath());
+									return true;
+								}
 							}
 						}
+						error("Could not find " + EMBEDDED_REPO + " as a resource on the classpath");
 					}
-					error("Couldn't find biz.aQute.bnd.embedded-repo on the classpath");
 					return false;
-				} else
-					return false;
-			} finally {
-				lock.unlock();
+				} finally {
+					lock.unlock();
+				}
+			} else {
+				throw new TimeoutException("Cannot acquire Cached File Repo lock");
 			}
 		}
 
@@ -620,16 +606,16 @@ public class Workspace extends Processor {
 			list.add(new ExecutableJarExporter());
 			list.add(new RunbundlesExporter());
 
+			HttpClient client = new HttpClient();
 			try {
-				HttpClient client = new HttpClient();
 				client.setOffline(getOffline());
 				client.setRegistry(this);
 				client.readSettings(this);
 
-				list.add(client);
 			} catch (Exception e) {
 				exception(e, "Failed to load the communication settings");
 			}
+			list.add(client);
 
 		} catch (RuntimeException e) {
 			throw e;
@@ -640,7 +626,7 @@ public class Workspace extends Processor {
 
 	/**
 	 * Add any extensions listed
-	 * 
+	 *
 	 * @param list
 	 */
 	@Override
@@ -745,7 +731,7 @@ public class Workspace extends Processor {
 
 	/**
 	 * Provide access to the global settings of this machine.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -1046,7 +1032,7 @@ public class Workspace extends Processor {
 
 	/**
 	 * Add a plugin
-	 * 
+	 *
 	 * @param plugin
 	 * @throws Exception
 	 */
@@ -1129,7 +1115,7 @@ public class Workspace extends Processor {
 		}
 	}
 
-	static Pattern ESCAPE_P = Pattern.compile("(\"|')(.*)\1");
+	private final static Pattern ESCAPE_P = Pattern.compile("([\"'])(.*)\\1");
 
 	private Object escaped(String value) {
 		Matcher matcher = ESCAPE_P.matcher(value);
@@ -1155,7 +1141,7 @@ public class Workspace extends Processor {
 
 	/**
 	 * Create a workspace that does not inherit from a cnf directory etc.
-	 * 
+	 *
 	 * @param run
 	 */
 	public static Workspace createStandaloneWorkspace(Processor run, URI base) throws Exception {
@@ -1277,7 +1263,7 @@ public class Workspace extends Processor {
 
 	/**
 	 * Create a new Workspace
-	 * 
+	 *
 	 * @param wsdir
 	 * @throws Exception
 	 */
@@ -1300,7 +1286,7 @@ public class Workspace extends Processor {
 	/**
 	 * Lock the workspace and its corresponding projects for reading. The r
 	 * parameter when called can freely use any read function in the workspace.
-	 * 
+	 *
 	 * @param r the lambda to run
 	 * @param timeoutInMs the timeout in milliseconds
 	 * @return the value of the lambda
@@ -1316,7 +1302,7 @@ public class Workspace extends Processor {
 	/**
 	 * Lock the workspace and its corresponding projects for all functions. The
 	 * r parameter when called can freely use any function in the workspace.
-	 * 
+	 *
 	 * @param r the lambda to run
 	 * @param timeoutInMs the timeout in milliseconds
 	 * @return the value of the lambda
@@ -1341,4 +1327,66 @@ public class Workspace extends Processor {
 		}
 	}
 
+	/**
+	 * Provide a macro that lists all currently loaded project names that match
+	 * a macro. This macro checks for cycles since I am not sure if calling
+	 * getAllProjects is safe for some macros in all cases. I.e. the primary use
+	 * case wants to use it in -dependson
+	 *
+	 * <pre>
+	 *      ${projectswhere;key;glob}
+	 * </pre>
+	 */
+
+	static final String							_projectswhereHelp		= "${projectswhere[;<key>;<glob>]} - Make sure this cannot be called recursively at startup";
+	private static final ThreadLocal<Boolean>	projectswhereCycleCheck	= new ThreadLocal<>();
+
+	public String _projectswhere(String args[]) {
+		if (projectswhereCycleCheck.get() != null) {
+			throw new IllegalStateException("The ${projectswhere} macro is called recursively");
+		}
+		projectswhereCycleCheck.set(Boolean.TRUE);
+		try {
+
+			Macro.verifyCommand(args, _projectswhereHelp, null, 1, 3);
+
+			Collection<Project> allProjects = getAllProjects();
+			if (args.length == 1) {
+				return Strings.join(allProjects);
+			}
+
+			String key = args[1];
+			boolean negate;
+			Glob g;
+			if (args.length > 2) {
+				if (args[2].startsWith("!")) {
+					g = new Glob(args[2].substring(1));
+					negate = true;
+				} else {
+					g = new Glob(args[2]);
+					negate = false;
+				}
+			} else {
+				g = null;
+				negate = false;
+			}
+
+			return allProjects.stream()
+				.filter(p -> {
+					String value = p.getProperty(key);
+					if (value == null)
+						return negate;
+
+					if (g == null)
+						return !negate;
+
+					return negate ^ g.matcher(value)
+						.matches();
+				})
+				.map(Project::getName)
+				.collect(Strings.joining());
+		} finally {
+			projectswhereCycleCheck.set(null);
+		}
+	}
 }

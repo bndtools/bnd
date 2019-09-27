@@ -5,7 +5,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleException;
-import org.osgi.framework.BundleListener;
 
 public class GC implements BundleActivator {
 
@@ -14,17 +13,13 @@ public class GC implements BundleActivator {
 	@Override
 	public void start(BundleContext context) throws Exception {
 		this.context = context;
-		context.addBundleListener(new BundleListener() {
-
-			@Override
-			public void bundleChanged(BundleEvent event) {
-				if (event.getType() == BundleEvent.UNINSTALLED) {
-					Bundle b = event.getBundle();
-					String embedded = b.getHeaders()
-						.get("Bnd-Embedded");
-					if (embedded != null) {
-						uninstalled(b);
-					}
+		context.addBundleListener(event -> {
+			if (event.getType() == BundleEvent.UNINSTALLED) {
+				Bundle b = event.getBundle();
+				String embedded = b.getHeaders()
+					.get("Bnd-Embedded");
+				if (embedded != null) {
+					uninstalled(b);
 				}
 			}
 		});

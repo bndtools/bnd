@@ -128,7 +128,7 @@ public class Httpbin extends HttpTestServer {
 		return Collections.singletonMap("user-agent", rq.headers.get("user-agent"));
 	}
 
-	static Pattern BASIC_AUTH_P = Pattern.compile("Basic\\s+(?<auth>[^\\s]+)\\s*", Pattern.CASE_INSENSITIVE);
+	static Pattern	BASIC_AUTH_P	= Pattern.compile("Basic\\s+(?<auth>[^\\s]+)\\s*", Pattern.CASE_INSENSITIVE);
 	static Pattern	BEARER_AUTH_P	= Pattern.compile("Bearer\\s+(?<auth>[^\\s]+)\\s*", Pattern.CASE_INSENSITIVE);
 
 	public Request _basic$2dauth(Request req, Response response, String user, String passwrd)

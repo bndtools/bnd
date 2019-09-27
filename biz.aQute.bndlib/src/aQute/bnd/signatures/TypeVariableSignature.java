@@ -9,7 +9,7 @@ import aQute.lib.stringrover.StringRover;
 public class TypeVariableSignature implements ReferenceTypeSignature, ThrowsSignature {
 	public final String identifier;
 
-	TypeVariableSignature(String identifier) {
+	public TypeVariableSignature(String identifier) {
 		this.identifier = identifier;
 	}
 

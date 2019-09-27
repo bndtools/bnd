@@ -7,6 +7,7 @@
 -testpath: \
 	osgi.annotation;version=latest,\
 	osgi.core;version=latest,\
+	org.osgi.namespace.extender;version=latest,\
 	org.osgi.namespace.service;version=latest,\
 	org.osgi.service.blueprint;version=latest,\
 	org.osgi.service.cdi;version=latest,\
@@ -28,10 +29,13 @@
 	org.apache.geronimo.specs.geronimo-interceptor_1.2_spec;version=latest,\
 	org.apache.geronimo.specs.geronimo-jcdi_2.0_spec;version=latest,\
 	aQute.libg;version=project,\
+	biz.aQute.launcher;version=snapshot;packages=*,\
 	biz.aQute.bnd.annotation;version=project,\
 	biz.aQute.bndlib;version=project;packages=*,\
 	biz.aQute.repository;version=snapshot,\
 	biz.aQute.bnd.test;version=project,\
+	javax.json-api;version=1.1.2,\
+	javax.json.bind-api;version=1.0,\
 	slf4j.api;version=latest,\
 	slf4j.simple;version=latest,\
 	${junit},\

@@ -42,177 +42,184 @@ import bndtools.central.RepositoryUtils;
 
 public class BndContainerSourceManager {
 
-    private static final String PROPERTY_SRC_ROOT = ".srcRoot"; //$NON-NLS-1$
+	private static final String	PROPERTY_SRC_ROOT	= ".srcRoot";	//$NON-NLS-1$
 
-    private static final String PROPERTY_SRC_PATH = ".srcPath"; //$NON-NLS-1$
+	private static final String	PROPERTY_SRC_PATH	= ".srcPath";	//$NON-NLS-1$
 
-    /**
-     * Persist the attached sources for given {@link IClasspathEntry} instances.
-     */
-    public static void saveAttachedSources(final IProject project, final IClasspathEntry[] classpathEntries) throws CoreException {
-        final Properties props = new Properties();
+	/**
+	 * Persist the attached sources for given {@link IClasspathEntry} instances.
+	 */
+	public static void saveAttachedSources(final IProject project, final IClasspathEntry[] classpathEntries)
+		throws CoreException {
+		final Properties props = new Properties();
 
-        // Construct the Properties that represent the source attachment(s)
-        for (final IClasspathEntry entry : classpathEntries) {
-            if (IClasspathEntry.CPE_LIBRARY != entry.getEntryKind()) {
-                continue;
-            }
-            final String path = entry.getPath()
-                .toPortableString();
-            if (entry.getSourceAttachmentPath() != null) {
-                props.put(path + PROPERTY_SRC_PATH, entry.getSourceAttachmentPath()
-                    .toPortableString());
-            }
-            if (entry.getSourceAttachmentRootPath() != null) {
-                props.put(path + PROPERTY_SRC_ROOT, entry.getSourceAttachmentRootPath()
-                    .toPortableString());
-            }
-        }
+		// Construct the Properties that represent the source attachment(s)
+		for (final IClasspathEntry entry : classpathEntries) {
+			if (IClasspathEntry.CPE_LIBRARY != entry.getEntryKind()) {
+				continue;
+			}
+			final String path = entry.getPath()
+				.toPortableString();
+			if (entry.getSourceAttachmentPath() != null) {
+				props.put(path + PROPERTY_SRC_PATH, entry.getSourceAttachmentPath()
+					.toPortableString());
+			}
+			if (entry.getSourceAttachmentRootPath() != null) {
+				props.put(path + PROPERTY_SRC_ROOT, entry.getSourceAttachmentRootPath()
+					.toPortableString());
+			}
+		}
 
-        // Write the properties to a persistent storage area
-        final File propertiesFile = getSourceAttachmentPropertiesFile(project);
-        if (props.isEmpty()) {
-            IO.delete(propertiesFile);
-        } else {
-            try (OutputStream out = IO.outputStream(propertiesFile)) {
-                props.store(out, new Date().toString());
-            } catch (final IOException e) {
-                throw new CoreException(new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID, "Failure to write container source attachments", e));
-            }
-        }
-    }
+		// Write the properties to a persistent storage area
+		final File propertiesFile = getSourceAttachmentPropertiesFile(project);
+		if (props.isEmpty()) {
+			IO.delete(propertiesFile);
+		} else {
+			try (OutputStream out = IO.outputStream(propertiesFile)) {
+				props.store(out, new Date().toString());
+			} catch (final IOException e) {
+				throw new CoreException(new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID,
+					"Failure to write container source attachments", e));
+			}
+		}
+	}
 
-    /**
-     * Return (a potentially modified) list of {@link IClasspathEntry} instances that will have any previously persisted
-     * attached sources added.
-     */
-    public static List<IClasspathEntry> loadAttachedSources(final IProject project, final List<IClasspathEntry> classPathEntries) throws CoreException {
-        if (classPathEntries.isEmpty()) {
-            return classPathEntries;
-        }
+	/**
+	 * Return (a potentially modified) list of {@link IClasspathEntry} instances
+	 * that will have any previously persisted attached sources added.
+	 */
+	public static List<IClasspathEntry> loadAttachedSources(final IProject project,
+		final List<IClasspathEntry> classPathEntries) throws CoreException {
+		if (classPathEntries.isEmpty()) {
+			return classPathEntries;
+		}
 
-        final Properties props = loadSourceAttachmentProperties(project);
+		final Properties props = loadSourceAttachmentProperties(project);
 
-        final List<IClasspathEntry> configuredClassPathEntries = new ArrayList<IClasspathEntry>(classPathEntries.size());
+		final List<IClasspathEntry> configuredClassPathEntries = new ArrayList<>(classPathEntries.size());
 
-        for (final IClasspathEntry entry : classPathEntries) {
-            if (entry.getEntryKind() != IClasspathEntry.CPE_LIBRARY || entry.getSourceAttachmentPath() != null) {
-                configuredClassPathEntries.add(entry);
-                continue;
-            }
+		for (final IClasspathEntry entry : classPathEntries) {
+			if (entry.getEntryKind() != IClasspathEntry.CPE_LIBRARY || entry.getSourceAttachmentPath() != null) {
+				configuredClassPathEntries.add(entry);
+				continue;
+			}
 
-            final String key = entry.getPath()
-                .toPortableString();
+			final String key = entry.getPath()
+				.toPortableString();
 
-            IPath srcPath = null;
-            IPath srcRoot = null;
+			IPath srcPath = null;
+			IPath srcRoot = null;
 
-            // Retrieve the saved source attachment information
-            if (props != null && props.containsKey(key + PROPERTY_SRC_PATH)) {
-                srcPath = Path.fromPortableString((String) props.get(key + PROPERTY_SRC_PATH));
-                if (props.containsKey(key + PROPERTY_SRC_ROOT)) {
-                    srcRoot = Path.fromPortableString((String) props.get(key + PROPERTY_SRC_ROOT));
-                }
-            } else {
-                // If there is no saved source attachment, then try and find a source bundle
-                Map<String, String> extraProps = new HashMap<String, String>();
+			// Retrieve the saved source attachment information
+			if (props != null && props.containsKey(key + PROPERTY_SRC_PATH)) {
+				srcPath = Path.fromPortableString((String) props.get(key + PROPERTY_SRC_PATH));
+				if (props.containsKey(key + PROPERTY_SRC_ROOT)) {
+					srcRoot = Path.fromPortableString((String) props.get(key + PROPERTY_SRC_ROOT));
+				}
+			} else {
+				// If there is no saved source attachment, then try and find a
+				// source bundle
+				Map<String, String> extraProps = new HashMap<>();
 
-                for (IClasspathAttribute attr : entry.getExtraAttributes()) {
-                    extraProps.put(attr.getName(), attr.getValue());
-                }
+				for (IClasspathAttribute attr : entry.getExtraAttributes()) {
+					extraProps.put(attr.getName(), attr.getValue());
+				}
 
-                File sourceBundle = getSourceBundle(entry.getPath(), extraProps);
-                if (sourceBundle != null) {
-                    srcPath = new Path(sourceBundle.getAbsolutePath());
-                }
-            }
+				File sourceBundle = getSourceBundle(entry.getPath(), extraProps);
+				if (sourceBundle != null) {
+					srcPath = new Path(sourceBundle.getAbsolutePath());
+				}
+			}
 
-            if (srcPath != null || srcRoot != null) {
-                configuredClassPathEntries.add(JavaCore.newLibraryEntry(entry.getPath(), srcPath, srcRoot, entry.getAccessRules(), entry.getExtraAttributes(), entry.isExported()));
-            } else {
-                configuredClassPathEntries.add(entry);
-            }
-        }
+			if (srcPath != null || srcRoot != null) {
+				configuredClassPathEntries.add(JavaCore.newLibraryEntry(entry.getPath(), srcPath, srcRoot,
+					entry.getAccessRules(), entry.getExtraAttributes(), entry.isExported()));
+			} else {
+				configuredClassPathEntries.add(entry);
+			}
+		}
 
-        return configuredClassPathEntries;
-    }
+		return configuredClassPathEntries;
+	}
 
-    private static File getSourceBundle(IPath path, Map<String, String> props) {
-        Workspace bndWorkspace;
+	private static File getSourceBundle(IPath path, Map<String, String> props) {
+		Workspace bndWorkspace;
 
-        try {
-            bndWorkspace = Central.getWorkspace();
-            if (bndWorkspace == null) {
-                return null;
-            }
-        } catch (final Exception e) {
-            return null;
-        }
+		try {
+			bndWorkspace = Central.getWorkspace();
+			if (bndWorkspace == null) {
+				return null;
+			}
+		} catch (final Exception e) {
+			return null;
+		}
 
-        IPath bundlePath = path;
-        IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        IWorkspaceRoot root = workspace.getRoot();
-        IResource resource = root.findMember(path);
-        if (resource != null) {
-            bundlePath = resource.getLocation();
-        }
+		IPath bundlePath = path;
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		IWorkspaceRoot root = workspace.getRoot();
+		IResource resource = root.findMember(path);
+		if (resource != null) {
+			bundlePath = resource.getLocation();
+		}
 
-        try (JarInputStream jarStream = new JarInputStream(IO.stream(bundlePath.toFile()), false)) {
-            Manifest manifest = jarStream.getManifest();
-            if (manifest == null) {
-                return null;
-            }
+		try (JarInputStream jarStream = new JarInputStream(IO.stream(bundlePath.toFile()), false)) {
+			Manifest manifest = jarStream.getManifest();
+			if (manifest == null) {
+				return null;
+			}
 
-            Domain domain = Domain.domain(manifest);
-            Entry<String, Attrs> bsnAttrs = domain.getBundleSymbolicName();
-            if (bsnAttrs == null) {
-                return null;
-            }
-            String bsn = bsnAttrs.getKey();
-            String version = domain.getBundleVersion();
+			Domain domain = Domain.domain(manifest);
+			Entry<String, Attrs> bsnAttrs = domain.getBundleSymbolicName();
+			if (bsnAttrs == null) {
+				return null;
+			}
+			String bsn = bsnAttrs.getKey();
+			String version = domain.getBundleVersion();
 
-            if (version == null) {
-                version = props.get("version");
-            }
+			if (version == null) {
+				version = props.get("version");
+			}
 
-            for (RepositoryPlugin repo : RepositoryUtils.listRepositories(true)) {
-                if (repo == null) {
-                    continue;
-                }
-                if (repo instanceof WorkspaceRepository) {
-                    continue;
-                }
-                File sourceBundle = repo.get(bsn + ".source", new Version(version), props);
-                if (sourceBundle != null) {
-                    return sourceBundle;
-                }
-            }
-        } catch (final Exception e) {
-            // Ignore, something went wrong, or we could not find the source bundle
-        }
+			for (RepositoryPlugin repo : RepositoryUtils.listRepositories(true)) {
+				if (repo == null) {
+					continue;
+				}
+				if (repo instanceof WorkspaceRepository) {
+					continue;
+				}
+				File sourceBundle = repo.get(bsn + ".source", new Version(version), props);
+				if (sourceBundle != null) {
+					return sourceBundle;
+				}
+			}
+		} catch (final Exception e) {
+			// Ignore, something went wrong, or we could not find the source
+			// bundle
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    private static Properties loadSourceAttachmentProperties(final IProject project) throws CoreException {
-        final Properties props = new Properties();
+	private static Properties loadSourceAttachmentProperties(final IProject project) throws CoreException {
+		final Properties props = new Properties();
 
-        final File propertiesFile = getSourceAttachmentPropertiesFile(project);
-        if (propertiesFile.exists()) {
-            try (InputStream in = IO.stream(propertiesFile)) {
-                props.load(in);
-            } catch (final IOException e) {
-                throw new CoreException(new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID, "Failure to read container source attachments", e));
-            }
-        }
+		final File propertiesFile = getSourceAttachmentPropertiesFile(project);
+		if (propertiesFile.exists()) {
+			try (InputStream in = IO.stream(propertiesFile)) {
+				props.load(in);
+			} catch (final IOException e) {
+				throw new CoreException(new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID,
+					"Failure to read container source attachments", e));
+			}
+		}
 
-        return props;
-    }
+		return props;
+	}
 
-    private static File getSourceAttachmentPropertiesFile(final IProject project) {
-        return new File(BuilderPlugin.getInstance()
-            .getStateLocation()
-            .toFile(), project.getName() + ".sources"); //$NON-NLS-1$
-    }
+	private static File getSourceAttachmentPropertiesFile(final IProject project) {
+		return new File(BuilderPlugin.getInstance()
+			.getStateLocation()
+			.toFile(), project.getName() + ".sources"); //$NON-NLS-1$
+	}
 
 }

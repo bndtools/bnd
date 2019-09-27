@@ -8,12 +8,12 @@ import org.eclipse.jdt.debug.ui.launchConfigurations.JavaConnectTab;
 
 public class NativeLaunchTabGroup extends AbstractLaunchConfigurationTabGroup {
 
-    @Override
-    public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
-        ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
-            new SourceLookupTab(), new JavaConnectTab()
-        };
-        setTabs(tabs);
-    }
+	@Override
+	public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
+		ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
+			new SourceLookupTab(), new JavaConnectTab()
+		};
+		setTabs(tabs);
+	}
 
 }

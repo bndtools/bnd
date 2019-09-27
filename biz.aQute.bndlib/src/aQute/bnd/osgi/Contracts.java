@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
+
 import java.util.Collection;
 import java.util.Formatter;
 import java.util.HashSet;
@@ -22,7 +24,7 @@ import aQute.service.reporter.Report.Location;
 /**
  * OSGi Contracts are first defined in OSGi Enterprise Release 5.0.0. A Contract
  * is a namespace to control the versioning of a set of packages.
- * 
+ *
  * @author aqute
  */
 class Contracts {
@@ -151,7 +153,7 @@ class Contracts {
 	/**
 	 * Find out if a package is contracted. If there are multiple contracts for
 	 * a package we remember this so we can generate a single error.
-	 * 
+	 *
 	 * @param packageRef
 	 */
 	boolean isContracted(PackageRef packageRef) {
@@ -176,7 +178,7 @@ class Contracts {
 	/**
 	 * Called before we print the manifest. Should add any contracts that were
 	 * actually used to the requirements.
-	 * 
+	 *
 	 * @param requirements
 	 */
 	void addToRequirements(Parameters requirements) {
@@ -184,8 +186,9 @@ class Contracts {
 			Attrs attrs = new Attrs(c.decorators);
 			attrs.put(ContractNamespace.CONTRACT_NAMESPACE, c.name);
 			String name = ContractNamespace.CONTRACT_NAMESPACE;
-			while (requirements.containsKey(name))
-				name += "~";
+			while (requirements.containsKey(name)) {
+				name += DUPLICATE_MARKER;
+			}
 
 			try (Formatter f = new Formatter()) {
 				f.format("(&(%s=%s)(version=%s))", ContractNamespace.CONTRACT_NAMESPACE, c.name, c.version);

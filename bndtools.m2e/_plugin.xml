@@ -18,4 +18,75 @@
 		</configurator>
 	</extension>
 
+	<extension point="org.eclipse.core.expressions.propertyTesters">
+		<propertyTester id="bndtools.m2e.launchPropertyTester.IJavaElement"
+			namespace="bndtools.m2e"
+			properties="isInBndMavenProject,isResolvableBndMavenProject,isTestableBndMavenProject"
+			class="bndtools.m2e.LaunchPropertyTester"
+			type="org.eclipse.jdt.core.IJavaElement"/>
+		<propertyTester id="bndtools.m2e.launchPropertyTester.IResource"
+			namespace="bndtools.m2e"
+			properties="isInBndMavenProject,isResolvableBndMavenProject,isTestableBndMavenProject"
+			class="bndtools.m2e.LaunchPropertyTester"
+			type="org.eclipse.core.resources.IResource"/>
+	</extension>
+
+	<!-- LAUNCH SHORTCUTS -->
+	<extension
+			point="org.eclipse.debug.ui.launchShortcuts">
+		<shortcut
+				class="bndtools.launch.JUnitShortcut"
+				icon="icons/bricks_junit.png"
+				id="bndtools.m2e.launch.junitShortcut"
+				label="Bnd OSGi Test Launcher (JUnit)"
+				modes="run, debug"
+				path="bndtools.m2e.launch.core">
+			<contextualLaunch>
+				<enablement>
+				<with variable="selection">
+					<count value="1"/>
+					<iterate>
+						<adapt type="org.eclipse.jdt.core.IJavaElement">
+							<test property="bndtools.m2e.isTestableBndMavenProject" forcePluginActivation="true" />
+							<test property="org.eclipse.jdt.junit.canLaunchAsJUnit" forcePluginActivation="true" />
+							<or>
+								<test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="org.junit.Test" />
+								<test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="junit.framework.Test" />
+							</or>
+						</adapt>
+					</iterate>
+				</with>
+				</enablement>
+			</contextualLaunch>
+			<description
+				description="Debug a JUnit Test in an OSGi Framework"
+				mode="debug">
+			</description>
+			<description
+				description="Run an OSGi JUnit Test in an OSGi framework"
+				mode="run">
+			</description>
+		</shortcut>
+
+		<shortcut
+				class="bndtools.launch.RunShortcut"
+				icon="icons/bricks_run.png"
+				id="bndtools.m2e.launch.runShortcut"
+				label="Bnd OSGi Run Launcher"
+				modes="run, debug"
+				path="bndtools.m2e.launch.core">
+			<contextualLaunch>
+				<enablement>
+				<with variable="selection">
+					<count value="1"/>
+					<iterate>
+						<adapt type="org.eclipse.jdt.core.IJavaElement">
+							<test property="bndtools.m2e.isResolvableBndMavenProject" forcePluginActivation="true" />
+						</adapt>
+					</iterate>
+				</with>
+				</enablement>
+			</contextualLaunch>
+		</shortcut>
+	</extension>
 </plugin>

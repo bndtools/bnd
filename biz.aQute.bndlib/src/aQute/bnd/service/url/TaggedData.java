@@ -17,7 +17,7 @@ import aQute.lib.io.IO;
 /**
  * Represents a data stream that has a tag associated with it; the primary
  * use-case is an HTTP response stream with an ETag header.
- * 
+ *
  * @author Neil Bartlett
  */
 public class TaggedData implements Closeable {
@@ -70,7 +70,7 @@ public class TaggedData implements Closeable {
 			if (h.getResponseCode() / 100 < 4)
 				return null;
 
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 
 			try {
 				InputStream in = con.getInputStream();
@@ -93,9 +93,9 @@ public class TaggedData implements Closeable {
 		}
 	}
 
-	final static Pattern	HTML_TAGS_P	= Pattern.compile("<!--.*-->|<[^>]+>");
-	final static Pattern	NEWLINES_P	= Pattern.compile("(\\s*\n\r?\\s*)+");
-	final static Pattern	ENTITIES_P	= Pattern.compile("&(#(?<nr>[0-9]+))|(?<name>[a-z]+);",
+	private final static Pattern	HTML_TAGS_P	= Pattern.compile("<!--.*-->|<[^>]+>");
+	private final static Pattern	NEWLINES_P	= Pattern.compile("(\\s*\n\r?\\s*)+");
+	private final static Pattern	ENTITIES_P	= Pattern.compile("&(#(?<nr>[0-9]+))|(?<name>[a-z]+);",
 		Pattern.CASE_INSENSITIVE);
 
 	private String cleanHtml(CharSequence sb) {
@@ -103,19 +103,21 @@ public class TaggedData implements Closeable {
 			.replaceAll("");
 		sb = NEWLINES_P.matcher(sb)
 			.replaceAll("\n");
-		StringBuffer x = new StringBuffer();
+		StringBuilder x = new StringBuilder();
 		Matcher m = ENTITIES_P.matcher(sb);
-		while (m.find()) {
+		int start = 0;
+		for (; m.find(); start = m.end()) {
+			x.append(sb, start, m.start());
 			if (m.group("nr") != null) {
 				char c = (char) Integer.parseInt(m.group("nr"));
-				m.appendReplacement(x, "");
 				x.append(c);
 			} else {
-				m.appendReplacement(x, entity(m.group("name")));
+				x.append(entity(m.group("name")));
 			}
 		}
-		m.appendTail(x);
-		return x.toString();
+		return (start == 0) ? sb.toString()
+			: x.append(sb, start, sb.length())
+				.toString();
 	}
 
 	private String entity(String name) {
@@ -177,7 +179,7 @@ public class TaggedData implements Closeable {
 
 	/**
 	 * Returns the input stream containing the resource data.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	public InputStream getInputStream() throws IOException {
@@ -236,7 +238,7 @@ public class TaggedData implements Closeable {
 	}
 
 	public boolean isNotFound() {
-		return responseCode == 404;
+		return responseCode == HttpURLConnection.HTTP_NOT_FOUND;
 	}
 
 	public File getFile() {

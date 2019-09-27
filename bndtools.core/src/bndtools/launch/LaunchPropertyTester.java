@@ -10,25 +10,26 @@ import org.eclipse.jdt.core.IJavaProject;
 import bndtools.launch.util.LaunchUtils;
 
 public class LaunchPropertyTester extends PropertyTester {
-    private static final ILogger logger = Logger.getLogger(LaunchPropertyTester.class);
+	private static final ILogger	logger						= Logger.getLogger(LaunchPropertyTester.class);
 
-    public static final String PROP_IS_IN_BND_JAVA_PROJECT = "isInBndJavaProject";
+	public static final String		PROP_IS_IN_BND_JAVA_PROJECT	= "isInBndJavaProject";
 
-    @Override
-    public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (PROP_IS_IN_BND_JAVA_PROJECT.equals(property)) {
-            try {
-                IJavaElement elem = (IJavaElement) receiver;
-                IJavaProject javaProject = elem.getJavaProject();
+	@Override
+	public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+		if (PROP_IS_IN_BND_JAVA_PROJECT.equals(property)) {
+			try {
+				IJavaElement elem = (IJavaElement) receiver;
+				IJavaProject javaProject = elem.getJavaProject();
 
-                return javaProject != null && javaProject.exists() && LaunchUtils.isInBndWorkspaceProject(javaProject.getProject());
-            } catch (CoreException e) {
-                logger.logError("Error testing '" + PROP_IS_IN_BND_JAVA_PROJECT + "' property on java element.", e);
-                return false;
-            }
-        }
+				return javaProject != null && javaProject.exists()
+					&& LaunchUtils.isInBndWorkspaceProject(javaProject.getProject());
+			} catch (CoreException e) {
+				logger.logError("Error testing '" + PROP_IS_IN_BND_JAVA_PROJECT + "' property on java element.", e);
+				return false;
+			}
+		}
 
-        return false;
-    }
+		return false;
+	}
 
 }
