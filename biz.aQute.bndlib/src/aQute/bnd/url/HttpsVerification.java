@@ -37,7 +37,6 @@ import aQute.service.reporter.Reporter;
 public class HttpsVerification extends DefaultURLConnectionHandler {
 	static Logger				logger	= LoggerFactory.getLogger(HttpsVerification.class);
 	private SSLSocketFactory	factory;
-	private HostnameVerifier	verifier;
 	private boolean				verify	= true;
 	private String				certificatesPath;
 	private X509Certificate[]	certificateChain;
@@ -61,7 +60,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	}
 
 	/**
-	 * Initialize the SSL Context, factory and verifier.
+	 * Initialize the SSL Context and factory.
 	 *
 	 * @throws NoSuchAlgorithmException
 	 * @throws KeyManagementException
@@ -82,8 +81,6 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 			SSLContext context = SSLContext.getInstance("TLS");
 			context.init(null, trustManagers, new SecureRandom());
 			factory = context.getSocketFactory();
-
-			verifier = (string, session) -> verify;
 		}
 	}
 
@@ -97,7 +94,9 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 			HttpsURLConnection https = (HttpsURLConnection) connection;
 			init();
 			https.setSSLSocketFactory(factory);
-			https.setHostnameVerifier(verifier);
+			if (!verify) {
+				https.setHostnameVerifier((string, session) -> true);
+			}
 		}
 	}
 
