@@ -1,5 +1,5 @@
 // touch settings.gradle
-// ../gradlew -b publish.gradle displayArtifacts publishPlugins
+// ../gradlew --no-daemon -b publish.gradle displayArtifacts publishPlugins
 // rm settings.gradle
 
 buildscript {
@@ -18,7 +18,7 @@ apply plugin: 'java'
 
 ext.groupId = 'biz.aQute.bnd'
 ext.artifactId = 'biz.aQute.bnd.gradle'
-ext.artifactVersion = '4.2.0'
+ext.artifactVersion = '4.3.0'
 
 repositories {
   jcenter()
