@@ -10,7 +10,6 @@
 
 -testpath: \
 	${junit},\
-	osgi.core;version=latest,\
 	slf4j.simple;version=latest
 
 -exportcontents: *

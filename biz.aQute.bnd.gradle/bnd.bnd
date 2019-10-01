@@ -21,6 +21,9 @@ Bundle-Description: The Bnd Gradle plugin.
 	biz.aQute.repository;version=latest, \
 	biz.aQute.bnd.embedded-repo;version=latest
 
+-testpath: \
+	${junit}
+
 bnd_version: ${replace;${bnd_plugin};.*:(.*);$1}
 
 -includeresource: \

@@ -1,56 +1,62 @@
 package aQute.libg.uri;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.condition.OS.WINDOWS;
+
 import java.net.URI;
 
-import aQute.lib.io.IO;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
 
-public class URIUtilsTest extends TestCase {
+public class URIUtilsTest {
 
+	@Test
 	public void testResolveAbsolute() throws Exception {
 		// reference is absolute, so base is irrelevant
 		URI result = URIUtil.resolve(URI.create("http://example.com/foo.xml"), "http://example.org/bar.xml");
-		assertEquals("http://example.org/bar.xml", result.toString());
+		assertThat(result).hasToString("http://example.org/bar.xml");
 	}
 
+	@Test
 	public void testResolveRelativeHttp() throws Exception {
 		URI result = URIUtil.resolve(URI.create("http://example.com/foo.xml"), "bar.xml");
-		assertEquals("http://example.com/bar.xml", result.toString());
+		assertThat(result).hasToString("http://example.com/bar.xml");
 	}
 
+	@Test
 	public void testResolveBlank() throws Exception {
 		URI result = URIUtil.resolve(URI.create("http://example.com/foo.xml"), "");
-		assertEquals("http://example.com/foo.xml", result.toString());
+		assertThat(result).hasToString("http://example.com/foo.xml");
 	}
 
+	@Test
 	public void testResolveFragmentBlank() throws Exception {
 		URI result = URIUtil.resolve(URI.create("http://example.com/foo.xml#bar"), "");
-		assertEquals("http://example.com/foo.xml", result.toString());
+		assertThat(result).hasToString("http://example.com/foo.xml");
 	}
 
+	@Test
+	@EnabledOnOs(WINDOWS)
 	public void testResolveAbsoluteWindowsPath() throws Exception {
-		if (IO.isWindows()) {
-			URI result = URIUtil.resolve(URI.create("file:/C:/Users/jimbob/base.txt"), "C:\\Users\\sub dir\\foo.txt");
-			assertEquals("file:/C:/Users/sub%20dir/foo.txt", result.toString());
-			result = URIUtil.resolve(URI.create("file:/C:/Users/jimbob/base.txt"), "C:/Users/sub dir/bar.txt");
-			assertEquals("file:/C:/Users/sub%20dir/bar.txt", result.toString());
-		}
+		URI result = URIUtil.resolve(URI.create("file:/C:/Users/jimbob/base.txt"), "C:\\Users\\sub dir\\foo.txt");
+		assertThat(result).hasToString("file:/C:/Users/sub%20dir/foo.txt");
+		result = URIUtil.resolve(URI.create("file:/C:/Users/jimbob/base.txt"), "C:/Users/sub dir/bar.txt");
+		assertThat(result).hasToString("file:/C:/Users/sub%20dir/bar.txt");
 	}
 
+	@Test
+	@EnabledOnOs(WINDOWS)
 	public void testResolveRelativeWindowsPath() throws Exception {
-		if (IO.isWindows()) {
-			URI result = URIUtil.resolve(URI.create("file:/C:/Users/jim/base.txt"), "sub dir\\foo.txt");
-			assertEquals("file:/C:/Users/jim/sub%20dir/foo.txt", result.toString());
-		}
+		URI result = URIUtil.resolve(URI.create("file:/C:/Users/jim/base.txt"), "sub dir\\foo.txt");
+		assertThat(result).hasToString("file:/C:/Users/jim/sub%20dir/foo.txt");
 	}
 
+	@Test
+	@EnabledOnOs(WINDOWS)
 	public void testResolveUNCWindowsPath() throws Exception {
-		if (IO.isWindows()) {
-			URI result = URIUtil.resolve(URI.create("file:/C:/Users/jim/base.txt"), "\\\\server\\share\\foo.txt");
-			assertEquals("file:////server/share/foo.txt", result.toString());
-			result = URIUtil.resolve(URI.create("file:/C:/Users/jim/base.txt"), "//server/share/foo.txt");
-			assertEquals("file:////server/share/foo.txt", result.toString());
-		}
+		URI result = URIUtil.resolve(URI.create("file:/C:/Users/jim/base.txt"), "\\\\server\\share\\foo.txt");
+		assertThat(result).hasToString("file:////server/share/foo.txt");
+		result = URIUtil.resolve(URI.create("file:/C:/Users/jim/base.txt"), "//server/share/foo.txt");
+		assertThat(result).hasToString("file:////server/share/foo.txt");
 	}
-
 }

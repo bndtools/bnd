@@ -7,7 +7,8 @@
 	osgi.core;version=latest,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
-    ${junit}
+    org.apache.servicemix.bundles.junit;version=latest,\
+    org.assertj.core;version=latest
 
 Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 
