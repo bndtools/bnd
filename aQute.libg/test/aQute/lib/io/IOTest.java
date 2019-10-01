@@ -1,9 +1,11 @@
 package aQute.lib.io;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
 import java.io.File;
 import java.io.InputStream;
@@ -18,6 +20,8 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledOnOs;
 
 import aQute.lib.io.IO.EnvironmentCalculator;
 
@@ -66,16 +70,19 @@ public class IOTest {
 	}
 
 	@Test
+	@DisabledOnOs(WINDOWS)
 	public void testSafeFileName() {
-		if (IO.isWindows()) {
-			assertEquals("abc%def", IO.toSafeFileName("abc:def"));
-			assertEquals("%abc%def%", IO.toSafeFileName("<abc:def>"));
-			assertEquals("LPT1_", IO.toSafeFileName("LPT1"));
-			assertEquals("COM2_", IO.toSafeFileName("COM2"));
-		} else {
-			assertEquals("abc%def", IO.toSafeFileName("abc/def"));
-			assertEquals("<abc%def>", IO.toSafeFileName("<abc/def>"));
-		}
+		assertEquals("abc%def", IO.toSafeFileName("abc/def"));
+		assertEquals("<abc%def>", IO.toSafeFileName("<abc/def>"));
+	}
+
+	@Test
+	@EnabledOnOs(WINDOWS)
+	public void testSafeFileNameWindows() {
+		assertEquals("abc%def", IO.toSafeFileName("abc:def"));
+		assertEquals("%abc%def%", IO.toSafeFileName("<abc:def>"));
+		assertEquals("LPT1_", IO.toSafeFileName("LPT1"));
+		assertEquals("COM2_", IO.toSafeFileName("COM2"));
 	}
 
 	@Test
@@ -273,37 +280,32 @@ public class IOTest {
 
 		assertTrue(IO.createSymbolicLinkOrCopy(link, source));
 
-		if (IO.isWindows()) {
-			assertFalse(IO.isSymbolicLink(link));
-		} else {
-			assertTrue(IO.isSymbolicLink(link));
-		}
+		assertThat(IO.isSymbolicLink(link)).isNotEqualTo(IO.isWindows());
 	}
 
 	@Test
+	@EnabledOnOs(WINDOWS)
 	public void testOnlyCopyIfReallyNeededOnWindows() throws Exception {
-		if (IO.isWindows()) {
-			File link = new File("generated/test/target.dat");
+		File link = new File("generated/test/target.dat");
 
-			IO.delete(link);
+		IO.delete(link);
 
-			assertFalse(link.exists() || IO.isSymbolicLink(link));
+		assertFalse(link.exists() || IO.isSymbolicLink(link));
 
-			IO.mkdirs(link.getParentFile());
+		IO.mkdirs(link.getParentFile());
 
-			File source = new File("testresources/zipped.dat");
-			assertTrue(source.exists());
+		File source = new File("testresources/zipped.dat");
+		assertTrue(source.exists());
 
-			assertTrue(IO.createSymbolicLinkOrCopy(link, source));
+		assertTrue(IO.createSymbolicLinkOrCopy(link, source));
 
-			assertEquals(link.lastModified(), source.lastModified());
-			assertEquals(link.length(), source.length());
+		assertEquals(link.lastModified(), source.lastModified());
+		assertEquals(link.length(), source.length());
 
-			assertTrue(IO.createSymbolicLinkOrCopy(link, source));
+		assertTrue(IO.createSymbolicLinkOrCopy(link, source));
 
-			assertEquals(link.lastModified(), source.lastModified());
-			assertEquals(link.length(), source.length());
-		}
+		assertEquals(link.lastModified(), source.lastModified());
+		assertEquals(link.length(), source.length());
 	}
 
 	@Test
