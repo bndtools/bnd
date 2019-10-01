@@ -1,16 +1,28 @@
 package test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.condition.DisabledOnOs;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
@@ -19,28 +31,35 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class ResourcesTest extends TestCase {
+public class ResourcesTest {
 	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+	private String		testName;
+
+	@BeforeEach
+	public void before(TestInfo info) {
+		testName = info.getTestMethod()
+			.map(Method::getName)
+			.get();
+	}
 
 	/**
 	 * Command facility in Include-Resource
 	 */
 
+	@Test
+	@DisabledOnOs(WINDOWS)
 	public void testCommand() throws Exception {
-		if (!IO.isWindows()) {
-			Builder b = new Builder();
-			b.setProperty("Include-Resource", "xkeystore; requires='testresources/keystore';cmd='echo ${@requires}', ");
-			b.setProperty("-resourceonly", "true");
-			Jar jar = b.build();
-			assertTrue(b.check());
-			Resource r = jar.getResource("xkeystore");
-			assertNotNull(r);
-			String s = IO.collect(r.openInputStream());
-			assertEquals("testresources/keystore\n", s);
-		}
+		Builder b = new Builder();
+		b.setProperty("Include-Resource", "xkeystore; requires='testresources/keystore';cmd='echo ${@requires}', ");
+		b.setProperty("-resourceonly", "true");
+		Jar jar = b.build();
+		assertTrue(b.check());
+		Resource r = jar.getResource("xkeystore");
+		assertNotNull(r);
+		String s = IO.collect(r.openInputStream());
+		assertEquals("testresources/keystore\n", s);
 	}
 
 	/**
@@ -49,20 +68,20 @@ public class ResourcesTest extends TestCase {
 	 * resource.
 	 */
 
-	public static void testOnTheFlyMerge() throws Exception {
-		if (!IO.isWindows()) {
-			Builder b = new Builder();
-			b.setIncludeResource("count;for='1,2,3';cmd='echo YES_${@}'");
-			b.setProperty("-resourceonly", "true");
-			Jar jar = b.build();
-			assertTrue(b.check());
-			Resource r = jar.getResource("count");
-			assertNotNull(r);
+	@Test
+	@DisabledOnOs(WINDOWS)
+	public void testOnTheFlyMerge() throws Exception {
+		Builder b = new Builder();
+		b.setIncludeResource("count;for='1,2,3';cmd='echo YES_${@}'");
+		b.setProperty("-resourceonly", "true");
+		Jar jar = b.build();
+		assertTrue(b.check());
+		Resource r = jar.getResource("count");
+		assertNotNull(r);
 
-			String s = IO.collect(r.openInputStream());
-			assertEquals("YES_1\nYES_2\nYES_3\n", s);
-			b.close();
-		}
+		String s = IO.collect(r.openInputStream());
+		assertEquals("YES_1\nYES_2\nYES_3\n", s);
+		b.close();
 	}
 
 	/**
@@ -70,10 +89,9 @@ public class ResourcesTest extends TestCase {
 	 * is a simple case of one resource.
 	 */
 
-	public static void testOnTheFlySingle() throws Exception {
-		if (IO.isWindows())
-			return;
-
+	@Test
+	@DisabledOnOs(WINDOWS)
+	public void testOnTheFlySingle() throws Exception {
 		Builder b = new Builder();
 		b.setIncludeResource("testresources/ls;cmd='ls /etc | grep hosts'");
 		b.setProperty("-resourceonly", "true");
@@ -90,10 +108,9 @@ public class ResourcesTest extends TestCase {
 	 * is a simple case of one resource with an error.
 	 */
 
-	public static void testOnTheFlySingleError() throws Exception {
-		if (IO.isWindows())
-			return;
-
+	@Test
+	@DisabledOnOs(WINDOWS)
+	public void testOnTheFlySingleError() throws Exception {
 		Builder b = new Builder();
 		b.setIncludeResource("testresources/x;cmd='I do not exist!!!!!!!!!!!'");
 		b.setProperty("-resourceonly", "true");
@@ -108,9 +125,9 @@ public class ResourcesTest extends TestCase {
 	 * resource.
 	 */
 
-	public static void testOnTheFlyMultiple() throws Exception {
-		if (IO.isWindows())
-			return;
+	@Test
+	@DisabledOnOs(WINDOWS)
+	public void testOnTheFlyMultiple() throws Exception {
 		Builder b = new Builder();
 		b.setIncludeResource("count/${@};for='1,2,3';cmd='echo YES_${@}'");
 		b.setProperty("-resourceonly", "true");
@@ -130,7 +147,8 @@ public class ResourcesTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
-	public static void testAbsentIsOk() throws Exception {
+	@Test
+	public void testAbsentIsOk() throws Exception {
 		{
 			Builder b = new Builder();
 			b.setProperty("Include-Resource", "TargetFolder=-testresources/ws/p2/Resources");
@@ -173,7 +191,8 @@ public class ResourcesTest extends TestCase {
 
 	}
 
-	public static void testNegativeFilter() throws Exception {
+	@Test
+	public void testNegativeFilter() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "TargetFolder=testresources/ws/p2/Resources;filter:=!*.txt");
 		b.setProperty("-resourceonly", "true");
@@ -186,7 +205,8 @@ public class ResourcesTest extends TestCase {
 		assertNotNull(r);
 	}
 
-	public static void testCopyToRoot() throws Exception {
+	@Test
+	public void testCopyToRoot() throws Exception {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.setProperty("-resourceonly", "true");
@@ -203,7 +223,8 @@ public class ResourcesTest extends TestCase {
 			.size());
 	}
 
-	public static void testIncludeResourceDirectivesDefault() throws Exception {
+	@Test
+	public void testIncludeResourceDirectivesDefault() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "TargetFolder=testresources/ws/p2/Resources");
 		b.setProperty("-resourceonly", "true");
@@ -223,7 +244,8 @@ public class ResourcesTest extends TestCase {
 
 	}
 
-	public static void testIncludeResourceDoNotCopy() throws Exception {
+	@Test
+	public void testIncludeResourceDoNotCopy() throws Exception {
 		Builder b = new Builder();
 
 		// Use Properties file otherwise -donotcopy is not picked up
@@ -249,7 +271,8 @@ public class ResourcesTest extends TestCase {
 
 	}
 
-	public static void testIncludeResourceDoNotCopyPath() throws Exception {
+	@Test
+	public void testIncludeResourceDoNotCopyPath() throws Exception {
 		Builder b = new Builder();
 
 		// Use Properties file otherwise -donotcopy is not picked up
@@ -276,7 +299,8 @@ public class ResourcesTest extends TestCase {
 
 	}
 
-	public static void testIncludeResourceDoNotCopyPath_Since_3_1() throws Exception {
+	@Test
+	public void testIncludeResourceDoNotCopyPath_Since_3_1() throws Exception {
 		Builder b = new Builder();
 
 		// Use Properties file otherwise -donotcopy is not picked up
@@ -302,7 +326,8 @@ public class ResourcesTest extends TestCase {
 
 	}
 
-	public static void testIncludeResourceDirectivesFilterRecursive() throws Exception {
+	@Test
+	public void testIncludeResourceDirectivesFilterRecursive() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "TargetFolder=testresources/ws/p2/Resources;filter:=re*.txt");
 		b.setProperty("-resourceonly", "true");
@@ -320,7 +345,8 @@ public class ResourcesTest extends TestCase {
 
 	}
 
-	public static void testIncludeResourceDirectivesFilterRecursive2() throws Exception {
+	@Test
+	public void testIncludeResourceDirectivesFilterRecursive2() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "testresources/ws/p2/Resources;filter:=re*.txt");
 		b.setProperty("-resourceonly", "true");
@@ -338,7 +364,8 @@ public class ResourcesTest extends TestCase {
 
 	}
 
-	public static void testIncludeResourceDirectivesFilterNonRecursive() throws Exception {
+	@Test
+	public void testIncludeResourceDirectivesFilterNonRecursive() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource",
 			"TargetFolder=testresources/ws/p2/Resources;filter:=re*.txt;recursive:=false");
@@ -354,7 +381,8 @@ public class ResourcesTest extends TestCase {
 		assertNull(r);
 	}
 
-	public static void testIncludeResourceDirectivesFilterRecursiveFlatten() throws Exception {
+	@Test
+	public void testIncludeResourceDirectivesFilterRecursiveFlatten() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "TargetFolder=testresources/ws/p2/Resources;filter:=re*.txt;flatten:=true");
 		b.setProperty("-resourceonly", "true");
@@ -373,7 +401,8 @@ public class ResourcesTest extends TestCase {
 
 	}
 
-	public static void testEmpty() throws Exception {
+	@Test
+	public void testEmpty() throws Exception {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.setProperty("-resourceonly", "true");
@@ -385,7 +414,8 @@ public class ResourcesTest extends TestCase {
 		assertTrue(bmaker.check("The JAR is empty"));
 	}
 
-	public static void testLiteral() throws Exception {
+	@Test
+	public void testLiteral() throws Exception {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.setProperty("-resourceonly", "true");
@@ -412,7 +442,8 @@ public class ResourcesTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
-	public static void testOnDemandResource() throws Exception {
+	@Test
+	public void testOnDemandResource() throws Exception {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.setProperty("-resourceonly", "true");
@@ -432,6 +463,7 @@ public class ResourcesTest extends TestCase {
 
 	}
 
+	@Test
 	public void testEmptyDirs() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-resourceonly", "true");
@@ -463,6 +495,7 @@ public class ResourcesTest extends TestCase {
 		assertFalse(hasContent);
 	}
 
+	@Test
 	public void testEmptyDirs2() throws Exception {
 		File tstDir = IO.getFile("testresources/ws/p2/Resources/empty");
 		tstDir.mkdirs();
@@ -496,8 +529,9 @@ public class ResourcesTest extends TestCase {
 		IO.delete(tstDir);
 	}
 
+	@Test
 	public void testURLResourceJarLocking() throws Exception {
-		File f = new File("generated/tmp/test/" + getName() + "/locking.jar");
+		File f = new File("generated/tmp/test/" + testName + "/locking.jar");
 		try (Builder b = new Builder()) {
 			b.setProperty("-includeresource", "TargetFolder=testresources/ws/p2/Resources");
 			b.setProperty("-resourceonly", "true");
