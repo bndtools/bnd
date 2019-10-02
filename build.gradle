@@ -34,6 +34,9 @@ subprojects {
   if (plugins.hasPlugin('biz.aQute.bnd')) {
     group bnd('-groupid')
     version bnd('base.version')
+    tasks.withType(JavaCompile).configureEach {
+      options.compilerArgs.add('-Xlint:unchecked')
+    }
     tasks.named('javadoc') {
       options.tags = [
         'Immutable:t:',
