@@ -36,6 +36,6 @@ Export-Package:  \
 
 -builderignore: testdata
 
--fixupmessages.private: private references
+-fixupmessages.felix: "Export biz.aQute.resolve,* private references \\[org.apache.felix.resolver\\]"
 
 -baseline: *

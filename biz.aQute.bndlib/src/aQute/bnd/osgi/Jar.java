@@ -308,7 +308,6 @@ public class Jar implements Closeable {
 	}
 
 	public boolean putResource(String path, Resource resource) {
-		check();
 		return putResource(path, resource, true);
 	}
 

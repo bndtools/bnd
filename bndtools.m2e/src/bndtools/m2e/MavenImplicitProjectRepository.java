@@ -188,6 +188,7 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
 					containerBuilder.setIncludeDependencyManagement(maven.getMojoParameterValue(mavenProject,
 						mojoExecution, "includeDependencyManagement", Boolean.class, monitor));
 
+					@SuppressWarnings("unchecked")
 					Set<String> scopeValues = maven.getMojoParameterValue(mavenProject, mojoExecution, "scopes",
 						Set.class, monitor);
 					if (!scopeValues.isEmpty()) {
