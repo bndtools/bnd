@@ -35,3 +35,5 @@ Import-Package: \
 	org.codehaus.plexus.classworlds,\
 	org.codehaus.plexus:plexus-utils,\
 	slf4j.simple;version=latest
+
+-baseline: *
