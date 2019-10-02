@@ -21,5 +21,3 @@ Bundle-Description: A library to be statically linked. Contains many small utili
 -sources= true
 
 -builderignore: testresources
-
--fixupmessages.bundleversion: "The bundle version \\(4.2.0/4.4.0\\) is too low, must be at least 5.0.0";is:=ignore
