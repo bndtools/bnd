@@ -1,6 +1,7 @@
 # baseline.version is set in cnf/build.bnd
 biz.aQute.bnd:aQute.libg:${baseline.version}
 biz.aQute.bnd:biz.aQute.bnd.exporters:${baseline.version}
+biz.aQute.bnd:biz.aQute.bnd.maven:${baseline.version}
 biz.aQute.bnd:biz.aQute.bnd.reporter:${baseline.version}
 biz.aQute.bnd:biz.aQute.bndlib:${baseline.version}
 biz.aQute.bnd:biz.aQute.junit:${baseline.version}

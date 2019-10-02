@@ -5,3 +5,5 @@ Private-Package aQute.launchpad.internal
 
 Import-Package: \
     *;resolution:=optional
+
+-baseline:

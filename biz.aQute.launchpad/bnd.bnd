@@ -36,7 +36,6 @@ Import-Package: \
     biz.aQute.bndlib;version=latest;packages=*,\
     org.eclipse.jdt.annotation;version=@2, \
     ${junit}
-    
 
 -testpath: \
     ${mockito}, \
@@ -50,6 +49,8 @@ Import-Package: \
     org.apache.felix.gogo.shell;version=latest
 
 -runfw: org.apache.felix.framework
+
+-baseline: *
 
 # For testing purpose, see BundleBuilderTest.java
 Project                 true
