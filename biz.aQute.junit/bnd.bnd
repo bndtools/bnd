@@ -34,7 +34,10 @@ Export-Package: \
 Import-Package: \
 	aQute.*;resolution:=optional,\
 	junit.*;version="[3.8,5)",\
+    !org.opentest4j,\
 	!org.junit.jupiter.*,\
+	!org.junit.platform.*,\
+	!javax.annotation.*,\
 	sun.*;resolution:=optional,\
 	jdk.*;resolution:=optional,\
 	*
@@ -44,7 +47,9 @@ DynamicImport-Package: \
     org.opentest4j,\
     org.testng,\
     org.testng.*,\
-    org.junit.jupiter.*
+	org.junit.jupiter.*,\
+	org.junit.platform.*,\
+	javax.annotation.*
 
 Bundle-Activator: aQute.junit.Activator
 Embedded-Activator: aQute.junit.Activator
