@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import aQute.bnd.main.testrules.WatchedFolder.FileStatus;
 import aQute.bnd.osgi.Jar;
+import aQute.lib.io.IO;
 
 public class TestBndMain extends TestBndMainBase {
 
@@ -48,6 +49,20 @@ public class TestBndMain extends TestBndMainBase {
 			expectJarEntry(result, "jar/org.apache.felix.framework-5.6.10.jar");
 			expectJarEntry(result, "jar/printAndExit-1.0.0.jar");
 		}
+	}
+
+	@Test
+	public void testBrewFormulaExpectedOutput() throws Exception {
+		executeBndCmd(IO.getPath("testdata/brew"), "resolve", "resolve", "-b", "launch.bndrun");
+		/*
+		 * If the expected output changes for this test, we will need to modify
+		 * the brew formula for the bnd command to change the output asserts.
+		 * See
+		 * https://github.com/Homebrew/homebrew-core/blob/master/Formula/bnd.rb
+		 */
+		expectOutputContainsPattern(
+			"BUNDLES\\s+org.apache.felix.gogo.runtime;version='\\[1.0.0,1.0.1\\)'");
+		expectNoError();
 	}
 
 	@Test

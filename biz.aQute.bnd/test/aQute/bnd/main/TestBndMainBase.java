@@ -1,5 +1,6 @@
 package aQute.bnd.main;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -117,8 +118,18 @@ public class TestBndMainBase {
 		assertThat("missing output", capturedStdIO.getSystemOutContent(), containsString(expected));
 	}
 
+	protected void expectOutputContainsPattern(String regex) {
+		assertThat(capturedStdIO.getSystemOutContent()).as("output does not contain pattern")
+			.containsPattern(regex);
+	}
+
 	protected void expectErrorContains(String expected) {
 		assertThat("missing error", capturedStdIO.getSystemErrContent(), containsString(expected));
+	}
+
+	protected void expectErrorContainsPattern(String regex) {
+		assertThat(capturedStdIO.getSystemErrContent()).as("error does not contain pattern")
+			.containsPattern(regex);
 	}
 
 	protected void expectNoError(boolean ignoreWarnings, String... expects) {
