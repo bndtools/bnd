@@ -84,10 +84,12 @@ The launcher registers a service with object class `Object` that provides some r
 
 ## Embedded Activators
 
-The launcher supports _embedded activators_. These are like normal Bundle Actviator classes but are instead found on the `-runpath`. Any bundle that has the header `Embedded-Activator` will be started. This starting can happen before any bundle is started or after all bundles are started. To start immediate, add a static or instance field called `IMMEDIATE` with a value that equals `true`.
+The launcher supports _embedded activators_. These are like normal Bundle Actviator classes but are instead found on the `-runpath`. Any bundle that has the header `Embedded-Activator` will be started. The start can happen at 3 points: Before any bundle is installed, after all bundles are installed and after all bundles are started. The default is after all bundles are started. To configure the starting point add a static or instance field called `IMMEDIATE` of type String and set one of the following values: `AFTER_FRAMEWORK_INIT` or `BEFORE_BUNDLES_START`. Any other value will result in the default start after all bundles are started. 
+
+Until recently only before and after bundle start was support. This was determined by looking for a static boolean field `IMMEDIATE`. This is still supported and `true` corresponds to the String `BEFORE_BUNDLES_START`. `false` trigger a start after all bundles are started.
 
     public class MyActivator implements BundleActivator {
-        public static boolean IMMEDIATE = true;
+        public static String IMMEDIATE = "BEFORE_BUNDLES_START";
 
         public void start(BundleContext context) {}
         

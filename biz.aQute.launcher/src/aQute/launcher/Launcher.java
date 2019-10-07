@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.IllegalFormatException;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -99,7 +100,6 @@ public class Launcher implements ServiceListener {
 	private boolean							security;
 	private SimplePermissionPolicy			policy;
 	private Callable<Integer>				mainThread;
-	private final List<BundleActivator>		embedded			= new ArrayList<>();
 	private final Map<Bundle, Throwable>	errors				= new HashMap<>();
 	private final Map<File, Bundle>			installedBundles	= new LinkedHashMap<>();
 	private File							home				= new File(System.getProperty("user.home"));
@@ -425,7 +425,6 @@ public class Launcher implements ServiceListener {
 
 		doSecurity();
 
-		List<Bundle> tobestarted = update(System.currentTimeMillis() + 100);
 
 		int result = LauncherConstants.OK;
 
@@ -434,6 +433,8 @@ public class Launcher implements ServiceListener {
 		systemContext.addServiceListener(this, "(&(|(objectclass=" + Runnable.class.getName() + ")(objectclass="
 			+ Callable.class.getName() + "))(main.thread=true))");
 
+		List<BundleActivator> startBeforeBundleStart = new LinkedList<>();
+		List<BundleActivator> startAfterBundleStart = new LinkedList<>();
 
 		// Start embedded activators
 		trace("start embedded activators");
@@ -443,22 +444,30 @@ public class Launcher implements ServiceListener {
 				try {
 					Class<?> clazz = loader.loadClass((String) token);
 					BundleActivator activator = (BundleActivator) newInstance(clazz);
-					if (isImmediate(activator)) {
-						start(systemContext, result, activator);
+					if (isAfterFrameworkInit(activator)) {
+						result = start(systemContext, result, activator);
+					} else if (isBeforeBundlesStart(activator)) {
+						startBeforeBundleStart.add(activator);
+					} else {
+						startAfterBundleStart.add(activator);
 					}
-					embedded.add(activator);
 					trace("adding activator %s", activator);
 				} catch (Exception e) {
 					throw new IllegalArgumentException("Embedded Bundle Activator incorrect: " + token, e);
 				}
 			}
 		}
+		List<Bundle> tobestarted = update(System.currentTimeMillis() + 100);
+
+		for (BundleActivator activator : startBeforeBundleStart) {
+			result = start(systemContext, result, activator);
+		}
 
 		startBundles(tobestarted);
 
-		for (BundleActivator activator : embedded)
-			if (!isImmediate(activator))
-				result = start(systemContext, result, activator);
+		for (BundleActivator activator : startAfterBundleStart) {
+			result = start(systemContext, result, activator);
+		}
 
 		systemBundle.start();
 		trace("system bundle started ok");
@@ -471,15 +480,23 @@ public class Launcher implements ServiceListener {
 		return result;
 	}
 
-	private boolean isImmediate(BundleActivator activator) {
+	private Object getImmediateFieldValue(BundleActivator activator) {
 		try {
 			Field f = activator.getClass()
 				.getField("IMMEDIATE");
+			return f.get(activator);
+		} catch (Exception e) {}
+		return Boolean.FALSE;
+	}
 
-			return f.getBoolean(activator);
-		} catch (Exception e) {
-			return false;
-		}
+	private boolean isAfterFrameworkInit(BundleActivator activator) {
+		Object result = getImmediateFieldValue(activator);
+		return "AFTER_FRAMEWORK_INIT".equals(result);
+	}
+
+	private boolean isBeforeBundlesStart(BundleActivator activator) {
+		Object result = getImmediateFieldValue(activator);
+		return "BEFORE_BUNDLES_START".equals(result) || Boolean.TRUE.equals(result);
 	}
 
 	private int start(BundleContext systemContext, int result, BundleActivator activator) {
