@@ -1,18 +1,22 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
-import junit.framework.TestCase;
 
-@SuppressWarnings("resource")
-public class ClassReferenceTest extends TestCase {
+public class ClassReferenceTest {
 	class Inner {
 
 	}
@@ -30,137 +34,63 @@ public class ClassReferenceTest extends TestCase {
 	 * @throws Exception
 	 */
 
-	public void testSun_1_1() throws Exception {
-		doit("sun_1_1");
-	}
-
-	public void testSun_1_2() throws Exception {
-		doit("sun_1_2");
-	}
-
-	public void testSun_1_3() throws Exception {
-		doit("sun_1_3");
-	}
-
-	public void testSun_1_4() throws Exception {
-		doit("sun_1_4");
-	}
-
-	public void testSun_1_5() throws Exception {
-		doit("sun_1_5");
-	}
-
-	public void testSun_jsr14() throws Exception {
-		doit("sun_jsr14");
-	}
-
-	public void testSun_1_6() throws Exception {
-		doit("sun_1_6");
-	}
-
-	public void testSun_1_7() throws Exception {
-		doit("sun_1_7");
-	}
-
-	public void testSun_1_8() throws Exception {
-		doit("sun_1_8");
-	}
-
-	public void testJdk_9_0() throws Exception {
-		doit("jdk_9_0");
-	}
-
-	public void testJdk_10_0() throws Exception {
-		doit("jdk_10_0");
-	}
-
-	public void testJdk_11_0() throws Exception {
-		doit("jdk_11_0");
-	}
-
-	public void testJdk_12_0() throws Exception {
-		doit("jdk_12_0");
-	}
-
-	public void testJdk_13_0() throws Exception {
-		doit("jdk_13_0");
-	}
-
-	public void testEclipse_1_1() throws Exception {
-		doit("eclipse_1_1");
-	}
-
-	public void testEclipse_1_2() throws Exception {
-		doit("eclipse_1_2");
-	}
-
-	public void testEclipse_1_3() throws Exception {
-		doit("eclipse_1_3");
-	}
-
-	public void testEclipse_1_4() throws Exception {
-		doit("eclipse_1_4");
-	}
-
-	public void testEclipse_1_5() throws Exception {
-		doit("eclipse_1_5");
-	}
-
-	public void testEclipse_1_6() throws Exception {
-		doit("eclipse_1_6");
-	}
-
-	public void testEclipse_1_7() throws Exception {
-		doit("eclipse_1_7");
-	}
-
-	public void testEclipse_1_8() throws Exception {
-		doit("eclipse_1_8");
-	}
-
-	public void testEclipse_9_0() throws Exception {
-		doit("eclipse_9_0");
-	}
-
-	public void testEclipse_10_0() throws Exception {
-		doit("eclipse_10_0");
-	}
-
-	public void testEclipse_11_0() throws Exception {
-		doit("eclipse_11_0");
-	}
-
-	public void testEclipse_12_0() throws Exception {
-		doit("eclipse_12_0");
-	}
-
-	public void testEclipse_13_0() throws Exception {
-		doit("eclipse_13_0");
-	}
-
-	public void doit(String p) throws Exception {
+	@ParameterizedTest(name = "Check code in compilerversions/src/{arguments}")
+	@ValueSource(strings = {
+		"sun_1_1", //
+		"sun_1_2", //
+		"sun_1_3", //
+		"sun_1_4", //
+		"sun_1_5", //
+		"sun_jsr14", //
+		"sun_1_6", //
+		"sun_1_7", //
+		"sun_1_8", //
+		"jdk_9_0", //
+		"jdk_10_0", //
+		"jdk_11_0", //
+		"jdk_12_0", //
+		"jdk_13_0", //
+		"eclipse_1_1", //
+		"eclipse_1_2", //
+		"eclipse_1_3", //
+		"eclipse_1_4", //
+		"eclipse_1_5", //
+		"eclipse_1_6", //
+		"eclipse_1_7", //
+		"eclipse_1_8", //
+		"eclipse_9_0", //
+		"eclipse_10_0", //
+		"eclipse_11_0", //
+		"eclipse_12_0", //
+		"eclipse_13_0" //
+	})
+	@DisplayName("Class Reference Test")
+	public void doit(String pkg) throws Exception {
 		Properties properties = new Properties();
 		properties.put("-classpath", "compilerversions/compilerversions.jar");
-		System.out.println("compiler version " + p);
-		Builder builder = new Builder();
-		properties.put(Constants.EEPROFILE, "auto");
-		properties.put("Export-Package", p);
-		builder.setProperties(properties);
-		Jar jar = builder.build();
-		assertTrue(builder.check());
-		JAVA highestEE = builder.getHighestEE();
-		Map<String, Set<String>> profiles = highestEE.getProfiles();
-		if (profiles != null) {
-			System.out.println("profiles" + profiles);
-			jar.getManifest()
-				.write(System.out);
-		}
+		System.out.println("compiler version " + pkg);
+		try (Builder builder = new Builder()) {
+			properties.put(Constants.EEPROFILE, "auto");
+			properties.put("Export-Package", pkg);
+			builder.setProperties(properties);
+			Jar jar = builder.build();
+			assertThat(builder.check()).isTrue();
+			JAVA highestEE = builder.getHighestEE();
+			Map<String, Set<String>> profiles = highestEE.getProfiles();
+			if (profiles != null) {
+				System.out.println("profiles" + profiles);
+				jar.getManifest()
+					.write(System.out);
+			}
 
-		assertTrue(builder.check());
-		Manifest manifest = jar.getManifest();
-		String imports = manifest.getMainAttributes()
-			.getValue("Import-Package");
-		assertTrue("Package " + p + "contains swing ref ", imports.contains("javax.swing"));
-		assertFalse("Package " + p + "should not contain ClassRef", imports.contains("ClassRef"));
+			assertThat(builder.check()).isTrue();
+			Manifest manifest = jar.getManifest();
+			String imports = manifest.getMainAttributes()
+				.getValue("Import-Package");
+			assertThat(imports).as("Package %s contains swing ref", pkg)
+				.contains("javax.swing")
+				.as("Package %s should not contain ClassRef", pkg)
+				.doesNotContain("ClassRef");
+		}
 	}
 }
