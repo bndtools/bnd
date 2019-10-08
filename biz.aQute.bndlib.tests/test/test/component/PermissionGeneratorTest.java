@@ -1,5 +1,6 @@
 package test.component;
 
+import static aQute.bnd.test.BndTestCase.assertOk;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
@@ -20,9 +21,9 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.PermissionGenerator;
 import aQute.bnd.osgi.Resource;
-import aQute.bnd.test.BndTestCase;
+import junit.framework.TestCase;
 
-public class PermissionGeneratorTest extends BndTestCase {
+public class PermissionGeneratorTest extends TestCase {
 	private static Set<String> getPermissionsGeneratedFor(String permissionFile) throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*_basic");

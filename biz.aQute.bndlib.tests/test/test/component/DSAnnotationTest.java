@@ -1,5 +1,6 @@
 package test.component;
 
+import static aQute.bnd.test.BndTestCase.assertOk;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -59,12 +60,12 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
-import aQute.bnd.test.BndTestCase;
 import aQute.bnd.test.XmlTester;
 import aQute.bnd.version.Version;
 import aQute.lib.filter.Filter;
 import aQute.lib.io.IO;
 import junit.framework.AssertionFailedError;
+import junit.framework.TestCase;
 
 /**
  * Test for use of DS components specified using spec DS annotations.
@@ -72,7 +73,7 @@ import junit.framework.AssertionFailedError;
 @SuppressWarnings({
 	"resource", "restriction", "serial"
 })
-public class DSAnnotationTest extends BndTestCase {
+public class DSAnnotationTest extends TestCase {
 
 	public static final String	FELIX_1_2				= "http://felix.apache.org/xmlns/scr/v1.2.0-felix";
 
