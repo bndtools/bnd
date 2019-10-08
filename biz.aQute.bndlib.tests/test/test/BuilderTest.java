@@ -976,6 +976,8 @@ public class BuilderTest extends BndTestCase {
 			}, {
 				"eclipse_12_0", "JavaSE-12", "12"
 			}, {
+				"eclipse_13_0", "JavaSE-13", "13"
+			}, {
 				"sun_1_1", "JRE-1.1", "1.1"
 			}, {
 				"sun_1_2", "J2SE-1.2", "1.2"
@@ -999,6 +1001,8 @@ public class BuilderTest extends BndTestCase {
 				"jdk_11_0", "JavaSE-11", "11"
 			}, {
 				"jdk_12_0", "JavaSE-12", "12"
+			}, {
+				"jdk_13_0", "JavaSE-13", "13"
 			}
 		};
 		Pattern p = Pattern.compile("\\(&\\(osgi.ee=JavaSE\\)\\(version=(" + Version.VERSION_STRING + ")\\)\\)");

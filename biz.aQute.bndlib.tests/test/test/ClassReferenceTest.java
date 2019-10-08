@@ -82,6 +82,10 @@ public class ClassReferenceTest extends TestCase {
 		doit("jdk_12_0");
 	}
 
+	public void testJdk_13_0() throws Exception {
+		doit("jdk_13_0");
+	}
+
 	public void testEclipse_1_1() throws Exception {
 		doit("eclipse_1_1");
 	}
@@ -128,6 +132,10 @@ public class ClassReferenceTest extends TestCase {
 
 	public void testEclipse_12_0() throws Exception {
 		doit("eclipse_12_0");
+	}
+
+	public void testEclipse_13_0() throws Exception {
+		doit("eclipse_13_0");
 	}
 
 	public void doit(String p) throws Exception {
