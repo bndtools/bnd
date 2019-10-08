@@ -1,5 +1,7 @@
 package test.component_extra;
 
+import static aQute.bnd.test.BndTestCase.assertOk;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,13 +20,13 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.test.BndTestCase;
+import junit.framework.TestCase;
 
 /*
  * Placed in a new package to avoid breaking lots of existing tests with the additional packages
  * we need to import.
  */
-public class DSAnnotationExtrasTest extends BndTestCase {
+public class DSAnnotationExtrasTest extends TestCase {
 
 	@Component(configurationPid = "x" // force DS 1.3
 	)

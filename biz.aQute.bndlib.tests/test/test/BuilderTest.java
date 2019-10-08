@@ -1,5 +1,6 @@
 package test;
 
+import static aQute.bnd.test.BndTestCase.assertOk;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -39,15 +40,15 @@ import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
-import aQute.bnd.test.BndTestCase;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.SortedList;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Report.Location;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class BuilderTest extends BndTestCase {
+public class BuilderTest extends TestCase {
 
 	/**
 	 * There shouldn't be "Duplicate name..." warnings with pedantic flag set to

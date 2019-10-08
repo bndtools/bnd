@@ -25,8 +25,8 @@ import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
-import aQute.bnd.test.BndTestCase;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 class T0 {}
 
@@ -37,7 +37,7 @@ class T2 extends T1 {}
 class T3 extends T2 {}
 
 @SuppressWarnings("resource")
-public class AnalyzerTest extends BndTestCase {
+public class AnalyzerTest extends TestCase {
 	static File cwd = new File(System.getProperty("user.dir"));
 
 	/**
