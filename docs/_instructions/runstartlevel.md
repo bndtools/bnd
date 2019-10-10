@@ -25,8 +25,8 @@ This instruction has the following syntax:
             'leastdependenciesfirst' 
         |   'leastdependencieslast'
         |   'random'
-        |   'sortedbyname'
-        |   'mergedsortedbyname'
+        |   'sortbynameversion'
+        |   'mergedsortbynameversion'
     begin               ::= 'begin=' NUMBER
     step                ::= 'step=' NUMBER
 
@@ -36,8 +36,8 @@ The final `-runstartlevel` flattens the properties so that the last of each of `
 
 The value of `order` can take on the following values:
 
-* `mergedsortedbyname` – Ordering by name (and version) and then merging was the original behavior. This is therefore the default.
-* `sortedbyname` – For completeness, this option orders the bundles by name and version and then assigns a startlevel.
+* `mergedsortbynameversion` – Ordering by name (and version) and then merging was the original behavior. This is therefore the default.
+* `sortbynameversion` – For completeness, this option orders the bundles by name and version and then assigns a startlevel.
 * `random` – Use a random ordering. The ordering uses an algorithm that is based on the random number generator and should therefore 
   be different on each run.
 * `leastdependenciesfirst` – Sort the resources _topologically_ and place the resources with the least dependencies first.
