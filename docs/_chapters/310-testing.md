@@ -72,7 +72,7 @@ You can find a bndtools project that shows this at [Github](https://github.com/b
 
 ## Testing With JUnit 5 - `biz.aQute.tester.junit-platform`
 
-As of 4.3, bnd includes a new tester bundle `biz.aQute.tester.junit-platform` that supports JUnit 5.
+As of 4.4, bnd includes a new tester bundle `biz.aQute.tester.junit-platform` that supports JUnit 5.
 
 As per the [JUnit 5 documentation](https://junit.org/junit5/docs/current/user-guide/#overview-what-is-junit-5), JUnit 5 is comprised of three modules:
 

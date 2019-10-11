@@ -40,6 +40,7 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
 import org.osgi.framework.SynchronousBundleListener;
 
+import aQute.lib.strings.Strings;
 import aQute.tester.bundle.engine.BundleEngine;
 import aQute.tester.bundle.engine.discovery.BundleSelector;
 import aQute.tester.junit.platform.reporting.legacy.xml.LegacyXmlReportGeneratingListener;
@@ -201,7 +202,7 @@ public class Activator implements BundleActivator, Runnable {
 		} else {
 			trace("receivednames of classes to test %s", testcases);
 			try {
-				baseSelectors = aQute.lib.strings.Strings.splitAsStream(testcases)
+				baseSelectors = Strings.splitAsStream(testcases)
 					.map(x -> {
 						if (x.contains(":")) {
 							return selectMethod(x.replace(':', '#'));
