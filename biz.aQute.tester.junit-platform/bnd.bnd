@@ -23,9 +23,6 @@ Import-Package: \
 	
 -includeresource.perm: OSGI-INF/permissions.perm;literal="(java.security.AllPermission)"
 
--includeresource: \
-	resources
-
 -conditionalpackage: aQute.lib*
 
 -maven-scope: provided

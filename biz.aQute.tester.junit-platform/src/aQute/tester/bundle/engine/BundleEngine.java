@@ -19,8 +19,11 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
+import aQute.bnd.annotation.Resolution;
+import aQute.bnd.annotation.spi.ServiceProvider;
 import aQute.tester.bundle.engine.discovery.BundleSelectorResolver;
 
+@ServiceProvider(value = TestEngine.class, resolution = Resolution.OPTIONAL)
 public class BundleEngine implements TestEngine {
 
 	public static final String				CHECK_UNRESOLVED	= "aQute.bnd.junit.bundle.engine.checkUnresolved";
