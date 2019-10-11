@@ -77,6 +77,7 @@ Import-Package: \
     org.eclipse.jdt.debug,\
     org.eclipse.jdt.debug.ui,\
     org.eclipse.jdt.junit,\
+    org.eclipse.jdt.junit.core,\
     org.eclipse.equinox.preferences,\
     org.eclipse.help.base,\
     org.eclipse.ltk.core.refactoring,\

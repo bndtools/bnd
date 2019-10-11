@@ -1,0 +1,7 @@
+-include: runtests-shared.bndrun
+
+-runbundles: \
+	${runbundles.basetests},\
+	org.eclipse.core.filesystem,\
+	${runbundles.tester}
+	

@@ -1,0 +1,53 @@
+Test-Cases: ${classes;CONCRETE;PUBLIC;NAMED;*Test}
+
+-buildpath: \
+	my.bundle.of.test3;version=snapshot,\
+	org.apache.servicemix.bundles.junit,\
+	org.junit.jupiter.api,\
+	org.opentest4j
+	
+-testpath: \
+	org.junit.jupiter.engine,\
+	org.junit.vintage.engine,\
+	org.apiguardian;version='[1.0.0,1.0.1)',\
+	org.junit.jupiter.api;version='[5.0.0,5.0.1)',\
+	org.junit.platform.commons;version='[1.0.0,1.0.1)',\
+	org.opentest4j;version='[1.0.0,1.0.1)',\
+	org.junit.platform.engine;version='[1.0.0,1.0.1)',\
+	org.junit.platform.launcher
+	
+-runfw: org.eclipse.osgi;version='[3.12.100.v20180210-1608,3.12.100.v20180210-1608]'
+-runee: JavaSE-1.8
+
+Fragment-Host: my.bundle.of.test3
+
+-runrequires: \
+	bnd.identity;id='test',\
+	bnd.identity;id='biz.aQute.tester',\
+	bnd.identity;id='biz.aQute.junit.jupiter.engine',\
+	bnd.identity;id='biz.aQute.junit.vintage.engine',\
+	bnd.identity;id='biz.aQute.junit.platform.launcher',\
+	osgi.identity;filter:='(&(osgi.identity=biz.aQute.junit.platform.reporting)(version>=4.3.0))',\
+	bnd.identity;id='org.eclipse.equinox.console'
+-runbundles: \
+	org.apache.servicemix.bundles.junit;version='[4.12.0,4.12.1)',\
+	org.junit.jupiter.engine;version='[5,6)',\
+	org.junit.vintage.engine;version='[4,5)',\
+	test;version=snapshot,\
+	org.apiguardian;version='[1.0.0,1.0.1)',\
+	org.junit.jupiter.api;version='[5.0.0,5.0.1)',\
+	org.junit.platform.commons;version='[1.0.0,1.0.1)',\
+	org.opentest4j;version='[1.0.0,1.0.1)',\
+	org.junit.platform.engine;version='[1.0.0,1.0.1)',\
+	org.junit.platform.launcher;version=snapshot,\
+	biz.aQute.junit.platform.reporting;version=snapshot,\
+	biz.aQute.tester;version=snapshot,\
+	org.apache.felix.gogo.runtime;version='[1.1.0,1.1.1)',\
+	org.apache.felix.gogo.shell;version='[1.1.0,1.1.1)',\
+	org.eclipse.equinox.console;version='[1.1.300,1.1.301)'
+	
+-runproperties: launcher.trace=true,\
+	osgi.console=,\
+    osgi.console.enable.builtin=false,\
+	tester.continuous=true,\
+	tester.trace=true

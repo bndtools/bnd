@@ -25,6 +25,9 @@
             biz.aQute.remote, \
             biz.aQute.repository, \
             biz.aQute.resolve, \
+            biz.aQute.tester, \
+            biz.aQute.tester.junit-platform, \
+            biz.aQute.tester.test, \
             bndtools.api, \
             bndtools.builder, \
             bndtools.core, \
