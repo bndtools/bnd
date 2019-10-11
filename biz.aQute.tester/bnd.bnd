@@ -22,9 +22,6 @@ Import-Package: \
 	aQute.junit.*
 -includeresource.perm: OSGI-INF/permissions.perm;literal="(java.security.AllPermission)"
 
-Tester-Plugin: \
-	aQute.tester.plugin.ProjectTesterImpl
-
 -conditionalpackage: aQute.lib*
 
 -maven-scope: provided

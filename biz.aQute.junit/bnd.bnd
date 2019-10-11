@@ -11,8 +11,6 @@
     org.apache.servicemix.bundles.junit;version=latest,\
     org.assertj.core;version=latest
 
-Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
-
 -includepackage: \
 	aQute.junit.*, \
 	org.assertj.core.*

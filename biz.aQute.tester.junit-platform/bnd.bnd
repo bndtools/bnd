@@ -26,9 +26,6 @@ Import-Package: \
 -includeresource: \
 	resources
 
-Tester-Plugin: \
-	aQute.tester.junit.platform.plugin.ProjectTesterImpl
-
 -conditionalpackage: aQute.lib*
 
 -maven-scope: provided
