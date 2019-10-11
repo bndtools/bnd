@@ -35,6 +35,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 
+import aQute.lib.strings.Strings;
 import aQute.tester.bundle.engine.BundleDescriptor;
 import aQute.tester.bundle.engine.BundleEngine;
 import aQute.tester.bundle.engine.StaticFailureDescriptor;
@@ -306,7 +307,7 @@ public class BundleSelectorResolver {
 	}
 
 	private static Stream<String> testCases(Bundle bundle) {
-		return aQute.lib.strings.Strings.splitAsStream(bundle.getHeaders()
+		return Strings.splitAsStream(bundle.getHeaders()
 			.get(aQute.bnd.osgi.Constants.TESTCASES));
 	}
 

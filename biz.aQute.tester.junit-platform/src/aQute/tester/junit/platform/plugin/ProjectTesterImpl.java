@@ -11,6 +11,8 @@ import static aQute.junit.constants.TesterConstants.TESTER_UNRESOLVED;
 
 import java.util.Collection;
 
+import org.osgi.annotation.bundle.Header;
+
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
@@ -19,6 +21,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.EclipseJUnitTester;
 
+@Header(name = Constants.TESTER_PLUGIN, value = "${@class}")
 public class ProjectTesterImpl extends ProjectTester implements EclipseJUnitTester {
 	int					port		= -1;
 	int					controlPort	= -1;

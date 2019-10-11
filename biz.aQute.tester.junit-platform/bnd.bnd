@@ -19,23 +19,16 @@ Import-Package: \
 	org.junit;version='[4,5)';resolution:=optional,\
 	*
 
-Bundle-Activator: aQute.tester.junit.platform.Activator
-
 -includepackage: aQute.tester.*
 	
 -includeresource.perm: OSGI-INF/permissions.perm;literal="(java.security.AllPermission)"
-
--includeresource: \
-	resources
-
-Tester-Plugin: \
-	aQute.tester.junit.platform.plugin.ProjectTesterImpl
 
 -conditionalpackage: aQute.lib*
 
 -maven-scope: provided
 
 -buildpath: \
+	osgi.annotation;version=latest,\
 	aQute.libg;version=project,\
 	osgi.core;version=latest,\
 	biz.aQute.bndlib;version=snapshot,\

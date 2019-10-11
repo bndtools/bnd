@@ -1,0 +1,8 @@
+tasks.named('test') {
+  def cnf = parent.project('cnf')
+  // Depend upon output dir to avoid parallel test execution
+  // This effectively claims the resource and prevents
+  // other test tasks claiming the same resource from
+  // executing concurrently with this test task.
+  outputs.dir file("${cnf.buildDir}/resource/launchpad")
+}

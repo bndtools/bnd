@@ -33,6 +33,7 @@ import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.LoggingListener;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
+import org.osgi.annotation.bundle.Header;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -40,11 +41,13 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
 import org.osgi.framework.SynchronousBundleListener;
 
+import aQute.lib.strings.Strings;
 import aQute.tester.bundle.engine.BundleEngine;
 import aQute.tester.bundle.engine.discovery.BundleSelector;
 import aQute.tester.junit.platform.reporting.legacy.xml.LegacyXmlReportGeneratingListener;
 import aQute.tester.junit.platform.utils.BundleUtils;
 
+@Header(name = Constants.BUNDLE_ACTIVATOR, value = "${@class}")
 public class Activator implements BundleActivator, Runnable {
 	String								unresolved;
 	Launcher							launcher;
@@ -201,7 +204,7 @@ public class Activator implements BundleActivator, Runnable {
 		} else {
 			trace("receivednames of classes to test %s", testcases);
 			try {
-				baseSelectors = aQute.lib.strings.Strings.splitAsStream(testcases)
+				baseSelectors = Strings.splitAsStream(testcases)
 					.map(x -> {
 						if (x.contains(":")) {
 							return selectMethod(x.replace(':', '#'));
