@@ -4,6 +4,7 @@
 -maven-scope: provided
 
 -buildpath: \
+	osgi.annotation;version=latest,\
 	osgi.core;version=latest,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
@@ -51,8 +52,7 @@ DynamicImport-Package: \
 	org.junit.platform.*,\
 	javax.annotation.*
 
-Bundle-Activator: aQute.junit.Activator
-Embedded-Activator: aQute.junit.Activator
+Embedded-Activator: ${Bundle-Activator}
 Bundle-Release: Use main thread for testing, optionally allowing old separate thread model
 
 -baseline: *

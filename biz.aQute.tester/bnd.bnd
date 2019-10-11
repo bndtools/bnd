@@ -16,9 +16,6 @@ Import-Package: \
 	junit.*;version="[3.8,5)",\
 	*
 
-Bundle-Activator: \
-	aQute.junit.Activator
-
 -includepackage: \
 	aQute.tester.plugin, \
 	!aQute.junit.plugin, \
@@ -33,6 +30,7 @@ Tester-Plugin: \
 -maven-scope: provided
 
 -buildpath: \
+	osgi.annotation;version=latest,\
 	osgi.core;version=latest,\
 	biz.aQute.junit;version=latest;packages=aQute.junit.*,\
 	biz.aQute.bndlib;version=latest

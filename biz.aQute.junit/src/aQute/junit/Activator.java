@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.NoTestsRemainException;
+import org.osgi.annotation.bundle.Header;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -40,6 +41,7 @@ import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
+@Header(name = Constants.BUNDLE_ACTIVATOR, value = "${@class}")
 public class Activator implements BundleActivator, TesterConstants, Runnable {
 	BundleContext		context;
 	volatile boolean	active;
