@@ -18,6 +18,8 @@ collections:
   instructions:
     output: true
 
+baseurl: /releases/3.5.0
+
 defaults:
   -
     scope:
