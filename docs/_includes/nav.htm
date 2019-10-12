@@ -1,13 +1,13 @@
 
 <ul class="container12 menu-bar">
-	<li span=8><a class=menu-link href="{{ site.github.url }}/"><img
-			class=menu-logo src='{{ site.github.url }}/img/bnd-80x40-white.png'></a>
-			<a href="{{ site.github.url }}/chapters/110-introduction.html">Intro
-			</a><a href="{{ site.github.url }}/chapters/800-headers.html">Headers
-			</a><a href="{{ site.github.url }}/chapters/825-instructions-ref.html">Instructions
-			</a><a href="{{ site.github.url }}/chapters/855-macros-ref.html">Macros</a>
-			</a><a href="{{ site.github.url }}/chapters/400-commands.html">Commands</a>
-			
+	<li span=8><a class=menu-link href="{{ '/' | prepend:site.baseurl }}"><img
+			class=menu-logo src="{{ '/img/bnd-80x40-white.png' | prepend:site.baseurl }}"></a>
+			<a href="{{ '/chapters/110-introduction.html' | prepend:site.baseurl }}">Intro
+			</a><a href="{{ '/chapters/800-headers.html' | prepend:site.baseurl }}">Headers
+			</a><a href="{{ '/chapters/825-instructions-ref.html' | prepend:site.baseurl }}">Instructions
+			</a><a href="{{ '/chapters/855-macros-ref.html' | prepend:site.baseurl }}">Macros</a>
+			</a><a href="{{ '/chapters/400-commands.html' | prepend:site.baseurl }}">Commands</a>
+
 	<li class=menu-link span=4>
 			{% include github.htm %}
 </ul>

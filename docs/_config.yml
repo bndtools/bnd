@@ -19,6 +19,13 @@ collections:
   instructions:
     output: true
 
+## The release name. Must be equal to the version or `master`.
+releasename: master
+
+## Uncomment and set this property when generating release docs.
+## Make sure to leave this unset in the `master` branch.
+#baseurl: /releases/<releasename>
+
 defaults:
   -
     scope:
@@ -27,6 +34,7 @@ defaults:
       layout: default
 
 exclude:
+  - 'ADDING_RELEASE_DOCS.md'
   - 'Gemfile'
   - 'Gemfile.lock'
   - 'README.md'
@@ -36,5 +44,7 @@ exclude:
   - '.project'
   - 'build.sh'
   - '/examples'
+  - '/releases/*/CNAME'
+  - '/releases/*/favicon.ico'
   - '/vendor'
   - '/.settings'
