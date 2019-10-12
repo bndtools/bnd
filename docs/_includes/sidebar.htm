@@ -3,7 +3,7 @@
 		{% if chapter.title == page.title %}
 			<li class=selected>{{chapter.title}}
 	  	{% else %}
-			<li><a href="{{ chapter.url | prepend: site.github.url }}">{{chapter.title}}</a>
+			<li><a href="{{ chapter.url | prepend: site.baseurl }}">{{chapter.title}}</a>
 	  	{% endif %}
   	{% endfor %}
 </ul>
