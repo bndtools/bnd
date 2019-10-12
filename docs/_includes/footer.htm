@@ -1,12 +1,12 @@
 
 <nav class=next-prev>
-	<a href='{{ page.previous.url | prepend: site.github.url }}'></a> <a href='{{ page.next.url | prepend: site.github.url }}'></a>
+	<a href='{{ page.previous.url | prepend: site.baseurl }}'></a> <a href='{{ page.next.url | prepend: site.baseurl }}'></a>
 </nav>
 <footer class="container12" style="border-top: 1px solid black;padding:10px 0">
 	<ul span=12 row>
 		<li span=12>
 			<ul>
-				<li><a href="{{ site.github.url }}/">GitHub</a>
+				<li><a href="{{ site.baseurl }}/">GitHub</a>
 			</ul>
 	</ul>
 </footer>

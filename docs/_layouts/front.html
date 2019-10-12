@@ -8,7 +8,7 @@
 	{% include nav.htm %}
 
 	<div class=container12>
-		<img span=12 src="{{ site.github.url }}/img/front-page.png">
+		<img span=12 src="{{ site.baseurl }}/img/front-page.png">
 	</div>
 
 	<ul class=container12>
@@ -49,7 +49,7 @@
 			<ol>
 				{% for chapter in site.chapters %}
 				<li>
-				<a href="{{ chapter.url | prepend: site.github.url }}">{{chapter.title}}</a> {% endfor %}
+				<a href="{{ chapter.url | prepend: site.baseurl }}">{{chapter.title}}</a> {% endfor %}
 			</ol>
 	</ul>
 
