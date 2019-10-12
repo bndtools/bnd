@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/4.2.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>-fixupmessages SELECTOR ( ‘;’ ( is replace restrict ) )* …</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="-fixupmessages SELECTOR ( ‘;’ ( is replace restrict ) )* …" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="The -fixupmessages instruction is intended to fixup the errors and warnings. It allows you to remove errors and/or warnings, turn errors into warnings, and turn warnings into errors. With this instruction you can fail a build based on a warning or succeed a build that runs into errors." />
+<meta property="og:description" content="The -fixupmessages instruction is intended to fixup the errors and warnings. It allows you to remove errors and/or warnings, turn errors into warnings, and turn warnings into errors. With this instruction you can fail a build based on a warning or succeed a build that runs into errors." />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-10-12T19:48:23-04:00" />
+<script type="application/ld+json">
+{"headline":"-fixupmessages SELECTOR ( ‘;’ ( is replace restrict ) )* …","dateModified":"2019-10-12T19:48:23-04:00","datePublished":"2019-10-12T19:48:23-04:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"/releases/4.2.0/instructions/fixupmessages.html"},"url":"/releases/4.2.0/instructions/fixupmessages.html","description":"The -fixupmessages instruction is intended to fixup the errors and warnings. It allows you to remove errors and/or warnings, turn errors into warnings, and turn warnings into errors. With this instruction you can fail a build based on a warning or succeed a build that runs into errors.","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/4.2.0/"><img
+			class=menu-logo src='/releases/4.2.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/4.2.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/4.2.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/4.2.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/4.2.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/4.2.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">4.2.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/4.2.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/150-build.html">Build</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/160-jars.html">Generating JARs</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/220-contracts.html">Contracts</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/230-manifest-annotations.html">Manifest Annotations</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/300-launching.html">Launching</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/305-Junit-Testing-OSGi.html">Plain JUnit Testing with OSGi (PRELIMENARY)</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/400-commands.html">Commands</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/800-headers.html">Headers</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/820-instructions.html">Instruction Reference</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/850-macros.html">Macro Reference</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/855-macros-ref.html">Macro Index</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/870-plugins.html">Plugins</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> -fixupmessages SELECTOR ( ';' ( is | replace | restrict ) )* ...</h1>
+				<p>The <code class="highlighter-rouge">-fixupmessages</code> instruction is intended to <em>fixup</em> the errors and warnings. It allows you to remove errors and/or warnings, turn errors into warnings, and turn warnings into errors. With this instruction you can fail a build based on a warning or succeed a build that runs into errors.</p>
+
+<p>The default of this instruction is to list a number of patterns. Any error or warning that matches this pattern is then removed. The following example will remove any  error/warning that matches <code class="highlighter-rouge">'some error'</code>, <code class="highlighter-rouge">'another error'</code>, or <code class="highlighter-rouge">'and yet another error'</code>.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-fixupmessages:  \
+	some error,
+	another error,
+	and yet another error
+</code></pre></div></div>
+
+<p>The pattern is a <a href="https://bnd.bndtools.org/chapters/820-instructions.html#selector">SELECTOR</a>, which makes it possible to do case insensitive matches, wildcards, literals, etc.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<p>The basic format of <code class="highlighter-rouge">-fixupmessages</code> is:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-fixupmessages ::= fixup ( ',' fixup ) *
+fixup          ::= SELECTOR directive *
+directive      ::= ';' ( restrict | is | replace )
+restrict       ::= 'restrict:=' ( 'error' | 'warning' )
+is             ::= 'is:=' ( 'ignore' | 'error' | 'warning' )
+replace        ::= 'replace:=' &lt;&lt;text&gt;&gt;
+</code></pre></div></div>
+
+<p>The value of a fixup clause is a globbing expression.</p>
+
+<h2 id="directives">Directives</h2>
+
+<p>The following directives are supported:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">restrict:</code> – By default, the fixup clause is applied to all errors and warnings. You can restrict its application to either errors or warnings specifying either <code class="highlighter-rouge">restrict:=error</code> or <code class="highlighter-rouge">restrict:=warning</code>.</li>
+  <li><code class="highlighter-rouge">is:</code> – By default an error remains an error and a warning remains a warning. However, if you specify the <code class="highlighter-rouge">is:</code> directive you can force an error to become a warning or vice versa. This can be very useful if you build fails with an error that you do not consider a failure.</li>
+  <li><code class="highlighter-rouge">replace:</code> – Replace the message with a new message. The replacement will be processed by the macro processor, the <code class="highlighter-rouge">${@}</code> macro will contain the current message.</li>
+</ul>
+
+<p>The <code class="highlighter-rouge">-fixupmessages</code> instruction is a <em>merged property</em>. This means that you can define it in many different places like for example in a file in <code class="highlighter-rouge">cnf/ext</code>. Just put an extension on the instruction. For example:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-fixupmessages.one: 'Some error'
+-fixupmessages.two: 'Another error'
+</code></pre></div></div>
+
+<h2 id="examples">Examples</h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Turn an error into a warning
+-fixupmessages
+  "Invalid character'; \
+    restrict:=error;
+    is:=warning
+
+# Replace a message
+-fixupmessages \
+  "split";replace:=broken
+
+# Ignore case by appending :i
+-fixupmessages \
+  "case insensitive:i"
+
+# Wildcards
+-fixupmessages \
+  "prefix*suffix"
+
+# Turn properties parser messages into warnings
+-fixupmessages.parser: \
+  "Invalid character in properties"; \
+  "No value specified for key"; \
+  "Invalid property key"; \
+  "Invalid unicode string"; \
+  "Found \\&lt;whitespace&gt;";
+    is:=warning
+</code></pre></div></div>
+
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/4.2.0/instructions/failok.html'></a> <a href='/releases/4.2.0/instructions/include.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/4.2.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>
