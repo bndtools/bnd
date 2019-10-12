@@ -1,0 +1,13 @@
+---
+layout: json
+---
+[
+  {
+    "url": "/",
+    "name": "master"
+  }{% assign sorted = site.static_files | sort: "path" | reverse %}{% for entry in sorted %}{% if entry.path contains 'releases/' %}{% assign entrypath = entry.path | split: "/" %}{% if entrypath.size == 4 and entrypath[3] == "index.html" %}
+  ,{
+    "url": "/{{ entrypath[1] }}/{{ entrypath[2] }}",
+    "name": "{{ entrypath[2] }}"
+  }{% endif %}{% endif %}{% endfor %}
+]
