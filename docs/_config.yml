@@ -19,6 +19,8 @@ collections:
   instructions:
     output: true
 
+baseurl: /releases/4.1.0
+
 defaults:
   -
     scope:
