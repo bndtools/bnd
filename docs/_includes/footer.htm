@@ -1,20 +1,20 @@
 
 <nav class=next-prev>
-	<a href='{{ page.previous.url | prepend: site.github.url }}'></a> <a href='{{ page.next.url | prepend: site.github.url }}'></a>
+	<a href='{{ page.previous.url | prepend: site.baseurl }}'></a> <a href='{{ page.next.url | prepend: site.baseurl }}'></a>
 </nav>
 <footer class="container12" style="border-top: 1px solid black;padding:10px 0">
 	<ul span=12 row>
 		<li span=3>
 			<ul>
-				<li><a href="{{ site.github.url }}/contact.html">Contact</a>
+				<li><a href="{{ site.baseurl }}/contact.html">Contact</a>
 			</ul>
 		<li span=3>
 			<ul>
-				<li><a href="{{ site.github.url }}/">Developers</a>
+				<li><a href="{{ site.baseurl }}/">Developers</a>
 			</ul>
 		<li span=3>
 			<ul>
-				<li><a href="{{ site.github.url }}/">More</a>
+				<li><a href="{{ site.baseurl }}/">More</a>
 			</ul>
 	</ul>
 </footer>
