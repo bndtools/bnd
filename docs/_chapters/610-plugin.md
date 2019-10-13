@@ -20,7 +20,7 @@ bnd current supports the following plugin types:
 		<th>Plugin Name</th>
 		<th>Summary</th>
 	</tr>
-{% for plugin in site.plugins %}<tr><td><a href="{{ plugin.url | prepend: site.github.url }}">{{plugin.title}}</a></td><td>{{plugin.summary}}</td></tr>
+{% for plugin in site.plugins %}<tr><td><a href="{{ plugin.url | prepend: site.baseurl }}">{{plugin.title}}</a></td><td>{{plugin.summary}}</td></tr>
 {% endfor %}
 </table>
 
