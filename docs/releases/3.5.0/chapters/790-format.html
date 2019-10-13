@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/3.5.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>File Format</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="File Format" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Instructions" />
+<meta property="og:description" content="Instructions" />
+<script type="application/ld+json">
+{"@type":"WebPage","url":"/releases/3.5.0/chapters/790-format.html","headline":"File Format","description":"Instructions","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<style>
+			 body {
+				counter-reset: h1 25;
+			}
+		</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/3.5.0/"><img
+			class=menu-logo src='/releases/3.5.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/3.5.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/3.5.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/3.5.0/chapters/820-instructions.html">Instructions
+			</a><a href="/releases/3.5.0/chapters/850-macros.html">Macros
+			</a><div class="releases"><button class="dropbtn">3.5.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/3.5.0/chapters/100-release.html">Release</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/150-build.html">Build</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/160-jars.html">Generating JARs</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/220-contracts.html">Contracts</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/230-manifest-annotations.html">Manifest Annotations</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/300-launching.html">Launching</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/400-commandline.html">From the command line</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/610-plugin.html">Plugins</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li class=selected>File Format
+
+
+
+			<li><a href="/releases/3.5.0/chapters/800-headers.html">Header Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/820-instructions.html">Instruction</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/850-macros.html">Macro Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/860-commands.html">Command Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/870-plugins.html">Plugins Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			<div class=enroute><a href="http://enroute.osgi.org">Supported by OSGi enRoute <img src="/releases/3.5.0/img/EnRouteIcon_CMYK.png"></a></div>
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> File Format</h1>
+				<h1 id="instructions">Instructions</h1>
+
+<p>The bnd format is very similar to the manifest. Though it is read with the Properties class, you can actually use the ‘:’ as separator to make it look more like a manifest file. The only thing you should be aware of is that the line continuation method of the Manifest (a space as the first character on the line) is not supported. Line continuations are indicated with the backslash (‘' \u005C) as the last character of the line. Lines may have any length.</p>
+
+<p>The most common mistake is missing the escape. The following does not what people expect it to do:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Header: abc=def,
+  gih=jkl
+</code></pre></div></div>
+
+<p>This is actually defining 2 headers. You can fold lines by escaping the newline:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Header: abc=def, \\
+  gih=jkl
+</code></pre></div></div>
+
+<p>You can add comments with a # on the first character of the line:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># This is a comment
+</code></pre></div></div>
+
+<p>White spaces around the key and value are trimmed.</p>
+
+<p>See [  Properties][http://java.sun.com/j2se/1.4.2/docs/api/java/util/Properties.html ] for more information about the format.</p>
+
+<h2 id="types-of-instructions">Types of Instructions</h2>
+<p>There are different instructions in the properties file:</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>!Type</td>
+      <td> </td>
+      <td>!Example</td>
+      <td> </td>
+      <td>!Description</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>Manifest headers</td>
+      <td> </td>
+      <td>Bundle-Description: …</td>
+      <td> </td>
+      <td>When the first character is a upper case character. These headers are copied to the manifest or augmented by bnd.</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>Variables</td>
+      <td> </td>
+      <td>version=3.0</td>
+      <td> </td>
+      <td>Variables are lower case headers. Headers can contain references to other headers using macro expansion. Variables are not copied to the manifest. See [Macros][#macros]</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>Directives</td>
+      <td> </td>
+      <td>-include: deflts.bnd</td>
+      <td> </td>
+      <td>Directives start with a ‘-‘ sign. A directive is an instruction to bnd to do something special. See [Directives][#directives]</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="parameters">Parameters</h2>
+
+<h2 id="basic-types">Basic Types</h2>
+<p>||[[#list]][[#LIST]]LIST||A comma separated list. Items should be quoted with ‘”’ if the contain commas. In general, a list item can also define attributes and directives on an item.||
+||[[#pattern]][[#PATTERN]]PATTERN||A pattern matches some entity: a package, a directory, etc. Patterns are based on Java regular expressions but are preprocessed before compiled. Any dots (‘.’) are replaced with . to make them match the input and not act as the ‘any character’ operator. Any ‘?’ or ‘<em>’ is prefixed with a dot to make it match any character. As an extra convenience, if the string ends with ..</em>, an additional pattern is added to match the complete string with out the ..<em>. The effect is that something like com.acme.</em> matches com.acme and all its sub packages. It is also to negate a pattern by prefixing it with an exclamation mark (‘!’). For example:<br />
+   <code class="highlighter-rouge">Import-Package: !com.sun.*, *</code> <br />
+indicates that any imports to com.sun should not be imported.||
+||[[#regex]]REGEX||A regular expressions||</p>
+
+<h2 id="selectors">Selectors</h2>
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/3.5.0/chapters/700-tools.html'></a> <a href='/releases/3.5.0/chapters/800-headers.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/3.5.0/contact.html">Contact</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/3.5.0/">Developers</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/3.5.0/">More</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

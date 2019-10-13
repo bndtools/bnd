@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/3.5.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>From the command line</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="From the command line" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="MAIN OPTIONS" />
+<meta property="og:description" content="MAIN OPTIONS" />
+<script type="application/ld+json">
+{"@type":"WebPage","url":"/releases/3.5.0/chapters/400-commandline.html","headline":"From the command line","description":"MAIN OPTIONS","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<style>
+			 body {
+				counter-reset: h1 21;
+			}
+		</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/3.5.0/"><img
+			class=menu-logo src='/releases/3.5.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/3.5.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/3.5.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/3.5.0/chapters/820-instructions.html">Instructions
+			</a><a href="/releases/3.5.0/chapters/850-macros.html">Macros
+			</a><div class="releases"><button class="dropbtn">3.5.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/3.5.0/chapters/100-release.html">Release</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/150-build.html">Build</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/160-jars.html">Generating JARs</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/220-contracts.html">Contracts</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/230-manifest-annotations.html">Manifest Annotations</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/300-launching.html">Launching</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li class=selected>From the command line
+
+
+
+			<li><a href="/releases/3.5.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/610-plugin.html">Plugins</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/790-format.html">File Format</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/800-headers.html">Header Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/820-instructions.html">Instruction</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/850-macros.html">Macro Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/860-commands.html">Command Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/870-plugins.html">Plugins Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			<div class=enroute><a href="http://enroute.osgi.org">Supported by OSGi enRoute <img src="/releases/3.5.0/img/EnRouteIcon_CMYK.png"></a></div>
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> From the command line</h1>
+				<p>MAIN OPTIONS</p>
+
+<p>[ -o, –output <string> ]  - Specify the output file path. The default is
+                                output.jar in the current directory</string></p>
+
+<p>MAIN OPTIONS</p>
+
+<p>[ -f, –full ]             - Do full
+   [ -p, –project <string> ] - Identify another project
+   [ -t, --test ]             - Build for test</string></p>
+
+<p>Available sub-commands:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="n">action</span>                      <span class="p">-</span> <span class="n">Execute</span> <span class="n">an</span> <span class="n">action</span> <span class="n">on</span> <span class="n">a</span> <span class="n">repo</span><span class="p">,</span> <span class="k">or</span> <span class="k">if</span> <span class="n">no</span> <span class="n">name</span> <span class="n">is</span>
+                                <span class="n">give</span><span class="p">,</span> <span class="k">list</span> <span class="n">the</span> <span class="n">actions</span>
+  <span class="n">baseline</span>                    <span class="p">-</span> <span class="n">Compare</span> <span class="n">a</span> <span class="n">newer</span> <span class="n">bundle</span> <span class="k">to</span> <span class="n">a</span> <span class="n">baselined</span> <span class="n">bundle</span> <span class="k">and</span>
+                                <span class="n">provide</span> <span class="n">versioning</span> <span class="n">advice</span>
+  <span class="n">bnd</span>                         <span class="p">-</span> <span class="n">The</span> <span class="n">swiss</span> <span class="n">army</span> <span class="n">tool</span> <span class="n">for</span> <span class="n">OSGi</span>
+  <span class="n">bootstrap</span>                   <span class="p">-</span>
+  <span class="n">bsn2url</span>                     <span class="p">-</span>
+  <span class="n">build</span>                       <span class="p">-</span> <span class="n">Build</span> <span class="n">a</span> <span class="n">project</span><span class="p">.</span> <span class="n">This</span> <span class="n">will</span> <span class="nb">create</span> <span class="n">the</span> <span class="n">jars</span>
+                                <span class="n">defined</span> <span class="k">in</span> <span class="n">the</span> <span class="n">bnd</span><span class="p">.</span><span class="n">bnd</span> <span class="k">and</span> <span class="n">sub</span><span class="p">-</span><span class="n">builders</span><span class="p">.</span>
+  <span class="n">buildx</span>                      <span class="p">-</span> <span class="n">Build</span> <span class="n">project</span><span class="p">,</span> <span class="n">is</span> <span class="n">deprecated</span> <span class="n">but</span> <span class="n">here</span> <span class="n">for</span>
+                                <span class="n">backward</span> <span class="n">compatibility</span>
+  <span class="n">bump</span>                        <span class="p">-</span> <span class="n">Bumps</span> <span class="n">the</span> <span class="k">version</span> <span class="k">of</span> <span class="n">a</span> <span class="n">project</span>
+  <span class="n">changes</span>                     <span class="p">-</span>
+  <span class="n">clean</span>                       <span class="p">-</span> <span class="n">Clean</span> <span class="n">a</span> <span class="n">project</span>
+  <span class="n">convert</span>                     <span class="p">-</span> <span class="n">Converter</span> <span class="k">to</span> <span class="n">different</span> <span class="n">formats</span>
+  <span class="nb">create</span>                      <span class="p">-</span> <span class="n">Create</span> <span class="n">jar</span><span class="p">,</span> <span class="n">used</span> <span class="k">to</span> <span class="n">support</span> <span class="n">backward</span> <span class="n">compatible</span>
+                                <span class="n">java</span> <span class="n">jar</span> <span class="n">commands</span>
+  <span class="n">debug</span>                       <span class="p">-</span> <span class="n">Show</span> <span class="n">a</span> <span class="n">lot</span> <span class="k">of</span> <span class="n">info</span> <span class="n">about</span> <span class="n">the</span> <span class="n">project</span> <span class="n">you</span><span class="s1">'re in
+  defaults                    -
+  deliverables                - Show all deliverables from this workspace. with
+                                their current version and path.
+  diff                        - Diff jars
+  digest                      - Digests a number of files
+  do                          - Execute a file based on its extension. Supported
+                                extensions are: bnd (build), bndrun (run), and
+                                jar (print)
+  eclipse                     - Show info about the current directory'</span><span class="n">s</span> <span class="n">eclipse</span>
+                                <span class="n">project</span>
+  <span class="n">ees</span>                         <span class="p">-</span>
+  <span class="n">enroute</span>                     <span class="p">-</span> <span class="n">OSGi</span> <span class="n">enRoute</span> <span class="n">commands</span> <span class="k">to</span> <span class="n">maintain</span> <span class="n">bnd</span> <span class="n">workspaces</span>
+                                <span class="p">(</span><span class="nb">create</span> <span class="n">workspace</span><span class="p">,</span> <span class="n">add</span> <span class="n">project</span><span class="p">,</span> <span class="n">etc</span><span class="p">)</span>
+  <span class="n">extract</span>                     <span class="p">-</span> <span class="n">Extract</span> <span class="n">files</span> <span class="k">from</span> <span class="n">a</span> <span class="n">JAR</span> <span class="n">file</span><span class="p">,</span> <span class="n">equivalent</span> <span class="n">jar</span>
+                                <span class="nf">command</span> <span class="n">x</span><span class="p">[</span><span class="n">vf</span><span class="p">]</span> <span class="p">(</span><span class="n">syntax</span> <span class="n">supported</span><span class="p">)</span>
+  <span class="n">find</span>                        <span class="p">-</span>
+  <span class="n">generate</span>                    <span class="p">-</span> <span class="n">Generate</span> <span class="n">autocompletion</span> <span class="n">file</span> <span class="n">for</span> <span class="n">bash</span>
+  <span class="n">grep</span>                        <span class="p">-</span> <span class="n">Grep</span> <span class="n">the</span> <span class="n">manifest</span> <span class="k">of</span> <span class="n">bundles</span><span class="p">/</span><span class="n">jar</span> <span class="n">files</span><span class="p">.</span>
+  <span class="n">identity</span>                    <span class="p">-</span>
+  <span class="n">info</span>                        <span class="p">-</span> <span class="n">Show</span> <span class="n">key</span> <span class="n">project</span> <span class="n">variables</span>
+  <span class="n">junit</span>                       <span class="p">-</span> <span class="n">Test</span> <span class="n">a</span> <span class="n">project</span> <span class="k">with</span> <span class="n">plain</span> <span class="n">JUnit</span>
+  <span class="n">macro</span>                       <span class="p">-</span> <span class="n">Show</span> <span class="n">macro</span> <span class="n">value</span>
+  <span class="n">maven</span>                       <span class="p">-</span> <span class="n">Maven</span> <span class="n">bundle</span> <span class="nf">command</span>
+  <span class="k">package</span>                     <span class="p">-</span> <span class="k">Package</span> <span class="n">a</span> <span class="n">bnd</span> <span class="k">or</span> <span class="n">bndrun</span> <span class="n">file</span> <span class="n">into</span> <span class="n">a</span> <span class="n">single</span> <span class="n">jar</span>
+                                <span class="n">that</span> <span class="n">executes</span> <span class="k">with</span> <span class="n">java</span> <span class="p">-</span><span class="n">jar</span> <span class="p">&lt;&gt;.</span><span class="n">jar</span>
+  <span class="n">plugins</span>                     <span class="p">-</span>
+  <span class="n">print</span>                       <span class="p">-</span> <span class="n">Printout</span> <span class="n">the</span> <span class="n">JAR</span>
+  <span class="n">project</span>                     <span class="p">-</span> <span class="n">Execute</span> <span class="n">a</span> <span class="n">Project</span> <span class="n">action</span><span class="p">,</span> <span class="k">or</span> <span class="k">if</span> <span class="n">no</span> <span class="n">parms</span> <span class="n">given</span><span class="p">,</span>
+                                <span class="n">show</span> <span class="n">information</span> <span class="n">about</span> <span class="n">the</span> <span class="n">project</span>
+  <span class="n">release</span>                     <span class="p">-</span> <span class="n">Release</span> <span class="n">this</span> <span class="n">project</span>
+  <span class="n">repo</span>                        <span class="p">-</span> <span class="n">Manage</span> <span class="n">the</span> <span class="n">repositories</span>
+  <span class="nf">run</span>                         <span class="p">-</span> <span class="nf">Run</span> <span class="n">a</span> <span class="n">project</span> <span class="k">in</span> <span class="n">the</span> <span class="n">OSGi</span> <span class="n">launcher</span>
+  <span class="n">runtests</span>                    <span class="p">-</span> <span class="nf">Run</span> <span class="n">OSGi</span> <span class="n">tests</span> <span class="k">and</span> <span class="nb">create</span> <span class="n">report</span>
+  <span class="n">schema</span>                      <span class="p">-</span> <span class="n">Highly</span> <span class="n">specialized</span> <span class="k">function</span> <span class="k">to</span> <span class="nb">create</span> <span class="n">an</span>
+                                <span class="n">overview</span> <span class="k">of</span> <span class="k">package</span> <span class="n">deltas</span> <span class="k">in</span> <span class="n">ees</span>
+  <span class="n">select</span>                      <span class="p">-</span> <span class="n">Helps</span> <span class="n">finding</span> <span class="n">information</span> <span class="k">in</span> <span class="n">a</span> <span class="k">set</span> <span class="k">of</span> <span class="n">JARs</span> <span class="n">by</span>
+                                <span class="n">filtering</span> <span class="n">on</span> <span class="n">manifest</span> <span class="n">data</span> <span class="k">and</span> <span class="n">printing</span> <span class="n">out</span>
+                                <span class="n">selected</span> <span class="n">information</span><span class="p">.</span>
+  <span class="n">settings</span>                    <span class="p">-</span> <span class="k">Set</span> <span class="n">bnd</span><span class="p">/</span><span class="n">jpm</span> <span class="n">global</span> <span class="n">variables</span>
+  <span class="n">source</span>                      <span class="p">-</span> <span class="n">Merge</span> <span class="n">a</span> <span class="n">binary</span> <span class="n">jar</span> <span class="k">with</span> <span class="n">its</span> <span class="n">sources</span><span class="p">.</span> <span class="n">It</span> <span class="n">is</span>
+                                <span class="n">possible</span> <span class="k">to</span> <span class="n">specify</span> <span class="n">source</span> <span class="n">path</span>
+  <span class="n">sync</span>                        <span class="p">-</span>
+  <span class="n">syntax</span>                      <span class="p">-</span> <span class="n">Access</span> <span class="n">the</span> <span class="n">internal</span> <span class="n">bnd</span> <span class="n">database</span> <span class="k">of</span> <span class="n">keywords</span> <span class="k">and</span>
+                                <span class="k">options</span>
+  <span class="n">test</span>                        <span class="p">-</span> <span class="n">Test</span> <span class="n">a</span> <span class="n">project</span> <span class="n">according</span> <span class="k">to</span> <span class="n">an</span> <span class="n">OSGi</span> <span class="n">test</span>
+  <span class="n">type</span>                        <span class="p">-</span> <span class="k">List</span> <span class="n">files</span> <span class="n">int</span> <span class="n">a</span> <span class="n">JAR</span> <span class="n">file</span><span class="p">,</span> <span class="n">equivalent</span> <span class="n">jar</span>
+                                <span class="nf">command</span> <span class="n">t</span><span class="p">[</span><span class="n">vf</span><span class="p">]</span> <span class="p">(</span><span class="n">syntax</span> <span class="n">supported</span><span class="p">)</span>
+  <span class="n">verify</span>                      <span class="p">-</span> <span class="n">Verify</span> <span class="n">jars</span>
+  <span class="k">version</span>                     <span class="p">-</span> <span class="n">Show</span> <span class="k">version</span> <span class="n">information</span> <span class="n">about</span> <span class="n">bnd</span>
+  <span class="n">view</span>                        <span class="p">-</span> <span class="n">View</span> <span class="n">a</span> <span class="n">resource</span> <span class="k">from</span> <span class="n">a</span> <span class="n">JAR</span> <span class="n">file</span><span class="p">.</span>
+  <span class="n">wrap</span>                        <span class="p">-</span> <span class="n">Wrap</span> <span class="n">a</span> <span class="n">jar</span>
+  <span class="n">xref</span>                        <span class="p">-</span> <span class="n">Show</span> <span class="n">a</span> <span class="n">cross</span> <span class="n">references</span> <span class="n">for</span> <span class="n">all</span> <span class="n">classes</span> <span class="k">in</span> <span class="n">a</span> <span class="k">set</span>
+                                <span class="k">of</span> <span class="n">jars</span><span class="p">.</span>
+</code></pre></div></div>
+
+<p>The command line tool can be invoked in several different ways:</p>
+
+<ul>
+  <li>bnd ‘‘general-options’’ ‘‘cmd’’ ‘‘cmd-options’’</li>
+  <li>bnd ‘‘general-options’’ ‘‘<file>.jar''</file></li>
+  <li>bnd ‘‘general-options’’ ‘‘<file>.bnd''</file></li>
+</ul>
+
+<p>In this text <code class="highlighter-rouge">bnd</code> is used as if it is a command line program. This should be set up as:</p>
+
+<p>java -jar <path to="" bnd="">.jar ...</path></p>
+
+<p>Work is in progress to simplify this.</p>
+
+<h3 id="general-options">General Options</h3>
+
+<table>
+  <tbody>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>!General Option</td>
+      <td> </td>
+      <td>!Description</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>-failok</td>
+      <td> </td>
+      <td>Same as the property -failok. The current run will create a JAR file even if there were errors.</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>-exceptions</td>
+      <td> </td>
+      <td>Will print the exception when the software has ran into a bad exception and bails out. Normally only a message is printed. For debugging or diagnostic reasons, the exception stack trace can be very helpful.</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="print---verify---manifest---list----all---jar-">print ( -verify | -manifest | -list | - all ) * <file>.jar +</file></h3>
+
+<p>The print function will take a list of JAR file and print one or more aspect of the JAR files. The following aspects can be added.</p>
+
+<ul>
+  <li>-verify - Verify the JAR for consistency with the specification. The print will exit with an error if the verify fails</li>
+  <li>-manifest - Show the manifest</li>
+  <li>-list - List the entries in the JAR file</li>
+  <li>-all - Do all (this is the default)</li>
+</ul>
+
+<p>bnd print -verify *.jar</p>
+
+<h3 id="buildx---classpath-list---eclipse----noeclipse---output----bnd-">buildx ( -classpath LIST | -eclipse <file> | -noeclipse | -output <file> ) * <file>.bnd +</file></file></file></h3>
+
+<p>The build function will assemble a bundle from the bnd specification. The default name of the output bundle is the name of the bnd file with a .jar extension.</p>
+
+<ul>
+  <li>-classpath - A list of JAR files and/or directories that should be placed on the class path before the calculation starts.</li>
+  <li>-eclipse - Parse the file as an Eclipse .classpath file, use the information to create an Eclipse’s project class path. If this option is used, the default .classpath file is not read.</li>
+  <li>-noeclipse - Do not parse the .classpath file of an Eclipse project.</li>
+  <li>-output - Override the default output name of the bundle or the directory. If the output is a directory, the name will be derived from the bnd file name.</li>
+</ul>
+
+<p>bnd buildx -classpath bin -noeclipse -output test.jar xyz.bnd</p>
+
+<p>[[#wrap]]</p>
+<h3 id="wrap---classpath--output-filedir---properties----">wrap ( -classpath (<file>(','<file>)*)-output &lt;file|dir&gt; | -properties <file> ) * \\</file></file></file></h3>
+<p>-ignoremanifest? <file>.jar *</file></p>
+
+<p>The wrap command takes an existing JAR file and guesses the manifest headers that will make this JAR useful for an OSGi Service Platform. If the output file is not overridden, the name of the input file is used with a .bar extension. The default bnd file for the header calculation is:</p>
+
+<p>Export-Package: *
+ Import-Package: <packages inside="" the="" target="" jar=""></packages></p>
+
+<p>If the target bundle has a manifest, the headers are merged with the properties.</p>
+
+<p>The defaults can be overridden with a specific properties file.</p>
+
+<ul>
+  <li>-output - Set the output file or directory</li>
+  <li>-classpath - Sets the classpath as a comma separated list</li>
+  <li>-properties - Use a special property file for the manifest calculation.</li>
+  <li>-ignoremanifest - Do not include the manifest headers from the target bundle</li>
+</ul>
+
+<p>bnd wrap -classpath osgi.jar *.jar</p>
+
+<h3 id="eclipse">eclipse</h3>
+
+<p>List the Eclipse information in the current directory.</p>
+
+<p>bnd eclipse
+[[#eclipse]]</p>
+<h2 id="eclipse-plugin">Eclipse Plugin</h2>
+<p>The bnd.jar file is a complete plugin. To install this plugin, place it in the eclipse/plugin directory (or extension directory) of your Eclipse installation and restart (!). The plugin will provides a ‘Make Bundle’ context menu when you select a file that ends with .bnd. Two menus are shown when you select a JAR file. You can ‘Wrap JAR’, turning it into a bundle with all imports and exports set (the extension will be .bar), or you can use ‘Verify Bundle’, and verify the bundle for compliance to the spec. Any errors or warnings are listed in a dialog box.</p>
+
+<p>Additionally, the plugin registers an editor for JAR files. The editor shows the full output of the print command.</p>
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/3.5.0/chapters/390-wrapping.html'></a> <a href='/releases/3.5.0/chapters/600-developer.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/3.5.0/contact.html">Contact</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/3.5.0/">Developers</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/3.5.0/">More</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

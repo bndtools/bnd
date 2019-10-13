@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/3.5.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Export-Package ::= export ( ‘,’ export)*</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Export-Package ::= export ( ‘,’ export)*" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="The bnd definition allows the specification to be done using ‘‘patterns’’, a modified regular expression. All patterns in the definition are matched against every package on the [ class path][#CLASSPATH ]. If the pattern is a negating pattern (starts with !) and it is matched, then the package is completely excluded. Normal patterns cause the package to be included in the resulting bundle. Patterns can include both directives and attributes, these items will be copied to the output. The list is ordered, earlier patterns take effect before later patterns. The following examples copies everything on the class path except for packages starting with com. The default for Export-Package is “*”, which can result in quite large bundles. If the source packages have an associated version (from their manifest of packageinfo file), then this version is automatically added to the clauses." />
+<meta property="og:description" content="The bnd definition allows the specification to be done using ‘‘patterns’’, a modified regular expression. All patterns in the definition are matched against every package on the [ class path][#CLASSPATH ]. If the pattern is a negating pattern (starts with !) and it is matched, then the package is completely excluded. Normal patterns cause the package to be included in the resulting bundle. Patterns can include both directives and attributes, these items will be copied to the output. The list is ordered, earlier patterns take effect before later patterns. The following examples copies everything on the class path except for packages starting with com. The default for Export-Package is “*”, which can result in quite large bundles. If the source packages have an associated version (from their manifest of packageinfo file), then this version is automatically added to the clauses." />
+<script type="application/ld+json">
+{"@type":"WebPage","url":"/releases/3.5.0/heads/export_package.html","headline":"Export-Package ::= export ( ‘,’ export)*","description":"The bnd definition allows the specification to be done using ‘‘patterns’’, a modified regular expression. All patterns in the definition are matched against every package on the [ class path][#CLASSPATH ]. If the pattern is a negating pattern (starts with !) and it is matched, then the package is completely excluded. Normal patterns cause the package to be included in the resulting bundle. Patterns can include both directives and attributes, these items will be copied to the output. The list is ordered, earlier patterns take effect before later patterns. The following examples copies everything on the class path except for packages starting with com. The default for Export-Package is “*”, which can result in quite large bundles. If the source packages have an associated version (from their manifest of packageinfo file), then this version is automatically added to the clauses.","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/3.5.0/"><img
+			class=menu-logo src='/releases/3.5.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/3.5.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/3.5.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/3.5.0/chapters/820-instructions.html">Instructions
+			</a><a href="/releases/3.5.0/chapters/850-macros.html">Macros
+			</a><div class="releases"><button class="dropbtn">3.5.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/3.5.0/chapters/100-release.html">Release</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/150-build.html">Build</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/160-jars.html">Generating JARs</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/220-contracts.html">Contracts</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/230-manifest-annotations.html">Manifest Annotations</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/300-launching.html">Launching</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/400-commandline.html">From the command line</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/610-plugin.html">Plugins</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/790-format.html">File Format</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/800-headers.html">Header Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/820-instructions.html">Instruction</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/850-macros.html">Macro Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/860-commands.html">Command Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/870-plugins.html">Plugins Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			<div class=enroute><a href="http://enroute.osgi.org">Supported by OSGi enRoute <img src="/releases/3.5.0/img/EnRouteIcon_CMYK.png"></a></div>
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> Export-Package  ::= export ( ',' export)*</h1>
+				<p>The bnd definition allows the specification to be done using ‘‘patterns’’, a modified regular expression. All patterns in the definition are matched against every package on the [ class path][#CLASSPATH ]. If the pattern is a negating pattern (starts with !) and it is matched, then the package is completely excluded. Normal patterns cause the package to be included in the resulting bundle. Patterns can include both directives and attributes, these items will be copied to the output. The list is ordered, earlier patterns take effect before later patterns. The following examples copies everything on the class path except for packages starting with <code class="highlighter-rouge">com</code>. The default for Export-Package is “*”, which can result in quite large bundles. If the source packages have an associated version (from their manifest of packageinfo file), then this version is automatically added to the clauses.</p>
+
+<p>Export-Package= !com.*, *</p>
+
+<p>Exports are automatically imported. This features can be disabled with a special directive on the export instruction: <code class="highlighter-rouge">-noimport:=true</code>. For example:</p>
+
+<p>Export-Package= com.acme.impl.*;-noimport:=true, *</p>
+
+<p>Bnd will automatically calculate the <code class="highlighter-rouge">uses:</code> directive. This directive is used by the OSGi framework to create a consistent class space for a bundle. The Export-Package statement allows this directive to be overridden on a package basis by specifying the directive in an Export-Package instruction.</p>
+
+<p>Export-package = com.acme.impl.*;uses=”my.special.import”</p>
+
+<p>However, in certain cases it is necessary to augment the uses clause. It is therefore possible to use the special name <code class="highlighter-rouge">&lt;&lt;USES&gt;&gt;</code> in the clause. Bnd will replace this special name with the calculated uses set. Bnd will remove any extraneous commas when the <code class="highlighter-rouge">&lt;&lt;USES&gt;&gt;</code> is empty.</p>
+
+<p>Export-package = com.acme.impl.*;uses:=”my.special.import,«USES»”</p>
+
+<p>Directives that are not part of the OSGi specification will give a warning unless they are prefixed with a ‘x-‘.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>		//
+		// EXPORTS
+		//
+		{
+			Set&lt;Instruction&gt; unused = Create.set();
+
+			Instructions filter = new Instructions(getExportPackage());
+			filter.append(getExportContents());
+
+			exports = filter(filter, contained, unused);
+
+			if (!unused.isEmpty()) {
+				warning("Unused " + Constants.EXPORT_PACKAGE + " instructions: %s ", unused);
+			}
+
+			// See what information we can find to augment the
+			// exports. I.e. look on the classpath
+			augmentExports(exports);
+		}
+
+	/**
+ * Check if the given resource is in scope of this bundle. That is, it
+ * checks if the Include-Resource includes this resource or if it is a class
+ * file it is on the class path and the Export-Package or Private-Package
+ * include this resource.
+ *
+ * @param f
+ * @return
+ */
+public boolean isInScope(Collection&lt;File&gt; resources) throws Exception {
+	Parameters clauses = parseHeader(getProperty(Constants.EXPORT_PACKAGE));
+	clauses.putAll(parseHeader(getProperty(Constants.PRIVATE_PACKAGE)));
+	clauses.putAll(parseHeader(getProperty(Constants.PRIVATEPACKAGE)));
+	if (isTrue(getProperty(Constants.UNDERTEST))) {
+		clauses.putAll(parseHeader(getProperty(Constants.TESTPACKAGES, "test;presence:=optional")));
+	}
+
+	Collection&lt;String&gt; ir = getIncludedResourcePrefixes();
+
+	Instructions instructions = new Instructions(clauses);
+
+	for (File r : resources) {
+		String cpEntry = getClasspathEntrySuffix(r);
+
+		if (cpEntry != null) {
+
+			if (cpEntry.equals("")) // Meaning we actually have a CPE
+				return true;
+
+			String pack = Descriptors.getPackage(cpEntry);
+			Instruction i = matches(instructions, pack, null, r.getName());
+			if (i != null)
+				return !i.isNegated();
+		}
+
+		// Check if this resource starts with one of the I-C header
+		// paths.
+		String path = r.getAbsolutePath();
+		for (String p : ir) {
+			if (path.startsWith(p))
+				return true;
+		}
+	}
+	return false;
+}
+
+	/**
+ * Verify that the exports only use versions.
+ */
+private void verifyExports() {
+	if (isStrict()) {
+		Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
+		Set&lt;String&gt; noexports = new HashSet&lt;String&gt;();
+
+		for (Entry&lt;String,Attrs&gt; e : map.entrySet()) {
+
+			String version = e.getValue().get(Constants.VERSION_ATTRIBUTE);
+			if (version == null) {
+				noexports.add(e.getKey());
+			} else {
+				if (!VERSION.matcher(version).matches()) {
+					Location location;
+					if (VERSIONRANGE.matcher(version).matches()) {
+						location = error(
+								"Export Package %s version is a range: %s; Exports do not allow for ranges.",
+								e.getKey(), version).location();
+					} else {
+						location = error("Export Package %s version has invalid syntax: %s", e.getKey(), version)
+								.location();
+					}
+					location.header = Constants.EXPORT_PACKAGE;
+					location.context = e.getKey();
+				}
+			}
+
+			if (e.getValue().containsKey(Constants.SPECIFICATION_VERSION)) {
+				Location location = error(
+						"Export Package %s uses deprecated specification-version instead of version", e.getKey())
+						.location();
+				location.header = Constants.EXPORT_PACKAGE;
+				location.context = e.getKey();
+			}
+
+			String mandatory = e.getValue().get(Constants.MANDATORY_DIRECTIVE);
+			if (mandatory != null) {
+				Set&lt;String&gt; missing = new HashSet&lt;String&gt;(split(mandatory));
+				missing.removeAll(e.getValue().keySet());
+				if (!missing.isEmpty()) {
+					Location location = error("Export Package %s misses mandatory attribute: %s", e.getKey(),
+							missing).location();
+					location.header = Constants.EXPORT_PACKAGE;
+					location.context = e.getKey();
+				}
+			}
+		}
+
+		if (!noexports.isEmpty()) {
+			Location location = error("Export Package clauses without version range: %s", noexports).location();
+			location.header = Constants.EXPORT_PACKAGE;
+		}
+	}
+}
+</code></pre></div></div>
+
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/3.5.0/heads/dynamicimport_package.html'></a> <a href='/releases/3.5.0/heads/fragment_host.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/3.5.0/contact.html">Contact</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/3.5.0/">Developers</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/3.5.0/">More</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>
