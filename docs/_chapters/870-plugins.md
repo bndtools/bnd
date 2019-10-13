@@ -8,7 +8,7 @@ layout: default
 <div>
 <dl class="property-index">
 
-{% for c in site.plugins %}<dt><a href="{{ c.url | prepend: site.github.url }}">{{c.title}}</a></dt><dd>{{c.summary}}</dd>
+{% for c in site.plugins %}<dt><a href="{{ c.url | prepend: site.baseurl }}">{{c.title}}</a></dt><dd>{{c.summary}}</dd>
 {% endfor %}
 
 </dl>

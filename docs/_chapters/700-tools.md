@@ -8,7 +8,7 @@ layout: default
 <div>
 <ul>
 
-{% for tool in site.tools %}<li><a href="{{ tool.url | prepend: site.github.url }}">{{tool.title}}</a> {{tool.summary}}</li>
+{% for tool in site.tools %}<li><a href="{{ tool.url | prepend: site.baseurl }}">{{tool.title}}</a> {{tool.summary}}</li>
 {% endfor %}
 
 </ul>
