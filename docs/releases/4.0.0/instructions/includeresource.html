@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/4.0.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.4.0 -->
+<title>-includeresource</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="-includeresource" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="/** * Parse the Bundle-Includes header. Files in the bundles Include header are * included in the jar. The source can be a directory or a file. * * @throws IOException * @throws FileNotFoundException */ private void doIncludeResources(Jar jar) throws Exception { String includes = getProperty(&quot;Bundle-Includes&quot;); if (includes == null) { includes = getProperty(INCLUDERESOURCE); if (includes == null || includes.length() == 0) includes = getProperty(Constants.INCLUDE_RESOURCE); } else warning(&quot;Please use -includeresource instead of Bundle-Includes&quot;);" />
+<meta property="og:description" content="/** * Parse the Bundle-Includes header. Files in the bundles Include header are * included in the jar. The source can be a directory or a file. * * @throws IOException * @throws FileNotFoundException */ private void doIncludeResources(Jar jar) throws Exception { String includes = getProperty(&quot;Bundle-Includes&quot;); if (includes == null) { includes = getProperty(INCLUDERESOURCE); if (includes == null || includes.length() == 0) includes = getProperty(Constants.INCLUDE_RESOURCE); } else warning(&quot;Please use -includeresource instead of Bundle-Includes&quot;);" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-10-12T20:27:56-04:00" />
+<script type="application/ld+json">
+{"datePublished":"2019-10-12T20:27:56-04:00","description":"/** * Parse the Bundle-Includes header. Files in the bundles Include header are * included in the jar. The source can be a directory or a file. * * @throws IOException * @throws FileNotFoundException */ private void doIncludeResources(Jar jar) throws Exception { String includes = getProperty(&quot;Bundle-Includes&quot;); if (includes == null) { includes = getProperty(INCLUDERESOURCE); if (includes == null || includes.length() == 0) includes = getProperty(Constants.INCLUDE_RESOURCE); } else warning(&quot;Please use -includeresource instead of Bundle-Includes&quot;);","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"/releases/4.0.0/instructions/includeresource.html"},"url":"/releases/4.0.0/instructions/includeresource.html","headline":"-includeresource","dateModified":"2019-10-12T20:27:56-04:00","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/4.0.0/"><img
+			class=menu-logo src='/releases/4.0.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/4.0.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/4.0.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/4.0.0/chapters/820-instructions.html">Instructions
+			</a><a href="/releases/4.0.0/chapters/850-macros.html">Macros
+			</a><div class="releases"><button class="dropbtn">4.0.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/4.0.0/chapters/100-release.html">Release</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/150-build.html">Build</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/160-jars.html">Generating JARs</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/220-contracts.html">Contracts</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/230-manifest-annotations.html">Manifest Annotations</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/300-launching.html">Launching</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/400-commandline.html">From the command line</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/610-plugin.html">Plugins</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/790-format.html">File Format</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/800-headers.html">Header Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/820-instructions.html">Instruction</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/850-macros.html">Macro Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/860-commands.html">Command Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/870-plugins.html">Plugins Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			<div class=enroute><a href="https://enroute.osgi.org">Supported by OSGi enRoute <img src="/releases/4.0.0/img/EnRouteIcon_CMYK.png"></a></div>
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> -includeresource</h1>
+				<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/**
+ * Parse the Bundle-Includes header. Files in the bundles Include header are
+ * included in the jar. The source can be a directory or a file.
+ *
+ * @throws IOException
+ * @throws FileNotFoundException
+ */
+private void doIncludeResources(Jar jar) throws Exception {
+	String includes = getProperty("Bundle-Includes");
+	if (includes == null) {
+		includes = getProperty(INCLUDERESOURCE);
+		if (includes == null || includes.length() == 0)
+			includes = getProperty(Constants.INCLUDE_RESOURCE);
+	} else
+		warning("Please use -includeresource instead of Bundle-Includes");
+
+	doIncludeResource(jar, includes);
+
+}
+
+private void doIncludeResource(Jar jar, String includes) throws Exception {
+	Parameters clauses = parseHeader(includes);
+	doIncludeResource(jar, clauses);
+}
+
+private void doIncludeResource(Jar jar, Parameters clauses) throws ZipException, IOException, Exception {
+	for (Entry&lt;String,Attrs&gt; entry : clauses.entrySet()) {
+		doIncludeResource(jar, entry.getKey(), entry.getValue());
+	}
+}
+
+private void doIncludeResource(Jar jar, String name, Map&lt;String,String&gt; extra) throws ZipException, IOException,
+		Exception {
+
+	Instructions preprocess = null;
+	boolean absentIsOk = false;
+
+	if (name.startsWith("{") &amp;&amp; name.endsWith("}")) {
+		preprocess = getPreProcessMatcher(extra);
+		name = name.substring(1, name.length() - 1).trim();
+	}
+
+	String parts[] = name.split("\\s*=\\s*");
+	String source = parts[0];
+	String destination = parts[0];
+	if (parts.length == 2)
+		source = parts[1];
+
+	if (source.startsWith("-")) {
+		source = source.substring(1);
+		absentIsOk = true;
+	}
+
+	if (source.startsWith("@")) {
+		extractFromJar(jar, source.substring(1), parts.length == 1 ? "" : destination, absentIsOk);
+	} else if (extra.containsKey("cmd")) {
+		doCommand(jar, source, destination, extra, preprocess, absentIsOk);
+	} else if (extra.containsKey(LITERAL_ATTRIBUTE)) {
+		String literal = extra.get(LITERAL_ATTRIBUTE);
+		Resource r = new EmbeddedResource(literal.getBytes("UTF-8"), 0);
+		String x = extra.get("extra");
+		if (x != null)
+			r.setExtra(x);
+		jar.putResource(name, r);
+	} else {
+		File sourceFile;
+		String destinationPath;
+
+		sourceFile = getFile(source);
+		if (parts.length == 1) {
+			// Directories should be copied to the root
+			// but files to their file name ...
+			if (sourceFile.isDirectory())
+				destinationPath = "";
+			else
+				destinationPath = sourceFile.getName();
+		} else {
+			destinationPath = parts[0];
+		}
+		// Handle directories
+		if (sourceFile.isDirectory()) {
+			destinationPath = doResourceDirectory(jar, extra, preprocess, sourceFile, destinationPath);
+			return;
+		}
+
+		// destinationPath = checkDestinationPath(destinationPath);
+
+		if (!sourceFile.exists()) {
+			if (absentIsOk)
+				return;
+
+			noSuchFile(jar, name, extra, source, destinationPath);
+		} else
+			copy(jar, destinationPath, sourceFile, preprocess, extra);
+	}
+}
+
+private Instructions getPreProcessMatcher(Map&lt;String,String&gt; extra) {
+	if (defaultPreProcessMatcher == null) {
+		defaultPreProcessMatcher = new Instructions(getProperty(PREPROCESSMATCHERS,
+				Constants.DEFAULT_PREPROCESSS_MATCHERS));
+	}
+	if (extra == null)
+		return defaultPreProcessMatcher;
+
+	String additionalMatchers = extra.get(PREPROCESSMATCHERS);
+	if (additionalMatchers == null)
+		return defaultPreProcessMatcher;
+
+	Instructions specialMatcher = new Instructions(additionalMatchers);
+	specialMatcher.putAll(defaultPreProcessMatcher);
+	return specialMatcher;
+}
+
+/**
+ * It is possible in Include-Resource to use a system command that generates
+ * the contents, this is indicated with {@code cmd} attribute. The command
+ * can be repeated for a number of source files with the {@code for}
+ * attribute which indicates a list of repetitions, often down with the
+ * {@link Macro#_lsa(String[])} or {@link Macro#_lsb(String[])} macro. The
+ * repetition will repeat the given command for each item. The @} macro can
+ * be used to replace the current item. If no {@code for} is given, the
+ * source is used as the only item. If the destination contains a macro,
+ * each iteration will create a new file, otherwise the destination name is
+ * used.
+ *
+ * @param jar
+ * @param source
+ * @param destination
+ * @param extra
+ * @param preprocess
+ * @param absentIsOk
+ * @throws Exception
+ */
+private void doCommand(Jar jar, String source, String destination, Map&lt;String,String&gt; extra,
+		Instructions preprocess, boolean absentIsOk) throws Exception {
+	String repeat = extra.get("for"); // TODO constant
+	if (repeat == null)
+		repeat = source;
+
+	Collection&lt;String&gt; requires = split(extra.get("requires"));
+	long lastModified = 0;
+	for (String required : requires) {
+		File file = getFile(required);
+		if (!file.exists()) {
+			error(Constants.INCLUDE_RESOURCE + ".cmd for %s, requires %s, but no such file %s", source, required,
+					file.getAbsoluteFile());
+		} else
+			lastModified = findLastModifiedWhileOlder(file, lastModified());
+	}
+
+	String cmd = extra.get("cmd");
+
+	List&lt;String&gt; paths = new ArrayList&lt;String&gt;();
+
+	for (String item : Processor.split(repeat)) {
+		File f = IO.getFile(item);
+		traverse(paths, f);
+	}
+
+	CombinedResource cr = null;
+
+	if (!destination.contains("${@}")) {
+		cr = new CombinedResource();
+		cr.lastModified = lastModified;
+	}
+
+	setProperty("@requires", join(requires, " "));
+	try {
+		for (String item : paths) {
+			setProperty("@", item);
+			try {
+				String path = getReplacer().process(destination);
+				String command = getReplacer().process(cmd);
+				File file = getFile(item);
+				if (file.exists())
+					lastModified = Math.max(lastModified, file.lastModified());
+
+				CommandResource cmdresource = new CommandResource(command, this, lastModified, getBase());
+
+				Resource r = cmdresource;
+
+				// Turn this resource into a file resource
+				// so we execute the command now and catch its
+				// errors
+				FileResource fr = new FileResource(r);
+
+				addClose(fr);
+				r = fr;
+
+				if (preprocess != null &amp;&amp; preprocess.matches(path))
+					r = new PreprocessResource(this, r);
+
+				if (cr == null)
+					jar.putResource(path, r);
+				else
+					cr.addResource(r);
+			}
+			finally {
+				unsetProperty("@");
+			}
+		}
+	}
+	finally {
+		unsetProperty("@requires");
+	}
+
+	// Add last so the correct modification date is used
+	// to update the modified time.
+	if (cr != null)
+		jar.putResource(destination, cr);
+
+	updateModified(lastModified, Constants.INCLUDE_RESOURCE + ": cmd");
+}
+
+private void traverse(List&lt;String&gt; paths, File item) {
+
+	if (item.isDirectory()) {
+		for (File sub : item.listFiles()) {
+			traverse(paths, sub);
+		}
+	} else if (item.isFile())
+		paths.add(item.getAbsolutePath());
+	else
+		paths.add(item.getName());
+}
+
+
+
+
+	public class MakeBnd implements MakePlugin, Constants {
+		final static Pattern	JARFILE	= Pattern.compile("(.+)\\.(jar|ipa)");
+
+		public Resource make(Builder builder, String destination, Map&lt;String,String&gt; argumentsOnMake) throws Exception {
+			String type = argumentsOnMake.get("type");
+			if (!"bnd".equals(type))
+				return null;
+
+			String recipe = argumentsOnMake.get("recipe");
+			if (recipe == null) {
+				builder.error("No recipe specified on a make instruction for " + destination);
+				return null;
+			}
+			File bndfile = builder.getFile(recipe);
+			if (bndfile.isFile()) {
+				// We do not use a parent because then we would
+				// build ourselves again. So we can not blindly
+				// inherit the properties.
+				Builder bchild = builder.getSubBuilder();
+				bchild.removeBundleSpecificHeaders();
+
+				// We must make sure that we do not include ourselves again!
+				bchild.setProperty(Analyzer.INCLUDE_RESOURCE, "");
+				bchild.setProperty(Analyzer.INCLUDERESOURCE, "");
+				bchild.setProperties(bndfile, builder.getBase());
+
+				Jar jar = bchild.build();
+				Jar dot = builder.getTarget();
+
+				if (builder.hasSources()) {
+					for (String key : jar.getResources().keySet()) {
+						if (key.startsWith("OSGI-OPT/src"))
+							dot.putResource(key, jar.getResource(key));
+					}
+				}
+				builder.getInfo(bchild, bndfile.getName() + ": ");
+				return new JarResource(jar);
+			}
+			return null;
+		}
+
+	}
+</code></pre></div></div>
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/4.0.0/instructions/include.html'></a> <a href='/releases/4.0.0/instructions/invalidfilenames.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.0.0/contact.html">Contact</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.0.0/">Developers</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.0.0/">More</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>
