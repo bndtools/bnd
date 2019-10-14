@@ -106,7 +106,7 @@ In addition to JUnit Platform support, the new tester has some features that wer
     * Ignored/skipped tests
     * Custom display names (including full Unicode support)
     * Parameterized tests
-* Better continuous mode support. With the `biz.aQute.tester`, when running in continuous mode only the results of the first test are displayed in Eclipse. With the `biz.aQute.junit.platform`, if you select the *Display JUnit results in IDE every time the tester reruns tests* property in the launch configuration, then it will display a fresh set of results every time it runs. This allows you to combine the power of continuous testing with the convenience of Eclipse's JUnit GUI.
+* Better continuous mode support. With `biz.aQute.tester`, when running in continuous mode only the results of the first test run are displayed in Eclipse. With `biz.aQute.junit-platform`, if you select the *Display JUnit results in IDE every time the tester reruns tests* property in the launch configuration, then it will display the results afresh for every test run. This allows you to combine the power of continuous testing with the convenience of Eclipse's JUnit GUI.
 
 ### Using `biz.aQute.tester.junit-platform`
 
