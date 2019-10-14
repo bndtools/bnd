@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -35,7 +34,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 
-import aQute.lib.strings.Strings;
 import aQute.tester.bundle.engine.BundleDescriptor;
 import aQute.tester.bundle.engine.BundleEngine;
 import aQute.tester.bundle.engine.StaticFailureDescriptor;
@@ -65,7 +63,7 @@ public class BundleSelectorResolver {
 	}
 
 	final EngineDiscoveryRequest								request;
-	final EngineDescriptor										b;
+	final EngineDescriptor										descriptor;
 	final StaticFailureDescriptor								misconfiguredEnginesDescriptor;
 	final StaticFailureDescriptor								unresolvedBundlesDescriptor;
 	final StaticFailureDescriptor								unattachedFragmentsDescriptor;
@@ -76,15 +74,14 @@ public class BundleSelectorResolver {
 	final Predicate<Bundle>										isNotATestBundle;
 	final Bundle[]												allBundles;
 	final Set<TestEngine>										engines;
-	final Function<BundleDescriptor, List<DiscoverySelector>>	selectorResolver;
 	final Set<String>											unresolvedClasses	= new HashSet<>();
 	final Set<Class<?>>											resolvedClasses		= new HashSet<>();
 	private boolean												verbose				= false;
 
-	public BundleSelectorResolver(BundleContext context, EngineDiscoveryRequest request, EngineDescriptor b2) {
+	public BundleSelectorResolver(BundleContext context, EngineDiscoveryRequest request, EngineDescriptor descriptor) {
 		this.request = request;
-		this.b = b2;
-		final UniqueId uniqueId = b2.getUniqueId();
+		this.descriptor = descriptor;
+		final UniqueId uniqueId = descriptor.getUniqueId();
 		testUnresolved = request.getConfigurationParameters()
 			.getBoolean(CHECK_UNRESOLVED)
 			.orElse(true);
@@ -103,7 +100,8 @@ public class BundleSelectorResolver {
 
 		methodSelectors = request.getSelectorsByType(MethodSelector.class)
 			.stream()
-			.map(x -> selectMethod(x.getClassName(), x.getMethodName(), x.getMethodParameterTypes()))
+			.map(selector -> selectMethod(selector.getClassName(), selector.getMethodName(),
+				selector.getMethodParameterTypes()))
 			.collect(Collectors.toList());
 
 		bundleSelectors = request.getSelectorsByType(BundleSelector.class);
@@ -129,14 +127,12 @@ public class BundleSelectorResolver {
 					return (host != null && host != bundle && bundleMatches(selector, host));
 				})
 				.reduce(Predicate::or)
-				.orElse(x -> false);
-		isNotATestBundle = x -> !isATestBundle.test(x);
+				.orElse(bundle -> false);
+		isNotATestBundle = bundle -> !isATestBundle.test(bundle);
 
 		engines = new HashSet<>(11);
 		findEngines();
 
-		selectorResolver = classSelectors.isEmpty() && methodSelectors.isEmpty() ? this::getSelectorsFromTestCasesHeader
-			: this::getSelectorsFromSuppliedSelectors;
 		unresolvedClasses.addAll(classSelectors);
 		// TODO: Test
 		// for (MethodSelector mSelector : methodSelectors) {
@@ -145,7 +141,7 @@ public class BundleSelectorResolver {
 	}
 
 	private static boolean bundleMatches(BundleSelector selector, Bundle bundle) {
-		return selector.getVersion()
+		return selector.getVersionRange()
 			.includes(bundle.getVersion())
 			&& selector.getSymbolicName()
 				.contentEquals(bundle.getSymbolicName());
@@ -158,7 +154,7 @@ public class BundleSelectorResolver {
 				try {
 					StreamSupport.stream(ServiceLoader.load(TestEngine.class, cl)
 						.spliterator(), false)
-						.filter(e -> e.getId() != BundleEngine.ENGINE_ID)
+						.filter(engine -> engine.getId() != BundleEngine.ENGINE_ID)
 						.forEach(engines::add);
 				} catch (Error e) {
 					if (testUnresolved) {
@@ -175,19 +171,18 @@ public class BundleSelectorResolver {
 	}
 
 	public TestDescriptor resolve() {
-		final UniqueId uniqueId = b.getUniqueId();
+		final UniqueId uniqueId = descriptor.getUniqueId();
 		Stream.of(allBundles)
 			.filter(isATestBundle)
 			.filter(BundleUtils::isNotFragment)
 			.filter(BundleUtils::isNotResolved)
 			.forEach(bundle -> {
-				final String bundleDesc = uniqueIdOf(bundle);
 				try {
 					bundle.start();
 				} catch (BundleException e) {
-					UniqueId bundleId = uniqueId.append("bundle", bundleDesc);
+					UniqueId bundleId = uniqueId.append("bundle", uniqueIdOf(bundle));
 					BundleDescriptor bd = new BundleDescriptor(bundle, bundleId, e);
-					b.addChild(bd);
+					descriptor.addChild(bd);
 					markClassesResolved(bundle);
 				}
 			});
@@ -200,14 +195,13 @@ public class BundleSelectorResolver {
 			.filter(BundleUtils::isNotFragment)
 			.filter(BundleUtils::isNotResolved)
 			.forEach(bundle -> {
-				final String bundleDesc = uniqueIdOf(bundle);
 				try {
 					bundle.start();
 				} catch (BundleException e) {
 					if (testUnresolved) {
 						unresolvedBundlesDescriptor
 							.addChild(new StaticFailureDescriptor(unresolvedBundlesDescriptor.getUniqueId()
-								.append("bundle", bundleDesc), displayNameOf(bundle), e));
+								.append("bundle", uniqueIdOf(bundle)), displayNameOf(bundle), e));
 					}
 				}
 			});
@@ -218,10 +212,9 @@ public class BundleSelectorResolver {
 				.filter(isNotATestBundle)
 				.filter(BundleUtils::isNotAttached)
 				.forEach(bundle -> {
-					final String bundleDesc = uniqueIdOf(bundle);
 					unattachedFragmentsDescriptor.addChild(new StaticFailureDescriptor(
 						unattachedFragmentsDescriptor.getUniqueId()
-							.append("bundle", bundleDesc),
+							.append("bundle", uniqueIdOf(bundle)),
 						displayNameOf(bundle), new JUnitException("Fragment was not attached to a host bundle")));
 				});
 		}
@@ -231,11 +224,10 @@ public class BundleSelectorResolver {
 			.filter(BundleUtils::isFragment)
 			.filter(BundleUtils::isNotAttached)
 			.forEach(bundle -> {
-				final String bundleDesc = uniqueIdOf(bundle);
-				UniqueId bundleId = uniqueId.append("bundle", bundleDesc);
+				UniqueId bundleId = uniqueId.append("bundle", uniqueIdOf(bundle));
 				BundleDescriptor bd = new BundleDescriptor(bundle, bundleId,
 					new BundleException("Test fragment was not attached to a host bundle"));
-				b.addChild(bd);
+				descriptor.addChild(bd);
 				markClassesResolved(bundle);
 			});
 
@@ -258,7 +250,7 @@ public class BundleSelectorResolver {
 				if (bd == null) {
 					UniqueId parentId = uniqueId.append("bundle", uniqueIdOf(parent));
 					bd = new BundleDescriptor(parent, parentId);
-					b.addChild(bd);
+					descriptor.addChild(bd);
 					bundleMap.put(parent.getBundleId(), bd);
 				}
 				BundleDescriptor fd = new BundleDescriptor(bundle, bd.getUniqueId()
@@ -269,13 +261,13 @@ public class BundleSelectorResolver {
 
 		Stream.of(misconfiguredEnginesDescriptor, unresolvedBundlesDescriptor, unattachedFragmentsDescriptor)
 			.filter(StaticFailureDescriptor::hasChildren)
-			.forEach(b::addChild);
+			.forEach(descriptor::addChild);
 
 		if (engines.isEmpty()) {
 			TestDescriptor t = new StaticFailureDescriptor(uniqueId.append("test", "noEngines"), "Initialization Error",
 				new JUnitException("Couldn't find any registered TestEngines"));
-			b.addChild(t);
-			return b;
+			descriptor.addChild(t);
+			return descriptor;
 		}
 
 		if (testUnresolved && !unresolvedClasses.isEmpty()) {
@@ -287,16 +279,16 @@ public class BundleSelectorResolver {
 						.append("test", unresolvedClass),
 					unresolvedClass, new JUnitException("Couldn't find class " + unresolvedClass + " in any bundle")));
 			}
-			b.addChild(unresolvedClassesDescriptor);
+			descriptor.addChild(unresolvedClassesDescriptor);
 		}
-		info(() -> dump(b, ""));
-		return b;
+		info(() -> dump(descriptor, ""));
+		return descriptor;
 	}
 
 	void info(Supplier<String> msg, Throwable cause) {
 		if (verbose) {
 			System.err.println(msg.get());
-			cause.printStackTrace();
+			cause.printStackTrace(System.err);
 		}
 	}
 
@@ -306,45 +298,56 @@ public class BundleSelectorResolver {
 		}
 	}
 
-	private static Stream<String> testCases(Bundle bundle) {
-		return Strings.splitAsStream(bundle.getHeaders()
-			.get(aQute.bnd.osgi.Constants.TESTCASES));
-	}
-
 	private void markClassesResolved(Bundle bundle) {
-		testCases(bundle).forEach(unresolvedClasses::remove);
+		BundleUtils.testCases(bundle)
+			.map(testcase -> {
+				int index = testcase.indexOf('#');
+				return (index < 0) ? testcase : testcase.substring(0, index);
+			})
+			.forEach(unresolvedClasses::remove);
 	}
 
 	private List<DiscoverySelector> getSelectorsFromTestCasesHeader(BundleDescriptor bd) {
 		List<DiscoverySelector> selectors = new ArrayList<>();
 		Bundle bundle = bd.getBundle();
-		testCases(bundle).forEach(x -> {
-			try {
-				Class<?> testClass = BundleUtils.getHost(bundle)
-					.get()
-					.loadClass(x);
-				if (!resolvedClasses.contains(testClass)) {
-					resolvedClasses.add(testClass);
-					selectors.add(selectClass(testClass));
+		BundleUtils.testCases(bundle)
+			.forEach(testcase -> {
+				int index = testcase.indexOf('#');
+				String className = (index < 0) ? testcase : testcase.substring(0, index);
+				try {
+					Class<?> testClass = BundleUtils.getHost(bundle)
+						.get()
+						.loadClass(className);
+					if (!resolvedClasses.contains(testClass)) {
+						resolvedClasses.add(testClass);
+						if (index < 0) {
+							selectors.add(selectClass(testClass));
+						} else {
+							MethodSelector methodSelector = selectMethod(testcase);
+							selectors.add(selectMethod(testClass, methodSelector.getMethodName(),
+								methodSelector.getMethodParameterTypes()));
+						}
+					}
+				} catch (ClassNotFoundException cnfe) {
+					final StaticFailureDescriptor unresolvedClassDescriptor = new StaticFailureDescriptor(
+						bd.getUniqueId()
+							.append("test", testcase),
+						testcase, cnfe);
+					bd.addChild(unresolvedClassDescriptor);
 				}
-			} catch (ClassNotFoundException cnfe) {
-				final StaticFailureDescriptor unresolvedClassDescriptor = new StaticFailureDescriptor(bd.getUniqueId()
-					.append("test", x), x, cnfe);
-				bd.addChild(unresolvedClassDescriptor);
-			}
-		});
+			});
 		return selectors;
 	}
 
 	private List<DiscoverySelector> getSelectorsFromSuppliedSelectors(BundleDescriptor bd) {
 		List<DiscoverySelector> selectors = new ArrayList<>();
 		Bundle bundle = bd.getBundle();
-		classSelectors.forEach(x -> {
+		classSelectors.forEach(className -> {
 			try {
 				Class<?> testClass = BundleUtils.getHost(bundle)
 					.get()
-					.loadClass(x);
-				unresolvedClasses.remove(x);
+					.loadClass(className);
+				unresolvedClasses.remove(className);
 				info(() -> "removing resolved class: " + testClass + ", that leaves: " + unresolvedClasses);
 				if (!resolvedClasses.contains(testClass)) {
 					resolvedClasses.add(testClass);
@@ -354,13 +357,13 @@ public class BundleSelectorResolver {
 				info(() -> "Unresolved class: " + cnfe + ", bundle: " + bundle.getSymbolicName(), cnfe);
 			}
 		});
-		methodSelectors.forEach(x -> {
+		methodSelectors.forEach(selector -> {
 			try {
 				Class<?> testClass = BundleUtils.getHost(bundle)
 					.get()
-					.loadClass(x.getClassName());
-				selectors.add(selectMethod(testClass, x.getMethodName(), x.getMethodParameterTypes()));
-				unresolvedClasses.remove(x.getClassName());
+					.loadClass(selector.getClassName());
+				selectors.add(selectMethod(testClass, selector.getMethodName(), selector.getMethodParameterTypes()));
+				unresolvedClasses.remove(selector.getClassName());
 			} catch (ClassNotFoundException cnfe) {}
 		});
 		info(() -> "Selectors: " + selectors);
@@ -374,19 +377,13 @@ public class BundleSelectorResolver {
 			this.selectors = selectors;
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public <T extends DiscoverySelector> List<T> getSelectorsByType(Class<T> selectorType) {
 			info(() -> "Getting selectors from sub-request for: " + selectorType);
-			return doGetSelectorsByType(selectorType);
-		}
-
-		private <T extends DiscoverySelector> List<T> doGetSelectorsByType(Class<T> selectorType) {
 			if (selectorType.equals(ClassSelector.class) || selectorType.equals(MethodSelector.class)) {
-				@SuppressWarnings("unchecked")
 				List<T> retval = selectors.stream()
-					.filter(x -> selectorType.isAssignableFrom(x.getClass()))
-					.map(x -> (T) x)
+					.filter(selectorType::isInstance)
+					.map(selectorType::cast)
 					.collect(Collectors.toList());
 				return retval;
 			} else if (selectorType.equals(BundleSelector.class)) {
@@ -416,10 +413,10 @@ public class BundleSelectorResolver {
 		if (classSelectors.isEmpty() && methodSelectors.isEmpty() && isATestBundle.test(bundle)) {
 			classFilters = getSelectorsFromTestCasesHeader(bd);
 		} else {
-			classFilters = this.getSelectorsFromSuppliedSelectors(bd);
+			classFilters = getSelectorsFromSuppliedSelectors(bd);
 		}
 
-		if (classFilters != null && !classFilters.isEmpty()) {
+		if (!classFilters.isEmpty()) {
 			SubDiscoveryRequest edr = new SubDiscoveryRequest(classFilters);
 
 			engines.forEach(engine -> {
@@ -434,7 +431,7 @@ public class BundleSelectorResolver {
 	private void addEnginesToBundle(Bundle bundle) {
 		info(() -> "Performing engine discovery for bundle: " + bundle.getSymbolicName());
 		final String bundleDesc = uniqueIdOf(bundle);
-		UniqueId bundleId = b.getUniqueId()
+		UniqueId bundleId = descriptor.getUniqueId()
 			.append("bundle", bundleDesc);
 		BundleDescriptor bd = new BundleDescriptor(bundle, bundleId);
 		final List<DiscoverySelector> classFilters;
@@ -443,14 +440,14 @@ public class BundleSelectorResolver {
 			classFilters = getSelectorsFromTestCasesHeader(bd);
 		} else {
 			info(() -> "Getting selectors from supplied selectors");
-			classFilters = this.getSelectorsFromSuppliedSelectors(bd);
+			classFilters = getSelectorsFromSuppliedSelectors(bd);
 		}
 		info(() -> "Compiled class filters: " + classFilters);
 
-		if (classFilters != null && !classFilters.isEmpty()) {
+		if (!classFilters.isEmpty()) {
 			SubDiscoveryRequest edr = new SubDiscoveryRequest(classFilters);
 
-			b.addChild(bd);
+			descriptor.addChild(bd);
 			bundleMap.put(bundle.getBundleId(), bd);
 
 			engines.forEach(engine -> {

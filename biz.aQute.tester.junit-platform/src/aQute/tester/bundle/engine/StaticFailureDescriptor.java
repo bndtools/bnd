@@ -28,22 +28,25 @@ public class StaticFailureDescriptor extends AbstractTestDescriptor {
 	}
 
 	public boolean hasChildren() {
-		return getChildren().size() > 0;
+		return !getChildren().isEmpty();
 	}
 
 	// Defensive guarding.
 	@Override
 	public void addChild(TestDescriptor t) {
-		if (!(t instanceof StaticFailureDescriptor)) {
+		if (t instanceof StaticFailureDescriptor) {
+			super.addChild(t);
+		} else {
 			throw new IllegalArgumentException(
 				"StaticFailureDescriptor can only take StaticFailureDescriptors as children");
 		}
-		super.addChild(t);
 	}
 
-	public void execute(EngineExecutionListener l) {
-		l.executionStarted(this);
-		getChildren().forEach(x -> ((StaticFailureDescriptor) x).execute(l));
-		l.executionFinished(this, error == null ? TestExecutionResult.successful() : TestExecutionResult.failed(error));
+	public void execute(EngineExecutionListener listener) {
+		listener.executionStarted(this);
+		getChildren().stream()
+			.map(StaticFailureDescriptor.class::cast)
+			.forEach(descriptor -> descriptor.execute(listener));
+		listener.executionFinished(this, error == null ? TestExecutionResult.successful() : TestExecutionResult.failed(error));
 	}
 }

@@ -2,6 +2,7 @@ package aQute.tester.bundle.engine;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.junit.platform.commons.JUnitException;
@@ -32,14 +33,11 @@ public class BundleEngine implements TestEngine {
 
 	public static final String				ENGINE_ID			= "bnd-bundle-engine";
 
-	BundleContext							context;
+	private final Optional<BundleContext>	context;
 
 	public BundleEngine() {
-		Bundle us = FrameworkUtil.getBundle(BundleEngine.class);
-
-		if (us != null) {
-			context = us.getBundleContext();
-		}
+		context = Optional.ofNullable(FrameworkUtil.getBundle(BundleEngine.class))
+			.map(Bundle::getBundleContext);
 	}
 
 	@Override
@@ -49,7 +47,7 @@ public class BundleEngine implements TestEngine {
 
 	@Override
 	public Optional<String> getGroupId() {
-		return Optional.of("biz.aQute");
+		return Optional.of("biz.aQute.bnd");
 	}
 
 	@Override
@@ -59,15 +57,15 @@ public class BundleEngine implements TestEngine {
 
 	@Override
 	public TestDescriptor discover(EngineDiscoveryRequest request, UniqueId uniqueId) {
-		BundleEngineDescriptor b = new BundleEngineDescriptor(uniqueId);
+		BundleEngineDescriptor descriptor = new BundleEngineDescriptor(uniqueId);
 
-		if (context == null) {
-			b.addChild(new StaticFailureDescriptor(uniqueId.append("test", "noFramework"), "Initialization Error",
+		if (!context.isPresent()) {
+			descriptor.addChild(new StaticFailureDescriptor(uniqueId.append("test", "noFramework"), "Initialization Error",
 				new JUnitException("BundleEngine must run inside an OSGi framework")));
-			return b;
+			return descriptor;
 		}
-		new BundleSelectorResolver(context, request, b).resolve();
-		return b;
+		new BundleSelectorResolver(context.get(), request, descriptor).resolve();
+		return descriptor;
 	}
 
 	@Override
@@ -81,25 +79,26 @@ public class BundleEngine implements TestEngine {
 				.getClass());
 		Preconditions.condition(root.getChildren()
 			.stream()
-			.allMatch(x -> x instanceof BundleDescriptor || x instanceof StaticFailureDescriptor),
+			.allMatch(descriptor -> descriptor instanceof BundleDescriptor || descriptor instanceof StaticFailureDescriptor),
 			"Child descriptors should all be BundleDescriptors or StaticFailureDescriptors");
 		try {
 
 			listener.executionStarted(root);
 
 			final AtomicReference<StaticFailureDescriptor> matched = new AtomicReference<>(null);
+			Predicate<TestDescriptor> isStaticFailureDescriptor = StaticFailureDescriptor.class::isInstance;
 			root.getChildren()
 				.stream()
-				.filter(x -> x instanceof StaticFailureDescriptor)
-				.map(x -> (StaticFailureDescriptor) x)
-				.forEach(x -> {
-					matched.set(x);
-					x.execute(listener);
+				.filter(isStaticFailureDescriptor)
+				.map(StaticFailureDescriptor.class::cast)
+				.forEach(descriptor -> {
+					matched.set(descriptor);
+					descriptor.execute(listener);
 				});
 
-			Stream<? extends TestDescriptor> s = root.getChildren()
+			Stream<? extends TestDescriptor> descriptors = root.getChildren()
 				.stream()
-				.filter(x -> !(x instanceof StaticFailureDescriptor));
+				.filter(isStaticFailureDescriptor.negate());
 			if (matched.get() != null) {
 				final String reason = matched.get()
 					.getError() == null ? matched.get()
@@ -107,51 +106,52 @@ public class BundleEngine implements TestEngine {
 						: matched.get()
 							.getError()
 							.getMessage();
-				s.forEach(x -> listener.executionSkipped(x, reason));
+				descriptors.forEach(descriptor -> listener.executionSkipped(descriptor, reason));
 			} else {
-				s.map(x -> (BundleDescriptor) x)
-					.forEach(b -> executeBundle(b, listener, params));
+				descriptors.map(BundleDescriptor.class::cast)
+					.forEach(descriptor -> executeBundle(descriptor, listener, params));
 			}
 			listener.executionFinished(root, TestExecutionResult.successful());
 		} catch (Throwable t) {
 			System.err.println("Unrecoverable error while executing tests: " + t);
-			t.printStackTrace();
+			t.printStackTrace(System.err);
 			listener.executionFinished(root, TestExecutionResult.failed(t));
 		}
 	}
 
-	private static void executeBundle(BundleDescriptor b, EngineExecutionListener listener,
+	private static void executeBundle(BundleDescriptor descriptor, EngineExecutionListener listener,
 		ConfigurationParameters params) {
-		listener.executionStarted(b);
+		listener.executionStarted(descriptor);
 		TestExecutionResult result;
-		if (b.getException() == null) {
+		if (descriptor.getException() == null) {
 			result = singleTestExecutor.executeSafely(() -> {
-				b.getChildren()
+				descriptor.getChildren()
 					.stream()
-					.filter(x -> !(x instanceof BundleDescriptor || x instanceof StaticFailureDescriptor))
-					.forEach(descriptor -> {
-						ExecutionRequest er = new ExecutionRequest(descriptor, listener, params);
-						b.getEngineFor(descriptor)
-							.execute(er);
+					.filter(childDescriptor -> !(childDescriptor instanceof BundleDescriptor
+						|| childDescriptor instanceof StaticFailureDescriptor))
+					.forEach(childDescriptor -> {
+						TestEngine engine = descriptor.getEngineFor(childDescriptor);
+						ExecutionRequest er = new ExecutionRequest(childDescriptor, listener, params);
+						engine.execute(er);
 					});
 			});
-			b.getChildren()
+			descriptor.getChildren()
 				.stream()
-				.filter(x -> x instanceof BundleDescriptor)
-				.map(x -> (BundleDescriptor) x)
-				.forEach(bundleDescriptor -> executeBundle(bundleDescriptor, listener, params));
-			b.getChildren()
+				.filter(BundleDescriptor.class::isInstance)
+				.map(BundleDescriptor.class::cast)
+				.forEach(childDescriptor -> executeBundle(childDescriptor, listener, params));
+			descriptor.getChildren()
 				.stream()
-				.filter(x -> x instanceof StaticFailureDescriptor)
-				.map(x -> (StaticFailureDescriptor) x)
-				.forEach(x -> x.execute(listener));
+				.filter(StaticFailureDescriptor.class::isInstance)
+				.map(StaticFailureDescriptor.class::cast)
+				.forEach(childDescriptor -> childDescriptor.execute(listener));
 		} else {
-			result = TestExecutionResult.failed(b.getException());
-			b.getChildren()
-				.forEach(descriptor -> {
-					listener.executionSkipped(descriptor, "Bundle did not resolve");
+			result = TestExecutionResult.failed(descriptor.getException());
+			descriptor.getChildren()
+				.forEach(childDescriptor -> {
+					listener.executionSkipped(childDescriptor, "Bundle did not resolve");
 				});
 		}
-		listener.executionFinished(b, result);
+		listener.executionFinished(descriptor, result);
 	}
 }

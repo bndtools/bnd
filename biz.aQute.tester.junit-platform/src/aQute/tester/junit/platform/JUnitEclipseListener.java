@@ -17,6 +17,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -48,11 +49,11 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	// This contrasts to an assumption failure, which happens during a test
 	// execution that has already started.
 	@Override
-	public void executionSkipped(TestIdentifier test, String reason) {
-		info("JUnitEclipseListener: testPlanSkipped: " + test + ", reason: " + reason);
-		if (test.isContainer() && testPlan != null) {
-			testPlan.getChildren(test)
-				.forEach(x -> executionSkipped(x, "ancestor \"" + test.getDisplayName() + "\" was skipped"));
+	public void executionSkipped(TestIdentifier testIdentifier, String reason) {
+		info("JUnitEclipseListener: testPlanSkipped: " + testIdentifier + ", reason: " + reason);
+		if (testIdentifier.isContainer() && testPlan != null) {
+			testPlan.getChildren(testIdentifier)
+				.forEach(identifier -> executionSkipped(identifier, "ancestor \"" + testIdentifier.getDisplayName() + "\" was skipped"));
 		}
 		// This is a departure from the Eclipse built-in JUnit 5 tester in two
 		// ways (hopefully both improvements):
@@ -64,16 +65,16 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		// Reporting them all as assumption failures triggers the GUI to display
 		// the skip reason in the failure trace, which the Eclipse
 		// implementation doesn't do.
-		if (!test.isContainer()) {
-			message("%TESTS  ", test);
+		if (!testIdentifier.isContainer()) {
+			message("%TESTS  ", testIdentifier);
 		}
-		message("%FAILED ", test, "@AssumptionFailure: ");
+		message("%FAILED ", testIdentifier, "@AssumptionFailure: ");
 		message("%TRACES ");
 		info(() -> "JUnitEclipseListener: Skipped: " + reason);
 		out.println("Skipped: " + reason);
 		message("%TRACEE ");
-		if (!test.isContainer()) {
-			message("%TESTE  ", test);
+		if (!testIdentifier.isContainer()) {
+			message("%TESTE  ", testIdentifier);
 		}
 	}
 
@@ -182,7 +183,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 			}
 		}
 
-		final long realCount = testPlan.countTestIdentifiers(x -> x.isTest());
+		final long realCount = testPlan.countTestIdentifiers(TestIdentifier::isTest);
 		info("JUnitEclipseListener: testPlanExecutionStarted: " + testPlan + ", realCount: " + realCount);
 		message("%TESTC  ", realCount + " v2");
 		this.testPlan = testPlan;
@@ -226,18 +227,18 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	}
 
 	@Override
-	public void executionStarted(TestIdentifier test) {
-		info("JUnitEclipseListener: Execution started: " + test);
-		if (test.isTest()) {
-			message("%TESTS  ", test);
+	public void executionStarted(TestIdentifier testIdentifier) {
+		info("JUnitEclipseListener: Execution started: " + testIdentifier);
+		if (testIdentifier.isTest()) {
+			message("%TESTS  ", testIdentifier);
 		}
 	}
 
 	@Override
-	public void executionFinished(TestIdentifier test, TestExecutionResult testExecutionResult) {
-		info("JUnitEclipseListener: Execution finished: " + test);
+	public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
+		info("JUnitEclipseListener: Execution finished: " + testIdentifier);
 		Status result = testExecutionResult.getStatus();
-		if (test.isTest()) {
+		if (testIdentifier.isTest()) {
 			if (result != Status.SUCCESSFUL) {
 				final boolean assumptionFailed = result == Status.ABORTED;
 				info("JUnitEclipseListener: assumption failed: " + assumptionFailed);
@@ -249,21 +250,21 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 					if (assumptionFailed || exception instanceof AssertionError) {
 						info(() -> "JUnitEclipseListener: failed: " + exception + " assumptionFailed: "
 							+ assumptionFailed);
-						message("%FAILED ", test, (assumptionFailed ? "@AssumptionFailure: " : ""));
+						message("%FAILED ", testIdentifier, (assumptionFailed ? "@AssumptionFailure: " : ""));
 
 						sendExpectedAndActual(exception);
 
 					} else {
 						info("JUnitEclipseListener: error");
-						message("%ERROR  ", test);
+						message("%ERROR  ", testIdentifier);
 					}
 					sendTrace(exception);
 				}
 			}
-			message("%TESTE  ", test);
+			message("%TESTE  ", testIdentifier);
 		} else { // container
 			if (result != Status.SUCCESSFUL) {
-				message("%ERROR  ", test);
+				message("%ERROR  ", testIdentifier);
 				Optional<Throwable> throwableOp = testExecutionResult.getThrowable();
 				if (throwableOp.isPresent()) {
 					sendTrace(throwableOp.get());
@@ -281,18 +282,18 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 
 	private boolean sendExpectedAndActual(Throwable exception, StringBuilder expectedBuilder,
 		StringBuilder actualBuilder) {
-		BooleanSupplier b;
+		BooleanSupplier action;
 		// NOTE:
 		// 1. switch is based on the class name rather than using instanceof
 		// or class literals, to avoid hard dependency on the assertion types.
-		// 2. the individual case blocks are lamdas rather than inlined code -
+		// 2. the individual case blocks are lambdas rather than inlined code -
 		// this too is done on purpose to make sure that JUnitEclipseListener
 		// doesn't have a hard dependency on any of the assertion classes (the
 		// JUnit 3/4 comparison failure assertions in particular).
 		switch (exception.getClass()
 			.getName()) {
 			case "org.opentest4j.AssertionFailedError" :
-				b = () -> {
+				action = () -> {
 					AssertionFailedError assertionFailedError = (AssertionFailedError) exception;
 					ValueWrapper expected = assertionFailedError.getExpected();
 					ValueWrapper actual = assertionFailedError.getActual();
@@ -305,7 +306,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 				};
 				break;
 			case "org.junit.ComparisonFailure" :
-				b = () -> {
+				action = () -> {
 					ComparisonFailure comparisonFailure = (ComparisonFailure) exception;
 					String expected = comparisonFailure.getExpected();
 					String actual = comparisonFailure.getActual();
@@ -318,7 +319,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 				};
 				break;
 			case "junit.framework.ComparisonFailure" :
-				b = () -> {
+				action = () -> {
 					junit.framework.ComparisonFailure comparisonFailure = (junit.framework.ComparisonFailure) exception;
 					String expected = comparisonFailure.getExpected();
 					String actual = comparisonFailure.getActual();
@@ -331,15 +332,17 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 				};
 				break;
 			case "org.opentest4j.MultipleFailuresError" :
-				b = () -> ((MultipleFailuresError) exception).getFailures()
-					.stream()
-					.filter(x -> sendExpectedAndActual(x, expectedBuilder, actualBuilder))
-					.count() > 0;
+				action = () -> {
+					List<Throwable> failures = ((MultipleFailuresError) exception).getFailures();
+					return failures.stream()
+						.filter(failure -> sendExpectedAndActual(failure, expectedBuilder, actualBuilder))
+						.count() > 0;
+				};
 				break;
 			default :
 				return false;
 		}
-		return b.getAsBoolean();
+		return action.getAsBoolean();
 	}
 
 	private void sendExpectedAndActual(Throwable exception) {
@@ -368,11 +371,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	private Map<String, String>	idMap	= new HashMap<>();
 
 	private String getTestId(String junitId) {
-		String id = idMap.get(junitId);
-		if (id == null) {
-			id = Integer.toString(counter.getAndIncrement());
-			idMap.put(junitId, id);
-		}
+		String id = idMap.computeIfAbsent(junitId, k -> Integer.toString(counter.getAndIncrement()));
 		return id;
 	}
 
@@ -383,7 +382,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	private String getTestName(TestIdentifier test) {
 		return test.getSource()
 			.map(this::getTestName)
-			.orElse(test.getDisplayName());
+			.orElseGet(test::getDisplayName);
 	}
 
 	private String getTestName(TestSource testSource) {
@@ -509,7 +508,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	public void close() {
 		info(() -> idMap.entrySet()
 			.stream()
-			.map(x -> x.getKey() + " => " + x.getValue())
+			.map(entry -> entry.getKey() + " => " + entry.getValue())
 			.collect(Collectors.joining(",\n")));
 		safeClose(in);
 		safeClose(out);

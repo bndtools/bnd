@@ -4,10 +4,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.BundleWiring;
+
+import aQute.lib.strings.Strings;
 
 public final class BundleUtils {
 
@@ -16,40 +19,32 @@ public final class BundleUtils {
 			return Optional.of(bundle);
 		}
 		return Optional.ofNullable(bundle.adapt(BundleRevision.class))
-			.filter(revision -> revision.getWiring() != null)
-			.map(revision -> revision.getWiring()
-				.getRequiredWires(BundleRevision.HOST_NAMESPACE))
-			.flatMap(wires -> wires.stream()
+			.map(BundleRevision::getWiring)
+			.flatMap(wiring -> wiring.getRequiredWires(BundleRevision.HOST_NAMESPACE)
+				.stream()
 				.map(wire -> wire.getProviderWiring()
 					.getBundle())
 				.findFirst());
 	}
 
 	public static List<Bundle> getFragments(Bundle bundle) {
-		if (isNotFragment(bundle)) {
-			BundleRevision revision = bundle.adapt(BundleRevision.class);
-			if (revision != null) {
-				BundleWiring wiring = revision.getWiring();
-				if (wiring != null) {
-					return wiring.getProvidedWires(BundleRevision.HOST_NAMESPACE)
-						.stream()
-						.map(wire -> wire.getRequirerWiring()
-							.getBundle())
-						.collect(Collectors.toList());
-				}
-			}
+		if (isFragment(bundle)) {
+			return Collections.emptyList();
 		}
-		return Collections.emptyList();
+		return Optional.ofNullable(bundle.adapt(BundleRevision.class))
+			.map(BundleRevision::getWiring)
+			.map(wiring -> wiring.getProvidedWires(BundleRevision.HOST_NAMESPACE)
+				.stream()
+				.map(wire -> wire.getRequirerWiring()
+					.getBundle())
+				.collect(Collectors.toList()))
+			.orElseGet(Collections::emptyList);
 	}
 
 	public static ClassLoader getClassLoader(Bundle bundle) {
-		Optional<Bundle> host = getHost(bundle);
-		if (!host.isPresent()) {
-			return null;
-		}
-		BundleWiring wiring = host.get()
-			.adapt(BundleWiring.class);
-		return wiring != null ? wiring.getClassLoader() : null;
+		return getHost(bundle).map(host -> host.adapt(BundleWiring.class))
+			.map(BundleWiring::getClassLoader)
+			.orElse(null);
 	}
 
 	public static boolean isNotResolved(Bundle bundle) {
@@ -61,7 +56,7 @@ public final class BundleUtils {
 	}
 
 	public static boolean isNotAttached(Bundle bundle) {
-		return !BundleUtils.isAttached(bundle);
+		return !isAttached(bundle);
 	}
 
 	public static boolean isAttached(Bundle bundle) {
@@ -84,6 +79,16 @@ public final class BundleUtils {
 
 	public static boolean hasNoTests(Bundle bundle) {
 		return !hasTests(bundle);
+	}
+
+	public static Stream<String> testCases(Bundle bundle) {
+		return testCases(bundle.getHeaders()
+			.get(aQute.bnd.osgi.Constants.TESTCASES));
+	}
+
+	public static Stream<String> testCases(String testCases) {
+		return Strings.splitAsStream(testCases)
+			.map(entry -> entry.replace(':', '#'));
 	}
 
 }
