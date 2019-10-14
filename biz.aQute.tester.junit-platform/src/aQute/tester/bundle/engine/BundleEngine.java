@@ -32,14 +32,11 @@ public class BundleEngine implements TestEngine {
 
 	public static final String				ENGINE_ID			= "bnd-bundle-engine";
 
-	BundleContext							context;
+	private final Optional<BundleContext>	context;
 
 	public BundleEngine() {
-		Bundle us = FrameworkUtil.getBundle(BundleEngine.class);
-
-		if (us != null) {
-			context = us.getBundleContext();
-		}
+		context = Optional.ofNullable(FrameworkUtil.getBundle(BundleEngine.class))
+			.map(Bundle::getBundleContext);
 	}
 
 	@Override
@@ -61,12 +58,12 @@ public class BundleEngine implements TestEngine {
 	public TestDescriptor discover(EngineDiscoveryRequest request, UniqueId uniqueId) {
 		BundleEngineDescriptor b = new BundleEngineDescriptor(uniqueId);
 
-		if (context == null) {
+		if (!context.isPresent()) {
 			b.addChild(new StaticFailureDescriptor(uniqueId.append("test", "noFramework"), "Initialization Error",
 				new JUnitException("BundleEngine must run inside an OSGi framework")));
 			return b;
 		}
-		new BundleSelectorResolver(context, request, b).resolve();
+		new BundleSelectorResolver(context.get(), request, b).resolve();
 		return b;
 	}
 
@@ -130,9 +127,9 @@ public class BundleEngine implements TestEngine {
 					.stream()
 					.filter(x -> !(x instanceof BundleDescriptor || x instanceof StaticFailureDescriptor))
 					.forEach(descriptor -> {
+						TestEngine engineFor = b.getEngineFor(descriptor);
 						ExecutionRequest er = new ExecutionRequest(descriptor, listener, params);
-						b.getEngineFor(descriptor)
-							.execute(er);
+						engineFor.execute(er);
 					});
 			});
 			b.getChildren()
