@@ -35,7 +35,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 
-import aQute.lib.strings.Strings;
 import aQute.tester.bundle.engine.BundleDescriptor;
 import aQute.tester.bundle.engine.BundleEngine;
 import aQute.tester.bundle.engine.StaticFailureDescriptor;
@@ -306,33 +305,44 @@ public class BundleSelectorResolver {
 		}
 	}
 
-	private static Stream<String> testCases(Bundle bundle) {
-		return Strings.splitAsStream(bundle.getHeaders()
-			.get(aQute.bnd.osgi.Constants.TESTCASES));
-	}
-
 	private void markClassesResolved(Bundle bundle) {
-		testCases(bundle).forEach(unresolvedClasses::remove);
+		BundleUtils.testCases(bundle)
+			.map(testcase -> {
+				int index = testcase.indexOf('#');
+				return (index < 0) ? testcase : testcase.substring(0, index);
+			})
+			.forEach(unresolvedClasses::remove);
 	}
 
 	private List<DiscoverySelector> getSelectorsFromTestCasesHeader(BundleDescriptor bd) {
 		List<DiscoverySelector> selectors = new ArrayList<>();
 		Bundle bundle = bd.getBundle();
-		testCases(bundle).forEach(x -> {
-			try {
-				Class<?> testClass = BundleUtils.getHost(bundle)
-					.get()
-					.loadClass(x);
-				if (!resolvedClasses.contains(testClass)) {
-					resolvedClasses.add(testClass);
-					selectors.add(selectClass(testClass));
+		BundleUtils.testCases(bundle)
+			.forEach(testcase -> {
+				int index = testcase.indexOf('#');
+				String className = (index < 0) ? testcase : testcase.substring(0, index);
+				try {
+					Class<?> testClass = BundleUtils.getHost(bundle)
+						.get()
+						.loadClass(className);
+					if (!resolvedClasses.contains(testClass)) {
+						resolvedClasses.add(testClass);
+						if (index < 0) {
+							selectors.add(selectClass(testClass));
+						} else {
+							MethodSelector methodSelector = selectMethod(testcase);
+							selectors.add(selectMethod(testClass, methodSelector.getMethodName(),
+								methodSelector.getMethodParameterTypes()));
+						}
+					}
+				} catch (ClassNotFoundException cnfe) {
+					final StaticFailureDescriptor unresolvedClassDescriptor = new StaticFailureDescriptor(
+						bd.getUniqueId()
+							.append("test", testcase),
+						testcase, cnfe);
+					bd.addChild(unresolvedClassDescriptor);
 				}
-			} catch (ClassNotFoundException cnfe) {
-				final StaticFailureDescriptor unresolvedClassDescriptor = new StaticFailureDescriptor(bd.getUniqueId()
-					.append("test", x), x, cnfe);
-				bd.addChild(unresolvedClassDescriptor);
-			}
-		});
+			});
 		return selectors;
 	}
 

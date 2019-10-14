@@ -86,4 +86,14 @@ public final class BundleUtils {
 		return !hasTests(bundle);
 	}
 
+	public static Stream<String> testCases(Bundle bundle) {
+		return testCases(bundle.getHeaders()
+			.get(aQute.bnd.osgi.Constants.TESTCASES));
+	}
+
+	public static Stream<String> testCases(String testCases) {
+		return Strings.splitAsStream(testCases)
+			.map(entry -> entry.replace(':', '#'));
+	}
+
 }
