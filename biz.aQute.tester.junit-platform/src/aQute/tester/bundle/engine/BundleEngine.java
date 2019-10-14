@@ -49,7 +49,7 @@ public class BundleEngine implements TestEngine {
 
 	@Override
 	public Optional<String> getGroupId() {
-		return Optional.of("biz.aQute");
+		return Optional.of("biz.aQute.bnd");
 	}
 
 	@Override
