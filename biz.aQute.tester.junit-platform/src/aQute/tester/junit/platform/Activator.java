@@ -41,7 +41,6 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
 import org.osgi.framework.SynchronousBundleListener;
 
-import aQute.lib.strings.Strings;
 import aQute.tester.bundle.engine.BundleEngine;
 import aQute.tester.bundle.engine.discovery.BundleSelector;
 import aQute.tester.junit.platform.reporting.legacy.xml.LegacyXmlReportGeneratingListener;
@@ -71,12 +70,8 @@ public class Activator implements BundleActivator, Runnable {
 		active = true;
 
 		if (!Boolean.valueOf(context.getProperty(TESTER_SEPARATETHREAD))
-			&& Boolean.valueOf(context.getProperty("launch.services"))) { // can't
-																			// register
-																			// services
-																			// on
-																			// mini
-																			// framework
+			&& Boolean.valueOf(context.getProperty("launch.services"))) {
+			// can't register services on mini framework
 			Hashtable<String, String> ht = new Hashtable<>();
 			ht.put("main.thread", "true");
 			ht.put(Constants.SERVICE_DESCRIPTION, "JUnit tester");
@@ -202,16 +197,10 @@ public class Activator implements BundleActivator, Runnable {
 				// ignore
 			}
 		} else {
-			trace("receivednames of classes to test %s", testcases);
+			trace("received names of classes to test %s", testcases);
 			try {
-				baseSelectors = Strings.splitAsStream(testcases)
-					.map(x -> {
-						if (x.contains(":")) {
-							return selectMethod(x.replace(':', '#'));
-						} else {
-							return selectClass(x);
-						}
-					})
+				baseSelectors = BundleUtils.testCases(testcases)
+					.map(testcase -> testcase.indexOf('#') < 0 ? selectClass(testcase) : selectMethod(testcase))
 					.collect(Collectors.toList());
 				automatic();
 			} catch (Exception e) {

@@ -18,13 +18,13 @@ public class BundleDescriptor extends AbstractTestDescriptor {
 	final private BundleException					bundleException;
 	final private Map<TestDescriptor, TestEngine>	engineMap	= new HashMap<>();
 
-	public BundleDescriptor(Bundle b, UniqueId uniqueId) {
-		this(b, uniqueId, null);
+	public BundleDescriptor(Bundle bundle, UniqueId uniqueId) {
+		this(bundle, uniqueId, null);
 	}
 
-	public BundleDescriptor(Bundle b, UniqueId uniqueId, BundleException bundleException) {
-		super(uniqueId, displayNameOf(b));
-		bundle = b;
+	public BundleDescriptor(Bundle bundle, UniqueId uniqueId, BundleException bundleException) {
+		super(uniqueId, displayNameOf(bundle));
+		this.bundle = bundle;
 		this.bundleException = bundleException;
 	}
 
@@ -32,13 +32,13 @@ public class BundleDescriptor extends AbstractTestDescriptor {
 		return bundle;
 	}
 
-	public void addEngine(TestDescriptor d, TestEngine e) {
-		engineMap.put(d, e);
-		addChild(d);
+	public void addEngine(TestDescriptor descriptor, TestEngine engine) {
+		engineMap.put(descriptor, engine);
+		addChild(descriptor);
 	}
 
-	public TestEngine getEngineFor(TestDescriptor d) {
-		return engineMap.get(d);
+	public TestEngine getEngineFor(TestDescriptor descriptor) {
+		return engineMap.get(descriptor);
 	}
 
 	@Override

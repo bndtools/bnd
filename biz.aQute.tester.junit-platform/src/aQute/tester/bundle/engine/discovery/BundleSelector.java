@@ -2,36 +2,40 @@ package aQute.tester.bundle.engine.discovery;
 
 import org.junit.platform.engine.DiscoverySelector;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 
 public class BundleSelector implements DiscoverySelector {
+	private static final VersionRange	allRange	= new VersionRange(VersionRange.LEFT_CLOSED, Version.emptyVersion,
+		null, VersionRange.RIGHT_OPEN);
 
-	private final String		symbolicName;
-	private final VersionRange	version;
+	private final String				symbolicName;
+	private final VersionRange			versionRange;
 
-	private BundleSelector(String symbolicName, VersionRange version) {
+	private BundleSelector(String symbolicName, VersionRange versionRange) {
 		this.symbolicName = symbolicName;
-		this.version = version;
+		this.versionRange = versionRange;
 	}
 
 	public String getSymbolicName() {
 		return symbolicName;
 	}
 
-	public VersionRange getVersion() {
-		return version;
+	public VersionRange getVersionRange() {
+		return versionRange;
 	}
 
-	public static BundleSelector selectBundle(String bsn) {
-		return selectBundle(bsn, "0");
+	public static BundleSelector selectBundle(String symbolicName) {
+		return new BundleSelector(symbolicName, allRange);
 	}
 
-	public static BundleSelector selectBundle(String bsn, String versionRange) {
-		return new BundleSelector(bsn, VersionRange.valueOf(versionRange));
+	public static BundleSelector selectBundle(String symbolicName, String versionRange) {
+		return new BundleSelector(symbolicName, VersionRange.valueOf(versionRange));
 	}
 
 	public static BundleSelector selectBundle(Bundle bundle) {
 		return new BundleSelector(bundle.getSymbolicName(),
-			new VersionRange('[', bundle.getVersion(), bundle.getVersion(), ']'));
+			new VersionRange(VersionRange.LEFT_CLOSED, bundle.getVersion(), bundle.getVersion(),
+				VersionRange.RIGHT_CLOSED));
 	}
 }
