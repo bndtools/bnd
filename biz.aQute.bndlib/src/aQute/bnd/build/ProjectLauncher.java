@@ -619,7 +619,7 @@ public abstract class ProjectLauncher extends Processor {
 			properties.put(Constants.LAUNCH_ACTIVATION_EAGER, Boolean.toString(eager));
 
 		Collection<String> activators = getActivators();
-		if (activators.isEmpty())
+		if (!activators.isEmpty())
 			properties.put(Constants.LAUNCH_ACTIVATORS, join(activators, ","));
 
 		if (!keep)
