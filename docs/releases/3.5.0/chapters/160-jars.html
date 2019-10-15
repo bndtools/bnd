@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/3.5.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Generating JARs</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Generating JARs" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This is about generating JARs" />
+<meta property="og:description" content="This is about generating JARs" />
+<script type="application/ld+json">
+{"@type":"WebPage","url":"/releases/3.5.0/chapters/160-jars.html","headline":"Generating JARs","description":"This is about generating JARs","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<style>
+			 body {
+				counter-reset: h1 9;
+			}
+		</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/3.5.0/"><img
+			class=menu-logo src='/releases/3.5.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/3.5.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/3.5.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/3.5.0/chapters/820-instructions.html">Instructions
+			</a><a href="/releases/3.5.0/chapters/850-macros.html">Macros
+			</a><div class="releases"><button class="dropbtn">3.5.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/3.5.0/chapters/100-release.html">Release</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/150-build.html">Build</a>
+
+
+
+			<li class=selected>Generating JARs
+
+
+
+			<li><a href="/releases/3.5.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/220-contracts.html">Contracts</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/230-manifest-annotations.html">Manifest Annotations</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/300-launching.html">Launching</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/400-commandline.html">From the command line</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/610-plugin.html">Plugins</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/790-format.html">File Format</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/800-headers.html">Header Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/820-instructions.html">Instruction</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/850-macros.html">Macro Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/860-commands.html">Command Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/870-plugins.html">Plugins Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			<div class=enroute><a href="http://enroute.osgi.org">Supported by OSGi enRoute <img src="/releases/3.5.0/img/EnRouteIcon_CMYK.png"></a></div>
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> Generating JARs</h1>
+				<p>This is about generating JARs</p>
+
+<p>This is a simple example of wrapping a jar with bnd. The basic idea is to create a recipe (a .bnd file) that collects the different resources in the right way.</p>
+
+<p>For example, you want to wrap the WebSocket server from https://github.com/TooTallNate/Java-WebSocket. Download the binary and the sources in Websocket.jar, Websocket-src.zip. Once you have these files, the following code will create the org.websocket bundle</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Wrapped version of Github project TooTallNate/Java-WebSocket
+Bundle-SymbolicName: org.websocket
+Bundle-DocURL: https://github.com/TooTallNate/Java-WebSocket
+Bundle-License: https://github.com/TooTallNate/Java-WebSocket/blob/8ef67b46ecc927d5521849dcc2d85d10f9789c20/LICENSE
+Bundle-Description: This repository contains a barebones \
+ WebSocket server and client implementation written \
+ in 100% Java. The underlying classes are implemented \
+ using the Java ServerSocketChannel and SocketChannel \
+ classes, which allows for a non-blocking event-driven model \
+ (similar to the WebSocket API for web browsers). \
+ Implemented WebSocket protocol versions are: Hixie 75, \
+ Hixie 76, Hybi 10, and Hybi 17
+
+# websocket does not define a version yet :-(
+Bundle-Version: 1.0.2
+
+-includeresource: @jar/WebSocket.jar, OSGI-OPT/src=@jar/WebSocket-src.zip
+-exportcontents: org.java_websocket
+</code></pre></div></div>
+
+<p>The documentation headers are optional but very important, just spent the minute to document them since you’ll be grateful later.</p>
+
+<p>If the target project does not have a version, makeup a version and maintain it. Notice that in general the recipe will only be used once for each version, it is normally not used in continuous integration builds. However, you normally use it to convert the next version of the project. Crisp versioning is important.</p>
+
+<p>The <code class="highlighter-rouge">Include-Resource</code> statement unrolls the jars we downloaded in the root of the JAR and in <code class="highlighter-rouge">OSGI-OPT</code>. Since the source code is in the <code class="highlighter-rouge">src</code> directory in the  <code class="highlighter-rouge">WebSocket-src.zip</code> file, we put it in the new JAR under <code class="highlighter-rouge">OSGI-OPT/src</code>. This convention is supported by all IDEs to give you direct access to the bundle’s source code. Since the binary and the source are kept together, you always have the correct source code available, and usually automatically. It is so convenient that once you’re used to this it is hard to imagine a life without source code.</p>
+
+<p>The binaries and sources are not in the final jar but bnd does not yet know what needs to be exported. This can be indicated with the <code class="highlighter-rouge">-exportcontents</code> instruction. It has the same syntax as <code class="highlighter-rouge">Export-Package</code> but does not copy from the classpath, it only applies the instruction to the content of the final JAR.</p>
+
+<h2 id="project">Project</h2>
+<p>The easiest way to build these wrappers is to create a project in bndtools called wrappers and create a bnd descriptor for each one. They are then automatically build (look in generated) and you get a lot of help editing the bnd files.</p>
+
+<p>You can also make an ant file but this is not described here (volunteer?). The other possibility is to use bnd from the [[CommandLine]]. In this case the command is:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bnd websocket.bnd
+</code></pre></div></div>
+
+<h2 id="manifest">Manifest</h2>
+<p>Applying this recipe gives the following manifest in a JAR named <code class="highlighter-rouge">org.websocket.jar</code>:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Manifest-Version: 1.0
+Bnd-LastModified: 1338190175969
+Bundle-Description: This repository contains a barebones WebSocket serve
+ r and client implementation written in 100% Java. The underlying classe
+ s are implemented using the Java ServerSocketChannel and SocketChannel
+ classes, which allows for a non-blocking event-driven model (similar to
+ the WebSocket API for web browsers). Implemented WebSocket protocol ve
+ rsions are: Hixie 75, Hixie 76, Hybi 10, and Hybi 17
+Bundle-DocURL: https://github.com/TooTallNate/Java-WebSocket
+Bundle-License: https://github.com/TooTallNate/Java-WebSocket/blob/8ef67
+ b46ecc927d5521849dcc2d85d10f9789c20/LICENSE
+Bundle-ManifestVersion: 2
+Bundle-Name: org.websocket
+Bundle-SymbolicName: org.websocket
+Bundle-Version: 1.0.2
+Created-By: 1.6.0_27 (Apple Inc.)
+Export-Package: org.java_websocket;version="1.0.2"
+Include-Resource: @jar/WebSocket.jar, OSGI-OPT/src=@jar/WebSocket-src.zip
+Private-Package: org.java_websocket.handshake,org.java_websocket.drafts,
+ org.java_websocket.exceptions,org.java_websocket.util,org.java_websocke
+ t.framing
+Tool: Bnd-1.51.0
+</code></pre></div></div>
+
+<h2 id="extra-entries-on-the-classpath">Extra entries on the Classpath</h2>
+<p>One of the great features of bnd is to use export version from other versions to generate the import ranges. This feature requires that the other JARs are on the classpath. In bndtools you can use the -buildpath. However, you always add entries on the class path per bnd descriptor with the -classpath instruction:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-classpath: dependency.jar, other.jar
+</code></pre></div></div>
+
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/3.5.0/chapters/150-build.html'></a> <a href='/releases/3.5.0/chapters/170-versioning.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/3.5.0/contact.html">Contact</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/3.5.0/">Developers</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/3.5.0/">More</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

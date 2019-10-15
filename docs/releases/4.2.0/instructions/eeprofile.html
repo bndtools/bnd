@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/4.2.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>-eeprofile ‘auto’ PROFILE +</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="-eeprofile ‘auto’ PROFILE +" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="/** * Added for 1.8 profiles. A 1.8 profile is a set of packages so the VM can * be delivered in smaller versions. This method will look at the * {@link Constants#EEPROFILE} option. If it is set, it can be &quot;auto&quot; or it * can contain a list of profiles specified as name=&quot;a,b,c&quot; values. If we * find a package outside the profiles, no profile is set. Otherwise the * highest found profile is added. This only works for java packages. */ private String doEEProfiles(JAVA highest) throws IOException { String ee = getProperty(EEPROFILE); if (ee == null) return highest.getFilter();" />
+<meta property="og:description" content="/** * Added for 1.8 profiles. A 1.8 profile is a set of packages so the VM can * be delivered in smaller versions. This method will look at the * {@link Constants#EEPROFILE} option. If it is set, it can be &quot;auto&quot; or it * can contain a list of profiles specified as name=&quot;a,b,c&quot; values. If we * find a package outside the profiles, no profile is set. Otherwise the * highest found profile is added. This only works for java packages. */ private String doEEProfiles(JAVA highest) throws IOException { String ee = getProperty(EEPROFILE); if (ee == null) return highest.getFilter();" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-10-12T19:48:23-04:00" />
+<script type="application/ld+json">
+{"headline":"-eeprofile ‘auto’ PROFILE +","dateModified":"2019-10-12T19:48:23-04:00","datePublished":"2019-10-12T19:48:23-04:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"/releases/4.2.0/instructions/eeprofile.html"},"url":"/releases/4.2.0/instructions/eeprofile.html","description":"/** * Added for 1.8 profiles. A 1.8 profile is a set of packages so the VM can * be delivered in smaller versions. This method will look at the * {@link Constants#EEPROFILE} option. If it is set, it can be &quot;auto&quot; or it * can contain a list of profiles specified as name=&quot;a,b,c&quot; values. If we * find a package outside the profiles, no profile is set. Otherwise the * highest found profile is added. This only works for java packages. */ private String doEEProfiles(JAVA highest) throws IOException { String ee = getProperty(EEPROFILE); if (ee == null) return highest.getFilter();","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/4.2.0/"><img
+			class=menu-logo src='/releases/4.2.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/4.2.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/4.2.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/4.2.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/4.2.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/4.2.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">4.2.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/4.2.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/150-build.html">Build</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/160-jars.html">Generating JARs</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/220-contracts.html">Contracts</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/230-manifest-annotations.html">Manifest Annotations</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/300-launching.html">Launching</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/305-Junit-Testing-OSGi.html">Plain JUnit Testing with OSGi (PRELIMENARY)</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/400-commands.html">Commands</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/800-headers.html">Headers</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/820-instructions.html">Instruction Reference</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/850-macros.html">Macro Reference</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/855-macros-ref.html">Macro Index</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/870-plugins.html">Plugins</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> -eeprofile 'auto' | PROFILE +</h1>
+				<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	/**
+ * Added for 1.8 profiles. A 1.8 profile is a set of packages so the VM can
+ * be delivered in smaller versions. This method will look at the
+ * {@link Constants#EEPROFILE} option. If it is set, it can be "auto" or it
+ * can contain a list of profiles specified as name="a,b,c" values. If we
+ * find a package outside the profiles, no profile is set. Otherwise the
+ * highest found profile is added. This only works for java packages.
+ */
+private String doEEProfiles(JAVA highest) throws IOException {
+	String ee = getProperty(EEPROFILE);
+	if (ee == null)
+		return highest.getFilter();
+
+	ee = ee.trim();
+
+	Map&lt;String,Set&lt;String&gt;&gt; profiles;
+
+	if (ee.equals(EEPROFILE_AUTO_ATTRIBUTE)) {
+		profiles = highest.getProfiles();
+		if (profiles == null)
+			return highest.getFilter();
+	} else {
+		Attrs t = OSGiHeader.parseProperties(ee);
+		profiles = new HashMap&lt;String,Set&lt;String&gt;&gt;();
+
+		for (Map.Entry&lt;String,String&gt; e : t.entrySet()) {
+			String profile = e.getKey();
+			String l = e.getValue();
+			SortedList&lt;String&gt; sl = new SortedList&lt;String&gt;(l.split("\\s*,\\s*"));
+			profiles.put(profile, sl);
+		}
+	}
+	SortedSet&lt;String&gt; found = new TreeSet&lt;String&gt;();
+	nextPackage: for (PackageRef p : referred.keySet()) {
+		if (p.isJava()) {
+			String fqn = p.getFQN();
+			for (Entry&lt;String,Set&lt;String&gt;&gt; entry : profiles.entrySet()) {
+				if (entry.getValue().contains(fqn)) {
+
+					found.add(entry.getKey());
+
+					//
+					// Check if we found all the possible profiles
+					// that means we're finished
+					//
+
+					if (found.size() == profiles.size())
+						break nextPackage;
+
+					//
+					// Profiles should be exclusive
+					// so we can break if we found one
+					//
+					continue nextPackage;
+				}
+			}
+
+			//
+			// Ouch, outside any profile
+			//
+			return highest.getFilter();
+		}
+	}
+
+	String filter = highest.getFilter();
+	if (!found.isEmpty())
+		filter = filter.replaceAll("JavaSE", "JavaSE/" + found.last());
+	// TODO a more elegant way to build the filter, we now assume JavaSE
+	return filter;
+
+}
+</code></pre></div></div>
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/4.2.0/instructions/dsannotations.html'></a> <a href='/releases/4.2.0/instructions/executable.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/4.2.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

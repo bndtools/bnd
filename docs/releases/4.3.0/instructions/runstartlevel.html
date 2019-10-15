@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/4.3.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>-runstartlevel ( order begin step )*</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="-runstartlevel ( order begin step )*" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="After a resolve the resolver calculates a number of resources that are mapped to bundles. This mapping can include ordering and assigned startlevels. The basic instruction that parameterizes this is -runstartlevel." />
+<meta property="og:description" content="After a resolve the resolver calculates a number of resources that are mapped to bundles. This mapping can include ordering and assigned startlevels. The basic instruction that parameterizes this is -runstartlevel." />
+<script type="application/ld+json">
+{"@type":"WebPage","url":"/releases/4.3.0/instructions/runstartlevel.html","headline":"-runstartlevel ( order begin step )*","description":"After a resolve the resolver calculates a number of resources that are mapped to bundles. This mapping can include ordering and assigned startlevels. The basic instruction that parameterizes this is -runstartlevel.","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/4.3.0/"><img
+			class=menu-logo src='/releases/4.3.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/4.3.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/4.3.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/4.3.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/4.3.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/4.3.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">4.3.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/4.3.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/150-build.html">Build</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/155-project-setup.html">Project Setup</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/160-jars.html">Generating JARs</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/220-contracts.html">Contracts</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/235-accessor-properties.html">Accessor Properties</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/240-spi-annotations.html">SPI Annotations</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/300-launching.html">Launching</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/305-startlevels.html">Startlevels</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/330-jpms.html">JPMS Libraries</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/395-generating-documentation.html">Generating Documentation</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/400-commands.html">Commands</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/800-headers.html">Headers</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/820-instructions.html">Instruction Reference</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/850-macros.html">Macro Reference</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/855-macros-ref.html">Macro Index</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/870-plugins.html">Plugins</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/4.3.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> -runstartlevel ( order | begin | step )*</h1>
+				<p>After a <a href="/chapters/250-resolving.html">resolve</a> the resolver calculates a number of resources that are mapped to bundles. This mapping can
+include ordering and assigned startlevels. The basic instruction that parameterizes this is <code class="highlighter-rouge">-runstartlevel</code>.</p>
+
+<h2 id="default-behavior-when-not-set">Default behavior when not set</h2>
+
+<p>If <code class="highlighter-rouge">-runstartlevel</code> is not set the set of -runbundles will be sorted by name and version after which it is merged with the existing
+<code class="highlighter-rouge">-runbundles</code>. Setting the <code class="highlighter-rouge">-runstartlevel</code> makes it possible to let bnd assign startlevels based on different
+ordering strategies.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<p>This instruction has the following syntax:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-runstartlevel      ::= runstartlevel ( ',' runstartlevel )
+runstartlevel       ::  order | begin | step
+order               ::= 'order=' ORDER
+ORDER               ::=
+        'leastdependenciesfirst'
+    |   'leastdependencieslast'
+    |   'random'
+    |   'sortedbyname'
+    |   'mergedsortedbyname'
+begin               ::= 'begin=' NUMBER
+step                ::= 'step=' NUMBER
+</code></pre></div></div>
+
+<p>The final <code class="highlighter-rouge">-runstartlevel</code> flattens the properties so that the last of each of <code class="highlighter-rouge">order</code>, <code class="highlighter-rouge">begin</code>, or <code class="highlighter-rouge">step</code> will be used.</p>
+
+<h3 id="order-types">Order Types</h3>
+
+<p>The value of <code class="highlighter-rouge">order</code> can take on the following values:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">mergedsortedbyname</code> – Ordering by name (and version) and then merging was the original behavior. This is therefore the default.</li>
+  <li><code class="highlighter-rouge">sortedbyname</code> – For completeness, this option orders the bundles by name and version and then assigns a startlevel.</li>
+  <li><code class="highlighter-rouge">random</code> – Use a random ordering. The ordering uses an algorithm that is based on the random number generator and should therefore
+be different on each run.</li>
+  <li><code class="highlighter-rouge">leastdependenciesfirst</code> – Sort the resources <em>topologically</em> and place the resources with the least dependencies first.</li>
+  <li><code class="highlighter-rouge">leastdependencieslast</code> – Sort the resources <em>topologically</em> and place the resources with the least dependencies last.</li>
+</ul>
+
+<p>The topological sorting algorithm is based on <a href="https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm">Tarjan</a>. It can handle cyclic dependencies well. However, cyclic dependencies
+make the ordering not perfect.</p>
+
+<h2 id="startlevels">Startlevels</h2>
+
+<p>After the resources have been resolved they are sorted according to the <code class="highlighter-rouge">order</code>. If the <code class="highlighter-rouge">begin</code> attribute is set and
+higher than 0, the resources will be assigned a startlevel that starts at the given value. By default, the step for each
+bundle is 10. (A lesson taught to us by BASIC) The step can be overridden by setting the <code class="highlighter-rouge">step</code> value.</p>
+
+<p>If the <code class="highlighter-rouge">begin</code> value is not set, or it is set to a value &lt; 1, then no startlevel attribute is added. However, the
+order of the <code class="highlighter-rouge">-runbundles</code> will be in the specified <code class="highlighter-rouge">order</code>. In most cases, this is then some kind of <em>natural</em> ordering
+since launchers start these</p>
+
+<p>If you set the <code class="highlighter-rouge">step</code> to 0 then all bundles will be assigned the same startlevel. However, the <code class="highlighter-rouge">-runbundles</code> has the proper
+order.</p>
+
+<h2 id="example">Example</h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-runstartlevel: \
+    order = leastdependenciesfirst, \
+    begin = 1000, \
+    step  =    1
+</code></pre></div></div>
+
+<p>After resolving, this can generate:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-runbundles: \
+	org.apache.felix.configadmin;version='[1.8.8,1.8.9)';startlevel=1000,\
+	org.apache.felix.http.jetty;version='[3.2.0,3.2.1);startlevel=1001',\
+	org.apache.felix.http.servlet-api;version='[1.1.2,1.1.3);startlevel=1002',\
+	...
+	osgi.enroute.twitter.bootstrap.webresource;version='[3.3.5,3.3.6);startlevel=1019',\
+	osgi.enroute.web.simple.provider;version='[2.1.0,2.1.1);startlevel=1020'
+</code></pre></div></div>
+
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/4.3.0/instructions/runrequires.html'></a> <a href='/releases/4.3.0/instructions/runstorage.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/4.3.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

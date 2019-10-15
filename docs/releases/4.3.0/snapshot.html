@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>OSGi bnd Snapshot Viewer</title>
+    <script src="https://unpkg.com/vue"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP"
+        crossorigin="anonymous">
+
+    <style>
+        table.table td.table {
+            margin: 0px;
+            padding: 0px;
+            border: 0px;
+        }
+
+        table.table td.table table {
+            border: 0px;
+            width: 100%;
+            height: 100%;
+        }
+
+        span.timing {
+            font-size: smaller
+        }
+    </style>
+</head>
+
+<body>
+    <section class="section" id="app" style="max-width: 1200px;font-size:smaller">
+
+        <div class="container">
+
+            <input class="box" type="file" @change="handleFileSelect">
+
+            <div class="tabs">
+                <ul>
+                    <li :class="{ 'is-active': active==='errors'}">
+                        <a @click="active='errors'">Errors{{ getErrors().length != 0 ? "!" : ""}}</a>
+                    </li>
+                    <li :class="{ 'is-active': active==='bundles'}">
+                        <a @click="active='bundles'">Bundles</a>
+                    </li>
+                    <li :class="{ 'is-active': active==='services'}">
+                        <a @click="active='services'">Services</a>
+                    </li>
+                    <li :class="{ 'is-active': active==='packages'}">
+                        <a @click="active='packages'">Packages</a>
+                    </li>
+                    <li :class="{ 'is-active': active==='instances'}">
+                        <a @click="active='instances'">Instances</a>
+                    </li>
+                    <li :class="{ 'is-active': active==='templates'}">
+                        <a @click="active='templates'">Templates</a>
+                    </li>
+                    <li :class="{ 'is-active': active==='configs'}">
+                        <a @click="active='configs'">Configuration</a>
+                    </li>
+                    <li :class="{ 'is-active': active==='logs'}">
+                        <a @click="active='logs'">Logs{{getLog().filter( function(l) { "ERROR" === l.level || "WARNING" == l.level } ).length != 0
+                            ? "!" : ""}}</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div v-if="snapshot.framework && active=='errors'">
+
+                <div class="notification" v-for="e in getErrors()">
+                    {{e}}
+                </div>
+
+                <template v-for="bundle in getBundles()">
+                    <template v-for="wait in bundle.waiting">
+                        <div class="notification is-danger" v-if="wait.hidden && wait.hidden.length > 0">
+                            <h2>Hidden Services</h2>
+                            In
+                            <bundle-ref :bundleid="bundle.id" /> the services
+                            <service-ref v-for="serviceid in wait.hidden" :serviceid="serviceid" :key="sericeid" /> are hidden from view.
+                        </div>
+                    </template>
+                </template>
+
+            </div>
+
+            <table class="table is-bordered is-fullwidth" v-if="snapshot.framework && active==='bundles'">
+
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Id</th>
+                        <th>Symbolic Name</th>
+                        <th>Version</th>
+                        <th>State</th>
+                        <th>Last Modified</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <template v-for="bundle in getBundles()">
+                        <tr :key="bundle.id||0" :id="'b-'+(bundle.id||0)">
+                            <td>
+                                <open v-model="selectedBundle" :target="bundle.id||0" />
+                            </td>
+                            <td :title="bundle.location">{{bundle.id||0}}</td>
+                            <td>
+                                <b>{{bundle.symbolicName}}</b>
+                                <p>{{bundle.headers['Bundle-Description']}}</p>
+                            </td>
+                            <td>{{bundle.version}}</td>
+                            <td>
+                                <i :class="bundleState(bundle.state)"></i>
+                            </td>
+                            <td>
+                                <duration :global="time" :t="bundle.lastModified"></duration>
+                            </td>
+                        </tr>
+                        <tr v-if="selectedBundle==(bundle.id||0)">
+                            <td colspan="2"></td>
+                            <td colspan="5" class="table">
+                                <table>
+                                    <tbody>
+                                        <tr>
+                                            <th>Location</th>
+                                            <td>{{bundle.location}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Exports</th>
+                                            <td class="table">
+                                                <table>
+                                                    <colgroup>
+                                                        <col style="width: 50%">
+                                                        <col style="width: 50%">
+                                                    </colgroup>
+                                                    <tbody>
+                                                        <tr v-for="exportId in bundle.exports" :key="exportId">
+                                                            <td>
+                                                                <package-ref :packageid="exportId" />
+                                                            </td>
+                                                            <td>
+                                                                <bundle-ref v-for="usingId in getPackage(exportId).importingBundles" :bundleid="usingId" :key="usingId" />
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Imports</th>
+                                            <td class="table">
+                                                <table>
+                                                    <colgroup>
+                                                        <col style="width: 50%">
+                                                        <col style="width: 50%">
+                                                    </colgroup>
+                                                    <tbody>
+                                                        <tr v-for="importId in bundle.imports">
+                                                            <td>
+                                                                <package-ref :packageid="importId" />
+                                                            </td>
+                                                            <td>
+                                                                <bundle-ref :bundleid="getPackage(importId).exportingBundle" />
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Services</th>
+                                            <td class="table">
+                                                <table v-if="bundle.registeredServices || bundle.usingServices || bundle.waiting ">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Registered</th>
+                                                            <th>Using</th>
+                                                            <th>Waiting</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>
+                                                                <service-ref v-for="registeredId in bundle.registeredServices" :serviceid="registeredId" :key="registeredId" />
+                                                            </td>
+                                                            <td>
+                                                                <service-ref v-for="usingId in bundle.usingServices" :serviceid="usingId" :key="usingId" />
+                                                            </td>
+                                                            <td>
+                                                                <div v-for="w in bundle.waiting">
+                                                                    {{w.filter}}
+                                                                    <service-ref class="is-danger" v-for="hiddenId in w.hidden" :serviceid="hiddenId" :key="hiddenId" />
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Components</th>
+                                            <td class="table">
+                                                <div :setx="instances = getInstances().filter( i => getTemplate(i.templateId).bundleId == bundle.id)">
+                                                    <table v-if="instances">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Id</th>
+                                                                <th>State</th>
+                                                                <th>References</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr v-for="instance in instances">
+                                                                <td>
+                                                                    <instance-ref :instanceid="instance.id" />
+                                                                </td>
+                                                                <td>
+                                                                    {{getComponentState(instance )}}
+                                                                </td>
+                                                                <td>
+                                                                    {{ref.name}} (
+                                                                    <span v-for="id in ref.boundedServiceIds">
+                                                                        <service-timing :service="getService(id)"> </service-timing>
+                                                                    </span>)
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Properties</th>
+                                            <td class="table">
+                                                <bnd-properties :properties="bundle.headers" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Log</th>
+                                            <td class="table">
+                                                <table v-if="getLogByBundle(bundle.id)">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Level</th>
+                                                            <th>Message</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-for="log in getLogByBundle(bundle.id)">
+                                                            <td>
+                                                                {{getLogLevel(log)}}
+                                                            </td>
+                                                            <td>
+                                                                {{log.message}}
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+
+
+            <table class="table is-bordered is-fullwidth" v-if="snapshot.framework && active==='services'">
+                <thead>
+                    <th></th>
+                    <th>Id</th>
+                    <th>Interface(s)</th>
+                    <th>Timing(s)</th>
+                    <th>Scope</th>
+                    <th>Component</th>
+                    <th>Registrar</th>
+                    <th>Using Bundles</th>
+                </thead>
+                <tbody>
+                    <template v-for="service in getServices()">
+                        <tr>
+                            <td>
+                                <open v-model="selectedService" :target="service.id" />
+                            </td>
+                            <td :id="'s-'+service.id">
+                                {{service.id}}
+                            </td>
+                            <td>
+                                <b :title="service.properties.objectClass">{{objectClass(service.properties.objectClass)}}</b>
+                                <p>{{service.properties['service.description']}}</p>
+
+                            </td>
+                            <td>
+                                <service-timing :service="service" ></service-timing>
+                            </td>
+                            <td>
+                                {{service.properties['service.scope']}}
+                            </td>
+                            <td>
+                                <instance-ref v-if="service.properties['component.id']" :instanceid="service.properties['component.id']" />
+                            </td>
+                            <td>
+                                <bundle-ref :bundleid="service.bundle" />
+                            </td>
+                            <td>
+                                <bundle-ref v-for="usingId in service.usingBundles" :bundleid="usingId" :key="usingId" />
+                            </td>
+                        </tr>
+                        <tr v-if="selectedService==service.id">
+                            <td colspan="2"></td>
+                            <td colspan="5" class="table">
+                                <bnd-properties :properties="service.properties" />
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+
+            </table>
+
+            <table class="table is-bordered is-fullwidth" v-if="snapshot.scr && active==='instances'">
+                <thead>
+                    <th></th>
+                    <th>Id</th>
+                    <th>Timing</th>
+                    <th>Template</th>
+                    <th>State</th>
+                    <th>Service</th>
+                    <th>Bundle</th>
+                    <th>References</th>
+                </thead>
+                <tbody>
+                    <template v-for="instance in getInstances()">
+                        <tr>
+                            <td>
+                                <open v-model="selectedInstance" :target="instance.id" />
+                            </td>
+                            <td :id="'i-'+instance.id">{{instance.id}}</td>
+                            <td>
+                                <service-timing v-if="instance.serviceId" :service="getService(instance.serviceId)"/>
+                            </td>
+                            <td>
+                                <template-ref :templateid="instance.templateId" />
+                            </td>
+                            <td>
+                                {{getComponentState(instance)}}
+                            </td>
+                            <td>
+                                <service-ref v-if="instance.serviceId>=0" :serviceid="instance.serviceId" />
+                            </td>
+                            <td>
+                                <bundle-ref :bundleid="getTemplate(instance.templateId).bundleId" />
+                            </td>
+                            <td>
+                                <div v-for="ref in Object.values(instance.references)" :class="{ 'has-text-danger': !ref.satisfied , 'has-text-success': ref.satisfied }">
+                                    {{ref.name}} (
+                                    <span v-for="id in ref.boundedServiceIds">
+                                        <service-timing :service="getService(id)"> </service-timing>
+                                    </span>)
+                                </div>
+                            </td>
+                        </tr>
+                        <tr v-if="selectedInstance===instance.id">
+                            <td colspan="1" />
+                            <td colspan="5" class="table">
+                                <table>
+                                    <tbody>
+                                        <tr>
+                                            <td>References</td>
+                                            <td class="table">
+                                                <table>
+                                                    <thead>
+                                                        <th>Name</th>
+                                                        <th>Target</th>
+                                                        <th>Service</th>
+                                                        <th>Cardinality</th>
+                                                        <th>Candidates</th>
+
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-for="ref in Object.values(instance.references)" :set="tref=getTemplateReference(instance.templateId,ref.name)">
+                                                            <td>
+                                                                <div :class="{ 'has-text-danger':!ref.satisfied }">{{ref.name}}</div>
+                                                            </td>
+                                                            <td>{{instance.target}}</td>
+                                                            <td>
+                                                                {{shorten(tref.service)}}
+                                                            </td>
+                                                            <td>
+                                                                {{tref.cardinality}}
+                                                            </td>
+                                                            <td>
+                                                                <service-ref v-for="boundId in ref.boundedServiceIds" :serviceid="boundId" :key="boundId" />
+                                                                <div v-if="ref.candidateServiceIds">
+                                                                    <b>Candidates</b>
+                                                                    <service-ref v-for="boundId in ref.candidateServiceIds" :serviceid="boundId" :key="boundId" />
+                                                                </div>
+                                                                <div v-if="ref.candidateServiceIds">
+                                                                    <b>Hidden</b>
+                                                                    <service-ref v-for="boundId in ref.candidateServiceIds" :serviceid="boundId" class="has-text-danger" :key="boundId" />
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                Name
+                                            </th>
+                                            <td>{{getTemplate(instance.templateId).name}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Factory</th>
+                                            <td>{{getTemplate(instance.templateId).factory}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Scope</th>
+                                            <td>{{getTemplate(instance.templateId).scope}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Implementation</th>
+                                            <td>{{getTemplate(instance.templateId).implementationClass}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Immediate</th>
+                                            <td>{{getTemplate(instance.templateId).immediate}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Activate</th>
+                                            <td>{{getTemplate(instance.templateId).activate}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Deactivate</th>
+                                            <td>{{getTemplate(instance.templateId).decativate}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Modified</th>
+                                            <td>{{getTemplate(instance.templateId).modified}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Configuration Policy</th>
+                                            <td>{{getTemplate(instance.templateId).configurationPolicy}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                Configuration
+                                            </th>
+                                            <td>
+                                                <div v-for="pid in getTemplate(instance.templateId).configurationPid" :class="{'has-text-danger': hasPid(pid).length==0}">
+                                                    <b>{{pid}}</b>
+                                                    <bnd-properties v-for="cnf in hasPid(pid)" :properties="cnf" :key="pid" />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Properties</th>
+                                            <td class="table">
+                                                <bnd-properties :properties="instance.properties" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+
+            </table>
+
+            <table class="table is-bordered is-fullwidth" v-if="snapshot.scr && active==='templates'">
+                <thead>
+                    <th></th>
+                    <th>Id</th>
+                    <th>Service(s)</th>
+                    <th>Bundle</th>
+                    <th>Enabled</th>
+                    <th>Instances</th>
+                </thead>
+                <tbody>
+                    <template v-for="template in getTemplates()">
+                        <tr>
+                            <td>
+                                <open v-model="selectedTemplate" :target="template.id" />
+                            </td>
+                            <td :id="'t-'+template.id">
+                                <div :title="template.name">{{template.id}}</div>
+                            </td>
+                            <td>
+                                {{objectClass(template.serviceInterfaces)}}
+                            </td>
+                            <td>
+                                <bundle-ref :bundleid="template.bundleId" />
+                            </td>
+                            <td>
+                                {{template.isEnabled}}
+                            </td>
+                            <td>
+                                <instance-ref v-for="instance in getInstances().filter( i => i.templateId == template.id )" :instanceid="instance.id" :key="instance.id"
+                                />
+                            </td>
+                        </tr>
+                        <tr v-if="selectedTemplate==template.id">
+                            <td colspan="1">
+
+                            </td>
+                            <td colspan="5" class="table">
+                                <table>
+                                    <tr>
+                                        <th>References</th>
+                                        <td class="table">
+                                            <table>
+                                                <thead>
+                                                    <th>Name</th>
+                                                    <th>Service</th>
+                                                    <th>Cardinality</th>
+                                                    <th>Policy</th>
+                                                    <th>Bind</th>
+                                                    <th>Scope</th>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="ref in Object.values(template.references)">
+                                                        <td>{{ref.name}}</td>
+                                                        <td :title="ref.service">{{shorten(ref.service)}}</td>
+                                                        <td>{{ref.cardinality}} {{ref.target}}</td>
+                                                        <td>{{ref.policy}} {{ref.policyOption}}</td>
+                                                        <td>
+                                                            <template v-if="ref.field">
+                                                                {{ref.field}} {{ref.fieldOption}}
+                                                            </template>
+                                                            <template v-else>
+                                                                <span v-if="ref.bind">{{ref.bind}}()</span> /
+                                                                <span v-if="ref.update">{{ref.updated}}()</span> /
+                                                                <span v-if="ref.unbind">{{ref.unbind}}</span>
+                                                            </template>
+                                                        </td>
+                                                        <td>
+                                                            {{ref.scope}}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Name</th>
+                                        <td>{{template.name}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Factory</th>
+                                        <td>{{template.factory}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Scope</th>
+                                        <td>{{template.scope}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Implementation</th>
+                                        <td>{{template.implementationClass}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Default Enabled</th>
+                                        <td>{{template.defaultEnabled}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Immediate</th>
+                                        <td>{{template.immediate}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Services</th>
+                                        <td>{{template.serviceInterfaces.join("\\n")}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Activate</th>
+                                        <td>{{template.activate}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Modified</th>
+                                        <td>{{template.modified}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Deactivate</th>
+                                        <td>{{template.deactivate}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Conf. Policy</th>
+                                        <td>{{template.configurationPolicy}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            Configuration
+                                        </th>
+                                        <td>
+                                            <div v-for="pid in template.configurationPid" :class="{'has-text-danger': hasPid(pid).length==0}">
+                                                <b>{{pid}}</b>
+                                                <bnd-properties v-for="cnf in hasPid(pid)" :properties="cnf" :key="pid" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Enabled</th>
+                                        <td>{{template.isEnabled}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Properties</th>
+                                        <td class="table">
+                                            <bnd-properties :properties="template.properties" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+
+            </table>
+
+
+            <div v-if="snapshot.framework && active==='packages'">
+                <label class="checkbox">
+                    <input v-model="hideNoImporters" type="checkbox"> Hide without importers
+                </label>
+                <table class="table is-bordered is-fullwidth">
+                    <thead>
+                        <th>Id</th>
+                        <th>Package</th>
+                        <th>Version</th>
+                        <th>Exporter</th>
+                        <th>Importers</th>
+                        <th>Duplicates</th>
+                        <th>Removal Pend.</th>
+                    </thead>
+                    <tbody>
+                        <tr v-for="p in getPackages()" :class="{ 'has-text-danger': p.duplicates.length }" v-if="!hideNoImporters || p.importingBundles.length > 0"
+                            :key="p.id">
+                            <td :id="'p-'+p.id">{{p.id}}</td>
+                            <td>{{p.name}}</td>
+                            <td>
+                                <div v-for="v in Object.keys(p.versions)" :key="v">{{v}}</div>
+                            </td>
+                            <td>
+                                <bundle-ref :bundleId="p.exportingBundle" />
+                            </td>
+                            <td>
+                                <bundle-ref v-for="bundleId in p.importingBundles" :bundleid="bundleId" :key="bundleId" />
+                            </td>
+                            <td>
+                                <package-ref v-for="v in p.duplicates" :packageid="v" :key="v" />
+                            </td>
+                            <td>{{p.removalPending}}</td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+            <table class="table is-bordered is-fullwidth" v-if="snapshot.cnf && active=='configs'" id="configs">
+                <thead>
+                    <th></th>
+                    <th>FactoryPID</th>
+                    <th>PID</th>
+                    <th>Change</th>
+                    <th>Location</th>
+                </thead>
+                <tbody>
+                    <template v-for="cnf in getConfigurations().sort( (a,b) => a.factoryPid == b.factoryPid ? 0 : a.factoryPid>b.factoryPid ? 1 : -1)">
+                        <tr>
+                            <td>
+                                <open v-model="selectedConfiguration" :target="cnf.pid" />
+                            </td>
+                            <td>
+                                {{cnf.factoryPid}}
+                            </td>
+                            <td>
+                                {{cnf.pid}}
+                            </td>
+                            <td>
+                                {{cnf.changeCount}}
+                            </td>
+                            <td>
+                                {{cnf.bundleLocation}}
+                            </td>
+                        </tr>
+                        <tr v-if="selectedConfiguration===cnf.pid">
+                            <td colspan="1"></td>
+                            <td colspan="4" class="table">
+                                <bnd-properties :properties="cnf.properties" />
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+
+
+            <table class="table is-bordered is-fullwidth" v-if="snapshot.log && active=='logs'">
+                <thead>
+                    <th>Seq</th>
+                    <th>Level</th>
+                    <th>Message</th>
+                    <th>Time</th>
+                    <th>Name</th>
+                    <th>Bundle</th>
+                    <th>Thread</th>
+                </thead>
+                <tbody>
+                    <tr v-for="log in snapshot.log.log">
+                        <td>{{log.sequence}}</td>
+                        <td :id="'l-'+log.sequence">{{getLogLevel(log)}}</td>
+                        <td>
+                            {{log.message}}
+                            <div v-if="log.exception!=null">{{log.exception}}</div>
+                        </td>
+                        <td>{{new Date(log.time)}}</td>
+                        <td>{{log.loggerName}}</td>
+                        <td>
+                            <bundle-ref :bundleid="log.bundle" />
+                        </td>
+                        <td>{{log.threadInfo}}</td>
+                    </tr>
+                </tbody>
+
+            </table>
+        </div>
+
+    </section>
+
+
+    <script>
+        /**
+                                                                                                                                                                                  DURATION
+                                                                                                                                                                                */
+        Vue.component("duration", {
+            props: ["global", "t"],
+            data: function () {
+                return {
+
+                }
+            },
+            methods: {
+                ago: function () {
+                    if (isNaN(this.t))
+                        return "0"
+
+                    var delta = Math.round((this.global - this.t) / 1000)
+                    if (delta < 300)
+                        return delta + " secs"
+
+                    delta = Math.round(delta / 60)
+                    if (delta < 180)
+                        return delta + " mins"
+
+                    delta = Math.round(delta / 24)
+                    if (delta < 300)
+                        return delta + " days"
+
+                    delta = Math.round(delta / 7)
+                    if (delta < 300)
+                        return delta + " weeks"
+
+                    return Math.round(delta / 52) + " year"
+                }
+            },
+            template: "<span>{{ago()}}</span>"
+        })
+
+        /**
+         * Open
+         */
+
+        Vue.component("open", {
+            props: ["value", "target"],
+            methods: {
+                select: function (t) {
+                    this.value = t
+                }
+            },
+            template: `<i 
+			   v-on:click="value == target ? $emit('input', null) : $emit('input', target)" 
+			   :class="{ fas: true, 'fa-caret-down': (value==target), 'fa-caret-right': (value!=target)}"></i>`
+        })
+
+        /**
+         * PROPERTIES
+         */
+
+        Vue.component("bnd-properties", {
+            props: ["properties"],
+            template: `
+               <table class="table bnd-fullwidth" >
+                <colgroup width="25%"/>
+                <colgroup width="75%"/>
+               <tbody>
+	                   <tr v-for=" (v,k) in properties" :key="k">
+	                       <th>{{k}}</th>
+	                       <td v-if="Array.isArray(v)"><div v-for="s in v">{{s}}</div></td>
+	                       <td v-else>{{$parent.cleanup(v)}}</td>
+	                   </tr>
+	               </tbody>
+               </table> `
+
+        })
+
+        /**
+         * BUNDLEREF
+         */
+
+        Vue.component("bundle-ref", {
+            props: ["bundleid"],
+            template: `
+	    		  <div>
+	    		     <a @click="$parent.selectedBundle=(bundleid||0)" :href="'#b-' + (bundleid||0)">[{{ (bundleid||0) }}]-{{$parent.getBundle(bundleid).symbolicName}}</a>
+	    		  </div>
+	    	`
+
+        })
+
+        /**
+         * PACKAGEREF
+         */
+
+        Vue.component("package-ref", {
+            props: ["packageid"],
+            template: `
+                  <div>
+                     <a :class="{ 'has-text-danger':$parent.getPackage(packageid).duplicate }"  :href="'#p-' + packageid">|{{packageid}}|-{{$parent.getPackage(packageid).name}};{{$parent.getPackage(packageid).version}}</a>
+                  </div>
+            `
+
+        })
+
+        /**
+         * SERVICEREF
+         */
+
+        Vue.component("service-ref", {
+            props: ["serviceid"],
+            methods: {
+                srv: function () {
+                    var s = this.$parent.getService(this.serviceid)
+                    if (!s)
+                        console.log("??")
+                    return s
+                },
+                objectClass: function () {
+                    return this.$parent.objectClass(this.srv().properties.objectClass)
+                }
+
+            },
+            template: `
+                  <div>
+                     <a :href="'#s-' + serviceid" :title="srv() ? srv().properties.objectClass.join('\\n') : 'YYYYYYYYYYYYYYY'">({{serviceid}}) - 
+                     {{srv() ? $parent.objectClass(srv().properties.objectClass) : 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXX'}}</a>
+                  </div>
+            `
+
+        })
+
+        /**
+         * TEMPLATEREF
+         */
+
+        Vue.component("template-ref", {
+            props: ["templateid"],
+            methods: {},
+            template: `
+                  <div>
+                     <a :href="'#t-' + templateid">&lt;{{templateid}}&gt;</a>
+                  </div>
+            `
+
+        })
+
+        /**
+         * INSTANCEREF
+         */
+
+        Vue.component("instance-ref", {
+            props: ["instanceid"],
+            methods: {},
+            template: `
+                  <div>
+                     <a :href="'#i-' + instanceid">&lt;{{instanceid}}&gt;</a>
+                  </div>
+            `
+
+        })
+
+        /**
+         * SERVICE-TIMING
+         */
+
+        Vue.component("service-timing", {
+            props: ["service"],
+            methods: {},
+            template: `
+                  <span>
+                    <span v-for="t in service.timings" class="timing">
+                        {{ Math.round(t / 100000) / 10 }} ms
+                    </span>
+                  </span>
+            `
+        })
+
+        var bundleStates = {
+            1: "fas fa-ban", // uninstalled
+            2: "far fa-paper-plane", // installed
+            4: "far fa-plane", // resolved
+            8: "fas fa-plane-departure", // starting
+            16: "fas fa-plane-arrival", // stopping
+            32: "fas fa-fighter-jet", // active
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                snapshot: {},
+                time: new Date().getTime(),
+                selectedBundle: null,
+                selectedService: null,
+                selectedTemplate: null,
+                selectedInstance: null,
+                selectedConfiguration: null,
+                selectedPackage: null,
+                instances: null,
+                tref: null,
+                active: 'bundles',
+                hideNoImporters: true
+            },
+            methods: {
+                handleFileSelect: function (evt) {
+                    var file = evt.target.files[0]
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        app.snapshot = JSON.parse(e.target.result)
+                        window.location.hash = ""
+                    }
+                    if (file)
+                        reader.readAsText(file)
+                },
+                scaleTime: function(t) {
+                    return Math.round(t/100000)/10;
+                },
+                bundleState: function (state) {
+                    var r = bundleStates[state]
+                    if (!r)
+                        r = ""
+                    return r
+                },
+                getBundle: function (bundleId) {
+                    return this.snapshot.framework.bundles[bundleId || 0]
+                },
+                isSelected: function (bundle) {
+                    return window.location.hash == "#bundle-" + bundle.id
+                },
+                getService: function (serviceId) {
+                    return this.snapshot.framework.services[serviceId]
+                },
+                shorten: function (s) {
+                    var n = s.lastIndexOf(".")
+                    return s.substring(n + 1)
+                },
+                objectClass: function (oc) {
+                    var result = "";
+                    var del = "";
+                    oc.forEach(function (s) {
+                        result += del;
+                        result += app.shorten(s);
+                        del = "  | "
+                    })
+                    return result
+                },
+                getBundles: function () {
+                    return Object.values(this.snapshot.framework.bundles)
+                },
+                getPackages: function () {
+                    return Object.values(this.snapshot.framework.packages).sort((a, b) => a.name === b.name ?
+                        0 : a.name > b.name ? 1 : -1)
+                },
+                getPackage: function (id) {
+                    return this.snapshot.framework.packages[id]
+                },
+                getImports: function (bundle) {
+                    return this.getPackages().filter(p => p.importingBundles.indexOf(bundle.id) >= 0)
+                },
+                getExports: function (bundle) {
+                    return this.getPackages().filter(p => p.exportingBundle === bundle.id)
+                },
+                getServices: function () {
+                    var srvcs = Object.values(this.snapshot.framework.services)
+                    return srvcs
+                },
+                getTemplates: function () {
+                    var dscrs = Object.values(this.snapshot.scr.templates)
+                    return dscrs
+                },
+                getTemplate: function (templateId) {
+                    return this.snapshot.scr.templates[templateId]
+                },
+                getTemplateReference: function (templateId, referenceName) {
+                    var template = this.getTemplate(templateId)
+                    return template.references[referenceName]
+
+                },
+                getInstances: function () {
+                    return this.snapshot.scr ? Object.values(this.snapshot.scr.instances) : []
+                },
+                getInstance: function (instanceId) {
+                    return this.snapshot.scr.templates[instanceId]
+                },
+                getComponentState: function (instance) {
+                    if (instance.state == 1)
+                        return "UNSAT CFG";
+
+                    if (instance.state == 2)
+                        return "UNSAT REF";
+
+                    if (instance.state == 4)
+                        return "SATISFIED";
+
+                    if (instance.state == 8)
+                        return "ACTIVE";
+
+                    return instance.state + "?";
+
+                },
+                cleanup: function (s) {
+                    if (typeof s === "string") {
+                        return s.replace(/,/g, ", ")
+                    } else return s
+                },
+                getLogLevel: function (log) {
+                    if (log.level === 0)
+                        return "ERROR";
+                    if (log.level === 1)
+                        return "WARN";
+                    if (log.level === 2)
+                        return "INFO";
+                    if (log.level === 3)
+                        return "DEBUG";
+
+                    return log.level + "?"
+                },
+                getLog: function () {
+                    return this.snapshot.log ? this.snapshot.log.log : []
+                },
+                getLogByBundle: function (bundleId) {
+                    return this.getLog().filter(l => l.bundle === bundleId)
+                },
+                getConfigurations: function () {
+                    return Object.values(this.snapshot.cnf.configurations)
+                },
+                hasPid: function (pid) {
+                    return this.getConfigurations().filter(cnf => cnf.pid === pid)
+                },
+                getErrors: function () {
+                    var errors = []
+                    Object.values(this.snapshot).forEach(obj => {
+                        if (obj.errors) {
+                            errors = errors.concat(obj.errors);
+                        }
+                    })
+
+                    return errors;
+                },
+                hashChanged: function (hash) {
+                    var result = /#b-(\d+)/.exec(hash);
+                    if (result) {
+                        this.selectedBundle = parseInt(result[1])
+                        this.active = 'bundles'
+                        return;
+                    }
+
+                    result = /#s-(\d+)/.exec(hash);
+                    if (result) {
+                        this.selectedService = parseInt(result[1])
+                        this.active = 'services'
+                        return;
+                    }
+
+                    result = /#i-(\d+)/.exec(hash);
+                    if (result) {
+                        this.selectedInstance = parseInt(result[1])
+                        this.active = 'instances'
+                        return;
+                    }
+
+                    result = /#t-(\d+)/.exec(hash);
+                    if (result) {
+                        this.selectedTemplate = parseInt(result[1])
+                        this.active = 'templates'
+                        return;
+                    }
+
+                    result = /#l-(\d+)/.exec(hash);
+                    if (result) {
+                        this.selectedLog = parseInt(result[1])
+                        this.active = 'logs'
+                        return;
+                    }
+
+                    result = /#c-(\d+)/.exec(hash);
+                    if (result) {
+                        this.selectedConfiguration = parseInt(result[1])
+                        this.active = 'config'
+                        return;
+                    }
+
+                    result = /#p-(\d+)/.exec(hash);
+                    if (result) {
+                        this.selectedPackage = parseInt(result[1])
+                        this.active = 'packages'
+                        return;
+                    }
+                    this.active = 'errors';
+                }
+            }
+        })
+
+        window.onhashchange = () => app.hashChanged(window.location.hash)
+    </script>
+</body>
+
+</html>
