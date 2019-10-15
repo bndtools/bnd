@@ -309,12 +309,12 @@ ordering strategies.</p>
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-runstartlevel      ::= runstartlevel ( ',' runstartlevel )
 runstartlevel       ::  order | begin | step
 order               ::= 'order=' ORDER
-ORDER               ::=
-        'leastdependenciesfirst'
+ORDER               ::= 
+        'leastdependenciesfirst' 
     |   'leastdependencieslast'
     |   'random'
-    |   'sortedbyname'
-    |   'mergedsortedbyname'
+    |   'sortbynameversion'
+    |   'mergedsortbynameversion'
 begin               ::= 'begin=' NUMBER
 step                ::= 'step=' NUMBER
 </code></pre></div></div>
@@ -326,9 +326,9 @@ step                ::= 'step=' NUMBER
 <p>The value of <code class="highlighter-rouge">order</code> can take on the following values:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">mergedsortedbyname</code> – Ordering by name (and version) and then merging was the original behavior. This is therefore the default.</li>
-  <li><code class="highlighter-rouge">sortedbyname</code> – For completeness, this option orders the bundles by name and version and then assigns a startlevel.</li>
-  <li><code class="highlighter-rouge">random</code> – Use a random ordering. The ordering uses an algorithm that is based on the random number generator and should therefore
+  <li><code class="highlighter-rouge">mergedsortbynameversion</code> – Ordering by name (and version) and then merging was the original behavior. This is therefore the default.</li>
+  <li><code class="highlighter-rouge">sortbynameversion</code> – For completeness, this option orders the bundles by name and version and then assigns a startlevel.</li>
+  <li><code class="highlighter-rouge">random</code> – Use a random ordering. The ordering uses an algorithm that is based on the random number generator and should therefore 
 be different on each run.</li>
   <li><code class="highlighter-rouge">leastdependenciesfirst</code> – Sort the resources <em>topologically</em> and place the resources with the least dependencies first.</li>
   <li><code class="highlighter-rouge">leastdependencieslast</code> – Sort the resources <em>topologically</em> and place the resources with the least dependencies last.</li>
@@ -347,7 +347,7 @@ bundle is 10. (A lesson taught to us by BASIC) The step can be overridden by set
 order of the <code class="highlighter-rouge">-runbundles</code> will be in the specified <code class="highlighter-rouge">order</code>. In most cases, this is then some kind of <em>natural</em> ordering
 since launchers start these</p>
 
-<p>If you set the <code class="highlighter-rouge">step</code> to 0 then all bundles will be assigned the same startlevel. However, the <code class="highlighter-rouge">-runbundles</code> has the proper
+<p>If you set the <code class="highlighter-rouge">step</code> to 0 then all bundles will be assigned the same startlevel. However, the <code class="highlighter-rouge">-runbundles</code> has the proper 
 order.</p>
 
 <h2 id="example">Example</h2>

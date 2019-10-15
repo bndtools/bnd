@@ -46,5 +46,7 @@ exclude:
   - '/examples'
   - '/releases/*/CNAME'
   - '/releases/*/favicon.ico'
+  - '/releases/*/robots.txt'
+  - '/releases/*/sitemap.xml'
   - '/vendor'
   - '/.settings'
