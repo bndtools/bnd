@@ -235,6 +235,7 @@ public class DSAnnotationTest extends TestCase {
 		xt.assertAttribute("Byte", "scr:component/property[@name='byte']/@type");
 		xt.assertAttribute("Boolean", "scr:component/property[@name='boolean']/@type");
 		xt.assertAttribute("Character", "scr:component/property[@name='char']/@type");
+		xt.assertAttribute(Integer.toString('1'), "scr:component/property[@name='char']/@value");
 		xt.assertAttribute("Short", "scr:component/property[@name='short']/@type");
 		xt.assertAttribute("Integer", "scr:component/property[@name='integer']/@type");
 		xt.assertAttribute("Long", "scr:component/property[@name='long']/@type");
@@ -2238,6 +2239,7 @@ public class DSAnnotationTest extends TestCase {
 			xt.assertAttribute("Byte", "scr:component/factory-property[@name='byte']/@type");
 			xt.assertAttribute("Boolean", "scr:component/factory-property[@name='boolean']/@type");
 			xt.assertAttribute("Character", "scr:component/factory-property[@name='char']/@type");
+			xt.assertAttribute(Integer.toString('1'), "scr:component/factory-property[@name='char']/@value");
 			xt.assertAttribute("Short", "scr:component/factory-property[@name='short']/@type");
 			xt.assertAttribute("Integer", "scr:component/factory-property[@name='integer']/@type");
 			xt.assertAttribute("Long", "scr:component/factory-property[@name='long']/@type");
@@ -2469,7 +2471,7 @@ public class DSAnnotationTest extends TestCase {
 		xt.assertAttribute("1.0", "scr:component/property[@name='myFloat']/@value");
 		xt.assertAttribute("Float", "scr:component/property[@name='myFloat']/@type");
 
-		xt.assertAttribute("97", "scr:component/property[@name='myChar']/@value");
+		xt.assertAttribute(Integer.toString('a'), "scr:component/property[@name='myChar']/@value");
 		xt.assertAttribute("Character", "scr:component/property[@name='myChar']/@type");
 
 		xt.assertAttribute("2", "scr:component/property[@name='myByte']/@value");
