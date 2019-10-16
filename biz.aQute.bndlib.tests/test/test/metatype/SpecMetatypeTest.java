@@ -1261,6 +1261,12 @@ public class SpecMetatypeTest extends TestCase {
 		String[] strings() default {
 			"bar", "baz"
 		};
+
+		char character() default 'a';
+
+		char[] characters() default {
+			'b', 'c'
+		};
 	}
 
 	public void testAnnotationDefaults() throws Exception {
@@ -1286,19 +1292,34 @@ public class SpecMetatypeTest extends TestCase {
 		XmlTester xt = xmlTester12(r);
 		xt.assertExactAttribute("1", "metatype:MetaData/OCD/AD[@id='integer']/@default");
 		xt.assertExactAttribute("2,3", "metatype:MetaData/OCD/AD[@id='integers']/@default");
+		xt.assertExactAttribute("Integer", "metatype:MetaData/OCD/AD[@id='integer']/@type");
+		xt.assertExactAttribute("Integer", "metatype:MetaData/OCD/AD[@id='integers']/@type");
 
 		xt.assertExactAttribute("true", "metatype:MetaData/OCD/AD[@id='bool']/@default");
 		xt.assertExactAttribute("true,false", "metatype:MetaData/OCD/AD[@id='bools']/@default");
+		xt.assertExactAttribute("Boolean", "metatype:MetaData/OCD/AD[@id='bool']/@type");
+		xt.assertExactAttribute("Boolean", "metatype:MetaData/OCD/AD[@id='bools']/@type");
 
 		xt.assertExactAttribute(String.class.getName(), "metatype:MetaData/OCD/AD[@id='clazz']/@default");
 		xt.assertExactAttribute(Integer.class.getName() + "," + Double.class.getName(),
 			"metatype:MetaData/OCD/AD[@id='clazzs']/@default");
+		xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='clazz']/@type");
+		xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='clazzs']/@type");
 
 		xt.assertExactAttribute("A", "metatype:MetaData/OCD/AD[@id='l']/@default");
 		xt.assertExactAttribute("B,C", "metatype:MetaData/OCD/AD[@id='ls']/@default");
+		xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='l']/@type");
+		xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='ls']/@type");
 
 		xt.assertExactAttribute("foo", "metatype:MetaData/OCD/AD[@id='string']/@default");
 		xt.assertExactAttribute("bar,baz", "metatype:MetaData/OCD/AD[@id='strings']/@default");
+		xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='string']/@type");
+		xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='strings']/@type");
+
+		xt.assertExactAttribute("a", "metatype:MetaData/OCD/AD[@id='character']/@default");
+		xt.assertExactAttribute("b,c", "metatype:MetaData/OCD/AD[@id='characters']/@default");
+		xt.assertExactAttribute("Char", "metatype:MetaData/OCD/AD[@id='character']/@type");
+		xt.assertExactAttribute("Char", "metatype:MetaData/OCD/AD[@id='characters']/@type");
 
 	}
 
