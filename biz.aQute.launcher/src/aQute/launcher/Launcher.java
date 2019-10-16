@@ -558,7 +558,9 @@ public class Launcher implements ServiceListener {
 					failed.add(b.getSymbolicName() + "-" + b.getVersion() + " " + e + "\n");
 				}
 			}
-			error("could not resolve the bundles: %s", failed);
+			if (!failed.isEmpty()) {
+				error("could not resolve the bundles: %s", failed);
+			}
 			// return LauncherConstants.RESOLVE_ERROR;
 		}
 
