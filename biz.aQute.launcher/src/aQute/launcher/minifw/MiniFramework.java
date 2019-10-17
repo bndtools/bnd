@@ -31,6 +31,11 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
 import org.osgi.framework.launch.Framework;
+import org.osgi.framework.startlevel.BundleStartLevel;
+import org.osgi.framework.startlevel.FrameworkStartLevel;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.framework.wiring.FrameworkWiring;
 
 public class MiniFramework implements Framework, Bundle, BundleContext {
 	ClassLoader			loader;
@@ -39,18 +44,19 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	int					ID		= 0;
 	int					state	= Bundle.INSTALLED;
 	ClassLoader			last;
-
+	final FrameworkStartLevelImpl	frameworkStartLevel;
 	public MiniFramework(Map<Object, Object> properties) {
 		this.properties = new Properties(System.getProperties());
 		this.properties.putAll(properties);
 
 		bundles.put(Long.valueOf(0), this);
 		last = loader = getClass().getClassLoader();
+		frameworkStartLevel = new FrameworkStartLevelImpl(this);
 	}
 
 	@Override
 	public void init() throws BundleException {
-		state = Bundle.ACTIVE;
+		state = Bundle.STARTING;
 	}
 
 	@Override
@@ -122,7 +128,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	@Override
 	public int getState() {
-		return Bundle.ACTIVE;
+		return state;
 	}
 
 	@Override
@@ -146,10 +152,14 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	}
 
 	@Override
-	public void start() {}
+	public void start() {
+		state = Bundle.ACTIVE;
+	}
 
 	@Override
-	public void start(int options) {}
+	public void start(int options) {
+		start();
+	}
 
 	@Override
 	public synchronized void stop() {
@@ -389,6 +399,21 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	@Override
 	public <A> A adapt(Class<A> type) {
+		if (BundleRevision.class.equals(type)) {
+			return type.cast(new BundleRevisionImpl(this));
+		}
+		if (BundleWiring.class.equals(type)) {
+			return type.cast(new BundleWiringImpl(this, loader));
+		}
+		if (BundleStartLevel.class.equals(type)) {
+			return type.cast(new BundleStartLevelImpl(this, frameworkStartLevel));
+		}
+		if (FrameworkStartLevel.class.equals(type)) {
+			return type.cast(frameworkStartLevel);
+		}
+		if (FrameworkWiring.class.equals(type)) {
+			return type.cast(new FrameworkWiringImpl(this));
+		}
 		return null;
 	}
 
@@ -405,6 +430,6 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	@Override
 	public void init(FrameworkListener... listeners) throws BundleException {
-
+		init();
 	}
 }

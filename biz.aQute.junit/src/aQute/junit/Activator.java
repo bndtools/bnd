@@ -367,11 +367,11 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		BundleWiring wiring = bundle.adapt(BundleWiring.class);
 		// Bundle isn't resolved.
 		if (wiring == null) {
-			System.err.println("unresolved bundle: " + bundle);
+			trace("unresolved bundle: %s", bundle);
 			return null;
 		}
 		List<BundleWire> wires = wiring.getRequiredWires(HostNamespace.HOST_NAMESPACE);
-		System.err.println("required wires for " + bundle + " " + wires);
+		trace("required wires for %s %s", bundle, wires);
 
 		for (BundleWire wire : wires) {
 			hosts.add(wire.getProviderWiring()
@@ -469,20 +469,20 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 					"The test class %s extends %s and it uses JUnit 4 annotations. This means that the annotations will be ignored.",
 					clazz.getName(), TestCase.class.getName());
 			}
-			trace("using JUnit 3");
 			if (method != null) {
+				trace("using JUnit 3 for %s#%s", clazz.getName(), method);
 				suite.addTest(TestSuite.createTest(clazz, method));
 				return;
 			}
+			trace("using JUnit 3 for %s", clazz.getName());
 			suite.addTestSuite((Class<? extends TestCase>) clazz);
 			return;
 		}
 
-		trace("using JUnit 4");
 
 		JUnit4TestAdapter adapter = new JUnit4TestAdapter(clazz);
 		if (method != null) {
-			trace("method specified " + clazz + ":" + method);
+			trace("using JUnit 4 for %s#%s", clazz.getName(), method);
 			final Pattern glob = Pattern.compile(method.replaceAll("\\*", ".*")
 				.replaceAll("\\?", ".?"));
 
@@ -508,6 +508,8 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			} catch (NoTestsRemainException e) {
 				return;
 			}
+		} else {
+			trace("using JUnit 4 for %s", clazz.getName());
 		}
 		suite.addTest(adapter);
 	}
