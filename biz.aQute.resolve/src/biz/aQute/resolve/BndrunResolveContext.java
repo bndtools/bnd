@@ -69,6 +69,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	private final Processor		properties;
 	private Project				project;
 	private boolean				initialized;
+	private volatile List<ResolverHook>	resolverHooks;
 
 	/**
 	 * Constructor for a BndEditModel. The idea to use a BndEditModel was rather
@@ -511,13 +512,20 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		resolvePrefs = new Parameters(properties.getProperty(PROP_RESOLVE_PREFERENCES), project);
 	}
 
+	private List<ResolverHook> getResolverHooks() {
+		if (resolverHooks != null) {
+			return resolverHooks;
+		}
+		return resolverHooks = registry.getPlugins(ResolverHook.class);
+	}
+
 	@Override
 	protected void postProcessProviders(Requirement requirement, Set<Capability> wired, List<Capability> candidates) {
 		if (candidates.isEmpty())
 			return;
 
 		// Call resolver hooks
-		for (ResolverHook resolverHook : registry.getPlugins(ResolverHook.class)) {
+		for (ResolverHook resolverHook : getResolverHooks()) {
 			resolverHook.filterMatches(requirement, candidates);
 		}
 

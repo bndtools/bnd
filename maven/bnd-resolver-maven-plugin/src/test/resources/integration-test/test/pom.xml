@@ -14,6 +14,7 @@
 		<module>resolve-from-dependencyManagement</module>
 		<module>resolve-from-scopes</module>
 		<module>resolve-from-inputbundles</module>
+		<module>enroute</module>
 	</modules>
 
 	<build>
