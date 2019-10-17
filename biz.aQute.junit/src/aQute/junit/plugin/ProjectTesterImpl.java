@@ -50,7 +50,7 @@ public class ProjectTesterImpl extends ProjectTester implements EclipseJUnitTest
 				.put(TESTER_DIR, getReportDir().getAbsolutePath());
 			launcher.getRunProperties()
 				.put(TESTER_CONTINUOUS, "" + getContinuous());
-			if (getProject().is(Constants.RUNTRACE))
+			if (getProject().isRunTrace())
 				launcher.getRunProperties()
 					.put(TESTER_TRACE, "true");
 
