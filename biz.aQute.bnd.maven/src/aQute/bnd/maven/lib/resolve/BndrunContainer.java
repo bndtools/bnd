@@ -64,8 +64,6 @@ public class BndrunContainer {
 
 	private FileSetRepository										fileSetRepository;
 
-	private Processor												processor;
-
 	public static class Builder {
 
 		private final MavenProject										project;
@@ -258,16 +256,12 @@ public class BndrunContainer {
 	}
 
 	private Processor getProcessor(Workspace workspace) {
-		if (processor != null) {
-			return processor;
-		}
-
 		Properties beanProperties = new BeanProperties();
 		beanProperties.put("project", project);
 		beanProperties.put("settings", session.getSettings());
 		Properties mavenProperties = new Properties(beanProperties);
 		mavenProperties.putAll(project.getProperties());
-		return processor = new Processor(workspace, mavenProperties, false);
+		return new Processor(workspace, mavenProperties, false);
 	}
 
 	@SuppressWarnings("deprecation")
