@@ -34,6 +34,9 @@ import org.osgi.framework.ServiceObjects;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
+import org.osgi.framework.startlevel.BundleStartLevel;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.BundleWiring;
 
 public class Context extends URLClassLoader implements Bundle, BundleContext, BundleReference {
 	long					id;
@@ -438,6 +441,15 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 	@Override
 	public <A> A adapt(Class<A> type) {
+		if (BundleRevision.class.equals(type)) {
+			return type.cast(new BundleRevisionImpl(this));
+		}
+		if (BundleWiring.class.equals(type)) {
+			return type.cast(new BundleWiringImpl(this, this));
+		}
+		if (BundleStartLevel.class.equals(type)) {
+			return type.cast(new BundleStartLevelImpl(this, fw.frameworkStartLevel));
+		}
 		return null;
 	}
 
