@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.osgi.annotation.bundle.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +54,7 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.Glob;
 
+@Header(name = Constants.LAUNCHER_PLUGIN, value = "${@class}")
 public class ProjectLauncherImpl extends ProjectLauncher {
 	private final static Logger		logger				= LoggerFactory.getLogger(ProjectLauncherImpl.class);
 	private static final String		EMBEDDED_RUNPATH	= "Embedded-Runpath";
@@ -75,7 +77,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		logger.debug("created a aQute launcher plugin");
 		launchPropertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
 		logger.debug("launcher plugin using temp launch file {}", launchPropertiesFile.getAbsolutePath());
-		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=\"" + launchPropertiesFile.getAbsolutePath() + "\"");
+		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=" + launchPropertiesFile.getAbsolutePath());
 
 		if (project.getRunProperties()
 			.get("noframework") != null) {
@@ -182,7 +184,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	public Collection<String> getRunVM() {
 		List<String> list = new ArrayList<>(super.getRunVM());
 		list.add(getRunpath().stream()
-			.collect(Strings.joining(",", "-D" + LAUNCHER_PATH + "=\"", "\"", "")));
+			.collect(Strings.joining(",", "-D" + LAUNCHER_PATH + "=", "", "")));
 		return list;
 	}
 
