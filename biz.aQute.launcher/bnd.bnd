@@ -22,7 +22,7 @@ Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
 	aQute.launcher.minifw,\
 	aQute.launcher.plugin
 -includeresource: \
-	${p}.pre.jar
+	${p}.pre.jar=pre.jar
 
 -builderignore: testresources
 
