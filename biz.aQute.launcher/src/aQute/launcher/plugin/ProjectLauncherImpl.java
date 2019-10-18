@@ -75,7 +75,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		logger.debug("created a aQute launcher plugin");
 		launchPropertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
 		logger.debug("launcher plugin using temp launch file {}", launchPropertiesFile.getAbsolutePath());
-		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=\"" + launchPropertiesFile.getAbsolutePath() + "\"");
+		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=" + launchPropertiesFile.getAbsolutePath());
 
 		if (project.getRunProperties()
 			.get("noframework") != null) {
@@ -182,7 +182,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	public Collection<String> getRunVM() {
 		List<String> list = new ArrayList<>(super.getRunVM());
 		list.add(getRunpath().stream()
-			.collect(Strings.joining(",", "-D" + LAUNCHER_PATH + "=\"", "\"", "")));
+			.collect(Strings.joining(",", "-D" + LAUNCHER_PATH + "=", "", "")));
 		return list;
 	}
 
