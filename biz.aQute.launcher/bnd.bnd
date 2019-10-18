@@ -4,6 +4,7 @@
 -dependson: demo
 
 -buildpath: \
+	osgi.annotation;version=latest;maven-scope=provided,\
 	osgi.core;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
@@ -12,8 +13,6 @@
 -testpath: \
 	${junit},\
 	slf4j.simple;version=latest
-
-Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
 
 -conditionalpackage: aQute.lib*
 -includepackage: \

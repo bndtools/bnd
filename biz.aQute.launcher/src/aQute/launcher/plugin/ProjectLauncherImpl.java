@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.osgi.annotation.bundle.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +54,7 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.Glob;
 
+@Header(name = Constants.LAUNCHER_PLUGIN, value = "${@class}")
 public class ProjectLauncherImpl extends ProjectLauncher {
 	private final static Logger		logger				= LoggerFactory.getLogger(ProjectLauncherImpl.class);
 	private static final String		EMBEDDED_RUNPATH	= "Embedded-Runpath";
