@@ -13,6 +13,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.lifecycle.MavenExecutionPlan;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
@@ -160,8 +161,10 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
 				lookupComponent(org.apache.maven.artifact.factory.ArtifactFactory.class),
 				lookupComponent(RepositorySystem.class));
 
-			MojoExecution mojoExecution = projectFacade
-				.getMojoExecutions("biz.aQute.bnd", "bnd-resolver-maven-plugin", monitor, "resolve")
+			MavenExecutionPlan plan = maven.calculateExecutionPlan(mavenProject,
+				Collections.singletonList("bnd-resolver:resolve"),
+				true, monitor);
+			MojoExecution mojoExecution = plan.getMojoExecutions()
 				.stream()
 				.filter(exe -> containsBndrun(exe, mavenProject, monitor))
 				.findFirst()
