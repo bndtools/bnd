@@ -233,6 +233,7 @@ class BundleTaskConvention {
         // Gradle 5.1 deprecates Jar task properties
         File archivePath = task.hasProperty('archiveFile') ? task.archiveFile.get().asFile : task.archivePath
         String archiveName = task.hasProperty('archiveFileName') ? task.archiveFileName.get() : task.archiveName
+        String baseName = task.hasProperty('archiveBaseName') ? task.archiveBaseName.get() : task.baseName
         String version = task.hasProperty('archiveVersion') ? task.archiveVersion.getOrNull() : task.version
 
         // Include entire contents of Jar task generated jar (except the manifest)
