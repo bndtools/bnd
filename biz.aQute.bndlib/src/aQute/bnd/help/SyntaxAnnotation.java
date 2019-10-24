@@ -26,7 +26,9 @@ import java.lang.annotation.Target;
  * </ul>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target({
+	ElementType.METHOD, ElementType.FIELD
+})
 public @interface SyntaxAnnotation {
 
 	/**

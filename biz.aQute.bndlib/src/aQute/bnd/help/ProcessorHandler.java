@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 import aQute.bnd.osgi.Processor;
+import aQute.lib.converter.Converter;
 
 /**
  * Handles a proxy on a Processor's properties. In contrast with the Converter,
@@ -31,7 +32,11 @@ class ProcessorHandler implements InvocationHandler {
 
 		String name = Syntax.toInstruction(method);
 
-		Object value = processor.mergeProperties(name);
+		Object value;
+		if (Converter.isMultiple(method.getReturnType()))
+			value = processor.mergeProperties(name);
+		else
+			value = processor.getProperty(name);
 
 		if (value == null) {
 			if (args != null && args.length == 1) {
@@ -43,6 +48,7 @@ class ProcessorHandler implements InvocationHandler {
 
 		return converter.convertNeverNull(method.getGenericReturnType(), value);
 	}
+
 
 	@SuppressWarnings("unchecked")
 	public static <T> T getInstructions(Processor processor, Class<T> type) {
