@@ -37,6 +37,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectLauncher.NotificationType;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.result.Result;
 import bndtools.Plugin;
 
 public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
@@ -51,12 +52,14 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 	@Override
 	protected void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception {
 		synchronized (model) {
-			bndLauncher = model.getProjectLauncher();
-			if (bndLauncher == null)
-				throw new IllegalStateException(String.format("Failed to obtain launcher for project %s (%s)",
-					model.getName(), model.getPropertiesFile()));
-		}
+			Result<ProjectLauncher, String> resolvingProjectLauncher = Result.fromNull(model.getProjectLauncher(),
+				"Failed to get projectlauncher");
 
+			bndLauncher = resolvingProjectLauncher
+				.orElseThrow(
+					(e) -> new IllegalStateException(String.format("Failed to obtain launcher for project %s (%s): %s",
+						model.getName(), model.getPropertiesFile(), e)));
+		}
 		configureLauncher(configuration);
 
 		bndLauncher.registerForNotifications((type, notification) -> {

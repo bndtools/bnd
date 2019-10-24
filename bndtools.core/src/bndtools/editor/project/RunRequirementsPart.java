@@ -2,9 +2,6 @@ package bndtools.editor.project;
 
 import java.util.List;
 
-import org.bndtools.api.ILogger;
-import org.bndtools.api.Logger;
-import org.bndtools.api.ResolveMode;
 import org.bndtools.core.resolve.ResolveJob;
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
@@ -16,16 +13,23 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.osgi.resource.Requirement;
 
+import aQute.bnd.help.Syntax;
+import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
+import aQute.bnd.osgi.Constants;
 import bndtools.BndConstants;
 import bndtools.editor.BndEditor;
 
@@ -33,19 +37,16 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 
 	@SuppressWarnings("deprecation")
 	private static final String		RUNREQUIRE		= BndConstants.RUNREQUIRE;
-	private static final ILogger	logger			= Logger.getLogger(RunRequirementsPart.class);
 
 	private static final String[]	SUBSCRIBE_PROPS	= new String[] {
-		RUNREQUIRE, BndConstants.RUNREQUIRES, BndConstants.RESOLVE_MODE
+		RUNREQUIRE, BndConstants.RUNREQUIRES, Constants.RESOLVE
 	};
-
-	private Button					btnAutoResolve;
-	private ResolveMode				resolveMode;
 
 	private final Image				resolveIcon		= Icons.desc("resolve")
 		.createImage();
 	private Button					btnResolveNow;
 	private JobChangeAdapter		resolveJobListener;
+	private Combo					comboResolveMode;
 
 	public RunRequirementsPart(Composite parent, FormToolkit toolkit, int style) {
 		super(parent, toolkit, style);
@@ -73,20 +74,34 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 		TableViewer viewer = createViewer(composite, tk);
 
 		// Create resolve and auto-resolve controls
-		btnAutoResolve = tk.createButton(composite, "Auto-resolve on save", SWT.CHECK);
+
+		Composite resolveModeComposite = tk.createComposite(composite);
+		Label lblResolveMode = tk.createLabel(resolveModeComposite, "Resolve mode");
+		comboResolveMode = new Combo(resolveModeComposite, SWT.DROP_DOWN | SWT.READ_ONLY);
+		ResolveMode[] enumConstants = ResolveMode.class.getEnumConstants();
+		for (ResolveMode m : enumConstants) {
+			comboResolveMode.add(m.name());
+		}
+
+		comboResolveMode.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+			int n = comboResolveMode.getSelectionIndex();
+			assert n >= 0 && n < enumConstants.length;
+
+			ResolveMode selected = enumConstants[n];
+			if (selected == model.getResolveMode()) {
+				return;
+			}
+			model.setResolveMode(selected);
+		}));
+		Syntax syntax = Syntax.HELP.get(Constants.RESOLVE);
+		if (syntax != null) {
+			resolveModeComposite.setToolTipText(syntax.getLead());
+		}
+		resolveModeComposite.setLayout(new FillLayout());
+
 		btnResolveNow = tk.createButton(composite, "Resolve", SWT.PUSH);
 		btnResolveNow.setImage(resolveIcon);
 
-		// Listeners
-		btnAutoResolve.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				ResolveMode old = resolveMode;
-				resolveMode = btnAutoResolve.getSelection() ? ResolveMode.auto : ResolveMode.manual;
-				if (old != resolveMode)
-					markDirty();
-			}
-		});
 		btnResolveNow.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -149,13 +164,12 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 	@Override
 	protected void doCommitToModel(List<Requirement> requires) {
 		model.setRunRequires(requires);
-		setResolveMode();
 	}
 
 	@Override
 	public List<Requirement> doRefreshFromModel() {
-		resolveMode = getResolveMode();
-		btnAutoResolve.setSelection(resolveMode == ResolveMode.auto);
+		comboResolveMode.select(model.getResolveMode()
+			.ordinal());
 
 		return model.getRunRequires();
 	}
@@ -163,27 +177,6 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 	@Override
 	protected String getAddButtonLabel() {
 		return "Add Bundle Requirement";
-	}
-
-	private void setResolveMode() {
-		String formatted;
-		if (resolveMode == ResolveMode.manual || resolveMode == null)
-			formatted = null;
-		else
-			formatted = resolveMode.toString();
-		model.genericSet(BndConstants.RESOLVE_MODE, formatted);
-	}
-
-	private ResolveMode getResolveMode() {
-		ResolveMode resolveMode = ResolveMode.manual;
-		try {
-			String str = (String) model.genericGet(BndConstants.RESOLVE_MODE);
-			if (str != null)
-				resolveMode = Enum.valueOf(ResolveMode.class, str);
-		} catch (Exception e) {
-			logger.logError("Error parsing '-resolve' header.", e);
-		}
-		return resolveMode;
 	}
 
 }

@@ -30,14 +30,19 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
+import bndtools.editor.BndEditor;
+import bndtools.editor.pages.ProjectRunPage;
 import bndtools.launch.LaunchConstants;
 
 public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
@@ -110,6 +115,46 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 
 	@Override
 	public void launch(IEditorPart editor, String mode) {
+		/*
+		 * unfortunately, the editor is the ProjectRunPage and the doSave and
+		 * isDirty methods are not properly implemented. We therefore need to do
+		 * some deep casting :-(
+		 */
+		if (editor instanceof ProjectRunPage) {
+			BndEditor editor2 = (BndEditor) ((ProjectRunPage) editor).getEditor();
+			editor2.commitDirtyPages();
+			if (editor2.getModel()
+				.isDirty()) {
+				Display display = Display.findDisplay(Thread.currentThread());
+				Shell activeShell = display.getActiveShell();
+				MessageDialog dialog = new MessageDialog(activeShell, "Properties have changed", null,
+					"Save properties before launch?", MessageDialog.CONFIRM, new String[] {
+						"Save", "Launch Previous", "Cancel Launch"
+					}, 0);
+				int result = dialog.open();
+				if (result == 0) {
+					/*
+					 * Doing the save in a background job but this throws a
+					 * thread exception for SWT, would be better if this worked
+					 */
+					// Job job = new Job("Save the properties before launching")
+					// {
+					// @Override
+					// protected IStatus run(IProgressMonitor m) {
+					editor2.doSave(null);
+					launch0(editor, mode);
+					// return Status.OK_STATUS;
+					// }
+					// };
+					// job.schedule();
+					return;
+				}
+			}
+		}
+		launch0(editor, mode);
+	}
+
+	private void launch0(IEditorPart editor, String mode) {
 		IEditorInput input = editor.getEditorInput();
 		IJavaElement element = input.getAdapter(IJavaElement.class);
 		if (element != null) {

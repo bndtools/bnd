@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-import org.bndtools.api.ResolveMode;
 import org.bndtools.api.RunMode;
 import org.bndtools.core.jobs.JobUtil;
 import org.bndtools.core.resolve.ResolutionResult;
@@ -42,12 +41,14 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -76,9 +77,9 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
 import aQute.bnd.properties.BadLocationException;
 import aQute.lib.exceptions.Exceptions;
-import bndtools.BndConstants;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.editor.common.IPriority;
@@ -238,15 +239,10 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
 	@Override
 	public void doSave(IProgressMonitor monitor) {
-		// Commit dirty pages
-		if (sourcePage.isActive() && sourcePage.isDirty()) {
-			sourcePage.commit(true);
-		} else {
-			commitPages(true);
-			sourcePage.refresh();
-		}
 
-		ResolveMode resolveMode = getResolveMode();
+		commitDirtyPages();
+
+		ResolveMode resolveMode = model.getResolveMode();
 
 		// If auto resolve, then resolve and save in background thread.
 		if (resolveMode == ResolveMode.auto && !PlatformUI.getWorkbench()
@@ -255,6 +251,19 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		} else {
 			// Not auto-resolving, just save
 			reallySave(monitor);
+		}
+	}
+
+	/**
+	 * Commit the active page to the edit model or if no active page, commit all
+	 * pages
+	 */
+	public void commitDirtyPages() {
+		if (sourcePage.isActive() && sourcePage.isDirty()) {
+			sourcePage.commit(true);
+		} else {
+			commitPages(true);
+			sourcePage.refresh();
 		}
 	}
 
@@ -366,7 +375,25 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 							// This is an interactive resolve, always show the
 							// dialog
 							boolean dirtyBeforeResolve = isDirty();
-							WizardDialog dialog = new WizardDialog(shell, wizard);
+							WizardDialog dialog = new WizardDialog(shell, wizard) {
+
+								@Override
+								protected Button createButton(org.eclipse.swt.widgets.Composite parent, int id,
+									String label, boolean defaultButton) {
+									Button button = super.createButton(parent, id, label, defaultButton);
+									if (id == IDialogConstants.FINISH_ID) {
+										if (model.getResolveMode() == ResolveMode.beforelaunch) {
+											button.setText("Set Cache");
+											button.setToolTipText(
+												"-resolve is set `beforelaunch`, resolving saves the run bundles in the cache");
+										} else {
+											button.setText("Update");
+											button.setToolTipText("Update the -runbundles");
+										}
+									}
+									return button;
+								}
+							};
 							if (dialog.open() == Window.OK && !dirtyBeforeResolve) {
 								// save changes immediately if there were no
 								// unsaved changes before the resolve
@@ -391,18 +418,6 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		};
 		runResolveInUIJob.setUser(true);
 		return JobUtil.chainJobs(loadWorkspaceJob, runResolveInUIJob);
-	}
-
-	private ResolveMode getResolveMode() {
-		ResolveMode resolveMode = ResolveMode.manual;
-		try {
-			String str = (String) model.genericGet(BndConstants.RESOLVE_MODE);
-			if (str != null)
-				resolveMode = Enum.valueOf(ResolveMode.class, str);
-		} catch (Exception e) {
-			logger.logError("Error parsing '-resolve' header.", e);
-		}
-		return resolveMode;
 	}
 
 	protected void ensurePageExists(String pageId, IFormPage page, int index) {
@@ -605,6 +620,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 						IDocument document = docProvider.getDocument(getEditorInput());
 						model.loadFrom(new IDocumentWrapper(document));
 						model.setBndResource(inputFile);
+						model.setDirty(false);
 						completed.resolve(model.getWorkspace());
 					} catch (IOException e) {
 						logger.logError("Unable to load edit model", e);
@@ -843,5 +859,9 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 					savedString = new IDocumentWrapper(docProvider.getDocument(element)).get();
 			}
 		}
+	}
+
+	public BndEditModel getModel() {
+		return model;
 	}
 }

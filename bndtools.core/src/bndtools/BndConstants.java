@@ -12,5 +12,4 @@ public interface BndConstants extends Constants {
 	 * The URI to which a resource was resolved by OBR
 	 */
 	String	RESOLUTION_URI_ATTRIBUTE	= "resolution";
-	String	RESOLVE_MODE				= "-resolve";
 }
