@@ -269,7 +269,7 @@ public class Project extends Processor {
 			return;
 		}
 
-		synchronized (preparedPaths) {
+		synchronized (this) {
 			if (preparedPaths.get()) {
 				// ensure output folders exist
 				getSrcOutput0();
@@ -565,9 +565,13 @@ public class Project extends Processor {
 
 	private List<Container> parseRunbundles() throws Exception {
 
-		return getBundles(Strategy.HIGHEST, mergeProperties(Constants.RUNBUNDLES), Constants.RUNBUNDLES);
+		return parseRunbundles(mergeProperties(Constants.RUNBUNDLES));
 	}
 
+	protected List<Container> parseRunbundles(String spec) throws Exception {
+
+		return getBundles(Strategy.HIGHEST, spec, Constants.RUNBUNDLES);
+	}
 	private List<Container> parseRunFw() throws Exception {
 		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNFW), Constants.RUNFW);
 	}
@@ -3541,4 +3545,15 @@ public class Project extends Processor {
 	public boolean isStandalone() {
 		return getWorkspace().getLayout() == WorkspaceLayout.STANDALONE;
 	}
+
+	@Override
+	public String getChecksum() {
+		try {
+			prepare();
+			return super.getChecksum();
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
 }
