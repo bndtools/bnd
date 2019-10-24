@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.stream.MapStream;
 import aQute.lib.strings.Strings;
+import aQute.bnd.header.Parameters;
 
 public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 
@@ -25,6 +26,21 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 
 		this.name = name;
 		this.attribs = attribs == null ? new Attrs() : attribs;
+	}
+
+	/**
+	 * Accept String syntax as defined by 1 element of a Parameters
+	 * 
+	 * @param v one element of Parameter
+	 */
+	public HeaderClause(String v) {
+		Parameters parameters = new Parameters(v);
+		if ( parameters.size() != 1)
+			throw new IllegalArgumentException("Invalid header clause (not exactly 1 element) " + v);
+
+		Entry<String, Attrs> next = parameters.entrySet().iterator().next();
+		this.name = next.getKey();
+		this.attribs = next.getValue();
 	}
 
 	public void setName(String name) {
@@ -148,4 +164,13 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 		formatTo(b);
 		return b.toString();
 	}
+
+	public static Parameters toParameters(List<? extends HeaderClause> l) {
+		Parameters parameters = new Parameters();
+
+		l.forEach(hc -> parameters.put(hc.name, hc.attribs));
+
+		return parameters;
+	}
+
 }
