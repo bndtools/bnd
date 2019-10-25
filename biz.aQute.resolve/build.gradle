@@ -1,0 +1,5 @@
+
+test {
+  systemProperty "org.slf4j.simpleLogger.defaultLogLevel", "Debug"
+}
+

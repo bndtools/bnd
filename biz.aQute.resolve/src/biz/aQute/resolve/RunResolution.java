@@ -18,6 +18,8 @@ import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.Resolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -53,6 +55,8 @@ import biz.aQute.resolve.RunResolution.CacheDTO;
  * projects
  */
 public class RunResolution {
+	final static Logger						logger		= LoggerFactory.getLogger(RunResolution.class);
+
 	private static final JSONCodec			JSON_CODEC	= new JSONCodec();
 	public final Project					project;
 	public final Processor					properties;
@@ -434,8 +438,6 @@ public class RunResolution {
 
 	public static Result<String, String> getRunBundles(Project project, boolean resolveIfNecessary) {
 		try {
-			System.out.println("get run bundles");
-
 			File f = getCacheFile(project);
 
 			if (f.isFile()) {
@@ -444,12 +446,12 @@ public class RunResolution {
 						.from(f)
 						.get(CacheDTO.class);
 					if (dto.checksum.equals(project.getChecksum())) {
-						System.out.println("read cache");
+						logger.info("read cache for {}", project);
 						return Ok.result(HeaderClause.toParameters(dto.runbundles)
 							.toString());
 					}
 				} catch (Exception e) {
-					System.out.println("exception " + e);
+					logger.warn("{} getRunBundles  exception in reading cache {}, ignoring", project, e);
 					IO.delete(f);
 				}
 			}
@@ -458,11 +460,12 @@ public class RunResolution {
 				return Ok.result(null);
 			}
 
-			System.out.println("Resolving");
+			logger.info("resolve {}", project);
 			Result<RunResolution, String> r = resolve(project, project, null).asResult();
+			logger.debug("resolve {} {}", project, r);
 
 			return r.then(rr -> {
-				System.out.println("saving cache ");
+				logger.info("saving cache {}", project);
 				rr.cache();
 				return Ok.result(rr);
 			})
