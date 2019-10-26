@@ -6,4 +6,6 @@ tasks.named('test') {
   // set heap size for the test JVM(s)
   minHeapSize = "1024m"
   maxHeapSize = "2048m"
+  // Some test's depend upon `-dependson` which are `jar` task dependencies.
+  inputs.files tasks.named('jar')
 }
