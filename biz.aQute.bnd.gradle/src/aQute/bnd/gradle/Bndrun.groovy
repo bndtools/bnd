@@ -126,11 +126,12 @@ public class Bndrun extends DefaultTask {
     createRun(workspace, bndrun).withCloseable { run ->
       def runWorkspace = run.getWorkspace()
       project.mkdir(workingDir)
-      Properties gradleProperties = new PropertiesWrapper(runWorkspace.getProperties())
-      gradleProperties.put('task', this)
-      gradleProperties.put('project', project)
-      Class processorClass = workspace ? Class.forName(Processor.class.getName(), true, workspace.getClass().getClassLoader()) : Processor.class
-      run.setParent(processorClass.newInstance([runWorkspace, gradleProperties, false] as Object[]))
+      if (workspace == null) {
+        Properties gradleProperties = new PropertiesWrapper(runWorkspace.getProperties())
+        gradleProperties.put('task', this)
+        gradleProperties.put('project', project)
+        run.setParent(new Processor(runWorkspace, gradleProperties, false))
+      }
       run.setBase(workingDir)
       if (run.isStandalone()) {
         runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)
