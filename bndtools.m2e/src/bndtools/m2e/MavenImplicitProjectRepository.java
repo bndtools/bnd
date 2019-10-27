@@ -161,9 +161,14 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
 				lookupComponent(org.apache.maven.artifact.factory.ArtifactFactory.class),
 				lookupComponent(RepositorySystem.class));
 
-			MavenExecutionPlan plan = maven.calculateExecutionPlan(mavenProject,
-				Collections.singletonList("bnd-resolver:resolve"),
-				true, monitor);
+			List<String> tasks = mavenProject.getPlugin("biz.aQute.bnd:bnd-resolver-maven-plugin")
+				.getExecutionsAsMap()
+				.keySet()
+				.stream()
+				.map(executionId -> "bnd-resolver:resolve@" + executionId)
+				.collect(Collectors.toList());
+
+			MavenExecutionPlan plan = maven.calculateExecutionPlan(mavenProject, tasks, true, monitor);
 			MojoExecution mojoExecution = plan.getMojoExecutions()
 				.stream()
 				.filter(exe -> containsBndrun(exe, mavenProject, monitor))
