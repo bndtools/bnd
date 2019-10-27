@@ -20,9 +20,11 @@ import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
+import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Deque;
@@ -47,6 +49,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -60,7 +63,6 @@ import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
-import aQute.lib.collections.Iterables;
 import aQute.lib.date.Dates;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.ExtendedFilter;
@@ -1348,26 +1350,38 @@ public class Macro {
 		// do not report unknown macros while flattening
 		flattening = true;
 		try {
-			Properties flattened = new UTF8Properties();
-			Properties source = domain.getProperties();
-			for (String key : Iterables.iterable(source.propertyNames(), String.class::cast)) {
-				if (!key.startsWith("_")) {
-					String value = source.getProperty(key);
-					if (value == null) {
-						Object raw = source.get(key);
-						reporter.warning("Key '%s' has a non-String value: %s:%s", key,
-							raw == null ? ""
-								: raw.getClass()
-									.getName(),
-							raw);
-					} else {
-						if (ignoreInstructions && key.startsWith("-"))
-							flattened.put(key, value);
-						else
-							flattened.put(key, process(value));
+			Stream<String> keys = StreamSupport.stream(domain.spliterator(), false);
+			Properties flattened = keys.filter(key -> !key.startsWith("_"))
+				.map(key -> {
+					String value = null;
+					for (Processor proc = domain; proc != null; proc = proc.getParent()) {
+						Object raw = proc.getProperties()
+							.get(key);
+						if (raw != null) {
+							if (raw instanceof String) {
+								value = (String) raw;
+							} else if (reporter.isPedantic()) {
+								reporter.warning("Key '%s' has a non-String value: %s:%s", key, raw.getClass()
+									.getName(), raw);
+							}
+							break;
+						}
+
+						Collection<String> keyFilter = proc.filter;
+						if ((keyFilter != null) && (keyFilter.contains(key))) {
+							break;
+						}
 					}
-				}
-			}
+					if (value == null) {
+						return null;
+					}
+					if (!ignoreInstructions || !key.startsWith("-")) {
+						value = process(value);
+					}
+					return new AbstractMap.SimpleEntry<>(key, value);
+				})
+				.filter(Objects::nonNull)
+				.collect(toMap(Entry::getKey, Entry::getValue, (oldValue, newValue) -> newValue, UTF8Properties::new));
 			return flattened;
 		} finally {
 			flattening = false;

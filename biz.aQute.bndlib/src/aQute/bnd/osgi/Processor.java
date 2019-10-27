@@ -1442,7 +1442,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			if (raw != null) {
 				if (raw instanceof String) {
 					value = (String) raw;
-				} else {
+				} else if (isPedantic()) {
 					warning("Key '%s' has a non-String value: %s:%s", key, raw.getClass()
 						.getName(), raw);
 				}
