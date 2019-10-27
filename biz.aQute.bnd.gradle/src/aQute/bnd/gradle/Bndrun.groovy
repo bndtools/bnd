@@ -126,7 +126,7 @@ public class Bndrun extends DefaultTask {
     createRun(workspace, bndrun).withCloseable { run ->
       def runWorkspace = run.getWorkspace()
       project.mkdir(workingDir)
-      Properties gradleProperties = new PropertiesWrapper()
+      Properties gradleProperties = new PropertiesWrapper(runWorkspace.getProperties())
       gradleProperties.put('task', this)
       gradleProperties.put('project', project)
       Class processorClass = workspace ? Class.forName(Processor.class.getName(), true, workspace.getClass().getClassLoader()) : Processor.class

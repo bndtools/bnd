@@ -256,7 +256,7 @@ public class BndrunContainer {
 	}
 
 	private Processor getProcessor(Workspace workspace) {
-		Properties beanProperties = new BeanProperties();
+		Properties beanProperties = new BeanProperties(workspace.getProperties());
 		beanProperties.put("project", project);
 		beanProperties.put("settings", session.getSettings());
 		Properties mavenProperties = new Properties(beanProperties);

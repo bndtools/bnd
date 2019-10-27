@@ -249,32 +249,24 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public Processor() {
-		properties = new UTF8Properties();
+		this(new UTF8Properties(), false);
 	}
 
-	public Processor(Properties parent) {
-		properties = new UTF8Properties(parent);
+	public Processor(Properties props) {
+		this(props, true);
 	}
 
-	public Processor(Processor processor) {
-		this(processor.getProperties0());
-		this.parent = processor;
+	public Processor(Processor parent) {
+		this(parent, parent.getProperties0(), true);
 	}
 
-	public Processor(Properties props, boolean copy) {
-		if (copy)
-			properties = new UTF8Properties(props);
-		else
-			properties = props;
+	public Processor(Properties props, boolean wrap) {
+		this.properties = wrap ? new UTF8Properties(props) : props;
 	}
 
-	public Processor(Processor parent, Properties props, boolean copy) {
+	public Processor(Processor parent, Properties props, boolean wrap) {
+		this(props, wrap);
 		this.parent = parent;
-		properties = copy ? new UTF8Properties(props) : props;
-		for (Entry<Object, Object> entry : parent.getProperties0()
-			.entrySet()) {
-			properties.putIfAbsent(entry.getKey(), entry.getValue());
-		}
 	}
 
 	public void setParent(Processor processor) {
