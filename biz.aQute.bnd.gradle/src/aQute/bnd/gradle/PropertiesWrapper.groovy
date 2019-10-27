@@ -6,7 +6,15 @@
 package aQute.bnd.gradle
 
 class PropertiesWrapper extends Properties {
-  PropertiesWrapper() {}
+  protected Properties defaults
+
+  PropertiesWrapper(Properties defaults) {
+    this.defaults = defaults
+  }
+
+  PropertiesWrapper() {
+    this(null)
+  }
 
   @Override
   public String getProperty(String key) {
@@ -15,9 +23,13 @@ class PropertiesWrapper extends Properties {
       Object value = props.drop(1).inject(get(props.first())) { obj, prop ->
         obj?."${prop}"
       }
-      return value?.toString()
+      return (value != null) ? value.toString() : defaultValue(key)
     } catch (MissingPropertyException mpe) {
-      return null
+      return defaultValue(key)
     }
+  }
+
+  private defaultValue(String key) {
+    return (defaults != null) ? defaults.getProperty(key) : null
   }
 }

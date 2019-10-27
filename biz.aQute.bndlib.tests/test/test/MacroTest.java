@@ -1679,6 +1679,7 @@ public class MacroTest {
 	@Test
 	public void testNonStringValue() throws Exception {
 		try (Processor b = new Processor()) {
+			b.setPedantic(true);
 			// getProperty will return null for non-String value
 			b.getProperties()
 				.put("tst", new StringBuilder("foo"));
@@ -1695,6 +1696,7 @@ public class MacroTest {
 	@Test
 	public void testNonStringFlattenedValue() throws Exception {
 		try (Processor b = new Processor()) {
+			b.setPedantic(true);
 			// getProperty will return null for non-String value
 			b.getProperties()
 				.put("tst", new StringBuilder("foo"));

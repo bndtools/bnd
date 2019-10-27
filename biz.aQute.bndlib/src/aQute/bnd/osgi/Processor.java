@@ -54,6 +54,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -248,32 +249,24 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public Processor() {
-		properties = new UTF8Properties();
+		this(new UTF8Properties(), false);
 	}
 
-	public Processor(Properties parent) {
-		properties = new UTF8Properties(parent);
+	public Processor(Properties props) {
+		this(props, true);
 	}
 
-	public Processor(Processor processor) {
-		this(processor.getProperties0());
-		this.parent = processor;
+	public Processor(Processor parent) {
+		this(parent, parent.getProperties0(), true);
 	}
 
-	public Processor(Properties props, boolean copy) {
-		if (copy)
-			properties = new UTF8Properties(props);
-		else
-			properties = props;
+	public Processor(Properties props, boolean wrap) {
+		this.properties = wrap ? new UTF8Properties(props) : props;
 	}
 
-	public Processor(Processor parent, Properties props, boolean copy) {
+	public Processor(Processor parent, Properties props, boolean wrap) {
+		this(props, wrap);
 		this.parent = parent;
-		properties = copy ? new UTF8Properties(props) : props;
-		for (Entry<Object, Object> entry : parent.getProperties0()
-			.entrySet()) {
-			properties.putIfAbsent(entry.getKey(), entry.getValue());
-		}
 	}
 
 	public void setParent(Processor processor) {
@@ -1063,11 +1056,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public String getUnexpandedProperty(String key) {
-		String raw = getProperties().getProperty(key);
-		if (raw == null && parent != null) {
-			raw = parent.getUnexpandedProperty(key);
+		if (filter != null && filter.contains(key)) {
+			Object raw = getProperties().get(key);
+			return (raw instanceof String) ? (String) raw : null;
 		}
-		return raw;
+		return getProperties().getProperty(key);
 	}
 
 	public void mergeProperties(File file, boolean override) {
@@ -1389,7 +1382,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public String getUnprocessedProperty(String key, String deflt) {
 		if (filter != null && filter.contains(key)) {
-			return (String) getProperties().getOrDefault(key, deflt);
+			Object raw = getProperties().get(key);
+			return (raw instanceof String) ? (String) raw : deflt;
 		}
 		return getProperties().getProperty(key, deflt);
 	}
@@ -1434,44 +1428,33 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		String value = null;
 		// Use the key as is first, if found ok
 
-		if (filter != null && filter.contains(key)) {
-			Object raw = getProperties().get(key);
+		for (Processor proc = source; proc != null; proc = proc.getParent()) {
+			Object raw = proc.getProperties()
+				.get(key);
 			if (raw != null) {
 				if (raw instanceof String) {
 					value = (String) raw;
-				} else {
-					warning("Key '%s' has a non-String value: %s:%s", key, raw == null ? ""
-						: raw.getClass()
-							.getName(),
-						raw);
+				} else if (isPedantic()) {
+					warning("Key '%s' has a non-String value: %s:%s", key, raw.getClass()
+						.getName(), raw);
 				}
+				source = proc;
+				break;
 			}
-		} else {
-			for (Processor proc = source; proc != null; proc = proc.getParent()) {
-				Object raw = proc.getProperties()
-					.get(key);
-				if (raw != null) {
-					if (raw instanceof String) {
-						value = (String) raw;
-					} else {
-						warning("Key '%s' has a non-String value: %s:%s", key, raw == null ? ""
-							: raw.getClass()
-								.getName(),
-							raw);
-					}
-					source = proc;
-					break;
-				}
 
-				if (!inherit)
-					break;
+			if (!inherit) {
+				break;
 			}
-			//
-			// Check if we can find a replacement through the
-			// replacer, which takes profiles into account
-			if (value == null) {
-				value = getReplacer().getMacro(key, null);
+			Collection<String> keyFilter = proc.filter;
+			if ((keyFilter != null) && (keyFilter.contains(key))) {
+				break;
 			}
+		}
+		//
+		// Check if we can find a replacement through the
+		// replacer, which takes profiles into account
+		if (value == null) {
+			value = getReplacer().getMacro(key, null);
 		}
 
 		if (value != null)
@@ -1664,6 +1647,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			result = new TreeSet<>();
 		} else {
 			result = parent.getPropertyKeys(inherit);
+			if (filter != null) {
+				result.removeAll(filter);
+			}
 		}
 		for (Object o : getProperties0().keySet()) {
 			result.add(o.toString());
@@ -2315,30 +2301,31 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	private Stream<String> stream(boolean inherit) {
-		return StreamSupport.stream(iterable(inherit).spliterator(), false);
+		return StreamSupport.stream(iterable(inherit, Objects::nonNull).spliterator(), false);
 	}
 
 	@Override
 	public Iterator<String> iterator() {
-		return iterable(true).iterator();
+		return iterable(true, Objects::nonNull).iterator();
 	}
 
 	@Override
 	public Spliterator<String> spliterator() {
-		return iterable(true).spliterator();
+		return iterable(true, Objects::nonNull).spliterator();
 	}
 
-	private Iterable<String> iterable(boolean inherit) {
+	private Iterable<String> iterable(boolean inherit, Predicate<String> keyFilter) {
 		Set<Object> first = getProperties0().keySet();
 		Iterable<? extends Object> second;
 		if (parent == null || !inherit) {
 			second = Collections.emptyList();
 		} else {
-			second = parent.iterable(inherit);
+			second = parent.iterable(inherit,
+				(filter == null) ? keyFilter : keyFilter.and(key -> !filter.contains(key)));
 		}
 
 		Iterable<String> iterable = Iterables.distinct(first, second, o -> (o instanceof String) ? (String) o : null,
-			Objects::nonNull);
+			keyFilter);
 		return iterable;
 	}
 
