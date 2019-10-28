@@ -178,7 +178,9 @@ This is the main list to watch. It contains the set of _initial requirements_ gi
 
 <img alt="Run Requirements" src="https://user-images.githubusercontent.com/200494/31171486-26d66416-a900-11e7-8856-0e4debb85e24.png" width="50%">
 
-### Additional Panes
+
+
+### Additional Components
 
 There are some more panes that are useful but they will be handled in diagnosing problems. For reference, a short introduction to these panes.
 
@@ -186,6 +188,7 @@ There are some more panes that are useful but they will be handled in diagnosing
 * **Runtime Properties** – Makes it possible to define OSGi framework properties, command line arguments, and VM arguments.
 * **Run Blacklist** – Any resources selected by the requirements in the blacklist can never be used in a resolution.
 * **Run Bundles** – This is normally the output of the resolver. However, it is possible to add/remove bundles from this list when the resolver is bypassed. The `Run`, `Debug`, and `Export` functions always work from the `-runbundles` list.
+* **Resolve** – A popup that defines _when_ the [resolver will run](http://bnd.bndtools.org/instructions/resolve.html).
 
 ## Resolving
 
@@ -301,6 +304,7 @@ Notice that most instructions are [_merge properties_](http://bnd.bndtools.org/c
 * [-runrepos](http://bnd.bndtools.org/instructions/runpath.html) – Optional list of ordered repo names. If this is not set, the current set of repo plugins is used.
 * [-augment](http://bnd.bndtools.org/instructions/augment.html) – Adds virtual capabilities and requirements to resources in the repository.
 * [-distro](http://bnd.bndtools.org/instructions/distro.html) – Directly provides the system capabilities in a JAR with Manifest. Is used when the resulotion is not used to create an executable JAR but to create a Java EE WAR or Karaf KAR where the application is running in a host environment.
+* [-resolve](http://bnd.bndtools.org/instructions/resolve.html) – Controls when the resolver runs
 * [-resolve.effective](http://bnd.bndtools.org/instructions/resolve.effective.html) – Sets the effectives for the resolver.
 * [-resolve.preferences](http://bnd.bndtools.org/instructions/resolve.preferences.html) – Can be used to make some resources more equal than others.
 
