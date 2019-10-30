@@ -183,6 +183,8 @@ public class BndrunContainer {
 			workspace.setOffline(session.getSettings()
 				.isOffline());
 			workspace.addBasicPlugin(getFileSetRepository());
+			workspace.setProperty(Constants.PLUGIN, run.getMergedParameters(Constants.PLUGIN)
+				.toString());
 			run.setParent(getProcessor(workspace));
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);
