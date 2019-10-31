@@ -20,7 +20,7 @@ configurations {
 }
 
 dependencies {
-    compile "biz.aQute.bnd:biz.aQute.junit:${bnd_version}"
+    implementation "biz.aQute.bnd:biz.aQute.junit:${bnd_version}"
     framework 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
 }
 

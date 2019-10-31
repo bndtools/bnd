@@ -16,8 +16,8 @@ repositories {
 }
 
 dependencies {
-    compile "biz.aQute.bnd:biz.aQute.junit:${bnd_version}"
-    runtime 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
+    implementation "biz.aQute.bnd:biz.aQute.junit:${bnd_version}"
+    runtimeOnly 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
 }
 
 ext {

@@ -17,16 +17,16 @@ repositories {
 }
 
 dependencies {
-    compile 'commons-codec:commons-codec:1.5'
-    compile 'commons-lang:commons-lang:2.6'
-    testCompile 'junit:junit:4.9'
+    implementation 'commons-codec:commons-codec:1.5'
+    implementation 'commons-lang:commons-lang:2.6'
+    testImplementation 'junit:junit:4.9'
 }
 
 jar {
   ext.taskprop = 'prop.task'
   manifest {
-    attributes('Implementation-Title': baseName,
-               'Implementation-Version': version,
+    attributes('Implementation-Title': project.archivesBaseName,
+               'Implementation-Version': project.version,
                '-includeresource': '{${.}/bar.txt}',
                '-include': '${.}/other.bnd',
                'Override': 'This should be overridden by the bnd file'
@@ -39,13 +39,13 @@ task bundle(type: Bundle) {
    description 'Bundle'
    group 'build'
    from sourceSets.test.output
-   baseName = baseName+'_bundle'
+   archiveBaseName = "${project.archivesBaseName}_bundle"
    bnd = '''
 -exportcontents: doubler.impl
 -sources: true
 My-Header: my-value
 text: TEXT
-Bundle-Name: ${project.group}:${task.baseName}
+Bundle-Name: ${project.group}:${task.archiveBaseName}
 Project-Name: ${project.name}
 Project-Dir: ${project.dir}
 Project-Output: ${project.output}
@@ -61,6 +61,6 @@ Project-Buildpath: ${project.buildpath}
 }
 
 artifacts {
-  runtime bundle
+  runtimeOnly bundle
   archives bundle
 }

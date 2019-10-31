@@ -5,6 +5,8 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.gradle.BndUtils.unwrap
+
 class PropertiesWrapper extends Properties {
   protected Properties defaults
 
@@ -23,6 +25,7 @@ class PropertiesWrapper extends Properties {
       Object value = props.drop(1).inject(get(props.first())) { obj, prop ->
         obj?."${prop}"
       }
+      value = unwrap(value)
       return (value != null) ? value.toString() : defaultValue(key)
     } catch (MissingPropertyException mpe) {
       return defaultValue(key)

@@ -12,8 +12,6 @@
 
 package aQute.bnd.gradle
 
-import static aQute.bnd.gradle.BndUtils.createTask
-
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
 
@@ -175,7 +173,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
       Project cnfProject = findProject(bnd_cnf)
       if (cnfProject != null) {
         ext.cnf = cnfProject
-        createTask(cnfProject, 'cleanCache', Delete.class) { t ->
+        cnfProject.tasks.register('cleanCache', Delete.class) { t ->
           t.description 'Clean the cache folder.'
           t.group 'build'
           t.delete 'cache'

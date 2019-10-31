@@ -19,9 +19,6 @@
 
 package aQute.bnd.gradle
 
-import static aQute.bnd.gradle.BndUtils.configureTask
-import static aQute.bnd.gradle.BndUtils.createTask
-
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -48,7 +45,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
       }
       plugins.apply 'java'
 
-      def jar = configureTask(project, 'jar') { t ->
+      def jar = tasks.named('jar') { t ->
         t.description 'Assembles a bundle containing the main classes.'
         t.convention.plugins.bundle = new BundleTaskConvention(t)
         def defaultBndfile = project.file('bnd.bnd')
@@ -72,7 +69,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
         }
       }
 
-      createTask(project, 'baseline', Baseline.class) { t ->
+      tasks.register('baseline', Baseline.class) { t ->
         t.description 'Baseline the project bundle.'
         t.group 'release'
         t.bundle jar

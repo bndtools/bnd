@@ -20,7 +20,7 @@ configurations {
 }
 
 dependencies {
-    compile "biz.aQute.bnd:biz.aQute.junit:${bnd_version}"
+    implementation "biz.aQute.bnd:biz.aQute.junit:${bnd_version}"
     bundles "biz.aQute.bnd:biz.aQute.junit:${bnd_version}"
     bundles 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
 }
@@ -30,7 +30,7 @@ task testosgi(type: TestOSGi) {
    group 'test'
    inputs.files jar
    bndrun "${name}.bndrun"
-   bundles = [configurations.bundles, jar.archivePath]
+   bundles = [configurations.bundles, jar.archiveFile]
 }
 
 check {

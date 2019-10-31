@@ -8,9 +8,8 @@ specified in the Bnd Workspace's `cnf/build.bnd` file and each project's
 `bnd.bnd` file to configure the Gradle projects and tasks.
 
 The [`biz.aQute.bnd.gradle`][2] jar contains the Bnd Gradle Plugins.
-These plugins requires at least Gradle 4.0 for Java 8, at least
-Gradle 4.2.1 for Java 9, at least Gradle 4.7 for Java 10, and at
-least Gradle 5.0 for Java 11.
+These plugins requires at least Gradle 5.1 for Java 8 to Java 12, and at
+least Gradle 6.0 for Java 13.
 
 This README represents the capabilities and features of the Bnd Gradle Plugins in
 the branch containing this README. So for the `master` branch, this will be
@@ -433,7 +432,7 @@ plus _${project.configurations.archives.artifacts.files}_.
 
 The list of fully qualified names of test classes to run. If not set, or empty,
 Then all the test classes listed in the `Test-Classes` manifest header are
-run. In Gradle 4.6 and later, the `--tests` command line option can be used
+run. The `--tests` command line option can be used
 to set the fully qualified name of a test class to run. This can be repeated
 multiple times to specify multiple test classes to run.
 
