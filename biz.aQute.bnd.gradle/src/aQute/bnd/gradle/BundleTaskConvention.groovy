@@ -25,6 +25,7 @@ package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.gradle.BndUtils.builtBy
+import static aQute.bnd.gradle.BndUtils.unwrap
 
 import java.util.Properties
 import java.util.jar.Manifest
@@ -230,19 +231,18 @@ class BundleTaskConvention {
           throw new GradleException('Sub-bundles are not supported by this task')
         }
 
-        // Gradle 5.1 deprecates Jar task properties
-        File archivePath = task.hasProperty('archiveFile') ? task.archiveFile.get().asFile : task.archivePath
-        String archiveName = task.hasProperty('archiveFileName') ? task.archiveFileName.get() : task.archiveName
-        String baseName = task.hasProperty('archiveBaseName') ? task.archiveBaseName.get() : task.baseName
-        String version = task.hasProperty('archiveVersion') ? task.archiveVersion.getOrNull() : task.version
+        File archiveFile = unwrap(task.archiveFile)
+        String archiveFileName = unwrap(task.archiveFileName)
+        String archiveBaseName = unwrap(task.archiveBaseName)
+        String archiveVersion = unwrap(task.archiveVersion)
 
         // Include entire contents of Jar task generated jar (except the manifest)
         project.copy {
-          from archivePath
+          from archiveFile
           into temporaryDir
         }
-        File archiveCopyFile = new File(temporaryDir, archiveName)
-        Jar bundleJar = new Jar(archiveName, archiveCopyFile)
+        File archiveCopyFile = new File(temporaryDir, archiveFileName)
+        Jar bundleJar = new Jar(archiveFileName, archiveCopyFile)
         String reproducible = builder.getProperty(Constants.REPRODUCIBLE)
         bundleJar.setReproducible((reproducible != null) ? Processor.isTrue(reproducible) : !task.preserveFileTimestamps)
         bundleJar.updateModified(archiveCopyFile.lastModified(), 'time of Jar task generated jar')
@@ -277,16 +277,16 @@ class BundleTaskConvention {
         logger.debug 'builder sourcepath: {}', builder.getSourcePath()
 
 
-        // set bundle symbolic name from tasks's baseName property if necessary
+        // set bundle symbolic name from tasks's archiveBaseName property if necessary
         String bundleSymbolicName = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME)
         if (isEmpty(bundleSymbolicName)) {
-          builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, baseName)
+          builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, archiveBaseName)
         }
 
-        // set bundle version from task's version if necessary
+        // set bundle version from task's archiveVersion if necessary
         String bundleVersion = builder.getProperty(Constants.BUNDLE_VERSION)
         if (isEmpty(bundleVersion)) {
-          builder.setProperty(Constants.BUNDLE_VERSION, MavenVersion.parseMavenString(version?.toString()).getOSGiVersion().toString())
+          builder.setProperty(Constants.BUNDLE_VERSION, MavenVersion.parseMavenString(archiveVersion?.toString()).getOSGiVersion().toString())
         }
 
         logger.debug 'builder properties: {}', builder.getProperties()
@@ -296,24 +296,24 @@ class BundleTaskConvention {
         if (!builder.isOk()) {
           // if we already have an error; fail now
           logReport(builder, logger)
-          failBuild("Bundle ${archiveName} has errors", archivePath)
+          failBuild("Bundle ${archiveFileName} has errors", archiveFile)
         }
 
         // Write out the bundle
-        builtJar.write(archivePath)
+        builtJar.write(archiveFile)
         long now = System.currentTimeMillis()
-        archivePath.setLastModified(now)
+        archiveFile.setLastModified(now)
 
         logReport(builder, logger)
         if (!builder.isOk()) {
-          failBuild("Bundle ${archiveName} has errors", archivePath)
+          failBuild("Bundle ${archiveFileName} has errors", archiveFile)
         }
       }
     }
   }
 
-  private void failBuild(String msg, File archivePath) {
-    project.delete(archivePath)
+  private void failBuild(String msg, File archiveFile) {
+    project.delete(archiveFile)
     throw new GradleException(msg)
   }
 

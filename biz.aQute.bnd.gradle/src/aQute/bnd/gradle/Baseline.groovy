@@ -49,7 +49,6 @@
 package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.builtBy
-import static aQute.bnd.gradle.BndUtils.toTask
 
 import aQute.bnd.differ.DiffPluginImpl
 import aQute.bnd.header.Parameters
@@ -68,6 +67,7 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.TaskProvider
 
 public class Baseline extends DefaultTask {
   private ConfigurableFileCollection bundleCollection
@@ -214,7 +214,9 @@ public class Baseline extends DefaultTask {
 
   Task getBundleTask() {
     return bundleCollection.getBuiltBy().flatten().findResult { t ->
-      t = toTask(t)
+      if (t instanceof TaskProvider) {
+        t = t.get()
+      }
       t instanceof Task && t.convention.findPlugin(BundleTaskConvention.class) ? t : null
     }
   }

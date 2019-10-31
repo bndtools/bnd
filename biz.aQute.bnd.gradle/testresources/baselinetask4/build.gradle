@@ -18,16 +18,16 @@ repositories {
 }
 
 dependencies {
-    compile 'commons-codec:commons-codec:1.5'
-    compile 'commons-lang:commons-lang:2.6'
-    testCompile 'junit:junit:4.9'
+    implementation 'commons-codec:commons-codec:1.5'
+    implementation 'commons-lang:commons-lang:2.6'
+    testImplementation 'junit:junit:4.9'
     baseline ':baselinetask1:1.0.0'
 }
 
 jar {
     manifest {
-        attributes('Implementation-Title': baseName,
-                   'Implementation-Version': version,
+        attributes('Implementation-Title': project.archivesBaseName,
+                   'Implementation-Version': project.version,
                    '-includeresource': '{bar.txt}',
                    '-include': 'other.bnd',
                    'Override': 'This should be overridden by the bnd file'

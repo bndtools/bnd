@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     compileOnly 'org.osgi:osgi.core:5.0.0'
-    runtime 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
+    runtimeOnly 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
 }
 
 task run(type: Bndrun) {
