@@ -10,6 +10,8 @@ import org.gradle.api.Buildable
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.FileSystemLocation
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.logging.Logger
 import org.gradle.util.GradleVersion
@@ -108,5 +110,16 @@ class BndUtils {
       }
     }
     return t
+  }
+
+  @CompileStatic
+  public static Object unwrap(Object value) {
+    if (value instanceof Provider) {
+      value = value.getOrNull()
+    } 
+    if (value instanceof FileSystemLocation) {
+      value = value.getAsFile()
+    } 
+    return value
   }
 }
