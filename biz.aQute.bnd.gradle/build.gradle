@@ -7,8 +7,8 @@ repositories {
 dependencies {
     compileOnly localGroovy()
     compileOnly gradleApi()
-    testCompile gradleTestKit()
-    testCompile('org.spockframework:spock-core:1.1-groovy-2.4')  {
+    testImplementation gradleTestKit()
+    testImplementation('org.spockframework:spock-core:1.1-groovy-2.4')  {
         exclude module: 'groovy-all'
     }
 }

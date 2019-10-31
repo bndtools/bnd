@@ -32,8 +32,8 @@ def p2FeatureProperties = tasks.register('p2FeatureProperties', WriteProperties.
 
 def p2FeatureMain = tasks.register('p2FeatureMain', Zip.class) {
   inputs.files p2FeatureProperties
-  destinationDir = file("${buildDir}/features")
-  archiveName    = 'bndtools.main.feature.jar'
+  destinationDirectory = file("${buildDir}/features")
+  archiveFileName = 'bndtools.main.feature.jar'
   from             'features/bndtools.main'
   include          'feature.xml'
   doFirst {
@@ -48,8 +48,8 @@ def p2FeatureMain = tasks.register('p2FeatureMain', Zip.class) {
 
 def p2FeatureM2e = tasks.register('p2FeatureM2e', Zip.class) {
   inputs.files p2FeatureProperties
-  destinationDir = file("${buildDir}/features")
-  archiveName    = 'bndtools.m2e.feature.jar'
+  destinationDirectory = file("${buildDir}/features")
+  archiveFileName    = 'bndtools.m2e.feature.jar'
   from             'features/bndtools.m2e'
   include          'feature.xml'
   doFirst {
@@ -64,8 +64,8 @@ def p2FeatureM2e = tasks.register('p2FeatureM2e', Zip.class) {
 
 def p2FeaturePde = tasks.register('p2FeaturePde', Zip.class) {
   inputs.files p2FeatureProperties
-  destinationDir = file("${buildDir}/features")
-  archiveName    = 'bndtools.pde.feature.jar'
+  destinationDirectory = file("${buildDir}/features")
+  archiveFileName    = 'bndtools.pde.feature.jar'
   from             'features/bndtools.pde'
   include          'feature.xml'
   doFirst {
