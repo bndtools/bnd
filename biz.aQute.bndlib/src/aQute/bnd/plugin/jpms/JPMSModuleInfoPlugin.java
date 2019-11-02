@@ -1,20 +1,31 @@
 package aQute.bnd.plugin.jpms;
 
+import static aQute.bnd.classfile.ModuleAttribute.ACC_OPEN;
 import static aQute.bnd.osgi.Constants.AUTOMATIC_MODULE_NAME;
+import static aQute.bnd.osgi.Constants.DYNAMICIMPORT_PACKAGE;
 import static aQute.bnd.osgi.Constants.INTERNAL_EXPORT_TO_MODULES_DIRECTIVE;
 import static aQute.bnd.osgi.Constants.INTERNAL_MODULE_VERSION_DIRECTIVE;
 import static aQute.bnd.osgi.Constants.INTERNAL_OPEN_TO_MODULES_DIRECTIVE;
 import static aQute.bnd.osgi.Constants.JPMS_MODULE_INFO;
 import static aQute.bnd.osgi.Constants.MAIN_CLASS;
 import static aQute.bnd.osgi.Constants.MODULE_INFO_CLASS;
+import static aQute.bnd.osgi.Constants.PROVIDE_CAPABILITY;
+import static aQute.bnd.osgi.Constants.REQUIRE_CAPABILITY;
 import static aQute.bnd.osgi.Constants.SERVICELOADER_NAMESPACE;
 import static aQute.bnd.osgi.Constants.SERVICELOADER_REGISTER_DIRECTIVE;
 import static aQute.bnd.osgi.Constants.USES_DIRECTIVE;
+import static aQute.bnd.osgi.Descriptors.fqnToBinary;
+import static aQute.lib.env.Header.removeDuplicateMarker;
+import static aQute.lib.strings.Strings.splitAsStream;
+import static java.util.Collections.emptyList;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Map.Entry.comparingByKey;
 import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 import static org.osgi.namespace.extender.ExtenderNamespace.EXTENDER_NAMESPACE;
 
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,11 +44,10 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.EmbeddedResource;
+import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.service.verifier.VerifierPlugin;
@@ -68,11 +78,11 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		Parameters provideCapabilities = new Parameters(analyzer.getJar()
 			.getManifest()
 			.getMainAttributes()
-			.getValue(Constants.PROVIDE_CAPABILITY));
+			.getValue(PROVIDE_CAPABILITY));
 		Parameters requireCapabilities = new Parameters(analyzer.getJar()
 			.getManifest()
 			.getMainAttributes()
-			.getValue(Constants.REQUIRE_CAPABILITY));
+			.getValue(REQUIRE_CAPABILITY));
 
 		if ("".equals(moduleProperty)) {
 			String name = name(analyzer);
@@ -169,9 +179,9 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 	private int access(Parameters requireCapabilities) {
 		return requireCapabilities.entrySet()
 			.stream()
-			.filter(entry -> Header.removeDuplicateMarker(entry.getKey())
+			.filter(entry -> removeDuplicateMarker(entry.getKey())
 				.equals(EXTENDER_NAMESPACE))
-			.mapToInt(entry -> ModuleAttribute.ACC_OPEN)
+			.mapToInt(entry -> ACC_OPEN)
 			.findAny()
 			.orElse(0);
 	}
@@ -189,7 +199,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
 				Attrs containedAttrs = contained.get(packageRef);
 				if (containedAttrs != null && containedAttrs.containsKey(INTERNAL_EXPORT_TO_MODULES_DIRECTIVE)) {
-					targets = Strings.splitAsStream(containedAttrs.get(INTERNAL_EXPORT_TO_MODULES_DIRECTIVE))
+					targets = splitAsStream(containedAttrs.get(INTERNAL_EXPORT_TO_MODULES_DIRECTIVE))
 						.toArray(String[]::new);
 				}
 
@@ -234,7 +244,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 			.forEach(entry -> {
 				PackageRef packageRef = entry.getKey();
 
-				String[] targets = Strings.splitAsStream(entry.getValue()
+				String[] targets = splitAsStream(entry.getValue()
 					.get(INTERNAL_OPEN_TO_MODULES_DIRECTIVE))
 					.toArray(String[]::new);
 
@@ -246,7 +256,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 	}
 
 	private void requires(Entry<String, Attrs> instruction, Analyzer analyzer, Packages index,
-		ModuleInfoBuilder builder) {
+		ModuleInfoBuilder builder) throws Exception {
 
 		String eeAttribute = instruction.getValue()
 			.get("ee");
@@ -257,27 +267,21 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		Packages imports = analyzer.getImports();
 		Packages referred = analyzer.getReferred();
 
+		Instructions dynamicImportPackages = new Instructions(new Parameters(analyzer.getJar()
+			.getManifest()
+			.getMainAttributes()
+			.getValue(DYNAMICIMPORT_PACKAGE)));
+
 		Packages externallyReferred = new Packages(referred);
-		exports.forEach((pack, a) -> externallyReferred.remove(pack));
+		exports.keySet()
+			.forEach(externallyReferred::remove);
 
-		Set<String> requiredModules = new HashSet<>();
-
-		String manuallyRequiredModules = instruction.getValue()
-			.get("modules");
-
-		if (manuallyRequiredModules != null) {
-			Strings.splitAsStream(manuallyRequiredModules)
-				.forEach(moduleToAdd -> {
-					builder.requires(moduleToAdd, 0, null);
-					requiredModules.add(moduleToAdd);
-				});
-		}
-
-		externallyReferred.entrySet()
+		Map<String, List<Entry<PackageRef, Attrs>>> requiresMap = externallyReferred.entrySet()
 			.stream()
 			.filter(entry -> {
 				PackageRef packageRef = entry.getKey();
 				Attrs attrs = index.get(packageRef);
+				Attrs importAttrs = imports.get(packageRef);
 
 				if (attrs == null || !attrs.containsKey(INTERNAL_MODULE_DIRECTIVE)) {
 					String eeModuleName = moduleEE.getModules()
@@ -290,30 +294,46 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 						.findAny()
 						.orElse(null);
 
-					if (eeModuleName != null) {
-						index.put(packageRef, Attrs.create(INTERNAL_MODULE_DIRECTIVE, eeModuleName));
-						return true;
+					if (eeModuleName == null) {
+						if (logger.isWarnEnabled())
+							logger.warn("Can't find a module name for imported package: {}", packageRef.getFQN());
+
+						return false;
 					}
 
-					if (logger.isWarnEnabled())
-						logger.warn("Can't find a module name for imported package: {}", packageRef.getFQN());
-
-					return false;
+					attrs = Attrs.create(INTERNAL_MODULE_DIRECTIVE, eeModuleName);
+					index.put(packageRef, attrs);
+				}
+				if (importAttrs != null) {
+					attrs.mergeWith(importAttrs, false);
 				}
 				return true;
 			})
 			// group packages by module/contract
 			.collect(groupingBy(entry -> index.get(entry.getKey())
-				.get(INTERNAL_MODULE_DIRECTIVE)))
-			.entrySet()
+				.get(INTERNAL_MODULE_DIRECTIVE)));
+
+		String manuallyRequiredModules = instruction.getValue()
+			.get("modules");
+
+		if (manuallyRequiredModules != null) {
+			splitAsStream(manuallyRequiredModules)
+				.forEach(moduleToAdd -> {
+					requiresMap.computeIfAbsent(moduleToAdd, key -> emptyList());
+				});
+		}
+
+		requiresMap.entrySet()
+			.stream()
+			.sorted(comparingByKey(naturalOrder()))
 			.forEach(entry -> {
 				String moduleName = entry.getKey();
 
-				if (requiredModules.contains(moduleName)) {
-					return;
-				}
-
 				List<Entry<PackageRef, Attrs>> referencedPackages = entry.getValue();
+
+				List<PackageRef> referencedModulePackages = referencedPackages.stream()
+					.map(Entry::getKey)
+					.collect(toList());
 
 				// An import results in `transitive` requires where there is an
 				// `Export-Package` that has a `uses` constraint on the imported
@@ -323,10 +343,9 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 					.map(export -> export.getValue()
 						.get(USES_DIRECTIVE))
 					.flatMap(Strings::splitAsStream)
-					.map(use -> analyzer.getPackageRef(Descriptors.fqnToBinary(use)))
-					.anyMatch(packageRef -> referencedPackages.stream()
-						.anyMatch(e -> e.getKey()
-							.equals(packageRef)));
+					.map(use -> analyzer.getPackageRef(fqnToBinary(use)))
+					.anyMatch(packageRef -> referencedModulePackages.stream()
+						.anyMatch(p -> p.equals(packageRef)));
 
 				// TODO modules can fall under the follow categories:
 				// a) JDK modules (whose packages are not _yet_ imported)
@@ -335,7 +354,18 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 				// c) statically referenced classes (which do not incur an
 				// import like bundle annotations)
 				// b) and c) result in static requires
-				boolean isStatic = false;
+				boolean isStatic = referencedModulePackages.isEmpty() || referencedModulePackages.stream()
+					.allMatch(p -> {
+						Attrs attrs = index.get(p);
+
+						if ("optional".equals(attrs.get("resolution:"))) {
+							return true;
+						} else if (!dynamicImportPackages.isEmpty() && dynamicImportPackages.matches(p.getFQN())) {
+							return true;
+						}
+
+						return false;
+					});
 
 				// Allowed: 0 | ACC_TRANSITIVE | ACC_STATIC_PHASE |
 				// ACC_SYNTHETIC | ACC_MANDATED
@@ -346,8 +376,6 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 				// not checked at runtime.
 
 				builder.requires(moduleName, access, null);
-
-				requiredModules.add(moduleName);
 			});
 	}
 
