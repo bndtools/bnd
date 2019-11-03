@@ -321,6 +321,11 @@ default is `false`.
 If `true` the build will fail if the resolve process changes the value of the
 `-runbundles` property. The default is `false`.
 
+### writeOnChanges
+
+If `true` the build will write changes to the value of the `-runbundles`
+property back to the bndrun file. The default is `true`.
+
 ### bndrun
 
 The bndrun to be resolved. It can be anything that `Project.file(Object)`

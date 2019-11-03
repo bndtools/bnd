@@ -59,6 +59,9 @@ public class ResolverMojo extends AbstractMojo {
 	@Parameter(defaultValue = "true")
 	private boolean												failOnChanges;
 
+	@Parameter(defaultValue = "true")
+	private boolean												writeOnChanges;
+
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	private File												targetDir;
 
@@ -121,7 +124,7 @@ public class ResolverMojo extends AbstractMojo {
 	private Operation getOperation() {
 		return (file, runName, run) -> {
 			try {
-				run.resolve(failOnChanges, true);
+				run.resolve(failOnChanges, writeOnChanges);
 			} catch (ResolutionException re) {
 				logger.error(ResolveProcess.format(re, reportOptional));
 				throw re;

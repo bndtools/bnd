@@ -60,6 +60,17 @@ public class Resolve extends Bndrun {
   boolean failOnChanges = false
 
   /**
+   * Whether resolve changes should be writen back.
+   *
+   * <p>
+   * If <code>true</code>, then a change to the current -runbundles
+   * value will be writen back into the bndrun file. The default is
+   * <code>true</code>.
+   */
+  @Input
+  boolean writeOnChanges = true
+
+  /**
    * Whether to report optional requirements.
    *
    * <p>
@@ -91,7 +102,7 @@ public class Resolve extends Bndrun {
   protected void worker(def run) {
     logger.info 'Resolving runbundles required for {}', run.getPropertiesFile()
     try {
-      def result = run.resolve(failOnChanges, true)
+      def result = run.resolve(failOnChanges, writeOnChanges)
       logger.info '{}: {}', Constants.RUNBUNDLES, result
     } catch (ResolutionException e) {
       logger.error ResolveProcess.format(e, reportOptional)
