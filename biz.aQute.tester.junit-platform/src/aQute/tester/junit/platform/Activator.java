@@ -8,6 +8,8 @@ import static aQute.junit.constants.TesterConstants.TESTER_PORT;
 import static aQute.junit.constants.TesterConstants.TESTER_SEPARATETHREAD;
 import static aQute.junit.constants.TesterConstants.TESTER_TRACE;
 import static aQute.junit.constants.TesterConstants.TESTER_UNRESOLVED;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
 
@@ -20,14 +22,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.platform.engine.DiscoverySelector;
+import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.support.descriptor.ClassSource;
+import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TestExecutionListener;
+import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
@@ -186,6 +193,29 @@ public class Activator implements BundleActivator, Runnable {
 		summary = new SummaryGeneratingListener();
 		listenerList.add(basicReport);
 		listenerList.add(summary);
+		listenerList.add(new TestExecutionListener() {
+			@Override
+			public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
+				switch (testExecutionResult.getStatus()) {
+					case SUCCESSFUL :
+						return;
+					case FAILED :
+						message("", "TEST %s <<< ERROR: %s", testName(testIdentifier),
+							testExecutionResult.getThrowable()
+								.orElse(null));
+						return;
+					case ABORTED :
+						message("", "TEST %s <<< ABORTED: %s", testName(testIdentifier),
+							testExecutionResult.getThrowable()
+								.orElse(null));
+				}
+			}
+
+			@Override
+			public void executionSkipped(TestIdentifier testIdentifier, String reason) {
+				message("", "TEST %s <<< SKIPPED", testName(testIdentifier));
+			}
+		});
 		listeners = listenerList.stream()
 			.toArray(TestExecutionListener[]::new);
 
@@ -201,13 +231,37 @@ public class Activator implements BundleActivator, Runnable {
 			try {
 				baseSelectors = BundleUtils.testCases(testcases)
 					.map(testcase -> testcase.indexOf('#') < 0 ? selectClass(testcase) : selectMethod(testcase))
-					.collect(Collectors.toList());
+					.collect(toList());
 				automatic();
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.exit(254);
 			}
 		}
+	}
+
+	String testName(TestIdentifier testIdentifier) {
+		return testIdentifier.getSource()
+			.map(source -> {
+				if (source instanceof ClassSource) {
+					ClassSource classSource = (ClassSource) source;
+
+					return classSource.getClassName();
+				} else if (source instanceof MethodSource) {
+					MethodSource methodSource = (MethodSource) source;
+
+					return Stream
+						.of(methodSource.getClassName(), "#", methodSource.getMethodName(),
+							Optional.ofNullable(methodSource.getMethodParameterTypes())
+								.map(mpt -> "(".concat(mpt)
+									.concat(")"))
+								.orElse(""))
+						.collect(joining());
+				}
+
+				return source.toString();
+			})
+			.orElseGet(testIdentifier::getDisplayName);
 	}
 
 	void automatic() throws IOException {
