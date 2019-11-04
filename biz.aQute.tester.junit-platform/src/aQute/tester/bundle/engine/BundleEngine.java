@@ -1,8 +1,6 @@
 package aQute.tester.bundle.engine;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.junit.platform.commons.JUnitException;
@@ -64,7 +62,7 @@ public class BundleEngine implements TestEngine {
 				new JUnitException("BundleEngine must run inside an OSGi framework")));
 			return descriptor;
 		}
-		new BundleSelectorResolver(context.get(), request, descriptor).resolve();
+		BundleSelectorResolver.resolve(context.get(), request, descriptor);
 		return descriptor;
 	}
 
@@ -75,41 +73,33 @@ public class BundleEngine implements TestEngine {
 		final ConfigurationParameters params = request.getConfigurationParameters();
 
 		Preconditions.condition(root instanceof BundleEngineDescriptor,
-			"Root descriptor should be an instance of BundleEngineDescriptor, was " + request.getRootTestDescriptor()
-				.getClass());
+			"Root descriptor should be an instance of BundleEngineDescriptor, was " + root.getClass());
 		Preconditions.condition(root.getChildren()
 			.stream()
 			.allMatch(descriptor -> descriptor instanceof BundleDescriptor || descriptor instanceof StaticFailureDescriptor),
 			"Child descriptors should all be BundleDescriptors or StaticFailureDescriptors");
+		listener.executionStarted(root);
 		try {
-
-			listener.executionStarted(root);
-
-			final AtomicReference<StaticFailureDescriptor> matched = new AtomicReference<>(null);
-			Predicate<TestDescriptor> isStaticFailureDescriptor = StaticFailureDescriptor.class::isInstance;
-			root.getChildren()
+			Optional<StaticFailureDescriptor> staticFailureDescriptor = root.getChildren()
 				.stream()
-				.filter(isStaticFailureDescriptor)
+				.filter(StaticFailureDescriptor.class::isInstance)
 				.map(StaticFailureDescriptor.class::cast)
-				.forEach(descriptor -> {
-					matched.set(descriptor);
-					descriptor.execute(listener);
-				});
+				.peek(childDescriptor -> childDescriptor.execute(listener))
+				.reduce((first, second) -> first);
 
-			Stream<? extends TestDescriptor> descriptors = root.getChildren()
+			Stream<BundleDescriptor> childDescriptors = root.getChildren()
 				.stream()
-				.filter(isStaticFailureDescriptor.negate());
-			if (matched.get() != null) {
-				final String reason = matched.get()
-					.getError() == null ? matched.get()
-						.getDisplayName()
-						: matched.get()
-							.getError()
-							.getMessage();
-				descriptors.forEach(descriptor -> listener.executionSkipped(descriptor, reason));
+				.filter(BundleDescriptor.class::isInstance)
+				.map(BundleDescriptor.class::cast);
+			if (staticFailureDescriptor.isPresent()) {
+				String reason = staticFailureDescriptor.map(StaticFailureDescriptor::getError)
+					.map(Throwable::getMessage)
+					.orElseGet(() -> staticFailureDescriptor.get()
+						.getDisplayName());
+				childDescriptors.forEach(childDescriptor -> listener.executionSkipped(childDescriptor, reason));
 			} else {
-				descriptors.map(BundleDescriptor.class::cast)
-					.forEach(descriptor -> executeBundle(descriptor, listener, params));
+				childDescriptors
+					.forEach(childDescriptor -> executeBundle(childDescriptor, listener, params));
 			}
 			listener.executionFinished(root, TestExecutionResult.successful());
 		} catch (Throwable t) {
@@ -129,11 +119,7 @@ public class BundleEngine implements TestEngine {
 					.stream()
 					.filter(childDescriptor -> !(childDescriptor instanceof BundleDescriptor
 						|| childDescriptor instanceof StaticFailureDescriptor))
-					.forEach(childDescriptor -> {
-						TestEngine engine = descriptor.getEngineFor(childDescriptor);
-						ExecutionRequest er = new ExecutionRequest(childDescriptor, listener, params);
-						engine.execute(er);
-					});
+					.forEach(childDescriptor -> descriptor.executeChild(childDescriptor, listener, params));
 			});
 			descriptor.getChildren()
 				.stream()

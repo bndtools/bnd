@@ -1,10 +1,12 @@
 package aQute.tester.bundle.engine;
 
-import static aQute.tester.bundle.engine.discovery.BundleSelectorResolver.displayNameOf;
-
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
+import org.junit.platform.engine.ConfigurationParameters;
+import org.junit.platform.engine.EngineExecutionListener;
+import org.junit.platform.engine.ExecutionRequest;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.UniqueId;
@@ -17,6 +19,13 @@ public class BundleDescriptor extends AbstractTestDescriptor {
 	final private Bundle							bundle;
 	final private BundleException					bundleException;
 	final private Map<TestDescriptor, TestEngine>	engineMap	= new HashMap<>();
+
+	public static String displayNameOf(Bundle bundle) {
+		final Optional<String> bundleName = Optional.ofNullable(bundle.getHeaders()
+			.get(aQute.bnd.osgi.Constants.BUNDLE_NAME));
+		return "[" + bundle.getBundleId() + "] " + bundleName.orElse(bundle.getSymbolicName()) + ';'
+			+ bundle.getVersion();
+	}
 
 	public BundleDescriptor(Bundle bundle, UniqueId uniqueId) {
 		this(bundle, uniqueId, null);
@@ -32,15 +41,17 @@ public class BundleDescriptor extends AbstractTestDescriptor {
 		return bundle;
 	}
 
-	public void addEngine(TestDescriptor descriptor, TestEngine engine) {
+	public void addChild(TestDescriptor descriptor, TestEngine engine) {
 		engineMap.put(descriptor, engine);
 		addChild(descriptor);
 	}
 
-	public TestEngine getEngineFor(TestDescriptor descriptor) {
-		return engineMap.get(descriptor);
-	}
+	public void executeChild(TestDescriptor descriptor, EngineExecutionListener listener, ConfigurationParameters params) {
+		TestEngine engine = engineMap.get(descriptor);
+		ExecutionRequest er = new ExecutionRequest(descriptor, listener, params);
+		engine.execute(er);
 
+	}
 	@Override
 	public Type getType() {
 		return bundleException == null ? Type.CONTAINER : Type.TEST;
