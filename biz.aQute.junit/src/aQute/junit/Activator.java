@@ -1,5 +1,12 @@
 package aQute.junit;
 
+import static aQute.junit.constants.TesterConstants.TESTER_CONTINUOUS;
+import static aQute.junit.constants.TesterConstants.TESTER_DIR;
+import static aQute.junit.constants.TesterConstants.TESTER_NAMES;
+import static aQute.junit.constants.TesterConstants.TESTER_PORT;
+import static aQute.junit.constants.TesterConstants.TESTER_SEPARATETHREAD;
+import static aQute.junit.constants.TesterConstants.TESTER_TRACE;
+import static aQute.junit.constants.TesterConstants.TESTER_UNRESOLVED;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
@@ -11,14 +18,20 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.NoTestsRemainException;
@@ -28,13 +41,12 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
-import org.osgi.framework.SynchronousBundleListener;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.util.tracker.BundleTracker;
 
-import aQute.junit.constants.TesterConstants;
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -42,7 +54,7 @@ import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
 @Header(name = Constants.BUNDLE_ACTIVATOR, value = "${@class}")
-public class Activator implements BundleActivator, TesterConstants, Runnable {
+public class Activator implements BundleActivator, Runnable {
 	BundleContext		context;
 	volatile boolean	active;
 	int					port		= -1;
@@ -59,12 +71,8 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		this.context = context;
 		active = true;
 		if (!Boolean.valueOf(context.getProperty(TESTER_SEPARATETHREAD))
-			&& Boolean.valueOf(context.getProperty("launch.services"))) { // can't
-																			// register
-																			// services
-																			// on
-																			// mini
-																			// framework
+			// can't register services on mini framework
+			&& Boolean.valueOf(context.getProperty("launch.services"))) {
 			Hashtable<String, String> ht = new Hashtable<>();
 			ht.put("main.thread", "true");
 			ht.put(Constants.SERVICE_DESCRIPTION, "JUnit tester");
@@ -195,32 +203,66 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	void automatic(File reportDir) throws IOException {
-		BlockingDeque<Bundle> queue = new LinkedBlockingDeque<>();
+		final BlockingDeque<Entry<Bundle, String>> queue = new LinkedBlockingDeque<>();
 
-		trace("adding Bundle Listener for getting test bundle events");
-		context.addBundleListener((SynchronousBundleListener) event -> {
-			switch (event.getType()) {
-				case BundleEvent.STARTED :
-				case BundleEvent.RESOLVED :
-					checkBundle(queue, event.getBundle());
-					break;
+		trace("opening BundleTracker for finding test bundles");
+		BundleTracker<Bundle> tracker = new BundleTracker<Bundle>(context,
+			Bundle.RESOLVED | Bundle.STARTING | Bundle.ACTIVE, null) {
+			final Set<Bundle> processed = new HashSet<>();
+
+			@Override
+			public Bundle addingBundle(Bundle bundle, BundleEvent event) {
+				if ((bundle.getState() & Bundle.RESOLVED) != 0) {
+					// maybe a fragment
+					Bundle host = findHost(bundle);
+					if (host != bundle) { // fragment
+						if ((host.getState() & (Bundle.STARTING | Bundle.ACTIVE)) != 0) {
+							process(Stream.of(bundle));
+						}
+						return bundle;
+					}
+					// a RESOLVED host
+					return null;
+				}
+				// must be a host
+				process(Stream.of(bundle));
+				process(findFragments(bundle));
+				return bundle;
 			}
-		});
 
-		for (Bundle b : context.getBundles()) {
-			checkBundle(queue, b);
-		}
+			private void process(Stream<Bundle> stream) {
+				stream.filter(processed::add)
+					.map(bundle -> {
+						String testnames = bundle.getHeaders()
+							.get(aQute.bnd.osgi.Constants.TESTCASES);
+						if (testnames == null) {
+							return null;
+						}
+						trace("found active bundle with test cases %s : %s", bundle, testnames);
+						return new AbstractMap.SimpleEntry<>(bundle, testnames);
+					})
+					.filter(Objects::nonNull)
+					.forEach(queue::offerLast);
+			}
+
+			@Override
+			public void removedBundle(Bundle bundle, BundleEvent event, Bundle object) {
+				processed.remove(object);
+			}
+		};
+		tracker.open();
 
 		trace("starting queue");
 		int result = 0;
 		while (active()) {
 			try {
-				Bundle bundle = queue.takeFirst();
+				Entry<Bundle, String> entry = queue.takeFirst();
+				Bundle bundle = entry.getKey();
+				String testnames = entry.getValue();
 				trace("received bundle to test: %s", bundle.getLocation());
 				try (Writer report = getReportWriter(reportDir, bundleReportName(bundle))) {
 					trace("test will run");
-					result += test(bundle, bundle.getHeaders()
-						.get(aQute.bnd.osgi.Constants.TESTCASES), report);
+					result += test(bundle, testnames, report);
 					trace("test ran");
 				}
 				if (queue.isEmpty() && !continuous) {
@@ -234,18 +276,6 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			} catch (Exception e) {
 				error("Not sure what happened anymore %s", e);
 				System.exit(254);
-			}
-		}
-	}
-
-	void checkBundle(BlockingDeque<Bundle> queue, Bundle bundle) {
-		Bundle host = findHost(bundle);
-		if (host != null && (host.getState() == Bundle.ACTIVE || host.getState() == Bundle.STARTING)) {
-			String testcases = bundle.getHeaders()
-				.get(aQute.bnd.osgi.Constants.TESTCASES);
-			if (testcases != null) {
-				trace("found active bundle with test cases %s : %s", bundle, testcases);
-				queue.offerLast(bundle);
 			}
 		}
 	}
@@ -375,7 +405,6 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 		for (BundleWire wire : wires) {
 			hosts.add(wire.getProviderWiring()
-				.getRevision()
 				.getBundle());
 		}
 		if (hosts.isEmpty()) {
@@ -385,6 +414,25 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			trace("Found multiple hosts for fragment %s: %s", bundle, hosts);
 		}
 		return hosts.get(0);
+	}
+
+	private Stream<Bundle> findFragments(Bundle host) {
+		if (host == null) {
+			return Stream.empty();
+		}
+
+		BundleWiring wiring = host.adapt(BundleWiring.class);
+		// Bundle isn't resolved.
+		if (wiring == null) {
+			trace("unresolved bundle: %s", host);
+			return Stream.empty();
+		}
+		List<BundleWire> wires = wiring.getProvidedWires(HostNamespace.HOST_NAMESPACE);
+		trace("provided wires for %s %s", host, wires);
+
+		return wires.stream()
+			.map(BundleWire::getRequirerWiring)
+			.map(BundleWiring::getBundle);
 	}
 
 	private TestSuite createSuite(Bundle tfw, List<String> testNames, TestResult result) {
