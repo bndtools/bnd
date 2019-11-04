@@ -51,7 +51,7 @@ When calculating the module **requires** the following is considered:
 1. If the `-jpms-module-info` instruction contains a key having a `modules` attribute, the `modules` attribute value is first split on commas (`,`) and each segment is added as a raw required module name
    e.g. `-jpms-module-info: foo.module;modules='java.desktop,java.logging'`, the modules `java.desktop`, and `java.logging` are added to module requires
 
-2. In addition, if the `-jpms-module-info` instruction contains a key having a `ee` attribute, the `ee` attribute indicates the Java module name mapping table to use for Java SE packages using bnd's `aQute.bnd.build.model.EE` definitions which define a set of Java module name mapping tables keyed by EE.
+2. In addition, if the `-jpms-module-info` instruction contains a key having a `ee` attribute, the `ee` attribute indicates the Java module name mapping table to use for Java SE packages using bnd's `aQute.bnd.build.model.EE` definitions which define a set of Java module name mapping tables keyed by `EE`.
    e.g. `-jpms-module-info: foo.module;ee=JavaSE_10_0`, bnd will use the Java module name mapping table for Java SE 10 when determining module name for a given Java SE package
 
    If no `ee` attribute is specified, bnd will use the Java module name mapping table for Java SE 11 when determining module name for a given Java SE package
@@ -67,15 +67,17 @@ When calculating the module **requires** the following is considered:
 
 #### Requires - Access: Transitivity
 
-If bnd calculates a module require, the require's access is determined to be `transitive` by discovering if any package exported by the bundle has a `uses` constraint on a package of the required module.
+Bnd will set the access to `transitive`  if _any_ package exported by the bundle has a `uses` constraint on a package of the required module.
 
 #### Requires  - Access: Static
 
-Bnd does not currently specific a heuristic mapping a require's access as being `static`. A possible heuristic might be that all packages of a module are imported with `resolution:=optional` or by `Dynamic-ImportPackage`.
+Bnd will set the access to `static` if the module is specified in the `-jpms-module-info` instruction and does not actual have any imports.
+
+Bnd will set the access to `static` if _all_ the packages imported from the module are any combination of `resolution:=optional`, `resolution:=dynamic` or match the `Dynamic-ImportPackage` instruction.
 
 #### Requires - Version
 
-Bnd does not currently track a require's version.
+Bnd does not currently track a `require`'s version.
 
 ### Exports
 
@@ -127,3 +129,53 @@ public class Main {
 ### Java 8 Support
 
 Bnd's `module-info.class` generation is supported when building with Java 8 or higher. (Yes! I did say Java 8.)
+
+## Advanced Options
+
+There are scenarios where the heuristics used by bnd don't give the desired result because the necessary information is not available or is incorrect.
+
+The `-jpms-module-info-options` instruction provides some capabilities to help the developer handle these scenarios. The instruction uses the _package header syntax_ similar to many other bnd instructions. The keys of these instructions are module names and there are 4 available attributes. They are:
+
+- **`substitute`** - If bnd generates a module name matching the value of this attribute it should be substituted with the key of the instruction.
+  e.g. 
+  
+  ```properties
+  -jpms-module-info-options: java.enterprise;substitute="geronimo-jcdi_2.0_spec"
+  ```
+  means that if bnd calculates the module name to be `geronimo-jcdi_2.0_spec` it should replace it with `java.enterprise` 
+  
+- **`ignore`** - If the attribute `ignore="true"` is found the require matching the key of the instruction will not be added.
+  e.g. 
+  
+  ```properties
+  -jpms-module-info-options: java.enterprise;ignore="true"
+  ```
+
+  means ignore the module `java.enterprise`
+  
+- **`static`** - If the attribute `static="true|false"` is found the access of the module matching the key of the instruction will be set to match.
+  e.g. 
+  
+  ```properties
+  -jpms-module-info-options: java.enterprise;static="true"
+  ```
+
+  means make the `require` for module `java.enterprise` `static`
+  
+- **`transitive`** - If the attribute `transitive="true|false"` is found the access of the module matching the key of the instruction will be set to match.
+  e.g. 
+  
+  ```properties
+  -jpms-module-info-options: java.enterprise;transitive="true"
+  ```
+  
+  means make the `require` for module `java.enterprise` `transitive`
+
+The following is an example with multiple attributes and instructions:
+
+```properties
+-jpms-module-info-options: \
+    java.enterprise;substitute="geronimo-jcdi_2.0_spec";static=true;transitive=true,\
+    java.management;ignore=true;
+```
+

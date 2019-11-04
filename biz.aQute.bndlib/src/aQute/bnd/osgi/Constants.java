@@ -503,6 +503,15 @@ public interface Constants {
 	 * Module Section
 	 */
 	String				JPMS_MODULE_INFO							= "-jpms-module-info";
+	String				JPMS_MODULE_INFO_OPTIONS					= "-jpms-module-info-options";
+	String				ACCESS_ATTRIBUTE							= "access";
+	String				EE_ATTRIBUTE								= "ee";
+	String				EXPORTS_ATTRIBUTE							= "exports";
+	String				IGNORE_ATTRIBUTE							= "ignore";
+	String				MODULES_ATTRIBUTE							= "modules";
+	String				TRANSITIVE_ATTRIBUTE						= "transitive";
+	String				STATIC_ATTRIBUTE							= "static";
+	String				SUBSTITUTE_ATTRIBUTE						= "substitute";
 	String				MODULE_INFO_CLASS							= "module-info.class";
 
 	/*
