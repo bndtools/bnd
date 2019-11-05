@@ -17,15 +17,14 @@ import aQute.launchpad.Launchpad;
 import aQute.lib.exceptions.Exceptions;
 
 /**
- * Utility class for compiling sources from the testresources folder and
- * building test bundles.
+ * Utility class for reflectively accessing class definitions inside a bundle.
  * <p>
- * Testing the tester requires test classes to feed it. Unfortunately, if these
- * are present in regular test source, they are also found (and executed) by the
- * build tools. To get around this, this utility class allows you to store the
- * test sources in the testresources folder. At startup, it will compile them
- * all into generated/bin_testresources. The rest of the methods facilitate
- * copying the classes into synthetic bundles using Launchpad.
+ * Testing the tester requires test classes to feed it. The tests in this
+ * project have the feeder test classes in the src directory and they are
+ * accessible on the classpath at runtime, but in order to create a true test
+ * they are copied into the framework-under-test rather than imported from the
+ * framework classloader. This utility class allows you to reflectively access
+ * the class objects inside the framework.
  *
  * @author Fr Jeremy Krieg (fr.jkrieg@greekwelfaresa.org.au)
  */
