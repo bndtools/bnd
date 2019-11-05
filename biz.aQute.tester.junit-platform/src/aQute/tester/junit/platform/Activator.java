@@ -20,9 +20,11 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.stream.Stream;
@@ -46,7 +48,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
-import org.osgi.framework.SynchronousBundleListener;
+import org.osgi.util.tracker.BundleTracker;
 
 import aQute.tester.bundle.engine.BundleEngine;
 import aQute.tester.bundle.engine.discovery.BundleSelector;
@@ -65,7 +67,6 @@ public class Activator implements BundleActivator, Runnable {
 	JUnitEclipseListener				jUnitEclipseListener;
 	volatile Thread						thread;
 	private File						reportDir;
-	private LoggingListener				basicReport;
 	private SummaryGeneratingListener	summary;
 	private TestExecutionListener[]		listeners;
 
@@ -121,6 +122,7 @@ public class Activator implements BundleActivator, Runnable {
 		ClassLoader l = thread.getContextClassLoader();
 		try {
 			thread.setContextClassLoader(BundleEngine.class.getClassLoader());
+			// This will instantiate the BundleEngine class via ServiceLoader
 			launcher = LauncherFactory.create();
 		} catch (Throwable e) {
 			error("Couldn't load the BundleEngine: %s", e);
@@ -183,15 +185,14 @@ public class Activator implements BundleActivator, Runnable {
 			}
 		}
 
-		basicReport = LoggingListener.forBiConsumer((t, msg) -> {
+		listenerList.add(LoggingListener.forBiConsumer((t, msg) -> {
 			if (t == null) {
 				trace(msg.get());
 			} else {
 				trace(msg.get(), t);
 			}
-		});
+		}));
 		summary = new SummaryGeneratingListener();
-		listenerList.add(basicReport);
 		listenerList.add(summary);
 		listenerList.add(new TestExecutionListener() {
 			@Override
@@ -216,8 +217,7 @@ public class Activator implements BundleActivator, Runnable {
 				message("", "TEST %s <<< SKIPPED", testName(testIdentifier));
 			}
 		});
-		listeners = listenerList.stream()
-			.toArray(TestExecutionListener[]::new);
+		listeners = listenerList.toArray(new TestExecutionListener[0]);
 
 		if (testcases == null) {
 			trace("automatic testing of all bundles with " + aQute.bnd.osgi.Constants.TESTCASES + " header");
@@ -229,10 +229,12 @@ public class Activator implements BundleActivator, Runnable {
 		} else {
 			trace("received names of classes to test %s", testcases);
 			try {
-				baseSelectors = BundleUtils.testCases(testcases)
+				List<DiscoverySelector> testcaseSelectors = BundleUtils.testCases(testcases)
 					.map(testcase -> testcase.indexOf('#') < 0 ? selectClass(testcase) : selectMethod(testcase))
 					.collect(toList());
-				automatic();
+				LauncherDiscoveryRequest request = buildRequest(testcaseSelectors);
+				long result = test(request);
+				System.exit((int) result);
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.exit(254);
@@ -267,27 +269,59 @@ public class Activator implements BundleActivator, Runnable {
 	void automatic() throws IOException {
 		final BlockingDeque<LauncherDiscoveryRequest> queue = new LinkedBlockingDeque<>();
 
-		trace("adding Bundle Listener for getting test bundle events");
-		context.addBundleListener((SynchronousBundleListener) event -> {
-			switch (event.getType()) {
-				case BundleEvent.STARTED :
-				case BundleEvent.RESOLVED :
-					checkBundle(queue, event.getBundle());
-					break;
-			}
-		});
-
-		long result = 0;
-		LauncherDiscoveryRequest request = buildRequest();
+		trace("Build initial request for finding test bundles");
+		LauncherDiscoveryRequest request = buildRequest(Collections.emptyList());
 		TestPlan plan = launcher.discover(request);
 		if (plan.containsTests()) {
-			result = test(request);
-			if (!continuous) {
-				System.exit((int) result);
-			}
+			queue.offerLast(request);
 		}
 
+		trace("Opening BundleTracker for finding test bundles started later");
+		BundleTracker<Bundle> tracker = new BundleTracker<Bundle>(context,
+			Bundle.RESOLVED | Bundle.STARTING | Bundle.ACTIVE, null) {
+			final Set<Bundle> processed = new HashSet<>();
+
+			@Override
+			public Bundle addingBundle(Bundle bundle, BundleEvent event) {
+				if ((bundle.getState() & Bundle.RESOLVED) != 0) {
+					// maybe a fragment
+					Bundle host = BundleUtils.getHost(bundle)
+						.orElse(bundle);
+					if (host != bundle) { // fragment
+						if ((host.getState() & (Bundle.STARTING | Bundle.ACTIVE)) != 0) {
+							if (event != null) { // only process for events
+								process(Stream.of(bundle));
+							}
+						}
+						return bundle;
+					}
+					// a RESOLVED host
+					return null;
+				}
+				// must be a host
+				if (event != null) { // only process for events
+					process(Stream.of(bundle));
+					process(BundleUtils.getFragments(bundle));
+				}
+				return bundle;
+			}
+
+			private void process(Stream<Bundle> stream) {
+				stream.filter(processed::add)
+					.filter(BundleUtils::hasTests)
+					.map(Activator.this::buildRequest)
+					.forEach(queue::offerLast);
+			}
+
+			@Override
+			public void removedBundle(Bundle bundle, BundleEvent event, Bundle object) {
+				processed.remove(object);
+			}
+		};
+		tracker.open();
+
 		trace("starting queue");
+		long result = 0;
 		while (active()) {
 			try {
 				LauncherDiscoveryRequest testRequest = queue.takeFirst();
@@ -301,6 +335,7 @@ public class Activator implements BundleActivator, Runnable {
 			} catch (InterruptedException e) {
 				trace("tests bundle queue interrupted");
 				thread.interrupt();
+				break;
 			} catch (Exception e) {
 				error("Not sure what happened anymore %s", e);
 				System.exit(254);
@@ -308,36 +343,18 @@ public class Activator implements BundleActivator, Runnable {
 		}
 	}
 
-	List<DiscoverySelector> baseSelectors = Collections.emptyList();
-
-	LauncherDiscoveryRequest buildRequest() {
+	LauncherDiscoveryRequest buildRequest(List<DiscoverySelector> testcaseSelectors) {
 		return LauncherDiscoveryRequestBuilder.request()
 			.configurationParameter(BundleEngine.CHECK_UNRESOLVED, unresolved)
-			.selectors(baseSelectors)
+			.selectors(testcaseSelectors)
 			.build();
 	}
 
 	LauncherDiscoveryRequest buildRequest(Bundle bundle) {
-		List<DiscoverySelector> selectors = new ArrayList<>(baseSelectors.size() + 1);
-		selectors.addAll(baseSelectors);
-		selectors.add(BundleSelector.selectBundle(bundle));
 		return LauncherDiscoveryRequestBuilder.request()
 			.configurationParameter(BundleEngine.CHECK_UNRESOLVED, unresolved)
-			.selectors(selectors)
+			.selectors(BundleSelector.selectBundle(bundle))
 			.build();
-	}
-
-	void checkBundle(BlockingDeque<LauncherDiscoveryRequest> queue, Bundle bundle) {
-		Bundle host = BundleUtils.getHost(bundle)
-			.orElse(bundle);
-		if ((host.getState() & (Bundle.ACTIVE | Bundle.STARTING)) != 0) {
-			String testcases = bundle.getHeaders()
-				.get(aQute.bnd.osgi.Constants.TESTCASES);
-			if (testcases != null) {
-				trace("found active bundle with test cases %s : %s", bundle, testcases);
-				queue.offerLast(buildRequest(bundle));
-			}
-		}
 	}
 
 	/**
