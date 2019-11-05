@@ -9,6 +9,7 @@ import static aQute.junit.constants.TesterConstants.TESTER_PORT;
 import static aQute.junit.constants.TesterConstants.TESTER_TRACE;
 import static aQute.junit.constants.TesterConstants.TESTER_UNRESOLVED;
 
+import java.io.File;
 import java.util.Collection;
 
 import org.osgi.annotation.bundle.Header;
@@ -73,12 +74,15 @@ public class ProjectTesterImpl extends ProjectTester implements EclipseJUnitTest
 
 			//
 			// We used to add this bundle to the -runpath. However, now we add
-			// it
-			// ad the add the end of the -runbundles
+			// it at the end of the -runbundles
 			//
-
-			launcher.addRunBundle(me.getFile()
-				.getAbsolutePath());
+			final String ourPath = me.getFile()
+				.getAbsolutePath()
+				.replace(File.separatorChar, '/');
+			if (!launcher.getRunBundles()
+				.contains(ourPath)) {
+				launcher.addRunBundle(ourPath);
+			}
 			launcher.prepare();
 		}
 		return true;
