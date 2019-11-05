@@ -418,7 +418,7 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 		int waitCount = 0;
 		try {
 			OUTER: while (true) {
-				Thread.sleep(10);
+				Thread.sleep(100);
 				final Thread.State state = runThread.getState();
 				switch (state) {
 					case TERMINATED :

@@ -19,7 +19,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -27,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.junit.platform.engine.DiscoverySelector;
@@ -37,7 +37,6 @@ import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
-import org.junit.platform.launcher.TestPlan;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.LoggingListener;
@@ -267,16 +266,9 @@ public class Activator implements BundleActivator, Runnable {
 	}
 
 	void automatic() throws IOException {
-		final BlockingDeque<LauncherDiscoveryRequest> queue = new LinkedBlockingDeque<>();
+		final BlockingDeque<BundleSelector> queue = new LinkedBlockingDeque<>();
 
-		trace("Build initial request for finding test bundles");
-		LauncherDiscoveryRequest request = buildRequest(Collections.emptyList());
-		TestPlan plan = launcher.discover(request);
-		if (plan.containsTests()) {
-			queue.offerLast(request);
-		}
-
-		trace("Opening BundleTracker for finding test bundles started later");
+		trace("Opening BundleTracker for finding test bundles");
 		BundleTracker<Bundle> tracker = new BundleTracker<Bundle>(context,
 			Bundle.RESOLVED | Bundle.STARTING | Bundle.ACTIVE, null) {
 			final Set<Bundle> processed = new HashSet<>();
@@ -289,9 +281,7 @@ public class Activator implements BundleActivator, Runnable {
 						.orElse(bundle);
 					if (host != bundle) { // fragment
 						if ((host.getState() & (Bundle.STARTING | Bundle.ACTIVE)) != 0) {
-							if (event != null) { // only process for events
-								process(Stream.of(bundle));
-							}
+							process(Stream.of(bundle));
 						}
 						return bundle;
 					}
@@ -299,17 +289,15 @@ public class Activator implements BundleActivator, Runnable {
 					return null;
 				}
 				// must be a host
-				if (event != null) { // only process for events
-					process(Stream.of(bundle));
-					process(BundleUtils.getFragments(bundle));
-				}
+				process(Stream.of(bundle));
+				process(BundleUtils.getFragments(bundle));
 				return bundle;
 			}
 
 			private void process(Stream<Bundle> stream) {
 				stream.filter(processed::add)
 					.filter(BundleUtils::hasTests)
-					.map(Activator.this::buildRequest)
+					.map(BundleSelector::selectBundle)
 					.forEach(queue::offerLast);
 			}
 
@@ -324,7 +312,14 @@ public class Activator implements BundleActivator, Runnable {
 		long result = 0;
 		while (active()) {
 			try {
-				LauncherDiscoveryRequest testRequest = queue.takeFirst();
+				List<BundleSelector> selectors = new ArrayList<>();
+				for (BundleSelector selector = queue.takeFirst(); //
+					selector != null; //
+					selector = queue.pollFirst(100, TimeUnit.MILLISECONDS)) {
+					selectors.add(selector);
+					queue.drainTo(selectors);
+				}
+				LauncherDiscoveryRequest testRequest = buildRequest(selectors);
 				trace("test will run");
 				result += test(testRequest);
 				trace("test ran");
@@ -343,17 +338,10 @@ public class Activator implements BundleActivator, Runnable {
 		}
 	}
 
-	LauncherDiscoveryRequest buildRequest(List<DiscoverySelector> testcaseSelectors) {
+	LauncherDiscoveryRequest buildRequest(List<? extends DiscoverySelector> selectors) {
 		return LauncherDiscoveryRequestBuilder.request()
 			.configurationParameter(BundleEngine.CHECK_UNRESOLVED, unresolved)
-			.selectors(testcaseSelectors)
-			.build();
-	}
-
-	LauncherDiscoveryRequest buildRequest(Bundle bundle) {
-		return LauncherDiscoveryRequestBuilder.request()
-			.configurationParameter(BundleEngine.CHECK_UNRESOLVED, unresolved)
-			.selectors(BundleSelector.selectBundle(bundle))
+			.selectors(selectors)
 			.build();
 	}
 
