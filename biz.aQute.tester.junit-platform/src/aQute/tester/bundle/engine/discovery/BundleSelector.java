@@ -1,5 +1,7 @@
 package aQute.tester.bundle.engine.discovery;
 
+import java.util.Objects;
+
 import org.junit.platform.engine.DiscoverySelector;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
@@ -37,5 +39,15 @@ public class BundleSelector implements DiscoverySelector {
 		return new BundleSelector(bundle.getSymbolicName(),
 			new VersionRange(VersionRange.LEFT_CLOSED, bundle.getVersion(), bundle.getVersion(),
 				VersionRange.RIGHT_CLOSED));
+	}
+
+	public boolean selects(Bundle bundle) {
+		return Objects.equals(getSymbolicName(), bundle.getSymbolicName())
+			&& getVersionRange().includes(bundle.getVersion());
+	}
+
+	@Override
+	public String toString() {
+		return "BundleSelector [symbolicName = '" + getSymbolicName() + "', versionRange = " + getVersionRange() + "]";
 	}
 }

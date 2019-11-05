@@ -108,8 +108,8 @@ public class BundleSelectorResolver {
 
 		bundleSelectors = request.getSelectorsByType(BundleSelector.class);
 
-		info(() -> "our bundleSelectors: " + BundleSelector.class.getClassLoader());
-		info(() -> "supplied bundleSelectors: " + request.getSelectorsByType(DiscoverySelector.class)
+		info(() -> "our class loader: " + BundleSelector.class.getClassLoader());
+		info(() -> "supplied selector's class loaders: " + request.getSelectorsByType(DiscoverySelector.class)
 			.stream()
 			.map(Object::getClass)
 			.map(Class::getClassLoader)
@@ -120,13 +120,13 @@ public class BundleSelectorResolver {
 
 		isATestBundle = bundleSelectors.isEmpty() ? BundleUtils::hasTests
 			: bundleSelectors.stream()
-				.map(selector -> (Predicate<Bundle>) bundle -> {
-					if (bundleMatches(selector, bundle)) {
+				.<Predicate<Bundle>> map(selector -> bundle -> {
+					if (selector.selects(bundle)) {
 						return true;
 					}
 					Bundle host = BundleUtils.getHost(bundle)
-						.orElse(null);
-					return (host != null && host != bundle && bundleMatches(selector, host));
+						.orElse(bundle);
+					return ((host != bundle) && selector.selects(host));
 				})
 				.reduce(Predicate::or)
 				.orElse(bundle -> false);
@@ -140,11 +140,6 @@ public class BundleSelectorResolver {
 		methodSelectors.stream() // TODO: Test
 			.map(MethodSelector::getClassName)
 			.forEach(unresolvedClasses::add);
-	}
-
-	private static boolean bundleMatches(BundleSelector selector, Bundle bundle) {
-		return Objects.equals(selector.getSymbolicName(), bundle.getSymbolicName()) && selector.getVersionRange()
-			.includes(bundle.getVersion());
 	}
 
 	private Set<TestEngine> findEngines() {
@@ -242,7 +237,6 @@ public class BundleSelectorResolver {
 			.filter(BundleUtils::isResolved)
 			.filter(BundleUtils::isNotFragment)
 			.forEach(bundle -> {
-				// addEnginesToBundle(bundle);
 				info(() -> "Performing discovery for bundle: " + bundle.getSymbolicName());
 				String bundleDesc = uniqueIdOf(bundle);
 				UniqueId bundleId = descriptor.getUniqueId()
