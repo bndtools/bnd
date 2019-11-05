@@ -125,8 +125,7 @@ public abstract class ProjectLauncher extends Processor {
 		for (Container container : run) {
 			File file = container.getFile();
 			if (file != null && (file.isFile() || file.isDirectory())) {
-				runbundles.add(IO.absolutePath(file));
-				int bundleIndex = runbundles.size() - 1;
+				addRunBundle(IO.absolutePath(file));
 			} else {
 				getProject().error("Bundle file \"%s\" does not exist, given error is %s", file, container.getError());
 			}
@@ -136,7 +135,7 @@ public abstract class ProjectLauncher extends Processor {
 			File[] builds = getProject().getBuildFiles(true);
 			if (builds != null)
 				for (File file : builds)
-					runbundles.add(IO.absolutePath(file));
+					addRunBundle(IO.absolutePath(file));
 		}
 
 		Collection<Container> runpath = getProject().getRunpath();
@@ -228,8 +227,11 @@ public abstract class ProjectLauncher extends Processor {
 		}
 	}
 
-	public void addRunBundle(String f) {
-		runbundles.add(f);
+	public void addRunBundle(String path) {
+		path = IO.normalizePath(path);
+		if (!runbundles.contains(path)) {
+			runbundles.add(path);
+		}
 	}
 
 	public Collection<String> getRunBundles() {

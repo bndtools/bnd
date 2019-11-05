@@ -1,9 +1,7 @@
 variables:
   LC_ALL: en_US.UTF-8
   GRADLE_OPTS: -Dorg.gradle.parallel=false
-  JAVA8_JDK: https://cdn.azul.com/zulu/bin/zulu8.40.0.25-ca-jdk8.0.222-linux_x64.tar.gz
-  JAVA11_JDK: https://cdn.azul.com/zulu/bin/zulu11.33.15-ca-jdk11.0.4-linux_x64.tar.gz
-  JAVA12_JDK: https://cdn.azul.com/zulu/bin/zulu12.3.11-ca-jdk12.0.2-linux_x64.tar.gz
+  JAVA_JDK: https://cdn.azul.com/zulu/bin/zulu8.42.0.23-ca-jdk8.0.232-linux_x64.tar.gz
 
 jobs:
 
@@ -14,7 +12,7 @@ jobs:
   - bash: |
       set -ev
       curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh
-      source install-jdk.sh --url $(JAVA8_JDK)
+      source install-jdk.sh --url $(JAVA_JDK)
       ./gradlew --no-daemon --version
       ./mvnw --version
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
@@ -33,11 +31,13 @@ jobs:
 - job: OpenJDK11
   pool:
     vmImage: 'ubuntu-16.04'
+  variables:
+    JAVA_JDK: https://cdn.azul.com/zulu/bin/zulu11.35.15-ca-jdk11.0.5-linux_x64.tar.gz
   steps:
   - bash: |
       set -ev
       curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh
-      source install-jdk.sh --url $(JAVA11_JDK)
+      source install-jdk.sh --url $(JAVA_JDK)
       ./gradlew --no-daemon --version
       ./mvnw --version
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
@@ -46,11 +46,13 @@ jobs:
 - job: OpenJDK12
   pool:
     vmImage: 'ubuntu-16.04'
+  variables:
+    JAVA_JDK: https://cdn.azul.com/zulu/bin/zulu12.3.11-ca-jdk12.0.2-linux_x64.tar.gz
   steps:
   - bash: |
       set -ev
       curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh
-      source install-jdk.sh --url $(JAVA12_JDK)
+      source install-jdk.sh --url $(JAVA_JDK)
       ./gradlew --no-daemon --version
       ./mvnw --version
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
@@ -63,7 +65,7 @@ jobs:
   - bash: |
       set -ev
       curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh
-      source install-jdk.sh --url $(JAVA8_JDK)
+      source install-jdk.sh --url $(JAVA_JDK)
       ./gradlew --no-daemon --version
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 :biz.aQute.bnd.gradle:build :biz.aQute.bnd.gradle:releaseNeeded
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 -Pbnd_repourl=./dist/bundles :buildscriptDependencies :build
@@ -86,7 +88,7 @@ jobs:
   steps:
   - task: UseRubyVersion@0
     inputs:
-      versionSpec: '>= 2.4' 
+      versionSpec: '>= 2.4'
       addToPath: true
   - bash: |
       set -ev
