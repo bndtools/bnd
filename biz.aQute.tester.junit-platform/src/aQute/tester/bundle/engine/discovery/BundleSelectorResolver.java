@@ -108,8 +108,8 @@ public class BundleSelectorResolver {
 
 		bundleSelectors = request.getSelectorsByType(BundleSelector.class);
 
-		System.err.println("our bundleSelectors: " + BundleSelector.class.getClassLoader());
-		System.err.println("supplied bundleSelectors: " + request.getSelectorsByType(DiscoverySelector.class)
+		info(() -> "our bundleSelectors: " + BundleSelector.class.getClassLoader());
+		info(() -> "supplied bundleSelectors: " + request.getSelectorsByType(DiscoverySelector.class)
 			.stream()
 			.map(Object::getClass)
 			.map(Class::getClassLoader)

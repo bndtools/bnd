@@ -53,7 +53,8 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		info("JUnitEclipseListener: testPlanSkipped: " + testIdentifier + ", reason: " + reason);
 		if (testIdentifier.isContainer() && testPlan != null) {
 			testPlan.getChildren(testIdentifier)
-				.forEach(identifier -> executionSkipped(identifier, "ancestor \"" + testIdentifier.getDisplayName() + "\" was skipped"));
+				.forEach(identifier -> executionSkipped(identifier,
+					"ancestor \"" + testIdentifier.getDisplayName() + "\" was skipped"));
 		}
 		// This is a departure from the Eclipse built-in JUnit 5 tester in two
 		// ways (hopefully both improvements):
