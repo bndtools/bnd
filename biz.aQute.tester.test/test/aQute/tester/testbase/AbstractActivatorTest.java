@@ -189,26 +189,17 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 	// Try to build some resilience into this test to avoid
 	// race conditions when the new test starts.
 	private Thread getBndTestThread() throws InterruptedException {
-		int threadCount = Thread.activeCount();
-		Thread[] threads = new Thread[threadCount + 10];
-
-		final long endTime = System.currentTimeMillis() + 10000;
+		final long endTime = System.currentTimeMillis() + 30000;
 
 		while (System.currentTimeMillis() < endTime) {
-			threadCount = Thread.enumerate(threads);
-
-			if (threadCount == threads.length) {
-				threads = new Thread[threadCount + 10];
-				continue;
-			}
-
-			for (Thread thread : threads) {
+			for (Thread thread : Thread.getAllStackTraces()
+				.keySet()) {
 				if (thread.getName()
 					.equals(BND_TEST_THREAD)) {
 					return thread;
 				}
 			}
-			Thread.sleep(10);
+			Thread.sleep(1000);
 		}
 		return null;
 	}
@@ -219,8 +210,6 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 		createLP();
 		addTesterBundle();
 
-		final CountDownLatch latch = new CountDownLatch(1);
-
 		final Thread bndThread = getBndTestThread();
 
 		// Don't assert softly, since if we can't find this thread we can't do
@@ -230,12 +219,11 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 			.isNotNull()
 			.isNotSameAs(Thread.currentThread());
 
-		Runnable r = lp.getService(Runnable.class)
-			.orElse(null);
-		assertThat(r).as("runnable")
-			.isNull();
+		assertThat(lp.getService(Runnable.class)).as("runnable")
+			.isEmpty();
 
 		final AtomicReference<Throwable> exception = new AtomicReference<>();
+		final CountDownLatch latch = new CountDownLatch(1);
 		bndThread.setUncaughtExceptionHandler((thread, e) -> {
 			exception.set(e);
 			latch.countDown();
@@ -245,12 +233,8 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 		// is in place to ensure we're ready to catch System.exit().
 		addTestBundle(JUnit3Test.class);
 
-		final AtomicBoolean flag = new AtomicBoolean(false);
 		// Wait for the exception handler to catch the exit.
-		assertThatCode(() -> flag.set(latch.await(5000, TimeUnit.MILLISECONDS))).as("wait for exit")
-			.doesNotThrowAnyException();
-
-		assertThat(flag.get()).as("flag")
+		assertThat(latch.await(20000, TimeUnit.MILLISECONDS)).as("wait for exit")
 			.isTrue();
 
 		assertThat(exception.get()).as("exited")
@@ -434,7 +418,7 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 		int waitCount = 0;
 		try {
 			OUTER: while (true) {
-				Thread.sleep(10);
+				Thread.sleep(100);
 				final Thread.State state = runThread.getState();
 				switch (state) {
 					case TERMINATED :
