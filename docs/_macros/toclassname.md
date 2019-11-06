@@ -4,10 +4,6 @@ class: Macro
 title: toclassname ';' FILES
 summary: Translate a list of relative file paths to class names. The files can either end with .class or .java
 ---
-layout: default
-
-
-
 
 	static String	_toclassnameHelp	= "${classname;<list of class names>}, convert class paths to FQN class names ";
 

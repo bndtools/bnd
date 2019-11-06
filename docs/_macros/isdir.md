@@ -4,7 +4,6 @@ class: Macro
 title: isdir ( ';' FILE )+
 summary: True if all given files are directories, false if no file arguments
 ---
-layout: default
 
 	public String _isdir(String args[]) {
 		boolean isdir = true;

@@ -4,7 +4,6 @@ class: Macro
 title: long2date
 summary: Turn a long time into a date
 ---
-layout: default
 
 	public String _long2date(String args[]) {
 		try {

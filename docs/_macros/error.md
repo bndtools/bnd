@@ -4,7 +4,6 @@ class: Macro
 title: error ( ';' STRING )*
 summary: Raise an error consisting of all concatenated strings
 ---
-layout: default
 
 
 	public String _error(String args[]) {
