@@ -14,6 +14,10 @@ File wrapper_bundle = new File(basedir, 'test-wrapper-bundle/target/test-wrapper
 assert wrapper_bundle.isFile()
 File in_build_pluginManagement_api_bundle = new File(basedir, 'test-in-build-pluginManagement-inheritance/test-inheriting-api-bundle/target/test-inheriting-api-bundle-0.0.1.jar')
 assert in_build_pluginManagement_api_bundle.isFile()
+File tests_main_bundle = new File(basedir, 'test-bnd-process-tests-goal/target/test-bnd-process-tests-goal-0.0.1-SNAPSHOT.jar')
+assert tests_main_bundle.isFile()
+File tests_test_bundle = new File(basedir, 'test-bnd-process-tests-goal/target/test-bnd-process-tests-goal-0.0.1-SNAPSHOT-tests.jar')
+assert tests_test_bundle.isFile()
 
 // Load manifests
 JarFile api_jar = new JarFile(api_bundle)
@@ -24,6 +28,10 @@ JarFile wrapper_jar = new JarFile(wrapper_bundle)
 Attributes wrapper_manifest = wrapper_jar.getManifest().getMainAttributes()
 JarFile in_build_pluginManagement_api_jar = new JarFile(in_build_pluginManagement_api_bundle)
 Attributes in_build_pluginManagement_api_manifest = in_build_pluginManagement_api_jar.getManifest().getMainAttributes()
+JarFile tests_main_jar = new JarFile(tests_main_bundle)
+Attributes tests_main_manifest = tests_main_jar.getManifest().getMainAttributes()
+JarFile tests_test_jar = new JarFile(tests_test_bundle)
+Attributes tests_test_manifest = tests_test_jar.getManifest().getMainAttributes()
 
 // Basic manifest check
 assert api_manifest.getValue('Bundle-SymbolicName') == 'test.api.bundle'
@@ -39,6 +47,8 @@ assert wrapper_manifest.getValue('Bundle-Version') != '0.0.1.BUILD-SNAPSHOT'
 assert wrapper_manifest.getValue('Bundle-Version') =~ /^0\.0\.1\.BUILD-/
 assert in_build_pluginManagement_api_manifest.getValue('Bundle-Version') == '0.0.1'
 assert wrapper_manifest.getValue('Bundle-ClassPath') == '.,lib/osgi.annotation.jar'
+assert tests_main_manifest.getValue('Bundle-SymbolicName') == 'test-bnd-process-tests-goal'
+assert tests_test_manifest.getValue('Bundle-SymbolicName') == 'test-bnd-process-tests-goal-tests'
 
 // Check inheritance of properties in bnd.bnd from the parent project
 assert api_manifest.getValue('X-ParentProjectProperty') == 'it worked'
@@ -85,6 +95,8 @@ assert api_manifest.getValue('Parent-Here') == basedir.absolutePath.replace(File
 assert impl_manifest.getValue('Parent-Here') == basedir.absolutePath.replace(File.separatorChar, '/' as char)
 assert wrapper_manifest.getValue('Parent-Here') == basedir.absolutePath.replace(File.separatorChar, '/' as char)
 assert impl_manifest.getValue('Project-License') == 'Apache License, Version 2.0'
+assert tests_main_manifest.getValue('Test-Cases') == null
+assert tests_test_manifest.getValue('Test-Cases') == 'org.example.test.ExampleTest'
 
 // Check contents
 assert api_jar.getEntry('org/example/api/') != null
@@ -98,3 +110,5 @@ assert impl_jar.getEntry('OSGI-INF/metatype/org.example.impl.Config.xml') != nul
 assert wrapper_jar.getEntry('org/example/api/') != null
 assert wrapper_jar.getEntry('org/example/types/') != null
 assert wrapper_jar.getEntry('lib/osgi.annotation.jar') != null
+assert tests_test_jar.getEntry('org/example/test/') != null
+assert tests_test_jar.getEntry('org/example/impl/') == null

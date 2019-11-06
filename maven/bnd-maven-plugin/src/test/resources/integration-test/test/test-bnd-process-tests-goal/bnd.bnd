@@ -1,0 +1,13 @@
+Project-Build-SourceEncoding: ${project.build.sourceEncoding}
+Project-GroupId-ArtifactId: ${project.groupId}:${project.artifactId}
+Project-Build-OutputDirectory: ${project.build.outputDirectory}
+Project-License: ${project.licenses\\[0\\].name}
+Project-NoSuchProperty: ${project.nosuchproperty}
+Project: ${project}
+Settings-InteractiveMode: ${settings.interactiveMode}
+Settings-LocalRepository: ${settings.localRepository}
+SomeVar: ${someVar}
+SomeParentVar: ${someParentVar}
+Bundle-Name: Test Impl Bundle
+-include: ${.}/other.bnd
+-snapshot: SNAPSHOT

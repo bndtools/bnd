@@ -237,8 +237,11 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 			SubMonitor progress = SubMonitor.convert(monitor1);
 			MavenProject mavenProject = getMavenProject(projectFacade, progress.newChild(1));
 
-			List<MojoExecution> mojoExecutions = projectFacade.getMojoExecutions("org.apache.maven.plugins",
-				"maven-jar-plugin", monitor1, "jar");
+			List<MojoExecution> mojoExecutions = new ArrayList<>();
+			mojoExecutions.addAll(
+				projectFacade.getMojoExecutions("org.apache.maven.plugins", "maven-jar-plugin", monitor1, "jar"));
+			mojoExecutions.addAll(
+				projectFacade.getMojoExecutions("org.apache.maven.plugins", "maven-jar-plugin", monitor1, "test-jar"));
 
 			for (MojoExecution mojoExecution : mojoExecutions) {
 				maven.execute(mavenProject, mojoExecution, progress.newChild(1));
