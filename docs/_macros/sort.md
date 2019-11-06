@@ -4,7 +4,6 @@ class: Macro
 title: sort (';' LIST )+
 summary: Concatenate a set of lists and sort their contents on their string value
 ---
-layout: default
 
 	public String _sort(String args[]) {
 		verifyCommand(args, _sortHelp, null, 2, Integer.MAX_VALUE);

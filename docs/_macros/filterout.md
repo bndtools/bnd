@@ -1,8 +1,8 @@
 ---
 layout: default
 class: Macro
-title: filter ';' LIST ';' REGEX
-summary: Filters entries in a list that matching a regular expression
+title: filterout ';' LIST ';' REGEX
+summary: Filters out entries in a list that matching a regular expression
 ---
 
 	public String _filter(String args[]) {

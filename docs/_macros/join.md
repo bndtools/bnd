@@ -4,16 +4,6 @@ class: Macro
 title: join ( ';' LIST )+
 summary: Join a number of list/values into a single list
 ---
-layout: default
-
-
-
-
-
-
-
-
-
 
 	static String	_joinHelp	= "${join;<list>...}";
 

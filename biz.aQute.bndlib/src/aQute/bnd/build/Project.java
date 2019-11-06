@@ -1595,10 +1595,11 @@ public class Project extends Processor {
 	}
 
 	/**
-	 * Macro access to the repository ${repo;<bsn>[;<version>[;<low|high>]]}
+	 * Macro access to the repository
+	 * ${repo;<bsn>[;<versionrange>[;<lowest|highest|exact>]]}
 	 */
 
-	static String _repoHelp = "${repo ';'<bsn> [ ; <version> [; ('HIGHEST'|'LOWEST')]}";
+	static String _repoHelp = "${repo;<bsn>[;<versionrange>[;('HIGHEST'|'LOWEST'|'EXACT')]]}";
 
 	public String _repo(String args[]) throws Exception {
 		if (args.length < 2) {

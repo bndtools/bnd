@@ -4,7 +4,6 @@ class: Builder
 title: maven_version ';' MAVEN-VERSION
 summary: Cleanup a potential maven version to make it match an OSGi Version syntax.
 ---
-layout: default
 
 
 	/**
