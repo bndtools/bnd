@@ -2183,4 +2183,16 @@ public class Macro {
 		}
 		return null;
 	}
+
+	static final String _fileuriHelp = "${fileuri;<path>}, Return a file uri for the specified path. Relative paths are resolved against the processor base.";
+
+	public String _fileuri(String args[]) throws Exception {
+		verifyCommand(args, _fileuriHelp, null, 2, 2);
+
+		File f = domain.getFile(args[1])
+			.getCanonicalFile();
+		return f.toURI()
+			.toString();
+	}
+
 }
