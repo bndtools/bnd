@@ -314,7 +314,7 @@ ORDER               ::=
     |   'leastdependencieslast'
     |   'random'
     |   'sortbynameversion'
-    |   'mergedsortbynameversion'
+    |   'mergesortbynameversion'
 begin               ::= 'begin=' NUMBER
 step                ::= 'step=' NUMBER
 </code></pre></div></div>
@@ -326,7 +326,7 @@ step                ::= 'step=' NUMBER
 <p>The value of <code class="highlighter-rouge">order</code> can take on the following values:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">mergedsortbynameversion</code> – Ordering by name (and version) and then merging was the original behavior. This is therefore the default.</li>
+  <li><code class="highlighter-rouge">mergesortbynameversion</code> – Ordering by name (and version) and then merging was the original behavior. This is therefore the default.</li>
   <li><code class="highlighter-rouge">sortbynameversion</code> – For completeness, this option orders the bundles by name and version and then assigns a startlevel.</li>
   <li><code class="highlighter-rouge">random</code> – Use a random ordering. The ordering uses an algorithm that is based on the random number generator and should therefore 
 be different on each run.</li>
