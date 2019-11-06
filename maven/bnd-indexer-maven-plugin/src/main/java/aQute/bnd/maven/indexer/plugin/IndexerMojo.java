@@ -53,7 +53,7 @@ import aQute.libg.cryptography.SHA256;
 /**
  * Exports project dependencies to OSGi R5 index format.
  */
-@Mojo(name = "index", defaultPhase = PACKAGE, requiresDependencyResolution = TEST, threadSafe = true)
+@Mojo(name = "index", defaultPhase = PACKAGE, requiresDependencyResolution = TEST, requiresProject = true, threadSafe = true)
 public class IndexerMojo extends AbstractMojo {
 	private static final Logger			logger	= LoggerFactory.getLogger(IndexerMojo.class);
 

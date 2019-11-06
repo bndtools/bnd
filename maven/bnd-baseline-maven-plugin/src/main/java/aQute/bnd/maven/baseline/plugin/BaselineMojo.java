@@ -47,7 +47,7 @@ import aQute.service.reporter.Reporter;
 /**
  * Exports project dependencies to OSGi R5 index format.
  */
-@Mojo(name = "baseline", defaultPhase = VERIFY, threadSafe = true)
+@Mojo(name = "baseline", defaultPhase = VERIFY, requiresProject = true, threadSafe = true)
 public class BaselineMojo extends AbstractMojo {
 	private static final Logger		logger			= LoggerFactory.getLogger(BaselineMojo.class);
 	private static final String		PACKAGING_POM	= "pom";

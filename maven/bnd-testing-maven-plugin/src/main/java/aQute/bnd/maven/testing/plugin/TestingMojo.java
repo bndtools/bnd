@@ -36,7 +36,7 @@ import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 import biz.aQute.resolve.ResolveProcess;
 
-@Mojo(name = "testing", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true)
+@Mojo(name = "testing", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, requiresProject = true, threadSafe = true)
 public class TestingMojo extends AbstractMojo {
 	private static final Logger									logger	= LoggerFactory.getLogger(TestingMojo.class);
 

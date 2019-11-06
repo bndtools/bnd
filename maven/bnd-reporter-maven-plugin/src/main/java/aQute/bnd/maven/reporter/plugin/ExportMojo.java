@@ -26,7 +26,7 @@ import biz.aQute.bnd.reporter.exporter.ReportExporterBuilder;
 /**
  * Exports a set of user defined reports.
  */
-@Mojo(name = "export", threadSafe = true)
+@Mojo(name = "export", requiresProject = true, threadSafe = true)
 public class ExportMojo extends AbstractMojo {
 
 	private static final String			AGGREGATOR_SCOPE	= "aggregator";

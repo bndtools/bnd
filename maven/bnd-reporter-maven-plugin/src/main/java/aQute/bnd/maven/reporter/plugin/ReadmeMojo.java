@@ -25,7 +25,7 @@ import biz.aQute.bnd.reporter.exporter.ReportExporterBuilder;
  * Exports a set of readme files (template can be parametrized with system
  * properties starting with 'bnd.reporter.*').
  */
-@Mojo(name = "readme", threadSafe = true)
+@Mojo(name = "readme", requiresProject = true, threadSafe = true)
 public class ReadmeMojo extends AbstractMojo {
 
 	private static final Logger	logger		= LoggerFactory.getLogger(ReadmeMojo.class);

@@ -29,7 +29,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 
-@Mojo(name = "bnd-process-tests", defaultPhase = LifecyclePhase.PROCESS_TEST_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE, threadSafe = true)
+@Mojo(name = "bnd-process-tests", defaultPhase = LifecyclePhase.PROCESS_TEST_CLASSES, requiresProject = true, requiresDependencyResolution = ResolutionScope.COMPILE, threadSafe = true)
 public class BndMavenTestsPlugin extends AbstractBndMavenPlugin {
 
 	/**
