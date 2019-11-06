@@ -122,7 +122,7 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 
 	@Override
 	public AbstractBuildParticipant getBuildParticipant(final IMavenProjectFacade projectFacade,
-		MojoExecution execution, IPluginExecutionMetadata executionMetadata) {
+		final MojoExecution execution, IPluginExecutionMetadata executionMetadata) {
 		return new MojoExecutionBuildParticipant(execution, true, true) {
 			@Override
 			public Set<IProject> build(int kind, IProgressMonitor monitor) throws Exception {
@@ -145,6 +145,21 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 					return build;
 				}
 
+				// There might be more than one bnd-maven-plugin execution on
+				// any single project. An example of this would be bundling test
+				// classes. However, each such execution would be pointing at a
+				// particular output directory, for example:
+				//
+				// ${project.build.outputDirectory}
+				// vs.
+				// ${project.build.testOutputDirectory}
+				//
+				// With that in mind the scope of detectable changes needs to be
+				// limited to the actual output directory associated with the
+				// plugin by reading the classesDir property.
+				final File classesDir = maven.getMojoParameterValue(projectFacade.getMavenProject(), execution,
+					"classesDir", File.class, monitor);
+
 				// now we make sure jar is built in separate job, doing this
 				// during maven builder will throw lifecycle
 				// errors
@@ -156,9 +171,7 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 						execJarMojo(projectFacade, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
 						// Find the maven output directory (usually "target")
-						MavenProject mvnProject = getMavenProject(projectFacade, progress.newChild(1));
-						IPath buildDirPath = Path.fromOSString(mvnProject.getBuild()
-							.getDirectory());
+						IPath buildDirPath = Path.fromOSString(classesDir.getAbsolutePath());
 						IPath projectPath = project.getLocation();
 						IPath relativeBuildDirPath = buildDirPath.makeRelativeTo(projectPath);
 						IFolder buildDir = project.getFolder(relativeBuildDirPath);
