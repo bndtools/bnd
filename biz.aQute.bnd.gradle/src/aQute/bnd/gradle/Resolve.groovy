@@ -24,8 +24,8 @@
  * The default is false.</li>
  * <li>bndrun - This is the bndrun file to be resolved.
  * This property must be set.</li>
- * <li>workingDir - This is the directory for the resolve process.
- * The default for workingDir is temporaryDir.</li>
+ * <li>workingDirectory - This is the directory for the resolve process.
+ * The default for workingDirectory is temporaryDir.</li>
  * <li>bundles - This is the collection of files to use for locating
  * bundles during the resolve process. The default is
  * 'sourceSets.main.runtimeClasspath' plus
@@ -91,9 +91,9 @@ public class Resolve extends Bndrun {
   /**
    * Create the Bndrun object.
    */
-  protected def createRun(def workspace, File bndrun) {
+  protected def createRun(def workspace, File bndrunFile) {
     Class runClass = workspace ? Class.forName(biz.aQute.resolve.Bndrun.class.getName(), true, workspace.getClass().getClassLoader()) : biz.aQute.resolve.Bndrun.class
-    return runClass.createBndrun(workspace, bndrun)
+    return runClass.createBndrun(workspace, bndrunFile)
   }
 
   /**

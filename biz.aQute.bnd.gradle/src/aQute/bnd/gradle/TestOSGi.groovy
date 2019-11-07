@@ -21,7 +21,7 @@
  * fails. The default is false.</li>
  * <li>bndrun - This is the bndrun file to be tested.
  * This property must be set.</li>
- * <li>workingDir - This is the directory for the test case execution.
+ * <li>workingDirectory - This is the directory for the test case execution.
  * The default for workingDir is temporaryDir.</li>
  * <li>bundles - This is the collection of files to use for locating
  * bundles during the test case execution. The default is

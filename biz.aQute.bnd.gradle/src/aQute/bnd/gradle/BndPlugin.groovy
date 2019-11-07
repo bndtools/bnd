@@ -265,7 +265,7 @@ public class BndPlugin implements Plugin<Project> {
           bndProject.getPropertiesFile(),
           bndProject.getIncluded()).withPropertyName('bndFiles')
         t.outputs.files({ project.configurations.archives.artifacts.files }).withPropertyName('artifacts')
-        t.outputs.file(new File(project.buildDir, Constants.BUILDFILES)).withPropertyName('buildfiles')
+        t.outputs.file(project.layout.buildDirectory.file(Constants.BUILDFILES)).withPropertyName('buildfiles')
         t.doLast {
           File[] built
           try {
@@ -364,7 +364,7 @@ public class BndPlugin implements Plugin<Project> {
 
       def clean = tasks.named('clean') { t ->
         t.description 'Cleans the build and compiler output directories of this project.'
-        t.delete project.buildDir, project.sourceSets.main.output, project.sourceSets.test.output
+        t.delete project.layout.buildDirectory, project.sourceSets.main.output, project.sourceSets.test.output
       }
 
       def cleanDependencies = tasks.register('cleanDependencies') { t ->

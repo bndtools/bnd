@@ -69,7 +69,7 @@ task indexer(type: Index) {
    description 'Indexer'
    group 'build'
    repositoryName = project.name
-   bundles fileTree(new File(destinationDir, 'libs')) {
+   bundles fileTree(project.layout.buildDirectory.dir('libs')) {
     include '**/*.jar'
     exclude '**/*-latest.jar'
     exclude '**/*-sources.jar'
@@ -82,7 +82,8 @@ task indexer2(type: Index) {
    group 'build'
    indexName = 'index2.xml'
    gzip = true
-   bundles fileTree(new File(destinationDir, 'libs')) {
+   destinationDirectory = project.layout.buildDirectory
+   bundles fileTree(destinationDirectory.dir('libs')) {
     include '**/*.jar'
     exclude '**/*_bundle*.jar'
     exclude '**/*-latest.jar'
