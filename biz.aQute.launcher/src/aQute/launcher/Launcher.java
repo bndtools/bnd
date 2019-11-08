@@ -470,12 +470,13 @@ public class Launcher implements ServiceListener {
 
 		startBundles(tobestarted);
 
+		systemBundle.start();
+		trace("system bundle started ok");
+
 		for (BundleActivator activator : startAfterBundleStart) {
 			result = start(systemContext, result, activator);
 		}
 
-		systemBundle.start();
-		trace("system bundle started ok");
 		startLevelhandler.afterStart();
 
 		if (parms.trace) {
