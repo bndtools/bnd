@@ -1,7 +1,7 @@
 releaserepo:            ${workspace}/dist/bundles
 mavencentral:           https://repo.maven.apache.org/maven2
 
--plugin:\
+-plugin.0.Main:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name="Maven Central";\
         releaseUrl="${mavencentral}";\
@@ -30,7 +30,9 @@ mavencentral:           https://repo.maven.apache.org/maven2
         name="JFrog";\
         releaseUrl="https://bndtools.jfrog.io/bndtools/libs-release-local/";\
         snapshotUrl="https://bndtools.jfrog.io/bndtools/libs-snapshot-local/";\
-        noupdateOnRelease=true,\
+        noupdateOnRelease=true
+
+-plugin.1.Eclipse:\
     aQute.bnd.repository.osgi.OSGiRepository;\
         name="Eclipse Oxygen 4.7.3a";\
         locations="https://dl.bintray.com/bndtools/eclipse-repo/4.7.3a/index.xml.gz";\
@@ -40,7 +42,9 @@ mavencentral:           https://repo.maven.apache.org/maven2
         name="Eclipse m2e 1.8.3 Dependencies";\
         revision="org.apache.maven:maven-core:3.3.9,org.sonatype.plexus:plexus-build-api:0.0.7";\
         releaseUrls="${mavencentral}";\
-        location="${workspace}/cnf/cache/stable/EclipseM2EDeps/index.xml",\
+        location="${workspace}/cnf/cache/stable/EclipseM2EDeps/index.xml"
+
+-plugin.9.Baseline:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name="Baseline";\
         releaseUrl="${mavencentral}";\
