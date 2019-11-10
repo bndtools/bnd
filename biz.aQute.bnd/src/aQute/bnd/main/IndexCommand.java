@@ -86,7 +86,8 @@ public class IndexCommand extends Processor {
 			return;
 		}
 
-		new SimpleIndexer().files(files)
+		new SimpleIndexer().reporter(bnd)
+			.files(files)
 			.base(base)
 			.name(name)
 			.compress(compress)
