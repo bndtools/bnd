@@ -1,5 +1,7 @@
 package aQute.libg.reporter.slf4j;
 
+import static java.util.Objects.requireNonNull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,14 +10,18 @@ import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
 public class Slf4jReporter extends ReporterAdapter {
-	final Logger logger;
+	private final Logger logger;
 
 	public Slf4jReporter(Class<?> loggingClass) {
-		logger = LoggerFactory.getLogger(loggingClass);
+		this(LoggerFactory.getLogger(loggingClass));
 	}
 
 	public Slf4jReporter() {
-		logger = LoggerFactory.getLogger("default");
+		this(LoggerFactory.getLogger("default"));
+	}
+
+	public Slf4jReporter(Logger logger) {
+		this.logger = requireNonNull(logger);
 	}
 
 	@Override
