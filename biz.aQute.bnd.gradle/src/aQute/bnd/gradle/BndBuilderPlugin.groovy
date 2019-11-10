@@ -23,6 +23,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ExternalDependency
@@ -45,7 +46,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
       }
       plugins.apply 'java'
 
-      def jar = tasks.named('jar') { t ->
+      def jars = tasks.withType(Jar.class).each { t ->
         t.description 'Assembles a bundle containing the main classes.'
         t.convention.plugins.bundle = new BundleTaskConvention(t)
         def defaultBndfile = project.file('bnd.bnd')
@@ -72,7 +73,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
       tasks.register('baseline', Baseline.class) { t ->
         t.description 'Baseline the project bundle.'
         t.group 'release'
-        t.bundle jar
+        t.bundle jars.named('jar')
         t.baseline project.configurations.baseline
       }
 
