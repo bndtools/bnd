@@ -459,6 +459,11 @@ public class Syntax implements Constants {
 				+ " header manifest generation, same format.",
 			EXPORT_CONTENTS + "=!*impl*,*;version=3.0", null, null),
 
+		new Syntax(EXPORT_APIGUARDIAN,
+			"Enable the APIGuardian plugin that searches for @API annotations for calculating the " + EXPORT_PACKAGE
+				+ " header manifest generation, same format.",
+			EXPORT_APIGUARDIAN + "=!*impl*,*;version=3.0", null, null),
+
 		new Syntax(EXPORTTYPE, "This specifies the type of the exported content",
 			EXPORTTYPE + "=bnd.executablejar;foo=bnd, bnd.runbundles;bar=bnd", null, null),
 

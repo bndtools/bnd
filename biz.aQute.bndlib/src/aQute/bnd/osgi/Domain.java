@@ -248,6 +248,11 @@ public abstract class Domain implements Iterable<String> {
 		return getParameters(EXPORT_CONTENTS, true);
 	}
 
+	public void setExportContents(String s) {
+		if (s != null)
+			set(EXPORT_CONTENTS, s);
+	}
+
 	public String getBundleActivator() {
 		return get(BUNDLE_ACTIVATOR);
 	}
