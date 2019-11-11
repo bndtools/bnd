@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -19,6 +20,7 @@ import org.osgi.resource.Resource;
 import aQute.bnd.annotation.ConsumerType;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;
@@ -209,7 +211,13 @@ public class SimpleIndexer {
 		Path relativePath = base.relativize(filePath);
 		// Note that relativePath.toURI() gives the wrong answer for us!
 		// We have to do some Windows related mashing here too :(
-		URI relativeURI = URI.create(IO.normalizePath(relativePath));
+		String ssp = IO.normalizePath(relativePath);
+		URI relativeURI;
+		try {
+			relativeURI = new URI(null, ssp, null);
+		} catch (URISyntaxException e) {
+			throw Exceptions.duck(e);
+		}
 		reporter.trace("Resolving %s relative to %s; Relative Path: %s, URI: %s", filePath, base, relativePath,
 			relativeURI);
 		return relativeURI;

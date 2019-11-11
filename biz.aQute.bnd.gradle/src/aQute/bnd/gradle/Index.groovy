@@ -41,13 +41,16 @@
 package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.builtBy
+import static aQute.bnd.gradle.BndUtils.logReport
 
 import aQute.bnd.osgi.repository.SimpleIndexer
 import aQute.lib.io.IO
+import aQute.bnd.osgi.Processor
 
 import java.util.zip.GZIPOutputStream
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
@@ -201,18 +204,31 @@ public class Index extends DefaultTask {
    */
   @TaskAction
   void indexer() {
-    new SimpleIndexer()
-      .files(bundles.sort())
-      .base(getBase())
-      .name(repositoryName)
-      .index(indexUncompressed)
-    logger.info 'Generated index {}.', indexUncompressed
+    new Processor().withCloseable { Processor processor ->
+      new SimpleIndexer()
+        .reporter(processor)
+        .files(bundles.sort())
+        .base(getBase())
+        .name(repositoryName)
+        .index(indexUncompressed)
 
-    if (gzip) {
-      indexCompressed.withOutputStream { out ->
-        IO.copy(indexUncompressed, new GZIPOutputStream(out)).close()
+      logReport(processor, logger)
+      if (!processor.isOk()) {
+        failTask("Index ${indexUncompressed} has errors", indexUncompressed)
       }
-      logger.info 'Generated index {}.', indexCompressed
+
+      logger.info 'Generated index {}.', indexUncompressed
+      if (gzip) {
+        indexCompressed.withOutputStream { out ->
+          IO.copy(indexUncompressed, new GZIPOutputStream(out)).close()
+        }
+        logger.info 'Generated index {}.', indexCompressed
+      }
     }
+  }
+
+  private void failTask(String msg, File outputFile) {
+    project.delete(outputFile)
+    throw new GradleException(msg)
   }
 }
