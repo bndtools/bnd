@@ -14,12 +14,12 @@ String masterVersion = String.format('%s-%s-g%.7s',
 def p2Plugins = tasks.register('p2Plugins', Sync.class) {
   dependsOn 'jarDependencies'
   from    bnd('plugins').tokenize(',')
-  into    "${buildDir}/plugins"
+  into    project.layout.buildDirectory.dir('plugins')
 }
 
 def p2FeatureProperties = tasks.register('p2FeatureProperties', WriteProperties.class) {
   inputs.files p2Plugins
-  outputFile = file("${buildDir}/feature.properties")
+  outputFile = project.layout.buildDirectory.file('feature.properties')
   doFirst {
     property('base-version', bnd('base.version'))
     fileTree(p2Plugins.get().destinationDir).each {
@@ -32,7 +32,7 @@ def p2FeatureProperties = tasks.register('p2FeatureProperties', WriteProperties.
 
 def p2FeatureMain = tasks.register('p2FeatureMain', Zip.class) {
   inputs.files p2FeatureProperties
-  destinationDirectory = file("${buildDir}/features")
+  destinationDirectory = project.layout.buildDirectory.dir('features')
   archiveFileName = 'bndtools.main.feature.jar'
   from             'features/bndtools.main'
   include          'feature.xml'
@@ -48,7 +48,7 @@ def p2FeatureMain = tasks.register('p2FeatureMain', Zip.class) {
 
 def p2FeatureM2e = tasks.register('p2FeatureM2e', Zip.class) {
   inputs.files p2FeatureProperties
-  destinationDirectory = file("${buildDir}/features")
+  destinationDirectory = project.layout.buildDirectory.dir('features')
   archiveFileName    = 'bndtools.m2e.feature.jar'
   from             'features/bndtools.m2e'
   include          'feature.xml'
@@ -64,7 +64,7 @@ def p2FeatureM2e = tasks.register('p2FeatureM2e', Zip.class) {
 
 def p2FeaturePde = tasks.register('p2FeaturePde', Zip.class) {
   inputs.files p2FeatureProperties
-  destinationDirectory = file("${buildDir}/features")
+  destinationDirectory = project.layout.buildDirectory.dir('features')
   archiveFileName    = 'bndtools.pde.feature.jar'
   from             'features/bndtools.pde'
   include          'feature.xml'
@@ -83,8 +83,8 @@ def p2 = tasks.register('p2') {
   group       'release'
   enabled JavaVersion.current().isJava8()
   inputs.files p2Plugins, p2FeatureMain, p2FeatureM2e, p2FeaturePde, 'p2.xml', 'features/category.xml'
-  ext.destinationDir = file("${buildDir}/p2")
-  outputs.dir destinationDir
+  ext.destinationDirectory = project.layout.buildDirectory.dir('p2')
+  outputs.dir destinationDirectory
   doLast {
     def eclipseDir = file('eclipse-3.5.2')
     javaexec {
@@ -96,7 +96,7 @@ def p2 = tasks.register('p2') {
       args '-application'
       args 'org.eclipse.ant.core.antRunner'
       args '-data'
-      args buildDir
+      args file(project.layout.buildDirectory)
       if (logger.isDebugEnabled()) {
         args '-debug'
       } else {
@@ -116,9 +116,9 @@ def p2 = tasks.register('p2') {
       args '-application'
       args 'org.eclipse.equinox.p2.publisher.CategoryPublisher'
       args '-data'
-      args buildDir
+      args file(project.layout.buildDirectory)
       args '-metadataRepository'
-      args uri(destinationDir)
+      args uri(destinationDirectory)
       args '-categoryDefinition'
       args uri('features/category.xml')
       args '-compress'

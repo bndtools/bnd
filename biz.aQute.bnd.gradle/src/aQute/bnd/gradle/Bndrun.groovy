@@ -42,8 +42,14 @@ import aQute.bnd.osgi.Processor
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFile
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.model.ReplacedBy
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
 public class Bndrun extends DefaultTask {
@@ -58,8 +64,8 @@ public class Bndrun extends DefaultTask {
   @Input
   boolean ignoreFailures = false
 
-  private File workingDir
-  private File bndrun
+  private final RegularFileProperty bndrunProperty
+  private final DirectoryProperty workingDirectory
   private final def bndWorkspace
 
   /**
@@ -68,6 +74,10 @@ public class Bndrun extends DefaultTask {
    */
   public Bndrun() {
     super()
+    bndrunProperty = project.objects.fileProperty()
+    DirectoryProperty temporaryDirProperty = project.objects.directoryProperty()
+    temporaryDirProperty.set(temporaryDir)
+    workingDirectory = project.objects.directoryProperty().convention(temporaryDirProperty)
     bndWorkspace = project.findProperty('bndWorkspace')
     if (bndWorkspace == null) {
       convention.plugins.bundles = new FileSetRepositoryConvention(this)
@@ -79,8 +89,8 @@ public class Bndrun extends DefaultTask {
    *
    */
   @InputFile
-  public File getBndrun() {
-    return bndrun
+  public Provider<RegularFile> getBndrun() {
+    return bndrunProperty
   }
 
   /**
@@ -91,26 +101,29 @@ public class Bndrun extends DefaultTask {
    * Project.file().
    */
   public void setBndrun(Object file) {
-    bndrun = project.file(file)
+    bndrunProperty.set(project.layout.file(project.provider({ ->
+      return project.file(file)
+    })))
   }
 
   /**
-   * Return the working dir for the execution.
+   * The working directory for the execution.
    *
    */
+  @Internal
+  public DirectoryProperty getWorkingDirectory() {
+    return workingDirectory
+  }
+
+  @Deprecated
+  @ReplacedBy('workingDirectory')
   public File getWorkingDir() {
-    return workingDir ?: temporaryDir
+    return project.file(getWorkingDirectory())
   }
 
-  /**
-   * Set the working dir for the execution.
-   *
-   * <p>
-   * The argument will be handled using
-   * Project.file().
-   */
+  @Deprecated
   public void setWorkingDir(Object dir) {
-    workingDir = project.file(dir)
+    getWorkingDirectory().set(project.file(dir))
   }
 
   /**
@@ -119,23 +132,25 @@ public class Bndrun extends DefaultTask {
   @TaskAction
   void bndrun() {
     def workspace = bndWorkspace
-    if ((workspace != null) && project.plugins.hasPlugin(BndPlugin.PLUGINID) && (bndrun == project.bnd.project.getPropertiesFile())) {
+    File bndrunFile = project.file(getBndrun())
+    File workingDirFile = project.file(getWorkingDirectory())
+    if ((workspace != null) && project.plugins.hasPlugin(BndPlugin.PLUGINID) && (bndrunFile == project.bnd.project.getPropertiesFile())) {
       worker(project.bnd.project)
       return
     }
-    createRun(workspace, bndrun).withCloseable { run ->
+    createRun(workspace, bndrunFile).withCloseable { run ->
       def runWorkspace = run.getWorkspace()
-      project.mkdir(workingDir)
+      project.mkdir(workingDirFile)
       if (workspace == null) {
         Properties gradleProperties = new PropertiesWrapper(runWorkspace.getProperties())
         gradleProperties.put('task', this)
         gradleProperties.put('project', project)
         run.setParent(new Processor(runWorkspace, gradleProperties, false))
       }
-      run.setBase(workingDir)
+      run.setBase(workingDirFile)
       if (run.isStandalone()) {
         runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)
-        File cnf = new File(workingDir, Workspace.CNFDIR)
+        File cnf = new File(workingDirFile, Workspace.CNFDIR)
         project.mkdir(cnf)
         runWorkspace.setBuildDir(cnf)
         if (convention.findPlugin(FileSetRepositoryConvention)) {
@@ -158,9 +173,9 @@ public class Bndrun extends DefaultTask {
   /**
    * Create the Run object.
    */
-  protected def createRun(def workspace, File bndrun) {
+  protected def createRun(def workspace, File bndrunFile) {
     Class runClass = workspace ? Class.forName(aQute.bnd.build.Run.class.getName(), true, workspace.getClass().getClassLoader()) : aQute.bnd.build.Run.class
-    return runClass.createRun(workspace, bndrun)
+    return runClass.createRun(workspace, bndrunFile)
   }
 
   /**

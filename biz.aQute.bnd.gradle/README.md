@@ -267,7 +267,7 @@ default is `false`.
 ### baselineReportDirName
 
 The name of the baseline reports directory. Can be a name or a
-path relative to the project's [`reporting.baseDir`][19]. The default name is
+path relative to the project's [`reporting.baseDirectory`][19]. The default name is
 `baseline`.
 
 ### bundle
@@ -331,7 +331,7 @@ property back to the bndrun file. The default is `true`.
 The bndrun to be resolved. It can be anything that `Project.file(Object)`
 can accept. This property must be set.
 
-### workingDir
+### workingDirectory
 
 The directory for the resolve process. The default is _${temporaryDir}_.
 
@@ -379,15 +379,15 @@ plugin. The default is `bnd.executablejar`.
 The bndrun to be exported. It can be anything that `Project.file(Object)`
 can accept. This property must be set.
 
-### destinationDir
+### destinationDirectory
 
-The directory for the output. The default for destinationDir is
-_${project.distsDir}_/executable if the exporter is `bnd.executablejar`,
-_${project.distsDir}_/runbundles/_${bndrun.name - '.bndrun'}_ if
-the exporter is `bnd.runbundles`, and _${project.distsDir}_/_${task.name}_
+The directory for the output. The default for destinationDirectory is
+_${project.distsDirectory}_/executable if the exporter is `bnd.executablejar`,
+_${project.distsDirectory}_/runbundles/_${bndrun.name - '.bndrun'}_ if
+the exporter is `bnd.runbundles`, and _${project.distsDirectory}_/_${task.name}_
 for all other exporters.
 
-### workingDir
+### workingDirectory
 
 The directory for the export operation. The default is _${temporaryDir}_.
 
@@ -423,7 +423,7 @@ default is `false`.
 The bndrun to be tested. It can be anything that `Project.file(Object)`
 can accept. This property must be set.
 
-### workingDir
+### workingDirectory
 
 The directory for the test execution. The default is _${temporaryDir}_.
 
@@ -452,7 +452,7 @@ example:
 ```groovy
 import aQute.bnd.gradle.Index
  task index(type: Index) {
-   destination = file('bundles')
+   destinationDirectory = file('bundles')
    gzip = true
    bundles = fileTree(destination) {
     include '**/*.jar'
@@ -472,20 +472,20 @@ Otherwise, only the uncompressed index will be made. The default is
 
 ### indexName
 
-The name of the index file. The file is created in the destinationDir.
+The name of the index file. The file is created in the destinationDirectory.
 The default is`index.xml`.
 
 ### repositoryName
 
 The name attribute in the generated index. The default is the name of the task.
 
-### destinationDir
+### destinationDirectory
 
 The destination directory for the index. The default value is _${project.buildDir}_.
 
 ### base
 
-The URI base for the generated index. The default value is _${project.uri(destinationDir)}_.
+The URI base for the generated index. The default value is _${project.uri(destinationDirectory)}_.
 
 ### bundles
 
@@ -517,7 +517,7 @@ default is `false`.
 The bndrun to be executed. It can be anything that `Project.file(Object)`
 can accept. This property must be set.
 
-### workingDir
+### workingDirectory
 
 The directory for the execution. The default is _${temporaryDir}_.
 

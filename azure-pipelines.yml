@@ -43,11 +43,11 @@ jobs:
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
     displayName: Build
 
-- job: OpenJDK12
+- job: OpenJDK13
   pool:
     vmImage: 'ubuntu-16.04'
   variables:
-    JAVA_JDK: https://cdn.azul.com/zulu/bin/zulu12.3.11-ca-jdk12.0.2-linux_x64.tar.gz
+    JAVA_JDK: https://cdn.azul.com/zulu/bin/zulu13.28.11-ca-jdk13.0.1-linux_x64.tar.gz
   steps:
   - bash: |
       set -ev

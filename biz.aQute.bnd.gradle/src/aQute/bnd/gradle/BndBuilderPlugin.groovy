@@ -28,6 +28,7 @@ import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ExternalDependency
 import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.artifacts.ResolveException
+import org.gradle.api.file.RegularFile
 
 
 
@@ -48,9 +49,9 @@ public class BndBuilderPlugin implements Plugin<Project> {
       def jar = tasks.named('jar') { t ->
         t.description 'Assembles a bundle containing the main classes.'
         t.convention.plugins.bundle = new BundleTaskConvention(t)
-        def defaultBndfile = project.file('bnd.bnd')
-        if (defaultBndfile.isFile()) {
-          t.bndfile = defaultBndfile
+        RegularFile defaultBndfile = project.layout.projectDirectory.file('bnd.bnd')
+        if (defaultBndfile.getAsFile().isFile()) {
+          t.bndfile.convention(defaultBndfile)
         }
         t.doLast {
           buildBundle()

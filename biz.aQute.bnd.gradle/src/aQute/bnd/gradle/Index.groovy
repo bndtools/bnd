@@ -30,7 +30,7 @@
  * <code>index.xml</code>.</li>
  * <li>repositoryName - The name attribute in the generated index. The default is
  * the name of the task.</li>
- * <li>destinationDir - The destination directory for the index.
+ * <li>destinationDirectory - The destination directory for the index.
  * This is used as the URI base of the generated index.
  * The default value is buildDir.</li>
  * <li>bundles - This is the bundles to be indexed. This property
@@ -52,16 +52,26 @@ import java.util.zip.GZIPOutputStream
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFile
+import org.gradle.api.model.ReplacedBy
+import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
 public class Index extends DefaultTask {
   private ConfigurableFileCollection bundleCollection
-  private File destinationDir
-  private URI base
+  private final DirectoryProperty destinationDirectory
+  private final Property<URI> baseProperty
+  private final Provider<RegularFile> indexUncompressed
+  private final Provider<RegularFile> indexCompressed
+  private String repositoryName
+  private String indexName
 
   /**
    * Whether a gzip'd index should be made.
@@ -73,27 +83,7 @@ public class Index extends DefaultTask {
    */
   @Input
   @Optional
-  boolean gzip
-
-  /**
-   * The name of the index file.
-   *
-   * <p>
-   * The default is <code>index.xml</code>.
-   */
-  @Input
-  @Optional
-  String indexName
-
-  /**
-   * The name attribute in the generated index.
-   *
-   * <p>
-   * The default is the name of the task.
-   */
-  @Input
-  @Optional
-  String repositoryName
+  boolean gzip = false
 
   /**
    * Create an Index task.
@@ -101,34 +91,89 @@ public class Index extends DefaultTask {
    */
   public Index() {
     super()
-    gzip = false
     indexName = 'index.xml'
     repositoryName = name
     bundleCollection = project.files()
+    destinationDirectory = project.objects.directoryProperty().convention(project.layout.buildDirectory)
+    baseProperty = project.objects.property(URI.class).convention(destinationDirectory.map({ path ->
+      project.uri(path)
+    }))
+    indexUncompressed = destinationDirectory.file(project.provider({ ->
+      return indexName
+    }))
+    indexCompressed = destinationDirectory.file(project.provider({ ->
+      return indexName + '.gz'
+    }))
     dependsOn { getBundles() }
   }
 
   /**
-   * Set the destination directory for the index.
+   * Get the name of the index file.
    *
    * <p>
-   * The argument will be handled using
-   * Project.file().
+   * The default is <code>index.xml</code>.
    */
-  public void setDestinationDir(Object file) {
-    destinationDir = project.file(file)
+  @Internal('Represented by indexUncompressed and indexCompressed')
+  public String getIndexName() {
+    return indexName
   }
 
   /**
-   * Return the destination directory for the index.
+   * Set the name of the index file.
+   */
+  public void setIndexName(String indexName) {
+    this.indexName = indexName
+  }
+
+  /**
+   * Get the name attribute in the generated index.
+   *
+   * <p>
+   * The default is the name of the task.
+   */
+  @Input
+  public String getRepositoryName() {
+    return repositoryName
+  }
+
+  /**
+   * Set the name attribute in the generated index.
+   */
+  public void setRepositoryName(String repositoryName) {
+    this.repositoryName = repositoryName
+  }
+
+  /**
+   * The destination directory for the index.
    *
    * <p>
    * The default value is buildDir.
    */
-  @Input
-  @Optional
+  @Internal('Represented by indexUncompressed and indexCompressed')
+  public DirectoryProperty getDestinationDirectory() {
+    return destinationDirectory
+  }
+
+  @Deprecated
+  @ReplacedBy('destinationDirectory')
   public File getDestinationDir() {
-    return destinationDir ?: project.buildDir
+    return project.file(getDestinationDirectory())
+  }
+
+  @Deprecated
+  public void setDestinationDir(Object dir) {
+    getDestinationDirectory().set(project.file(dir))
+  }
+
+  /**
+   * Return the URI base of the generated index.
+   *
+   * <p>
+   * The default value is destinationDir.
+   */
+  @Input
+  public Provider<URI> getBase() {
+    return baseProperty
   }
 
   /**
@@ -139,19 +184,9 @@ public class Index extends DefaultTask {
    * Project.uri().
    */
   public void setBase(Object path) {
-    base = project.uri(path)
-  }
-
-  /**
-   * Return the URI base of the generated index.
-   *
-   * <p>
-   * The default value is destinationDir.
-   */
-  @Input
-  @Optional
-  public URI getBase() {
-    return base ?: project.uri(getDestinationDir())
+    baseProperty.set(project.provider({ ->
+      return project.uri(path)
+    }))
   }
 
   /**
@@ -186,16 +221,16 @@ public class Index extends DefaultTask {
    * Return the uncompressed index file.
    */
   @OutputFile
-  public File getIndexUncompressed() {
-    return new File(getDestinationDir(), indexName)
+  public Provider<RegularFile> getIndexUncompressed() {
+    return indexUncompressed
   }
 
   /**
    * Return the compressed index file.
    */
   @OutputFile
-  public File getIndexCompressed() {
-    return new File(getDestinationDir(), indexName + '.gz')
+  public Provider<RegularFile> getIndexCompressed() {
+    return indexCompressed
   }
 
   /**
@@ -204,25 +239,27 @@ public class Index extends DefaultTask {
    */
   @TaskAction
   void indexer() {
+    File indexUncompressedFile = project.file(getIndexUncompressed())
     new Processor().withCloseable { Processor processor ->
       new SimpleIndexer()
         .reporter(processor)
         .files(bundles.sort())
-        .base(getBase())
-        .name(repositoryName)
-        .index(indexUncompressed)
+        .base(getBase().get())
+        .name(getRepositoryName())
+        .index(indexUncompressedFile)
 
       logReport(processor, logger)
       if (!processor.isOk()) {
-        failTask("Index ${indexUncompressed} has errors", indexUncompressed)
+        failTask("Index ${indexUncompressedFile} has errors", indexUncompressedFile)
       }
 
-      logger.info 'Generated index {}.', indexUncompressed
+      logger.info 'Generated index {}.', indexUncompressedFile
       if (gzip) {
-        indexCompressed.withOutputStream { out ->
-          IO.copy(indexUncompressed, new GZIPOutputStream(out)).close()
+        File indexCompressedFile = project.file(getIndexCompressed())
+        indexCompressedFile.withOutputStream { out ->
+          IO.copy(indexUncompressedFile, new GZIPOutputStream(out)).close()
         }
-        logger.info 'Generated index {}.', indexCompressed
+        logger.info 'Generated index {}.', indexCompressedFile
       }
     }
   }

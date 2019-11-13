@@ -23,8 +23,8 @@
 
 package aQute.bnd.gradle
 
-import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.gradle.BndUtils.builtBy
+import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.gradle.BndUtils.unwrap
 
 import java.util.Properties
@@ -40,10 +40,13 @@ import aQute.bnd.osgi.Processor
 import aQute.bnd.version.MavenVersion
 import aQute.lib.utf8properties.UTF8Properties
 import org.gradle.api.GradleException
-import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.logging.Logger
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.logging.Logger
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
@@ -53,8 +56,9 @@ import org.gradle.api.tasks.SourceSet
 class BundleTaskConvention {
   private final Task task
   private final Project project
-  private File bndfile
-  private final StringBuilder instructions
+  private final RegularFileProperty bndfile
+  private final ListProperty<CharSequence> instructions
+  private final Provider<String> bndbnd
   private final ConfigurableFileCollection classpathCollection
   private boolean classpathModified
   private SourceSet sourceSet
@@ -69,14 +73,18 @@ class BundleTaskConvention {
   BundleTaskConvention(org.gradle.api.tasks.bundling.Jar task) {
     this.task = task
     this.project = task.project
-    instructions = new StringBuilder()
+    bndfile = project.objects.fileProperty()
+    instructions = project.objects.listProperty(CharSequence.class).empty()
+    bndbnd = instructions.map({ list ->
+      return list.join('\n')
+    })
     classpathCollection = project.files()
     setSourceSet(project.sourceSets.main)
     classpathModified = false
     // need to programmatically add to inputs since @InputFiles in a convention is not processed
     task.inputs.files(classpathCollection).withPropertyName('classpath')
-    task.inputs.file({ getBndfile() }).optional().withPropertyName('bndfile')
-    task.inputs.property('bnd', { getBnd() })
+    task.inputs.file(getBndfile()).optional().withPropertyName('bndfile')
+    task.inputs.property('bnd', getBnd())
   }
 
   /**
@@ -86,7 +94,7 @@ class BundleTaskConvention {
    */
   @InputFile
   @Optional
-  public File getBndfile() {
+  public RegularFileProperty getBndfile() {
     return bndfile
   }
   /**
@@ -97,7 +105,9 @@ class BundleTaskConvention {
    * Project.file().
    */
   public void setBndfile(Object file) {
-    bndfile = project.file(file)
+    bndfile.set(project.layout.file(project.provider({ ->
+      return project.file(file)
+    })))
   }
 
   /**
@@ -108,15 +118,15 @@ class BundleTaskConvention {
    */
   @Input
   @Optional
-  public String getBnd() {
-    return instructions.toString()
+  public Provider<String> getBnd() {
+    return bndbnd
   }
 
   /**
    * Set the bnd property from a multi-line string.
    */
   public void setBnd(CharSequence line) {
-     instructions.length = 0
+     instructions.empty()
      bnd(line)
   }
 
@@ -124,16 +134,14 @@ class BundleTaskConvention {
    * Add instuctions to the bnd property from a list of multi-line strings.
    */
   public void bnd(CharSequence... lines) {
-    lines.each { line ->
-      instructions.append(line).append('\n')
-    }
+    instructions.addAll(lines)
   }
 
   /**
    * Set the bnd property from a map.
    */
   public void setBnd(Map<String, ?> map) {
-     instructions.length = 0
+     instructions.empty()
      bnd(map)
   }
 
@@ -141,9 +149,9 @@ class BundleTaskConvention {
    * Add instuctions to the bnd property from a map.
    */
   public void bnd(Map<String, ?> map) {
-    map.each { key, value ->
-      instructions.append(key).append('=').append(value).append('\n')
-    }
+    map.each({ key, value ->
+      instructions.add("${key}=${value}")
+    })
   }
 
   /**
@@ -210,12 +218,16 @@ class BundleTaskConvention {
           }.replaceHere(project.projectDir).store(writer, null)
 
           // if the bnd file exists, add its contents to the tmp bnd file
+          File bndfile = getBndfile().getOrNull()?.getAsFile()
           if (bndfile?.isFile()) {
             builder.loadProperties(bndfile).store(writer, null)
-          } else if (!bnd.empty) {
-            UTF8Properties props = new UTF8Properties()
-            props.load(bnd, project.buildFile, builder)
-            props.replaceHere(project.projectDir).store(writer, null)
+          } else {
+            String bnd = getBnd().get()
+            if (!bnd.empty) {
+              UTF8Properties props = new UTF8Properties()
+              props.load(bnd, project.buildFile, builder)
+              props.replaceHere(project.projectDir).store(writer, null)
+            }
           }
         }
         builder.setProperties(temporaryBndFile, project.projectDir) // this will cause project.dir property to be set
@@ -250,7 +262,7 @@ class BundleTaskConvention {
         builder.setJar(bundleJar)
 
         // set builder classpath
-        ConfigurableFileCollection buildpath = project.files(classpath.files.findAll { File file ->
+        ConfigurableFileCollection buildpath = project.files(getClasspath().files.findAll { File file ->
           if (!file.exists()) {
             return false
           }
@@ -271,7 +283,7 @@ class BundleTaskConvention {
         logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
 
         // set builder sourcepath
-        ConfigurableFileCollection sourcepath = project.files(sourceSet.allSource.srcDirs.findAll{it.exists()})
+        ConfigurableFileCollection sourcepath = project.files(getSourceSet().allSource.srcDirs.findAll{it.exists()})
         builder.setProperty('project.sourcepath', sourcepath.asPath)
         builder.setSourcepath(sourcepath.files as File[])
         logger.debug 'builder sourcepath: {}', builder.getSourcePath()
@@ -296,7 +308,7 @@ class BundleTaskConvention {
         if (!builder.isOk()) {
           // if we already have an error; fail now
           logReport(builder, logger)
-          failBuild("Bundle ${archiveFileName} has errors", archiveFile)
+          failTask("Bundle ${archiveFileName} has errors", archiveFile)
         }
 
         // Write out the bundle
@@ -306,13 +318,13 @@ class BundleTaskConvention {
 
         logReport(builder, logger)
         if (!builder.isOk()) {
-          failBuild("Bundle ${archiveFileName} has errors", archiveFile)
+          failTask("Bundle ${archiveFileName} has errors", archiveFile)
         }
       }
     }
   }
 
-  private void failBuild(String msg, File archiveFile) {
+  private void failTask(String msg, File archiveFile) {
     project.delete(archiveFile)
     throw new GradleException(msg)
   }

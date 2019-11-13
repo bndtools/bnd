@@ -46,7 +46,18 @@ task baselineDiffpackages(type: Baseline) {
    group 'build'
    bundle jar
    baseline configurations.baseline
-   diffpackages '!doubler', '*'
+   diffpackages = ['!doubler']
+   diffpackages '*'
+   ignoreFailures = false
+}
+
+task baselineDiffignore(type: Baseline) {
+   description 'Baseline diffignore'
+   group 'build'
+   bundle jar
+   baseline configurations.baseline
+   diffignore 'foo.txt'
+   diffignore = ['OSGI-OPT']
    ignoreFailures = false
 }
 
