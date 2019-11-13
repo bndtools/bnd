@@ -38,6 +38,7 @@
 	javax.json.bind-api;version=1.0,\
 	slf4j.api;version=latest,\
 	slf4j.simple;version=latest,\
+	org.apiguardian:apiguardian-api;version=latest,\
 	${junit},\
 	${mockito}
 
