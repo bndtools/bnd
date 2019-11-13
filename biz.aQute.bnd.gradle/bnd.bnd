@@ -3,16 +3,7 @@
 # for the bnd_version for the test cases.
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/gradle.properties
 
--includepackage: \
-	aQute.bnd.gradle.*
-
--conditionalpackage: \
-    aQute.lib.*, \
-    aQute.libg.*
-
--digests: MD5, SHA1
-
-Bundle-Description: The Bnd Gradle plugin.
+-sub: *.bnd
 
 -buildpath: \
 	aQute.libg;version=project, \
@@ -26,16 +17,10 @@ Bundle-Description: The Bnd Gradle plugin.
 
 bnd_version: ${replace;${bnd_plugin};.*:(.*);$1}
 
--includeresource: \
-	OSGI-OPT/src=src, \
-	resources
-
 -builderignore: testresources
 
 # Use groovydoc task generated doc for -javadoc.jar
 -maven-release: pom;path=JAR,javadoc;path=${target}/docs/groovydoc
 
-#
-# The groovy compiler must be run from the gradle build
-#
--fixupmessages.groovy: "Unused Private*aQute.bnd.gradle";replace:="The groovy classes must be compiled with the gradle build."
+# Stop Eclipse whining about the bnd files using specific Bundle-SymbolicNames
+-fixupmessages.bndtools: "Eclipse: The Bundle Symbolic * name"
