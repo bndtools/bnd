@@ -545,7 +545,7 @@ public class Activator implements BundleActivator, Runnable {
 					@Override
 					public boolean shouldRun(Description description) {
 						if (glob.matcher(description.getMethodName())
-							.lookingAt()) {
+							.matches()) {
 							trace("accepted " + description.getMethodName());
 							return true;
 						}
