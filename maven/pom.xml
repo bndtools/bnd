@@ -176,7 +176,7 @@
 			<dependency>
 				<groupId>org.osgi</groupId>
 				<artifactId>osgi.core</artifactId>
-				<version>6.0.0</version>
+				<version>7.0.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
