@@ -223,8 +223,8 @@ public class HttpClientProxyTest extends TestCase {
 	private AtomicBoolean				proxyCalled				= new AtomicBoolean();
 	private HttpTestServer				httpTestServer;
 	private SocksProxyServer			socks5Proxy;
-	private static int					httpProxyPort			= 2080;
-	private static int					socksProxyPort			= 3080;
+	private static final AtomicInteger	httpProxyPort			= new AtomicInteger(2080);
+	private static final AtomicInteger	socksProxyPort			= new AtomicInteger(3080);
 	private AtomicReference<Throwable>	exception				= new AtomicReference<>();
 	private AtomicInteger				created					= new AtomicInteger();
 
@@ -232,7 +232,7 @@ public class HttpClientProxyTest extends TestCase {
 
 	void createAuthenticationHttpProxy() {
 		HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer.bootstrap()
-			.withPort(++httpProxyPort)
+			.withPort(httpProxyPort.incrementAndGet())
 			.withProxyAuthenticator(new ProxyAuthenticator() {
 
 				@Override
@@ -254,14 +254,14 @@ public class HttpClientProxyTest extends TestCase {
 
 	void createPromiscuousHttpProxy() {
 		HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer.bootstrap()
-			.withPort(++httpProxyPort)
+			.withPort(httpProxyPort.incrementAndGet())
 			.withFiltersSource(new ProxyCheckingFilter(false));
 		httpProxy = bootstrap.start();
 	}
 
 	void createSecurePromiscuousHttpProxy() {
 		HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer.bootstrap()
-			.withPort(++httpProxyPort)
+			.withPort(httpProxyPort.incrementAndGet())
 			.withManInTheMiddle(new MitmManager() {
 
 				SecureRandom random = new SecureRandom();
@@ -347,7 +347,7 @@ public class HttpClientProxyTest extends TestCase {
 		UserManager userManager = new MemoryBasedUserManager();
 		userManager.create(new User("proxyuser", "good"));
 		SocksServerBuilder builder = SocksServerBuilder.newSocks5ServerBuilder()
-			.setBindPort(++socksProxyPort)
+			.setBindPort(socksProxyPort.incrementAndGet())
 			.addSocksMethods(new UsernamePasswordMethod(new UsernamePasswordAuthenticator(userManager) {
 				@Override
 				public void doAuthenticate(Credentials arg0, Session arg1) throws AuthenticationException {
@@ -393,19 +393,19 @@ public class HttpClientProxyTest extends TestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
-		super.tearDown();
-
-		proxyCalled.set(false);
-		authenticationCalled.set(false);
-
-		if (httpProxy != null)
+		if (httpProxy != null) {
 			httpProxy.abort();
+		}
 
-		if (httpTestServer != null)
+		if (httpTestServer != null) {
 			httpTestServer.close();
+		}
 
-		if (socks5Proxy != null)
+		if (socks5Proxy != null) {
 			socks5Proxy.shutdown();
+		}
+
+		super.tearDown();
 	}
 
 	void assertHttpProxy(String password, boolean authenticationCalled, int responseCode)
@@ -424,7 +424,8 @@ public class HttpClientProxyTest extends TestCase {
 				ProxyDTO proxy = new ProxyDTO();
 				proxy.active = true;
 				proxy.host = "localhost";
-				proxy.port = httpProxyPort;
+				proxy.port = httpProxy.getListenAddress()
+					.getPort();
 				proxy.protocol = protocol;
 				if (password != null) {
 					proxy.username = "proxyuser";
@@ -470,7 +471,7 @@ public class HttpClientProxyTest extends TestCase {
 				ProxyDTO proxy = new ProxyDTO();
 				proxy.active = true;
 				proxy.host = "localhost";
-				proxy.port = socksProxyPort;
+				proxy.port = socks5Proxy.getBindPort();
 				proxy.protocol = Type.SOCKS.name();
 				if (password != null) {
 					proxy.username = "proxyuser";

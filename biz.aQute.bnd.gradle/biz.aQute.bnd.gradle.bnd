@@ -1,0 +1,17 @@
+Bundle-SymbolicName: ${substring;${propertiesname};0;-${length;.bnd}}
+Bundle-Description: The Bnd Gradle plugins.
+
+-includepackage: \
+    aQute.bnd.gradle.*
+
+-conditionalpackage: \
+    aQute.lib.*, \
+    aQute.libg.*
+
+-includeresource: \
+    OSGI-OPT/src=src, \
+    resources
+#
+# The groovy compiler must be run from the gradle build
+#
+-fixupmessages.groovy: "Unused Private*aQute.bnd.gradle";replace:="The groovy classes must be compiled with the gradle build."

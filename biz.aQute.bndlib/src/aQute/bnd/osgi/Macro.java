@@ -796,7 +796,6 @@ public class Macro {
 			.map(domain::getFile)
 			.filter(File::exists)
 			.map(File::getParentFile)
-			.filter(File::exists)
 			.map(IO::absolutePath)
 			.collect(Strings.joining());
 		return result;
@@ -809,8 +808,7 @@ public class Macro {
 		}
 		String result = Arrays.stream(args, 1, args.length)
 			.map(domain::getFile)
-			.filter(f -> f.exists() && f.getParentFile()
-				.exists())
+			.filter(File::exists)
 			.map(File::getName)
 			.collect(Strings.joining());
 		return result;
