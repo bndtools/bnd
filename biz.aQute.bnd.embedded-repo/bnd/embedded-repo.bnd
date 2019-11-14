@@ -8,6 +8,4 @@ Timestamp: ${_@tstamp}
     biz.aQute.tester/biz.aQute.tester-${base.version}.jar=${repo;biz.aQute.tester;snapshot}, \
     biz.aQute.tester.junit-platform/biz.aQute.tester.junit-platform-${base.version}.jar=${repo;biz.aQute.tester.junit-platform;snapshot}
 
--digests: MD5, SHA1
-
 -pom: false
