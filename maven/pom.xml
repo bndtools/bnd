@@ -315,10 +315,13 @@
 										<versionRange>[1.0.0,)</versionRange>
 										<goals>
 											<goal>install</goal>
+											<goal>run</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore>
+											<message></message>
+										</ignore>
 									</action>
 								</pluginExecution>
 								<pluginExecution>
