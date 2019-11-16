@@ -16,6 +16,7 @@ import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.IMaven;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.IMavenProjectRegistry;
+
 import aQute.bnd.build.Run;
 import aQute.lib.exceptions.Exceptions;
 
@@ -61,27 +62,33 @@ public interface MavenRunListenerHelper {
 	}
 
 	default boolean hasBndMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
-		return projectFacade
-			.getMojoExecutions("biz.aQute.bnd", "bnd-maven-plugin", new NullProgressMonitor(), "bnd-process")
+		return getMavenProject(projectFacade).getPlugin("biz.aQute.bnd:bnd-maven-plugin")
+			.getExecutionsAsMap()
+			.values()
 			.stream()
-			.findFirst()
-			.isPresent();
+			.flatMap(pe -> pe.getGoals()
+				.stream())
+			.anyMatch("bnd-process"::equals);
 	}
 
 	default boolean hasBndResolverMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
-		return projectFacade
-			.getMojoExecutions("biz.aQute.bnd", "bnd-resolver-maven-plugin", new NullProgressMonitor(), "resolve")
+		return getMavenProject(projectFacade).getPlugin("biz.aQute.bnd:bnd-resolver-maven-plugin")
+			.getExecutionsAsMap()
+			.values()
 			.stream()
-			.findFirst()
-			.isPresent();
+			.flatMap(pe -> pe.getGoals()
+				.stream())
+			.anyMatch("resolve"::equals);
 	}
 
 	default boolean hasBndTestingMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
-		return projectFacade
-			.getMojoExecutions("biz.aQute.bnd", "bnd-testing-maven-plugin", new NullProgressMonitor(), "testing")
+		return getMavenProject(projectFacade).getPlugin("biz.aQute.bnd:bnd-testing-maven-plugin")
+			.getExecutionsAsMap()
+			.values()
 			.stream()
-			.findFirst()
-			.isPresent();
+			.flatMap(pe -> pe.getGoals()
+				.stream())
+			.anyMatch("testing"::equals);
 	}
 
 	default boolean isOffline() {

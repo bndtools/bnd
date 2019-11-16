@@ -52,6 +52,7 @@
 							<or>
 								<test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="org.junit.Test" />
 								<test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="junit.framework.Test" />
+								<test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="org.junit.jupiter.api.Test" />
 							</or>
 						</adapt>
 					</iterate>

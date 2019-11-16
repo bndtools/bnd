@@ -605,9 +605,13 @@
 
                            <!--  Java element (src-folder, package or JUnit class) -->
                            <adapt type="org.eclipse.jdt.core.IJavaElement">
-                              <test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="junit.framework.Test" />
-                              <test property="org.eclipse.jdt.junit.canLaunchAsJUnit" forcePluginActivation="true" />
                               <test property="org.bndtools.core.isInBndJavaProject" forcePluginActivation="true" />
+                              <test property="org.eclipse.jdt.junit.canLaunchAsJUnit" forcePluginActivation="true" />
+                              <or>
+                                 <test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="org.junit.Test" />
+                                 <test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="junit.framework.Test" />
+                                 <test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="org.junit.jupiter.api.Test" />
+                              </or>
                            </adapt>
 
 						   <!-- bnd.bnd or *.bndrun file -->
