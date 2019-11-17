@@ -1,5 +1,8 @@
 package aQute.junit;
 
+import static aQute.junit.BundleUtils.hasNoTests;
+import static aQute.junit.BundleUtils.hasTests;
+import static aQute.junit.BundleUtils.testCases;
 import static aQute.junit.constants.TesterConstants.TESTER_CONTINUOUS;
 import static aQute.junit.constants.TesterConstants.TESTER_DIR;
 import static aQute.junit.constants.TesterConstants.TESTER_NAMES;
@@ -8,6 +11,7 @@ import static aQute.junit.constants.TesterConstants.TESTER_SEPARATETHREAD;
 import static aQute.junit.constants.TesterConstants.TESTER_TRACE;
 import static aQute.junit.constants.TesterConstants.TESTER_UNRESOLVED;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,14 +22,12 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.BlockingDeque;
@@ -155,16 +157,14 @@ public class Activator implements BundleActivator, Runnable {
 			}
 			if (testBundle != null) {
 				for (Bundle b : context.getBundles()) {
-					String testcasesheader = b.getHeaders()
-						.get(aQute.bnd.osgi.Constants.TESTCASES);
-					if (testcasesheader != null) {
+					if (hasTests(b)) {
 						testBundle = b;
 						break;
 					}
 				}
 				int err = 0;
 				try {
-					err = test(context.getBundle(), "aQute.junit.UnresolvedTester",
+					err = test(context.getBundle(), testCases("aQute.junit.UnresolvedTester"),
 						getReportWriter(reportDir, bundleReportName(testBundle)));
 				} catch (IOException e) {
 					// ignore
@@ -192,7 +192,7 @@ public class Activator implements BundleActivator, Runnable {
 			try {
 				int errors;
 				try (Writer report = getReportWriter(reportDir, reportDir.getName())) {
-					errors = test(null, testcases, report);
+					errors = test(null, testCases(testcases), report);
 				}
 				System.exit(errors);
 			} catch (Exception e) {
@@ -203,7 +203,7 @@ public class Activator implements BundleActivator, Runnable {
 	}
 
 	void automatic(File reportDir) throws IOException {
-		final BlockingDeque<Entry<Bundle, String>> queue = new LinkedBlockingDeque<>();
+		final BlockingDeque<Bundle> queue = new LinkedBlockingDeque<>();
 
 		trace("opening BundleTracker for finding test bundles");
 		BundleTracker<Bundle> tracker = new BundleTracker<Bundle>(context,
@@ -233,13 +233,15 @@ public class Activator implements BundleActivator, Runnable {
 			private void process(Stream<Bundle> stream) {
 				stream.filter(processed::add)
 					.map(bundle -> {
-						String testnames = bundle.getHeaders()
-							.get(aQute.bnd.osgi.Constants.TESTCASES);
-						if (testnames == null) {
+						if (hasNoTests(bundle)) {
 							return null;
 						}
-						trace("found active bundle with test cases %s : %s", bundle, testnames);
-						return new AbstractMap.SimpleEntry<>(bundle, testnames);
+						if (isTrace()) {
+							trace("found active bundle with test cases %s : %s", bundle,
+								testCases(bundle)
+									.collect(toList()));
+						}
+						return bundle;
 					})
 					.filter(Objects::nonNull)
 					.forEach(queue::offerLast);
@@ -256,13 +258,11 @@ public class Activator implements BundleActivator, Runnable {
 		int result = 0;
 		while (active()) {
 			try {
-				Entry<Bundle, String> entry = queue.takeFirst();
-				Bundle bundle = entry.getKey();
-				String testnames = entry.getValue();
+				Bundle bundle = queue.takeFirst();
 				trace("received bundle to test: %s", bundle.getLocation());
 				try (Writer report = getReportWriter(reportDir, bundleReportName(bundle))) {
 					trace("test will run");
-					result += test(bundle, testnames, report);
+					result += test(bundle, testCases(bundle), report);
 					trace("test ran");
 				}
 				if (queue.isEmpty() && !continuous) {
@@ -299,19 +299,16 @@ public class Activator implements BundleActivator, Runnable {
 	 * The main test routine.
 	 *
 	 * @param bundle The bundle under test or null
-	 * @param testnames The names to test
+	 * @param testNames The names to test
 	 * @param report The report writer or null
 	 * @return # of errors
 	 */
-	int test(Bundle bundle, String testnames, Writer report) {
-		trace("testing bundle %s with %s", bundle, testnames);
+	int test(Bundle bundle, Stream<String> testNames, Writer report) {
+		trace("testing bundle %s", bundle);
 		Bundle fw = context.getBundle(0);
 		try {
 
 			bundle = findHost(bundle);
-
-			List<String> names = Arrays.asList(testnames.trim()
-				.split(",\\s*"));
 
 			List<TestReporter> reporters = new ArrayList<>();
 			final TestResult result = new TestResult();
@@ -345,7 +342,7 @@ public class Activator implements BundleActivator, Runnable {
 					tr.setup(fw, bundle);
 				}
 
-				TestSuite suite = createSuite(bundle, names, result);
+				TestSuite suite = createSuite(bundle, testNames, result);
 				try {
 					trace("created suite %s #%s", suite.getName(), suite.countTestCases());
 					List<Test> flattened = new ArrayList<>();
@@ -435,11 +432,9 @@ public class Activator implements BundleActivator, Runnable {
 			.map(BundleWiring::getBundle);
 	}
 
-	private TestSuite createSuite(Bundle tfw, List<String> testNames, TestResult result) {
+	private TestSuite createSuite(Bundle tfw, Stream<String> testNames, TestResult result) {
 		TestSuite suite = new TestSuite();
-		for (String fqn : testNames) {
-			addTest(tfw, suite, fqn, result);
-		}
+		testNames.forEachOrdered(fqn -> addTest(tfw, suite, fqn, result));
 		return suite;
 	}
 

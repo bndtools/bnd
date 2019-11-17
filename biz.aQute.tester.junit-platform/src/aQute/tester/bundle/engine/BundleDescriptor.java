@@ -14,6 +14,8 @@ import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 
+import aQute.bnd.osgi.Constants;
+
 public class BundleDescriptor extends AbstractTestDescriptor {
 
 	final private Bundle							bundle;
@@ -22,8 +24,8 @@ public class BundleDescriptor extends AbstractTestDescriptor {
 
 	public static String displayNameOf(Bundle bundle) {
 		final Optional<String> bundleName = Optional.ofNullable(bundle.getHeaders()
-			.get(aQute.bnd.osgi.Constants.BUNDLE_NAME));
-		return "[" + bundle.getBundleId() + "] " + bundleName.orElse(bundle.getSymbolicName()) + ';'
+			.get(Constants.BUNDLE_NAME));
+		return "[" + bundle.getBundleId() + "] " + bundleName.orElseGet(bundle::getSymbolicName) + ';'
 			+ bundle.getVersion();
 	}
 

@@ -1,6 +1,11 @@
 package aQute.tester.junit.platform.utils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Optional;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import java.util.stream.Stream;
 
 import org.osgi.framework.Bundle;
@@ -12,6 +17,8 @@ import org.osgi.framework.wiring.BundleWiring;
 import aQute.lib.strings.Strings;
 
 public final class BundleUtils {
+
+	private static final Attributes.Name TESTCASES = new Attributes.Name(aQute.bnd.osgi.Constants.TESTCASES);
 
 	public static Optional<Bundle> getHost(Bundle bundle) {
 		return Optional.ofNullable(bundle.adapt(BundleWiring.class))
@@ -46,8 +53,7 @@ public final class BundleUtils {
 	}
 
 	public static boolean hasTests(Bundle bundle) {
-		return bundle.getHeaders()
-			.get(aQute.bnd.osgi.Constants.TESTCASES) != null;
+		return testCases(bundle).anyMatch(s -> true);
 	}
 
 	public static boolean hasNoTests(Bundle bundle) {
@@ -64,8 +70,17 @@ public final class BundleUtils {
 	}
 
 	public static Stream<String> testCases(Bundle bundle) {
-		return testCases(bundle.getHeaders()
-			.get(aQute.bnd.osgi.Constants.TESTCASES));
+		URL url = bundle.getEntry("META-INF/MANIFEST.MF");
+		if (url == null) {
+			return Stream.empty();
+		}
+		try (InputStream in = url.openStream()) {
+			Manifest manifest = new Manifest(in);
+			return testCases(manifest.getMainAttributes()
+				.getValue(TESTCASES));
+		} catch (IOException e) {
+			return Stream.empty();
+		}
 	}
 
 	public static Stream<String> testCases(String testCases) {
