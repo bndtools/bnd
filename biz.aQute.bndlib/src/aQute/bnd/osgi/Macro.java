@@ -37,6 +37,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -1503,11 +1504,35 @@ public class Macro {
 
 	public String _extension(String[] args) throws Exception {
 		verifyCommand(args, _extensionHelp, null, 2, 2);
-		String name = args[1];
-		int n = name.indexOf('.');
-		if (n < 0)
-			return "";
-		return name.substring(n + 1);
+		String result = Optional.of(args[1])
+			.map(IO::normalizePath)
+			.map(path -> Optional.ofNullable(Strings.lastPathSegment(path))
+				.map(tuple -> tuple[1])
+				.orElse(path))
+			.flatMap(name -> Optional.ofNullable(Strings.extension(name))
+				.map(tuple -> tuple[1]))
+			.orElse("");
+		return result;
+	}
+
+	static final String _basenameextHelp = "${basenameext;<path>[;<extension>]}";
+
+	public String _basenameext(String[] args) throws Exception {
+		verifyCommand(args, _basenameextHelp, null, 2, 3);
+		String extension = Optional.ofNullable((args.length > 2) ? args[2] : null)
+			.map(ext -> ext.startsWith(".") ? ext.substring(1) : ext)
+			.orElse(".");
+		String result = Optional.of(args[1])
+			.map(IO::normalizePath)
+			.map(path -> Optional.ofNullable(Strings.lastPathSegment(path))
+				.map(tuple -> tuple[1])
+				.orElse(path))
+			.map(name -> Optional.ofNullable(Strings.extension(name))
+				.filter(tuple -> extension.equals(tuple[1]))
+				.map(tuple -> tuple[0])
+				.orElse(name))
+			.orElse("");
+		return result;
 	}
 
 	static final String _stemHelp = "${stem;<string>}";
