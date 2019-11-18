@@ -37,6 +37,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -1503,11 +1504,15 @@ public class Macro {
 
 	public String _extension(String[] args) throws Exception {
 		verifyCommand(args, _extensionHelp, null, 2, 2);
-		String name = args[1];
-		int n = name.indexOf('.');
-		if (n < 0)
-			return "";
-		return name.substring(n + 1);
+		String result = Optional.of(args[1])
+			.map(IO::normalizePath)
+			.map(path -> Optional.ofNullable(Strings.lastPathSegment(path))
+				.map(tuple -> tuple[1])
+				.orElse(path))
+			.flatMap(name -> Optional.ofNullable(Strings.extension(name))
+				.map(tuple -> tuple[1]))
+			.orElse("");
+		return result;
 	}
 
 	static final String _stemHelp = "${stem;<string>}";

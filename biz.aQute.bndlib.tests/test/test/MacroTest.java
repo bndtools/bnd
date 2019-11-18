@@ -19,6 +19,7 @@ import java.util.jar.Manifest;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledOnOs;
 
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
@@ -588,7 +589,7 @@ public class MacroTest {
 
 		assertEquals("properties", processor.getReplacer()
 			._extension(new String[] {
-				"", "testresources/testfilenamemacros.properties"
+				"", "test.resources/test.filenamemacros.properties"
 			}));
 
 		assertEquals("testfilenamemacros.properties", processor.getReplacer()
@@ -783,6 +784,10 @@ public class MacroTest {
 			.process("${extension;abcdef.def}"));
 		assertEquals("", processor.getReplacer()
 			.process("${extension;abcdefxyz}"));
+		assertEquals("def", processor.getReplacer()
+			.process("${extension;/foo.bar/abcdefxyz.def}"));
+		assertEquals("", processor.getReplacer()
+			.process("${extension;/foo.bar/abcdefxyz}"));
 
 		assertEquals("abc", processor.getReplacer()
 			.process("${substring;abcdef;0;3}"));
@@ -800,6 +805,17 @@ public class MacroTest {
 		assertEquals("0", processor.getReplacer()
 			.process("${length;}"));
 
+	}
+
+	@Test
+	@EnabledOnOs(WINDOWS)
+	public void testMacroStringsWindows() throws Exception {
+		Processor processor = new Processor();
+
+		assertEquals("def", processor.getReplacer()
+			.process("${extension;c:\\foo.bar\\abcdef.def}"));
+		assertEquals("", processor.getReplacer()
+			.process("${extension;c:\\foo.bar\\abcdef}"));
 	}
 
 	/**

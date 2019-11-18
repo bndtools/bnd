@@ -1,17 +1,18 @@
 ---
 layout: default
 class: Macro
-title: extension STRING
-summary: The extension of the given string (the part after the '.') or empty
+title: extension ';' PATH
+summary: The file extension of the given path or empty string if no extension
 ---
 
-	static String	_extension	= "${extension;<string>}";
+Returns the file extension of the specified path. The last segment of the path is examined for a `.` separating the extension from the rest of the file name. The extension is returned or, if the file name has no extension, an empty string is returned.
 
-	public String _extension(String args[]) throws Exception {
-		verifyCommand(args, _extension, null, 2, 2);
-		String name = args[1];
-		int n = name.indexOf('.');
-		if (n < 0)
-			return "";
-		return name.substring(n + 1);
-	}
+## Examples
+
+    # returns 'def'
+    ${extension;abcdef.def}
+    ${extension;/foo.bar/abcdefxyz.def}
+    
+    # Returns empty string
+    ${extension;abcdefxyz}
+    ${extension;/foo.bar/abcdefxyz}

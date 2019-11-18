@@ -276,9 +276,8 @@ public class Strings {
 	 * separator appears
 	 *
 	 * @param s the string that contains a path
-	 * @return null if no extension or an array of 2 elements, first is the
-	 *         prefix and second is the last segment without the separator at
-	 *         the start
+	 * @return null if no suffix or an array of 2 elements, first is the prefix
+	 *         and second is the suffix without the separator at the start
 	 */
 	public static String[] last(String s, char separator) {
 		int n = s.lastIndexOf(separator);
