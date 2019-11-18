@@ -198,6 +198,11 @@ public class StartLevelRuntimeHandler implements Closeable {
 							if (bundle.getBundleId() == 0)
 								return;
 
+							if (bundle.getSymbolicName() == null) {
+								logger.trace("Found bundle without a bsn %s, ignoring", bundle);
+								return;
+							}
+
 							BundleIdentity id = installed.computeIfAbsent(bundle, BundleIdentity::new);
 							if (event.getType() == BundleEvent.INSTALLED || event.getType() == BundleEvent.UPDATED) {
 								setStartlevel(bundle, id);
