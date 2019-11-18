@@ -789,6 +789,63 @@ public class MacroTest {
 		assertEquals("", processor.getReplacer()
 			.process("${extension;/foo.bar/abcdefxyz}"));
 
+		assertEquals(".abcdef", processor.getReplacer()
+			.process("${basenameext;.abcdef}"));
+		assertEquals(".abcdef", processor.getReplacer()
+			.process("${basenameext;.abcdef;}"));
+		assertEquals(".abcdef", processor.getReplacer()
+			.process("${basenameext;.abcdef;bar}"));
+		assertEquals("", processor.getReplacer()
+			.process("${basenameext;.abcdef;abcdef}"));
+		assertEquals("", processor.getReplacer()
+			.process("${basenameext;.abcdef;.abcdef}"));
+
+		assertEquals("abcdef.", processor.getReplacer()
+			.process("${basenameext;abcdef.}"));
+		assertEquals("abcdef.", processor.getReplacer()
+			.process("${basenameext;abcdef.;}"));
+		assertEquals("abcdef.", processor.getReplacer()
+			.process("${basenameext;abcdef.;bar}"));
+
+		assertEquals("abcdef.def", processor.getReplacer()
+			.process("${basenameext;abcdef.def}"));
+		assertEquals("abcdef.def", processor.getReplacer()
+			.process("${basenameext;abcdef.def;bar}"));
+		assertEquals("abcdef", processor.getReplacer()
+			.process("${basenameext;abcdef.def;def}"));
+		assertEquals("abcdef", processor.getReplacer()
+			.process("${basenameext;abcdef.def;.def}"));
+
+		assertEquals("abcdefxyz", processor.getReplacer()
+			.process("${basenameext;abcdefxyz}"));
+		assertEquals("abcdefxyz", processor.getReplacer()
+			.process("${basenameext;abcdefxyz;xyz}"));
+
+		assertEquals("abcdefxyz.def", processor.getReplacer()
+			.process("${basenameext;/foo.bar/abcdefxyz.def}"));
+		assertEquals("abcdefxyz.def", processor.getReplacer()
+			.process("${basenameext;/foo.bar/abcdefxyz.def;bar}"));
+		assertEquals("abcdefxyz", processor.getReplacer()
+			.process("${basenameext;/foo.bar/abcdefxyz.def;def}"));
+		assertEquals("abcdefxyz", processor.getReplacer()
+			.process("${basenameext;/foo.bar/abcdefxyz.def;.def}"));
+
+		assertEquals("abcdefxyz", processor.getReplacer()
+			.process("${basenameext;/foo.bar/abcdefxyz}"));
+		assertEquals("abcdefxyz", processor.getReplacer()
+			.process("${basenameext;/foo.bar/abcdefxyz;bar}"));
+		assertEquals("abcdefxyz", processor.getReplacer()
+			.process("${basenameext;/foo.bar/abcdefxyz;xyz}"));
+
+		assertEquals(".abcdefxyz", processor.getReplacer()
+			.process("${basenameext;/foo.bar/.abcdefxyz}"));
+		assertEquals(".abcdefxyz", processor.getReplacer()
+			.process("${basenameext;/foo.bar/.abcdefxyz;bar}"));
+		assertEquals("", processor.getReplacer()
+			.process("${basenameext;/foo.bar/.abcdefxyz;abcdefxyz}"));
+		assertEquals("", processor.getReplacer()
+			.process("${basenameext;/foo.bar/.abcdefxyz;.abcdefxyz}"));
+
 		assertEquals("abc", processor.getReplacer()
 			.process("${substring;abcdef;0;3}"));
 		assertEquals("abc", processor.getReplacer()
@@ -816,6 +873,22 @@ public class MacroTest {
 			.process("${extension;c:\\foo.bar\\abcdef.def}"));
 		assertEquals("", processor.getReplacer()
 			.process("${extension;c:\\foo.bar\\abcdef}"));
+
+		assertEquals("abcdef.def", processor.getReplacer()
+			.process("${basenameext;c:\\foo.bar\\abcdef.def}"));
+		assertEquals("abcdef.def", processor.getReplacer()
+			.process("${basenameext;c:\\foo.bar\\abcdef.def;bar}"));
+		assertEquals("abcdef", processor.getReplacer()
+			.process("${basenameext;c:\\foo.bar\\abcdef.def;def}"));
+		assertEquals("abcdef", processor.getReplacer()
+			.process("${basenameext;c:\\foo.bar\\abcdef.def;.def}"));
+
+		assertEquals("abcdef", processor.getReplacer()
+			.process("${basenameext;c:\\foo.bar\\abcdef}"));
+		assertEquals("abcdef", processor.getReplacer()
+			.process("${basenameext;c:\\foo.bar\\abcdef;bar}"));
+		assertEquals("abcdef", processor.getReplacer()
+			.process("${basenameext;c:\\foo.bar\\abcdef;def}"));
 	}
 
 	/**
