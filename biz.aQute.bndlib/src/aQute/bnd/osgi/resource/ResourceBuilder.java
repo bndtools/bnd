@@ -935,4 +935,22 @@ public class ResourceBuilder {
 
 	}
 
+	/**
+	 * A repository that implements the {@code WorkspaceRepositoryMarker} in the
+	 * resolver must add a WORKSPACE_NAMESPACE capability to make its clear the
+	 * resources are from the workspace. Ideally this would not be necessary but
+	 * we're having two workspace repositories. One for Bndtools where the
+	 * repository is interactive, the other is for resolving in Gradle, etc.
+	 *
+	 * @param name the project name
+	 */
+	public void addWorkspaceNamespace(String name) throws Exception {
+		// Add a capability specific to the workspace so that we can
+		// identify this fact later during resource processing.
+		Attrs attrs = new Attrs();
+		attrs.put(ResourceUtils.WORKSPACE_NAMESPACE, name);
+
+		addCapability(CapReqBuilder.createCapReqBuilder(ResourceUtils.WORKSPACE_NAMESPACE, attrs));
+
+	}
 }
