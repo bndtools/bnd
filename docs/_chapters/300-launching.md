@@ -84,9 +84,22 @@ The launcher registers a service with object class `Object` that provides some r
 
 ## Embedded Activators
 
-The launcher supports _embedded activators_. These are like normal Bundle Actviator classes but are instead found on the `-runpath`. Any bundle that has the header `Embedded-Activator` will be started. The start can happen at 3 points: Before any bundle is installed, after all bundles are installed and after all bundles are started. The default is after all bundles are started. To configure the starting point add a static or instance field called `IMMEDIATE` of type String and set one of the following values: `AFTER_FRAMEWORK_INIT` or `BEFORE_BUNDLES_START`. Any other value will result in the default start after all bundles are started. 
+The launcher supports _embedded activators_. These are like normal Bundle Actviator classes but are instead found on the `-runpath`. Any bundle that has the header `Embedded-Activator` will be started. The start can happen at 3 points that are identified with a static field in the Embedded Activator class. This field is called `IMMEDIATE`. For example:
 
-Until recently only before and after bundle start was support. This was determined by looking for a static boolean field `IMMEDIATE`. This is still supported and `true` corresponds to the String `BEFORE_BUNDLES_START`. `false` trigger a start after all bundles are started.
+    public class MyEmbeddedActivator implements BundleActivator {
+        public static String IMMEDIATE = "AFTER_FRAMEWORK_INIT";
+        ...
+    } 
+
+The `IMMEDIATE` field can have the following values:
+
+* `"AFTER_FRAMEWORK_INIT"` –  The Embedded Activator is called after the Framework is initialized but before the framework is started. This means that no bundles are started yet.
+*  `"BEFORE_BUNDLES_START"` – The Embedded Activator is called after the framework has been started but before the bundles are explicitly started _by the launcher_. This will always happening in start level 1. If the framework was started from an existing configuration then any bundles in start level 1 that were persistently started will therefore have been started before the Embedded Activator is started. The launcher starts bundles persistently so if the same configuration is restarted they will be started after the framework is started.
+* `"AFTER_BUNDLES_START"` – Will start the Embedded Activators _after_ all bundles have been persistently started. Since this happens at start level 1, some bundles in higher start levels will not be active.
+
+The reason strings are used is to not require the need for extraneous types on the executable's class path. If a string in `IMMEDIATE` is used that is not part of the previous one then a message must be logged. The behavior will then be `"AFTER_BUNDLES_START"`. Other strings are reserved for future extensions.
+
+For example: 
 
     public class MyActivator implements BundleActivator {
         public static String IMMEDIATE = "BEFORE_BUNDLES_START";
@@ -96,10 +109,15 @@ Until recently only before and after bundle start was support. This was determin
         public void stop(BundleContext context) {}
     }
 
-    In the manifest:
+    bnd.bnd:
+        Embedded-Activator: com.example.MyActivator
 
-    Embedded-Activator: com.example.MyActivator
+For backward compatibility reason the `IMMEDIATE` field the launcher will also recognize a `boolean` field. 
 
+* `true` – Corresponds to the String `BEFORE_BUNDLES_START`. 
+* `false` – Will be the `"AFTER_BUNDLES_START"` case
+
+It is recommended to update to one of the strings instead of the boolean and not use this pattern in new setups.
 
 ## Startlevels
 

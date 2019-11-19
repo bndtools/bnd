@@ -114,6 +114,28 @@ public class Launcher implements ServiceListener {
 	private AtomicReference<DatagramSocket>	commsSocket			= new AtomicReference<>();
 	private StartLevelRuntimeHandler		startLevelhandler;
 
+	enum EmbeddedActivatorPhase {
+
+		AFTER_FRAMEWORK_INIT,
+		BEFORE_BUNDLES_START,
+		AFTER_BUNDLES_START,
+		UNKNOWN;
+
+		static EmbeddedActivatorPhase valueOf( Object o) {
+			if ( AFTER_FRAMEWORK_INIT.name().equals(o))
+				return AFTER_FRAMEWORK_INIT;
+
+			if (Boolean.TRUE.equals(o) || BEFORE_BUNDLES_START.name()
+				.equals(o))
+				return BEFORE_BUNDLES_START;
+
+			if (Boolean.FALSE.equals(o) || AFTER_BUNDLES_START.name()
+				.equals(o))
+				return AFTER_BUNDLES_START;
+
+			return UNKNOWN;
+		}
+	}
 	/**
 	 * Called from the commandline (and via EmbeddedLauncher in the embedded
 	 * mode.)
@@ -449,14 +471,33 @@ public class Launcher implements ServiceListener {
 				try {
 					Class<?> clazz = loader.loadClass((String) token);
 					BundleActivator activator = (BundleActivator) newInstance(clazz);
-					if (isAfterFrameworkInit(activator)) {
-						result = start(systemContext, result, activator);
-					} else if (isBeforeBundlesStart(activator)) {
-						startBeforeBundleStart.add(activator);
-					} else {
-						startAfterBundleStart.add(activator);
+					Object immediateFieldValue = getImmediateFieldValue(activator);
+					EmbeddedActivatorPhase phase = EmbeddedActivatorPhase.valueOf(immediateFieldValue);
+					switch (phase) {
+						case AFTER_FRAMEWORK_INIT :
+							trace("AFTER_FRAMEWORK_INIT %s", activator);
+							result = start(systemContext, result, activator);
+							break;
+
+						case BEFORE_BUNDLES_START :
+							trace("BEFORE_BUNDLES_START %s", activator);
+							startBeforeBundleStart.add(activator);
+							break;
+
+						case UNKNOWN :
+							trace(
+								"!the value of IMMEDIATE is not recognized as one of %s, it is %s",
+								EmbeddedActivatorPhase.values(),
+								immediateFieldValue);
+
+							// FALL THROUGH
+
+						default :
+						case AFTER_BUNDLES_START :
+							trace("AFTER_BUNDLES_START %s", activator);
+							startAfterBundleStart.add(activator);
+							break;
 					}
-					trace("adding activator %s", activator);
 				} catch (Exception e) {
 					throw new IllegalArgumentException("Embedded Bundle Activator incorrect: " + token, e);
 				}
@@ -464,14 +505,15 @@ public class Launcher implements ServiceListener {
 		}
 		List<Bundle> tobestarted = update(System.currentTimeMillis() + 100);
 
+		systemBundle.start();
+
+		trace("system bundle started ok");
+
 		for (BundleActivator activator : startBeforeBundleStart) {
 			result = start(systemContext, result, activator);
 		}
 
 		startBundles(tobestarted);
-
-		systemBundle.start();
-		trace("system bundle started ok");
 
 		for (BundleActivator activator : startAfterBundleStart) {
 			result = start(systemContext, result, activator);
@@ -493,16 +535,6 @@ public class Launcher implements ServiceListener {
 			return f.get(activator);
 		} catch (Exception e) {}
 		return Boolean.FALSE;
-	}
-
-	private boolean isAfterFrameworkInit(BundleActivator activator) {
-		Object result = getImmediateFieldValue(activator);
-		return "AFTER_FRAMEWORK_INIT".equals(result);
-	}
-
-	private boolean isBeforeBundlesStart(BundleActivator activator) {
-		Object result = getImmediateFieldValue(activator);
-		return "BEFORE_BUNDLES_START".equals(result) || Boolean.TRUE.equals(result);
 	}
 
 	private int start(BundleContext systemContext, int result, BundleActivator activator) {
