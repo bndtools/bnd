@@ -164,10 +164,14 @@ public class Strings {
 	}
 
 	public static Stream<String> splitQuotedAsStream(String s) {
+		return splitQuotedAsStream(s, true);
+	}
+
+	public static Stream<String> splitQuotedAsStream(String s, boolean retainQuotes) {
 		if ((s == null) || (s = s.trim()).isEmpty()) {
 			return Stream.empty();
 		}
-		return new QuotedTokenizer(s, COMMA, false, true).stream()
+		return new QuotedTokenizer(s, COMMA, false, retainQuotes).stream()
 			.filter(Strings::notEmpty);
 	}
 
