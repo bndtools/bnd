@@ -45,6 +45,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	int					state	= Bundle.INSTALLED;
 	ClassLoader			last;
 	final FrameworkStartLevelImpl	frameworkStartLevel;
+	private Tracing					tracing	= Tracing.noop;
 	public MiniFramework(Map<Object, Object> properties) {
 		this.properties = new Properties(System.getProperties());
 		this.properties.putAll(properties);
@@ -52,6 +53,14 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		bundles.put(Long.valueOf(0), this);
 		last = loader = getClass().getClassLoader();
 		frameworkStartLevel = new FrameworkStartLevelImpl(this);
+
+	public MiniFramework setTracing(Tracing tracing) {
+		this.tracing = tracing;
+		return this;
+	}
+
+	void trace(String msg, Object... objects) {
+		tracing.trace(msg, objects);
 	}
 
 	@Override
