@@ -24,7 +24,6 @@ import org.osgi.service.log.LogService;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.deployer.repository.CapabilityIndex;
-import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
 import aQute.bnd.deployer.repository.api.IRepositoryIndexProcessor;
 import aQute.bnd.deployer.repository.api.Referral;
 import aQute.bnd.deployer.repository.providers.R5RepoContentProvider;
@@ -37,7 +36,7 @@ public class WorkspaceR5Repository extends BaseRepository implements WorkspaceRe
 	private static final String						NAME			= "Workspace";
 
 	private final Map<IProject, CapabilityIndex>	projectMap		= new HashMap<>();
-	private final IRepositoryContentProvider		contentProvider	= new R5RepoContentProvider();
+	private final R5RepoContentProvider				contentProvider	= new R5RepoContentProvider();
 
 	private final ILogger							logger			= Logger.getLogger(WorkspaceR5Repository.class);
 	private final LogService						logAdapter		= new LogServiceAdapter(logger);
@@ -102,7 +101,7 @@ public class WorkspaceR5Repository extends BaseRepository implements WorkspaceRe
 						// ignore: we don't create any referrals
 					}
 				};
-				contentProvider.parseIndex(index, baseUri, processor, logAdapter);
+				contentProvider.parseIndex(project.getName(), index, baseUri, processor, logAdapter);
 			} catch (Exception e) {
 				logger.logError(
 					MessageFormat.format("Failed to process index file for bundles in project {0}.", project.getName()),

@@ -149,6 +149,12 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	@Override
 	public void parseIndex(InputStream stream, URI baseUri, IRepositoryIndexProcessor listener, LogService log)
 		throws Exception {
+		this.parseIndex(baseUri + "", stream, baseUri, listener, log);
+	}
+
+	public void parseIndex(String projectName, InputStream stream, URI baseUri, IRepositoryIndexProcessor listener,
+		LogService log)
+		throws Exception {
 		XMLStreamReader reader = null;
 		try {
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
@@ -215,6 +221,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 							capReqBuilder = null;
 						} else if (TAG_RESOURCE.equals(localName)) {
 							if (resourceBuilder != null) {
+								resourceBuilder.addWorkspaceNamespace(projectName);
 								Resource resource = resourceBuilder.build();
 								listener.processResource(resource);
 								resourceBuilder = null;
