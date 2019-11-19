@@ -55,14 +55,14 @@ import aQute.tester.testclasses.With2Failures;
 // Because we're not in the same project as aQute.junit.TesterConstants and its bundle-private.
 public abstract class AbstractActivatorTest extends SoftAssertions {
 
-	static final String					BND_TEST_THREAD		= "bnd Runtime Test Bundle";
+	static final String		BND_TEST_THREAD	= "bnd Runtime Test Bundle";
 
-	private final String				activatorClass;
-	private final String				tester;
+	private final String	activatorClass;
+	private final String	tester;
 
 	protected TestBundler	testBundler;
 
-	private boolean						DEBUG				= true;
+	private boolean			DEBUG			= true;
 
 	@AfterEach
 	public void after() {
@@ -495,8 +495,7 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 
 	protected String testCase(Class<?> testClass, String method) {
 		return String.format("%s/testcase[@classname='%s' and @name='%s' and count(error) = 0]", testSuite(),
-			testClass.getName(),
-			method);
+			testClass.getName(), method);
 	}
 
 	protected String testCaseError(Class<?> testClass, String method, Class<? extends Throwable> error) {

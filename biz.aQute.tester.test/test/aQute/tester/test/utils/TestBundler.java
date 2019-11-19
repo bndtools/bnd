@@ -30,7 +30,7 @@ import aQute.lib.exceptions.Exceptions;
  */
 public class TestBundler {
 
-	final Launchpad lp;
+	final Launchpad			lp;
 
 	Map<Class<?>, Class<?>>	classMap	= new HashMap<>();
 	Map<Class<?>, Bundle>	bundleMap	= new HashMap<>();
