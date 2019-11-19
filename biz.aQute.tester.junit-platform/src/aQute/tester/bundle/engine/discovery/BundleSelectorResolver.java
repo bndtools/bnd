@@ -430,10 +430,15 @@ public class BundleSelectorResolver {
 		SubDiscoveryRequest subRequest = new SubDiscoveryRequest(selectors);
 		engines.forEach(engine -> {
 			info(() -> "Processing engine: " + engine.getId() + " for bundle " + bundle);
-			TestDescriptor engineDescriptor = engine.discover(subRequest, bd.getUniqueId()
-				.append("sub-engine", engine.getId()));
-			bd.addChild(engineDescriptor, engine);
-			info(() -> "Finished processing engine: " + engine.getId() + " for bundle " + bundle);
+			try {
+				TestDescriptor engineDescriptor = engine.discover(subRequest, bd.getUniqueId()
+					.append("sub-engine", engine.getId()));
+				bd.addChild(engineDescriptor, engine);
+				info(() -> "Finished processing engine: " + engine.getId() + " for bundle " + bundle);
+			} catch (Exception e) {
+				info(() -> "Error processing tests for engine: " + engine.getId() + " for bundle " + bundle + ": "
+					+ e.getMessage(), e);
+			}
 		});
 		return true;
 	}

@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -144,6 +145,10 @@ public class TestBundler {
 	@SuppressWarnings("unchecked")
 	public Thread getCurrentThread(Class<?> testClass) {
 		return ((AtomicReference<Thread>) getStatic(testClass, "currentThread")).get();
+	}
+
+	public int getInteger(String fieldName, Class<?> testClass) {
+		return ((AtomicInteger) getStatic(testClass, fieldName)).get();
 	}
 
 	public boolean getFlag(Class<?> testClass, String flag) {

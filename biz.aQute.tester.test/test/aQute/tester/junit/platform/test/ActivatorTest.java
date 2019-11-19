@@ -2,6 +2,7 @@ package aQute.tester.junit.platform.test;
 
 import static aQute.junit.constants.TesterConstants.TESTER_CONTINUOUS;
 import static aQute.junit.constants.TesterConstants.TESTER_CONTROLPORT;
+import static aQute.junit.constants.TesterConstants.TESTER_NAMES;
 import static aQute.junit.constants.TesterConstants.TESTER_PORT;
 import static aQute.junit.constants.TesterConstants.TESTER_UNRESOLVED;
 import static aQute.tester.test.utils.TestRunData.nameOf;
@@ -62,6 +63,7 @@ import aQute.tester.testclasses.junit.platform.JUnit5Test;
 import aQute.tester.testclasses.junit.platform.JUnitMixedComparisonTest;
 import aQute.tester.testclasses.junit.platform.Mixed35Test;
 import aQute.tester.testclasses.junit.platform.Mixed45Test;
+import aQute.tester.testclasses.junit.platform.ParameterizedTesterNamesTest;
 
 public class ActivatorTest extends AbstractActivatorTest {
 	public ActivatorTest() {
@@ -516,6 +518,22 @@ public class ActivatorTest extends AbstractActivatorTest {
 
 		assertThat(result.getNameMap()
 			.get("Unresolved bundles")).isNull();
+	}
+
+	@Test
+	public void testerNames_withParameters_isHonouredByTester() {
+		builder.set(TESTER_NAMES,
+			"'" + ParameterizedTesterNamesTest.class.getName() + ":parameterizedMethod(java.lang.String,float)'");
+		runTests(0, JUnit3Test.class, JUnit4Test.class, ParameterizedTesterNamesTest.class);
+		assertThat(testBundler.getCurrentThread(JUnit3Test.class)).as("JUnit3 thread")
+			.isNull();
+		assertThat(testBundler.getCurrentThread(JUnit4Test.class)).as("JUnit4 thread")
+			.isNull();
+		assertThat(testBundler.getInteger("countParameterized", ParameterizedTesterNamesTest.class))
+			.as("parameterizedMethod")
+			.isEqualTo(5);
+		assertThat(testBundler.getInteger("countOther", ParameterizedTesterNamesTest.class)).as("countOther")
+			.isEqualTo(0);
 	}
 
 	@Test
