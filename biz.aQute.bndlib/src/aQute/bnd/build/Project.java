@@ -2217,6 +2217,11 @@ public class Project extends Processor {
 		return null;
 	}
 
+	/**
+	 * The keep flag is really awkward since it overrides the -runkeep flag in
+	 * the file. Use doExport instead
+	 */
+	@Deprecated
 	public void export(String runFilePath, boolean keep, File output) throws Exception {
 		Map<String, String> options = Collections.singletonMap("keep", Boolean.toString(keep));
 		Entry<String, Resource> export;

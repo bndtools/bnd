@@ -11,6 +11,7 @@ public class PackageTask extends BaseTask {
 	File	output		= null;
 	boolean	keep		= false;
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void execute() throws BuildException {
 		if (output == null)
