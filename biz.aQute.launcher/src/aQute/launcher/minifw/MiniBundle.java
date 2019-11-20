@@ -1,30 +1,33 @@
 package aQute.launcher.minifw;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Enumeration;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
-import java.util.Vector;
-import java.util.jar.Attributes;
+import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import java.util.zip.ZipEntry;
+import java.util.stream.Stream;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.BundleListener;
-import org.osgi.framework.BundleReference;
+import org.osgi.framework.Constants;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.InvalidSyntaxException;
@@ -35,90 +38,57 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
 import org.osgi.framework.startlevel.BundleStartLevel;
+import org.osgi.framework.startlevel.FrameworkStartLevel;
 import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.BundleWiring;
 
-public class Context extends URLClassLoader implements Bundle, BundleContext, BundleReference {
-	long					id;
-	MiniFramework			fw;
-	String					location;
-	int						state	= Bundle.INSTALLED;
-	JarFile					jar;
-	Manifest				manifest;
-	private TreeSet<String>	paths;
-	private File			jarFile;
+public class MiniBundle implements Bundle, BundleContext, Closeable {
+	private final long					id;
+	private final long					lastModified;
+	private final MiniFramework			fw;
+	private final String				location;
+	private int							state;
+	private final JarFile				jar;
+	private final Manifest				manifest;
+	private TreeMap<String, JarEntry>	entries;
+	private File						jarFile;
+	private final URLClassLoader		loader;
 
-	class Dict extends Dictionary<String, String> {
-
-		@Override
-		public Enumeration<String> elements() {
-			@SuppressWarnings({
-				"unchecked", "rawtypes"
-			})
-			Enumeration<String> enumeration = (Enumeration) Collections.enumeration(manifest.getMainAttributes()
-				.values());
-			return enumeration;
-		}
-
-		@Override
-		public String get(Object key) {
-			String o = manifest.getMainAttributes()
-				.getValue((String) key);
-			return o;
-		}
-
-		@Override
-		public boolean isEmpty() {
-			return manifest.getMainAttributes()
-				.isEmpty();
-		}
-
-		@Override
-		public Enumeration<String> keys() {
-			Vector<String> v = new Vector<>();
-			for (Iterator<Object> i = manifest.getMainAttributes()
-				.keySet()
-				.iterator(); i.hasNext();) {
-				Attributes.Name name = (Attributes.Name) i.next();
-				v.add(name.toString());
-			}
-			return v.elements();
-		}
-
-		@Override
-		public String put(String key, String value) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public String remove(Object key) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public int size() {
-			return manifest.getMainAttributes()
-				.size();
-		}
-
-	}
-
-	public Context(MiniFramework fw, ClassLoader parent, int id, String location) throws Exception {
-		super(new URL[] {
-			new File(location).toURI()
-				.toURL()
-		}, parent);
+	public MiniBundle(MiniFramework fw, ClassLoader parent, int id, String location) throws Exception {
+		super();
 		this.fw = fw;
 		this.id = id;
 		this.location = location;
+		state = Bundle.INSTALLED;
+		lastModified = System.currentTimeMillis();
 
-		jar = new JarFile(jarFile = new File(location));
-		// Enumeration<JarEntry> entries = jar.entries();
-		// while ( entries.hasMoreElements())
-		// System.err.println(entries.nextElement().getName());
-
+		jarFile = new File(location);
+		loader = new BundleClassLoader(jarFile, parent, getBundle());
+		jar = new JarFile(jarFile);
 		manifest = jar.getManifest();
+		entries = new TreeMap<>();
+		for (Enumeration<JarEntry> e = jar.entries(); e.hasMoreElements();) {
+			JarEntry entry = e.nextElement();
+			if (entry.isDirectory()) {
+				continue;
+			}
+			// fw.trace("entry %s",entry.getName());
+			entries.put(entry.getName(), entry);
+		}
+	}
+
+	@Override
+	public void close() throws IOException {
+		loader.close();
 		jar.close();
+	}
+
+	ClassLoader getClassLoader() {
+		return loader;
+	}
+
+	private Map<String, JarEntry> getEntries() {
+		return entries;
 	}
 
 	@Override
@@ -133,29 +103,37 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 	@Override
 	public URL getEntry(String path) {
-		if (path.startsWith("/"))
+		fw.trace("### getEntry(%s) %s", path, this);
+		if (path.startsWith("/")) {
 			path = path.substring(1);
-		return getResource(path);
+		}
+		JarEntry entry = getEntries().get(path);
+		if (entry == null) {
+			return null;
+		}
+		return createURL(entry);
 	}
 
 	@Override
 	public Enumeration<String> getEntryPaths(String path) {
-		throw new UnsupportedOperationException();
+		fw.trace("### getEntryPaths(%s) %s", path, this);
+		Stream<String> paths = findEntryPaths(path, null, true);
+		return new IteratorEnumeration<>(paths);
 	}
 
 	@Override
 	public Dictionary<String, String> getHeaders() {
-		return new Dict();
+		return new Headers(manifest);
 	}
 
 	@Override
 	public Dictionary<String, String> getHeaders(String locale) {
-		return new Dict();
+		return new Headers(manifest);
 	}
 
 	@Override
 	public long getLastModified() {
-		return jarFile.lastModified();
+		return lastModified;
 	}
 
 	@Override
@@ -165,35 +143,30 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 	@Override
 	public Enumeration<URL> findEntries(String path, String filePattern, boolean recurse) {
-
-		try {
-			if (path.startsWith("/"))
-				path = path.substring(1);
-			if (!path.endsWith("/"))
-				path += "/";
-
-			Vector<URL> paths = new Vector<>();
-			for (Iterator<String> i = getPaths().iterator(); i.hasNext();) {
-				String entry = i.next();
-				if (entry.startsWith(path)) {
-					if (recurse || entry.indexOf('/', path.length()) < 0) {
-						if (filePattern == null || matches(entry, filePattern)) {
-							URL url = getResource(entry);
-							if (url == null) {
-								System.err.println("Cannot load resource that should be there: " + entry);
-							} else
-								paths.add(url);
-						}
-					}
-				}
-			}
-			return paths.elements();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		fw.trace("### findEntries(%s, %s, %s) %s", path, filePattern, recurse, this);
+		Stream<URL> entries = findEntryPaths(path, filePattern, recurse).map(name -> getEntries().get(name))
+			.map(this::createURL);
+		return new IteratorEnumeration<>(entries);
 	}
 
-	public static boolean matches(String path, String filePattern) {
+	private Stream<String> findEntryPaths(String path, String filePattern, boolean recurse) {
+		if (path.startsWith("/")) {
+			path = path.substring(1);
+		}
+		if (!path.endsWith("/")) {
+			path += "/";
+		}
+
+		String finalPath = path;
+		int finalPathLength = finalPath.length();
+		Stream<String> paths = getEntries().keySet()
+			.stream()
+			.filter(name -> name.startsWith(finalPath) && (recurse || name.indexOf('/', finalPathLength) < 0)
+				&& (filePattern == null || matches(name, filePattern)));
+		return paths;
+	}
+
+	private static boolean matches(String path, String filePattern) {
 		do {
 			int part = filePattern.indexOf('*');
 			if (part < 0) {
@@ -209,18 +182,40 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		} while (true);
 	}
 
-	private Collection<String> getPaths() throws Exception {
-		if (paths != null)
-			return paths;
+	private URL createURL(JarEntry jarEntry) {
+		try {
+			return new URL("bundlentry", null, 0, "/".concat(jarEntry.getName()), new URLStreamHandler() {
+				@Override
+				protected URLConnection openConnection(URL u) throws IOException {
+					return new URLConnection(u) {
+						@Override
+						public void connect() throws IOException {}
 
-		paths = new TreeSet<>();
-		try (JarFile jar = new JarFile(new File(location))) {
-			for (Enumeration<JarEntry> e = jar.entries(); e.hasMoreElements();) {
-				ZipEntry entry = e.nextElement();
-				paths.add(entry.getName());
-			}
+						@Override
+						public InputStream getInputStream() throws IOException {
+							return jar.getInputStream(jarEntry);
+						}
+
+						@Override
+						public int getContentLength() {
+							return (int) getContentLengthLong();
+						}
+
+						@Override
+						public long getContentLengthLong() {
+							return jarEntry.getSize();
+						}
+
+						@Override
+						public String getContentType() {
+							return "application/octet-stream";
+						}
+					};
+				}
+			});
+		} catch (MalformedURLException e) {
+			throw new UncheckedIOException(e); // wont happen
 		}
-		return paths;
 	}
 
 	@Override
@@ -235,7 +230,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 	@Override
 	public Map<X509Certificate, List<X509Certificate>> getSignerCertificates(int signersType) {
-		throw new UnsupportedOperationException();
+		return new HashMap<>();
 	}
 
 	@Override
@@ -245,17 +240,14 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 	@Override
 	public String getSymbolicName() {
-		return getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLICNAME)
+		return getHeaders().get(Constants.BUNDLE_SYMBOLICNAME)
 			.trim();
 	}
 
 	@Override
 	public Version getVersion() {
-		String v = getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_VERSION)
-			.trim();
-		if (v == null)
-			return new Version("0");
-		return new Version(v);
+		String v = getHeaders().get(Constants.BUNDLE_VERSION);
+		return Version.parseVersion(v);
 	}
 
 	@Override
@@ -265,7 +257,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 	@Override
 	public void start() throws BundleException {
-		state = Bundle.ACTIVE;
+		start(0);
 	}
 
 	@Override
@@ -275,7 +267,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 	@Override
 	public void stop() throws BundleException {
-		state = Bundle.RESOLVED;
+		stop(0);
 	}
 
 	@Override
@@ -300,32 +292,32 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 	@Override
 	public void addBundleListener(BundleListener listener) {
-		throw new UnsupportedOperationException();
+		fw.addBundleListener(listener);
 	}
 
 	@Override
 	public void addFrameworkListener(FrameworkListener listener) {
-		throw new UnsupportedOperationException();
+		fw.addFrameworkListener(listener);
 	}
 
 	@Override
 	public void addServiceListener(ServiceListener listener) {
-		throw new UnsupportedOperationException();
+		fw.addServiceListener(listener);
 	}
 
 	@Override
 	public void addServiceListener(ServiceListener listener, String filter) {
-		throw new UnsupportedOperationException();
+		fw.addServiceListener(listener, filter);
 	}
 
 	@Override
 	public Filter createFilter(String filter) throws InvalidSyntaxException {
-		throw new UnsupportedOperationException();
+		return fw.createFilter(filter);
 	}
 
 	@Override
 	public ServiceReference<?>[] getAllServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
 	@Override
@@ -375,17 +367,17 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 	@Override
 	public void removeBundleListener(BundleListener listener) {
-		throw new UnsupportedOperationException();
+		fw.removeBundleListener(listener);
 	}
 
 	@Override
 	public void removeFrameworkListener(FrameworkListener listener) {
-		throw new UnsupportedOperationException();
+		fw.removeFrameworkListener(listener);
 	}
 
 	@Override
 	public void removeServiceListener(ServiceListener listener) {
-		throw new UnsupportedOperationException();
+		fw.removeServiceListener(listener);
 	}
 
 	@Override
@@ -394,8 +386,8 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 	}
 
 	@Override
-	public int compareTo(Bundle var0) {
-		return 0;
+	public int compareTo(Bundle other) {
+		return Long.signum(getBundleId() - other.getBundleId());
 	}
 
 	@Override
@@ -436,20 +428,21 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 	@Override
 	public Bundle getBundle(String location) {
-		return null;
+		return fw.getBundle(location);
 	}
 
 	@Override
 	public <A> A adapt(Class<A> type) {
 		if (BundleRevision.class.equals(type)) {
-			return type.cast(new BundleRevisionImpl(this));
+			return type.cast(new BundleRevisionImpl(getBundle()));
 		}
 		if (BundleWiring.class.equals(type)) {
-			return type.cast(new BundleWiringImpl(this, this));
+			return type.cast(new BundleWiringImpl(getBundle(), getClassLoader()));
 		}
 		if (BundleStartLevel.class.equals(type)) {
-			return type.cast(new BundleStartLevelImpl(this, fw.frameworkStartLevel));
+			return type.cast(new BundleStartLevelImpl(getBundle(), fw.adapt(FrameworkStartLevel.class)));
 		}
+		fw.trace("### No adaptation for adapt(%s) %s", type, this);
 		return null;
 	}
 
@@ -462,6 +455,24 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 	@Override
 	public <S> ServiceObjects<S> getServiceObjects(ServiceReference<S> reference) {
 		return null;
+	}
+
+	@Override
+	public URL getResource(String name) {
+		fw.trace("### getResource(%s) %s", name, this);
+		return loader.getResource(name);
+	}
+
+	@Override
+	public Class<?> loadClass(String name) throws ClassNotFoundException {
+		fw.trace("### loadClass(%s) %s", name, this);
+		return loader.loadClass(name);
+	}
+
+	@Override
+	public Enumeration<URL> getResources(String name) throws IOException {
+		fw.trace("### getResources(%s) %s", name, this);
+		return loader.getResources(name);
 	}
 
 }

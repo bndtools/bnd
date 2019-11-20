@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -433,7 +434,10 @@ public class Activator implements BundleActivator, Runnable {
 	}
 
 	private TestSuite createSuite(Bundle tfw, Stream<String> testNames, TestResult result) {
-		TestSuite suite = new TestSuite();
+		String name = Optional.ofNullable(tfw)
+			.map(Bundle::getSymbolicName)
+			.orElse("test.run");
+		TestSuite suite = new TestSuite(name);
 		testNames.forEachOrdered(fqn -> addTest(tfw, suite, fqn, result));
 		return suite;
 	}
