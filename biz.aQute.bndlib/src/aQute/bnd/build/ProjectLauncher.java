@@ -103,6 +103,7 @@ public abstract class ProjectLauncher extends Processor {
 
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
+		this.setBase(project.getBase());
 		builderInstrs = project.getInstructions(BuilderInstructions.class);
 		launcherInstrs = project.getInstructions(LauncherInstructions.class);
 	}

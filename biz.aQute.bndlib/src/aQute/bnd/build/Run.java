@@ -50,4 +50,8 @@ public class Run extends Project {
 		return getPropertiesFile().getName();
 	}
 
+	@Override
+	public boolean isRun() {
+		return true;
+	}
 }
