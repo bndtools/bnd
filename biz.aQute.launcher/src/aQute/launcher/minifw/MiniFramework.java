@@ -13,7 +13,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.Manifest;
 
 import org.osgi.framework.Bundle;
@@ -39,33 +42,39 @@ import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.framework.wiring.FrameworkWiring;
 
-public class MiniFramework implements Framework, Bundle, BundleContext {
-	final ClassLoader				loader;
-	private final Properties		properties;
-	private Map<Long, Bundle>		bundles	= new HashMap<>();
-	private final AtomicInteger		ID		= new AtomicInteger(0);
-	int								state	= Bundle.RESOLVED;
-	ClassLoader						last;
-	final FrameworkStartLevelImpl	frameworkStartLevel;
-	private Tracing					tracing	= Tracing.noop;
-	private final Manifest			manifest;
-	private long					lastModified;
+public class MiniFramework implements Framework, BundleContext {
+	private final ClassLoader				loader;
+	private final Properties				properties;
+	private final Map<Long, Bundle>			bundles;
+	private final AtomicLong				ID;
+	private volatile int					state;
+	private ClassLoader						last;
+	private final FrameworkStartLevelImpl	frameworkStartLevel;
+	private Tracing							tracing	= Tracing.noop;
+	private final Headers					headers;
+	private volatile long					lastModified;
+	private volatile CountDownLatch			stopped;
 
 	public MiniFramework(Map<Object, Object> properties) {
 		this.properties = new Properties(System.getProperties());
 		this.properties.putAll(properties);
+		ID = new AtomicLong(Constants.SYSTEM_BUNDLE_ID);
+		state = Bundle.RESOLVED;
+		stopped = new CountDownLatch(0);
+		lastModified = System.currentTimeMillis();
 
-		bundles.put(Long.valueOf(0), getBundle());
+		bundles = new HashMap<>();
+		bundles.put(Long.valueOf(Constants.SYSTEM_BUNDLE_ID), getBundle());
 		last = loader = getClass().getClassLoader();
 		frameworkStartLevel = new FrameworkStartLevelImpl(this);
-		manifest = new Manifest();
+		Manifest manifest = new Manifest();
 		manifest.getMainAttributes()
 			.putValue(Constants.BUNDLE_MANIFESTVERSION, "2");
 		manifest.getMainAttributes()
-			.putValue(Constants.BUNDLE_SYMBOLICNAME, "Mini framework");
+			.putValue(Constants.BUNDLE_SYMBOLICNAME, "Mini Framework");
 		manifest.getMainAttributes()
 			.putValue(Constants.BUNDLE_VERSION, "1.8.0");
-		lastModified = System.currentTimeMillis();
+		headers = new Headers(manifest);
 	}
 
 	public MiniFramework setTracing(Tracing tracing) {
@@ -79,7 +88,12 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	@Override
 	public void init() throws BundleException {
-		state = Bundle.STARTING;
+		if (stopped.getCount() == 0) {
+			properties.setProperty(Constants.FRAMEWORK_UUID, UUID.randomUUID()
+				.toString());
+			state = Bundle.STARTING;
+			stopped = new CountDownLatch(1);
+		}
 	}
 
 	@Override
@@ -89,17 +103,9 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	@Override
 	public FrameworkEvent waitForStop(long timeout) throws InterruptedException {
-		long deadline = System.currentTimeMillis() + timeout;
-
-		while (state != Bundle.UNINSTALLED) {
-			if (timeout != 0) {
-				long wait = deadline - System.currentTimeMillis();
-				if (wait <= 0)
-					return new FrameworkEvent(FrameworkEvent.WAIT_TIMEDOUT, getBundle(), null);
-			}
-			Thread.sleep(100);
-		}
-		return new FrameworkEvent(FrameworkEvent.STOPPED, getBundle(), null);
+		int type = stopped.await(timeout, TimeUnit.MILLISECONDS) ? FrameworkEvent.STOPPED
+			: FrameworkEvent.WAIT_TIMEDOUT;
+		return new FrameworkEvent(type, getBundle(), null);
 	}
 
 	@Override
@@ -114,10 +120,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	@Override
 	public URL getEntry(String path) {
-		if (path.startsWith("/")) {
-			path = path.substring(1);
-		}
-		return loader.getResource(path);
+		return null;
 	}
 
 	@Override
@@ -127,12 +130,12 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	@Override
 	public Dictionary<String, String> getHeaders() {
-		return new Headers(manifest);
+		return headers;
 	}
 
 	@Override
 	public Dictionary<String, String> getHeaders(String locale) {
-		return new Headers(manifest);
+		return getHeaders();
 	}
 
 	@Override
@@ -181,24 +184,25 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	}
 
 	@Override
-	public void start() {
-		start(0);
-	}
-
-	@Override
-	public void start(int options) {
+	public void start() throws BundleException {
+		init();
 		state = Bundle.ACTIVE;
 	}
 
 	@Override
-	public void stop() {
-		stop(0);
+	public void start(int options) throws BundleException {
+		start();
 	}
 
 	@Override
-	public synchronized void stop(int options) {
+	public void stop() throws BundleException {
 		state = Bundle.RESOLVED;
-		notifyAll();
+		stopped.countDown();
+	}
+
+	@Override
+	public void stop(int options) throws BundleException {
+		stop();
 	}
 
 	@Override
@@ -209,14 +213,18 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	@Override
 	public Bundle getBundle(long id) {
 		Long l = Long.valueOf(id);
-		Bundle b = bundles.get(l);
-		return b;
+		synchronized (bundles) {
+			Bundle b = bundles.get(l);
+			return b;
+		}
 	}
 
 	@Override
 	public Bundle[] getBundles() {
-		return bundles.values()
-			.toArray(new Bundle[0]);
+		synchronized (bundles) {
+			return bundles.values()
+				.toArray(new Bundle[0]);
+		}
 	}
 
 	@Override
@@ -246,9 +254,9 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 					URL url = new URL(location);
 				} catch (MalformedURLException e) {
 					throw new BundleException(
-						"For the mini framework, the location must be a proper URL even though this is not required by the specification "
+						"For the Mini Framework, the location must be a proper URL even though this is not required by the specification "
 							+ location,
-						e);
+						BundleException.UNSUPPORTED_OPERATION, e);
 				}
 			}
 
@@ -256,13 +264,18 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 				location = location.substring(1);
 			}
 
-			MiniBundle c = new MiniBundle(this, last, ID.incrementAndGet(), location);
-			bundles.put(Long.valueOf(c.getBundleId()), c);
-			last = c.getClassLoader();
-			lastModified = c.getLastModified();
-			return c;
+			synchronized (bundles) {
+				long id = ID.incrementAndGet();
+				MiniBundle bundle = new MiniBundle(this, last, id, location);
+				bundles.put(Long.valueOf(id), bundle);
+				last = bundle.getClassLoader();
+				lastModified = bundle.getLastModified();
+				return bundle;
+			}
+		} catch (BundleException e) {
+			throw e;
 		} catch (Exception e) {
-			throw new BundleException("Failed to install", e);
+			throw new BundleException("Failed to install", BundleException.READ_ERROR, e);
 		}
 	}
 
@@ -298,11 +311,18 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	@Override
 	public void update() throws BundleException {
-		throw new BundleException("Cannot update mini framework", BundleException.UNSUPPORTED_OPERATION);
+		update(null);
 	}
 
 	@Override
 	public void update(InputStream in) throws BundleException {
+		if (in != null) {
+			try {
+				in.close();
+			} catch (IOException e) {
+				throw new BundleException("Cannot update mini framework", BundleException.UNSUPPORTED_OPERATION, e);
+			}
+		}
 		throw new BundleException("Cannot update mini framework", BundleException.UNSUPPORTED_OPERATION);
 	}
 
@@ -363,7 +383,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	@Override
 	public String toString() {
-		return "0 Mini framework";
+		return "0 Mini Framework";
 	}
 
 	@Override
