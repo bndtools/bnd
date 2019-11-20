@@ -1,5 +1,7 @@
 package aQute.launcher.minifw;
 
+import static aQute.launcher.minifw.Enumerations.enumeration;
+
 import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Enumeration;
@@ -20,7 +22,7 @@ class Headers extends Dictionary<String, String> {
 		})
 		Collection<String> elements = (Collection) manifest.getMainAttributes()
 			.values();
-		return new IteratorEnumeration<>(elements);
+		return enumeration(elements);
 	}
 
 	@Override
@@ -42,7 +44,7 @@ class Headers extends Dictionary<String, String> {
 			.keySet()
 			.stream()
 			.map(Object::toString);
-		return new IteratorEnumeration<>(keys);
+		return enumeration(keys);
 	}
 
 	@Override

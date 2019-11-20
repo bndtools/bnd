@@ -1,5 +1,8 @@
 package aQute.launcher.minifw;
 
+import static aQute.launcher.minifw.Enumerations.enumeration;
+import static java.util.stream.Collectors.toMap;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -17,10 +20,11 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 import java.util.stream.Stream;
 
 import org.osgi.framework.Bundle;
@@ -43,18 +47,18 @@ import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.BundleWiring;
 
 public class MiniBundle implements Bundle, BundleContext, Closeable {
-	private final long					id;
-	private final long					lastModified;
-	private final MiniFramework			fw;
-	private final String				location;
-	private int							state;
-	private final JarFile				jar;
-	private final Manifest				manifest;
-	private TreeMap<String, JarEntry>	entries;
-	private File						jarFile;
-	private final URLClassLoader		loader;
+	private final long						id;
+	private final long						lastModified;
+	private final MiniFramework				fw;
+	private final String					location;
+	private volatile int					state;
+	private final JarFile					jar;
+	private final Headers					headers;
+	private final TreeMap<String, JarEntry>	entries;
+	private final File						jarFile;
+	private final URLClassLoader			loader;
 
-	public MiniBundle(MiniFramework fw, ClassLoader parent, int id, String location) throws Exception {
+	public MiniBundle(MiniFramework fw, ClassLoader parent, long id, String location) throws BundleException {
 		super();
 		this.fw = fw;
 		this.id = id;
@@ -62,18 +66,19 @@ public class MiniBundle implements Bundle, BundleContext, Closeable {
 		state = Bundle.INSTALLED;
 		lastModified = System.currentTimeMillis();
 
-		jarFile = new File(location);
-		loader = new BundleClassLoader(jarFile, parent, getBundle());
-		jar = new JarFile(jarFile);
-		manifest = jar.getManifest();
-		entries = new TreeMap<>();
-		for (Enumeration<JarEntry> e = jar.entries(); e.hasMoreElements();) {
-			JarEntry entry = e.nextElement();
-			if (entry.isDirectory()) {
-				continue;
-			}
-			// fw.trace("entry %s",entry.getName());
-			entries.put(entry.getName(), entry);
+		try {
+			jarFile = new File(location);
+			loader = new BundleClassLoader(jarFile, parent, getBundle());
+			jar = new JarFile(jarFile);
+			headers = new Headers(jar.getManifest());
+			entries = Enumerations.stream(jar.entries())
+				.filter(entry -> !entry.isDirectory())
+				// .peek(entry -> fw.trace("entry %s",entry.getName()))
+				.collect(toMap(JarEntry::getName, Function.identity(), (u, v) -> {
+					throw new IllegalStateException(String.format("Duplicate jar entry %s", u));
+				}, TreeMap::new));
+		} catch (IOException e) {
+			throw new BundleException("Failure to create MiniBundle", BundleException.READ_ERROR, e);
 		}
 	}
 
@@ -107,28 +112,28 @@ public class MiniBundle implements Bundle, BundleContext, Closeable {
 		if (path.startsWith("/")) {
 			path = path.substring(1);
 		}
-		JarEntry entry = getEntries().get(path);
-		if (entry == null) {
-			return null;
-		}
-		return createURL(entry);
+
+		URL entry = Optional.ofNullable(getEntries().get(path))
+			.map(this::createURL)
+			.orElse(null);
+		return entry;
 	}
 
 	@Override
 	public Enumeration<String> getEntryPaths(String path) {
 		fw.trace("### getEntryPaths(%s) %s", path, this);
 		Stream<String> paths = findEntryPaths(path, null, true);
-		return new IteratorEnumeration<>(paths);
+		return enumeration(paths);
 	}
 
 	@Override
 	public Dictionary<String, String> getHeaders() {
-		return new Headers(manifest);
+		return headers;
 	}
 
 	@Override
 	public Dictionary<String, String> getHeaders(String locale) {
-		return new Headers(manifest);
+		return getHeaders();
 	}
 
 	@Override
@@ -146,7 +151,7 @@ public class MiniBundle implements Bundle, BundleContext, Closeable {
 		fw.trace("### findEntries(%s, %s, %s) %s", path, filePattern, recurse, this);
 		Stream<URL> entries = findEntryPaths(path, filePattern, recurse).map(name -> getEntries().get(name))
 			.map(this::createURL);
-		return new IteratorEnumeration<>(entries);
+		return enumeration(entries);
 	}
 
 	private Stream<String> findEntryPaths(String path, String filePattern, boolean recurse) {
@@ -210,6 +215,11 @@ public class MiniBundle implements Bundle, BundleContext, Closeable {
 						public String getContentType() {
 							return "application/octet-stream";
 						}
+
+						@Override
+						public long getLastModified() {
+							return jarEntry.getTime();
+						}
 					};
 				}
 			});
@@ -240,14 +250,18 @@ public class MiniBundle implements Bundle, BundleContext, Closeable {
 
 	@Override
 	public String getSymbolicName() {
-		return getHeaders().get(Constants.BUNDLE_SYMBOLICNAME)
-			.trim();
+		return Optional.ofNullable(getHeaders().get(Constants.BUNDLE_SYMBOLICNAME))
+			.map(bsn -> {
+				int n = bsn.indexOf(';');
+				return (n > 0) ? bsn.substring(0, n) : bsn;
+			})
+			.map(String::trim)
+			.orElse(null);
 	}
 
 	@Override
 	public Version getVersion() {
-		String v = getHeaders().get(Constants.BUNDLE_VERSION);
-		return Version.parseVersion(v);
+		return Version.parseVersion(getHeaders().get(Constants.BUNDLE_VERSION));
 	}
 
 	@Override
@@ -282,12 +296,20 @@ public class MiniBundle implements Bundle, BundleContext, Closeable {
 
 	@Override
 	public void update() throws BundleException {
-		throw new UnsupportedOperationException();
+		update(null);
 	}
 
 	@Override
 	public void update(InputStream in) throws BundleException {
-		throw new UnsupportedOperationException();
+		if (in != null) {
+			try {
+				in.close();
+			} catch (IOException e) {
+				throw new BundleException("Cannot update bundle in mini framework",
+					BundleException.UNSUPPORTED_OPERATION, e);
+			}
+		}
+		throw new BundleException("Cannot update bundle in mini framework", BundleException.UNSUPPORTED_OPERATION);
 	}
 
 	@Override
@@ -474,5 +496,4 @@ public class MiniBundle implements Bundle, BundleContext, Closeable {
 		fw.trace("### getResources(%s) %s", name, this);
 		return loader.getResources(name);
 	}
-
 }
