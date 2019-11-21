@@ -1,11 +1,14 @@
 package aQute.lib.exceptions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 
@@ -197,5 +200,47 @@ public class ExceptionsTest {
 
 	private void runnableThrows() throws Exception {
 		throw new Exception("hi");
+	}
+
+	@Test
+	public void testUnchecked() {
+		AtomicBoolean called = new AtomicBoolean(false);
+		assertThatCode(() -> {
+			Exceptions.unchecked(() -> {
+				called.set(true);
+				return; // Runnable
+			});
+		}).doesNotThrowAnyException();
+		assertThat(called).isTrue();
+
+		called.set(false);
+		AtomicReference<String> result = new AtomicReference<>(null);
+		assertThatCode(() -> {
+			String v = Exceptions.unchecked(() -> {
+				called.set(true);
+				return "value"; // Callable
+			});
+			result.set(v);
+		}).doesNotThrowAnyException();
+		assertThat(called).isTrue();
+		assertThat(result).hasValue("value");
+
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> Exceptions.unchecked(() -> runnableThrows()))
+			.withMessage("hi");
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> Exceptions.unchecked(this::runnableThrows))
+			.withMessage("hi");
+
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> {
+			String v = Exceptions.unchecked(() -> callableThrows());
+		})
+			.withMessage("hiho");
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> {
+			String v = Exceptions.unchecked(this::callableThrows);
+		})
+			.withMessage("hiho");
+	}
+
+	private String callableThrows() throws Exception {
+		throw new Exception("hiho");
 	}
 }
