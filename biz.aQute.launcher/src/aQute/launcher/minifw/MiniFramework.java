@@ -1,5 +1,6 @@
 package aQute.launcher.minifw;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +11,7 @@ import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -42,7 +44,7 @@ import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.framework.wiring.FrameworkWiring;
 
-public class MiniFramework implements Framework, BundleContext {
+public class MiniFramework implements Framework, BundleContext, Closeable {
 	private final ClassLoader				loader;
 	private final Properties				properties;
 	private final Map<Long, Bundle>			bundles;
@@ -63,7 +65,7 @@ public class MiniFramework implements Framework, BundleContext {
 		stopped = new CountDownLatch(0);
 		lastModified = System.currentTimeMillis();
 
-		bundles = new HashMap<>();
+		bundles = new LinkedHashMap<>();
 		bundles.put(Long.valueOf(Constants.SYSTEM_BUNDLE_ID), getBundle());
 		last = loader = getClass().getClassLoader();
 		frameworkStartLevel = new FrameworkStartLevelImpl(this);
@@ -87,6 +89,18 @@ public class MiniFramework implements Framework, BundleContext {
 	}
 
 	@Override
+	public void close() throws IOException {
+		synchronized (bundles) {
+			for (Bundle bundle : bundles.values()) {
+				if (bundle instanceof MiniBundle) {
+					((MiniBundle) bundle).close();
+				}
+			}
+			bundles.clear();
+		}
+	}
+
+	@Override
 	public void init() throws BundleException {
 		if (stopped.getCount() == 0) {
 			properties.setProperty(Constants.FRAMEWORK_UUID, UUID.randomUUID()
@@ -103,6 +117,10 @@ public class MiniFramework implements Framework, BundleContext {
 
 	@Override
 	public FrameworkEvent waitForStop(long timeout) throws InterruptedException {
+		if (timeout <= 0) {
+			stopped.await();
+			return new FrameworkEvent(FrameworkEvent.STOPPED, getBundle(), null);
+		}
 		int type = stopped.await(timeout, TimeUnit.MILLISECONDS) ? FrameworkEvent.STOPPED
 			: FrameworkEvent.WAIT_TIMEDOUT;
 		return new FrameworkEvent(type, getBundle(), null);
@@ -170,7 +188,7 @@ public class MiniFramework implements Framework, BundleContext {
 
 	@Override
 	public Version getVersion() {
-		return new Version("1.0");
+		return new Version("1.8.0");
 	}
 
 	@Override
