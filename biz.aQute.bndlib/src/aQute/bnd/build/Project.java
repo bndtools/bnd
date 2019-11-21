@@ -43,8 +43,6 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.jar.Attributes;
-import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
@@ -100,7 +98,6 @@ import aQute.bnd.service.release.ReleaseBracketingPlugin;
 import aQute.bnd.service.specifications.RunSpecification;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
-import aQute.lib.collections.ExtList;
 import aQute.lib.collections.Iterables;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.ConsumerWithException;
@@ -1931,16 +1928,16 @@ public class Project extends Processor {
 
 			for (Map.Entry<File, Resource> ee : exports.entrySet()) {
 				File outputFile = ee.getKey();
-					File actual = write(f -> {
-						IO.copy(ee.getValue()
-							.openInputStream(), f);
-					}, outputFile);
+				File actual = write(f -> {
+					IO.copy(ee.getValue()
+						.openInputStream(), f);
+				}, outputFile);
 
-					if (actual != null) {
-						buildFilesSet.add(actual);
-					} else {
-						error("Could not save %s", ee.getKey());
-					}
+				if (actual != null) {
+					buildFilesSet.add(actual);
+				} else {
+					error("Could not save %s", ee.getKey());
+				}
 			}
 
 			if (!isOk()) {
@@ -2249,7 +2246,7 @@ public class Project extends Processor {
 	 * since the extension is defined by the exporter)
 	 *
 	 * @param type an exporter type like `bnd.executablejar` or null as default
-	 *            `bnd.pack`, the original export function
+	 *            `bnd.executablejar.pack`, the original export function
 	 * @param options parameters to the exporters
 	 * @return and entry with the name and resource for the export
 	 * @throws Exception
@@ -2997,68 +2994,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public Jar pack(String profile) throws Exception {
-		List<String> ignore = new ExtList<>(BUNDLE_SPECIFIC_HEADERS);
-		try (ProjectBuilder pb = getBuilder(null)) {
-			List<Builder> subBuilders = pb.getSubBuilders();
-
-			if (subBuilders.size() != 1) {
-				error("Project has multiple bnd files, please select one of the bnd files").header(EXPORT)
-					.context(profile);
-				return null;
-			}
-
-			try (Builder b = subBuilders.iterator()
-				.next()) {
-
-				ignore.remove(BUNDLE_SYMBOLICNAME);
-				ignore.remove(BUNDLE_VERSION);
-				ignore.add(SERVICE_COMPONENT);
-
-				try (ProjectLauncher launcher = getProjectLauncher()) {
-					launcher.getRunProperties()
-						.put("profile", profile); // TODO
-													// remove
-					launcher.getRunProperties()
-						.put(PROFILE, profile);
-					Jar jar = launcher.executable();
-					Manifest m = jar.getManifest();
-					Attributes main = m.getMainAttributes();
-					for (String key : this) {
-						if (Character.isUpperCase(key.charAt(0)) && !ignore.contains(key)) {
-							String value = getProperty(key);
-							if (value == null)
-								continue;
-							Name name = new Name(key);
-							String trimmed = value.trim();
-							if (trimmed.isEmpty())
-								main.remove(name);
-							else if (EMPTY_HEADER.equals(trimmed))
-								main.put(name, "");
-							else
-								main.put(name, value);
-						}
-					}
-
-					if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
-						main.putValue(BUNDLE_SYMBOLICNAME, b.getBsn());
-
-					if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
-						main.putValue(BUNDLE_SYMBOLICNAME, getName());
-
-					if (main.getValue(BUNDLE_VERSION) == null) {
-						main.putValue(BUNDLE_VERSION, Version.LOWEST.toString());
-						warning("No version set, uses 0.0.0");
-					}
-
-					jar.setManifest(m);
-					jar.calcChecksums(new String[] {
-						"SHA1", "MD5"
-					});
-					launcher.removeClose(jar);
-					return jar;
-				}
-			}
-		}
+		return ExecutableJarExporter.pack(this, profile);
 	}
 
 	/**
@@ -3607,9 +3543,4 @@ public class Project extends Processor {
 	public boolean isStandalone() {
 		return getWorkspace().getLayout() == WorkspaceLayout.STANDALONE;
 	}
-
-	public boolean isRun() {
-		return false;
-	}
-
 }

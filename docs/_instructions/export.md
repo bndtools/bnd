@@ -29,7 +29,7 @@ The `-exporttype` can be used to set some default attributes for a specific type
 The Exporters use a plugin mechanism and therefore the list is not closed. The following exporters are supported by bnd out of the box:
 
 * `bnd.executablejar.pack` – Exports a JAR file using the launcher from the `-runpath` or the default if no launcher is specified.
-* `bnd.executablejar` – Similar to the previous but does not support profiles
+* `bnd.executablejar` – Similar to the previous but does not support profiles, has no automatic bsn assigned, and entries are not signed. The reason there are two types for the more or less the same format with subtle differences is for backward compatibility.
 * `bnd.runbundles` – A JAR with the runbundles
 * `osgi.subsystem.application` – Export into an application subsystem
 * `osgi.subsystem.feature` – Export into a feature subsystem 

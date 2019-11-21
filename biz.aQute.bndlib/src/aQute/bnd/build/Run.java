@@ -49,9 +49,4 @@ public class Run extends Project {
 	public String getName() {
 		return getPropertiesFile().getName();
 	}
-
-	@Override
-	public boolean isRun() {
-		return true;
-	}
 }
