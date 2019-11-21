@@ -5,9 +5,26 @@ import static java.util.Objects.requireNonNull;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.StringJoiner;
+import java.util.concurrent.Callable;
 
 public class Exceptions {
 	private Exceptions() {}
+
+	public static <V> V unchecked(Callable<? extends V> callable) {
+		try {
+			return callable.call();
+		} catch (Exception t) {
+			throw duck(t);
+		}
+	}
+
+	public static void unchecked(RunnableWithException runnable) {
+		try {
+			runnable.run();
+		} catch (Exception t) {
+			throw duck(t);
+		}
+	}
 
 	public static RuntimeException duck(Throwable t) {
 		Exceptions.throwsUnchecked(t);
