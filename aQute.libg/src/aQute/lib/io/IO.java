@@ -8,6 +8,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,6 +32,7 @@ import java.nio.channels.FileChannel.MapMode;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
@@ -52,6 +54,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import aQute.lib.exceptions.ConsumerWithException;
 import aQute.lib.stringrover.StringRover;
 import aQute.libg.glob.Glob;
 
@@ -872,7 +875,11 @@ public class IO {
 	 * @throws IOException if the rename operation fails
 	 */
 	public static Path rename(Path from, Path to) throws IOException {
-		return Files.move(from, to, StandardCopyOption.REPLACE_EXISTING);
+		try {
+			return Files.move(from, to, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+		} catch (AtomicMoveNotSupportedException e) {
+			return Files.move(from, to, StandardCopyOption.REPLACE_EXISTING);
+		}
 	}
 
 	public static File mkdirs(File dir) throws IOException {
@@ -981,6 +988,37 @@ public class IO {
 	public static void store(Object o, Writer w) throws IOException {
 		if (o != null) {
 			w.write(o.toString());
+		}
+	}
+
+	/**
+	 * Store output in a file but ensure that the content is updated atomically.
+	 * To ensure this, the file is first copied to a temporary file in the same
+	 * directory as the target. It is then renamed which will first attempt an
+	 * atomic move but will always replace.
+	 *
+	 * @param store the function provide the output
+	 * @param target the file to store it, parent directories will be created if
+	 *            necessary
+	 */
+	public static void store(ConsumerWithException<OutputStream> store, File target) throws Exception {
+
+		target.getParentFile()
+			.mkdirs();
+
+		File tmp = createTempFile(target.getParentFile(), target.getName(), ".tmp");
+		try {
+
+			try (FileOutputStream outputStream = new FileOutputStream(tmp)) {
+				store.accept(outputStream);
+			}
+			rename(tmp, target);
+
+			assert target.isFile();
+
+		} finally {
+			if (tmp.exists())
+				tmp.delete();
 		}
 	}
 
