@@ -1,7 +1,6 @@
 -include: bndtools.shared.bndrun
 
 -runbundles: \
-	${crossplatform.bundles},\
 	org.eclipse.core.filesystem.win32.x86,\
 	org.eclipse.core.resources.win32.x86,\
 	org.eclipse.equinox.security.win32.x86,\

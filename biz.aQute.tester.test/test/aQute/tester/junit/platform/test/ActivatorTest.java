@@ -360,7 +360,7 @@ public class ActivatorTest extends AbstractActivatorTest {
 			fail("Expecting method:\n%s\nto have failed", methodTest);
 		} else {
 			assertThat(failure.trace).as("trace")
-				.startsWith("org.junit.platform.commons.JUnitException: Could not find method: unknownMethod");
+				.startsWith("org.junit.platform.commons.JUnitException: Could not find factory method [unknownMethod]");
 		}
 	}
 

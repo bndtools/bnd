@@ -14,7 +14,7 @@ public class JpmPreferences {
 	public static final int			PREF_BROWSER_PLATFORM_DEFAULT	= 3;
 
 	public static final String[]	PREF_BROWSER_SELECTION_CHOICES	= new String[] {
-		"Internal WebKit", "Internal Mozilla (requires XULRunner)", "External", "Platform Default"
+		"Internal WebKit", "Internal Mozilla (Depcreated, will be WebKit instead)", "External", "Platform Default"
 	};
 
 	private final IPreferenceStore	store;

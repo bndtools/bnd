@@ -1,6 +1,6 @@
 -include: bndtools.shared.bndrun
 
--runbundles: ${crossplatform.bundles},\
+-runbundles: \
 	org.eclipse.swt.cocoa.macosx.x86_64,\
 	org.eclipse.e4.ui.workbench.renderers.swt.cocoa,\
 	org.eclipse.equinox.security.macosx,\
