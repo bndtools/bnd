@@ -213,9 +213,6 @@ public interface Constants {
 	String				REPRODUCIBLE								= "-reproducible";
 
 	String				RESOLVE										= "-resolve";
-	String				RESOLVE_MANUAL								= "manual";
-	String				RESOLVE_AUTO								= "auto";
-	String				RESOLVE_ONLAUNCH							= "onlaunch";
 
 	String				RUNNOREFERENCES								= "-runnoreferences";
 	String				RUNOPTIONS									= "-runoptions";

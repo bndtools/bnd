@@ -59,7 +59,7 @@ public interface ResolutionInstructions {
 		/**
 		 * Resolve is done manually. This is the default
 		 */
-		@SyntaxAnnotation(lead = "Resolve is manyally with the Resolve button")
+		@SyntaxAnnotation(lead = "Resolve is manually with the Resolve button")
 		manual,
 		/**
 		 * Run the resolver automatically yon save

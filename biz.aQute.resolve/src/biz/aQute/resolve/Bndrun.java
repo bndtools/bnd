@@ -26,6 +26,8 @@ import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
 
 /**
+ * This is a resolving version of the Run class. The name of this class is known
+ * in the super class so do not rename it or change {@link Run}
  */
 public class Bndrun extends Run {
 	Logger																		logger					= LoggerFactory

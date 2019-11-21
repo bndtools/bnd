@@ -2,9 +2,6 @@ package biz.aQute.resolve;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -406,22 +403,16 @@ public class RunResolution {
 		assert isOK() : "can only be called for a real resolution";
 
 		try {
-			File f = getCacheFile(project);
-
 			CacheDTO dto = new CacheDTO();
 			dto.checksum = project.getChecksum();
 			dto.runbundles = getRunBundles();
 
-			Path tmp = Files.createTempFile(f.getParentFile()
-				.toPath(), project.getName(), ".json");
-
-			JSON_CODEC.enc()
-				.to(tmp.toFile())
-				.put(dto)
-				.close();
-
-			Files.move(tmp, f.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-
+			IO.store(ff -> {
+				JSON_CODEC.enc()
+					.to(ff)
+					.put(dto)
+					.close();
+			}, getCacheFile(project));
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -442,14 +433,17 @@ public class RunResolution {
 
 			if (f.isFile()) {
 				try {
+
 					CacheDTO dto = JSON_CODEC.dec()
 						.from(f)
 						.get(CacheDTO.class);
+
 					if (dto.checksum.equals(project.getChecksum())) {
 						logger.info("read cache for {}", project);
 						return Ok.result(HeaderClause.toParameters(dto.runbundles)
 							.toString());
 					}
+
 				} catch (Exception e) {
 					logger.warn("{} getRunBundles  exception in reading cache {}, ignoring", project, e);
 					IO.delete(f);
