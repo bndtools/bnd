@@ -6,16 +6,18 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
 
 public class Instructions implements Map<Instruction, Attrs> {
@@ -283,9 +285,31 @@ public class Instructions implements Map<Instruction, Attrs> {
 	 * @param base The directory to list files from.
 	 * @return The map that links files to attributes
 	 */
+	@Deprecated
 	public Map<File, Attrs> select(File base) {
+		return select(base, Function.identity(), null).entrySet()
+			.stream()
+			.collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue()
+				.get(0)));
+	}
 
-		Map<File, Attrs> result = new HashMap<>();
+	/**
+	 * Turn this Instructions into a map of File -> Attrs. You can specify a
+	 * base directory, which will match all files in that directory against the
+	 * specification or you can use literal instructions to get files from
+	 * anywhere.
+	 * <p>
+	 * A mapping function can be provided to rename literal names. This was
+	 * added to map '.' and '' to 'bnd.bnd'. However, this can be generally
+	 * useful.
+	 *
+	 * @param base The directory to list files from.
+	 * @param mapper Maps the literal names.
+	 * @return The map that links files to attributes
+	 */
+	public Map<File, List<Attrs>> select(File base, Function<String, String> mapper, Set<Instruction> missing) {
+
+		MultiMap<File, Attrs> result = new MultiMap<>();
 
 		//
 		// We allow literals to be specified so that we can actually include
@@ -297,10 +321,16 @@ public class Instructions implements Map<Instruction, Attrs> {
 				.isLiteral()
 				&& !instr.getKey()
 					.isNegated()) {
-				File f = IO.getFile(base, instr.getKey()
+				String name = mapper.apply(instr.getKey()
 					.getLiteral());
+				if (name == null)
+					continue;
+
+				File f = IO.getFile(base, name);
 				if (f.isFile())
-					result.put(f, instr.getValue());
+					result.add(f, instr.getValue());
+				else if (missing != null)
+					missing.add(instr.getKey());
 			}
 		}
 
@@ -311,12 +341,16 @@ public class Instructions implements Map<Instruction, Attrs> {
 		if (base != null) {
 			nextFile: for (File f : base.listFiles()) {
 				for (Entry<Instruction, Attrs> instr : entrySet()) {
+					if (instr.getKey()
+						.isLiteral())
+						continue;
+
 					String name = f.getName();
 					if (instr.getKey()
 						.matches(name)) {
 						if (!instr.getKey()
 							.isNegated())
-							result.put(f, instr.getValue());
+							result.add(f, instr.getValue());
 						continue nextFile;
 					}
 				}

@@ -3,13 +3,12 @@ package aQute.lib.collections;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MultiMap<K, V> extends HashMap<K, List<V>> implements Map<K, List<V>> {
+public class MultiMap<K, V> extends LinkedHashMap<K, List<V>> implements Map<K, List<V>> {
 	private static final long	serialVersionUID	= 1L;
 	private final boolean		noduplicates;
 	private final Class<?>		keyClass;

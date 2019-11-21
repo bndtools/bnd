@@ -22,6 +22,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,6 +46,7 @@ import aQute.bnd.build.ProjectTester;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Resource;
@@ -79,6 +81,7 @@ public class AlsoLauncherTest {
 		}
 		IO.delete(new File(wsRoot, "cnf/cache"));
 		workspace = new Workspace(wsRoot);
+		workspace.setProperty(Constants.PROFILE, "prod");
 		project = workspace.getProject("demo");
 		project.setTrace(true);
 		assertTrue(project.check());
@@ -90,6 +93,124 @@ public class AlsoLauncherTest {
 		IO.close(project);
 		IO.close(workspace);
 		System.setProperties(prior);
+	}
+
+	@Test
+	public void testExportWithIncludedBundlesInBndrun() throws Exception {
+		project.setProperty("-resourceonly", "true");
+		project.setProperty("-includeresource", "hello;literal=true");
+
+		project.setProperty("-export", "a.bndrun;output=a.bndrun");
+		IO.store("-includeresource: generated/demo.jar", project.getFile("a.bndrun"));
+		File file = project.getFile("generated/demo.jar");
+		file.delete();
+		assertThat(file).doesNotExist();
+
+		File[] build = project.build();
+		assertThat(project.check()).isTrue();
+		assertThat(build).hasSize(2);
+		assertThat(build[0]).isEqualTo(file);
+
+		File run = project.getFile("generated/a.bndrun.jar");
+		assertThat(build[1]).isEqualTo(run);
+
+	}
+
+	@Test
+	public void testExportOptions() throws Exception {
+		project.setProperty("-resourceonly", "true");
+		project.setProperty("-includeresource", "hello;literal=true");
+
+		project.setProperty("-export", //
+			"x.bndrun, " //
+				+ "x.bndrun;duplicate=true," //
+				+ "x.bndrun;name=aa.jar, " //
+				+ "x.bndrun;name=bsn.jar;bsn=foo.bar;version=1.2.3, " //
+				+ "x.bndrun;type=bnd.runbundles;name=runbundles.jar," //
+				+ "x.bndrun;name=foo.jar;Foo=aaa," //
+				+ "export-options.bndrun;-profile=debug;type=bnd.executablejar.pack," //
+				+ "export-options.bndrun;type=bnd.executablejar.pack;name=export-options-prod.jar");
+
+		project.setProperty(Constants.FIXUPMESSAGES, "Duplicate file in -export;is:=warning");
+
+		File[] build = project.build();
+
+
+		assertThat(project.check("Duplicate file in -export")).isTrue();
+		assertThat(build).hasSize(8);
+
+		assertThat(build[0].getName()).isEqualTo("demo.jar");
+		assertThat(build[1].getName()).isEqualTo("x.bndrun.jar");
+		assertThat(build[2].getName()).isEqualTo("aa.jar");
+		assertThat(build[3].getName()).isEqualTo("bsn.jar");
+		assertThat(build[4].getName()).isEqualTo("runbundles.jar");
+		assertThat(build[5].getName()).isEqualTo("foo.jar");
+		assertThat(build[6].getName()).isEqualTo("export-options.jar");
+		assertThat(build[7].getName()).isEqualTo("export-options-prod.jar");
+
+		File demo = project.getFile("generated/demo.jar");
+		Domain domain = Domain.domain(demo);
+		assertThat(domain.get(Constants.BUNDLE_SYMBOLICNAME)).isEqualTo("demo");
+
+		File runbundles = project.getFile("generated/runbundles.jar");
+		domain = Domain.domain(runbundles);
+		assertThat(domain).isNull();
+
+		File bsn = project.getFile("generated/bsn.jar");
+		domain = Domain.domain(bsn);
+		assertThat(domain.get(Constants.BUNDLE_SYMBOLICNAME)).isEqualTo("foo.bar");
+		assertThat(domain.get(Constants.BUNDLE_VERSION)).isEqualTo("1.2.3");
+
+		File withFoo = project.getFile("generated/foo.jar");
+		domain = Domain.domain(withFoo);
+		assertThat(domain.get("Foo")).isEqualTo("aaa");
+
+		File profile = project.getFile("generated/export-options.jar");
+		domain = Domain.domain(profile);
+		assertThat(domain.get("Bar")
+			.trim()).isEqualTo("DEBUG");
+
+		File profileProd = project.getFile("generated/export-options-prod.jar");
+		domain = Domain.domain(profileProd);
+		assertThat(domain.get("Bar")
+			.trim()).isEqualTo("PROD");
+
+		File run = project.getFile("generated/x.bndrun.jar");
+		assertThat(build[1]).isEqualTo(run);
+
+	}
+
+	@Test
+	public void testSelfExportError() throws Exception {
+		project.setProperty("-resourceonly", "true");
+		project.setProperty("-includeresource", "hello;literal=true");
+
+		project.setProperty("-export", //
+			"bnd.bnd");
+
+		File[] build = project.build();
+
+		assertThat(project.check("Cannot export the same file that contains the -export instruction")).isTrue();
+	}
+
+	@Test
+	public void testExportWithRunKeep() throws Exception {
+		project.setProperty("-runkeep", "true");
+		Entry<String, Resource> export = project.export("bnd.executablejar", null);
+		assertThat(project.check()).isTrue();
+		assertThat(export).isNotNull();
+
+		try (Jar jar = new Jar(".", export.getValue()
+			.openInputStream())) {
+			Resource resource = jar.getResource("launcher.properties");
+			assertThat(resource).isNotNull();
+
+			Properties p = new Properties();
+			p.load(resource.openInputStream());
+
+			assertThat(p.getProperty("launch.keep")).isEqualTo("true");
+
+		}
 	}
 
 	@Test
@@ -317,6 +438,7 @@ public class AlsoLauncherTest {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Test
 	public void testPackagerDifference3() throws Exception {
 		// Test project with export
@@ -336,6 +458,7 @@ public class AlsoLauncherTest {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Test
 	public void testPackagerDifference4() throws Exception {
 		// Test file with export
@@ -502,6 +625,13 @@ public class AlsoLauncherTest {
 	@Test
 	public void testCleanup() throws Exception {
 		File target = project.getTarget();
+
+		for (File f : target.listFiles()) {
+			if (f.getName()
+				.startsWith("launch"))
+				f.delete();
+		}
+
 		assertNoProperties(target);
 		try (ProjectLauncher l = project.getProjectLauncher()) {
 			l.setTrace(true);

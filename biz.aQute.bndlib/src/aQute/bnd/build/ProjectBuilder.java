@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Formatter;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -35,6 +37,7 @@ import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.diff.Diff;
@@ -614,19 +617,99 @@ public class ProjectBuilder extends Builder {
 	public List<Run> getExportedRuns() throws Exception {
 		Instructions runspec = new Instructions(getProperty(EXPORT));
 		List<Run> runs = new ArrayList<>();
+		Set<Instruction> missing = new LinkedHashSet<>();
 
-		Map<File, Attrs> files = runspec.select(getBase());
+		Map<File, List<Attrs>> files = runspec.select(getBase(), null, missing);
 
-		for (Entry<File, Attrs> e : files.entrySet()) {
-			Run run = new Run(project.getWorkspace(), getBase(), e.getKey());
-			for (Entry<String, String> ee : e.getValue()
-				.entrySet()) {
-				run.setProperty(ee.getKey(), ee.getValue());
+		for (Entry<File, List<Attrs>> e : files.entrySet()) {
+			for (Attrs attrs : e.getValue()) {
+				Run run = new Run(project.getWorkspace(), getBase(), e.getKey());
+				for (Entry<String, String> ee : attrs.entrySet()) {
+					run.setProperty(ee.getKey(), ee.getValue());
+				}
+				runs.add(run);
 			}
-			runs.add(run);
 		}
 
 		return runs;
+	}
+
+	Map<File, Resource> doExports(Map<File, List<Attrs>> entries) {
+		Map<File, Resource> result = new LinkedHashMap<>();
+
+		for (Entry<File, List<Attrs>> e : entries.entrySet()) {
+
+			for (Attrs attrs : e.getValue()) {
+
+				File file = e.getKey();
+				try {
+
+					Run run = Run.createRun(getProject().getWorkspace(), file);
+
+					//
+					// History made it that we had an -export instruction and
+					// somehow
+					// later export functions were added using the exporters
+					// that
+					// were not exactly aligned. I think we also had some
+					// separate
+					// function
+					// in bndtools.
+					// The code is now reconciled but we need to support the old
+					// mode of the -export that had some quirks in naming. If no
+					// options are given for the type of exporter or the name
+					// then we assume it must be backward compatible. Otherwise
+					// the -export follows the export function with the
+					// exporters.
+					//
+
+					boolean backwardCompatible = !attrs.containsKey(Constants.EXPORT_TYPE)
+						&& !attrs.containsKey(Constants.EXPORT_NAME);
+
+					String name = run.getName();
+					if (backwardCompatible) {
+
+						if (run.getProperty(BUNDLE_SYMBOLICNAME) == null)
+							run.setProperty(BUNDLE_SYMBOLICNAME, getBsn() + ".run");
+
+						attrs.put(Constants.EXPORT_NAME, name + Constants.DEFAULT_JAR_EXTENSION);
+					}
+					if (attrs.containsKey(Constants.EXPORT_BSN)) {
+						run.setProperty(BUNDLE_SYMBOLICNAME, attrs.get(Constants.EXPORT_BSN));
+					}
+					if (attrs.containsKey(Constants.EXPORT_VERSION)) {
+						run.setProperty(BUNDLE_VERSION, attrs.get(Constants.EXPORT_VERSION));
+					}
+
+					for (Entry<String, String> ee : attrs
+						.entrySet()) {
+						run.setProperty(ee.getKey(), ee.getValue());
+					}
+
+					Entry<String, Resource> export = run.export(null, attrs);
+					getInfo(run);
+					if (isOk()) {
+						File outputFile;
+						if (backwardCompatible) {
+							outputFile = project.getOutputFile(name, run.getBundleVersion());
+						} else {
+							name = attrs.getOrDefault(Constants.EXPORT_NAME, export.getKey());
+							outputFile = getFile(project.getTarget(), name);
+						}
+						Resource put = result.put(outputFile, export.getValue());
+						if (put != null) {
+							error("Duplicate file in -export  %s. Input=%s, Attrs=%s, previous resource %s",
+								outputFile.getName(), file.getName(), attrs, put);
+						}
+					}
+
+				} catch (Exception ee) {
+					exception(ee, "Failed to export %s, %s", file, ee.getMessage());
+				}
+			}
+		}
+
+		return result;
 	}
 
 	/**
@@ -639,23 +722,7 @@ public class ProjectBuilder extends Builder {
 		project.importedPackages.clear();
 		project.containedPackages.clear();
 
-		Jar[] jars = super.builds();
-
-		if (isOk()) {
-			for (Run export : getExportedRuns()) {
-				addClose(export);
-				if (export.getProperty(BUNDLE_SYMBOLICNAME) == null) {
-					export.setProperty(BUNDLE_SYMBOLICNAME, getBsn() + ".run");
-				}
-				Jar pack = export.pack(getProperty(PROFILE));
-				getInfo(export);
-				if (pack != null) {
-					jars = concat(Jar.class, jars, pack);
-					addClose(pack);
-				}
-			}
-		}
-		return jars;
+		return super.builds();
 	}
 
 	/**
@@ -751,4 +818,5 @@ public class ProjectBuilder extends Builder {
 	public boolean isInteractive() {
 		return getProject().isInteractive();
 	}
+
 }

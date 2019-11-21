@@ -49,5 +49,4 @@ public class Run extends Project {
 	public String getName() {
 		return getPropertiesFile().getName();
 	}
-
 }

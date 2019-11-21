@@ -314,6 +314,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		Parameters ir = getProject().getIncludeResource();
 		if (!ir.isEmpty()) {
 			try (Builder b = new Builder()) {
+				b.setBase(getProject().getBase());
 				b.setIncludeResource(ir.toString());
 				b.setProperty(Constants.RESOURCEONLY, "true");
 				b.build();

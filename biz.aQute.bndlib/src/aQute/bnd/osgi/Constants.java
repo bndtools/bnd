@@ -135,6 +135,12 @@ public interface Constants {
 	String				EEPROFILE									= "-eeprofile";
 	String				EXECUTABLE									= "-executable";
 	String				EXPORT										= "-export";
+	String				EXPORT_TYPE									= "type";
+	String				EXPORT_BSN									= "bsn";
+	String				EXPORT_NAME									= "name";
+	String				EXPORT_VERSION								= "version";
+
+
 	String				EXPORTTYPE									= "-exporttype";
 	String				EXPORT_APIGUARDIAN							= "-export-apiguardian";
 	String				FAIL_OK										= "-failok";
@@ -573,5 +579,7 @@ public interface Constants {
 	String				DEBUG										= "-debug";
 	@Deprecated
 	String				EXPERIMENTS									= "-experiments";
+
+
 
 }

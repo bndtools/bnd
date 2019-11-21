@@ -42,8 +42,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.jar.Attributes;
-import java.util.jar.Attributes.Name;
+import java.util.function.Function;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
@@ -99,7 +98,6 @@ import aQute.bnd.service.release.ReleaseBracketingPlugin;
 import aQute.bnd.service.specifications.RunSpecification;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
-import aQute.lib.collections.ExtList;
 import aQute.lib.collections.Iterables;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.ConsumerWithException;
@@ -1872,6 +1870,7 @@ public class Project extends Processor {
 			if (underTest)
 				builder.setProperty(Constants.UNDERTEST, "true");
 			Jar jars[] = builder.builds();
+
 			getInfo(builder);
 
 			if (isPedantic() && !unreferencedClasspathEntries.isEmpty()) {
@@ -1882,27 +1881,75 @@ public class Project extends Processor {
 				return null;
 			}
 
-			Set<File> builtFiles = Create.set();
+			//
+			// Save the JARs
+			//
+
+			Set<File> buildFilesSet = Create.set();
 			long lastModified = 0L;
 			for (Jar jar : jars) {
 				File file = saveBuild(jar);
 				if (file == null) {
-					getInfo(builder);
 					error("Could not save %s", jar.getName());
-					return null;
+				} else {
+					buildFilesSet.add(file);
+					if (lastModified < jar.lastModified()) {
+						lastModified = jar.lastModified();
+					}
 				}
-				builtFiles.add(file);
-				if (lastModified < jar.lastModified()) {
-					lastModified = jar.lastModified();
+			}
+
+			if (!isOk())
+				return null;
+
+			//
+			// Handle the exports
+			//
+
+			Instructions runspec = new Instructions(getProperty(EXPORT));
+			Set<Instruction> missing = new LinkedHashSet<>();
+
+			Map<File, List<Attrs>> selectedRunFiles = runspec.select(getBase(), Function.identity(), missing);
+
+			if (!missing.isEmpty()) {
+				// this is a new error :-( so make it a warning
+				warning("-export entries %s could not be found", missing);
+			}
+			if (selectedRunFiles.containsKey(getPropertiesFile())) {
+				error("Cannot export the same file that contains the -export instruction %s", getPropertiesFile());
+				return null;
+			}
+
+			Map<File, Resource> exports = builder.doExports(selectedRunFiles);
+			getInfo(builder);
+
+			if (!isOk())
+				return null;
+
+			for (Map.Entry<File, Resource> ee : exports.entrySet()) {
+				File outputFile = ee.getKey();
+				File actual = write(f -> {
+					IO.copy(ee.getValue()
+						.openInputStream(), f);
+				}, outputFile);
+
+				if (actual != null) {
+					buildFilesSet.add(actual);
+				} else {
+					error("Could not save %s", ee.getKey());
 				}
+			}
+
+			if (!isOk()) {
+				return null;
 			}
 
 			boolean bfsWrite = !bfs.exists() || (lastModified > bfs.lastModified());
 			if (buildfiles != null) {
 				Set<File> removed = Create.set(buildfiles);
-				if (!removed.equals(builtFiles)) {
+				if (!removed.equals(buildFilesSet)) {
 					bfsWrite = true;
-					removed.removeAll(builtFiles);
+					removed.removeAll(buildFilesSet);
 					for (File remove : removed) {
 						IO.delete(remove);
 						getWorkspace().changedFile(remove);
@@ -1913,7 +1960,7 @@ public class Project extends Processor {
 			// so we can get them later even in another process
 			if (bfsWrite) {
 				try (PrintWriter fw = IO.writer(bfs)) {
-					for (File f : builtFiles) {
+					for (File f : buildFilesSet) {
 						fw.write(IO.absolutePath(f));
 						fw.write('\n');
 					}
@@ -1921,7 +1968,8 @@ public class Project extends Processor {
 				getWorkspace().changedFile(bfs);
 			}
 			bfs = null; // avoid delete in finally block
-			return files = builtFiles.toArray(new File[0]);
+
+			return files = buildFilesSet.toArray(new File[0]);
 		} finally {
 			if (tstamp)
 				unsetProperty(TSTAMP);
@@ -1942,93 +1990,12 @@ public class Project extends Processor {
 	public File saveBuild(Jar jar) throws Exception {
 		try {
 			File outputFile = getOutputFile(jar.getName(), jar.getVersion());
-			File logicalFile = outputFile;
 
 			reportNewer(outputFile.lastModified(), jar);
+			File logicalFile = write(jar::write, outputFile);
 
-			File fp = outputFile.getParentFile();
-			if (!fp.isDirectory()) {
-				IO.mkdirs(fp);
-			}
-
-			// On windows we sometimes cannot delete a file because
-			// someone holds a lock in our or another process. So if
-			// we set the -overwritestrategy flag we use an avoiding
-			// strategy.
-			// We will always write to a temp file name. Basically the
-			// calculated name + a variable suffix. We then create
-			// a link with the constant name to this variable name.
-			// This allows us to pick a different suffix when we cannot
-			// delete the file. Yuck, but better than the alternative.
-
-			String overwritestrategy = getProperty("-x-overwritestrategy", "classic");
-			swtch: switch (overwritestrategy) {
-				case "delay" :
-					for (int i = 0; i < 10; i++) {
-						try {
-							IO.deleteWithException(outputFile);
-							jar.write(outputFile);
-							break swtch;
-						} catch (Exception e) {
-							Thread.sleep(500);
-						}
-					}
-
-					// Execute normal case to get classic behavior
-					// FALL THROUGH
-
-				case "classic" :
-					IO.deleteWithException(outputFile);
-					jar.write(outputFile);
-					break swtch;
-
-				case "gc" :
-					try {
-						IO.deleteWithException(outputFile);
-					} catch (Exception e) {
-						System.gc();
-						System.runFinalization();
-						IO.deleteWithException(outputFile);
-					}
-					jar.write(outputFile);
-					break swtch;
-
-				case "windows-only-disposable-names" :
-					if (!IO.isWindows()) {
-						IO.deleteWithException(outputFile);
-						jar.write(outputFile);
-						break swtch;
-					}
-					// Fall through
-
-				case "disposable-names" :
-					int suffix = 0;
-					while (true) {
-						outputFile = new File(outputFile.getParentFile(), outputFile.getName() + "-" + suffix);
-						IO.delete(outputFile);
-						if (!outputFile.isFile()) {
-							// Succeeded to delete the file
-							jar.write(outputFile);
-							Files.createSymbolicLink(logicalFile.toPath(), outputFile.toPath());
-							break;
-						} else {
-							warning("Could not delete build file {} ", overwritestrategy);
-							logger.warn("Cannot delete file {} but that should be ok", outputFile);
-						}
-						suffix++;
-					}
-					break swtch;
-
-				default :
-					error(
-						"Invalid value for -x-overwritestrategy: %s, expected classic, delay, gc, windows-only-disposable-names, disposable-names",
-						overwritestrategy);
-					IO.deleteWithException(outputFile);
-					jar.write(outputFile);
-					break swtch;
-
-			}
-
+			logger.debug("{} ({}) {}", jar.getName(), outputFile.getName(), jar.getResources()
+				.size());
 			//
 			// For maven we've got the shitty situation that the
 			// files in the generated directories have an ever changing
@@ -2053,16 +2020,103 @@ public class Project extends Processor {
 				}
 				getWorkspace().changedFile(canonical);
 			}
-
-			getWorkspace().changedFile(outputFile);
-			if (!outputFile.equals(logicalFile))
-				getWorkspace().changedFile(logicalFile);
-			logger.debug("{} ({}) {}", jar.getName(), outputFile.getName(), jar.getResources()
-				.size());
 			return logicalFile;
 		} finally {
 			jar.close();
 		}
+	}
+
+	private File write(ConsumerWithException<File> jar, File outputFile)
+		throws IOException, InterruptedException, Exception {
+		File logicalFile = outputFile;
+
+		File fp = outputFile.getParentFile();
+		if (!fp.isDirectory()) {
+			IO.mkdirs(fp);
+		}
+
+		// On windows we sometimes cannot delete a file because
+		// someone holds a lock in our or another process. So if
+		// we set the -overwritestrategy flag we use an avoiding
+		// strategy.
+		// We will always write to a temp file name. Basically the
+		// calculated name + a variable suffix. We then create
+		// a link with the constant name to this variable name.
+		// This allows us to pick a different suffix when we cannot
+		// delete the file. Yuck, but better than the alternative.
+
+		String overwritestrategy = getProperty("-x-overwritestrategy", "classic");
+		swtch: switch (overwritestrategy) {
+			case "delay" :
+				for (int i = 0; i < 10; i++) {
+					try {
+						IO.deleteWithException(outputFile);
+						jar.accept(outputFile);
+						break swtch;
+					} catch (Exception e) {
+						Thread.sleep(500);
+					}
+				}
+
+				// Execute normal case to get classic behavior
+				// FALL THROUGH
+
+			case "classic" :
+				IO.deleteWithException(outputFile);
+				jar.accept(outputFile);
+				break swtch;
+
+			case "gc" :
+				try {
+					IO.deleteWithException(outputFile);
+				} catch (Exception e) {
+					System.gc();
+					System.runFinalization();
+					IO.deleteWithException(outputFile);
+				}
+				jar.accept(outputFile);
+				break swtch;
+
+			case "windows-only-disposable-names" :
+				if (!IO.isWindows()) {
+					IO.deleteWithException(outputFile);
+					jar.accept(outputFile);
+					break swtch;
+				}
+				// Fall through
+
+			case "disposable-names" :
+				int suffix = 0;
+				while (true) {
+					outputFile = new File(outputFile.getParentFile(), outputFile.getName() + "-" + suffix);
+					IO.delete(outputFile);
+					if (!outputFile.isFile()) {
+						// Succeeded to delete the file
+						jar.accept(outputFile);
+						Files.createSymbolicLink(logicalFile.toPath(), outputFile.toPath());
+						break;
+					} else {
+						warning("Could not delete build file {} ", overwritestrategy);
+						logger.warn("Cannot delete file {} but that should be ok", outputFile);
+					}
+					suffix++;
+				}
+				break swtch;
+
+			default :
+				error(
+					"Invalid value for -x-overwritestrategy: %s, expected classic, delay, gc, windows-only-disposable-names, disposable-names",
+					overwritestrategy);
+				IO.deleteWithException(outputFile);
+				jar.accept(outputFile);
+				break swtch;
+
+		}
+
+		getWorkspace().changedFile(outputFile);
+		if (!outputFile.equals(logicalFile))
+			getWorkspace().changedFile(logicalFile);
+		return logicalFile;
 	}
 
 	/**
@@ -2186,15 +2240,27 @@ public class Project extends Processor {
 		release(false);
 	}
 
+	/**
+	 * Export this project via the exporters. The return is the calculated name
+	 * (can be overridden with the option `name`, which must be the basename
+	 * since the extension is defined by the exporter)
+	 *
+	 * @param type an exporter type like `bnd.executablejar` or null as default
+	 *            `bnd.executablejar.pack`, the original export function
+	 * @param options parameters to the exporters
+	 * @return and entry with the name and resource for the export
+	 * @throws Exception
+	 */
 	public Map.Entry<String, Resource> export(String type, Map<String, String> options) throws Exception {
-		Exporter exporter = getExporter(type);
-		if (exporter == null) {
-			error("No exporter for %s", type);
-			return null;
-		}
+
 		if (options == null) {
 			options = Collections.emptyMap();
 		}
+
+		if (type == null) {
+			type = options.getOrDefault(Constants.EXPORT_TYPE, "bnd.executablejar.pack");
+		}
+
 		Parameters exportTypes = parseHeader(getProperty(Constants.EXPORTTYPE));
 		Map<String, String> attrs = exportTypes.get(type);
 		if (attrs != null) {
@@ -2202,7 +2268,19 @@ public class Project extends Processor {
 			options = attrs;
 		}
 
-		return exporter.export(type, this, options);
+		Exporter exporter = getExporter(type);
+		if (exporter == null) {
+			error("No exporter for %s", type);
+			return null;
+		}
+
+		Entry<String, Resource> entry = exporter.export(type, this, options);
+		if (entry == null) {
+			error("Export failed %s for type %s", this, type);
+			return null;
+		}
+
+		return entry;
 	}
 
 	private Exporter getExporter(String type) {
@@ -2217,6 +2295,11 @@ public class Project extends Processor {
 		return null;
 	}
 
+	/**
+	 * The keep flag is really awkward since it overrides the -runkeep flag in
+	 * the file. Use doExport instead
+	 */
+	@Deprecated
 	public void export(String runFilePath, boolean keep, File output) throws Exception {
 		Map<String, String> options = Collections.singletonMap("keep", Boolean.toString(keep));
 		Entry<String, Resource> export;
@@ -2904,78 +2987,14 @@ public class Project extends Processor {
 
 	/**
 	 * Pack the project (could be a bndrun file) and save it on disk. Report
-	 * errors if they happen.
-	 */
-	static List<String> ignore = new ExtList<>(BUNDLE_SPECIFIC_HEADERS);
-
-	/**
-	 * Caller must close this JAR
+	 * errors if they happen. Caller must close this JAR
 	 *
 	 * @param profile
 	 * @return a jar with the executable code
 	 * @throws Exception
 	 */
 	public Jar pack(String profile) throws Exception {
-		try (ProjectBuilder pb = getBuilder(null)) {
-			List<Builder> subBuilders = pb.getSubBuilders();
-
-			if (subBuilders.size() != 1) {
-				error("Project has multiple bnd files, please select one of the bnd files").header(EXPORT)
-					.context(profile);
-				return null;
-			}
-
-			Builder b = subBuilders.iterator()
-				.next();
-
-			ignore.remove(BUNDLE_SYMBOLICNAME);
-			ignore.remove(BUNDLE_VERSION);
-			ignore.add(SERVICE_COMPONENT);
-
-			try (ProjectLauncher launcher = getProjectLauncher()) {
-				launcher.getRunProperties()
-					.put("profile", profile); // TODO
-												// remove
-				launcher.getRunProperties()
-					.put(PROFILE, profile);
-				Jar jar = launcher.executable();
-				Manifest m = jar.getManifest();
-				Attributes main = m.getMainAttributes();
-				for (String key : this) {
-					if (Character.isUpperCase(key.charAt(0)) && !ignore.contains(key)) {
-						String value = getProperty(key);
-						if (value == null)
-							continue;
-						Name name = new Name(key);
-						String trimmed = value.trim();
-						if (trimmed.isEmpty())
-							main.remove(name);
-						else if (EMPTY_HEADER.equals(trimmed))
-							main.put(name, "");
-						else
-							main.put(name, value);
-					}
-				}
-
-				if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
-					main.putValue(BUNDLE_SYMBOLICNAME, b.getBsn());
-
-				if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
-					main.putValue(BUNDLE_SYMBOLICNAME, getName());
-
-				if (main.getValue(BUNDLE_VERSION) == null) {
-					main.putValue(BUNDLE_VERSION, Version.LOWEST.toString());
-					warning("No version set, uses 0.0.0");
-				}
-
-				jar.setManifest(m);
-				jar.calcChecksums(new String[] {
-					"SHA1", "MD5"
-				});
-				launcher.removeClose(jar);
-				return jar;
-			}
-		}
+		return ExecutableJarExporter.pack(this, profile);
 	}
 
 	/**
