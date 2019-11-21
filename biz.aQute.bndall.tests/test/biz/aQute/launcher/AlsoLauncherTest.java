@@ -73,8 +73,8 @@ public class AlsoLauncherTest {
 		prior.putAll(System.getProperties());
 
 		File wsRoot = new File(testDir, "test ws");
-		for (String folder : Arrays.asList("cnf", "demo", "biz.aQute.launcher", "biz.aQute.junit",
-			"biz.aQute.tester", "biz.aQute.tester.junit-platform")) {
+		for (String folder : Arrays.asList("cnf", "demo", "biz.aQute.launcher", "biz.aQute.junit", "biz.aQute.tester",
+			"biz.aQute.tester.junit-platform")) {
 			File tgt = new File(wsRoot, folder);
 			IO.copy(new File("..", folder), tgt);
 			IO.delete(new File(tgt, "generated/buildfiles"));
