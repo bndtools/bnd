@@ -9,6 +9,7 @@ import static aQute.junit.constants.TesterConstants.TESTER_TRACE;
 import static aQute.junit.constants.TesterConstants.TESTER_UNRESOLVED;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import org.osgi.annotation.bundle.Header;
 
@@ -16,7 +17,6 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectTester;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.EclipseJUnitTester;
 
 @Header(name = Constants.TESTER_PLUGIN, value = "${@class}")
@@ -27,6 +27,10 @@ public class ProjectTesterImpl extends ProjectTester implements EclipseJUnitTest
 
 	public ProjectTesterImpl(Project project) throws Exception {
 		super(project);
+	}
+
+	static String maybeQuote(String s) {
+		return (s.indexOf(',') == -1) ? s : '"' + s + '"';
 	}
 
 	@Override
@@ -57,7 +61,9 @@ public class ProjectTesterImpl extends ProjectTester implements EclipseJUnitTest
 			Collection<String> testnames = getTests();
 			if (testnames.size() > 0) {
 				launcher.getRunProperties()
-					.put(TESTER_NAMES, Processor.join(testnames));
+					.put(TESTER_NAMES, testnames.stream()
+						.map(ProjectTesterImpl::maybeQuote)
+						.collect(Collectors.joining(",")));
 			}
 			// This is only necessary because we might be picked
 			// as default and that implies we're not on the -testpath
