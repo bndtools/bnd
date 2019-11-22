@@ -25,11 +25,11 @@ public class Run extends Project {
 
 	static {
 		MethodHandles.Lookup lookup = MethodHandles.publicLookup();
-		MethodType type = methodType(Run.class, Workspace.class, File.class);
 		MethodHandle handle = null;
 		try {
 			Class<?> clazz = Run.class.getClassLoader()
 				.loadClass("biz.aQute.resolve.Bndrun");
+			MethodType type = methodType(clazz, Workspace.class, File.class);
 			handle = lookup.findStatic(clazz, "createBndrun", type);
 		} catch (Throwable e) {
 			handle = null;

@@ -874,7 +874,7 @@ public class Syntax implements Constants {
 				example = sa.example();
 			if (!sa.pattern()
 				.isEmpty())
-				pattern = Pattern.compile(Pattern.quote(sa.pattern()));
+				pattern = Pattern.compile(sa.pattern(), Pattern.LITERAL);
 		}
 		return new Syntax(name, lead, example, name, pattern);
 	}

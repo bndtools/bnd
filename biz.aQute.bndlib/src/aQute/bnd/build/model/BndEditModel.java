@@ -401,7 +401,11 @@ public class BndEditModel {
 	public BndEditModel(Project project) throws IOException {
 		this(project.getWorkspace());
 		this.project = project;
-		this.document = new Document(IO.collect(project.getPropertiesFile()));
+		File propertiesFile = project.getPropertiesFile();
+		if (propertiesFile.isFile())
+			this.document = new Document(IO.collect(propertiesFile));
+		else
+			this.document = new Document("");
 		loadFrom(this.document);
 	}
 

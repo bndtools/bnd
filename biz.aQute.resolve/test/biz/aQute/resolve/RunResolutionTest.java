@@ -3,6 +3,7 @@ package biz.aQute.resolve;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -27,8 +28,14 @@ public class RunResolutionTest {
 
 	Workspace workspace;
 
+	File		tmp;
+
 	@Before
 	public void setup() throws Exception {
+		tmp = IO.getFile("generated/tmp");
+		IO.delete(tmp);
+		tmp.mkdirs();
+		IO.copy(IO.getFile("testdata/enroute"), tmp);
 		workspace = Workspace.findWorkspace(IO.getFile("testdata/pre-buildworkspace"));
 		assertThat(workspace).isNotNull();
 	}
@@ -59,7 +66,7 @@ public class RunResolutionTest {
 
 	@Test
 	public void testCachingOfResult() throws Exception {
-		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile("testdata/enroute/resolver.bndrun"));
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(tmp, "resolver.bndrun"));
 		bndrun.setProperty("-resolve", "beforelaunch");
 		bndrun.unsetProperty("-runbundles");
 		RunResolution.clearCache(bndrun.getWorkspace());
@@ -90,12 +97,13 @@ public class RunResolutionTest {
 
 	@Test
 	public void testNotCachingOfResultForOtherResolveOption() throws Exception {
-		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile("testdata/enroute/resolver.bndrun"));
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(tmp, "resolver.bndrun"));
 		bndrun.setProperty("-resolve", "manual");
 		bndrun.unsetProperty("-runbundles");
 		RunResolution.clearCache(bndrun.getWorkspace());
 
 		ProjectLauncher pl = bndrun.getProjectLauncher();
+
 		assertNotNull(pl);
 		Collection<Container> runbundles = pl.getProject()
 			.getRunbundles();
@@ -105,12 +113,13 @@ public class RunResolutionTest {
 
 	@Test
 	public void testLaunchWithBeforeLaunchResolve() throws Exception {
-		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile("testdata/enroute/resolver.bndrun"));
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(tmp, "resolver.bndrun"));
 		bndrun.setProperty("-resolve", "beforelaunch");
 		bndrun.unsetProperty("-runbundles");
 		RunResolution.clearCache(bndrun.getWorkspace());
 
 		ProjectLauncher pl = bndrun.getProjectLauncher();
+		pl.setCwd(tmp);
 		assertNotNull(pl);
 		Collection<Container> runbundles = pl.getProject()
 			.getRunbundles();

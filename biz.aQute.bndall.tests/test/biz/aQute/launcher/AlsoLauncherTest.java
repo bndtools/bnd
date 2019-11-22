@@ -53,6 +53,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
 import aQute.libg.command.Command;
+import biz.aQute.resolve.Bndrun;
 
 public class AlsoLauncherTest {
 	public static final String	TMPDIR		= "generated/tmp/test";
@@ -93,6 +94,17 @@ public class AlsoLauncherTest {
 		IO.close(project);
 		IO.close(workspace);
 		System.setProperties(prior);
+	}
+
+	/**
+	 * Test that the Bndrun file is loaded when we create a run
+	 * 
+	 */
+	@Test
+	public void testCreateBndrun() throws Exception {
+		Run run = Run.createRun(workspace, project.getFile("x.bndrun"));
+
+		assertThat(run).isInstanceOf(Bndrun.class);
 	}
 
 	@Test

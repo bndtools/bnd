@@ -2950,42 +2950,33 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @return A checksum based on the values of the properties
 	 */
 	public String getChecksum() {
-		try {
-			Properties properties2 = getProperties();
-			String old = properties2.getProperty(Constants.TSTAMP);
-			properties2.setProperty(Constants.TSTAMP, "0");
-			try {
-				Properties flattenedProperties = getFlattenedProperties();
-				Digester<SHA1> digester = SHA1.getDigester();
+		try (Processor p = new Processor(this)) {
+			p.setProperty(Constants.TSTAMP, "0");
 
-				@SuppressWarnings({
-					"unchecked", "rawtypes"
-				})
-				Set<String> keySet = new TreeSet<>((Set) flattenedProperties.keySet());
-				keySet.forEach(k -> {
-					try {
-						byte[] bytes = k.getBytes(StandardCharsets.UTF_8);
-						digester.write(bytes);
-						String s = flattenedProperties.getProperty(k);
-						if (s == null)
-							return;
+			Properties flattenedProperties = p.getFlattenedProperties();
+			Digester<SHA1> digester = SHA1.getDigester();
 
-						bytes = s.getBytes(StandardCharsets.UTF_8);
-						digester.write(bytes);
-					} catch (Exception e) {
-						throw Exceptions.duck(e);
-					}
-				});
-				String checksum = digester.digest()
-					.asHex();
-				return checksum;
-			} finally {
-				if (old == null) {
-					properties2.remove(Constants.TSTAMP);
-				} else {
-					properties2.setProperty(Constants.TSTAMP, old);
+			@SuppressWarnings({
+				"unchecked", "rawtypes"
+			})
+			Set<String> keySet = new TreeSet<>((Set) flattenedProperties.keySet());
+			keySet.forEach(k -> {
+				try {
+					byte[] bytes = k.getBytes(StandardCharsets.UTF_8);
+					digester.write(bytes);
+					String s = flattenedProperties.getProperty(k);
+					if (s == null)
+						return;
+
+					bytes = s.getBytes(StandardCharsets.UTF_8);
+					digester.write(bytes);
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
 				}
-			}
+			});
+			String checksum = digester.digest()
+				.asHex();
+			return checksum;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
