@@ -137,7 +137,7 @@ public class BundleSelectorResolver {
 		classSelectors.stream()
 			.map(ClassSelector::getClassName)
 			.forEach(unresolvedClasses::add);
-		methodSelectors.stream() // TODO: Test
+		methodSelectors.stream()
 			.map(MethodSelector::getClassName)
 			.forEach(unresolvedClasses::add);
 	}
