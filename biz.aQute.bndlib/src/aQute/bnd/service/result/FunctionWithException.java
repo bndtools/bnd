@@ -5,7 +5,6 @@ import static java.util.Objects.requireNonNull;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import aQute.lib.exceptions.Exceptions;
 
 /**
  * Function interface that allows exceptions.
@@ -21,8 +20,10 @@ public interface FunctionWithException<T, R> {
 		return t -> {
 			try {
 				return apply(t);
+			} catch (RuntimeException e) {
+				throw e;
 			} catch (Exception e) {
-				throw Exceptions.duck(e);
+				throw new RuntimeException(e);
 			}
 		};
 	}
