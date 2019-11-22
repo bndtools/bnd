@@ -484,10 +484,9 @@ public class RunResolution {
 	}
 
 	private static File getCacheFile(Project project) {
-		String id = project.getPropertiesFile()
-			.getAbsolutePath()
-			.replace(File.pathSeparatorChar, '-')
-			.replace('/', '-');
+
+		String id = IO.toSafeFileName(project.getPropertiesFile()
+			.getAbsolutePath());
 
 		File cache = project.getWorkspace()
 			.getCache("resolutions/" + id);
