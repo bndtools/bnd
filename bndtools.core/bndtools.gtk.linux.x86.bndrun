@@ -1,7 +1,6 @@
 -include: bndtools.shared.bndrun
 
 -runbundles: \
-	${crossplatform.bundles},\
 	org.eclipse.core.filesystem.linux.x86,\
 	org.eclipse.core.net.linux.x86,\
 	org.eclipse.swt.gtk.linux.x86;version='[3.103.2.v20150203-1351,3.103.3)'

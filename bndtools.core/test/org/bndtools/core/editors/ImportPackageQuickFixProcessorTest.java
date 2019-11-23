@@ -1,8 +1,46 @@
 package org.bndtools.core.editors;
 
+import static org.assertj.core.api.Assertions.allOf;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.util.Sets.newLinkedHashSet;
+import static org.bndtools.core.editors.ImportPackageQuickFixProcessor.ADD_BUNDLE;
+import static org.bndtools.core.editors.ImportPackageQuickFixProcessor.ADD_BUNDLE_WORKSPACE;
+import static org.eclipse.jdt.core.compiler.IProblem.AmbiguousField;
+import static org.eclipse.jdt.core.compiler.IProblem.AmbiguousType;
+import static org.eclipse.jdt.core.compiler.IProblem.ImportNotFound;
+import static org.eclipse.jdt.core.compiler.IProblem.IsClassPathCorrect;
+import static org.eclipse.jdt.core.compiler.IProblem.UndefinedType;
+import static org.eclipse.jdt.core.compiler.IProblem.UnusedImport;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.assertj.core.api.Condition;
 import org.bndtools.api.ILogger;
 import org.bndtools.core.editors.ImportPackageQuickFixProcessor.AddBundleCompletionProposal;
+import org.bndtools.core.editors.ImportPackageQuickFixProcessor.BndBuildPathHandler;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -38,28 +76,6 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.strings.Strings;
-
-import static org.eclipse.jdt.core.compiler.IProblem.*;
-import static org.bndtools.core.editors.ImportPackageQuickFixProcessor.*;
-
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.util.Sets.newLinkedHashSet;
-import static org.mockito.Mockito.*;
 
 public class ImportPackageQuickFixProcessorTest {
 
@@ -283,7 +299,7 @@ public class ImportPackageQuickFixProcessorTest {
 	}
 
 	private void setupAST(String source) {
-		ASTParser parser = ASTParser.newParser(AST.JLS10);
+		ASTParser parser = ASTParser.newParser(AST.JLS11);
 		Map<String, String> options = JavaCore.getOptions();
 		// Need to set 1.5 or higher for the "import static" syntax to work.
 		// Need to set 1.8 or higher to test parameterized type usages.

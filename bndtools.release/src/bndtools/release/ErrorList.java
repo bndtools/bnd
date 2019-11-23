@@ -211,8 +211,8 @@ public class ErrorList {
 			}
 			maxLength += 2;
 			GC gc = new GC(cmp);
-			int charWidth = gc.getFontMetrics()
-				.getAverageCharWidth();
+			int charWidth = (int) Math.round(gc.getFontMetrics()
+				.getAverageCharacterWidth());
 			gc.dispose();
 			return charWidth * maxLength;
 		}

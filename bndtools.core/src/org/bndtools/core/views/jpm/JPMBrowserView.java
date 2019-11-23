@@ -87,7 +87,7 @@ public class JPMBrowserView extends ViewPart implements ISelectionListener {
 				browser = new Browser(parent, SWT.WEBKIT);
 				stack.topControl = browser;
 			} else if (prefs.getBrowserSelection() == JpmPreferences.PREF_BROWSER_MOZILLA) {
-				browser = new Browser(parent, SWT.MOZILLA);
+				browser = new Browser(parent, SWT.WEBKIT);
 				stack.topControl = browser;
 			}
 

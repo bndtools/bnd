@@ -1,7 +1,6 @@
 -include: bndtools.shared.bndrun
 
--runbundles: \
-	${crossplatform.bundles},\
+-runbundles.wind32: \
 	org.eclipse.core.filesystem.win32.x86_64,\
 	org.eclipse.core.resources.win32.x86_64,\
 	org.eclipse.equinox.security.win32.x86_64,\

@@ -37,4 +37,5 @@
 	slf4j.simple;version=latest,\
 	org.eclipse.jdt.junit.core;version=latest,\
 	org.eclipse.core.runtime;version=latest,\
+	org.eclipse.equinox.preferences;version=latest,\
 	org.eclipse.equinox.common;version=latest
