@@ -149,7 +149,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 						String name = annot.getElementName();
 						if (ANNOTATION_VERSION_NO_PKG.equals(name) || ANNOTATION_VERSION_OSGI.equals(name)
 							|| ANNOTATION_VERSION_BND.equals(name)) {
-							ASTParser parser = ASTParser.newParser(AST.JLS10);
+							ASTParser parser = ASTParser.newParser(AST.JLS11);
 							parser.setKind(ASTParser.K_COMPILATION_UNIT);
 							parser.setSource(compUnit);
 							parser.setResolveBindings(true);
