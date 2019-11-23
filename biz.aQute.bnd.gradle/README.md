@@ -41,7 +41,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.4.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:5.0.0'
   }
 }
 ```
@@ -579,7 +579,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.4.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:5.0.0'
   }
 }
 apply plugin: 'biz.aQute.bnd.workspace'
@@ -613,7 +613,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.4.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:5.0.0'
   }
 }
 apply plugin: 'biz.aQute.bnd.workspace'
