@@ -76,6 +76,12 @@ Import-Package: \
 	biz.aQute.bnd.annotation;version=project,\
 	slf4j.api;version=latest;maven-scope=compile
 
+-testpath: \
+    ${junit},\
+    ${mockito}
+
+-builderignore: testresources
+
 Bundle-Icon: img/bnd-64.png;size=64
 Bundle-Developers: peter.kriens@aQute.biz, njbartlett@gmail.com
 Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic.nl, bj@bjhargrave.com

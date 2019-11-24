@@ -166,11 +166,11 @@ public class ResolverTest {
 			assertThat(resolved).isEqualTo(JavaTypeSignature.of("Lorg/osgi/service/log/LogReaderService;"));
 			assertThat(resolver.resolveResult()).isEqualTo(VoidDescriptor.V);
 
-			methodSig = methodSigs.get("bindCSO");
+			methodSig = methodSigs.get("bindSO");
 			resolver = new MethodResolver(classSig, methodSig);
 			resolved = resolver.resolveParameter(0);
 			assertThat(resolved)
-				.isEqualTo(JavaTypeSignature.of("Lorg/osgi/service/component/ComponentServiceObjects<+TLR;>;"));
+				.isEqualTo(JavaTypeSignature.of("Lorg/osgi/framework/ServiceObjects<+TLR;>;"));
 			type = (ClassTypeSignature) resolved;
 			resolved = resolver.resolveType(type.classType.typeArguments[0]);
 			assertThat(resolved).isEqualTo(JavaTypeSignature.of("Lorg/osgi/service/log/LogReaderService;"));
