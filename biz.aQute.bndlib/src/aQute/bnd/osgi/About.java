@@ -50,10 +50,10 @@ public class About {
 	public static final Version					_4_1		= new Version(4, 1, 0);
 	public static final Version					_4_2		= new Version(4, 2, 0);
 	public static final Version					_4_3		= new Version(4, 3, 0);
-	public static final Version					_4_4		= new Version(4, 4, 0);
-	public static final Version					CURRENT		= _4_4;
+	public static final Version					_5_0		= new Version(5, 0, 0);
+	public static final Version					CURRENT		= _5_0;
 
-	public static final String[]				CHANGES_4_4	= {};
+	public static final String[]				CHANGES_5_0	= {};
 	public static final String[]				CHANGES_4_3	= {};
 	public static final String[]				CHANGES_4_2	= {};
 	public static final String[]				CHANGES_4_1	= {};
@@ -218,7 +218,7 @@ public class About {
 	public static final Map<Version, String[]>	CHANGES		= new TreeMap<>(Collections.reverseOrder());
 
 	static {
-		CHANGES.put(_4_4, CHANGES_4_4);
+		CHANGES.put(_5_0, CHANGES_5_0);
 		CHANGES.put(_4_3, CHANGES_4_3);
 		CHANGES.put(_4_2, CHANGES_4_2);
 		CHANGES.put(_4_1, CHANGES_4_1);

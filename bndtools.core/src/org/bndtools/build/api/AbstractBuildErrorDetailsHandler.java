@@ -91,8 +91,7 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
 		if (cunit == null)
 			return null; // not a source type
 
-		@SuppressWarnings("deprecation")
-		ASTParser parser = ASTParser.newParser(AST.JLS4);
+		ASTParser parser = ASTParser.newParser(AST.JLS11);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
 		parser.setSource(cunit);
 		parser.setResolveBindings(true);
