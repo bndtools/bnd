@@ -13,7 +13,7 @@ import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.UniqueId;
-import org.junit.platform.engine.support.hierarchical.SingleTestExecutor;
+import org.opentest4j.TestAbortedException;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -26,8 +26,6 @@ import aQute.tester.bundle.engine.discovery.BundleSelectorResolver;
 public class BundleEngine implements TestEngine {
 
 	public static final String				CHECK_UNRESOLVED	= "aQute.bnd.junit.bundle.engine.checkUnresolved";
-
-	private static final SingleTestExecutor	singleTestExecutor	= new SingleTestExecutor();
 
 	public static final String				ENGINE_ID			= "bnd-bundle-engine";
 
@@ -114,13 +112,20 @@ public class BundleEngine implements TestEngine {
 		listener.executionStarted(descriptor);
 		TestExecutionResult result;
 		if (descriptor.getException() == null) {
-			result = singleTestExecutor.executeSafely(() -> {
+			try {
 				descriptor.getChildren()
 					.stream()
 					.filter(childDescriptor -> !(childDescriptor instanceof BundleDescriptor
 						|| childDescriptor instanceof StaticFailureDescriptor))
 					.forEach(childDescriptor -> descriptor.executeChild(childDescriptor, listener, params));
-			});
+				result = TestExecutionResult.successful();
+			} catch (TestAbortedException abort) {
+				result = TestExecutionResult.aborted(abort);
+			} catch (OutOfMemoryError | StackOverflowError t) {
+				throw t;
+			} catch (Throwable t) {
+				result = TestExecutionResult.failed(t);
+			}
 			descriptor.getChildren()
 				.stream()
 				.filter(BundleDescriptor.class::isInstance)
