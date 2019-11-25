@@ -37,6 +37,7 @@ Export-Package: \
 	aQute.bnd.util.home;-noimport:=true,\
 	aQute.bnd.util.repository;-noimport:=true,\
 	aQute.bnd.component.error;-noimport:=true,\
+	aQute.bnd.stream;-noimport:=true,\
 	org.osgi.service.log;-split-package:=first,\
 	org.osgi.service.repository;-split-package:=first,\
 	org.osgi.util.promise;-split-package:=first,\
