@@ -553,6 +553,38 @@ public class BundleEngineTest {
 	}
 
 	@Test
+	public void withMethodSelectorForUnresolvedClass_andTesterUnresolvedFalse_doesntReportError_andRunsOtherTests()
+		throws Exception {
+		Bundle resolvedTestBundle = startTestBundle(TestClass.class);
+
+		engineInFramework().configurationParameter(CHECK_UNRESOLVED, "false")
+			.selectors(selectMethod("some.unknown.Clazz", "someMethod"), selectClass(TestClass.class.getName()))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(0, event(container("unresolvedClasses")))
+			.haveExactly(1,
+				event(inBundle(resolvedTestBundle), containerClass(TestClass.class), finishedSuccessfully()));
+	}
+
+	@Test
+	public void withMethodSelectorForUnresolvedClass_TesterUnresolvedTrue_reportsError_andRunsOtherTests()
+		throws Exception {
+		Bundle resolvedTestBundle = startTestBundle(TestClass.class);
+
+		engineInFramework()
+			.selectors(selectMethod("some.unknown.Clazz", "someMethod"), selectClass(TestClass.class.getName()))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1, event(container("unresolvedClasses"), finishedSuccessfully()))
+			.haveExactly(1, event(test("some.unknown.Clazz"), finishedWithFailure(instanceOf(JUnitException.class))))
+			.haveExactly(1, event(bundle(resolvedTestBundle), skippedWithReason("Unresolved classes")));
+	}
+
+	@Test
 	public void withClassSelector_forUnresolvedTestBundle_andTesterUnresolvedTrue_reportsUnresolvedBundle_butNotUnresolvedClass()
 		throws Exception {
 		BundleSpecBuilder bb = buildTestBundle(TestClass.class);
