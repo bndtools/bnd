@@ -106,12 +106,18 @@ public class Err<V, E> implements Result<V, E> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <U> Result<U, E> then(FunctionWithException<V, Result<U, E>> lambda) {
+	public <U> Result<U, E> flatMap(FunctionWithException<V, Result<U, E>> lambda) {
 		return (Result<U, E>) this;
 	}
 
 	@Override
-	public <R extends Exception> V orElseThrow(FunctionWithException<E, R> f) throws Exception {
-		throw f.apply(error);
+	public <R extends Throwable> V orElseThrow(FunctionWithException<? super E, ? extends R> f) throws R {
+		R r;
+		try {
+			r = f.apply(error);
+		} catch (Exception e) {
+			throw new ResultException(e);
+		}
+		throw r;
 	}
 }

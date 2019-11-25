@@ -108,7 +108,7 @@ public class Ok<V, E> implements Result<V, E> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <U> Result<U, E> then(FunctionWithException<V, Result<U, E>> lambda) {
+	public <U> Result<U, E> flatMap(FunctionWithException<V, Result<U, E>> lambda) {
 		try {
 			return lambda.apply(value);
 		} catch (Exception e) {
@@ -117,7 +117,7 @@ public class Ok<V, E> implements Result<V, E> {
 	}
 
 	@Override
-	public <R extends Exception> V orElseThrow(FunctionWithException<E, R> f) {
+	public <R extends Throwable> V orElseThrow(FunctionWithException<? super E, ? extends R> f) {
 		return value;
 	}
 }

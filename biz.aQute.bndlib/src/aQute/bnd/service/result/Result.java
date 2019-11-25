@@ -17,7 +17,6 @@
 package aQute.bnd.service.result;
 
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -97,22 +96,24 @@ public interface Result<V, E> {
 	V unwrap(String message) throws ResultException;
 
 	/**
-	 * If this is an Ok value, andThen() returns the result of the given
-	 * {@link Function}. Otherwise returns this.
+	 * If this is an Ok value, flatMap() returns the result of the given
+	 * {@link FunctionWithException}. Otherwise returns this.
 	 *
-	 * @param lambda The {@link Function} to be called with the value of this.
+	 * @param lambda The {@link FunctionWithException} to be called with the
+	 *            value of this.
 	 * @param <U> The new value type.
 	 * @return see above.
 	 */
 	@SuppressWarnings("unchecked")
-	<U> Result<U, E> then(final FunctionWithException<V, Result<U, E>> lambda);
+	<U> Result<U, E> flatMap(final FunctionWithException<V, Result<U, E>> lambda);
 
 	/**
 	 * If this is an Ok value, map() returns the result of the given
-	 * {@link Function}, wrapped in a new Ok Result instance. Otherwise returns
-	 * this.
+	 * {@link FunctionWithException}, wrapped in a new Ok Result instance.
+	 * Otherwise returns this.
 	 *
-	 * @param lambda The {@link Function} to call with the value of this.
+	 * @param lambda The {@link FunctionWithException} to call with the value of
+	 *            this.
 	 * @param <U> The new value type.
 	 * @return see above.
 	 */
@@ -122,7 +123,8 @@ public interface Result<V, E> {
 	 * If this is an Err value, mapErr() returns the result of the given @{link
 	 * Function}, wrapped in a new Err Result instance. Otherwise returns this.
 	 *
-	 * @param lambda The {@link Function} to call with the error of this.
+	 * @param lambda The {@link FunctionWithException} to call with the error of
+	 *            this.
 	 * @param <F> The new error type.
 	 * @return see above
 	 */
@@ -145,7 +147,7 @@ public interface Result<V, E> {
 		return getValue().orElseGet(value);
 	}
 
-	<R extends Exception> V orElseThrow(FunctionWithException<E, R> f) throws Exception;
+	<R extends Throwable> V orElseThrow(FunctionWithException<? super E, ? extends R> f) throws R;
 
 	default Result<V, E> failed(Exception e) {
 		if (e instanceof RuntimeException)

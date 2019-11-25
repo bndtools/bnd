@@ -458,7 +458,7 @@ public class RunResolution {
 			Result<RunResolution, String> r = resolve(project, project, null).asResult();
 			logger.debug("resolve {} {}", project, r);
 
-			return r.then(rr -> {
+			return r.flatMap(rr -> {
 				logger.info("saving cache {}", project);
 				rr.cache();
 				return Ok.result(rr);
