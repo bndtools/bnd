@@ -37,6 +37,7 @@ import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
+import org.junit.platform.launcher.core.LauncherConfig;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.LoggingListener;
@@ -117,18 +118,10 @@ public class Activator implements BundleActivator, Runnable {
 		// We can be started on our own thread or from the main code
 		thread = Thread.currentThread();
 
-		// Make sure that this is loaded
-		ClassLoader l = thread.getContextClassLoader();
-		try {
-			thread.setContextClassLoader(BundleEngine.class.getClassLoader());
-			// This will instantiate the BundleEngine class via ServiceLoader
-			launcher = LauncherFactory.create();
-		} catch (Throwable e) {
-			error("Couldn't load the BundleEngine: %s", e);
-			System.exit(254);
-		} finally {
-			thread.setContextClassLoader(l);
-		}
+		launcher = LauncherFactory.create(LauncherConfig.builder()
+				.enableTestEngineAutoRegistration(false)
+				.addTestEngines(new BundleEngine())
+				.build());
 
 		List<TestExecutionListener> listenerList = new ArrayList<>();
 
