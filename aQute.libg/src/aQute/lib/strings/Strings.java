@@ -140,6 +140,15 @@ public class Strings {
 		return !s.isEmpty();
 	}
 
+	public static boolean nonNullOrEmpty(String s) {
+		return (s != null) && !s.isEmpty();
+	}
+
+	public static boolean nonNullOrTrimmedEmpty(String s) {
+		return (s != null) && !s.trim()
+			.isEmpty();
+	}
+
 	private final static Pattern SIMPLE_LIST_SPLITTER = Pattern.compile("\\s*,\\s*");
 
 	public static Stream<String> splitAsStream(String s) {
