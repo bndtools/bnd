@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.osgi.framework.ServiceObjects;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.component.ComponentServiceObjects;
 import org.osgi.service.log.LogReaderService;
 
 @SuppressWarnings("unused")
@@ -29,7 +29,7 @@ public class TypeUser1<LR extends LogReaderService, SR extends ServiceReference<
 
 	public void bindSR(SR sr) {}
 
-	public <CSO extends ComponentServiceObjects<? extends LR>, M extends Map<String, Object>> M bindCSO(CSO cso) {
+	public <SO extends ServiceObjects<? extends LR>, M extends Map<String, Object>> M bindSO(SO cso) {
 		return null;
 	}
 
