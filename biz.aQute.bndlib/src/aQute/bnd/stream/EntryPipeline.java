@@ -193,28 +193,61 @@ final class EntryPipeline<K, V> implements MapStream<K, V> {
 		return new EntryPipeline<>(entries().peek(e -> peek.accept(e.getKey(), e.getValue())));
 	}
 
+	@SuppressWarnings({
+		"unchecked", "rawtypes"
+	})
+	// If K is not Comparable, a ClassCastException may be thrown when the
+	// terminal operation is executed.
+	private static <K, V> Comparator<Entry<K, V>> comparingByKey() {
+		return (Comparator) Entry.comparingByKey();
+	}
+
+	@SuppressWarnings({
+		"unchecked", "rawtypes"
+	})
+	// If V is not Comparable, a ClassCastException may be thrown when the
+	// terminal operation is executed.
+	private static <K, V> Comparator<Entry<K, V>> comparingByValue() {
+		return (Comparator) Entry.comparingByValue();
+	}
+
+	@SuppressWarnings({
+		"unchecked", "rawtypes"
+	})
+	// If K and V are not Comparable, a ClassCastException may be thrown
+	// when the terminal operation is executed.
+	private static <K, V> Comparator<Entry<K, V>> comparing() {
+		return ((Comparator) Entry.comparingByKey()).thenComparing(Entry.comparingByValue());
+	}
+
+	@Override
+	public MapStream<K, V> sorted() {
+		return sorted(comparing());
+	}
+
+	@Override
+	public MapStream<K, V> sorted(Comparator<? super Entry<K, V>> comparator) {
+		return new EntryPipeline<>(entries().sorted(comparator));
+	}
+
 	@Override
 	public MapStream<K, V> sortedByKey() {
-		@SuppressWarnings("unchecked")
-		Comparator<K> comparator = (Comparator<K>) Comparator.naturalOrder();
-		return sortedByKey(comparator);
+		return sorted(comparingByKey());
 	}
 
 	@Override
 	public MapStream<K, V> sortedByKey(Comparator<? super K> comparator) {
-		return new EntryPipeline<>(entries().sorted(Entry.comparingByKey(comparator)));
+		return sorted(Entry.comparingByKey(comparator));
 	}
 
 	@Override
 	public MapStream<K, V> sortedByValue() {
-		@SuppressWarnings("unchecked")
-		Comparator<V> comparator = (Comparator<V>) Comparator.naturalOrder();
-		return sortedByValue(comparator);
+		return sorted(comparingByValue());
 	}
 
 	@Override
 	public MapStream<K, V> sortedByValue(Comparator<? super V> comparator) {
-		return new EntryPipeline<>(entries().sorted(Entry.comparingByValue(comparator)));
+		return sorted(Entry.comparingByValue(comparator));
 	}
 
 	@Override
@@ -274,23 +307,33 @@ final class EntryPipeline<K, V> implements MapStream<K, V> {
 	}
 
 	@Override
+	public Optional<Entry<K, V>> max(Comparator<? super Entry<K, V>> comparator) {
+		return entries().max(comparator);
+	}
+
+	@Override
 	public Optional<Entry<K, V>> maxByKey(Comparator<? super K> comparator) {
-		return entries().max(Entry.comparingByKey(comparator));
+		return max(Entry.comparingByKey(comparator));
 	}
 
 	@Override
 	public Optional<Entry<K, V>> maxByValue(Comparator<? super V> comparator) {
-		return entries().max(Entry.comparingByValue(comparator));
+		return max(Entry.comparingByValue(comparator));
+	}
+
+	@Override
+	public Optional<Entry<K, V>> min(Comparator<? super Entry<K, V>> comparator) {
+		return entries().min(comparator);
 	}
 
 	@Override
 	public Optional<Entry<K, V>> minByKey(Comparator<? super K> comparator) {
-		return entries().min(Entry.comparingByKey(comparator));
+		return min(Entry.comparingByKey(comparator));
 	}
 
 	@Override
 	public Optional<Entry<K, V>> minByValue(Comparator<? super V> comparator) {
-		return entries().min(Entry.comparingByValue(comparator));
+		return min(Entry.comparingByValue(comparator));
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,12 +29,19 @@ import java.util.stream.Stream;
 
 public interface MapStream<K, V> extends BaseStream<Entry<K, V>, MapStream<K, V>> {
 	static <K, V> MapStream<K, V> of(Map<? extends K, ? extends V> map) {
-		return of(map.entrySet()
-			.stream());
+		return of(map.entrySet());
 	}
 
 	static <K, V> MapStream<K, V> ofNullable(Map<? extends K, ? extends V> map) {
 		return (map != null) ? of(map) : empty();
+	}
+
+	static <K, V> MapStream<K, V> of(Collection<? extends Entry<? extends K, ? extends V>> collection) {
+		return of(collection.stream());
+	}
+
+	static <K, V> MapStream<K, V> ofNullable(Collection<? extends Entry<? extends K, ? extends V>> collection) {
+		return (collection != null) ? of(collection) : empty();
 	}
 
 	static <K, V> MapStream<K, V> of(Stream<? extends Entry<? extends K, ? extends V>> stream) {
@@ -123,6 +131,10 @@ public interface MapStream<K, V> extends BaseStream<Entry<K, V>, MapStream<K, V>
 
 	MapStream<K, V> peek(BiConsumer<? super K, ? super V> peek);
 
+	MapStream<K, V> sorted();
+
+	MapStream<K, V> sorted(Comparator<? super Entry<K, V>> comparator);
+
 	MapStream<K, V> sortedByKey();
 
 	MapStream<K, V> sortedByKey(Comparator<? super K> comparator);
@@ -166,9 +178,13 @@ public interface MapStream<K, V> extends BaseStream<Entry<K, V>, MapStream<K, V>
 		return Collectors.toMap(Entry::getKey, Entry::getValue, mergeFunction, mapSupplier);
 	}
 
+	Optional<Entry<K, V>> max(Comparator<? super Entry<K, V>> comparator);
+
 	Optional<Entry<K, V>> maxByKey(Comparator<? super K> comparator);
 
 	Optional<Entry<K, V>> maxByValue(Comparator<? super V> comparator);
+
+	Optional<Entry<K, V>> min(Comparator<? super Entry<K, V>> comparator);
 
 	Optional<Entry<K, V>> minByKey(Comparator<? super K> comparator);
 
