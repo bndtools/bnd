@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.Callable;
@@ -69,6 +70,7 @@ import aQute.bnd.service.lifecycle.LifeCyclePlugin;
 import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.service.repository.RepositoryDigest;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.url.MultiURLConnectionHandler;
 import aQute.bnd.util.home.Home;
 import aQute.bnd.version.Version;
@@ -295,9 +297,8 @@ public class Workspace extends Processor {
 		//
 
 		Attrs sysProps = OSGiHeader.parseProperties(mergeProperties(SYSTEMPROPERTIES));
-		for (Entry<String, String> e : sysProps.entrySet()) {
-			System.setProperty(e.getKey(), e.getValue());
-		}
+		sysProps.stream()
+			.forEachOrdered(System::setProperty);
 	}
 
 	public Project getProjectFromFile(File projectDir) {
@@ -1079,9 +1080,9 @@ public class Workspace extends Processor {
 				+ "#\n", alias);
 			setup.format("-plugin.%s = %s", alias, plugin.getName());
 
-			for (Map.Entry<String, String> e : parameters.entrySet()) {
-				setup.format("; \\\n \t%s = '%s'", e.getKey(), escaped(e.getValue()));
-			}
+			MapStream.of(parameters)
+				.mapValue(this::escaped)
+				.forEachOrdered((k, v) -> setup.format("; \\\n \t%s = '%s'", k, v));
 			setup.format("\n\n");
 
 			String out = setup.toString();
@@ -1159,15 +1160,10 @@ public class Workspace extends Processor {
 					// Copy all properties except the type we will add
 					//
 
-					for (Entry<Object, Object> entry : run.getProperties()
-						.entrySet()) {
-						String key = (String) entry.getKey();
-						if (!key.startsWith(PLUGIN_STANDALONE)) {
-							ws.getProperties()
-								.put(key, entry.getValue());
-						}
-					}
-
+					Properties wsProperties = ws.getProperties();
+					MapStream.of(run.getProperties())
+						.filterKey(k -> !((String) k).startsWith(PLUGIN_STANDALONE))
+						.forEachOrdered(wsProperties::put);
 					break;
 				}
 
@@ -1182,10 +1178,9 @@ public class Workspace extends Processor {
 					name = String.format("repo%02d", counter);
 				}
 				f.format("%s; name='%s'; locations='%s'", STANDALONE_REPO_CLASS, name, resolvedLocation);
-				for (Map.Entry<String, String> attribEntry : attrs.entrySet()) {
-					if (!"name".equals(attribEntry.getKey()))
-						f.format("; %s='%s'", attribEntry.getKey(), attribEntry.getValue());
-				}
+				attrs.stream()
+					.filterKey(k -> !k.equals("name"))
+					.forEachOrdered((k, v) -> f.format("; %s='%s'", k, v));
 				String value = f.toString();
 				sb.setLength(0);
 				ws.setProperty(key, value);

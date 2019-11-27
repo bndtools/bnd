@@ -3,15 +3,14 @@ package aQute.bnd.build.model.clauses;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
 
 import aQute.bnd.header.Attrs;
+import aQute.bnd.stream.MapStream;
+import aQute.lib.strings.Strings;
 
 public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 
@@ -78,39 +77,20 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 	public void formatTo(StringBuilder buffer, Comparator<Entry<String, String>> sorter) {
 		String separator = newlinesBetweenAttributes() ? INTERNAL_LIST_SEPARATOR_NEWLINES : INTERNAL_LIST_SEPARATOR;
 		// If the name contains a comma, then quote the whole thing
-		String tmpName = name;
-		if (tmpName.indexOf(',') > -1)
-			tmpName = "'" + tmpName + "'";
-		buffer.append(tmpName);
+		buffer.append((name.indexOf(',') > -1) ? "'" + name + "'" : name);
 
-		if (attribs != null) {
-			Set<Entry<String, String>> set;
-			if (sorter != null) {
-				set = new TreeSet<>(sorter);
-				set.addAll(attribs.entrySet());
-			} else {
-				set = attribs.entrySet();
-			}
-
-			for (Iterator<Entry<String, String>> iter = set.iterator(); iter.hasNext();) {
-				Entry<String, String> entry = iter.next();
-				String name = entry.getKey();
-				String value = entry.getValue();
-
-				if (value != null && value.length() > 0) {
-					buffer.append(separator);
-
-					// If the value contains any comma or equals, then quote the
-					// whole thing
-					if (value.indexOf(',') > -1 || value.indexOf('=') > -1)
-						value = "'" + value + "'";
-
-					buffer.append(name)
-						.append('=')
-						.append(value);
-				}
-			}
+		MapStream<String, String> entries = MapStream.ofNullable(attribs);
+		if (sorter != null) {
+			entries = entries.sorted(sorter);
 		}
+		entries.filterValue(Strings::nonNullOrEmpty)
+			// If the value contains any comma or equals, then quote the
+			// whole thing
+			.mapValue(value -> (value.indexOf(',') > -1 || value.indexOf('=') > -1) ? "'" + value + "'" : value)
+			.forEachOrdered((name, value) -> buffer.append(separator)
+				.append(name)
+				.append('=')
+				.append(value));
 	}
 
 	protected boolean newlinesBetweenAttributes() {

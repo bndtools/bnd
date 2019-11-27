@@ -34,7 +34,6 @@ import java.util.Formatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -60,6 +59,7 @@ import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.service.url.URLConnector;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.util.home.Home;
 import aQute.lib.date.Dates;
 import aQute.lib.exceptions.Exceptions;
@@ -713,12 +713,11 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 
 		private void setHeaders(Map<String, String> headers, URLConnection con) {
-			if (headers != null) {
-				for (Entry<String, String> e : headers.entrySet()) {
-					logger.debug("set header {}={}", e.getKey(), e.getValue());
-					con.setRequestProperty(e.getKey(), e.getValue());
-				}
+			MapStream<String, String> stream = MapStream.ofNullable(headers);
+			if (logger.isDebugEnabled()) {
+				stream = stream.peek((k, v) -> logger.debug("set header {}={}", k, v));
 			}
+			stream.forEachOrdered(con::setRequestProperty);
 		}
 
 		private Object convert(Type type, File in, TaggedData tag) throws Exception {

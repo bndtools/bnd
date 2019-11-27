@@ -1,7 +1,9 @@
 package aQute.bnd.osgi;
 
+import static aQute.lib.exceptions.BiConsumerWithException.asBiConsumer;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -29,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
@@ -43,7 +46,6 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.zip.CRC32;
@@ -55,6 +57,7 @@ import java.util.zip.ZipOutputStream;
 
 import aQute.bnd.classfile.ClassFile;
 import aQute.bnd.classfile.ModuleAttribute;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.Iterables;
@@ -803,23 +806,16 @@ public class Jar implements Closeable {
 	/**
 	 * Output an Attributes map. We will sort this map before outputing.
 	 *
-	 * @param value the attrbutes
+	 * @param value the attributes
 	 * @param out the output stream
 	 * @throws IOException when something fails
 	 */
 	private static void attributes(Attributes value, OutputStream out) throws IOException {
-		TreeMap<String, String> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-		for (Map.Entry<Object, Object> entry : value.entrySet()) {
-			map.put(entry.getKey()
-				.toString(),
-				entry.getValue()
-					.toString());
-		}
-
-		map.remove("Manifest-Version"); // get rid of manifest version
-		for (Map.Entry<String, String> entry : map.entrySet()) {
-			writeEntry(out, entry.getKey(), entry.getValue());
-		}
+		MapStream.of(value)
+			.map((k, v) -> MapStream.entry(k.toString(), v.toString()))
+			.filterKey(k -> !k.equals("Manifest-Version"))
+			.sortedByKey(String.CASE_INSENSITIVE_ORDER)
+			.forEachOrdered(asBiConsumer((k, v) -> writeEntry(out, k, v)));
 	}
 
 	private static Manifest clean(Manifest org) {
@@ -998,12 +994,11 @@ public class Jar implements Closeable {
 
 	public List<String> getPackages() {
 		check();
-		return directories.entrySet()
-			.stream()
-			.filter(e -> e.getValue() != null)
-			.map(e -> e.getKey()
-				.replace('/', '.'))
-			.collect(Collectors.toList());
+		return MapStream.of(directories)
+			.filterValue(Objects::nonNull)
+			.keys()
+			.map(k -> k.replace('/', '.'))
+			.collect(toList());
 	}
 
 	public File getSource() {

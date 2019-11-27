@@ -1,10 +1,10 @@
 package aQute.bnd.component;
 
-import java.util.ArrayList;
+import static java.util.stream.Collectors.toList;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
@@ -70,16 +70,13 @@ public class MergedRequirement {
 	 * Require-Capability header.
 	 */
 	public List<String> toStringList() {
-		List<String> strings = new ArrayList<>(filterMap.size());
-
-		for (Entry<FilterEffectivePair, Attrs> entry : filterMap.entrySet()) {
-			Attrs attrs = entry.getValue();
-			strings.add(new StringBuilder().append(namespace)
+		List<String> strings = filterMap.values()
+			.stream()
+			.map(attrs -> new StringBuilder().append(namespace)
 				.append(';')
 				.append(attrs)
-				.toString());
-		}
-
+				.toString())
+			.collect(toList());
 		return strings;
 	}
 

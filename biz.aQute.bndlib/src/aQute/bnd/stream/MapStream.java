@@ -13,6 +13,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -130,6 +131,10 @@ public interface MapStream<K, V> extends BaseStream<Entry<K, V>, MapStream<K, V>
 	DoubleStream flatMapToDouble(BiFunction<? super K, ? super V, ? extends DoubleStream> mapper);
 
 	MapStream<K, V> peek(BiConsumer<? super K, ? super V> peek);
+
+	MapStream<K, V> peekKey(Consumer<? super K> peek);
+
+	MapStream<K, V> peekValue(Consumer<? super V> peek);
 
 	MapStream<K, V> sorted();
 

@@ -820,6 +820,26 @@ public class MapStreamTest {
 	}
 
 	@Test
+	public void peekKey() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap);
+		List<String> peeked = new ArrayList<>();
+		assertThat(supplier.get()
+			.peekKey(peeked::add)
+			.collect(MapStream.toMap())).containsExactlyInAnyOrderEntriesOf(testMap);
+		assertThat(peeked).containsExactlyInAnyOrderElementsOf(testMap.keySet());
+	}
+
+	@Test
+	public void peekValue() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap);
+		List<String> peeked = new ArrayList<>();
+		assertThat(supplier.get()
+			.peekValue(peeked::add)
+			.collect(MapStream.toMap())).containsExactlyInAnyOrderEntriesOf(testMap);
+		assertThat(peeked).containsExactlyInAnyOrderElementsOf(testMap.values());
+	}
+
+	@Test
 	public void sorted() {
 		Supplier<MapStream<String, String>> supplier = () -> MapStream
 			.ofEntries(entry("key1", "value1"), entry("key1", "value0"), entry("key2", "value6"),

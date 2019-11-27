@@ -14,6 +14,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 
 public class Attrs implements Map<String, String> {
@@ -108,20 +109,13 @@ public class Attrs implements Map<String, String> {
 	public Attrs(Map<String, String> map) {
 		this();
 		assert !(map instanceof Attrs);
-		if (map != null)
-			map.entrySet()
-				.stream()
-				.forEach(e -> put(e.getKey(), e.getValue()));
+		MapStream.ofNullable(map)
+			.forEach(this::put);
 	}
 
 	public void putAllTyped(Map<String, Object> attrs) {
-
-		for (Map.Entry<String, Object> entry : attrs.entrySet()) {
-			Object value = entry.getValue();
-			String key = entry.getKey();
-			putTyped(key, value);
-
-		}
+		MapStream.of(attrs)
+			.forEach(this::putTyped);
 	}
 
 	public void putTyped(String key, Object value) {
@@ -224,6 +218,10 @@ public class Attrs implements Map<String, String> {
 	@Override
 	public Set<java.util.Map.Entry<String, String>> entrySet() {
 		return map.entrySet();
+	}
+
+	public MapStream<String, String> stream() {
+		return MapStream.of(this);
 	}
 
 	@Override
@@ -342,9 +340,8 @@ public class Attrs implements Map<String, String> {
 			putAll((Attrs) other);
 			return;
 		}
-		for (Map.Entry<? extends String, ? extends String> e : other.entrySet()) {
-			put(e.getKey(), e.getValue());
-		}
+		MapStream.of(other)
+			.forEach(this::put);
 	}
 
 	@Override
@@ -556,18 +553,19 @@ public class Attrs implements Map<String, String> {
 	 */
 
 	public void mergeWith(Attrs other, boolean override) {
-		for (Map.Entry<String, String> e : other.entrySet()) {
-			String key = e.getKey();
-			if (override || !containsKey(key)) {
-				map.put(key, e.getValue());
-				Type t = other.getType(key);
-				if (t != Type.STRING) {
-					types.put(key, t);
-				} else {
-					types.remove(key);
-				}
-			}
+		MapStream<String, String> stream = other.stream();
+		if (!override) {
+			stream = stream.filterKey(key -> !containsKey(key));
 		}
+		stream.peekKey(key -> {
+			Type t = other.getType(key);
+			if (t != Type.STRING) {
+				types.put(key, t);
+			} else {
+				types.remove(key);
+			}
+		})
+			.forEachOrdered(map::put);
 	}
 
 	/**

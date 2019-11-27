@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -54,6 +55,7 @@ import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.diff.Type;
 import aQute.bnd.service.specifications.BuilderSpecification;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.hex.Hex;
@@ -367,9 +369,9 @@ public class Builder extends Analyzer {
 		List<SignerPlugin> signers = getPlugins(SignerPlugin.class);
 
 		Parameters infos = parseHeader(signing);
-		for (Entry<String, Attrs> entry : infos.entrySet()) {
+		for (String alias : infos.keySet()) {
 			for (SignerPlugin signer : signers) {
-				signer.sign(this, entry.getKey());
+				signer.sign(this, alias);
 			}
 		}
 	}
@@ -607,11 +609,10 @@ public class Builder extends Analyzer {
 		MultiMap<String, Jar> packages = new MultiMap<>();
 		for (Jar srce : getClasspath()) {
 			dot.updateModified(srce.lastModified(), srce + " (" + srce.lastModifiedReason() + ")");
-			for (Entry<String, Map<String, Resource>> e : srce.getDirectories()
-				.entrySet()) {
-				if (e.getValue() != null)
-					packages.add(e.getKey(), srce);
-			}
+			MapStream.of(srce.getDirectories())
+				.filterValue(Objects::nonNull)
+				.keys()
+				.forEachOrdered(path -> packages.add(path, srce));
 		}
 
 		Parameters includedPackages = getPrivatePackage();
@@ -1604,11 +1605,9 @@ public class Builder extends Analyzer {
 	 * Include-Resource header.
 	 */
 	private Stream<String> getIncludedResourcePrefixes() {
-		Stream<String> prefixes = getIncludeResource().entrySet()
-			.stream()
-			.filter(e -> !e.getValue()
-				.containsKey("literal"))
-			.map(Entry::getKey)
+		Stream<String> prefixes = getIncludeResource().stream()
+			.filterValue(attrs -> !attrs.containsKey("literal"))
+			.keys()
 			.map(IR_PATTERN::matcher)
 			.filter(Matcher::matches)
 			.map(m -> m.group(1))
@@ -1978,10 +1977,8 @@ public class Builder extends Analyzer {
 			setProperty(Constants.REQUIRE_CAPABILITY, new Parameters(spec.requireCapability).toString());
 		}
 
-		spec.other.entrySet()
-			.forEach(e -> {
-				setProperty(e.getKey(), e.getValue());
-			});
+		MapStream.of(spec.other)
+			.forEach(this::setProperty);
 
 		return this;
 

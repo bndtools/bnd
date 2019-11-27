@@ -1,6 +1,9 @@
 package aQute.bnd.osgi.resource;
 
+import static aQute.lib.exceptions.BiConsumerWithException.asBiConsumer;
+import static aQute.lib.exceptions.BiFunctionWithException.asBiFunction;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -35,6 +38,7 @@ import org.osgi.service.repository.ContentNamespace;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
 import aQute.libg.filters.AndFilter;
@@ -136,9 +140,8 @@ public class CapReqBuilder {
 	}
 
 	public CapReqBuilder addAttributes(Map<? extends String, ? extends Object> attributes) throws Exception {
-		for (Entry<? extends String, ? extends Object> e : attributes.entrySet()) {
-			addAttribute(e.getKey(), e.getValue());
-		}
+		MapStream.of(attributes)
+			.forEachOrdered(asBiConsumer(this::addAttribute));
 		return this;
 	}
 
@@ -151,18 +154,16 @@ public class CapReqBuilder {
 	}
 
 	public CapReqBuilder addDirectives(Attrs directives) {
-		for (Entry<String, String> e : directives.entrySet()) {
-			String key = Attrs.toDirective(e.getKey());
-			if (key != null)
-				addDirective(key, e.getValue());
-		}
+		directives.stream()
+			.mapKey(Attrs::toDirective)
+			.filterKey(Objects::nonNull)
+			.forEachOrdered(this::addDirective);
 		return this;
 	}
 
 	public CapReqBuilder addDirectives(Map<String, String> directives) {
-		for (Entry<String, String> e : directives.entrySet()) {
-			addDirective(e.getKey(), e.getValue());
-		}
+		MapStream.of(directives)
+			.forEachOrdered(this::addDirective);
 		return this;
 	}
 
@@ -299,11 +300,9 @@ public class CapReqBuilder {
 	 * @throws Exception
 	 */
 	public static List<Requirement> getRequirementsFrom(Parameters rr, boolean unalias) throws Exception {
-		List<Requirement> requirements = new ArrayList<>();
-		for (Entry<String, Attrs> e : rr.entrySet()) {
-			Requirement req = getRequirementFrom(Processor.removeDuplicateMarker(e.getKey()), e.getValue(), unalias);
-			requirements.add(req);
-		}
+		List<Requirement> requirements = rr.stream()
+			.mapToObj(asBiFunction((k, v) -> getRequirementFrom(Processor.removeDuplicateMarker(k), v, unalias)))
+			.collect(toList());
 		return requirements;
 	}
 
@@ -388,19 +387,15 @@ public class CapReqBuilder {
 	}
 
 	private static void copyAttribs(Requirement req, CapReqBuilder builder, Set<String> excludes) throws Exception {
-		for (Entry<String, Object> entry : req.getAttributes()
-			.entrySet()) {
-			if (!excludes.contains(entry.getKey()))
-				builder.addAttribute(entry.getKey(), entry.getValue());
-		}
+		MapStream.of(req.getAttributes())
+			.filterKey(key -> !excludes.contains(key))
+			.forEachOrdered(asBiConsumer(builder::addAttribute));
 	}
 
 	private static void copyDirectives(Requirement req, CapReqBuilder builder, Set<String> excludes) throws Exception {
-		for (Entry<String, String> entry : req.getDirectives()
-			.entrySet()) {
-			if (!excludes.contains(entry.getKey()))
-				builder.addDirective(entry.getKey(), entry.getValue());
-		}
+		MapStream.of(req.getDirectives())
+			.filterKey(key -> !excludes.contains(key))
+			.forEachOrdered(builder::addDirective);
 	}
 
 	private static VersionRange toRange(Object o) throws IllegalArgumentException {
@@ -417,10 +412,10 @@ public class CapReqBuilder {
 	}
 
 	public static List<Capability> getCapabilitiesFrom(Parameters rr) throws Exception {
-		List<Capability> capabilities = new ArrayList<>();
-		for (Entry<String, Attrs> e : rr.entrySet()) {
-			capabilities.add(getCapabilityFrom(Processor.removeDuplicateMarker(e.getKey()), e.getValue()));
-		}
+		List<Capability> capabilities = rr.stream()
+			.mapKey(Processor::removeDuplicateMarker)
+			.mapToObj(asBiFunction(CapReqBuilder::getCapabilityFrom))
+			.collect(toList());
 		return capabilities;
 	}
 
@@ -585,22 +580,15 @@ public class CapReqBuilder {
 	public Attrs toAttrs() {
 		Attrs attrs = new Attrs();
 
-		if (attributes != null) {
-			for (Entry<String, Object> e : attributes.entrySet()) {
-				Object value = e.getValue();
+		MapStream.ofNullable(attributes)
+			.map((key, value) -> (key.equals("version") || (value instanceof Version))
+				? MapStream.entry(key, toBndVersions(value))
+				: MapStream.entry(key, value))
+			.forEachOrdered(attrs::putTyped);
 
-				if (e.getKey()
-					.equals("version") || value instanceof Version)
-					value = toBndVersions(value);
-
-				attrs.putTyped(e.getKey(), value);
-			}
-		}
-
-		if (directives != null)
-			for (Entry<String, String> e : directives.entrySet()) {
-				attrs.put(e.getKey() + ":", e.getValue());
-			}
+		MapStream.ofNullable(directives)
+			.mapKey(key -> key.concat(":"))
+			.forEachOrdered(attrs::put);
 
 		return attrs;
 	}

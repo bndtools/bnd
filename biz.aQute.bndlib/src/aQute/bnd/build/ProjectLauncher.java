@@ -40,6 +40,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.Strategy;
+import aQute.bnd.stream.MapStream;
 import aQute.lib.io.IO;
 import aQute.lib.startlevel.StartLevelRuntimeHandler;
 import aQute.lib.watcher.FileWatcher;
@@ -295,10 +296,8 @@ public abstract class ProjectLauncher extends Processor {
 		// Handle the environment
 		//
 
-		Map<String, String> env = getRunEnv();
-		for (Map.Entry<String, String> e : env.entrySet()) {
-			java.var(e.getKey(), e.getValue());
-		}
+		MapStream.of(getRunEnv())
+			.forEachOrdered(java::var);
 
 		java.add(getJavaExecutable("java"));
 		if (getProject().is(Constants.JAVAAGENT)) {

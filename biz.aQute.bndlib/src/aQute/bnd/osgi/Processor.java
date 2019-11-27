@@ -77,6 +77,7 @@ import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryDonePlugin;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.url.URLConnectionHandler;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.Iterables;
@@ -1099,10 +1100,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void addProperties(Map<?, ?> properties) {
-		for (Entry<?, ?> entry : properties.entrySet()) {
-			setProperty(entry.getKey()
-				.toString(), String.valueOf(entry.getValue()));
-		}
+		MapStream.of(properties)
+			.forEachOrdered((k, v) -> setProperty(k.toString(), String.valueOf(v)));
 	}
 
 	public void addIncluded(File file) {
@@ -1497,15 +1496,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * loaded properties
 	 */
 	public static Properties replaceAll(Properties p, String pattern, String replacement) {
-		UTF8Properties result = new UTF8Properties();
 		Pattern regex = Pattern.compile(pattern);
-		for (Map.Entry<Object, Object> entry : p.entrySet()) {
-			String key = (String) entry.getKey();
-			String value = (String) entry.getValue();
-			value = regex.matcher(value)
-				.replaceAll(replacement);
-			result.put(key, value);
-		}
+		UTF8Properties result = MapStream.of(p)
+			.mapValue(value -> regex.matcher((String) value)
+				.replaceAll(replacement))
+			.collect(MapStream.toMap((u, v) -> v, UTF8Properties::new));
 		return result;
 	}
 

@@ -7,6 +7,7 @@ import java.util.Set;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Descriptors.PackageRef;
+import aQute.bnd.stream.MapStream;
 
 public class Packages implements Map<PackageRef, Attrs> {
 	private final Map<PackageRef, Attrs> map;
@@ -59,6 +60,10 @@ public class Packages implements Map<PackageRef, Attrs> {
 		return map.entrySet();
 	}
 
+	public MapStream<PackageRef, Attrs> stream() {
+		return MapStream.of(this);
+	}
+
 	@Override
 	@Deprecated
 	public Attrs get(Object key) {
@@ -101,10 +106,9 @@ public class Packages implements Map<PackageRef, Attrs> {
 	}
 
 	public void putAllIfAbsent(Map<PackageRef, ? extends Attrs> map) {
-		for (Map.Entry<PackageRef, ? extends Attrs> entry : map.entrySet()) {
-			if (!containsKey(entry.getKey()))
-				put(entry.getKey(), entry.getValue());
-		}
+		MapStream.of(map)
+			.filterKey(key -> !containsKey(key))
+			.forEachOrdered(this::put);
 	}
 
 	@Override
@@ -129,23 +133,19 @@ public class Packages implements Map<PackageRef, Attrs> {
 	}
 
 	public Attrs getByFQN(String s) {
-		for (Map.Entry<PackageRef, Attrs> pr : map.entrySet()) {
-			if (pr.getKey()
-				.getFQN()
-				.equals(s))
-				return pr.getValue();
-		}
-		return null;
+		return stream().filterKey(key -> key.getFQN()
+			.equals(s))
+			.values()
+			.findFirst()
+			.orElse(null);
 	}
 
 	public Attrs getByBinaryName(String s) {
-		for (Map.Entry<PackageRef, Attrs> pr : map.entrySet()) {
-			if (pr.getKey()
-				.getBinary()
-				.equals(s))
-				return pr.getValue();
-		}
-		return null;
+		return stream().filterKey(key -> key.getBinary()
+			.equals(s))
+			.values()
+			.findFirst()
+			.orElse(null);
 	}
 
 	public boolean containsFQN(String s) {

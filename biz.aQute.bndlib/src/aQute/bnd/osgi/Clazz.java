@@ -15,6 +15,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -26,7 +27,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.EnumSet;
@@ -102,8 +102,10 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.signatures.FieldSignature;
 import aQute.bnd.signatures.MethodSignature;
 import aQute.bnd.signatures.Signature;
+import aQute.bnd.stream.MapStream;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferDataInput;
+import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.generics.Create;
 import aQute.libg.glob.Glob;
@@ -149,13 +151,10 @@ public class Clazz {
 					try (InputStream in = Clazz.class.getResourceAsStream("profiles-" + this + ".properties")) {
 						p.load(in);
 					}
-					profiles = new HashMap<>();
-					for (Map.Entry<Object, Object> prop : p.entrySet()) {
-						String list = (String) prop.getValue();
-						Set<String> set = new HashSet<>();
-						Collections.addAll(set, list.split("\\s*,\\s*"));
-						profiles.put((String) prop.getKey(), set);
-					}
+					profiles = MapStream.of(p)
+						.map((k, v) -> MapStream.entry((String) k, Strings.splitAsStream((String) v)
+							.collect(toSet())))
+						.collect(MapStream.toMap());
 				}
 				return profiles;
 			}

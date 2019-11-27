@@ -10,6 +10,7 @@ import java.util.Spliterator;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -191,6 +192,18 @@ final class EntryPipeline<K, V> implements MapStream<K, V> {
 	public MapStream<K, V> peek(BiConsumer<? super K, ? super V> peek) {
 		requireNonNull(peek);
 		return new EntryPipeline<>(entries().peek(e -> peek.accept(e.getKey(), e.getValue())));
+	}
+
+	@Override
+	public MapStream<K, V> peekKey(Consumer<? super K> peek) {
+		requireNonNull(peek);
+		return new EntryPipeline<>(entries().peek(e -> peek.accept(e.getKey())));
+	}
+
+	@Override
+	public MapStream<K, V> peekValue(Consumer<? super V> peek) {
+		requireNonNull(peek);
+		return new EntryPipeline<>(entries().peek(e -> peek.accept(e.getValue())));
 	}
 
 	@SuppressWarnings({

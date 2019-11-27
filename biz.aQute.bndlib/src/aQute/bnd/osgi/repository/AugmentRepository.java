@@ -18,6 +18,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.stream.MapStream;
 import aQute.lib.collections.MultiMap;
 
 public class AugmentRepository extends BaseRepository {
@@ -74,11 +75,8 @@ public class AugmentRepository extends BaseRepository {
 	private void init(Parameters augments) throws Exception {
 		MultiMap<Requirement, Augment> operations = new MultiMap<>();
 
-		for (Map.Entry<String, Attrs> e : augments.entrySet()) {
-			String bsn = e.getKey();
-			Attrs attrs = e.getValue();
-			createAugmentOperation(operations, bsn, attrs);
-		}
+		MapStream.of(augments)
+			.forEachOrdered((bsn, attrs) -> createAugmentOperation(operations, bsn, attrs));
 
 		Map<Requirement, Collection<Capability>> allBundles = repository.findProviders(operations.keySet());
 

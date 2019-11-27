@@ -313,20 +313,16 @@ public abstract class Domain implements Iterable<String> {
 
 	public Map.Entry<String, Attrs> getBundleSymbolicName() {
 		Parameters p = getParameters(BUNDLE_SYMBOLICNAME);
-		if (p.isEmpty())
-			return null;
-		return p.entrySet()
-			.iterator()
-			.next();
+		return p.stream()
+			.findFirst()
+			.orElse(null);
 	}
 
 	public Map.Entry<String, Attrs> getFragmentHost() {
 		Parameters p = getParameters(FRAGMENT_HOST);
-		if (p.isEmpty())
-			return null;
-		return p.entrySet()
-			.iterator()
-			.next();
+		return p.stream()
+			.findFirst()
+			.orElse(null);
 	}
 
 	public void setBundleSymbolicName(String s) {

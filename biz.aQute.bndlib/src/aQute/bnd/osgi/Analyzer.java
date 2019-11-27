@@ -24,6 +24,7 @@ import static aQute.lib.exceptions.PredicateWithException.asPredicate;
 import static aQute.libg.generics.Create.list;
 import static aQute.libg.generics.Create.map;
 import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
@@ -60,6 +61,7 @@ import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
@@ -80,6 +82,7 @@ import aQute.bnd.service.classparser.ClassParser;
 import aQute.bnd.signatures.ClassSignature;
 import aQute.bnd.signatures.FieldSignature;
 import aQute.bnd.signatures.MethodSignature;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
@@ -1158,15 +1161,11 @@ public class Analyzer extends Processor {
 			if (profiles == null)
 				return highest.getFilter();
 		} else {
-			Attrs t = OSGiHeader.parseProperties(ee);
-			profiles = new HashMap<>();
-
-			for (Map.Entry<String, String> e : t.entrySet()) {
-				String profile = e.getKey();
-				String l = e.getValue();
-				SortedList<String> sl = new SortedList<>(l.split("\\s*,\\s*"));
-				profiles.put(profile, sl);
-			}
+			profiles = OSGiHeader.parseProperties(ee)
+				.stream()
+				.mapValue(v -> Strings.splitAsStream(v)
+					.collect(Collectors.collectingAndThen(toList(), SortedList::new)))
+				.collect(MapStream.toMap());
 		}
 		SortedSet<String> found = new TreeSet<>();
 		nextPackage: for (PackageRef p : referred.keySet()) {
@@ -1809,12 +1808,10 @@ public class Analyzer extends Processor {
 	}
 
 	public boolean referred(PackageRef packageName) {
-		boolean result = uses.entrySet()
-			.stream()
-			.filter(entry -> !entry.getKey()
-				.equals(packageName))
-			.anyMatch(entry -> entry.getValue()
-				.contains(packageName));
+		boolean result = MapStream.of(uses)
+			.filterKey(pkg -> !pkg.equals(packageName))
+			.values()
+			.anyMatch(list -> list.contains(packageName));
 		return result;
 	}
 
@@ -1832,10 +1829,10 @@ public class Analyzer extends Processor {
 				String bsn = jar.getBsn();
 				String version = jar.getVersion();
 				String bsn_version = bsn + "-" + version;
-				for (Entry<String, Attrs> e : exported.entrySet()) {
-					PackageRef ref = getPackageRef(e.getKey());
-					if (!classpathExports.containsKey(ref)) {
-						Attrs attrs = e.getValue();
+				exported.stream()
+					.mapKey(this::getPackageRef)
+					.filterKey(ref -> !classpathExports.containsKey(ref))
+					.forEachOrdered((ref, attrs) -> {
 						attrs.put(Constants.INTERNAL_EXPORTED_DIRECTIVE, bsn_version);
 						if (bsn != null) {
 							attrs.put(Constants.INTERNAL_BUNDLESYMBOLICNAME_DIRECTIVE, bsn);
@@ -1850,8 +1847,7 @@ public class Analyzer extends Processor {
 						fixupOldStyleVersions(attrs);
 
 						classpathExports.put(ref, attrs);
-					}
-				}
+					});
 
 				//
 				// Collect any declared contracts
@@ -2418,10 +2414,11 @@ public class Analyzer extends Processor {
 	}
 
 	public void putAll(Map<String, String> additional, boolean force) {
-		for (Map.Entry<String, String> entry : additional.entrySet()) {
-			if (force || getProperties().get(entry.getKey()) == null)
-				setProperty(entry.getKey(), entry.getValue());
+		MapStream<String, String> stream = MapStream.of(additional);
+		if (!force) {
+			stream = stream.filterKey(key -> getProperties().get(key) == null);
 		}
+		stream.forEachOrdered(this::setProperty);
 	}
 
 	boolean firstUse = true;
@@ -2495,15 +2492,9 @@ public class Analyzer extends Processor {
 			analyzeJar(dot, "", true, null);
 		} else {
 			// Cleanup entries
-			bcp = bcp.entrySet()
-				.stream()
-				.collect(toMap(e -> {
-					String path = e.getKey();
-					if (path.equals(".") || path.equals("/")) {
-						return ".";
-					}
-					return appendPath(path);
-				}, Entry::getValue, (u, v) -> u, Parameters::new));
+			bcp = bcp.stream()
+				.mapKey(path -> (path.equals(".") || path.equals("/")) ? "." : appendPath(path))
+				.collect(MapStream.toMap((u, v) -> u, Parameters::new));
 			boolean okToIncludeDirs = bcp.keySet()
 				.stream()
 				.noneMatch(dot::hasDirectory);

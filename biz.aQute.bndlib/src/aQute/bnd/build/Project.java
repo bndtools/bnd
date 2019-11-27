@@ -96,6 +96,7 @@ import aQute.bnd.service.action.NamedAction;
 import aQute.bnd.service.export.Exporter;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
 import aQute.bnd.service.specifications.RunSpecification;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.Iterables;
@@ -2197,16 +2198,13 @@ public class Project extends Processor {
 
 	public Map<String, Action> getActions() {
 		Map<String, Action> all = newMap();
-		Map<String, Action> actions = newMap();
 		fillActions(all);
 		getWorkspace().fillActions(all);
 
-		for (Map.Entry<String, Action> action : all.entrySet()) {
-			String key = getReplacer().process(action.getKey());
-			if (key != null && key.trim()
-				.length() != 0)
-				actions.put(key, action.getValue());
-		}
+		Map<String, Action> actions = MapStream.of(all)
+			.mapKey(key -> getReplacer().process(key))
+			.filterKey(Strings::nonNullOrTrimmedEmpty)
+			.collect(MapStream.toMap((u, v) -> v, LinkedHashMap::new));
 		return actions;
 	}
 
