@@ -9,7 +9,7 @@ env:
     - GRADLE_OPTS=-Dorg.gradle.parallel=false
     - JAVA_JDK=https://cdn.azul.com/zulu/bin/zulu8.42.0.23-ca-jdk8.0.232-linux_x64.tar.gz
 
-matrix:
+jobs:
   include:
     - name: "OpenJDK8"
       env:
