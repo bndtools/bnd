@@ -8,6 +8,7 @@ import java.util.List;
 import aQute.bnd.build.ProjectLauncher.NotificationListener;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.io.IO;
+import aQute.libg.qtokens.QuotedTokenizer;
 
 public abstract class ProjectTester {
 	private final Project			project;
@@ -30,6 +31,13 @@ public abstract class ProjectTester {
 	}
 
 	public void addTest(String test) {
+		if ((test == null) || (test = test.trim()).isEmpty()) {
+			return;
+		}
+		test = new QuotedTokenizer(test, "", true).nextToken();
+		if ((test == null) || (test = test.trim()).isEmpty()) {
+			return;
+		}
 		tests.add(test);
 	}
 

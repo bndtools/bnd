@@ -84,7 +84,7 @@ public final class BundleUtils {
 	}
 
 	public static Stream<String> testCases(String testCases) {
-		return Strings.splitAsStream(testCases)
+		return Strings.splitQuotedAsStream(testCases, false)
 			.map(entry -> entry.replace(':', '#'));
 	}
 }
