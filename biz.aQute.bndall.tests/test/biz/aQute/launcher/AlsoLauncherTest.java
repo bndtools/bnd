@@ -772,6 +772,16 @@ public class AlsoLauncherTest {
 	}
 
 	@Test
+	public void testTesterQuoted() throws Exception {
+		ProjectTester pt = project.getProjectTester();
+		pt.addTest("'test.Junit4TestCase'");
+		pt.addTest("\"test.TestCase2:m1\"");
+		pt.addTest("\"test.TestCase2:m2\"");
+		assertThat(pt.getTests()).containsExactly("test.Junit4TestCase", "test.TestCase2:m1", "test.TestCase2:m2");
+		assertThat(pt.test()).isEqualTo(1);
+	}
+
+	@Test
 	public void testTimeoutActivator() throws Exception {
 		try (ProjectLauncher l = project.getProjectLauncher()) {
 			l.setTimeout(100, TimeUnit.MILLISECONDS);
