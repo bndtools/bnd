@@ -3,7 +3,7 @@ package aQute.lib.exceptions;
 import java.util.function.BiConsumer;
 
 /**
- * Consumer interface that allows exceptions.
+ * BiConsumer interface that allows exceptions.
  *
  * @param <T> the type of the first argument
  * @param <U> the type of the second argument

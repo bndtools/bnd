@@ -4,6 +4,7 @@ import static aQute.bnd.stream.MapStream.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -95,6 +96,76 @@ public class MapStreamTest {
 	public void ofMapNullable_Null() {
 		Map<String, String> nullMap = null;
 		Supplier<MapStream<String, String>> supplier = () -> MapStream.ofNullable(nullMap);
+		assertThat(supplier.get()).isNotNull();
+		assertThat(supplier.get()
+			.count()).isEqualTo(0);
+		assertThat(supplier.get()
+			.entries()
+			.count()).isEqualTo(0);
+		assertThat(supplier.get()
+			.keys()
+			.count()).isEqualTo(0);
+		assertThat(supplier.get()
+			.values()
+			.count()).isEqualTo(0);
+		assertThat(supplier.get()
+			.keys()).isEmpty();
+		assertThat(supplier.get()
+			.values()).isEmpty();
+		assertThat(supplier.get()
+			.entries()).isEmpty();
+	}
+
+	@Test
+	public void ofCollection() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap.entrySet());
+		assertThat(supplier.get()).isNotNull();
+		assertThat(supplier.get()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.entries()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.keys()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.values()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.keys()).containsExactlyInAnyOrder("key1", "key2", "key3", "key4", "key5");
+		assertThat(supplier.get()
+			.values()).containsExactlyInAnyOrder("value1", "value2", "value3", "value4", "value5");
+		assertThat(supplier.get()
+			.entries()).containsExactlyInAnyOrder(testEntries);
+	}
+
+	@Test
+	public void ofCollectionNullable_NotNull() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.ofNullable(testMap.entrySet());
+		assertThat(supplier.get()).isNotNull();
+		assertThat(supplier.get()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.entries()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.keys()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.values()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.keys()).containsExactlyInAnyOrder("key1", "key2", "key3", "key4", "key5");
+		assertThat(supplier.get()
+			.values()).containsExactlyInAnyOrder("value1", "value2", "value3", "value4", "value5");
+		assertThat(supplier.get()
+			.entries()).containsExactlyInAnyOrder(testEntries);
+	}
+
+	@Test
+	public void ofCollectionNullable_Null() {
+		Collection<Entry<String, String>> nullCollection = null;
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.ofNullable(nullCollection);
 		assertThat(supplier.get()).isNotNull();
 		assertThat(supplier.get()
 			.count()).isEqualTo(0);
@@ -749,6 +820,56 @@ public class MapStreamTest {
 	}
 
 	@Test
+	public void sorted() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream
+			.ofEntries(entry("key1", "value1"), entry("key1", "value0"), entry("key2", "value6"),
+				entry("key3", "value3"), entry("key4", "value4"), entry("key5", "value5"), entry("key2", "value2"))
+			.sorted();
+		assertThat(supplier.get()
+			.count()).isEqualTo(7);
+		assertThat(supplier.get()
+			.entries()
+			.count()).isEqualTo(7);
+		assertThat(supplier.get()
+			.keys()
+			.count()).isEqualTo(7);
+		assertThat(supplier.get()
+			.values()
+			.count()).isEqualTo(7);
+		assertThat(supplier.get()
+			.keys()).containsExactly("key1", "key1", "key2", "key2", "key3", "key4", "key5");
+		assertThat(supplier.get()
+			.values()).containsExactly("value0", "value1", "value2", "value6", "value3", "value4", "value5");
+		assertThat(supplier.get()
+			.entries()).containsExactly(entry("key1", "value0"), entry("key1", "value1"), entry("key2", "value2"),
+				entry("key2", "value6"), entry("key3", "value3"), entry("key4", "value4"), entry("key5", "value5"));
+	}
+
+	@Test
+	public void sortedComparator() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap)
+			.sorted(Entry.comparingByKey(Comparator.reverseOrder()));
+		assertThat(supplier.get()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.entries()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.keys()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.values()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.keys()).containsExactly("key5", "key4", "key3", "key2", "key1");
+		assertThat(supplier.get()
+			.values()).containsExactly("value5", "value4", "value3", "value2", "value1");
+		assertThat(supplier.get()
+			.entries()).containsExactly(entry("key5", "value5"), entry("key4", "value4"), entry("key3", "value3"),
+				entry("key2", "value2"), entry("key1", "value1"));
+	}
+
+	@Test
 	public void sortedByKey() {
 		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap)
 			.sortedByKey();
@@ -946,6 +1067,17 @@ public class MapStreamTest {
 	}
 
 	@Test
+	public void max() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap);
+		assertThat(supplier.get()
+			.max(Entry.comparingByKey(Comparator.naturalOrder()))).contains(entry("key5", "value5"));
+		assertThat(supplier.get()
+			.max(Entry.comparingByKey(Comparator.reverseOrder()))).contains(entry("key1", "value1"));
+		assertThat(MapStream.<String, String> empty()
+			.max(Entry.comparingByKey(Comparator.naturalOrder()))).isEmpty();
+	}
+
+	@Test
 	public void maxByKey() {
 		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap);
 		assertThat(supplier.get()
@@ -965,6 +1097,17 @@ public class MapStreamTest {
 			.maxByValue(Comparator.reverseOrder())).contains(entry("key1", "value1"));
 		assertThat(MapStream.<String, String> empty()
 			.maxByValue(Comparator.naturalOrder())).isEmpty();
+	}
+
+	@Test
+	public void min() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap);
+		assertThat(supplier.get()
+			.min(Entry.comparingByValue(Comparator.naturalOrder()))).contains(entry("key1", "value1"));
+		assertThat(supplier.get()
+			.min(Entry.comparingByValue(Comparator.reverseOrder()))).contains(entry("key5", "value5"));
+		assertThat(MapStream.<String, String> empty()
+			.min(Entry.comparingByValue(Comparator.naturalOrder()))).isEmpty();
 	}
 
 	@Test
