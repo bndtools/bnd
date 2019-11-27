@@ -13,10 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.stream.MapStream;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
 
@@ -93,6 +93,10 @@ public class Instructions implements Map<Instruction, Attrs> {
 			return EMPTY.entrySet();
 
 		return map.entrySet();
+	}
+
+	public MapStream<Instruction, Attrs> stream() {
+		return MapStream.of(this);
 	}
 
 	@Override
@@ -180,9 +184,9 @@ public class Instructions implements Map<Instruction, Attrs> {
 	}
 
 	public void append(Parameters other) {
-		for (Map.Entry<String, Attrs> e : other.entrySet()) {
-			put(new Instruction(e.getKey()), e.getValue());
-		}
+		other.stream()
+			.mapKey(Instruction::new)
+			.forEachOrdered(this::put);
 	}
 
 	public void appendIfAbsent(Parameters other) {
@@ -190,13 +194,10 @@ public class Instructions implements Map<Instruction, Attrs> {
 			.map(Instruction::getInput)
 			.collect(toSet());
 
-		for (Map.Entry<String, Attrs> e : other.entrySet()) {
-			String k = e.getKey();
-			if (present.contains(k))
-				continue;
-
-			put(new Instruction(k), e.getValue());
-		}
+		other.stream()
+			.filterKey(k -> !present.contains(k))
+			.mapKey(Instruction::new)
+			.forEachOrdered(this::put);
 	}
 
 	public <T> Collection<T> select(Collection<T> set, boolean emptyIsAll) {
@@ -287,10 +288,9 @@ public class Instructions implements Map<Instruction, Attrs> {
 	 */
 	@Deprecated
 	public Map<File, Attrs> select(File base) {
-		return select(base, Function.identity(), null).entrySet()
-			.stream()
-			.collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue()
-				.get(0)));
+		return MapStream.of(select(base, Function.identity(), null))
+			.mapValue(v -> v.get(0))
+			.collect(MapStream.toMap());
 	}
 
 	/**

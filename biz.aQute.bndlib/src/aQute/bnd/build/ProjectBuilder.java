@@ -624,9 +624,8 @@ public class ProjectBuilder extends Builder {
 		for (Entry<File, List<Attrs>> e : files.entrySet()) {
 			for (Attrs attrs : e.getValue()) {
 				Run run = new Run(project.getWorkspace(), getBase(), e.getKey());
-				for (Entry<String, String> ee : attrs.entrySet()) {
-					run.setProperty(ee.getKey(), ee.getValue());
-				}
+				attrs.stream()
+					.forEachOrdered(run::setProperty);
 				runs.add(run);
 			}
 		}
@@ -681,10 +680,8 @@ public class ProjectBuilder extends Builder {
 						run.setProperty(BUNDLE_VERSION, attrs.get(Constants.EXPORT_VERSION));
 					}
 
-					for (Entry<String, String> ee : attrs
-						.entrySet()) {
-						run.setProperty(ee.getKey(), ee.getValue());
-					}
+					attrs.stream()
+						.forEachOrdered(run::setProperty);
 
 					Entry<String, Resource> export = run.export(null, attrs);
 					getInfo(run);

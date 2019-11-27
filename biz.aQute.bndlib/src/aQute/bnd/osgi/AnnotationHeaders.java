@@ -6,7 +6,6 @@ import static java.util.Collections.emptySet;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.annotation.Target;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,6 +43,7 @@ import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.MultiMap;
@@ -916,15 +916,11 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	}
 
 	private Attrs getAttributes(Annotation a, String... ignores) {
+		List<String> ignoresList = Arrays.asList(ignores);
 		Attrs attrs = new Attrs();
-		outer: for (Entry<String, Object> entry : a.entrySet()) {
-			String key = entry.getKey();
-			for (String ignore : ignores) {
-				if (key.equals(ignore))
-					continue outer;
-			}
-			attrs.putTyped(key, entry.getValue());
-		}
+		MapStream.of(a.entrySet())
+			.filterKey(key -> !ignoresList.contains(key))
+			.forEachOrdered(attrs::putTyped);
 		return attrs;
 	}
 
@@ -936,28 +932,24 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			return;
 
 		Processor next = new Processor();
-		next.addProperties(annotation.entrySet()
-			.stream()
-			.filter(entry -> entry.getKey()
-				.startsWith("#"))
-			.map(entry -> {
-				if (entry.getKey()
-					.equals("#uses") && (entry.getValue() instanceof Object[])
-					&& (((Object[]) entry.getValue()).length > 0)
-					&& (((Object[]) entry.getValue())[0] instanceof TypeRef)) {
-
-					String converted = Arrays.stream((Object[]) entry.getValue())
-						.map(TypeRef.class::cast)
-						.map(TypeRef::getPackageRef)
-						.map(PackageRef::getFQN)
-						.distinct()
-						.collect(Collectors.joining(","));
-
-					return new SimpleEntry<>(entry.getKey(), converted);
+		next.addProperties(MapStream.of(annotation.entrySet())
+			.filterKey(k -> k.startsWith("#"))
+			.map((k, v) -> {
+				if (k.equals("#uses") && (v instanceof Object[])) {
+					Object[] array = (Object[]) v;
+					if ((array.length > 0) && (array[0] instanceof TypeRef)) {
+						String converted = Arrays.stream(array)
+							.map(TypeRef.class::cast)
+							.map(TypeRef::getPackageRef)
+							.map(PackageRef::getFQN)
+							.distinct()
+							.collect(Collectors.joining(","));
+						return MapStream.entry(k, converted);
+					}
 				}
-				return entry;
+				return MapStream.entry(k, convert(v));
 			})
-			.collect(Collectors.toMap(Entry::getKey, entry -> convert(entry.getValue()))));
+			.collect(MapStream.toMap()));
 		next.setProperty("@class", current.getFQN());
 		next.setProperty("@class-short", current.getClassName()
 			.getShortName());

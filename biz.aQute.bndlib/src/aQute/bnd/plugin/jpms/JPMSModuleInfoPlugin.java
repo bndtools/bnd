@@ -25,17 +25,17 @@ import static aQute.bnd.osgi.Constants.SUBSTITUTE_ATTRIBUTE;
 import static aQute.bnd.osgi.Constants.TRANSITIVE_ATTRIBUTE;
 import static aQute.bnd.osgi.Constants.USES_DIRECTIVE;
 import static aQute.bnd.osgi.Constants.VERSION_ATTRIBUTE;
-import static aQute.bnd.osgi.Descriptors.fqnToBinary;
 import static aQute.bnd.osgi.Processor.isTrue;
 import static aQute.bnd.osgi.Processor.removeDuplicateMarker;
 import static aQute.lib.strings.Strings.splitAsStream;
 import static java.util.Collections.emptyList;
-import static java.util.Comparator.naturalOrder;
-import static java.util.Map.Entry.comparingByKey;
 import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static org.osgi.namespace.extender.ExtenderNamespace.EXTENDER_NAMESPACE;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -66,7 +66,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.verifier.VerifierPlugin;
-import aQute.lib.env.Header;
+import aQute.bnd.stream.MapStream;
 import aQute.lib.io.ByteBufferDataOutput;
 import aQute.lib.strings.Strings;
 
@@ -80,12 +80,8 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
 	private static final Pattern	mangledModuleName			= Pattern.compile("(.*)-\\d.*");
 
-	private static final String[]	EMPTY						= new String[0];
 	private static final EE			DEFAULT_MODULE_EE			= EE.JavaSE_11_0;
 	private static final String		INTERNAL_MODULE_DIRECTIVE	= "-internal-module:";
-	private static final String		META_INF					= "META-INF";
-	private static final String		OSGI_INF					= "OSGI-INF";
-	private static final String		OSGI_OPT					= "OSGI-OPT";
 	private static final String		WEB_INF						= "WEB-INF";
 
 	@Override
@@ -118,9 +114,9 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		if (moduleParameters.size() > 1)
 			throw new IllegalArgumentException("Only one -module instruction is allowed:" + moduleParameters);
 
-		Entry<String, Attrs> moduleInstructions = moduleParameters.entrySet()
-			.iterator()
-			.next();
+		Entry<String, Attrs> moduleInstructions = moduleParameters.stream()
+			.findFirst()
+			.get();
 
 		Parameters moduleInfoOptions = OSGiHeader.parseHeader(analyzer.getProperty(JPMS_MODULE_INFO_OPTIONS));
 
@@ -130,32 +126,20 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		for (Jar jar : analyzer.getClasspath()) {
 			String moduleName = getModuleName(analyzer, jar, moduleInfoOptions);
 			String moduleVersion = jar.getModuleVersion();
-			jar.getDirectories()
-				.entrySet()
-				.stream()
-				.filter(entry -> (entry.getValue() != null) && !entry.getValue()
-					.isEmpty()
-					&& entry.getKey()
-						.length() > 0
-					&& !entry.getKey()
-						.startsWith(META_INF)
-					&& !entry.getKey()
-						.startsWith(OSGI_INF)
-					&& !entry.getKey()
-						.startsWith(OSGI_OPT)
-					&& !entry.getKey()
-						.startsWith(WEB_INF))
-				.forEach(entry -> {
-					PackageRef ref = analyzer.getPackageRef(entry.getKey());
-					Attrs attrs = new Attrs();
-					if (moduleName != null) {
-						attrs.put(INTERNAL_MODULE_DIRECTIVE, moduleName);
-					}
-					if (moduleVersion != null) {
-						attrs.put(INTERNAL_MODULE_VERSION_DIRECTIVE, moduleVersion);
-					}
-					index.put(ref, attrs);
-				});
+			Attrs attrs = new Attrs();
+			if (moduleName != null) {
+				attrs.put(INTERNAL_MODULE_DIRECTIVE, moduleName);
+			}
+			if (moduleVersion != null) {
+				attrs.put(INTERNAL_MODULE_VERSION_DIRECTIVE, moduleVersion);
+			}
+			MapStream.of(jar.getDirectories())
+				.filter((k, v) -> (v != null) && !v.isEmpty() && !k.isEmpty())
+				.keys()
+				.map(analyzer::getPackageRef)
+				.filter(ref -> !ref.isMetaData() && !ref.getPath()
+					.startsWith(WEB_INF))
+				.forEach(ref -> index.put(ref, new Attrs(attrs)));
 		}
 
 		ModuleInfoBuilder builder = nameAccessAndVersion(moduleInstructions, requireCapabilities, analyzer);
@@ -192,12 +176,10 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 				moduleName = matcher.group(1);
 			}
 			final String name = moduleName;
-			moduleName = moduleInfoOptions.entrySet()
-				.stream()
-				.filter(e -> name.equals(e.getValue()
-					.get(SUBSTITUTE_ATTRIBUTE)))
+			moduleName = moduleInfoOptions.stream()
+				.filterValue(attrs -> name.equals(attrs.get(SUBSTITUTE_ATTRIBUTE)))
+				.keys()
 				.findFirst()
-				.map(Entry::getKey)
 				.orElse(moduleName);
 
 			if (logger.isWarnEnabled())
@@ -207,11 +189,9 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 	}
 
 	private int access(Parameters requireCapabilities) {
-		return requireCapabilities.entrySet()
-			.stream()
-			.filter(entry -> removeDuplicateMarker(entry.getKey())
-				.equals(EXTENDER_NAMESPACE))
-			.mapToInt(entry -> ACC_OPEN)
+		return requireCapabilities.stream()
+			.filterKey(key -> removeDuplicateMarker(key).equals(EXTENDER_NAMESPACE))
+			.mapToInt((k, v) -> ACC_OPEN)
 			.findAny()
 			.orElse(0);
 	}
@@ -225,12 +205,12 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
 		analyzer.getExports()
 			.forEach((packageRef, attrs) -> {
-				String[] targets = EMPTY;
+				Set<String> targets = Collections.emptySet();
 
 				Attrs containedAttrs = contained.get(packageRef);
 				if (containedAttrs != null && containedAttrs.containsKey(INTERNAL_EXPORT_TO_MODULES_DIRECTIVE)) {
 					targets = splitAsStream(containedAttrs.get(INTERNAL_EXPORT_TO_MODULES_DIRECTIVE))
-						.toArray(String[]::new);
+						.collect(toCollection(LinkedHashSet::new));
 				}
 
 				// TODO Do we want to handle access? I can't think of a reason.
@@ -267,16 +247,11 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
 	private void openPackages(Analyzer analyzer, ModuleInfoBuilder builder) {
 		analyzer.getContained()
-			.entrySet()
 			.stream()
-			.filter(entry -> entry.getValue()
-				.containsKey(INTERNAL_OPEN_TO_MODULES_DIRECTIVE))
-			.forEach(entry -> {
-				PackageRef packageRef = entry.getKey();
-
-				String[] targets = splitAsStream(entry.getValue()
-					.get(INTERNAL_OPEN_TO_MODULES_DIRECTIVE))
-					.toArray(String[]::new);
+			.filterValue(attrs -> attrs.containsKey(INTERNAL_OPEN_TO_MODULES_DIRECTIVE))
+			.forEach((packageRef, attrs) -> {
+				Set<String> targets = splitAsStream(attrs.get(INTERNAL_OPEN_TO_MODULES_DIRECTIVE))
+					.collect(toCollection(LinkedHashSet::new));
 
 				// TODO Do we want to handle access? I can't think of a reason.
 				// Allowed: 0 | ACC_SYNTHETIC | ACC_MANDATED
@@ -306,24 +281,19 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		exports.keySet()
 			.forEach(externallyReferred::remove);
 
-		Map<String, List<Entry<PackageRef, Attrs>>> requiresMap = externallyReferred.entrySet()
-			.stream()
-			.filter(entry -> {
-				PackageRef packageRef = entry.getKey();
+		Map<String, List<Entry<? extends PackageRef, ? extends Attrs>>> requiresMap = externallyReferred.stream()
+			.filterKey(packageRef -> {
 				Attrs attrs = index.get(packageRef);
 				Attrs importAttrs = imports.get(packageRef);
 
 				if (attrs == null || !attrs.containsKey(INTERNAL_MODULE_DIRECTIVE)) {
 					String eeModuleName = moduleEE.getModules()
-						.entrySet()
 						.stream()
-						.filter(it -> it.getValue()
-							.getTyped(Attrs.LIST_STRING, EXPORTS_ATTRIBUTE)
+						.filterValue(a -> a.getTyped(Attrs.LIST_STRING, EXPORTS_ATTRIBUTE)
 							.contains(packageRef.getFQN()))
-						.map(Entry::getKey)
+						.keys()
 						.findAny()
 						.orElse(null);
-
 					if (eeModuleName == null) {
 						if (logger.isWarnEnabled())
 							logger.warn("Can't find a module name for imported package: {}", packageRef.getFQN());
@@ -353,18 +323,12 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 				});
 		}
 
-		requiresMap.entrySet()
-			.stream()
-			.sorted(comparingByKey(naturalOrder()))
-			.forEach(entry -> {
-				String moduleName = entry.getKey();
-
-				List<Entry<PackageRef, Attrs>> referencedPackages = entry.getValue();
-
-				List<PackageRef> referencedModulePackages = referencedPackages.stream()
-					.map(Entry::getKey)
-					.collect(toList());
-
+		MapStream.of(requiresMap)
+			.sortedByKey()
+			.mapValue(referencedPackages -> MapStream.of(referencedPackages)
+				.keys()
+				.collect(toList()))
+			.forEach((moduleName, referencedModulePackages) -> {
 				Attrs moduleMappingAttrs = Optional.ofNullable(moduleInfoOptions.get(moduleName))
 					.orElseGet(Attrs::new);
 
@@ -377,14 +341,12 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 				// package.
 				boolean isTransitive = Optional.ofNullable(moduleMappingAttrs.get(TRANSITIVE_ATTRIBUTE))
 					.map(Processor::isTrue)
-					.orElseGet(() -> exports.entrySet()
+					.orElseGet(() -> exports.values()
 						.stream()
-						.map(export -> export.getValue()
-							.get(USES_DIRECTIVE))
+						.map(a -> a.get(USES_DIRECTIVE))
 						.flatMap(Strings::splitAsStream)
-						.map(use -> analyzer.getPackageRef(fqnToBinary(use)))
-						.anyMatch(packageRef -> referencedModulePackages.stream()
-							.anyMatch(p -> p.equals(packageRef))));
+						.map(analyzer::getPackageRef)
+						.anyMatch(referencedModulePackages::contains));
 
 				// TODO modules can fall under the follow categories:
 				// a) JDK modules (whose packages are not _yet_ imported)
@@ -396,16 +358,16 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 				boolean isStatic = Optional.ofNullable(moduleMappingAttrs.get(STATIC_ATTRIBUTE))
 					.map(Processor::isTrue)
 					.orElseGet(() -> referencedModulePackages.isEmpty() || referencedModulePackages.stream()
-					.allMatch(p -> {
-						Attrs attrs = index.get(p);
+						.allMatch(p -> {
+							Attrs attrs = index.get(p);
 
 							if (OPTIONAL.equals(attrs.get(RESOLUTION_DIRECTIVE))) {
-							return true;
-						} else if (!dynamicImportPackages.isEmpty() && dynamicImportPackages.matches(p.getFQN())) {
-							return true;
-						}
+								return true;
+							} else if (!dynamicImportPackages.isEmpty() && dynamicImportPackages.matches(p.getFQN())) {
+								return true;
+							}
 
-						return false;
+							return false;
 						}));
 
 				// Allowed: 0 | ACC_TRANSITIVE | ACC_STATIC_PHASE |
@@ -421,38 +383,31 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 	}
 
 	private void serviceLoaderProviders(Parameters provideCapabilities, Analyzer analyzer, ModuleInfoBuilder builder) {
-		provideCapabilities.entrySet()
-			.stream()
-			.filter(entry -> Header.removeDuplicateMarker(entry.getKey())
-				.equals(SERVICELOADER_NAMESPACE))
+		provideCapabilities.stream()
+			.filterKey(namespace -> removeDuplicateMarker(namespace).equals(SERVICELOADER_NAMESPACE))
 			// We need the `register:` directive to be present for this to work.
-			.filter(entry -> entry.getValue()
-				.containsKey(SERVICELOADER_REGISTER_DIRECTIVE))
-			.map(Entry::getValue)
+			.filterValue(attrs -> attrs.containsKey(SERVICELOADER_REGISTER_DIRECTIVE))
+			.values()
 			.collect(groupingBy(attrs -> analyzer.getTypeRefFromFQN(attrs.get(SERVICELOADER_NAMESPACE))))
 			.entrySet()
 			.forEach(entry -> {
 				TypeRef typeRef = entry.getKey();
-				String[] impls = entry.getValue()
+				Set<String> impls = entry.getValue()
 					.stream()
 					.map(attrs -> attrs.get(SERVICELOADER_REGISTER_DIRECTIVE))
 					.map(impl -> analyzer.getTypeRefFromFQN(impl)
 						.getBinary())
-					.toArray(String[]::new);
-
+					.collect(toCollection(LinkedHashSet::new));
 				builder.provides(typeRef.getBinary(), impls);
 			});
 	}
 
 	private void serviceLoaderUses(Parameters requireCapabilities, Analyzer analyzer, ModuleInfoBuilder builder) {
-		requireCapabilities.entrySet()
-			.stream()
-			.filter(entry -> Header.removeDuplicateMarker(entry.getKey())
-				.equals(SERVICELOADER_NAMESPACE))
-			.map(Entry::getValue)
+		requireCapabilities.stream()
+			.filterKey(key -> removeDuplicateMarker(key).equals(SERVICELOADER_NAMESPACE))
+			.values()
 			.forEach(attrs -> {
 				TypeRef typeRef = analyzer.getTypeRefFromFQN(attrs.get(SERVICELOADER_NAMESPACE));
-
 				builder.uses(typeRef.getBinary());
 			});
 	}

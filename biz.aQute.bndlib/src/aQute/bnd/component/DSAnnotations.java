@@ -35,6 +35,7 @@ import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.AnalyzerPlugin;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
 import aQute.lib.collections.MultiMap;
@@ -216,18 +217,12 @@ public class DSAnnotations implements AnalyzerPlugin {
 		updateHeader(analyzer, Constants.REQUIRE_CAPABILITY, requires);
 		updateHeader(analyzer, Constants.PROVIDE_CAPABILITY, provides);
 
-		definitionsByName.entrySet()
-			.stream()
-			.filter(e -> e.getValue()
-				.size() > 1)
-			.forEach(e -> {
-				analyzer.error("Same component name %s used in multiple component implementations: %s", e.getKey(),
-					e.getValue()
-						.stream()
-						.map(def -> def.implementation)
-						.collect(toList()));
-			});
-
+		MapStream.of(definitionsByName)
+			.filterValue(l -> l.size() > 1)
+			.forEach((k, v) -> analyzer.error("Same component name %s used in multiple component implementations: %s",
+				k, v.stream()
+					.map(def -> def.implementation)
+					.collect(toList())));
 		return false;
 	}
 

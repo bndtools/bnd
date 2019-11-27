@@ -1,13 +1,17 @@
 package aQute.bnd.osgi;
 
+import static java.util.stream.Collectors.toCollection;
+
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
-import aQute.bnd.header.Attrs;
+import org.osgi.namespace.service.ServiceNamespace;
+import org.osgi.resource.Namespace;
+
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
@@ -16,6 +20,7 @@ import aQute.bnd.osgi.resource.FilterParser.Op;
 import aQute.bnd.osgi.resource.FilterParser.Or;
 import aQute.bnd.osgi.resource.FilterParser.PatternExpression;
 import aQute.bnd.osgi.resource.FilterParser.SimpleExpression;
+import aQute.lib.strings.Strings;
 
 public class PermissionGenerator {
 	public enum Parameter {
@@ -91,20 +96,15 @@ public class PermissionGenerator {
 	public static final String KEY = "permissions";
 
 	public static Set<String> getDeclaredServices(Builder builder) {
-		Set<String> declaredServices = new TreeSet<>();
-		for (Entry<String, Attrs> entry : builder.getProvideCapability()
-			.entrySet()) {
-			if (Processor.removeDuplicateMarker(entry.getKey())
-				.equals("osgi.service")) {
-				Attrs attrs = entry.getValue();
-				String ifaces = attrs.get("objectClass");
-				if (ifaces != null) {
-					for (String iface : ifaces.split(",")) {
-						declaredServices.add(iface.trim());
-					}
-				}
-			}
-		}
+		Set<String> declaredServices = builder.getProvideCapability()
+			.stream()
+			.filterKey(key -> Processor.removeDuplicateMarker(key)
+				.equals(ServiceNamespace.SERVICE_NAMESPACE))
+			.values()
+			.map(attrs -> attrs.get(ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE))
+			.filter(Objects::nonNull)
+			.flatMap(Strings::splitAsStream)
+			.collect(toCollection(TreeSet::new));
 		return declaredServices;
 	}
 
@@ -164,26 +164,22 @@ public class PermissionGenerator {
 	}
 
 	public static Set<String> getReferencedServices(Builder builder) {
-		Set<String> referencedServices = new TreeSet<>();
-		for (Entry<String, Attrs> entry : builder.getRequireCapability()
-			.entrySet()) {
-			if (Processor.removeDuplicateMarker(entry.getKey())
-				.equals("osgi.service")) {
-				Attrs attrs = entry.getValue();
-				String filter = attrs.get("filter:");
-				if (filter != null && !filter.isEmpty()) {
-					FilterParser filterParser = new FilterParser();
-					Expression expr = filterParser.parse(filter);
-					referencedServices.addAll(expr.visit(new FindReferencedServices()));
-				}
-			}
-		}
+		Set<String> referencedServices = builder.getRequireCapability()
+			.stream()
+			.filterKey(key -> Processor.removeDuplicateMarker(key)
+				.equals(ServiceNamespace.SERVICE_NAMESPACE))
+			.values()
+			.map(attrs -> attrs.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE + ":"))
+			.filter(Strings::nonNullOrEmpty)
+			.flatMap(filter -> new FilterParser().parse(filter)
+				.visit(new FindReferencedServices())
+				.stream())
+			.collect(toCollection(TreeSet::new));
 
 		if (referencedServices.contains(MATCH_ALL)) {
 			return Collections.singleton(MATCH_ALL);
-		} else {
-			return referencedServices;
 		}
+		return referencedServices;
 	}
 
 	private static EnumSet<Parameter> parseParams(Builder builder, final String... args) {

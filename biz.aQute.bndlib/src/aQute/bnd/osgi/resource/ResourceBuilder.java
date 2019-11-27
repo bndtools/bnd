@@ -1,6 +1,9 @@
 package aQute.bnd.osgi.resource;
 
 import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
+import static aQute.lib.exceptions.BiConsumerWithException.asBiConsumer;
+import static aQute.lib.exceptions.BiFunctionWithException.asBiFunction;
+import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.net.URI;
@@ -282,41 +285,40 @@ public class ResourceBuilder {
 	}
 
 	public void addExportServices(Parameters exportServices) throws Exception {
-		for (Map.Entry<String, Attrs> e : exportServices.entrySet()) {
-			String service = Processor.removeDuplicateMarker(e.getKey());
-			CapabilityBuilder cb = new CapabilityBuilder(ServiceNamespace.SERVICE_NAMESPACE);
-
-			cb.addAttributesOrDirectives(e.getValue());
-			cb.addAttribute(Constants.OBJECTCLASS, service);
-			addCapability(cb);
-		}
+		exportServices.stream()
+			.mapKey(Processor::removeDuplicateMarker)
+			.forEachOrdered(asBiConsumer((service, attrs) -> {
+				CapabilityBuilder cb = new CapabilityBuilder(ServiceNamespace.SERVICE_NAMESPACE);
+				cb.addAttributesOrDirectives(attrs);
+				cb.addAttribute(Constants.OBJECTCLASS, service);
+				addCapability(cb);
+			}));
 	}
 
 	public void addImportServices(Parameters importServices) {
-		for (Map.Entry<String, Attrs> e : importServices.entrySet()) {
-			String service = Processor.removeDuplicateMarker(e.getKey());
-			boolean optional = Constants.RESOLUTION_OPTIONAL.equals(e.getValue()
-				.get("availability:"));
-			boolean multiple = "true".equalsIgnoreCase(e.getValue()
-				.get("multiple:"));
+		importServices.stream()
+			.mapKey(Processor::removeDuplicateMarker)
+			.forEachOrdered((service, attrs) -> {
+				boolean optional = Constants.RESOLUTION_OPTIONAL.equals(attrs.get("availability:"));
+				boolean multiple = "true".equalsIgnoreCase(attrs.get("multiple:"));
 
-			StringBuilder filter = new StringBuilder();
-			filter.append('(')
-				.append(Constants.OBJECTCLASS)
-				.append('=')
-				.append(service)
-				.append(')');
-			RequirementBuilder rb = new RequirementBuilder(ServiceNamespace.SERVICE_NAMESPACE);
-			rb.addFilter(filter.toString());
-			rb.addDirective("effective", "active");
-			if (optional)
-				rb.addDirective(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Constants.RESOLUTION_OPTIONAL);
+				StringBuilder filter = new StringBuilder();
+				filter.append('(')
+					.append(Constants.OBJECTCLASS)
+					.append('=')
+					.append(service)
+					.append(')');
+				RequirementBuilder rb = new RequirementBuilder(ServiceNamespace.SERVICE_NAMESPACE);
+				rb.addFilter(filter.toString());
+				rb.addDirective("effective", "active");
+				if (optional)
+					rb.addDirective(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Constants.RESOLUTION_OPTIONAL);
 
-			rb.addDirective(Namespace.REQUIREMENT_CARDINALITY_DIRECTIVE,
-				multiple ? Namespace.CARDINALITY_MULTIPLE : Namespace.CARDINALITY_SINGLE);
+				rb.addDirective(Namespace.REQUIREMENT_CARDINALITY_DIRECTIVE,
+					multiple ? Namespace.CARDINALITY_MULTIPLE : Namespace.CARDINALITY_SINGLE);
 
-			addRequirement(rb);
-		}
+				addRequirement(rb);
+			});
 	}
 
 	/**
@@ -443,9 +445,9 @@ public class ResourceBuilder {
 	 */
 
 	public void addRequireBundles(Parameters requireBundle) throws Exception {
-		for (Entry<String, Attrs> clause : requireBundle.entrySet()) {
-			addRequireBundle(Processor.removeDuplicateMarker(clause.getKey()), clause.getValue());
-		}
+		requireBundle.stream()
+			.mapKey(Processor::removeDuplicateMarker)
+			.forEachOrdered(asBiConsumer(this::addRequireBundle));
 	}
 
 	public void addRequireBundle(String bsn, VersionRange range) throws Exception {
@@ -515,10 +517,9 @@ public class ResourceBuilder {
 	}
 
 	public void addRequireCapabilities(Parameters required) throws Exception {
-		for (Entry<String, Attrs> clause : required.entrySet()) {
-			String namespace = Processor.removeDuplicateMarker(clause.getKey());
-			addRequireCapability(namespace, Processor.removeDuplicateMarker(clause.getKey()), clause.getValue());
-		}
+		required.stream()
+			.mapKey(Processor::removeDuplicateMarker)
+			.forEachOrdered(asBiConsumer((namespace, attrs) -> addRequireCapability(namespace, namespace, attrs)));
 	}
 
 	public void addRequireCapability(String namespace, String name, Attrs attrs) throws Exception {
@@ -528,14 +529,10 @@ public class ResourceBuilder {
 	}
 
 	public List<Capability> addProvideCapabilities(Parameters capabilities) throws Exception {
-		List<Capability> added = new ArrayList<>();
-		for (Entry<String, Attrs> clause : capabilities.entrySet()) {
-			String namespace = Processor.removeDuplicateMarker(clause.getKey());
-			Attrs attrs = clause.getValue();
-
-			Capability addedCapability = addProvideCapability(namespace, attrs);
-			added.add(addedCapability);
-		}
+		List<Capability> added = capabilities.stream()
+			.mapKey(Processor::removeDuplicateMarker)
+			.mapToObj(asBiFunction(this::addProvideCapability))
+			.collect(toList());
 		return added;
 	}
 
@@ -555,12 +552,9 @@ public class ResourceBuilder {
 	 * @throws Exception
 	 */
 	public void addExportPackages(Parameters exports) throws Exception {
-		for (Entry<String, Attrs> clause : exports.entrySet()) {
-			String pname = Processor.removeDuplicateMarker(clause.getKey());
-			Attrs attrs = clause.getValue();
-
-			addExportPackage(pname, attrs);
-		}
+		exports.stream()
+			.mapKey(Processor::removeDuplicateMarker)
+			.forEachOrdered(asBiConsumer(this::addExportPackage));
 	}
 
 	public void addEE(EE ee) throws Exception {
@@ -588,12 +582,9 @@ public class ResourceBuilder {
 	 * @throws Exception
 	 */
 	public void addImportPackages(Parameters imports) throws Exception {
-		for (Entry<String, Attrs> clause : imports.entrySet()) {
-			String pname = Processor.removeDuplicateMarker(clause.getKey());
-			Attrs attrs = clause.getValue();
-
-			addImportPackage(pname, attrs);
-		}
+		imports.stream()
+			.mapKey(Processor::removeDuplicateMarker)
+			.forEachOrdered(asBiConsumer(this::addImportPackage));
 	}
 
 	public Requirement addImportPackage(String pname, Attrs attrs) throws Exception {

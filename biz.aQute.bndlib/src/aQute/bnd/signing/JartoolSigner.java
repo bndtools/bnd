@@ -4,8 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +13,9 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.SignerPlugin;
+import aQute.bnd.stream.MapStream;
 import aQute.lib.io.IO;
 import aQute.libg.command.Command;
 import aQute.service.reporter.Reporter;
@@ -90,6 +90,8 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 
 	@Override
 	public void setReporter(Reporter processor) {}
+
+	private static Pattern EXTENSIONS_P = Pattern.compile(".*\\.(DSA|RSA|SF|MF)$");
 
 	@Override
 	public void sign(Builder builder, String alias) throws Exception {
@@ -168,13 +170,10 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 		Jar signed = new Jar(tmp);
 		builder.addClose(signed);
 
-		Map<String, Resource> dir = signed.getDirectory("META-INF");
-		for (Entry<String, Resource> entry : dir.entrySet()) {
-			String path = entry.getKey();
-			if (path.matches(".*\\.(DSA|RSA|SF|MF)$")) {
-				jar.putResource(path, entry.getValue());
-			}
-		}
+		MapStream.of(signed.getDirectory("META-INF"))
+			.filterKey(path -> EXTENSIONS_P.matcher(path)
+				.matches())
+			.forEachOrdered(jar::putResource);
 		jar.setDoNotTouchManifest();
 	}
 

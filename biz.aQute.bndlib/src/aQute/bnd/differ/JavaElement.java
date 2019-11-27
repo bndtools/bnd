@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Manifest;
@@ -53,6 +54,7 @@ import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Type;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
 import aQute.libg.generics.Create;
@@ -127,11 +129,14 @@ class JavaElement {
 			.getManifest();
 		if (manifest != null && manifest.getMainAttributes()
 			.getValue(Constants.BUNDLE_MANIFESTVERSION) != null) {
-			exports = new Packages();
-			for (Map.Entry<String, Attrs> entry : OSGiHeader.parseHeader(manifest.getMainAttributes()
+			exports = OSGiHeader.parseHeader(manifest.getMainAttributes()
 				.getValue(Constants.EXPORT_PACKAGE))
-				.entrySet())
-				exports.put(analyzer.getPackageRef(entry.getKey()), entry.getValue());
+				.stream()
+				.mapKey(analyzer::getPackageRef)
+				.collect(MapStream.toMap((Attrs u, Attrs v) -> {
+					u.mergeWith(v, true);
+					return u;
+				}, Packages::new));
 		} else
 			exports = analyzer.getContained();
 		//
@@ -140,13 +145,11 @@ class JavaElement {
 		// out who the providers and consumers are
 		//
 
-		for (Entry<PackageRef, Attrs> entry : exports.entrySet()) {
-			String value = entry.getValue()
-				.get(Constants.PROVIDER_TYPE_DIRECTIVE);
-			if (value != null) {
-				providerMatcher.put(entry.getKey(), new Instructions(value));
-			}
-		}
+		exports.stream()
+			.mapValue(v -> v.get(Constants.PROVIDER_TYPE_DIRECTIVE))
+			.filterValue(Objects::nonNull)
+			.mapValue(Instructions::new)
+			.forEachOrdered(providerMatcher::put);
 
 		// we now need to gather all the packages but without
 		// creating the packages yet because we do not yet know

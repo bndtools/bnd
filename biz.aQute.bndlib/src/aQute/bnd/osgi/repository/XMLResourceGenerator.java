@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
@@ -23,6 +24,7 @@ import org.osgi.service.repository.Repository;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.TypedAttribute;
+import aQute.bnd.stream.MapStream;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
 
@@ -150,27 +152,22 @@ public class XMLResourceGenerator {
 	}
 
 	private void directives(Tag cr, Map<String, String> directives) {
-		directives.entrySet()
-			.forEach(e -> {
+		MapStream.of(directives)
+			.forEach((key, value) -> {
 				Tag d = new Tag(cr, "directive");
-				d.addAttribute("name", e.getKey());
-				d.addAttribute("value", e.getValue());
+				d.addAttribute("name", key);
+				d.addAttribute("value", value);
 			});
 	}
 
 	private void attributes(Tag cr, Map<String, Object> attributes) {
-		attributes.entrySet()
-			.forEach(e -> {
-				Object value = e.getValue();
-				if (value == null)
-					return;
-
-				TypedAttribute ta = TypedAttribute.getTypedAttribute(value);
-				if (ta == null)
-					return;
-
+		MapStream.of(attributes)
+			.filterValue(Objects::nonNull)
+			.mapValue(TypedAttribute::getTypedAttribute)
+			.filterValue(Objects::nonNull)
+			.forEach((key, ta) -> {
 				Tag d = new Tag(cr, "attribute");
-				d.addAttribute("name", e.getKey());
+				d.addAttribute("name", key);
 				d.addAttribute("value", ta.value);
 				if (ta.type != null)
 					d.addAttribute("type", ta.type);
