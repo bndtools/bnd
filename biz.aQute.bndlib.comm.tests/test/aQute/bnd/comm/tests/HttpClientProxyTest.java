@@ -223,8 +223,9 @@ public class HttpClientProxyTest extends TestCase {
 	private AtomicBoolean				proxyCalled				= new AtomicBoolean();
 	private HttpTestServer				httpTestServer;
 	private SocksProxyServer			socks5Proxy;
-	private static final AtomicInteger	httpProxyPort			= new AtomicInteger(2080);
-	private static final AtomicInteger	socksProxyPort			= new AtomicInteger(3080);
+	private static final AtomicInteger	httpProxyPort			= new AtomicInteger(IO.isWindows() ? 52080 : 2080);
+	private static final AtomicInteger	socksProxyPort			= new AtomicInteger(IO.isWindows() ? 53080 : 3080);
+
 	private AtomicReference<Throwable>	exception				= new AtomicReference<>();
 	private AtomicInteger				created					= new AtomicInteger();
 
