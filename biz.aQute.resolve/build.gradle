@@ -1,0 +1,21 @@
+
+test {
+    def StringBuilder builder = new StringBuilder();
+    
+    onOutput { descriptor, event ->
+        builder.append(event.message);
+   }
+   
+    beforeTest { descriptor ->
+        builder.setLength(0);
+        builder.append("\n*************************************************************\n");
+    }
+
+    afterTest { descriptor, result ->
+        if  ( result.getResultType().toString() == "FAILURE" ) {
+            builder.append("\n*************************************************************\n");
+            System.out.println("After " + result.getResultType() );
+            logger.error("Test: " + descriptor + ", error: " + builder)
+        } 
+    }
+}

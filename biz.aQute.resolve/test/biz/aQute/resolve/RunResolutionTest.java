@@ -26,7 +26,7 @@ import aQute.lib.io.IO;
 
 public class RunResolutionTest {
 
-	Workspace workspace;
+	Workspace	workspace;
 
 	File		tmp;
 
@@ -108,7 +108,10 @@ public class RunResolutionTest {
 		Collection<Container> runbundles = pl.getProject()
 			.getRunbundles();
 		assertThat(runbundles).isEmpty();
-		assertThat(bndrun.check("Download java.io.FileNotFoundException:")).isTrue();
+		if (IO.isWindows())
+			assertThat(bndrun.check()).isTrue();
+		else
+			assertThat(bndrun.check("Download java.io.FileNotFoundException:")).isTrue();
 	}
 
 	@Test
@@ -124,6 +127,7 @@ public class RunResolutionTest {
 		Collection<Container> runbundles = pl.getProject()
 			.getRunbundles();
 	}
+
 	private Map<Resource, List<Wire>> permutate(Map<Resource, List<Wire>> required) {
 		TreeMap<Resource, List<Wire>> map = new TreeMap<>(required);
 		map.entrySet()
@@ -144,6 +148,7 @@ public class RunResolutionTest {
 			.setRunBundles(Collections.emptyList());
 		assertThat(resolution.updateBundles(bndrun.getModel())).isTrue();
 	}
+
 	@Test
 	public void testStartLevelsLeastDependenciesFirst() throws Exception {
 		Bndrun bndrun = Bndrun.createBndrun(workspace,
