@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import aQute.bnd.build.Workspace;
@@ -32,6 +34,11 @@ import aQute.maven.api.Program;
 @Description("Maintain Maven Bnd Repository GAV files")
 @SuppressWarnings("deprecation")
 public class MbrCommand extends Processor {
+	final static Pattern					SNAPSHOTLIKE_P			= Pattern.compile("-[^.]+$");
+	final static Predicate<MavenVersion>	notSnapshotlikePredicate	= v -> {
+																			return !SNAPSHOTLIKE_P.matcher(v.toString())
+																			.find();
+																	};
 
 	@Description("Maintain Maven Bnd Repository GAV files")
 	public interface MrOptions extends Options {
@@ -56,6 +63,7 @@ public class MbrCommand extends Processor {
 		int[] repo();
 
 	}
+
 	@Description("List the repositories in this workspace")
 	@Arguments(arg = {})
 	interface ReposOptions extends Options {
@@ -69,13 +77,13 @@ public class MbrCommand extends Processor {
 			System.out.format("%2d %-30s %s\n", n, r.getName(), r.getIndexFile());
 		}
 	}
+
 	@Description("Verify the repositories, this checks if a GAV is defined in multiple repositories or if there are multiple revisions for the same program")
 	@Arguments(arg = {
 		"archive-glob..."
 	})
 
-	interface VerifyOptions extends BaseOptions {
-	}
+	interface VerifyOptions extends BaseOptions {}
 
 	@Description("Verify the repositories, this checks if a GAV is defined in multiple repositories or if there are multiple revisions for the same program")
 	public void _verify(VerifyOptions options) throws Exception {
@@ -122,6 +130,9 @@ public class MbrCommand extends Processor {
 
 		@Description("Specify the scope of the selected version: all, micro (max), minor (max), major (max)")
 		Scope scope(Scope deflt);
+
+		@Description("Include snapshot like versions like -SNAPSHOT, -rc1, -beta12. These are skipped for updated by default")
+		boolean snapshotlike();
 	}
 
 	@Description("For each archive in the index, show the available higher versions")
@@ -129,7 +140,8 @@ public class MbrCommand extends Processor {
 		List<MavenBndRepository> repos = getRepositories(options.repo());
 		List<Archive> archives = getArchives(repos, options._arguments());
 
-		MultiMap<Archive, MavenVersion> overlap = getUpdates(options.scope(Scope.all), repos, archives);
+		MultiMap<Archive, MavenVersion> overlap = getUpdates(options.scope(Scope.all), repos, archives,
+			options.snapshotlike());
 		format("Updates available", overlap);
 	}
 
@@ -146,7 +158,8 @@ public class MbrCommand extends Processor {
 		List<MavenBndRepository> repos = getRepositories(options.repo());
 		List<Archive> archives = getArchives(repos, options._arguments());
 
-		MultiMap<Archive, MavenVersion> updates = getUpdates(options.scope(Scope.all), repos, archives);
+		MultiMap<Archive, MavenVersion> updates = getUpdates(options.scope(Scope.all), repos, archives,
+			options.snapshotlike());
 
 		for (MavenBndRepository repo : repos) {
 			bnd.trace("repo %s", repo.getName());
@@ -159,8 +172,7 @@ public class MbrCommand extends Processor {
 				} else {
 					MavenVersion version = list.get(list.size() - 1);
 					bnd.out.format("  %-70s   %20s -> %s%n", archive.getRevision().program,
-						archive.getRevision().version,
-						version);
+						archive.getRevision().version, version);
 					content.put(archive, version);
 				}
 			}
@@ -269,6 +281,7 @@ public class MbrCommand extends Processor {
 		}
 
 		return repos.stream()
+			.parallel()
 			.map(MavenBndRepository::getArchives)
 			.flatMap(Collection::stream)
 			.filter(archive -> selection.matches(archive.toString()))
@@ -276,7 +289,7 @@ public class MbrCommand extends Processor {
 	}
 
 	private MultiMap<Archive, MavenVersion> getUpdates(Scope scope, List<MavenBndRepository> repos,
-		List<Archive> archives) throws Exception {
+		List<Archive> archives, boolean snapshotlike) throws Exception {
 		MultiMap<Archive, MavenVersion> overlap = new MultiMap<>();
 
 		for (Archive archive : archives) {
@@ -287,6 +300,7 @@ public class MbrCommand extends Processor {
 					r.getRevisions(archive.revision.program)
 						.stream()
 						.map(revision -> revision.version)
+						.filter(snapshotlike ? x -> true : notSnapshotlikePredicate)
 						.filter(v -> v.compareTo(version) > 0)
 						.forEach(v -> {
 							overlap.add(archive, v);
@@ -296,8 +310,7 @@ public class MbrCommand extends Processor {
 		}
 		overlap.entrySet()
 			.forEach(e -> {
-				List<MavenVersion> filtered = filter(e.getValue(), e.getKey().revision.version.getOSGiVersion(),
-					scope);
+				List<MavenVersion> filtered = filter(e.getValue(), e.getKey().revision.version.getOSGiVersion(), scope);
 				e.setValue(filtered);
 			});
 		return overlap;

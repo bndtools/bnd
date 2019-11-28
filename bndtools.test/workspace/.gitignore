@@ -1,3 +1,4 @@
-/.gradle/
-/.metadata
-/*
+.DS_Store
+.gradle/
+/generated/
+.metadata
