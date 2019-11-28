@@ -141,7 +141,9 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 	}
 
 	protected void launchProject(IProject project, String mode) {
-		launch(null, project, mode);
+		IPath fullPath = project.getFullPath();
+		IPath bndfile = fullPath.append(Project.BNDFILE);
+		launch(bndfile, project, mode);
 	}
 
 	protected void launchBndRun(IFile bndRunFile, String mode) {
