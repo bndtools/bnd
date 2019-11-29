@@ -150,10 +150,7 @@ public interface Result<V, E> {
 	<R extends Throwable> V orElseThrow(FunctionWithException<? super E, ? extends R> f) throws R;
 
 	default Result<V, E> failed(Exception e) {
-		if (e instanceof RuntimeException)
-			throw (RuntimeException) e;
-
-		throw new ResultException(e);
+		throw Private.duck(e);
 	}
 
 	static <O, F> Result<O, F> fromNull(O ok, F err) {

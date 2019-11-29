@@ -61,15 +61,4 @@ public interface FunctionWithException<T, R> {
 		Supplier<? extends R> orElseGet) {
 		return unchecked.orElseGet(orElseGet);
 	}
-
-	static RuntimeException duck(Throwable t) {
-		throwsUnchecked(t);
-		throw new AssertionError("unreachable");
-	}
-
-	@SuppressWarnings("unchecked")
-	static <E extends Throwable> void throwsUnchecked(Throwable throwable) throws E {
-		throw (E) throwable;
-	}
-
 }
