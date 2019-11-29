@@ -20,10 +20,8 @@ public interface FunctionWithException<T, R> {
 		return t -> {
 			try {
 				return apply(t);
-			} catch (RuntimeException e) {
-				throw e;
-			} catch (Exception e) {
-				throw new RuntimeException(e);
+			} catch (Throwable e) {
+				throw Exceptions.duck(e);
 			}
 		};
 	}

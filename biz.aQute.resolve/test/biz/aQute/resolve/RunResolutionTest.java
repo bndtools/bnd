@@ -108,10 +108,11 @@ public class RunResolutionTest {
 		Collection<Container> runbundles = pl.getProject()
 			.getRunbundles();
 		assertThat(runbundles).isEmpty();
-		if (IO.isWindows())
-			assertThat(bndrun.check()).isTrue();
-		else
-			assertThat(bndrun.check("Download java.io.FileNotFoundException:")).isTrue();
+
+		// The repo used is an XML and the URLs are not found when downloaded in
+		// the background. Sometimes they're in,
+		// sometimes not. This is valid since the Container will be error.
+		assertThat(bndrun.check("(Download java.io.FileNotFoundException:)?")).isTrue();
 	}
 
 	@Test
