@@ -1434,7 +1434,7 @@ public class bnd extends Processor {
 	@Description("Eclipse")
 	public void _eclipse(eclipseOptions options) throws Exception {
 
-		List<String> args = options._arguments();
+		List<String> arguments = options._arguments();
 
 		File dir = getBase();
 		if (options.dir() != null)
@@ -1443,23 +1443,32 @@ public class bnd extends Processor {
 		if (!dir.isDirectory())
 			error("Eclipse requires a path to a directory: %s", dir.getAbsolutePath());
 
-		if (options._arguments()
-			.size() != 0)
-			error("Unnecessary arguments %s", options._arguments());
-
-		if (!isOk())
+		if (!arguments.isEmpty()) {
+			try (EclipseCommand c = new EclipseCommand(this)) {
+				String result = options._command()
+					.subCmd(options, c);
+				if (result != null) {
+					out.println(result);
+				}
+				getInfo(c);
+			}
 			return;
-
-		File cp = new File(dir, ".classpath");
-		if (!cp.exists()) {
-			error("Cannot find .classpath in project directory: %s", dir.getAbsolutePath());
 		} else {
-			EclipseClasspath eclipse = new EclipseClasspath(this, dir.getParentFile(), dir);
-			err.println("Classpath    " + eclipse.getClasspath());
-			err.println("Dependents   " + eclipse.getDependents());
-			err.println("Sourcepath   " + eclipse.getSourcepath());
-			err.println("Output       " + eclipse.getOutput());
-			err.println();
+
+			if (!isOk())
+				return;
+
+			File cp = new File(dir, ".classpath");
+			if (!cp.exists()) {
+				error("Cannot find .classpath in project directory: %s", dir.getAbsolutePath());
+			} else {
+				EclipseClasspath eclipse = new EclipseClasspath(this, dir.getParentFile(), dir);
+				err.println("Classpath    " + eclipse.getClasspath());
+				err.println("Dependents   " + eclipse.getDependents());
+				err.println("Sourcepath   " + eclipse.getSourcepath());
+				err.println("Output       " + eclipse.getOutput());
+				err.println();
+			}
 		}
 	}
 
