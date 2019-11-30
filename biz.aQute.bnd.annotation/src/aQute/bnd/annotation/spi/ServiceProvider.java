@@ -8,6 +8,7 @@ import static aQute.bnd.annotation.spi.Constants.REGISTER_MACRO;
 import static aQute.bnd.annotation.spi.Constants.SERVICELOADER_REGISTRAR;
 import static aQute.bnd.annotation.spi.Constants.SERVICELOADER_VERSION;
 import static aQute.bnd.annotation.spi.Constants.VALUE_MACRO;
+import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.CLASS;
 import static org.osgi.namespace.extender.ExtenderNamespace.EXTENDER_NAMESPACE;
@@ -35,7 +36,9 @@ import aQute.bnd.annotation.Resolution;
  *      Loader Mediator</a>
  */
 @Retention(CLASS)
-@Target(TYPE)
+@Target({
+	PACKAGE, TYPE
+})
 @Repeatable(ServiceProviders.class)
 @Capability(name = VALUE_MACRO, namespace = SERVICELOADER_NAMESPACE, attribute = {
 	REGISTER_MACRO, USES_MACRO, ATTRIBUTE_MACRO
@@ -101,5 +104,15 @@ public @interface ServiceProvider {
 	 * requirement clause.
 	 */
 	Resolution resolution() default Resolution.DEFAULT;
+
+	/**
+	 * The type to register as the provider.
+	 * <p>
+	 * If the annotation used on a package, then {@link #register()} must be
+	 * set. It is optional when used on a type using the type as the value.
+	 * <p>
+	 * The {@code register} directive is omitted from the requirement clause.
+	 */
+	Class<?> register() default Target.class;
 
 }

@@ -25,6 +25,41 @@ import aQute.lib.io.IO;
 public class SPIAnnotationsTest {
 
 	@Test
+	public void testServiceProviderOnPackage() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.spi.providerF");
+			b.build();
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			assertTrue(b.check());
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			assertEquals(2, req.size());
+
+			assertEE(req);
+
+			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
+			assertEquals(1, cap.size());
+
+			Props p = cap.get("osgi.serviceloader");
+			assertNotNull(p);
+			assertNotNull(p.get("osgi.serviceloader"));
+			assertEquals("test.annotationheaders.spi.SPIService", p.get("osgi.serviceloader"));
+			assertNotNull(p.get("register:"));
+			assertEquals("test.annotationheaders.spi.providerF.Provider", p.get("register:"));
+
+			assertServiceMappingFile(b.getJar(), "test.annotationheaders.spi.SPIService",
+				"test.annotationheaders.spi.providerF.Provider");
+		}
+	}
+
+	@Test
 	public void testServiceProvider_existingdescriptor() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin_test"));
