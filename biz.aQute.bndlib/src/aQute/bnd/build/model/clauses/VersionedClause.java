@@ -9,6 +9,10 @@ public class VersionedClause extends HeaderClause implements Cloneable {
 		super(name, attribs);
 	}
 
+	public VersionedClause(String v) {
+		super(v);
+	}
+
 	public String getVersionRange() {
 		return attribs.get(Constants.VERSION_ATTRIBUTE);
 	}

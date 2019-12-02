@@ -698,4 +698,22 @@ public class Converter {
 		return new Converter().convert(tr, source);
 	}
 
+	/**
+	 * Return if the class's instances can hold multiple values.
+	 * 
+	 * @param c the class to test
+	 * @return true if the class's instances can hold multiple values
+	 */
+	public static boolean isMultiple(Class<?> c) {
+		if (c.isArray())
+			return true;
+
+		if (Collection.class.isAssignableFrom(c))
+			return true;
+
+		if (Map.class.isAssignableFrom(c))
+			return true;
+
+		return false;
+	}
 }

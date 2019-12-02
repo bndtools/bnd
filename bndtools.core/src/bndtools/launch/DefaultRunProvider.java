@@ -10,8 +10,8 @@ import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
+import biz.aQute.resolve.Bndrun;
 import bndtools.central.Central;
 import bndtools.launch.util.LaunchUtils;
 
@@ -19,7 +19,7 @@ import bndtools.launch.util.LaunchUtils;
 public class DefaultRunProvider implements RunProvider {
 
 	@Override
-	public Run create(IResource targetResource, RunMode mode) throws Exception {
+	public Bndrun create(IResource targetResource, RunMode mode) throws Exception {
 		Workspace ws = null;
 
 		if (LaunchUtils.isInBndWorkspaceProject(targetResource)) {
@@ -37,14 +37,14 @@ public class DefaultRunProvider implements RunProvider {
 			if (bndFile == null || !bndFile.isFile())
 				return null;
 
-			return Run.createRun(ws, bndFile);
+			return Bndrun.createBndrun(ws, bndFile);
 		} else if (targetResource.getType() == IResource.FILE) {
 			// This is file, use directly
 			File file = targetResource.getLocation()
 				.toFile();
 			if (file == null || !file.isFile())
 				return null;
-			return Run.createRun(ws, file);
+			return Bndrun.createBndrun(ws, file);
 		} else {
 			return null;
 		}

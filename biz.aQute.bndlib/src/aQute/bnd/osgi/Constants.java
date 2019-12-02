@@ -211,6 +211,9 @@ public interface Constants {
 	String				STRICT										= "-strict";
 	String				SUB											= "-sub";
 	String				REPRODUCIBLE								= "-reproducible";
+
+	String				RESOLVE										= "-resolve";
+
 	String				RUNNOREFERENCES								= "-runnoreferences";
 	String				RUNOPTIONS									= "-runoptions";
 	String				RUNOPTIONS_EAGER							= "eager";
@@ -303,7 +306,7 @@ public interface Constants {
 		JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND, GROUPID, STANDALONE, IGNORE_STANDALONE,
 		RUNREPOS, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE,
 		REPRODUCIBLE, INCLUDEPACKAGE, CDIANNOTATIONS, REMOTEWORKSPACE, MAVEN_DEPENDENCIES, BUILDERIGNORE, STALECHECK,
-		MAVEN_SCOPE, RUNSTARTLEVEL, RUNOPTIONS, NOCLASSFORNAME, EXPORT_APIGUARDIAN
+		MAVEN_SCOPE, RUNSTARTLEVEL, RUNOPTIONS, NOCLASSFORNAME, EXPORT_APIGUARDIAN, RESOLVE
 
 	};
 
@@ -555,9 +558,6 @@ public interface Constants {
 	 */
 	@Deprecated
 	String				COMPILER_TARGET								= "-target";
-	@Deprecated
-	// no references in bnd?
-	String				RESOLVE										= "-resolve";
 	@Deprecated
 	String				TESTSUITES									= "Test-Suites";
 	@Deprecated

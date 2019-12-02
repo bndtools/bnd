@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;
@@ -41,7 +40,7 @@ public class DownloadListenerPromise {
 		logger.debug("{}: starting", task);
 		promise.thenAccept(file -> {
 			if (file == null) {
-				throw new FileNotFoundException("Download failed " + task);
+				throw new FileNotFoundException(task);
 			}
 			logger.debug("{}: success {}", this, file);
 
@@ -59,7 +58,7 @@ public class DownloadListenerPromise {
 		})
 			.onFailure(failure -> {
 				logger.debug("{}: failure", this, failure);
-				String reason = Exceptions.toString(failure);
+				String reason = failure.toString();
 				for (DownloadListener dl : dls) {
 					try {
 						dl.failure(null, reason);

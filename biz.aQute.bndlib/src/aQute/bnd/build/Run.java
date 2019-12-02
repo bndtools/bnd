@@ -1,11 +1,41 @@
 package aQute.bnd.build;
 
+import static java.lang.invoke.MethodType.methodType;
+
 import java.io.File;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.Map;
 
 import aQute.bnd.osgi.Processor;
+import aQute.lib.exceptions.Exceptions;
 
 public class Run extends Project {
+
+	/**
+	 * So far we have not included the resolver code inside bndlib. This means
+	 * that anybody inside bndlib cannot rely on the resolver code present.
+	 * However, we get more functions that take advantage of this tool. The
+	 * following code looks if the resolving counterpart of Run is present in
+	 * the classloader. Since this is a 1:1 replacement for this class, we try
+	 * to load the resolving Bndrun.
+	 */
+	private final static MethodHandle createBndrun;
+
+	static {
+		MethodHandles.Lookup lookup = MethodHandles.publicLookup();
+		MethodHandle handle = null;
+		try {
+			Class<?> clazz = Run.class.getClassLoader()
+				.loadClass("biz.aQute.resolve.Bndrun");
+			MethodType type = methodType(clazz, Workspace.class, File.class);
+			handle = lookup.findStatic(clazz, "createBndrun", type);
+		} catch (Throwable e) {
+			handle = null;
+		}
+		createBndrun = handle;
+	}
 
 	/**
 	 * Create a Run that will be stand alone if it contains -standalone. In that
@@ -13,6 +43,17 @@ public class Run extends Project {
 	 * valid workspace.
 	 */
 	public static Run createRun(Workspace workspace, File file) throws Exception {
+		if (createBndrun == null)
+			return createRun0(workspace, file);
+
+		try {
+			return (Run) createBndrun.invoke(workspace, file);
+		} catch (Throwable e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	private static Run createRun0(Workspace workspace, File file) throws Exception {
 		Processor processor;
 		if (workspace != null) {
 			Run run = new Run(workspace, file);

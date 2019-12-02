@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
@@ -87,6 +88,7 @@ import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.cryptography.Digester;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.generics.Create;
 import aQute.libg.reporter.ReporterAdapter;
@@ -2940,5 +2942,43 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			profile = getProperty(Constants.PROFILE);
 		}
 		return profile;
+	}
+
+	/**
+	 * A checksum based on the values of the properties
+	 *
+	 * @return A checksum based on the values of the properties
+	 */
+	public String getChecksum() {
+		try (Processor p = new Processor(this)) {
+			p.setProperty(Constants.TSTAMP, "0");
+
+			Properties flattenedProperties = p.getFlattenedProperties();
+			Digester<SHA1> digester = SHA1.getDigester();
+
+			@SuppressWarnings({
+				"unchecked", "rawtypes"
+			})
+			Set<String> keySet = new TreeSet<>((Set) flattenedProperties.keySet());
+			keySet.forEach(k -> {
+				try {
+					byte[] bytes = k.getBytes(StandardCharsets.UTF_8);
+					digester.write(bytes);
+					String s = flattenedProperties.getProperty(k);
+					if (s == null)
+						return;
+
+					bytes = s.getBytes(StandardCharsets.UTF_8);
+					digester.write(bytes);
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+			});
+			String checksum = digester.digest()
+				.asHex();
+			return checksum;
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 	}
 }

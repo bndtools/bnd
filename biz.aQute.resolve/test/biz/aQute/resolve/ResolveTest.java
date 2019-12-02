@@ -68,7 +68,7 @@ public class ResolveTest extends TestCase {
 	public void testIncludeBndrun() throws Exception {
 		assertInclude("intop.bndrun", "top");
 		assertInclude("ininclude.bndrun", "include");
-		assertInclude("inworkspace.bndrun", "workspace");
+		assertInclude("inws.bndrun", "workspace");
 	}
 
 	/*

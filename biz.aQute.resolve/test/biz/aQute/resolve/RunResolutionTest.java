@@ -1,7 +1,10 @@
 package biz.aQute.resolve;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
 
+import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -12,18 +15,27 @@ import org.junit.Test;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 
+import aQute.bnd.build.Container;
+import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.help.instructions.ResolutionInstructions.Runorder;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.service.result.Result;
 import aQute.lib.io.IO;
 
 public class RunResolutionTest {
 
-	Workspace workspace;
+	Workspace	workspace;
+
+	File		tmp;
 
 	@Before
 	public void setup() throws Exception {
+		tmp = IO.getFile("generated/tmp");
+		IO.delete(tmp);
+		tmp.mkdirs();
+		IO.copy(IO.getFile("testdata/enroute"), tmp);
 		workspace = Workspace.findWorkspace(IO.getFile("testdata/pre-buildworkspace"));
 		assertThat(workspace).isNotNull();
 	}
@@ -38,8 +50,7 @@ public class RunResolutionTest {
 
 	@Test
 	public void testOrdering() throws Exception {
-		Bndrun bndrun = Bndrun.createBndrun(workspace,
-			IO.getFile("testdata/ordering.bndrun"));
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile("testdata/ordering.bndrun"));
 		RunResolution resolution = bndrun.resolve();
 		assertThat(bndrun.check()).isTrue();
 
@@ -51,6 +62,71 @@ public class RunResolutionTest {
 			Runorder.LEASTDEPENDENCIESFIRST);
 
 		assertThat(l1).isEqualTo(l2);
+	}
+
+	@Test
+	public void testCachingOfResult() throws Exception {
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(tmp, "resolver.bndrun"));
+		bndrun.setProperty("-resolve", "beforelaunch");
+		bndrun.unsetProperty("-runbundles");
+		RunResolution.clearCache(bndrun.getWorkspace());
+
+		Result<String, String> nonExistent = RunResolution.getRunBundles(bndrun, false);
+		assertThat(nonExistent.unwrap()).isNull();
+
+		Result<String, String> force = RunResolution.getRunBundles(bndrun, true);
+		assertThat(force.unwrap()).isNotNull();
+
+		Result<String, String> existent = RunResolution.getRunBundles(bndrun, false);
+		assertThat(existent.unwrap()).isNotNull();
+
+		System.out.println("Runbundles " + existent.unwrap());
+
+		bndrun.setProperty("foo", "bar");
+		nonExistent = RunResolution.getRunBundles(bndrun, false);
+		assertThat(nonExistent.unwrap()).isNull();
+
+		ProjectLauncher pl = bndrun.getProjectLauncher();
+		assertNotNull(pl);
+
+		Collection<Container> runbundles = pl.getProject()
+			.getRunbundles();
+		runbundles.forEach(c -> System.out.println(c.getFile()));
+		// assertThat(runbundles).hasSize(22);
+	}
+
+	@Test
+	public void testNotCachingOfResultForOtherResolveOption() throws Exception {
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(tmp, "resolver.bndrun"));
+		bndrun.setProperty("-resolve", "manual");
+		bndrun.unsetProperty("-runbundles");
+		RunResolution.clearCache(bndrun.getWorkspace());
+
+		ProjectLauncher pl = bndrun.getProjectLauncher();
+
+		assertNotNull(pl);
+		Collection<Container> runbundles = pl.getProject()
+			.getRunbundles();
+		assertThat(runbundles).isEmpty();
+
+		// The repo used is an XML and the URLs are not found when downloaded in
+		// the background. Sometimes they're in,
+		// sometimes not. This is valid since the Container will be error.
+		assertThat(bndrun.check("(Download java.io.FileNotFoundException:)?")).isTrue();
+	}
+
+	@Test
+	public void testLaunchWithBeforeLaunchResolve() throws Exception {
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(tmp, "resolver.bndrun"));
+		bndrun.setProperty("-resolve", "beforelaunch");
+		bndrun.unsetProperty("-runbundles");
+		RunResolution.clearCache(bndrun.getWorkspace());
+
+		ProjectLauncher pl = bndrun.getProjectLauncher();
+		pl.setCwd(tmp);
+		assertNotNull(pl);
+		Collection<Container> runbundles = pl.getProject()
+			.getRunbundles();
 	}
 
 	private Map<Resource, List<Wire>> permutate(Map<Resource, List<Wire>> required) {
@@ -73,6 +149,7 @@ public class RunResolutionTest {
 			.setRunBundles(Collections.emptyList());
 		assertThat(resolution.updateBundles(bndrun.getModel())).isTrue();
 	}
+
 	@Test
 	public void testStartLevelsLeastDependenciesFirst() throws Exception {
 		Bndrun bndrun = Bndrun.createBndrun(workspace,

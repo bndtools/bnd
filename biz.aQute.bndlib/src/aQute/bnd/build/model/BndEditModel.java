@@ -53,6 +53,7 @@ import aQute.bnd.build.model.conversions.RequirementFormatter;
 import aQute.bnd.build.model.conversions.RequirementListConverter;
 import aQute.bnd.build.model.conversions.SimpleListConverter;
 import aQute.bnd.build.model.conversions.VersionedClauseConverter;
+import aQute.bnd.help.instructions.ResolutionInstructions;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.properties.Document;
@@ -113,6 +114,8 @@ public class BndEditModel {
 	private final Map<String, Object>								objectProperties			= new HashMap<>();
 	private final Map<String, String>								changesToSave				= new TreeMap<>();
 	private Project													project;
+
+	private volatile boolean										dirty;
 
 	// CONVERTERS
 	private Converter<List<VersionedClause>, String>				buildPathConverter			= new HeaderClauseListConverter<>(
@@ -398,7 +401,11 @@ public class BndEditModel {
 	public BndEditModel(Project project) throws IOException {
 		this(project.getWorkspace());
 		this.project = project;
-		this.document = new Document(IO.collect(project.getPropertiesFile()));
+		File propertiesFile = project.getPropertiesFile();
+		if (propertiesFile.isFile())
+			this.document = new Document(IO.collect(propertiesFile));
+		else
+			this.document = new Document("");
 		loadFrom(this.document);
 	}
 
@@ -1113,7 +1120,7 @@ public class BndEditModel {
 		properties.remove(name);
 		String v = formatter.convert(newValue);
 		changesToSave.put(name, v);
-
+		dirty = true;
 		propChangeSupport.firePropertyChange(name, oldValue, newValue);
 	}
 
@@ -1121,7 +1128,7 @@ public class BndEditModel {
 		objectProperties.put(name, newValue);
 		String v = formatter.convert(newValue);
 		changesToSave.put(name, v);
-
+		dirty = true;
 		propChangeSupport.firePropertyChange(name, oldValue, newValue);
 	}
 
@@ -1348,9 +1355,39 @@ public class BndEditModel {
 
 		saveChangesTo(document);
 		store(document, getProject().getPropertiesFile());
+		dirty = false;
 	}
 
 	public static void store(IDocument document, File file) throws IOException {
 		IO.store(document.get(), file);
+	}
+
+	public ResolutionInstructions.ResolveMode getResolveMode() {
+		String resolve = getGenericString(Constants.RESOLVE);
+		if (resolve != null) {
+			try {
+				return aQute.lib.converter.Converter.cnv(ResolutionInstructions.ResolveMode.class, resolve);
+			} catch (Exception e) {
+				project.error("Invalid value for %s: %s. Allowed values are %s", Constants.RESOLVE, resolve,
+					ResolutionInstructions.ResolveMode.class.getEnumConstants());
+			}
+		}
+		return ResolutionInstructions.ResolveMode.manual;
+	}
+
+	public void setResolveMode(ResolutionInstructions.ResolveMode resolveMode) {
+		setGenericString(Constants.RESOLVE, resolveMode.name());
+	}
+
+	/**
+	 * @return true if there is a discrepancy between the project's file and the
+	 *         document
+	 */
+	public boolean isDirty() {
+		return dirty;
+	}
+
+	public void setDirty(boolean isDirty) {
+		this.dirty = isDirty;
 	}
 }

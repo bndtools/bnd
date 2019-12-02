@@ -5,7 +5,9 @@ import java.util.Collections;
 import org.bndtools.core.resolve.ResolutionResult;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.wizard.Wizard;
+
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
 import biz.aQute.resolve.RunResolution;
 
 public class ResolutionWizard extends Wizard {
@@ -29,9 +31,16 @@ public class ResolutionWizard extends Wizard {
 	@Override
 	public boolean performFinish() {
 		ResolutionResult result = resultsPage.getResult();
+
 		if (result != null && result.getOutcome() == ResolutionResult.Outcome.Resolved) {
 			RunResolution resolution = result.getResolution();
-			resolution.updateBundles(model);
+			assert resolution.isOK();
+
+			if (model.getResolveMode() == ResolveMode.beforelaunch) {
+				resolution.cache();
+			} else {
+				resolution.updateBundles(model);
+			}
 		} else {
 			if (!preserveRunBundleUnresolved)
 				model.setRunBundles(Collections.emptyList());
@@ -46,5 +55,4 @@ public class ResolutionWizard extends Wizard {
 	public void setPreserveRunBundlesUnresolved(boolean preserve) {
 		this.preserveRunBundleUnresolved = preserve;
 	}
-
 }

@@ -53,6 +53,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
 import aQute.libg.command.Command;
+import biz.aQute.resolve.Bndrun;
 
 public class AlsoLauncherTest {
 	public static final String	TMPDIR		= "generated/tmp/test";
@@ -73,8 +74,8 @@ public class AlsoLauncherTest {
 		prior.putAll(System.getProperties());
 
 		File wsRoot = new File(testDir, "test ws");
-		for (String folder : Arrays.asList("cnf", "demo", "biz.aQute.launcher", "biz.aQute.junit",
-			"biz.aQute.tester", "biz.aQute.tester.junit-platform")) {
+		for (String folder : Arrays.asList("cnf", "demo", "biz.aQute.launcher", "biz.aQute.junit", "biz.aQute.tester",
+			"biz.aQute.tester.junit-platform")) {
 			File tgt = new File(wsRoot, folder);
 			IO.copy(new File("..", folder), tgt);
 			IO.delete(new File(tgt, "generated/buildfiles"));
@@ -93,6 +94,17 @@ public class AlsoLauncherTest {
 		IO.close(project);
 		IO.close(workspace);
 		System.setProperties(prior);
+	}
+
+	/**
+	 * Test that the Bndrun file is loaded when we create a run
+	 * 
+	 */
+	@Test
+	public void testCreateBndrun() throws Exception {
+		Run run = Run.createRun(workspace, project.getFile("x.bndrun"));
+
+		assertThat(run).isInstanceOf(Bndrun.class);
 	}
 
 	@Test

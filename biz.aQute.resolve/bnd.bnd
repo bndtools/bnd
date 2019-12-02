@@ -24,7 +24,7 @@
 	slf4j.simple;version=latest
 
 Export-Package:  \
-	biz.aQute.resolve,\
+	biz.aQute.resolve;bnd-plugins=true,\
 	org.osgi.service.log;-split-package:=first,\
 	org.osgi.service.resolver;-split-package:=first
 

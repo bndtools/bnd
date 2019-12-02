@@ -9,6 +9,7 @@ import org.osgi.service.resolver.ResolutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.build.Container;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
@@ -16,17 +17,23 @@ import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.build.model.conversions.CollectionFormatter;
 import aQute.bnd.build.model.conversions.Converter;
 import aQute.bnd.build.model.conversions.HeaderClauseFormatter;
+import aQute.bnd.help.Syntax;
+import aQute.bnd.help.instructions.ResolutionInstructions;
+import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
 
 /**
+ * This is a resolving version of the Run class. The name of this class is known
+ * in the super class so do not rename it or change {@link Run}
  */
 public class Bndrun extends Run {
 	Logger																		logger					= LoggerFactory
 		.getLogger(Bndrun.class);
 	final BndEditModel															model;
+	final ResolutionInstructions												resolutionInstructions;
 	private static final Converter<String, Collection<? extends HeaderClause>>	runbundlesListFormatter	= new CollectionFormatter<>(
 		",", new HeaderClauseFormatter(), null, "", "");
 
@@ -59,11 +66,14 @@ public class Bndrun extends Run {
 		super(model.getWorkspace(), model.getProject()
 			.getPropertiesFile());
 		this.model = model;
+		this.resolutionInstructions = Syntax.getInstructions(model.getProject(), ResolutionInstructions.class);
+
 	}
 
 	public Bndrun(Workspace workspace, File propertiesFile) throws Exception {
 		super(workspace, propertiesFile);
 		this.model = new BndEditModel(this);
+		this.resolutionInstructions = Syntax.getInstructions(model.getProject(), ResolutionInstructions.class);
 	}
 
 	/**
@@ -139,4 +149,15 @@ public class Bndrun extends Run {
 	public BndEditModel getModel() {
 		return model;
 	}
+
+	@Override
+	public Collection<Container> getRunbundles() throws Exception {
+		if (resolutionInstructions.resolve() == ResolveMode.beforelaunch) {
+			return RunResolution.getRunBundles(this, true)
+				.map(this::parseRunbundles)
+				.orElseThrow(s -> new IllegalArgumentException(s));
+		}
+		return super.getRunbundles();
+	}
+
 }

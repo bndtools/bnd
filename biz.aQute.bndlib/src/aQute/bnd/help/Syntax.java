@@ -1,5 +1,6 @@
 package aQute.bnd.help;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -14,6 +15,7 @@ import java.util.regex.Pattern;
 
 import aQute.bnd.help.instructions.BuilderInstructions;
 import aQute.bnd.help.instructions.LauncherInstructions;
+import aQute.bnd.help.instructions.ResolutionInstructions;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
@@ -751,6 +753,7 @@ public class Syntax implements Constants {
 		}
 		add(BuilderInstructions.class);
 		add(LauncherInstructions.class);
+		add(ResolutionInstructions.class);
 	}
 
 	private static void add(Syntax s) {
@@ -832,6 +835,17 @@ public class Syntax implements Constants {
 				// properties
 				Syntax[] clauses = create(rtype, Syntax::toProperty, false);
 				syntaxes.add(new Syntax(name, lead, example, values, pattern, clauses));
+			}
+			if (rtype.isEnum()) {
+				Field[] enumConstants = rtype.getFields();
+				Syntax[] fields = new Syntax[enumConstants.length];
+
+				for (int i = 0; i < enumConstants.length; i++) {
+					Field e = enumConstants[i];
+					fields[i] = createEnumField(e);
+				}
+				Syntax syntax = new Syntax(name, lead, example, values, pattern, fields);
+				syntaxes.add(syntax);
 			} else {
 				// simple value
 				syntaxes.add(new Syntax(name, lead, example, values, pattern));
@@ -840,6 +854,29 @@ public class Syntax implements Constants {
 		}
 
 		return syntaxes.toArray(new Syntax[0]);
+	}
+
+	private static Syntax createEnumField(Field e) {
+		String name = e.getName();
+		String lead = null;
+		String example = null;
+		Pattern pattern = Pattern.compile(Pattern.quote(e.getName()));
+		SyntaxAnnotation sa = e.getAnnotation(SyntaxAnnotation.class);
+		if (sa != null) {
+			if (!sa.name()
+				.isEmpty())
+				name = sa.name();
+			if (!sa.lead()
+				.isEmpty())
+				lead = sa.lead();
+			if (!sa.example()
+				.isEmpty())
+				example = sa.example();
+			if (!sa.pattern()
+				.isEmpty())
+				pattern = Pattern.compile(sa.pattern(), Pattern.LITERAL);
+		}
+		return new Syntax(name, lead, example, name, pattern);
 	}
 
 	static String toInstruction(Method m) {
