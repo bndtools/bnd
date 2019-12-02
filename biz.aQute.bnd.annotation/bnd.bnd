@@ -6,5 +6,6 @@ Bundle-Description:     bnd Annotations Library
 -buildpath: \
 	osgi.annotation;version=latest,\
 	org.osgi.namespace.extender;version=latest,\
+	org.osgi.namespace.service;version=latest,\
 	org.osgi.resource;version=latest,\
 	org.osgi.service.serviceloader;version=latest

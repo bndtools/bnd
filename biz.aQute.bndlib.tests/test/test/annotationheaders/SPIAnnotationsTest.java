@@ -12,6 +12,9 @@ import java.util.jar.Attributes;
 
 import org.junit.Test;
 
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -45,7 +48,7 @@ public class SPIAnnotationsTest {
 			assertEE(req);
 
 			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
-			assertEquals(1, cap.size());
+			assertEquals(2, cap.size());
 
 			Props p = cap.get("osgi.serviceloader");
 			assertNotNull(p);
@@ -161,7 +164,7 @@ public class SPIAnnotationsTest {
 			assertEE(req);
 
 			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
-			assertEquals(1, cap.size());
+			assertEquals(2, cap.size());
 
 			Props p = cap.get("osgi.serviceloader");
 			assertNotNull(p);
@@ -228,7 +231,7 @@ public class SPIAnnotationsTest {
 			assertEE(req);
 
 			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
-			assertEquals(1, cap.size());
+			assertEquals(2, cap.size());
 
 			Props p = cap.get("osgi.serviceloader");
 			assertNotNull(p);
@@ -466,7 +469,7 @@ public class SPIAnnotationsTest {
 			assertEE(req);
 
 			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
-			assertEquals(1, cap.size());
+			assertEquals(2, cap.size());
 
 			Props p = cap.get("osgi.serviceloader");
 			assertNotNull(p);
@@ -481,6 +484,38 @@ public class SPIAnnotationsTest {
 
 			assertServiceMappingFile(b.getJar(), "test.annotationheaders.spi.SPIService",
 				"test.annotationheaders.spi.providerB.Provider");
+		}
+	}
+
+	@Test
+	public void testServiceProviderProvidesService() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.spi.provider");
+			b.build();
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			assertTrue(b.check());
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			assertEquals(2, req.size());
+
+			assertExtender(req, "osgi.serviceloader.registrar");
+			assertEE(req);
+
+			Parameters cap = OSGiHeader.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
+			assertEquals(3, cap.size());
+
+			Attrs p = cap.get("osgi.service");
+			assertNotNull(p);
+			assertNotNull(p.getTyped("objectClass"));
+			assertThat(p.getTyped(Attrs.LIST_STRING, "objectClass")).contains("test.annotationheaders.spi.SPIService");
+			assertEquals("active", p.get("effective:"));
 		}
 	}
 
@@ -506,7 +541,7 @@ public class SPIAnnotationsTest {
 			assertEE(req);
 
 			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
-			assertEquals(2, cap.size());
+			assertEquals(3, cap.size());
 
 			Props p = cap.get("osgi.serviceloader");
 			assertNotNull(p);
