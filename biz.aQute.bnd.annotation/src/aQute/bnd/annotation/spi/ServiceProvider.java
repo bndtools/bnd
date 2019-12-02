@@ -7,11 +7,14 @@ import static aQute.bnd.annotation.spi.Constants.ATTRIBUTE_MACRO;
 import static aQute.bnd.annotation.spi.Constants.REGISTER_MACRO;
 import static aQute.bnd.annotation.spi.Constants.SERVICELOADER_REGISTRAR;
 import static aQute.bnd.annotation.spi.Constants.SERVICELOADER_VERSION;
+import static aQute.bnd.annotation.spi.Constants.SERVICE_MACRO;
 import static aQute.bnd.annotation.spi.Constants.VALUE_MACRO;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.CLASS;
 import static org.osgi.namespace.extender.ExtenderNamespace.EXTENDER_NAMESPACE;
+import static org.osgi.namespace.service.ServiceNamespace.SERVICE_NAMESPACE;
+import static org.osgi.resource.Namespace.EFFECTIVE_ACTIVE;
 import static org.osgi.service.serviceloader.ServiceLoaderNamespace.SERVICELOADER_NAMESPACE;
 
 import java.lang.annotation.Repeatable;
@@ -43,6 +46,9 @@ import aQute.bnd.annotation.Resolution;
 @Capability(name = VALUE_MACRO, namespace = SERVICELOADER_NAMESPACE, attribute = {
 	REGISTER_MACRO, USES_MACRO, ATTRIBUTE_MACRO
 })
+@Capability(namespace = SERVICE_NAMESPACE, attribute = {
+	SERVICE_MACRO, USES_MACRO, ATTRIBUTE_MACRO
+}, effective = EFFECTIVE_ACTIVE)
 @Requirement(name = SERVICELOADER_REGISTRAR, namespace = EXTENDER_NAMESPACE, version = SERVICELOADER_VERSION, attribute = {
 	EFFECTIVE_MACRO, RESOLUTION_MACRO
 })

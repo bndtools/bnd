@@ -15,6 +15,8 @@ public final class Constants {
 
 	public static final String	REGISTER_MACRO			= "register:=${#register}";
 
+	public static final String	SERVICE_MACRO			= "objectClass:List<String>=\"${#value}\"";
+
 	public static final String	VALUE_MACRO				= "${#value}";
 
 }
