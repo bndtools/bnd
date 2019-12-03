@@ -25,6 +25,36 @@ import aQute.bnd.osgi.Jar;
 public class CDIAnnotationTest {
 
 	@Test
+	public void allowAbstract() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty("Private-Package", "test.cdi.beans_l.*");
+			b.addClasspath(new File("bin_test"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, Arrays.asList("test.cdi.beans_l.Bar"));
+		}
+	}
+
+	@Test
+	public void allowInterfaces() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty("Private-Package", "test.cdi.beans_k.*");
+			b.addClasspath(new File("bin_test"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, Arrays.asList("test.cdi.beans_k.Bar"));
+		}
+	}
+
+	@Test
 	public void ignoresAnonymousClass() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty("Private-Package", "test.cdi.beans_j.*");
