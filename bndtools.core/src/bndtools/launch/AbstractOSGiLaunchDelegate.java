@@ -23,7 +23,10 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobFunction;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
@@ -36,6 +39,7 @@ import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.environments.IExecutionEnvironment;
 import org.eclipse.jdt.launching.environments.IExecutionEnvironmentsManager;
+import org.osgi.framework.FrameworkUtil;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
@@ -354,6 +358,8 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 		enableTraceOptionIfSetOnConfiguration(configuration, getProjectLauncher());
 	}
 
+	private AtomicBoolean updatePending = new AtomicBoolean(false);
+
 	/**
 	 * Registers a resource listener with the project model file to update the
 	 * launcher when the model or any of the run-bundles changes. The resource
@@ -364,8 +370,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 	 * @param launch
 	 * @throws CoreException
 	 */
-	private void registerLaunchPropertiesRegenerator(final Project project, final ILaunch launch)
-		throws CoreException {
+	private void registerLaunchPropertiesRegenerator(final Project project, final ILaunch launch) throws CoreException {
 		final IResource targetResource = LaunchUtils.getTargetResource(launch.getLaunchConfiguration());
 		if (targetResource == null)
 			return;
@@ -386,8 +391,9 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 		}
 		final IResourceChangeListener resourceListener = event -> {
 			try {
-				final AtomicBoolean update = new AtomicBoolean(false);
-
+				if (updatePending.get()) {
+					return;
+				}
 				// Was the properties file (bnd.bnd or *.bndrun) included in
 				// the delta?
 				IResourceDelta propsDelta = event.getDelta()
@@ -397,53 +403,88 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 						.findMember(targetResource.getFullPath());
 				if (propsDelta != null) {
 					if (propsDelta.getKind() == IResourceDelta.CHANGED) {
-						update.set(true);
+						scheduleUpdate();
+						return;
 					}
 				}
 
 				// Check for bundles included in the launcher's runbundles
 				// list
-				if (!update.get()) {
-					final Set<String> runBundleSet = new HashSet<>();
-					for (String bundlePath : getProjectLauncher().getRunBundles()) {
-						runBundleSet.add(new org.eclipse.core.runtime.Path(bundlePath).toPortableString());
-					}
-					event.getDelta()
-						.accept(delta -> {
-							// Short circuit if we have already found a
-							// match
-							if (update.get())
-								return false;
+				final Set<String> runBundleSet = new HashSet<>();
+				for (String bundlePath : getProjectLauncher().getRunBundles()) {
+					runBundleSet.add(new org.eclipse.core.runtime.Path(bundlePath).toPortableString());
+				}
+				event.getDelta()
+					.accept(delta -> {
+						// Short circuit if we have already found a
+						// match
+						if (updatePending.get()) {
+							return false;
+						}
 
-							IResource resource = delta.getResource();
-							if (resource.getType() == IResource.FILE) {
-								IPath location = resource.getLocation();
-								boolean isRunBundle = location != null
-									? runBundleSet.contains(location.toPortableString())
-									: false;
-								update.compareAndSet(false, isRunBundle);
-								return false;
+						IResource resource = delta.getResource();
+						if (resource.getType() == IResource.FILE) {
+							IPath location = resource.getLocation();
+							boolean isRunBundle = location != null ? runBundleSet.contains(location.toPortableString())
+								: false;
+							if (isRunBundle) {
+								scheduleUpdate();
 							}
+							return false;
+						}
 
-							// Recurse into containers
-							return true;
-						});
-				}
-
-				if (update.get()) {
-					getProjectLauncher().update();
-				}
-			} catch (Exception e) {
-				logger.logError("Error updating launch properties file.", e);
+						// Recurse into containers
+						return true;
+					});
+			} catch (CoreException e) {
+				logger.logError("Error while processing resource changes.", e);
 			}
 		};
+		updatePending.set(false);
 		ResourcesPlugin.getWorkspace()
 			.addResourceChangeListener(resourceListener);
 
 		// Register a listener for termination of the launched process
 		DebugPlugin.getDefault()
-			.addDebugEventListener(new TerminationListener(launch, () -> ResourcesPlugin.getWorkspace()
-				.removeResourceChangeListener(resourceListener)));
+			.addDebugEventListener(new TerminationListener(launch, () -> {
+				ResourcesPlugin.getWorkspace()
+					.removeResourceChangeListener(resourceListener);
+				updatePending.set(false);
+			}));
+	}
+
+	private void scheduleUpdate() {
+		if (updatePending.compareAndSet(false, true)) {
+			Job job = Job.create("Update launched application...", (IJobFunction) monitor -> {
+				try {
+					Job.getJobManager()
+						.join(ResourcesPlugin.FAMILY_MANUAL_BUILD, monitor);
+					if (updatePending.get() && !monitor.isCanceled()) {
+						Job.getJobManager()
+							.join(ResourcesPlugin.FAMILY_AUTO_BUILD, monitor);
+						if (updatePending.get() && !monitor.isCanceled()) {
+							// Just in case we've been shut down in the
+							// meantime.
+							getProjectLauncher().update();
+							return Status.OK_STATUS;
+						}
+					}
+					return Status.CANCEL_STATUS;
+				} catch (InterruptedException | OperationCanceledException e) {
+					return Status.CANCEL_STATUS;
+				} catch (CoreException e) {
+					IStatus st = e.getStatus();
+					return new Status(st.getSeverity(), st.getPlugin(), st.getCode(), st.getMessage(), e);
+				} catch (Exception e) {
+					logger.logError("Error updating launch properties file.", e);
+					return new Status(IStatus.ERROR, FrameworkUtil.getBundle(AbstractOSGiLaunchDelegate.class)
+						.getSymbolicName(), "Error updating launch properties file.", e);
+				} finally {
+					updatePending.set(false);
+				}
+			});
+			job.schedule();
+		}
 	}
 
 	protected static void enableTraceOptionIfSetOnConfiguration(ILaunchConfiguration configuration,
