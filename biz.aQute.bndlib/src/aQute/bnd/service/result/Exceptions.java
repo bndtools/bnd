@@ -1,4 +1,5 @@
 package aQute.bnd.service.result;
+
 class Exceptions {
 	static RuntimeException duck(Throwable t) {
 		throwsUnchecked(t);
@@ -6,7 +7,7 @@ class Exceptions {
 	}
 
 	@SuppressWarnings("unchecked")
-	static <E extends Throwable> void throwsUnchecked(Throwable throwable) throws E {
+	private static <E extends Throwable> void throwsUnchecked(Throwable throwable) throws E {
 		throw (E) throwable;
 	}
 }
