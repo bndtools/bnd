@@ -32,7 +32,6 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Clazz;
-import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Instruction;
@@ -115,8 +114,7 @@ public class CDIAnnotations implements AnalyzerPlugin {
 		for (Clazz c : analyzer.getClassspace()
 			.values()) {
 
-			if (c.isModule() || c.isEnum() || c.isInterface() || c.isInnerClass() || c.isSynthetic()
-				|| !c.is(QUERY.CONCRETE, null, analyzer)) {
+			if (c.isModule() || c.isEnum() || c.isAnnotation() || c.isInnerClass() || c.isSynthetic()) {
 				// These types cannot be managed beans so don't bother scanning
 				// them. See
 				// http://docs.jboss.org/cdi/spec/2.0/cdi-spec.html#what_classes_are_beans
