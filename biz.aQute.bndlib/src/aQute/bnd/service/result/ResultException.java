@@ -17,13 +17,9 @@
 package aQute.bnd.service.result;
 
 public class ResultException extends RuntimeException {
-
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 1L;
 
-	public ResultException(final String s) {
+	public ResultException(String s) {
 		super(s);
 	}
 

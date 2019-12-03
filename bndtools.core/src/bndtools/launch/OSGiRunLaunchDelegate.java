@@ -52,7 +52,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 	@Override
 	protected void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception {
 		synchronized (model) {
-			Result<ProjectLauncher, String> resolvingProjectLauncher = Result.fromNull(model.getProjectLauncher(),
+			Result<ProjectLauncher, String> resolvingProjectLauncher = Result.of(model.getProjectLauncher(),
 				"Failed to get projectlauncher");
 
 			bndLauncher = resolvingProjectLauncher

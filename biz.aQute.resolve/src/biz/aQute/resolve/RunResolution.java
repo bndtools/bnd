@@ -32,15 +32,12 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
-import aQute.bnd.service.result.Err;
-import aQute.bnd.service.result.Ok;
 import aQute.bnd.service.result.Result;
 import aQute.lib.dot.DOT;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.libg.tarjan.Tarjan;
-import biz.aQute.resolve.RunResolution.CacheDTO;
 
 /**
  * Provides a simple way to resolve a project or bndrun file with support for
@@ -403,7 +400,7 @@ public class RunResolution {
 		assert isOK() : "can only be called for a real resolution";
 
 		try {
-			CacheDTO dto = new CacheDTO();
+			RunResolution.CacheDTO dto = new RunResolution.CacheDTO();
 			dto.checksum = project.getChecksum();
 			dto.runbundles = getRunBundles();
 
@@ -434,13 +431,13 @@ public class RunResolution {
 			if (f.isFile()) {
 				try {
 
-					CacheDTO dto = JSON_CODEC.dec()
+					RunResolution.CacheDTO dto = JSON_CODEC.dec()
 						.from(f)
-						.get(CacheDTO.class);
+						.get(RunResolution.CacheDTO.class);
 
 					if (dto.checksum.equals(project.getChecksum())) {
 						logger.info("read cache for {}", project);
-						return Ok.result(HeaderClause.toParameters(dto.runbundles)
+						return Result.ok(HeaderClause.toParameters(dto.runbundles)
 							.toString());
 					}
 
@@ -451,7 +448,7 @@ public class RunResolution {
 			}
 
 			if (!resolveIfNecessary) {
-				return Ok.result(null);
+				return Result.ok("");
 			}
 
 			logger.info("resolve {}", project);
@@ -461,7 +458,7 @@ public class RunResolution {
 			return r.flatMap(rr -> {
 				logger.info("saving cache {}", project);
 				rr.cache();
-				return Ok.result(rr);
+				return Result.ok(rr);
 			})
 				.map(RunResolution::getRunBundlesAsString);
 
@@ -478,9 +475,9 @@ public class RunResolution {
 	 */
 	public Result<RunResolution, String> asResult() {
 		if (isOK())
-			return Ok.result(this);
+			return Result.ok(this);
 		else
-			return Err.result(report(false));
+			return Result.err(report(false));
 	}
 
 	private static File getCacheFile(Project project) {

@@ -16,7 +16,10 @@
 
 package aQute.bnd.service.result;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * This class represents the Ok side of @{link Result}.
@@ -24,100 +27,147 @@ import java.util.Optional;
  * @param <V> The value type
  * @param <E> The error type
  */
-public class Ok<V, E> implements Result<V, E> {
+public final class Ok<V, E> implements Result<V, E> {
 	private final V value;
-
-	/**
-	 * Returns a new Ok instance containing the given value.
-	 *
-	 * @param value the value
-	 * @param <V> The type of the value
-	 * @param <E> The type of the error
-	 * @return see above
-	 */
-	public static <V, E> Result<V, E> result(final V value) {
-		return new Ok<V, E>(value);
-	}
 
 	/**
 	 * Constructor.
 	 *
 	 * @param value the value
 	 */
-	Ok(final V value) {
-		super();
-		this.value = value;
+	Ok(V value) {
+		this.value = requireNonNull(value);
 	}
 
-	@Override
-	public Optional<V> getValue() {
-		return Optional.of(value);
-	}
-
-	@Override
-	public Optional<E> getError() {
-		return Optional.empty();
-	}
-
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean isOk() {
 		return true;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean isErr() {
 		return false;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Optional<V> value() {
+		return Optional.of(value);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Optional<E> error() {
+		return Optional.empty();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public V unwrap() {
 		return value;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public V unwrap(final String message) throws ResultException {
+	public V unwrap(String message) throws ResultException {
 		return value;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public V orElse(V orElse) {
+		return value;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public V orElseGet(Supplier<? extends V> orElseSupplier) {
+		requireNonNull(orElseSupplier);
+		return value;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public <R extends Throwable> V orElseThrow(FunctionWithException<? super E, ? extends R> throwableSupplier)
+		throws R {
+		requireNonNull(throwableSupplier);
+		return value;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public <U> Result<U, E> map(FunctionWithException<? super V, ? extends U> mapper) {
+		requireNonNull(mapper);
+		try {
+			return new Ok<>(mapper.apply(value));
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private <F> Result<V, F> coerce() {
+		return (Result<V, F>) this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public <F> Result<V, F> mapErr(FunctionWithException<? super E, ? extends F> mapper) {
+		requireNonNull(mapper);
+		return coerce();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public <U> Result<U, E> flatMap(
+		FunctionWithException<? super V, ? extends Result<? extends U, ? extends E>> mapper) {
+		requireNonNull(mapper);
+		try {
+			@SuppressWarnings("unchecked")
+			Result<U, E> result = (Result<U, E>) requireNonNull(mapper.apply(value));
+			return result;
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Result<V, E> recover(FunctionWithException<? super E, ? extends V> recover) {
+		requireNonNull(recover);
+		return this;
 	}
 
 	@Override
 	public String toString() {
 		return String.format("Ok(%s)", value);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <U> Result<U, E> map(FunctionWithException<V, U> lambda) {
-		try {
-			U apply = lambda.apply(value);
-			return result(apply);
-		} catch (Exception e) {
-			return (Result<U, E>) failed(e);
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <F> Result<V, F> mapErr(FunctionWithException<E, F> lambda) {
-		return (Result<V, F>) this;
-	}
-
-	@Override
-	public Result<V, E> recover(FunctionWithException<E, V> recover) {
-		return this;
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <U> Result<U, E> flatMap(FunctionWithException<V, Result<U, E>> lambda) {
-		try {
-			return lambda.apply(value);
-		} catch (Exception e) {
-			return (Result<U, E>) failed(e);
-		}
-	}
-
-	@Override
-	public <R extends Throwable> V orElseThrow(FunctionWithException<? super E, ? extends R> f) {
-		return value;
 	}
 }

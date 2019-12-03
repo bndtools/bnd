@@ -72,19 +72,19 @@ public class RunResolutionTest {
 		RunResolution.clearCache(bndrun.getWorkspace());
 
 		Result<String, String> nonExistent = RunResolution.getRunBundles(bndrun, false);
-		assertThat(nonExistent.unwrap()).isNull();
+		assertThat(nonExistent.unwrap()).isEmpty();
 
 		Result<String, String> force = RunResolution.getRunBundles(bndrun, true);
-		assertThat(force.unwrap()).isNotNull();
+		assertThat(force.unwrap()).isNotEmpty();
 
 		Result<String, String> existent = RunResolution.getRunBundles(bndrun, false);
-		assertThat(existent.unwrap()).isNotNull();
+		assertThat(existent.unwrap()).isNotEmpty();
 
 		System.out.println("Runbundles " + existent.unwrap());
 
 		bndrun.setProperty("foo", "bar");
 		nonExistent = RunResolution.getRunBundles(bndrun, false);
-		assertThat(nonExistent.unwrap()).isNull();
+		assertThat(nonExistent.unwrap()).isEmpty();
 
 		ProjectLauncher pl = bndrun.getProjectLauncher();
 		assertNotNull(pl);
