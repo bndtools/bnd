@@ -27,7 +27,6 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobFunction;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.ILaunch;
@@ -234,36 +233,17 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
 		// Register listener to clean up temp files on exit of launched JVM
 		final ProjectLauncher launcher = getProjectLauncher();
-		IDebugEventSetListener listener = new IDebugEventSetListener() {
-			@Override
-			public void handleDebugEvents(DebugEvent[] events) {
-				for (DebugEvent event : events) {
-					if (event.getKind() == DebugEvent.TERMINATE) {
-						Object source = event.getSource();
-						if (source instanceof IProcess) {
-							ILaunch processLaunch = ((IProcess) source).getLaunch();
-							if (processLaunch == launch) {
-								// Not interested in any further events =>
-								// unregister this listener
-								DebugPlugin.getDefault()
-									.removeDebugEventListener(this);
-
-								// Cleanup. Guard with a draconian catch because
-								// changes in the ProjectLauncher API
-								// *may* cause LinkageErrors.
-								try {
-									launcher.cleanup();
-								} catch (Throwable t) {
-									logger.logError("Error cleaning launcher temporary files", t);
-								}
-
-								LaunchUtils.endRun((Run) launcher.getProject());
-							}
-						}
-					}
-				}
+		IDebugEventSetListener listener = new TerminationListener(launch, () -> {
+			// Cleanup. Guard with a draconian catch because
+			// changes in the ProjectLauncher API
+			// *may* cause LinkageErrors.
+			try {
+				launcher.cleanup();
+			} catch (Throwable t) {
+				logger.logError("Error cleaning launcher temporary files", t);
 			}
-		};
+			LaunchUtils.endRun((Run) launcher.getProject());
+		});
 		DebugPlugin.getDefault()
 			.addDebugEventListener(listener);
 
