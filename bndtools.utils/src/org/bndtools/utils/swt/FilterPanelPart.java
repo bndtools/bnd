@@ -21,7 +21,7 @@ import org.eclipse.swt.widgets.Text;
 public class FilterPanelPart {
 
 	private static final String				PROP_FILTER				= "filter";
-	private static final long				SEARCH_DELAY			= 1000;
+	private static final long				SEARCH_DELAY			= 300;
 
 	private final ScheduledExecutorService	scheduler;
 
@@ -128,6 +128,10 @@ public class FilterPanelPart {
 
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
 		propSupport.removePropertyChangeListener(PROP_FILTER, listener);
+	}
+
+	public void setHint(String string) {
+		getFilterControl().setMessage(string);
 	}
 
 }

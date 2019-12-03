@@ -12,6 +12,8 @@ import bndtools.PartConstants;
 
 public class BndPerspective implements IPerspectiveFactory {
 
+	private static final String BNDTOOLS_PACKAGE_EXPLORER = "bndtools.PackageExplorer";
+
 	public static final String	ID_PROJECT_EXPLORER		= "org.eclipse.ui.navigator.ProjectExplorer";	//$NON-NLS-1$
 
 	public static final String	VIEW_ID_JUNIT_RESULTS	= "org.eclipse.jdt.junit.ResultView";
@@ -23,7 +25,8 @@ public class BndPerspective implements IPerspectiveFactory {
 		String editorArea = layout.getEditorArea();
 
 		IFolderLayout leftFolder = layout.createFolder("left", IPageLayout.LEFT, 0.25f, editorArea);
-		leftFolder.addView(JavaUI.ID_PACKAGES);
+		leftFolder.addView(BNDTOOLS_PACKAGE_EXPLORER);
+		// leftFolder.addView(JavaUI.ID_PACKAGES);
 		leftFolder.addView(JavaUI.ID_TYPE_HIERARCHY);
 
 		layout.addView(PartConstants.VIEW_ID_REPOSITORIES, IPageLayout.BOTTOM, 0.66f, "left");
