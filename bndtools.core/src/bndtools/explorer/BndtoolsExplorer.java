@@ -3,6 +3,7 @@ package bndtools.explorer;
 import java.beans.PropertyChangeListener;
 
 import org.bndtools.utils.swt.FilterPanelPart;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.ui.packageview.PackageExplorerPart;
@@ -22,7 +23,8 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 	private final FilterPanelPart	filterPart	= new FilterPanelPart(Plugin.getDefault()
 		.getScheduler());
 	private PropertyChangeListener	listener;
-
+	private Glob					glob;
+	boolean							installed;
 	@Override
 	public void createPartControl(Composite parent) {
 		Composite c = new Composite(parent, SWT.NONE);
@@ -37,28 +39,39 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 		}
 		c.layout();
 
+
 		filterPart.setHint("Filter for projects (glob)");
 		listener = e -> {
 			String value = (String) e.getNewValue();
 
 			if (Strings.nonNullOrEmpty(value)) {
-				Glob glob = new Glob(value);
-				getTreeViewer().setFilters(new ViewerFilter() {
+				glob = new Glob(value);
+				if (!installed) {
+					installed = true;
+					getTreeViewer().addFilter(new ViewerFilter() {
 
-					@Override
-					public boolean select(Viewer viewer, Object parentElement, Object element) {
-						if (element instanceof JavaProject) {
-							IJavaProject project = (JavaProject) element;
-							String name = project.getElementName();
-							return glob.finds(name) >= 0;
+						@Override
+						public boolean select(Viewer viewer, Object parentElement, Object element) {
+							if (glob == null)
+								return true;
 
-						} else
-							return true;
-					}
-				});
+							if (element instanceof JavaProject) {
+								IJavaProject project = (JavaProject) element;
+								String name = project.getElementName();
+								return glob.finds(name) >= 0;
+
+							} else if (element instanceof IProject) {
+								String name = ((IProject) element).getName();
+								return glob.finds(name) >= 0;
+							} else
+								return true;
+						}
+					});
+				}
 			} else {
-				getTreeViewer().setFilters();
+				glob = null;
 			}
+			getTreeViewer().refresh();
 		};
 		filterPart.addPropertyChangeListener(listener);
 	}
