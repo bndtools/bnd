@@ -26,9 +26,11 @@ import aQute.bnd.deployer.repository.api.CheckResult;
 import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
 import aQute.bnd.deployer.repository.api.IRepositoryIndexProcessor;
 import aQute.bnd.deployer.repository.api.Referral;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.repository.SimpleIndexer;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.Registry;
 
 public class R5RepoContentProvider implements IRepositoryContentProvider {
@@ -149,6 +151,12 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	@Override
 	public void parseIndex(InputStream stream, URI baseUri, IRepositoryIndexProcessor listener, LogService log)
 		throws Exception {
+		this.parseIndex(baseUri + "", stream, baseUri, listener, log);
+	}
+
+	void parseIndex(String projectName, InputStream stream, URI baseUri, IRepositoryIndexProcessor listener,
+		LogService log)
+		throws Exception {
 		XMLStreamReader reader = null;
 		try {
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
@@ -215,6 +223,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 							capReqBuilder = null;
 						} else if (TAG_RESOURCE.equals(localName)) {
 							if (resourceBuilder != null) {
+								addWorkspaceNamespace(resourceBuilder, projectName);
 								Resource resource = resourceBuilder.build();
 								listener.processResource(resource);
 								resourceBuilder = null;
@@ -230,6 +239,26 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 				} catch (Exception e) {}
 			}
 		}
+	}
+
+	/**
+	 * A repository that implements the {@code WorkspaceRepositoryMarker} in the
+	 * resolver must add a WORKSPACE_NAMESPACE capability to make its clear the
+	 * resources are from the workspace. Ideally this would not be necessary but
+	 * we're having two workspace repositories. One for Bndtools where the
+	 * repository is interactive, the other is for resolving in Gradle, etc.
+	 *
+	 * @param rb
+	 * @param name the project name
+	 */
+	private void addWorkspaceNamespace(ResourceBuilder rb, String name) throws Exception {
+		// Add a capability specific to the workspace so that we can
+		// identify this fact later during resource processing.
+		Attrs attrs = new Attrs();
+		attrs.put(ResourceUtils.WORKSPACE_NAMESPACE, name);
+
+		rb.addCapability(CapReqBuilder.createCapReqBuilder(ResourceUtils.WORKSPACE_NAMESPACE, attrs));
+
 	}
 
 	private static URI resolveUri(String uriStr, URI baseUri) throws URISyntaxException {
