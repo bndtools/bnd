@@ -89,7 +89,6 @@ org.littleshoot:littleproxy:1.1.2
 io.netty:netty-all:4.1.0.Final
 
 com.google.guava:guava:19.0
-com.google.guava:guava:21.0
 
 org.nanohttpd:nanohttpd:2.2.0
 
