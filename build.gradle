@@ -51,29 +51,31 @@ subprojects {
       testLogging {
         exceptionFormat 'full'
       }
-      def stdOut = [:]
-      def stdErr = [:]
-      onOutput { descriptor, event ->
-        if (event.destination == TestOutputEvent.Destination.StdErr) {
-          stdErr.get(descriptor, []).add(event)
-        } else {
-          stdOut.get(descriptor, []).add(event)
-        }
-      }
-      afterTest { descriptor, result ->
-        def stdErrEvents = stdErr.remove(descriptor)
-        def stdOutEvents = stdOut.remove(descriptor)
-        if (result.resultType == TestResult.ResultType.FAILURE) {
-          if (stdErrEvents && !stdErrEvents.empty) {
-            logger.lifecycle('\n{} > {} STANDARD_ERROR', descriptor.className, descriptor.name)
-            stdErrEvents.each { event ->
-              logger.lifecycle('    {}', event.message.trim())
-            }
+      if (!logger.isInfoEnabled()) {
+        def stdOut = [:]
+        def stdErr = [:]
+        onOutput { descriptor, event ->
+          if (event.destination == TestOutputEvent.Destination.StdErr) {
+            stdErr.get(descriptor, []).add(event)
+          } else {
+            stdOut.get(descriptor, []).add(event)
           }
-          if (stdOutEvents && !stdOutEvents.empty) {
-            logger.lifecycle('\n{} > {} STANDARD_OUT', descriptor.className, descriptor.name)
-            stdOutEvents.each { event ->
-              logger.lifecycle('    {}', event.message.trim())
+        }
+        afterTest { descriptor, result ->
+          def stdErrEvents = stdErr.remove(descriptor)
+          def stdOutEvents = stdOut.remove(descriptor)
+          if (result.resultType == TestResult.ResultType.FAILURE) {
+            if (stdErrEvents && !stdErrEvents.empty) {
+              logger.lifecycle('\n{} > {} STANDARD_ERROR', descriptor.className, descriptor.name)
+              stdErrEvents.each { event ->
+                logger.lifecycle('    {}', event.message.trim())
+              }
+            }
+            if (stdOutEvents && !stdOutEvents.empty) {
+              logger.lifecycle('\n{} > {} STANDARD_OUT', descriptor.className, descriptor.name)
+              stdOutEvents.each { event ->
+                logger.lifecycle('    {}', event.message.trim())
+              }
             }
           }
         }
