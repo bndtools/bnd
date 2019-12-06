@@ -41,7 +41,6 @@ public class HttpClientTest extends TestCase {
 	protected void tearDown() throws Exception {
 		IO.close(httpServer);
 		IO.close(httpsServer);
-		IO.delete(tmp);
 		super.tearDown();
 	}
 
@@ -117,6 +116,10 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
+
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -130,7 +133,7 @@ public class HttpClientTest extends TestCase {
 		httpsServer = new Httpbin(configs);
 		httpsServer.start();
 
-		tmp = IO.getFile("generated/tmp");
+		tmp = IO.getFile("generated/tmp/test/" + getTestName());
 		IO.delete(tmp);
 		tmp.mkdirs();
 		httpServer.second = false;

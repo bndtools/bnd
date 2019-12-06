@@ -27,13 +27,16 @@ import aQute.lib.io.IO.EnvironmentCalculator;
 
 public class IOTest {
 
-	private String testName;
+	private Path tmp;
 
 	@BeforeEach
-	public void before(TestInfo info) {
-		testName = info.getTestMethod()
-			.map(Method::getName)
+	public void before(TestInfo info) throws Exception {
+		Method testMethod = info.getTestMethod()
 			.get();
+		tmp = Paths.get("generated/tmp/test", getClass().getName(), testMethod.getName())
+			.toAbsolutePath();
+		IO.delete(tmp);
+		IO.mkdirs(tmp);
 	}
 
 	@Test
@@ -335,9 +338,7 @@ public class IOTest {
 
 	@Test
 	public void testCreateDirectory_Symlink() throws Exception {
-		Path rootDirectory = Paths.get("generated/tmp/test/" + testName);
-		IO.delete(rootDirectory);
-		rootDirectory = Files.createDirectories(rootDirectory);
+		Path rootDirectory = tmp;
 
 		Path target = Files.createDirectories(rootDirectory.resolve("target")
 			.toAbsolutePath());
@@ -356,9 +357,7 @@ public class IOTest {
 
 	@Test
 	public void testCreateDirectory_SymlinkMissingTarget() throws Exception {
-		Path rootDirectory = Paths.get("generated/tmp/test/" + testName);
-		IO.delete(rootDirectory);
-		rootDirectory = Files.createDirectories(rootDirectory);
+		Path rootDirectory = tmp;
 
 		Path target = rootDirectory.resolve("target")
 			.toAbsolutePath();

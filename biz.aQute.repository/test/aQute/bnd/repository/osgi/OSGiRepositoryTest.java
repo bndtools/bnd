@@ -39,7 +39,7 @@ public class OSGiRepositoryTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		tmp = IO.getFile("generated/tmp/test/" + getName());
+		tmp = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName());
 		cache = IO.getFile(tmp, "cache");
 		remote = IO.getFile(tmp, "testdata");
 		ws = IO.getFile(tmp, "ws");

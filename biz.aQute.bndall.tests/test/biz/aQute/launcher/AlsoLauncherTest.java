@@ -67,7 +67,7 @@ public class AlsoLauncherTest {
 
 	@Before
 	public void setUp() throws Exception {
-		testDir = new File(TMPDIR, testName.getMethodName());
+		testDir = new File(TMPDIR, getClass().getName() + "/" + testName.getMethodName());
 		IO.delete(testDir);
 		IO.mkdirs(testDir);
 		prior = new Properties();
@@ -98,7 +98,7 @@ public class AlsoLauncherTest {
 
 	/**
 	 * Test that the Bndrun file is loaded when we create a run
-	 * 
+	 *
 	 */
 	@Test
 	public void testCreateBndrun() throws Exception {

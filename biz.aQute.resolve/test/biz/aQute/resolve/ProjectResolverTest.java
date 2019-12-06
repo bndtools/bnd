@@ -33,13 +33,17 @@ public class ProjectResolverTest extends TestCase {
 	private ResourcesRepository	fr;
 	private File				home	= IO.getFile("testdata/projectresolver");
 
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
+
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		ws = Workspace.findWorkspace(IO.getFile("testdata/projectresolver/ws"));
 		ws.setTrace(true);
-		tmp = IO.getFile("generated/tmp");
-		local = IO.getFile("generated/tmp/local");
+		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+		local = IO.getFile(tmp, "local");
 		IO.delete(tmp);
 		local.mkdirs();
 
@@ -70,7 +74,6 @@ public class ProjectResolverTest extends TestCase {
 	@Override
 	protected void tearDown() throws Exception {
 		ws.close();
-		IO.delete(tmp);
 		super.tearDown();
 	}
 

@@ -36,7 +36,7 @@ public class LauncherTest {
 
 	@Before
 	public void before() throws Exception {
-		testDir = new File(TMPDIR, testName.getMethodName());
+		testDir = new File(TMPDIR, getClass().getName() + "/" + testName.getMethodName());
 		IO.delete(testDir);
 		IO.mkdirs(testDir);
 		prior = new Properties();

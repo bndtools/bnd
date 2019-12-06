@@ -1,27 +1,36 @@
 package aQute.bnd.repository.p2.provider;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.lang.reflect.Method;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
 
 public class P2RepositoryTest {
-	File tmp = IO.getFile("generated/tmp");
+	File tmp;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	public void setUp(TestInfo info) throws Exception {
+		Method testMethod = info.getTestMethod()
+			.get();
+		tmp = Paths.get("generated/tmp/test", getClass().getName(), testMethod.getName())
+			.toAbsolutePath()
+			.toFile();
 		IO.delete(tmp);
-		tmp.mkdirs();
+		IO.mkdirs(tmp);
 	}
 
 	@Test

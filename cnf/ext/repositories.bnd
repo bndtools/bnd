@@ -9,8 +9,7 @@ mavencentral:           https://repo.maven.apache.org/maven2
         readOnly=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name="OSGi Snapshots";\
-        releaseUrl="https://oss.sonatype.org/content/repositories/osgi-releases/";\
-        snapshotUrl="https://oss.sonatype.org/content/repositories/osgi-snapshots/";\
+        snapshotUrl="https://oss.sonatype.org/content/repositories/snapshots/";\
         index="${.}/osgi-snapshots.mvn";\
         readOnly=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\

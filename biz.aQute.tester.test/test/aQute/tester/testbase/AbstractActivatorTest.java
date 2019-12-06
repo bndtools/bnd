@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Permission;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -113,7 +115,7 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 	protected LaunchpadBuilder	builder;
 	protected Launchpad			lp;
 	SecurityManager				oldManager;
-	File						tmpDir;
+	Path						tmpDir;
 	protected int				eclipseJUnitPort;
 
 	protected TestRunDataAssert assertThat(TestRunData a) {
@@ -124,25 +126,25 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 	protected String	name;
 
 	protected File getTmpDir() {
-		return tmpDir;
+		return tmpDir.toFile();
 	}
 
-	protected LaunchpadBuilder setTmpDir() {
+	protected LaunchpadBuilder setTmpDir() throws IOException {
 		// Create tmp dir for test reports to go into as the default is in the
 		// project root, which can mess up build dependencies.
-
-		tmpDir = IO.getFile("generated/testdir/" + name);
-		tmpDir.mkdirs();
-
-		return builder.set(TESTER_DIR, tmpDir.getAbsolutePath());
+		return builder.set(TESTER_DIR, getTmpDir().getAbsolutePath());
 	}
 
 	@BeforeEach
-	public void setUp(TestInfo info) {
+	public void setUp(TestInfo info) throws Exception {
 		this.info = info;
-		name = info.getTestMethod()
-			.map(Method::getName)
+		Method testMethod = info.getTestMethod()
 			.get();
+		name = getClass().getName() + "/" + testMethod.getName();
+		tmpDir = Paths.get("generated/tmp/test", name)
+			.toAbsolutePath();
+		IO.delete(tmpDir);
+		IO.mkdirs(tmpDir);
 
 		builder = new LaunchpadBuilder();
 		builder.bndrun(tester + ".bndrun")

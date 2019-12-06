@@ -25,6 +25,10 @@ import junit.framework.TestCase;
 public class GenericResolveContextResolveTest extends TestCase {
 	ResolverLogger logger = new ResolverLogger(0, System.out);
 
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
+
 	/**
 	 * Simple basic resolve. We use a small index with gogo + framework and then
 	 * try to see if we can resolve the runtime from the shell requirement.
@@ -32,7 +36,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 	 * @throws Exception
 	 */
 	public void testSimpleResolve() throws Exception {
-		Repository repository = createRepo(IO.getFile("testdata/repo3.index.xml"), getName());
+		Repository repository = createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName());
 		GenericResolveContext grc = new GenericResolveContext(logger);
 		grc.setLevel(2);
 		grc.addRepository(repository);
@@ -56,7 +60,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 	 * @throws Exception
 	 */
 	public void testResolveRequirementNoDirective() throws Exception {
-		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getName());
+		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getTestName());
 		GenericResolveContext grc = new GenericResolveContext(logger);
 		grc.setLevel(2);
 		grc.addRepository(repository);
@@ -78,7 +82,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 	 */
 	public void testResolveRequirementResolveDirective() throws Exception {
 
-		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getName());
+		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getTestName());
 		GenericResolveContext grc = new GenericResolveContext(logger);
 		grc.addRepository(repository);
 		Requirement logservice = new CapReqBuilder("osgi.service")
@@ -93,7 +97,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 	}
 
 	public void testResolveRequirementActiveDirective() throws Exception {
-		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getName());
+		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getTestName());
 		GenericResolveContext grc = new GenericResolveContext(logger);
 		grc.addRepository(repository);
 

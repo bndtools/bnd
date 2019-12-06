@@ -27,6 +27,19 @@ import junit.framework.TestCase;
 
 public class JarTest extends TestCase {
 
+	File tmp;
+
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
+
+	@Override
+	protected void setUp() throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+		IO.delete(tmp);
+		IO.mkdirs(tmp);
+	}
+
 	public void testDeletePrefix() {
 		Resource r = new EmbeddedResource(new byte[1], 0L);
 
@@ -111,10 +124,6 @@ public class JarTest extends TestCase {
 	}
 
 	public void testWriteFolder() throws Exception {
-		File tmp = IO.getFile("generated/tmp");
-		IO.delete(tmp);
-		tmp.mkdirs();
-
 		try (Builder b = new Builder()) {
 			b.setIncludeResource("/a/b.txt;literal='ab', /a/c.txt;literal='ac', /a/c/d/e.txt;literal='acde'");
 			b.build();
@@ -127,8 +136,6 @@ public class JarTest extends TestCase {
 				.isFile());
 			assertEquals("ab", IO.collect(IO.getFile(tmp, "a/b.txt")));
 			assertEquals("acde", IO.collect(IO.getFile(tmp, "a/c/d/e.txt")));
-
-			IO.delete(tmp);
 		}
 	}
 
@@ -250,10 +257,6 @@ public class JarTest extends TestCase {
 	}
 
 	public void testZipSlip() throws Exception {
-		File tmp = IO.getFile("generated/tmp/test/" + getName());
-		IO.delete(tmp);
-		IO.mkdirs(tmp);
-
 		assertThatIOException().as("Failed to handle zip-slip problem")
 			.isThrownBy(() -> {
 				try (Jar jar = new Jar(new File("jar/zip-slip.zip"))) {

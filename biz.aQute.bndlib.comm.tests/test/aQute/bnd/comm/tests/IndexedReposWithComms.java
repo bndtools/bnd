@@ -1,6 +1,5 @@
 package aQute.bnd.comm.tests;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -13,7 +12,6 @@ import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.url.URLConnector;
 import aQute.http.testservers.HttpTestServer;
 import aQute.http.testservers.Httpbin;
-import aQute.lib.io.IO;
 import junit.framework.TestCase;
 import sockslib.common.AuthenticationException;
 import sockslib.common.Credentials;
@@ -32,7 +30,6 @@ import sockslib.server.msg.CommandMessage;
 public class IndexedReposWithComms extends TestCase {
 
 	private static SocksProxyServer	socks5Proxy;
-	private static File				tmp	= IO.getFile("generated/tmp");
 
 	public void testBasicWorkspace() throws Exception {
 		HttpTestServer ht = http();
@@ -150,11 +147,6 @@ public class IndexedReposWithComms extends TestCase {
 			});
 
 		socks5Proxy.start();
-	}
-
-	@Override
-	public void setUp() {
-		IO.delete(tmp);
 	}
 
 	@Override

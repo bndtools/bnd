@@ -11,10 +11,15 @@ import aQute.lib.io.IO;
 import junit.framework.TestCase;
 
 public class ContainerTest extends TestCase {
-	File tmp = IO.getFile("generated/tmp");
+	File tmp;
+
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
 
 	@Override
 	public void setUp() {
+		tmp = IO.getFile("generated/tmp/test/" + getTestName());
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}

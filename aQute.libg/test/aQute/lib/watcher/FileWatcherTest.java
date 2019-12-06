@@ -29,7 +29,7 @@ public class FileWatcherTest {
 
 	@Before
 	public void before() throws Exception {
-		testDir = new File(TMPDIR, testName.getMethodName());
+		testDir = new File(TMPDIR, getClass().getName() + "/" + testName.getMethodName());
 		IO.delete(testDir);
 		IO.mkdirs(testDir);
 		executor = Executors.newFixedThreadPool(10);

@@ -15,6 +15,8 @@ crossplatform.runprops: \
 	osgi.console.enable.builtin=false
 	
 -runrequires: \
+	bnd.identity;id='com.google.guava',\
+	bnd.identity;id='org.apache.ant',\
 	bnd.identity;id='org.apache.felix.gogo.shell',\
 	bnd.identity;id='org.apache.felix.gogo.runtime',\
 	bnd.identity;id='org.apache.felix.gogo.command',\
@@ -33,11 +35,9 @@ crossplatform.runprops: \
 	bnd.identity;id='org.eclipse.emf.codegen.ecore.ui',\
 	bnd.identity;id='org.eclipse.emf.codegen.ui',\
 	bnd.identity;id='org.eclipse.emf.common.ui',\
-	bnd.identity;id='com.google.guava',\
 	bnd.identity;id='org.eclipse.equinox.event',\
 	bnd.identity;id='org.eclipse.ant.core',\
 	bnd.identity;id='org.eclipse.ant.ui',\
-	bnd.identity;id='org.apache.ant',\
 	bnd.identity;id='org.eclipse.ui.ide.application',\
 	bnd.identity;id='org.eclipse.ui.ide',\
 	bnd.identity;id='org.eclipse.sdk',\
@@ -50,6 +50,9 @@ crossplatform.runprops: \
 	bnd.identity;id='org.eclipse.pde.ui',\
 	bnd.identity;id='org.eclipse.pde.build',\
 	bnd.identity;id='org.eclipse.jdt.annotation',\
+	bnd.identity;id='org.eclipse.ui.browser',\
+	bnd.identity;id='org.junit.platform.engine',\
+	bnd.identity;id='org.junit.platform.launcher',\
 	bnd.identity;id='bndtools.api',\
 	bnd.identity;id='bndtools.builder',\
 	bnd.identity;id='bndtools.core',\
@@ -66,8 +69,7 @@ crossplatform.runprops: \
 	bnd.identity;id='org.bndtools.templating.gitrepo',\
 	bnd.identity;id='org.bndtools.versioncontrol.ignores.manager',\
 	bnd.identity;id='org.bndtools.versioncontrol.ignores.plugin.git',\
-	bnd.identity;id='org.bndtools.applaunch',\
-	bnd.identity;id='org.eclipse.ui.browser'
+	bnd.identity;id='org.bndtools.applaunch'
 
 -runee: JavaSE-1.8
 -runsystempackages: \
@@ -251,30 +253,30 @@ crossplatform.runprops: \
 	org.w3c.dom.events;version='[3.0.0,3.0.1)',\
 	org.w3c.dom.smil;version='[1.0.1,1.0.2)',\
 	org.w3c.dom.svg;version='[1.1.0,1.1.1)',\
-	biz.aQute.bnd.maven;version='snapshot',\
-	biz.aQute.bndlib;version='snapshot',\
-	biz.aQute.repository;version='snapshot',\
-	biz.aQute.resolve;version='snapshot',\
-	bndtools.api;version='snapshot',\
-	bndtools.builder;version='snapshot',\
-	bndtools.core;version='snapshot',\
-	bndtools.jareditor;version='snapshot',\
-	bndtools.m2e;version='snapshot',\
-	bndtools.m2e.debug.fragment;version='snapshot',\
-	bndtools.pde;version='snapshot',\
-	bndtools.release;version='snapshot',\
+	biz.aQute.bnd.maven;version=snapshot,\
+	biz.aQute.bndlib;version=snapshot,\
+	biz.aQute.repository;version=snapshot,\
+	biz.aQute.resolve;version=snapshot,\
+	bndtools.api;version=snapshot,\
+	bndtools.builder;version=snapshot,\
+	bndtools.core;version=snapshot,\
+	bndtools.jareditor;version=snapshot,\
+	bndtools.m2e;version=snapshot,\
+	bndtools.m2e.debug.fragment;version=snapshot,\
+	bndtools.pde;version=snapshot,\
+	bndtools.release;version=snapshot,\
 	com.jcraft.jsch;version='[0.1.54,0.1.55)',\
 	javaewah;version='[1.1.6,1.1.7)',\
 	org.apache.felix.scr;version='[2.0.14,2.0.15)',\
-	org.bndtools.applaunch;version='snapshot',\
-	org.bndtools.headless.build.manager;version='snapshot',\
-	org.bndtools.headless.build.plugin.ant;version='snapshot',\
-	org.bndtools.headless.build.plugin.gradle;version='snapshot',\
-	org.bndtools.templates.template;version='snapshot',\
-	org.bndtools.templating;version='snapshot',\
-	org.bndtools.templating.gitrepo;version='snapshot',\
-	org.bndtools.versioncontrol.ignores.manager;version='snapshot',\
-	org.bndtools.versioncontrol.ignores.plugin.git;version='snapshot',\
+	org.bndtools.applaunch;version=snapshot,\
+	org.bndtools.headless.build.manager;version=snapshot,\
+	org.bndtools.headless.build.plugin.ant;version=snapshot,\
+	org.bndtools.headless.build.plugin.gradle;version=snapshot,\
+	org.bndtools.templates.template;version=snapshot,\
+	org.bndtools.templating;version=snapshot,\
+	org.bndtools.templating.gitrepo;version=snapshot,\
+	org.bndtools.versioncontrol.ignores.manager;version=snapshot,\
+	org.bndtools.versioncontrol.ignores.plugin.git;version=snapshot,\
 	org.eclipse.jgit;version='[5.2.0,5.2.1)',\
 	org.eclipse.m2e.archetype.common;version='[1.10.0,1.10.1)',\
 	org.eclipse.m2e.core;version='[1.10.0,1.10.1)',\
@@ -282,9 +284,13 @@ crossplatform.runprops: \
 	org.eclipse.m2e.maven.runtime;version='[1.10.0,1.10.1)',\
 	org.eclipse.m2e.maven.runtime.slf4j.simple;version='[1.10.0,1.10.1)',\
 	org.eclipse.m2e.workspace.cli;version='[0.3.1,0.3.2)',\
-	org.eclipse.swt.gtk.linux.x86_64;version='[3.109.0,3.109.1)',\
 	org.slf4j.api;version='[1.7.2,1.7.3)',\
-	org.eclipse.ui.browser;version='[3.6.300,3.6.301)'
+	org.eclipse.ui.browser;version='[3.6.300,3.6.301)',\
+	org.apiguardian;version='[1.0.0,1.0.1)',\
+	org.junit.platform.commons;version='[1.3.1,1.3.2)',\
+	org.junit.platform.engine;version='[1.3.1,1.3.2)',\
+	org.junit.platform.launcher;version='[1.3.1,1.3.2)',\
+	org.opentest4j;version='[1.1.1,1.1.2)'
 -runrepos: \
 	Workspace,\
 	Eclipse 2018-12,\
