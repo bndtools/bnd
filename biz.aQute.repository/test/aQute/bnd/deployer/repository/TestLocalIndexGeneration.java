@@ -37,7 +37,7 @@ public class TestLocalIndexGeneration extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
-		outputDir = IO.getFile("generated/tmp/test/" + getName());
+		outputDir = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName());
 		IO.delete(outputDir);
 		if (!outputDir.exists() && !outputDir.mkdirs()) {
 			throw new IOException("Could not create directory " + outputDir);
@@ -248,7 +248,8 @@ public class TestLocalIndexGeneration extends TestCase {
 			.toURI()
 			.toString());
 		map.put("name", getName());
-		map.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
+		map.put("cache",
+			new File("generated/tmp/test/cache/" + getClass().getName() + "/" + getName()).getAbsolutePath());
 		repo.setProperties(map);
 		Processor p = new Processor();
 		p.addBasicPlugin(httpClient);

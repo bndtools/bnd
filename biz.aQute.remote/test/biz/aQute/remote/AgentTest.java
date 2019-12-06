@@ -42,10 +42,15 @@ public class AgentTest extends TestCase {
 	private File			t41;
 	private TestSupervisor	supervisor;
 
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
+
 	@Override
 	protected void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp");
-		tmp.mkdirs();
+		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+		IO.delete(tmp);
+		IO.mkdirs(tmp);
 
 		t1 = create("bsn-1", new Version(1, 0, 0));
 		t2 = create("bsn-2", new Version(2, 0, 0));
@@ -90,7 +95,6 @@ public class AgentTest extends TestCase {
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		framework.stop();
-		IO.delete(tmp);
 		IO.delete(IO.getFile("generated/cache"));
 		IO.delete(IO.getFile("generated/storage"));
 		framework.waitForStop(100000);

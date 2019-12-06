@@ -33,29 +33,6 @@ public class Utils {
 		return repo;
 	}
 
-	public static Repository createRepo(String uriStr, String name) throws Exception {
-		try {
-			URI uri = new URI(uriStr);
-			return createRepo(uri, name);
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public static Repository createRepo(URI uri, String name) throws Exception {
-		OSGiRepository repo = new OSGiRepository();
-		HttpClient httpClient = new HttpClient();
-		Map<String, String> map = new HashMap<>();
-		map.put("locations", uri.toString());
-		map.put("name", name);
-		map.put("cache", new File("generated/tmp/test/cache/" + name).getAbsolutePath());
-		repo.setProperties(map);
-		Processor p = new Processor();
-		p.addBasicPlugin(httpClient);
-		repo.setRegistry(p);
-		return repo;
-	}
-
 	public static URI findContentURI(Resource resource) {
 		List<Capability> contentCaps = resource.getCapabilities("osgi.content");
 		if (contentCaps == null || contentCaps.isEmpty())

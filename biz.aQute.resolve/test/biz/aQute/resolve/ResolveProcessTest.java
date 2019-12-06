@@ -326,7 +326,8 @@ public class ResolveProcessTest extends TestCase {
 			.toURI()
 			.toString());
 		map.put("name", getName());
-		map.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
+		map.put("cache",
+			new File("generated/tmp/test/cache/" + getClass().getName() + "/" + getName()).getAbsolutePath());
 		repo.setProperties(map);
 		Processor p = new Processor();
 		p.addBasicPlugin(httpClient);

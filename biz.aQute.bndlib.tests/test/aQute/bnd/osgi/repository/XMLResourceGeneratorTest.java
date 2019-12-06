@@ -23,9 +23,15 @@ import junit.framework.TestCase;
 
 public class XMLResourceGeneratorTest extends TestCase {
 	private static final Requirement	WILDCARD	= ResourceUtils.createWildcardRequirement();
-	File								tmp			= IO.getFile("generated/tmp");
+	File								tmp;
 
-	{
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
+
+	@Override
+	protected void setUp() {
+		tmp = IO.getFile("generated/tmp/test/" + getTestName());
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}

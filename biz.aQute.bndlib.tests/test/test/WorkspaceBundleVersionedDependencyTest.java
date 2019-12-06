@@ -25,7 +25,7 @@ public class WorkspaceBundleVersionedDependencyTest {
 
 	@Before
 	public void setUp() throws Exception {
-		testDir = new File(TMPDIR, testName.getMethodName());
+		testDir = new File(TMPDIR, getClass().getName() + "/" + testName.getMethodName());
 		IO.delete(testDir);
 		IO.mkdirs(testDir);
 	}

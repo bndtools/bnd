@@ -137,7 +137,8 @@ public class PluginTest extends TestCase {
 	}
 
 	public void testLoadPluginWithGlobalPluginPathURL() throws Exception {
-		File tmp = new File("generated/tmp/test/" + getName() + "/thinlet.jar").getAbsoluteFile();
+		File tmp = new File("generated/tmp/test/" + getClass().getName() + "/" + getName() + "/thinlet.jar")
+			.getAbsoluteFile();
 		IO.delete(tmp);
 		try (Builder p = new Builder()) {
 			p.setProperty(Constants.PLUGIN, "thinlet.Thinlet");

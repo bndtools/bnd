@@ -33,7 +33,7 @@ public class P2IndexerTest extends TestCase {
 
 	@Override
 	protected void setUp() {
-		tmp = IO.getFile("generated/tmp/test/" + getName());
+		tmp = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName());
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}

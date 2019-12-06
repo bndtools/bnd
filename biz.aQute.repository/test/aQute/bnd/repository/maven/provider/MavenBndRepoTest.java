@@ -72,7 +72,7 @@ public class MavenBndRepoTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		tmpName = "generated/tmp/test/" + getName();
+		tmpName = "generated/tmp/test/" + getClass().getName() + "/" + getName();
 		tmp = IO.getFile(tmpName);
 		IO.delete(tmp);
 		local = IO.getFile(tmp, "local");

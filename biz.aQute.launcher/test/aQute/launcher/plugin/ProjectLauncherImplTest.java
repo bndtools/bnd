@@ -19,7 +19,7 @@ public class ProjectLauncherImplTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		tmp = new File("generated/tmp/test/" + getName());
+		tmp = new File("generated/tmp/test/" + getClass().getName() + "/" + getName());
 		IO.delete(tmp);
 		IO.mkdirs(tmp);
 		IO.copy(IO.getFile("testresources/ws"), tmp);

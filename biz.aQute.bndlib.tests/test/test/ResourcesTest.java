@@ -14,6 +14,8 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -35,13 +37,16 @@ import aQute.lib.io.IOConstants;
 @SuppressWarnings("resource")
 public class ResourcesTest {
 	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
-	private String		testName;
+	private Path		tmp;
 
 	@BeforeEach
-	public void before(TestInfo info) {
-		testName = info.getTestMethod()
-			.map(Method::getName)
+	public void before(TestInfo info) throws Exception {
+		Method testMethod = info.getTestMethod()
 			.get();
+		tmp = Paths.get("generated/tmp/test", getClass().getName(), testMethod.getName())
+			.toAbsolutePath();
+		IO.delete(tmp);
+		IO.mkdirs(tmp);
 	}
 
 	/**
@@ -531,7 +536,8 @@ public class ResourcesTest {
 
 	@Test
 	public void testURLResourceJarLocking() throws Exception {
-		File f = new File("generated/tmp/test/" + testName + "/locking.jar");
+		File f = tmp.resolve("locking.jar")
+			.toFile();
 		try (Builder b = new Builder()) {
 			b.setProperty("-includeresource", "TargetFolder=testresources/ws/p2/Resources");
 			b.setProperty("-resourceonly", "true");

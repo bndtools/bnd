@@ -102,9 +102,9 @@ public class BundleEngineTest {
 	@BeforeEach
 	public void setUp(TestInfo info) {
 		debugStr = DEBUG ? new PrintWriter(System.err) : new PrintWriter(IO.nullWriter);
-		method = info.getTestMethod()
-			.map(Method::getName)
+		Method testMethod = info.getTestMethod()
 			.get();
+		method = getClass().getName() + "/" + testMethod.getName();
 		if (!info.getTags()
 			.contains(CUSTOM_LAUNCH)) {
 			startLaunchpad();
