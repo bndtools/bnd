@@ -1,9 +1,10 @@
 -include: bndtools.shared.bndrun
 
--runbundles: \
+-runbundles.linux: \
 	org.eclipse.core.filesystem.linux.x86_64,\
 	org.eclipse.core.net.linux.x86_64,\
-	org.eclipse.swt.gtk.linux.x86_64;version='[3.103.2.v20150203-1351,3.103.3)'
+    org.eclipse.equinox.security.linux.x86_64,\
+	org.eclipse.swt.gtk.linux.x86_64
 
 -runvm: ${crossplatform.vmargs}
 
