@@ -9,6 +9,7 @@ import org.gradle.api.Action
 import org.gradle.api.Buildable
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.attributes.LibraryElements
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.provider.Provider
@@ -18,6 +19,8 @@ import org.gradle.util.GradleVersion
 
 class BndUtils {
   private BndUtils() { }
+
+  private static final boolean IS_GRADLE_COMPATIBLE_5_6 = GradleVersion.current().compareTo(GradleVersion.version('5.6')) >= 0
 
   public static void logReport(def report, Logger logger) {
     if (logger.isWarnEnabled()) {
@@ -58,5 +61,11 @@ class BndUtils {
       value = value.getAsFile()
     } 
     return value
+  }
+
+  public static void jarLibraryElements(Project project, String configurationName) {
+    if (IS_GRADLE_COMPATIBLE_5_6) {
+      project.configurations[configurationName].attributes.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.objects.named(LibraryElements.class, LibraryElements.JAR))
+    }
   }
 }

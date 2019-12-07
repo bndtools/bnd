@@ -16,6 +16,7 @@ package aQute.bnd.gradle
 
 import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
 import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES
+import static aQute.bnd.gradle.BndUtils.jarLibraryElements
 import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.osgi.Processor.isTrue
 
@@ -108,6 +109,7 @@ public class BndPlugin implements Plugin<Project> {
             t.destinationDir = destinationDir
           }
           output.dir(destinationDir, builtBy: compileJavaTaskName)
+          jarLibraryElements(project, compileClasspathConfigurationName)
         }
         test {
           FileCollection srcDirs = files(bndProject.getTestSrc())
@@ -120,6 +122,7 @@ public class BndPlugin implements Plugin<Project> {
             t.destinationDir = destinationDir
           }
           output.dir(destinationDir, builtBy: compileJavaTaskName)
+          jarLibraryElements(project, compileClasspathConfigurationName)
         }
       }
       /* Configure srcDirs for any additional languages */
