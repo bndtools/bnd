@@ -62,7 +62,9 @@ public class BndBuilderPlugin implements Plugin<Project> {
         baseline
         baseline.dependencies.all { Dependency dep ->
           if (dep instanceof ExternalDependency) {
-            dep.force = true
+            dep.version {
+              strictly dep.getVersion()
+            }
           }
           if (dep instanceof ModuleDependency) {
             dep.transitive = false
@@ -81,9 +83,11 @@ public class BndBuilderPlugin implements Plugin<Project> {
         Task baselineTask = tasks.getByName('baseline')
         Task bundleTask = baselineTask.getBundleTask()
         if (bundleTask) {
-          logger.debug 'Searching for default baseline {}:{}:(,{}[', group, bundleTask.baseName, bundleTask.version
-          Dependency baselineDep = dependencies.create('group': group, 'name': bundleTask.baseName, 'version': "(,${bundleTask.version}[") {
-            force = true
+          logger.debug 'Searching for default baseline {}:{}:(0,{}[', group, bundleTask.baseName, bundleTask.version
+          Dependency baselineDep = dependencies.create('group': group, 'name': bundleTask.baseName) {
+            version {
+              strictly "(0,${bundleTask.version}["
+            }
             transitive = false
           }
           try {

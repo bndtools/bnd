@@ -18,7 +18,7 @@ apply plugin: 'java'
 
 ext.groupId = 'biz.aQute.bnd'
 ext.artifactId = 'biz.aQute.bnd.gradle'
-ext.artifactVersion = '4.3.0'
+ext.artifactVersion = '4.3.1'
 
 repositories {
   jcenter()
@@ -29,7 +29,9 @@ configurations {
   plugin
   plugin.dependencies.all { Dependency dep ->
     if (dep instanceof ExternalDependency) {
-      dep.force = true
+      dep.version {
+        strictly dep.getVersion()
+      }
     }
     if (dep instanceof ModuleDependency) {
       dep.transitive = false
