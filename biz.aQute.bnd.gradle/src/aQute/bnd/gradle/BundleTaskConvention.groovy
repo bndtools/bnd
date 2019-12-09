@@ -24,6 +24,7 @@
 package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.builtBy
+import static aQute.bnd.gradle.BndUtils.jarLibraryElements
 import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.gradle.BndUtils.unwrap
 
@@ -193,6 +194,7 @@ class BundleTaskConvention {
    */
   public void setSourceSet(SourceSet sourceSet) {
     this.sourceSet = sourceSet
+    jarLibraryElements(project, sourceSet.compileClasspathConfigurationName)
     if (!classpathModified) {
       setClasspath(sourceSet.compileClasspath)
       classpathModified = false
