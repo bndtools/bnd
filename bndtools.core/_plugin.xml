@@ -1125,155 +1125,19 @@
       </filter>
       <filter
             targetId="bndtools.PackageExplorer"
-            name="%HideInnerClassFiles.label"
+            name="Hide Empty Packages"
             enabled="true"
-            description="%HideInnerClassFiles.description"
-            class="org.eclipse.jdt.internal.ui.filters.InnerClassFilesFilter"
-            id="org.eclipse.jdt.internal.ui.PackageExplorer.HideInnerClassFilesFilter">
+            description="Hide Empty Packages"
+            class="bndtools.explorer.EmptyPackageFilter"
+            id="bndtools.explorer.EmptyPackageFilter">
       </filter>
       <filter
             targetId="bndtools.PackageExplorer"
-            name="%HideEmptyPackages.label"
+            name="Only Bnd projects"
             enabled="false"
-            description="%HideEmptyPackages.description"
-            class="org.eclipse.jdt.internal.ui.filters.EmptyPackageFilter"
-            id="org.eclipse.jdt.internal.ui.PackageExplorer.EmptyPackageFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideEmptyInnerPackages.label"
-            enabled="true"
-            description="%HideEmptyInnerPackages.description"
-            class="org.eclipse.jdt.internal.ui.filters.EmptyInnerPackageFilter"
-            id="org.eclipse.jdt.internal.ui.PackageExplorer.EmptyInnerPackageFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideNonJavaElements.label"
-            enabled="false"
-            description="%HideNonJavaElements.description"
-            class="org.eclipse.jdt.internal.ui.filters.NonJavaElementFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.NonJavaElementFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideEmptyLibraryContainers.label"
-            enabled="true"
-            description="%HideEmptyLibraryContainers.description"
-            class="org.eclipse.jdt.internal.ui.filters.EmptyLibraryContainerFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.EmptyLibraryContainerFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideReferencedLibraries.label"
-            enabled="false"
-            description="%HideReferencedLibraries.description"
-            class="org.eclipse.jdt.internal.ui.filters.LibraryFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.LibraryFilter">
-      </filter>      
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideContainedLibraries.label"
-            enabled="false"
-            description="%HideContainedLibraries.description"
-            class="org.eclipse.jdt.internal.ui.filters.ContainedLibraryFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.ContainedLibraryFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideJavaFiles.label"
-            enabled="false"
-            description="%HideJavaFiles.description"
-            class="org.eclipse.jdt.internal.ui.filters.JavaFileFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.CuAndClassFileFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HidePackageDeclaration.label"
-            enabled="true"
-            description="%HidePackageDeclaration.description"
-            class="org.eclipse.jdt.internal.ui.filters.PackageDeclarationFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.PackageDeclarationFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideImportDeclaration.label"
-            enabled="true"
-            description="%HideImportDeclaration.description"
-            class="org.eclipse.jdt.internal.ui.filters.ImportDeclarationFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.ImportDeclarationFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideSyntheticMembers.label"
-            enabled="true"
-            description="%HideSyntheticMembers.description"
-            class="org.eclipse.jdt.internal.ui.filters.SyntheticMembersFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.SyntheticMembersFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideNonJavaProjects.label"
-            enabled="false"
-            description="%HideNonJavaProjects.description"
-            class="org.eclipse.jdt.internal.ui.filters.NonJavaProjectsFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.NonJavaProjectsFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideNonSharedProjects.label"
-            enabled="false"
-            description="%HideNonSharedProjects.description"
-            class="org.eclipse.jdt.internal.ui.filters.NonSharedProjectFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.NonSharedProjectsFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideClosedProjects.label"
-            enabled="false"
-            description="%HideClosedProjects.description"
-            class="org.eclipse.jdt.internal.ui.filters.ClosedProjectFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.ClosedProjectsFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideFields.label"
-            enabled="false"
-            description="%HideFields.description"
-            class="org.eclipse.jdt.internal.ui.filters.FieldsFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.FieldsFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideStatics.label"
-            enabled="false"
-            description="%HideStatics.description"
-            class="org.eclipse.jdt.internal.ui.filters.StaticsFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.StaticsFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideNonPublic.label"
-            enabled="false"
-            description="%HideNonPublic.description"
-            class="org.eclipse.jdt.internal.ui.filters.NonPublicFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.NonPublicFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideLocalTypes.label"
-            enabled="false"
-            description="%HideLocalTypes.description"
-            class="org.eclipse.jdt.internal.ui.filters.LocalTypesFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.LocalTypesFilter">
-      </filter>
-      <filter
-            targetId="bndtools.PackageExplorer"
-            name="%HideDeprecatedFieldsAndMethods.label"
-            enabled="false"
-            description="%HideDeprecatedFieldsAndMethods.description"
-            class="org.eclipse.jdt.internal.ui.filters.DeprecatedFieldsAndMethodsFilter"
-            id="org.eclipse.jdt.ui.PackageExplorer.DeprecatedMembersFilter">
+            description="Show only bnd projects"
+            class="bndtools.explorer.BndProjects"
+            id="bndtools.explorer.BndProjects">
       </filter>
    </extension>
  </plugin>
