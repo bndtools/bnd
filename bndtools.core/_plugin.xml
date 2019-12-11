@@ -234,6 +234,13 @@
       </category>
       <view
             category="bndtools.viewCategory"
+            class="bndtools.explorer.BndtoolsExplorer"
+            icon="icons/bndtools-logo-16x16.png"
+            id="bndtools.PackageExplorer"
+            name="Bndtools Explorer">
+      </view>
+      <view
+            category="bndtools.viewCategory"
             class="bndtools.views.resolution.ResolutionView"
             icon="${icons.capreq}"
             id="bndtools.impExpView"
@@ -1098,16 +1105,6 @@
             project="true">
             <description>Imports an existing Bnd workspace</description>
       </wizard>
-   </extension>
-   <extension
-         point="org.eclipse.ui.views">
-      <view
-            name="Bndtools Explorer"
-            icon="/icons/bndtools-logo-16x16.png"
-            category="org.eclipse.jdt.ui.java"
-            class="bndtools.explorer.BndtoolsExplorer"
-            id="bndtools.PackageExplorer">
-      </view>
    </extension>
 
 <!-- =========================================================================== -->
