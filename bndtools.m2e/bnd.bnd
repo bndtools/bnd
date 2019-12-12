@@ -9,6 +9,7 @@
 	biz.aQute.bnd.maven;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	biz.aQute.repository;version=latest,\
+	biz.aQute.resolve;version=latest,\
 	bndtools.api;version=latest,\
 	bndtools.core;version=latest,\
 	org.slf4j.api;version=latest,\

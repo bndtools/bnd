@@ -22,6 +22,7 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.EE;
@@ -32,6 +33,7 @@ import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import biz.aQute.resolve.Bndrun;
 
+@ProviderType
 public class BndrunContainer {
 
 	private static final Logger										logger	= LoggerFactory
@@ -61,8 +63,6 @@ public class BndrunContainer {
 	private final boolean											transitive;
 
 	private final PostProcessor										postProcessor;
-
-	private FileSetRepository										fileSetRepository;
 
 	public static class Builder {
 
@@ -164,9 +164,23 @@ public class BndrunContainer {
 	}
 
 	public int execute(File runFile, String task, File workingDir, Operation operation) throws Exception {
+		try (Bndrun run = init(runFile, task, workingDir)) {
+			if (run == null) {
+				return 1;
+			}
+			int errors = report(run);
+			if (!run.isOk()) {
+				return errors;
+			}
+			injectImplicitRepository(run);
+			return operation.apply(runFile, getNamePart(runFile), run);
+		}
+	}
+
+	public Bndrun init(File runFile, String task, File workingDir) throws Exception {
 		if (!runFile.exists()) {
 			logger.error("Could not find bnd run file {}", runFile);
-			return 1;
+			return null;
 		}
 		String bndrun = getNamePart(runFile);
 		File temporaryDir = workingDir.toPath()
@@ -176,33 +190,52 @@ public class BndrunContainer {
 			.toFile();
 		File cnf = new File(temporaryDir, Workspace.CNFDIR);
 		aQute.lib.io.IO.mkdirs(cnf);
-		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
-			run.setBase(temporaryDir);
-			Workspace workspace = run.getWorkspace();
-			workspace.setBuildDir(cnf);
-			workspace.setOffline(session.getSettings()
-				.isOffline());
+
+		Bndrun run = Bndrun.createBndrun(null, runFile);
+		run.setBase(temporaryDir);
+		Workspace workspace = run.getWorkspace();
+		workspace.setBase(temporaryDir);
+		workspace.setBuildDir(cnf);
+		workspace.setOffline(session.getSettings()
+			.isOffline());
+		run.setParent(getProcessor(workspace));
+		run.getInfo(workspace);
+		setRunrequiresFromProjectArtifact(run);
+		setEEfromBuild(run);
+		run.addBasicPlugin(this);
+		return run;
+	}
+
+	public boolean injectImplicitRepository(Run run) throws Exception {
+		Workspace workspace = run.getWorkspace();
+		if (workspace.getPlugin(ImplicitFileSetRepository.class) == null) {
 			workspace.addBasicPlugin(getFileSetRepository());
-			run.setParent(getProcessor(workspace));
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);
 			}
-			setRunrequiresFromProjectArtifact(run);
-			setEEfromBuild(run);
-			run.getInfo(workspace);
-			int errors = report(run);
-			if (!run.isOk()) {
-				return errors;
-			}
-			return operation.apply(runFile, bndrun, run);
+			return true;
 		}
+		return false;
 	}
 
+	/**
+	 * Creates a new repository in every invocation.
+	 *
+	 * @return a new {@link ImplicitFileSetRepository}
+	 * @throws Exception
+	 */
 	public FileSetRepository getFileSetRepository() throws Exception {
-		if (fileSetRepository != null) {
-			return fileSetRepository;
-		}
+		return getFileSetRepository(project);
+	}
 
+	/**
+	 * Creates a new repository in every invocation.
+	 *
+	 * @param the Maven project
+	 * @return a new {@link ImplicitFileSetRepository}
+	 * @throws Exception
+	 */
+	public FileSetRepository getFileSetRepository(MavenProject project) throws Exception {
 		if (includeDependencyManagement) {
 			includeDependencyManagement(project, artifactFactory);
 		}
@@ -213,7 +246,7 @@ public class BndrunContainer {
 		String name = project.getName()
 			.isEmpty() ? project.getArtifactId() : project.getName();
 
-		return fileSetRepository = dependencyResolver.getFileSetRepository(name, bundles, useMavenDependencies);
+		return dependencyResolver.getFileSetRepository(name, bundles, useMavenDependencies);
 	}
 
 	public void setRunrequiresFromProjectArtifact(Run run) {
