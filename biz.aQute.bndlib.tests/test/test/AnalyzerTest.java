@@ -1,5 +1,7 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -257,6 +259,28 @@ public class AnalyzerTest extends TestCase {
 				.getVersion();
 			assertEquals("3.5.7", version);
 			m.write(System.err);
+		} finally {
+			b.close();
+		}
+
+	}
+
+	public void testNegatedPackagesFiltering() throws Exception {
+		Builder b = new Builder();
+		try {
+			b.setIncludePackage("test.packageinfo.*");
+			b.setProperty("X-Not-Versioned", "${packages;ANNOTATED;!org.osgi.annotation.versioning.Version}");
+			b.addClasspath(new File("bin_test"));
+			Jar jar = b.build();
+			Manifest m = jar.getManifest();
+			m.write(System.err);
+			assertTrue(b.check());
+			Parameters notVersioned = Domain.domain(m)
+				.getParameters("X-Not-Versioned");
+			assertThat(notVersioned) //
+				.containsKeys("test.packageinfo", "test.packageinfo.both_no_version",
+				"test.packageinfo.nopackageinfo", "test.packageinfo.ref")
+				.doesNotContainKeys("test.packageinfo.annotated", "test.packageinfo.notannotated");
 		} finally {
 			b.close();
 		}
