@@ -112,8 +112,7 @@ public class Workspace extends Processor {
 	private final static Map<File, WeakReference<Workspace>>	cache				= newHashMap();
 	static Processor											defaults			= null;
 	final Map<String, Action>									commands			= newMap();
-	final Maven													maven				= new Maven(
-		Processor.getExecutor());
+	final Maven													maven;
 	private final AtomicBoolean									offline				= new AtomicBoolean();
 	Settings													settings			= new Settings(
 		Home.getUserHomeBnd() + "/settings.json");
@@ -249,6 +248,7 @@ public class Workspace extends Processor {
 
 	public Workspace(File workspaceDir, String bndDir) throws Exception {
 		super(getDefaults());
+		this.maven = new Maven(Processor.getExecutor(), this);
 		this.layout = WorkspaceLayout.BND;
 		workspaceDir = workspaceDir.getAbsoluteFile();
 		setBase(workspaceDir); // setBase before call to setFileSystem
@@ -259,6 +259,7 @@ public class Workspace extends Processor {
 
 	private Workspace(WorkspaceLayout layout) throws Exception {
 		super(getDefaults());
+		this.maven = new Maven(Processor.getExecutor(), this);
 		this.layout = layout;
 		setBuildDir(IO.getFile(BND_DEFAULT_WS, CNFDIR));
 		projects = new ProjectTracker(this);

@@ -22,6 +22,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import aQute.lib.io.IO;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.reporter.Reporter;
 
 public abstract class Pom {
 	static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
@@ -52,6 +54,7 @@ public abstract class Pom {
 
 	final Maven			maven;
 	final URI			home;
+	final Reporter		reporter;
 
 	String				groupId;
 	String				artifactId;
@@ -142,9 +145,14 @@ public abstract class Pom {
 	}
 
 	public Pom(Maven maven, File pomFile, URI home) throws Exception {
+		this(maven, pomFile, home, new ReporterAdapter());
+	}
+
+	public Pom(Maven maven, File pomFile, URI home, Reporter reporter) throws Exception {
 		this.maven = maven;
 		this.home = home;
 		this.pomFile = pomFile;
+		this.reporter = reporter;
 	}
 
 	void parse() throws Exception {
@@ -280,14 +288,14 @@ public abstract class Pom {
 							}
 						}
 					} else if (rover.previous != null)
-						System.err.println("Cannot find " + dep + " from " + rover.previous.dependency);
+						reporter.error("Cannot find %s from %s", dep, rover.previous.dependency);
 					else
-						System.err.println("Cannot find " + dep + " from top");
+						reporter.error("Cannot find %s from top", dep);
 				} catch (Exception e) {
 					if (rover.previous != null)
-						System.err.println("Cannot find " + dep + " from " + rover.previous.dependency);
+						reporter.error("Cannot find %s from ", dep, rover.previous.dependency);
 					else
-						System.err.println("Cannot find " + dep + " from top");
+						reporter.error("Cannot find %s from top", dep);
 
 					// boolean include = false;
 					// if (dep.scope == Scope.compile) {
@@ -314,7 +322,7 @@ public abstract class Pom {
 	}
 
 	protected String replace(String in) {
-		System.err.println("replace: " + in);
+		reporter.trace("Replace: %s", in);
 		if (in == null)
 			return "null";
 

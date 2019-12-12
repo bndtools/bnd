@@ -19,16 +19,24 @@ import org.w3c.dom.NodeList;
 
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.reporter.Reporter;
 
 public class ProjectPom extends Pom {
 
 	final List<URI>		repositories	= new ArrayList<>();
 	final Properties	properties		= new UTF8Properties();
+	final Reporter		reporter;
 	String				packaging;
 	String				url;
 
 	ProjectPom(Maven maven, File pomFile) throws Exception {
-		super(maven, pomFile, pomFile.toURI());
+		this(maven, pomFile, new ReporterAdapter());
+	}
+
+	ProjectPom(Maven maven, File pomFile, Reporter reporter) throws Exception {
+		super(maven, pomFile, pomFile.toURI(), reporter);
+		this.reporter = reporter;
 	}
 
 	@Override
@@ -53,7 +61,7 @@ public class ProjectPom extends Pom {
 				parentFile = IO.getFile(getPomFile().getParentFile(), parentPath);
 			}
 			if (parentFile.isFile()) {
-				ProjectPom parentPom = new ProjectPom(maven, parentFile);
+				ProjectPom parentPom = new ProjectPom(maven, parentFile, reporter);
 				parentPom.parse();
 				dependencies.addAll(parentPom.dependencies);
 				for (Enumeration<?> e = parentPom.properties.propertyNames(); e.hasMoreElements();) {
@@ -153,9 +161,9 @@ public class ProjectPom extends Pom {
 
 	@Override
 	protected String replace(String in) {
-		System.err.println("Replce: " + in);
+		reporter.trace("Replace: %s", in);
 		if (in == null) {
-			System.err.println("null??");
+			reporter.error("No input to replace. Setting it to <<???>>");
 			in = "<<???>>";
 		}
 		Matcher matcher = MACRO.matcher(in);
