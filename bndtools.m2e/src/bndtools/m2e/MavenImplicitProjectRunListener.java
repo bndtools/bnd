@@ -1,9 +1,5 @@
 package bndtools.m2e;
 
-import java.io.File;
-import java.nio.file.Paths;
-
-import org.apache.maven.project.MavenProject;
 import org.bndtools.api.RunListener;
 import org.bndtools.api.RunMode;
 import org.eclipse.core.resources.IResource;
@@ -18,7 +14,6 @@ import org.osgi.service.component.annotations.Component;
 
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
-import aQute.lib.io.IO;
 
 @Component(property = Constants.SERVICE_RANKING + ":Integer=1000")
 public class MavenImplicitProjectRunListener implements MavenRunListenerHelper, RunListener {
@@ -37,22 +32,8 @@ public class MavenImplicitProjectRunListener implements MavenRunListenerHelper, 
 
 		if (workspace.getPlugin(MavenImplicitProjectRepository.class) == null) {
 			IMavenProjectFacade projectFacade = getMavenProjectFacade(resource);
-			MavenProject mavenProject = getMavenProject(projectFacade);
 
-			String bndrun = getNamePart(resource.getName());
-			File temporaryDir = Paths.get(mavenProject.getBuild()
-				.getDirectory(), "tmp", "resolve", bndrun)
-				.toFile();
-			File cnf = new File(temporaryDir, Workspace.CNFDIR);
-			IO.mkdirs(cnf);
-
-			run.setBase(temporaryDir);
-			workspace.setBase(temporaryDir);
-			workspace.setBuildDir(cnf);
-			workspace.setOffline(isOffline());
-
-			final MavenImplicitProjectRepository implicitRepo = new MavenImplicitProjectRepository(projectFacade,
-				run.getPropertiesFile(), run);
+			final MavenImplicitProjectRepository implicitRepo = new MavenImplicitProjectRepository(projectFacade, run);
 
 			if (runMode == RunMode.EDIT) {
 				new Job("Create implicit repo") {
@@ -69,6 +50,8 @@ public class MavenImplicitProjectRunListener implements MavenRunListenerHelper, 
 			workspace.getRepositories()
 				.add(0, implicitRepo);
 			workspace.addBasicPlugin(implicitRepo);
+
+			mavenProjectRegistry.addMavenProjectChangedListener(implicitRepo);
 		}
 	}
 
@@ -89,12 +72,9 @@ public class MavenImplicitProjectRunListener implements MavenRunListenerHelper, 
 				.remove(implicitRepo);
 			workspace.removeBasicPlugin(implicitRepo);
 			implicitRepo.cleanup();
-		}
-	}
 
-	private String getNamePart(String nameExt) {
-		int pos = nameExt.lastIndexOf('.');
-		return (pos > 0) ? nameExt.substring(0, pos) : nameExt;
+			mavenProjectRegistry.removeMavenProjectChangedListener(implicitRepo);
+		}
 	}
 
 }

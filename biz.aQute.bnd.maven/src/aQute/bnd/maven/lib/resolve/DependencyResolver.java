@@ -29,8 +29,10 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.repository.fileset.FileSetRepository;
 
+@ProviderType
 public class DependencyResolver {
 
 	private static final Logger					logger	= LoggerFactory.getLogger(DependencyResolver.class);
@@ -165,7 +167,7 @@ public class DependencyResolver {
 			bundles.addAll(bundlesInputParameter);
 		}
 
-		return new FileSetRepository(name, bundles);
+		return new ImplicitFileSetRepository(name, bundles);
 	}
 
 	private void discoverArtifacts(Map<File, ArtifactResult> files, List<DependencyNode> nodes, String parent,
