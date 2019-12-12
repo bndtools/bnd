@@ -18,6 +18,8 @@ import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.filelock.DirectoryLock;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.reporter.Reporter;
 
 /**
  * An entry (a group/artifact) in the maven cache in the .m2/repository
@@ -34,6 +36,7 @@ public class MavenEntry implements Closeable {
 	final File					artifactFile;
 	final String				pomPath;
 	final File					propertiesFile;
+	final Reporter				reporter;
 	UTF8Properties				properties;
 	private boolean				propertiesChanged;
 	FutureTask<File>			artifact;
@@ -46,6 +49,17 @@ public class MavenEntry implements Closeable {
 	 * @param path
 	 */
 	MavenEntry(Maven maven, String path) {
+		this(maven, path, new ReporterAdapter());
+	}
+
+	/**
+	 * Constructor.
+	 *
+	 * @param maven
+	 * @param path
+	 * @param reporter
+	 */
+	MavenEntry(Maven maven, String path, Reporter reporter) {
 		this.root = maven.repository;
 		this.maven = maven;
 		this.path = path;
@@ -62,6 +76,7 @@ public class MavenEntry implements Closeable {
 		this.artifactFile = new File(maven.repository, artifactPath);
 		this.propertiesFile = new File(dir, "bnd.properties");
 		this.lock = new DirectoryLock(dir, 5 * 60000); // 5 mins
+		this.reporter = reporter;
 	}
 
 	public File getArtifactFile() {
@@ -248,7 +263,7 @@ public class MavenEntry implements Closeable {
 	 * @throws Exception
 	 */
 	private CachedPom createPom(URI url) throws Exception {
-		CachedPom pom = new CachedPom(this, url);
+		CachedPom pom = new CachedPom(this, url, reporter);
 		pom.parse();
 		poms.put(url, pom);
 		setProperty(url.toASCIIString(), "true");
