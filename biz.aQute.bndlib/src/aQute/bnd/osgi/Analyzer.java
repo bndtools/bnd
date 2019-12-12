@@ -2862,8 +2862,10 @@ public class Analyzer extends Processor {
 					case ANNOTATED :
 						if (instr == null)
 							throw new IllegalArgumentException("Not enough arguments in ${packages} macro");
-						accept = pkgInfo != null && pkgInfo.is(Clazz.QUERY.ANNOTATED, instr, this);
+						accept = (pkgInfo == null && instr.isNegated())
+							|| (pkgInfo != null && pkgInfo.is(Clazz.QUERY.ANNOTATED, instr, this));
 						break;
+
 					case VERSIONED :
 						accept = entry.getValue()
 							.getVersion() != null;
