@@ -2,7 +2,7 @@
 layout: default
 class: Project
 title: -runvm KEYS 
-summary:  Additional arguments for the VM invocation. Keys that start with a - are added as options, otherwise they are treated as -D properties for the VM.
+summary:  Additional arguments for the VM invocation. Arguments are added as-is.
 ---
 
 
