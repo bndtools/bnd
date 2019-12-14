@@ -34,6 +34,7 @@ public interface MavenRunListenerHelper {
 
 	IMaven					maven					= MavenPlugin.getMaven();
 	IMavenProjectRegistry	mavenProjectRegistry	= MavenPlugin.getMavenProjectRegistry();
+	IWorkspace				iWorkspace				= ResourcesPlugin.getWorkspace();
 
 	default IResource getResource(Run run) {
 		File propertiesFile = run.getPropertiesFile();
