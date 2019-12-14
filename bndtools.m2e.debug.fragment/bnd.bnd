@@ -8,6 +8,8 @@ Fragment-Host: org.eclipse.m2e.maven.runtime
 -buildpath: org.eclipse.m2e.maven.runtime
 
 Import-Package: \
+	javax.crypto,\
+	javax.crypto.spec,\
 	javax.net.ssl
 
 -fixupmessages.empty: The JAR is empty

@@ -37,6 +37,11 @@ mavencentral:           https://repo.maven.apache.org/maven2
         locations="https://dl.bintray.com/bndtools/eclipse-repo/4.10/index.xml.gz";\
         poll.time=-1;\
         cache="${workspace}/cnf/cache/stable/Eclipse-2018-12",\
+    aQute.bnd.repository.osgi.OSGiRepository;\
+        name="Eclipse 2018-12-FULL";\
+        locations="https://dl.bintray.com/bndtools/eclipse-repo/4.10/fullindex.xml.gz";\
+        poll.time=-1;\
+        cache="${workspace}/cnf/cache/stable/Eclipse-2018-12-FULL",\
     aQute.bnd.repository.maven.pom.provider.BndPomRepository;\
         name="Eclipse m2e 1.10.0 Dependencies";\
         revision="org.apache.maven:maven-core:3.5.3,org.apache.maven:maven-aether-provider:3.3.9,org.sonatype.plexus:plexus-build-api:0.0.7";\
