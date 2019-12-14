@@ -3,6 +3,7 @@ package bndtools.m2e;
 import org.bndtools.api.RunListener;
 import org.bndtools.api.RunMode;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -51,7 +52,10 @@ public class MavenImplicitProjectRunListener implements MavenRunListenerHelper, 
 				.add(0, implicitRepo);
 			workspace.addBasicPlugin(implicitRepo);
 
-			mavenProjectRegistry.addMavenProjectChangedListener(implicitRepo);
+			mavenProjectRegistry.addMavenProjectChangedListener( //
+				implicitRepo);
+			iWorkspace.addResourceChangeListener( //
+				implicitRepo, IResourceChangeEvent.POST_CHANGE);
 		}
 	}
 
@@ -74,6 +78,7 @@ public class MavenImplicitProjectRunListener implements MavenRunListenerHelper, 
 			implicitRepo.cleanup();
 
 			mavenProjectRegistry.removeMavenProjectChangedListener(implicitRepo);
+			iWorkspace.removeResourceChangeListener(implicitRepo);
 		}
 	}
 
