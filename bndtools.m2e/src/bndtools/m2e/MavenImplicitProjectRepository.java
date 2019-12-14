@@ -1,5 +1,7 @@
 package bndtools.m2e;
 
+import static aQute.lib.exceptions.ConsumerWithException.asConsumer;
+
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,13 +11,16 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.maven.project.MavenProject;
-import org.bndtools.api.ILogger;
-import org.bndtools.api.Logger;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Run;
 import aQute.bnd.maven.lib.resolve.BndrunContainer;
@@ -25,19 +30,21 @@ import aQute.bnd.version.Version;
 import aQute.lib.exceptions.Exceptions;
 import bndtools.central.Central;
 
-public class MavenImplicitProjectRepository extends AbstractMavenRepository implements Refreshable {
+public class MavenImplicitProjectRepository extends AbstractMavenRepository
+	implements IResourceChangeListener, Refreshable {
 
-	private static final ILogger						logger					= Logger
-		.getLogger(MavenImplicitProjectRepository.class);
+	private static final org.slf4j.Logger	logger	= LoggerFactory.getLogger(MavenImplicitProjectRepository.class);
 
-	private volatile FileSetRepository					fileSetRepository;
-
-	private final IMavenProjectFacade					projectFacade;
-	private final Run									run;
+	private volatile FileSetRepository	fileSetRepository;
+	private final IMavenProjectFacade	projectFacade;
+	private final Run					run;
+	private final IPath					bndrunFilePath;
 
 	public MavenImplicitProjectRepository(IMavenProjectFacade projectFacade, Run run) {
 		this.projectFacade = projectFacade;
 		this.run = run;
+
+		bndrunFilePath = projectFacade.getFullPath(run.getPropertiesFile());
 	}
 
 	@Override
@@ -96,6 +103,14 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
 	}
 
 	@Override
+	public void resourceChanged(IResourceChangeEvent event) {
+		if (event.getDelta()
+			.findMember(bndrunFilePath) != null) {
+			createRepo(projectFacade, new NullProgressMonitor());
+		}
+	}
+
+	@Override
 	public boolean refresh() throws Exception {
 		return true;
 	}
@@ -116,9 +131,9 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
 			fileSetRepository = bndrunContainer.getFileSetRepository(mavenProject);
 			fileSetRepository.list(null);
 
-			Central.refreshPlugin(this);
+			fullRefresh();
 		} catch (Exception e) {
-			logger.logError("Failed to create implicit repository for m2e project " + getName(), e);
+			logger.error("Failed to create implicit repository for m2e project {}", getName(), e);
 
 			try {
 				String name = mavenProject.getName()
@@ -126,11 +141,22 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
 
 				fileSetRepository = new FileSetRepository(name, Collections.emptyList());
 
-				Central.refreshPlugin(this);
+				fullRefresh();
 			} catch (Exception e2) {
 				throw Exceptions.duck(e2);
 			}
 		}
+	}
+
+	private void fullRefresh() throws Exception {
+		Central.refreshPlugin(this);
+		run.refresh();
+		run.getWorkspace()
+			.getRepositories()
+			.stream()
+			.filter(Refreshable.class::isInstance)
+			.map(Refreshable.class::cast)
+			.forEach(asConsumer(Central::refreshPlugin));
 	}
 
 }
