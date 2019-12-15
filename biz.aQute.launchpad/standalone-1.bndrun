@@ -1,0 +1,33 @@
+-standalone: true
+
+-plugin.repo.test = \
+	aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
+		releaseUrls=https://repo.maven.apache.org/maven2; \
+		revision='\
+			org.apache.felix:org.apache.felix.framework:6.0.3,\
+			org.apache.felix:org.apache.felix.gogo.command:1.0.2,\
+			org.apache.felix:org.apache.felix.gogo.runtime:1.1.0,\
+			org.apache.felix:org.apache.felix.gogo.shell:1.1.0,\
+			org.apache.felix:org.apache.felix.log:1.2.2,\
+			org.apache.felix:org.apache.felix.scr:2.1.12,\
+			biz.aQute.bnd:biz.aQute.bnd.runtime.gogo:4.3.1,\
+			org.osgi:org.osgi.service.cm:1.6.0,\
+			org.osgi:org.osgi.util.function:1.1.0,\
+			org.osgi:org.osgi.util.promise:1.1.1';\
+		location='${.}/generated/cache/standaloneTest.xml';\
+		transitive=true; \
+		poll_time=-1;\
+		name='standaloneTest'
+
+#-runrequires: \
+#	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
+#	osgi.identity;filter:='(osgi.identity=biz.aQute.bnd.runtime.gogo)'
+
+
+#-runbundles: \
+#	org.apache.felix.gogo.runtime;version='[1.1.0,1.1.1)',\
+#	org.apache.felix.gogo.shell;version='[1.1.0,1.1.1)',\
+#	biz.aQute.bnd.runtime.gogo;version=snapshot,\
+#	org.apache.felix.log;version='[1.0.1,1.0.2)'
+#-runfw: org.apache.felix.framework
+-runee: JavaSE-1.8

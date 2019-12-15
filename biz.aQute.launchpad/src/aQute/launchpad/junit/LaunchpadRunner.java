@@ -25,8 +25,8 @@ import org.osgi.framework.Bundle;
 
 import aQute.bnd.service.specifications.BuilderSpecification;
 import aQute.bnd.service.specifications.RunSpecification;
+import aQute.launchpad.AbstractLaunchpadBuilder;
 import aQute.launchpad.Launchpad;
-import aQute.launchpad.LaunchpadBuilder;
 import aQute.launchpad.Probe;
 import aQute.launchpad.internal.ProbeImpl;
 import aQute.lib.io.IO;
@@ -34,7 +34,7 @@ import aQute.lib.io.IO;
 public class LaunchpadRunner extends BlockJUnit4ClassRunner {
 	static byte[]			testBundle;
 
-	final LaunchpadBuilder	builder;
+	final AbstractLaunchpadBuilder<?>	builder;
 
 	public LaunchpadRunner(Class<?> klass) throws InitializationError {
 		super(klass);
@@ -45,10 +45,10 @@ public class LaunchpadRunner extends BlockJUnit4ClassRunner {
 			}
 			field.setAccessible(true);
 			Object value = field.get(null);
-			if (value instanceof LaunchpadBuilder) {
-				this.builder = (LaunchpadBuilder) value;
+			if (value instanceof AbstractLaunchpadBuilder) {
+				this.builder = (AbstractLaunchpadBuilder<?>) value;
 			} else {
-				throw new IllegalArgumentException("The builder field must be a LaunchpadBuilder");
+				throw new IllegalArgumentException("The builder field must be a AbstractLaunchpadBuilder");
 			}
 		} catch (NoSuchFieldException | IllegalAccessException e) {
 			throw new InitializationError("No field 'builder' in class " + klass);

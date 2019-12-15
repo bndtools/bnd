@@ -1,2 +1,2 @@
-@org.osgi.annotation.versioning.Version("1.2.0")
+@org.osgi.annotation.versioning.Version("2.0.0")
 package aQute.launchpad;
