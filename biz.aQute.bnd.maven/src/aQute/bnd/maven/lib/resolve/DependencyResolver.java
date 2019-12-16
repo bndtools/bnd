@@ -178,10 +178,14 @@ public class DependencyResolver {
 				.getScope())) {
 				continue;
 			}
+
+			List<RemoteRepository> combinedRepositories = new ArrayList<>(remoteRepositories);
+			combinedRepositories.addAll(node.getRepositories());
+
 			// Ensure that the file is downloaded so we can index it
 			try {
 				ArtifactResult resolvedArtifact = postProcessor.postProcessResult(system.resolveArtifact(session,
-					new ArtifactRequest(node.getArtifact(), remoteRepositories, parent)));
+					new ArtifactRequest(node.getArtifact(), combinedRepositories, parent)));
 				logger.debug("Located file: {} for artifact {}", resolvedArtifact.getArtifact()
 					.getFile(), resolvedArtifact);
 
@@ -192,7 +196,7 @@ public class DependencyResolver {
 					.toString(), e);
 			}
 			if (includeTransitive) {
-				discoverArtifacts(files, node.getChildren(), node.getRequestContext(), remoteRepositories);
+				discoverArtifacts(files, node.getChildren(), node.getRequestContext(), combinedRepositories);
 			} else {
 				logger.debug("Ignoring transitive dependencies of {}", node.getDependency());
 			}
