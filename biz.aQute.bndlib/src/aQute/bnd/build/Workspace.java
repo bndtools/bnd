@@ -1,5 +1,6 @@
 package aQute.bnd.build;
 
+import static aQute.lib.exceptions.BiFunctionWithException.asBiFunction;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.lang.invoke.MethodType.methodType;
 
@@ -33,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -100,7 +102,7 @@ public class Workspace extends Processor {
 	public static final String	STANDALONE_REPO_CLASS			= "aQute.bnd.repository.osgi.OSGiRepository";
 
 	static final int			BUFFER_SIZE						= IOConstants.PAGE_SIZE * 16;
-	private static final String	PLUGIN_STANDALONE				= "-plugin.standalone_";
+	private static final String	PLUGIN_STANDALONE		= Constants.PLUGIN + ".standalone_";
 
 	static class WorkspaceData {
 		List<RepositoryPlugin>	repositories;
@@ -1078,7 +1080,7 @@ public class Workspace extends Processor {
 			setup.format("#\n" //
 				+ "# Plugin %s setup\n" //
 				+ "#\n", alias);
-			setup.format("-plugin.%s = %s", alias, plugin.getName());
+			setup.format(Constants.PLUGIN + ".%s = %s", alias, plugin.getName());
 
 			MapStream.of(parameters)
 				.mapValue(this::escaped)
@@ -1148,45 +1150,42 @@ public class Workspace extends Processor {
 	public static Workspace createStandaloneWorkspace(Processor run, URI base) throws Exception {
 		Workspace ws = new Workspace(WorkspaceLayout.STANDALONE);
 
+		AtomicBoolean copyAll = new AtomicBoolean(false);
+		AtomicInteger counter = new AtomicInteger();
 		Parameters standalone = new Parameters(run.getProperty(STANDALONE), ws);
-		StringBuilder sb = new StringBuilder();
-		try (Formatter f = new Formatter(sb, Locale.US)) {
-			int counter = 1;
-			for (Map.Entry<String, Attrs> e : standalone.entrySet()) {
-				String locationStr = e.getKey();
+		standalone.stream()
+			.filterKey(locationStr -> {
 				if ("true".equalsIgnoreCase(locationStr)) {
-
-					//
-					// Copy all properties except the type we will add
-					//
-
-					Properties wsProperties = ws.getProperties();
-					MapStream.of(run.getProperties())
-						.filterKey(k -> !((String) k).startsWith(PLUGIN_STANDALONE))
-						.forEachOrdered(wsProperties::put);
-					break;
+					copyAll.set(true);
+					return false;
 				}
-
-				URI resolvedLocation = URIUtil.resolve(base, locationStr);
-
-				String key = f.format("%s%02d", PLUGIN_STANDALONE, counter)
-					.toString();
-				sb.setLength(0);
-				Attrs attrs = e.getValue();
+				return true;
+			})
+			.map(asBiFunction((locationStr, attrs) -> {
+				String index = String.format("%02d", counter.incrementAndGet());
 				String name = attrs.get("name");
 				if (name == null) {
-					name = String.format("repo%02d", counter);
+					name = "repo".concat(index);
 				}
-				f.format("%s; name='%s'; locations='%s'", STANDALONE_REPO_CLASS, name, resolvedLocation);
-				attrs.stream()
-					.filterKey(k -> !k.equals("name"))
-					.forEachOrdered((k, v) -> f.format("; %s='%s'", k, v));
-				String value = f.toString();
-				sb.setLength(0);
-				ws.setProperty(key, value);
-				counter++;
-			}
+				URI resolvedLocation = URIUtil.resolve(base, locationStr);
+				try (Formatter f = new Formatter(Locale.US)) {
+					f.format(STANDALONE_REPO_CLASS + "; name='%s'; locations='%s'", name, resolvedLocation);
+					attrs.stream()
+						.filterKey(k -> !k.equals("name"))
+						.forEachOrdered((k, v) -> f.format("; %s='%s'", k, v));
+					return MapStream.entry(PLUGIN_STANDALONE.concat(index), f.toString());
+				}
+			}))
+			.forEachOrdered(ws::setProperty);
+
+		MapStream<String, Object> runProperties = MapStream.of(run.getProperties())
+			.mapKey(String.class::cast);
+		if (!copyAll.get()) {
+			runProperties = runProperties.filterKey(k -> k.equals(Constants.PLUGIN) || k.startsWith(Constants.PLUGIN + "."));
 		}
+		Properties wsProperties = ws.getProperties();
+		runProperties.filterKey(k -> !k.startsWith(PLUGIN_STANDALONE))
+			.forEachOrdered(wsProperties::put);
 
 		return ws;
 	}
