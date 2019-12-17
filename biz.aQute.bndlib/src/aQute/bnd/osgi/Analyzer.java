@@ -220,6 +220,8 @@ public class Analyzer extends Processor {
 					}
 			}
 
+			addDefinedContracts();
+
 			// Handle the bundle activator
 
 			String s = getProperty(BUNDLE_ACTIVATOR);
@@ -3688,6 +3690,11 @@ public class Analyzer extends Processor {
 			return Boolean.FALSE;
 		}
 		return assignable0(findClass(zuper), inferredServiceClazz);
+	}
+
+	private void addDefinedContracts() {
+		Parameters definedContracts = getMergedParameters(Constants.DEFINE_CONTRACT);
+		contracts.collectContracts(Constants.DEFINE_CONTRACT, definedContracts);
 	}
 
 }
