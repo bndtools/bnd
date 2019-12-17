@@ -180,10 +180,15 @@ public class BundleSelectorResolver {
 			.filter(BundleUtils::isNotFragment)
 			.filter(BundleUtils::isNotResolved)
 			.forEach(bundle -> {
-				if (!frameworkWiring.resolveBundles(Collections.singleton(bundle))) {
+				if (frameworkWiring.resolveBundles(Collections.singleton(bundle))) {
+					return;
+				}
+				// Trigger BundleException with resolution failure information
+				try {
+					bundle.start(Bundle.START_TRANSIENT | Bundle.START_ACTIVATION_POLICY);
+				} catch (BundleException resolutionFailure) {
 					UniqueId bundleId = uniqueId.append("bundle", uniqueIdOf(bundle));
-					BundleDescriptor bd = new BundleDescriptor(bundle, bundleId,
-						new BundleException("Unable to resolve", BundleException.RESOLVE_ERROR));
+					BundleDescriptor bd = new BundleDescriptor(bundle, bundleId, resolutionFailure);
 					descriptor.addChild(bd);
 					markClassesResolved(bundle);
 				}
@@ -197,14 +202,16 @@ public class BundleSelectorResolver {
 			.filter(BundleUtils::isNotFragment)
 			.filter(BundleUtils::isNotResolved)
 			.forEach(bundle -> {
-				if (!frameworkWiring.resolveBundles(Collections.singleton(bundle))) {
-					if (testUnresolved) {
-						unresolvedBundlesDescriptor.addChild(new StaticFailureDescriptor(
-							unresolvedBundlesDescriptor.getUniqueId()
-								.append("bundle", uniqueIdOf(bundle)),
-							displayNameOf(bundle),
-							new BundleException("Unable to resolve", BundleException.RESOLVE_ERROR)));
-					}
+				if (frameworkWiring.resolveBundles(Collections.singleton(bundle)) || !testUnresolved) {
+					return;
+				}
+				// Trigger BundleException with resolution failure information
+				try {
+					bundle.start(Bundle.START_TRANSIENT | Bundle.START_ACTIVATION_POLICY);
+				} catch (BundleException resolutionFailure) {
+					unresolvedBundlesDescriptor
+						.addChild(new StaticFailureDescriptor(unresolvedBundlesDescriptor.getUniqueId()
+							.append("bundle", uniqueIdOf(bundle)), displayNameOf(bundle), resolutionFailure));
 				}
 			});
 
