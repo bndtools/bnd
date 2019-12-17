@@ -1,7 +1,5 @@
 package aQute.bnd.stream;
 
-import static java.util.Objects.requireNonNull;
-
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,11 +51,6 @@ public interface MapStream<K, V> extends BaseStream<Entry<K, V>, MapStream<K, V>
 		return (stream != null) ? of(stream) : empty();
 	}
 
-	static <K, V> MapStream<K, V> ofKeys(Stream<? extends K> keys, Function<? super K, ? extends V> valueSupplier) {
-		requireNonNull(valueSupplier);
-		return of(keys.map(k -> entry(k, valueSupplier.apply(k))));
-	}
-
 	static <K, V> MapStream<K, V> concat(MapStream<? extends K, ? extends V> a, MapStream<? extends K, ? extends V> b) {
 		return of(Stream.concat(a.entries(), b.entries()));
 	}
@@ -85,6 +78,11 @@ public interface MapStream<K, V> extends BaseStream<Entry<K, V>, MapStream<K, V>
 	@SafeVarargs
 	static <K, V> MapStream<K, V> ofEntries(Entry<? extends K, ? extends V>... entries) {
 		return of(Arrays.stream(entries));
+	}
+
+	static <O, K, V> MapStream<K, V> ofEntries(Stream<? extends O> stream,
+		Function<? super O, ? extends Entry<? extends K, ? extends V>> entryMapper) {
+		return of(stream.map(entryMapper));
 	}
 
 	static <K, V> Entry<K, V> entry(K key, V value) {
