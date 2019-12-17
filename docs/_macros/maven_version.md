@@ -6,18 +6,5 @@ summary: Cleanup a potential maven version to make it match an OSGi Version synt
 ---
 
 
-	/**
-	 * A macro to convert a maven version to an OSGi version
-	 */
-
-	public String _maven_version(String args[]) {
-		if (args.length > 2)
-			error("${maven_version} macro receives too many arguments " + Arrays.toString(args));
-		else if (args.length < 2)
-			error("${maven_version} macro has no arguments, use ${maven_version;1.2.3-SNAPSHOT}");
-		else {
-			return cleanupVersion(args[1]);
-		}
-		return null;
-	}
+The [`${version_cleanup}`](/macros/version_cleanup.html) macro should be used in place of this macro since it can be used in more places.
 
