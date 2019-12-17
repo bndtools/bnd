@@ -2218,4 +2218,11 @@ public class Macro {
 			.toString();
 	}
 
+	static final String _version_cleanupHelp = "${version_cleanup;<version>}, Cleanup a potential maven version to make it match the OSGi Version syntax.";
+
+	public String _version_cleanup(String args[]) {
+		verifyCommand(args, _version_cleanupHelp, null, 2, 2);
+		return Analyzer.cleanupVersion(args[1]);
+	}
+
 }
