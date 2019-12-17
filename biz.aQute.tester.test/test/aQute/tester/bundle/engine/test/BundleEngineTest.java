@@ -14,6 +14,7 @@ import static org.junit.platform.testkit.engine.EventConditions.skippedWithReaso
 import static org.junit.platform.testkit.engine.EventConditions.started;
 import static org.junit.platform.testkit.engine.EventConditions.test;
 import static org.junit.platform.testkit.engine.EventConditions.type;
+import static org.junit.platform.testkit.engine.EventConditions.uniqueIdSubstring;
 import static org.junit.platform.testkit.engine.EventType.SKIPPED;
 import static org.junit.platform.testkit.engine.TestExecutionResultConditions.instanceOf;
 import static org.junit.platform.testkit.engine.TestExecutionResultConditions.message;
@@ -45,6 +46,7 @@ import org.junit.platform.testkit.engine.Event;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 
+import aQute.bnd.osgi.Constants;
 import aQute.launchpad.BundleSpecBuilder;
 import aQute.launchpad.Launchpad;
 import aQute.launchpad.LaunchpadBuilder;
@@ -488,26 +490,6 @@ public class BundleEngineTest {
 	@Test
 	public void withClassNameSelectors_andTestClassHeader_runsOnlySelectedClasses() throws Exception {
 		Bundle resolvedTestBundle = startTestBundle(TestClass.class, JUnit4Test.class);
-
-		engineInFramework().selectors(selectClass(TestClass.class.getName()))
-			.execute()
-			.all()
-			.debug(debugStr)
-			.assertThatEvents()
-			.haveExactly(0, event(containerClass(JUnit4Test.class)))
-			.haveExactly(1,
-				event(inBundle(resolvedTestBundle), containerClass(TestClass.class), finishedSuccessfully()));
-	}
-
-	@Test
-	public void withClassNameSelectors_andNoTestClassHeader_stillRunsSelectedClasses() throws Exception {
-		// BundleSpecBuilder bb = testBundler.bundleWithEE();
-		// addTestClass(bb, TestClass.class);
-		// addTestClass(bb, JUnit4Test.class);
-		Bundle resolvedTestBundle = testBundler.bundleWithEE()
-			.addResourceWithCopy(TestClass.class)
-			.addResourceWithCopy(JUnit4Test.class)
-			.start();
 
 		engineInFramework().selectors(selectClass(TestClass.class.getName()))
 			.execute()
@@ -984,5 +966,72 @@ public class BundleEngineTest {
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(bundle(tb1), displayNameContaining("This is my name"), finishedSuccessfully()));
+	}
+
+	@Test
+	public void testClass_inFragment_withClassSelector_runsOnlyInFragment() throws Exception {
+		Bundle testFragmentHostWithoutItsOwnTests = testBundler.bundleWithEE()
+			.bundleSymbolicName("host.bundle")
+			.install();
+
+		Bundle attachedTestFragment = buildTestBundle(TestClass.class)
+			.fragmentHost(testFragmentHostWithoutItsOwnTests.getSymbolicName())
+			.bundleSymbolicName("fragment.bundle")
+			.install();
+
+		testFragmentHostWithoutItsOwnTests.start();
+
+		engineInFramework().selectors(selectClass(TestClass.class))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1, event(uniqueIdSubstring("host.bundle"), test("thisIsATest"), finishedSuccessfully()))
+			.haveExactly(1, event(uniqueIdSubstring("fragment.bundle"), test("thisIsATest"), finishedSuccessfully()));
+	}
+
+	@Test
+	public void testClass_inFragment_withMethodSelector_runsOnlyInFragment() throws Exception {
+		Bundle testFragmentHostWithoutItsOwnTests = testBundler.bundleWithEE()
+			.bundleSymbolicName("host.bundle")
+			.install();
+
+		Bundle attachedTestFragment = buildTestBundle(JUnit4Test.class)
+			.fragmentHost(testFragmentHostWithoutItsOwnTests.getSymbolicName())
+			.bundleSymbolicName("fragment.bundle")
+			.install();
+
+		testFragmentHostWithoutItsOwnTests.start();
+
+		engineInFramework().selectors(selectMethod(JUnit4Test.class, "aTest"))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1, event(uniqueIdSubstring("host.bundle"), test("aTest"), finishedSuccessfully()))
+			.haveExactly(1, event(uniqueIdSubstring("fragment.bundle"), test("aTest"), finishedSuccessfully()))
+			.haveExactly(0, event(test("bTest")));
+	}
+
+	@Test
+	public void testClass_andBundleWithDynamicImport_withMethodSelector_runsOnlyInTestBundle() {
+		Bundle test = testBundler.buildTestBundle(TestClass.class)
+			.exportPackage(TestClass.class.getPackage()
+				.getName())
+			.start();
+
+		Bundle dynamic = testBundler.bundleWithEE()
+			.bundleSymbolicName("dynamic.bundle")
+			.header(Constants.DYNAMICIMPORT_PACKAGE, "*")
+			.start();
+
+		engineInFramework().selectors(selectMethod(TestClass.class, "thisIsATest"))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(0, event(uniqueIdSubstring("dynamic.bundle"), containerClass(TestClass.class)))
+			.haveExactly(1,
+				event(uniqueIdSubstring(test.getSymbolicName()), test("thisIsATest"), finishedSuccessfully()));
 	}
 }

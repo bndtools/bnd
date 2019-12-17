@@ -350,32 +350,38 @@ public class BundleSelectorResolver {
 		Bundle bundle = bd.getBundle();
 		Bundle host = BundleUtils.getHost(bundle)
 			.get();
-		classSelectors.forEach(selector -> {
-			try {
-				Class<?> testClass = host.loadClass(selector.getClassName());
-				unresolvedClasses.remove(selector.getClassName());
-				info(() -> "removing resolved class: " + testClass + ", that leaves: " + unresolvedClasses);
-				if (resolvedClasses.add(testClass)) {
-					selectors.add(selectClass(testClass));
+		Set<String> testCases = BundleUtils.testCases(bundle)
+			.collect(toSet());
+		classSelectors.stream()
+			.map(ClassSelector::getClassName)
+			.filter(testCases::contains)
+			.forEach(className -> {
+				try {
+					Class<?> testClass = host.loadClass(className);
+					unresolvedClasses.remove(className);
+					info(() -> "removing resolved class: " + testClass + ", that leaves: " + unresolvedClasses);
+					if (resolvedClasses.add(testClass)) {
+						selectors.add(selectClass(testClass));
+					}
+				} catch (ClassNotFoundException cnfe) {
+					info(() -> "Unresolved class: " + className + ", bundle: " + bundle.getSymbolicName(), cnfe);
 				}
-			} catch (ClassNotFoundException cnfe) {
-				info(() -> "Unresolved class: " + selector.getClassName() + ", bundle: " + bundle.getSymbolicName(),
-					cnfe);
-			}
-		});
-		methodSelectors.forEach(selector -> {
-			try {
-				Class<?> testClass = host.loadClass(selector.getClassName());
-				if (!resolvedClasses.contains(testClass)) {
-					selectors
-						.add(selectMethod(testClass, selector.getMethodName(), selector.getMethodParameterTypes()));
-					unresolvedClasses.remove(selector.getClassName());
+			});
+		methodSelectors.stream()
+			.filter(selector -> testCases.contains(selector.getClassName()))
+			.forEach(selector -> {
+				try {
+					Class<?> testClass = host.loadClass(selector.getClassName());
+					if (!resolvedClasses.contains(testClass)) {
+						selectors
+							.add(selectMethod(testClass, selector.getMethodName(), selector.getMethodParameterTypes()));
+						unresolvedClasses.remove(selector.getClassName());
+					}
+				} catch (ClassNotFoundException cnfe) {
+					info(() -> "Unresolved class: " + selector.getClassName() + ", bundle: " + bundle.getSymbolicName(),
+						cnfe);
 				}
-			} catch (ClassNotFoundException cnfe) {
-				info(() -> "Unresolved class: " + selector.getClassName() + ", bundle: " + bundle.getSymbolicName(),
-					cnfe);
-			}
-		});
+			});
 		info(() -> "Selectors: " + selectors);
 		return selectors;
 	}
