@@ -231,7 +231,7 @@ public class BndrunContainer {
 	/**
 	 * Creates a new repository in every invocation.
 	 *
-	 * @param the Maven project
+	 * @param project the Maven project
 	 * @return a new {@link ImplicitFileSetRepository}
 	 * @throws Exception
 	 */
