@@ -63,6 +63,7 @@ import aQute.tester.test.utils.ServiceLoaderMask;
 import aQute.tester.test.utils.TestBundler;
 import aQute.tester.testclasses.bundle.engine.AnotherTestClass;
 import aQute.tester.testclasses.bundle.engine.JUnit4Test;
+import aQute.tester.testclasses.bundle.engine.JUnit5ParameterizedTest;
 import aQute.tester.testclasses.bundle.engine.JUnit5Test;
 import aQute.tester.testclasses.bundle.engine.TestClass;
 
@@ -488,6 +489,26 @@ public class BundleEngineTest {
 	}
 
 	@Test
+	public void withMethodSelectorsWithParams_andTestClassesHeader_runsOnlySelectedMethods() throws Exception {
+		Bundle resolvedTestBundle = startTestBundle(TestClass.class, JUnit5ParameterizedTest.class);
+
+		engineInFramework()
+			.selectors(
+				selectMethod(JUnit5ParameterizedTest.class.getName(), "parameterizedMethod", "java.lang.String,float"))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(inBundle(resolvedTestBundle), lastSegment("class", JUnit5ParameterizedTest.class.getName()),
+					finishedSuccessfully()))
+			.haveExactly(5,
+				event(testInBundle(resolvedTestBundle), test("parameterizedMethod"), finishedSuccessfully()))
+			.haveExactly(0, event(test("thisIsATest")))
+			.haveExactly(0, event(containerClass(TestClass.class), finishedSuccessfully()));
+	}
+
+	@Test
 	public void withClassNameSelectors_andTestClassHeader_runsOnlySelectedClasses() throws Exception {
 		Bundle resolvedTestBundle = startTestBundle(TestClass.class, JUnit4Test.class);
 
@@ -563,7 +584,39 @@ public class BundleEngineTest {
 			.assertThatEvents()
 			.haveExactly(1, event(container("unresolvedClasses"), finishedSuccessfully()))
 			.haveExactly(1, event(test("some.unknown.Clazz"), finishedWithFailure(instanceOf(JUnitException.class))))
+			.haveExactly(0, event(container("unresolvedMethods")))
 			.haveExactly(1, event(bundle(resolvedTestBundle), skippedWithReason("Unresolved classes")));
+	}
+
+	@Test
+	public void withMethodSelectorForKnownClassButUnresolvedMethod_TesterUnresolvedTrue_reportsError_andRunsOtherTests()
+		throws Exception {
+		Bundle resolvedTestBundle = startTestBundle(TestClass.class);
+
+		engineInFramework().selectors(selectMethod(TestClass.class.getName(), "someMethod"))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(0, event(container("unresolvedClasses")))
+			.haveExactly(1, event(uniqueIdSubstring(TestClass.class.getName()), test("someMethod"),
+				finishedWithFailure(instanceOf(JUnitException.class))));
+	}
+
+	@Test
+	public void withMethodSelectorForKnownClassButUnresolvedMethod_TesterUnresolvedFalse_doesNotReportError_andRunsOtherTests()
+		throws Exception {
+		Bundle resolvedTestBundle = startTestBundle(TestClass.class);
+
+		engineInFramework().configurationParameter(CHECK_UNRESOLVED, "false")
+			.selectors(selectMethod(TestClass.class.getName(), "someMethod"))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(0, event(container("unresolvedClasses")))
+			.haveExactly(0, event(container("unresolvedMethods")))
+			.haveExactly(0, event(test("someMethod")));
 	}
 
 	@Test
