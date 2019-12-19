@@ -383,6 +383,21 @@ public class BundleSelectorResolver {
 			.collect(toList());
 	}
 
+	// This is a workaround for JUnit issue:
+	// https://github.com/junit-team/junit5/issues/2104
+	private static Optional<Method> findMethod(Class<?> clazz, String method, String parameterTypes) {
+		final ClassLoader orig = Thread.currentThread()
+			.getContextClassLoader();
+		try {
+			Thread.currentThread()
+				.setContextClassLoader(clazz.getClassLoader());
+			return ReflectionSupport.findMethod(clazz, method, parameterTypes);
+		} finally {
+			Thread.currentThread()
+				.setContextClassLoader(orig);
+		}
+	}
+
 	private List<DiscoverySelector> getSelectorsFromSuppliedSelectors(BundleDescriptor bd) {
 		List<DiscoverySelector> selectors = new ArrayList<>();
 		Bundle bundle = bd.getBundle();
@@ -413,7 +428,7 @@ public class BundleSelectorResolver {
 					Class<?> testClass = host.loadClass(className);
 					if (!resolvedClasses.contains(testClass)) {
 						unresolvedClasses.remove(className);
-						Optional<Method> method = ReflectionSupport.findMethod(testClass, selector.getMethodName(),
+						Optional<Method> method = findMethod(testClass, selector.getMethodName(),
 							selector.getMethodParameterTypes());
 						if (method.isPresent()) {
 							selectors.add(selectMethod(testClass, method.get()));
