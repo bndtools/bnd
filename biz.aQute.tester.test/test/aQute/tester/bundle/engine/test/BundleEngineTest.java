@@ -2,6 +2,7 @@ package aQute.tester.bundle.engine.test;
 
 import static aQute.tester.bundle.engine.BundleEngine.CHECK_UNRESOLVED;
 import static org.assertj.core.api.Assertions.allOf;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.platform.commons.util.FunctionUtils.where;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
@@ -59,10 +60,12 @@ import aQute.tester.bundle.engine.StaticFailureDescriptor;
 import aQute.tester.bundle.engine.discovery.BundleSelector;
 import aQute.tester.bundle.engine.discovery.BundleSelectorResolver;
 import aQute.tester.junit.platform.utils.BundleUtils;
+import aQute.tester.test.params.CustomParameter;
 import aQute.tester.test.utils.ServiceLoaderMask;
 import aQute.tester.test.utils.TestBundler;
 import aQute.tester.testclasses.bundle.engine.AnotherTestClass;
 import aQute.tester.testclasses.bundle.engine.JUnit4Test;
+import aQute.tester.testclasses.bundle.engine.JUnit5ParameterizedTest;
 import aQute.tester.testclasses.bundle.engine.JUnit5Test;
 import aQute.tester.testclasses.bundle.engine.TestClass;
 
@@ -488,6 +491,62 @@ public class BundleEngineTest {
 	}
 
 	@Test
+	public void withMethodSelectorsWithParams_andTestClassesHeader_runsOnlySelectedMethods() throws Exception {
+		Bundle resolvedTestBundle = startTestBundle(TestClass.class, JUnit5ParameterizedTest.class);
+
+		engineInFramework()
+			.selectors(
+				selectMethod(JUnit5ParameterizedTest.class.getName(), "parameterizedMethod", "java.lang.String,float"))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(inBundle(resolvedTestBundle), lastSegment("class", JUnit5ParameterizedTest.class.getName()),
+					finishedSuccessfully()))
+			.haveExactly(5,
+				event(testInBundle(resolvedTestBundle), test("parameterizedMethod"), finishedSuccessfully()))
+			.haveExactly(0, event(test("thisIsATest")))
+			.haveExactly(0, event(containerClass(TestClass.class), finishedSuccessfully()));
+	}
+
+	@Test
+	@Tag(CUSTOM_LAUNCH)
+	public void withMethodSelectorsWithParamsFromDifferentBundle_andTestClassesHeader_runsOnlySelectedMethods()
+		throws Exception {
+		builder.excludeExport("aQute.tester.test.params");
+		startLaunchpad();
+		Bundle parameterBundle = testBundler.bundleWithEE()
+			.addResourceWithCopy(CustomParameter.class)
+			.exportPackage(CustomParameter.class.getPackage()
+				.getName())
+			.install();
+
+		Bundle resolvedTestBundle = startTestBundle(TestClass.class, JUnit5ParameterizedTest.class);
+
+		Builder b = engineInFramework();
+		// This assert is to check that our test environment has been configured
+		// properly. If the CustomParameter class is visible to the engine
+		// bundle (eg, we haven't excluded it properly), then it may work when
+		// it shouldn't.
+		assertThatThrownBy(() -> engineBundle.loadClass(CustomParameter.class.getName()))
+			.isInstanceOf(ClassNotFoundException.class);
+
+		b.selectors(selectMethod(JUnit5ParameterizedTest.class.getName(), "customParameter",
+			"aQute.tester.test.params.CustomParameter"))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(inBundle(resolvedTestBundle), lastSegment("class", JUnit5ParameterizedTest.class.getName()),
+					finishedSuccessfully()))
+			.haveExactly(3, event(testInBundle(resolvedTestBundle), test("customParameter"), finishedSuccessfully()))
+			.haveExactly(0, event(test("thisIsATest")))
+			.haveExactly(0, event(containerClass(TestClass.class), finishedSuccessfully()));
+	}
+
+	@Test
 	public void withClassNameSelectors_andTestClassHeader_runsOnlySelectedClasses() throws Exception {
 		Bundle resolvedTestBundle = startTestBundle(TestClass.class, JUnit4Test.class);
 
@@ -563,7 +622,39 @@ public class BundleEngineTest {
 			.assertThatEvents()
 			.haveExactly(1, event(container("unresolvedClasses"), finishedSuccessfully()))
 			.haveExactly(1, event(test("some.unknown.Clazz"), finishedWithFailure(instanceOf(JUnitException.class))))
+			.haveExactly(0, event(container("unresolvedMethods")))
 			.haveExactly(1, event(bundle(resolvedTestBundle), skippedWithReason("Unresolved classes")));
+	}
+
+	@Test
+	public void withMethodSelectorForKnownClassButUnresolvedMethod_TesterUnresolvedTrue_reportsError_andRunsOtherTests()
+		throws Exception {
+		Bundle resolvedTestBundle = startTestBundle(TestClass.class);
+
+		engineInFramework().selectors(selectMethod(TestClass.class.getName(), "someMethod"))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(0, event(container("unresolvedClasses")))
+			.haveExactly(1, event(uniqueIdSubstring(TestClass.class.getName()), test("someMethod"),
+				finishedWithFailure(instanceOf(JUnitException.class))));
+	}
+
+	@Test
+	public void withMethodSelectorForKnownClassButUnresolvedMethod_TesterUnresolvedFalse_doesNotReportError_andRunsOtherTests()
+		throws Exception {
+		Bundle resolvedTestBundle = startTestBundle(TestClass.class);
+
+		engineInFramework().configurationParameter(CHECK_UNRESOLVED, "false")
+			.selectors(selectMethod(TestClass.class.getName(), "someMethod"))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(0, event(container("unresolvedClasses")))
+			.haveExactly(0, event(container("unresolvedMethods")))
+			.haveExactly(0, event(test("someMethod")));
 	}
 
 	@Test
