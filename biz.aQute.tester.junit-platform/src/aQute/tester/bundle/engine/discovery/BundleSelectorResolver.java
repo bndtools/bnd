@@ -7,6 +7,8 @@ import static java.util.stream.Collectors.toSet;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +51,19 @@ import aQute.tester.bundle.engine.StaticFailureDescriptor;
 import aQute.tester.junit.platform.utils.BundleUtils;
 
 public class BundleSelectorResolver {
+
+	static final Set<String> JUNIT4_ANNOTATIONS;
+	static {
+		Set<String> annotations = new HashSet<>();
+		annotations.add("org.junit.Test");
+		annotations.add("org.junit.Before");
+		annotations.add("org.junit.BeforeClass");
+		annotations.add("org.junit.After");
+		annotations.add("org.junit.AfterClass");
+		annotations.add("org.junit.experimental.theories.Theory");
+		annotations.add("org.junit.runners.RunWith");
+		JUNIT4_ANNOTATIONS = Collections.unmodifiableSet(annotations);
+	}
 
 	final boolean						testUnresolved;
 	final Map<Long, BundleDescriptor>	bundleMap	= new HashMap<>();
@@ -365,6 +380,7 @@ public class BundleSelectorResolver {
 				try {
 					Class<?> testClass = host.loadClass(className);
 					if (!resolvedClasses.contains(testClass)) {
+						checkForMixedJUnit34(bd, testClass);
 						if (index < 0) {
 							resolvedClasses.add(testClass);
 							return selectClass(testClass);
@@ -398,6 +414,48 @@ public class BundleSelectorResolver {
 		}
 	}
 
+	private void checkForMixedJUnit34(BundleDescriptor bd, Class<?> testClass) {
+		try {
+			// Don't hardcode TestCase.class here as we don't want to introduce
+			// a hard dependency on that package
+			Class<?> junit3TestCase = testClass.getClassLoader()
+				.loadClass("junit.framework.TestCase");
+
+			if (junit3TestCase.isAssignableFrom(testClass) && hasJUnit4Annotations(testClass)) {
+				StaticFailureDescriptor mixedError = new StaticFailureDescriptor(bd.getUniqueId()
+					.append("test", testClass.getName()), testClass.getName(),
+					new JUnitException(
+						"Class extends junit.framework.TestCase and has JUnit 4 annotations; annotations will be ignored"));
+				bd.addChild(mixedError);
+			}
+
+		} catch (ClassNotFoundException e) {
+		}
+	}
+
+	private boolean hasJUnit4Annotations(Class<?> clazz) {
+		if (elementHasJUnit4Annotations(clazz))
+			return true;
+
+		for (Method m : clazz.getMethods()) {
+			if (elementHasJUnit4Annotations(m)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean elementHasJUnit4Annotations(AnnotatedElement element) {
+		Annotation[] annotations = element.getAnnotations();
+		if (annotations == null) {
+			return false;
+		}
+		return Stream.of(annotations)
+			.map(Annotation::annotationType)
+			.map(Class::getName)
+			.anyMatch(JUNIT4_ANNOTATIONS::contains);
+	}
+
 	private List<DiscoverySelector> getSelectorsFromSuppliedSelectors(BundleDescriptor bd) {
 		List<DiscoverySelector> selectors = new ArrayList<>();
 		Bundle bundle = bd.getBundle();
@@ -414,6 +472,7 @@ public class BundleSelectorResolver {
 					unresolvedClasses.remove(className);
 					info(() -> "removing resolved class: " + testClass + ", that leaves: " + unresolvedClasses);
 					if (resolvedClasses.add(testClass)) {
+						checkForMixedJUnit34(bd, testClass);
 						selectors.add(selectClass(testClass));
 					}
 				} catch (ClassNotFoundException cnfe) {
@@ -427,6 +486,7 @@ public class BundleSelectorResolver {
 				try {
 					Class<?> testClass = host.loadClass(className);
 					if (!resolvedClasses.contains(testClass)) {
+						checkForMixedJUnit34(bd, testClass);
 						unresolvedClasses.remove(className);
 						Optional<Method> method = findMethod(testClass, selector.getMethodName(),
 							selector.getMethodParameterTypes());
