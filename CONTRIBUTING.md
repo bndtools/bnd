@@ -23,8 +23,8 @@ You can use your system `gradle` but we require at least version 5.0.
 - `./gradlew :dist:buildNeeded` - Assembles and tests the projects
 - `./gradlew :dist:releaseNeeded` - Assembles and releases the projects into dist/bundles
 
-We use [Travis CI](https://travis-ci.org/bndtools/bnd) and the repo includes a
-`.travis.yml` file to build on Travis CI.
+We use [GitHub Actions](https://github.com/bndtools/bnd/actions?query=workflow%3A%22CI%20Build%22) and the repo includes a
+`.github/workflows/cibuild.yml` file to build via GitHub Actions.
 
 ## Workflow
 
@@ -61,10 +61,6 @@ unless you are already using Git 2.0 where it is the default.
 
 Finally, the third side of the triangle is pull requests from your fork repo to the
 main repo.
-
-Make sure to set up [Travis CI](https://travis-ci.org) for your fork repo to test your commits
-when they are pushed to your fork repo. Travis CI will also build any [pull requests you 
-submit](https://travis-ci.org/bndtools/bnd/pull_requests).
 
 ## Contribution guidelines
 
@@ -109,8 +105,7 @@ Submit unit tests for your changes. We use `junit` and most projects already
 have a number of test cases. The test cases for `biz.aQute.bndlib` are however
 in the `biz.aQute.bndlib.tests` project for historical reasons.
 Take a look at existing tests for inspiration. Run the full build including all
-the tests in your branch before submitting a pull request. Having Travis CI set up
-for your fork repo is quite a help here.
+the tests in your branch before submitting a pull request.
 
 Write clean code. Universally formatted code promotes ease of writing, reading,
 and maintenance. We use Eclipse and all the projects have Eclipse `.settings` which
