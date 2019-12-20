@@ -7,7 +7,7 @@
 		<artifactId>test</artifactId>
 		<version>0.0.2</version>
 	</parent>
-	<artifactId>test-bnd-process-tests-goal</artifactId>
+	<artifactId>test-bnd-process-tests-goal-fragment</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<licenses>
 		<license>
@@ -56,6 +56,7 @@
 							<goal>bnd-process-tests</goal>
 						</goals>
 						<configuration>
+							<artifactFragment>true</artifactFragment>
 							<testCases>junit4</testCases>
 							<bndfile>tests.bnd</bndfile>
 						</configuration>

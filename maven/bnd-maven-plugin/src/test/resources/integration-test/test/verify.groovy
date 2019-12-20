@@ -18,6 +18,8 @@ File tests_main_bundle = new File(basedir, 'test-bnd-process-tests-goal/target/t
 assert tests_main_bundle.isFile()
 File tests_test_bundle = new File(basedir, 'test-bnd-process-tests-goal/target/test-bnd-process-tests-goal-0.0.1-SNAPSHOT-tests.jar')
 assert tests_test_bundle.isFile()
+File tests_test_bundle_fragment = new File(basedir, 'test-bnd-process-tests-goal-fragment/target/test-bnd-process-tests-goal-fragment-0.0.1-SNAPSHOT-tests.jar')
+assert tests_test_bundle_fragment.isFile()
 
 // Load manifests
 JarFile api_jar = new JarFile(api_bundle)
@@ -32,6 +34,8 @@ JarFile tests_main_jar = new JarFile(tests_main_bundle)
 Attributes tests_main_manifest = tests_main_jar.getManifest().getMainAttributes()
 JarFile tests_test_jar = new JarFile(tests_test_bundle)
 Attributes tests_test_manifest = tests_test_jar.getManifest().getMainAttributes()
+JarFile tests_test_bundle_fragment_jar = new JarFile(tests_test_bundle_fragment)
+Attributes tests_test_bundle_fragment_manifest = tests_test_bundle_fragment_jar.getManifest().getMainAttributes()
 
 // Basic manifest check
 assert api_manifest.getValue('Bundle-SymbolicName') == 'test.api.bundle'
@@ -49,6 +53,8 @@ assert in_build_pluginManagement_api_manifest.getValue('Bundle-Version') == '0.0
 assert wrapper_manifest.getValue('Bundle-ClassPath') == '.,lib/osgi.annotation.jar'
 assert tests_main_manifest.getValue('Bundle-SymbolicName') == 'test-bnd-process-tests-goal'
 assert tests_test_manifest.getValue('Bundle-SymbolicName') == 'test-bnd-process-tests-goal-tests'
+assert tests_test_bundle_fragment_manifest.getValue('Bundle-SymbolicName') == 'test-bnd-process-tests-goal-fragment-tests'
+assert tests_test_bundle_fragment_manifest.getValue('Fragment-Host') == 'test-bnd-process-tests-goal-fragment'
 
 // Check inheritance of properties in bnd.bnd from the parent project
 assert api_manifest.getValue('X-ParentProjectProperty') == 'it worked'
@@ -112,3 +118,11 @@ assert wrapper_jar.getEntry('org/example/types/') != null
 assert wrapper_jar.getEntry('lib/osgi.annotation.jar') != null
 assert tests_test_jar.getEntry('org/example/test/') != null
 assert tests_test_jar.getEntry('org/example/impl/') == null
+assert tests_test_jar.getEntry('org/junit/') != null
+
+File build_log_file = new File("${basedir}/build.log")
+assert build_log_file.exists();
+def build_log = build_log_file.text
+
+// No previous
+assert !(build_log =~ java.util.regex.Pattern.quote('Host test-bnd-process-tests-goal-fragment= for this fragment cannot be found on the classpath'))

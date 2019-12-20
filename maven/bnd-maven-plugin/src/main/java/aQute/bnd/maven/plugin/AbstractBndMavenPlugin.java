@@ -457,7 +457,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	 * here.
 	 *
 	 * @param builder the Builder created to analyze the jar contents
-	 * @throws MojoFailureException
+	 * @throws MojoFailureException if an issue is encountered
 	 */
 	protected void processBuilder(Builder builder) throws MojoFailureException {}
 
