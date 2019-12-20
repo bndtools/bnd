@@ -9,14 +9,18 @@ mavencentral:           https://repo.maven.apache.org/maven2
         readOnly=true,\
     aQute.bnd.deployer.repository.LocalIndexedRepo;\
         name="Local";\
-        local="${.}/../cache/local",\
-    aQute.bnd.deployer.repository.LocalIndexedRepo;\
-        name="Bnd 4.3.0 embedded repo cache";\
-        local="${.}/../cache/4.3.0/bnd-cache",\
+        local="${.}/../cache/local"
+        
+-plugin.1.Eclipse:\
     aQute.bnd.repository.osgi.OSGiRepository;\
-        name="Eclipse Oxygen 4.7.3a";\
-        locations="https://dl.bintray.com/bndtools/eclipse-repo/4.7.3a/index.xml.gz";\
+        name="Eclipse 2018-12";\
+        locations="https://dl.bintray.com/bndtools/eclipse-repo/4.10/index.xml.gz";\
         poll.time=-1;\
-        cache="${workspace}/cnf/cache/stable/EclipseOxygen",\
+        cache="${workspace}/cnf/cache/stable/Eclipse-2018-12",\
+    aQute.bnd.repository.maven.pom.provider.BndPomRepository;\
+        name="Eclipse m2e 1.10.0 Dependencies";\
+        revision="org.apache.maven:maven-core:3.5.3,org.apache.maven:maven-aether-provider:3.3.9,org.sonatype.plexus:plexus-build-api:0.0.7";\
+        releaseUrls="${mavencentral}";\
+        location="${workspace}/cnf/cache/stable/Eclipse-m2e-1.10.0/index.xml"
 
 -buildrepo: Local

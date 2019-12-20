@@ -21,9 +21,13 @@
 	tester.trace=true
 
 runbundles.basetests: \
+	main-with-runners;version=snapshot,\
+	my.bundle.of.test3;version=snapshot,\
+	my.fragment.of.test4;version=snapshot,\
 	org.apache.felix.gogo.command,\
 	org.apache.felix.gogo.runtime,\
 	org.apache.felix.gogo.shell,\
+	org.apache.felix.log,\
 	org.apache.servicemix.bundles.junit,\
 	org.apiguardian,\
 	org.assertj.core,\
@@ -36,10 +40,7 @@ runbundles.basetests: \
 	org.junit.vintage.engine,\
 	org.opentest4j,\
 	test;version=snapshot,\
-	test-fragment;version=snapshot,\
-	main-with-runners;version=snapshot,\
-	my.bundle.of.test3;version=snapshot,\
-	my.fragment.of.test4;version=snapshot
-	
+	test-fragment;version=snapshot
+		
 runbundles.tester: \
 	biz.aQute.tester.junit-platform
