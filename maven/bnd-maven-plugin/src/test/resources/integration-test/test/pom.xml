@@ -19,6 +19,7 @@
 		<module>test-wrapper-bundle</module>
 		<module>test-in-build-pluginManagement-inheritance</module>
 		<module>test-bnd-process-tests-goal</module>
+		<module>test-bnd-process-tests-goal-fragment</module>
 	</modules>
 
 	<build>

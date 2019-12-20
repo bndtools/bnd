@@ -29,7 +29,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 
-@Mojo(name = "bnd-process-tests", defaultPhase = LifecyclePhase.PROCESS_TEST_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE, threadSafe = true)
+@Mojo(name = "bnd-process-tests", defaultPhase = LifecyclePhase.PROCESS_TEST_CLASSES, requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 public class BndMavenTestsPlugin extends AbstractBndMavenPlugin {
 
 	/**
@@ -101,13 +101,17 @@ public class BndMavenTestsPlugin extends AbstractBndMavenPlugin {
 	}
 
 	@Override
+	protected void processBuildPath(List<Object> buildpath) {
+		// Add the main classes directory at the tip of the build path
+		buildpath.add(0, mainClassesDir);
+	}
+
+	@Override
 	protected void processBuilder(Builder builder) throws MojoFailureException {
 		String defaultBsn = project.getArtifactId();
 		if (artifactFragment) {
 			builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, defaultBsn + "-tests");
 			builder.setProperty(Constants.FRAGMENT_HOST, defaultBsn);
-			builder.setProperty("-fixupmessages.missing.host",
-				"\"Host " + defaultBsn + "=  for this fragment...\";is:=ignore");
 		} else if (builder.getProperty(Constants.BUNDLE_SYMBOLICNAME) == null) {
 			builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, defaultBsn + "-tests");
 		}
@@ -118,7 +122,6 @@ public class BndMavenTestsPlugin extends AbstractBndMavenPlugin {
 			throw new MojoFailureException(
 				"<testCases> specified " + TestCases.useTestCasesHeader + " but no Test-Cases header was found");
 		}
-
 	}
 
 }
