@@ -2,7 +2,6 @@ package aQute.tester.bundle.engine;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.EngineExecutionListener;
@@ -14,8 +13,6 @@ import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 
-import aQute.bnd.osgi.Constants;
-
 public class BundleDescriptor extends AbstractTestDescriptor {
 
 	final private Bundle							bundle;
@@ -23,9 +20,7 @@ public class BundleDescriptor extends AbstractTestDescriptor {
 	final private Map<TestDescriptor, TestEngine>	engineMap	= new HashMap<>();
 
 	public static String displayNameOf(Bundle bundle) {
-		final Optional<String> bundleName = Optional.ofNullable(bundle.getHeaders()
-			.get(Constants.BUNDLE_NAME));
-		return "[" + bundle.getBundleId() + "] " + bundleName.orElseGet(bundle::getSymbolicName) + ';'
+		return "[" + bundle.getBundleId() + "] " + bundle.getSymbolicName() + ';'
 			+ bundle.getVersion();
 	}
 
