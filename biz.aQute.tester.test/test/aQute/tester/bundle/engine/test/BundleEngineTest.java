@@ -1048,18 +1048,6 @@ public class BundleEngineTest {
 	}
 
 	@Test
-	public void usesBundleDisplayName() throws Exception {
-		Bundle tb1 = buildTestBundle(JUnit4Test.class).header("Bundle-Name", "This is my name")
-			.start();
-
-		engineInFramework().execute()
-			.all()
-			.debug(debugStr)
-			.assertThatEvents()
-			.haveExactly(1, event(bundle(tb1), displayNameContaining("This is my name"), finishedSuccessfully()));
-	}
-
-	@Test
 	public void testClass_inFragment_withClassSelector_runsOnlyInFragment() throws Exception {
 		Bundle testFragmentHostWithoutItsOwnTests = testBundler.bundleWithEE()
 			.bundleSymbolicName("host.bundle")
