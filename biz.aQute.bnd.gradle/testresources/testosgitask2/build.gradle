@@ -11,7 +11,7 @@ plugins {
 version = '1.0.0'
 
 repositories {
-    mavenLocal()
+    mavenLocal().metadataSources { mavenPom(); artifact() }
     mavenCentral()
 }
 
