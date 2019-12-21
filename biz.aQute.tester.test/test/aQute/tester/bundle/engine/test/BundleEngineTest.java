@@ -64,6 +64,9 @@ import aQute.tester.test.params.CustomParameter;
 import aQute.tester.test.utils.ServiceLoaderMask;
 import aQute.tester.test.utils.TestBundler;
 import aQute.tester.testclasses.bundle.engine.AnotherTestClass;
+import aQute.tester.testclasses.bundle.engine.JUnit3And4Test;
+import aQute.tester.testclasses.bundle.engine.JUnit3And5Test;
+import aQute.tester.testclasses.bundle.engine.JUnit3AndVenusTest;
 import aQute.tester.testclasses.bundle.engine.JUnit4Test;
 import aQute.tester.testclasses.bundle.engine.JUnit5ParameterizedTest;
 import aQute.tester.testclasses.bundle.engine.JUnit5Test;
@@ -1112,5 +1115,67 @@ public class BundleEngineTest {
 			.haveExactly(0, event(uniqueIdSubstring("dynamic.bundle"), containerClass(TestClass.class)))
 			.haveExactly(1,
 				event(uniqueIdSubstring(test.getSymbolicName()), test("thisIsATest"), finishedSuccessfully()));
+	}
+
+	@Test
+	public void testClass_withBothJUnit3And4_raisesAnError() {
+		Bundle test = startTestBundle(JUnit3And4Test.class);
+
+		engineInFramework().execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(uniqueIdSubstring(test.getSymbolicName()), testClass(JUnit3And4Test.class),
+					finishedWithFailure(instanceOf(JUnitException.class),
+						message(
+							x -> x.matches("^(?si).*TestCase.*JUnit 4 annotations.*annotations will be ignored.*$")))));
+
+	}
+
+	@Test
+	public void withClassSelector_testClass_withBothJUnit3And4_raisesAnError() {
+		Bundle test = startTestBundle(JUnit3And4Test.class);
+
+		engineInFramework().selectors(selectClass(JUnit3And4Test.class))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(uniqueIdSubstring(test.getSymbolicName()), testClass(JUnit3And4Test.class), finishedWithFailure(
+					instanceOf(JUnitException.class),
+					message(x -> x.matches("^(?si).*TestCase.*JUnit 4 annotations.*annotations will be ignored.*$")))));
+
+	}
+
+	@Test
+	public void withMethodSelector_testClass_withBothJUnit3And4_raisesAnError() {
+		Bundle test = startTestBundle(JUnit3And4Test.class);
+
+		engineInFramework().selectors(selectMethod(JUnit3And4Test.class, "testSomething"))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(uniqueIdSubstring(test.getSymbolicName()), testClass(JUnit3And4Test.class), finishedWithFailure(
+					instanceOf(JUnitException.class),
+					message(x -> x.matches("^(?si).*TestCase.*JUnit 4 annotations.*annotations will be ignored.*$")))));
+
+	}
+
+	@Test
+	public void testClass_withBothJUnit3AndOtherJUnit_doesntRaiseAnError() {
+		// "Venus" is a hypothetical not-yet-released JUnit implementation (the
+		// planet before Jupiter); need to make sure that our JUnit 4 testing
+		// is fairly future proof in the face of future JUnit releases.
+		Bundle test = startTestBundle(JUnit3And5Test.class, JUnit3AndVenusTest.class);
+
+		engineInFramework().execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(0, finishedWithFailure(instanceOf(JUnitException.class)));
 	}
 }
