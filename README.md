@@ -36,11 +36,12 @@ Gradle is used to build Bnd/Bndtools. The workspace root has a `build.gradle` fi
 
 The workspace root includes the gradle wrapper, `gradlew`, command.
 
+[![GitHub Actions CI Build Status](https://github.com/bndtools/bnd/workflows/CI%20Build/badge.svg)](https://github.com/bndtools/bnd/actions?query=workflow%3A%22CI%20Build%22)
 [![Azure Pipeline Build Status](https://dev.azure.com/bndtools/bnd/_apis/build/status/bndtools.bnd?branchName=master)](https://dev.azure.com/bndtools/bnd/_build/latest?definitionId=1?branchName=master)
 [![Travis CI Build Status](https://travis-ci.org/bndtools/bnd.svg?branch=master)](https://travis-ci.org/bndtools/bnd)
 
 ## Release
-Bnd/Bndtools is continuously built on [Azure Pipeline](https://dev.azure.com/bndtools/bnd/_build?definitionId=1).
+Bnd/Bndtools is continuously built on [GitHub Actions](https://github.com/bndtools/bnd/actions?query=workflow%3A%22CI%20Build%22).
 
 A Maven repository of the latest build is available at <https://bndtools.jfrog.io/bndtools/libs-snapshot>.
 A snapshot version of all the bundles and Maven and Gradle plugins is there.
