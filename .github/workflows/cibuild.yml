@@ -1,6 +1,12 @@
 name: CI Build
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+    - 'docs/**'
+  pull_request:
+    paths-ignore:
+    - 'docs/**'
 
 env:
   LC_ALL: en_US.UTF-8
@@ -94,17 +100,3 @@ jobs:
       shell: bash
       run: |
         ./.github/scripts/build.sh
-  GitHub_Pages:
-    name: GitHub Pages
-    runs-on: ubuntu-latest
-    steps:
-    - name: Git Checkout
-      uses: actions/checkout@v1
-    - name: Set up Ruby
-      uses: actions/setup-ruby@v1
-      with:
-        ruby-version: 2.6.x
-    - name: Build
-      shell: bash
-      run: |
-        ./.github/scripts/docs.sh
