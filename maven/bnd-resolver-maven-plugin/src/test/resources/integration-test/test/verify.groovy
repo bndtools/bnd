@@ -113,3 +113,11 @@ assert bemRunBundles.size() == 1
 sb = new StringBuilder()
 bemRunBundles.get(0).formatTo(sb)
 assert sb.toString() == "org.apache.felix.eventadmin;version='[1.4.8,1.4.9)'"
+
+
+File build_log_file = new File("${basedir}/build.log")
+assert build_log_file.exists();
+def build_log = build_log_file.text
+
+// No previous
+assert !(build_log =~ java.util.regex.Pattern.quote("Resolution Result:\n[INFO]  org.apache.felix.eventadmin;version='[1.5.0,1.5.1)'"))

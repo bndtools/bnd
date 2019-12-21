@@ -29,6 +29,7 @@ import aQute.bnd.maven.lib.configuration.Bundles;
 import aQute.bnd.maven.lib.resolve.BndrunContainer;
 import aQute.bnd.maven.lib.resolve.Operation;
 import aQute.bnd.maven.lib.resolve.Scope;
+import aQute.bnd.osgi.Constants;
 import biz.aQute.resolve.ResolveProcess;
 
 /**
@@ -124,7 +125,8 @@ public class ResolverMojo extends AbstractMojo {
 	private Operation getOperation() {
 		return (file, runName, run) -> {
 			try {
-				run.resolve(failOnChanges, writeOnChanges);
+				String result = run.resolve(failOnChanges, writeOnChanges);
+				logger.info("{}: {}", Constants.RUNBUNDLES, result);
 			} catch (ResolutionException re) {
 				logger.error(ResolveProcess.format(re, reportOptional));
 				throw re;
