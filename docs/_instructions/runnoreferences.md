@@ -2,8 +2,10 @@
 layout: default
 class: Launcher
 title: -runnoreferences  BOOLEAN
-summary: Do not use the `reference:` URL scheme for installing a bundle in the installer. On non-Windows machines, the more efficient `reference:` URLs are used by default - use `-runnoreferences: true` to override this. On Windows this instruction is ignored - `reference:` URLs are never used due to Windows being more obstinate about open files.
+summary: Do not use the `reference:` URL scheme for installing a bundle in the installer.
 ---
+
+On non-Windows machines, the more efficient `reference:` URLs are used by default - use `-runnoreferences: true` to override this. On Windows this instruction is ignored - `reference:` URLs are never used due to Windows being more obstinate about open files.
 
 	private LauncherConstants getConstants(Collection<String> runbundles, boolean exported) throws Exception, FileNotFoundException,
 			IOException {
