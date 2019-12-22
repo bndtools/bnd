@@ -268,17 +268,25 @@ public class BndrunContainer {
 		String runee = run.getProperty(Constants.RUNEE);
 
 		if (runee == null) {
-			Optional.ofNullable(project.getPlugin("org.apache.maven.plugins:maven-compiler-plugin"))
+			EE ee = Optional.ofNullable(project.getBuild()
+				.getPluginsAsMap()
+				.get("org.apache.maven.plugins:maven-compiler-plugin"))
+					// when executed in a project with POM packaging the
+					// following always returns null
 				.map(Plugin::getConfiguration)
 				.map(Xpp3Dom.class::cast)
 				.map(dom -> dom.getChild("target"))
 				.map(Xpp3Dom::getValue)
+					// so fallback to the currently running Java version
 				.flatMap(EE::highestFromTargetVersion)
-				.ifPresent(ee -> {
-					run.setProperty(Constants.RUNEE, ee.getEEName());
+					.orElseGet(() -> EE.highestFromTargetVersion(System.getProperty("java.version"))
+						// if that all fails at least we know bnd needs at least
+						// Java 8 at this point
+						.orElse(EE.JavaSE_1_8));
 
-					logger.info("Bnd inferred {}: {}", Constants.RUNEE, run.getProperty(Constants.RUNEE));
-				});
+			run.setProperty(Constants.RUNEE, ee.getEEName());
+
+			logger.info("Bnd inferred {}: {}", Constants.RUNEE, run.getProperty(Constants.RUNEE));
 		}
 	}
 
