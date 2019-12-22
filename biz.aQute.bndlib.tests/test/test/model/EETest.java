@@ -1,7 +1,9 @@
 package test.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
+import org.assertj.core.api.Condition;
 import org.junit.Test;
 
 import aQute.bnd.build.model.EE;
@@ -42,6 +44,26 @@ public class EETest {
 			.orElse(null)).isEqualTo(EE.JavaSE_12_0);
 		assertThat(EE.highestFromTargetVersion("13")
 			.orElse(null)).isEqualTo(EE.JavaSE_13_0);
+	}
+
+	@Test
+	public void getEEFromJvm() throws Exception {
+		assertThat(EE.highestFromTargetVersion(System.getProperty("java.version"))).is( //
+			new Condition<>(ee -> ee.get()
+				.compareTo(EE.JavaSE_1_8) >= 0, "At least JavaSE-1.8"));
+	}
+
+	@Test
+	public void failsWithNonVersionInput() throws Exception {
+		assertThatExceptionOfType(IllegalArgumentException.class)
+			.isThrownBy(() -> EE.highestFromTargetVersion("sillyinput"))
+			.withMessage("Invalid syntax for version: sillyinput");
+	}
+
+	@Test
+	public void failsWithNullInput() throws Exception {
+		assertThatExceptionOfType(NullPointerException.class).isThrownBy( //
+			() -> EE.highestFromTargetVersion(null));
 	}
 
 }
