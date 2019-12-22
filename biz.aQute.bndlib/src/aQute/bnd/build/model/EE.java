@@ -8,6 +8,7 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.version.Version;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -106,7 +107,15 @@ public enum EE {
 	}
 
 	public static Optional<EE> highestFromTargetVersion(String targetVersion) {
-		Version version = new Version(targetVersion);
+		Version version = Optional.of(targetVersion)
+			.map(Analyzer::cleanupVersion)
+			.map(Version::new)
+			// drop the MICRO version since EEs don't have them
+			.map(v -> new Version(v.getMajor(), v.getMinor(), 0))
+			// practically unreachable since NPE and invalid syntax are caught
+			// earlier
+			.orElseThrow(() -> new IllegalArgumentException(
+				"Argument could not be recognized as a version string: " + targetVersion));
 		return Arrays.stream(values())
 			.filter(ee -> ee.capabilityVersion.compareTo(version) == 0)
 			.sorted(Collections.reverseOrder())
