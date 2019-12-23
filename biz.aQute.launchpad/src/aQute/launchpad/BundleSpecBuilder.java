@@ -15,6 +15,8 @@ import java.util.stream.Stream;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.Version;
+import org.osgi.namespace.extender.ExtenderNamespace;
+import org.osgi.service.configurator.ConfiguratorConstants;
 
 import aQute.bnd.service.specifications.BuilderSpecification;
 import aQute.lib.exceptions.Exceptions;
@@ -27,7 +29,7 @@ import aQute.lib.strings.Strings;
  * create sub builder interfaces that inherit all functions of the outer one.
  */
 public interface BundleSpecBuilder {
-	String	CONFIGURATION_JSON	= "configuration/configuration.json";
+	String	CONFIGURATION_JSON	= "OSGI-INF/configurator/configuration.json";
 	Pattern	SYMBOLICNAME		= Pattern.compile(PatternConstants.SYMBOLICNAME);
 
 	BundleBuilder x();
@@ -667,7 +669,7 @@ public interface BundleSpecBuilder {
 		}
 
 		default BundleSpecProvideCapability version(String version) {
-			attribute("version", version);
+			attribute("version:Version", version);
 			return this;
 		}
 
@@ -915,16 +917,29 @@ public interface BundleSpecBuilder {
 		}
 	}
 
+	/**
+	 * Adds a configuration compatible as described by the Configurator spec. It
+	 * will automatically add the necessary Requirement Header.
+	 *
+	 * @param config the {@link File} containing the configuration
+	 * @return the current version of the {@link BundleSpecBuilder}
+	 */
 	default BundleSpecBuilder addConfiguration(File config) {
 		try {
-			addResource(CONFIGURATION_JSON, config.toURI()
+			return addConfiguration(config.toURI()
 				.toURL());
-			return this;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
 
+	/**
+	 * Adds a configuration compatible as described by the Configurator spec. It
+	 * will automatically add the necessary Requirement Header.
+	 *
+	 * @param config the content for the configuration.
+	 * @return the current version of the {@link BundleSpecBuilder}
+	 */
 	default BundleSpecBuilder addConfiguration(String config) {
 		try {
 			File f = Files.createTempFile("x", "config")
@@ -939,8 +954,18 @@ public interface BundleSpecBuilder {
 		return this;
 	}
 
+	/**
+	 * Adds a configuration compatible as described by the Configurator spec. It
+	 * will automatically add the necessary Requirement Header.
+	 *
+	 * @param url the URL, where the Configuration can be found
+	 * @return the current version of the {@link BundleSpecBuilder}
+	 */
 	default BundleSpecBuilder addConfiguration(URL url) {
-		return addResource(CONFIGURATION_JSON, url);
+		return requireCapability(ExtenderNamespace.EXTENDER_NAMESPACE)
+			.filter(String.format("(%s=%s)", ExtenderNamespace.EXTENDER_NAMESPACE,
+				ConfiguratorConstants.CONFIGURATOR_EXTENDER_NAME))
+			.addResource(CONFIGURATION_JSON, url);
 	}
 
 	default Bundle install() throws Exception {

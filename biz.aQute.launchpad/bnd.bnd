@@ -31,11 +31,13 @@ Import-Package: \
     osgi.annotation;version=latest,\
     osgi.core;version=latest,\
     org.osgi.service.component;version='[1.4,1.5)',\
-    aQute.libg;version=latest, \
+    aQute.libg;version=latest,\
     org.osgi.service.component.annotations;version='[1.3,1.4)',\
     biz.aQute.bndlib;version=latest;packages=*,\
-    org.eclipse.jdt.annotation;version=@2, \
-    ${junit}
+    org.eclipse.jdt.annotation;version=@2,\
+    ${junit},\
+    org.osgi.service.configurator,\
+    org.osgi.namespace.extender
 
 -testpath: \
     ${mockito}, \
