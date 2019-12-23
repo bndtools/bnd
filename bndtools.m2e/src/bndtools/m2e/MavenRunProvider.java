@@ -1,6 +1,7 @@
 package bndtools.m2e;
 
 import java.io.File;
+import java.util.function.Predicate;
 
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
@@ -38,34 +39,54 @@ public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 
 		logger.info("Creating a Run for IResource {}", targetResource);
 
-		IMavenProjectFacade projectFacade = getMavenProjectFacade(targetResource);
-		MavenProject mavenProject = getMavenProject(projectFacade);
+		final IMavenProjectFacade projectFacade = getMavenProjectFacade(targetResource);
+		final MavenProject mavenProject = getMavenProject(projectFacade);
+		final IProgressMonitor monitor = new NullProgressMonitor();
 
-		IProgressMonitor monitor = new NullProgressMonitor();
+		Predicate<MojoExecution> bndrunMatchs = f -> true;
+		File bndrunFile = null;
+
+		if (targetResource.getName()
+			.endsWith(".bndrun")) {
+
+			File location = targetResource.getLocation()
+				.toFile();
+			bndrunFile = location;
+			bndrunMatchs = mojoExecution -> containsBndrun(mojoExecution, mavenProject, location, monitor);
+		}
+
 		MojoExecution mojoExecution;
 
 		if (((mode == RunMode.LAUNCH) || (mode == RunMode.EDIT))
-			&& ((mojoExecution = getBndResolverMojoExecution(projectFacade, monitor)) != null)) {
+			&& ((mojoExecution = getBndResolverMojoExecution(projectFacade, bndrunMatchs, monitor)) != null)) {
 
-			Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns", Bndruns.class,
-				monitor);
+			if (bndrunFile == null) {
+				Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns", Bndruns.class,
+					monitor);
+
+				bndrunFile = bndruns.getFiles(mavenProject.getBasedir())
+					.get(0);
+			}
 
 			BndrunContainer bndrunContainer = mbc.getBndrunContainer(projectFacade, mojoExecution, monitor);
 
-			return bndrunContainer.init(bndruns.getFiles(mavenProject.getBasedir())
-				.get(0), mode.name(),
+			return bndrunContainer.init(bndrunFile, mode.name(),
 				new File(mavenProject.getBuild()
 					.getDirectory()));
 		} else if ((mode == RunMode.TEST)
-			&& ((mojoExecution = getBndTestingMojoExecution(projectFacade, monitor)) != null)) {
+			&& ((mojoExecution = getBndTestingMojoExecution(projectFacade, bndrunMatchs, monitor)) != null)) {
 
-			Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns", Bndruns.class,
-				monitor);
+			if (bndrunFile == null) {
+				Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns", Bndruns.class,
+					monitor);
+
+				bndrunFile = bndruns.getFiles(mavenProject.getBasedir())
+					.get(0);
+			}
 
 			BndrunContainer bndrunContainer = mbc.getBndrunContainer(projectFacade, mojoExecution, monitor);
 
-			return bndrunContainer.init(bndruns.getFiles(mavenProject.getBasedir())
-				.get(0), mode.name(),
+			return bndrunContainer.init(bndrunFile, mode.name(),
 				new File(mavenProject.getBuild()
 					.getDirectory()));
 		} else {
