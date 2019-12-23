@@ -188,11 +188,17 @@ public class LaunchpadTest {
 			.create()
 			.inject(this)) {
 
+			Bundle capability = fw.bundle()
+				.provideCapability("osgi.extender")
+				.attribute("osgi.extender", "osgi.configurator")
+				.version("1.0.0")
+				.start();
+
 			Bundle cfg = fw.bundle()
 				.addConfiguration("[{}]")
 				.start();
 
-			URL entry = cfg.getEntry("configuration/configuration.json");
+			URL entry = cfg.getEntry("OSGI-INF/configurator/configuration.json");
 			assertThat(entry).isNotNull();
 
 			String txt = IO.collect(entry.openStream());
