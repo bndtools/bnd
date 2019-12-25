@@ -161,7 +161,7 @@ public class JUnitEclipseReport implements TestReporter {
 			sb.append(tests.indexOf(test) + 1);
 		}
 		sb.append(',');
-		copyAndEscapeText(getTestName(test), sb);
+		appendEscaped(getTestName(test), sb);
 		String payload = sb.toString();
 		message(key, payload);
 	}
@@ -172,7 +172,7 @@ public class JUnitEclipseReport implements TestReporter {
 			StringBuilder sb = new StringBuilder();
 			sb.append(i + 1)
 				.append(',');
-			copyAndEscapeText(getTestName(test), sb);
+			appendEscaped(getTestName(test), sb);
 			sb.append(',')
 				.append(test instanceof TestSuite || test instanceof JUnit4TestAdapter)
 				.append(',');
@@ -195,7 +195,7 @@ public class JUnitEclipseReport implements TestReporter {
 		safeClose(client);
 	}
 
-	private static void copyAndEscapeText(String s, StringBuilder sb) {
+	private static void appendEscaped(String s, StringBuilder sb) {
 		if (s.isEmpty()) {
 			return;
 		}

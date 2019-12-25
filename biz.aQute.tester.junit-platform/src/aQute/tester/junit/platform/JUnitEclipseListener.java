@@ -420,12 +420,12 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	// namePrefix is used as a special case to signal ignored and aborted tests.
 	private void message(String key, TestIdentifier testIdentifier, String namePrefix) {
 		StringBuilder sb = new StringBuilder(getTestId(testIdentifier)).append(',');
-		copyAndEscapeText(namePrefix, sb);
-		copyAndEscapeText(getTestName(testIdentifier), sb);
+		appendEscaped(namePrefix, sb);
+		appendEscaped(getTestName(testIdentifier), sb);
 		message(key, sb);
 	}
 
-	private static void copyAndEscapeText(String s, StringBuilder sb) {
+	private static void appendEscaped(String s, StringBuilder sb) {
 		if (s.isEmpty()) {
 			return;
 		}
@@ -464,7 +464,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 
 	private void visitEntry(TestIdentifier testIdentifier, boolean isDynamic) {
 		StringBuilder treeEntry = new StringBuilder(getTestId(testIdentifier)).append(',');
-		copyAndEscapeText(getTestName(testIdentifier), treeEntry);
+		appendEscaped(getTestName(testIdentifier), treeEntry);
 		treeEntry.append(',');
 		Set<TestIdentifier> children;
 		if (testIdentifier.isTest()) {
@@ -483,11 +483,11 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 			.append(',')
 			.append(getParentTestId(testIdentifier))
 			.append(',');
-		copyAndEscapeText(testIdentifier.getDisplayName(), treeEntry);
+		appendEscaped(testIdentifier.getDisplayName(), treeEntry);
 		treeEntry.append(',');
-		copyAndEscapeText(getTestParameterTypes(testIdentifier), treeEntry);
+		appendEscaped(getTestParameterTypes(testIdentifier), treeEntry);
 		treeEntry.append(',');
-		copyAndEscapeText(testIdentifier.getUniqueId(), treeEntry);
+		appendEscaped(testIdentifier.getUniqueId(), treeEntry);
 		message("%TSTTREE", treeEntry);
 		for (TestIdentifier child : children) {
 			visitEntry(child, isDynamic);
