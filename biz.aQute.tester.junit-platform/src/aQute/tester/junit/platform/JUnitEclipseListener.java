@@ -6,15 +6,15 @@ import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.net.ConnectException;
 import java.net.InetAddress;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.channels.Channels;
+import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -73,7 +73,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		message("%FAILED ", testIdentifier, "@AssumptionFailure: ");
 		message("%TRACES ");
 		info("JUnitEclipseListener: Skipped: %s", reason);
-		junit.out.println("Skipped: " + reason);
+		client.out.println("Skipped: " + reason);
 		message("%TRACEE ");
 		if (!testIdentifier.isContainer()) {
 			message("%TESTE  ", testIdentifier);
@@ -81,27 +81,25 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	}
 
 	private final Connection<DataInputStream, OutputStream>	control;
-	private Connection<Reader, PrintWriter>					junit;
+	private Connection<Reader, PrintWriter>					client;
 	private long											startTime;
 	private TestPlan										testPlan;
 	private final boolean									verbose	= false;
 
-	private static final class Connection<IN extends Closeable, OUT extends Closeable> implements Closeable {
-		final Socket	sock;
-		final IN		in;
-		final OUT		out;
+	private static final class Connection<IN, OUT> implements Closeable {
+		final SocketChannel	channel;
+		final IN			in;
+		final OUT			out;
 
-		Connection(Socket sock, IN in, OUT out) {
-			this.sock = sock;
+		Connection(SocketChannel channel, IN in, OUT out) {
+			this.channel = channel;
 			this.in = in;
 			this.out = out;
 		}
 
 		@Override
 		public void close() {
-			safeClose(out);
-			safeClose(in);
-			safeClose(sock);
+			safeClose(channel);
 		}
 	}
 
@@ -109,12 +107,15 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		this(port, false);
 	}
 
-	private Socket connectRetry(int port) throws Exception {
-		ConnectException e = null;
+	private SocketChannel connectRetry(int port) throws Exception {
+		IOException e = null;
 		for (int i = 0; i < 30; i++) {
 			try {
-				return new Socket(InetAddress.getByName(null), port);
-			} catch (ConnectException ce) {
+				SocketAddress address = new InetSocketAddress(InetAddress.getByName(null), port);
+				SocketChannel channel = SocketChannel.open(address);
+				channel.finishConnect();
+				return channel;
+			} catch (IOException ce) {
 				e = ce;
 				Thread.sleep(i * 100);
 			}
@@ -127,28 +128,26 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 
 	public JUnitEclipseListener(int port, boolean rerunIDE) throws Exception {
 		try {
-			Socket socket = connectRetry(port);
-
+			SocketChannel channel = connectRetry(port);
 			if (rerunIDE) {
-				control = new Connection<>(socket, new DataInputStream(socket.getInputStream()),
-					socket.getOutputStream());
-				junit = null;
+				control = new Connection<>(channel, new DataInputStream(Channels.newInputStream(channel)),
+					Channels.newOutputStream(channel));
+				client = null;
 			} else {
 				control = null;
-				junit = junitConnection(socket);
+				client = junitConnection(channel);
 			}
-		} catch (ConnectException e) {
-			info("JUnitEclipseListener: Cannot open the JUnit control Port: %s %s", port, e);
+		} catch (IOException e) {
+			info("JUnitEclipseListener: Cannot open the JUnit Port: %s %s", port, e);
 			System.exit(254);
 			throw new AssertionError("unreachable");
 		}
 	}
 
-	private Connection<Reader, PrintWriter> junitConnection(Socket junitSocket) throws IOException {
-		info("Opening streams");
-		return new Connection<>(junitSocket,
-			new BufferedReader(new InputStreamReader(junitSocket.getInputStream(), UTF_8)),
-			new PrintWriter(new OutputStreamWriter(junitSocket.getOutputStream(), UTF_8), true));
+	private Connection<Reader, PrintWriter> junitConnection(SocketChannel channel) throws IOException {
+		info("JUnitEclipseListener: Opening streams for client connection %s", channel);
+		return new Connection<>(channel, new BufferedReader(Channels.newReader(channel, UTF_8.newDecoder(), -1)),
+			new PrintWriter(Channels.newWriter(channel, UTF_8.newEncoder(), -1)));
 	}
 
 	private Connection<Reader, PrintWriter> nullConnection() {
@@ -174,9 +173,9 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 
 	@Override
 	public void testPlanExecutionStarted(TestPlan testPlan) {
-		info("testPlanExecution started, closing existing connection (if any)");
 		if (control != null) {
-			safeClose(junit);
+			info("JUnitEclipseListener: testPlanExecutionStarted: Closing client connection, if any");
+			safeClose(client);
 			try {
 				info("Notifying controller that we're starting a new session");
 				control.out.write(1);
@@ -184,12 +183,12 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 				info("Retrieving new JUnit port");
 				int junitPort = control.in.readInt();
 				info("Attempting to connect to port: %s", junitPort);
-				Socket junitSocket = connectRetry(junitPort);
-				junit = junitConnection(junitSocket);
+				SocketChannel channel = connectRetry(junitPort);
+				client = junitConnection(channel);
 			} catch (Exception e) {
 				System.err.println("Error trying to connect to JUnit session: " + e);
 				info("Setting up dummy io");
-				junit = nullConnection();
+				client = nullConnection();
 			}
 		}
 
@@ -209,31 +208,31 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	@Override
 	public void testPlanExecutionFinished(TestPlan testPlan) {
 		message("%RUNTIME", Long.toString(System.currentTimeMillis() - startTime));
-		junit.out.flush();
+		client.out.flush();
 		if (control == null) {
-			safeClose(junit);
-			junit = nullConnection();
+			safeClose(client);
+			client = nullConnection();
 		}
 	}
 
 	private void sendTrace(Throwable t) {
 		message("%TRACES ");
-		t.printStackTrace(junit.out);
+		t.printStackTrace(client.out);
 		if (verbose) {
 			t.printStackTrace(System.err);
 		}
-		junit.out.println();
+		client.out.println();
 		message("%TRACEE ");
 	}
 
 	private void sendExpectedAndActual(String expected, String actual) {
 		message("%EXPECTS");
-		junit.out.println(expected);
+		client.out.println(expected);
 		info(expected);
 		message("%EXPECTE");
 
 		message("%ACTUALS");
-		junit.out.println(actual);
+		client.out.println(actual);
 		info(actual);
 		message("%ACTUALE");
 	}
@@ -359,7 +358,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 			throw new IllegalArgumentException(key + " is not 8 characters");
 
 		String message = key.concat(payload.toString());
-		junit.out.println(message);
+		client.out.println(message);
 		info("JUnitEclipseListener: %s", message);
 	}
 
@@ -513,7 +512,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 			.stream()
 			.map(entry -> entry.getKey() + " => " + entry.getValue())
 			.collect(Collectors.joining(",\n")));
-		safeClose(junit);
+		safeClose(client);
 		safeClose(control);
 	}
 
