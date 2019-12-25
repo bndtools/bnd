@@ -200,7 +200,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		this.testPlan = testPlan;
 		for (TestIdentifier root : testPlan.getRoots()) {
 			for (TestIdentifier child : testPlan.getChildren(root)) {
-				visitEntry(child);
+				visitEntry(child, false);
 			}
 		}
 		startTime = System.currentTimeMillis();
@@ -456,10 +456,6 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 					break;
 			}
 		}
-	}
-
-	private void visitEntry(TestIdentifier testIdentifier) {
-		visitEntry(testIdentifier, false);
 	}
 
 	private void visitEntry(TestIdentifier testIdentifier, boolean isDynamic) {
