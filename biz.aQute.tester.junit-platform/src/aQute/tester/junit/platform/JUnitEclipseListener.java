@@ -15,6 +15,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.Channels;
 import java.nio.channels.SocketChannel;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -464,36 +465,32 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	private void visitEntry(TestIdentifier testIdentifier, boolean isDynamic) {
 		StringBuilder treeEntry = new StringBuilder(getTestId(testIdentifier)).append(',');
 		copyAndEscapeText(getTestName(testIdentifier), treeEntry);
+		treeEntry.append(',');
+		Set<TestIdentifier> children;
 		if (testIdentifier.isTest()) {
-			treeEntry.append(",false,1,")
-				.append(isDynamic)
+			children = Collections.emptySet();
+			treeEntry.append(false)
 				.append(',')
-				.append(getParentTestId(testIdentifier))
-				.append(',');
-			copyAndEscapeText(testIdentifier.getDisplayName(), treeEntry);
-			treeEntry.append(',');
-			copyAndEscapeText(getTestParameterTypes(testIdentifier), treeEntry);
-			treeEntry.append(',');
-			copyAndEscapeText(testIdentifier.getUniqueId(), treeEntry);
-			message("%TSTTREE", treeEntry);
+				.append('1');
 		} else {
-			final Set<TestIdentifier> children = testPlan.getChildren(testIdentifier);
-			treeEntry.append(",true,")
-				.append(children.size())
+			children = testPlan.getChildren(testIdentifier);
+			treeEntry.append(true)
 				.append(',')
-				.append(isDynamic)
-				.append(',')
-				.append(getParentTestId(testIdentifier))
-				.append(',');
-			copyAndEscapeText(testIdentifier.getDisplayName(), treeEntry);
-			treeEntry.append(',');
-			copyAndEscapeText(getTestParameterTypes(testIdentifier), treeEntry);
-			treeEntry.append(',');
-			copyAndEscapeText(testIdentifier.getUniqueId(), treeEntry);
-			message("%TSTTREE", treeEntry);
-			for (TestIdentifier child : children) {
-				visitEntry(child, isDynamic);
-			}
+				.append(children.size());
+		}
+		treeEntry.append(',')
+			.append(isDynamic)
+			.append(',')
+			.append(getParentTestId(testIdentifier))
+			.append(',');
+		copyAndEscapeText(testIdentifier.getDisplayName(), treeEntry);
+		treeEntry.append(',');
+		copyAndEscapeText(getTestParameterTypes(testIdentifier), treeEntry);
+		treeEntry.append(',');
+		copyAndEscapeText(testIdentifier.getUniqueId(), treeEntry);
+		message("%TSTTREE", treeEntry);
+		for (TestIdentifier child : children) {
+			visitEntry(child, isDynamic);
 		}
 	}
 
