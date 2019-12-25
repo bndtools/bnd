@@ -15,12 +15,13 @@ import java.io.Writer;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -37,11 +38,11 @@ import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
 import org.opentest4j.AssertionFailedError;
 import org.opentest4j.MultipleFailuresError;
-import org.opentest4j.ValueWrapper;
 
 public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	@Override
 	public void dynamicTestRegistered(TestIdentifier testIdentifier) {
+		info("JUnitEclipseListener: dynamicTestRegistered: %s", testIdentifier);
 		visitEntry(testIdentifier, true);
 	}
 
@@ -50,7 +51,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	// execution that has already started.
 	@Override
 	public void executionSkipped(TestIdentifier testIdentifier, String reason) {
-		info("JUnitEclipseListener: testPlanSkipped: " + testIdentifier + ", reason: " + reason);
+		info("JUnitEclipseListener: testPlanSkipped: %s, reason: %s", testIdentifier, reason);
 		if (testIdentifier.isContainer() && testPlan != null) {
 			testPlan.getChildren(testIdentifier)
 				.forEach(identifier -> executionSkipped(identifier,
@@ -71,32 +72,46 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		}
 		message("%FAILED ", testIdentifier, "@AssumptionFailure: ");
 		message("%TRACES ");
-		info(() -> "JUnitEclipseListener: Skipped: " + reason);
-		out.println("Skipped: " + reason);
+		info("JUnitEclipseListener: Skipped: %s", reason);
+		junit.out.println("Skipped: " + reason);
 		message("%TRACEE ");
 		if (!testIdentifier.isContainer()) {
 			message("%TESTE  ", testIdentifier);
 		}
 	}
 
-	private final Socket			controlSock;
-	private final OutputStream		controlOut;
-	private final DataInputStream	controlIn;
-	private Socket					sock;
-	private BufferedReader			in;
-	private PrintWriter				out;
-	private long					startTime;
-	private TestPlan				testPlan;
-	private boolean					verbose	= false;
+	private final Connection<DataInputStream, OutputStream>	control;
+	private Connection<Reader, PrintWriter>					junit;
+	private long											startTime;
+	private TestPlan										testPlan;
+	private final boolean									verbose	= false;
+
+	private static final class Connection<IN extends Closeable, OUT extends Closeable> implements Closeable {
+		final Socket	sock;
+		final IN		in;
+		final OUT		out;
+
+		Connection(Socket sock, IN in, OUT out) {
+			this.sock = sock;
+			this.in = in;
+			this.out = out;
+		}
+
+		@Override
+		public void close() {
+			safeClose(out);
+			safeClose(in);
+			safeClose(sock);
+		}
+	}
 
 	public JUnitEclipseListener(int port) throws Exception {
 		this(port, false);
 	}
 
 	private Socket connectRetry(int port) throws Exception {
-		Socket socket = null;
 		ConnectException e = null;
-		for (int i = 0; socket == null && i < 30; i++) {
+		for (int i = 0; i < 30; i++) {
 			try {
 				return new Socket(InetAddress.getByName(null), port);
 			} catch (ConnectException ce) {
@@ -115,31 +130,29 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 			Socket socket = connectRetry(port);
 
 			if (rerunIDE) {
-				controlSock = socket;
-				controlIn = new DataInputStream(socket.getInputStream());
-				controlOut = socket.getOutputStream();
+				control = new Connection<>(socket, new DataInputStream(socket.getInputStream()),
+					socket.getOutputStream());
+				junit = null;
 			} else {
-				controlSock = null;
-				controlIn = null;
-				controlOut = null;
-				setupJUnitSocket(socket);
+				control = null;
+				junit = junitConnection(socket);
 			}
 		} catch (ConnectException e) {
-			info("JUnitEclipseListener: Cannot open the JUnit control Port: " + port + " " + e);
+			info("JUnitEclipseListener: Cannot open the JUnit control Port: %s %s", port, e);
 			System.exit(254);
 			throw new AssertionError("unreachable");
 		}
 	}
 
-	private void setupJUnitSocket(Socket junitSocket) throws IOException {
+	private Connection<Reader, PrintWriter> junitConnection(Socket junitSocket) throws IOException {
 		info("Opening streams");
-		sock = junitSocket;
-		in = new BufferedReader(new InputStreamReader(junitSocket.getInputStream(), UTF_8));
-		out = new PrintWriter(new OutputStreamWriter(junitSocket.getOutputStream(), UTF_8));
+		return new Connection<>(junitSocket,
+			new BufferedReader(new InputStreamReader(junitSocket.getInputStream(), UTF_8)),
+			new PrintWriter(new OutputStreamWriter(junitSocket.getOutputStream(), UTF_8), true));
 	}
 
-	private void setNullStreams() {
-		in = new BufferedReader(new Reader() {
+	private Connection<Reader, PrintWriter> nullConnection() {
+		return new Connection<>(null, new Reader() {
 			@Override
 			public int read(char[] cbuf, int off, int len) {
 				return -1;
@@ -147,46 +160,43 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 
 			@Override
 			public void close() {}
-		});
-		out = new PrintWriter(new Writer() {
+		}, new PrintWriter(new Writer() {
 			@Override
 			public void write(char[] cbuf, int off, int len) {}
 
 			@Override
-			public void flush() throws IOException {}
+			public void flush() {}
 
 			@Override
-			public void close() throws IOException {}
-		});
+			public void close() {}
+		}));
 	}
 
 	@Override
 	public void testPlanExecutionStarted(TestPlan testPlan) {
 		info("testPlanExecution started, closing existing connection (if any)");
-		if (controlSock != null) {
-			safeClose(in);
-			safeClose(out);
-			safeClose(sock);
+		if (control != null) {
+			safeClose(junit);
 			try {
 				info("Notifying controller that we're starting a new session");
-				controlOut.write(1);
-				controlOut.flush();
+				control.out.write(1);
+				control.out.flush();
 				info("Retrieving new JUnit port");
-				int junitPort = controlIn.readInt();
-				info(() -> "Attempting to connect to port: " + junitPort);
+				int junitPort = control.in.readInt();
+				info("Attempting to connect to port: %s", junitPort);
 				Socket junitSocket = connectRetry(junitPort);
-
-				setupJUnitSocket(junitSocket);
+				junit = junitConnection(junitSocket);
 			} catch (Exception e) {
 				System.err.println("Error trying to connect to JUnit session: " + e);
 				info("Setting up dummy io");
-				setNullStreams();
+				junit = nullConnection();
 			}
 		}
 
 		final long realCount = testPlan.countTestIdentifiers(TestIdentifier::isTest);
-		info("JUnitEclipseListener: testPlanExecutionStarted: " + testPlan + ", realCount: " + realCount);
-		message("%TESTC  ", realCount + " v2");
+		info("JUnitEclipseListener: testPlanExecutionStarted: %s, realCount: %s", testPlan, realCount);
+		message("%TESTC  ", Long.toString(realCount)
+			.concat(" v2"));
 		this.testPlan = testPlan;
 		for (TestIdentifier root : testPlan.getRoots()) {
 			for (TestIdentifier child : testPlan.getChildren(root)) {
@@ -198,38 +208,39 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 
 	@Override
 	public void testPlanExecutionFinished(TestPlan testPlan) {
-		message("%RUNTIME", "" + (System.currentTimeMillis() - startTime));
-		out.flush();
-		if (controlSock == null) {
-			setNullStreams();
+		message("%RUNTIME", Long.toString(System.currentTimeMillis() - startTime));
+		junit.out.flush();
+		if (control == null) {
+			safeClose(junit);
+			junit = nullConnection();
 		}
 	}
 
 	private void sendTrace(Throwable t) {
 		message("%TRACES ");
-		t.printStackTrace(out);
+		t.printStackTrace(junit.out);
 		if (verbose) {
 			t.printStackTrace(System.err);
 		}
-		out.println();
+		junit.out.println();
 		message("%TRACEE ");
 	}
 
-	private void sendExpectedAndActual(CharSequence expected, CharSequence actual) {
+	private void sendExpectedAndActual(String expected, String actual) {
 		message("%EXPECTS");
-		out.println(expected);
+		junit.out.println(expected);
 		info(expected);
 		message("%EXPECTE");
 
 		message("%ACTUALS");
-		out.println(actual);
+		junit.out.println(actual);
 		info(actual);
 		message("%ACTUALE");
 	}
 
 	@Override
 	public void executionStarted(TestIdentifier testIdentifier) {
-		info("JUnitEclipseListener: Execution started: " + testIdentifier);
+		info("JUnitEclipseListener: Execution started: %s", testIdentifier);
 		if (testIdentifier.isTest()) {
 			message("%TESTS  ", testIdentifier);
 		}
@@ -237,52 +248,37 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 
 	@Override
 	public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
-		info("JUnitEclipseListener: Execution finished: " + testIdentifier);
+		info("JUnitEclipseListener: Execution finished: %s", testIdentifier);
 		Status result = testExecutionResult.getStatus();
 		if (testIdentifier.isTest()) {
 			if (result != Status.SUCCESSFUL) {
 				final boolean assumptionFailed = result == Status.ABORTED;
-				info("JUnitEclipseListener: assumption failed: " + assumptionFailed);
+				info("JUnitEclipseListener: assumption failed: %s", assumptionFailed);
 				Optional<Throwable> throwableOp = testExecutionResult.getThrowable();
-				if (throwableOp.isPresent()) {
-					Throwable exception = throwableOp.get();
-					info("JUnitEclipseListener: throwable: " + exception);
-
+				throwableOp.ifPresent(exception -> {
+					info("JUnitEclipseListener: throwable: %s", exception);
 					if (assumptionFailed || exception instanceof AssertionError) {
-						info(() -> "JUnitEclipseListener: failed: " + exception + " assumptionFailed: "
-							+ assumptionFailed);
+						info("JUnitEclipseListener: failed: %s assumptionFailed: %s", exception, assumptionFailed);
 						message("%FAILED ", testIdentifier, (assumptionFailed ? "@AssumptionFailure: " : ""));
-
 						sendExpectedAndActual(exception);
-
 					} else {
 						info("JUnitEclipseListener: error");
 						message("%ERROR  ", testIdentifier);
 					}
 					sendTrace(exception);
-				}
+				});
 			}
 			message("%TESTE  ", testIdentifier);
 		} else { // container
 			if (result != Status.SUCCESSFUL) {
 				message("%ERROR  ", testIdentifier);
 				Optional<Throwable> throwableOp = testExecutionResult.getThrowable();
-				if (throwableOp.isPresent()) {
-					sendTrace(throwableOp.get());
-				}
+				throwableOp.ifPresent(this::sendTrace);
 			}
 		}
 	}
 
-	private static void appendString(StringBuilder b, String s) {
-		if (b.length() > 0) {
-			b.append("\n\n");
-		}
-		b.append(s);
-	}
-
-	private boolean sendExpectedAndActual(Throwable exception, StringBuilder expectedBuilder,
-		StringBuilder actualBuilder) {
+	private boolean sendExpectedAndActual(Throwable exception, StringJoiner expectedJoiner, StringJoiner actualJoiner) {
 		BooleanSupplier action;
 		// NOTE:
 		// 1. switch is based on the class name rather than using instanceof
@@ -296,14 +292,14 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 			case "org.opentest4j.AssertionFailedError" :
 				action = () -> {
 					AssertionFailedError assertionFailedError = (AssertionFailedError) exception;
-					ValueWrapper expected = assertionFailedError.getExpected();
-					ValueWrapper actual = assertionFailedError.getActual();
-					if (expected == null || actual == null) {
-						return false;
+					if (assertionFailedError.isExpectedDefined() && assertionFailedError.isActualDefined()) {
+						expectedJoiner.add(assertionFailedError.getExpected()
+							.getStringRepresentation());
+						actualJoiner.add(assertionFailedError.getActual()
+							.getStringRepresentation());
+						return true;
 					}
-					appendString(expectedBuilder, expected.getStringRepresentation());
-					appendString(actualBuilder, actual.getStringRepresentation());
-					return true;
+					return false;
 				};
 				break;
 			case "org.junit.ComparisonFailure" :
@@ -311,12 +307,12 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 					ComparisonFailure comparisonFailure = (ComparisonFailure) exception;
 					String expected = comparisonFailure.getExpected();
 					String actual = comparisonFailure.getActual();
-					if (expected == null || actual == null) {
-						return false;
+					if ((expected != null) && (actual != null)) {
+						expectedJoiner.add(expected);
+						actualJoiner.add(actual);
+						return true;
 					}
-					appendString(expectedBuilder, expected);
-					appendString(actualBuilder, actual);
-					return true;
+					return false;
 				};
 				break;
 			case "junit.framework.ComparisonFailure" :
@@ -324,19 +320,19 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 					junit.framework.ComparisonFailure comparisonFailure = (junit.framework.ComparisonFailure) exception;
 					String expected = comparisonFailure.getExpected();
 					String actual = comparisonFailure.getActual();
-					if (expected == null || actual == null) {
-						return false;
+					if ((expected != null) && (actual != null)) {
+						expectedJoiner.add(expected);
+						actualJoiner.add(actual);
+						return true;
 					}
-					appendString(expectedBuilder, expected);
-					appendString(actualBuilder, actual);
-					return true;
+					return false;
 				};
 				break;
 			case "org.opentest4j.MultipleFailuresError" :
 				action = () -> {
 					List<Throwable> failures = ((MultipleFailuresError) exception).getFailures();
 					return failures.stream()
-						.filter(failure -> sendExpectedAndActual(failure, expectedBuilder, actualBuilder))
+						.filter(failure -> sendExpectedAndActual(failure, expectedJoiner, actualJoiner))
 						.count() > 0;
 				};
 				break;
@@ -347,10 +343,10 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	}
 
 	private void sendExpectedAndActual(Throwable exception) {
-		final StringBuilder expected = new StringBuilder();
-		final StringBuilder actual = new StringBuilder();
+		StringJoiner expected = new StringJoiner("\n\n");
+		StringJoiner actual = new StringJoiner("\n\n");
 		if (sendExpectedAndActual(exception, expected, actual)) {
-			sendExpectedAndActual(expected, actual);
+			sendExpectedAndActual(expected.toString(), actual.toString());
 		}
 	}
 
@@ -362,40 +358,51 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		if (key.length() != 8)
 			throw new IllegalArgumentException(key + " is not 8 characters");
 
-		out.print(key);
-		out.println(payload);
-		out.flush();
-		info("JUnitEclipseListener: " + key + payload);
+		String message = key.concat(payload.toString());
+		junit.out.println(message);
+		info("JUnitEclipseListener: %s", message);
 	}
 
-	private AtomicInteger		counter	= new AtomicInteger(1);
-	private Map<String, String>	idMap	= new HashMap<>();
+	private final AtomicInteger					counter	= new AtomicInteger();
+	private final ConcurrentMap<String, String>	idMap	= new ConcurrentHashMap<>();
 
-	private String getTestId(String junitId) {
-		String id = idMap.computeIfAbsent(junitId, k -> Integer.toString(counter.getAndIncrement()));
-		return id;
+	private String getTestId(String uniqueId) {
+		String testId = idMap.computeIfAbsent(uniqueId, id -> Integer.toString(counter.incrementAndGet()));
+		return testId;
 	}
 
-	private String getTestId(TestIdentifier test) {
-		return getTestId(test.getUniqueId());
+	private String getTestId(TestIdentifier testIdentifier) {
+		return getTestId(testIdentifier.getUniqueId());
 	}
 
-	private String getTestName(TestIdentifier test) {
-		return test.getSource()
+	private String getParentTestId(TestIdentifier testIdentifier) {
+		return testPlan.getParent(testIdentifier)
+			.map(this::getTestId)
+			.orElse("-1");
+	}
+
+	private String getTestName(TestIdentifier testIdentifier) {
+		return testIdentifier.getSource()
 			.map(this::getTestName)
-			.orElseGet(test::getDisplayName);
+			.orElseGet(testIdentifier::getDisplayName);
 	}
 
 	private String getTestName(TestSource testSource) {
 		if (testSource instanceof ClassSource) {
-			return ((ClassSource) testSource).getJavaClass()
-				.getName();
+			ClassSource classSource = (ClassSource) testSource;
+			return classSource.getClassName();
 		}
 		if (testSource instanceof MethodSource) {
 			MethodSource methodSource = (MethodSource) testSource;
-			return MessageFormat.format("{0}({1})", methodSource.getMethodName(), methodSource.getClassName());
+			return String.format(Locale.ROOT, "%s(%s)", methodSource.getMethodName(), methodSource.getClassName());
 		}
 		return null;
+	}
+
+	private String getTestParameterTypes(TestIdentifier testIdentifier) {
+		return testIdentifier.getSource()
+			.map(this::getTestParameterTypes)
+			.orElse("");
 	}
 
 	private String getTestParameterTypes(TestSource testSource) {
@@ -403,92 +410,87 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 			MethodSource methodSource = (MethodSource) testSource;
 			return methodSource.getMethodParameterTypes();
 		}
-		return "";
+		return null;
 	}
 
-	private void message(String key, TestIdentifier test) {
-		message(key, test, "");
+	private void message(String key, TestIdentifier testIdentifier) {
+		message(key, testIdentifier, "");
 	}
 
 	// namePrefix is used as a special case to signal ignored and aborted tests.
-	private void message(String key, TestIdentifier test, String namePrefix) {
-		final StringBuilder sb = new StringBuilder(100);
-		sb.append(getTestId(test))
-			.append(',');
-		copyAndEscapeText(namePrefix + getTestName(test), sb);
+	private void message(String key, TestIdentifier testIdentifier, String namePrefix) {
+		StringBuilder sb = new StringBuilder(getTestId(testIdentifier)).append(',');
+		copyAndEscapeText(namePrefix, sb);
+		copyAndEscapeText(getTestName(testIdentifier), sb);
 		message(key, sb);
 	}
 
-	// This is mostly copied from
-	// org.eclipse.jdt.internal.junit.runner.RemoteTestRunner except that
-	// StringBuffer local has been replaced with StringBuilder parameter.
-	public static void copyAndEscapeText(String s, StringBuilder sb) {
+	private static void copyAndEscapeText(String s, StringBuilder sb) {
+		if (s.isEmpty()) {
+			return;
+		}
 		if ((s.indexOf(',') < 0) && (s.indexOf('\\') < 0) && (s.indexOf('\r') < 0) && (s.indexOf('\n') < 0)) {
 			sb.append(s);
 			return;
 		}
-		for (int i = 0; i < s.length(); i++) {
+		for (int i = 0, len = s.length(); i < len; i++) {
 			char c = s.charAt(i);
-			if (c == ',') {
-				sb.append("\\,"); //$NON-NLS-1$
-			} else if (c == '\\') {
-				sb.append("\\\\"); //$NON-NLS-1$
-			} else if (c == '\r') {
-				if (i + 1 < s.length() && s.charAt(i + 1) == '\n') {
-					i++;
-				}
-				sb.append(' ');
-			} else if (c == '\n') {
-				sb.append(' ');
-			} else {
-				sb.append(c);
+			switch (c) {
+				case '\r' :
+					int j;
+					if ((j = i + 1) < len && s.charAt(j) == '\n') {
+						i = j;
+					}
+					sb.append(' ');
+					break;
+				case '\n' :
+					sb.append(' ');
+					break;
+				case ',' :
+				case '\\' :
+					sb.append('\\');
+					sb.append(c);
+					break;
+				default :
+					sb.append(c);
+					break;
 			}
 		}
 	}
 
-	private void visitEntry(TestIdentifier test) {
-		visitEntry(test, false);
+	private void visitEntry(TestIdentifier testIdentifier) {
+		visitEntry(testIdentifier, false);
 	}
 
-	private void visitEntry(TestIdentifier test, boolean isDynamic) {
-		StringBuilder treeEntry = new StringBuilder();
-		treeEntry.append(getTestId(test))
-			.append(',');
-		copyAndEscapeText(getTestName(test), treeEntry);
-		if (test.isTest()) {
+	private void visitEntry(TestIdentifier testIdentifier, boolean isDynamic) {
+		StringBuilder treeEntry = new StringBuilder(getTestId(testIdentifier)).append(',');
+		copyAndEscapeText(getTestName(testIdentifier), treeEntry);
+		if (testIdentifier.isTest()) {
 			treeEntry.append(",false,1,")
 				.append(isDynamic)
 				.append(',')
-				.append(test.getParentId()
-					.map(this::getTestId)
-					.orElse("-1"))
+				.append(getParentTestId(testIdentifier))
 				.append(',');
-			copyAndEscapeText(test.getDisplayName(), treeEntry);
+			copyAndEscapeText(testIdentifier.getDisplayName(), treeEntry);
 			treeEntry.append(',');
-			copyAndEscapeText(test.getSource()
-				.map(this::getTestParameterTypes)
-				.orElse(""), treeEntry);
+			copyAndEscapeText(getTestParameterTypes(testIdentifier), treeEntry);
 			treeEntry.append(',');
-			copyAndEscapeText(test.getUniqueId(), treeEntry);
+			copyAndEscapeText(testIdentifier.getUniqueId(), treeEntry);
 			message("%TSTTREE", treeEntry);
 		} else {
-			final Set<TestIdentifier> children = testPlan.getChildren(test);
+			final Set<TestIdentifier> children = testPlan.getChildren(testIdentifier);
 			treeEntry.append(",true,")
 				.append(children.size())
 				.append(',')
 				.append(isDynamic)
 				.append(',')
-				.append(test.getParentId()
-					.map(this::getTestId)
-					.orElse("-1"))
+				.append(getParentTestId(testIdentifier))
 				.append(',');
-			copyAndEscapeText(test.getDisplayName(), treeEntry);
+			copyAndEscapeText(testIdentifier.getDisplayName(), treeEntry);
 			treeEntry.append(',');
-			copyAndEscapeText(test.getSource()
-				.map(this::getTestParameterTypes)
-				.orElse(""), treeEntry); //$NON-NLS-1$
+			copyAndEscapeText(getTestParameterTypes(testIdentifier), treeEntry);
 			treeEntry.append(',');
-			copyAndEscapeText(test.getUniqueId(), treeEntry);
+			copyAndEscapeText(testIdentifier.getUniqueId(), treeEntry);
 			message("%TSTTREE", treeEntry);
 			for (TestIdentifier child : children) {
 				visitEntry(child, isDynamic);
@@ -496,12 +498,12 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		}
 	}
 
-	private void safeClose(Closeable io) {
-		if (io == null) {
+	static void safeClose(Closeable closeable) {
+		if (closeable == null) {
 			return;
 		}
 		try {
-			io.close();
+			closeable.close();
 		} catch (IOException e) {}
 	}
 
@@ -511,12 +513,8 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 			.stream()
 			.map(entry -> entry.getKey() + " => " + entry.getValue())
 			.collect(Collectors.joining(",\n")));
-		safeClose(in);
-		safeClose(out);
-		safeClose(sock);
-		safeClose(controlIn);
-		safeClose(controlOut);
-		safeClose(controlSock);
+		safeClose(junit);
+		safeClose(control);
 	}
 
 	private void info(Supplier<CharSequence> message) {
@@ -528,6 +526,12 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	private void info(CharSequence message) {
 		if (verbose) {
 			System.err.println(message);
+		}
+	}
+
+	private void info(String format, Object... args) {
+		if (verbose) {
+			System.err.printf(format.concat("%n"), args);
 		}
 	}
 }
