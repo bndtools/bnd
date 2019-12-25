@@ -210,7 +210,15 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	public void testPlanExecutionFinished(TestPlan testPlan) {
 		message("%RUNTIME", Long.toString(System.currentTimeMillis() - startTime));
 		client.out.flush();
+		info("JUnitEclipseListener: testPlanExecutionFinished: Waiting .25 seconds");
+		try {
+			Thread.sleep(250L);
+		} catch (InterruptedException e) {
+			Thread.currentThread()
+				.interrupt();
+		}
 		if (control == null) {
+			info("JUnitEclipseListener: testPlanExecutionFinished: Closing client connection");
 			safeClose(client);
 			client = nullConnection();
 		}
