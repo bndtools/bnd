@@ -5,13 +5,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.net.ConnectException;
 import java.net.InetAddress;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.channels.Channels;
+import java.nio.channels.SocketChannel;
 import java.util.List;
 
 import org.osgi.framework.Bundle;
@@ -25,24 +25,23 @@ public class JUnitEclipseReport implements TestReporter {
 	private long							startTime;
 	private List<Test>						tests;
 	private final boolean					verbose	= false;
-	private Connection<Reader, PrintWriter>	junit;
+	private Connection<Reader, PrintWriter>	client;
 
-	private static final class Connection<IN extends Closeable, OUT extends Closeable> implements Closeable {
-		final Socket	sock;
-		final IN		in;
-		final OUT		out;
+	private static final class Connection<IN, OUT> implements Closeable {
+		final SocketChannel	channel;
+		@SuppressWarnings("unused")
+		final IN			in;
+		final OUT			out;
 
-		Connection(Socket sock, IN in, OUT out) {
-			this.sock = sock;
+		Connection(SocketChannel channel, IN in, OUT out) {
+			this.channel = channel;
 			this.in = in;
 			this.out = out;
 		}
 
 		@Override
 		public void close() {
-			safeClose(out);
-			safeClose(in);
-			safeClose(sock);
+			safeClose(channel);
 		}
 	}
 
@@ -57,22 +56,28 @@ public class JUnitEclipseReport implements TestReporter {
 
 	public JUnitEclipseReport(int port) throws Exception {
 		try {
-			Socket socket = connectRetry(port);
-			junit = new Connection<>(socket, new BufferedReader(new InputStreamReader(socket.getInputStream(), UTF_8)),
-				new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), UTF_8), true));
-		} catch (ConnectException e) {
+			SocketChannel channel = connectRetry(port);
+			if (verbose) {
+				System.err.println("Opening streams for client connection " + channel);
+			}
+			client = new Connection<>(channel, new BufferedReader(Channels.newReader(channel, UTF_8.newDecoder(), -1)),
+				new PrintWriter(Channels.newWriter(channel, UTF_8.newEncoder(), -1)));
+		} catch (IOException e) {
 			System.err.println("Cannot open the JUnit Port: " + port + " " + e);
 			System.exit(254);
 			throw new AssertionError("unreachable");
 		}
 	}
 
-	private Socket connectRetry(int port) throws Exception {
-		ConnectException e = null;
+	private SocketChannel connectRetry(int port) throws Exception {
+		IOException e = null;
 		for (int i = 0; i < 30; i++) {
 			try {
-				return new Socket(InetAddress.getByName(null), port);
-			} catch (ConnectException ce) {
+				SocketAddress address = new InetSocketAddress(InetAddress.getByName(null), port);
+				SocketChannel channel = SocketChannel.open(address);
+				channel.finishConnect();
+				return channel;
+			} catch (IOException ce) {
 				e = ce;
 				Thread.sleep(i * 100);
 			}
@@ -98,8 +103,20 @@ public class JUnitEclipseReport implements TestReporter {
 	@Override
 	public void end() {
 		message("%RUNTIME", Long.toString(System.currentTimeMillis() - startTime));
-		junit.out.flush();
-		safeClose(junit);
+		client.out.flush();
+		if (verbose) {
+			System.err.println("Test run ended; waiting .25 seconds");
+		}
+		try {
+			Thread.sleep(250L);
+		} catch (InterruptedException e) {
+			Thread.currentThread()
+				.interrupt();
+		}
+		if (verbose) {
+			System.err.println("Closing client connection");
+		}
+		safeClose(client);
 	}
 
 	@Override
@@ -116,11 +133,11 @@ public class JUnitEclipseReport implements TestReporter {
 
 	void trace(Throwable t) {
 		message("%TRACES ", "");
-		t.printStackTrace(junit.out);
+		t.printStackTrace(client.out);
 		if (verbose) {
 			t.printStackTrace(System.err);
 		}
-		junit.out.println();
+		client.out.println();
 		message("%TRACEE ", "");
 	}
 
@@ -139,7 +156,7 @@ public class JUnitEclipseReport implements TestReporter {
 			throw new IllegalArgumentException(key + " is not 8 characters");
 
 		String message = key.concat(payload);
-		junit.out.println(message);
+		client.out.println(message);
 		if (verbose)
 			System.err.println(message);
 	}
@@ -156,7 +173,7 @@ public class JUnitEclipseReport implements TestReporter {
 			sb.append(tests.indexOf(test) + 1);
 		}
 		sb.append(',');
-		copyAndEscapeText(getTestName(test), sb);
+		appendEscaped(getTestName(test), sb);
 		String payload = sb.toString();
 		message(key, payload);
 	}
@@ -167,7 +184,7 @@ public class JUnitEclipseReport implements TestReporter {
 			StringBuilder sb = new StringBuilder();
 			sb.append(i + 1)
 				.append(',');
-			copyAndEscapeText(getTestName(test), sb);
+			appendEscaped(getTestName(test), sb);
 			sb.append(',')
 				.append(test instanceof TestSuite || test instanceof JUnit4TestAdapter)
 				.append(',');
@@ -187,10 +204,10 @@ public class JUnitEclipseReport implements TestReporter {
 	}
 
 	public void close() {
-		safeClose(junit);
+		safeClose(client);
 	}
 
-	private static void copyAndEscapeText(String s, StringBuilder sb) {
+	private static void appendEscaped(String s, StringBuilder sb) {
 		if (s.isEmpty()) {
 			return;
 		}
