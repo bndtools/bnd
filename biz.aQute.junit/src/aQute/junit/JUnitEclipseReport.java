@@ -104,6 +104,18 @@ public class JUnitEclipseReport implements TestReporter {
 	public void end() {
 		message("%RUNTIME", Long.toString(System.currentTimeMillis() - startTime));
 		client.out.flush();
+		if (verbose) {
+			System.err.println("Test run ended; waiting .25 seconds");
+		}
+		try {
+			Thread.sleep(250L);
+		} catch (InterruptedException e) {
+			Thread.currentThread()
+				.interrupt();
+		}
+		if (verbose) {
+			System.err.println("Closing client connection");
+		}
 		safeClose(client);
 	}
 
