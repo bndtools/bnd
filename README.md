@@ -37,7 +37,6 @@ Gradle is used to build Bnd/Bndtools. The workspace root has a `build.gradle` fi
 The workspace root includes the gradle wrapper, `gradlew`, command.
 
 [![GitHub Actions CI Build Status](https://github.com/bndtools/bnd/workflows/CI%20Build/badge.svg)](https://github.com/bndtools/bnd/actions?query=workflow%3A%22CI%20Build%22)
-[![Travis CI Build Status](https://travis-ci.org/bndtools/bnd.svg?branch=master)](https://travis-ci.org/bndtools/bnd)
 
 ## Release
 Bnd/Bndtools is continuously built on [GitHub Actions](https://github.com/bndtools/bnd/actions?query=workflow%3A%22CI%20Build%22).
