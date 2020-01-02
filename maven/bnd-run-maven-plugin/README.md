@@ -123,7 +123,7 @@ An *implicit repository* containing the project artifact and project dependencie
 
 |Configuration Property       | Description |
 | ---                         | ---         |
-|`bndrun`                     | A bndrun file to run. The file is relative to the `${project.basedir}` directory.|
+|`bndrun`                     | A bndrun file to run. The file is relative to the `${project.basedir}` directory. Override with property `bnd.run.file`. |
 |`bundles`                    | A collection of files to include in the *implicit repository*. Can contain `bundle` child elements specifying the path to a bundle. These can be absolute paths. You can also specify `include` and `exclude` child elements using Ant-style globs to specify bundles. These are relative to the `${project.basedir}` directory. _Defaults to dependencies in the scopes specified by the `scopes` property, plus the current artifact (if any and `useMavenDependencies` is `true`)._|
 |`useMavenDependencies`       | If `true`, adds the project dependencies subject to `scopes` to the collection of files to include in the *implicit repository*. _Defaults to `true`._|
 |`scopes`                     | Specify from which scopes to collect dependencies. _Defaults to `compile, runtime`._ Override with property `bnd.run.scopes`.|
