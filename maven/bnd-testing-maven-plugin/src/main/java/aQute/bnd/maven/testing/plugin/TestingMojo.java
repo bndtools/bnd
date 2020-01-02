@@ -172,6 +172,7 @@ public class TestingMojo extends AbstractMojo {
 				try {
 					String runBundles = run.resolve(failOnChanges, false);
 					if (run.isOk()) {
+						logger.info("{}: {}", Constants.RUNBUNDLES, runBundles);
 						run.setProperty(Constants.RUNBUNDLES, runBundles);
 					}
 				} catch (ResolutionException re) {
