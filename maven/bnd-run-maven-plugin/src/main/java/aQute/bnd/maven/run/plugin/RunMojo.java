@@ -45,7 +45,7 @@ public class RunMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession								repositorySession;
 
-	@Parameter
+	@Parameter(property = "bnd.run.file")
 	private File												bndrun;
 
 	@Parameter(required = false)
