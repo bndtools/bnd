@@ -9,14 +9,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -39,8 +37,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -94,10 +90,8 @@ import aQute.bnd.maven.PomFromManifest;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Clazz.Def;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
-import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.FileResource;
@@ -105,11 +99,11 @@ import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Macro;
-import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.eclipse.EclipseClasspath;
+import aQute.bnd.print.JarPrinter;
 import aQute.bnd.repository.maven.provider.NexusCommand;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
@@ -123,7 +117,6 @@ import aQute.configurable.Config;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.ExtList;
 import aQute.lib.collections.MultiMap;
-import aQute.lib.collections.SortedList;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.Filter;
 import aQute.lib.getopt.Arguments;
@@ -773,7 +766,10 @@ public class bnd extends Processor {
 			} else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
 				|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
 				try (Jar jar = getJar(path)) {
-					doPrint(jar, MANIFEST, null);
+					try (JarPrinter p = new JarPrinter(this)) {
+						p.doManifest(jar);
+						out.println(p);
+					}
 				}
 			} else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
 				doRun(Arrays.asList(path), false, null);
@@ -1633,8 +1629,11 @@ public class bnd extends Processor {
 				Resource r = jar.getResource(selection);
 
 				if (selection.endsWith(".MF")) {
-					Manifest m = new Manifest(r.openInputStream());
-					printManifest(m);
+					try (JarPrinter p = new JarPrinter(this)) {
+						Manifest m = new Manifest(r.openInputStream());
+						p.doManifest(m);
+						out.println(p);
+					}
 				} else if (selection.endsWith(".class")) {
 					ClassDumper clsd = new ClassDumper(selection, r.openInputStream());
 					clsd.dump(out);
@@ -1885,24 +1884,12 @@ public class bnd extends Processor {
 	 * Print out a JAR
 	 */
 
-	final static int	VERIFY			= 1;
-
-	final static int	MANIFEST		= 2;
-
-	final static int	LIST			= 4;
-
-	final static int	IMPEXP			= 16;
-	final static int	USES			= 32;
-	final static int	USEDBY			= 64;
-	final static int	COMPONENT		= 128;
-	final static int	METATYPE		= 256;
-	final static int	API				= 512;
-	final static int	CAPABILITIES	= 1024;
-	static final int	HEX				= 0;
-
 	@Arguments(arg = "jar-file...")
 	@Description("Provides detailed view of the bundle. It will analyze the bundle and then show its contents from different perspectives. If no options are specified, prints the manifest.")
 	interface printOptions extends Options {
+		@Description("Print all except list")
+		boolean full();
+
 		@Description("Print the api usage. This shows the usage constraints on exported packages when only public API is used.")
 		boolean api();
 
@@ -1944,357 +1931,46 @@ public class bnd extends Processor {
 	public void _print(printOptions options) throws Exception {
 		for (String s : options._arguments()) {
 			int opts = 0;
+			if (options.full())
+				opts |= -1 & ~JarPrinter.LIST;
+
 			if (options.verify())
-				opts |= VERIFY;
+				opts |= JarPrinter.VERIFY;
 
 			if (options.manifest())
-				opts |= MANIFEST;
+				opts |= JarPrinter.MANIFEST;
 
 			if (options.api())
-				opts |= API;
+				opts |= JarPrinter.API;
 
 			if (options.list())
-				opts |= LIST;
+				opts |= JarPrinter.LIST;
 
 			if (options.impexp())
-				opts |= IMPEXP;
+				opts |= JarPrinter.IMPEXP;
 
 			if (options.uses())
-				opts |= USES;
+				opts |= JarPrinter.USES;
 
 			if (options.by())
-				opts |= USEDBY;
+				opts |= JarPrinter.USEDBY;
 
 			if (options.component())
-				opts |= COMPONENT;
+				opts |= JarPrinter.COMPONENT;
 
 			if (options.typemeta())
-				opts |= METATYPE;
+				opts |= JarPrinter.METATYPE;
 
 			if (options.capabilities())
-				opts |= CAPABILITIES;
+				opts |= JarPrinter.CAPABILITIES;
 
 			if (opts == 0)
-				opts = MANIFEST | IMPEXP;
+				opts = JarPrinter.MANIFEST | JarPrinter.IMPEXP;
 
-			try (Jar jar = getJar(s)) {
-				doPrint(jar, opts, options);
+			try (Jar jar = getJar(s); JarPrinter p = new JarPrinter(this)) {
+				p.doPrint(jar, opts, options.java(), options.xport());
+				out.println(p);
 			}
-		}
-	}
-
-	private void doPrint(Jar jar, int options, printOptions po) throws ZipException, IOException, Exception {
-		if ((options & VERIFY) != 0) {
-			try (Verifier verifier = new Verifier(jar)) {
-				verifier.setPedantic(isPedantic());
-				verifier.verify();
-				getInfo(verifier);
-			}
-		}
-		if ((options & MANIFEST) != 0) {
-			Manifest manifest = jar.getManifest();
-			if (manifest == null)
-				warning("JAR has no manifest %s", jar);
-			else {
-				err.println("[MANIFEST " + jar.getName() + "]");
-				printManifest(manifest);
-			}
-			out.println();
-		}
-		if ((options & IMPEXP) != 0) {
-			out.println("[IMPEXP]");
-			Manifest m = jar.getManifest();
-
-			if (m != null) {
-				Domain domain = Domain.domain(m);
-				Parameters imports = domain.getImportPackage();
-				Parameters exports = domain.getExportPackage();
-				for (String p : exports.keySet()) {
-					if (imports.containsKey(p)) {
-						Attrs attrs = imports.get(p);
-						if (attrs.containsKey(VERSION_ATTRIBUTE)) {
-							exports.get(p)
-								.put("imported-as", attrs.get(VERSION_ATTRIBUTE));
-						}
-					}
-				}
-				print(Constants.IMPORT_PACKAGE, new TreeMap<>(imports));
-				print(Constants.EXPORT_PACKAGE, new TreeMap<>(exports));
-			} else
-				warning("File has no manifest");
-		}
-		if ((options & CAPABILITIES) != 0) {
-			out.println("[CAPABILITIES]");
-			Manifest m = jar.getManifest();
-			Domain domain = Domain.domain(m);
-
-			if (m != null) {
-				Parameters provide = domain.getProvideCapability();
-				Parameters require = domain.getRequireCapability();
-				print(Constants.PROVIDE_CAPABILITY, new TreeMap<>(provide));
-				print(Constants.REQUIRE_CAPABILITY, new TreeMap<>(require));
-			} else
-				warning("File has no manifest");
-		}
-		if ((options & (USES | USEDBY | API)) != 0) {
-			out.println();
-			try (Analyzer analyzer = new Analyzer()) {
-				analyzer.setPedantic(isPedantic());
-				analyzer.setJar(jar);
-				Manifest m = jar.getManifest();
-				if (m != null) {
-					String s = m.getMainAttributes()
-						.getValue(Constants.EXPORT_PACKAGE);
-					if (s != null)
-						analyzer.setExportPackage(s);
-				}
-				analyzer.analyze();
-
-				boolean java = po.java();
-
-				Packages exports = analyzer.getExports();
-
-				if ((options & API) != 0) {
-					Map<PackageRef, List<PackageRef>> apiUses = analyzer.cleanupUses(analyzer.getAPIUses(), !po.java());
-					if (!po.xport()) {
-						if (exports.isEmpty())
-							warning("Not filtering on exported only since exports are empty");
-						else
-							apiUses.keySet()
-								.retainAll(analyzer.getExports()
-									.keySet());
-					}
-					out.println("[API USES]");
-					printMultiMap(apiUses);
-
-					Set<PackageRef> privates = analyzer.getPrivates();
-					for (PackageRef export : exports.keySet()) {
-						Map<Def, List<TypeRef>> xRef = analyzer.getXRef(export, privates,
-							Modifier.PROTECTED + Modifier.PUBLIC);
-						if (!xRef.isEmpty()) {
-							out.println();
-							out.printf("%s refers to private Packages (not good)\n\n", export);
-							for (Entry<Def, List<TypeRef>> e : xRef.entrySet()) {
-								TreeSet<PackageRef> refs = new TreeSet<>();
-								for (TypeRef ref : e.getValue())
-									refs.add(ref.getPackageRef());
-
-								refs.retainAll(privates);
-								out.printf("%60s %-40s %s\n", e.getKey()
-									.getOwnerType()
-									.getFQN() //
-									, e.getKey()
-										.getName(),
-									refs);
-							}
-							out.println();
-						}
-					}
-					out.println();
-				}
-
-				Map<PackageRef, List<PackageRef>> uses = analyzer.cleanupUses(analyzer.getUses(), !po.java());
-				if ((options & USES) != 0) {
-					out.println("[USES]");
-					printMultiMap(uses);
-					out.println();
-				}
-				if ((options & USEDBY) != 0) {
-					out.println("[USEDBY]");
-					MultiMap<PackageRef, PackageRef> usedBy = new MultiMap<>(uses).transpose();
-					printMultiMap(usedBy);
-				}
-			}
-		}
-		if ((options & COMPONENT) != 0) {
-			printComponents(out, jar);
-		}
-		if ((options & METATYPE) != 0) {
-			printMetatype(out, jar);
-		}
-		if ((options & LIST) != 0) {
-			out.println("[LIST]");
-			for (Map.Entry<String, Map<String, Resource>> entry : jar.getDirectories()
-				.entrySet()) {
-				String name = entry.getKey();
-				Map<String, Resource> contents = entry.getValue();
-				out.println(name);
-				if (contents != null) {
-					for (String element : contents.keySet()) {
-						int n = element.lastIndexOf('/');
-						if (n > 0)
-							element = element.substring(n + 1);
-						out.print("  ");
-						out.print(element);
-						String path = element;
-						if (name.length() != 0)
-							path = name + "/" + element;
-						Resource r = contents.get(path);
-						if (r != null) {
-							String extra = r.getExtra();
-							if (extra != null) {
-
-								out.print(" extra='" + escapeUnicode(extra) + "'");
-							}
-						}
-						out.println();
-					}
-				} else {
-					out.println(name + " <no contents>");
-				}
-			}
-			out.println();
-		}
-	}
-
-	/**
-	 * @param manifest
-	 */
-	void printManifest(Manifest manifest) {
-		SortedSet<String> sorted = new TreeSet<>();
-		for (Object element : manifest.getMainAttributes()
-			.keySet()) {
-			sorted.add(element.toString());
-		}
-		for (String key : sorted) {
-			Object value = manifest.getMainAttributes()
-				.getValue(key);
-			out.printf("%-40s %-40s\n", key, value);
-		}
-	}
-
-	private final char nibble(int i) {
-		return "0123456789ABCDEF".charAt(i & 0xF);
-	}
-
-	private final String escapeUnicode(String s) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < s.length(); i++) {
-			char c = s.charAt(i);
-			if (c >= ' ' && c <= '~' && c != '\\')
-				sb.append(c);
-			else {
-				sb.append("\\u");
-				sb.append(nibble(c >> 12));
-				sb.append(nibble(c >> 8));
-				sb.append(nibble(c >> 4));
-				sb.append(nibble(c));
-			}
-		}
-		return sb.toString();
-	}
-
-	/**
-	 * Print the components in this JAR.
-	 *
-	 * @param jar
-	 */
-	private void printComponents(PrintStream out, Jar jar) throws Exception {
-		out.println("[COMPONENTS]");
-		Manifest manifest = jar.getManifest();
-		if (manifest == null) {
-			out.println("No manifest");
-			return;
-		}
-
-		String componentHeader = manifest.getMainAttributes()
-			.getValue(Constants.SERVICE_COMPONENT);
-		Parameters clauses = new Parameters(componentHeader, this);
-		for (String path : clauses.keySet()) {
-			out.println(path);
-
-			Resource r = jar.getResource(path);
-			if (r != null) {
-				InputStreamReader ir = new InputStreamReader(r.openInputStream(), Constants.DEFAULT_CHARSET);
-				OutputStreamWriter or = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
-				try {
-					IO.copy(ir, or);
-				} finally {
-					or.flush();
-					ir.close();
-				}
-			} else {
-				out.println("  - no resource");
-				warning("No Resource found for service component: %s", path);
-			}
-		}
-		out.println();
-	}
-
-	/**
-	 * Print the metatypes in this JAR.
-	 *
-	 * @param jar
-	 */
-	private void printMetatype(PrintStream out, Jar jar) throws Exception {
-		out.println("[METATYPE]");
-		Manifest manifest = jar.getManifest();
-		if (manifest == null) {
-			out.println("No manifest");
-			return;
-		}
-
-		Map<String, Resource> map = jar.getDirectories()
-			.get("OSGI-INF/metatype");
-		if (map != null) {
-			for (Map.Entry<String, Resource> entry : map.entrySet()) {
-				out.println(entry.getKey());
-				IO.copy(entry.getValue()
-					.openInputStream(), out);
-				out.println();
-			}
-			out.println();
-		}
-	}
-
-	<T extends Comparable<? super T>> void printMultiMap(Map<T, ? extends Collection<?>> map) {
-		SortedList<T> keys = new SortedList<>(map.keySet());
-		for (Object key : keys) {
-			String name = key.toString();
-
-			SortedList<Object> values = new SortedList<>(map.get(key), null);
-			String list = vertical(40, values);
-			out.printf("%-40s %s\n", name, list);
-		}
-	}
-
-	String vertical(int padding, Collection<?> used) {
-		StringBuilder sb = new StringBuilder();
-		String del = "";
-		for (Object s : used) {
-			String name = s.toString();
-			sb.append(del);
-			sb.append(name);
-			sb.append("\r\n");
-			del = pad(padding);
-		}
-		if (sb.length() == 0)
-			sb.append("\r\n");
-		return sb.toString();
-	}
-
-	String pad(int i) {
-		StringBuilder sb = new StringBuilder();
-		while (i-- > 0)
-			sb.append(' ');
-		return sb.toString();
-	}
-
-	/**
-	 * @param msg
-	 * @param ports
-	 */
-
-	private void print(String msg, Map<?, ? extends Map<?, ?>> ports) {
-		if (ports.isEmpty())
-			return;
-		out.println(msg);
-		for (Entry<?, ? extends Map<?, ?>> entry : ports.entrySet()) {
-			Object key = entry.getKey();
-			Map<?, ?> clause = Create.copy((Map<?, ?>) entry.getValue());
-			clause.remove("uses:");
-			out.printf("  %-38s %s\n", key.toString()
-				.trim(), clause.isEmpty() ? "" : clause.toString());
 		}
 	}
 
@@ -3060,7 +2736,7 @@ public class bnd extends Processor {
 			table.addAll("Run path", p.getRunpath());
 		}
 
-		printMultiMap(table);
+		out.println(MultiMap.format(table));
 	}
 
 	/**
