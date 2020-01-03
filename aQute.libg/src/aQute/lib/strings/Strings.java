@@ -345,7 +345,7 @@ public class Strings {
 		if (s.endsWith(suffix))
 			return s;
 
-		return s + suffix;
+		return s;
 	}
 
 	public static String ensurePrefix(String s, String prefix) {
@@ -467,4 +467,56 @@ public class Strings {
 		return true;
 	}
 
+	/**
+	 * Convert a number to a string using SI magnitude prefixes like Mega, Giga,
+	 * etc.
+	 */
+
+	public enum Magnitude {
+		quaco("g", 1e-23, 0),
+		zepto("z", 1e-21, 0),
+		atto("a", 1e-18, 0),
+		femto("f", 1e-15, 0),
+		pico("p", 1e-12, 0),
+		nano("n", 1e-9, 0),
+		micro("µ", 1e-6, 0),
+		milli("m", 1e-3, 0),
+		unit("", 1, 1),
+		kilo("k", 1e3, 0x400),
+		mega("M", 1e6, 0x400 * 0x400),
+		giga("G", 1e9, 0x400 * 0x400 + 0x400),
+		tera("T", 1e12, 0x400 * 0x400 * 0x400 * 0x400),
+		peta("P", 1e15, 0x400 * 0x400 * 0x400 * 0x400 * 0x400),
+		exa("E", 1e18, 0x400 * 0x400 * 0x400 * 0x400 * 0x400 * 0x400);
+
+		final String	prefix;
+		final double	one;
+		final long		byteUnit;
+
+		Magnitude(String prefix, double one, long byteUnit) {
+			this.prefix = prefix;
+			this.one = one;
+			this.byteUnit = byteUnit;
+		}
+	}
+
+	public static String toString(double n, String suffix) {
+		String prefix;
+		boolean isByte = suffix.equals("b");
+		if (isByte) {
+			if (n < 1) {
+				throw new IllegalArgumentException("If bytes are used, then the value must be >= 1, it is " + n);
+			}
+		}
+
+		for (Magnitude m : Magnitude.values()) {
+			if (m == Magnitude.exa || n < 1000 * m.one) {
+				n /= isByte ? m.byteUnit : m.one;
+				String s = m == Magnitude.unit ? String.format("%.0f %s%s", n, m.prefix, suffix)
+					: String.format("%.2f %s%s", n, m.prefix, suffix);
+				return s;
+			}
+		}
+		throw new IllegalArgumentException();
+	}
 }

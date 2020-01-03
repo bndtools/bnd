@@ -1,5 +1,7 @@
 package aQute.lib.hex;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Arrays;
 
 import aQute.lib.base64.Base64;
@@ -89,5 +91,64 @@ public class HexTest extends TestCase {
 		assertTrue(Arrays.equals(new byte[] {
 			'1', '2', '3', '4', '5', '6', '7', '8', '9', -10
 		}, Base64.decodeBase64("MTIzNDU2Nzg59g==")));
+	}
+
+	final static String EOL = String.format("%n");
+
+	public void testFormatEmpty() {
+		assertThat(Hex.format(new byte[] {})).isEqualTo("");
+	}
+
+	public void testNull() {
+		assertThat(Hex.format(null)).isEmpty();
+	}
+
+	public void testAscii() {
+		assertThat(Hex.format(new byte[] {
+			-1, 'A', 'a', '~', ' ', '\u007F'
+		})).isEqualTo("0x0000  FF 41 61 7E 20 7F                                 .Aa~ ." + EOL);
+	}
+
+	public void testFormatOne() {
+		assertThat(Hex.format(new byte[] {
+			-1
+		})).isEqualTo("0x0000  FF                                                ." + EOL);
+	}
+
+	public void testFormatSeven() {
+		assertThat(Hex.format(new byte[] {
+			0, 1, 2, 3, 4, 5, 6
+		})).isEqualTo("0x0000  00 01 02 03 04 05 06                              ......." + EOL);
+	}
+
+	public void testFormatEight() {
+		assertThat(Hex.format(new byte[] {
+			0, 1, 2, 3, 4, 5, 6, 7
+		})).isEqualTo("0x0000  00 01 02 03 04 05 06 07                           ........" + EOL);
+	}
+
+	public void testFormatNine() {
+		assertThat(Hex.format(new byte[] {
+			0, 1, 2, 3, 4, 5, 6, 7, 8
+		})).isEqualTo("0x0000  00 01 02 03 04 05 06 07  08                       ........  ." + EOL);
+	}
+
+	public void testFormatFifteen() {
+		assertThat(Hex.format(new byte[] {
+			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+		})).isEqualTo("0x0000  00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E     ........  ......." + EOL);
+	}
+
+	public void testFormatSixteen() {
+		assertThat(Hex.format(new byte[] {
+			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+		})).isEqualTo("0x0000  00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F  ........  ........" + EOL);
+	}
+
+	public void testFormatSeventeen() {
+		assertThat(Hex.format(new byte[] {
+			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
+		})).isEqualTo("0x0000  00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F  ........  ........" + EOL + //
+		/*         */ "0x0010  10                                                ." + EOL);
 	}
 }

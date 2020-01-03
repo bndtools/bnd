@@ -3,6 +3,7 @@ package aQute.lib.collections;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Formatter;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -202,6 +203,42 @@ public class MultiMap<K, V> extends LinkedHashMap<K, List<V>> implements Map<K, 
 	 */
 	public List<V> allValues() {
 		return new IteratorList<>(all());
+	}
+
+	public static <T extends Comparable<? super T>> String format(Map<T, ? extends Collection<?>> map) {
+		try (Formatter f = new Formatter()) {
+			SortedList<T> keys = new SortedList<>(map.keySet());
+			for (Object key : keys) {
+				String name = key.toString();
+
+				SortedList<Object> values = new SortedList<>(map.get(key), null);
+				String list = vertical(40, values);
+				f.format("%-39s %s", name, list);
+			}
+			return f.toString();
+		}
+	}
+
+	static String vertical(int padding, Collection<?> used) {
+		StringBuilder sb = new StringBuilder();
+		String del = "";
+		for (Object s : used) {
+			String name = s.toString();
+			sb.append(del);
+			sb.append(name);
+			sb.append("\r\n");
+			del = pad(padding);
+		}
+		if (sb.length() == 0)
+			sb.append("\r\n");
+		return sb.toString();
+	}
+
+	static String pad(int i) {
+		StringBuilder sb = new StringBuilder();
+		while (i-- > 0)
+			sb.append(' ');
+		return sb.toString();
 	}
 
 }
