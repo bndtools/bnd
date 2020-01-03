@@ -16,6 +16,7 @@
 
 package aQute.bnd.service.result;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -86,6 +87,14 @@ public interface Result<V, E> {
 	 */
 	static <V, E> Result<V, E> err(E error) {
 		return new Err<>(error);
+	}
+
+	static <V> Result<V, String> err(String format, Object... args) {
+		try {
+			return new Err<>(String.format(format, args));
+		} catch (Exception e) {
+			return new Err<>(format + " " + Arrays.toString(args));
+		}
 	}
 
 	/**
@@ -224,5 +233,13 @@ public interface Result<V, E> {
 	 *         value. Otherwise this.
 	 */
 	Result<V, E> recover(FunctionWithException<? super E, ? extends V> recover);
+
+	/**
+	 * Terminal function that processes the result or the error
+	 *
+	 * @param ok the consumer called when ok
+	 * @param err the consumer called when not ok
+	 */
+	void then(ConsumerWithException<? super V> ok, ConsumerWithException<? super E> err);
 
 }

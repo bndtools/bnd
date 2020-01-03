@@ -166,7 +166,17 @@ public final class Err<V, E> implements Result<V, E> {
 	}
 
 	@Override
+	public void then(ConsumerWithException<? super V> ok, ConsumerWithException<? super E> err) {
+		try {
+			err.accept(error);
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	@Override
 	public String toString() {
 		return String.format("Err(%s)", error);
 	}
+
 }
