@@ -906,7 +906,7 @@ public interface BundleSpecBuilder {
 			if ("file".equals(url.getProtocol())) {
 				f = new File(url.toURI());
 			} else {
-				f = File.createTempFile("xx", "conf");
+				f = File.createTempFile("bundlespecbuilder", "conf");
 				IO.store(url.openStream(), f);
 			}
 			x().addClose(() -> IO.delete(f));
