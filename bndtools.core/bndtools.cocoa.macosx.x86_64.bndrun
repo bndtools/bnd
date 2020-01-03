@@ -8,7 +8,7 @@
 	org.eclipse.core.filesystem.macosx,\
 	org.eclipse.jdt.launching.macosx
 
--runvm: -XstartOnFirstThread -Djava.awt.headless=true -Dorg.eclipse.swt.internal.carbon.smallFonts ${crossplatform.vmargs}
+-runvm: -XstartOnFirstThread -Djava.awt.headless=true -Dorg.eclipse.swt.internal.carbon.smallFonts ${crossplatform.vmargs} -ea
 
 -runproperties: ${crossplatform.runprops},\
 	osgi.ws=cocoa,\
