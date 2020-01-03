@@ -1,12 +1,7 @@
 package bndtools.jareditor.internal;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
 import java.net.URI;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -15,11 +10,14 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.print.JarPrinter;
+
 public class JARPrintPage extends FormPage {
 
 	private Text	text;
-
-	private boolean	loaded	= false;
+	private URI		uri;
+	private boolean	loading;
 
 	public JARPrintPage(FormEditor formEditor, String id, String title) {
 		super(formEditor, id, title);
@@ -37,41 +35,37 @@ public class JARPrintPage extends FormPage {
 		return text;
 	}
 
+	private static String print(URI uri) throws Exception {
+		try (JarPrinter printer = new JarPrinter()) {
+			int options = -1;
+			try (Jar jar = new Jar(uri.toString(), uri.toURL()
+				.openStream())) {
+				printer.doPrint(jar, options, false, false);
+				return printer.toString();
+			}
+		}
+	}
+
 	@Override
 	public void setActive(boolean active) {
 		super.setActive(active);
-		if (active && !loaded) {
-			refresh();
-		}
+		if (active)
+			update();
 	}
 
-	public void refresh() {
-		URI uri = null;
-		try {
-			uri = URIHelper.retrieveFileURI(getEditorInput());
-			if (uri != null) {
-				text.setText(print(new File(uri)));
-			}
-		} catch (Exception e) {
-			Plugin.getDefault()
-				.getLog()
-				.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error outputing JAR content display.", e));
-		} finally {
-			loaded = true;
+	private void update() {
+		if (loading || text == null || !isActive()) {
+			return;
 		}
+		loading = true;
+		JAREditor.background("Printing ZIP file", monitor -> {
+			return print(uri);
+		}, text::setText);
 	}
 
-	private static String print(File file) throws Exception {
-		try (Printer printer = new Printer()) {
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			printer.setOut(new PrintStream(bos, false, "UTF-8"));
-
-			/* Printer.METATYPE throws an NPE */
-			int options = Printer.VERIFY | Printer.MANIFEST | Printer.LIST | Printer.IMPEXP | Printer.USES
-				| Printer.USEDBY | Printer.COMPONENT;
-
-			printer.doPrint(file.getAbsolutePath(), options);
-			return bos.toString("UTF-8");
-		}
+	public void setInput(URI uri) {
+		this.uri = uri;
+		loading = false;
+		update();
 	}
 }
