@@ -1,12 +1,18 @@
 package bndtools.jareditor.internal;
 
+import java.net.URI;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.swt.widgets.Control;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
@@ -15,20 +21,22 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.ide.ResourceUtil;
 
-import bndtools.jareditor.internal.utils.SWTConcurrencyUtil;
+import aQute.lib.exceptions.ConsumerWithException;
+import aQute.lib.exceptions.FunctionWithException;
+import aQute.lib.strings.Strings;
 
 public class JAREditor extends FormEditor implements IResourceChangeListener {
-
-	JARContentPage	contentPage	= new JARContentPage(this, "contentPage", "Content");
-	JARPrintPage	printPage	= new JARPrintPage(this, "printPage", "Print");
+	private JARTreePage		treePage	= new JARTreePage(this, "treePage", "Tree");
+	private JARPrintPage	printPage	= new JARPrintPage(this, "printPage", "Print");
+	private URI				uri;
 
 	@Override
 	protected void addPages() {
 		try {
-			addPage(contentPage);
+			addPage(treePage);
 			addPage(printPage);
 		} catch (PartInitException e) {
-			e.printStackTrace();
+			JAREditor.error("Could not initialize the JAREditor: " + e);
 		}
 	}
 
@@ -46,7 +54,6 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
 	@Override
 	public void init(final IEditorSite site, final IEditorInput input) throws PartInitException {
 		super.init(site, input);
-
 		IResource resource = ResourceUtil.getResource(input);
 		if (resource != null) {
 			resource.getWorkspace()
@@ -57,6 +64,7 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
 	@Override
 	protected void setInput(final IEditorInput input) {
 		super.setInput(input);
+
 		String name = "unknown";
 		if (input instanceof IFileEditorInput) {
 			name = ((IFileEditorInput) input).getFile()
@@ -65,34 +73,7 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
 			name = ((IURIEditorInput) input).getName();
 		}
 		setPartName(name);
-
-		contentPage.setSelectedPath(new String[] {
-			"META-INF/", "MANIFEST.MF"
-		});
-	}
-
-	protected void updateContent(@SuppressWarnings("unused")
-	final IEditorInput input) {
-		Runnable update = () -> {
-			Control c = (contentPage == null) ? null : contentPage.getPartControl();
-			if ((c != null) && !c.isDisposed()) {
-				String[] selectedPath = contentPage.getSelectedPath();
-				contentPage.getManagedForm()
-					.refresh();
-				contentPage.setSelectedPath(selectedPath);
-			}
-
-			c = (printPage == null) ? null : printPage.getPartControl();
-			if ((c != null) && !c.isDisposed()) {
-				printPage.refresh();
-			}
-		};
-		try {
-			SWTConcurrencyUtil.execForDisplay(contentPage.getPartControl()
-				.getDisplay(), update);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		setInput(retrieveFileURI(input));
 	}
 
 	@Override
@@ -125,7 +106,77 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
 		if (delta.getKind() == IResourceDelta.REMOVED) {
 			close(false);
 		} else if (delta.getKind() == IResourceDelta.CHANGED) {
-			updateContent(getEditorInput());
+			Display.getDefault()
+				.asyncExec(this::update);
 		}
+	}
+
+	private void setInput(URI uri) {
+		this.uri = uri;
+		update();
+	}
+
+	private void update() {
+		treePage.setInput(uri);
+		printPage.setInput(uri);
+	}
+
+	static <T> void background(String message, FunctionWithException<IProgressMonitor, T> background,
+		ConsumerWithException<T> onDisplayThread) {
+
+		Job job = new Job(message) {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				try {
+					T result = background.apply(monitor);
+					if (monitor.isCanceled())
+						return Status.CANCEL_STATUS;
+
+					Display.getDefault()
+						.asyncExec(() -> {
+							try {
+								onDisplayThread.accept(result);
+							} catch (Exception e) {
+								// ignore
+							}
+						});
+					return Status.OK_STATUS;
+				} catch (Exception e) {
+					JAREditor.error("Failed " + message + " : " + e.getMessage());
+					return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, e);
+				}
+			}
+		};
+		job.schedule();
+	}
+
+	static void error(Throwable e, String format, Object... args) {
+		String message = Strings.format(format, args);
+		Status status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, e);
+		Display.getDefault()
+			.asyncExec(() -> {
+				ErrorDialog.openError(null, "Error", message, status);
+			});
+	}
+
+	static void error(String message) {
+		error(null, "%s", message);
+	}
+
+	private URI retrieveFileURI(final IEditorInput input) {
+		URI uri = null;
+		if (input instanceof IFileEditorInput) {
+			uri = ((IFileEditorInput) input).getFile()
+				.getLocationURI();
+		} else if (input instanceof IURIEditorInput) {
+			uri = ((IURIEditorInput) input).getURI();
+		}
+
+		return uri;
+	}
+
+	static boolean isDisplayThread() {
+		return Display.getDefault()
+			.getThread() == Thread.currentThread();
 	}
 }

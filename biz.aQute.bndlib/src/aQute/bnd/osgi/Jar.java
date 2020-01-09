@@ -294,7 +294,10 @@ public class Jar implements Closeable {
 				int size = (int) entry.getSize();
 				try (ByteBufferOutputStream bbos = new ByteBufferOutputStream((size == -1) ? BUFFER_SIZE : size + 1)) {
 					bbos.write(jin);
-					putResource(entry.getName(), new EmbeddedResource(bbos.toByteBuffer(), lastModified), true);
+					long time = entry.getTime();
+					if (time == -1)
+						time = lastModified;
+					putResource(entry.getName(), new EmbeddedResource(bbos.toByteBuffer(), time), true);
 				}
 			}
 		}

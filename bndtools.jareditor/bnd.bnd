@@ -4,11 +4,11 @@
 Bundle-SymbolicName: bndtools.jareditor;singleton:=true
 -includeresource: resources
 
--buildpath:  \
+-buildpath: \
 	osgi.annotation;version=latest;maven-scope=provided,\
 	osgi.core;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
-    biz.aQute.bndlib;version=latest,\
+	biz.aQute.bndlib;version=latest,\
 	org.eclipse.jface.text,\
 	org.eclipse.core.resources,\
 	org.eclipse.ui,\
@@ -25,7 +25,10 @@ Bundle-SymbolicName: bndtools.jareditor;singleton:=true
 	org.eclipse.core.jobs,\
 	org.eclipse.equinox.common,\
 	org.eclipse.equinox.registry,\
-	org.eclipse.text
+	org.eclipse.text,\
+	org.eclipse.jdt.core,\
+	org.eclipse.core.filesystem,\
+	org.eclipse.core.contenttype
 
 -includepackage: bndtools.jareditor.*,\
 	bndtools.test.plugin

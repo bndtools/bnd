@@ -8,6 +8,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -178,6 +179,19 @@ public class IO {
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
 			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
+				out.write(buffer, 0, size);
+			}
+			return out;
+		} finally {
+			in.close();
+		}
+	}
+
+	public static OutputStream copy(InputStream in, OutputStream out, int limit) throws IOException {
+		try {
+			byte[] buffer = new byte[BUFFER_SIZE];
+			for (int size; limit > 0
+				&& (size = in.read(buffer, 0, Math.min(buffer.length, limit))) > 0; limit -= size) {
 				out.write(buffer, 0, size);
 			}
 			return out;
@@ -1155,6 +1169,40 @@ public class IO {
 
 	public static PrintWriter writer(OutputStream out, Charset encoding) {
 		return new PrintWriter(new OutputStreamWriter(out, encoding));
+	}
+
+	static class AppendableWriterAdapter extends Writer {
+
+		private Appendable appendable;
+
+		public AppendableWriterAdapter(Appendable appendable) {
+			this.appendable = appendable;
+		}
+
+		@Override
+		public void write(char[] cbuf, int off, int len) throws IOException {
+			appendable.append(String.valueOf(cbuf), off, len);
+		}
+
+		@Override
+		public void flush() throws IOException {
+			if (appendable instanceof Flushable) {
+				((Flushable) appendable).flush();
+			}
+		}
+
+		@Override
+		public void close() throws IOException {
+			flush();
+			if (appendable instanceof Closeable) {
+				((Closeable) appendable).close();
+			}
+		}
+
+	}
+
+	public static Writer appendableToWriter(Appendable appendable) {
+		return new AppendableWriterAdapter(appendable);
 	}
 
 	public static boolean createSymbolicLink(File link, File target) throws IOException {

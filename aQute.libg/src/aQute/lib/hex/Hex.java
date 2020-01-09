@@ -1,6 +1,7 @@
 package aQute.lib.hex;
 
 import java.io.IOException;
+import java.util.Formatter;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -99,13 +100,84 @@ public class Hex {
 	}
 
 	public static String separated(byte[] bytes, String separator) {
+		return separated(bytes, 0, bytes.length, separator);
+	}
+
+	public static String separated(byte[] bytes, int start, int length, String separator) {
+
+		assert start >= 0;
+		assert length + start <= bytes.length;
+
 		String del = "";
 		StringBuilder sb = new StringBuilder();
-		for (byte x : bytes) {
+		for (int i = 0; i < length; i++) {
+
+			byte x = bytes[i + start];
 			sb.append(del);
 			sb.append(toHex(x));
 			del = separator;
 		}
 		return sb.toString();
+	}
+
+	/**
+	 * Format a buffer to show the buffer in a table with 16 bytes per row, hex
+	 * values and ascii values are shown.
+	 *
+	 * @param data the buffer
+	 * @return a String with the formatted data
+	 */
+	public static String format(byte[] data) {
+		if (data == null)
+			return "";
+
+		try (Formatter f = new Formatter()) {
+			int b = 0;
+
+			int rover = 0;
+			StringBuilder ascii = new StringBuilder(30);
+			StringBuilder hex = new StringBuilder(30);
+
+			while (rover < data.length) {
+				int p = rover;
+				ascii.setLength(0);
+				hex.setLength(0);
+
+				for (int g = 0; g < 2 && p < data.length; g++) {
+
+					hex.append(' ');
+					ascii.append("  ");
+
+					for (int i = 0; i < 8 && p < data.length; i++) {
+						byte c = data[p++];
+
+						hex.append(' ');
+						hex.append(toHex(c));
+						if (c < ' ' || c > 0x7E)
+							c = '.';
+						ascii.append((char) c);
+					}
+				}
+				f.format("0x%04x%-50s%s%n", rover, hex, ascii);
+				rover += 16;
+			}
+			return f.toString();
+		}
+	}
+
+	/**
+	 * Check of a buffer is classified as binary or text. We assume a file is
+	 * binary of it contains a 0 byte. Heuristics may differ in the future, this
+	 * method is really to collect this decision in one place.
+	 *
+	 * @param data the buffer
+	 * @return true of classified as binary
+	 */
+	public static boolean isBinary(byte[] data) {
+		for (int i = 0; i < data.length; i++) {
+			if (data[i] == 0)
+				return true;
+		}
+		return false;
 	}
 }

@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension
-         point="org.eclipse.ui.editors">
-      <editor
-            class="bndtools.jareditor.internal.JAREditor"
-            contributorClass="bndtools.jareditor.internal.JAREditorContributor"
-            extensions="jar,war,ear,zip"
-            icon="icons/jar_obj.gif"
-            id="bndtools.jareditor.internal.JAREditor"
-            name="JAR Editor">
-      </editor>
-   </extension>
-
+	<extension point="org.eclipse.ui.editors">
+		<editor class="bndtools.jareditor.internal.JAREditor"
+			contributorClass="bndtools.jareditor.internal.JAREditorContributor"
+			extensions="jar,war,ear,zip" icon="icons/jar_obj.gif"
+			id="bndtools.jareditor.internal.JAREditor" name="JAR Editor">
+		</editor>
+	</extension>
+	<extension id="bndtools.filesystem.zip"
+		point="org.eclipse.core.filesystem.filesystems">
+		<filesystem scheme="jarf">
+			<run class="bndtools.jareditor.internal.JarFileSystem" />
+		</filesystem>
+	</extension>
 </plugin>
