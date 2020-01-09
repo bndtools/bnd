@@ -541,7 +541,7 @@ public class RepoCommand {
 					.put(map)
 					.flush();
 			else if (!options.diff())
-				MultiMap.format(map);
+				bnd.out.println(MultiMap.format(map));
 			else
 				DiffCommand.show(pw, diff, 0, !options.full());
 		}

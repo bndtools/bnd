@@ -240,6 +240,6 @@ public interface Result<V, E> {
 	 * @param ok the consumer called when ok
 	 * @param err the consumer called when not ok
 	 */
-	void then(ConsumerWithException<? super V> ok, ConsumerWithException<? super E> err);
+	void accept(ConsumerWithException<? super V> ok, ConsumerWithException<? super E> err);
 
 }
