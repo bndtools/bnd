@@ -99,6 +99,17 @@ The plugin will by default set some OSGi bundle headers derived from [pom elemen
 | `Bundle-Developers` | `developers` (child element `id` must be set on each developer) |
 | `Bundle-DocURL` | `url` |
 
+### Reproducible Builds
+
+To support reproducible builds, you will need to configure the following Bnd instructions:
+
+```properties
+-noextraheaders: true
+-snapshot: SNAPSHOT
+```
+
+The `-noextraheaders: true` instruction will prevent Bnd from adding extra manifest headers whose values depend upon the build environment. The `-snapshot: SNAPSHOT` instruction will prevent Bnd from replacing the version qualifier `SNAPSHOT` in the `Bundle-Version` manifest header with the build time stamp. The latter instruction only makes a difference for snapshot builds since release builds do not have the version qualifier `SNAPSHOT`.
+
 ### Bnd Instruction Inheritance
 
 This plugin supports a hybrid configuration model where Bnd instructions can come from a bnd file or configuration in the project pom. Inheritance of configuration from parent projects is also supported for this hybrid configuration model. At each project level in the project hierarchy, the configuration can come from a bnd file in the project or from the configuration in the pom with the former taking precedence. This plugin merges the configurations from the parent project with the configuration from the current project. If a parent project does not define a configuration for this plugin, then the configuration, if any, from the `pluginManagement` section for this plugin is used as the configuration from the parent project. This configuration contribution from the `pluginManagement` section for this plugin is evaluated in the context of the current project.
