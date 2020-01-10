@@ -189,16 +189,7 @@ public class IO {
 	}
 
 	public static OutputStream copy(InputStream in, OutputStream out, int limit) throws IOException {
-		try {
-			byte[] buffer = new byte[BUFFER_SIZE];
-			for (int size; limit > 0
-				&& (size = in.read(buffer, 0, Math.min(buffer.length, limit))) > 0; limit -= size) {
-				out.write(buffer, 0, size);
-			}
-			return out;
-		} finally {
-			in.close();
-		}
+		return copy(new LimitedInputStream(in, limit), out);
 	}
 
 	public static ByteBufferOutputStream copy(InputStream in, ByteBufferOutputStream out) throws IOException {
@@ -609,9 +600,7 @@ public class IO {
 	}
 
 	public static String collect(Reader r) throws IOException {
-		StringWriter w = new StringWriter();
-		copy(r, w);
-		return w.toString();
+		return copy(r, new StringWriter()).toString();
 	}
 
 	/**
@@ -1090,6 +1079,10 @@ public class IO {
 
 	public static ByteBuffer encode(CharBuffer cb, Charset encoding) {
 		return encoding.encode(cb);
+	}
+
+	public static ByteBuffer encode(String s, Charset encoding) {
+		return encoding.encode(s);
 	}
 
 	public static BufferedReader reader(String s) {

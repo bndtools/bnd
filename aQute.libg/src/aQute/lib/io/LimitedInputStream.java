@@ -1,39 +1,67 @@
 package aQute.lib.io;
 
+import static java.util.Objects.requireNonNull;
+
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class LimitedInputStream extends InputStream {
-	static final int	BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
-
-	final InputStream	in;
-	final int			size;
-	int					left;
+	private final InputStream	in;
+	private int					remaining;
 
 	public LimitedInputStream(InputStream in, int size) {
-		this.in = in;
-		this.left = size;
-		this.size = size;
+		this.in = requireNonNull(in);
+		this.remaining = size;
+		if (size < 0) {
+			throw new IllegalArgumentException("size must be non-negative");
+		}
+	}
+
+	private void consume(int n) throws IOException {
+		if (n - remaining > 0) {
+			throw new EOFException("request to read more bytes than available");
+		}
+		remaining -= n;
+	}
+
+	private boolean hasRemaining() {
+		return remaining > 0;
+	}
+
+	private int ranged(int n) {
+		if (n <= 0) {
+			return 0;
+		}
+		return Math.min(n, remaining);
+	}
+
+	private long ranged(long n) {
+		if (n <= 0L) {
+			return 0L;
+		}
+		return Math.min(n, remaining);
 	}
 
 	@Override
 	public int read() throws IOException {
-		if (left <= 0) {
-			eof();
-			return -1;
+		if (hasRemaining()) {
+			int read = in.read();
+			consume(Byte.BYTES);
+			return read;
 		}
-
-		left--;
-		return in.read();
+		eof();
+		return -1;
 	}
 
 	@Override
 	public int available() throws IOException {
-		return Math.min(left, in.available());
+		return ranged(in.available());
 	}
 
 	@Override
 	public void close() throws IOException {
+		remaining = 0;
 		eof();
 		in.close();
 	}
@@ -42,7 +70,6 @@ public class LimitedInputStream extends InputStream {
 
 	@Override
 	public void mark(int readlimit) {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -52,14 +79,13 @@ public class LimitedInputStream extends InputStream {
 
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
-		int min = Math.min(len, left);
-		if (min == 0)
-			return 0;
-
-		int read = in.read(b, off, min);
-		if (read > 0)
-			left -= read;
-		return read;
+		if (hasRemaining()) {
+			int read = in.read(b, off, ranged(len));
+			consume(read);
+			return read;
+		}
+		eof();
+		return -1;
 	}
 
 	@Override
@@ -69,20 +95,13 @@ public class LimitedInputStream extends InputStream {
 
 	@Override
 	public void reset() throws IOException {
-		throw new UnsupportedOperationException();
+		throw new IOException("mark/reset not supported");
 	}
 
 	@Override
 	public long skip(long n) throws IOException {
-		long count = 0;
-		byte buffer[] = new byte[BUFFER_SIZE];
-		while (n > 0 && read() >= 0) {
-			int size = read(buffer);
-			if (size <= 0)
-				return count;
-			count += size;
-			n -= size;
-		}
-		return count;
+		long skipped = in.skip(ranged(n));
+		consume((int) skipped);
+		return skipped;
 	}
 }
