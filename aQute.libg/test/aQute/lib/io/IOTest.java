@@ -1,6 +1,7 @@
 package aQute.lib.io;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,6 +10,7 @@ import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.Writer;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -374,10 +376,123 @@ public class IOTest {
 			.exists());
 	}
 
+	@Test
 	public void testCollectEncoded() throws Exception {
 		InputStream in = IO.stream("testString", "UTF-8");
 		String result = IO.collect(in, "UTF-8");
 		assertEquals("testString", result);
+	}
+
+	@Test
+	public void appendableWriter() throws Exception {
+		StringBuilder sb = new StringBuilder();
+		Writer w = IO.appendableToWriter(sb);
+		assertThat(sb).isEmpty();
+
+		w.append('@');
+		assertThat(sb).isNotEmpty()
+			.hasToString("@");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.append(null);
+		assertThat(sb).isNotEmpty()
+			.hasToString("null");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.append(null, 2, 4);
+		assertThat(sb).isNotEmpty()
+			.hasToString("ll");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.append("foobar");
+		assertThat(sb).isNotEmpty()
+			.hasToString("foobar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.append("foobar", 3, 6);
+		assertThat(sb).isNotEmpty()
+			.hasToString("bar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.append("foobar", 3, 3);
+		assertThat(sb).isEmpty();
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.append("foobar", 3, 7);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.append("foobar", -1, 7);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.append("foobar", 0, -1);
+		});
+
+		w.write(64);
+		assertThat(sb).isNotEmpty()
+			.hasToString("@");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.write("foobar".toCharArray());
+		assertThat(sb).isNotEmpty()
+			.hasToString("foobar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.write("foobar".toCharArray(), 3, 3);
+		assertThat(sb).isNotEmpty()
+			.hasToString("bar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.write("foobar".toCharArray(), 3, 0);
+		assertThat(sb).isEmpty();
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar".toCharArray(), 3, 4);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar".toCharArray(), -1, 4);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar".toCharArray(), 0, -1);
+		});
+
+		w.write("foobar");
+		assertThat(sb).isNotEmpty()
+			.hasToString("foobar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.write("foobar", 3, 3);
+		assertThat(sb).isNotEmpty()
+			.hasToString("bar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.write("foobar", 3, 0);
+		assertThat(sb).isEmpty();
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar", 3, 4);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar", -1, 4);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar", 0, -1);
+		});
 	}
 
 }
