@@ -135,8 +135,7 @@ public class Jar implements Closeable {
 	}
 
 	public Jar(String name, InputStream in, long lastModified) throws IOException {
-		this(name);
-		buildFromInputStream(in, lastModified);
+		this(name, in);
 	}
 
 	@SuppressWarnings("resource")
@@ -214,8 +213,9 @@ public class Jar implements Closeable {
 		return name;
 	}
 
-	public Jar(String string, InputStream resourceAsStream) throws IOException {
-		this(string, resourceAsStream, 0);
+	public Jar(String name, InputStream in) throws IOException {
+		this(name);
+		buildFromInputStream(in);
 	}
 
 	public Jar(String string, File file) throws IOException {
@@ -282,10 +282,10 @@ public class Jar implements Closeable {
 	}
 
 	private Jar buildFromResource(Resource resource) throws Exception {
-		return buildFromInputStream(resource.openInputStream(), resource.lastModified());
+		return buildFromInputStream(resource.openInputStream());
 	}
 
-	private Jar buildFromInputStream(InputStream in, long lastModified) throws IOException {
+	private Jar buildFromInputStream(InputStream in) throws IOException {
 		try (ZipInputStream jin = new ZipInputStream(in)) {
 			for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
 				if (entry.isDirectory()) {
@@ -294,10 +294,8 @@ public class Jar implements Closeable {
 				int size = (int) entry.getSize();
 				try (ByteBufferOutputStream bbos = new ByteBufferOutputStream((size == -1) ? BUFFER_SIZE : size + 1)) {
 					bbos.write(jin);
-					long time = entry.getTime();
-					if (time == -1)
-						time = lastModified;
-					putResource(entry.getName(), new EmbeddedResource(bbos.toByteBuffer(), time), true);
+					putResource(entry.getName(),
+						new EmbeddedResource(bbos.toByteBuffer(), ZipUtil.getModifiedTime(entry)), true);
 				}
 			}
 		}
