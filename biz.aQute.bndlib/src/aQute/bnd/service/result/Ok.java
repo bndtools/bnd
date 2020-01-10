@@ -173,6 +173,7 @@ public final class Ok<V, E> implements Result<V, E> {
 
 	@Override
 	public void accept(ConsumerWithException<? super V> ok, ConsumerWithException<? super E> err) {
+		requireNonNull(err);
 		try {
 			ok.accept(value);
 		} catch (Exception e) {
