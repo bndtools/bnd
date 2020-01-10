@@ -26,6 +26,7 @@ Export-Package: \
     aQute.bnd.osgi.eclipse;-noimport:=true,\
     aQute.bnd.osgi.repository;-noimport:=true,\
     aQute.bnd.osgi.resource;-noimport:=true,\
+	aQute.bnd.print;-noimport:=true,\
     aQute.bnd.properties;-noimport:=true,\
     aQute.bnd.service.*;-noimport:=true,\
 	aQute.bnd.signatures;-noimport:=true,\
