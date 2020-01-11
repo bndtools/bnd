@@ -167,6 +167,7 @@ public final class Err<V, E> implements Result<V, E> {
 
 	@Override
 	public void accept(ConsumerWithException<? super V> ok, ConsumerWithException<? super E> err) {
+		requireNonNull(ok);
 		try {
 			err.accept(error);
 		} catch (Exception e) {

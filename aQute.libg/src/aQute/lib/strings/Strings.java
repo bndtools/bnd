@@ -345,7 +345,7 @@ public class Strings {
 		if (s.endsWith(suffix))
 			return s;
 
-		return s;
+		return s + suffix;
 	}
 
 	public static String ensurePrefix(String s, String prefix) {

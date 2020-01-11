@@ -1,6 +1,8 @@
 package aQute.lib.io;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,6 +11,7 @@ import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.Writer;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -23,6 +26,7 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 
+import aQute.lib.exceptions.BiFunctionWithException;
 import aQute.lib.io.IO.EnvironmentCalculator;
 
 public class IOTest {
@@ -374,10 +378,177 @@ public class IOTest {
 			.exists());
 	}
 
+	@Test
 	public void testCollectEncoded() throws Exception {
 		InputStream in = IO.stream("testString", "UTF-8");
 		String result = IO.collect(in, "UTF-8");
 		assertEquals("testString", result);
+	}
+
+	@Test
+	public void appendableWriter() throws Exception {
+		StringBuilder sb = new StringBuilder();
+		Writer w = IO.appendableToWriter(sb);
+		assertThat(sb).isEmpty();
+
+		w.append('@');
+		assertThat(sb).isNotEmpty()
+			.hasToString("@");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.append(null);
+		assertThat(sb).isNotEmpty()
+			.hasToString("null");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.append(null, 2, 4);
+		assertThat(sb).isNotEmpty()
+			.hasToString("ll");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.append("foobar");
+		assertThat(sb).isNotEmpty()
+			.hasToString("foobar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.append("foobar", 3, 6);
+		assertThat(sb).isNotEmpty()
+			.hasToString("bar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.append("foobar", 3, 3);
+		assertThat(sb).isEmpty();
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.append("foobar", 3, 7);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.append("foobar", -1, 7);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.append("foobar", 0, -1);
+		});
+
+		w.write(64);
+		assertThat(sb).isNotEmpty()
+			.hasToString("@");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.write("foobar".toCharArray());
+		assertThat(sb).isNotEmpty()
+			.hasToString("foobar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.write("foobar".toCharArray(), 3, 3);
+		assertThat(sb).isNotEmpty()
+			.hasToString("bar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.write("foobar".toCharArray(), 3, 0);
+		assertThat(sb).isEmpty();
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar".toCharArray(), 3, 4);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar".toCharArray(), -1, 4);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar".toCharArray(), 0, -1);
+		});
+
+		w.write("foobar");
+		assertThat(sb).isNotEmpty()
+			.hasToString("foobar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.write("foobar", 3, 3);
+		assertThat(sb).isNotEmpty()
+			.hasToString("bar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.write("foobar", 3, 0);
+		assertThat(sb).isEmpty();
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar", 3, 4);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar", -1, 4);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar", 0, -1);
+		});
+	}
+
+	@Test
+	public void limitedInputStream() throws Exception {
+		BiFunctionWithException<String, Integer, InputStream> supplier = (data, limit) -> {
+			InputStream in = IO.stream(data, UTF_8);
+			return new LimitedInputStream(in, limit);
+		};
+
+		InputStream in = supplier.apply("testString", 4);
+		assertThat(IO.collect(in, UTF_8)).isEqualTo("test");
+
+		in = supplier.apply("testString", 4);
+		assertThat(in.skip(0L)).isEqualTo(0L);
+		assertThat(IO.collect(in, UTF_8)).isEqualTo("test");
+
+		in = supplier.apply("testString", 4);
+		assertThat(in.skip(2L)).isEqualTo(2L);
+		assertThat(IO.collect(in, UTF_8)).isEqualTo("st");
+
+		in = supplier.apply("testString", 4);
+		assertThat(in.skip(4L)).isEqualTo(4L);
+		assertThat(IO.collect(in, UTF_8)).isEmpty();
+
+		in = supplier.apply("testString", 4);
+		assertThat(in.skip(80L)).isEqualTo(4L);
+		assertThat(IO.collect(in, UTF_8)).isEmpty();
+
+		in = supplier.apply("testString", 0);
+		assertThat(IO.collect(in, UTF_8)).isEmpty();
+
+		in = supplier.apply("testString", 4);
+		assertThat(in.available()).isEqualTo(4);
+		assertThat(in.read()).isEqualTo('t');
+		assertThat(in.available()).isEqualTo(3);
+		assertThat(in.read()).isEqualTo('e');
+		assertThat(in.available()).isEqualTo(2);
+		assertThat(in.read()).isEqualTo('s');
+		assertThat(in.available()).isEqualTo(1);
+		assertThat(in.read()).isEqualTo('t');
+		assertThat(in.available()).isEqualTo(0);
+		assertThat(in.read()).isEqualTo(-1);
+
+		in = supplier.apply("testString", 4);
+		byte[] buf = new byte[10];
+		int read = in.read(buf);
+		assertThat(read).isEqualTo(4);
+		assertThat(buf).containsExactly('t', 'e', 's', 't', 0, 0, 0, 0, 0, 0);
+
+		in = supplier.apply("testString", 4);
+		buf = new byte[10];
+		read = in.read(buf, 2, 3);
+		assertThat(read).isEqualTo(3);
+		assertThat(buf).containsExactly(0, 0, 't', 'e', 's', 0, 0, 0, 0, 0);
 	}
 
 }

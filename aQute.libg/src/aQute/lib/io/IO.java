@@ -1,6 +1,7 @@
 package aQute.lib.io;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -188,16 +189,7 @@ public class IO {
 	}
 
 	public static OutputStream copy(InputStream in, OutputStream out, int limit) throws IOException {
-		try {
-			byte[] buffer = new byte[BUFFER_SIZE];
-			for (int size; limit > 0
-				&& (size = in.read(buffer, 0, Math.min(buffer.length, limit))) > 0; limit -= size) {
-				out.write(buffer, 0, size);
-			}
-			return out;
-		} finally {
-			in.close();
-		}
+		return copy(new LimitedInputStream(in, limit), out);
 	}
 
 	public static ByteBufferOutputStream copy(InputStream in, ByteBufferOutputStream out) throws IOException {
@@ -608,9 +600,7 @@ public class IO {
 	}
 
 	public static String collect(Reader r) throws IOException {
-		StringWriter w = new StringWriter();
-		copy(r, w);
-		return w.toString();
+		return copy(r, new StringWriter()).toString();
 	}
 
 	/**
@@ -1091,6 +1081,10 @@ public class IO {
 		return encoding.encode(cb);
 	}
 
+	public static ByteBuffer encode(String s, Charset encoding) {
+		return encoding.encode(s);
+	}
+
 	public static BufferedReader reader(String s) {
 		return new BufferedReader(new StringReader(s));
 	}
@@ -1171,34 +1165,108 @@ public class IO {
 		return new PrintWriter(new OutputStreamWriter(out, encoding));
 	}
 
-	static class AppendableWriterAdapter extends Writer {
+	static final class AppendableWriterAdapter extends Writer {
+		private final Appendable appendable;
 
-		private Appendable appendable;
-
-		public AppendableWriterAdapter(Appendable appendable) {
+		AppendableWriterAdapter(Appendable appendable) {
+			super(appendable);
 			this.appendable = appendable;
 		}
 
 		@Override
+		public void write(int c) throws IOException {
+			synchronized (lock) {
+				appendable.append((char) c);
+			}
+		}
+
+		private static void validate(int length, int offset, int count) {
+			if (offset < 0) {
+				throw new IndexOutOfBoundsException("offset less than zero");
+			}
+			if (count < 0) {
+				throw new IndexOutOfBoundsException("count less than zero");
+			}
+			if (offset > length - count) {
+				throw new IndexOutOfBoundsException("offset+count greater than input length");
+			}
+		}
+
+		@Override
 		public void write(char[] cbuf, int off, int len) throws IOException {
-			appendable.append(String.valueOf(cbuf), off, len);
+			validate(cbuf.length, off, len);
+			synchronized (lock) {
+				for (int i = off, end = off + len; i < end; i++) {
+					appendable.append(cbuf[i]);
+				}
+			}
+		}
+
+		@Override
+		public void write(String str) throws IOException {
+			requireNonNull(str);
+			synchronized (lock) {
+				appendable.append(str);
+			}
+		}
+
+		@Override
+		public void write(String str, int off, int len) throws IOException {
+			validate(str.length(), off, len);
+			synchronized (lock) {
+				appendable.append(str, off, off + len);
+			}
+		}
+
+		@Override
+		public Writer append(char c) throws IOException {
+			synchronized (lock) {
+				appendable.append(c);
+			}
+			return this;
+		}
+
+		@Override
+		public Writer append(CharSequence csq) throws IOException {
+			if (csq == null) {
+				csq = "null";
+			}
+			synchronized (lock) {
+				appendable.append(csq);
+			}
+			return this;
+		}
+
+		@Override
+		public Writer append(CharSequence csq, int start, int end) throws IOException {
+			if (csq == null) {
+				csq = "null";
+			}
+			validate(csq.length(), start, end - start);
+			synchronized (lock) {
+				appendable.append(csq, start, end);
+			}
+			return this;
 		}
 
 		@Override
 		public void flush() throws IOException {
-			if (appendable instanceof Flushable) {
-				((Flushable) appendable).flush();
+			synchronized (lock) {
+				if (appendable instanceof Flushable) {
+					((Flushable) appendable).flush();
+				}
 			}
 		}
 
 		@Override
 		public void close() throws IOException {
-			flush();
-			if (appendable instanceof Closeable) {
-				((Closeable) appendable).close();
+			synchronized (lock) {
+				flush();
+				if (appendable instanceof Closeable) {
+					((Closeable) appendable).close();
+				}
 			}
 		}
-
 	}
 
 	public static Writer appendableToWriter(Appendable appendable) {
