@@ -14,4 +14,55 @@
 			<run class="bndtools.jareditor.internal.JarFileSystem" />
 		</filesystem>
 	</extension>
+	<extension point="org.eclipse.ui.navigator.navigatorContent">
+		<commonFilter
+			activeByDefault="true"
+			description="Hide the &quot;BndtoolsJAREditorTempFiles&quot; project"
+			id="bndtools.jareditor.tempfiles.filter"
+			name="BndtoolsJAREditorTempFiles project"
+			visibleInUI="true">
+			<filterExpression>
+				<instanceof value="org.eclipse.core.resources.IProject">
+				</instanceof>
+				<test
+					property="org.eclipse.core.resources.name"
+					value="BndtoolsJAREditorTempFiles">
+				</test>
+			</filterExpression>
+		</commonFilter>
+	</extension>
+	<extension point="org.eclipse.jdt.ui.javaElementFilters">
+		<filter
+			class="bndtools.jareditor.internal.TemporaryProjectFilter"
+			description="Hide the &quot;BndtoolsJAREditorTempFiles&quot; project"
+			enabled="true"
+			id="bndtools.jareditor.tempfiles.packageexplorer.filter"
+			name="BndtoolsJAREditorTempFiles project"
+			targetId="org.eclipse.jdt.ui.PackageExplorer">
+		</filter>
+		<filter
+			class="bndtools.jareditor.internal.TemporaryProjectFilter"
+			description="Hide the &quot;BndtoolsJAREditorTempFiles&quot; project"
+			enabled="true"
+			id="bndtools.jareditor.tempfiles.projectsview.filter"
+			name="BndtoolsJAREditorTempFiles project"
+			targetId="org.eclipse.jdt.ui.ProjectsView">
+		</filter>
+		<filter
+			class="bndtools.jareditor.internal.TemporaryProjectFilter"
+			description="Hide the &quot;BndtoolsJAREditorTempFiles&quot; project"
+			enabled="true"
+			id="bndtools.jareditor.tempfiles.bndexplorer.filter"
+			name="BndtoolsJAREditorTempFiles project"
+			targetId="bndtools.PackageExplorer">
+		</filter>
+	</extension>
+	<extension point="org.eclipse.ui.navigator.viewer">
+		<viewerContentBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+			<includes>
+				<contentExtension pattern="bndtools.jareditor.tempfiles.filter">
+				</contentExtension>
+			</includes>
+		</viewerContentBinding>
+	</extension>
 </plugin>

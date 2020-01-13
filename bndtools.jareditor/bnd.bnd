@@ -27,6 +27,7 @@ Bundle-SymbolicName: bndtools.jareditor;singleton:=true
 	org.eclipse.equinox.registry,\
 	org.eclipse.text,\
 	org.eclipse.jdt.core,\
+	org.eclipse.jdt.launching,\
 	org.eclipse.core.filesystem,\
 	org.eclipse.core.contenttype
 
