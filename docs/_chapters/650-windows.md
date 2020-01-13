@@ -46,9 +46,19 @@ A better solution is to disable antivirus scanning for specific directories. You
 * your Bnd workspace;
 * the corresponding Eclipse workspace; and
 * your temp directory (by default: `%UserHome%\AppData\Local\Temp`).
-However, excluding your temp directory might be a bit of a security hole as it is likely to be a place where malware will try and write first. If you are concerned about this, see the next section.
+However, excluding your temp directory might be a bit of a security hole as it is likely to be a place where malware will try and write first. If you are concerned about this, see the next section 
+for a workaround.
 
-It is possible that excluding other directories may help performance - eg, your `.m2` directory. You need to weigh the merits of excluding each folder vs the incremental security risk.
+It is possible that excluding other directories may help performance, as Windows Defender 
+seems to take a keen interest in jar files. Some examples:
+* your `.m2` directory (usually found in your home directory);
+* the P2 repository for your local Eclipse installation. This is either in your Eclipse 
+  root directory, or else in `%UserHome%\.p2` directory if you have installed it using 
+  the P2 bundle pool.
+* any other local repositories you might be using in your workspace (that are not already 
+  covered by one of the above exclusions).
+  
+Be wary that each additional exclusion you add increases the security risk. You need to weigh the performance benefits of excluding each folder vs the increase in security risk.
 
 ### Create a custom temp directory
 
