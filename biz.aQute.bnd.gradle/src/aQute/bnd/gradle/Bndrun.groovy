@@ -8,7 +8,7 @@
  * Here is examples of using the Bndrun task type:
  * <pre>
  * import aQute.bnd.gradle.Bndrun
- * task run(type: Bndrun) {
+ * tasks.register('run', Bndrun) {
  *   bndrun file('my.bndrun')
  * }
  * </pre>

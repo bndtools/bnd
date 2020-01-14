@@ -8,11 +8,11 @@
  * Here is examples of using the Export task type:
  * <pre>
  * import aQute.bnd.gradle.Export
- * task exportExecutable(type: Export) {
+ * tasks.register('exportExecutable', Export) {
  *   bndrun file('my.bndrun')
  *   exporter = 'bnd.executablejar'
  * }
- * task exportRunbundles(type: Export) {
+ * tasks.register('exportRunbundles', Export) {
  *   bndrun file('my.bndrun')
  *   exporter = 'bnd.runbundles'
  * }
