@@ -10,7 +10,7 @@
  * Here is an example of using the Bundle task type:
  * <pre>
  * import aQute.bnd.gradle.Bundle
- * task bundle(type: Bundle) {
+ * tasks.register('bundle', Bundle) {
  *   description 'Build my bundle'
  *   group 'build'
  *   from sourceSets.bundle.output

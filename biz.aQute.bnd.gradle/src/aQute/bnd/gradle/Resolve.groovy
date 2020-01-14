@@ -9,7 +9,7 @@
  * Here is an example of using the Resolve task type:
  * <pre>
  * import aQute.bnd.gradle.Resolve
- * task resolve(type: Resolve) {
+ * tasks.register('resolve', Resolve) {
  *   bndrun file('my.bndrun')
  * }
  * </pre>
