@@ -8,10 +8,10 @@
  * Here is an example of using the Baseline task type:
  * <pre>
  * import aQute.bnd.gradle.Index
- * task index(type: Index) {
- *   destination = file('bundles')
+ * tasks.register('index', Index) {
+ *   destinationDirectory = file('bundles')
  *   gzip = true
- *   bundles = fileTree(destination) {
+ *   bundles = fileTree(destinationDirectory) {
  *    include '**&#47;*.jar'
  *    exclude '**&#47;*-latest.jar'
  *    exclude '**&#47;*-sources.jar'

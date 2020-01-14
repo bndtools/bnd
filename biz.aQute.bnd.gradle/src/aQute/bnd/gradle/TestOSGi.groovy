@@ -8,7 +8,7 @@
  * Here is examples of using the TestOSGi task type:
  * <pre>
  * import aQute.bnd.gradle.TestOSGi
- * task testOSGi(type: TestOSGi) {
+ * tasks.register('testOSGi', TestOSGi) {
  *   bndrun file('my.bndrun')
  * }
  * </pre>

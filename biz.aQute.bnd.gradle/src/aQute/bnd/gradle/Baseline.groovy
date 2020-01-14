@@ -8,17 +8,19 @@
  * Here is an example of using the Baseline task type:
  * <pre>
  * import aQute.bnd.gradle.Baseline
- * apply plugin: 'java'
  * configurations {
  *   baseline
  * }
  * dependencies {
- *     baseline('group': group, 'name': jar.baseName, 'version': "(,${jar.version})") {
+ *     baseline('group': group, 'name': jar.baseName) {
+ *       version {
+ *         strictly "(0,${jar.version}["
+ *       }
  *       transitive false
  *     }
  *   }
  * }
- * task baseline(type: Baseline) {
+ * tasks.register('baseline', Baseline) {
  *   bundle jar
  *   baseline configurations.baseline
  * }
