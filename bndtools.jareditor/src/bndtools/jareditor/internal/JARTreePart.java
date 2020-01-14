@@ -12,19 +12,15 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.StyledCellLabelProvider;
-import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.dnd.DragSourceListener;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -41,8 +37,8 @@ import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.part.FileEditorInput;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.lib.io.IO;
 
@@ -70,7 +66,7 @@ public class JARTreePart extends AbstractFormPart {
 
 		viewer = new TreeViewer(tree);
 		viewer.setContentProvider(new JARTreeContentProvider());
-		viewer.setLabelProvider(new JARTreeLabelProvider());
+		viewer.setLabelProvider(new WorkbenchLabelProvider());
 
 		Transfer[] transfers = new Transfer[] {
 			FileTransfer.getInstance()
@@ -233,41 +229,6 @@ public class JARTreePart extends AbstractFormPart {
 			result = fromInstances(treePath);
 		}
 		return result;
-	}
-
-	private static class JARTreeLabelProvider extends StyledCellLabelProvider {
-
-		private final Image	folderImg	= AbstractUIPlugin
-			.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/fldr_obj.gif")
-			.createImage();
-		private final Image	fileImg		= AbstractUIPlugin
-			.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/file_obj.gif")
-			.createImage();
-
-		public JARTreeLabelProvider() {
-			super();
-		}
-
-		@Override
-		public void update(final ViewerCell cell) {
-			IResource node = (IResource) cell.getElement();
-
-			StyledString label = new StyledString(node.getName());
-
-			if (node instanceof IContainer) {
-				cell.setImage(folderImg);
-			}
-
-			cell.setText(label.getString());
-			cell.setStyleRanges(label.getStyleRanges());
-		}
-
-		@Override
-		public void dispose() {
-			super.dispose();
-			folderImg.dispose();
-			fileImg.dispose();
-		}
 	}
 
 	private static class JARTreeContentProvider implements ITreeContentProvider {

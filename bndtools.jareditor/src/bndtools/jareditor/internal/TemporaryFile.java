@@ -2,14 +2,10 @@ package bndtools.jareditor.internal;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -29,8 +25,7 @@ public class TemporaryFile {
 		.getRoot();
 	final static AtomicLong		id		= new AtomicLong(10000000);
 
-	static IFolder				tempFolder;
-	static Path					tempDir;
+	static TemporaryProject		tempProject	= new TemporaryProject();
 
 	public static Result<IFolder, String> tempFolder(URI source, String path, IProgressMonitor monitor) {
 		try {
@@ -38,7 +33,7 @@ public class TemporaryFile {
 			String name = parts == null ? path : parts[1];
 			String idstring = Long.toString(id.incrementAndGet());
 
-			return select().map((IFolder folder) -> {
+			return selectTempProject().map((IFolder folder) -> {
 				//
 				// Create a folder/file.ext. Many Eclipse and java routines
 				// create for example a window name out of the path or use
@@ -63,72 +58,11 @@ public class TemporaryFile {
 		}
 	}
 
-	private static Result<IFolder, String> select() throws CoreException, IOException {
-		if (tempFolder == null) {
-			IProject[] projects = root.getProjects();
+	private static Result<IFolder, String> selectTempProject() throws CoreException, IOException {
+		IProject project = tempProject.getJavaProject()
+			.getProject();
 
-			for (IProject p : projects) {
-				Stream.of(p.members(IResource.HIDDEN))
-					.filter(IResource::isHidden)
-					.filter(r -> ID.equals(r.getName()))
-					.forEach(r -> {
-						delete(r);
-					});
-			}
-		} else if (!tempFolder.isAccessible()) {
-			delete(tempFolder);
-		} else
-			return Result.ok(tempFolder);
-
-		if (tempDir == null)
-			tempDir = Files.createTempDirectory("BndEditorTempFile");
-
-		if (!tempDir.toFile()
-			.isDirectory()) {
-			Result.err("Cannot create temporary directory for temporary IResource folder");
-		}
-
-		IProject[] projects = root.getProjects();
-		assert projects != null && projects.length > 0 : "there must always be at least one project";
-
-		IProject victim = getVictim(projects);
-		assert victim != null;
-
-		IFolder folder = victim.getFolder(ID);
-		if (folder.exists())
-			delete(folder);
-
-		folder.createLink(tempDir.toUri(), IResource.HIDDEN, null);
-
-		return Result.ok(tempFolder = folder);
-	}
-
-	private static void delete(IResource r) {
-		try {
-			r.delete(true, null);
-		} catch (CoreException e) {
-			// ignore, best effort
-		}
-	}
-
-	private static IProject getVictim(IProject[] projects) throws CoreException {
-		assert projects != null && projects.length > 0 : "Require at least 1 project";
-
-		IProject victim = projects[0];
-
-		//
-		// A hack. If you select a class file the JDT decompiler
-		// wants a Java project. So we create the temp files in the
-		// first java project we can see.
-		//
-
-		for (IProject p : projects) {
-			IProjectNature nature = p.getNature("org.eclipse.jdt.core.javanature");
-			if (nature != null) {
-				victim = p;
-			}
-		}
-		return victim;
+		return Result.ok(project.getFolder("temp"));
 	}
 
 	public static void dispose(IFolder model) {
