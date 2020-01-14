@@ -19,6 +19,8 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.gradle.BndUtils.unwrap
+
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -83,10 +85,12 @@ public class BndBuilderPlugin implements Plugin<Project> {
         Task baselineTask = tasks.getByName('baseline')
         Task bundleTask = baselineTask.getBundleTask()
         if (bundleTask) {
-          logger.debug 'Searching for default baseline {}:{}:(0,{}[', group, bundleTask.baseName, bundleTask.version
-          Dependency baselineDep = dependencies.create('group': group, 'name': bundleTask.baseName) {
+          String archiveBaseName = unwrap(bundleTask.archiveBaseName)
+          String archiveVersion = unwrap(bundleTask.archiveVersion)
+          logger.debug 'Searching for default baseline {}:{}:(0,{}[', group, archiveBaseName, archiveVersion
+          Dependency baselineDep = dependencies.create('group': group, 'name': archiveBaseName) {
             version {
-              strictly "(0,${bundleTask.version}["
+              strictly "(0,${archiveVersion}["
             }
             transitive = false
           }
