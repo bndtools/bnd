@@ -12,9 +12,9 @@
  *   baseline
  * }
  * dependencies {
- *     baseline('group': group, 'name': jar.baseName) {
+ *     baseline('group': group, 'name': jar.archiveBaseName) {
  *       version {
- *         strictly "(0,${jar.version}["
+ *         strictly "(0,${jar.archiveVersion.get()}["
  *       }
  *       transitive false
  *     }
