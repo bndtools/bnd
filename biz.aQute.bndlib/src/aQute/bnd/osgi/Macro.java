@@ -984,19 +984,13 @@ public class Macro {
 
 		String mask = args[1];
 
-		Version version = null;
+		Version version;
 		if (args.length >= 3) {
 			if (isLocalTarget(args[2]))
 				return LITERALVALUE;
 
 			version = Version.parseVersion(args[2]);
-		}
-
-		return version(version, mask);
-	}
-
-	String version(Version version, String mask) {
-		if (version == null) {
+		} else {
 			String v = domain.getProperty(Constants.CURRENT_VERSION);
 			if (v == null) {
 				return LITERALVALUE;
@@ -1004,52 +998,94 @@ public class Macro {
 			version = new Version(v);
 		}
 
+		return version(version, mask);
+	}
+
+	static String version(Version version, String mask) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 
-		for (int i = 0; i < mask.length(); i++) {
+		maskloop: for (int i = 0, len = mask.length(); i < len; i++) {
 			char c = mask.charAt(i);
-			String result = null;
-			if (c != '~') {
-				if (i == 3) {
-					result = version.getQualifier();
-					MavenVersion mv = new MavenVersion(version);
-					if (c == 'S') {
+			if (i == 3) {
+				switch (c) {
+					case '~' :
+						break;
+					case '0' :
+					case '1' :
+					case '2' :
+					case '3' :
+					case '4' :
+					case '5' :
+					case '6' :
+					case '7' :
+					case '8' :
+					case '9' :
+						sb.append(del)
+							.append(c);
+						break;
+					case 's' : {
+						MavenVersion mv = new MavenVersion(version);
 						// we have a request for a Maven snapshot
-						if (mv.isSnapshot())
-							return sb.append("-SNAPSHOT")
-								.toString();
-					} else if (c == 's') {
+						if (mv.isSnapshot()) {
+							sb.append("-SNAPSHOT");
+						}
+						break;
+					}
+					case 'S' : {
+						MavenVersion mv = new MavenVersion(version);
 						// we have a request for a Maven snapshot
-						if (mv.isSnapshot())
-							return sb.append("-SNAPSHOT")
-								.toString();
-						else
-							return sb.toString();
+						if (mv.isSnapshot()) {
+							sb.append("-SNAPSHOT");
+							break;
+						}
+						// FALL-THROUGH
 					}
-				} else if (Character.isDigit(c)) {
-					// Handle masks like +00, =+0
-					result = String.valueOf(c);
-				} else {
-					int x = version.get(i);
-					switch (c) {
-						case '+' :
-							x++;
-							break;
-						case '-' :
-							x--;
-							break;
-						case '=' :
-							break;
+					case '=' : {
+						String qualifier = version.getQualifier();
+						if (qualifier != null) {
+							sb.append(del)
+								.append(qualifier);
+						}
+						break;
 					}
-					result = Integer.toString(x);
+					default :
+						throw new IllegalArgumentException("Invalid mask character " + c + " at index " + i);
 				}
-				if (result != null) {
-					sb.append(del);
-					del = ".";
-					sb.append(result);
-				}
+				return sb.toString();
 			}
+			switch (c) {
+				case '~' :
+					continue maskloop; // don't modify del
+				case '0' :
+				case '1' :
+				case '2' :
+				case '3' :
+				case '4' :
+				case '5' :
+				case '6' :
+				case '7' :
+				case '8' :
+				case '9' :
+					sb.append(del)
+						.append(c);
+					break;
+				case '+' :
+					sb.append(del)
+						.append(version.get(i) + 1);
+					break;
+				case '-' :
+					sb.append(del)
+						.append(Math.max(0, version.get(i) - 1));
+					break;
+				case '=' :
+					sb.append(del)
+						.append(version.get(i));
+					break;
+				default :
+					throw new IllegalArgumentException("Invalid mask character " + c + " at index " + i);
+			}
+			del = ".";
 		}
 		return sb.toString();
 	}
@@ -1073,7 +1109,7 @@ public class Macro {
 
 	public String _range(String[] args) {
 		verifyCommand(args, _rangeHelp, _rangePattern, 2, 3);
-		Version version = null;
+		Version version;
 		if (args.length >= 3) {
 			String string = args[2];
 			if (isLocalTarget(string))
