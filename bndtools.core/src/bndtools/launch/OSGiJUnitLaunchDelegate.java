@@ -197,18 +197,27 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 			try {
 				listener = new ServerSocket(port);
 
-				socket = listener.accept();
-				outStr = new DataOutputStream(socket.getOutputStream());
-				while (socket.getInputStream()
-					.read() != -1) {
-					testRunSession = new TestRunSessionAndPort(launch, project);
-					outStr.writeInt(testRunSession.getPort());
+				// Note that this loop will terminate when accept() throws a
+				// SocketException. This ordinarily happens when the
+				// ServerSocket is closed in ControlThread.close(), which is in
+				// turn called by the registered TerminationListener (configured
+				// by launch()) at process termination time.
+				while (true) {
+					socket = listener.accept();
+					outStr = new DataOutputStream(socket.getOutputStream());
+					while (socket.getInputStream()
+						.read() != -1) {
+						testRunSession = new TestRunSessionAndPort(launch, project);
+						outStr.writeInt(testRunSession.getPort());
+					}
 				}
 			} catch (SocketException se) {
 				logger.logInfo("Connection to tester terminated", se);
 			} catch (IOException e) {
 				logger.logError("Error communicating to the tester", e);
 			}
+			// This call is defensive; close() should have already been called
+			// by the time we get here.
 			close();
 		}
 
