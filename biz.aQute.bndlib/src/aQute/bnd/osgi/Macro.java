@@ -984,19 +984,13 @@ public class Macro {
 
 		String mask = args[1];
 
-		Version version = null;
+		Version version;
 		if (args.length >= 3) {
 			if (isLocalTarget(args[2]))
 				return LITERALVALUE;
 
 			version = Version.parseVersion(args[2]);
-		}
-
-		return version(version, mask);
-	}
-
-	String version(Version version, String mask) {
-		if (version == null) {
+		} else {
 			String v = domain.getProperty(Constants.CURRENT_VERSION);
 			if (v == null) {
 				return LITERALVALUE;
@@ -1004,6 +998,10 @@ public class Macro {
 			version = new Version(v);
 		}
 
+		return version(version, mask);
+	}
+
+	static String version(Version version, String mask) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 
@@ -1073,7 +1071,7 @@ public class Macro {
 
 	public String _range(String[] args) {
 		verifyCommand(args, _rangeHelp, _rangePattern, 2, 3);
-		Version version = null;
+		Version version;
 		if (args.length >= 3) {
 			String string = args[2];
 			if (isLocalTarget(string))
