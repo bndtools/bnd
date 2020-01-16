@@ -2665,6 +2665,19 @@ public class Analyzer extends Processor {
 			return prefix + cleanupVersion(first) + "," + cleanupVersion(last) + suffix;
 		}
 
+		if (version.startsWith("@")) {
+			version = cleanupVersion(version.substring(1));
+			String right = Macro.version(Version.valueOf(version), "+0");
+			return "[" + version + "," + right + ")";
+		} else if (version.endsWith("@")) {
+			version = cleanupVersion(version.substring(0, version.length() - 1));
+			String right = Macro.version(Version.valueOf(version), "=+");
+			return "[" + version + "," + right + ")";
+		} else if (version.startsWith("=")) {
+			version = cleanupVersion(version.substring(1));
+			return "[" + version + "," + version + "]";
+		}
+
 		m = fuzzyVersion.matcher(version);
 		if (m.matches()) {
 			StringBuilder result = new StringBuilder();

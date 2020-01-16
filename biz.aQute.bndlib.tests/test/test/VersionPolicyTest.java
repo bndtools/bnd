@@ -1,5 +1,6 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -11,6 +12,8 @@ import java.util.Map;
 import java.util.jar.Manifest;
 
 import org.junit.jupiter.api.Test;
+import org.osgi.framework.Version;
+import org.osgi.framework.VersionRange;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -377,6 +380,57 @@ public class VersionPolicyTest {
 				.get("version");
 			assertEquals("1.0.1", s);
 			assertEquals("[1.3,1.4)", l);
+		}
+	}
+
+	@Test
+	public void testImportNextMajor() throws Exception {
+		try (Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.setProperty("Import-Package", "org.osgi.service.event;version=\"@1.2.3\"");
+			b.build();
+			String s = b.getImports()
+				.getByFQN("org.osgi.service.event")
+				.get("version");
+			VersionRange v = VersionRange.valueOf(s);
+			assertThat(v.getLeftType()).isEqualTo('[');
+			assertThat(v.getLeft()).isEqualTo(Version.valueOf("1.2.3"));
+			assertThat(v.getRight()).isEqualTo(Version.valueOf("2"));
+			assertThat(v.getRightType()).isEqualTo(')');
+		}
+	}
+
+	@Test
+	public void testImportNextMinor() throws Exception {
+		try (Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.setProperty("Import-Package", "org.osgi.service.event;version=\"1.2.3@\"");
+			b.build();
+			String s = b.getImports()
+				.getByFQN("org.osgi.service.event")
+				.get("version");
+			VersionRange v = VersionRange.valueOf(s);
+			assertThat(v.getLeftType()).isEqualTo('[');
+			assertThat(v.getLeft()).isEqualTo(Version.valueOf("1.2.3"));
+			assertThat(v.getRight()).isEqualTo(Version.valueOf("1.3"));
+			assertThat(v.getRightType()).isEqualTo(')');
+		}
+	}
+
+	@Test
+	public void testImportExact() throws Exception {
+		try (Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.setProperty("Import-Package", "org.osgi.service.event;version=\"=1.2.3\"");
+			b.build();
+			String s = b.getImports()
+				.getByFQN("org.osgi.service.event")
+				.get("version");
+			VersionRange v = VersionRange.valueOf(s);
+			assertThat(v.getLeftType()).isEqualTo('[');
+			assertThat(v.getLeft()).isEqualTo(Version.valueOf("1.2.3"));
+			assertThat(v.getRight()).isEqualTo(Version.valueOf("1.2.3"));
+			assertThat(v.getRightType()).isEqualTo(']');
 		}
 	}
 
