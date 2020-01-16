@@ -1269,12 +1269,12 @@ public class Jar implements Closeable {
 
 	public void removePrefix(String prefixLow) {
 		prefixLow = cleanPath(prefixLow);
-		String prefixHigh = prefixLow + "\uFFFF";
+		String prefixHigh = prefixLow.concat("\uFFFF");
 		resources.subMap(prefixLow, prefixHigh)
 			.clear();
 		if (prefixLow.endsWith("/")) {
 			prefixLow = prefixLow.substring(0, prefixLow.length() - 1);
-			prefixHigh = prefixLow + "\uFFFF";
+			prefixHigh = prefixLow.concat("\uFFFF");
 		}
 		directories.subMap(prefixLow, prefixHigh)
 			.clear();
@@ -1283,11 +1283,11 @@ public class Jar implements Closeable {
 	public void removeSubDirs(String dir) {
 		dir = cleanPath(dir);
 		if (!dir.endsWith("/")) {
-			dir = dir + "/";
+			dir = dir.concat("/");
 		}
-		List<String> subDirs = new ArrayList<>(directories.subMap(dir, dir + "\uFFFF")
+		List<String> subDirs = new ArrayList<>(directories.subMap(dir, dir.concat("\uFFFF"))
 			.keySet());
-		subDirs.forEach(subDir -> removePrefix(subDir + "/"));
+		subDirs.forEach(subDir -> removePrefix(subDir.concat("/")));
 	}
 
 	private static final Predicate<String> pomXmlFilter = new PathSet("META-INF/maven/*/*/pom.xml").matches();
