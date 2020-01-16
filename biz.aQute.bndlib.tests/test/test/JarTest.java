@@ -1,13 +1,14 @@
 package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIOException;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.data.Offset.strictOffset;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
@@ -257,11 +258,22 @@ public class JarTest extends TestCase {
 	}
 
 	public void testZipSlip() throws Exception {
-		assertThatIOException().as("Failed to handle zip-slip problem")
-			.isThrownBy(() -> {
-				try (Jar jar = new Jar(new File("jar/zip-slip.zip"))) {
-					jar.writeFolder(tmp);
-				}
-			});
+		assertThat(catchThrowable(() -> {
+			try (Jar jar = new Jar(new File("jar/zip-slip.zip"))) {
+				jar.writeFolder(tmp);
+			}
+		})).as("Failed to handle zip-slip problem")
+			.isInstanceOfAny(IOException.class, UncheckedIOException.class);
+	}
+
+	public void testCreateZipSlip() throws Exception {
+		try (Jar jar = new Jar("zipzlip")) {
+			assertThat(catchThrowable(() -> {
+				jar.putResource("foo/../../bad.txt", new EmbeddedResource("bad", 0L));
+			})).as("Failed to handle zip-slip problem")
+				.isInstanceOfAny(IOException.class, UncheckedIOException.class);
+			jar.putResource("foo/../ok.txt", new EmbeddedResource("ok", 0L));
+			assertThat(jar.exists("ok.txt")).isTrue();
+		}
 	}
 }

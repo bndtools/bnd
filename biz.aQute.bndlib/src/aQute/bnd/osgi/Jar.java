@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.file.FileVisitOption;
@@ -66,6 +67,7 @@ import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
+import aQute.lib.stringrover.StringRover;
 import aQute.lib.zip.ZipUtil;
 import aQute.libg.glob.PathSet;
 
@@ -316,12 +318,42 @@ public class Jar implements Closeable {
 	}
 
 	private static String cleanPath(String path) {
-		int start = 0;
-		int end = path.length();
-		while ((start < end) && (path.charAt(start) == '/')) {
-			start++;
+		if (path.isEmpty()) {
+			return "";
 		}
-		return path.substring(start);
+		StringRover rover = new StringRover(path);
+		StringBuilder clean = new StringBuilder();
+		while (!rover.isEmpty()) {
+			int n = rover.indexOf('/');
+			if (n < 0) {
+				n = rover.length();
+			}
+			if ((n == 0) || ((n == 1) && (rover.charAt(0) == '.'))) {
+				// case "" or "."
+			} else if ((n == 2) && (rover.charAt(0) == '.') && (rover.charAt(1) == '.')) {
+				// case ".."
+				int lastSlash = clean.lastIndexOf("/");
+				if (lastSlash == -1) {
+					if (clean.length() == 0) {
+						throw new UncheckedIOException(new IOException("Entry path is outside of zip file: " + path));
+					}
+					clean.setLength(0);
+				} else {
+					clean.setLength(lastSlash - 1);
+				}
+			} else {
+				if (clean.length() > 0) {
+					clean.append('/');
+				}
+				clean.append(rover, 0, n);
+			}
+			rover.increment(n);
+			if ((rover.length() == 1) && (clean.length() > 0)) {
+				clean.append('/'); // trailing slash
+			}
+			rover.increment();
+		}
+		return clean.toString();
 	}
 
 	public boolean putResource(String path, Resource resource, boolean overwrite) {
