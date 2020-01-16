@@ -472,22 +472,22 @@ public class Strings {
 	 * etc.
 	 */
 
-	public enum Magnitude {
-		quaco("g", 1e-23, 0),
-		zepto("z", 1e-21, 0),
-		atto("a", 1e-18, 0),
-		femto("f", 1e-15, 0),
-		pico("p", 1e-12, 0),
-		nano("n", 1e-9, 0),
-		micro("µ", 1e-6, 0),
-		milli("m", 1e-3, 0),
-		unit("", 1, 1),
-		kilo("k", 1e3, 0x400),
-		mega("M", 1e6, 0x400 * 0x400),
-		giga("G", 1e9, 0x400 * 0x400 + 0x400),
-		tera("T", 1e12, 0x400 * 0x400 * 0x400 * 0x400),
-		peta("P", 1e15, 0x400 * 0x400 * 0x400 * 0x400 * 0x400),
-		exa("E", 1e18, 0x400 * 0x400 * 0x400 * 0x400 * 0x400 * 0x400);
+	enum Magnitude {
+		quaco("g", 1e-23, 0L),
+		zepto("z", 1e-21, 0L),
+		atto("a", 1e-18, 0L),
+		femto("f", 1e-15, 0L),
+		pico("p", 1e-12, 0L),
+		nano("n", 1e-9, 0L),
+		micro("µ", 1e-6, 0L),
+		milli("m", 1e-3, 0L),
+		unit("", 1e0, 1L),
+		kilo("k", 1e3, 0x400L),
+		mega("M", 1e6, 0x100000L),
+		giga("G", 1e9, 0x40000000L),
+		tera("T", 1e12, 0x10000000000L),
+		peta("P", 1e15, 0x4000000000000L),
+		exa("E", 1e18, 0x1000000000000000L);
 
 		final String	prefix;
 		final double	one;
