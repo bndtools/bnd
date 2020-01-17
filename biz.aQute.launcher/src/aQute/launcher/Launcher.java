@@ -43,7 +43,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Formatter;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.IllegalFormatException;
 import java.util.LinkedHashMap;
@@ -106,7 +105,6 @@ public class Launcher implements ServiceListener {
 	private boolean							security;
 	private SimplePermissionPolicy			policy;
 	private Callable<Integer>				mainThread;
-	private final Map<Bundle, Throwable>	errors				= new HashMap<>();
 	private final Map<File, Bundle>			installedBundles	= new LinkedHashMap<>();
 	private File							home				= new File(System.getProperty("user.home"));
 	private File							bnd					= new File(home, "bnd");
@@ -1268,12 +1266,7 @@ public class Launcher implements ServiceListener {
 						out.print(fill(toState(bundles[i].getState()), 6));
 						out.print(fill(lastModified, 14));
 
-						if (errors.containsKey(bundles[i])) {
-							out.print(fill(loc, 50));
-							out.print(errors.get(bundles[i])
-								.toString());
-						} else
-							out.print(bundles[i].getLocation());
+						out.print(bundles[i].getLocation());
 
 						out.println();
 					}
