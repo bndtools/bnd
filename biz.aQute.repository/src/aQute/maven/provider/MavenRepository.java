@@ -158,9 +158,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 					return file;
 				return null;
 			}
-			if (resolved != null) {
-				result = fetch(snapshot, resolved.remotePath, file);
-			}
+			result = fetch(snapshot, resolved.remotePath, file);
 		}
 
 		if (result == null && release != null)

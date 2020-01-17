@@ -165,12 +165,8 @@ public class DiffCommand {
 				tag.print(0, pw);
 			}
 		} finally {
-			if (older != null) {
-				older.close();
-			}
-			if (newer != null) {
-				newer.close();
-			}
+			older.close();
+			newer.close();
 		}
 	}
 

@@ -169,10 +169,8 @@ public class RepoCommand {
 				repos.add(p.getWorkspace()
 					.getWorkspaceRepository());
 			} else {
-				if (workspace != null) {
-					repos.addAll(workspace.getRepositories());
-					repos.add(workspace.getWorkspaceRepository());
-				}
+				repos.addAll(workspace.getRepositories());
+				repos.add(workspace.getWorkspaceRepository());
 			}
 		}
 		logger.debug("repos {}", repos);
@@ -209,8 +207,7 @@ public class RepoCommand {
 				bnd.out.print(help);
 			}
 		}
-		if (workspace != null)
-			bnd.getInfo(workspace);
+		bnd.getInfo(workspace);
 	}
 
 	/**

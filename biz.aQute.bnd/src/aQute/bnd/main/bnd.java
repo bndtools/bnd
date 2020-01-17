@@ -404,7 +404,7 @@ public class bnd extends Processor {
 			if (workspace != null) {
 				logger.debug("Using workspace {}", workspace);
 				workspace.use(this);
-				if (options.workspace() && workspace != null) {
+				if (options.workspace()) {
 					this.setParent(workspace);
 				}
 			}

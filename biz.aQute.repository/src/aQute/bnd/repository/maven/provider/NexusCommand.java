@@ -100,7 +100,7 @@ public class NexusCommand extends Processor {
 
 		Signer signer = new Signer(new String(password), options.command(getProperty("gpg", System.getenv("GPG"))));
 
-		if (signer == null || password == null || !isOk())
+		if (password == null || !isOk())
 			return;
 
 		List<String> args = options._arguments();

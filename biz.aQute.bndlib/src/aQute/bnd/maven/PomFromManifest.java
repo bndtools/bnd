@@ -136,7 +136,7 @@ public class PomFromManifest extends WriteResource {
 			scm.add(scmheader);
 
 		Tag scmtag = new Tag(project, "scm");
-		if (scm != null && !scm.isEmpty()) {
+		if (!scm.isEmpty()) {
 			for (String cm : this.scm) {
 				new Tag(scmtag, "url").addContent(cm);
 				new Tag(scmtag, "connection").addContent(cm);

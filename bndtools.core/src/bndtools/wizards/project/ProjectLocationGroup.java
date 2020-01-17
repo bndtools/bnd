@@ -225,7 +225,7 @@ public class ProjectLocationGroup {
 
 		// Check valid name
 		IStatus nameStatus = JavaPlugin.getWorkspace()
-			.validateName(projectName != null ? projectName : "", IResource.PROJECT);
+			.validateName(projectName, IResource.PROJECT);
 		if (!nameStatus.isOK())
 			return nameStatus;
 

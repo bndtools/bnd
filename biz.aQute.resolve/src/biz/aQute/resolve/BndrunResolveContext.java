@@ -490,7 +490,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		resBuilder.addCapability(identity);
 
 		Parameters inputRequirements = new Parameters(properties.mergeProperties(Constants.RUNREQUIRES), project);
-		if (inputRequirements != null && !inputRequirements.isEmpty()) {
+		if (!inputRequirements.isEmpty()) {
 			List<Requirement> requires = CapReqBuilder.getRequirementsFrom(inputRequirements);
 			resBuilder.addRequirements(requires);
 		}
@@ -502,7 +502,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		Parameters blacklist = new Parameters(augments.mergeProperties(Constants.RUNBLACKLIST), project);
 		blacklist.putAll(new Parameters(properties.mergeProperties(Constants.RUNBLACKLIST), project));
 
-		if (blacklist != null && !blacklist.isEmpty()) {
+		if (!blacklist.isEmpty()) {
 			List<Requirement> reject = CapReqBuilder.getRequirementsFrom(blacklist);
 			setBlackList(reject);
 		}

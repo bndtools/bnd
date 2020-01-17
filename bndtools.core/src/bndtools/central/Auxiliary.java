@@ -135,9 +135,8 @@ class Auxiliary implements Closeable, WeavingHook {
 			extra = delta;
 			delta = null;
 		}
-		if (extra != null)
-			wovenClass.getDynamicImports()
-				.addAll(extra);
+		wovenClass.getDynamicImports()
+			.addAll(extra);
 	}
 
 	@Override
