@@ -9,10 +9,12 @@ import java.io.InputStream;
 public class LimitedInputStream extends InputStream {
 	private final InputStream	in;
 	private int					remaining;
+	private long				marked;
 
 	public LimitedInputStream(InputStream in, int size) {
 		this.in = requireNonNull(in);
 		this.remaining = size;
+		this.marked = size;
 		if (size < 0) {
 			throw new IllegalArgumentException("size must be non-negative");
 		}
@@ -69,12 +71,14 @@ public class LimitedInputStream extends InputStream {
 	protected void eof() {}
 
 	@Override
-	public void mark(int readlimit) {
+	public synchronized void mark(int readlimit) {
+		in.mark((int) ranged(readlimit));
+		marked = remaining;
 	}
 
 	@Override
 	public boolean markSupported() {
-		return false;
+		return in.markSupported();
 	}
 
 	@Override
@@ -94,8 +98,12 @@ public class LimitedInputStream extends InputStream {
 	}
 
 	@Override
-	public void reset() throws IOException {
-		throw new IOException("mark/reset not supported");
+	public synchronized void reset() throws IOException {
+		if (!in.markSupported()) {
+			throw new IOException("mark/reset not supported");
+		}
+		in.reset();
+		remaining = marked;
 	}
 
 	@Override
