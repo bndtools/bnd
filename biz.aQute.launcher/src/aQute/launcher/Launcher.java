@@ -39,6 +39,7 @@ import java.security.Policy;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Formatter;
@@ -487,7 +488,7 @@ public class Launcher implements ServiceListener {
 						case UNKNOWN :
 							trace(
 								"!the value of IMMEDIATE is not recognized as one of %s, it is %s",
-								EmbeddedActivatorPhase.values(),
+								Arrays.toString(EmbeddedActivatorPhase.values()),
 								immediateFieldValue);
 
 							// FALL THROUGH
