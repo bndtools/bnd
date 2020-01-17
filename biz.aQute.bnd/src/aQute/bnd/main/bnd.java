@@ -4206,7 +4206,7 @@ public class bnd extends Processor {
 		File outfile = getFile(outpath);
 		outfile.getParentFile()
 			.mkdirs();
-		logger.debug("out %s", outfile);
+		logger.debug("out {}", outfile);
 
 		String classes = options.classes();
 		if (classes == null) {
@@ -4218,7 +4218,7 @@ public class bnd extends Processor {
 
 		for (String arg : args) {
 			try {
-				logger.debug("storing %s", arg);
+				logger.debug("storing {}", arg);
 				File file = getFile(arg);
 				if (!file.isFile()) {
 					error("Cannot open file %s", file);
@@ -4246,7 +4246,7 @@ public class bnd extends Processor {
 				if (e.getKey()
 					.startsWith(path)) {
 					match = true;
-					logger.info("# found %s", path);
+					logger.info("# found {}", path);
 					out.putResource(e.getKey(), e.getValue());
 				}
 			}

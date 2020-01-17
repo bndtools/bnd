@@ -3385,9 +3385,8 @@ public class Project extends Processor {
 							po.version = version;
 							PutResult put = destination.put(in, po);
 						} catch (Exception e) {
-							logger.error("Failed to copy {}-{}", e, bsn, version);
-							error("Failed to copy %s:%s from %s to %s, error: %s", bsn, version, source, destination,
-								e);
+							logger.error("Failed to copy {}-{}", bsn, version, e);
+							exception(e, "Failed to copy %s:%s from %s to %s", bsn, version, source, destination);
 						}
 					}
 				}

@@ -133,7 +133,7 @@ public class P2Impl implements ArtifactProvider {
 					deferred.resolveWith(uris.stream()
 						.map(uri -> getArtifacts(cycles, base.resolve(uri)).recover(failed -> {
 							if (!defaults.contains(uri)) {
-								logger.info("Failed to get artifacts for %s", uri, failed.getFailure());
+								logger.info("Failed to get artifacts for {}", uri, failed.getFailure());
 							}
 							return Collections.emptyList();
 						}))

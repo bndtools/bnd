@@ -1732,7 +1732,7 @@ public class Builder extends Analyzer {
 			Instructions instructions = new Instructions(entry.getValue()
 				.get("--pack"));
 
-			logger.debug("diff against {} --full={} --pack={} --warning={}", file, full, instructions);
+			logger.debug("diff against {} --full={} --pack={} --warning={}", file, full, instructions, warning);
 			for (Diff p : api.getChildren()) {
 				String pname = p.getName();
 				if (p.getType() == Type.PACKAGE && instructions.matches(pname)) {

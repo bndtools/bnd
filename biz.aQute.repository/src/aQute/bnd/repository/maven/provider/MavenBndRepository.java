@@ -175,7 +175,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 							logger.debug("Already released {} to {}", pom.getRevision(), this);
 							return result;
 						}
-						logger.debug("Redeploying {}", pom.getRevision(), this);
+						logger.debug("Redeploying {} to {}", pom.getRevision(), this);
 					}
 				}
 
