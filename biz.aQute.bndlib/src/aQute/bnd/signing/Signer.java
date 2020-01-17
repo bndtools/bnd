@@ -43,8 +43,10 @@ public class Signer extends Processor {
 	String							alias;
 
 	public void signJar(Jar jar) {
-		if (digestNames == null || digestNames.length == 0)
+		if (digestNames == null || digestNames.length == 0) {
 			error("Need at least one digest algorithm name, none are specified");
+			return;
+		}
 
 		if (keystoreFile == null || !keystoreFile.getAbsoluteFile()
 			.exists()) {

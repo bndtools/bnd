@@ -12,8 +12,7 @@ public class HttpRequestException extends RuntimeException {
 	public final int			responseCode;
 
 	public HttpRequestException(HttpURLConnection conn) throws IOException {
-		super(conn.getURL() + ":" + conn.getResponseCode() + ":" + conn.getResponseMessage() == null ? getMessage(conn)
-			: conn.getResponseMessage());
+		super(getMessage(conn));
 		this.responseCode = conn.getResponseCode();
 	}
 
@@ -22,18 +21,34 @@ public class HttpRequestException extends RuntimeException {
 	}
 
 	public HttpRequestException(TaggedData tag, Throwable cause) {
-		super(tag.getUrl() + ":" + tag.getResponseCode() + ":" + tag.getTag(), cause);
+		super(getMessage(tag), cause);
 		this.responseCode = tag.getResponseCode();
 	}
 
-	private static String getMessage(HttpURLConnection conn) {
-		try (InputStream in = conn.getErrorStream()) {
-			if (in != null)
-				return IO.collect(in);
-		} catch (Exception e) {
-			// Ignore
+	private static String getMessage(TaggedData tag) {
+		return tag.getUrl() + ":" + tag.getResponseCode() + ":" + tag.getTag();
+	}
+
+	private static String getMessage(HttpURLConnection conn) throws IOException {
+		StringBuilder message = new StringBuilder().append(conn.getURL())
+			.append(':')
+			.append(conn.getResponseCode());
+		String responseMessage = conn.getResponseMessage();
+		if (responseMessage != null) {
+			message.append(':')
+				.append(responseMessage);
+		} else {
+			try (InputStream in = conn.getErrorStream()) {
+				if (in != null) {
+					String error = IO.collect(in);
+					message.append(':')
+					.append(error);
+				}
+			} catch (Exception e) {
+				// Ignore
+			}
 		}
-		return "";
+		return message.toString();
 	}
 
 }

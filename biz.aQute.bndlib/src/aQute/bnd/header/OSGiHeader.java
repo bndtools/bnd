@@ -35,7 +35,7 @@ public class OSGiHeader {
 
 	static public Parameters parseHeader(String value, Reporter logger, Parameters result) {
 		if (value == null || value.trim()
-			.length() == 0)
+			.isEmpty())
 			return result;
 
 		Map<String, String> duplicates = new HashMap<>();
@@ -48,7 +48,7 @@ public class OSGiHeader {
 			String name = qt.nextToken(",;");
 
 			del = qt.getSeparator();
-			if (name == null || name.length() == 0) {
+			if (name == null || name.isEmpty()) {
 				if (logger != null && logger.isPedantic()) {
 					logger.warning(
 						"Empty clause, usually caused by repeating a comma without any name field or by having spaces after the backslash of a property file: %s",
@@ -57,8 +57,6 @@ public class OSGiHeader {
 				if (name == null)
 					break;
 			} else {
-				name = name.trim();
-
 				aliases.add(name);
 				while (del == ';') {
 					String adname = qt.nextToken();
@@ -69,10 +67,21 @@ public class OSGiHeader {
 									"Header contains name field after attribute or directive: %s from %s. Name fields must be consecutive, separated by a ';' like a;b;c;x=3;y=4",
 									adname, value);
 							}
-						if (adname != null && adname.length() > 0)
-							aliases.add(adname.trim());
+						if (adname != null && !adname.isEmpty())
+							aliases.add(adname);
 					} else {
 						String advalue = qt.nextToken();
+						del = qt.getSeparator();
+						if (adname == null || adname.isEmpty()) {
+							if (logger != null)
+								logger.error("No name before '=' sign for attribute");
+							continue;
+						}
+						if (advalue == null) {
+							if (logger != null)
+								logger.error("No value after '=' sign for attribute %s", adname);
+							advalue = "";
+						}
 						if (clause.containsKey(adname)) {
 							if (result.allowDuplicateAttributes()) {
 								while (clause.containsKey(adname)) {
@@ -85,13 +94,7 @@ public class OSGiHeader {
 										adname, value);
 							}
 						}
-						if (advalue == null) {
-							if (logger != null)
-								logger.error("No value after '=' sign for attribute %s", adname);
-							advalue = "";
-						}
-						clause.put(adname.trim(), advalue);
-						del = qt.getSeparator();
+						clause.put(adname, advalue);
 						hadAttribute = true;
 					}
 				}

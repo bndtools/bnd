@@ -1,5 +1,6 @@
 package aQute.bnd.osgi;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
@@ -308,7 +309,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 	 * @return The map that links files to attributes
 	 */
 	public Map<File, List<Attrs>> select(File base, Function<String, String> mapper, Set<Instruction> missing) {
-
+		requireNonNull(mapper);
 		MultiMap<File, Attrs> result = new MultiMap<>();
 
 		//

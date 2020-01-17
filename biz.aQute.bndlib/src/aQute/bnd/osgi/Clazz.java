@@ -1812,9 +1812,9 @@ public class Clazz {
 
 			case DEFAULT_CONSTRUCTOR :
 				return hasPublicNoArgsConstructor();
+			default :
+				return instr == null ? false : instr.isNegated();
 		}
-
-		return instr == null ? false : instr.isNegated();
 	}
 
 	@Override
