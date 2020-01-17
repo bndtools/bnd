@@ -62,7 +62,7 @@ public class Tag {
 	 */
 	public Tag(String name, String[] attributes) {
 		this.name = name;
-		for (int i = 0; i < attributes.length; i += 2)
+		for (int i = 0; (i + 1) < attributes.length; i += 2)
 			addAttribute(attributes[i], attributes[i + 1]);
 	}
 

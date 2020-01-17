@@ -595,7 +595,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	 * @return result
 	 */
 	public String _replace(String args[]) {
-		if (args.length != 4) {
+		if (args.length < 3) {
 			reporter.warning("Invalid nr of arguments to replace %s", Arrays.asList(args));
 			return null;
 		}
