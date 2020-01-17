@@ -8,7 +8,7 @@ import java.io.InputStream;
 
 public class LimitedInputStream extends InputStream {
 	private final InputStream	in;
-	private int					remaining;
+	private long				remaining;
 	private long				marked;
 
 	public LimitedInputStream(InputStream in, int size) {
@@ -20,22 +20,15 @@ public class LimitedInputStream extends InputStream {
 		}
 	}
 
-	private void consume(int n) throws IOException {
-		if (n - remaining > 0) {
+	private void consume(long n) throws IOException {
+		if (n - remaining > 0L) {
 			throw new EOFException("request to read more bytes than available");
 		}
 		remaining -= n;
 	}
 
 	private boolean hasRemaining() {
-		return remaining > 0;
-	}
-
-	private int ranged(int n) {
-		if (n <= 0) {
-			return 0;
-		}
-		return Math.min(n, remaining);
+		return remaining > 0L;
 	}
 
 	private long ranged(long n) {
@@ -58,7 +51,7 @@ public class LimitedInputStream extends InputStream {
 
 	@Override
 	public int available() throws IOException {
-		return ranged(in.available());
+		return (int) ranged(in.available());
 	}
 
 	@Override
@@ -84,7 +77,7 @@ public class LimitedInputStream extends InputStream {
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
 		if (hasRemaining()) {
-			int read = in.read(b, off, ranged(len));
+			int read = in.read(b, off, (int) ranged(len));
 			consume(read);
 			return read;
 		}
@@ -109,7 +102,7 @@ public class LimitedInputStream extends InputStream {
 	@Override
 	public long skip(long n) throws IOException {
 		long skipped = in.skip(ranged(n));
-		consume((int) skipped);
+		consume(skipped);
 		return skipped;
 	}
 }
