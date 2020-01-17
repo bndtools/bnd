@@ -126,15 +126,8 @@ public class DiffCommand {
 			return;
 		}
 
-		PrintWriter pw = null;
-		try {
-			File fout = options.output();
-
-			if (fout == null)
-				pw = IO.writer(bnd.out);
-			else
-				pw = IO.writer(fout, UTF_8);
-
+		File fout = options.output();
+		try (PrintWriter pw = (fout == null) ? IO.writer(bnd.out) : IO.writer(fout, UTF_8)) {
 			Instructions packageFilters = new Instructions(options.pack());
 
 			if (options.ignore() != null)
@@ -177,9 +170,6 @@ public class DiffCommand {
 			}
 			if (newer != null) {
 				newer.close();
-			}
-			if (pw != null) {
-				pw.close();
 			}
 		}
 	}

@@ -2,8 +2,6 @@ package org.bndtools.core.editors;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -63,7 +62,6 @@ import aQute.bnd.properties.Document;
 import aQute.bnd.properties.IDocument;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.collections.MultiMap;
-import aQute.lib.io.ByteBufferInputStream;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import bndtools.central.Central;
@@ -147,7 +145,7 @@ public class ImportPackageQuickFixProcessor implements IQuickFixProcessor {
 			loadFileInfo();
 			String contents;
 			try {
-				contents = IO.collect(new InputStreamReader(bndFile.getContents(), bndFile.getCharset()));
+				contents = IO.collect(bndFile.getContents(), bndFile.getCharset());
 				bndDoc = new Document(contents);
 				bndModel = new BndEditModel(getWorkspace());
 				bndModel.loadFrom(bndDoc);
@@ -192,15 +190,13 @@ public class ImportPackageQuickFixProcessor implements IQuickFixProcessor {
 			}
 			bndModel.setBuildPath(buildPath);
 			bndModel.saveChangesTo(bndDoc);
-			InputStream str;
-			try {
-				str = new ByteBufferInputStream(bndDoc.get()
-					.getBytes(bndFile.getCharset()));
-			} catch (UnsupportedEncodingException e) {
+
+			try (InputStream str = IO.stream(bndDoc.get(), bndFile.getCharset())) {
+				bndFile.setContents(str, IResource.KEEP_HISTORY, monitor);
+			} catch (IOException e) {
 				throw new CoreException(
 					new Status(IStatus.ERROR, BndtoolsConstants.CORE_PLUGIN_ID, "Invalid encoding for " + bndFile, e));
 			}
-			bndFile.setContents(str, IResource.KEEP_HISTORY, monitor);
 		}
 
 		public boolean containsBundle(String bundle) throws CoreException {

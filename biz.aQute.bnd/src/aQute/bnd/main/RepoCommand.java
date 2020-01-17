@@ -451,10 +451,11 @@ public class RepoCommand {
 				}
 
 				if (bnd.isOk()) {
-					PutResult r = writable.put(new BufferedInputStream(IO.stream(file)),
-						new RepositoryPlugin.PutOptions());
-					logger.debug("put {} in {} ({}) into {}", source, writable.getName(), writable.getLocation(),
-						r.artifact);
+					try (InputStream in = new BufferedInputStream(IO.stream(file))) {
+						PutResult r = writable.put(in, new RepositoryPlugin.PutOptions());
+						logger.debug("put {} in {} ({}) into {}", source, writable.getName(), writable.getLocation(),
+							r.artifact);
+					}
 				}
 			}
 			if (delete)

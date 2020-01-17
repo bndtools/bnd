@@ -1198,7 +1198,9 @@ public class Project extends Processor {
 			builder.init();
 			for (RepositoryPlugin releaseRepo : releaseRepos) {
 				for (File jar : jars) {
-					releaseRepo(releaseRepo, builder, jar.getName(), new BufferedInputStream(IO.stream(jar)));
+					try (InputStream jarStream = new BufferedInputStream(IO.stream(jar))) {
+						releaseRepo(releaseRepo, builder, jar.getName(), jarStream);
+					}
 				}
 			}
 		}
@@ -1547,9 +1549,8 @@ public class Project extends Processor {
 		}
 
 		if (rp != null) {
-			try {
-				rp.put(new BufferedInputStream(IO.stream(file)), new RepositoryPlugin.PutOptions());
-				return;
+			try (InputStream stream = new BufferedInputStream(IO.stream(file))) {
+				rp.put(stream, new RepositoryPlugin.PutOptions());
 			} catch (Exception e) {
 				msgs.DeployingFile_On_Exception_(file, rp.getName(), e);
 			}
@@ -1584,8 +1585,8 @@ public class Project extends Processor {
 		for (File output : outputs) {
 			for (Deploy d : getPlugins(Deploy.class)) {
 				logger.debug("Deploying {} to: {}", output.getName(), d);
-				try {
-					if (d.deploy(this, output.getName(), new BufferedInputStream(IO.stream(output))))
+				try (InputStream jarStream = new BufferedInputStream(IO.stream(output))) {
+					if (d.deploy(this, output.getName(), jarStream))
 						logger.debug("deployed {} successfully to {}", output, d);
 				} catch (Exception e) {
 					msgs.Deploying(e);
