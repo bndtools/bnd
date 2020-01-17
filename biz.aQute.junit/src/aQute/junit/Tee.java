@@ -29,6 +29,14 @@ public class Tee extends OutputStream {
 			wrapped.write(b);
 	}
 
+	@Override
+	public void write(byte b[], int off, int len) throws IOException {
+		if (capture)
+			buffer.write(b, off, len);
+		if (echo)
+			wrapped.write(b, off, len);
+	}
+
 	public String getContent() {
 		if (buffer.size() == 0)
 			return null;
