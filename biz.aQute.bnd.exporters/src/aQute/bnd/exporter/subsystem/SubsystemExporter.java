@@ -161,7 +161,7 @@ public class SubsystemExporter implements Exporter {
 		// provide capability
 		MultiMap<String, Attrs> provideCapability = new MultiMap<>();
 		Parameters capabilityParameter = project.getProvideCapability();
-		if (provideCapability != null && !provideCapability.entrySet()
+		if (capabilityParameter != null && !capabilityParameter.entrySet()
 			.isEmpty()) {
 			for (Entry<String, Attrs> e : capabilityParameter.entrySet()) {
 				provideCapability.add(e.getKey(), e.getValue());

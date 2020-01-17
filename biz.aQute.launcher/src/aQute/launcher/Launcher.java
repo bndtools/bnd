@@ -603,9 +603,10 @@ public class Launcher implements ServiceListener {
 		List<Bundle> all = new ArrayList<>(tobestarted);
 		// Add all bundles that we've tried to start but failed
 		all.addAll(wantsToBeStarted);
+		wantsToBeStarted.clear();
 
 
-		for (Bundle b : tobestarted) {
+		for (Bundle b : all) {
 			try {
 				trace("starting %s", b.getSymbolicName());
 				start(b);

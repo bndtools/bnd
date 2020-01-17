@@ -109,7 +109,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 			RunRemoteDTO dto = converter.convert(RunRemoteDTO.class, entry.getValue());
 			dto.name = entry.getKey();
 
-			Map<String, Object> sessionProperties = new HashMap<>(properties);
+			Map<String, String> sessionProperties = new HashMap<>(properties);
 			sessionProperties.putAll(entry.getValue());
 			sessionProperties.put("session.name", dto.name);
 
@@ -117,7 +117,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 				tryJMXDeploy(dto.jmx, "biz.aQute.remote.agent");
 			}
 
-			RunSessionImpl session = new RunSessionImpl(this, dto, properties);
+			RunSessionImpl session = new RunSessionImpl(this, dto, sessionProperties);
 			sessions.add(session);
 		}
 	}
