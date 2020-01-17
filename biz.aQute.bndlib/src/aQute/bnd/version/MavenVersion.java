@@ -253,7 +253,6 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	 * 2,147,483,647 = 10 digits
 	 * </pre>
 	 *
-	 * @param integer
 	 * @return if this fits in an integer
 	 */
 	private static boolean isInteger(String minor) {

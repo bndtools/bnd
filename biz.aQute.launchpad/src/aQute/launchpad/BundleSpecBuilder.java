@@ -364,7 +364,8 @@ public interface BundleSpecBuilder {
 	/**
 	 * Import-Package
 	 *
-	 * @param name name of the package to be imported, may contain wildcards
+	 * @param packageName name of the package to be imported, may contain
+	 *            wildcards
 	 */
 
 	default BundleSpecImportPackage importPackage(String packageName) {
@@ -530,9 +531,9 @@ public interface BundleSpecBuilder {
 		/**
 		 * Set included classes
 		 *
-		 * @param classNames the included class names
+		 * @param classes the included class names
 		 */
-		default BundleSpecExportPackage include(@SuppressWarnings("rawtypes") Class... classes) {
+		default BundleSpecExportPackage include(Class<?>... classes) {
 			return this.include(Stream.of(classes)
 				.map(Class::getName)
 				.toArray(String[]::new));

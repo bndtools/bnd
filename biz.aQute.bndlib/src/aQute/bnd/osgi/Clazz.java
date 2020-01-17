@@ -1591,8 +1591,6 @@ public class Clazz {
 
 	/**
 	 * Add a new package reference.
-	 *
-	 * @param packageRef A '.' delimited package name
 	 */
 	private void referTo(TypeRef typeRef, int modifiers) {
 		xref.add(typeRef);

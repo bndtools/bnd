@@ -19,8 +19,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-import javax.xml.xpath.XPathExpressionException;
-
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
@@ -114,14 +112,6 @@ public class P2Impl implements ArtifactProvider {
 		});
 	}
 
-	/**
-	 * @param artifacts
-	 * @param cycles
-	 * @param in
-	 * @return
-	 * @throws IOException
-	 * @throws XPathExpressionException
-	 */
 	private Promise<List<Artifact>> parseCompositeArtifacts(Set<URI> cycles, InputStream in, URI base)
 		throws Exception {
 		if (in == null) {
@@ -220,10 +210,6 @@ public class P2Impl implements ArtifactProvider {
  	 *  metadata.repository.factory.order = compositeContent.xml,\!
  	 *  artifact.repository.factory.order = compositeArtifacts.xml,\!
 	 * @formatter:on
-	 * @param artifacts
-	 * @param cycles
-	 * @param base
-	 * @throws Exception
 	 */
 	private Promise<List<Artifact>> parseIndexArtifacts(Set<URI> cycles, final URI uri) throws Exception {
 		Promise<File> file = client.build()

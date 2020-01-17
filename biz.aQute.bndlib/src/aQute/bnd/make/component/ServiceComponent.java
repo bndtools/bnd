@@ -2,7 +2,6 @@ package aQute.bnd.make.component;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -253,11 +252,6 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 		/**
 		 * Create the resource for a DS component.
-		 *
-		 * @param list
-		 * @param name
-		 * @param info
-		 * @throws UnsupportedEncodingException
 		 */
 		Resource createComponentResource(String name, String impl, Map<String, String> info) throws Exception {
 			HeaderReader hr = new HeaderReader(analyzer);

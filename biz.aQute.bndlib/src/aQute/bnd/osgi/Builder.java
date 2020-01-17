@@ -654,11 +654,6 @@ public class Builder extends Analyzer {
 	/**
 	 * Destructively filter the packages from the build up index. This index is
 	 * used by the Export Package as well as the Private Package
-	 *
-	 * @param jar
-	 * @param name
-	 * @param instructions
-	 * @throws Exception
 	 */
 	private Set<Instruction> doExpand(Jar jar, MultiMap<String, Jar> index, Instructions filter) throws Exception {
 		Set<Instruction> unused = Create.set();
@@ -740,11 +735,6 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Copy the package from the providers based on the split package strategy.
-	 *
-	 * @param dest
-	 * @param providers
-	 * @param directory
-	 * @param splitStrategy
 	 */
 	private void copyPackage(Jar dest, List<Jar> providers, String path, int splitStrategy) {
 		switch (splitStrategy) {
@@ -779,12 +769,7 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Cop
-	 *
-	 * @param dest
-	 * @param srce
-	 * @param path
-	 * @param overwriteResource
+	 * Copy
 	 */
 	private void copy(Jar dest, Jar srce, String path, boolean overwrite) {
 		logger.debug("copy d={} s={} p={}", dest, srce, path);
@@ -1261,14 +1246,7 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Extra resources from a Jar and add them to the given jar. The clause is
-	 * the
-	 *
-	 * @param jar
-	 * @param clauses
-	 * @param i
-	 * @throws ZipException
-	 * @throws IOException
+	 * Extra resources from a Jar and add them to the given jar.
 	 */
 	private void extractFromJar(Jar jar, String source, String destination, boolean absentIsOk)
 		throws ZipException, IOException {
@@ -1786,9 +1764,6 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Show the diff recursively
-	 *
-	 * @param p
-	 * @param i
 	 */
 	private void show(Diff p, String indent, boolean warning) {
 		Delta d = p.getDelta();

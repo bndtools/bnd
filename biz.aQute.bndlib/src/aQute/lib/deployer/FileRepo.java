@@ -843,9 +843,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/**
 	 * Execute a command. Used in different stages so that the repository can be
 	 * synced with external tools.
-	 *
-	 * @param line
-	 * @param target
 	 */
 	void exec(String line, Object... args) {
 		if (line == null) {

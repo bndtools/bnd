@@ -347,10 +347,6 @@ public class ClassDumper {
 	 * catch_type; } exception_table[exception_table_length]; u2
 	 * attributes_count; attribute_info attributes[attributes_count]; }
 	 * </pre>
-	 *
-	 * @param in
-	 * @param pool
-	 * @throws IOException
 	 */
 	private void doCode(DataInputStream in, String indent) throws IOException {
 		int max_stack = in.readUnsignedShort();

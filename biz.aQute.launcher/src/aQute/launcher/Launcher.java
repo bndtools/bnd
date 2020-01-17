@@ -552,8 +552,6 @@ public class Launcher implements ServiceListener {
 	 * Ensure that all the bundles in the parameters are actually started. We
 	 * can start in embedded mode (bundles are inside our main jar) or in file
 	 * system mode.
-	 *
-	 * @param begin
 	 */
 	private List<Bundle> update(long before) throws Exception {
 
@@ -1188,8 +1186,6 @@ public class Launcher implements ServiceListener {
 	/**
 	 * Try to get the stupid service interface ...
 	 *
-	 * @param loader
-	 * @param string
 	 * @throws IOException
 	 */
 	private List<String> getMetaInfServices(ClassLoader loader, String factory) throws IOException {

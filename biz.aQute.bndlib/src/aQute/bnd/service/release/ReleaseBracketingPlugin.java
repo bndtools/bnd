@@ -31,5 +31,5 @@ public interface ReleaseBracketingPlugin {
 	 * @param project The project that should be associated with product created
 	 *            at the end of the release cycle.
 	 */
-	void end(Project p);
+	void end(Project project);
 }

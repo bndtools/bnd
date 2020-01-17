@@ -147,17 +147,6 @@ class ArtifactRepository extends XML {
 		}
 	}
 
-	/**
-	 * * <artifact classifier='osgi.bundle' id=
-	 * 'org.bndtools.versioncontrol.ignores.plugin.git' version=
-	 * '3.3.0.201605202157'>
-	 *
-	 * @param item
-	 * @return
-	 * @throws Exception
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 */
 	List<Rule> getRules() throws Exception {
 		List<Rule> rules = new ArrayList<>();
 		NodeList ruleNodes = getNodes("repository/mappings/rule");

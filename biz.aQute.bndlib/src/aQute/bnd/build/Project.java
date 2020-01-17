@@ -925,9 +925,6 @@ public class Project extends Processor {
 
 	/**
 	 * Handle dependencies for paths that are calculated on demand.
-	 *
-	 * @param testpath2
-	 * @param parseTestpath
 	 */
 	private void justInTime(Collection<Container> path, List<Container> entries, boolean noproject, String name) {
 		if (delayRunDependencies && path.isEmpty())

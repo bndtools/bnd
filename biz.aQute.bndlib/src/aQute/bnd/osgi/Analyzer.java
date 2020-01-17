@@ -1694,10 +1694,6 @@ public class Analyzer extends Processor {
 		return result;
 	}
 
-	/**
-	 * @param manifests
-	 * @throws Exception
-	 */
 	private void merge(Manifest result, Manifest old) {
 		if (old != null) {
 			for (Map.Entry<Object, Object> entry : old.getMainAttributes()
@@ -1817,11 +1813,6 @@ public class Analyzer extends Processor {
 		return result;
 	}
 
-	/**
-	 * @param jar
-	 * @param contracts
-	 * @param contracted
-	 */
 	private void getManifestInfoFromClasspath(Jar jar, Packages classpathExports, Contracts contracts) {
 		try {
 			Manifest m = jar.getManifest();
@@ -2298,15 +2289,6 @@ public class Analyzer extends Processor {
 		}
 	}
 
-	/**
-	 * Verify an attribute
-	 *
-	 * @param f
-	 * @param where
-	 * @param key
-	 * @param propvalue
-	 * @throws IOException
-	 */
 	private void verifyAttribute(String path, String where, String key, String value) throws IOException {
 		SetLocation location;
 		if (!Verifier.isExtended(key)) {
@@ -2548,11 +2530,6 @@ public class Analyzer extends Processor {
 	 * We traverse through all the classes that we can find and calculate the
 	 * contained and referred set and uses. This method ignores the Bundle
 	 * classpath.
-	 *
-	 * @param jar
-	 * @param contained
-	 * @param uses
-	 * @throws IOException
 	 */
 	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs, String bcpEntry) throws Exception {
 		Map<String, Clazz> mismatched = new HashMap<>();
@@ -2731,7 +2708,6 @@ public class Analyzer extends Processor {
 	 * 2,147,483,647 = 10 digits
 	 * </pre>
 	 *
-	 * @param integer
 	 * @return if this fits in an integer
 	 */
 	private static boolean isInteger(String minor) {
