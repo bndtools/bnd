@@ -119,8 +119,6 @@ class JavaElement {
 	 * Create an element for the API. We take the exported packages and traverse
 	 * those for their classes. If there is no manifest or it does not describe
 	 * a bundle we assume the whole contents is exported.
-	 *
-	 * @param infos
 	 */
 	JavaElement(Analyzer analyzer) throws Exception {
 		this.analyzer = analyzer;
@@ -211,11 +209,6 @@ class JavaElement {
 	 * finding all the methods that were added etc. The parsing will take super
 	 * interfaces and super classes into account. For this reason it maintains a
 	 * queue of classes/interfaces to parse.
-	 *
-	 * @param analyzer
-	 * @param clazz
-	 * @param infos
-	 * @throws Exception
 	 */
 	Element classElement(final Clazz clazz) throws Exception {
 		Element e = cache.get(clazz);

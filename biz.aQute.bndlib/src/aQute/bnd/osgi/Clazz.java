@@ -487,10 +487,10 @@ public class Clazz {
 
 		@Override
 		ElementType elementType() {
-			if (isAnnotation()) {
+			if (super.isAnnotation()) {
 				return ElementType.ANNOTATION_TYPE;
 			}
-			if (isModule()) {
+			if (super.isModule()) {
 				return ElementType.MODULE;
 			}
 			return type.getBinary()
@@ -612,7 +612,7 @@ public class Clazz {
 
 		@Override
 		public boolean isFinal() {
-			return super.isFinal() || Modifier.isFinal(classDef.getAccess());
+			return super.isFinal() || Clazz.this.isFinal();
 		}
 
 		@Override
@@ -621,7 +621,7 @@ public class Clazz {
 		}
 
 		public boolean isBridge() {
-			return (getAccess() & ACC_BRIDGE) != 0;
+			return (super.getAccess() & ACC_BRIDGE) != 0;
 		}
 
 		@Override
@@ -1591,8 +1591,6 @@ public class Clazz {
 
 	/**
 	 * Add a new package reference.
-	 *
-	 * @param packageRef A '.' delimited package name
 	 */
 	private void referTo(TypeRef typeRef, int modifiers) {
 		xref.add(typeRef);
@@ -1814,9 +1812,9 @@ public class Clazz {
 
 			case DEFAULT_CONSTRUCTOR :
 				return hasPublicNoArgsConstructor();
+			default :
+				return instr == null ? false : instr.isNegated();
 		}
-
-		return instr == null ? false : instr.isNegated();
 	}
 
 	@Override

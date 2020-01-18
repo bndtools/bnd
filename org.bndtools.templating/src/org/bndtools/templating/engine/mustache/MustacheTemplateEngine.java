@@ -26,6 +26,7 @@ import com.github.mustachejava.DefaultMustacheFactory;
 
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Instructions;
+import aQute.lib.io.IO;
 
 @Component(name = "org.bndtools.templating.engine.mustache", property = {
     "name=mustache", "version=0.8.18"
@@ -85,10 +86,11 @@ public class MustacheTemplateEngine implements TemplateEngine {
             Resource source = entry.getValue();
             if (settings.ignore == null || !settings.ignore.matches(inputPath)) {
                 if (source.getType() == ResourceType.File && settings.preprocessMatch.matches(inputPath)) {
-                    InputStreamReader reader = new InputStreamReader(source.getContent(), source.getTextEncoding());
-                    factory.compile(reader, "temp" + (counter++), settings.leftDelim, settings.rightDelim)
-                        .execute(new StringWriter(), Collections.emptyMap())
-                        .toString();
+					try (Reader reader = IO.reader(source.getContent(), source.getTextEncoding())) {
+						factory.compile(reader, "temp" + (counter++), settings.leftDelim, settings.rightDelim)
+							.execute(new StringWriter(), Collections.emptyMap())
+							.toString();
+					}
                 }
             }
         }
@@ -130,11 +132,12 @@ public class MustacheTemplateEngine implements TemplateEngine {
                     case File :
                         if (settings.preprocessMatch.matches(inputPath)) {
                             // This file should be processed with the template engine
-                            InputStreamReader reader = new InputStreamReader(source.getContent(), source.getTextEncoding());
-                            StringWriter rendered = new StringWriter();
-                            mustacheFactory.compile(reader, outputPath, settings.leftDelim, settings.rightDelim)
-                                .execute(rendered, flattenedParams);
-                            output = new StringResource(rendered.toString());
+							try (Reader reader = IO.reader(source.getContent(), source.getTextEncoding())) {
+								StringWriter rendered = new StringWriter();
+								mustacheFactory.compile(reader, outputPath, settings.leftDelim, settings.rightDelim)
+									.execute(rendered, flattenedParams);
+								output = new StringResource(rendered.toString());
+							}
                         } else {
                             // This file should be directly copied
                             output = source;

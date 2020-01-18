@@ -152,9 +152,6 @@ public class Central implements IStartupParticipant {
 					// model = Central.getProject(projectDir);
 					return null;
 				}
-				if (workspace == null) {
-					model.getWorkspace();
-				}
 				if (model != null) {
 					javaProjectToModel.put(project, model);
 				}

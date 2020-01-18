@@ -1125,8 +1125,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 *
 	 * @param ubase
 	 * @param p
-	 * @param done
-	 * @throws IOException
 	 * @throws IOException
 	 */
 
@@ -1476,9 +1474,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * nowadays all files are encoded with UTF-8. So we try to load it first as
 	 * UTF-8 and if this fails we fail back to ISO-8859-1
 	 *
-	 * @param in The stream to load from
-	 * @param name The name of the file for doc reasons
-	 * @return a Properties
 	 * @throws IOException
 	 */
 	UTF8Properties loadProperties0(File file) throws IOException {

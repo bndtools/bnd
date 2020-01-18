@@ -344,7 +344,6 @@ public class Util {
 		// assert (pieces.length > 1)
 		// minimal case is <string>*<string>
 
-		boolean result = true;
 		int len = pieces.size();
 
 		// Special case, if there is only one piece, then
@@ -358,32 +357,29 @@ public class Util {
 
 		int index = 0;
 
-		loop: for (int i = 0; i < len; i++) {
+		for (int i = 0; i < len; i++) {
 			String piece = pieces.get(i);
 
 			// If this is the first piece, then make sure the
 			// string starts with it.
 			if (i == 0) {
 				if (!s.startsWith(piece)) {
-					result = false;
-					break loop;
+					return false;
 				}
 			}
 
 			// If this is the last piece, then make sure the
 			// string ends with it.
 			if (i == len - 1) {
-				result = s.endsWith(piece);
-				break loop;
+				return s.endsWith(piece);
 			}
 
 			// If this is neither the first or last piece, then
 			// make sure the string contains it.
-			if ((i > 0) && (i < (len - 1))) {
+			if (i > 0) {
 				index = s.indexOf(piece, index);
 				if (index < 0) {
-					result = false;
-					break loop;
+					return false;
 				}
 			}
 
@@ -391,12 +387,12 @@ public class Util {
 			index += piece.length();
 		}
 
-		return result;
+		return true;
 	}
 
 	/**
 	 * Intepret a string as a URI relative to the current working directory.
-	 * 
+	 *
 	 * @param session the session (where the CWD is stored)
 	 * @param relativeUri the input URI
 	 * @return the resulting URI as a string

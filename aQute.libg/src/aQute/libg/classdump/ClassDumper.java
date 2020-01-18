@@ -245,8 +245,7 @@ public class ClassDumper {
 	 */
 	private void doAttribute(DataInputStream in, String indent) throws IOException {
 		int attribute_name_index = in.readUnsignedShort();
-		long attribute_length = in.readInt();
-		attribute_length &= 0xFFFF;
+		int attribute_length = in.readInt();
 		String attributeName = (String) pool[attribute_name_index];
 		ps.printf("%-30s %s(#%d)%n", indent + "attribute", attributeName, attribute_name_index);
 		if ("RuntimeVisibleAnnotations".equals(attributeName))
@@ -273,10 +272,10 @@ public class ClassDumper {
 			; // Is Empty
 		else {
 			ps.printf("%-30s %d%n", indent + "Unknown attribute, skipping", attribute_length);
-			if (attribute_length > 0x7FFFFFFF) {
+			if (attribute_length < 0) {
 				throw new IllegalArgumentException("Attribute > 2Gb");
 			}
-			byte buffer[] = new byte[(int) attribute_length];
+			byte buffer[] = new byte[attribute_length];
 			in.readFully(buffer);
 			printHex(buffer);
 		}
@@ -347,10 +346,6 @@ public class ClassDumper {
 	 * catch_type; } exception_table[exception_table_length]; u2
 	 * attributes_count; attribute_info attributes[attributes_count]; }
 	 * </pre>
-	 *
-	 * @param in
-	 * @param pool
-	 * @throws IOException
 	 */
 	private void doCode(DataInputStream in, String indent) throws IOException {
 		int max_stack = in.readUnsignedShort();

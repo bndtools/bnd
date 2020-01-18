@@ -158,7 +158,7 @@ public class MavenEntry implements Closeable {
 	/**
 	 * Download a resource from the given repo.
 	 *
-	 * @param url The base url for the repo
+	 * @param repo The base url for the repo
 	 * @param path The path part
 	 * @throws MalformedURLException
 	 */

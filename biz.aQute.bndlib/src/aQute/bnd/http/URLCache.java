@@ -186,11 +186,11 @@ public class URLCache {
 	public boolean clear(URI uri) throws Exception {
 		File f = getCacheFileFor(uri);
 		boolean exists = f.isFile();
-		if (f != null && exists) {
+		if (exists) {
 			IO.deleteWithException(f);
 		}
 		f = getCacheInfoFileFor(uri);
-		if (f != null && f.isFile()) {
+		if (f.isFile()) {
 			IO.deleteWithException(f);
 		}
 		infos.remove(f);

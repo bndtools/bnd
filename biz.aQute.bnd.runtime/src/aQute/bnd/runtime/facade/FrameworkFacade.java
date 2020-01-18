@@ -144,7 +144,7 @@ public class FrameworkFacade implements SnapshotProvider {
 					for (ListenerInfo li : listeners) {
 						Bundle b = li.getBundleContext()
 							.getBundle();
-						serviceListeners.remove(b, li);
+						serviceListeners.removeValue(b, li);
 					}
 				}
 			}

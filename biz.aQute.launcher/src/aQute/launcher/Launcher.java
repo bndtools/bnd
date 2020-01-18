@@ -39,10 +39,10 @@ import java.security.Policy;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Formatter;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.IllegalFormatException;
 import java.util.LinkedHashMap;
@@ -105,7 +105,6 @@ public class Launcher implements ServiceListener {
 	private boolean							security;
 	private SimplePermissionPolicy			policy;
 	private Callable<Integer>				mainThread;
-	private final Map<Bundle, Throwable>	errors				= new HashMap<>();
 	private final Map<File, Bundle>			installedBundles	= new LinkedHashMap<>();
 	private File							home				= new File(System.getProperty("user.home"));
 	private File							bnd					= new File(home, "bnd");
@@ -487,7 +486,7 @@ public class Launcher implements ServiceListener {
 						case UNKNOWN :
 							trace(
 								"!the value of IMMEDIATE is not recognized as one of %s, it is %s",
-								EmbeddedActivatorPhase.values(),
+								Arrays.toString(EmbeddedActivatorPhase.values()),
 								immediateFieldValue);
 
 							// FALL THROUGH
@@ -552,8 +551,6 @@ public class Launcher implements ServiceListener {
 	 * Ensure that all the bundles in the parameters are actually started. We
 	 * can start in embedded mode (bundles are inside our main jar) or in file
 	 * system mode.
-	 *
-	 * @param begin
 	 */
 	private List<Bundle> update(long before) throws Exception {
 
@@ -604,9 +601,10 @@ public class Launcher implements ServiceListener {
 		List<Bundle> all = new ArrayList<>(tobestarted);
 		// Add all bundles that we've tried to start but failed
 		all.addAll(wantsToBeStarted);
+		wantsToBeStarted.clear();
 
 
-		for (Bundle b : tobestarted) {
+		for (Bundle b : all) {
 			try {
 				trace("starting %s", b.getSymbolicName());
 				start(b);
@@ -1188,8 +1186,6 @@ public class Launcher implements ServiceListener {
 	/**
 	 * Try to get the stupid service interface ...
 	 *
-	 * @param loader
-	 * @param string
 	 * @throws IOException
 	 */
 	private List<String> getMetaInfServices(ClassLoader loader, String factory) throws IOException {
@@ -1270,12 +1266,7 @@ public class Launcher implements ServiceListener {
 						out.print(fill(toState(bundles[i].getState()), 6));
 						out.print(fill(lastModified, 14));
 
-						if (errors.containsKey(bundles[i])) {
-							out.print(fill(loc, 50));
-							out.print(errors.get(bundles[i])
-								.toString());
-						} else
-							out.print(bundles[i].getLocation());
+						out.print(bundles[i].getLocation());
 
 						out.println();
 					}

@@ -1,5 +1,7 @@
 package aQute.bnd.version;
 
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,6 +25,8 @@ public class Version implements Comparable<Version> {
 	public static final Version	emptyVersion	= LOWEST;
 	public static final Version	ONE				= new Version(1, 0, 0);
 	public static final Pattern	SNAPSHOT_P		= Pattern.compile("(.*-)?SNAPSHOT$");
+
+	private static final Comparator<String>	qualifierComparator	= Comparator.nullsFirst(Comparator.naturalOrder());
 
 	public Version() {
 		this(0);
@@ -95,33 +99,19 @@ public class Version implements Comparable<Version> {
 		if (other == this)
 			return 0;
 
-		Version o = other;
-		int cmp = major - o.major;
+		int cmp = Integer.compare(major, other.major);
 		if (cmp != 0)
 			return cmp;
 
-		cmp = minor - o.minor;
+		cmp = Integer.compare(minor, other.minor);
 		if (cmp != 0)
 			return cmp;
 
-		cmp = micro - o.micro;
+		cmp = Integer.compare(micro, other.micro);
 		if (cmp != 0)
 			return cmp;
 
-		if (qualifier != null)
-			cmp = 1;
-		if (o.qualifier != null)
-			cmp += 2;
-
-		switch (cmp) {
-			case 0 :
-				return 0;
-			case 1 :
-				return 1;
-			case 2 :
-				return -1;
-		}
-		return qualifier.compareTo(o.qualifier);
+		return Objects.compare(qualifier, other.qualifier, qualifierComparator);
 	}
 
 	@Override

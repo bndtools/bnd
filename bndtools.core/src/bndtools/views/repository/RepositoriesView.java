@@ -940,7 +940,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 	 *
 	 * @param target the target being dropped upon
 	 * @param data the data
-	 * @param data2
+	 * @param dropped
 	 * @return true if dropped and processed, false if not
 	 */
 	boolean performDrop(Object target, TransferData data, Object dropped) {

@@ -2,12 +2,14 @@ package bndtools.wizards.workspace;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -76,8 +78,8 @@ public class AddFilesToRepositoryWizard extends Wizard {
 						continue;
 					}
 
-					try {
-						RepositoryPlugin.PutResult result = repository.put(new BufferedInputStream(IO.stream(file)),
+					try (InputStream in = new BufferedInputStream(IO.stream(file))) {
+						RepositoryPlugin.PutResult result = repository.put(in,
 							new RepositoryPlugin.PutOptions());
 						URI artifact = result.artifact;
 						if ((artifact != null) && artifact.getScheme()

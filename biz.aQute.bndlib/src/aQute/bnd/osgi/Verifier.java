@@ -595,10 +595,6 @@ public class Verifier extends Processor {
 				+ ", ExtensionBundle-Activator, or a system bundle fragment makes it impossible to verify unresolved references");
 	}
 
-	/**
-	 * @param p
-	 * @param pack
-	 */
 	private boolean isDynamicImport(PackageRef pack) {
 		if (dynamicImports == null)
 			dynamicImports = new Instructions(main.getDynamicImportPackage());

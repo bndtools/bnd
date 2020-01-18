@@ -8,32 +8,27 @@ import java.io.InputStream;
 
 public class LimitedInputStream extends InputStream {
 	private final InputStream	in;
-	private int					remaining;
+	private long				remaining;
+	private long				marked;
 
 	public LimitedInputStream(InputStream in, int size) {
 		this.in = requireNonNull(in);
 		this.remaining = size;
+		this.marked = size;
 		if (size < 0) {
 			throw new IllegalArgumentException("size must be non-negative");
 		}
 	}
 
-	private void consume(int n) throws IOException {
-		if (n - remaining > 0) {
+	private void consume(long n) throws IOException {
+		if (n - remaining > 0L) {
 			throw new EOFException("request to read more bytes than available");
 		}
 		remaining -= n;
 	}
 
 	private boolean hasRemaining() {
-		return remaining > 0;
-	}
-
-	private int ranged(int n) {
-		if (n <= 0) {
-			return 0;
-		}
-		return Math.min(n, remaining);
+		return remaining > 0L;
 	}
 
 	private long ranged(long n) {
@@ -56,7 +51,7 @@ public class LimitedInputStream extends InputStream {
 
 	@Override
 	public int available() throws IOException {
-		return ranged(in.available());
+		return (int) ranged(in.available());
 	}
 
 	@Override
@@ -69,18 +64,20 @@ public class LimitedInputStream extends InputStream {
 	protected void eof() {}
 
 	@Override
-	public void mark(int readlimit) {
+	public synchronized void mark(int readlimit) {
+		in.mark((int) ranged(readlimit));
+		marked = remaining;
 	}
 
 	@Override
 	public boolean markSupported() {
-		return false;
+		return in.markSupported();
 	}
 
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
 		if (hasRemaining()) {
-			int read = in.read(b, off, ranged(len));
+			int read = in.read(b, off, (int) ranged(len));
 			consume(read);
 			return read;
 		}
@@ -94,14 +91,18 @@ public class LimitedInputStream extends InputStream {
 	}
 
 	@Override
-	public void reset() throws IOException {
-		throw new IOException("mark/reset not supported");
+	public synchronized void reset() throws IOException {
+		if (!in.markSupported()) {
+			throw new IOException("mark/reset not supported");
+		}
+		in.reset();
+		remaining = marked;
 	}
 
 	@Override
 	public long skip(long n) throws IOException {
 		long skipped = in.skip(ranged(n));
-		consume((int) skipped);
+		consume(skipped);
 		return skipped;
 	}
 }

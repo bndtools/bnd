@@ -196,7 +196,6 @@ public class ConnectionSettings {
 	/**
 	 * Set the parameters from within, i.e. not via file
 	 *
-	 * @param uri the uri that must match
 	 * @param value the values
 	 * @throws Exception
 	 */

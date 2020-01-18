@@ -198,11 +198,11 @@ public class TargetImpl implements ArtifactProvider {
 
 			List<Version> list = plugins.get(artifact.id);
 			if (list == null || list.isEmpty()) {
-				logger.debug("bundle not selected in any feature", artifact.id);
+				logger.debug("bundle {} not selected in any feature", artifact.id);
 				continue;
 			}
 
-			logger.debug("bundle selected in a feature", artifact.id);
+			logger.debug("bundle {} selected in a feature", artifact.id);
 
 			for (Version pluginVersion : list) {
 				if (pluginVersion.equals(ZERO) || pluginVersion.equals(artifact.version)) {

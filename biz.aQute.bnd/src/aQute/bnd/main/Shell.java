@@ -49,34 +49,32 @@ public class Shell implements AutoCloseable {
 			domain = bnd;
 		}
 
-		ConsoleReader reader = new ConsoleReader();
-		reader.setPrompt("> ");
+		try (ConsoleReader reader = new ConsoleReader(); PrintWriter out = new PrintWriter(reader.getOutput())) {
+			reader.setPrompt("> ");
 
-		String line;
-		PrintWriter out = new PrintWriter(reader.getOutput());
-		out.println("Base " + domain);
+			out.println("Base " + domain);
 
-		loop: while ((line = reader.readLine()) != null) {
-			out.flush();
+			loop: for (String line; (line = reader.readLine()) != null;) {
+				out.flush();
 
-			line = line.trim();
-			if (line.isEmpty() || line.startsWith("#"))
-				continue;
+				line = line.trim();
+				if (line.isEmpty() || line.startsWith("#"))
+					continue;
 
-			QuotedTokenizer qt = new QuotedTokenizer(line, "= ,;", true);
-			List<String> set = qt.getTokenSet();
-			set.removeIf(arg -> arg.trim()
-				.isEmpty());
-			String[] args = set.toArray(new String[0]);
+				QuotedTokenizer qt = new QuotedTokenizer(line, "= ,;", true);
+				List<String> set = qt.getTokenSet();
+				set.removeIf(arg -> arg.trim()
+					.isEmpty());
+				String[] args = set.toArray(new String[0]);
 
-			switch (args[0]) {
-				case "exit" :
-				case "quit" :
-					break loop;
+				switch (args[0]) {
+					case "exit" :
+					case "quit" :
+						break loop;
 
-				case "macros" : {
-					Glob glob = new Glob(args.length == 1 ? "*" : args[1]);
-					domain.getReplacer()
+					case "macros" : {
+						Glob glob = new Glob(args.length == 1 ? "*" : args[1]);
+						domain.getReplacer()
 						.getCommands()
 						.entrySet()
 						.stream()
@@ -84,12 +82,12 @@ public class Shell implements AutoCloseable {
 						.forEach(e -> {
 							out.printf("%-20s %s%n", e.getKey(), e.getValue());
 						});
-				}
+					}
 					break;
 
-				case "commands" : {
-					Glob glob = new Glob(args.length == 1 ? "*" : args[1]);
-					cmdline.getCommands(bnd)
+					case "commands" : {
+						Glob glob = new Glob(args.length == 1 ? "*" : args[1]);
+						cmdline.getCommands(bnd)
 						.entrySet()
 						.stream()
 						.filter(e -> glob.matches(e.getKey()))
@@ -99,54 +97,55 @@ public class Shell implements AutoCloseable {
 							String help = d == null ? "" : d.value();
 							out.printf("%-20s %s%n", e.getKey(), help);
 						});
-				}
-					break;
-
-				case "-help" :
-				case "--help" :
-				case "-h" :
-				case "help" :
-				case "?" :
-				case "/help" :
-					help(domain, out);
-					out.println();
-					Justif f = new Justif();
-					cmdline.help(f.formatter(), bnd);
-					out.println(f.wrap());
-					break;
-
-				default :
-					List<String> input = new ArrayList<>(Arrays.asList(args));
-					input.remove(0);
-
-					if (args.length >= 3 && args[1].equals("=")) {
-						String key = args[0];
-						if (key.startsWith("$"))
-							key = key.substring(1);
-						input.remove(0);
-						String value = Strings.join(" ", input);
-						domain.setProperty(key, value);
-					} else {
-						if (cmdline.getCommands(bnd)
-							.containsKey(args[0])) {
-							try {
-								String cmd = args[0];
-								String help = cmdline.execute(bnd, cmd, input);
-								if (help != null) {
-									out.println(help);
-								}
-							} catch (Throwable t) {
-								if (!(t instanceof Exception)) {
-									throw Exceptions.duck(t);
-								}
-								t = Exceptions.unrollCause(t, InvocationTargetException.class);
-								bnd.exception(t, "%s", t);
-							}
-						} else {
-							bnd.out.println(process(domain.getReplacer(), line.trim()));
-						}
 					}
 					break;
+
+					case "-help" :
+					case "--help" :
+					case "-h" :
+					case "help" :
+					case "?" :
+					case "/help" :
+						help(domain, out);
+						out.println();
+						Justif f = new Justif();
+						cmdline.help(f.formatter(), bnd);
+						out.println(f.wrap());
+						break;
+
+					default :
+						List<String> input = new ArrayList<>(Arrays.asList(args));
+						input.remove(0);
+
+						if (args.length >= 3 && args[1].equals("=")) {
+							String key = args[0];
+							if (key.startsWith("$"))
+								key = key.substring(1);
+							input.remove(0);
+							String value = Strings.join(" ", input);
+							domain.setProperty(key, value);
+						} else {
+							if (cmdline.getCommands(bnd)
+								.containsKey(args[0])) {
+								try {
+									String cmd = args[0];
+									String help = cmdline.execute(bnd, cmd, input);
+									if (help != null) {
+										out.println(help);
+									}
+								} catch (Throwable t) {
+									if (!(t instanceof Exception)) {
+										throw Exceptions.duck(t);
+									}
+									t = Exceptions.unrollCause(t, InvocationTargetException.class);
+									bnd.exception(t, "%s", t);
+								}
+							} else {
+								bnd.out.println(process(domain.getReplacer(), line.trim()));
+							}
+						}
+						break;
+				}
 			}
 
 			if (!domain.check() && !bnd.check()) {

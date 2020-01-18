@@ -59,12 +59,12 @@ public class ByteBufferInputStream extends InputStream {
 	}
 
 	@Override
-	public void mark(int readlimit) {
+	public synchronized void mark(int readlimit) {
 		bb.mark();
 	}
 
 	@Override
-	public void reset() {
+	public synchronized void reset() {
 		bb.reset();
 	}
 

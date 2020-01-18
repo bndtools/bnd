@@ -48,17 +48,17 @@ public class DisplayUtil {
 		Instant modified = Instant.ofEpochMilli(time);
 		Duration d = Duration.between(modified, now);
 		long millis = d.toMillis();
-		if (millis < 300_000) {
-			return (millis + 500) / 1000 + " secs ago";
+		if (millis < 300_000L) {
+			return (millis + 500L) / 1000L + " secs ago";
 		}
-		if (millis < 60 * 300_000) {
-			return (millis + 500) / 60_000 + " mins ago";
+		if (millis < 60L * 300_000L) {
+			return (millis + 500L) / 60_000L + " mins ago";
 		}
-		if (millis < 60 * 60 * 300_000) {
-			return (millis + 500) / (60 * 60_000) + " hrs ago";
+		if (millis < 60L * 60L * 300_000L) {
+			return (millis + 500L) / (60L * 60_000L) + " hrs ago";
 		}
-		if (millis < 24 * 60 * 300_000) {
-			return (millis + 500) / (24 * 60 * 60_000) + " days ago";
+		if (millis < 24L * 60L * 60L * 300_000L) {
+			return (millis + 500L) / (24L * 60L * 60_000L) + " days ago";
 		}
 		return dateTime(time);
 	}

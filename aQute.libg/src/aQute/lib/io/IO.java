@@ -703,7 +703,8 @@ public class IO {
 		base = base.getCanonicalFile();
 		File child = getFile(base, file);
 		if (child.getCanonicalPath()
-			.startsWith(base.getCanonicalPath())) {
+			.startsWith(base.getCanonicalPath()
+				.concat(File.separator))) {
 			return child;
 		}
 		throw new IOException("The file " + child + " is outside of the base " + base);

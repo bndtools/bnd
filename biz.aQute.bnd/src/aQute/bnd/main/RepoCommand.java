@@ -169,10 +169,8 @@ public class RepoCommand {
 				repos.add(p.getWorkspace()
 					.getWorkspaceRepository());
 			} else {
-				if (workspace != null) {
-					repos.addAll(workspace.getRepositories());
-					repos.add(workspace.getWorkspaceRepository());
-				}
+				repos.addAll(workspace.getRepositories());
+				repos.add(workspace.getWorkspaceRepository());
 			}
 		}
 		logger.debug("repos {}", repos);
@@ -209,8 +207,7 @@ public class RepoCommand {
 				bnd.out.print(help);
 			}
 		}
-		if (workspace != null)
-			bnd.getInfo(workspace);
+		bnd.getInfo(workspace);
 	}
 
 	/**
@@ -451,10 +448,11 @@ public class RepoCommand {
 				}
 
 				if (bnd.isOk()) {
-					PutResult r = writable.put(new BufferedInputStream(IO.stream(file)),
-						new RepositoryPlugin.PutOptions());
-					logger.debug("put {} in {} ({}) into {}", source, writable.getName(), writable.getLocation(),
-						r.artifact);
+					try (InputStream in = new BufferedInputStream(IO.stream(file))) {
+						PutResult r = writable.put(in, new RepositoryPlugin.PutOptions());
+						logger.debug("put {} in {} ({}) into {}", source, writable.getName(), writable.getLocation(),
+							r.artifact);
+					}
 				}
 			}
 			if (delete)

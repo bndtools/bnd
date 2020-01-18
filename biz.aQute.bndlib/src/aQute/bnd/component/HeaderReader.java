@@ -354,13 +354,6 @@ public class HeaderReader extends Processor {
 		return 6;
 	}
 
-	/**
-	 * @param info
-	 * @param impl TODO
-	 * @param descriptors TODO
-	 * @param pw
-	 * @throws Exception
-	 */
 	void reference(Map<String, String> info, String impl, ComponentDef cd, Map<String, MethodDef> descriptors)
 		throws Exception {
 		Collection<String> dynamic = new ArrayList<>(split(info.get(COMPONENT_DYNAMIC)));

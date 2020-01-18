@@ -29,7 +29,7 @@ public class SimpleListConverter<R> implements Converter<List<R>, String> {
 
 		List<R> result = new ArrayList<>();
 
-		if (input == null || Constants.EMPTY_HEADER.equalsIgnoreCase(input.trim()))
+		if (Constants.EMPTY_HEADER.equalsIgnoreCase(input.trim()))
 			return result;
 
 		QuotedTokenizer qt = new QuotedTokenizer(input, ",");

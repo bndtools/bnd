@@ -260,7 +260,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 				if (value != null)
 					return process(value, new Link(source, link, key));
 
-				if (key != null && key.trim()
+				if (key.trim()
 					.length() > 0) {
 					value = System.getProperty(key);
 					if (value != null)
@@ -595,7 +595,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	 * @return result
 	 */
 	public String _replace(String args[]) {
-		if (args.length != 4) {
+		if (args.length < 3) {
 			reporter.warning("Invalid nr of arguments to replace %s", Arrays.asList(args));
 			return null;
 		}
@@ -844,16 +844,13 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		String s = IO.collect(process.getInputStream(), UTF_8);
 		s += IO.collect(process.getErrorStream(), UTF_8);
 		int exitValue = process.waitFor();
-		if (exitValue != 0)
-			return exitValue + "";
-
 		if (exitValue != 0) {
 			if (!allowFail) {
 				reporter.error("System command %s failed with exit code %d", command, exitValue);
 			} else {
 				reporter.warning("System command %s failed with exit code %d (allowed)", command, exitValue);
-
 			}
+			return exitValue + "";
 		}
 
 		return s.trim();

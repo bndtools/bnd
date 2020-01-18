@@ -12,7 +12,7 @@ public interface P2Config {
 	/**
 	 * Name of the repository
 	 *
-	 * @param will be used if no name set
+	 * @param defaultName will be used if no name set
 	 */
 	String name(String defaultName);
 

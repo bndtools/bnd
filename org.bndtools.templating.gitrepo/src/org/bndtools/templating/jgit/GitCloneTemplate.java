@@ -153,10 +153,6 @@ public class GitCloneTemplate implements Template {
                                 if (SHA1_PATTERN.matcher(params.branch)
                                     .matches()) {
                                     startPoint = params.branch;
-
-                                    if (startPoint == null) {
-                                        throw new Exception("Unable to find requested ref \"" + params.branch + "\"");
-                                    }
                                 }
                             }
                         }

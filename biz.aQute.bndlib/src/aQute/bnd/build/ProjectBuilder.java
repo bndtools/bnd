@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
@@ -619,7 +620,7 @@ public class ProjectBuilder extends Builder {
 		List<Run> runs = new ArrayList<>();
 		Set<Instruction> missing = new LinkedHashSet<>();
 
-		Map<File, List<Attrs>> files = runspec.select(getBase(), null, missing);
+		Map<File, List<Attrs>> files = runspec.select(getBase(), Function.identity(), missing);
 
 		for (Entry<File, List<Attrs>> e : files.entrySet()) {
 			for (Attrs attrs : e.getValue()) {
