@@ -317,7 +317,7 @@ public class Jar implements Closeable {
 		return putResource(path, resource, true);
 	}
 
-	private static String cleanPath(String path) {
+	public static String cleanPath(String path) {
 		if (path.isEmpty()) {
 			return "";
 		}
