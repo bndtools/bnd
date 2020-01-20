@@ -2,6 +2,7 @@ package aQute.lib.hex;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import aQute.lib.base64.Base64;
@@ -96,59 +97,88 @@ public class HexTest extends TestCase {
 	final static String EOL = String.format("%n");
 
 	public void testFormatEmpty() {
-		assertThat(Hex.format(new byte[] {})).isEqualTo("");
+		byte[] input = new byte[] {};
+		assertThat(Hex.format(input)).isEqualTo("")
+			.isEqualTo(Hex.format(ByteBuffer.allocate(0)));
 	}
 
 	public void testNull() {
-		assertThat(Hex.format(null)).isEmpty();
+		assertThat(Hex.format((byte[]) null)).isEmpty();
+		assertThat(Hex.format((ByteBuffer) null)).isEmpty();
 	}
 
 	public void testAscii() {
-		assertThat(Hex.format(new byte[] {
+		byte[] input = new byte[] {
 			-1, 'A', 'a', '~', ' ', '\u007F'
-		})).isEqualTo("0x0000  FF 41 61 7E 20 7F                                 .Aa~ ." + EOL);
+		};
+		assertThat(Hex.format(input))
+			.isEqualTo("0x0000  FF 41 61 7E 20 7F                                 .Aa~ ." + EOL)
+			.isEqualTo(Hex.format(ByteBuffer.wrap(input)));
 	}
 
 	public void testFormatOne() {
-		assertThat(Hex.format(new byte[] {
+		byte[] input = new byte[] {
 			-1
-		})).isEqualTo("0x0000  FF                                                ." + EOL);
+		};
+		assertThat(Hex.format(input)).isEqualTo("0x0000  FF                                                ." + EOL)
+			.isEqualTo(Hex.format(ByteBuffer.wrap(input)));
 	}
 
 	public void testFormatSeven() {
-		assertThat(Hex.format(new byte[] {
+		byte[] input = new byte[] {
 			0, 1, 2, 3, 4, 5, 6
-		})).isEqualTo("0x0000  00 01 02 03 04 05 06                              ......." + EOL);
+		};
+		assertThat(Hex.format(input))
+			.isEqualTo("0x0000  00 01 02 03 04 05 06                              ......." + EOL)
+			.isEqualTo(Hex.format(ByteBuffer.wrap(input)));
 	}
 
 	public void testFormatEight() {
-		assertThat(Hex.format(new byte[] {
+		byte[] input = new byte[] {
 			0, 1, 2, 3, 4, 5, 6, 7
-		})).isEqualTo("0x0000  00 01 02 03 04 05 06 07                           ........" + EOL);
+		};
+		assertThat(Hex.format(input))
+			.isEqualTo("0x0000  00 01 02 03 04 05 06 07                           ........" + EOL)
+			.isEqualTo(Hex.format(ByteBuffer.wrap(input)));
 	}
 
 	public void testFormatNine() {
-		assertThat(Hex.format(new byte[] {
+		byte[] input = new byte[] {
 			0, 1, 2, 3, 4, 5, 6, 7, 8
-		})).isEqualTo("0x0000  00 01 02 03 04 05 06 07  08                       ........  ." + EOL);
+		};
+		assertThat(Hex.format(input))
+			.isEqualTo("0x0000  00 01 02 03 04 05 06 07  08                       ........  ." + EOL)
+			.isEqualTo(Hex.format(ByteBuffer.wrap(input)));
 	}
 
 	public void testFormatFifteen() {
-		assertThat(Hex.format(new byte[] {
+		byte[] input = new byte[] {
 			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
-		})).isEqualTo("0x0000  00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E     ........  ......." + EOL);
+		};
+		assertThat(Hex.format(input))
+			.isEqualTo("0x0000  00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E     ........  ......." + EOL)
+			.isEqualTo(Hex.format(ByteBuffer.wrap(input)));
+
 	}
 
 	public void testFormatSixteen() {
-		assertThat(Hex.format(new byte[] {
+		byte[] input = new byte[] {
 			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-		})).isEqualTo("0x0000  00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F  ........  ........" + EOL);
+		};
+		assertThat(Hex.format(input))
+			.isEqualTo("0x0000  00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F  ........  ........" + EOL)
+			.isEqualTo(Hex.format(ByteBuffer.wrap(input)));
+
 	}
 
 	public void testFormatSeventeen() {
-		assertThat(Hex.format(new byte[] {
+		byte[] input = new byte[] {
 			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
-		})).isEqualTo("0x0000  00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F  ........  ........" + EOL + //
-		/*         */ "0x0010  10                                                ." + EOL);
+		};
+		assertThat(Hex.format(input))
+			.isEqualTo("0x0000  00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F  ........  ........" + EOL + //
+			/*         */ "0x0010  10                                                ." + EOL)
+			.isEqualTo(Hex.format(ByteBuffer.wrap(input)));
+
 	}
 }
