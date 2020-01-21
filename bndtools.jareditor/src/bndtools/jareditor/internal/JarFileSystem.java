@@ -1,15 +1,22 @@
 package bndtools.jareditor.internal;
 
+import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
@@ -22,10 +29,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Status;
 
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.result.Result;
-import aQute.lib.exceptions.Exceptions;
+import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.lib.zip.ZipUtil;
 
 /**
  * Implements the URI
@@ -39,12 +46,15 @@ import aQute.lib.strings.Strings;
  * @author aqute
  */
 public class JarFileSystem extends FileSystem {
+	private static final ILogger									logger			= Logger
+		.getLogger(JarFileSystem.class);
 
-	static final Object							SCHEME_JAR	= "jarf";
-	final Map<URI, WeakReference<JarRootNode>>	roots		= new HashMap<URI, WeakReference<JarFileSystem.JarRootNode>>();
+	private static final String										SCHEME_JAR		= "jarf";
+	private final ConcurrentMap<IFileStore, Reference<JarRootNode>>	roots			= new ConcurrentHashMap<>();
 
-	final static Pattern						JARF_P		= Pattern
+	private static final Pattern									JARF_P			= Pattern
 		.compile("jarf:///(?<fileuri>.*)!(?<path>(/[^!]*)+)");
+	private final static Pattern									PATH_SPLITTER	= Pattern.compile("/");
 
 	static abstract class JarNode extends FileStore {
 		final JarNode	parent;
@@ -183,7 +193,7 @@ public class JarFileSystem extends FileSystem {
 			return JarFileSystem.openInputStream(jar(), getPath(), monitor)
 				.orElseThrow(s -> {
 					Status status = new Status(Status.ERROR, Plugin.PLUGIN_ID, s);
-					return Exceptions.duck(new CoreException(status));
+					return new CoreException(status);
 				});
 		}
 
@@ -195,61 +205,61 @@ public class JarFileSystem extends FileSystem {
 
 	@Override
 	public IFileStore getStore(URI uri) {
-		if (SCHEME_JAR.equals(uri.getScheme())) {
-			// WeakReference<JarRootNode> wr;
-			// synchronized (this) {
-			// wr = roots.get(uri);
-			// if (wr != null) {
-			// JarRootNode jarRootNode = wr.get();
-			// if (jarRootNode != null)
-			// return jarRootNode;
-			// }
-			// }
-
-			return jarf(uri).flatMap(ss -> {
-				URI u = new URI(ss[0]);
-				IFileStore store = EFS.getStore(u);
-				if (store == null) {
-					return Result.err("Cannot locate filestore for the JAR file: %s", uri);
-				}
-				JarRootNode root = new JarRootNode(store.toURI());
-
-				try (Jar jar = new Jar(u.toString(), store.openInputStream(0, null))) {
-					jar.getResources()
-						.forEach((path, resource) -> {
-							String[] segments = path.split("/");
-							try {
-								root.createdNode(path, segments, 0, resource.size(), resource.lastModified());
-							} catch (Exception e) {
-								root.createdNode(path, segments, 0, -1, 0);
-							}
-						});
-					WeakReference<JarRootNode> weakRef = new WeakReference<>(root);
-					synchronized (this) {
-						roots.putIfAbsent(uri, weakRef);
-					}
-					if (ss[1] == null || ss[1].equals("/") || ss[1].isEmpty()) {
-						return Result.ok(root);
-					}
-
-					List<String> segments = Strings.split("/", ss[1]);
-					JarNode rover = root;
-					for (String segment : segments) {
-						if (!(rover instanceof JarFolderNode)) {
-							return Result.ok(new NullFileStore(null));
-						}
-						JarFolderNode jfn = (JarFolderNode) rover;
-						rover = (JarNode) rover.getChild(segment);
-					}
-					return Result.ok(rover);
-				} catch (Exception e) {
-					return Result.err("Failed to load jar for %s: %s", u, e);
-				}
-			})
-				.map(s -> (IFileStore) s)
-				.orElse(null);
+		if (!SCHEME_JAR.equals(uri.getScheme())) {
+			throw new IllegalArgumentException("No file system for " + uri);
 		}
-		throw new IllegalArgumentException("No file system for " + uri);
+		return jarf(uri).flatMap(ss -> {
+			URI fileuri = new URI(ss[0]);
+			IFileStore store = EFS.getStore(fileuri);
+			if (store == null) {
+				return Result.err("Cannot locate filestore for the JAR file: %s", uri);
+			}
+
+			JarRootNode root = roots.compute(store, (key, ref) -> {
+				if ((ref != null) && (ref.get() != null)) {
+					return ref;
+				}
+				JarRootNode node = new JarRootNode(key.toURI());
+				try (ZipInputStream jin = new ZipInputStream(new BufferedInputStream(key.openInputStream(0, null)))) {
+					for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
+						if (entry.isDirectory()) {
+							continue;
+						}
+						String path = Jar.cleanPath(entry.getName());
+						String[] segments = PATH_SPLITTER.split(path);
+						try {
+							node.createdNode(path, segments, 0, entry.getSize(), ZipUtil.getModifiedTime(entry));
+						} catch (Exception e) {
+							node.createdNode(path, segments, 0, -1, 0);
+						}
+					}
+				} catch (Exception e) {
+					logger.logError("Error processing zip file " + key.toString(), e);
+				}
+				return new WeakReference<>(node);
+			})
+				.get();
+
+			if (root == null) {
+				return Result.err("Failed to load jar for %s", fileuri);
+			}
+			if (ss[1] == null || ss[1].equals("/") || ss[1].isEmpty()) {
+				return Result.ok(root);
+			}
+
+			Iterable<String> segments = PATH_SPLITTER.splitAsStream(ss[1])
+				.filter(Strings::notEmpty)::iterator;
+			JarNode rover = root;
+			for (String segment : segments) {
+				if (!(rover instanceof JarFolderNode)) {
+					return Result.ok(new NullFileStore(null));
+				}
+				JarFolderNode jfn = (JarFolderNode) rover;
+				rover = (JarNode) rover.getChild(segment);
+			}
+			return Result.ok(rover);
+		})
+			.orElse(null);
 	}
 
 	static Result<URI, String> jarf(URI jarfileuri, String path) {
@@ -257,11 +267,10 @@ public class JarFileSystem extends FileSystem {
 			if (path == null)
 				path = "/";
 			else if (!path.startsWith("/"))
-				path = "/" + path;
+				path = "/".concat(path);
 			return Result.ok(new URI("jarf:///" + jarfileuri.toString() + "!" + path));
 		} catch (Exception e) {
-			return Result.err("failed to construct uri from jar uri=%sm path = %s: %s", jarfileuri, path,
-				e.getMessage());
+			return Result.err("failed to construct uri from jar uri=%sm path = %s: %s", jarfileuri, path, e);
 		}
 	}
 
@@ -283,23 +292,30 @@ public class JarFileSystem extends FileSystem {
 
 	static Result<InputStream, String> openInputStream(URI uri, String path, IProgressMonitor monitor)
 		throws CoreException {
+		ZipInputStream jin = null;
 		try {
 			IFileStore store = EFS.getStore(uri);
 			if (store == null) {
 				return Result.err("Cannot locate filestore for the JAR file: %s", uri);
 			}
 
-			try (Jar jar = new Jar(".", store.openInputStream(0, monitor))) {
-				Resource r = jar.getResource(path);
-				if (r == null) {
-					return Result.err("No such resource %s in %s", path, uri);
+			jin = new ZipInputStream(new BufferedInputStream(store.openInputStream(0, monitor)));
+			for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
+				if (entry.isDirectory()) {
+					continue;
 				}
-				return Result.ok(r.openInputStream());
+				if (Objects.equals(path, Jar.cleanPath(entry.getName()))) {
+					return Result.ok(jin); // receiver must close input stream
+				}
 			}
+			IO.close(jin);
+			return Result.err("No such resource %s in %s", path, uri);
 		} catch (CoreException e) {
+			IO.close(jin);
 			throw e;
 		} catch (Exception e) {
-			return Result.err("Failed to open resource %s from %s : %s", path, uri, e.getMessage());
+			IO.close(jin);
+			return Result.err("Failed to open resource %s from %s : %s", path, uri, e);
 		}
 	}
 }

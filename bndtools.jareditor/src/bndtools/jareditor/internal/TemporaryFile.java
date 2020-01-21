@@ -7,10 +7,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.IJavaProject;
 
 import aQute.bnd.service.result.Result;
 import aQute.lib.strings.Strings;
@@ -20,12 +19,9 @@ import aQute.lib.strings.Strings;
  * clean up the temporary files as much as possible
  */
 public class TemporaryFile {
-	final static String			ID		= ".bndtools.jareditor.temp";
-	final static IWorkspaceRoot	root	= ResourcesPlugin.getWorkspace()
-		.getRoot();
-	final static AtomicLong		id		= new AtomicLong(10000000);
+	private final static AtomicLong			id			= new AtomicLong(10000000);
 
-	static TemporaryProject		tempProject	= new TemporaryProject();
+	private final static TemporaryProject	tempProject	= new TemporaryProject();
 
 	public static Result<IFolder, String> tempFolder(URI source, String path, IProgressMonitor monitor) {
 		try {
@@ -54,14 +50,16 @@ public class TemporaryFile {
 				return actualFolder;
 			});
 		} catch (Exception e) {
-			return Result.err(e.getMessage());
+			return Result.err("Error creating temp folder for JAREditor %s", e);
 		}
 	}
 
 	private static Result<IFolder, String> selectTempProject() throws CoreException, IOException {
-		IProject project = tempProject.getJavaProject()
-			.getProject();
-
+		IJavaProject javaProject = tempProject.getJavaProject();
+		if (javaProject == null) {
+			return Result.err("Unable to get temp project %s", TemporaryProject.PROJECT_NAME);
+		}
+		IProject project = javaProject.getProject();
 		return Result.ok(project.getFolder("temp"));
 	}
 

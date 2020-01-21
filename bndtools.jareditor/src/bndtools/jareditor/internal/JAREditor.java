@@ -2,6 +2,8 @@ package bndtools.jareditor.internal;
 
 import java.net.URI;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -26,6 +28,7 @@ import aQute.lib.exceptions.FunctionWithException;
 import aQute.lib.strings.Strings;
 
 public class JAREditor extends FormEditor implements IResourceChangeListener {
+	private static final ILogger	logger		= Logger.getLogger(JAREditor.class);
 	private JARTreePage		treePage	= new JARTreePage(this, "treePage", "Tree");
 	private JARPrintPage	printPage	= new JARPrintPage(this, "printPage", "Print");
 	private URI				uri;
@@ -121,8 +124,8 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
 		printPage.setInput(uri);
 	}
 
-	static <T> void background(String message, FunctionWithException<IProgressMonitor, T> background,
-		ConsumerWithException<T> onDisplayThread) {
+	static <T> void background(String message, FunctionWithException<IProgressMonitor, ? extends T> background,
+		ConsumerWithException<? super T> onDisplayThread) {
 
 		Job job = new Job(message) {
 			@Override
@@ -137,7 +140,7 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
 							try {
 								onDisplayThread.accept(result);
 							} catch (Exception e) {
-								// ignore
+								logger.logError("JAREditor display thread exception! " + message, e);
 							}
 						});
 					return Status.OK_STATUS;

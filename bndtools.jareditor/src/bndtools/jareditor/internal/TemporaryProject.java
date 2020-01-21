@@ -38,20 +38,18 @@ public class TemporaryProject {
 		proj.setDescription(description, new NullProgressMonitor());
 	}
 
-	private void checkForSupportProject() {
-		try {
-			IWorkspace workspace = ResourcesPlugin.getWorkspace();
-			IWorkspaceRoot root = workspace.getRoot();
-			IProject project = root.getProject(PROJECT_NAME);
+	private void checkForSupportProject() throws CoreException {
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		IWorkspaceRoot root = workspace.getRoot();
+		IProject project = root.getProject(PROJECT_NAME);
 
-			if (!project.exists() || !project.isOpen()) {
-				createProject();
-			}
+		if (!project.exists() || !project.isOpen()) {
+			createProject();
+		}
 
-			makeFolders(project.getFolder("temp"));
+		makeFolders(project.getFolder("temp"));
 
-			computeClasspath(JavaCore.create(project), new NullProgressMonitor());
-		} catch (CoreException ce) {}
+		computeClasspath(JavaCore.create(project), new NullProgressMonitor());
 	}
 
 	private void computeClasspath(IJavaProject project, IProgressMonitor monitor) {
@@ -94,18 +92,15 @@ public class TemporaryProject {
 		return project;
 	}
 
-	public IJavaProject getJavaProject() {
-		try {
-			checkForSupportProject();
-			IProject project = ResourcesPlugin.getWorkspace()
-				.getRoot()
-				.getProject(PROJECT_NAME);
+	public IJavaProject getJavaProject() throws CoreException {
+		checkForSupportProject();
+		IProject project = ResourcesPlugin.getWorkspace()
+			.getRoot()
+			.getProject(PROJECT_NAME);
 
-			if (project.exists() && project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
-				return JavaCore.create(project);
-			}
-		} catch (CoreException ce) {}
-
+		if (project.exists() && project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
+			return JavaCore.create(project);
+		}
 		return null;
 	}
 

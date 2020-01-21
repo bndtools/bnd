@@ -29,7 +29,8 @@ Bundle-SymbolicName: bndtools.jareditor;singleton:=true
 	org.eclipse.jdt.core,\
 	org.eclipse.jdt.launching,\
 	org.eclipse.core.filesystem,\
-	org.eclipse.core.contenttype
+	org.eclipse.core.contenttype,\
+    bndtools.api;version=latest
 
 -includepackage: bndtools.jareditor.*,\
 	bndtools.test.plugin

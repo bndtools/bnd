@@ -169,10 +169,10 @@ public class Jar implements Closeable {
 						if (entry.isDirectory()) {
 							continue;
 						}
-						if (filter.test(entry.getName())) {
-							int size = (int) entry.getSize();
-							try (ByteBufferOutputStream bbos = new ByteBufferOutputStream(
-								(size == -1) ? BUFFER_SIZE : size + 1)) {
+						String path = cleanPath(entry.getName());
+						if (filter.test(path)) {
+							int size = (entry.getSize() < 0) ? BUFFER_SIZE : (1 + (int) entry.getSize());
+							try (ByteBufferOutputStream bbos = new ByteBufferOutputStream(size)) {
 								bbos.write(jin);
 								Resource resource = new EmbeddedResource(bbos.toByteBuffer(),
 									ZipUtil.getModifiedTime(entry));
@@ -293,8 +293,8 @@ public class Jar implements Closeable {
 				if (entry.isDirectory()) {
 					continue;
 				}
-				int size = (int) entry.getSize();
-				try (ByteBufferOutputStream bbos = new ByteBufferOutputStream((size == -1) ? BUFFER_SIZE : size + 1)) {
+				int size = (entry.getSize() < 0) ? BUFFER_SIZE : (1 + (int) entry.getSize());
+				try (ByteBufferOutputStream bbos = new ByteBufferOutputStream(size)) {
 					bbos.write(jin);
 					putResource(entry.getName(),
 						new EmbeddedResource(bbos.toByteBuffer(), ZipUtil.getModifiedTime(entry)), true);
@@ -317,7 +317,7 @@ public class Jar implements Closeable {
 		return putResource(path, resource, true);
 	}
 
-	private static String cleanPath(String path) {
+	public static String cleanPath(String path) {
 		if (path.isEmpty()) {
 			return "";
 		}

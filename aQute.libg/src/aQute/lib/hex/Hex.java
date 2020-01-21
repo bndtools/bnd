@@ -1,6 +1,7 @@
 package aQute.lib.hex;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Formatter;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -132,19 +133,14 @@ public class Hex {
 			return "";
 
 		try (Formatter f = new Formatter()) {
-			int b = 0;
-
-			int rover = 0;
 			StringBuilder ascii = new StringBuilder(30);
 			StringBuilder hex = new StringBuilder(30);
 
-			while (rover < data.length) {
-				int p = rover;
+			for (int rover = 0; rover < data.length; rover += 16) {
 				ascii.setLength(0);
 				hex.setLength(0);
 
-				for (int g = 0; g < 2 && p < data.length; g++) {
-
+				for (int g = 0, p = rover; g < 2 && p < data.length; g++) {
 					hex.append(' ');
 					ascii.append("  ");
 
@@ -159,7 +155,46 @@ public class Hex {
 					}
 				}
 				f.format("0x%04x%-50s%s%n", rover, hex, ascii);
-				rover += 16;
+			}
+			return f.toString();
+		}
+	}
+
+	/**
+	 * Format a buffer to show the buffer in a table with 16 bytes per row, hex
+	 * values and ascii values are shown.
+	 *
+	 * @param data the buffer
+	 * @return a String with the formatted data
+	 */
+	public static String format(ByteBuffer data) {
+		if (data == null)
+			return "";
+
+		ByteBuffer bb = data.duplicate();
+		try (Formatter f = new Formatter()) {
+			StringBuilder ascii = new StringBuilder(30);
+			StringBuilder hex = new StringBuilder(30);
+
+			for (int rover = 0; bb.hasRemaining(); rover += 16) {
+				ascii.setLength(0);
+				hex.setLength(0);
+
+				for (int g = 0; g < 2 && bb.hasRemaining(); g++) {
+					hex.append(' ');
+					ascii.append("  ");
+
+					for (int i = 0; i < 8 && bb.hasRemaining(); i++) {
+						byte c = bb.get();
+
+						hex.append(' ');
+						hex.append(toHex(c));
+						if (c < ' ' || c > 0x7E)
+							c = '.';
+						ascii.append((char) c);
+					}
+				}
+				f.format("0x%04x%-50s%s%n", rover, hex, ascii);
 			}
 			return f.toString();
 		}
@@ -177,6 +212,24 @@ public class Hex {
 		for (int i = 0; i < data.length; i++) {
 			if (data[i] == 0)
 				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Check of a buffer is classified as binary or text. We assume a file is
+	 * binary of it contains a 0 byte. Heuristics may differ in the future, this
+	 * method is really to collect this decision in one place.
+	 *
+	 * @param data the buffer
+	 * @return true of classified as binary
+	 */
+	public static boolean isBinary(ByteBuffer data) {
+		ByteBuffer bb = data.duplicate();
+		while (bb.hasRemaining()) {
+			if (bb.get() == 0) {
+				return true;
+			}
 		}
 		return false;
 	}
