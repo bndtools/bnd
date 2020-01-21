@@ -31,6 +31,7 @@ import org.eclipse.core.runtime.Status;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.result.Result;
 import aQute.lib.io.IO;
+import aQute.lib.io.NonClosingInputStream;
 import aQute.lib.strings.Strings;
 import aQute.lib.zip.ZipUtil;
 
@@ -227,8 +228,12 @@ public class JarFileSystem extends FileSystem {
 						}
 						String path = Jar.cleanPath(entry.getName());
 						String[] segments = PATH_SPLITTER.split(path);
+						long size = entry.getSize();
+						if (size < 0) {
+							size = IO.drain(new NonClosingInputStream(jin));
+						}
 						try {
-							node.createdNode(path, segments, 0, entry.getSize(), ZipUtil.getModifiedTime(entry));
+							node.createdNode(path, segments, 0, size, ZipUtil.getModifiedTime(entry));
 						} catch (Exception e) {
 							node.createdNode(path, segments, 0, -1, 0);
 						}
