@@ -1823,6 +1823,7 @@ public class Analyzer extends Processor {
 	 * @param contracted
 	 */
 	private void getManifestInfoFromClasspath(Jar jar, Packages classpathExports, Contracts contracts) {
+		logger.debug("get Manifest Info From Classpath for {}", jar);
 		try {
 			Manifest m = jar.getManifest();
 			if (m != null) {
