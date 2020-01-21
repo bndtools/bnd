@@ -1,27 +1,36 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd
 
+jtwig.version: 5.86.1.RELEASE
 -maven-dependencies.jtwig:\
 	jtwig-core;\
 	groupId=org.jtwig;\
 	artifactId=jtwig-core;\
-	version=5.86.1.RELEASE;\
+	version=${jtwig.version};\
 	scope=compile,\
 	\
 	jtwig-reflection;\
 	groupId=org.jtwig;\
 	artifactId=jtwig-reflection;\
-	version=5.86.1.RELEASE;\
+	version=${jtwig.version};\
+	scope=compile
+
+dto.version: 1.0.0
+-maven-dependencies.dto:\
+	dto;\
+	groupId=org.osgi;\
+	artifactId=org.osgi.dto;\
+	version=${dto.version};\
 	scope=compile
  
 -buildpath: \
 	osgi.annotation;version=latest;maven-scope=provided,\
-	osgi.core;version=latest;maven-scope=provided,\
+	org.osgi.dto;version=${dto.version},\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest,\
-	org.jtwig:jtwig-core;version=latest,\
- 	org.jtwig:jtwig-reflection;version=latest,\
+	org.jtwig:jtwig-core;version=${jtwig.version},\
+ 	org.jtwig:jtwig-reflection;version=${jtwig.version},\
 	org.parboiled:parboiled-java;version=latest,\
 	org.parboiled:parboiled-core;version=latest,\
 	org.apache.commons.lang3;version="[3.4,4.0)",\
@@ -37,8 +46,6 @@
 	${junit}
 	
 Export-Package: \
-	aQute.bnd.service.reporter,\
-	org.osgi.dto,\
 	biz.aQute.bnd.reporter.service.resource.converter,\
 	biz.aQute.bnd.reporter.exporter,\
 	biz.aQute.bnd.reporter.generator,\
