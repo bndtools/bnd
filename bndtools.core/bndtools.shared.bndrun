@@ -92,6 +92,14 @@ crossplatform.runprops: \
 	bnd.identity;id='org.slf4j.impl.log4j12',\
 	bnd.identity;id='org.eclipse.osgi.compatibility.state'
 
+-runblacklist: \
+	bnd.identity;id='biz.aQute.bnd.annotation'
+
+-runrepos: \
+	"Workspace",\
+	"Eclipse 2018-12",\
+	"Eclipse m2e 1.10.0 Dependencies"
+
 -runee: JavaSE-1.8
 
 # Keep sorted so that we can diff
@@ -374,9 +382,4 @@ crossplatform.runprops: \
 	org.w3c.css.sac;version='[1.3.1,1.3.2)',\
 	org.w3c.dom.events;version='[3.0.0,3.0.1)',\
 	org.w3c.dom.smil;version='[1.0.1,1.0.2)',\
-	org.w3c.dom.svg;version='[1.1.0,1.1.1)',\
-
--runrepos: \
-	Workspace,\
-	Eclipse 2018-12,\
-	Eclipse m2e 1.10.0 Dependencies
+	org.w3c.dom.svg;version='[1.1.0,1.1.1)'
