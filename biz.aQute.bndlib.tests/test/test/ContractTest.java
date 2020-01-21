@@ -20,6 +20,32 @@ import junit.framework.TestCase;
 
 public class ContractTest extends TestCase {
 
+	public void testParameterized() throws Exception {
+		Jar bjara = getContractExporter("atest", "2.5", "${exports}");
+
+		Builder a = newBuilder();
+		a.setTrace(true);
+
+		a.addClasspath(bjara); // 1x
+		a.setProperty(Constants.CONTRACT, "atest;resolution:=optional,*");
+		a.setImportPackage("org.osgi.service.cm,*");
+		a.setProperty("Export-Package", "test.refer");
+		Jar ajar = a.build();
+		ajar.getManifest()
+			.write(System.out);
+		assertTrue(a.check());
+
+		Domain domain = Domain.domain(ajar.getManifest());
+		Parameters p = domain.getRequireCapability();
+		p.remove("osgi.ee");
+		assertNotNull(p);
+		assertEquals(1, p.size());
+		Attrs attrs = p.get("osgi.contract");
+		String optional = attrs.get("resolution:");
+		assertEquals("optional", optional);
+		assertEquals("(&(osgi.contract=atest)(version=2.5.0))", attrs.get("filter:"));
+	}
+
 	public void testDefinedContract() throws Exception {
 		Builder b = newBuilder();
 		b.setTrace(true);

@@ -76,6 +76,7 @@ class Contracts {
 	 * compare the imports against.
 	 */
 	void collectContracts(String from, Parameters pcs) {
+		logger.debug("collecting Contracts {} from {}", pcs, from);
 
 		contract: for (Entry<String, Attrs> p : pcs.entrySet()) {
 			String namespace = p.getKey();
@@ -98,7 +99,7 @@ class Contracts {
 							continue contract;
 						}
 
-						logger.debug("accepted {}", p);
+						logger.debug("accepted {} from {}", p, from);
 
 						Contract c = new Contract();
 						c.name = name;
@@ -144,6 +145,8 @@ class Contracts {
 						for (String pname : c.uses) {
 							contracted.add(analyzer.getPackageRef(pname), c);
 						}
+
+						break;
 					}
 				}
 			}
