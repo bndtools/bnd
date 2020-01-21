@@ -1,13 +1,14 @@
 package bndtools.jareditor.internal;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.SortedMap;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
@@ -39,10 +40,13 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.lib.hex.Hex;
+import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
+import aQute.lib.io.LimitedInputStream;
 import aQute.lib.strings.Strings;
 
 public class JARTreeEntryPart extends AbstractFormPart implements IPartSelectionListener {
+	private static final ILogger	logger			= Logger.getLogger(JARTreeEntryPart.class);
 
 	private static final int	READ_LIMIT		= 1000000;
 
@@ -206,9 +210,10 @@ public class JARTreeEntryPart extends AbstractFormPart implements IPartSelection
 			int limit = limitRead ? READ_LIMIT : Integer.MAX_VALUE;
 
 			JAREditor.background("Loading " + resource.getName(), mon -> {
-				ByteArrayOutputStream bout = new ByteArrayOutputStream();
-				IO.copy(node.getContents(), bout, limit);
-				return bout.toByteArray();
+				ByteBuffer content = IO
+					.copy(new LimitedInputStream(node.getContents(), limit), new ByteBufferOutputStream())
+					.toByteBuffer();
+				return content;
 			}, this::setContent);
 		} else {
 			setContent("");
@@ -230,7 +235,8 @@ public class JARTreeEntryPart extends AbstractFormPart implements IPartSelection
 			text.setText(content);
 	}
 
-	private void setContent(byte[] data) throws CoreException {
+
+	private void setContent(ByteBuffer data) throws CoreException {
 		if (resource instanceof IFile) {
 			URI locationURI = resource.getLocationURI();
 			if (locationURI != null) {
@@ -240,9 +246,13 @@ public class JARTreeEntryPart extends AbstractFormPart implements IPartSelection
 						IFileInfo fetchInfo = store.fetchInfo();
 						if (fetchInfo != null) {
 							long size = fetchInfo.getLength();
+							if (size < 0) {
+								this.size.setText("Unknown");
+							} else {
+								this.size.setText(Strings.toString(size, "b"));
+							}
 							long modified = fetchInfo.getLastModified();
 							Instant instant = Instant.ofEpochMilli(modified);
-							this.size.setText("" + Strings.toString(size, "b"));
 							this.lastModified.setText(instant.toString());
 						}
 					}
@@ -254,7 +264,7 @@ public class JARTreeEntryPart extends AbstractFormPart implements IPartSelection
 
 		Show show = showAs;
 		int limit = limitRead ? READ_LIMIT : Integer.MAX_VALUE;
-		boolean cut = data.length == limit;
+		boolean cut = data.remaining() == limit;
 
 		if (show == Show.Auto) {
 			show = Hex.isBinary(data) ? Show.Hex : Show.Text;
@@ -265,8 +275,9 @@ public class JARTreeEntryPart extends AbstractFormPart implements IPartSelection
 			case Text :
 				try {
 					Charset charset = Charset.forName(charsets[selectedCharset]);
-					content = IO.collect(IO.stream(data), charset);
-				} catch (IOException e) {
+					content = IO.decode(data, charset)
+						.toString();
+				} catch (Exception e) {
 					assert false : "All in memort ops";
 					content = "";
 				}

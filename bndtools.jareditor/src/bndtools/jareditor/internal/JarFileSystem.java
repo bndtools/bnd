@@ -2,18 +2,21 @@ package bndtools.jareditor.internal;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
@@ -43,12 +46,15 @@ import aQute.lib.zip.ZipUtil;
  * @author aqute
  */
 public class JarFileSystem extends FileSystem {
+	private static final ILogger									logger			= Logger
+		.getLogger(JarFileSystem.class);
 
-	static final Object							SCHEME_JAR	= "jarf";
-	final Map<URI, WeakReference<JarRootNode>>	roots		= new HashMap<URI, WeakReference<JarFileSystem.JarRootNode>>();
+	private static final String										SCHEME_JAR		= "jarf";
+	private final ConcurrentMap<IFileStore, Reference<JarRootNode>>	roots			= new ConcurrentHashMap<>();
 
-	final static Pattern						JARF_P		= Pattern
+	private static final Pattern									JARF_P			= Pattern
 		.compile("jarf:///(?<fileuri>.*)!(?<path>(/[^!]*)+)");
+	private final static Pattern									PATH_SPLITTER	= Pattern.compile("/");
 
 	static abstract class JarNode extends FileStore {
 		final JarNode	parent;
@@ -199,64 +205,61 @@ public class JarFileSystem extends FileSystem {
 
 	@Override
 	public IFileStore getStore(URI uri) {
-		if (SCHEME_JAR.equals(uri.getScheme())) {
-			// WeakReference<JarRootNode> wr;
-			// synchronized (this) {
-			// wr = roots.get(uri);
-			// if (wr != null) {
-			// JarRootNode jarRootNode = wr.get();
-			// if (jarRootNode != null)
-			// return jarRootNode;
-			// }
-			// }
+		if (!SCHEME_JAR.equals(uri.getScheme())) {
+			throw new IllegalArgumentException("No file system for " + uri);
+		}
+		return jarf(uri).flatMap(ss -> {
+			URI fileuri = new URI(ss[0]);
+			IFileStore store = EFS.getStore(fileuri);
+			if (store == null) {
+				return Result.err("Cannot locate filestore for the JAR file: %s", uri);
+			}
 
-			return jarf(uri).flatMap(ss -> {
-				URI u = new URI(ss[0]);
-				IFileStore store = EFS.getStore(u);
-				if (store == null) {
-					return Result.err("Cannot locate filestore for the JAR file: %s", uri);
+			JarRootNode root = roots.compute(store, (key, ref) -> {
+				if ((ref != null) && (ref.get() != null)) {
+					return ref;
 				}
-				JarRootNode root = new JarRootNode(store.toURI());
-
-				try (ZipInputStream jin = new ZipInputStream(new BufferedInputStream(store.openInputStream(0, null)))) {
+				JarRootNode node = new JarRootNode(key.toURI());
+				try (ZipInputStream jin = new ZipInputStream(new BufferedInputStream(key.openInputStream(0, null)))) {
 					for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
 						if (entry.isDirectory()) {
 							continue;
 						}
 						String path = Jar.cleanPath(entry.getName());
-						String[] segments = path.split("/");
+						String[] segments = PATH_SPLITTER.split(path);
 						try {
-							root.createdNode(path, segments, 0, entry.getSize(), ZipUtil.getModifiedTime(entry));
+							node.createdNode(path, segments, 0, entry.getSize(), ZipUtil.getModifiedTime(entry));
 						} catch (Exception e) {
-							root.createdNode(path, segments, 0, -1, 0);
+							node.createdNode(path, segments, 0, -1, 0);
 						}
 					}
-					WeakReference<JarRootNode> weakRef = new WeakReference<>(root);
-					synchronized (this) {
-						roots.putIfAbsent(uri, weakRef);
-					}
-					if (ss[1] == null || ss[1].equals("/") || ss[1].isEmpty()) {
-						return Result.ok(root);
-					}
-
-					List<String> segments = Strings.split("/", ss[1]);
-					JarNode rover = root;
-					for (String segment : segments) {
-						if (!(rover instanceof JarFolderNode)) {
-							return Result.ok(new NullFileStore(null));
-						}
-						JarFolderNode jfn = (JarFolderNode) rover;
-						rover = (JarNode) rover.getChild(segment);
-					}
-					return Result.ok(rover);
 				} catch (Exception e) {
-					return Result.err("Failed to load jar for %s: %s", u, e);
+					logger.logError("Error processing zip file " + key.toString(), e);
 				}
+				return new WeakReference<>(node);
 			})
-				.map(s -> (IFileStore) s)
-				.orElse(null);
-		}
-		throw new IllegalArgumentException("No file system for " + uri);
+				.get();
+
+			if (root == null) {
+				return Result.err("Failed to load jar for %s", fileuri);
+			}
+			if (ss[1] == null || ss[1].equals("/") || ss[1].isEmpty()) {
+				return Result.ok(root);
+			}
+
+			Iterable<String> segments = PATH_SPLITTER.splitAsStream(ss[1])
+				.filter(Strings::notEmpty)::iterator;
+			JarNode rover = root;
+			for (String segment : segments) {
+				if (!(rover instanceof JarFolderNode)) {
+					return Result.ok(new NullFileStore(null));
+				}
+				JarFolderNode jfn = (JarFolderNode) rover;
+				rover = (JarNode) rover.getChild(segment);
+			}
+			return Result.ok(rover);
+		})
+			.orElse(null);
 	}
 
 	static Result<URI, String> jarf(URI jarfileuri, String path) {
@@ -264,11 +267,10 @@ public class JarFileSystem extends FileSystem {
 			if (path == null)
 				path = "/";
 			else if (!path.startsWith("/"))
-				path = "/" + path;
+				path = "/".concat(path);
 			return Result.ok(new URI("jarf:///" + jarfileuri.toString() + "!" + path));
 		} catch (Exception e) {
-			return Result.err("failed to construct uri from jar uri=%sm path = %s: %s", jarfileuri, path,
-				e.getMessage());
+			return Result.err("failed to construct uri from jar uri=%sm path = %s: %s", jarfileuri, path, e);
 		}
 	}
 
@@ -313,7 +315,7 @@ public class JarFileSystem extends FileSystem {
 			throw e;
 		} catch (Exception e) {
 			IO.close(jin);
-			return Result.err("Failed to open resource %s from %s : %s", path, uri, e.getMessage());
+			return Result.err("Failed to open resource %s from %s : %s", path, uri, e);
 		}
 	}
 }
