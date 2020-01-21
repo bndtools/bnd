@@ -56,7 +56,7 @@ public class LimitedInputStream extends InputStream {
 
 	@Override
 	public void close() throws IOException {
-		remaining = 0;
+		remaining = 0L;
 		eof();
 		in.close();
 	}

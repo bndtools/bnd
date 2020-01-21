@@ -7,8 +7,6 @@ import java.time.Instant;
 import java.util.Iterator;
 import java.util.SortedMap;
 
-import org.bndtools.api.ILogger;
-import org.bndtools.api.Logger;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
@@ -46,8 +44,6 @@ import aQute.lib.io.LimitedInputStream;
 import aQute.lib.strings.Strings;
 
 public class JARTreeEntryPart extends AbstractFormPart implements IPartSelectionListener {
-	private static final ILogger	logger			= Logger.getLogger(JARTreeEntryPart.class);
-
 	private static final int	READ_LIMIT		= 1000000;
 
 	private static final String	DEFAULT_CHARSET	= "UTF-8";
