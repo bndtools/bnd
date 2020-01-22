@@ -183,20 +183,17 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 		ILaunch					launch;
 		IJavaProject			project;
 		TestRunSessionAndPort	testRunSession;
-		int						port;
 		DataOutputStream		outStr;
 
-		public ControlThread(ILaunch launch, IJavaProject project, int port) {
+		public ControlThread(ILaunch launch, IJavaProject project, int port) throws IOException {
 			this.launch = launch;
 			this.project = project;
-			this.port = port;
+			listener = new ServerSocket(port);
 		}
 
 		@Override
 		public void run() {
 			try {
-				listener = new ServerSocket(port);
-
 				// Note that this loop will terminate when accept() throws a
 				// SocketException. This ordinarily happens when the
 				// ServerSocket is closed in ControlThread.close(), which is in
