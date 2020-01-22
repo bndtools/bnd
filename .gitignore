@@ -8,4 +8,5 @@ Archive
 /reports/
 /generated/
 /install-jdk.sh
+/bndtools.test/
 .to
