@@ -192,7 +192,7 @@ public class Base64 {
 		if (in.length() > Integer.MAX_VALUE)
 			throw new IllegalArgumentException("File > 4Gb " + in);
 
-		encode(new BufferedInputStream(Files.newInputStream(in.toPath())), sb, (int) in.length());
+		encode(new BufferedInputStream(Files.newInputStream(in.toPath())), sb, (int) in.length()); // lgtm[java/input-resource-leak]
 	}
 
 	public static void encode(InputStream in, Appendable sb) throws IOException {

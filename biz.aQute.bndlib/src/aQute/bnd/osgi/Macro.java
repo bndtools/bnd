@@ -1869,7 +1869,7 @@ public class Macro {
 			context.setErrorWriter(stderr);
 			context.setWriter(stdout);
 		}
-		Object eval = engine.eval(sb.toString(), context);
+		Object eval = engine.eval(sb.toString(), context); // lgtm[java/dereferenced-value-may-be-null]
 		StringBuffer buffer = stdout.getBuffer();
 		if (buffer.length() > 0) {
 			reporter.error("Executing js: %s: %s", sb, buffer);

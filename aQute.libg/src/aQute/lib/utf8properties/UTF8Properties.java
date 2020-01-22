@@ -98,12 +98,12 @@ public class UTF8Properties extends Properties {
 	}
 
 	@Override
-	public void load(InputStream in) throws IOException {
+	public void load(InputStream in) throws IOException { // lgtm[java/non-sync-override]
 		load(new NonClosingInputStream(in), null, null, null);
 	}
 
 	@Override
-	public void load(Reader r) throws IOException {
+	public void load(Reader r) throws IOException { // lgtm[java/non-sync-override]
 		String source = IO.collect(new NonClosingReader(r));
 		load(source, null, null, null);
 	}
