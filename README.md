@@ -48,7 +48,7 @@ A snapshot version of all the bundles and Maven and Gradle plugins is there.
 
 * [Bnd Gradle Plugins](biz.aQute.bnd.gradle/README.md#using-the-latest-development-snapshot-build-of-the-bnd-gradle-plugins)
 * [Bnd Maven Plugins](maven/README.md#using-the-latest-development-snapshot-build-of-the-bnd-maven-plugins)
-* [Eclipse p2 update site for Bndtools](https://bndtools.jfrog.io/bndtools/update) <https://bndtools.jfrog.io/bndtools/update>
+* [Eclipse p2 update site for Bndtools](https://bndtools.jfrog.io/bndtools/update-snapshot) <https://bndtools.jfrog.io/bndtools/update-snapshot>
 
 ![Powered by Artifactory](https://github.com/bndtools/bnd/raw/master/docs/img/Powered-by-artifactory_04.png)
 
