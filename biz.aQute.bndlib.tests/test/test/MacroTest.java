@@ -1160,11 +1160,17 @@ public class MacroTest {
 	 */
 
 	@Test
-	@DisabledOnOs(WINDOWS)
 	public void testSystem() throws Exception {
 		Processor p = new Processor();
 		Macro macro = new Macro(p);
 		assertEquals("Hello World", macro.process("${system;echo Hello World}"));
+	}
+
+	@Test
+	@DisabledOnOs(WINDOWS)
+	public void testSystemNotWindows() throws Exception {
+		Processor p = new Processor();
+		Macro macro = new Macro(p);
 		assertTrue(macro.process("${system;wc;Hello World}")
 			.matches("\\s*[0-9]+\\s+[0-9]+\\s+[0-9]+\\s*"));
 	}

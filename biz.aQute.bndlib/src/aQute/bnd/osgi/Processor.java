@@ -91,6 +91,7 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.Digester;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.generics.Create;
+import aQute.libg.qtokens.QuotedTokenizer;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
@@ -2846,37 +2847,40 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public String system(boolean allowFail, String command, String input) throws IOException, InterruptedException {
-
-		if (IO.isWindows())
-			command = "cmd /c \"" + command + "\"";
-
-		Process process = Runtime.getRuntime()
-			.exec(command, null, getBase());
-
-		if (input != null) {
-			process.getOutputStream()
-				.write(input.getBytes(UTF_8));
+		List<String> args;
+		if (IO.isWindows()) {
+			args = new ArrayList<>();
+			args.add("cmd");
+			args.add("/c");
+			args.add("\"" + command + "\"");
+		} else {
+			QuotedTokenizer qt = new QuotedTokenizer(command, " ");
+			args = qt.getTokenSet();
 		}
-		process.getOutputStream()
-			.close();
+
+		Process process = new ProcessBuilder(args).directory(getBase())
+			.start();
+
+		try (OutputStream stdin = process.getOutputStream()) {
+			if (input != null) {
+				IO.store(input, stdin, UTF_8);
+			}
+		}
 
 		String out = IO.collect(process.getInputStream(), UTF_8);
 		String err = IO.collect(process.getErrorStream(), UTF_8);
-		int exitValue = -1;
 
-		exitValue = process.waitFor();
-
-		if (exitValue != 0) {
-			if (!allowFail) {
-				error("System command %s failed with exit code %d: %s", command, exitValue, out + "\n---\n" + err);
-			} else {
-				warning("System command %s failed with exit code %d (allowed)", command, exitValue);
-
-			}
-			return null;
+		int exitValue = process.waitFor();
+		if (exitValue == 0) {
+			return out.trim();
 		}
 
-		return out.trim();
+		if (allowFail) {
+			warning("System command %s failed with exit code %d (allowed)", command, exitValue);
+		} else {
+			error("System command %s failed with exit code %d: %s%n---%n%s", command, exitValue, out, err);
+		}
+		return null;
 	}
 
 	public String system(String command, String input) throws IOException, InterruptedException {
@@ -2886,7 +2890,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			command = command.substring(1);
 			allowFail = true;
 		}
-		return system(allowFail, command, null);
+		return system(allowFail, command, input);
 	}
 
 	public String getJavaExecutable(String java) {
