@@ -211,7 +211,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 
 	public File get(String bsn, String range, Strategy strategy, Map<String, String> properties) throws Exception {
 		File[] files = get(bsn, range);
-		if (files.length >= 0) {
+		if ((files != null) && (files.length > 0)) {
 			switch (strategy) {
 				case LOWEST :
 					return files[0];

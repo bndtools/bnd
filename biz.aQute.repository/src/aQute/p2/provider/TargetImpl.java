@@ -1,7 +1,6 @@
 package aQute.p2.provider;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -30,6 +29,7 @@ import org.w3c.dom.NodeList;
 import aQute.bnd.http.HttpClient;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.exceptions.Exceptions;
+import aQute.lib.io.IO;
 import aQute.p2.api.Artifact;
 import aQute.p2.api.ArtifactProvider;
 import aQute.p2.api.Classifier;
@@ -160,11 +160,13 @@ public class TargetImpl implements ArtifactProvider {
 					.useCache()
 					.go(artifact.uri);
 
-				Feature f = new Feature(new FileInputStream(file));
-				logger.debug("Adding feature {}", f);
+				try (InputStream in = IO.stream(file)) {
+					Feature f = new Feature(in);
+					logger.debug("Adding feature {}", f);
 
-				for (Plugin plugin : f.getPlugins()) {
-					plugins.add(plugin.id, plugin.version);
+					for (Plugin plugin : f.getPlugins()) {
+						plugins.add(plugin.id, plugin.version);
+					}
 				}
 			} catch (Exception e) {
 				logger.error("failed to create feature {} {}", artifact, e.getMessage());
