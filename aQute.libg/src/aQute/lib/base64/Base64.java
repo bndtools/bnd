@@ -188,11 +188,13 @@ public class Base64 {
 		return data;
 	}
 
-	public static void encode(File in, Appendable sb) throws IOException {
-		if (in.length() > Integer.MAX_VALUE)
-			throw new IllegalArgumentException("File > 4Gb " + in);
+	public static void encode(File file, Appendable sb) throws IOException {
+		if (file.length() > Integer.MAX_VALUE)
+			throw new IllegalArgumentException("File > 2Gb " + file);
 
-		encode(new BufferedInputStream(Files.newInputStream(in.toPath())), sb, (int) in.length()); // lgtm[java/input-resource-leak]
+		try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
+			encode(in, sb, (int) file.length());
+		}
 	}
 
 	public static void encode(InputStream in, Appendable sb) throws IOException {
@@ -201,7 +203,6 @@ public class Base64 {
 
 	public static void encode(InputStream in, Appendable sb, int maxLength) throws IOException {
 		try {
-			// StringBuilder sb = new StringBuilder();
 			int buf = 0;
 			int bits = 0;
 			int out = 0;
