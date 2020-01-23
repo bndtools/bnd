@@ -42,9 +42,19 @@ public class TemporaryProject {
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IWorkspaceRoot root = workspace.getRoot();
 		IProject project = root.getProject(PROJECT_NAME);
+		IProgressMonitor monitor = new NullProgressMonitor();
 
-		if (!project.exists() || !project.isOpen()) {
+		if (!project.exists()) {
 			createProject();
+		}
+		else if (!project.isOpen()) {
+			try {
+				project.open(monitor);
+			} catch (Exception e) {
+				// recreate project since there is something wrong with this one
+				project.delete(true, monitor);
+				createProject();
+			}
 		}
 
 		makeFolders(project.getFolder("temp"));
@@ -66,7 +76,9 @@ public class TemporaryProject {
 
 	private IProject createProject() throws CoreException {
 		IProgressMonitor monitor = new NullProgressMonitor();
-		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(PROJECT_NAME);
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		IProject project = workspace.getRoot()
+			.getProject(PROJECT_NAME);
 
 		if (project.exists()) {
 			if (!project.isOpen()) {
@@ -76,7 +88,14 @@ public class TemporaryProject {
 			return project;
 		}
 
-		project.create(monitor);
+		IProjectDescription description = workspace.newProjectDescription(PROJECT_NAME);
+
+		IPath stateLocation = Plugin.getInstance()
+			.getStateLocation();
+
+		description.setLocation(stateLocation.append(PROJECT_NAME));
+
+		project.create(description, monitor);
 		project.open(monitor);
 
 		makeFolders(project.getFolder("src"));
