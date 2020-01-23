@@ -1742,26 +1742,32 @@ public class Clazz {
 			case ANY :
 				return true;
 
-			case NAMED :
+			case NAMED : {
+				requireNonNull(instr);
 				return instr.matches(getClassName().getDottedOnly()) ^ instr.isNegated();
+			}
 
 			case VERSION : {
+				requireNonNull(instr);
 				String v = classFile.major_version + "." + classFile.minor_version;
 				return instr.matches(v) ^ instr.isNegated();
 			}
 
 			case IMPLEMENTS : {
+				requireNonNull(instr);
 				Set<TypeRef> visited = new HashSet<>();
 				return hierarchyStream(analyzer).flatMap(c -> c.typeStream(analyzer, Clazz::interfaces, visited))
 					.map(TypeRef::getDottedOnly)
 					.anyMatch(instr::matches) ^ instr.isNegated();
 			}
 
-			case EXTENDS :
+			case EXTENDS : {
+				requireNonNull(instr);
 				return hierarchyStream(analyzer).skip(1) // skip this class
 					.map(Clazz::getClassName)
 					.map(TypeRef::getDottedOnly)
 					.anyMatch(instr::matches) ^ instr.isNegated();
+			}
 
 			case PUBLIC :
 				return isPublic();
@@ -1769,23 +1775,30 @@ public class Clazz {
 			case CONCRETE :
 				return !isAbstract();
 
-			case ANNOTATED :
+			case ANNOTATED : {
+				requireNonNull(instr);
 				return typeStream(analyzer, Clazz::annotations, null) //
 					.map(TypeRef::getFQN)
 					.anyMatch(instr::matches) ^ instr.isNegated();
+			}
 
-			case INDIRECTLY_ANNOTATED :
+			case INDIRECTLY_ANNOTATED : {
+				requireNonNull(instr);
 				return typeStream(analyzer, Clazz::annotations, new HashSet<>()) //
 					.map(TypeRef::getFQN)
 					.anyMatch(instr::matches) ^ instr.isNegated();
+			}
 
-			case HIERARCHY_ANNOTATED :
+			case HIERARCHY_ANNOTATED : {
+				requireNonNull(instr);
 				return hierarchyStream(analyzer) //
 					.flatMap(c -> c.typeStream(analyzer, Clazz::annotations, null))
 					.map(TypeRef::getFQN)
 					.anyMatch(instr::matches) ^ instr.isNegated();
+			}
 
 			case HIERARCHY_INDIRECTLY_ANNOTATED : {
+				requireNonNull(instr);
 				Set<TypeRef> visited = new HashSet<>();
 				return hierarchyStream(analyzer) //
 					.flatMap(c -> c.typeStream(analyzer, Clazz::annotations, visited))
@@ -1802,13 +1815,15 @@ public class Clazz {
 			case ABSTRACT :
 				return isAbstract();
 
-			case IMPORTS :
+			case IMPORTS : {
+				requireNonNull(instr);
 				return hierarchyStream(analyzer) //
 					.map(Clazz::getReferred)
 					.flatMap(Set::stream)
 					.distinct()
 					.map(PackageRef::getFQN)
 					.anyMatch(instr::matches) ^ instr.isNegated();
+			}
 
 			case DEFAULT_CONSTRUCTOR :
 				return hasPublicNoArgsConstructor();

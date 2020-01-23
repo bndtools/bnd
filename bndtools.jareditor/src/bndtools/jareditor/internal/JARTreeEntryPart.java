@@ -1,5 +1,6 @@
 package bndtools.jareditor.internal;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -203,13 +204,12 @@ public class JARTreeEntryPart extends AbstractFormPart implements IPartSelection
 		lastModified.setText("");
 		if (resource instanceof IFile) {
 			IFile node = (IFile) resource;
-			int limit = limitRead ? READ_LIMIT : Integer.MAX_VALUE;
-
 			JAREditor.background("Loading " + resource.getName(), mon -> {
-				ByteBuffer content = IO
-					.copy(new LimitedInputStream(node.getContents(), limit), new ByteBufferOutputStream())
-					.toByteBuffer();
-				return content;
+				try (InputStream in = limitRead ? new LimitedInputStream(node.getContents(), READ_LIMIT)
+					: node.getContents()) {
+					return IO.copy(in, new ByteBufferOutputStream())
+						.toByteBuffer();
+				}
 			}, this::setContent);
 		} else {
 			setContent("");
@@ -258,10 +258,9 @@ public class JARTreeEntryPart extends AbstractFormPart implements IPartSelection
 			}
 		}
 
-		Show show = showAs;
-		int limit = limitRead ? READ_LIMIT : Integer.MAX_VALUE;
-		boolean cut = data.remaining() == limit;
+		boolean limited = limitRead && (data.remaining() == READ_LIMIT);
 
+		Show show = showAs;
 		if (show == Show.Auto) {
 			show = Hex.isBinary(data) ? Show.Hex : Show.Text;
 		}
@@ -285,7 +284,7 @@ public class JARTreeEntryPart extends AbstractFormPart implements IPartSelection
 				break;
 		}
 
-		if (cut)
+		if (limited)
 			content += "\n\nLimited to " + READ_LIMIT;
 
 		setContent(content);
