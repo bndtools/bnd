@@ -178,12 +178,12 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
 	private static class ControlThread implements Runnable, AutoCloseable {
 
-		ServerSocket			listener;
-		Socket					socket;
-		ILaunch					launch;
-		IJavaProject			project;
-		TestRunSessionAndPort	testRunSession;
-		DataOutputStream		outStr;
+		final ServerSocket				listener;
+		final ILaunch					launch;
+		final IJavaProject				project;
+		volatile Socket					socket;
+		volatile TestRunSessionAndPort	testRunSession;
+		volatile DataOutputStream		outStr;
 
 		public ControlThread(ILaunch launch, IJavaProject project, int port) throws IOException {
 			this.launch = launch;
@@ -223,9 +223,11 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 			IO.close(listener);
 			IO.close(outStr);
 			IO.close(socket);
-			if (testRunSession != null) {
-				testRunSession.stopTestRun();
-				testRunSession = null;
+			synchronized (this) {
+				if (testRunSession != null) {
+					testRunSession.stopTestRun();
+					testRunSession = null;
+				}
 			}
 		}
 	}
