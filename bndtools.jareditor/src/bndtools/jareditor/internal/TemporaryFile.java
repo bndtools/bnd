@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 
 import aQute.bnd.service.result.Result;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 
 /**
@@ -50,7 +51,7 @@ public class TemporaryFile {
 				return actualFolder;
 			});
 		} catch (Exception e) {
-			return Result.err("Error creating temp folder for JAREditor %s", e);
+			return Result.err("Error creating temp folder for JAREditor %s", Exceptions.toString(e));
 		}
 	}
 
