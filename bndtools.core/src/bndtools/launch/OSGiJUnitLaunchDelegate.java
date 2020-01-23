@@ -178,37 +178,43 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
 	private static class ControlThread implements Runnable, AutoCloseable {
 
-		ServerSocket			listener;
-		Socket					socket;
-		ILaunch					launch;
-		IJavaProject			project;
-		TestRunSessionAndPort	testRunSession;
-		int						port;
-		DataOutputStream		outStr;
+		final ServerSocket				listener;
+		final ILaunch					launch;
+		final IJavaProject				project;
+		volatile Socket					socket;
+		volatile TestRunSessionAndPort	testRunSession;
+		volatile DataOutputStream		outStr;
 
-		public ControlThread(ILaunch launch, IJavaProject project, int port) {
+		public ControlThread(ILaunch launch, IJavaProject project, int port) throws IOException {
 			this.launch = launch;
 			this.project = project;
-			this.port = port;
+			listener = new ServerSocket(port);
 		}
 
 		@Override
 		public void run() {
 			try {
-				listener = new ServerSocket(port);
-
-				socket = listener.accept();
-				outStr = new DataOutputStream(socket.getOutputStream());
-				while (socket.getInputStream()
-					.read() != -1) {
-					testRunSession = new TestRunSessionAndPort(launch, project);
-					outStr.writeInt(testRunSession.getPort());
+				// Note that this loop will terminate when accept() throws a
+				// SocketException. This ordinarily happens when the
+				// ServerSocket is closed in ControlThread.close(), which is in
+				// turn called by the registered TerminationListener (configured
+				// by launch()) at process termination time.
+				while (true) {
+					socket = listener.accept();
+					outStr = new DataOutputStream(socket.getOutputStream());
+					while (socket.getInputStream()
+						.read() != -1) {
+						testRunSession = new TestRunSessionAndPort(launch, project);
+						outStr.writeInt(testRunSession.getPort());
+					}
 				}
 			} catch (SocketException se) {
 				logger.logInfo("Connection to tester terminated", se);
 			} catch (IOException e) {
 				logger.logError("Error communicating to the tester", e);
 			}
+			// This call is defensive; close() should have already been called
+			// by the time we get here.
 			close();
 		}
 
@@ -217,9 +223,11 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 			IO.close(listener);
 			IO.close(outStr);
 			IO.close(socket);
-			if (testRunSession != null) {
-				testRunSession.stopTestRun();
-				testRunSession = null;
+			synchronized (this) {
+				if (testRunSession != null) {
+					testRunSession.stopTestRun();
+					testRunSession = null;
+				}
 			}
 		}
 	}
