@@ -450,7 +450,8 @@ public class CDIAnnotationReader extends ClassDataCollector {
 				if (targetIndex == Clazz.TYPEUSE_TARGET_INDEX_EXTENDS) {
 					definitions.get(0).service.add(extendsClass);
 				} else if (targetIndex != Clazz.TYPEUSE_INDEX_NONE) {
-					definitions.get(0).service.add(interfaces[targetIndex]); // lgtm[java/dereferenced-value-may-be-null]
+					requireNonNull(interfaces);
+					definitions.get(0).service.add(interfaces[targetIndex]);
 				}
 				break;
 			}
