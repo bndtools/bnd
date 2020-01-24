@@ -62,3 +62,5 @@ Export-Package: \
 -builderignore: testresources
 
 -baseline: *
+
+-fixupmessages.bundleversion: "The bundle version \\(5.0.0/5.1.0\\) is too low, must be at least 6.0.0";is:=ignore
