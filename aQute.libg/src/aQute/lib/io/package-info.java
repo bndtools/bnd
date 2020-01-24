@@ -1,4 +1,4 @@
-@Version("1.10.0")
-package aQute.lib.strings;
+@Version("3.5.0")
+package aQute.lib.io;
 
 import org.osgi.annotation.versioning.Version;
