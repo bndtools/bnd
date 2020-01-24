@@ -75,4 +75,74 @@ public class PathSetTest {
 		assertThat(pathSet.matches("**/*.txt")).accepts("foo.txt")
 			.rejects("foo.bar", "xxx/foo.txt/yyy", "xxx/bar.txt");
 	}
+
+	@Test
+	public void findNoInclude() {
+		PathSet pathSet = new PathSet();
+		assertThat(pathSet.find()).rejects("foo.txt", "xxx/bar.txt", "foo.bar", "xxx/foo.txt/yyy");
+	}
+
+	@Test
+	public void findOneIncludeConstructor() {
+		PathSet pathSet = new PathSet("txt");
+		assertThat(pathSet.find()).accepts("foo.txt", "xxx/bar.txt", "xxx/foo.txt/yyy")
+			.rejects("foo.bar");
+	}
+
+	@Test
+	public void findOneIncludeMethod() {
+		PathSet pathSet = new PathSet().include("txt");
+		assertThat(pathSet.find()).accepts("foo.txt", "xxx/bar.txt", "xxx/foo.txt/yyy")
+			.rejects("foo.bar");
+	}
+
+	@Test
+	public void findOneIncludeDefault() {
+		PathSet pathSet = new PathSet();
+		assertThat(pathSet.find("txt")).accepts("foo.txt", "xxx/bar.txt", "xxx/foo.txt/yyy")
+			.rejects("foo.bar");
+	}
+
+	@Test
+	public void findMultipleIncludeConstructor() {
+		PathSet pathSet = new PathSet("txt", "xxx/");
+		assertThat(pathSet.find()).accepts("foo.txt", "xxx/bar.bar", "xxx/foo.txt/yyy")
+			.rejects("foo.bar");
+	}
+
+	@Test
+	public void findMultipleIncludeMethod() {
+		PathSet pathSet = new PathSet().include("txt", "xxx/");
+		assertThat(pathSet.find()).accepts("foo.txt", "xxx/bar.bar", "xxx/foo.txt/yyy")
+			.rejects("foo.bar");
+	}
+
+	@Test
+	public void findMultipleIncludeDefault() {
+		PathSet pathSet = new PathSet();
+		assertThat(pathSet.find("txt", "xxx/")).accepts("foo.txt", "xxx/bar.bar", "xxx/foo.txt/yyy")
+			.rejects("foo.bar");
+	}
+
+	@Test
+	public void findOneIncludeConstructorExclude() {
+		PathSet pathSet = new PathSet("txt").exclude("xxx/");
+		assertThat(pathSet.find()).accepts("foo.txt")
+			.rejects("foo.bar", "xxx/foo.txt/yyy", "xxx/bar.txt");
+	}
+
+	@Test
+	public void findOneIncludeMethodExclude() {
+		PathSet pathSet = new PathSet().include("txt")
+			.exclude("xxx/");
+		assertThat(pathSet.find()).accepts("foo.txt")
+			.rejects("foo.bar", "xxx/foo.txt/yyy", "xxx/bar.txt");
+	}
+
+	@Test
+	public void findOneIncludeDefaultExclude() {
+		PathSet pathSet = new PathSet().exclude("xxx/");
+		assertThat(pathSet.find("txt")).accepts("foo.txt")
+			.rejects("foo.bar", "xxx/foo.txt/yyy", "xxx/bar.txt");
+	}
 }
