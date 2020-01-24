@@ -44,3 +44,4 @@ Import-Package: \
 	aQute.lib.*
 
 Bundle-Activator: bndtools.jareditor.internal.Plugin
+Bundle-ActivationPolicy: lazy
