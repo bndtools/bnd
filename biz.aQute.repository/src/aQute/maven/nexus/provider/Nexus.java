@@ -122,6 +122,8 @@ public class Nexus {
 	public File download(URI uri) throws Exception {
 		return request().useCache()
 			.age(30, TimeUnit.SECONDS)
+			.timeout(5 * 60 * 1000)
+			.retries(3)
 			.go(uri);
 	}
 
@@ -129,6 +131,7 @@ public class Nexus {
 		try (TaggedData tag = request().put()
 			.upload(data)
 			.asTag()
+			.retries(3)
 			.go(uri)) {
 			switch (tag.getState()) {
 				case NOT_FOUND :
