@@ -26,7 +26,6 @@ public class AugmentRepository extends BaseRepository {
 	private final Repository					repository;
 	private final Map<Capability, Capability>	wrapped					= new HashMap<>();
 	private final List<Capability>				augmentedCapabilities	= new ArrayList<>();
-	private final List<Resource>				augmentedBundles		= new ArrayList<>();	// lgtm[java/unused-container]
 
 	public AugmentRepository(Parameters augments, Repository repository) throws Exception {
 		this.repository = repository;
@@ -116,8 +115,7 @@ public class AugmentRepository extends BaseRepository {
 				augmentedCapabilities.addAll(addedCapabilities);
 			}
 
-			Resource wrappedBundle = wrappedBundleBuilder.build();
-			augmentedBundles.add(wrappedBundle);
+			wrappedBundleBuilder.build();
 		}
 	}
 
