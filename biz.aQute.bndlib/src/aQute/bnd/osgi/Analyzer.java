@@ -69,6 +69,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.Export;
+import aQute.bnd.apiguardian.api.API;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -501,19 +502,60 @@ public class Analyzer extends Processor {
 		return jar;
 	}
 
+	private final static String	STATUS_PROPERTY	= "status";
+
 	private Parameters getExportedByAnnotation() {
-		TypeRef exportAnnotation = descriptors.getTypeRefFromFQN("org.osgi.annotation.bundle.Export");
-		return contained.keySet()
+		TypeRef exportAnnotation = descriptors.getTypeRef("org/osgi/annotation/bundle/Export");
+		Parameters exportedByAnnotation = getContained().keySet()
 			.stream()
 			.map(this::getPackageInfo)
 			.filter(Objects::nonNull)
 			.distinct()
-			.filter(clz -> clz.annotations()
+			.filter(c -> c.annotations()
 				.contains(exportAnnotation))
 			.map(Clazz::getClassName)
 			.map(TypeRef::getPackageRef)
 			.map(PackageRef::getFQN)
 			.collect(Parameters.toParameters());
+
+		// Opt-in is required for processing API Guardian annotations
+		Parameters headerAPIGuardian = OSGiHeader.parseHeader(getProperty(Constants.EXPORT_APIGUARDIAN));
+		if (headerAPIGuardian.isEmpty()) {
+			return exportedByAnnotation;
+		}
+
+		Instructions instructions = new Instructions(headerAPIGuardian);
+		TypeRef apiAnnotation = descriptors.getTypeRef("org/apiguardian/api/API");
+		Parameters exportedByAPIGuardian = new Parameters(false);
+
+		MapStream.of(getClassspace().values()
+			.stream()
+			.filter(c -> !c.isModule() && !c.isInnerClass() && !c.isSynthetic() && c.annotations()
+				.contains(apiAnnotation))
+			.flatMap(c -> instructions.matchesStream(c.getFQN())
+				.mapKey(instruction -> c)
+				.entries()))
+			.forEachOrdered((c, a) -> c.annotations(apiAnnotation.getBinary())
+				.map(ann -> API.Status.valueOf(ann.get(STATUS_PROPERTY)))
+				.max(API.Status::compareTo)
+				.ifPresent(status -> exportedByAPIGuardian.computeIfAbsent(c.getClassName()
+					.getPackageRef()
+					.getFQN(), k -> new Attrs(a))
+					.compute(STATUS_PROPERTY, (k, v) -> (v == null) ? status.name()
+						: (API.Status.valueOf(v)
+							.compareTo(status) > 0 ? v : status.name()))));
+
+		exportedByAPIGuardian.values()
+			.stream()
+			.filter(attrs -> API.Status.valueOf(attrs.get(STATUS_PROPERTY)) == API.Status.INTERNAL)
+			.forEach(attrs -> {
+				attrs.put(Constants.MANDATORY_DIRECTIVE, STATUS_PROPERTY);
+				attrs.put(Constants.NO_IMPORT_DIRECTIVE, "true");
+			});
+
+		exportedByAnnotation.mergeWith(exportedByAPIGuardian, false);
+
+		return exportedByAnnotation;
 	}
 
 	public Clazz getPackageInfo(PackageRef packageRef) {
