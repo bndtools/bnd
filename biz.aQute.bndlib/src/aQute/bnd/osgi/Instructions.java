@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 import aQute.bnd.header.Attrs;
@@ -89,7 +90,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 	}
 
 	@Override
-	public Set<java.util.Map.Entry<Instruction, Attrs>> entrySet() {
+	public Set<Entry<Instruction, Attrs>> entrySet() {
 		if (map == null)
 			return EMPTY.entrySet();
 
@@ -276,6 +277,21 @@ public class Instructions implements Map<Instruction, Attrs> {
 		if (instr == null || instr.isNegated())
 			return false; // we deny this one explicitly
 		return true;
+	}
+
+	public MapStream<Instruction, Attrs> matchesStream(String value) {
+		requireNonNull(value);
+		AtomicBoolean negated = new AtomicBoolean(false);
+		return stream().filterKey(instruction -> {
+			if (negated.get() || !instruction.matches(value)) {
+				return false;
+			}
+			if (instruction.isNegated()) {
+				negated.set(true);
+				return false;
+			}
+			return true;
+		});
 	}
 
 	/**

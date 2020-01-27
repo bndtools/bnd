@@ -29,7 +29,6 @@ import java.util.zip.ZipException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.apiguardian.APIGuardianAnnotations;
 import aQute.bnd.cdi.CDIAnnotations;
 import aQute.bnd.component.DSAnnotations;
 import aQute.bnd.differ.DiffPluginImpl;
@@ -1679,7 +1678,6 @@ public class Builder extends Analyzer {
 	static JPMSAnnotations			moduleAnnotations		= new JPMSAnnotations();
 	static JPMSModuleInfoPlugin		moduleInfoPlugin		= new JPMSModuleInfoPlugin();
 	static SPIDescriptorGenerator	spiDescriptorGenerator	= new SPIDescriptorGenerator();
-	static APIGuardianAnnotations	apiGuardianAnnotations	= new APIGuardianAnnotations();
 
 	@Override
 	protected void setTypeSpecificPlugins(Set<Object> list) {
@@ -1692,7 +1690,6 @@ public class Builder extends Analyzer {
 		list.add(moduleAnnotations);
 		list.add(moduleInfoPlugin);
 		list.add(spiDescriptorGenerator);
-		list.add(apiGuardianAnnotations);
 		super.setTypeSpecificPlugins(list);
 	}
 
