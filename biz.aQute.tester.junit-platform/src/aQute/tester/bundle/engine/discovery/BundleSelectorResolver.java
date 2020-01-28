@@ -520,16 +520,15 @@ public class BundleSelectorResolver {
 		@Override
 		public <T extends DiscoverySelector> List<T> getSelectorsByType(Class<T> selectorType) {
 			info(() -> "Getting selectors from sub-request for: " + selectorType);
-			if (selectorType.equals(ClassSelector.class) || selectorType.equals(MethodSelector.class)) {
-				return selectors.stream()
-					.filter(selectorType::isInstance)
-					.map(selectorType::cast)
-					.collect(toList());
-			}
-			if (selectorType.equals(BundleSelector.class)) {
-				return new ArrayList<>();
-			}
-			return request.getSelectorsByType(selectorType);
+			return Stream.concat( //
+				request.getSelectorsByType(selectorType)
+					.stream()
+					.filter(selector -> !(selector instanceof ClassSelector || selector instanceof MethodSelector
+						|| selector instanceof BundleSelector)),
+				selectors.stream()
+					.filter(selectorType::isInstance))
+				.map(selectorType::cast)
+				.collect(toList());
 		}
 
 		@Override
