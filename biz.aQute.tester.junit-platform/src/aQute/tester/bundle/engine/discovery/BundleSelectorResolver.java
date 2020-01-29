@@ -5,12 +5,10 @@ import static aQute.tester.bundle.engine.BundleEngine.CHECK_UNRESOLVED;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
-import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,6 +36,7 @@ import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.discovery.ClassSelector;
+import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.engine.discovery.MethodSelector;
 import org.junit.platform.engine.support.descriptor.EngineDescriptor;
 import org.osgi.framework.Bundle;
@@ -52,18 +51,21 @@ import aQute.tester.junit.platform.utils.BundleUtils;
 
 public class BundleSelectorResolver {
 
-	static final Set<String> JUNIT4_ANNOTATIONS;
-	static {
-		Set<String> annotations = new HashSet<>();
-		annotations.add("org.junit.Test");
-		annotations.add("org.junit.Before");
-		annotations.add("org.junit.BeforeClass");
-		annotations.add("org.junit.After");
-		annotations.add("org.junit.AfterClass");
-		annotations.add("org.junit.experimental.theories.Theory");
-		annotations.add("org.junit.runners.RunWith");
-		JUNIT4_ANNOTATIONS = Collections.unmodifiableSet(annotations);
-	}
+	static final Predicate<String>		JUNIT4_ANNOTATIONS	=					//
+		name -> {
+			switch (name) {
+				case "org.junit.Test" :
+				case "org.junit.Before" :
+				case "org.junit.BeforeClass" :
+				case "org.junit.After" :
+				case "org.junit.AfterClass" :
+				case "org.junit.experimental.theories.Theory" :
+				case "org.junit.runners.RunWith" :
+					return true;
+				default :
+					return false;
+			}
+		};
 
 	final boolean						testUnresolved;
 	final Map<Long, BundleDescriptor>	bundleMap	= new HashMap<>();
@@ -92,8 +94,8 @@ public class BundleSelectorResolver {
 	final Predicate<Bundle>			isNotATestBundle;
 	final Bundle[]					allBundles;
 	final Set<TestEngine>			engines;
-	final Set<String>				unresolvedClasses	= new HashSet<>();
-	final Map<String, Set<String>>	unresolvedMethods	= new HashMap<>();
+	final Set<String>				unresolvedClassNames	= new HashSet<>();
+	final Map<String, Set<String>>	unresolvedMethodNames	= new HashMap<>();
 	final Set<Class<?>>				resolvedClasses		= new HashSet<>();
 	private boolean					verbose				= false;
 
@@ -121,7 +123,7 @@ public class BundleSelectorResolver {
 
 		methodSelectors = request.getSelectorsByType(MethodSelector.class)
 			.stream()
-			.map(selector -> selectMethod(selector.getClassName(), selector.getMethodName(),
+			.map(selector -> DiscoverySelectors.selectMethod(selector.getClassName(), selector.getMethodName(),
 				selector.getMethodParameterTypes()))
 			.collect(toList());
 
@@ -155,11 +157,11 @@ public class BundleSelectorResolver {
 
 		classSelectors.stream()
 			.map(ClassSelector::getClassName)
-			.forEach(unresolvedClasses::add);
+			.forEach(unresolvedClassNames::add);
 		methodSelectors.stream()
 			.forEach(selector -> {
-				unresolvedClasses.add(selector.getClassName());
-				unresolvedMethods.computeIfAbsent(selector.getClassName(), key -> new HashSet<>())
+				unresolvedClassNames.add(selector.getClassName());
+				unresolvedMethodNames.computeIfAbsent(selector.getClassName(), key -> new HashSet<>())
 					.add(selector.getMethodName());
 			});
 	}
@@ -310,24 +312,24 @@ public class BundleSelectorResolver {
 		}
 
 		if (testUnresolved) {
-			if (!unresolvedClasses.isEmpty()) {
+			if (!unresolvedClassNames.isEmpty()) {
 				StaticFailureDescriptor unresolvedClassesDescriptor = new StaticFailureDescriptor(
 					uniqueId.append("test", "unresolvedClasses"), "Unresolved classes");
-				for (String unresolvedClass : unresolvedClasses) {
+				for (String unresolvedClass : unresolvedClassNames) {
 					unresolvedClassesDescriptor.addChild(new StaticFailureDescriptor(
 						unresolvedClassesDescriptor.getUniqueId()
 							.append("test", unresolvedClass),
 						unresolvedClass,
 						new JUnitException("Couldn't find class " + unresolvedClass + " in any bundle")));
 					// Don't report unresolved methods of unresolved classes
-					unresolvedMethods.remove(unresolvedClass);
+					unresolvedMethodNames.remove(unresolvedClass);
 				}
 				descriptor.addChild(unresolvedClassesDescriptor);
 			}
-			if (!unresolvedMethods.isEmpty()) {
+			if (!unresolvedMethodNames.isEmpty()) {
 				StaticFailureDescriptor unresolvedMethodsDescriptor = new StaticFailureDescriptor(
 					uniqueId.append("test", "unresolvedMethods"), "Unresolved methods");
-				unresolvedMethods.forEach((className, methods) -> {
+				unresolvedMethodNames.forEach((className, methods) -> {
 					StaticFailureDescriptor classFailure = new StaticFailureDescriptor(
 						unresolvedMethodsDescriptor.getUniqueId()
 							.append("test", className),
@@ -366,7 +368,7 @@ public class BundleSelectorResolver {
 				int index = testcase.indexOf('#');
 				return (index < 0) ? testcase : testcase.substring(0, index);
 			})
-			.forEach(unresolvedClasses::remove);
+			.forEach(unresolvedClassNames::remove);
 	}
 
 	private List<DiscoverySelector> getSelectorsFromTestCasesHeader(BundleDescriptor bd) {
@@ -385,8 +387,7 @@ public class BundleSelectorResolver {
 							resolvedClasses.add(testClass);
 							return selectClass(testClass);
 						}
-						MethodSelector parsed = selectMethod(testcase);
-						return selectMethod(testClass, parsed.getMethodName(), parsed.getMethodParameterTypes());
+						return selectMethod(testClass, DiscoverySelectors.selectMethod(testcase));
 					}
 				} catch (ClassNotFoundException cnfe) {
 					StaticFailureDescriptor unresolvedClassDescriptor = new StaticFailureDescriptor(bd.getUniqueId()
@@ -412,6 +413,12 @@ public class BundleSelectorResolver {
 			Thread.currentThread()
 				.setContextClassLoader(orig);
 		}
+	}
+
+	private static MethodSelector selectMethod(Class<?> testClass, MethodSelector selector) {
+		return findMethod(testClass, selector.getMethodName(), selector.getMethodParameterTypes())
+			.map(method -> DiscoverySelectors.selectMethod(testClass, method))
+			.orElse(null);
 	}
 
 	private void checkForMixedJUnit34(BundleDescriptor bd, Class<?> testClass) {
@@ -453,59 +460,68 @@ public class BundleSelectorResolver {
 		return Stream.of(annotations)
 			.map(Annotation::annotationType)
 			.map(Class::getName)
-			.anyMatch(JUNIT4_ANNOTATIONS::contains);
+			.anyMatch(JUNIT4_ANNOTATIONS);
 	}
 
 	private List<DiscoverySelector> getSelectorsFromSuppliedSelectors(BundleDescriptor bd) {
-		List<DiscoverySelector> selectors = new ArrayList<>();
 		Bundle bundle = bd.getBundle();
 		Bundle host = BundleUtils.getHost(bundle)
 			.get();
 		Set<String> testCases = BundleUtils.testCases(bundle)
 			.collect(toSet());
-		classSelectors.stream()
-			.map(ClassSelector::getClassName)
-			.filter(testCases::contains)
-			.forEach(className -> {
-				try {
-					Class<?> testClass = host.loadClass(className);
-					unresolvedClasses.remove(className);
-					info(() -> "removing resolved class: " + testClass + ", that leaves: " + unresolvedClasses);
-					if (resolvedClasses.add(testClass)) {
-						checkForMixedJUnit34(bd, testClass);
-						selectors.add(selectClass(testClass));
-					}
-				} catch (ClassNotFoundException cnfe) {
-					info(() -> "Unresolved class: " + className + ", bundle: " + bundle.getSymbolicName(), cnfe);
-				}
-			});
-		methodSelectors.stream()
-			.filter(selector -> testCases.contains(selector.getClassName()))
-			.forEach(selector -> {
-				final String className = selector.getClassName();
-				try {
-					Class<?> testClass = host.loadClass(className);
-					if (!resolvedClasses.contains(testClass)) {
-						checkForMixedJUnit34(bd, testClass);
-						unresolvedClasses.remove(className);
-						Optional<Method> method = findMethod(testClass, selector.getMethodName(),
-							selector.getMethodParameterTypes());
-						if (method.isPresent()) {
-							selectors.add(selectMethod(testClass, method.get()));
-
-							Set<String> methods = unresolvedMethods.get(className);
-							if (methods != null) {
-								methods.remove(selector.getMethodName());
-								if (methods.isEmpty()) {
-									unresolvedMethods.remove(className);
-								}
+		List<DiscoverySelector> selectors = Stream.concat( //
+			classSelectors.stream()
+				.map(selector -> {
+					String className = selector.getClassName();
+					if (testCases.contains(className)) {
+						try {
+							Class<?> testClass = host.loadClass(className);
+							unresolvedClassNames.remove(className);
+							info(() -> "removing resolved class: " + testClass + ", that leaves: "
+								+ unresolvedClassNames);
+							if (resolvedClasses.add(testClass)) {
+								checkForMixedJUnit34(bd, testClass);
+								return selectClass(testClass);
 							}
+						} catch (ClassNotFoundException cnfe) {
+							info(() -> "Unresolved class: " + className + ", bundle: " + bundle.getSymbolicName(),
+								cnfe);
 						}
 					}
-				} catch (ClassNotFoundException cnfe) {
-					info(() -> "Unresolved class: " + className + ", bundle: " + bundle.getSymbolicName(), cnfe);
-				}
-			});
+					return null;
+				}), //
+			methodSelectors.stream()
+				.map(selector -> {
+					String className = selector.getClassName();
+					if (testCases.contains(className)) {
+						try {
+							Class<?> testClass = host.loadClass(className);
+							if (!resolvedClasses.contains(testClass)) {
+								checkForMixedJUnit34(bd, testClass);
+								unresolvedClassNames.remove(className);
+								MethodSelector methodSelector = selectMethod(testClass, selector);
+								if (methodSelector != null) {
+									unresolvedMethodNames.compute(className, (k, methods) -> {
+										if (methods != null) {
+											methods.remove(methodSelector.getMethodName());
+											if (!methods.isEmpty()) {
+												return methods;
+											}
+										}
+										return null;
+									});
+								}
+								return methodSelector;
+							}
+						} catch (ClassNotFoundException cnfe) {
+							info(() -> "Unresolved class: " + className + ", bundle: " + bundle.getSymbolicName(),
+								cnfe);
+						}
+					}
+					return null;
+				}))
+			.filter(Objects::nonNull)
+			.collect(toList());
 		info(() -> "Selectors: " + selectors);
 		return selectors;
 	}
