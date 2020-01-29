@@ -65,8 +65,8 @@ import aQute.tester.testclasses.junit.platform.Mixed35Test;
 import aQute.tester.testclasses.junit.platform.Mixed45Test;
 import aQute.tester.testclasses.junit.platform.ParameterizedTesterNamesTest;
 
-public class ActivatorTest extends AbstractActivatorTest {
-	public ActivatorTest() {
+public class ActivatorJUnitPlatformTest extends AbstractActivatorTest {
+	public ActivatorJUnitPlatformTest() {
 		super("aQute.tester.junit.platform.Activator", "biz.aQute.tester.junit-platform");
 	}
 
