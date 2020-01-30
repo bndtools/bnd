@@ -2,6 +2,7 @@ package aQute.tester.bundle.engine.test;
 
 import static aQute.tester.bundle.engine.BundleEngine.CHECK_UNRESOLVED;
 import static org.assertj.core.api.Assertions.allOf;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.platform.commons.util.FunctionUtils.where;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
@@ -22,9 +23,12 @@ import static org.junit.platform.testkit.engine.TestExecutionResultConditions.me
 
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +44,7 @@ import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.discovery.ClassSelector;
 import org.junit.platform.engine.support.descriptor.EngineDescriptor;
 import org.junit.platform.testkit.engine.EngineTestKit;
 import org.junit.platform.testkit.engine.EngineTestKit.Builder;
@@ -119,6 +124,14 @@ public class BundleEngineTest {
 		}
 	}
 
+	protected void startLaunchpadNoEngines() {
+		builder = new LaunchpadBuilder();
+		builder.bndrun("bundleenginetest-noengines.bndrun")
+			.excludeExport("aQute.tester.bundle.engine")
+			.excludeExport("aQute.tester.bundle.engine.discovery");
+		startLaunchpad();
+	}
+
 	protected void startLaunchpad() {
 		if (DEBUG) {
 			builder.debug();
@@ -174,11 +187,7 @@ public class BundleEngineTest {
 	@Test
 	@Tag(CUSTOM_LAUNCH)
 	public void withNoEngines_reportsMissingEngines_andSkipsMainTests() throws Exception {
-		builder = new LaunchpadBuilder();
-		builder = builder.bndrun("bundleenginetest-noengines.bndrun")
-			.excludeExport("aQute.tester.bundle.engine")
-			.excludeExport("aQute.tester.bundle.engine.discovery");
-		startLaunchpad();
+		startLaunchpadNoEngines();
 
 		Bundle testBundle = testBundler.startTestBundle(JUnit4Test.class);
 
@@ -270,11 +279,7 @@ public class BundleEngineTest {
 	@Test
 	@Tag(CUSTOM_LAUNCH)
 	public void withEngineWithServiceSpecCommentsAndWhitespace_loadsEngine() throws Exception {
-		builder = new LaunchpadBuilder();
-		builder.bndrun("bundleenginetest-noengines.bndrun")
-			.excludeExport("aQute.tester.bundle.engine")
-			.excludeExport("aQute.tester.bundle.engine.discovery");
-		startLaunchpad();
+		startLaunchpadNoEngines();
 
 		Bundle engineBundle = testBundler.bundleWithEE()
 			.includeResource("META-INF/services/" + TestEngine.class.getName())
@@ -1126,10 +1131,9 @@ public class BundleEngineTest {
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
-				event(uniqueIdSubstring(test.getSymbolicName()), testClass(JUnit3And4Test.class),
-					finishedWithFailure(instanceOf(JUnitException.class),
-						message(
-							x -> x.matches("^(?si).*TestCase.*JUnit 4 annotations.*annotations will be ignored.*$")))));
+				event(uniqueIdSubstring(test.getSymbolicName()), testClass(JUnit3And4Test.class), finishedWithFailure(
+					instanceOf(JUnitException.class),
+					message(x -> x.matches("^(?si).*TestCase.*JUnit 4 annotations.*annotations will be ignored.*$")))));
 
 	}
 
@@ -1177,5 +1181,72 @@ public class BundleEngineTest {
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, finishedWithFailure(instanceOf(JUnitException.class)));
+	}
+
+	public static class SubEngine implements TestEngine {
+
+		static EngineDiscoveryRequest request;
+
+		@Override
+		public String getId() {
+			return "sub-engine";
+		}
+
+		@Override
+		public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
+			request = discoveryRequest;
+			return null;
+		}
+
+		@Override
+		public void execute(ExecutionRequest request) {}
+	}
+
+	@Test
+	@Tag(CUSTOM_LAUNCH)
+	public void subRequest_resolvesAndRemovesBundleSelectors() throws Exception {
+		startLaunchpadNoEngines();
+
+		Bundle engineBundle = testBundler.bundleWithEE()
+			.includeResource("META-INF/services/" + TestEngine.class.getName())
+			.literal(SubEngine.class.getName())
+			.addResource(SubEngine.class)
+			.start();
+		Bundle testBundle = startTestBundle(JUnit4Test.class);
+
+		EngineDiscoveryRequest request;
+
+		synchronized (SubEngine.class) {
+			SubEngine.request = null;
+
+			engineInFramework()
+				.selectors(selectBundle(testBundle))
+				.execute()
+				.all()
+				.debug(debugStr);
+			request = SubEngine.request;
+		}
+		assertThat(request).isNotNull();
+
+		Class<?> junit4TestInBundle = testBundle.loadClass(JUnit4Test.class.getName());
+
+		List<Class<?>> selectedClasses = new ArrayList<>();
+
+		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+			softly.assertThat(request.getSelectorsByType(BundleSelector.class)).as("should remove BundleSelectors")
+				.isEmpty();
+			List<DiscoverySelector> selectors = request.getSelectorsByType(DiscoverySelector.class);
+			softly.assertThat(selectors)
+				.as("size")
+				.hasSize(1);
+			List<Class<?>> actualClasses = selectors.stream()
+				.filter(ClassSelector.class::isInstance)
+				.map(ClassSelector.class::cast)
+				.map(classSelector -> classSelector.getJavaClass())
+				.collect(Collectors.toList());
+			softly.assertThat(actualClasses)
+				.as("classes")
+				.containsExactlyInAnyOrder(junit4TestInBundle);
+		}
 	}
 }
