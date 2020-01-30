@@ -13,7 +13,7 @@ aQute.agent.server.port = 29998
     org.apache.felix.gogo.runtime;version=latest
 
 -testpath: \
-    biz.aQute.junit;version=latest,\
+    ${junit},\
     slf4j.api, \
     slf4j.simple,\
     org.apache.felix.framework;version=latest;packages=*, \

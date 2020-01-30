@@ -13,13 +13,14 @@ Bundle-Description: \
 # are not necessary
 Import-Package: \
 	aQute.*;resolution:=optional, \
-	junit.*;version="[3.8,5)",\
+	junit.*;version="${range;[==,5);${junit3.version}}",\
+	org.junit.*;version="${range;[==,+);${junit4.tester.version}}",\
 	*
 
 -includepackage: \
-	aQute.tester.plugin, \
-	!aQute.junit.plugin, \
-	aQute.junit.*
+	aQute.junit.*,\
+	aQute.tester.plugin
+
 -includeresource.perm: OSGI-INF/permissions.perm;literal="(java.security.AllPermission)"
 
 -conditionalpackage: aQute.lib*
@@ -29,7 +30,7 @@ Import-Package: \
 -buildpath: \
 	osgi.annotation;version=latest,\
 	osgi.core;version=latest,\
-	biz.aQute.junit;version=latest;packages=aQute.junit.*,\
+    junit:junit;version="${junit4.tester.version}",\
 	biz.aQute.bndlib;version=latest
 
 -baseline: *

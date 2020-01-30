@@ -7,35 +7,41 @@
 	osgi.annotation;version=latest,\
 	osgi.core;version=latest,\
 	aQute.libg;version=project,\
+	biz.aQute.tester;version=latest;packages=aQute.junit.*,\
 	biz.aQute.bndlib;version=latest,\
-    org.apache.servicemix.bundles.junit;version=latest,\
-    org.assertj.core;version=latest
+    junit:junit;version="${junit4.version}",\
+    org.hamcrest:hamcrest-core;version="${hamcrest.version}",\
+    assertj-core;version="${assertj.version}"
 
 -includepackage: \
-	aQute.junit.*, \
+	aQute.junit.*,\
+	junit.*,\
+	org.junit.*,\
+	org.hamcrest.*,\
 	org.assertj.core.*
 
 -includeresource.perm: OSGI-INF/permissions.perm;literal="(java.security.AllPermission)"
 
-Export-Package: \
-	junit.*;version="3.8.2", \
-	org.junit.*, \
-	org.hamcrest.*, \
-	!org.assertj.core.internal.*, \
+-exportcontents: \
+	junit.*;version="${junit3.version}",\
+	org.junit.*;version="${junit4.version}",\
+	org.hamcrest.*;version="${hamcrest.version}",\
+	!org.assertj.core.internal.*,\
 	org.assertj.core.*
 
--fixupmessages.junit: Version for package junit.*3.8.2
 -fixupmessages.assertj: Export org.assertj.core.* private references
+-fixupmessages.bundleversion: "The bundle version \\(5.0.0/5.1.0\\) is too low, must be at least 6.0.0";is:=ignore
 
 # The dependency on aQute packages is only for the
 # master side. When launched, those dependencies
 # are not necessary
 Import-Package: \
 	aQute.*;resolution:=optional,\
-	junit.*;version="[3.8,5)",\
+	junit.*;version="${range;[==,5);${junit3.version}}",\
     !org.opentest4j,\
 	!org.junit.jupiter.*,\
 	!org.junit.platform.*,\
+	org.junit.*;version="${range;[==,+);${junit4.tester.version}}",\
 	!javax.annotation.*,\
 	sun.*;resolution:=optional,\
 	jdk.*;resolution:=optional,\
@@ -54,4 +60,4 @@ Embedded-Activator: ${Bundle-Activator}
 Bundle-Release: Use main thread for testing, optionally allowing old separate thread model
 
 -baseline: *
--diffpackages: !org.junit.*, !org.assertj.core.*, !org.hamcrest.*, *
+-diffpackages: !junit.*, !org.junit.*, !org.assertj.core.*, !org.hamcrest.*, *

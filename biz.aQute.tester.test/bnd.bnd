@@ -24,11 +24,11 @@
 	org.junit.platform:junit-platform-launcher;version=latest,\
 	org.junit.platform.engine,\
 	org.junit.jupiter.engine,\
-	org.assertj.core;version=latest,\
+	assertj-core;version=latest,\
 	org.junit.platform:junit-platform-testkit;version=latest,\
 	aQute.libg;version=latest,\
 	biz.aQute.bndlib;version=snapshot;packages=aQute.bnd.osgi,\
-	biz.aQute.junit;version=snapshot;packages=aQute.junit.constants,\
+	biz.aQute.tester;version=snapshot;packages=aQute.junit.constants,\
 	biz.aQute.launchpad;version=project,\
 	biz.aQute.tester.junit-platform;version=project;packages=aQute.tester.bundle.engine,\
 	org.xmlunit:xmlunit-core;version=latest,\
