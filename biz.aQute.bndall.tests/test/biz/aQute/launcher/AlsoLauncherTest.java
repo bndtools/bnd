@@ -696,7 +696,7 @@ public class AlsoLauncherTest {
 			Macro r = project.getReplacer();
 
 			String[] expected = {
-				"org.apache.felix.scr", "org.apache.servicemix.bundles.junit", "org.assertj.core", "demo"
+				"org.apache.felix.scr", "org.apache.servicemix.bundles.junit", "assertj-core", "demo"
 			};
 
 			l.launch();

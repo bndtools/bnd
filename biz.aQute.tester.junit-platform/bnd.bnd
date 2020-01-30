@@ -14,12 +14,14 @@ Bundle-Description: \
 # are not necessary
 Import-Package: \
 	aQute.*;resolution:=optional,\
-	junit.*;version='[3.8,5)';resolution:=optional,\
+	junit.*;version="${range;[==,5);${junit3.version}}";resolution:=optional,\
 	org.junit.platform.*,\
-	org.junit;version='[4,5)';resolution:=optional,\
+	org.junit.*;version="${range;[==,+);${junit4.tester.version}}";resolution:=optional,\
 	*
 
--includepackage: aQute.tester.*
+-includepackage: \
+	!aQute.tester.plugin,\
+	aQute.tester.*
 	
 -includeresource.perm: OSGI-INF/permissions.perm;literal="(java.security.AllPermission)"
 
@@ -32,8 +34,8 @@ Import-Package: \
 	aQute.libg;version=project,\
 	osgi.core;version=latest,\
 	biz.aQute.bndlib;version=snapshot,\
-	biz.aQute.junit;version=snapshot;packages=aQute.junit.constants,\
-	org.apache.servicemix.bundles.junit;version=latest,\
+	biz.aQute.tester;version=snapshot;packages=aQute.junit.constants,\
+    junit:junit;version="${junit4.tester.version}",\
 	org.junit.platform.launcher,\
 	org.junit.platform.engine,\
 	org.junit.platform.commons,\
