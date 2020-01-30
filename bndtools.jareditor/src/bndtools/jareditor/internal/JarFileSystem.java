@@ -156,9 +156,12 @@ public class JarFileSystem extends FileSystem {
 
 		final URI uri;
 
-		JarRootNode(URI uri) {
+		JarRootNode(IFileStore store) {
 			super(null, "");
-			this.uri = uri;
+			this.uri = store.toURI();
+			IFileInfo storeInfo = store.fetchInfo();
+			this.info.setLength(storeInfo.getLength());
+			this.info.setLastModified(storeInfo.getLastModified());
 		}
 
 		@Override
@@ -217,10 +220,18 @@ public class JarFileSystem extends FileSystem {
 			}
 
 			JarRootNode root = roots.compute(store, (key, ref) -> {
-				if ((ref != null) && (ref.get() != null)) {
-					return ref;
+				if (ref != null) {
+					JarRootNode current = ref.get();
+					if (current != null) {
+						IFileInfo currentInfo = current.fetchInfo();
+						IFileInfo keyInfo = key.fetchInfo();
+						if ((currentInfo.getLastModified() == keyInfo.getLastModified())
+							&& (currentInfo.getLength() == keyInfo.getLength())) {
+							return ref;
+						}
+					}
 				}
-				JarRootNode node = new JarRootNode(key.toURI());
+				JarRootNode node = new JarRootNode(key);
 				try (ZipInputStream jin = new ZipInputStream(new BufferedInputStream(key.openInputStream(0, null)))) {
 					for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
 						if (entry.isDirectory()) {
