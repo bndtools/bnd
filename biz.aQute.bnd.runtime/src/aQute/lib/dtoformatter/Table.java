@@ -119,10 +119,7 @@ public class Table implements Cell {
 
 	@Override
 	public String toString() {
-		if (cols == 1 && rows > 3)
-			return transpose(0).toString("⁻¹");
-		else
-			return toString(null);
+		return toString(null);
 	}
 
 	@Override
