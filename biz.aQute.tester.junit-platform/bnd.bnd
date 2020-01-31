@@ -36,9 +36,9 @@ Import-Package: \
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.tester;version=snapshot;packages=aQute.junit.constants,\
     junit:junit;version="${junit4.tester.version}",\
-	org.junit.platform.launcher,\
-	org.junit.platform.engine,\
-	org.junit.platform.commons,\
+	org.junit.platform.launcher;version="${junit.platform.eclipse.version}",\
+	org.junit.platform.engine;version="${junit.platform.eclipse.version}",\
+	org.junit.platform.commons;version="${junit.platform.eclipse.version}",\
 	org.opentest4j,\
 	org.apiguardian
 

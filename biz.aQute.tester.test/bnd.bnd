@@ -5,8 +5,8 @@
 
 -buildpath: \
 	org.apache.servicemix.bundles.junit;version=latest,\
-	org.junit.jupiter.api,\
-	org.junit.jupiter.params,\
+	org.junit.jupiter.api;version="${junit.jupiter.eclipse.version}",\
+	org.junit.jupiter.params;version="${junit.jupiter.eclipse.version}",\
 	org.opentest4j,\
 	org.apiguardian,\
 	osgi.core;version=latest
@@ -19,13 +19,14 @@
 # Eclipse. BundleEngineTest requires that we share org.junit.platform.engine
 # between the test and the framework-under-test so that needs to be the
 # Oxygen version too.
+
 -testpath: \
-	org.junit.platform:junit-platform-commons;version=latest,\
-	org.junit.platform:junit-platform-launcher;version=latest,\
-	org.junit.platform.engine,\
-	org.junit.jupiter.engine,\
+	org.junit.platform:junit-platform-commons;version="${junit.platform.tester.version}";strategy=lowest,\
+	org.junit.platform:junit-platform-launcher;version="${junit.platform.tester.version}";strategy=lowest,\
+	org.junit.platform.engine;version="${junit.platform.eclipse.version}";strategy=lowest,\
+	org.junit.jupiter.engine;version="${junit.jupiter.eclipse.version}";strategy=lowest,\
 	assertj-core;version=latest,\
-	org.junit.platform:junit-platform-testkit;version=latest,\
+	org.junit.platform:junit-platform-testkit;version="${junit.platform.tester.version}";strategy=lowest,\
 	aQute.libg;version=latest,\
 	biz.aQute.bndlib;version=snapshot;packages=aQute.bnd.osgi,\
 	biz.aQute.tester;version=snapshot;packages=aQute.junit.constants,\
