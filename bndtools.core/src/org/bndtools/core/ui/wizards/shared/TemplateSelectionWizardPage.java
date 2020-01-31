@@ -30,7 +30,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -50,11 +49,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormText;
-import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.ScrolledFormText;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -201,12 +198,6 @@ public class TemplateSelectionWizardPage extends WizardPage {
 		gd_txtDescription.heightHint = 25;
 		txtDescription.setLayoutData(gd_txtDescription);
 
-		Hyperlink linkRetina = new Hyperlink(composite, SWT.NONE);
-		linkRetina.setText("Why is this text blurred?");
-		linkRetina.setUnderlined(true);
-		linkRetina.setForeground(JFaceColors.getHyperlinkText(getShell().getDisplay()));
-		linkRetina.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
-
 		viewer.addSelectionChangedListener(event -> {
 			Object element = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
 			setTemplate(element instanceof Template ? (Template) element : null);
@@ -228,20 +219,6 @@ public class TemplateSelectionWizardPage extends WizardPage {
 					viewer.addFilter(latestFilter);
 				else
 					viewer.removeFilter(latestFilter);
-			}
-		});
-		linkRetina.addHyperlinkListener(new HyperlinkAdapter() {
-			@Override
-			public void linkActivated(HyperlinkEvent ev) {
-				try {
-					IWorkbenchBrowserSupport browser = PlatformUI.getWorkbench()
-						.getBrowserSupport();
-					browser.getExternalBrowser()
-						.openURL(new URL(
-							"https://github.com/bndtools/bnd/wiki/Blurry-Form-Text-on-High-Resolution-Displays"));
-				} catch (Exception e) {
-					log.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Browser open error", e));
-				}
 			}
 		});
 		txtDescription.getFormText()
