@@ -41,6 +41,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 
+import aQute.lib.zip.ZipUtil;
+
 public class Util {
 
 	static final String CWD = "_cwd";
@@ -173,13 +175,13 @@ public class Util {
 		byte[] buffer = new byte[4096];
 
 		// Loop through JAR entries.
-		for (JarEntry je = jis.getNextJarEntry(); je != null; je = jis.getNextJarEntry()) {
-			if (je.getName()
-				.startsWith("/")) {
+		for (JarEntry je; (je = jis.getNextJarEntry()) != null;) {
+			String path = ZipUtil.cleanPath(je.getName());
+			if (path.startsWith("/")) {
 				throw new IOException("JAR resource cannot contain absolute paths.");
 			}
 
-			File target = new File(dir, je.getName());
+			File target = new File(dir, path);
 
 			// Check to see if the JAR entry is a directory.
 			if (je.isDirectory()) {
@@ -192,12 +194,9 @@ public class Util {
 				continue;
 			}
 
-			int lastIndex = je.getName()
-				.lastIndexOf('/');
-			String name = (lastIndex >= 0) ? je.getName()
-				.substring(lastIndex + 1) : je.getName();
-			String destination = (lastIndex >= 0) ? je.getName()
-				.substring(0, lastIndex) : "";
+			int lastIndex = path.lastIndexOf('/');
+			String name = (lastIndex >= 0) ? path.substring(lastIndex + 1) : path;
+			String destination = (lastIndex >= 0) ? path.substring(0, lastIndex) : "";
 
 			// JAR files use '/', so convert it to platform separator.
 			destination = destination.replace('/', File.separatorChar);
