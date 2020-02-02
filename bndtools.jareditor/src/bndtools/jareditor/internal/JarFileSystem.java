@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Status;
 
-import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.result.Result;
 import aQute.lib.io.IO;
 import aQute.lib.io.NonClosingInputStream;
@@ -237,7 +236,7 @@ public class JarFileSystem extends FileSystem {
 						if (entry.isDirectory()) {
 							continue;
 						}
-						String path = Jar.cleanPath(entry.getName());
+						String path = ZipUtil.cleanPath(entry.getName());
 						String[] segments = PATH_SPLITTER.split(path);
 						long size = entry.getSize();
 						if (size < 0) {
@@ -320,7 +319,7 @@ public class JarFileSystem extends FileSystem {
 				if (entry.isDirectory()) {
 					continue;
 				}
-				if (Objects.equals(path, Jar.cleanPath(entry.getName()))) {
+				if (Objects.equals(path, ZipUtil.cleanPath(entry.getName()))) {
 					return Result.ok(jin); // receiver must close input stream
 				}
 			}

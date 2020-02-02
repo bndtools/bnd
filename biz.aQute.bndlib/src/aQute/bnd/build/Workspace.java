@@ -86,6 +86,7 @@ import aQute.lib.io.NonClosingInputStream;
 import aQute.lib.settings.Settings;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.lib.zip.ZipUtil;
 import aQute.libg.glob.Glob;
 import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
@@ -515,11 +516,11 @@ public class Workspace extends Processor {
 						modifiedTime = FileTime.from(seconds, TimeUnit.SECONDS);
 					}
 				}
-				for (JarEntry jentry = jin.getNextJarEntry(); jentry != null; jentry = jin.getNextJarEntry()) {
+				for (JarEntry jentry; (jentry = jin.getNextJarEntry()) != null;) {
 					if (jentry.isDirectory()) {
 						continue;
 					}
-					String jentryName = jentry.getName();
+					String jentryName = ZipUtil.cleanPath(jentry.getName());
 					if (jentryName.startsWith("META-INF/")) {
 						continue;
 					}

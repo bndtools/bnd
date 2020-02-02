@@ -12,7 +12,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.file.FileVisitOption;
@@ -67,7 +66,6 @@ import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
-import aQute.lib.stringrover.StringRover;
 import aQute.lib.zip.ZipUtil;
 import aQute.libg.glob.PathSet;
 
@@ -169,7 +167,7 @@ public class Jar implements Closeable {
 						if (entry.isDirectory()) {
 							continue;
 						}
-						String path = cleanPath(entry.getName());
+						String path = ZipUtil.cleanPath(entry.getName());
 						if (filter.test(path)) {
 							int size = (entry.getSize() < 0) ? BUFFER_SIZE : (1 + (int) entry.getSize());
 							try (ByteBufferOutputStream bbos = new ByteBufferOutputStream(size)) {
@@ -317,48 +315,9 @@ public class Jar implements Closeable {
 		return putResource(path, resource, true);
 	}
 
-	public static String cleanPath(String path) {
-		if (path.isEmpty()) {
-			return "";
-		}
-		StringRover rover = new StringRover(path);
-		StringBuilder clean = new StringBuilder();
-		while (!rover.isEmpty()) {
-			int n = rover.indexOf('/');
-			if (n < 0) {
-				n = rover.length();
-			}
-			if ((n == 0) || ((n == 1) && (rover.charAt(0) == '.'))) {
-				// case "" or "."
-			} else if ((n == 2) && (rover.charAt(0) == '.') && (rover.charAt(1) == '.')) {
-				// case ".."
-				int lastSlash = clean.lastIndexOf("/");
-				if (lastSlash == -1) {
-					if (clean.length() == 0) {
-						throw new UncheckedIOException(new IOException("Entry path is outside of zip file: " + path));
-					}
-					clean.setLength(0);
-				} else {
-					clean.setLength(lastSlash - 1);
-				}
-			} else {
-				if (clean.length() > 0) {
-					clean.append('/');
-				}
-				clean.append(rover, 0, n);
-			}
-			rover.increment(n);
-			if ((rover.length() == 1) && (clean.length() > 0)) {
-				clean.append('/'); // trailing slash
-			}
-			rover.increment();
-		}
-		return clean.toString();
-	}
-
 	public boolean putResource(String path, Resource resource, boolean overwrite) {
 		check();
-		path = cleanPath(path);
+		path = ZipUtil.cleanPath(path);
 
 		if (path.equals(manifestName)) {
 			manifest = null;
@@ -388,7 +347,7 @@ public class Jar implements Closeable {
 
 	public Resource getResource(String path) {
 		check();
-		path = cleanPath(path);
+		path = ZipUtil.cleanPath(path);
 		return resources.get(path);
 	}
 
@@ -416,7 +375,7 @@ public class Jar implements Closeable {
 
 	public Map<String, Resource> getDirectory(String path) {
 		check();
-		path = cleanPath(path);
+		path = ZipUtil.cleanPath(path);
 		return directories.get(path);
 	}
 
@@ -503,7 +462,7 @@ public class Jar implements Closeable {
 
 	public boolean exists(String path) {
 		check();
-		path = cleanPath(path);
+		path = ZipUtil.cleanPath(path);
 		return resources.containsKey(path);
 	}
 
@@ -1021,7 +980,7 @@ public class Jar implements Closeable {
 
 	public boolean hasDirectory(String path) {
 		check();
-		path = cleanPath(path);
+		path = ZipUtil.cleanPath(path);
 		return directories.containsKey(path);
 	}
 
@@ -1055,7 +1014,7 @@ public class Jar implements Closeable {
 
 	public Resource remove(String path) {
 		check();
-		path = cleanPath(path);
+		path = ZipUtil.cleanPath(path);
 		Resource resource = resources.remove(path);
 		if (resource != null) {
 			String dir = getParent(path);
@@ -1300,7 +1259,7 @@ public class Jar implements Closeable {
 	}
 
 	public void removePrefix(String prefixLow) {
-		prefixLow = cleanPath(prefixLow);
+		prefixLow = ZipUtil.cleanPath(prefixLow);
 		String prefixHigh = prefixLow.concat("\uFFFF");
 		resources.subMap(prefixLow, prefixHigh)
 			.clear();
@@ -1313,7 +1272,7 @@ public class Jar implements Closeable {
 	}
 
 	public void removeSubDirs(String dir) {
-		dir = cleanPath(dir);
+		dir = ZipUtil.cleanPath(dir);
 		if (!dir.endsWith("/")) {
 			dir = dir.concat("/");
 		}
