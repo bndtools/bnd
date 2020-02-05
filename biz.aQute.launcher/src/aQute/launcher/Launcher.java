@@ -464,42 +464,38 @@ public class Launcher implements ServiceListener {
 
 		// Start embedded activators
 		trace("start embedded activators");
-		if (parms.activators != null) {
-			ClassLoader loader = getClass().getClassLoader();
-			for (Object token : parms.activators) {
-				try {
-					Class<?> clazz = loader.loadClass((String) token);
-					BundleActivator activator = (BundleActivator) newInstance(clazz);
-					Object immediateFieldValue = getImmediateFieldValue(activator);
-					EmbeddedActivatorPhase phase = EmbeddedActivatorPhase.valueOf(immediateFieldValue);
-					switch (phase) {
-						case AFTER_FRAMEWORK_INIT :
-							trace("AFTER_FRAMEWORK_INIT %s", activator);
-							result = start(systemContext, result, activator);
-							break;
+		ClassLoader loader = getClass().getClassLoader();
+		for (Object token : parms.activators) {
+			try {
+				Class<?> clazz = loader.loadClass((String) token);
+				BundleActivator activator = (BundleActivator) newInstance(clazz);
+				Object immediateFieldValue = getImmediateFieldValue(activator);
+				EmbeddedActivatorPhase phase = EmbeddedActivatorPhase.valueOf(immediateFieldValue);
+				switch (phase) {
+					case AFTER_FRAMEWORK_INIT :
+						trace("AFTER_FRAMEWORK_INIT %s", activator);
+						result = start(systemContext, result, activator);
+						break;
 
-						case BEFORE_BUNDLES_START :
-							trace("BEFORE_BUNDLES_START %s", activator);
-							startBeforeBundleStart.add(activator);
-							break;
+					case BEFORE_BUNDLES_START :
+						trace("BEFORE_BUNDLES_START %s", activator);
+						startBeforeBundleStart.add(activator);
+						break;
 
-						case UNKNOWN :
-							trace(
-								"!the value of IMMEDIATE is not recognized as one of %s, it is %s",
-								Arrays.toString(EmbeddedActivatorPhase.values()),
-								immediateFieldValue);
+					case UNKNOWN :
+						trace("!the value of IMMEDIATE is not recognized as one of %s, it is %s",
+							Arrays.toString(EmbeddedActivatorPhase.values()), immediateFieldValue);
 
-							// FALL THROUGH
+						// FALL THROUGH
 
-						default :
-						case AFTER_BUNDLES_START :
-							trace("AFTER_BUNDLES_START %s", activator);
-							startAfterBundleStart.add(activator);
-							break;
-					}
-				} catch (Exception e) {
-					throw new IllegalArgumentException("Embedded Bundle Activator incorrect: " + token, e);
+					default :
+					case AFTER_BUNDLES_START :
+						trace("AFTER_BUNDLES_START %s", activator);
+						startAfterBundleStart.add(activator);
+						break;
 				}
+			} catch (Exception e) {
+				throw new IllegalArgumentException("Embedded Bundle Activator incorrect: " + token, e);
 			}
 		}
 		List<Bundle> tobestarted = update(System.currentTimeMillis() + 100);

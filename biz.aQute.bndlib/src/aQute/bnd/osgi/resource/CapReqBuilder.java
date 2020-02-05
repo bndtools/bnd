@@ -525,7 +525,7 @@ public class CapReqBuilder {
 	}
 
 	public void and(String... s) {
-		String previous = directives == null ? null : directives.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+		String previous = directives.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 		StringBuilder filter = new StringBuilder();
 
 		if (previous != null) {
@@ -580,13 +580,13 @@ public class CapReqBuilder {
 	public Attrs toAttrs() {
 		Attrs attrs = new Attrs();
 
-		MapStream.ofNullable(attributes)
+		MapStream.of(attributes)
 			.map((key, value) -> (key.equals("version") || (value instanceof Version))
 				? MapStream.entry(key, toBndVersions(value))
 				: MapStream.entry(key, value))
 			.forEachOrdered(attrs::putTyped);
 
-		MapStream.ofNullable(directives)
+		MapStream.of(directives)
 			.mapKey(key -> key.concat(":"))
 			.forEachOrdered(attrs::put);
 
