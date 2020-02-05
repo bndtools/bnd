@@ -161,7 +161,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 			result = fetch(snapshot, resolved.remotePath, file);
 		}
 
-		if (result == null && release != null)
+		if (result == null)
 			result = fetch(release, archive.remotePath, file);
 
 		if (result == null)
@@ -264,13 +264,13 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	@Override
 	public URI toRemoteURI(Archive archive) throws Exception {
 		if (archive.revision.isSnapshot()) {
-			if (snapshot != null && !snapshot.isEmpty())
+			if (!snapshot.isEmpty()) {
 				return snapshot.get(0)
 					.toURI(archive.remotePath);
-		} else {
-			if (release != null && !release.isEmpty())
-				return release.get(0)
-					.toURI(archive.remotePath);
+			}
+		} else if (!release.isEmpty()) {
+			return release.get(0)
+				.toURI(archive.remotePath);
 		}
 		return toLocalFile(archive).toURI();
 	}
