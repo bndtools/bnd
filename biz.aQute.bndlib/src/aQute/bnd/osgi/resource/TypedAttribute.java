@@ -27,8 +27,8 @@ public class TypedAttribute {
 				if (subType == null)
 					subType = getType(v);
 
-				sb.append(del)
-					.append(escape(v.toString()));
+				sb.append(del);
+				escape(sb, v.toString());
 				del = ",";
 			}
 			if (subType == null)
@@ -51,8 +51,8 @@ public class TypedAttribute {
 				if (subType == null)
 					subType = getType(v);
 
-				sb.append(del)
-					.append(escape(v.toString()));
+				sb.append(del);
+				escape(sb, v.toString());
 				del = ",";
 			}
 			if (subType == null)
@@ -64,23 +64,22 @@ public class TypedAttribute {
 		return new TypedAttribute(getType(value), value.toString());
 	}
 
-	private static Object escape(String v) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < v.length(); i++) {
-			char c = v.charAt(i);
+	private static StringBuilder escape(StringBuilder sb, String value) {
+		final int len = value.length();
+		for (int i = 0; i < len; i++) {
+			char c = value.charAt(i);
 			switch (c) {
 				case '\\' :
-					sb.append("\\\\");
-					break;
-
 				case ',' :
-					sb.append("\\,");
+					sb.append('\\')
+						.append(c);
+					break;
 				default :
 					sb.append(c);
 					break;
 			}
 		}
-		return sb.toString();
+		return sb;
 	}
 
 	private static String getType(Object value) {

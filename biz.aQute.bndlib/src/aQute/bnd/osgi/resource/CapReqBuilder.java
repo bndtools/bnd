@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
@@ -516,12 +515,30 @@ public class CapReqBuilder {
 	 * solidus ('\' \u005C) character. Spaces are significant in value. Space
 	 * characters are defined by Character.isWhiteSpace().
 	 */
-
-	private final static Pattern ESCAPE_FILTER_VALUE_P = Pattern.compile("[\\\\*()]");
-
 	public static String escapeFilterValue(String value) {
-		return ESCAPE_FILTER_VALUE_P.matcher(value)
-			.replaceAll("\\\\$0");
+		final int len = value.length();
+		StringBuilder sb = escapeFilterValue(new StringBuilder(len), value);
+		return (len == sb.length()) ? value : sb.toString();
+	}
+
+	private static StringBuilder escapeFilterValue(StringBuilder sb, String value) {
+		final int len = value.length();
+		for (int i = 0; i < len; i++) {
+			char c = value.charAt(i);
+			switch (c) {
+				case '\\' :
+				case '*' :
+				case '(' :
+				case ')' :
+					sb.append('\\')
+						.append(c);
+					break;
+				default :
+					sb.append(c);
+					break;
+			}
+		}
+		return sb;
 	}
 
 	public void and(String... s) {

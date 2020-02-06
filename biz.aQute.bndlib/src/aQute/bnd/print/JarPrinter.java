@@ -286,25 +286,27 @@ public class JarPrinter extends Processor {
 		return this;
 	}
 
-	private final char nibble(int i) {
+	private static char nibble(int i) {
 		return "0123456789ABCDEF".charAt(i & 0xF);
 	}
 
-	private final String escapeUnicode(String s) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < s.length(); i++) {
-			char c = s.charAt(i);
+	private static String escapeUnicode(String value) {
+		final int len = value.length();
+		StringBuilder sb = new StringBuilder(len);
+		for (int i = 0; i < len; i++) {
+			char c = value.charAt(i);
 			if (c >= ' ' && c <= '~' && c != '\\')
 				sb.append(c);
 			else {
-				sb.append("\\u");
-				sb.append(nibble(c >> 12));
-				sb.append(nibble(c >> 8));
-				sb.append(nibble(c >> 4));
-				sb.append(nibble(c));
+				sb.append('\\')
+					.append('u')
+					.append(nibble(c >> 12))
+					.append(nibble(c >> 8))
+					.append(nibble(c >> 4))
+					.append(nibble(c));
 			}
 		}
-		return sb.toString();
+		return (len == sb.length()) ? value : sb.toString();
 	}
 
 	/**
