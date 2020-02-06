@@ -45,7 +45,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
-import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -88,8 +87,7 @@ public class ImportPackageQuickFixProcessor implements IQuickFixProcessor {
 	}
 
 	private static Requirement buildRequirement(String importName) {
-		final CapReqBuilder b = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE);
-		b.addFilter(PackageNamespace.PACKAGE_NAMESPACE, importName, null, new Attrs());
+		final CapReqBuilder b = CapReqBuilder.createPackageRequirement(importName, null);
 		return b.buildSyntheticRequirement();
 	}
 

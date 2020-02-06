@@ -55,7 +55,6 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
-import aQute.bnd.osgi.resource.Filters;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
@@ -64,10 +63,6 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
 import aQute.lib.io.IO;
-import aQute.libg.filters.AndFilter;
-import aQute.libg.filters.Filter;
-import aQute.libg.filters.LiteralFilter;
-import aQute.libg.filters.SimpleFilter;
 
 /**
  * This is the Resolve Context as outlined in the Resolver specification. It
@@ -682,13 +677,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	public static Requirement createIdentityRequirement(String identity, String versionRange) {
-		// Construct a filter & requirement to find matches
-		Filter filter = new SimpleFilter(IDENTITY_NAMESPACE, identity);
-		if (versionRange != null)
-			filter = new AndFilter().addChild(filter)
-				.addChild(new LiteralFilter(Filters.fromVersionRange(versionRange)));
-		Requirement frameworkReq = new CapReqBuilder(IDENTITY_NAMESPACE)
-			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString())
+		Requirement frameworkReq = CapReqBuilder.createBundleRequirement(identity, versionRange)
 			.buildSyntheticRequirement();
 		return frameworkReq;
 	}

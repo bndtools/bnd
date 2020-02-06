@@ -258,6 +258,10 @@ public class Attrs implements Map<String, String> {
 		if (key == null)
 			return null;
 
+		return map.put(putType(key), value);
+	}
+
+	private String putType(String key) {
 		int colon = key.indexOf(':');
 		if (colon >= 0) {
 			String type = key.substring(colon + 1)
@@ -312,12 +316,12 @@ public class Attrs implements Map<String, String> {
 						}
 						break;
 				}
-				return map.put(attribute, value);
+				return attribute;
 			}
 		}
 		// default String type
 		types.remove(key);
-		return map.put(key, value);
+		return key;
 	}
 
 	public Type getType(String key) {
@@ -572,10 +576,11 @@ public class Attrs implements Map<String, String> {
 	 * Check if a directive, if so, return directive name otherwise null
 	 */
 	public static String toDirective(String key) {
-		if (key == null || !key.endsWith(":"))
+		if (key == null) {
 			return null;
-
-		return key.substring(0, key.length() - 1);
+		}
+		int last = key.length() - 1;
+		return ((last >= 0) && (key.charAt(last) == ':')) ? key.substring(0, last) : null;
 	}
 
 	public static Attrs create(String key, String value) {

@@ -418,6 +418,9 @@ public interface Constants {
 		"META-INF", "OSGI-INF", "OSGI-OPT"
 	};
 
+	String				MIME_TYPE_BUNDLE							= "application/vnd.osgi.bundle";
+	String				MIME_TYPE_JAR								= "application/java-archive";
+
 	String				CURRENT_VERSION								= "@";
 	String				CURRENT_PACKAGE								= "@package";
 	String				CURRENT_BUNDLESYMBOLICNAME					= "@bundlesymbolicname";

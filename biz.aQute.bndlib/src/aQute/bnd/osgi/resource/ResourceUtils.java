@@ -303,19 +303,30 @@ public class ResourceUtils {
 	public static <T extends Capability> T as(final Capability cap, Class<T> type) {
 		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {
 			type
-		}, (target, method, args) -> (Capability.class == method.getDeclaringClass()) ? publicLookup().unreflect(method)
-			.bindTo(cap)
-			.invokeWithArguments(args) : get(method, cap.getAttributes(), cap.getDirectives(), args));
+		}, (target, method, args) -> {
+			Class<?> declaringClass = method.getDeclaringClass();
+			if ((Capability.class == declaringClass) || (Object.class == declaringClass)) {
+				return publicLookup().unreflect(method)
+					.bindTo(cap)
+					.invokeWithArguments(args);
+			}
+			return get(method, cap.getAttributes(), cap.getDirectives(), args);
+		});
 	}
 
 	@SuppressWarnings("unchecked")
 	public static <T extends Requirement> T as(final Requirement req, Class<T> type) {
 		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {
 			type
-		}, (target, method,
-			args) -> (Requirement.class == method.getDeclaringClass()) ? publicLookup().unreflect(method)
-				.bindTo(req)
-				.invokeWithArguments(args) : get(method, req.getAttributes(), req.getDirectives(), args));
+		}, (target, method, args) -> {
+			Class<?> declaringClass = method.getDeclaringClass();
+			if ((Requirement.class == declaringClass) || (Object.class == declaringClass)) {
+				return publicLookup().unreflect(method)
+					.bindTo(req)
+					.invokeWithArguments(args);
+			}
+			return get(method, req.getAttributes(), req.getDirectives(), args);
+		});
 	}
 
 	private static Object get(Method method, Map<String, Object> attrs, Map<String, String> directives, Object[] args)
