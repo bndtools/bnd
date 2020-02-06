@@ -36,8 +36,8 @@ public class Version implements Comparable<Version> {
 		this.major = major;
 		this.minor = minor;
 		this.micro = micro;
-		this.qualifier = qualifier;
-		this.snapshot = isSnapshot(qualifier);
+		this.qualifier = ((qualifier != null) && qualifier.isEmpty()) ? null : qualifier;
+		this.snapshot = isSnapshot(this.qualifier);
 	}
 
 	public Version(int major, int minor, int micro) {
