@@ -221,7 +221,6 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 							capReqBuilder = null;
 						} else if (TAG_RESOURCE.equals(localName)) {
 							if (resourceBuilder != null) {
-								resourceBuilder.addWorkspaceNamespace(projectName);
 								Resource resource = resourceBuilder.build();
 								listener.processResource(resource);
 								resourceBuilder = null;
