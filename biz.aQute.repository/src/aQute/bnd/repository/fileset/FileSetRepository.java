@@ -18,13 +18,13 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.service.repository.ContentNamespace;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.repository.BaseRepository;
@@ -129,17 +129,12 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 						.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_UNKNOWN);
 					rb.addCapability(identity);
 				}
+				rb.addContentCapability(file.toURI(), SHA256.digest(file)
+					.asHex(), file.length(), hasIdentity ? Constants.MIME_TYPE_BUNDLE : Constants.MIME_TYPE_JAR);
 			} catch (Exception f) {
 				return null;
 			}
 			logger.debug("{}: parsing {}", getName(), file);
-			CapReqBuilder content = new CapReqBuilder(ContentNamespace.CONTENT_NAMESPACE)
-				.addAttribute(ContentNamespace.CONTENT_NAMESPACE, SHA256.digest(file)
-					.asHex())
-				.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, file.toURI()
-					.toString())
-				.addAttribute(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, Long.valueOf(file.length()));
-			rb.addCapability(content);
 			return rb.build();
 		});
 		if (logger.isDebugEnabled()) {

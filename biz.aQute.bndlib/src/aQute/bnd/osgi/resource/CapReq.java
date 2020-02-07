@@ -12,23 +12,14 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
-class CapReq {
-
-	enum MODE {
-		Capability,
-		Requirement
-	}
-
-	private final MODE					mode;
+abstract class CapReq {
 	private final String				namespace;
 	private final Resource				resource;
 	private final Map<String, String>	directives;
 	private final Map<String, Object>	attributes;
 	private transient int				hashCode	= 0;
 
-	CapReq(MODE mode, String namespace, Resource resource, Map<String, String> directives,
-		Map<String, Object> attributes) {
-		this.mode = requireNonNull(mode);
+	CapReq(String namespace, Resource resource, Map<String, String> directives, Map<String, Object> attributes) {
 		this.namespace = requireNonNull(namespace);
 		this.resource = resource;
 		this.directives = unmodifiableMap(new HashMap<>(directives));
@@ -56,60 +47,33 @@ class CapReq {
 		if (hashCode != 0) {
 			return hashCode;
 		}
-		return hashCode = Objects.hash(attributes, directives, mode, namespace, resource);
+		return hashCode = Objects.hash(attributes, directives, Boolean.valueOf(this instanceof Capability), namespace,
+			resource);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
-			return false;
-		if (obj instanceof CapReq)
-			return equalsNative((CapReq) obj);
-		if ((mode == MODE.Capability) && (obj instanceof Capability))
-			return equalsCap((Capability) obj);
-		if ((mode == MODE.Requirement) && (obj instanceof Requirement))
-			return equalsReq((Requirement) obj);
-		return false;
-	}
-
-	private boolean equalsCap(Capability other) {
-		if (!Objects.equals(namespace, other.getNamespace()))
-			return false;
-		if (!Objects.equals(attributes, other.getAttributes()))
-			return false;
-		if (!Objects.equals(directives, other.getDirectives()))
-			return false;
-		return Objects.equals(resource, other.getResource());
-	}
-
-	private boolean equalsNative(CapReq other) {
-		if (mode != other.mode)
-			return false;
-		if (!Objects.equals(namespace, other.getNamespace()))
-			return false;
-		if (!Objects.equals(attributes, other.getAttributes()))
-			return false;
-		if (!Objects.equals(directives, other.getDirectives()))
-			return false;
-		return Objects.equals(resource, other.getResource());
-	}
-
-	private boolean equalsReq(Requirement other) {
-		if (!Objects.equals(namespace, other.getNamespace()))
-			return false;
-		if (!Objects.equals(attributes, other.getAttributes()))
-			return false;
-		if (!Objects.equals(directives, other.getDirectives()))
-			return false;
-		return Objects.equals(resource, other.getResource());
+		if (this instanceof Capability) {
+			if (!(obj instanceof Capability))
+				return false;
+			Capability other = (Capability) obj;
+			return Objects.equals(namespace, other.getNamespace()) && Objects.equals(attributes, other.getAttributes())
+				&& Objects.equals(directives, other.getDirectives()) && Objects.equals(resource, other.getResource());
+		} else {
+			if (!(obj instanceof Requirement))
+				return false;
+			Requirement other = (Requirement) obj;
+			return Objects.equals(namespace, other.getNamespace()) && Objects.equals(attributes, other.getAttributes())
+				&& Objects.equals(directives, other.getDirectives()) && Objects.equals(resource, other.getResource());
+		}
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		if (mode == MODE.Capability) {
+		if (this instanceof Capability) {
 			Object value = attributes.get(namespace);
 			builder.append(namespace)
 				.append('=')
@@ -125,11 +89,10 @@ class CapReq {
 	}
 
 	protected void toString(StringBuilder sb) {
-		sb.append("[")
+		sb.append('[')
 			.append(namespace)
-			.append("]");
-		sb.append(attributes);
-		sb.append(directives);
+			.append(']')
+			.append(attributes)
+			.append(directives);
 	}
-
 }

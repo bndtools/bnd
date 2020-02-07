@@ -1,6 +1,8 @@
 package aQute.bnd.osgi.resource;
 
 import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
+import static aQute.bnd.osgi.Constants.MIME_TYPE_BUNDLE;
+import static aQute.bnd.osgi.Constants.MIME_TYPE_JAR;
 import static aQute.lib.exceptions.BiConsumerWithException.asBiConsumer;
 import static aQute.lib.exceptions.BiFunctionWithException.asBiFunction;
 import static java.util.stream.Collectors.toList;
@@ -48,8 +50,6 @@ import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
 public class ResourceBuilder {
-	private final static String					BUNDLE_MIME_TYPE	= "application/vnd.osgi.bundle";
-	private final static String					JAR_MIME_TYPE		= "application/java-archive";
 	private final ResourceImpl					resource			= new ResourceImpl();
 	private final Map<Capability, Capability>	capabilities		= new LinkedHashMap<>();
 	private final Map<Requirement, Requirement>	requirements		= new LinkedHashMap<>();
@@ -146,44 +146,18 @@ public class ResourceBuilder {
 	 * @throws Exception
 	 */
 	public boolean addManifest(Domain manifest) throws Exception {
-
 		//
-		// Do the Bundle Identity Ns
+		// Identity capability
 		//
-
-		int bundleManifestVersion = Integer.parseInt(manifest.get(Constants.BUNDLE_MANIFESTVERSION, "1"));
-
 		Entry<String, Attrs> bsn = manifest.getBundleSymbolicName();
-
 		if (bsn == null) {
 			reporter.warning("No BSN set, not a bundle");
 			return false;
 		}
+		String name = bsn.getKey();
+		Attrs attrs = bsn.getValue();
 
-		boolean singleton = "true".equals(bsn.getValue()
-			.get(Constants.SINGLETON_DIRECTIVE + ":"));
-		boolean fragment = manifest.getFragmentHost() != null;
-
-		String versionString = manifest.getBundleVersion();
-		if (versionString == null)
-			versionString = "0";
-		else if (!aQute.bnd.version.Version.isVersion(versionString))
-			throw new IllegalArgumentException("Invalid version in bundle " + bsn + ": " + versionString);
-		aQute.bnd.version.Version version = aQute.bnd.version.Version.parseVersion(versionString);
-
-		//
-		// First the identity
-		//
-
-		CapReqBuilder identity = new CapReqBuilder(resource, IdentityNamespace.IDENTITY_NAMESPACE);
-		identity.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn.getKey());
-		identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE,
-			fragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_BUNDLE);
-		identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
-
-		if (singleton) {
-			identity.addDirective(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE, "true");
-		}
+		CapabilityBuilder identity = new CapabilityBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
 
 		String copyright = manifest.translate(Constants.BUNDLE_COPYRIGHT);
 		if (copyright != null) {
@@ -200,24 +174,66 @@ public class ResourceBuilder {
 			identity.addAttribute(IdentityNamespace.CAPABILITY_DOCUMENTATION_ATTRIBUTE, docurl);
 		}
 
-		String license = manifest.get("Bundle-License");
+		String license = manifest.get(Constants.BUNDLE_LICENSE);
 		if (license != null) {
 			identity.addAttribute(IdentityNamespace.CAPABILITY_LICENSE_ATTRIBUTE, license);
 		}
 
-		addCapability(identity.buildCapability());
+		// Add all attributes from Bundle-SymbolicName header
+		identity.addAttributes(attrs);
+		identity.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, name);
 
-		//
-		// Now the provide bundle ns
-		//
-
-		if ((bundleManifestVersion >= 2) && (!fragment)) {
-			CapReqBuilder provideBundle = new CapReqBuilder(resource, BundleNamespace.BUNDLE_NAMESPACE);
-			provideBundle.addAttributesOrDirectives(bsn.getValue());
-			provideBundle.addAttribute(BundleNamespace.BUNDLE_NAMESPACE, bsn.getKey());
-			provideBundle.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
-			addCapability(provideBundle.buildCapability());
+		String versionString = manifest.getBundleVersion();
+		if ((versionString != null) && !aQute.bnd.version.Version.isVersion(versionString)) {
+			throw new IllegalArgumentException("Invalid version in bundle " + bsn + ": " + versionString);
 		}
+		aQute.bnd.version.Version version = aQute.bnd.version.Version.parseVersion(versionString);
+		identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+
+		boolean singleton = "true".equals(attrs.get(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE + ":"));
+		if (singleton) {
+			identity.addDirective(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE, "true");
+		}
+
+		Entry<String, Attrs> fragment = manifest.getFragmentHost();
+		identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE,
+			(fragment == null) ? IdentityNamespace.TYPE_BUNDLE : IdentityNamespace.TYPE_FRAGMENT);
+
+		addCapability(identity);
+
+		if (fragment == null) {
+			//
+			// Bundle and Host capabilities
+			//
+			CapabilityBuilder bundle = new CapabilityBuilder(BundleNamespace.BUNDLE_NAMESPACE);
+			bundle.addAttributesOrDirectives(attrs);
+			bundle.removeDirective(Namespace.CAPABILITY_USES_DIRECTIVE)
+				.removeDirective(Namespace.CAPABILITY_EFFECTIVE_DIRECTIVE);
+			bundle.addAttribute(BundleNamespace.BUNDLE_NAMESPACE, name);
+			bundle.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
+			if (singleton) {
+				bundle.addDirective(BundleNamespace.CAPABILITY_SINGLETON_DIRECTIVE, "true");
+			}
+			addCapability(bundle);
+
+			CapabilityBuilder host = new CapabilityBuilder(HostNamespace.HOST_NAMESPACE);
+			host.addAttributesOrDirectives(attrs);
+			host.removeDirective(Namespace.CAPABILITY_USES_DIRECTIVE)
+				.removeDirective(Namespace.CAPABILITY_EFFECTIVE_DIRECTIVE);
+			host.addAttribute(HostNamespace.HOST_NAMESPACE, name);
+			host.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
+			addCapability(host);
+		} else {
+			//
+			// Host requirement
+			//
+			addFragmentHost(fragment.getKey(), fragment.getValue());
+		}
+
+		//
+		// Bundle requirements
+		//
+		addRequireBundles(manifest.getRequireBundle());
 
 		//
 		// Import/Export service
@@ -232,45 +248,25 @@ public class ResourceBuilder {
 		addExportServices(exportServices);
 
 		//
-		// Handle Require Bundle
-		//
-
-		Parameters requireBundle = manifest.getRequireBundle();
-		addRequireBundles(requireBundle);
-
-		//
-		// Handle Fragment Host
-		//
-
-		if (fragment) {
-			Entry<String, Attrs> fragmentHost = manifest.getFragmentHost();
-			addFragmentHost(fragmentHost.getKey(), fragmentHost.getValue());
-		} else {
-			addFragmentHostCap(bsn.getKey(), version);
-		}
-
-		//
-		// Add the exported package. These need
-		// to be converted to osgi.wiring.package ns
+		// Package capabilities
 		//
 
 		addExportPackages(manifest.getExportPackage());
 
 		//
-		// Add the imported package. These need
-		// to be converted to osgi.wiring.package ns
+		// Package requirements
 		//
 
 		addImportPackages(manifest.getImportPackage());
 
 		//
-		// Add the provided capabilities, they're easy!
+		// Provided capabilities
 		//
 
 		addProvideCapabilities(manifest.getProvideCapability());
 
 		//
-		// Add the required capabilities, they're also easy!
+		// Required capabilities
 		//
 
 		addRequireCapabilities(manifest.getRequireCapability());
@@ -406,7 +402,7 @@ public class ResourceBuilder {
 						if (validateFilter != null) {
 							reporter.error("Invalid 'selection-filter' on Bundle-NativeCode %s", filter);
 						}
-						sb.literal(value.toString());
+						sb.literal(filter);
 						break;
 
 					default :
@@ -452,68 +448,29 @@ public class ResourceBuilder {
 
 	public void addRequireBundle(String bsn, VersionRange range) throws Exception {
 		Attrs attrs = new Attrs();
-		attrs.put("bundle-version", range.toString());
+		attrs.put(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, range.toString());
 		addRequireBundle(bsn, attrs);
 	}
 
 	public void addRequireBundle(String bsn, Attrs attrs) throws Exception {
-		CapReqBuilder rbb = new CapReqBuilder(resource, BundleNamespace.BUNDLE_NAMESPACE);
-		rbb.addDirectives(attrs);
-
-		StringBuilder filter = new StringBuilder();
-		filter.append("(")
-			.append(BundleNamespace.BUNDLE_NAMESPACE)
-			.append("=")
-			.append(bsn)
-			.append(")");
-
-		String v = attrs.get(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
-		if (v != null && VersionRange.isOSGiVersionRange(v)) {
-			VersionRange range = VersionRange.parseOSGiVersionRange(v);
-			filter.insert(0, "(&");
-			filter.append(toBundleVersionFilter(range));
-			filter.append(")");
-		}
-
-		rbb.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
-
-		addRequirement(rbb.buildRequirement());
-	}
-
-	Object toBundleVersionFilter(VersionRange range) {
-		return range.toFilter()
-			.replaceAll(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE,
-				AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
-	}
-
-	void addFragmentHostCap(String bsn, aQute.bnd.version.Version version) throws Exception {
-		CapReqBuilder rbb = new CapReqBuilder(resource, HostNamespace.HOST_NAMESPACE);
-		rbb.addAttribute(HostNamespace.HOST_NAMESPACE, bsn);
-		rbb.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
-		addCapability(rbb.buildCapability());
+		RequirementBuilder require = new RequirementBuilder(BundleNamespace.BUNDLE_NAMESPACE);
+		require.addDirectives(attrs)
+			.removeDirective(Namespace.REQUIREMENT_CARDINALITY_DIRECTIVE)
+			.removeDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE);
+		require.addFilter(BundleNamespace.BUNDLE_NAMESPACE, bsn,
+			attrs.get(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE), attrs);
+		addRequirement(require);
 	}
 
 	public void addFragmentHost(String bsn, Attrs attrs) throws Exception {
-		CapReqBuilder rbb = new CapReqBuilder(resource, HostNamespace.HOST_NAMESPACE);
-		rbb.addDirectives(attrs);
-
-		StringBuilder filter = new StringBuilder();
-		filter.append("(")
-			.append(HostNamespace.HOST_NAMESPACE)
-			.append("=")
-			.append(bsn)
-			.append(")");
-
-		String v = attrs.get(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
-		if (v != null && VersionRange.isOSGiVersionRange(v)) {
-			VersionRange range = VersionRange.parseOSGiVersionRange(v);
-			filter.insert(0, "(&");
-			filter.append(range.toFilter(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE));
-			filter.append(")");
-		}
-		rbb.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
-
-		addRequirement(rbb.buildRequirement());
+		RequirementBuilder require = new RequirementBuilder(HostNamespace.HOST_NAMESPACE);
+		require.addDirectives(attrs)
+			.removeDirective(Namespace.REQUIREMENT_CARDINALITY_DIRECTIVE)
+			.removeDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE);
+		require.addDirective(Namespace.REQUIREMENT_CARDINALITY_DIRECTIVE, Namespace.CARDINALITY_MULTIPLE);
+		require.addFilter(HostNamespace.HOST_NAMESPACE, bsn,
+			attrs.get(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE), attrs);
+		addRequirement(require);
 	}
 
 	public void addRequireCapabilities(Parameters required) throws Exception {
@@ -523,9 +480,9 @@ public class ResourceBuilder {
 	}
 
 	public void addRequireCapability(String namespace, String name, Attrs attrs) throws Exception {
-		CapReqBuilder req = new CapReqBuilder(resource, namespace);
+		RequirementBuilder req = new RequirementBuilder(namespace);
 		req.addAttributesOrDirectives(attrs);
-		addRequirement(req.buildRequirement());
+		addRequirement(req);
 	}
 
 	public List<Capability> addProvideCapabilities(Parameters capabilities) throws Exception {
@@ -541,9 +498,10 @@ public class ResourceBuilder {
 	}
 
 	public Capability addProvideCapability(String namespace, Attrs attrs) throws Exception {
-		CapReqBuilder capb = new CapReqBuilder(resource, namespace);
-		capb.addAttributesOrDirectives(attrs);
-		return addCapability0(capb);
+		CapabilityBuilder builder = new CapabilityBuilder(namespace);
+		builder.addAttributesOrDirectives(attrs);
+		addCapability(builder);
+		return builder.build();
 	}
 
 	/**
@@ -567,7 +525,7 @@ public class ResourceBuilder {
 	}
 
 	public void addExportPackage(String packageName, Attrs attrs) throws Exception {
-		CapReqBuilder capb = new CapReqBuilder(resource, PackageNamespace.PACKAGE_NAMESPACE);
+		CapabilityBuilder capb = new CapabilityBuilder(PackageNamespace.PACKAGE_NAMESPACE);
 		capb.addAttributesOrDirectives(attrs);
 		if (!attrs.containsKey(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE)) {
 			capb.addAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, Version.emptyVersion);
@@ -588,21 +546,19 @@ public class ResourceBuilder {
 	}
 
 	public Requirement addImportPackage(String pname, Attrs attrs) throws Exception {
-		CapReqBuilder reqb = new CapReqBuilder(resource, PackageNamespace.PACKAGE_NAMESPACE);
-		reqb.addDirectives(attrs);
-		reqb.addFilter(PackageNamespace.PACKAGE_NAMESPACE, pname, attrs.getVersion(), attrs);
-		Requirement requirement = reqb.buildRequirement();
-		addRequirement(requirement);
-		return requirement;
+		RequirementBuilder builder = new RequirementBuilder(PackageNamespace.PACKAGE_NAMESPACE);
+		builder.addDirectives(attrs);
+		builder.addFilter(PackageNamespace.PACKAGE_NAMESPACE, pname,
+			attrs.get(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE), attrs);
+		addRequirement(builder);
+		return builder.build();
 	}
 
 	// Correct version according to R5 specification section 3.4.1
 	// BREE J2SE-1.4 ==> osgi.ee=JavaSE, version:Version=1.4
 	// See bug 329, https://github.com/bndtools/bnd/issues/329
 	public void addExecutionEnvironment(EE ee) throws Exception {
-
-		CapReqBuilder builder = new CapReqBuilder(resource,
-			ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
+		CapReqBuilder builder = new CapReqBuilder(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
 		builder.addAttribute(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, ee.getCapabilityName());
 		builder.addAttribute(ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE, ee.getCapabilityVersion());
 		addCapability(builder);
@@ -700,8 +656,8 @@ public class ResourceBuilder {
 		CapabilityBuilder c = new CapabilityBuilder(ContentNamespace.CONTENT_NAMESPACE);
 		c.addAttribute(ContentNamespace.CONTENT_NAMESPACE, sha256);
 		c.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, uri.toString());
-		c.addAttribute(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, length);
-		c.addAttribute(ContentNamespace.CAPABILITY_MIME_ATTRIBUTE, mime != null ? mime : BUNDLE_MIME_TYPE);
+		c.addAttribute(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, Long.valueOf(length));
+		c.addAttribute(ContentNamespace.CAPABILITY_MIME_ATTRIBUTE, mime != null ? mime : MIME_TYPE_BUNDLE);
 		addCapability(c);
 	}
 
@@ -710,13 +666,11 @@ public class ResourceBuilder {
 			uri = file.toURI();
 
 		Domain manifest = Domain.domain(file);
-		String mime = BUNDLE_MIME_TYPE;
 		boolean hasIdentity = false;
-		if (manifest != null)
+		if (manifest != null) {
 			hasIdentity = addManifest(manifest);
-		else
-			mime = JAR_MIME_TYPE;
-
+		}
+		String mime = hasIdentity ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
 		String sha256 = SHA256.digest(file)
 			.asHex();
 		addContentCapability(uri, sha256, file.length(), mime);
@@ -938,10 +892,8 @@ public class ResourceBuilder {
 	public void addWorkspaceNamespace(String name) throws Exception {
 		// Add a capability specific to the workspace so that we can
 		// identify this fact later during resource processing.
-		Attrs attrs = new Attrs();
-		attrs.put(ResourceUtils.WORKSPACE_NAMESPACE, name);
-
-		addCapability(CapReqBuilder.createCapReqBuilder(ResourceUtils.WORKSPACE_NAMESPACE, attrs));
-
+		CapabilityBuilder cap = new CapabilityBuilder(ResourceUtils.WORKSPACE_NAMESPACE);
+		cap.addAttribute(ResourceUtils.WORKSPACE_NAMESPACE, name);
+		addCapability(cap);
 	}
 }
