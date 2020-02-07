@@ -3525,7 +3525,8 @@ public class Project extends Processor {
 		if (identity == null)
 			return Container.error(this, r.toString());
 
-		if (r.getCapabilities(ResourceUtils.WORKSPACE_NAMESPACE) != null) {
+		if (!r.getCapabilities(ResourceUtils.WORKSPACE_NAMESPACE)
+			.isEmpty()) {
 			Container bundle = getBundle(identity.osgi_identity(), "snapshot", Strategy.HIGHEST, null);
 			if (bundle != null)
 				return bundle;

@@ -131,6 +131,12 @@ public class ConnectionSettings {
 					continue;
 				}
 
+				boolean ignoreError = false;
+				if (key.startsWith("-")) {
+					ignoreError = true;
+					key = key.substring(1);
+				}
+
 				switch (key) {
 					case "maven" :
 						key = M2_SETTINGS_XML;
@@ -155,18 +161,14 @@ public class ConnectionSettings {
 								key = IO.absolutePath(tmp);
 								tmps.add(tmp);
 							} else {
-								processor.error(
-									"Specified -connection-settings: %s, but no such environment variable %s is found",
-									connectionSettings, variable);
+								if (!ignoreError) {
+									processor.error(
+										"Specified -connection-settings: %s, but no such environment variable %s is found",
+										connectionSettings, variable);
+								}
 							}
 						}
 						break;
-				}
-
-				boolean ignoreError = false;
-				if (key.startsWith("-")) {
-					ignoreError = true;
-					key = key.substring(1);
 				}
 
 				key = Processor.removeDuplicateMarker(key);

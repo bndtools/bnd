@@ -492,7 +492,7 @@ public class ResolveTest extends TestCase {
 	private static Resource getResource(Set<Resource> resources, String bsn, String versionString) {
 		for (Resource resource : resources) {
 			List<Capability> identities = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
-			if (identities != null && identities.size() == 1) {
+			if (identities.size() == 1) {
 				Capability idCap = identities.get(0);
 				Object id = idCap.getAttributes()
 					.get(IdentityNamespace.IDENTITY_NAMESPACE);

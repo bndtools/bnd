@@ -247,11 +247,9 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		Resource resource) {
 		if (resource != null) {
 			List<Capability> selfCaps = resource.getCapabilities(requirement.getNamespace());
-			if (selfCaps != null) {
-				for (Capability selfCap : selfCaps) {
-					if (matches(requirement, selfCap))
-						firstStageResult.add(selfCap);
-				}
+			for (Capability selfCap : selfCaps) {
+				if (matches(requirement, selfCap))
+					firstStageResult.add(selfCap);
 			}
 		}
 	}
@@ -393,7 +391,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 		// Remove any jars without an identity capability
 		List<Capability> idCaps = resource.getCapabilities(IDENTITY_NAMESPACE);
-		if (idCaps == null || idCaps.isEmpty()) {
+		if (idCaps.isEmpty()) {
 			log.log(LogService.LOG_ERROR, "Resource is missing an identity capability (osgi.identity).");
 			return false;
 		}
@@ -810,7 +808,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			return null;
 		}
 		List<Capability> identityCaps = resource.getCapabilities(IDENTITY_NAMESPACE);
-		if (identityCaps == null || identityCaps.isEmpty()) {
+		if (identityCaps.isEmpty()) {
 			return null;
 		}
 		return identityCaps.iterator()
