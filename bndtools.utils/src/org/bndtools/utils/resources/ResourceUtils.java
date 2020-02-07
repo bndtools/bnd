@@ -27,7 +27,7 @@ public final class ResourceUtils {
 
 	public static Capability getIdentityCapability(Resource resource) throws IllegalArgumentException {
 		List<Capability> caps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
-		if (caps == null || caps.isEmpty())
+		if (caps.isEmpty())
 			throw new IllegalArgumentException("Resource has no identity");
 		if (caps.size() > 1) {
 			// Remove the alias identity "system.bundle"
@@ -81,7 +81,7 @@ public final class ResourceUtils {
 	public static Capability getContentCapability(Resource resource) throws IllegalArgumentException {
 		List<Capability> caps = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
 
-		if (caps == null)
+		if (caps.isEmpty())
 			throw new IllegalArgumentException("Resource has no content");
 
 		// A resource may have multiple capabilities and this is acceptable
@@ -110,9 +110,6 @@ public final class ResourceUtils {
 				// Oh well, just try the next one
 			}
 		}
-
-		if (firstCap == null)
-			throw new IllegalArgumentException("Resource has no content");
 
 		return firstCap;
 	}

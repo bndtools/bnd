@@ -35,7 +35,7 @@ public class Utils {
 
 	public static URI findContentURI(Resource resource) {
 		List<Capability> contentCaps = resource.getCapabilities("osgi.content");
-		if (contentCaps == null || contentCaps.isEmpty())
+		if (contentCaps.isEmpty())
 			throw new IllegalArgumentException("Resource has no content capability");
 		if (contentCaps.size() > 1)
 			throw new IllegalArgumentException("Resource has more than one content capability");

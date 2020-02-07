@@ -19,7 +19,7 @@ public class Utils {
 
 	public static Version findIdentityVersion(Resource resource) {
 		List<Capability> idCaps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
-		if (idCaps == null || idCaps.isEmpty())
+		if (idCaps.isEmpty())
 			throw new IllegalArgumentException("Resource has no identity capability.");
 		if (idCaps.size() > 1)
 			throw new IllegalArgumentException("Resource has more than one identity capability.");
