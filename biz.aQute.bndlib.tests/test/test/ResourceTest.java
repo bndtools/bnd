@@ -1,7 +1,13 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.FileInputStream;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,9 +16,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
 
+import org.assertj.core.api.InstanceOfAssertFactories;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.osgi.framework.Version;
 import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.HostNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.namespace.service.ServiceNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
@@ -33,17 +45,58 @@ import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-public class ResourceTest extends TestCase {
+public class ResourceTest {
 	static String		defaultSHA		= "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 	static String		alternativeSHA	= "AAAAAAAAAAAAFFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 	static FilterParser	filterParser	= new FilterParser();
+	private Method		testMethod;
 
+	@BeforeEach
+	public void before(TestInfo info) throws Exception {
+		testMethod = info.getTestMethod()
+			.get();
+	}
+
+	@Test
+	public void packageDecoration() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		Parameters exports = new Parameters("com.foo;version=1.0;abc=bar;mandatory:=abc");
+		rb.addExportPackages(exports, "com.bar", new Version("1.2.3"));
+		Parameters imports = new Parameters(
+			"com.foo;version=1.0;bundle-symbolic-name=com.bar;bundle-version=1.2.3;abc=bar;dirtest:=directive");
+		rb.addImportPackages(imports);
+		Resource built = rb.build();
+
+		List<Capability> capabilities = built.getCapabilities(PackageNamespace.PACKAGE_NAMESPACE);
+		assertThat(capabilities).hasSize(1);
+		assertThat(capabilities.get(0)
+			.getAttributes()).containsEntry(PackageNamespace.PACKAGE_NAMESPACE, "com.foo")
+				.containsEntry(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, new Version("1"))
+				.containsEntry(PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, "com.bar")
+				.containsEntry(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, new Version("1.2.3"))
+				.containsEntry("abc", "bar");
+		assertThat(capabilities.get(0)
+			.getDirectives()).containsEntry(AbstractWiringNamespace.CAPABILITY_MANDATORY_DIRECTIVE, "abc");
+
+		List<Requirement> requirements = built.getRequirements(PackageNamespace.PACKAGE_NAMESPACE);
+		assertThat(requirements).hasSize(1);
+		assertThat(requirements.get(0)
+			.getDirectives()).containsEntry("dirtest", "directive")
+				.extractingByKey(Namespace.REQUIREMENT_FILTER_DIRECTIVE, InstanceOfAssertFactories.STRING)
+				.contains("(" + PackageNamespace.PACKAGE_NAMESPACE + "=com.foo)",
+					"(" + PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE + ">=1.0.0)",
+					"(" + PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE + "=com.bar)",
+					"(" + AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE + ">=1.2.3)", "(abc=bar)")
+				.doesNotContain("dirtest", "directive");
+		assertThat(requirements.get(0)
+			.getAttributes()).isEmpty();
+	}
+
+	@Test
 	public void testImportPackage() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
 		Requirement importPackage = rb.addImportPackage("com.foo", Attrs.create("version", "1.2.3")
-			.with("mandatory:", "a,b")
 			.with("a", "1")
 			.with("b", "2"));
 		String filter = importPackage.getDirectives()
@@ -59,6 +112,7 @@ public class ResourceTest extends TestCase {
 		+ "service.pid=\"org.apache.felix.cm.file.FilePersistenceManager\";"
 		+ "service.vendor=\"Apache	Software Foundation\"";
 
+	@Test
 	public void testImportExportService() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
 		rb.addImportServices(new Parameters(is));
@@ -94,6 +148,7 @@ public class ResourceTest extends TestCase {
 		assertEquals(1, findProviders.size());
 	}
 
+	@Test
 	public void testImportExportServiceFromManifest() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
 		File f = IO.getFile("testresources/manifest/configadmin-1.8.8.mf");
@@ -105,6 +160,7 @@ public class ResourceTest extends TestCase {
 
 	}
 
+	@Test
 	public void testEscapeFilterValue() throws Exception {
 		assertEquals("abc", CapReqBuilder.escapeFilterValue("abc"));
 		assertEquals("abc\\\\", CapReqBuilder.escapeFilterValue("abc\\"));
@@ -128,6 +184,7 @@ public class ResourceTest extends TestCase {
 		assertEquals("\\*abc", CapReqBuilder.escapeFilterValue("*abc"));
 	}
 
+	@Test
 	public void testEquals() throws Exception {
 
 		assertResourceEquals(false, null);
@@ -170,6 +227,7 @@ public class ResourceTest extends TestCase {
 			.equals(rbb.build()));
 	}
 
+	@Test
 	public void testResourceEquals() throws Exception {
 		String locations = ResourceTest.class.getResource("larger-repo.xml")
 			.toString();
@@ -178,6 +236,7 @@ public class ResourceTest extends TestCase {
 		assertEquals(a, b);
 	}
 
+	@Test
 	public void testOSGiWiringHostBundle() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
 		rb.addManifest(Domain.domain(IO.getFile("../demo/generated/demo.jar")));
@@ -194,6 +253,7 @@ public class ResourceTest extends TestCase {
 			.size());
 	}
 
+	@Test
 	public void testOSGiWiringHostFragment() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
 		rb.addManifest(Domain.domain(IO.getFile("../demo-fragment/generated/demo-fragment.jar")));
@@ -211,6 +271,7 @@ public class ResourceTest extends TestCase {
 		assertEquals("(&(osgi.wiring.host=demo)(&(bundle-version>=1.0.0)(!(bundle-version>=1.0.1))))", filter);
 	}
 
+	@Test
 	public void testResourceToVersionedClause() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
 		rb.addManifest(Domain.domain(IO.getFile("../demo-fragment/generated/demo-fragment.jar")));
@@ -221,6 +282,7 @@ public class ResourceTest extends TestCase {
 		assertEquals("demo-fragment;version='[1.0.0,1.0.1)'", sb.toString());
 	}
 
+	@Test
 	public void testSnapshotResourceToVersionedClause() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
 		rb.addManifest(Domain.domain(IO.getFile("../demo-fragment/generated/demo-fragment.jar")));
@@ -238,9 +300,9 @@ public class ResourceTest extends TestCase {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			Map<String, String> map = new HashMap<>();
 			map.put("locations", locations);
-			map.put("name", getName());
-			map.put("cache",
-				new File("generated/tmp/test/cache/" + getClass().getName() + "/" + getName()).getAbsolutePath());
+			map.put("name", testMethod.getName());
+			map.put("cache", new File("generated/tmp/test/cache/" + getClass().getName() + "/" + testMethod.getName())
+				.getAbsolutePath());
 			repo.setProperties(map);
 			Processor p = new Processor();
 			p.addBasicPlugin(httpClient);
