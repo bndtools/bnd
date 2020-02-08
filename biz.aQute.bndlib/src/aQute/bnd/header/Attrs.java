@@ -583,6 +583,21 @@ public class Attrs implements Map<String, String> {
 		return ((last >= 0) && (key.charAt(last) == ':')) ? key.substring(0, last) : null;
 	}
 
+	/**
+	 * Predicate which returns true if the specified key is an attribute key.
+	 */
+	public static boolean isAttribute(String key) {
+		return !isDirective(key);
+	}
+
+	/**
+	 * Predicate which returns true if the specified key is a directive key.
+	 */
+	public static boolean isDirective(String key) {
+		int last = key.length() - 1;
+		return (last >= 0) && (key.charAt(last) == ':');
+	}
+
 	public static Attrs create(String key, String value) {
 		Attrs attrs = new Attrs();
 		attrs.put(key, value);
