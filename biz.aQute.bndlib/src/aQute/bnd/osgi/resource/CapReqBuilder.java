@@ -35,9 +35,9 @@ import org.osgi.service.repository.ContentNamespace;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
-import aQute.lib.strings.Strings;
 
 public class CapReqBuilder {
 
@@ -105,6 +105,10 @@ public class CapReqBuilder {
 		return this;
 	}
 
+	public boolean hasAttribute(String name) {
+		return attributes.containsKey(name);
+	}
+
 	public CapReqBuilder removeAttribute(String name) {
 		attributes.remove(name);
 		return this;
@@ -142,6 +146,10 @@ public class CapReqBuilder {
 
 		directives.put(ResourceUtils.stripDirective(name), value);
 		return this;
+	}
+
+	public boolean hasDirective(String name) {
+		return directives.containsKey(ResourceUtils.stripDirective(name));
 	}
 
 	public CapReqBuilder removeDirective(String name) {
@@ -183,17 +191,36 @@ public class CapReqBuilder {
 		return new RequirementImpl(namespace, null, directives, attributes);
 	}
 
-	public static CapReqBuilder createPackageRequirement(String name, String version) {
-		return createSimpleRequirement(PackageNamespace.PACKAGE_NAMESPACE, name, version);
+	public static CapReqBuilder createPackageRequirement(String name, String versionRange) {
+		return createSimpleRequirement(PackageNamespace.PACKAGE_NAMESPACE, name, versionRange);
 	}
 
-	public static CapReqBuilder createBundleRequirement(String name, String version) {
-		return createSimpleRequirement(IdentityNamespace.IDENTITY_NAMESPACE, name, version);
+	public static CapabilityBuilder createPackageCapability(String name, Attrs attrs, String bundle_symbolic_name,
+		Version bundle_version) throws Exception {
+		CapabilityBuilder builder = new CapabilityBuilder(PackageNamespace.PACKAGE_NAMESPACE);
+		if (attrs != null) {
+			builder.addAttributesOrDirectives(attrs);
+		}
+		if (!builder.hasAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE)) {
+			builder.addAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, Version.emptyVersion);
+		}
+		builder.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, requireNonNull(name));
+		if (bundle_symbolic_name != null) {
+			builder.addAttribute(PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, bundle_symbolic_name);
+		}
+		if (bundle_version != null) {
+			builder.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, bundle_version);
+		}
+		return builder;
 	}
 
-	public static CapReqBuilder createSimpleRequirement(String namespace, String name, String version) {
+	public static CapReqBuilder createBundleRequirement(String name, String versionRange) {
+		return createSimpleRequirement(IdentityNamespace.IDENTITY_NAMESPACE, name, versionRange);
+	}
+
+	public static CapReqBuilder createSimpleRequirement(String namespace, String name, String versionRange) {
 		RequirementBuilder builder = new RequirementBuilder(namespace);
-		builder.addFilter(namespace, name, version, null);
+		builder.addFilter(namespace, name, versionRange, null);
 		return builder;
 	}
 
@@ -310,7 +337,7 @@ public class CapReqBuilder {
 			case REQ_ALIAS_IDENTITY : {
 				String name = Objects.toString(requirement.getAttributes()
 					.get(REQ_ALIAS_IDENTITY_NAME_ATTRIB), null);
-				String version = Objects.toString(requirement.getAttributes()
+				String versionRange = Objects.toString(requirement.getAttributes()
 					.get(REQ_ALIAS_IDENTITY_VERSION_ATTRIB), null);
 				if (name == null) {
 					throw new IllegalArgumentException(
@@ -320,7 +347,7 @@ public class CapReqBuilder {
 				CapReqBuilder builder = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).from(requirement)
 					.removeAttribute(REQ_ALIAS_IDENTITY_NAME_ATTRIB)
 					.removeAttribute(REQ_ALIAS_IDENTITY_VERSION_ATTRIB);
-				builder.addFilter(IdentityNamespace.IDENTITY_NAMESPACE, name, version, null);
+				builder.addFilter(IdentityNamespace.IDENTITY_NAMESPACE, name, versionRange, null);
 				return builder.buildSyntheticRequirement();
 			}
 			default : {
@@ -394,7 +421,7 @@ public class CapReqBuilder {
 	public CapReqBuilder addAttributes(Attrs attrs) throws Exception {
 		for (Entry<String, String> e : attrs.entrySet()) {
 			String name = e.getKey();
-			if (Attrs.toDirective(name) == null) {
+			if (Attrs.isAttribute(name)) {
 				Object typed = attrs.getTyped(name);
 				if (typed instanceof aQute.bnd.version.Version) {
 					typed = toVersions(typed);
@@ -405,7 +432,7 @@ public class CapReqBuilder {
 		return this;
 	}
 
-	public void addFilter(String namespace, String name, String version, Attrs attrs) {
+	public void addFilter(String namespace, String name, String versionRange, Attrs attrs) {
 		StringBuilder filter = new StringBuilder().append('(')
 			.append('&')
 			.append('(')
@@ -415,39 +442,52 @@ public class CapReqBuilder {
 			.append(')');
 		final int len = filter.length();
 
-		String versionAttrName = Optional.ofNullable(ResourceUtils.getVersionAttributeForNamespace(namespace))
+		final String versionAttrName = Optional.ofNullable(ResourceUtils.getVersionAttributeForNamespace(namespace))
 			.orElse(Constants.VERSION_ATTRIBUTE);
-		Optional.ofNullable(version)
-			.filter(VersionRange::isOSGiVersionRange)
-			.map(VersionRange::parseOSGiVersionRange)
-			.map(range -> range.toFilter(versionAttrName))
-			.ifPresent(filter::append);
+		appendFilterVersionRange(filter, versionAttrName, versionRange);
+		final boolean versionAttrFilterAdded = filter.length() > len;
 
-		if (attrs != null) {
-			switch (namespace) {
-				case BundleNamespace.BUNDLE_NAMESPACE :
-				case HostNamespace.HOST_NAMESPACE :
-				case PackageNamespace.PACKAGE_NAMESPACE :
-					Strings.splitAsStream(attrs.get(AbstractWiringNamespace.CAPABILITY_MANDATORY_DIRECTIVE + ":"))
-						.sorted()
-						.forEachOrdered(mandatoryAttr -> {
-							String value = attrs.get(mandatoryAttr);
-							if (value != null) {
-								filter.append('(')
-									.append(mandatoryAttr)
-									.append('=');
-								escapeFilterValue(filter, value).append(')');
-							}
-						});
-					break;
-				default :
-					break;
+		// Attribute matching (Core 3.7.7) for wiring namespaces
+		if (namespace.startsWith("osgi.wiring.")) {
+			MapStream<String, String> attrStream = MapStream.ofNullable(attrs)
+				.filterKey(Attrs::isAttribute);
+			if (versionAttrFilterAdded) {
+				attrStream = attrStream.filterKey(attrName -> !attrName.equals(versionAttrName));
 			}
+			attrStream.sortedByKey()
+				.forEachOrdered((attrName, attrValue) -> {
+					switch (attrName) {
+						case PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE :
+						case AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE :
+							appendFilterVersionRange(filter, attrName, attrValue);
+							break;
+						default :
+							appendFilterEquals(filter, attrName, attrValue);
+							break;
+					}
+				});
 		}
 
 		String value = (filter.length() > len) ? filter.append(')')
 			.toString() : filter.substring(2);
 		addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, value);
+	}
+
+	private void appendFilterEquals(StringBuilder filter, String name, String value) {
+		if (value != null) {
+			filter.append('(')
+				.append(name)
+				.append('=');
+			escapeFilterValue(filter, value).append(')');
+		}
+	}
+
+	private void appendFilterVersionRange(StringBuilder filter, String name, String versionRange) {
+		Optional.ofNullable(versionRange)
+			.filter(VersionRange::isOSGiVersionRange)
+			.map(VersionRange::parseOSGiVersionRange)
+			.map(range -> range.toFilter(name))
+			.ifPresent(filter::append);
 	}
 
 	/**

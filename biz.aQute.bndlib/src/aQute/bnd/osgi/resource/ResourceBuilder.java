@@ -50,12 +50,12 @@ import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
 public class ResourceBuilder {
-	private final ResourceImpl					resource			= new ResourceImpl();
-	private final Map<Capability, Capability>	capabilities		= new LinkedHashMap<>();
-	private final Map<Requirement, Requirement>	requirements		= new LinkedHashMap<>();
-	private ReporterAdapter						reporter			= new ReporterAdapter();
+	private final ResourceImpl					resource		= new ResourceImpl();
+	private final Map<Capability, Capability>	capabilities	= new LinkedHashMap<>();
+	private final Map<Requirement, Requirement>	requirements	= new LinkedHashMap<>();
+	private ReporterAdapter						reporter		= new ReporterAdapter();
 
-	private boolean								built				= false;
+	private boolean								built			= false;
 
 	public ResourceBuilder(Resource source) throws Exception {
 		addCapabilities(source.getCapabilities(null));
@@ -187,7 +187,7 @@ public class ResourceBuilder {
 		if ((versionString != null) && !aQute.bnd.version.Version.isVersion(versionString)) {
 			throw new IllegalArgumentException("Invalid version in bundle " + bsn + ": " + versionString);
 		}
-		aQute.bnd.version.Version version = aQute.bnd.version.Version.parseVersion(versionString);
+		Version version = Version.parseVersion(versionString);
 		identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
 
 		boolean singleton = "true".equals(attrs.get(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE + ":"));
@@ -251,7 +251,7 @@ public class ResourceBuilder {
 		// Package capabilities
 		//
 
-		addExportPackages(manifest.getExportPackage());
+		addExportPackages(manifest.getExportPackage(), name, version);
 
 		//
 		// Package requirements
@@ -510,9 +510,13 @@ public class ResourceBuilder {
 	 * @throws Exception
 	 */
 	public void addExportPackages(Parameters exports) throws Exception {
-		exports.stream()
-			.mapKey(Processor::removeDuplicateMarker)
-			.forEachOrdered(asBiConsumer(this::addExportPackage));
+		exports.forEach(asBiConsumer((name, attrs) -> addExportPackage(Processor.removeDuplicateMarker(name), attrs)));
+	}
+
+	public void addExportPackages(Parameters exports, String bundle_symbolic_name, Version bundle_version)
+		throws Exception {
+		exports.forEach(asBiConsumer((name, attrs) -> addExportPackage(Processor.removeDuplicateMarker(name), attrs,
+			bundle_symbolic_name, bundle_version)));
 	}
 
 	public void addEE(EE ee) throws Exception {
@@ -524,14 +528,15 @@ public class ResourceBuilder {
 		}
 	}
 
-	public void addExportPackage(String packageName, Attrs attrs) throws Exception {
-		CapabilityBuilder capb = new CapabilityBuilder(PackageNamespace.PACKAGE_NAMESPACE);
-		capb.addAttributesOrDirectives(attrs);
-		if (!attrs.containsKey(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE)) {
-			capb.addAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, Version.emptyVersion);
-		}
-		capb.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, packageName);
-		addCapability(capb);
+	public void addExportPackage(String name, Attrs attrs, String bundle_symbolic_name, Version bundle_version)
+		throws Exception {
+		CapabilityBuilder builder = CapReqBuilder.createPackageCapability(name, attrs, bundle_symbolic_name,
+			bundle_version);
+		addCapability(builder);
+	}
+
+	public void addExportPackage(String name, Attrs attrs) throws Exception {
+		addExportPackage(name, attrs, null, null);
 	}
 
 	/**
@@ -540,15 +545,13 @@ public class ResourceBuilder {
 	 * @throws Exception
 	 */
 	public void addImportPackages(Parameters imports) throws Exception {
-		imports.stream()
-			.mapKey(Processor::removeDuplicateMarker)
-			.forEachOrdered(asBiConsumer(this::addImportPackage));
+		imports.forEach(asBiConsumer((name, attrs) -> addImportPackage(Processor.removeDuplicateMarker(name), attrs)));
 	}
 
-	public Requirement addImportPackage(String pname, Attrs attrs) throws Exception {
+	public Requirement addImportPackage(String name, Attrs attrs) throws Exception {
 		RequirementBuilder builder = new RequirementBuilder(PackageNamespace.PACKAGE_NAMESPACE);
 		builder.addDirectives(attrs);
-		builder.addFilter(PackageNamespace.PACKAGE_NAMESPACE, pname,
+		builder.addFilter(PackageNamespace.PACKAGE_NAMESPACE, name,
 			attrs.get(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE), attrs);
 		addRequirement(builder);
 		return builder.build();
@@ -799,6 +802,12 @@ public class ResourceBuilder {
 		}
 
 		@Override
+		public void addExportPackages(Parameters exports, String bundle_symbolic_name, Version bundle_version)
+			throws Exception {
+			ResourceBuilder.this.addExportPackages(exports, bundle_symbolic_name, bundle_version);
+		}
+
+		@Override
 		public void addExportPackages(Parameters exports) throws Exception {
 			ResourceBuilder.this.addExportPackages(exports);
 		}
@@ -809,8 +818,14 @@ public class ResourceBuilder {
 		}
 
 		@Override
-		public void addExportPackage(String packageName, Attrs attrs) throws Exception {
-			ResourceBuilder.this.addExportPackage(packageName, attrs);
+		public void addExportPackage(String name, Attrs attrs, String bundle_symbolic_name,
+			Version bundle_version) throws Exception {
+			ResourceBuilder.this.addExportPackage(name, attrs, bundle_symbolic_name, bundle_version);
+		}
+
+		@Override
+		public void addExportPackage(String name, Attrs attrs) throws Exception {
+			ResourceBuilder.this.addExportPackage(name, attrs);
 		}
 
 		@Override
@@ -819,8 +834,8 @@ public class ResourceBuilder {
 		}
 
 		@Override
-		public Requirement addImportPackage(String pname, Attrs attrs) throws Exception {
-			return ResourceBuilder.this.addImportPackage(pname, attrs);
+		public Requirement addImportPackage(String name, Attrs attrs) throws Exception {
+			return ResourceBuilder.this.addImportPackage(name, attrs);
 		}
 
 		@Override
@@ -896,4 +911,14 @@ public class ResourceBuilder {
 		cap.addAttribute(ResourceUtils.WORKSPACE_NAMESPACE, name);
 		addCapability(cap);
 	}
+
+	@Override
+	public String toString() {
+		return new StringBuilder("ResourceBuilder [caps=").append(capabilities.values())
+			.append(", reqs=")
+			.append(requirements.values())
+			.append(']')
+			.toString();
+	}
+
 }
