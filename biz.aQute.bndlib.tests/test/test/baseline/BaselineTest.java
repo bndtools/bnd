@@ -491,6 +491,26 @@ public class BaselineTest extends TestCase {
 	}
 
 	// Adding a method to a ProviderType produces a MINOR bump (1.0.0 -> 1.1.0)
+	// in package, but bundle version should be ignored
+	public void testBundleVersionDiffignore() throws Exception {
+		Processor processor = new Processor();
+
+		DiffPluginImpl differ = new DiffPluginImpl();
+		differ.setIgnore("Bundle-Version");
+		Baseline baseline = new Baseline(processor, differ);
+
+		try (Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
+			Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));) {
+
+			baseline.baseline(newer, older, null);
+
+			BundleInfo bundleInfo = baseline.getBundleInfo();
+
+			assertFalse(bundleInfo.mismatch);
+		}
+	}
+
+	// Adding a method to a ProviderType produces a MINOR bump (1.0.0 -> 1.1.0)
 	public void testBundleVersionBumpDifferentSymbolicNames() throws Exception {
 		Processor processor = new Processor();
 
