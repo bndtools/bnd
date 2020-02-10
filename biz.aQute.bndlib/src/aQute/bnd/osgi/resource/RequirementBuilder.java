@@ -15,11 +15,11 @@ public class RequirementBuilder extends CapReqBuilder {
 	}
 
 	public Requirement build() {
-		return super.buildRequirement();
+		return buildRequirement();
 	}
 
 	public Requirement synthetic() {
-		return super.buildSyntheticRequirement();
+		return buildSyntheticRequirement();
 	}
 
 	public RequirementBuilder addFilter(String filter) {
