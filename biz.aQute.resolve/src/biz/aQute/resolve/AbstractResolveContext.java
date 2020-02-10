@@ -783,10 +783,10 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	public static Capability createPackageCapability(String packageName, String versionString) throws Exception {
-		CapReqBuilder builder = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE);
-		builder.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, packageName);
-		Version version = versionString != null ? new Version(versionString) : Version.emptyVersion;
-		builder.addAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+		Attrs attrs = (versionString != null)
+			? Attrs.create(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE + ":Version", versionString)
+			: null;
+		CapReqBuilder builder = CapReqBuilder.createPackageCapability(packageName, attrs, null, null);
 		return builder.buildSyntheticCapability();
 	}
 

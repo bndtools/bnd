@@ -21,7 +21,6 @@ import org.bndtools.templating.TemplateLoader;
 import org.osgi.framework.Constants;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
-import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -97,9 +96,7 @@ public class ReposTemplateLoader implements TemplateLoader {
 
 	@Override
 	public Promise<List<Template>> findTemplates(String templateType, final Reporter reporter) {
-		String filterStr = String.format("(%s=%s)", NS_TEMPLATE, templateType);
-		final Requirement requirement = new CapReqBuilder(NS_TEMPLATE)
-			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filterStr)
+		final Requirement requirement = CapReqBuilder.createSimpleRequirement(NS_TEMPLATE, templateType, null)
 			.buildSyntheticRequirement();
 
 		// Try to get the repositories and BundleLocator from the workspace

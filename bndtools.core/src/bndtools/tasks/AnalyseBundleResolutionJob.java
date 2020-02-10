@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
 
 import aQute.lib.io.IO;
 import bndtools.model.resolution.RequirementWrapper;
@@ -77,7 +78,7 @@ public class AnalyseBundleResolutionJob extends Job {
 
 				for (RequirementWrapper rw : rws) {
 					String filterStr = rw.requirement.getDirectives()
-						.get("filter");
+						.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 					if (filterStr != null) {
 						aQute.lib.filter.Filter filter = new aQute.lib.filter.Filter(filterStr);
 						for (Capability cand : candidates) {

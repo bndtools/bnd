@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -25,6 +24,7 @@ import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.lib.exceptions.Exceptions;
 
 /**
  * WARNING ! Not tested
@@ -36,10 +36,7 @@ public abstract class BaseRepository implements Repository {
 		PromiseFactory.inlineExecutor());
 
 	static {
-		aQute.bnd.osgi.resource.RequirementBuilder rb = new aQute.bnd.osgi.resource.RequirementBuilder(
-			IdentityNamespace.IDENTITY_NAMESPACE);
-		rb.addFilter("(" + IdentityNamespace.IDENTITY_NAMESPACE + "=*)");
-		final Requirement requireAll = rb.synthetic();
+		Requirement requireAll = ResourceUtils.createWildcardRequirement();
 		all = () -> requireAll;
 	}
 
@@ -213,25 +210,21 @@ public abstract class BaseRepository implements Repository {
 				try {
 					rb.addAttributes(attributes);
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw Exceptions.duck(e);
 				}
 				return this;
 			}
 
 			@Override
 			public IdentityExpression buildExpression() {
-				return () -> {
-					if (rb.getResource() == null)
-						return rb.buildSyntheticRequirement();
-					return rb.build();
-				};
+				return this::build;
 			}
 
 			@Override
 			public Requirement build() {
 				if (rb.getResource() == null)
 					return rb.buildSyntheticRequirement();
-				return rb.build();
+				return rb.buildRequirement();
 			}
 
 			@Override
@@ -245,7 +238,7 @@ public abstract class BaseRepository implements Repository {
 				try {
 					rb.addAttribute(name, value);
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw Exceptions.duck(e);
 				}
 				return this;
 			}

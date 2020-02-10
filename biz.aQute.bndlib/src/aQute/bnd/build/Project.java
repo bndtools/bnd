@@ -1489,8 +1489,8 @@ public class Project extends Processor {
 					// R5 repos only support SHA-256
 					continue;
 
-				Requirement contentReq = new CapReqBuilder(ContentNamespace.CONTENT_NAMESPACE)
-					.filter(String.format("(%s=%s)", ContentNamespace.CONTENT_NAMESPACE, hash))
+				Requirement contentReq = CapReqBuilder
+					.createSimpleRequirement(ContentNamespace.CONTENT_NAMESPACE, hash, null)
 					.buildSyntheticRequirement();
 				Set<Requirement> reqs = Collections.singleton(contentReq);
 

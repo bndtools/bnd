@@ -47,8 +47,7 @@ public class DebugReporter {
 	private void doProviders() {
 		header("PROVIDERS");
 
-		Requirement r = CapReqBuilder.createBundleRequirement("*", null)
-			.buildSyntheticRequirement();
+		Requirement r = ResourceUtils.createWildcardRequirement();
 
 		List<Capability> providers = context.findProviders(r);
 		Set<Resource> resources = ResourceUtils.getResources(providers);
