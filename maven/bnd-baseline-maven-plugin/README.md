@@ -173,7 +173,7 @@ The manifest header names and resource paths to ignore when baseline comparing. 
 ##### Ignore bundle version
 
 Although the [semantic versioning policy][1] enforces also to maintain semantic bundle versions (and not only semantic package versions), this is often not followed by projects for different reasons.
-It is possible to only check for correct package versions and leave out the bundle version by ignore the `Bundle-Version` header.
+It is possible to only check for correct package versions and leave out the bundle version by ignoring the `Bundle-Version` manifest header.
 
     <configuration>
         <diffignores>

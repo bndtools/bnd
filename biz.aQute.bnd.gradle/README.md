@@ -297,6 +297,8 @@ This property can be used to
 [exclude](https://bnd.bndtools.org/chapters/820-instructions.html#selector)
 items from baseline comparison.
 
+For example, to exclude bundle versions from baseline comparison, add `Bundle-Version` to `diffignore`.
+
 ## Create a task of the `Resolve` type
 
 The `Resolve` task type
