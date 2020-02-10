@@ -27,7 +27,6 @@ import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.framework.namespace.NativeNamespace;
-import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.namespace.service.ServiceNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
@@ -559,10 +558,7 @@ public class ResourceBuilder {
 	}
 
 	public Requirement addImportPackage(String name, Attrs attrs) throws Exception {
-		RequirementBuilder builder = new RequirementBuilder(PackageNamespace.PACKAGE_NAMESPACE);
-		builder.addDirectives(attrs);
-		builder.addFilter(PackageNamespace.PACKAGE_NAMESPACE, name,
-			attrs.get(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE), attrs);
+		RequirementBuilder builder = CapReqBuilder.createPackageRequirement(name, attrs, null);
 		addRequirement(builder);
 		return buildRequirement(builder);
 	}
