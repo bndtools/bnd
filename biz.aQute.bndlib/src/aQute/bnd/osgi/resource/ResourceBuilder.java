@@ -82,12 +82,17 @@ public class ResourceBuilder {
 	}
 
 	private Capability addCapability0(CapReqBuilder builder) {
-		Capability cap = builder.setResource(resource)
-			.buildCapability();
+		Capability cap = buildCapability(builder);
 		Capability previous = capabilities.putIfAbsent(cap, cap);
 		if (previous != null) {
 			return previous;
 		}
+		return cap;
+	}
+
+	protected Capability buildCapability(CapReqBuilder builder) {
+		Capability cap = builder.setResource(resource)
+			.buildCapability();
 		return cap;
 	}
 
@@ -112,12 +117,17 @@ public class ResourceBuilder {
 	}
 
 	private Requirement addRequirement0(CapReqBuilder builder) {
-		Requirement req = builder.setResource(resource)
-			.buildRequirement();
+		Requirement req = buildRequirement(builder);
 		Requirement previous = requirements.putIfAbsent(req, req);
 		if (previous != null) {
 			return previous;
 		}
+		return req;
+	}
+
+	protected Requirement buildRequirement(CapReqBuilder builder) {
+		Requirement req = builder.setResource(resource)
+			.buildRequirement();
 		return req;
 	}
 
@@ -501,7 +511,7 @@ public class ResourceBuilder {
 		CapabilityBuilder builder = new CapabilityBuilder(namespace);
 		builder.addAttributesOrDirectives(attrs);
 		addCapability(builder);
-		return builder.build();
+		return buildCapability(builder);
 	}
 
 	/**
@@ -554,7 +564,7 @@ public class ResourceBuilder {
 		builder.addFilter(PackageNamespace.PACKAGE_NAMESPACE, name,
 			attrs.get(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE), attrs);
 		addRequirement(builder);
-		return builder.build();
+		return buildRequirement(builder);
 	}
 
 	// Correct version according to R5 specification section 3.4.1
@@ -567,7 +577,7 @@ public class ResourceBuilder {
 		addCapability(builder);
 
 		// Compatibility with old version...
-		builder = new CapReqBuilder(resource, ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
+		builder = new CapReqBuilder(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
 		builder.addAttribute(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, ee.getEEName());
 		addCapability(builder);
 	}
