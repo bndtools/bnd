@@ -1,0 +1,51 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>biz.aQute.bnd-test</groupId>
+		<artifactId>test</artifactId>
+		<version>1.0.1</version>
+	</parent>
+
+	<groupId>biz.aQute.bnd-test</groupId>
+	<artifactId>invalid-with-provider-require-bundle-version-change</artifactId>
+	<version>1.0.1</version>
+	<packaging>jar</packaging>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>osgi.annotation</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-baseline-maven-plugin</artifactId>
+				<configuration>
+					<base>
+						<artifactId>valid-no-previous</artifactId>
+						<version>1.0.1</version>
+					</base>
+					<includeDistributionManagement>true</includeDistributionManagement>
+					<fullReport>true</fullReport>
+					<continueOnError>true</continueOnError>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-maven-plugin</artifactId>
+				<configuration>
+					<!-- same BSN as valid-no-previous -->
+					<bnd><![CDATA[
+Bundle-SymbolicName: valid-no-previous
+					]]></bnd>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
