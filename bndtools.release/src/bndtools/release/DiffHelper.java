@@ -8,6 +8,7 @@ import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 
 public class DiffHelper {
@@ -49,10 +50,11 @@ public class DiffHelper {
 					String diffignore = projectBuilder.getProperty(Constants.DIFFIGNORE);
 					if (diffignore != null)
 						differ.setIgnore(diffignore);
+					Instructions diffpackages = new Instructions(projectBuilder.getProperty(Constants.DIFFPACKAGES));
 
 					Baseline baseline = new Baseline(projectBuilder, differ);
 
-					baseline.baseline(jar, currentJar, null);
+					baseline.baseline(jar, currentJar, diffpackages);
 					return baseline;
 				} finally {
 					if (jar != null)
