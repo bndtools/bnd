@@ -30,7 +30,6 @@
 	org.assertj.core.*
 
 -fixupmessages.assertj: Export org.assertj.core.* private references
--fixupmessages.bundleversion: "The bundle version \\(5.0.0/5.1.0\\) is too low, must be at least 6.0.0";is:=ignore
 
 # The dependency on aQute packages is only for the
 # master side. When launched, those dependencies

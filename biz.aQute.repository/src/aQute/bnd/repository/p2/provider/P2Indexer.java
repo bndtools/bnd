@@ -35,7 +35,6 @@ import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
-import aQute.bnd.osgi.resource.FilterBuilder;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
@@ -74,7 +73,7 @@ class P2Indexer implements Closeable {
 	private static final String			P2_CAPABILITY_NAMESPACE	= "bnd.p2";
 	private static final String			MD5_ATTRIBUTE			= "md5";
 	private static final Requirement	MD5_REQUIREMENT			= new RequirementBuilder(P2_CAPABILITY_NAMESPACE)
-		.addFilter(new FilterBuilder().isPresent(MD5_ATTRIBUTE))
+		.filter("(" + MD5_ATTRIBUTE + "=*)")
 		.buildSyntheticRequirement();
 
 	P2Indexer(Reporter reporter, File location, HttpClient client, URI url, String name) throws Exception {

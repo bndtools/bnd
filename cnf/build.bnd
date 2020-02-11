@@ -25,6 +25,8 @@ base.version:           5.1.0
 # Uncomment the following line to build the non-snapshot version.
 #-snapshot:
 Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
+# Don't baseline Bundle-Version
+-diffignore:            Bundle-Version
 
 # Maven info. The maven artifactId defaults to Bundle-SymbolicName
 -groupid:               biz.aQute.bnd

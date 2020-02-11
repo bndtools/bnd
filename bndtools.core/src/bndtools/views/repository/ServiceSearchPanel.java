@@ -11,8 +11,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IMemento;
-import org.osgi.namespace.service.ServiceNamespace;
-import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.osgi.resource.CapReqBuilder;
@@ -55,9 +53,7 @@ public class ServiceSearchPanel extends SearchPanel {
 			setError(null);
 			setRequirement(null);
 		} else {
-			String filter = String.format("(%s=%s)", ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE, serviceClass);
-			Requirement requirement = new CapReqBuilder(ServiceNamespace.SERVICE_NAMESPACE)
-				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter)
+			Requirement requirement = CapReqBuilder.createServiceRequirement(serviceClass)
 				.buildSyntheticRequirement();
 			setError(null);
 			setRequirement(requirement);

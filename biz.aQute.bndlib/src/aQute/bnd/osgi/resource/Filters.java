@@ -3,11 +3,6 @@ package aQute.bnd.osgi.resource;
 import org.osgi.framework.namespace.IdentityNamespace;
 
 import aQute.bnd.version.VersionRange;
-import aQute.libg.filters.AndFilter;
-import aQute.libg.filters.Filter;
-import aQute.libg.filters.NotFilter;
-import aQute.libg.filters.Operator;
-import aQute.libg.filters.SimpleFilter;
 
 public class Filters {
 
@@ -40,33 +35,7 @@ public class Filters {
 		if (range == null)
 			return null;
 		VersionRange parsedRange = new VersionRange(range);
-
-		Filter left;
-		if (parsedRange.includeLow())
-			left = new SimpleFilter(versionAttr, Operator.GreaterThanOrEqual, parsedRange.getLow()
-				.toString());
-		else
-			left = new NotFilter(new SimpleFilter(versionAttr, Operator.LessThanOrEqual, parsedRange.getLow()
-				.toString()));
-
-		Filter right;
-		if (!parsedRange.isRange())
-			right = null;
-		else if (parsedRange.includeHigh())
-			right = new SimpleFilter(versionAttr, Operator.LessThanOrEqual, parsedRange.getHigh()
-				.toString());
-		else
-			right = new NotFilter(new SimpleFilter(versionAttr, Operator.GreaterThanOrEqual, parsedRange.getHigh()
-				.toString()));
-
-		Filter result;
-		if (right != null)
-			result = new AndFilter().addChild(left)
-				.addChild(right);
-		else
-			result = left;
-
-		return result.toString();
+		return parsedRange.toFilter(versionAttr);
 	}
 
 }

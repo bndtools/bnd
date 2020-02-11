@@ -1,7 +1,6 @@
 package aQute.bnd.version;
 
 import java.util.ArrayList;
-import java.util.Formatter;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -165,25 +164,63 @@ public class VersionRange {
 	 * Convert to an OSGi filter expression
 	 */
 	public String toFilter(String versionAttribute) {
-		try (Formatter f = new Formatter()) {
-			if (high == Version.HIGHEST)
-				return "(" + versionAttribute + ">=" + low + ")";
-			if (isRange()) {
-				f.format("(&");
-				if (includeLow())
-					f.format("(%s>=%s)", versionAttribute, getLow());
-				else
-					f.format("(!(%s<=%s))", versionAttribute, getLow());
-				if (includeHigh())
-					f.format("(%s<=%s)", versionAttribute, getHigh());
-				else
-					f.format("(!(%s>=%s))", versionAttribute, getHigh());
-				f.format(")");
-			} else {
-				f.format("(%s>=%s)", versionAttribute, getLow());
-			}
-			return f.toString();
+		StringBuilder result = new StringBuilder(128);
+		final boolean needPresence = !includeLow() && ((high == Version.HIGHEST) || !includeHigh());
+		final boolean multipleTerms = needPresence || (high != Version.HIGHEST);
+
+		if (multipleTerms) {
+			result.append('(')
+				.append('&');
 		}
+		if (needPresence) {
+			result.append('(')
+				.append(versionAttribute)
+				.append('=')
+				.append('*')
+				.append(')');
+		}
+		if (includeLow()) {
+			result.append('(')
+				.append(versionAttribute)
+				.append('>')
+				.append('=')
+				.append(getLow())
+				.append(')');
+		} else {
+			result.append('(')
+				.append('!')
+				.append('(')
+				.append(versionAttribute)
+				.append('<')
+				.append('=')
+				.append(getLow())
+				.append(')')
+				.append(')');
+		}
+		if (high != Version.HIGHEST) {
+			if (includeHigh()) {
+				result.append('(')
+					.append(versionAttribute)
+					.append('<')
+					.append('=')
+					.append(getHigh())
+					.append(')');
+			} else {
+				result.append('(')
+					.append('!')
+					.append('(')
+					.append(versionAttribute)
+					.append('>')
+					.append('=')
+					.append(getHigh())
+					.append(')')
+					.append(')');
+			}
+		}
+		if (multipleTerms) {
+			result.append(')');
+		}
+		return result.toString();
 	}
 
 	public static boolean isVersionRange(String stringRange) {

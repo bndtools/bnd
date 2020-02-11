@@ -1,6 +1,5 @@
 package aQute.bnd.osgi.resource;
 
-import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
@@ -15,15 +14,15 @@ public class RequirementBuilder extends CapReqBuilder {
 	}
 
 	public Requirement build() {
-		return super.buildRequirement();
+		return buildRequirement();
 	}
 
 	public Requirement synthetic() {
-		return super.buildSyntheticRequirement();
+		return buildSyntheticRequirement();
 	}
 
 	public RequirementBuilder addFilter(String filter) {
-		addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
+		filter(filter);
 		return this;
 	}
 

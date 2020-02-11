@@ -13,7 +13,6 @@ import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.namespace.service.ServiceNamespace;
-import org.osgi.resource.Namespace;
 
 import aQute.bnd.osgi.resource.CapReqBuilder;
 
@@ -99,7 +98,7 @@ public class ArbitraryNamespaceSearchPanel extends SearchPanel {
 				.length() > 0) {
 				try {
 					Filter filter = FrameworkUtil.createFilter(filterStr.trim());
-					builder.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+					builder.filter(filter.toString());
 				} catch (InvalidSyntaxException e) {
 					throw new IllegalArgumentException("Invalid filter string: " + e.getMessage());
 				}

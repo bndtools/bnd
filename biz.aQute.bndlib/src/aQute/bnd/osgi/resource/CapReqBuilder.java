@@ -192,7 +192,19 @@ public class CapReqBuilder {
 	}
 
 	public static CapReqBuilder createPackageRequirement(String name, String versionRange) {
-		return createSimpleRequirement(PackageNamespace.PACKAGE_NAMESPACE, name, versionRange);
+		return createPackageRequirement(name, null, versionRange);
+	}
+
+	public static RequirementBuilder createPackageRequirement(String name, Attrs attrs, String versionRange) {
+		RequirementBuilder builder = new RequirementBuilder(PackageNamespace.PACKAGE_NAMESPACE);
+		if (attrs != null) {
+			builder.addDirectives(attrs);
+			if (versionRange == null) {
+				versionRange = attrs.get(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+			}
+		}
+		builder.addFilter(PackageNamespace.PACKAGE_NAMESPACE, name, versionRange, attrs);
+		return builder;
 	}
 
 	public static CapabilityBuilder createPackageCapability(String name, Attrs attrs, String bundle_symbolic_name,
@@ -221,6 +233,12 @@ public class CapReqBuilder {
 	public static CapReqBuilder createSimpleRequirement(String namespace, String name, String versionRange) {
 		RequirementBuilder builder = new RequirementBuilder(namespace);
 		builder.addFilter(namespace, name, versionRange, null);
+		return builder;
+	}
+
+	public static RequirementBuilder createServiceRequirement(String name) {
+		RequirementBuilder builder = new RequirementBuilder(ServiceNamespace.SERVICE_NAMESPACE);
+		builder.addFilter(ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE, name, null, null);
 		return builder;
 	}
 
@@ -261,7 +279,7 @@ public class CapReqBuilder {
 	}
 
 	public CapReqBuilder filter(CharSequence f) {
-		return addDirective("filter", f.toString());
+		return addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, f.toString());
 	}
 
 	/**
@@ -305,7 +323,9 @@ public class CapReqBuilder {
 
 	public static CapReqBuilder createCapReqBuilder(String namespace, Attrs attrs) throws Exception {
 		CapReqBuilder builder = new CapReqBuilder(namespace);
-		builder.addAttributesOrDirectives(attrs);
+		if (attrs != null) {
+			builder.addAttributesOrDirectives(attrs);
+		}
 		return builder;
 	}
 
@@ -433,7 +453,7 @@ public class CapReqBuilder {
 	}
 
 	public void addFilter(String namespace, String name, String versionRange, Attrs attrs) {
-		StringBuilder filter = new StringBuilder().append('(')
+		StringBuilder filter = new StringBuilder(256).append('(')
 			.append('&')
 			.append('(')
 			.append(requireNonNull(namespace))
@@ -473,7 +493,7 @@ public class CapReqBuilder {
 		addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, value);
 	}
 
-	private void appendFilterEquals(StringBuilder filter, String name, String value) {
+	private static void appendFilterEquals(StringBuilder filter, String name, String value) {
 		if (value != null) {
 			filter.append('(')
 				.append(name)
@@ -482,7 +502,7 @@ public class CapReqBuilder {
 		}
 	}
 
-	private void appendFilterVersionRange(StringBuilder filter, String name, String versionRange) {
+	private static void appendFilterVersionRange(StringBuilder filter, String name, String versionRange) {
 		Optional.ofNullable(versionRange)
 			.filter(VersionRange::isOSGiVersionRange)
 			.map(VersionRange::parseOSGiVersionRange)
@@ -671,39 +691,37 @@ public class CapReqBuilder {
 	}
 
 	public static RequirementBuilder createRequirementFromCapability(Capability capability) {
-		String versionAttrName = Optional
-			.ofNullable(ResourceUtils.getVersionAttributeForNamespace(capability.getNamespace()))
+		final String namespace = capability.getNamespace();
+		RequirementBuilder builder = new RequirementBuilder(namespace);
+		final String versionAttrName = Optional
+			.ofNullable(ResourceUtils.getVersionAttributeForNamespace(namespace))
 			.orElse(Constants.VERSION_ATTRIBUTE);
 		Map<String, Object> capAttributes = capability.getAttributes();
-		StringBuilder sb = new StringBuilder();
+		StringBuilder filter = new StringBuilder(256);
 		if (capAttributes.size() > 1) {
-			sb.append('(')
+			filter.append('(')
 				.append('&');
 		}
 		capAttributes.forEach((name, v) -> {
-			if (v instanceof Version || name.equals(versionAttrName)) {
-				VersionRange range = new VersionRange(v.toString());
-				String filter = range.toFilter(versionAttrName);
-				sb.append(filter);
+			if (v instanceof Version || name.equals(versionAttrName)
+				|| (namespace.equals(PackageNamespace.PACKAGE_NAMESPACE)
+					&& name.equals(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE))) {
+				appendFilterVersionRange(filter, name, v.toString());
 			} else {
-				sb.append('(')
-					.append(name)
-					.append('=');
-				escapeFilterValue(sb, (String) v).append(')');
+				appendFilterEquals(filter, name, v.toString());
 			}
 		});
 		if (capAttributes.size() > 1) {
-			sb.append(')');
+			filter.append(')');
 		}
 
-		RequirementBuilder req = new RequirementBuilder(capability.getNamespace());
-		req.addFilter(sb.toString());
-		return req;
+		builder.filter(filter);
+		return builder;
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append('[')
 			.append(namespace)
 			.append(']')
