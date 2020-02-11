@@ -89,7 +89,7 @@ public class AnalyseBundleResolutionJobTest extends TestCase {
 		List<RequirementWrapper> imports = reqs.get("osgi.wiring.package");
 		assertEquals(1, imports.size());
 		assertTrue(imports.get(0).resolved);
-		assertEquals("(&(osgi.wiring.package=api)(&(version>=1.0.0)(!(version>=1.1.0))))",
+		assertEquals("(&(osgi.wiring.package=api)(version>=1.0.0)(!(version>=1.1.0)))",
 			imports.get(0).requirement.getDirectives()
 				.get("filter"));
 

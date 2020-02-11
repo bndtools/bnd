@@ -268,7 +268,7 @@ public class ResourceTest {
 			.getDirectives();
 		assertTrue(directives.containsKey(Namespace.REQUIREMENT_FILTER_DIRECTIVE));
 		String filter = directives.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-		assertEquals("(&(osgi.wiring.host=demo)(&(bundle-version>=1.0.0)(!(bundle-version>=1.0.1))))", filter);
+		assertEquals("(&(osgi.wiring.host=demo)(bundle-version>=1.0.0)(!(bundle-version>=1.0.1)))", filter);
 	}
 
 	@Test

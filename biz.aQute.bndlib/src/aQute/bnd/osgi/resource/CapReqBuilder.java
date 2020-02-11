@@ -511,7 +511,14 @@ public class CapReqBuilder {
 			.filter(VersionRange::isOSGiVersionRange)
 			.map(VersionRange::parseOSGiVersionRange)
 			.map(range -> range.toFilter(name))
-			.ifPresent(filter::append);
+			.ifPresent(range -> {
+				if ((filter.length() > 1) && (filter.charAt(1) == '&') && (range.length() > 1)
+					&& (range.charAt(1) == '&')) {
+					filter.append(range, 2, range.length() - 1);
+				} else {
+					filter.append(range);
+				}
+			});
 	}
 
 	/**

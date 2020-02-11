@@ -50,7 +50,7 @@ public class CapReqBuilderTest extends TestCase {
 			.get(0);
 
 		assertEquals("osgi.identity", req.getNamespace());
-		assertEquals("(&(osgi.identity=org.example.foo)(&(version>=1.2.0)(!(version>=1.3.0))))", req.getDirectives()
+		assertEquals("(&(osgi.identity=org.example.foo)(version>=1.2.0)(!(version>=1.3.0)))", req.getDirectives()
 			.get("filter"));
 	}
 
