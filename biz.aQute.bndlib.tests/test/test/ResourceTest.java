@@ -90,7 +90,7 @@ public class ResourceTest {
 					"(" + AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE + ">=1.2.3)", "(abc=bar)")
 				.doesNotContain("dirtest", "directive");
 		assertThat(requirements.get(0)
-			.getAttributes()).isEmpty();
+			.getAttributes()).containsEntry(PackageNamespace.PACKAGE_NAMESPACE, "com.foo");
 	}
 
 	@Test

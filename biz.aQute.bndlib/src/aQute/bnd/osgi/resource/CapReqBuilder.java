@@ -207,6 +207,10 @@ public class CapReqBuilder {
 			}
 		}
 		builder.addFilter(PackageNamespace.PACKAGE_NAMESPACE, name, versionRange, attrs);
+		// Add package name as an attribute to help other parts of Bnd find the
+		// name of the required package without having to grovel through the
+		// filter string.
+		builder.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, name);
 		return builder;
 	}
 
