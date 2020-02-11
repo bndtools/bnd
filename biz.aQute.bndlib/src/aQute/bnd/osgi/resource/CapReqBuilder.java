@@ -1,7 +1,5 @@
 package aQute.bnd.osgi.resource;
 
-import static aQute.lib.exceptions.BiConsumerWithException.asBiConsumer;
-import static aQute.lib.exceptions.BiFunctionWithException.asBiFunction;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
@@ -38,6 +36,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
+import aQute.lib.exceptions.Exceptions;
 
 public class CapReqBuilder {
 
@@ -57,7 +56,7 @@ public class CapReqBuilder {
 		this.namespace = requireNonNull(namespace);
 	}
 
-	public CapReqBuilder(String namespace, Attrs attrs) throws Exception {
+	public CapReqBuilder(String namespace, Attrs attrs) {
 		this(namespace);
 		addAttributesOrDirectives(attrs);
 	}
@@ -67,11 +66,11 @@ public class CapReqBuilder {
 		setResource(resource);
 	}
 
-	public static CapReqBuilder clone(Capability capability) throws Exception {
+	public static CapReqBuilder clone(Capability capability) {
 		return new CapReqBuilder(capability.getNamespace()).from(capability);
 	}
 
-	public static CapReqBuilder clone(Requirement requirement) throws Exception {
+	public static CapReqBuilder clone(Requirement requirement) {
 		return new CapReqBuilder(requirement.getNamespace()).from(requirement);
 	}
 
@@ -88,13 +87,17 @@ public class CapReqBuilder {
 		return this;
 	}
 
-	public CapReqBuilder addAttribute(String name, Object value) throws Exception {
+	public CapReqBuilder addAttribute(String name, Object value) {
 		if (value == null)
 			return this;
 
 		if (value.getClass()
 			.isArray()) {
-			value = Converter.cnv(List.class, value);
+			try {
+				value = Converter.cnv(List.class, value);
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
 		}
 
 		if (name.equals(ResourceUtils.getVersionAttributeForNamespace(namespace))) {
@@ -135,8 +138,8 @@ public class CapReqBuilder {
 		return false;
 	}
 
-	public CapReqBuilder addAttributes(Map<? extends String, ? extends Object> attributes) throws Exception {
-		attributes.forEach(asBiConsumer(this::addAttribute));
+	public CapReqBuilder addAttributes(Map<? extends String, ? extends Object> attributes) {
+		attributes.forEach(this::addAttribute);
 		return this;
 	}
 
@@ -208,7 +211,7 @@ public class CapReqBuilder {
 	}
 
 	public static CapabilityBuilder createPackageCapability(String name, Attrs attrs, String bundle_symbolic_name,
-		Version bundle_version) throws Exception {
+		Version bundle_version) {
 		CapabilityBuilder builder = new CapabilityBuilder(PackageNamespace.PACKAGE_NAMESPACE);
 		if (attrs != null) {
 			builder.addAttributesOrDirectives(attrs);
@@ -287,7 +290,7 @@ public class CapReqBuilder {
 	 *
 	 * @param rr
 	 */
-	public static List<Requirement> getRequirementsFrom(Parameters rr) throws Exception {
+	public static List<Requirement> getRequirementsFrom(Parameters rr) {
 		return getRequirementsFrom(rr, true);
 	}
 
@@ -300,20 +303,19 @@ public class CapReqBuilder {
 	 *            such as "bundle; bsn=org.foo" will be returned as a raw
 	 *            Requirement in the unspecified namespace "bundle".
 	 * @return The list of parsed requirements.
-	 * @throws Exception
 	 */
-	public static List<Requirement> getRequirementsFrom(Parameters rr, boolean unalias) throws Exception {
+	public static List<Requirement> getRequirementsFrom(Parameters rr, boolean unalias) {
 		List<Requirement> requirements = rr.stream()
-			.mapToObj(asBiFunction((k, v) -> getRequirementFrom(Processor.removeDuplicateMarker(k), v, unalias)))
+			.mapToObj((k, v) -> getRequirementFrom(Processor.removeDuplicateMarker(k), v, unalias))
 			.collect(toList());
 		return requirements;
 	}
 
-	public static Requirement getRequirementFrom(String namespace, Attrs attrs) throws Exception {
+	public static Requirement getRequirementFrom(String namespace, Attrs attrs) {
 		return getRequirementFrom(namespace, attrs, true);
 	}
 
-	public static Requirement getRequirementFrom(String namespace, Attrs attrs, boolean unalias) throws Exception {
+	public static Requirement getRequirementFrom(String namespace, Attrs attrs, boolean unalias) {
 		CapReqBuilder builder = createCapReqBuilder(namespace, attrs);
 		Requirement requirement = builder.buildSyntheticRequirement();
 		if (unalias)
@@ -321,7 +323,7 @@ public class CapReqBuilder {
 		return requirement;
 	}
 
-	public static CapReqBuilder createCapReqBuilder(String namespace, Attrs attrs) throws Exception {
+	public static CapReqBuilder createCapReqBuilder(String namespace, Attrs attrs) {
 		CapReqBuilder builder = new CapReqBuilder(namespace);
 		if (attrs != null) {
 			builder.addAttributesOrDirectives(attrs);
@@ -337,7 +339,7 @@ public class CapReqBuilder {
 	 * Requirements that are not recognized as aliases will be returned
 	 * unchanged.
 	 */
-	public static Requirement unalias(Requirement requirement) throws Exception {
+	public static Requirement unalias(Requirement requirement) {
 		if (requirement == null) {
 			return null;
 		}
@@ -376,33 +378,32 @@ public class CapReqBuilder {
 		}
 	}
 
-	public static List<Capability> getCapabilitiesFrom(Parameters rr) throws Exception {
+	public static List<Capability> getCapabilitiesFrom(Parameters rr) {
 		List<Capability> capabilities = rr.stream()
-			.mapKey(Processor::removeDuplicateMarker)
-			.mapToObj(asBiFunction(CapReqBuilder::getCapabilityFrom))
+			.mapToObj((k, v) -> getCapabilityFrom(Processor.removeDuplicateMarker(k), v))
 			.collect(toList());
 		return capabilities;
 	}
 
-	public static Capability getCapabilityFrom(String namespace, Attrs attrs) throws Exception {
+	public static Capability getCapabilityFrom(String namespace, Attrs attrs) {
 		return createCapReqBuilder(namespace, attrs).buildSyntheticCapability();
 	}
 
-	public CapReqBuilder from(Capability capability) throws Exception {
+	public CapReqBuilder from(Capability capability) {
 		return addAttributes(capability.getAttributes()).addDirectives(capability.getDirectives());
 	}
 
-	public CapReqBuilder from(Requirement requirement) throws Exception {
+	public CapReqBuilder from(Requirement requirement) {
 		return addAttributes(requirement.getAttributes()).addDirectives(requirement.getDirectives());
 	}
 
-	public static Capability copy(Capability capability, Resource resource) throws Exception {
+	public static Capability copy(Capability capability, Resource resource) {
 		CapReqBuilder clone = clone(capability);
 		return (resource != null) ? clone.setResource(resource)
 			.buildCapability() : clone.buildSyntheticCapability();
 	}
 
-	public static Requirement copy(Requirement requirement, Resource resource) throws Exception {
+	public static Requirement copy(Requirement requirement, Resource resource) {
 		CapReqBuilder clone = clone(requirement);
 		return (resource != null) ? clone.setResource(resource)
 			.buildRequirement() : clone.buildSyntheticRequirement();
@@ -413,9 +414,8 @@ public class CapReqBuilder {
 	 * properly dispatch them AND take care of typing
 	 *
 	 * @param attrs
-	 * @throws Exception
 	 */
-	public void addAttributesOrDirectives(Attrs attrs) throws Exception {
+	public void addAttributesOrDirectives(Attrs attrs) {
 		for (Entry<String, String> e : attrs.entrySet()) {
 			String name = e.getKey();
 			String directive = Attrs.toDirective(name);
@@ -436,19 +436,18 @@ public class CapReqBuilder {
 	 * ignore directives.
 	 *
 	 * @param attrs
-	 * @throws Exception
 	 */
-	public CapReqBuilder addAttributes(Attrs attrs) throws Exception {
-		for (Entry<String, String> e : attrs.entrySet()) {
-			String name = e.getKey();
-			if (Attrs.isAttribute(name)) {
+	public CapReqBuilder addAttributes(Attrs attrs) {
+		attrs.keySet()
+			.stream()
+			.filter(Attrs::isAttribute)
+			.forEachOrdered(name -> {
 				Object typed = attrs.getTyped(name);
 				if (typed instanceof aQute.bnd.version.Version) {
 					typed = toVersions(typed);
 				}
 				addAttribute(name, typed);
-			}
-		}
+			});
 		return this;
 	}
 
@@ -693,8 +692,7 @@ public class CapReqBuilder {
 	public static RequirementBuilder createRequirementFromCapability(Capability capability) {
 		final String namespace = capability.getNamespace();
 		RequirementBuilder builder = new RequirementBuilder(namespace);
-		final String versionAttrName = Optional
-			.ofNullable(ResourceUtils.getVersionAttributeForNamespace(namespace))
+		final String versionAttrName = Optional.ofNullable(ResourceUtils.getVersionAttributeForNamespace(namespace))
 			.orElse(Constants.VERSION_ATTRIBUTE);
 		Map<String, Object> capAttributes = capability.getAttributes();
 		StringBuilder filter = new StringBuilder(256);
