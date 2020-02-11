@@ -2,14 +2,15 @@ package aQute.bnd.osgi.resource;
 
 import static aQute.lib.collections.Logic.retain;
 import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -31,21 +32,10 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 	private volatile transient Map<URI, String>		locations;
 
 	void setCapabilities(Collection<Capability> capabilities) {
-		Map<String, List<Capability>> prepare = new HashMap<>();
-		for (Capability capability : capabilities) {
-			List<Capability> list = prepare.get(capability.getNamespace());
-			if (list == null) {
-				list = new LinkedList<>();
-				prepare.put(capability.getNamespace(), list);
-			}
-			list.add(capability);
-		}
-		for (Map.Entry<String, List<Capability>> entry : prepare.entrySet()) {
-			entry.setValue(unmodifiableList(new ArrayList<>(entry.getValue())));
-		}
-
 		allCapabilities = unmodifiableList(new ArrayList<>(capabilities));
-		capabilityMap = prepare;
+		capabilityMap = capabilities.stream()
+			.collect(groupingBy(Capability::getNamespace, collectingAndThen(toList(), Collections::unmodifiableList)));
+
 		locations = null; // clear so equals/hashCode can recompute
 	}
 
@@ -58,21 +48,9 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 	}
 
 	void setRequirements(Collection<Requirement> requirements) {
-		Map<String, List<Requirement>> prepare = new HashMap<>();
-		for (Requirement requirement : requirements) {
-			List<Requirement> list = prepare.get(requirement.getNamespace());
-			if (list == null) {
-				list = new LinkedList<>();
-				prepare.put(requirement.getNamespace(), list);
-			}
-			list.add(requirement);
-		}
-		for (Map.Entry<String, List<Requirement>> entry : prepare.entrySet()) {
-			entry.setValue(unmodifiableList(new ArrayList<>(entry.getValue())));
-		}
-
 		allRequirements = unmodifiableList(new ArrayList<>(requirements));
-		requirementMap = prepare;
+		requirementMap = requirements.stream()
+			.collect(groupingBy(Requirement::getNamespace, collectingAndThen(toList(), Collections::unmodifiableList)));
 	}
 
 	@Override
@@ -105,7 +83,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 			builder.append(allCapabilities);
 			builder.append(", reqs=");
 			builder.append(allRequirements);
-			builder.append("]");
+			builder.append(']');
 		}
 		return builder.toString();
 	}

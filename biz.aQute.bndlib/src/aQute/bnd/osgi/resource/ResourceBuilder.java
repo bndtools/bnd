@@ -3,8 +3,6 @@ package aQute.bnd.osgi.resource;
 import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
 import static aQute.bnd.osgi.Constants.MIME_TYPE_BUNDLE;
 import static aQute.bnd.osgi.Constants.MIME_TYPE_JAR;
-import static aQute.lib.exceptions.BiConsumerWithException.asBiConsumer;
-import static aQute.lib.exceptions.BiFunctionWithException.asBiFunction;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
@@ -43,6 +41,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.Filter;
 import aQute.libg.cryptography.SHA256;
 import aQute.libg.reporter.ReporterAdapter;
@@ -56,14 +55,14 @@ public class ResourceBuilder {
 
 	private boolean								built			= false;
 
-	public ResourceBuilder(Resource source) throws Exception {
+	public ResourceBuilder(Resource source) {
 		addCapabilities(source.getCapabilities(null));
 		addRequirements(source.getRequirements(null));
 	}
 
 	public ResourceBuilder() {}
 
-	public ResourceBuilder addCapability(Capability capability) throws Exception {
+	public ResourceBuilder addCapability(Capability capability) {
 		CapReqBuilder builder = CapReqBuilder.clone(capability);
 		return addCapability(builder);
 	}
@@ -95,7 +94,7 @@ public class ResourceBuilder {
 		return cap;
 	}
 
-	public ResourceBuilder addRequirement(Requirement requirement) throws Exception {
+	public ResourceBuilder addRequirement(Requirement requirement) {
 		if (requirement == null)
 			return this;
 
@@ -152,9 +151,8 @@ public class ResourceBuilder {
 	 * Parse the manifest and turn them into requirements & capabilities
 	 *
 	 * @param manifest The manifest to parse
-	 * @throws Exception
 	 */
-	public boolean addManifest(Domain manifest) throws Exception {
+	public boolean addManifest(Domain manifest) {
 		//
 		// Identity capability
 		//
@@ -289,15 +287,15 @@ public class ResourceBuilder {
 		return true;
 	}
 
-	public void addExportServices(Parameters exportServices) throws Exception {
+	public void addExportServices(Parameters exportServices) {
 		exportServices.stream()
 			.mapKey(Processor::removeDuplicateMarker)
-			.forEachOrdered(asBiConsumer((service, attrs) -> {
+			.forEachOrdered((service, attrs) -> {
 				CapabilityBuilder cb = new CapabilityBuilder(ServiceNamespace.SERVICE_NAMESPACE);
 				cb.addAttributesOrDirectives(attrs);
 				cb.addAttribute(Constants.OBJECTCLASS, service);
 				addCapability(cb);
-			}));
+			});
 	}
 
 	public void addImportServices(Parameters importServices) {
@@ -333,7 +331,7 @@ public class ResourceBuilder {
 	 * @return a Requirement Builder set to the requirements according tot he
 	 *         core spec
 	 */
-	public RequirementBuilder getNativeCode(String header) throws Exception {
+	public RequirementBuilder getNativeCode(String header) {
 		if (header == null || header.isEmpty())
 			return null;
 
@@ -429,11 +427,16 @@ public class ResourceBuilder {
 		return rb;
 	}
 
-	private static void doOr(FilterBuilder sb, String key, String attribute, Attrs attrs) throws Exception {
+	private static void doOr(FilterBuilder sb, String key, String attribute, Attrs attrs) {
 		sb.or();
 
 		while (attrs.containsKey(key)) {
-			String[] names = Converter.cnv(String[].class, attrs.getTyped(key));
+			String[] names;
+			try {
+				names = Converter.cnv(String[].class, attrs.getTyped(key));
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
 			for (String name : names) {
 				sb.approximate(attribute, name);
 			}
@@ -445,23 +448,21 @@ public class ResourceBuilder {
 
 	/**
 	 * Add the Require-Bundle header
-	 *
-	 * @throws Exception
 	 */
 
-	public void addRequireBundles(Parameters requireBundle) throws Exception {
+	public void addRequireBundles(Parameters requireBundle) {
 		requireBundle.stream()
 			.mapKey(Processor::removeDuplicateMarker)
-			.forEachOrdered(asBiConsumer(this::addRequireBundle));
+			.forEachOrdered(this::addRequireBundle);
 	}
 
-	public void addRequireBundle(String bsn, VersionRange range) throws Exception {
+	public void addRequireBundle(String bsn, VersionRange range) {
 		Attrs attrs = new Attrs();
 		attrs.put(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, range.toString());
 		addRequireBundle(bsn, attrs);
 	}
 
-	public void addRequireBundle(String bsn, Attrs attrs) throws Exception {
+	public void addRequireBundle(String bsn, Attrs attrs) {
 		RequirementBuilder require = new RequirementBuilder(BundleNamespace.BUNDLE_NAMESPACE);
 		require.addDirectives(attrs)
 			.removeDirective(Namespace.REQUIREMENT_CARDINALITY_DIRECTIVE)
@@ -471,7 +472,7 @@ public class ResourceBuilder {
 		addRequirement(require);
 	}
 
-	public void addFragmentHost(String bsn, Attrs attrs) throws Exception {
+	public void addFragmentHost(String bsn, Attrs attrs) {
 		RequirementBuilder require = new RequirementBuilder(HostNamespace.HOST_NAMESPACE);
 		require.addDirectives(attrs)
 			.removeDirective(Namespace.REQUIREMENT_CARDINALITY_DIRECTIVE)
@@ -482,31 +483,31 @@ public class ResourceBuilder {
 		addRequirement(require);
 	}
 
-	public void addRequireCapabilities(Parameters required) throws Exception {
+	public void addRequireCapabilities(Parameters required) {
 		required.stream()
 			.mapKey(Processor::removeDuplicateMarker)
-			.forEachOrdered(asBiConsumer((namespace, attrs) -> addRequireCapability(namespace, namespace, attrs)));
+			.forEachOrdered((namespace, attrs) -> addRequireCapability(namespace, namespace, attrs));
 	}
 
-	public void addRequireCapability(String namespace, String name, Attrs attrs) throws Exception {
+	public void addRequireCapability(String namespace, String name, Attrs attrs) {
 		RequirementBuilder req = new RequirementBuilder(namespace);
 		req.addAttributesOrDirectives(attrs);
 		addRequirement(req);
 	}
 
-	public List<Capability> addProvideCapabilities(Parameters capabilities) throws Exception {
+	public List<Capability> addProvideCapabilities(Parameters capabilities) {
 		List<Capability> added = capabilities.stream()
 			.mapKey(Processor::removeDuplicateMarker)
-			.mapToObj(asBiFunction(this::addProvideCapability))
+			.mapToObj(this::addProvideCapability)
 			.collect(toList());
 		return added;
 	}
 
-	public List<Capability> addProvideCapabilities(String clauses) throws Exception {
+	public List<Capability> addProvideCapabilities(String clauses) {
 		return addProvideCapabilities(new Parameters(clauses, reporter));
 	}
 
-	public Capability addProvideCapability(String namespace, Attrs attrs) throws Exception {
+	public Capability addProvideCapability(String namespace, Attrs attrs) {
 		CapabilityBuilder builder = new CapabilityBuilder(namespace);
 		builder.addAttributesOrDirectives(attrs);
 		addCapability(builder);
@@ -515,20 +516,17 @@ public class ResourceBuilder {
 
 	/**
 	 * Add Exported Packages
-	 *
-	 * @throws Exception
 	 */
-	public void addExportPackages(Parameters exports) throws Exception {
-		exports.forEach(asBiConsumer((name, attrs) -> addExportPackage(Processor.removeDuplicateMarker(name), attrs)));
+	public void addExportPackages(Parameters exports) {
+		exports.forEach((name, attrs) -> addExportPackage(Processor.removeDuplicateMarker(name), attrs));
 	}
 
-	public void addExportPackages(Parameters exports, String bundle_symbolic_name, Version bundle_version)
-		throws Exception {
-		exports.forEach(asBiConsumer((name, attrs) -> addExportPackage(Processor.removeDuplicateMarker(name), attrs,
-			bundle_symbolic_name, bundle_version)));
+	public void addExportPackages(Parameters exports, String bundle_symbolic_name, Version bundle_version) {
+		exports.forEach((name, attrs) -> addExportPackage(Processor.removeDuplicateMarker(name), attrs,
+			bundle_symbolic_name, bundle_version));
 	}
 
-	public void addEE(EE ee) throws Exception {
+	public void addEE(EE ee) {
 		addExportPackages(ee.getPackages());
 		EE[] compatibles = ee.getCompatible();
 		addExecutionEnvironment(ee);
@@ -537,27 +535,24 @@ public class ResourceBuilder {
 		}
 	}
 
-	public void addExportPackage(String name, Attrs attrs, String bundle_symbolic_name, Version bundle_version)
-		throws Exception {
+	public void addExportPackage(String name, Attrs attrs, String bundle_symbolic_name, Version bundle_version) {
 		CapabilityBuilder builder = CapReqBuilder.createPackageCapability(name, attrs, bundle_symbolic_name,
 			bundle_version);
 		addCapability(builder);
 	}
 
-	public void addExportPackage(String name, Attrs attrs) throws Exception {
+	public void addExportPackage(String name, Attrs attrs) {
 		addExportPackage(name, attrs, null, null);
 	}
 
 	/**
 	 * Add imported packages
-	 *
-	 * @throws Exception
 	 */
-	public void addImportPackages(Parameters imports) throws Exception {
-		imports.forEach(asBiConsumer((name, attrs) -> addImportPackage(Processor.removeDuplicateMarker(name), attrs)));
+	public void addImportPackages(Parameters imports) {
+		imports.forEach((name, attrs) -> addImportPackage(Processor.removeDuplicateMarker(name), attrs));
 	}
 
-	public Requirement addImportPackage(String name, Attrs attrs) throws Exception {
+	public Requirement addImportPackage(String name, Attrs attrs) {
 		RequirementBuilder builder = CapReqBuilder.createPackageRequirement(name, attrs, null);
 		addRequirement(builder);
 		return buildRequirement(builder);
@@ -566,7 +561,7 @@ public class ResourceBuilder {
 	// Correct version according to R5 specification section 3.4.1
 	// BREE J2SE-1.4 ==> osgi.ee=JavaSE, version:Version=1.4
 	// See bug 329, https://github.com/bndtools/bnd/issues/329
-	public void addExecutionEnvironment(EE ee) throws Exception {
+	public void addExecutionEnvironment(EE ee) {
 		CapReqBuilder builder = new CapReqBuilder(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
 		builder.addAttribute(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, ee.getCapabilityName());
 		builder.addAttribute(ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE, ee.getCapabilityVersion());
@@ -578,7 +573,7 @@ public class ResourceBuilder {
 		addCapability(builder);
 	}
 
-	public void addAllExecutionEnvironments(EE ee) throws Exception {
+	public void addAllExecutionEnvironments(EE ee) {
 		addExportPackages(ee.getPackages());
 		addExecutionEnvironment(ee);
 		for (EE compatibleEE : ee.getCompatible()) {
@@ -586,7 +581,7 @@ public class ResourceBuilder {
 		}
 	}
 
-	public void copyCapabilities(Set<String> ignoreNamespaces, Resource r) throws Exception {
+	public void copyCapabilities(Set<String> ignoreNamespaces, Resource r) {
 		for (Capability c : r.getCapabilities(null)) {
 			if (ignoreNamespaces.contains(c.getNamespace()))
 				continue;
@@ -595,7 +590,7 @@ public class ResourceBuilder {
 		}
 	}
 
-	public void addCapabilities(List<Capability> capabilities) throws Exception {
+	public void addCapabilities(List<Capability> capabilities) {
 		if (capabilities == null || capabilities.isEmpty())
 			return;
 
@@ -604,7 +599,7 @@ public class ResourceBuilder {
 
 	}
 
-	public void addRequirement(List<Requirement> requirements) throws Exception {
+	public void addRequirement(List<Requirement> requirements) {
 		if (requirements == null || requirements.isEmpty())
 			return;
 
@@ -613,13 +608,13 @@ public class ResourceBuilder {
 
 	}
 
-	public void addRequirements(List<Requirement> requires) throws Exception {
+	public void addRequirements(List<Requirement> requires) {
 		for (Requirement req : requires) {
 			addRequirement(req);
 		}
 	}
 
-	public List<Capability> findCapabilities(String ns, String filter) throws Exception {
+	public List<Capability> findCapabilities(String ns, String filter) {
 		if (filter == null || capabilities.isEmpty())
 			return Collections.emptyList();
 
@@ -632,14 +627,18 @@ public class ResourceBuilder {
 
 			Map<String, Object> attributes = c.getAttributes();
 			if (attributes != null) {
-				if (f.matchMap(attributes))
-					capabilities.add(c);
+				try {
+					if (f.matchMap(attributes))
+						capabilities.add(c);
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
 			}
 		}
 		return capabilities;
 	}
 
-	public Map<Capability, Capability> from(Resource bundle) throws Exception {
+	public Map<Capability, Capability> from(Resource bundle) {
 		Map<Capability, Capability> mapping = new HashMap<>();
 
 		addRequirements(bundle.getRequirements(null));
@@ -656,7 +655,7 @@ public class ResourceBuilder {
 		return reporter;
 	}
 
-	public void addContentCapability(URI uri, String sha256, long length, String mime) throws Exception {
+	public void addContentCapability(URI uri, String sha256, long length, String mime) {
 
 		assert uri != null;
 		assert sha256 != null && sha256.length() == 64;
@@ -698,7 +697,7 @@ public class ResourceBuilder {
 		}
 
 		@Override
-		public ResourceBuilder addCapability(Capability capability) throws Exception {
+		public ResourceBuilder addCapability(Capability capability) {
 			return ResourceBuilder.this.addCapability(capability);
 		}
 
@@ -713,7 +712,7 @@ public class ResourceBuilder {
 		}
 
 		@Override
-		public ResourceBuilder addRequirement(Requirement requirement) throws Exception {
+		public ResourceBuilder addRequirement(Requirement requirement) {
 			return ResourceBuilder.this.addRequirement(requirement);
 		}
 
@@ -733,7 +732,7 @@ public class ResourceBuilder {
 		}
 
 		@Override
-		public boolean addManifest(Domain manifest) throws Exception {
+		public boolean addManifest(Domain manifest) {
 			return false;
 		}
 
@@ -743,7 +742,7 @@ public class ResourceBuilder {
 		}
 
 		@Override
-		public void addExportServices(Parameters exportServices) throws Exception {
+		public void addExportServices(Parameters exportServices) {
 			ResourceBuilder.this.addExportServices(exportServices);
 		}
 
@@ -753,7 +752,7 @@ public class ResourceBuilder {
 		}
 
 		@Override
-		public RequirementBuilder getNativeCode(String header) throws Exception {
+		public RequirementBuilder getNativeCode(String header) {
 			return ResourceBuilder.this.getNativeCode(header);
 		}
 
@@ -763,124 +762,122 @@ public class ResourceBuilder {
 		}
 
 		@Override
-		public void addRequireBundles(Parameters requireBundle) throws Exception {
+		public void addRequireBundles(Parameters requireBundle) {
 			ResourceBuilder.this.addRequireBundles(requireBundle);
 		}
 
 		@Override
-		public void addRequireBundle(String bsn, VersionRange range) throws Exception {
+		public void addRequireBundle(String bsn, VersionRange range) {
 			ResourceBuilder.this.addRequireBundle(bsn, range);
 		}
 
 		@Override
-		public void addRequireBundle(String bsn, Attrs attrs) throws Exception {
+		public void addRequireBundle(String bsn, Attrs attrs) {
 			ResourceBuilder.this.addRequireBundle(bsn, attrs);
 		}
 
 		@Override
-		public void addFragmentHost(String bsn, Attrs attrs) throws Exception {
+		public void addFragmentHost(String bsn, Attrs attrs) {
 			ResourceBuilder.this.addFragmentHost(bsn, attrs);
 		}
 
 		@Override
-		public void addRequireCapabilities(Parameters required) throws Exception {
+		public void addRequireCapabilities(Parameters required) {
 			ResourceBuilder.this.addRequireCapabilities(required);
 		}
 
 		@Override
-		public void addRequireCapability(String namespace, String name, Attrs attrs) throws Exception {
+		public void addRequireCapability(String namespace, String name, Attrs attrs) {
 			ResourceBuilder.this.addRequireCapability(namespace, name, attrs);
 		}
 
 		@Override
-		public List<Capability> addProvideCapabilities(Parameters capabilities) throws Exception {
+		public List<Capability> addProvideCapabilities(Parameters capabilities) {
 			return ResourceBuilder.this.addProvideCapabilities(capabilities);
 		}
 
 		@Override
-		public List<Capability> addProvideCapabilities(String clauses) throws Exception {
+		public List<Capability> addProvideCapabilities(String clauses) {
 			return ResourceBuilder.this.addProvideCapabilities(clauses);
 		}
 
 		@Override
-		public Capability addProvideCapability(String namespace, Attrs attrs) throws Exception {
+		public Capability addProvideCapability(String namespace, Attrs attrs) {
 			return ResourceBuilder.this.addProvideCapability(namespace, attrs);
 		}
 
 		@Override
-		public void addExportPackages(Parameters exports, String bundle_symbolic_name, Version bundle_version)
-			throws Exception {
+		public void addExportPackages(Parameters exports, String bundle_symbolic_name, Version bundle_version) {
 			ResourceBuilder.this.addExportPackages(exports, bundle_symbolic_name, bundle_version);
 		}
 
 		@Override
-		public void addExportPackages(Parameters exports) throws Exception {
+		public void addExportPackages(Parameters exports) {
 			ResourceBuilder.this.addExportPackages(exports);
 		}
 
 		@Override
-		public void addEE(EE ee) throws Exception {
+		public void addEE(EE ee) {
 			ResourceBuilder.this.addEE(ee);
 		}
 
 		@Override
-		public void addExportPackage(String name, Attrs attrs, String bundle_symbolic_name,
-			Version bundle_version) throws Exception {
+		public void addExportPackage(String name, Attrs attrs, String bundle_symbolic_name, Version bundle_version) {
 			ResourceBuilder.this.addExportPackage(name, attrs, bundle_symbolic_name, bundle_version);
 		}
 
 		@Override
-		public void addExportPackage(String name, Attrs attrs) throws Exception {
+		public void addExportPackage(String name, Attrs attrs) {
 			ResourceBuilder.this.addExportPackage(name, attrs);
 		}
 
 		@Override
-		public void addImportPackages(Parameters imports) throws Exception {
+		public void addImportPackages(Parameters imports) {
 			ResourceBuilder.this.addImportPackages(imports);
 		}
 
 		@Override
-		public Requirement addImportPackage(String name, Attrs attrs) throws Exception {
+		public Requirement addImportPackage(String name, Attrs attrs) {
 			return ResourceBuilder.this.addImportPackage(name, attrs);
 		}
 
 		@Override
-		public void addExecutionEnvironment(EE ee) throws Exception {
+		public void addExecutionEnvironment(EE ee) {
 			ResourceBuilder.this.addExecutionEnvironment(ee);
 		}
 
 		@Override
-		public void addAllExecutionEnvironments(EE ee) throws Exception {
+		public void addAllExecutionEnvironments(EE ee) {
 			ResourceBuilder.this.addAllExecutionEnvironments(ee);
 		}
 
 		@Override
-		public void copyCapabilities(Set<String> ignoreNamespaces, Resource r) throws Exception {
+		public void copyCapabilities(Set<String> ignoreNamespaces, Resource r) {
 			ResourceBuilder.this.copyCapabilities(ignoreNamespaces, r);
 		}
 
 		@Override
-		public void addCapabilities(List<Capability> capabilities) throws Exception {
+		public void addCapabilities(List<Capability> capabilities) {
 			ResourceBuilder.this.addCapabilities(capabilities);
 		}
 
 		@Override
-		public void addRequirement(List<Requirement> requirements) throws Exception {
+		public void addRequirement(List<Requirement> requirements) {
 			ResourceBuilder.this.addRequirement(requirements);
 		}
 
 		@Override
-		public void addRequirements(List<Requirement> requires) throws Exception {
+		public void addRequirements(List<Requirement> requires) {
 			ResourceBuilder.this.addRequirements(requires);
 		}
 
 		@Override
-		public List<Capability> findCapabilities(String ns, String filter) throws Exception {
+		public List<Capability> findCapabilities(String ns, String filter) {
 			return ResourceBuilder.this.findCapabilities(ns, filter);
 		}
 
 		@Override
-		public Map<Capability, Capability> from(Resource bundle) throws Exception {
+		public Map<Capability, Capability> from(Resource bundle) {
 			return ResourceBuilder.this.from(bundle);
 		}
 
@@ -890,7 +887,7 @@ public class ResourceBuilder {
 		}
 
 		@Override
-		public void addContentCapability(URI uri, String sha256, long length, String mime) throws Exception {
+		public void addContentCapability(URI uri, String sha256, long length, String mime) {
 			ResourceBuilder.this.addContentCapability(uri, sha256, length, mime);
 		}
 
@@ -910,7 +907,7 @@ public class ResourceBuilder {
 	 *
 	 * @param name the project name
 	 */
-	public void addWorkspaceNamespace(String name) throws Exception {
+	public void addWorkspaceNamespace(String name) {
 		// Add a capability specific to the workspace so that we can
 		// identify this fact later during resource processing.
 		CapabilityBuilder cap = new CapabilityBuilder(ResourceUtils.WORKSPACE_NAMESPACE);

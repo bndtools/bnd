@@ -90,7 +90,7 @@ public class ResourceTest {
 					"(" + AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE + ">=1.2.3)", "(abc=bar)")
 				.doesNotContain("dirtest", "directive");
 		assertThat(requirements.get(0)
-			.getAttributes()).isEmpty();
+			.getAttributes()).containsEntry(PackageNamespace.PACKAGE_NAMESPACE, "com.foo");
 	}
 
 	@Test
@@ -268,7 +268,7 @@ public class ResourceTest {
 			.getDirectives();
 		assertTrue(directives.containsKey(Namespace.REQUIREMENT_FILTER_DIRECTIVE));
 		String filter = directives.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-		assertEquals("(&(osgi.wiring.host=demo)(&(bundle-version>=1.0.0)(!(bundle-version>=1.0.1))))", filter);
+		assertEquals("(&(osgi.wiring.host=demo)(bundle-version>=1.0.0)(!(bundle-version>=1.0.1)))", filter);
 	}
 
 	@Test

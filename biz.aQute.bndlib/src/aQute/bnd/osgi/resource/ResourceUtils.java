@@ -11,7 +11,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -119,6 +118,7 @@ public class ResourceUtils {
 			bundle(IdentityNamespace.TYPE_BUNDLE),
 			fragment(IdentityNamespace.TYPE_FRAGMENT),
 			unknown(IdentityNamespace.TYPE_UNKNOWN);
+
 			private String s;
 
 			private Type(String s) {
@@ -391,7 +391,8 @@ public class ResourceUtils {
 	}
 
 	public static boolean matches(Requirement requirement, Resource resource) {
-		return capabilityStream(resource, requirement.getNamespace()).anyMatch(c -> matches(requirement, c));
+		return capabilityStream(resource, requirement.getNamespace())
+			.anyMatch(capability -> matches(requirement, capability));
 	}
 
 	public static boolean matches(Requirement requirement, Capability capability) {
@@ -436,28 +437,16 @@ public class ResourceUtils {
 	}
 
 	public static String toRequireCapability(Requirement requirement) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		sb.append(requirement.getNamespace());
-
-		CapReqBuilder r = new CapReqBuilder(requirement.getNamespace());
-		r.addAttributes(requirement.getAttributes());
-		r.addDirectives(requirement.getDirectives());
-		Attrs attrs = r.toAttrs();
-		sb.append(";")
-			.append(attrs);
+		CapReqBuilder builder = CapReqBuilder.clone(requirement);
+		StringBuilder sb = new StringBuilder(builder.getNamespace()).append(';')
+			.append(builder.toAttrs());
 		return sb.toString();
 	}
 
 	public static String toProvideCapability(Capability capability) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		sb.append(capability.getNamespace());
-
-		CapReqBuilder r = new CapReqBuilder(capability.getNamespace());
-		r.addAttributes(capability.getAttributes());
-		r.addDirectives(capability.getDirectives());
-		Attrs attrs = r.toAttrs();
-		sb.append(";")
-			.append(attrs);
+		CapReqBuilder builder = CapReqBuilder.clone(capability);
+		StringBuilder sb = new StringBuilder(builder.getNamespace()).append(';')
+			.append(builder.toAttrs());
 		return sb.toString();
 	}
 
@@ -477,7 +466,7 @@ public class ResourceUtils {
 	public static List<Capability> findProviders(Requirement requirement,
 		Collection<? extends Capability> capabilities) {
 		return capabilities.stream()
-			.filter(c -> matches(requirement, c))
+			.filter(capability -> matches(requirement, capability))
 			.collect(toList());
 	}
 
@@ -534,13 +523,10 @@ public class ResourceUtils {
 	}
 
 	public static List<VersionedClause> toVersionedClauses(Collection<Resource> resources) {
-		List<VersionedClause> runBundles = new ArrayList<>();
-		for (Resource resource : resources) {
-			VersionedClause runBundle = toVersionClause(resource);
-			if (!runBundles.contains(runBundle)) {
-				runBundles.add(runBundle);
-			}
-		}
+		List<VersionedClause> runBundles = resources.stream()
+			.map(ResourceUtils::toVersionClause)
+			.distinct()
+			.collect(toList());
 		return runBundles;
 	}
 
@@ -560,6 +546,11 @@ public class ResourceUtils {
 			.flatMap(Collection::stream));
 	}
 
+	@SuppressWarnings({
+		"rawtypes", "unchecked"
+	})
+	private static final Comparator<Comparable> nullsFirst = Comparator.nullsFirst(Comparator.naturalOrder());
+
 	/**
 	 * Compare two resources. This can be used to act as a comparator. The
 	 * comparison is first done on name and then version.
@@ -573,39 +564,17 @@ public class ResourceUtils {
 		IdentityCapability left = ResourceUtils.getIdentityCapability(a);
 		IdentityCapability right = ResourceUtils.getIdentityCapability(b);
 
-		String myName = left.osgi_identity();
-		String theirName = right.osgi_identity();
-		if (myName == theirName)
-			return 0;
-
-		if (myName == null)
-			return -1;
-
-		if (theirName == null)
-			return 1;
-
-		int n = myName.compareTo(theirName);
-		if (n != 0)
-			return n;
-
-		Version myVersion = left.version();
-		Version theirVersion = right.version();
-
-		if (myVersion == theirVersion)
-			return 0;
-
-		if (myVersion == null)
-			return -1;
-
-		if (theirVersion == null)
-			return 1;
-
-		return myVersion.compareTo(theirVersion);
+		int compare = Objects.compare(left.osgi_identity(), right.osgi_identity(), nullsFirst);
+		if (compare != 0) {
+			return compare;
+		}
+		return Objects.compare(left.version(), right.version(), nullsFirst);
 	}
 
-	public static List<Resource> sort(Collection<Resource> a) {
-		List<Resource> list = new ArrayList<>(a);
-		Collections.sort(list, ResourceUtils::compareTo);
+	public static List<Resource> sort(Collection<Resource> resources) {
+		List<Resource> list = resources.stream()
+			.sorted(ResourceUtils::compareTo)
+			.collect(toList());
 		return list;
 	}
 
@@ -616,9 +585,10 @@ public class ResourceUtils {
 	 * @return a sorted set of resources
 	 */
 	public static List<Resource> sortByNameVersion(Collection<Resource> resources) {
-		ArrayList<Resource> sorted = new ArrayList<>(resources);
-		Collections.sort(sorted, ResourceUtils::compareTo);
-		return sorted;
+		List<Resource> list = resources.stream()
+			.sorted(ResourceUtils::compareTo)
+			.collect(toList());
+		return list;
 	}
 
 	public static boolean isInitialRequirement(Resource resource) {
