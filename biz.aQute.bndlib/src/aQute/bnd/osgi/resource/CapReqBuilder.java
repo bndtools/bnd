@@ -100,7 +100,7 @@ public class CapReqBuilder {
 			}
 		}
 
-		if (name.equals(ResourceUtils.getVersionAttributeForNamespace(namespace))) {
+		if (name.equals(ResourceUtils.getVersionAttributeForNamespace(getNamespace()))) {
 			value = toVersions(value);
 		}
 
@@ -451,23 +451,24 @@ public class CapReqBuilder {
 		return this;
 	}
 
-	public void addFilter(String namespace, String name, String versionRange, Attrs attrs) {
+	public void addFilter(String nameAttr, String name, String versionRange, Attrs attrs) {
 		StringBuilder filter = new StringBuilder(256).append('(')
 			.append('&')
 			.append('(')
-			.append(requireNonNull(namespace))
+			.append(requireNonNull(nameAttr))
 			.append('=')
 			.append(requireNonNull(name))
 			.append(')');
 		final int len = filter.length();
 
-		final String versionAttrName = Optional.ofNullable(ResourceUtils.getVersionAttributeForNamespace(namespace))
+		final String versionAttrName = Optional
+			.ofNullable(ResourceUtils.getVersionAttributeForNamespace(getNamespace()))
 			.orElse(Constants.VERSION_ATTRIBUTE);
 		appendFilterVersionRange(filter, versionAttrName, versionRange);
 		final boolean versionAttrFilterAdded = filter.length() > len;
 
 		// Attribute matching (Core 3.7.7) for wiring namespaces
-		if (namespace.startsWith("osgi.wiring.")) {
+		if (getNamespace().startsWith("osgi.wiring.")) {
 			MapStream<String, String> attrStream = MapStream.ofNullable(attrs)
 				.filterKey(Attrs::isAttribute);
 			if (versionAttrFilterAdded) {
