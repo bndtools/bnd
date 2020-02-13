@@ -21,17 +21,18 @@ import aQute.service.reporter.Reporter;
  * @param <T>
  */
 public class HttpRequest<T> {
-	String				verb		= "GET";
+	String				verb			= "GET";
+	boolean				isIdemPotent	= true;
 	Object				upload;
 	Type				download;
-	Map<String, String>	headers		= new HashMap<>();
-	long				timeout		= -1;
+	Map<String, String>	headers			= new HashMap<>();
+	long				timeout			= -1;
 	HttpClient			client;
 	String				ifNoneMatch;
 	long				ifModifiedSince;
 	long				ifUnmodifiedSince;
 	URL					url;
-	int					redirects	= 10;
+	int					redirects		= 10;
 	String				ifMatch;
 	boolean				cached;
 	long				maxStale;
@@ -75,60 +76,74 @@ public class HttpRequest<T> {
 	}
 
 	/**
-	 * Set the HTTP verb
+	 * Set the HTTP verb. The methods GET, HEAD, PUT and DELETE are idempotent.
+	 * Also, the methods OPTIONS and TRACE SHOULD NOT have side effects, and so
+	 * are inherently idempotent.
 	 */
 
 	public HttpRequest<T> verb(String verb) {
 		this.verb = verb;
-		return this;
+		switch (verb.toUpperCase()) {
+			case "GET" :
+			case "HEAD" :
+			case "PUT" :
+			case "DELETE" :
+			case "OPTIONS" :
+			case "TRACE" :
+				return idemPotent(true);
+
+			default :
+				return idemPotent(false);
+		}
 	}
 
 	/**
 	 * Set the verb/method to put
 	 */
 	public HttpRequest<T> put() {
-		this.verb = "PUT";
-		return this;
+		return verb("PUT");
 	}
 
 	/**
 	 * Set the verb/method to head
 	 */
 	public HttpRequest<T> head() {
-		this.verb = "HEAD";
-		return this;
+		return verb("HEAD");
 	}
 
 	/**
 	 * Set the verb/method to get
 	 */
 	public HttpRequest<T> get() {
-		this.verb = "GET";
-		return this;
+		return verb("GET");
 	}
 
 	/**
 	 * Set the verb/method to post
 	 */
 	public HttpRequest<T> post() {
-		this.verb = "POST";
-		return this;
+		return verb("POST");
 	}
 
 	/**
 	 * Set the verb/method to option
 	 */
 	public HttpRequest<T> option() {
-		this.verb = "OPTION";
-		return this;
+		return verb("OPTIONS");
+	}
+
+	/**
+	 * Set the verb/method to option
+	 */
+	public HttpRequest<T> trace() {
+		return verb("TRACE");
 	}
 
 	/**
 	 * Set the verb/method to delete
 	 */
 	public HttpRequest<T> delete() {
-		this.verb = "DELETE";
-		return this;
+		return verb("DELETE");
 	}
 
 	/**
@@ -280,6 +295,14 @@ public class HttpRequest<T> {
 		return this;
 	}
 
+	/**
+	 * Set the number of retries. Retries are only attempted when the method
+	 * verb implies idempotency, or it is explicitly set to be idempotent, see
+	 * {@link #idemPotent(boolean)}.
+	 *
+	 * @param retries number of retries, default is 3.
+	 * @return this
+	 */
 	public HttpRequest<T> retries(int retries) {
 		this.retries = retries;
 		return this;
@@ -287,6 +310,28 @@ public class HttpRequest<T> {
 
 	public HttpRequest<T> retryDelay(int retryDelay) {
 		this.retryDelay = TimeUnit.SECONDS.toMillis(retryDelay);
+		return this;
+	}
+
+	/**
+	 * Idempotent Methods
+	 * <p>
+	 * Methods can also have the property of "idempotence" in that (aside from
+	 * error or expiration issues) the side-effects of N > 0 identical requests
+	 * is the same as for a single request. The methods GET, HEAD, PUT and
+	 * DELETE share this property. Also, the methods OPTIONS and TRACE SHOULD
+	 * NOT have side effects, and so are inherently idempotent.
+	 * <p>
+	 * The {@link #verb(String)} method will set the idempotency according to
+	 * this specification. This method can then override the default
+	 * idempotency.
+	 *
+	 * @param isIdemPotent if the to be used method is idempotent. (Is
+	 *            overridden if the method verb is set after this method!)
+	 * @return this
+	 */
+	public HttpRequest<T> idemPotent(boolean isIdemPotent) {
+		this.isIdemPotent = isIdemPotent;
 		return this;
 	}
 
