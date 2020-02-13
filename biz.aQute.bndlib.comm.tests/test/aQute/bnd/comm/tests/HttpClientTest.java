@@ -163,11 +163,29 @@ public class HttpClientTest extends TestCase {
 				TaggedData tag = client.build()
 					.timeout(1000)
 					.verb("PUT")
+					.idemPotent(false)
 					.retries(2)
 					.asTag()
 					.go(httpServer.getBaseURI("readtimeout/1"));
 				System.out.println(tag);
 				assertThat(tag.getResponseCode()).isEqualTo(HttpURLConnection.HTTP_GATEWAY_TIMEOUT);
+			}
+		}
+	}
+
+	public void testRetriesOnPut() throws Exception {
+		try (Processor p = new Processor()) {
+			try (HttpClient client = new HttpClient()) {
+				client.setReporter(p);
+
+				TaggedData tag = client.build()
+					.timeout(1000)
+					.verb("PUT")
+					.retries(2)
+					.asTag()
+					.go(httpServer.getBaseURI("readtimeout/1"));
+				System.out.println(tag);
+				assertThat(tag.getResponseCode()).isEqualTo(HttpURLConnection.HTTP_OK);
 			}
 		}
 	}

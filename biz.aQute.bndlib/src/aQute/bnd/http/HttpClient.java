@@ -150,7 +150,7 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	<T> Promise<T> sendAsync(HttpRequest<T> request) {
-		int retries = "GET".equalsIgnoreCase(request.verb) ? request.retries : 0;
+		int retries = request.isIdemPotent ? request.retries : 0;
 		long delay = (request.retryDelay == 0L) ? 1000L : request.retryDelay;
 		return sendAsync(request, retries, delay);
 	}

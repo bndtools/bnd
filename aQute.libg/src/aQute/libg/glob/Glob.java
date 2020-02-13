@@ -17,7 +17,8 @@ public class Glob {
 		QUOTED
 	}
 
-	public static final Glob	ALL	= new Glob("*");
+	public static final Glob	ALL		= new Glob("*");
+	public static final Glob	NONE	= new Glob("\uFFFF\uFFFB\uFFFE\uFFFD");
 	private final String		glob;
 	private final Pattern		pattern;
 

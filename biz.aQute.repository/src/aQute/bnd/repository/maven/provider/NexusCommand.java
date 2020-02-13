@@ -6,15 +6,23 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.resource.Resource;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.PromiseFactory;
+import org.osgi.util.promise.Promises;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,9 +33,13 @@ import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.collections.Iterables;
 import aQute.lib.getopt.Arguments;
+import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.libg.cryptography.Digest;
+import aQute.libg.cryptography.MD5;
+import aQute.libg.cryptography.SHA1;
 import aQute.libg.cryptography.SHA256;
 import aQute.maven.nexus.provider.Nexus;
 import aQute.maven.nexus.provider.Nexus.Asset;
@@ -39,6 +51,7 @@ public class NexusCommand extends Processor {
 	private NexusOptions		options;
 	private Nexus				nexus;
 	final HttpClient			client;
+	final Crawler				crawler;
 
 	public enum Compatible {
 		CRAWL,
@@ -56,14 +69,13 @@ public class NexusCommand extends Processor {
 	@SuppressWarnings("resource")
 	public NexusCommand(Processor parent, NexusOptions options) throws Exception {
 		super(parent);
+		use(parent);
 		this.options = options;
 		client = new HttpClient();
 		client.readSettings(parent);
+		this.crawler = new Crawler(client, getPromiseFactory());
 		if (this.options.url() == null) {
-			error("No -u/--url set");
-			System.out.println(options._help());
 			nexus = null;
-			return;
 		} else {
 			this.nexus = new Nexus(options.url(), client, Processor.getExecutor());
 		}
@@ -80,16 +92,28 @@ public class NexusCommand extends Processor {
 		String password();
 
 		String key();
+
+		URI from();
+
+		String include();
+
+		String xclude();
+
+		int threads();
+
 	}
 
 	public void _sign(SignOptions options) throws Exception {
+		if (!checkNexus())
+			return;
+
 		String password = null;
 		if (options.password() == null) {
 			Console console = System.console();
 			if (console == null) {
 				error("No -p/--password set for PGP key and no console to ask");
 			} else {
-				char[] pw = console.readPassword("Passsword: ");
+				char[] pw = console.readPassword("Passsword for pgp: ");
 				if (pw == null || pw.length == 0) {
 					error("Password not entered");
 				}
@@ -106,24 +130,70 @@ public class NexusCommand extends Processor {
 		List<String> args = options._arguments();
 
 		if (args.isEmpty()) {
-			List<URI> files = nexus.files();
+
+			List<URI> files;
+			final URI from;
+			final URI to = nexus.getUri();
+
+			if (options.from() != null) {
+				URI fromx = options.from()
+					.toString()
+					.endsWith("/") ? options.from() : new URI(options.from() + "/");
+				from = fromx.normalize();
+				files = crawler.getURIs(from, Crawler.predicate(options.include(), options.xclude()));
+				trace("retrieving files from ", from);
+			} else {
+				files = nexus.files();
+				from = nexus.getUri();
+			}
+
 			if (files == null) {
 				error("URI is not reachable %s", nexus.getUri());
 			} else {
-				for (URI uri : files) {
-					try {
-						logger.debug("signing {}", relative(uri));
-						File f = nexus.download(uri);
-						byte[] signature = signer.sign(f);
-						if (options.show())
-							show(signature);
-						else
-							nexus.upload(new URI(uri + ".asc"), signature);
-					} catch (Exception e) {
-						exception(e, "could not download/sign/upload %s", relative(uri));
+				trace("from %s to %s %s files", from, to, files.size());
+
+				int n = 2;
+				Semaphore threads = new Semaphore(Math.max(options.threads(), 1));
+
+				List<Promise<Void>> promises = new ArrayList<>();
+				PromiseFactory pf = getPromiseFactory();
+				CopyOnWriteArrayList<URI> inFlight = new CopyOnWriteArrayList<>();
+
+				for (URI source : files) {
+
+					while (true) {
+						if (threads.tryAcquire(5, TimeUnit.SECONDS))
+							break;
+						trace("in flight %s", inFlight);
+					}
+
+					inFlight.add(source);
+
+					Promise<Void> promise = pf.submit(() -> {
+						try {
+							sign(options, signer, from, to, source);
+							return null;
+						} finally {
+							inFlight.remove(source);
+							threads.release();
+						}
+					});
+					promises.add(promise);
+
+					//
+					// The staging area is time sensitive, if we push
+					// multiple files it creates multiple areas
+					// so the first n files we're careful
+					//
+
+					if (n-- > 0) {
+						promise.getValue();
 					}
 				}
+				Promises.all(promises)
+					.getValue();
 			}
+
 		} else {
 			for (String arg : args) {
 				File f = getFile(arg);
@@ -142,6 +212,57 @@ public class NexusCommand extends Processor {
 		}
 	}
 
+	private void sign(SignOptions options, Signer signer, URI from, URI to, URI source) {
+		String path = source.getPath();
+		if (path.endsWith(".sha1") || path.endsWith(".asc") || path.endsWith(".md5"))
+			return;
+
+		try {
+
+			URI relativized = from.relativize(source);
+			URI dest = to.resolve(relativized);
+
+			trace("signing %s", relativized);
+
+			File f = nexus.download(source);
+
+			trace("received %s size %s", f, f.length());
+
+			byte[] signature = signer.sign(f);
+			if (options.show())
+				show(signature);
+			else {
+				URI asc = new URI(dest + ".asc");
+				trace("signed upload %s", asc);
+				nexus.upload(asc, signature);
+
+				if (!dest.equals(source)) {
+					trace("source upload %s", dest);
+					nexus.upload(dest, IO.read(f));
+					SHA1 sha1 = SHA1.digest(f);
+					MD5 md5 = MD5.digest(f);
+					trace("digests %s SHA1+MD5 %s %s", dest, sha1.asHex(), md5.asHex());
+					nexus.upload(new URI(dest + ".sha1"), digest(sha1));
+					nexus.upload(new URI(dest + ".md5"), digest(md5));
+				}
+			}
+		} catch (Exception e) {
+			exception(e, "could not download/sign/upload %s", relative(source));
+		}
+	}
+
+	private byte[] digest(Digest sha1) {
+		return (sha1.asHex() + "\n").getBytes(StandardCharsets.UTF_8);
+	}
+
+	private boolean checkNexus() {
+		if (nexus == null) {
+			error("The -u option to define the maven repo to use was not given");
+			return false;
+		}
+		return true;
+	}
+
 	private void show(byte[] signature) throws IOException {
 		System.out.write(signature);
 	}
@@ -154,9 +275,57 @@ public class NexusCommand extends Processor {
 	@Arguments(arg = {
 		"files..."
 	})
-	interface FilesOption extends Options {}
+	interface FilesOption extends Options {
+		@Description("A resource URI is only include if the include pattern appears in the path and the exclude does not appear")
+		String include();
+
+		@Description("A resource URI is only include if the include pattern appears in the path and the exclude does not appear")
+		String exclude();
+
+		boolean relative();
+	}
 
 	public void _files(FilesOption options) throws Exception {
+		List<String> _arguments = options._arguments();
+		if (_arguments.isEmpty()) {
+			oldstyle();
+		} else {
+			List<URI> result = new ArrayList<>();
+			for (String arg : _arguments) {
+				URI uri = new URI(arg);
+				if (!uri.isAbsolute()) {
+					if (nexus == null) {
+						error("Not an absolute URI %s", uri);
+						continue;
+					} else {
+						uri = nexus.getUri()
+							.resolve(arg);
+						if (!uri.isAbsolute()) {
+							error("Not an absolute URI %s", uri);
+							continue;
+						}
+					}
+				}
+				assert uri.isAbsolute();
+
+				List<URI> urIs = crawler.getURIs(uri, Crawler.predicate(options.include(), options.exclude()));
+				result.addAll(urIs);
+			}
+
+			if (options.relative() && nexus != null) {
+				URI root = nexus.getUri();
+				result = result.stream()
+					.map(root::relativize)
+					.collect(Collectors.toList());
+			}
+			System.out.println(Strings.join("\n", result));
+		}
+	}
+
+	private void oldstyle() throws Exception {
+		if (!checkNexus())
+			return;
+
 		List<URI> uris = getFiles();
 		if (uris == null) {
 			error("URI is not reachable %s", nexus.getUri());

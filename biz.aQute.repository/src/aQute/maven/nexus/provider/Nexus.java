@@ -122,6 +122,7 @@ public class Nexus {
 	public File download(URI uri) throws Exception {
 		return request().useCache()
 			.age(30, TimeUnit.SECONDS)
+			.timeout(5 * 60 * 1000)
 			.go(uri);
 	}
 
