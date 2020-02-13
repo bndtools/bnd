@@ -10,14 +10,18 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.url.TaggedData;
 import aQute.lib.io.IO;
 import aQute.libg.tuple.Pair;
+import bndtools.central.Central;
 
 public class Cache {
 
     private final ConcurrentMap<URI, Pair<String, byte[]>> cache = new ConcurrentHashMap<>();
 
-    public byte[] download(URI uri) throws IOException {
+	public byte[] download(URI uri) throws Exception {
         byte[] data;
-        try (HttpClient client = new HttpClient()) {
+		try {
+			HttpClient client = Central.getWorkspace()
+				.getPlugin(HttpClient.class);
+
             Pair<String, byte[]> cachedTag = cache.get(uri);
             if (cachedTag == null) {
                 // Not previously cached

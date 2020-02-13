@@ -4,10 +4,10 @@
 -buildpath: \
 	osgi.annotation;version=latest;maven-scope=provided,\
 	osgi.core;version=latest;maven-scope=provided,\
-    org.osgi.service.component.annotations;version=1.3.0;maven-scope=provided,\
-    org.osgi.service.metatype;version=1.3.0,\
+	org.osgi.service.component.annotations;version=1.3.0;maven-scope=provided,\
+	org.osgi.service.metatype;version=1.3.0,\
 	aQute.libg;version=project,\
-    biz.aQute.bndlib;version=latest,\
+	biz.aQute.bndlib;version=latest,\
 	bndtools.api;version=latest,\
 	org.bndtools.templating;version=latest,\
 	bndtools.utils;version=project;packages=*,\
@@ -15,12 +15,13 @@
 	org.eclipse.jface,\
 	org.eclipse.ui.ide,\
 	org.eclipse.ui.workbench,\
-    org.eclipse.swt,\
+	org.eclipse.swt,\
 	org.eclipse.swt.cocoa.macosx.x86_64,\
-    org.eclipse.core.runtime,\
-    org.eclipse.core.commands,\
-    org.eclipse.equinox.common,\
-	org.eclipse.equinox.preferences
+	org.eclipse.core.runtime,\
+	org.eclipse.core.commands,\
+	org.eclipse.equinox.common,\
+	org.eclipse.equinox.preferences,\
+	bndtools.core;version=latest
 
 -includepackage: org.bndtools.templating.jgit.*
 -includeresource: /=resources/unprocessed,\

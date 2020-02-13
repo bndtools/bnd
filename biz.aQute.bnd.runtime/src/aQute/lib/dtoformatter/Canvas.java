@@ -40,6 +40,7 @@ public class Canvas {
 	final static Style	PLAIN		= new Style(east, south, west, north);
 	final static Style	BOLD		= new Style(beast, bsouth, bwest, bnorth);
 
+	final static boolean[]	extraline	= new boolean[256];
 	final static char[]	boxchars	= new char[256];
 	static {
 		box('─', west | east);
@@ -47,29 +48,29 @@ public class Canvas {
 		box('│', north | south);
 		box('┃', bnorth | bsouth);
 		box('┌', east | south);
-		box('┍', beast | south);
-		box('┎', east | bsouth);
-		box('┏', beast | bsouth);
+		xbox('┍', beast | south);
+		xbox('┎', east | bsouth);
+		xbox('┏', beast | bsouth);
 		box('┐', west | south);
 		box('┑', bwest | south);
 		box('┒', west | bsouth);
 		box('┓', bwest | bsouth);
-		box('└', north | east);
-		box('┕', north | beast);
-		box('┖', bnorth | east);
-		box('┗', bnorth | beast);
+		xbox('└', north | east);
+		xbox('┕', north | beast);
+		xbox('┖', bnorth | east);
+		xbox('┗', bnorth | beast);
 		box('┘', west | north);
 		box('┙', bwest | north);
 		box('┚', west | bnorth);
 		box('┛', bwest | bnorth);
-		box('├', north | south | east);
-		box('┝', north | south | beast);
-		box('┞', bnorth | south | east);
-		box('┟', north | bsouth | east);
-		box('┠', bnorth | bsouth | east);
-		box('┡', bnorth | south | beast);
-		box('┢', north | bsouth | beast);
-		box('┣', bnorth | bsouth | beast);
+		xbox('├', north | south | east);
+		xbox('┝', north | south | beast);
+		xbox('┞', bnorth | south | east);
+		xbox('┟', north | bsouth | east);
+		xbox('┠', bnorth | bsouth | east);
+		xbox('┡', bnorth | south | beast);
+		xbox('┢', north | bsouth | beast);
+		xbox('┣', bnorth | bsouth | beast);
 		box('┤', west | north | south);
 		box('┥', bwest | north | south);
 		box('┦', west | bnorth | south);
@@ -140,6 +141,12 @@ public class Canvas {
 		assert boxchars[i] == 0 : "Double usage " + c + " " + i;
 		assert c != 0;
 		boxchars[i] = c;
+	}
+
+	private static void xbox(char c, int i) {
+		box(c, i);
+		i = i - PRIVATE;
+		extraline[i] = true;
 	}
 
 	public Canvas clear() {
@@ -277,14 +284,18 @@ public class Canvas {
 	}
 
 	public void toString(StringBuilder sb) {
-		for (int y = 0; y < height(); y++) {
+		line: for (int y = 0; y < height(); y++) {
+			char t = get(0, y);
+			if (extraline[t - PRIVATE])
+				continue line;
+
 			for (int x = 0; x < width; x++) {
 				char c = get(x, y);
 				if (c == 0) {
 					System.out.println("null " + x + "," + y);
 				}
 				if (isPrivate(c)) {
-					c = boxchar(c);
+					c = ' ';// boxchar(c);
 				}
 				sb.append(c);
 			}
