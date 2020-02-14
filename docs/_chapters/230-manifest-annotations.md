@@ -8,9 +8,7 @@ Manifest headers are challenging to keep in sync with the code in the bundle. It
 
 One of the goals of bnd is to eliminate such issues by relying on Java's type system to express the semantics of OSGi metadata.
 
-## Bundle Annotations
-
-To address this bnd developers pioneered _manifest annotations_ which evolved into OSGi's [_bundle annotations_](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle). A **bundle annotation** is used to express metadata that cannot otherwise be derived from code.
+To address this bnd pioneered _manifest annotations_ which evolved into OSGi's [_bundle annotations_](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle). A **bundle annotation** is used to express metadata that cannot otherwise be derived from code.
 
 A *bundle annotation* is applied to a type or package and when processed by bnd will cause the generation of corresponding manifest headers (and header clauses). Generating manifest headers from type safe structures is far less likely to result in errors, simplifies the developers life and is more conducive to code refactoring which won't result in information loss.
 
@@ -52,6 +50,7 @@ While this provides a capability that can be required, we need a requirement to 
     namespace = ExtenderNamespace.EXTENDER_NAMESPACE,
 	name = ComponentConstants.COMPONENT_CAPABILITY_NAME,
 	version = ComponentConstants.COMPONENT_SPECIFICATION_VERSION)
+@Retention(RetentionPolicy.CLASS)	
 public @interface RequireServiceComponentRuntime { }
 ```
 
@@ -71,6 +70,26 @@ Require-Capability: \
 ```
 
 The invisible link created between user code and the indirect requirement is a powerful mechanism that enables automatic validation of a bundle closure.
+
+The actual requirement `filter:` directive is constructed from an `AND` of the `filter()`, `name()`, and `version()` annotation methods. All fields are optional. The name field will create an assertion that the given namespace equals the value of the `name()` annotation method. For example, if the namespace is `com.example.foo` and the `name()` method has the value `bar` then the filter is `(com.example.foo=bar)`. If a version is specified, it will be expanded to a filtered version-range expression.  The convention of using the namespace name as the property key is commonly used in OSGi specification. For example, the filter `(osgi.wiring.package=com.example.foo)` is the filter for an Import-Package `com.example.foo` while `osgi.wiring.package` is the namespace for the packages.
+
+For example:
+
+```java
+@Requirement(namespace = "NAMESPACE", name="NAME", version="1.2.3", filter="(foo=${#foo})")
+@Retention(RetentionPolicy.CLASS)
+public @interface RequireSomething {
+    int foo();
+}
+
+@RequireSomething(foo=3)
+class Foo {...}
+```
+This will generate a manifest Require-Capability header of:
+
+    Require-Capability: \
+        NAMESPACE; \
+        filter:="(&(foo=3)(NAMESPACE=NAME)(version>=1.2.3)(!(version>=2.0.0)))"   
 
 ### Arbitrary Manifest Headers
 
@@ -102,6 +121,9 @@ Bnd also provides access to certain key properties of the current processing sta
 - ***@version*** - gives the package version of the annotated class
 
 The `@Header` example above used the macro `${@class}` which lifted the `@class` property holding the class name of the activator into the header to avoid having to duplicate it. This also means that refactoring the activator won't cause the manifest to get out of sync.
+
+In the case that a bundle annotation is used as a meta annotation then the methods on the annotated annotation are available as macros as well with a name prefixed with `#`. That is, if the annotated annotation has a method `foo()`, then the macro `${#foo}` can be used to refer to its value. See [Accessor Properties](235-accessor-properties.html) for more details.
+  
 
 ### Custom Bundle Annotations
 
@@ -218,7 +240,7 @@ For more customisation options see chapter on [Accessor Properties](/chapters/23
 
 ### Where to find Bundle Annotations
 
-**OSGi** *bundle annotations* can be found in the `osgi.annotation` bundle.
+**OSGi** *bundle annotations* can be found in the `osgi.annotation` (e.g. `org.osgi:osgi.annotation:7.0.0`) bundle.
 
 ```xml
 <dependency>
@@ -228,7 +250,7 @@ For more customisation options see chapter on [Accessor Properties](/chapters/23
 </dependency>
 ```
 
-**Bnd** *bundle annotations* can be found in the `biz.aQute.bnd.annotations` bundle.
+**Bnd** *bundle annotations* can be found in the `biz.aQute.bnd.annotations` (e.g. `biz.aQute.bnd:biz.aQute.bnd.annotation:5.0.0`) bundle.
 
 ```xml
 <dependency>
