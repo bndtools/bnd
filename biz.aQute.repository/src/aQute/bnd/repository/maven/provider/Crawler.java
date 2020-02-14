@@ -10,7 +10,7 @@ import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
 
 import aQute.bnd.http.HttpClient;
-import aQute.libg.glob.Glob;
+import aQute.libg.glob.PathSet;
 
 class Crawler {
 	private final static Pattern	HREF_P	= Pattern.compile("href\\s*=\\s*\"(?<uri>[^\"]+)\"",
@@ -66,18 +66,9 @@ class Crawler {
 	}
 
 	public static Predicate<URI> predicate(String include, String exclude) {
-		Glob i = include == null ? Glob.ALL : new Glob(include);
-		Glob e = exclude == null ? Glob.NONE : new Glob(exclude);
-
-		return uri -> {
-			String path = uri.getPath();
-			return i.matcher(path)
-				.find()
-				&& !e.matcher(path)
-					.find();
-		};
+		PathSet pathSet = new PathSet().include(include)
+			.exclude(exclude);
+		Predicate<String> find = pathSet.find("**");
+		return uri -> find.test(uri.getPath());
 	}
-
-
-
 }

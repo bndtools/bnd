@@ -303,12 +303,6 @@ public class Canvas {
 		}
 	}
 
-	private char boxchar(char c) {
-		char out = boxchars[c & 0xFF];
-		assert out != 0;
-		return out;
-	}
-
 	public Canvas box() {
 		box(0, 0, width(), height(), PLAIN);
 		return this;
