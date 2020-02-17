@@ -2,6 +2,7 @@ package bndtools.editor;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -24,12 +25,14 @@ import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.internal.runtime.Activator;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -54,7 +57,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IFormPart;
@@ -63,6 +65,7 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -72,6 +75,7 @@ import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Promises;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
@@ -80,6 +84,7 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
 import aQute.bnd.properties.BadLocationException;
 import aQute.lib.exceptions.Exceptions;
+import biz.aQute.resolve.Bndrun;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.editor.common.IPriority;
@@ -126,22 +131,6 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
 	private IResource							inputResource;
 	private File								inputFile;
-
-	static Pair<String, String> getFileAndProject(IEditorInput input) {
-		String path;
-		String projectName;
-		if (input instanceof IFileEditorInput) {
-			IFile file = ((IFileEditorInput) input).getFile();
-			path = file.getProjectRelativePath()
-				.toString();
-			projectName = file.getProject()
-				.getName();
-		} else {
-			path = input.getName();
-			projectName = null;
-		}
-		return Pair.newInstance(path, projectName);
-	}
 
 	private void updateIncludedPages() {
 		List<String> requiredPageIds = new LinkedList<>();
@@ -287,6 +276,10 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	}
 
 	public Promise<IStatus> resolveRunBundles(IProgressMonitor monitor, boolean onSave) {
+		if ( inputResource != null) {
+			return Promises.failed(new CoreException(new Status(Status.ERROR, bndtools.Activator.PLUGIN_ID,
+				"Cannot resolve because the bnd file is not in the workspace")));
+		}
 		final Shell shell = getEditorSite().getShell();
 		final IFile file = ResourceUtil.getFile(getEditorInput());
 		if (file == null) {
@@ -529,16 +522,33 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
 	@Override
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+
 		super.init(site, input);
 		try {
 
 			// Work out our input file and subscribe to resource changes
 			this.inputResource = ResourceUtil.getResource(input);
-			inputResource.getWorkspace()
-				.addResourceChangeListener(this);
-			inputFile = inputResource.getLocation()
-				.toFile();
-			model.setBndResourceName(inputResource.getName());
+			if (this.inputResource != null) {
+				inputResource.getWorkspace()
+					.addResourceChangeListener(this);
+				inputFile = inputResource.getLocation()
+					.toFile();
+				model.setBndResourceName(inputResource.getName());
+			} else {
+				if (input instanceof FileStoreEditorInput) {
+					URI uri = ((FileStoreEditorInput) input).getURI();
+					if (uri != null && uri.getScheme()
+						.equalsIgnoreCase("file")) {
+						this.inputFile = new File(uri);
+						model.setBndResourceName(this.inputFile.getName());
+					}
+				}
+			}
+
+			if (this.inputFile == null) {
+				throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID,
+					"The bnd editor can only edit files inside the workspace"));
+			}
 
 			// Initialize pages and title
 			initPages(site, input);
@@ -604,7 +614,12 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
 	private Promise<Workspace> loadEditModel() throws Exception {
 		// Create the bnd edit model and workspace
-		Project bndProject = LaunchUtils.createRun(inputResource, RunMode.EDIT);
+		Project bndProject;
+		if (inputResource != null) {
+			bndProject = LaunchUtils.createRun(inputResource, RunMode.EDIT);
+		} else {
+			bndProject = Bndrun.createBndrun(null, this.inputFile);
+		}
 		model.setWorkspace(bndProject.getWorkspace());
 		model.setProject(bndProject);
 
@@ -674,9 +689,9 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	}
 
 	private void setPartNameForInput(IEditorInput input) {
-		Pair<String, String> fileAndProject = getFileAndProject(input);
-		String path = fileAndProject.getFirst();
-		String projectName = fileAndProject.getSecond();
+		// Pair<String, String> fileAndProject = getFileAndProject(input);
+		String path = inputFile.getAbsolutePath();
+		String projectName = model.getBndResourceName();
 
 		String name = input.getName();
 		if (isMainWorkspaceConfig(path, projectName) || isExtWorkspaceConfig(path, projectName)) {
@@ -864,4 +879,12 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	public BndEditModel getModel() {
 		return model;
 	}
+
+	private Pair<String, String> getFileAndProject(IEditorInput input) {
+		String path = inputFile.getAbsolutePath();
+		String projectName = model.getProject()
+			.getName();
+		return Pair.newInstance(path, projectName);
+	}
+
 }
