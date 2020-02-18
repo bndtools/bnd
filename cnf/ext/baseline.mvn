@@ -15,3 +15,4 @@ biz.aQute.bnd:biz.aQute.remote.main:${baseline.version}
 biz.aQute.bnd:biz.aQute.repository:${baseline.version}
 biz.aQute.bnd:biz.aQute.resolve:${baseline.version}
 biz.aQute.bnd:biz.aQute.tester:${baseline.version}
+biz.aQute.bnd:biz.aQute.tester.junit-platform:${baseline.version}

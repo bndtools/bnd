@@ -40,4 +40,4 @@ Import-Package: \
 	org.opentest4j,\
 	org.apiguardian
 
-#-baseline: *
+-baseline: *
