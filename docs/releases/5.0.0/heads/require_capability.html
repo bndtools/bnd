@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/5.0.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Require-Capability ::= requirement ( ‘,’ requirement )*</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Require-Capability ::= requirement ( ‘,’ requirement )*" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Parameters requirements = new Parameters(annotationHeaders.getHeader(REQUIRE_CAPABILITY)); Parameters capabilities = new Parameters(annotationHeaders.getHeader(PROVIDE_CAPABILITY));" />
+<meta property="og:description" content="Parameters requirements = new Parameters(annotationHeaders.getHeader(REQUIRE_CAPABILITY)); Parameters capabilities = new Parameters(annotationHeaders.getHeader(PROVIDE_CAPABILITY));" />
+<script type="application/ld+json">
+{"@type":"WebPage","headline":"Require-Capability ::= requirement ( ‘,’ requirement )*","url":"/releases/5.0.0/heads/require_capability.html","description":"Parameters requirements = new Parameters(annotationHeaders.getHeader(REQUIRE_CAPABILITY)); Parameters capabilities = new Parameters(annotationHeaders.getHeader(PROVIDE_CAPABILITY));","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/5.0.0/"><img
+			class=menu-logo src="/releases/5.0.0/img/bnd-80x40-white.png"></a>
+			<a href="/releases/5.0.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/5.0.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/5.0.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/5.0.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/5.0.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">5.0.0</button><div class="dropdown-content"></div></div>
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/releases/5.0.0/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+				<h1> Require-Capability ::= requirement ( ',' requirement )*</h1>
+				<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>			<span class="k">Parameters</span> <span class="k">requirements</span> <span class="p">=</span> <span class="n">new</span> <span class="k">Parameters</span><span class="p">(</span><span class="n">annotationHeaders</span><span class="p">.</span><span class="n">getHeader</span><span class="p">(</span><span class="n">REQUIRE_CAPABILITY</span><span class="p">));</span>
+		<span class="k">Parameters</span> <span class="n">capabilities</span> <span class="p">=</span> <span class="n">new</span> <span class="k">Parameters</span><span class="p">(</span><span class="n">annotationHeaders</span><span class="p">.</span><span class="n">getHeader</span><span class="p">(</span><span class="n">PROVIDE_CAPABILITY</span><span class="p">));</span>
+
+		<span class="p">//</span>
+		<span class="p">//</span> <span class="k">Do</span> <span class="n">any</span> <span class="n">contracts</span> <span class="n">contracts</span>
+		<span class="p">//</span>
+		<span class="n">contracts</span><span class="p">.</span><span class="n">addToRequirements</span><span class="p">(</span><span class="k">requirements</span><span class="p">);</span>
+
+		<span class="p">//</span>
+		<span class="p">//</span> <span class="n">We</span> <span class="n">want</span> <span class="k">to</span> <span class="n">add</span> <span class="n">the</span> <span class="n">minimum</span> <span class="n">EE</span> <span class="k">as</span> <span class="n">a</span> <span class="n">requirement</span>
+		<span class="p">//</span> <span class="n">based</span> <span class="n">on</span> <span class="n">the</span> <span class="n">class</span> <span class="k">version</span>
+		<span class="p">//</span>
+
+		<span class="k">if</span> <span class="p">(</span><span class="c1">!isTrue(getProperty(NOEE)) //
+</span>				<span class="p">&amp;&amp;</span> <span class="c1">!ees.isEmpty() // no use otherwise
+</span>				<span class="p">&amp;&amp;</span> <span class="n">since</span><span class="p">(</span><span class="n">About</span><span class="p">.</span><span class="n">_2_3</span><span class="p">)</span> <span class="p">//</span> <span class="n">we</span> <span class="n">want</span> <span class="n">people</span> <span class="k">to</span> <span class="k">not</span> <span class="n">have</span> <span class="k">to</span>
+										<span class="p">//</span> <span class="n">automatically</span> <span class="n">add</span> <span class="n">it</span>
+				<span class="p">&amp;&amp;</span> <span class="c1">!requirements.containsKey(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE) // and
+</span>																											<span class="p">//</span> <span class="n">it</span>
+																											<span class="p">//</span> <span class="n">should</span>
+																											<span class="p">//</span> <span class="k">not</span>
+																											<span class="p">//</span> <span class="n">be</span>
+																											<span class="p">//</span> <span class="n">there</span>
+																											<span class="p">//</span> <span class="n">already</span>
+		<span class="p">)</span> <span class="p">{</span>
+
+			<span class="n">JAVA</span> <span class="n">highest</span> <span class="p">=</span> <span class="n">ees</span><span class="p">.</span><span class="n">last</span><span class="p">();</span>
+			<span class="n">Attrs</span> <span class="n">attrs</span> <span class="p">=</span> <span class="n">new</span> <span class="n">Attrs</span><span class="p">();</span>
+
+			<span class="k">String</span> <span class="n">filter</span> <span class="p">=</span> <span class="n">doEEProfiles</span><span class="p">(</span><span class="n">highest</span><span class="p">);</span>
+
+			<span class="n">attrs</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="n">Constants</span><span class="p">.</span><span class="n">FILTER_DIRECTIVE</span><span class="p">,</span> <span class="n">filter</span><span class="p">);</span>
+
+			<span class="p">//</span>
+			<span class="p">//</span> <span class="n">Java</span> <span class="m">1.8</span> <span class="n">introduced</span> <span class="n">profiles</span><span class="p">.</span>
+			<span class="p">//</span> <span class="k">If</span> <span class="p">-</span><span class="n">eeprofile</span><span class="p">=</span> <span class="n">auto</span> <span class="p">|</span> <span class="p">(&lt;</span><span class="n">profile</span><span class="p">&gt;=</span><span class="s2">"..."</span><span class="p">)+</span> <span class="n">is</span> <span class="k">set</span> <span class="k">then</span>
+			<span class="p">//</span> <span class="n">we</span> <span class="n">add</span> <span class="n">a</span>
+
+			<span class="k">requirements</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">ExecutionEnvironmentNamespace</span><span class="p">.</span><span class="n">EXECUTION_ENVIRONMENT_NAMESPACE</span><span class="p">,</span> <span class="n">attrs</span><span class="p">);</span>
+		<span class="p">}</span>
+
+		<span class="k">if</span> <span class="p">(</span><span class="c1">!requirements.isEmpty())
+</span>			<span class="n">main</span><span class="p">.</span><span class="n">putValue</span><span class="p">(</span><span class="n">REQUIRE_CAPABILITY</span><span class="p">,</span> <span class="k">requirements</span><span class="p">.</span><span class="n">toString</span><span class="p">());</span>
+
+
+	<span class="p">/*</span>
+ <span class="p">*</span> <span class="n">Require</span><span class="p">-</span><span class="n">Capability</span> <span class="n">header</span>
+ <span class="p">*/</span>
+<span class="n">private</span> <span class="n">void</span> <span class="n">doRequireCapability</span><span class="p">(</span><span class="n">RequireCapability</span> <span class="n">annotation</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">StringBuilder</span> <span class="n">sb</span> <span class="p">=</span> <span class="n">new</span> <span class="n">StringBuilder</span><span class="p">(</span><span class="n">annotation</span><span class="p">.</span><span class="n">ns</span><span class="p">());</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">annotation</span><span class="p">.</span><span class="n">filter</span><span class="p">()</span> <span class="c1">!= null)
+</span>		<span class="n">sb</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="s2">";filter:='"</span><span class="p">).</span><span class="n">append</span><span class="p">(</span><span class="n">annotation</span><span class="p">.</span><span class="n">filter</span><span class="p">()).</span><span class="n">append</span><span class="p">(</span><span class="s2">"'"</span><span class="p">);</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">annotation</span><span class="p">.</span><span class="n">effective</span><span class="p">()</span> <span class="c1">!= null)
+</span>		<span class="n">sb</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="s2">";effective:='"</span><span class="p">).</span><span class="n">append</span><span class="p">(</span><span class="n">annotation</span><span class="p">.</span><span class="n">effective</span><span class="p">()).</span><span class="n">append</span><span class="p">(</span><span class="s2">"'"</span><span class="p">);</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">annotation</span><span class="p">.</span><span class="n">resolution</span><span class="p">()</span> <span class="c1">!= null)
+</span>		<span class="n">sb</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="s2">";resolution:='"</span><span class="p">).</span><span class="n">append</span><span class="p">(</span><span class="n">annotation</span><span class="p">.</span><span class="n">resolution</span><span class="p">()).</span><span class="n">append</span><span class="p">(</span><span class="s2">"'"</span><span class="p">);</span>
+
+	<span class="k">if</span> <span class="p">(</span><span class="n">annotation</span><span class="p">.</span><span class="n">value</span><span class="p">()</span> <span class="c1">!= null)
+</span>		<span class="n">sb</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="s2">";"</span><span class="p">).</span><span class="n">append</span><span class="p">(</span><span class="n">annotation</span><span class="p">.</span><span class="n">value</span><span class="p">());</span>
+
+	<span class="n">add</span><span class="p">(</span><span class="n">Constants</span><span class="p">.</span><span class="n">REQUIRE_CAPABILITY</span><span class="p">,</span> <span class="n">sb</span><span class="p">.</span><span class="n">toString</span><span class="p">());</span>
+<span class="p">}</span>
+
+
+<span class="k">package</span> <span class="n">aQute</span><span class="p">.</span><span class="n">bnd</span><span class="p">.</span><span class="n">annotation</span><span class="p">.</span><span class="n">headers</span><span class="p">;</span>
+
+	<span class="n">import</span> <span class="n">java</span><span class="p">.</span><span class="n">lang</span><span class="p">.</span><span class="n">annotation</span><span class="p">.*;</span>
+	
+	<span class="p">/**</span>
+	 <span class="p">*</span> <span class="n">The</span> <span class="n">Bundle</span><span class="err">’</span><span class="n">s</span> <span class="n">Require</span><span class="p">-</span><span class="n">Capability</span> <span class="n">header</span>
+	 <span class="p">*</span> 
+	 <span class="p">*</span> <span class="p">{@</span><span class="n">link</span> <span class="n">About</span><span class="p">}</span>
+	 <span class="p">*/</span>
+	<span class="p">@</span><span class="n">Retention</span><span class="p">(</span><span class="n">RetentionPolicy</span><span class="p">.</span><span class="n">CLASS</span><span class="p">)</span>
+	<span class="p">@</span><span class="n">Target</span><span class="p">({</span>
+			<span class="n">ElementType</span><span class="p">.</span><span class="n">ANNOTATION_TYPE</span><span class="p">,</span> <span class="n">ElementType</span><span class="p">.</span><span class="n">TYPE</span>
+	<span class="p">})</span>
+	<span class="k">public</span> <span class="p">@</span><span class="n">interface</span> <span class="n">RequireCapability</span> <span class="p">{</span>
+		<span class="k">String</span> <span class="n">value</span><span class="p">()</span> <span class="n">default</span> <span class="s2">""</span><span class="p">;</span>
+	
+		<span class="p">/**</span>
+		 <span class="p">*</span> <span class="n">The</span> <span class="n">capability</span> <span class="n">namespace</span><span class="p">.</span> <span class="n">For</span> <span class="n">example</span><span class="p">:</span> <span class="p">{@</span><span class="n">code</span> <span class="n">osgi</span><span class="p">.</span><span class="n">contract</span><span class="p">}.</span>
+		 <span class="p">*/</span>
+		<span class="k">String</span> <span class="n">ns</span><span class="p">();</span>
+	
+		<span class="p">/**</span>
+		 <span class="p">*</span> <span class="n">Specifies</span> <span class="n">the</span> <span class="n">time</span> <span class="n">a</span> <span class="n">Requirement</span> <span class="n">is</span> <span class="n">considered</span><span class="p">,</span> <span class="n">either</span> <span class="s1">'resolve'</span>
+		 <span class="p">*</span> <span class="p">(</span><span class="n">default</span><span class="p">)</span> <span class="k">or</span> <span class="n">another</span> <span class="n">name</span><span class="p">.</span> <span class="n">The</span> <span class="n">OSGi</span> <span class="n">framework</span> <span class="n">resolver</span> <span class="n">only</span> <span class="n">considers</span>
+		 <span class="p">*</span> <span class="k">Requirements</span> <span class="n">without</span> <span class="n">an</span> <span class="n">effective</span> <span class="n">directive</span> <span class="k">or</span> <span class="n">effective</span><span class="p">:=</span><span class="n">resolve</span><span class="p">.</span> <span class="n">Other</span>
+		 <span class="p">*</span> <span class="k">Requirements</span> <span class="n">can</span> <span class="n">be</span> <span class="n">considered</span> <span class="n">by</span> <span class="n">an</span> <span class="n">external</span> <span class="n">agent</span><span class="p">.</span> <span class="n">Additional</span> <span class="n">names</span> <span class="n">for</span>
+		 <span class="p">*</span> <span class="n">the</span> <span class="n">effective</span> <span class="n">directive</span> <span class="n">should</span> <span class="n">be</span> <span class="n">registered</span> <span class="k">with</span> <span class="n">the</span> <span class="n">OSGi</span> <span class="n">Alliance</span><span class="p">.</span> <span class="n">See</span>
+		 <span class="p">*</span> <span class="p">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="p">=</span><span class="s2">"https://www.osgi.org/developer/specifications/reference/"</span><span class="p">&gt;</span><span class="n">OSGi</span> <span class="n">Reference</span>
+		 <span class="p">*</span> <span class="n">Page</span><span class="p">&lt;/</span><span class="n">a</span><span class="p">&gt;</span>
+		 <span class="p">*/</span>
+		<span class="k">String</span> <span class="n">effective</span><span class="p">()</span> <span class="n">default</span> <span class="s2">"resolve"</span><span class="p">;</span>
+	
+		<span class="p">/**</span>
+		 <span class="p">*</span> <span class="n">A</span> <span class="n">filter</span> <span class="n">expression</span> <span class="n">that</span> <span class="n">is</span> <span class="n">asserted</span> <span class="n">on</span> <span class="n">the</span> <span class="n">Capabilities</span> <span class="n">belonging</span> <span class="k">to</span> <span class="n">the</span>
+		 <span class="p">*</span> <span class="n">given</span> <span class="n">namespace</span><span class="p">.</span> <span class="n">The</span> <span class="n">matching</span> <span class="k">of</span> <span class="n">the</span> <span class="n">filter</span> <span class="n">against</span> <span class="n">the</span> <span class="n">Capability</span> <span class="n">is</span>
+		 <span class="p">*</span> <span class="n">done</span> <span class="n">on</span> <span class="n">one</span> <span class="n">Capability</span> <span class="n">at</span> <span class="n">a</span> <span class="n">time</span><span class="p">.</span> <span class="n">A</span> <span class="n">filter</span> <span class="n">like</span> <span class="p">{@</span><span class="n">code</span> <span class="p">(&amp;(</span><span class="n">a</span><span class="p">=</span><span class="m">1</span><span class="p">)(</span><span class="n">b</span><span class="p">=</span><span class="m">2</span><span class="p">))}</span>
+		 <span class="p">*</span> <span class="n">matches</span> <span class="n">only</span> <span class="n">a</span> <span class="n">Capability</span> <span class="n">that</span> <span class="n">specifies</span> <span class="n">both</span> <span class="n">attributes</span> <span class="n">at</span> <span class="n">the</span> <span class="n">required</span>
+		 <span class="p">*</span> <span class="n">value</span><span class="p">,</span> <span class="k">not</span> <span class="n">two</span> <span class="n">capabilties</span> <span class="n">that</span> <span class="n">each</span> <span class="n">specify</span> <span class="n">one</span> <span class="k">of</span> <span class="n">the</span> <span class="n">attributes</span>
+		 <span class="p">*</span> <span class="n">correctly</span><span class="p">.</span> <span class="n">A</span> <span class="n">filter</span> <span class="n">is</span> <span class="n">optional</span><span class="p">,</span> <span class="k">if</span> <span class="n">no</span> <span class="n">filter</span> <span class="n">directive</span> <span class="n">is</span> <span class="n">specified</span> <span class="n">the</span>
+		 <span class="p">*</span> <span class="n">Requirement</span> <span class="n">always</span> <span class="n">matches</span><span class="p">.</span>
+		 <span class="p">*/</span>
+		<span class="k">String</span> <span class="n">filter</span><span class="p">();</span>
+	
+		<span class="p">/**</span>
+		 <span class="p">*</span> <span class="n">A</span> <span class="n">mandatory</span> <span class="n">Requirement</span> <span class="n">forbids</span> <span class="n">the</span> <span class="n">bundle</span> <span class="k">to</span> <span class="n">resolve</span> <span class="n">when</span> <span class="n">the</span>
+		 <span class="p">*</span> <span class="n">Requirement</span> <span class="n">is</span> <span class="k">not</span> <span class="n">satisfied</span><span class="p">;</span> <span class="n">an</span> <span class="n">optional</span> <span class="n">Requirement</span> <span class="n">allows</span> <span class="n">a</span> <span class="n">bundle</span> <span class="k">to</span>
+		 <span class="p">*</span> <span class="n">resolve</span> <span class="n">even</span> <span class="k">if</span> <span class="n">the</span> <span class="n">Requirement</span> <span class="n">is</span> <span class="k">not</span> <span class="n">satisfied</span><span class="p">.</span> <span class="n">No</span> <span class="n">wirings</span> <span class="n">are</span> <span class="n">created</span>
+		 <span class="p">*</span> <span class="n">when</span> <span class="n">this</span> <span class="n">Requirement</span> <span class="n">cannot</span> <span class="n">be</span> <span class="n">resolved</span><span class="p">,</span> <span class="n">this</span> <span class="n">can</span> <span class="n">result</span> <span class="k">in</span> <span class="n">Class</span> <span class="k">Not</span>
+		 <span class="p">*</span> <span class="n">Found</span> <span class="n">Exceptions</span> <span class="n">when</span> <span class="n">the</span> <span class="n">bundle</span> <span class="n">attempts</span> <span class="k">to</span> <span class="n">use</span> <span class="n">a</span> <span class="k">package</span> <span class="n">that</span> <span class="n">was</span> <span class="k">not</span>
+		 <span class="p">*</span> <span class="n">resolved</span> <span class="n">because</span> <span class="n">it</span> <span class="n">was</span> <span class="n">optional</span><span class="p">.</span>
+		 <span class="p">*/</span>
+		<span class="n">Resolution</span> <span class="n">resolution</span><span class="p">()</span> <span class="n">default</span> <span class="n">Resolution</span><span class="p">.</span><span class="n">mandatory</span><span class="p">;</span>
+	
+	<span class="p">}</span>
+	
+	
+		<span class="n">private</span> <span class="n">void</span> <span class="n">verifyRequirements</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">Parameters</span> <span class="n">map</span> <span class="p">=</span> <span class="n">parseHeader</span><span class="p">(</span><span class="n">manifest</span><span class="p">.</span><span class="n">getMainAttributes</span><span class="p">().</span><span class="nf">getValue</span><span class="p">(</span><span class="n">Constants</span><span class="p">.</span><span class="n">REQUIRE_CAPABILITY</span><span class="p">));</span>
+	<span class="n">for</span> <span class="p">(</span><span class="k">String</span> <span class="n">key</span> <span class="p">:</span> <span class="n">map</span><span class="p">.</span><span class="n">keySet</span><span class="p">())</span> <span class="p">{</span>
+		<span class="n">Attrs</span> <span class="n">attrs</span> <span class="p">=</span> <span class="n">map</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">);</span>
+		<span class="n">verify</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">"filter:"</span><span class="p">,</span> <span class="n">FILTERPATTERN</span><span class="p">,</span> <span class="nb">false</span><span class="p">,</span> <span class="s2">"Requirement %s filter not correct"</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+
+		<span class="k">String</span> <span class="n">filter</span> <span class="p">=</span> <span class="n">attrs</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"filter:"</span><span class="p">);</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">filter</span> <span class="c1">!= null) {
+</span>			<span class="k">String</span> <span class="n">verify</span> <span class="p">=</span> <span class="n">new</span> <span class="n">Filter</span><span class="p">(</span><span class="n">filter</span><span class="p">).</span><span class="n">verify</span><span class="p">();</span>
+			<span class="k">if</span> <span class="p">(</span><span class="n">verify</span> <span class="c1">!= null)
+</span>				<span class="n">error</span><span class="p">(</span><span class="s2">"Invalid filter syntax in requirement %s=%s. Reason %s"</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">verify</span><span class="p">);</span>
+		<span class="p">}</span>
+		<span class="n">verify</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">"cardinality:"</span><span class="p">,</span> <span class="n">CARDINALITY_PATTERN</span><span class="p">,</span> <span class="nb">false</span><span class="p">,</span> <span class="s2">"Requirement %s cardinality not correct"</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+		<span class="n">verify</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">"resolution:"</span><span class="p">,</span> <span class="n">RESOLUTION_PATTERN</span><span class="p">,</span> <span class="nb">false</span><span class="p">,</span> <span class="s2">"Requirement %s resolution not correct"</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+
+		<span class="k">if</span> <span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="n">equals</span><span class="p">(</span><span class="s2">"osgi.extender"</span><span class="p">))</span> <span class="p">{</span>
+			<span class="p">//</span> <span class="n">No</span> <span class="k">requirements</span> <span class="n">on</span> <span class="n">extender</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="n">equals</span><span class="p">(</span><span class="s2">"osgi.serviceloader"</span><span class="p">))</span> <span class="p">{</span>
+			<span class="n">verify</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">"register:"</span><span class="p">,</span> <span class="n">PACKAGEPATTERN</span><span class="p">,</span> <span class="nb">false</span><span class="p">,</span>
+					<span class="s2">"Service Loader extender register: directive not a fully qualified Java name"</span><span class="p">);</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="n">equals</span><span class="p">(</span><span class="s2">"osgi.contract"</span><span class="p">))</span> <span class="p">{</span>
+
+		<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="n">equals</span><span class="p">(</span><span class="s2">"osgi.service"</span><span class="p">))</span> <span class="p">{</span>
+
+		<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="n">equals</span><span class="p">(</span><span class="s2">"osgi.ee"</span><span class="p">))</span> <span class="p">{</span>
+
+		<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="nf">startsWith</span><span class="p">(</span><span class="s2">"osgi.wiring."</span><span class="p">)</span> <span class="p">||</span> <span class="n">key</span><span class="p">.</span><span class="nf">startsWith</span><span class="p">(</span><span class="s2">"osgi.identity"</span><span class="p">))</span> <span class="p">{</span>
+			<span class="n">error</span><span class="p">(</span><span class="s2">"osgi.wiring.* namespaces must not be specified with generic requirements/capabilities"</span><span class="p">);</span>
+		<span class="p">}</span>
+
+		<span class="n">verifyAttrs</span><span class="p">(</span><span class="n">attrs</span><span class="p">);</span>
+
+		<span class="k">if</span> <span class="p">(</span><span class="n">attrs</span><span class="p">.</span><span class="n">containsKey</span><span class="p">(</span><span class="s2">"mandatory:"</span><span class="p">))</span>
+			<span class="n">error</span><span class="p">(</span><span class="s2">"mandatory: directive is intended for Capabilities, not Requirement %s"</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+
+		<span class="k">if</span> <span class="p">(</span><span class="n">attrs</span><span class="p">.</span><span class="n">containsKey</span><span class="p">(</span><span class="s2">"uses:"</span><span class="p">))</span>
+			<span class="n">error</span><span class="p">(</span><span class="s2">"uses: directive is intended for Capabilities, not Requirement %s"</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/releases/5.0.0/heads/require_bundle.html'></a> <a href='/releases/5.0.0/heads/service_component.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/5.0.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

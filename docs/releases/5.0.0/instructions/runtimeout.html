@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/5.0.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>-runtimeout DURATION</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="-runtimeout DURATION" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="public void prepare() throws Exception { Pattern tests = Pattern.compile(project.getProperty(Constants.TESTSOURCES, &quot;(.*).java&quot;));" />
+<meta property="og:description" content="public void prepare() throws Exception { Pattern tests = Pattern.compile(project.getProperty(Constants.TESTSOURCES, &quot;(.*).java&quot;));" />
+<script type="application/ld+json">
+{"@type":"WebPage","headline":"-runtimeout DURATION","url":"/releases/5.0.0/instructions/runtimeout.html","description":"public void prepare() throws Exception { Pattern tests = Pattern.compile(project.getProperty(Constants.TESTSOURCES, &quot;(.*).java&quot;));","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/5.0.0/"><img
+			class=menu-logo src="/releases/5.0.0/img/bnd-80x40-white.png"></a>
+			<a href="/releases/5.0.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/5.0.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/5.0.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/5.0.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/5.0.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">5.0.0</button><div class="dropdown-content"></div></div>
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/releases/5.0.0/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+				<h1> -runtimeout DURATION</h1>
+				<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public void prepare() throws Exception {
+	Pattern tests = Pattern.compile(project.getProperty(Constants.TESTSOURCES, "(.*).java"));
+
+	String testDirName = project.getProperty("testsrc", "test");
+	File testSrc = project.getFile(testDirName).getAbsoluteFile();
+	if (!testSrc.isDirectory()) {
+		project.trace("no test src directory");
+		return;
+	}
+
+	if (!traverse(fqns, testSrc, "", tests)) {
+		project.trace("no test files found in %s", testSrc);
+		return;
+	}
+
+	timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT), 0); //		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
+	cp = new Classpath(project, "junit");
+	addClasspath(project.getTestpath());
+	addClasspath(project.getBuildpath());
+}
+
+
+public int launch() throws Exception {
+	java = new Command();
+	java.add(project.getProperty("java", "java"));
+
+	java.add("-cp");
+	java.add(cp.toString());
+	java.addAll(project.getRunVM());
+	java.add(getMainTypeName());
+	java.addAll(fqns);
+	if (timeout != 0)
+		java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
+
+	project.trace("cmd line %s", java);
+	try {
+		int result = java.execute(System.in, System.err, System.err);
+		if (result == Integer.MIN_VALUE)
+			return TIMEDOUT;
+		reportResult(result);
+		return result;
+	}
+	finally {
+		cleanup();
+	}
+
+}
+
+public static long getDuration(String tm, long dflt) {
+	if (tm == null)
+		return dflt;
+
+	tm = tm.toUpperCase();
+	TimeUnit unit = TimeUnit.MILLISECONDS;
+	Matcher m = Pattern
+			.compile("\\s*(\\d+)\\s*(NANOSECONDS|MICROSECONDS|MILLISECONDS|SECONDS|MINUTES|HOURS|DAYS)?").matcher(
+					tm);
+	if (m.matches()) {
+		long duration = Long.parseLong(tm);
+		String u = m.group(2);
+		if (u != null)
+			unit = TimeUnit.valueOf(u);
+		duration = TimeUnit.MILLISECONDS.convert(duration, unit);
+		return duration;
+	}
+	return dflt;
+}
+
+
+/**
+ * Collect all the aspect from the project and set the local fields from
+ * them. Should be called
+ * 
+ * @throws Exception
+ */
+protected void updateFromProject() throws Exception {
+	// pkr: could not use this because this is killing the runtests.
+	// project.refresh();
+	runbundles.clear();
+	Collection&lt;Container&gt; run = project.getRunbundles();
+
+	for (Container container : run) {
+		File file = container.getFile();
+		if (file != null &amp;&amp; (file.isFile() || file.isDirectory())) {
+			runbundles.add(file.getAbsolutePath());
+		} else {
+			error("Bundle file \"%s\" does not exist, given error is %s", file, container.getError());
+		}
+	}
+
+	if (project.getRunBuilds()) {
+		File[] builds = project.build();
+		if (builds != null)
+			for (File file : builds)
+				runbundles.add(file.getAbsolutePath());
+	}
+
+	Collection&lt;Container&gt; runpath = project.getRunpath();
+	runsystempackages = new Parameters( project.mergeProperties(Constants.RUNSYSTEMPACKAGES));
+	runsystemcapabilities = project.mergeProperties(Constants.RUNSYSTEMCAPABILITIES);
+	framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
+
+	timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT), 0);
+	trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
+
+	runpath.addAll(project.getRunFw());
+
+	for (Container c : runpath) {
+		addClasspath(c);
+	}
+
+	runvm.addAll(project.getRunVM());
+	runprogramargs.addAll(project.getRunProgramArgs());
+	runproperties = project.getRunProperties();
+
+	storageDir = project.getRunStorage();
+	if (storageDir == null) {
+		storageDir = new File(project.getTarget(), "fw");
+	}
+}
+
+
+	public void deactivate() throws Exception {
+	if (active.getAndSet(false)) {
+		systemBundle.stop();
+		systemBundle.waitForStop(parms.timeout);
+
+		ThreadGroup group = Thread.currentThread().getThreadGroup();
+		Thread[] threads = new Thread[group.activeCount() + 100];
+		group.enumerate(threads);
+		{
+			for (Thread t : threads) {
+				if (t != null &amp;&amp; !t.isDaemon() &amp;&amp; t.isAlive()) {
+					trace("alive thread " + t);
+				}
+			}
+		}
+	} else
+		errorAndExit("Huh? Already deactivated.");
+}
+
+
+	private void doTimeoutHandler() {
+	// Ensure we properly close in a separate thread so that
+	// we can leverage the main thread, which is required for macs
+	Thread wait = new Thread("FrameworkWaiter") {
+		@Override
+		public void run() {
+			try {
+				FrameworkEvent result = systemBundle.waitForStop(parms.timeout);
+				if (!active.get()) {
+					trace("ignoring timeout handler because framework is already no longer active, shutdown is orderly handled");
+					return;
+				}
+
+				trace("framework event " + result + " " + result.getType());
+				switch (result.getType()) {
+					case FrameworkEvent.STOPPED :
+						trace("framework event stopped");
+						System.exit(LauncherConstants.STOPPED);
+						break;
+
+					case FrameworkEvent.WAIT_TIMEDOUT :
+						trace("framework event timedout");
+						System.exit(LauncherConstants.TIMEDOUT);
+						break;
+
+					case FrameworkEvent.ERROR :
+						System.exit(ERROR);
+						break;
+
+					case FrameworkEvent.WARNING :
+						System.exit(WARNING);
+						break;
+
+					case FrameworkEvent.STOPPED_BOOTCLASSPATH_MODIFIED :
+					case FrameworkEvent.STOPPED_UPDATE :
+						trace("framework event update");
+						System.exit(UPDATE_NEEDED);
+						break;
+				}
+			}
+			catch (InterruptedException e) {
+				System.exit(CANCELED);
+			}
+		}
+	};
+	wait.start();
+}
+</code></pre></div></div>
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/releases/5.0.0/instructions/runsystempackages.html'></a> <a href='/releases/5.0.0/instructions/runtrace.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/5.0.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>
