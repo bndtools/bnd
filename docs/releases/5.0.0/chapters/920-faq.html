@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/5.0.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Frequently Asked Questions</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Frequently Asked Questions" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="How to Ask a Question Too Many Imports Remove unwanted imports Importing Default Package Why No Automatic Bundle-Activator How to set the unbind method with @Reference? packageinfo or package-info.java Why are super classes not inspected for annotations? Where do the exported package versions come from? Should I use the Bundle-ClassPath? What Should I use instead of the Bundle-ClassPath? Sharing CNF Folder and bnd Projects" />
+<meta property="og:description" content="How to Ask a Question Too Many Imports Remove unwanted imports Importing Default Package Why No Automatic Bundle-Activator How to set the unbind method with @Reference? packageinfo or package-info.java Why are super classes not inspected for annotations? Where do the exported package versions come from? Should I use the Bundle-ClassPath? What Should I use instead of the Bundle-ClassPath? Sharing CNF Folder and bnd Projects" />
+<script type="application/ld+json">
+{"@type":"WebPage","headline":"Frequently Asked Questions","url":"/releases/5.0.0/chapters/920-faq.html","description":"How to Ask a Question Too Many Imports Remove unwanted imports Importing Default Package Why No Automatic Bundle-Activator How to set the unbind method with @Reference? packageinfo or package-info.java Why are super classes not inspected for annotations? Where do the exported package versions come from? Should I use the Bundle-ClassPath? What Should I use instead of the Bundle-ClassPath? Sharing CNF Folder and bnd Projects","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+		<style>
+			 body {
+				counter-reset: h1 40;
+			}
+		</style>
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/5.0.0/"><img
+			class=menu-logo src="/releases/5.0.0/img/bnd-80x40-white.png"></a>
+			<a href="/releases/5.0.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/5.0.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/5.0.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/5.0.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/5.0.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">5.0.0</button><div class="dropdown-content"></div></div>
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/releases/5.0.0/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li class=selected>Frequently Asked Questions
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+				<h1> Frequently Asked Questions</h1>
+				<ul>
+  <li><a href="?#howToAsk">How to Ask a Question</a></li>
+  <li><a href="?#tooManyImports">Too Many Imports</a></li>
+  <li><a href="?#removeUnwantedImports">Remove unwanted imports</a></li>
+  <li><a href="?#importingDefaultPackage">Importing Default Package</a></li>
+  <li><a href="?#automaticActivator">Why No Automatic Bundle-Activator</a></li>
+  <li><a href="?#unbindMethod">How to set the unbind method with @Reference?</a></li>
+  <li><a href="?#packageinfo">packageinfo or package-info.java</a></li>
+  <li><a href="?#supercomps">Why are super classes not inspected for annotations?</a></li>
+  <li><a href="?#exportversions">Where do the exported package versions come from?</a></li>
+  <li><a href="?#bundleclasspath">Should I use the Bundle-ClassPath?</a></li>
+  <li><a href="?#bundleclasspath2">What Should I use instead of the Bundle-ClassPath?</a></li>
+  <li>
+    <h2 id="sharing-cnf-folder-and-bnd-projects"><a href="?#workspaceSharing">Sharing CNF Folder and bnd Projects</a></h2>
+  </li>
+</ul>
+
+<h2 id="how-to-ask-a-question-">How to ask a question <a name="howToAsk"></a></h2>
+<p>You can send a mail to <a href="http://groups.google.com/group/bndtools-users/">bndtools users</a> or <a href="mailto:Peter.Kriens@aQute.biz">mail me</a>.</p>
+
+<h2 id="too-many-imports-">Too Many Imports <a name="tooManyImports"></a></h2>
+<p>Sometimes bnd reports imports that seem plain wrong. Believe me, they are almost always right. bnd does a thorough analysis of the byte codes in your class files and when it imports something it is almost sure to be a reference in your code. How can you find the culprit? Bndtools has tooling to drill down into your code. bnd also can print out the JAR and look at the <code class="highlighter-rouge">[USEDBY]</code> section to find the package(s) that cause the import.</p>
+
+<p>If there is no package using the imported package, then look at the following places for imports:</p>
+
+<ul>
+  <li>Spring/Blueprint XML</li>
+  <li>Bundle Activator</li>
+  <li>Component annotations or Service-Component headers</li>
+</ul>
+
+<p>In the likely case the import is real but unwanted, look at <a href="?#removeUnwantedImports">Unwanted Imports</a>.</p>
+
+<h2 id="importing-the-default-package-error-">Importing the default package error <a name="importingDefaultPackage"></a></h2>
+<p>This usually indicates that:</p>
+
+<ul>
+  <li>You include classes that have compile errors. Some compilers still create class files on errors but they are invalid.</li>
+  <li>One of the imports caused by Spring, Blueprint, or Service Components are not proper.</li>
+</ul>
+
+<h2 id="remove-unwanted-imports-">Remove unwanted imports <a name="removeUnwantedImports"></a></h2>
+<p>If you have an unwanted import than you can remove it from the Import-Package manifest header with the ‘!’ operator:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Import-Package: !com.unwanted.reference.*, *
+</code></pre></div></div>
+
+<p>A usually better way is to make the imports optional:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Import-Package: com.unwanted.reference.*;resolution:=optional, *
+</code></pre></div></div>
+
+<p>Note the end at the Import-Package statement, that wildcard ‘*’ is crucial for remaining imports, see <a href="?#noImports">No Imports Show Up</a>.</p>
+
+<h2 id="no-imports-show-up-">No Imports Show Up <a name="noImports"></a></h2>
+<p>The imports that show up in your Import-Package manifest header are controlled by the bnd file’s Import-Package instruction. In bnd, the list is a set of patterns that are sequentially applied to your imports as calculated by bnd from the classes, resources, and headers in the JAR.</p>
+
+<p>The default Import-Package bnd instruction is:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Import-Package: *
+</code></pre></div></div>
+
+<p>This imports all referred packages. The most common reasons imports do not appear in the manifest is that the default is overridden and the overrider forgot to add the wildcard ‘*’ at the end. For example, the following is wrong:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Import-Package: com.example; version=1.2
+</code></pre></div></div>
+
+<p>This will create an import for com.example but it ignores all other imports.</p>
+
+<p>Another reason is the exclude operator (‘!’) that will remove imports. If this is too wild, then no imports are left to insert in the manifest. So the following leads to no imports for any package starting with com.example.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Import-Package: !com.example.*, *
+</code></pre></div></div>
+
+<p>Last but not least, look at the <code class="highlighter-rouge">[USEDBY]</code> section of the JAR print out, make sure there are actually references.</p>
+
+<h2 id="why-no-automatic-bundle-activator-">Why No Automatic Bundle-Activator <a name="automaticActivator"></a></h2>
+<p>Many people are surprised that bnd does not automatically calculate the Bundle-Activator. Basically, there are the following issues:</p>
+
+<ul>
+  <li>Not all bundles have a bundle activator</li>
+  <li>Detecting an activator in the code does not always mean you want one</li>
+  <li>Detecting means you can find more than one</li>
+</ul>
+
+<p>That said, it is possible to automate the Bundle-Activator:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Bundle-Activator: \
+   ${classes;IMPLEMENTS;org.osgi.framework.BundleActivator}
+</code></pre></div></div>
+
+<p>However, if there are multiple Bundle-Activators you will get an error.</p>
+
+<h2 id="how-to-assign-an-unbind-method-to-a-reference-">How to assign an unbind method to a @Reference? <a name="unbindMethod"></a></h2>
+<p><code class="highlighter-rouge">@Reference</code> automatically sets the bind method but how is the unbind method set? Simple, you use a method with a similar name:</p>
+
+<table style="width:100%">
+  <tr>
+    <th>bind</th>
+    <th>unbind</th>
+  </tr>
+  <tr>
+    <td>setX</td>
+    <td>unsetX</td>
+  </tr>
+  <tr>
+    <td>addX</td>
+    <td>removeX</td>
+  </tr>
+</table>
+
+<p>For example:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Reference
+protected void setFoo(LogService l) { ... }
+protected void unsetFoo(LogService l) { ... }
+</code></pre></div></div>
+
+<p>If you want to override this, use</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Reference(unbind="IRefuseToCallMyMethodUnFoo");
+protected void foo(LogService l) {}
+protected void IRefuseToCallMyMethodUnFoo(LogService l) {}
+</code></pre></div></div>
+
+<p>Unfortunately Java has no method references so it is not type safe.A non existent <code class="highlighter-rouge">@UnReference</code> annotation is not very useful because that still requires linking it up symbolically to the associated <code class="highlighter-rouge">@Reference</code>.</p>
+
+<h2 id="packageinfo-or-package-infojava-">packageinfo or package-info.java? <a name="packageinfo"></a></h2>
+<p>Inspired by the osgi-dev thread <a href="http://www.mail-archive.com/osgi-dev@mail.osgi.org/msg01514.html">Why default version for Export-Package is 0.0.0, not bundle version?</a> I’m just a little bit confused about the bnd approach with the file naming “packageinfo”. The <a href="http://java.sun.com/docs/books/jls/third_edition/html/packages.html">JLS</a> already defines “package-info.java” for package relevant infos. Wouldn’t it be simplier (less complex) to have only one file for package definitions? So, the bnd tool could manage the package version in “package-info.java”, too.</p>
+
+<p>You can use either file. The reason there are two options is that one constituency thinks annotations are the only solution and the other is running pre Java 5 … Basically if I would have to choose it would be packageinfo because that works anywhere but I expect that you probably would not like that :-)</p>
+
+<h2 id="why-are-superclass-not-inspected-for-component-annotations-">Why are superclass not inspected for Component annotations? <a name="supercomps"></a></h2>
+<p>Annotations are not inherited form the component’s super classes. The problem is that bnd cannot in all cases can see super classes (and interfaces) because the super class does not have to be available in the build. In runtime you are sure the super class is there, at build time you do not have that luxury. So to make sure, always define your annotations on the actual component class.</p>
+
+<h2 id="cant-find-the-source-of-the-version-on-an-export-package-">Can’t find the source of the version on an Export-Package? <a name="exportversions"></a></h2>
+<p>If no explicit export version is specified in the bnd file then bnd will look in the following places.</p>
+
+<ul>
+  <li>packageinfo file in the package directory (recommended)</li>
+  <li>package-info.java, bnd’s Version annotation</li>
+  <li>Manifest of the exporting JAR</li>
+</ul>
+
+<p>There was a mis-feature in an <a href="http://www.mail-archive.com/users@felix.apache.org/msg09656.html">older version of the maven plugin</a> that appended the pom version to the exported packages. It looked professional but it was baloney. Versioning a bundle should not version a package automatically, try it and feel the pain. So if you can’t find the source of an exported package version you might have an old maven bundle plugin.</p>
+
+<h2 id="should-i-use-the-bundle-classpath-">Should I use the Bundle-ClassPath? <a name="bundleclasspath"></a></h2>
+<p>No. It creates unnecessary complexity, it is slower, and it is not necessary. It will also not be compatible with techniques like <a href="http://code.google.com/p/pojosr">PojoSR</a>, something that the OSGi is looking into standardizing.</p>
+
+<h2 id="what-should-i-use-instead-of-the-bundle-classpath-">What should I use instead of the Bundle-ClassPath? <a name="bundleclasspath2"></a></h2>
+<p>Just use Private-Package and Export-Package, know what goes into your JAR. If you really need to wrap one or more JARs, use the Include-Resource instruction, it has an option to unroll a JAR resource (see <a href="?#include-resource">@ option</a>. This will copy all its contents in the target JAR. The -exportcontents can then be used to export selected packages. Even better is of course to know</p>
+
+<h2 id="sharing-cnf-folder-and-bndtools-projects-">Sharing CNF Folder and BNDTools Projects <a name="workspaceSharing"></a></h2>
+<p>The [Best Practices section[1] provides some good tips about how you setup workspaces that share some information.</p>
+
+<hr />
+
+<p>If an entry is wrong, send a <a href="mailto:bnd@aQute.biz">mail</a> with the JAR that has the problem. Preferably as small as possible.</p>
+
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/releases/5.0.0/chapters/910-warnings.html'></a> <a href='/releases/5.0.0'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/5.0.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>
