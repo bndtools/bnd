@@ -20,11 +20,11 @@ collections:
     output: true
 
 ## The release name. Must be equal to the version or `master`.
-releasename: master
+releasename: 5.0.0
 
 ## Uncomment and set this property when generating release docs.
 ## Make sure to leave this unset in the `master` branch.
-#baseurl: /releases/<releasename>
+baseurl: /releases/5.0.0
 
 defaults:
   -
