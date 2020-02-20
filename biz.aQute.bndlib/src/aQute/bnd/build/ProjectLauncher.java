@@ -61,6 +61,7 @@ public abstract class ProjectLauncher extends Processor {
 
 	final static Logger					logger				= LoggerFactory.getLogger(ProjectLauncher.class);
 	private final Project				project;
+	private final List<Runnable>		onUpdate			= new ArrayList<>();
 	private long						timeout				= 0;
 	private final List<String>			classpath			= new ArrayList<>();
 	private List<String>				runbundles			= Create.list();
@@ -282,6 +283,13 @@ public abstract class ProjectLauncher extends Processor {
 	public void update() throws Exception {
 		getProject().refresh();
 		updateFromProject();
+		for (Runnable update : onUpdate) {
+			update.run();
+		}
+	}
+
+	public void onUpdate(Runnable update) {
+		onUpdate.add(update);
 	}
 
 	@Override
