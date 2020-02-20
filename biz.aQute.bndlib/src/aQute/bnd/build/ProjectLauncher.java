@@ -281,6 +281,7 @@ public abstract class ProjectLauncher extends Processor {
 
 	public void update() throws Exception {
 		getProject().refresh();
+		updateFromProject();
 	}
 
 	@Override
