@@ -54,13 +54,14 @@ public class MavenDeployCmd extends Processor {
 
 		while (i < args.length && args[i].startsWith("-")) {
 			String option = args[i];
-			if (option.equals("-url"))
+			boolean hasValue = i < args.length - 1;
+			if (option.equals("-url") && hasValue)
 				repository = args[++i];
-			else if (option.equals("-passphrase"))
+			else if (option.equals("-passphrase") && hasValue)
 				passphrase = args[++i];
-			else if (option.equals("-url"))
+			else if (option.equals("-url") && hasValue)
 				homedir = args[++i];
-			else if (option.equals("-keyname"))
+			else if (option.equals("-keyname") && hasValue)
 				keyname = args[++i];
 			else
 				error("Invalid command ");

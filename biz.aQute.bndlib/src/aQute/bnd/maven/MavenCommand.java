@@ -76,7 +76,7 @@ public class MavenCommand extends Processor {
 		while (i < args.length && args[i].startsWith("-")) {
 			String option = args[i];
 			logger.debug("option {}", option);
-			if (option.equals("-temp"))
+			if (option.equals("-temp") && i < args.length - 1)
 				temp = getFile(args[++i]);
 			else {
 				help();
@@ -84,7 +84,10 @@ public class MavenCommand extends Processor {
 			}
 			i++;
 		}
-
+		if (i >= args.length) {
+			error("No command specified");
+			return;
+		}
 		String cmd = args[i++];
 
 		logger.debug("temp dir {}", temp);
@@ -173,30 +176,31 @@ public class MavenCommand extends Processor {
 
 		while (i < args.length && args[i].startsWith("-")) {
 			String option = args[i++];
+			boolean hasValue = i < args.length;
 			logger.debug("bundle option {}", option);
-			if (option.equals("-scm"))
+			if (option.equals("-scm") && hasValue) {
 				scm = args[i++];
-			else if (option.equals("-group"))
+			} else if (option.equals("-group") && hasValue)
 				group = args[i++];
-			else if (option.equals("-artifact"))
+			else if (option.equals("-artifact") && hasValue)
 				artifact = args[i++];
-			else if (option.equals("-version"))
+			else if (option.equals("-version") && hasValue)
 				version = args[i++];
-			else if (option.equals("-developer"))
+			else if (option.equals("-developer") && hasValue)
 				developers.add(args[i++]);
-			else if (option.equals("-passphrase")) {
+			else if (option.equals("-passphrase") && hasValue) {
 				passphrase = args[i++];
-			} else if (option.equals("-url")) {
+			} else if (option.equals("-url") && hasValue) {
 				url = args[i++];
-			} else if (option.equals("-javadoc"))
+			} else if (option.equals("-javadoc") && hasValue)
 				javadoc = args[i++];
-			else if (option.equals("-source"))
+			else if (option.equals("-source") && hasValue)
 				source = args[i++];
-			else if (option.equals("-output"))
+			else if (option.equals("-output") && hasValue)
 				output = args[i++];
 			else if (option.equals("-nodelete"))
 				nodelete = true;
-			else if (option.startsWith("-properties")) {
+			else if (option.startsWith("-properties") && hasValue) {
 				try (InputStream in = IO.stream(Paths.get(args[i++]))) {
 					properties.load(in);
 				} catch (Exception e) {}
@@ -576,11 +580,12 @@ public class MavenCommand extends Processor {
 		List<URI> urls = new ArrayList<>();
 		Path output = null;
 		while (i < args.length && args[i].startsWith("-")) {
-			if ("-r".equals(args[i])) {
+			boolean hasValue = i < args.length - 1;
+			if ("-r".equals(args[i]) && hasValue) {
 				URI uri = new URI(args[++i]);
 				urls.add(uri);
 				System.err.println("URI for repo " + uri);
-			} else if ("-o".equals(args[i])) {
+			} else if ("-o".equals(args[i]) && hasValue) {
 				output = Paths.get(args[++i]);
 			} else
 				throw new IllegalArgumentException("Unknown option: " + args[i]);
