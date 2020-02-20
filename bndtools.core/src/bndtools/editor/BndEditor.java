@@ -689,9 +689,10 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	}
 
 	private void setPartNameForInput(IEditorInput input) {
-		// Pair<String, String> fileAndProject = getFileAndProject(input);
-		String path = inputFile.getAbsolutePath();
-		String projectName = model.getBndResourceName();
+		Pair<String, String> fileAndProject = getFileAndProject(getEditorInput());
+
+		String path = fileAndProject.getFirst();
+		String projectName = fileAndProject.getSecond();
 
 		String name = input.getName();
 		if (isMainWorkspaceConfig(path, projectName) || isExtWorkspaceConfig(path, projectName)) {
@@ -881,9 +882,17 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	}
 
 	private Pair<String, String> getFileAndProject(IEditorInput input) {
-		String path = inputFile.getAbsolutePath();
-		String projectName = model.getProject()
-			.getName();
+		String path;
+		String projectName;
+		if (inputResource != null) {
+			path = inputResource.getProjectRelativePath()
+				.toString();
+			projectName = inputResource.getProject()
+				.getName();
+		} else {
+			path = inputFile.getAbsolutePath();
+			projectName = "none";
+		}
 		return Pair.newInstance(path, projectName);
 	}
 
