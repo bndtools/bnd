@@ -84,7 +84,13 @@ public abstract class ProjectTester {
 
 	public boolean prepare() throws Exception {
 		IO.mkdirs(reportDir);
+		updateFromProject();
+		getProjectLauncher().prepare();
 		return true;
+	}
+
+	protected void updateFromProject() throws Exception {
+		// noop
 	}
 
 	public abstract int test() throws Exception;
