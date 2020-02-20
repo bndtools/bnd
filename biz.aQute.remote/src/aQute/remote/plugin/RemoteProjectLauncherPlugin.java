@@ -68,7 +68,6 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	@Override
 	public void update() throws Exception {
 		super.update();
-		updateFromProject();
 
 		Parameters runremote = new Parameters(getProject().getProperty(Constants.RUNREMOTE), getProject());
 

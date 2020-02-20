@@ -1,5 +1,7 @@
 package aQute.bnd.build;
 
+import static aQute.lib.exceptions.RunnableWithException.asRunnable;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,6 +22,7 @@ public abstract class ProjectTester {
 	public ProjectTester(Project project) throws Exception {
 		this.project = project;
 		launcher = project.getProjectLauncher();
+		launcher.onUpdate(asRunnable(this::updateFromProject));
 		launcher.addRunVM("-ea");
 		continuous = project.is(Constants.TESTCONTINUOUS);
 
@@ -84,7 +87,13 @@ public abstract class ProjectTester {
 
 	public boolean prepare() throws Exception {
 		IO.mkdirs(reportDir);
+		updateFromProject();
+		getProjectLauncher().prepare();
 		return true;
+	}
+
+	protected void updateFromProject() throws Exception {
+		// noop
 	}
 
 	public abstract int test() throws Exception;

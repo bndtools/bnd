@@ -41,44 +41,48 @@ public class ProjectTesterImpl extends ProjectTester implements EclipseJUnitTest
 		if (!prepared) {
 			prepared = true;
 			super.prepare();
-			ProjectLauncher launcher = getProjectLauncher();
-			if (port > 0) {
-				launcher.getRunProperties()
-					.put(TESTER_PORT, "" + port);
-				if (host != null)
-					launcher.getRunProperties()
-						.put(TESTER_HOST, "" + host);
-
-			}
-			launcher.getRunProperties()
-				.put(TESTER_UNRESOLVED, getProject().getProperty(Constants.TESTUNRESOLVED, "true"));
-
-			launcher.getRunProperties()
-				.put(TESTER_DIR, getReportDir().getAbsolutePath());
-			launcher.getRunProperties()
-				.put(TESTER_CONTINUOUS, "" + getContinuous());
-			if (getProject().is(Constants.RUNTRACE))
-				launcher.getRunProperties()
-					.put(TESTER_TRACE, "true");
-
-			Collection<String> testnames = getTests();
-			if (testnames.size() > 0) {
-				launcher.getRunProperties()
-					.put(TESTER_NAMES, testnames.stream()
-						.map(ProjectTesterImpl::maybeQuote)
-						.collect(Collectors.joining(",")));
-			}
-
-			//
-			// We used to add this bundle to the -runpath. However, now we add
-			// it at the add the end of the -runbundles
-			//
-
-			launcher.addRunBundle(me.getFile()
-				.getAbsolutePath());
-			launcher.prepare();
 		}
 		return true;
+	}
+
+	@Override
+	protected void updateFromProject() throws Exception {
+		super.updateFromProject();
+		ProjectLauncher launcher = getProjectLauncher();
+		if (port > 0) {
+			launcher.getRunProperties()
+				.put(TESTER_PORT, "" + port);
+			if (host != null)
+				launcher.getRunProperties()
+					.put(TESTER_HOST, "" + host);
+
+		}
+		launcher.getRunProperties()
+			.put(TESTER_UNRESOLVED, getProject().getProperty(Constants.TESTUNRESOLVED, "true"));
+
+		launcher.getRunProperties()
+			.put(TESTER_DIR, getReportDir().getAbsolutePath());
+		launcher.getRunProperties()
+			.put(TESTER_CONTINUOUS, "" + getContinuous());
+		if (getProject().is(Constants.RUNTRACE))
+			launcher.getRunProperties()
+				.put(TESTER_TRACE, "true");
+
+		Collection<String> testnames = getTests();
+		if (testnames.size() > 0) {
+			launcher.getRunProperties()
+				.put(TESTER_NAMES, testnames.stream()
+					.map(ProjectTesterImpl::maybeQuote)
+					.collect(Collectors.joining(",")));
+		}
+
+		//
+		// We used to add this bundle to the -runpath. However, now we add
+		// it at the add the end of the -runbundles
+		//
+
+		launcher.addRunBundle(me.getFile()
+			.getAbsolutePath());
 	}
 
 	@Override
