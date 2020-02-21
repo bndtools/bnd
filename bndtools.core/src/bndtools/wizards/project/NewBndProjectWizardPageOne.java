@@ -105,7 +105,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 		composite.setLayout(new GridLayout(1, false));
 		composite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
 
-		Control nameControl = nameGroup.createControl(composite);
+		nameControl = nameGroup.createControl(composite);
 		nameControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 		Control locationControl = locationGroup.createControl(composite);
@@ -124,6 +124,14 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 	}
 
 	@Override
+	public void setVisible(boolean visible) {
+		super.setVisible(visible);
+		if (visible) {
+			nameControl.setFocus();
+		}
+	}
+
+	@Override
 	public IClasspathEntry[] getDefaultClasspathEntries() {
 		IClasspathEntry[] entries = super.getDefaultClasspathEntries();
 		List<IClasspathEntry> result = new ArrayList<>(entries.length + 2);
@@ -138,6 +146,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 	}
 
 	private static final IClasspathAttribute TEST = JavaCore.newClasspathAttribute("test", Boolean.TRUE.toString());
+	private Control								nameControl;
 
 	public ProjectPaths getProjectsPaths() {
 		try {
