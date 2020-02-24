@@ -280,7 +280,9 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		if (file == null) {
 			MessageDialog.openError(shell, "Resolution Error",
 				"Unable to run resolution because the file is not part of the current workspace.");
-			reallySave(monitor);
+			if (onSave) {
+				reallySave(monitor);
+			}
 			return Central.promiseFactory()
 				.resolved(Status.CANCEL_STATUS);
 		}
