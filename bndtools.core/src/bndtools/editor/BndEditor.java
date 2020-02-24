@@ -75,7 +75,6 @@ import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Promises;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
@@ -276,16 +275,14 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	}
 
 	public Promise<IStatus> resolveRunBundles(IProgressMonitor monitor, boolean onSave) {
-		if ( inputResource != null) {
-			return Promises.failed(new CoreException(new Status(Status.ERROR, bndtools.Activator.PLUGIN_ID,
-				"Cannot resolve because the bnd file is not in the workspace")));
-		}
 		final Shell shell = getEditorSite().getShell();
-		final IFile file = ResourceUtil.getFile(getEditorInput());
+		final IFile file = ResourceUtil.getFile(inputResource);
 		if (file == null) {
 			MessageDialog.openError(shell, "Resolution Error",
-				"Unable to run resolution because the file is not in the workspace.");
-			reallySave(monitor);
+				"Unable to run resolution because the file is not part of the current workspace.");
+			if (onSave) {
+				reallySave(monitor);
+			}
 			return Central.promiseFactory()
 				.resolved(Status.CANCEL_STATUS);
 		}
