@@ -72,7 +72,7 @@ You can find a bndtools project that shows this at [Github](https://github.com/b
 
 ## Testing With JUnit 5 - `biz.aQute.tester.junit-platform`
 
-As of 4.4, bnd includes a new tester bundle `biz.aQute.tester.junit-platform` that supports JUnit 5.
+As of Bnd 5.0, bnd includes a new tester bundle `biz.aQute.tester.junit-platform` that supports JUnit 5.
 
 As per the [JUnit 5 documentation](https://junit.org/junit5/docs/current/user-guide/#overview-what-is-junit-5), JUnit 5 is comprised of three modules:
 
@@ -130,14 +130,14 @@ Note that if you're only using JUnit 3/4, you can omit the `-runrequires` line f
 As noted above, `biz.aQute.tester.junit-platform` requires JUnit Platform (and its dependencies) on the classpath, and if it is to do much that is useful it will also require at least one `TestEngine`. Bundled versions of these are part of Eclipse since Oxygen. You can include them in your workspace from:
 
 * Eclipse's Orbit repository
-* Bnd project's Eclipse mirror: https://dl.bintray.com/bndtools/eclipse-repo/4.7.3a:
+* Bnd project's Eclipse mirror: https://dl.bintray.com/bndtools/eclipse-repo/4.10:
 ```
     -plugin.repository: \
         aQute.bnd.repository.osgi.OSGiRepository;\
-            name="Eclipse Oxygen 4.7.3a";\
-            locations="https://dl.bintray.com/bndtools/eclipse-repo/4.7.3a/index.xml.gz";\
+            name="Eclipse 2018-12";\
+            locations="https://dl.bintray.com/bndtools/eclipse-repo/4.10/index.xml.gz";\
             poll.time=-1;\
-            cache="${workspace}/cnf/cache/stable/EclipseOxygen"
+            cache="${workspace}/cnf/cache/stable/Eclipse-2018-12"
 ```
 * Your local Eclipse installation (using the P2Repository plugin):
 ```
@@ -147,7 +147,14 @@ As noted above, `biz.aQute.tester.junit-platform` requires JUnit Platform (and i
             url="file:///path/to/eclipse/";\
             location="${workspace}/cnf/cache/stable/EclipseLocal"
 ```
-Alternatively, it is not difficult to download the required (non-OSGi) modules from Maven Central and include them as-is on `-runpath`, or else (preferably) wrap them into bundles and include them in `-runrequires`/`-runbundles`.
+
+Alternatively, it is not difficult to download the required (non-OSGi) modules from Maven Central and include them as-is on `-runpath`, or else (preferably) wrap them into bundles and include them in `-runrequires`/`-runbundles`. 
+As of JUnit 5.6, the JUnit jars already have the OSGi metadata and so can be used as bundles 
+direct from Maven Central.
+
+Also note that unfortunately, due to a bug in `biz.aQute.tester.junit-platform`, Bndtools 5.0 
+*does not work with JUnit 5.5+*. A fix is already available in the latest development snapshot, and we expect the 
+fix to be included in a future Bndtools release (hopefully soon).
 
 ## Other Tester Frameworks
 The biz.aQute.tester is a normal bundle that gets started from the launcher framework. However, before bnd chooses the default tester, it scans the classpath for a tester (set with `-runpath`) for JARs that have the following header set:
