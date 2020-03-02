@@ -33,7 +33,6 @@ Export-Package: \
 	aQute.bnd.deployer.repository.wrapper;bnd-plugins=true,\
 	aQute.bnd.repository.maven.provider;bnd-plugins=true,\
 	org.osgi.service.coordinator,\
-	org.osgi.service.indexer,\
 	aQute.bnd.repository.p2.provider;bnd-plugins=true,\
 	aQute.bnd.repository.maven.pom.provider;bnd-plugins=true,\
 	aQute.bnd.repository.osgi;bnd-plugins=true,  \
