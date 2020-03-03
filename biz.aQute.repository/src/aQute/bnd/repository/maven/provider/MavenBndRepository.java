@@ -249,6 +249,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					.orElse(null);
 			} else {
 				pom = createPomFromFile(options.context.getFile(instructions.pom.path));
+				if (pom == null) {
+					logger.warn(
+						"A pom path was set in the -maven-release instuction, but no file could be found in {} (base path: {}) ",
+						instructions.pom.path, options.context.getBase());
+				}
 			}
 		} else {
 			if (!configuration.ignore_metainf_maven()) {
@@ -291,6 +296,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	private Jar getSources(Tool tool, Processor context, String path) throws Exception {
 		Jar jar = toJar(context, path);
+		if (path != null && jar == null) {
+			logger.warn(
+				"A sources path was set in the -maven-release instuction, but no sources could be found in {} (base path: {}) ",
+				path, context.getBase());
+		}
 		if (jar != null) {
 			tool.setSources(jar, "");
 		} else {
@@ -305,6 +315,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private Jar getJavadoc(Tool tool, Processor context, String path, Map<String, String> options, boolean exports)
 		throws Exception {
 		Jar jar = toJar(context, path);
+		if (path != null && jar == null) {
+			logger.warn(
+				"A javadoc path was set in the -maven-release instuction, but no javadoc could be found in {} (base path: {}) ",
+				path, context.getBase());
+		}
 		if (jar == null) {
 			jar = tool.doJavadoc(options, exports);
 		}
