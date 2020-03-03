@@ -238,7 +238,7 @@ public class AlsoLauncherTest {
 			.openInputStream())) {
 
 			assertThat(jar.getResources()
-				.keySet()).containsAll(Arrays.asList(//
+				.keySet()).contains(//
 					"jar/biz.aQute.launcher.jar", // -runpath
 					"jar/org.apache.felix.framework-5.6.10.jar", // -runpath
 					"jar/apiguardian-api-1.1.0.jar", // not a bundle
@@ -253,7 +253,7 @@ public class AlsoLauncherTest {
 					"jar/org.apache.felix.scr", //
 					"jar/org.apache.servicemix.bundles.junit", //
 					"jar/org.opentest4j" //
-			));
+					);
 
 			File tmp = File.createTempFile("foo", ".jar");
 			try {
@@ -271,8 +271,8 @@ public class AlsoLauncherTest {
 				System.out.println(output);
 
 				// These must be bsns ow
-				assertThat(output).contains("installing jar/org.apache.felix.scr");
-				assertThat(output).contains("installing jar/org.apache.felix.configadmin");
+				assertThat(output).contains("installing jar/org.apache.felix.scr",
+					"installing jar/org.apache.felix.configadmin");
 
 				assertThat(execute).isEqualTo(42);
 
