@@ -32,10 +32,13 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.help.instructions.LauncherInstructions.Executable;
 import aQute.bnd.help.instructions.LauncherInstructions.RunOption;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Instructions;
@@ -44,6 +47,7 @@ import aQute.bnd.osgi.Jar.Compression;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.Verifier;
 import aQute.launcher.constants.LauncherConstants;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.io.ByteBufferDataInput;
@@ -298,10 +302,11 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	@Override
 	public Jar executable() throws Exception {
 
-		Optional<Compression> rejar = launcherInstrs.executable()
+		Executable instrs = launcherInstrs.executable();
+		Optional<Compression> rejar = instrs
 			.rejar();
 		logger.debug("rejar {}", rejar);
-		Map<Glob, List<Glob>> strip = extractStripMapping(launcherInstrs.executable()
+		Map<Glob, List<Glob>> strip = extractStripMapping(instrs
 			.strip());
 		logger.debug("strip {}", strip);
 
@@ -339,7 +344,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			logger.debug("embedding runpath {}", path);
 			File file = new File(path);
 			if (file.isFile()) {
-				String newPath = nonCollidingPath(file, jar);
+				String newPath = nonCollidingPath(file, jar, null);
 				jar.putResource(newPath, getJarFileResource(file, rejar, strip));
 				classpath.add(newPath);
 			}
@@ -356,7 +361,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			if (!file.isFile())
 				getProject().error("Invalid entry in -runbundles %s", file);
 			else {
-				String newPath = nonCollidingPath(file, jar);
+				String newPath = nonCollidingPath(file, jar, instrs.location());
 				jar.putResource(newPath, getJarFileResource(file, rejar, strip));
 				actualPaths.add(newPath);
 			}
@@ -483,26 +488,70 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			.keySet()));
 	}
 
-	String nonCollidingPath(File file, Jar jar) throws Exception {
-		String fileName = file.getName();
-		String path = "jar/" + fileName;
-		Resource resource = jar.getResource(path);
-		if (resource != null) {
-			if ((file.length() == resource.size()) && (SHA1.digest(file)
-				.equals(SHA1.digest(resource.openInputStream())))) {
-				return path; // same resource
+	String nonCollidingPath(File file, Jar jar, String locationFormat) throws Exception {
+		if (locationFormat == null) {
+			String fileName = file.getName();
+			String path = "jar/" + fileName;
+			Resource resource = jar.getResource(path);
+			if (resource != null) {
+				if ((file.length() == resource.size()) && (SHA1.digest(file)
+					.equals(SHA1.digest(resource.openInputStream())))) {
+					return path; // same resource
+				}
+				String[] parts = Strings.extension(fileName);
+				if (parts == null) {
+					parts = new String[] {
+						fileName, ""
+					};
+				}
+				for (int i = 1; jar.exists(path); i++) {
+					path = String.format("jar/%s[%d].%s", parts[0], i, parts[1]);
+				}
 			}
-			String[] parts = Strings.extension(fileName);
-			if (parts == null) {
-				parts = new String[] {
-					fileName, ""
-				};
-			}
-			for (int i = 1; jar.exists(path); i++) {
-				path = String.format("jar/%s[%d].%s", parts[0], i, parts[1]);
-			}
+			return path;
 		}
-		return path;
+
+		try {
+			Domain domain = Domain.domain(file);
+			Entry<String, Attrs> bundleSymbolicName = domain.getBundleSymbolicName();
+			if ( bundleSymbolicName == null ) {
+				warning("Cannot find bsn in %s, required because it is on the -runbundles", file);
+				return nonCollidingPath(file, jar, null);
+			}
+			String bundleVersion = domain.getBundleVersion();
+			if (bundleVersion == null)
+				bundleVersion = "0";
+			else {
+				if ( !Verifier.isVersion(bundleVersion)) {
+					error("Invalid bundle version in %s", file);
+					return nonCollidingPath(file, jar, null);
+				}
+			}
+			try (Processor p = new Processor(this)) {
+
+				p.setProperty("@bsn", bundleSymbolicName.getKey());
+				p.setProperty("@version", bundleVersion);
+				p.setProperty("@name", file.getName());
+
+				String fileName = p.getReplacer()
+					.process(locationFormat);
+
+				if (fileName.contains("/")) {
+					error("Invalid bundle version in %s", file);
+					return nonCollidingPath(file, jar, null);
+				}
+
+				String filePath = "jar/" + fileName;
+				if (jar.getResources()
+					.containsKey(filePath)) {
+					error("Duplicate locations for %s for file %s", filePath, file);
+				}
+				return filePath;
+			}
+		} catch (Exception e) {
+			exception(e, "failed to use location pattern %s for location for file %", locationFormat, file);
+			return nonCollidingPath(file, jar, null);
+		}
 	}
 
 	/*
