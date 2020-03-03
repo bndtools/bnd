@@ -9,7 +9,6 @@ import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.lang.invoke.MethodType.methodType;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,6 +44,7 @@ import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.Hashtable;
 import java.util.IllegalFormatException;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -72,6 +73,8 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
+import org.osgi.framework.connect.ConnectFrameworkFactory;
+import org.osgi.framework.connect.ModuleConnector;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.framework.wiring.BundleRevision;
@@ -94,7 +97,7 @@ import aQute.libg.uri.URIUtil;
  */
 public class Launcher implements ServiceListener {
 
-	private static final String				BND_LAUNCHER		= ".bnd.launcher";
+	private static final String				BND_LAUNCHER			= ".bnd.launcher";
 
 	private PrintStream						out;
 	private LauncherConstants				parms;
@@ -105,13 +108,15 @@ public class Launcher implements ServiceListener {
 	private boolean							security;
 	private SimplePermissionPolicy			policy;
 	private Callable<Integer>				mainThread;
-	private final Map<File, Bundle>			installedBundles	= new LinkedHashMap<>();
-	private File							home				= new File(System.getProperty("user.home"));
-	private File							bnd					= new File(home, "bnd");
-	private List<Bundle>					wantsToBeStarted	= new ArrayList<>();
-	private AtomicBoolean					active				= new AtomicBoolean();
-	private AtomicReference<DatagramSocket>	commsSocket			= new AtomicReference<>();
+	private final Map<File, Bundle>			installedBundles		= new LinkedHashMap<>();
+	private File							home					= new File(System.getProperty("user.home"));
+	private File							bnd						= new File(home, "bnd");
+	private List<Bundle>					wantsToBeStarted		= new ArrayList<>();
+	private AtomicBoolean					active					= new AtomicBoolean();
+	private AtomicReference<DatagramSocket>	commsSocket				= new AtomicReference<>();
 	private StartLevelRuntimeHandler		startLevelhandler;
+	private boolean							connect;
+	private BundleActivator					externalActivator;
 
 	enum EmbeddedActivatorPhase {
 
@@ -120,8 +125,9 @@ public class Launcher implements ServiceListener {
 		AFTER_BUNDLES_START,
 		UNKNOWN;
 
-		static EmbeddedActivatorPhase valueOf( Object o) {
-			if ( AFTER_FRAMEWORK_INIT.name().equals(o))
+		static EmbeddedActivatorPhase valueOf(Object o) {
+			if (AFTER_FRAMEWORK_INIT.name()
+				.equals(o))
 				return AFTER_FRAMEWORK_INIT;
 
 			if (Boolean.TRUE.equals(o) || BEFORE_BUNDLES_START.name()
@@ -135,6 +141,7 @@ public class Launcher implements ServiceListener {
 			return UNKNOWN;
 		}
 	}
+
 	/**
 	 * Called from the commandline (and via EmbeddedLauncher in the embedded
 	 * mode.)
@@ -160,12 +167,38 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
-	/*
+	/**
 	 * Without exit and properties are read. Called reflectively from embedded
 	 */
 	public static int run(String args[]) throws Throwable {
 		Launcher target = new Launcher();
 		target.loadPropertiesFromFileOrEmbedded();
+		return target.launch(args);
+	}
+
+	/**
+	 * Launch with optional properties & optional bundle activator. If the
+	 * properties are null, they are attempted to be read from
+	 * `launcher.properties`.
+	 *
+	 * @param args
+	 * @param properties the properties or null
+	 * @param activator null, or a Bundle Activator that will be called
+	 *            back before the bundles are started, see
+	 *            {@link EmbeddedActivatorPhase#BEFORE_BUNDLES_START}.
+	 * @return the exit code
+	 * @throws Throwable
+	 */
+	public static int launch(String[] args, Properties properties, BundleActivator activator)
+		throws Throwable {
+		Launcher target;
+		if (properties == null) {
+			target = new Launcher();
+			target.loadPropertiesFromFileOrEmbedded();
+		} else {
+			target = new Launcher(properties);
+		}
+		target.externalActivator = activator;
 		return target.launch(args);
 	}
 
@@ -354,6 +387,8 @@ public class Launcher implements ServiceListener {
 
 			watch();
 
+			trace("java.class.path %s", System.getProperties()
+				.getProperty("java.class.path"));
 			trace("inited runbundles=%s activators=%s timeout=%s", parms.runbundles, parms.activators, parms.timeout);
 			trace("version %s", getVersion());
 
@@ -362,7 +397,6 @@ public class Launcher implements ServiceListener {
 				report(out);
 				System.exit(status);
 			}
-
 
 			trace("framework=%s", systemBundle);
 
@@ -395,7 +429,6 @@ public class Launcher implements ServiceListener {
 			} else {
 				trace("requested to register no services");
 			}
-
 
 			// Wait until a Runnable is registered with main.thread=true.
 			// not that this will never happen when we're running on the mini fw
@@ -451,7 +484,6 @@ public class Launcher implements ServiceListener {
 
 		doSecurity();
 
-
 		int result = LauncherConstants.OK;
 
 		BundleContext systemContext = systemBundle.getBundleContext();
@@ -461,6 +493,10 @@ public class Launcher implements ServiceListener {
 
 		List<BundleActivator> startBeforeBundleStart = new LinkedList<>();
 		List<BundleActivator> startAfterBundleStart = new LinkedList<>();
+
+		if (externalActivator != null) {
+			startBeforeBundleStart.add(externalActivator);
+		}
 
 		// Start embedded activators
 		trace("start embedded activators");
@@ -599,7 +635,6 @@ public class Launcher implements ServiceListener {
 		all.addAll(wantsToBeStarted);
 		wantsToBeStarted.clear();
 
-
 		for (Bundle b : all) {
 			try {
 				trace("starting %s", b.getSymbolicName());
@@ -733,7 +768,6 @@ public class Launcher implements ServiceListener {
 			}
 	}
 
-
 	/**
 	 * Convert a path to native when it contains a macro. This is needed for the
 	 * jpm option since it stores the paths with a macro in the JAR through the
@@ -833,7 +867,12 @@ public class Launcher implements ServiceListener {
 			URL resource = getClass().getClassLoader()
 				.getResource(path);
 			Bundle bundle;
-			if (useReferences() && resource.getProtocol()
+			if (connect) {
+				trace("installing %s by connect", path);
+				bundle = context.installBundle(path);
+				updateDigest(digest, bundle);
+				tobestarted.add(bundle);
+			} else if (useReferences() && resource.getProtocol()
 				.equalsIgnoreCase("file")) {
 				trace("installing %s by reference", path);
 
@@ -1122,36 +1161,29 @@ public class Launcher implements ServiceListener {
 		}
 
 		Framework systemBundle;
-
 		if (parms.services) {
 			trace("using META-INF/services");
 			// 3) framework = null, lookup in META-INF/services
 
 			ClassLoader loader = getClass().getClassLoader();
 
-			// 3) Lookup in META-INF/services
-			List<String> implementations = getMetaInfServices(loader, FrameworkFactory.class.getName());
-
-			if (implementations.isEmpty())
-				error("Found no fw implementation");
-			if (implementations.size() > 1)
-				error("Found more than one framework implementations: %s", implementations);
-
-			String implementation = implementations.get(0);
-
-			Class<?> clazz = loader.loadClass(implementation);
-			FrameworkFactory factory = (FrameworkFactory) newInstance(clazz);
-			trace("Framework factory %s", factory);
 			@SuppressWarnings({
 				"unchecked", "rawtypes"
 			})
 			Map<String, String> configuration = (Map) p;
-			systemBundle = factory.newFramework(configuration);
-			trace("framework instance %s", systemBundle);
+
+			systemBundle = createConnect(loader, configuration);
+			if (systemBundle == null) {
+				systemBundle = createClassic(systemBundle, loader, configuration);
+			}
 		} else {
 			trace("using embedded mini framework because we were told not to use META-INF/services");
 			// we have to use our own dummy framework
 			systemBundle = new MiniFramework(p).setTracing(this::trace);
+		}
+		if (systemBundle == null) {
+			error("Cannot find a framework on the classpath");
+			throw new IllegalStateException("Unfortunately, we could not create a framework");
 		}
 		systemBundle.init();
 
@@ -1175,38 +1207,58 @@ public class Launcher implements ServiceListener {
 		return systemBundle;
 	}
 
-	protected void deleteFiles(File wd) {
-		IO.delete(wd);
+	private Framework createClassic(Framework systemBundle, ClassLoader loader, Map<String, String> configuration) {
+		FrameworkFactory factory = getMetaInfService(loader, FrameworkFactory.class);
+		if (factory != null) {
+			systemBundle = factory.newFramework(configuration);
+			trace("framework instance %s", systemBundle);
+		} else
+			trace("framework factory not found");
+		return systemBundle;
 	}
 
-	/**
-	 * Try to get the stupid service interface ...
-	 *
-	 * @throws IOException
+	/*
+	 * Attempts to create an OSGi Connect. This allows a third party bundle on
+	 * the -runpath to control the class loading strategy
+	 * @param loader the class loader of this launcher
+	 * @param configuration the framework configuration
+	 * @return null or a connect framework
 	 */
-	private List<String> getMetaInfServices(ClassLoader loader, String factory) throws IOException {
-		if (loader == null)
-			loader = getClass().getClassLoader();
-
-		Enumeration<URL> e = loader.getResources("META-INF/services/" + factory);
-		List<String> factories = new ArrayList<>();
-
-		while (e.hasMoreElements()) {
-			URL url = e.nextElement();
-			trace("found META-INF/services in %s", url);
-
-			try (BufferedReader rdr = IO.reader(url.openStream(), UTF_8)) {
-				String line;
-				while ((line = rdr.readLine()) != null) {
-					trace("%s", line);
-					line = line.trim();
-					if (!line.startsWith("#") && line.length() > 0) {
-						factories.add(line);
-					}
+	private Framework createConnect(ClassLoader loader, Map<String, String> configuration) {
+		try {
+			ModuleConnector moduleConnector = getMetaInfService(loader, ModuleConnector.class);
+			if (moduleConnector != null) {
+				ConnectFrameworkFactory connectFrameworkFactory = getMetaInfService(loader,
+					ConnectFrameworkFactory.class);
+				if (connectFrameworkFactory != null) {
+					connect = true;
+					return connectFrameworkFactory.newFramework(configuration, moduleConnector);
 				}
 			}
+		} catch (Throwable e) {
+			// ignore, OSGi Connect is optional
 		}
-		return factories;
+		return null;
+	}
+
+	private <T> T getMetaInfService(ClassLoader loader, Class<T> service) {
+		Iterator<T> iterator = ServiceLoader.load(service, loader)
+			.iterator();
+
+		if (!iterator.hasNext()) {
+			error("Found no fw implementation");
+			return null;
+		}
+		T implementation = iterator.next();
+
+		if (iterator.hasNext())
+			error("Found more than one framework implementations: %s", iterator.next());
+
+		return implementation;
+	}
+
+	protected void deleteFiles(File wd) {
+		IO.delete(wd);
 	}
 
 	public void addBundle(File resource) {
@@ -1406,7 +1458,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	static class AllPermissionCollection extends PermissionCollection {
-		private static final long			serialVersionUID	= 1L;
+		private static final long				serialVersionUID	= 1L;
 		private static final List<Permission>	PERMISSIONS			= Collections.singletonList(new AllPermission());
 
 		AllPermissionCollection() {
