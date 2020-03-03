@@ -20,10 +20,10 @@ apply plugin: 'maven-publish'
 
 ext.groupId = 'biz.aQute.bnd'
 ext.artifactId = 'biz.aQute.bnd.gradle'
-ext.artifactVersion = '4.3.1'
+ext.artifactVersion = '5.0.0'
 
 repositories {
-  jcenter()
+  mavenCentral()
 }
 
 configurations {
@@ -62,6 +62,12 @@ tasks.create('displayArtifacts') {
     println "gradle.publish.key: ${project.findProperty('gradle.publish.key')}"
     println "gradle.publish.secret: ${project.findProperty('gradle.publish.secret')}"
     println()
+    println "pom:"
+    configurations.pom.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+      println "${artifact} ${artifact.file}"
+    }
+    println()
+    println "artifacts:"
     configurations.archives.artifacts.each { artifact ->
       println "${artifact} ${artifact.file}"
     }
@@ -70,11 +76,12 @@ tasks.create('displayArtifacts') {
 
 def pomFile = file("$buildDir/pom.xml")
 
-task('copyPublishedPom') {
+def copyPublishedPom = tasks.create('copyPublishedPom') {
   inputs.files(configurations.pom).withPathSensitivity(PathSensitivity.NONE)
   outputs.file(pomFile)
   doLast {
-    pomFile.text = configurations.pom.files.first().text
+    println "copy published pom ${configurations.pom.singleFile} to ${pomFile}"
+    pomFile.text = configurations.pom.singleFile.text
   }
 }
 
@@ -88,10 +95,10 @@ afterEvaluate {
       }
     }
   }
-  tasks.generatePomFileForPluginMavenPublication {
+  tasks.named('generatePomFileForPluginMavenPublication') {
     destination = pomFile
     enabled = false
-    finalizedBy('copyPublishedPom')
+    finalizedBy copyPublishedPom
   }
 }
 
