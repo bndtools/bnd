@@ -54,10 +54,11 @@ public class SocketRedirector implements Redirector {
 					// Connect to the server. We keep on trying this.
 					//
 
-					while (!isInterrupted() && !quit) {
-						socket = findSocket(agentServer, port);
-						if (socket != null)
-							break;
+					while ((socket = findSocket(agentServer, port)) == null) {
+
+						if (isInterrupted() || quit) {
+							return;
+						}
 
 						Thread.sleep(1000);
 					}
