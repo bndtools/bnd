@@ -182,23 +182,23 @@ public class Launcher implements ServiceListener {
 	 * `launcher.properties`.
 	 *
 	 * @param args
-	 * @param propertiesOrNull the properties or null
-	 * @param activatorOrNull null, or a Bundle Activator that will be called
+	 * @param properties the properties or null
+	 * @param activator null, or a Bundle Activator that will be called
 	 *            back before the bundles are started, see
 	 *            {@link EmbeddedActivatorPhase#BEFORE_BUNDLES_START}.
 	 * @return the exit code
 	 * @throws Throwable
 	 */
-	public static int launch(String[] args, Properties propertiesOrNull, BundleActivator activatorOrNull)
+	public static int launch(String[] args, Properties properties, BundleActivator activator)
 		throws Throwable {
 		Launcher target;
-		if (propertiesOrNull == null) {
+		if (properties == null) {
 			target = new Launcher();
 			target.loadPropertiesFromFileOrEmbedded();
 		} else {
-			target = new Launcher(propertiesOrNull);
+			target = new Launcher(properties);
 		}
-		target.externalActivator = activatorOrNull;
+		target.externalActivator = activator;
 		return target.launch(args);
 	}
 
