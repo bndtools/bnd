@@ -342,7 +342,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		for (String path : runpath) {
 			logger.debug("embedding runpath {}", path);
-			File file = new File(path);
+			File file = getOriginalFile(path);
 			if (file.isFile()) {
 				String newPath = nonCollidingPath(file, jar, null);
 				jar.putResource(newPath, getJarFileResource(file, rejar, strip));
@@ -357,7 +357,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		for (String path : runbundles) {
 			logger.debug("embedding run bundles {}", path);
-			File file = new File(path);
+			File file = getOriginalFile(path);
 			if (!file.isFile())
 				getProject().error("Invalid entry in -runbundles %s", file);
 			else {
@@ -486,6 +486,19 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		remove.forEach(jar::remove);
 		logger.debug("resources {}", Strings.join("\n", jar.getResources()
 			.keySet()));
+	}
+
+	File getOriginalFile(String path) {
+		File file = new File(path);
+		if (file.getName()
+			.startsWith("+") && file.exists()) { // file has source attached
+			File originalFile = new File(file.getParentFile(), file.getName()
+				.substring(1));
+			if (originalFile.exists()) {
+				return originalFile;
+			}
+		}
+		return file;
 	}
 
 	String nonCollidingPath(File file, Jar jar, String locationFormat) throws Exception {
