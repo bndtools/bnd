@@ -62,6 +62,9 @@ public class SocketRedirector implements Redirector {
 						Thread.sleep(1000);
 					}
 
+					if (socket == null)
+						return;
+
 					//
 					// Create a printstream on the socket output (the system's
 					// input).
