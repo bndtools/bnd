@@ -112,8 +112,28 @@ public final class URIUtil {
 						break;
 				}
 			}
-		} catch (URISyntaxException e1) {
-		}
+		} catch (URISyntaxException e1) {}
 		return Optional.empty();
 	}
+
+	/**
+	 * Answer if the given URL is on the local system or remote
+	 */
+	public static boolean isRemote(URI uri) {
+		String scheme = uri.getScheme();
+		if (scheme == null)
+			return false;
+
+		switch (scheme.toLowerCase()) {
+			case "file" :
+			case "jar" :
+			case "data" :
+				return false;
+
+			default :
+				return true;
+
+		}
+	}
+
 }
