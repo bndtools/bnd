@@ -27,6 +27,7 @@ import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
@@ -73,6 +74,8 @@ class IndexFile {
 	private long						lastModified;
 	private long						last		= 0L;
 	volatile Promise<BridgeRepository>	bridge;
+
+	private String						status;
 
 	/*
 	 * Constructor
@@ -293,7 +296,7 @@ class IndexFile {
 			MavenVersion version = archive.revision.version;
 
 			BridgeRepository.addInformationCapability(rb, name, version.getOSGiVersion(), repo.toString(),
-				"Not a bundle");
+				Constants.NOT_A_BUNDLE_S);
 		}
 
 		Resource resource = rb.build();
@@ -335,7 +338,10 @@ class IndexFile {
 	}
 
 	private Set<Archive> read(File file) throws IOException {
-		assert file.isFile();
+		if (!file.isFile()) {
+			this.status = "Not an index file: " + file;
+			return Collections.emptySet();
+		}
 		return read(IO.collect(file), true);
 	}
 
@@ -393,9 +399,15 @@ class IndexFile {
 			s = replacer.process(s);
 		int n = s.indexOf("#");
 		if (n > 0) {
-			s = Strings.trim(s.substring(0, n));
+			s = s.substring(0, n);
 		}
-		return Archive.valueOf(s);
+		s = Strings.trim(s);
+		if (Archive.isValid(s))
+			return Archive.valueOf(s);
+
+		if (status == null)
+			status = "Invalid GAV " + s;
+		return null;
 	}
 
 	BridgeRepository getBridge() {
@@ -403,10 +415,12 @@ class IndexFile {
 			return bridge.getValue();
 		} catch (InvocationTargetException e) {
 			reporter.exception(Exceptions.unrollCause(e, InvocationTargetException.class), "Getting bridge failed");
+			status = Exceptions.causes(e);
 		} catch (InterruptedException e) {
 			logger.info("Interrupted");
 			Thread.currentThread()
 				.interrupt();
+			status = Exceptions.causes(e);
 		}
 		return new BridgeRepository();
 	}
@@ -545,4 +559,21 @@ class IndexFile {
 		}
 	}
 
+	public String getStatus() {
+		if (status != null)
+			return status;
+
+		Promise<BridgeRepository> bridge2 = bridge;
+		if (bridge2 == null)
+			return null;
+
+		if (bridge2.isDone())
+			try {
+				return bridge2.getValue()
+					.getStatus();
+			} catch (Exception e) {
+				return e.getMessage();
+			}
+		return null;
+	}
 }

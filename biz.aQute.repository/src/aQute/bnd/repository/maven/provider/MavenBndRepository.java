@@ -1,6 +1,7 @@
 package aQute.bnd.repository.maven.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
+import static aQute.lib.exceptions.FunctionWithException.asFunction;
 
 import java.io.Closeable;
 import java.io.File;
@@ -13,13 +14,17 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -52,7 +57,6 @@ import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
-import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.service.maven.ToDependencyPom;
@@ -63,6 +67,7 @@ import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.exceptions.FunctionWithException;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.PathSet;
@@ -101,7 +106,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private String				name;
 	private HttpClient			client;
 	private ReleasePluginImpl	releasePlugin		= new ReleasePluginImpl(this, null);
-	private File				base;
+	private File				base				= IO.work;
+	private String				status				= null;
+	private boolean				remote;
+	private final AtomicBoolean	open				= new AtomicBoolean(true);
+	private Optional<Workspace>	workspace;
 
 	/**
 	 * Put result
@@ -118,7 +127,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	 */
 	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
-		init();
+		if (!init())
+			throw new IllegalStateException(status);
+
 		File binaryFile = File.createTempFile("put", ".jar");
 		File pomFile = File.createTempFile(Archive.POM_EXTENSION, ".xml");
 		LocalPutResult result = new LocalPutResult();
@@ -453,7 +464,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Override
 	public File get(String bsn, Version version, Map<String, String> properties, final DownloadListener... listeners)
 		throws Exception {
-		init();
+		if (!init())
+			throw new IllegalStateException(status);
+
 		index.sync(); // make sure all is downloaded & parsed
 
 		Archive archive = index.find(bsn, version);
@@ -487,49 +500,68 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public List<String> list(String pattern) throws Exception {
-		init();
+		if (!init())
+			return Collections.emptyList();
+
 		return index.getBridge()
 			.list(pattern);
 	}
 
 	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
-		init();
+		if (!init())
+			return new TreeSet<>();
+
 		return index.versions(bsn);
 	}
 
 	@Override
 	public String getName() {
-		init();
 		return name;
 	}
 
-	private synchronized void init() {
+	synchronized boolean init() {
+
+		if (!open.get())
+			throw new IllegalStateException("Already closed " + this);
+
+		if (status != null)
+			return false;
+
+		if (inited)
+			return true;
+
+		inited = true;
+
 		try {
-			if (inited)
-				return;
-
-			client = registry.getPlugin(HttpClient.class);
-			inited = true;
-			name = configuration.name("Maven");
-
-			localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
-
 			List<MavenBackingRepository> release = MavenBackingRepository.create(configuration.releaseUrl(), reporter,
 				localRepo, client);
 			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
 				localRepo, client);
-			storage = new MavenRepository(localRepo, getName(), release, snapshot, client.promiseFactory()
+
+			for (MavenBackingRepository mbr : release) {
+				if (mbr.isRemote()) {
+					remote = true;
+					break;
+				}
+			}
+			if (!remote)
+				for (MavenBackingRepository mbr : snapshot) {
+					if (mbr.isRemote()) {
+						remote = true;
+						break;
+					}
+				}
+
+			storage = new MavenRepository(localRepo, name, release, snapshot, client.promiseFactory()
 				.executor(), reporter);
 
-			base = IO.work;
-			if (registry != null) {
-				Workspace ws = registry.getPlugin(Workspace.class);
-				if (ws != null)
-					base = ws.getBuildDir();
-			}
-
 			File indexFile = getIndexFile();
+			Processor domain = (registry != null) ? registry.getPlugin(Processor.class) : null;
+			String source = configuration.source();
+			if (source != null) {
+				source = source.replaceAll("(\\s|,|;|\n|\r)+", "\n");
+			}
 			String tmp = configuration.multi();
 			String[] multi;
 			if (tmp == null) {
@@ -538,20 +570,47 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				multi = tmp.trim()
 					.split("\\s*,\\s*");
 			}
-			Processor domain = (registry != null) ? registry.getPlugin(Processor.class) : null;
-			String source = configuration.source();
-			if (source != null) {
-				source = source.replaceAll("(\\s|,|;|\n|\r)+", "\n");
-			}
 			this.index = new IndexFile(domain, reporter, indexFile, source, storage, client.promiseFactory(), multi);
 			this.index.open();
 
+			try (Formatter f = new Formatter()) {
+				validateUris(release, f);
+				validateUris(snapshot, f);
+
+				String s = f.toString();
+				if (!s.isEmpty()) {
+					status = s;
+					return false;
+				}
+			}
+
 			startPoll();
 			logger.debug("initing {}", this);
+			workspace.ifPresent(ws -> ws.refresh(this));
+			return true;
 		} catch (Exception e) {
 			reporter.exception(e, "Init for MavenBndRepository failed %s", configuration);
-			throw Exceptions.duck(e);
+			status = Exceptions.getDisplayTypeName(e) + " " + Exceptions.causes(e);
+			return false;
 		}
+	}
+
+	private void validateUris(List<MavenBackingRepository> release, Formatter f) {
+		release.stream()
+			.map(mb -> {
+				try {
+					return mb.toURI("");
+				} catch (Exception e) {
+					f.format("Invalid url %s : %s: %s\n", mb, Exceptions.causes(e));
+					return null;
+				}
+			})
+			.filter(Objects::nonNull)
+			.forEach(u -> {
+				String validateURI = client.validateURI(u);
+				if (validateURI != null)
+					f.format("%s : %s\n", u, validateURI);
+			});
 	}
 
 	private void startPoll() {
@@ -594,7 +653,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Override
 	public void setProperties(Map<String, String> map) throws Exception {
 		configuration = Converter.cnv(Configuration.class, map);
-
+		name = configuration.name("Maven");
+		localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
 	}
 
 	@Override
@@ -605,27 +665,28 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Override
 	public void setRegistry(Registry registry) {
 		this.registry = registry;
+		client = registry.getPlugin(HttpClient.class);
+		workspace = Optional.ofNullable(registry.getPlugin(Workspace.class));
+		base = workspace.map(Workspace::getBuildDir)
+			.orElse(IO.work);
 	}
 
 	@Override
 	public void close() throws IOException {
-		IO.close(storage);
-		if (indexPoller != null)
-			indexPoller.cancel(true);
+		if (open.getAndSet(false)) {
+			if (indexPoller != null)
+				indexPoller.cancel(true);
+			IO.close(storage);
+		}
 	}
 
 	@Override
 	public boolean refresh() throws Exception {
-		init();
+		if (!init())
+			return false;
 
 		return index.refresh(() -> {
-			for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class)) {
-				try {
-					listener.repositoryRefreshed(this);
-				} catch (Exception e) {
-					reporter.exception(e, "Updating listener plugin %s", listener);
-				}
-			}
+			workspace.ifPresent(ws -> ws.refresh(this));
 		});
 	}
 
@@ -636,13 +697,15 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public String toString() {
-		return "MavenBndRepository [localRepo=" + localRepo + ", storage=" + getName() + ", inited=" + inited
-			+ ", redeploy=" + configuration.redeploy() + "]";
+		return "MavenBndRepository [localRepo=" + localRepo + ", storage=" + name + ", inited=" + inited + ", redeploy="
+			+ configuration.redeploy() + "]";
 	}
 
 	@Override
 	public Map<String, Runnable> actions(Object... target) throws Exception {
-		init();
+		if (!init())
+			return Collections.emptyMap();
+
 		switch (target.length) {
 			case 0 :
 				return null;
@@ -658,33 +721,37 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public String tooltip(Object... target) throws Exception {
-		init();
+		if (!init())
+			return status;
+
 		switch (target.length) {
 			case 0 :
 				try (Formatter f = new Formatter()) {
-					f.format("%s (MavenBndRepository)\n", getName());
-					f.format("Revisions %s\n", index.archives.size());
-					for (MavenBackingRepository mbr : storage.getReleaseRepositories())
-						f.format("Release %s  (%s)\n", mbr, getUser(mbr));
-					for (MavenBackingRepository mbr : storage.getSnapshotRepositories())
-						f.format("Snapshot %s (%s)\n", mbr, getUser(mbr));
-					f.format("Storage %s\n", localRepo);
-					f.format("Index %s\n", index.indexFile);
+					if (status != null)
+						f.format("STATUS = %s", status);
+					else {
+						f.format("MavenBndRepository           : %s\n", getName());
+						f.format("Revisions                    : %s\n", index.archives.size());
+						f.format("Storage                      : %s\n", localRepo);
+						f.format("Index                        : %s\n", index.indexFile);
+						f.format("Release repos                : \n    %s\n",
+							Strings.join("\n", storage.getReleaseRepositories()
+								.stream()
+								.filter(Objects::nonNull)
+								.map(Object::toString)
+								.toArray()));
+
+						f.format("Snapshot repos               : \n    %s\n",
+							Strings.join("\n", storage.getSnapshotRepositories()
+								.stream()
+								.filter(Objects::nonNull)
+								.map(asFunction(MavenBackingRepository::getUser))
+								.toArray()));
+					}
 					return f.toString();
 				}
 			default :
 				return index.tooltip(target);
-		}
-	}
-
-	private Object getUser(MavenBackingRepository remote) {
-		if (remote == null)
-			return "";
-
-		try {
-			return remote.getUser();
-		} catch (Exception e) {
-			return "error: " + e.toString();
 		}
 	}
 
@@ -696,13 +763,16 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public String title(Object... target) throws Exception {
-		init();
+		if (!init())
+			return name;
+
 		return index.getBridge()
 			.title(target);
 	}
 
 	public boolean dropTarget(URI uri) throws Exception {
-		init();
+		if (!init())
+			return false;
 
 		String t = uri.toString()
 			.trim();
@@ -781,7 +851,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public void toPom(OutputStream out, PomOptions options) throws Exception {
-		init();
+		if (!init())
+			return;
+
 		PomGenerator pg = new PomGenerator(index.getArchives());
 		pg.name(Revision.valueOf(options.gav))
 			.parent(Revision.valueOf(options.parent))
@@ -792,7 +864,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
-		init();
+		if (!init())
+			return Collections.emptyMap();
+
 		return index.getBridge()
 			.getRepository()
 			.findProviders(requirements);
@@ -857,6 +931,25 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	public List<Revision> getRevisions(Program program) throws Exception {
+		if (!init())
+			return Collections.emptyList();
+
 		return storage.getRevisions(program);
+	}
+
+	@Override
+	public String getStatus() {
+		if (status != null)
+			return status;
+
+		if (this.index != null) {
+			return this.index.getStatus();
+		}
+		return null;
+	}
+
+	@Override
+	public boolean isRemote() {
+		return remote;
 	}
 }
