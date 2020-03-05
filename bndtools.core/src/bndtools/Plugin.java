@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.IStartupParticipant;
 import org.bndtools.api.Logger;
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
 import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.eclipse.core.resources.IWorkspace;
@@ -151,6 +152,7 @@ public class Plugin extends AbstractUIPlugin {
 		super.stop(context);
 		unregisterWorkspaceURLHandler();
 		scheduler.shutdown();
+		Icons.clear();
 	}
 
 	public static Plugin getDefault() {
