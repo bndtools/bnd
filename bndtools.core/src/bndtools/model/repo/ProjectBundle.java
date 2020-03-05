@@ -59,4 +59,9 @@ public class ProjectBundle implements IAdaptable {
 		}
 		return result;
 	}
+
+	public boolean isSub() {
+		return !project.getName()
+			.equals(bsn);
+	}
 }

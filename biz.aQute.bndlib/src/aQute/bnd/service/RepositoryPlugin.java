@@ -215,4 +215,38 @@ public interface RepositoryPlugin {
 	 */
 
 	String getLocation();
+
+	/**
+	 * Return a status of this repository, if it is null, status is ok.
+	 * Otherwise the return value represents a reason.
+	 *
+	 * @return a status or null if all ok
+	 */
+	default String getStatus() {
+		return null;
+	}
+
+	/**
+	 * Convenience method to see if the status is null
+	 */
+
+	default boolean isOk() {
+		return getStatus() == null;
+	}
+
+	/**
+	 * Return a name of an icon
+	 */
+	default String getIcon() {
+		return "repository";
+	}
+
+	/**
+	 * Indicate if this repo is remote or local
+	 *
+	 * @return true if this is a remote repo
+	 */
+	default boolean isRemote() {
+		return false;
+	}
 }
