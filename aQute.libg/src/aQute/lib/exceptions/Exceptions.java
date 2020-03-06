@@ -10,6 +10,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Exceptions {
+	final static Pattern DISPLAY_P = Pattern.compile("(.*)(Exception|Error)");
+
 	private Exceptions() {}
 
 	public static <V> V unchecked(Callable<? extends V> callable) {
@@ -65,12 +67,11 @@ public class Exceptions {
 		return sj.toString();
 	}
 
-	static Pattern DISPLAY_P = Pattern.compile("(.*)(Exception|Error)");
 
 	/**
 	 * Return a display name of an exception type. This is basically removing
 	 * the package and the Exception or Error suffix.
-	 * 
+	 *
 	 * @param e the exception
 	 * @return a display name for its type
 	 */
