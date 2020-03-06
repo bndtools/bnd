@@ -601,7 +601,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				try {
 					return mb.toURI("");
 				} catch (Exception e) {
-					f.format("Invalid url %s : %s: %s\n", mb, Exceptions.causes(e));
+					f.format("Invalid url %s : %s\n", mb, Exceptions.causes(e));
 					return null;
 				}
 			})
