@@ -221,4 +221,6 @@ public abstract class MavenBackingRepository implements Closeable {
 
 	public abstract boolean isFile();
 
+	public abstract boolean isRemote();
+
 }

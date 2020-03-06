@@ -74,4 +74,9 @@ public class MavenFileRepository extends MavenBackingRepository {
 	public boolean isFile() {
 		return true;
 	}
+
+	@Override
+	public boolean isRemote() {
+		return false;
+	}
 }

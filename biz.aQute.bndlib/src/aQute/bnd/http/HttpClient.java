@@ -65,6 +65,7 @@ import aQute.lib.date.Dates;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
+import aQute.lib.strings.Strings;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
@@ -881,4 +882,24 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 
 	}
+
+	/**
+	 * Validate a URI to see if it is supported by this client
+	 *
+	 * @param u the uri
+	 * @return null if ok, otherwise a reason why it is invalid
+	 */
+	public String validateURI(URI u) {
+		String scheme = u.getScheme();
+		if (scheme == null) {
+			return "Invalid uri, no scheme: " + u;
+		}
+		if (!Strings.in(new String[] {
+			"http", "https", "file"
+		}, scheme)) {
+			return "Invalid scheme " + scheme + "for uri " + u;
+		}
+		return null;
+	}
+
 }

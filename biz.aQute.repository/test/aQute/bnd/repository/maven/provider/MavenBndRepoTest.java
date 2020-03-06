@@ -30,6 +30,7 @@ import org.w3c.dom.Document;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.ResourceUtils;
@@ -99,6 +100,7 @@ public class MavenBndRepoTest extends TestCase {
 
 	public void testProgramRemoveFromIndex() throws Exception {
 		config(null);
+		assertThat(repo.getStatus()).isNull();
 		assertNotNull(repo.get("org.osgi.dto", DTO_VERSION, null));
 		String indexContent = IO.collect(index);
 		assertThat(indexContent).contains("org.osgi.dto:1.0.0");
@@ -138,15 +140,34 @@ public class MavenBndRepoTest extends TestCase {
 		assertThat(indexContent).contains("org.osgi.service.log:1.3.0");
 	}
 
+	public void testBadUrl() throws Exception {
+		Map<String, String> config = new HashMap<>();
+		config.put("releaseUrl", "httpx://goo.bar/adshasdh");
+		config(config);
+		repo.init();
+		assertThat(repo.getStatus()).contains("Invalid scheme");
+	}
+
 	public void testUseSource() throws Exception {
 		Map<String, String> config = new HashMap<>();
 		config.put("source", "org.osgi:org.osgi.service.log:1.3.0, ; \torg.osgi:org.osgi.service.log:1.2.0");
 		config(config);
+		assertThat(repo.getStatus()).isNull();
 		assertThat(repo.list("org.osgi.service.log")).isNotEmpty();
+	}
+
+	public void testUseSourceWithError() throws Exception {
+		Map<String, String> config = new HashMap<>();
+		config.put("source", "foobar\n");
+		config(config);
+		repo.init();
+		assertThat(repo.getStatus()).contains("foobar");
 	}
 
 	public void testTooltip() throws Exception {
 		config(null);
+		assertThat(repo.init()).isTrue();
+
 		String tooltip = repo.tooltip();
 		assertNotNull(tooltip);
 
@@ -166,7 +187,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertEquals("commons-cli:commons-cli [!]", title);
 
 		title = repo.title("commons-cli:commons-cli", new Version("1.0"));
-		assertEquals("1.0.0 [Not a bundle]", title);
+		assertEquals("1.0.0 [" + Constants.NOT_A_BUNDLE_S + "]", title);
 
 		title = repo.title("commons-cli:commons-cli", new Version("1.4.0.SNAPSHOT"));
 		assertEquals("1.4.0.SNAPSHOT [Not found]", title);

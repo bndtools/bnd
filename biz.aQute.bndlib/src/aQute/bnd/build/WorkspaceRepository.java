@@ -4,12 +4,15 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
+
+import org.osgi.service.repository.Repository;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
@@ -21,6 +24,7 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.SortedList;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 
 public class WorkspaceRepository implements RepositoryPlugin, Actionable {
@@ -161,7 +165,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 
 	@Override
 	public String getName() {
-		return "Workspace " + workspace.getBase()
+		return workspace.getBase()
 			.getName();
 	}
 
@@ -194,14 +198,44 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 
 	@Override
 	public String tooltip(Object... target) throws Exception {
-		// TODO Auto-generated method stub
+		if (target.length == 0) {
+			try (Formatter f = new Formatter()) {
+				f.format("Directory           : %s\n", workspace.getBase());
+				f.format("Projects            : %s\n", workspace.getAllProjects()
+					.size());
+				f.format("Communication       : %s\n", workspace.isOffline() ? "offline" : "online");
+				f.format("Gestalt             : %s\n", workspace.getGestalt());
+				f.format("Workspace errors    : \n    %s\n", Strings.join("\n    ", workspace.getErrors()));
+				f.format("Workspace warnings  : \n    %s\n", Strings.join("\n    ", workspace.getWarnings()));
+				f.format("Plugins             : \n    %s\n", Strings.join("\n    ", workspace.getPlugins()
+					.stream()
+					.filter(p -> !(p instanceof Repository))
+					.toArray()));
+				f.format("Repositories        : \n    %s\n", Strings.join("\n    ", workspace.getRepositories()
+					.stream()
+					.map(r -> {
+						return String.format("%-40s %s %s", r.getName(), r.canWrite(),
+							r.getStatus() == null ? "" : r.getStatus());
+					})
+					.toArray()));
+				return f.toString();
+			}
+		}
 		return null;
 	}
 
 	@Override
 	public String title(Object... target) throws Exception {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
+	public String getIcon() {
+		return "workspacerepo";
+	}
+
+	@Override
+	public boolean isRemote() {
+		return false;
+	}
 }

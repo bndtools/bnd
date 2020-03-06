@@ -65,6 +65,7 @@ import aQute.bnd.osgi.Verifier;
 import aQute.bnd.remoteworkspace.server.RemoteWorkspaceServer;
 import aQute.bnd.resource.repository.ResourceRepositoryImpl;
 import aQute.bnd.service.BndListener;
+import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.action.Action;
 import aQute.bnd.service.extension.ExtensionActivator;
@@ -1383,6 +1384,16 @@ public class Workspace extends Processor {
 				.collect(Strings.joining());
 		} finally {
 			projectswhereCycleCheck.set(null);
+		}
+	}
+
+	public void refresh(RepositoryPlugin repo) {
+		for (RepositoryListenerPlugin listener : getPlugins(RepositoryListenerPlugin.class)) {
+			try {
+				listener.repositoryRefreshed(repo);
+			} catch (Exception e) {
+				exception(e, "Updating listener plugin %s", listener);
+			}
 		}
 	}
 }

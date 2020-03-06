@@ -944,6 +944,33 @@ public class IO {
 		return close((AutoCloseable) in);
 	}
 
+	/**
+	 * Will iterate over the given toBeClose and silently close any object that
+	 * implements AutoCloseable.
+	 *
+	 * @param toBeClosed any iterable
+	 * @return true if an exception was thrown during closing
+	 */
+	public static boolean closeAll(Object... toBeClosed) {
+		if (toBeClosed == null)
+			return false;
+
+		boolean exceptionsWereThrown = false;
+		for (Object o : toBeClosed) {
+			if (o instanceof AutoCloseable) {
+				exceptionsWereThrown |= close((AutoCloseable) o) != null;
+			} else if (o instanceof Iterable) {
+				for (Object oo : (Iterable<?>) o) {
+					if (oo instanceof AutoCloseable) {
+						// do not recurse!
+						exceptionsWereThrown |= close((AutoCloseable) oo) != null;
+					}
+				}
+			}
+		}
+		return exceptionsWereThrown;
+	}
+
 	public static URL toURL(String s, File base) throws MalformedURLException {
 		int n = s.indexOf(':');
 		if (n > 0 && n < 10) {

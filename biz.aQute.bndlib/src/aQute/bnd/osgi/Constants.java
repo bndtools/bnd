@@ -13,6 +13,11 @@ public interface Constants {
 	String				AUTOMATIC_MODULE_NAME						= "Automatic-Module-Name";
 
 	/**
+	 * Consant string to be used when reporting it is not a bundle.
+	 */
+	String				NOT_A_BUNDLE_S								= "Not a bundle";
+
+	/**
 	 * Magic suffix to bsn that when used imply that the caller wants the
 	 * sources for the bsn- suffix.
 	 */
@@ -140,7 +145,6 @@ public interface Constants {
 	String				EXPORT_BSN									= "bsn";
 	String				EXPORT_NAME									= "name";
 	String				EXPORT_VERSION								= "version";
-
 
 	String				EXPORTTYPE									= "-exporttype";
 	String				EXPORT_APIGUARDIAN							= "-export-apiguardian";
@@ -583,6 +587,5 @@ public interface Constants {
 	String				DEBUG										= "-debug";
 	@Deprecated
 	String				EXPERIMENTS									= "-experiments";
-
 
 }

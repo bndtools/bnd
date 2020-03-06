@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.resource.Capability;
@@ -19,6 +20,7 @@ import org.osgi.service.repository.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
@@ -171,6 +173,14 @@ public class BridgeRepository {
 
 		public Resource getResource() {
 			return resource;
+		}
+
+		String getError() {
+			if (!error)
+				return null;
+
+			InfoCapability info = getInfo();
+			return info.name() + "-" + info.version() + " " + info.error();
 		}
 
 		@Override
@@ -363,5 +373,22 @@ public class BridgeRepository {
 
 	public Set<Resource> getResources() {
 		return ResourceUtils.getAllResources(repository);
+	}
+
+	final static Pattern NOT_A_BUNDLE_P = Pattern.compile(".*" + Constants.NOT_A_BUNDLE_S + ".*",
+		Pattern.CASE_INSENSITIVE);
+
+	public String getStatus() {
+		return index.entrySet()
+			.stream()
+			.flatMap(e -> e.getValue()
+				.values()
+				.stream())
+			.filter(ResourceInfo::isError)
+			.map(ResourceInfo::getError)
+			.filter(NOT_A_BUNDLE_P.asPredicate()
+				.negate())
+			.findAny()
+			.orElse(null);
 	}
 }

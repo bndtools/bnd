@@ -6,8 +6,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Exceptions {
+	final static Pattern DISPLAY_P = Pattern.compile("(.*)(Exception|Error)");
+
 	private Exceptions() {}
 
 	public static <V> V unchecked(Callable<? extends V> callable) {
@@ -61,6 +65,25 @@ public class Exceptions {
 			t = t.getCause();
 		}
 		return sj.toString();
+	}
+
+
+	/**
+	 * Return a display name of an exception type. This is basically removing
+	 * the package and the Exception or Error suffix.
+	 *
+	 * @param e the exception
+	 * @return a display name for its type
+	 */
+	public static String getDisplayTypeName(Throwable e) {
+		String name = e.getClass()
+			.getSimpleName();
+
+		Matcher m = DISPLAY_P.matcher(name);
+		if (m.matches()) {
+			return m.group(1);
+		} else
+			return name;
 	}
 
 }

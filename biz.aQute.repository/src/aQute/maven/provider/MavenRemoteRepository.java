@@ -3,6 +3,7 @@ package aQute.maven.provider;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Map;
@@ -20,6 +21,7 @@ import aQute.bnd.service.url.TaggedData;
 import aQute.lib.exceptions.Exceptions;
 import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
+import aQute.libg.uri.URIUtil;
 import aQute.maven.api.Program;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MetadataParser.ProgramMetadata;
@@ -33,11 +35,15 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 	final Map<Program, ProgramMetadata>		programs			= new ConcurrentHashMap<>();
 	final String							base;
 	final static long						DEFAULT_MAX_STALE	= TimeUnit.HOURS.toMillis(1);
+	final boolean							remote;
 
 	public MavenRemoteRepository(File root, HttpClient client, String base, Reporter reporter) throws Exception {
 		super(root, base, reporter);
 		this.client = client;
 		this.base = base;
+
+		URI uri = new URI(base);
+		remote = URIUtil.isRemote(uri);
 	}
 
 	@Override
@@ -172,12 +178,18 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 
 	@Override
 	public String toString() {
-		return "RemoteRepo [base=" + base + ", id=" + id + "]";
+		return "RemoteRepo [base=" + base + ", id=" + id + ", user=" + getUser() + "]";
 	}
 
 	@Override
-	public String getUser() throws Exception {
-		return client.getUserFor(base);
+	public String getUser() {
+		try {
+			return client.getUserFor(base);
+		} catch (MalformedURLException e) {
+			return "no user for invalid url " + e.getMessage();
+		} catch (Exception e) {
+			return "no user : " + Exceptions.causes(e);
+		}
 	}
 
 	@Override
@@ -188,5 +200,10 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 	@Override
 	public boolean isFile() {
 		return false;
+	}
+
+	@Override
+	public boolean isRemote() {
+		return remote;
 	}
 }
