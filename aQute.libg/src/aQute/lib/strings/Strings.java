@@ -327,8 +327,8 @@ public class Strings {
 		return null;
 	}
 
-	public static String stripSuffix(String s, String prefix) {
-		Pattern p = Pattern.compile(prefix);
+	public static String stripSuffix(String s, String suffix) {
+		Pattern p = Pattern.compile(suffix);
 		return stripSuffix(s, p);
 	}
 

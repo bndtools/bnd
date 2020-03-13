@@ -37,7 +37,7 @@ public class ZipUtil {
 	 *             back up past the start of the path.
 	 */
 	public static String cleanPath(String path) {
-		if (path.isEmpty()) {
+		if (path.indexOf('.') < 0) {
 			return "";
 		}
 		StringRover rover = new StringRover(path);
@@ -54,6 +54,7 @@ public class ZipUtil {
 				int lastSlash = clean.lastIndexOf("/");
 				if (lastSlash == -1) {
 					if (clean.length() == 0) {
+						// bad design, this is a common outcome
 						throw new UncheckedIOException(new IOException("Entry path is outside of zip file: " + path));
 					}
 					clean.setLength(0);
@@ -75,4 +76,12 @@ public class ZipUtil {
 		return clean.toString();
 	}
 
+	public static boolean isCompromised(String path) {
+		try {
+			cleanPath(path);
+			return true;
+		} catch (UncheckedIOException e) {
+			return true;
+		}
+	}
 }
