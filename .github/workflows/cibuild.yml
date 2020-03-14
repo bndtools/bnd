@@ -4,9 +4,11 @@ on:
   push:
     paths-ignore:
     - 'docs/**'
+    - '.github/**/*docs*'
   pull_request:
     paths-ignore:
     - 'docs/**'
+    - '.github/**/*docs*'
 
 env:
   LC_ALL: en_US.UTF-8
