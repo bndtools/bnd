@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.maven.execution.MavenSession;
@@ -20,6 +21,8 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.toolchain.ToolchainManager;
+import org.apache.maven.toolchain.java.DefaultJavaToolChain;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.osgi.service.resolver.ResolutionException;
@@ -111,6 +114,9 @@ public class TestingMojo extends AbstractMojo {
 	@SuppressWarnings("deprecation")
 	private org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
 
+	@Component
+	private ToolchainManager									toolchainManager;
+
 	private Glob												glob	= new Glob("*");
 
 	@Override
@@ -185,6 +191,12 @@ public class TestingMojo extends AbstractMojo {
 					}
 				}
 			}
+			getToolchainJavaHome().ifPresent(home -> run.setProperty("java", new StringBuilder().append(home)
+				.append(File.separatorChar)
+				.append("bin")
+				.append(File.separatorChar)
+				.append("java")
+				.toString()));
 			try {
 				run.test(new File(reportsDir, bndrun), getTests());
 			} finally {
@@ -196,6 +208,14 @@ public class TestingMojo extends AbstractMojo {
 
 			return 0;
 		};
+	}
+
+	private Optional<String> getToolchainJavaHome() {
+		return Optional.ofNullable(toolchainManager)
+			.map(tm -> tm.getToolchainFromBuildContext("jdk", session))
+			.filter(DefaultJavaToolChain.class::isInstance)
+			.map(DefaultJavaToolChain.class::cast)
+			.map(DefaultJavaToolChain::getJavaHome);
 	}
 
 }
