@@ -20,7 +20,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Git Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
+    - name: Git Unshallow
+      if: (github.repository == 'bndtools/bnd') && (github.event_name != 'pull_request')
+      shell: bash
+      run: |
+        git fetch --prune --unshallow
+        git describe --dirty --always --abbrev=9
     - name: Gradle Wrapper Validation
       uses: gradle/wrapper-validation-action@v1
     - name: Set up Java
@@ -39,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Git Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: Gradle Wrapper Validation
       uses: gradle/wrapper-validation-action@v1
     - name: Set up Java
@@ -55,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Git Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: Gradle Wrapper Validation
       uses: gradle/wrapper-validation-action@v1
     - name: Set up Java
@@ -71,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Git Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: Gradle Wrapper Validation
       uses: gradle/wrapper-validation-action@v1
     - name: Set up Java
@@ -87,7 +93,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Git Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: Gradle Wrapper Validation
       uses: gradle/wrapper-validation-action@v1
     - name: Set up Java
