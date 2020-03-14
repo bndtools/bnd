@@ -4,4 +4,4 @@ gem --version
 gem install bundler -v '~> 2.0'
 bundle --version
 cd docs
-./build.sh
+./build.sh "$@"
