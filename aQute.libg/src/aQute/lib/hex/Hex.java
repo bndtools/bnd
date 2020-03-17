@@ -1,6 +1,7 @@
 package aQute.lib.hex;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.Formatter;
 import java.util.Objects;
@@ -232,5 +233,33 @@ public class Hex {
 			}
 		}
 		return false;
+	}
+
+	public static void append(Appendable sb, byte ch) {
+		try {
+			sb.append(nibble(ch >>> 4));
+			sb.append(nibble(ch >>> 0));
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	public static void append(Appendable sb, short ch) {
+		append(sb, (byte) (0xFF & (ch >>> 8)));
+		append(sb, (byte) (0xFF & (ch >>> 0)));
+	}
+
+	public static void append(Appendable sb, char ch) {
+		append(sb, (short) ch);
+	}
+
+	public static void append(Appendable sb, int ch) {
+		append(sb, (short) (0xFFFF & (ch >>> 16)));
+		append(sb, (short) (0xFFFF & (ch >>> 0)));
+	}
+
+	public static void append(Appendable sb, long ch) {
+		append(sb, (int) (0xFFFF_FFFF & (ch >>> 32)));
+		append(sb, (int) (0xFFFF_FFFF & (ch >>> 0)));
 	}
 }

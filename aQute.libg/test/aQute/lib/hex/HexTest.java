@@ -181,4 +181,28 @@ public class HexTest extends TestCase {
 			.isEqualTo(Hex.format(ByteBuffer.wrap(input)));
 
 	}
+
+	public void testHexAppend() {
+		StringBuilder sb = new StringBuilder();
+
+		Hex.append(sb, (byte) 0xA5);
+		sb.append("-");
+
+		Hex.append(sb, (short) 0xA5A4);
+		sb.append("-");
+
+		Hex.append(sb, (short) -10);
+		sb.append("-");
+
+		Hex.append(sb, 'A');
+		sb.append("-");
+
+		Hex.append(sb, 0x1234567);
+		sb.append("-");
+
+		Hex.append(sb, 0x123456789ABCDEFL);
+
+		assertThat(sb.toString()).isEqualTo("A5-A5A4-FFF6-0041-01234567-0123456789ABCDEF");
+
+	}
 }
