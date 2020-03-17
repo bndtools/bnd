@@ -137,4 +137,44 @@ public class StringsTest extends TestCase {
 		assertThat(Strings.splitQuotedAsStream("someone,quote=\"He said, \\\"What!?\\\"\"")).containsSequence("someone",
 			"quote=\"He said, \\\"What!?\\\"\"");
 	}
+
+	public void testEscapeSlash() {
+		Pattern p1 = Pattern.compile("[/\\$]");
+		assertThat(Strings.escape("foobar", p1, '$')).isEqualTo("foobar");
+		assertThat(Strings.escape("foo/bar", p1, '$')).isEqualTo("foo$002Fbar");
+		assertThat(Strings.escape("foo/", p1, '$')).isEqualTo("foo$002F");
+		assertThat(Strings.escape("/bar", p1, '$')).isEqualTo("$002Fbar");
+		assertThat(Strings.escape("$/bar", p1, '$')).isEqualTo("$0024$002Fbar");
+	}
+
+	public void testUnEscape() {
+		Pattern p1 = Pattern.compile("[/\\$]");
+		assertThat(Strings.unescape("foobar", '$')).isPresent()
+			.get()
+			.isEqualTo("foobar");
+		assertThat(Strings.unescape("foo$002Fbar", '$')).isPresent()
+			.get()
+			.isEqualTo("foo/bar");
+		assertThat(Strings.unescape("$002Fbar", '$')).isPresent()
+			.get()
+			.isEqualTo("/bar");
+		assertThat(Strings.unescape("foo$002F", '$')).isPresent()
+			.get()
+			.isEqualTo("foo/");
+		assertThat(Strings.unescape("foo$002F$002Fbar", '$')).isPresent()
+			.get()
+			.isEqualTo("foo//bar");
+		assertThat(Strings.unescape("foo$0024$002F$002F$0024bar", '$')).isPresent()
+			.get()
+			.isEqualTo("foo$//$bar");
+	}
+
+	public void testError() {
+		Pattern p1 = Pattern.compile("[/\\$]");
+		assertThat(Strings.unescape("foo$002Xbar", '$')).isNotPresent();
+		assertThat(Strings.unescape("foo$002", '$')).isNotPresent();
+		assertThat(Strings.unescape("foo$", '$')).isNotPresent();
+		assertThat(Strings.unescape("foo$$", '$')).isNotPresent();
+	}
+
 }

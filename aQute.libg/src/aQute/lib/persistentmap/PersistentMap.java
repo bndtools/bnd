@@ -15,9 +15,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
+import aQute.lib.strings.Strings;
 
 /**
  * Implements a low performance but easy to use map that is backed on a
@@ -29,6 +31,7 @@ import aQute.lib.json.JSONCodec;
  */
 public class PersistentMap<V> extends AbstractMap<String, V> implements Closeable {
 
+	private static final char			ESCAPE	= '~';
 	final static JSONCodec				codec	= new JSONCodec();
 	final File							dir;
 	final File							data;
@@ -93,7 +96,11 @@ public class PersistentMap<V> extends AbstractMap<String, V> implements Closeabl
 			FileLock lock = lock();
 			try {
 				for (File file : data.listFiles()) {
-					cache.put(file.getName(), null);
+					String name = Strings.unescape(file.getName(), ESCAPE)
+						.orElse(null);
+					if ( name != null)
+						cache.put(name, null);
+
 				}
 			} finally {
 				unlock(lock);
@@ -139,7 +146,7 @@ public class PersistentMap<V> extends AbstractMap<String, V> implements Closeabl
 								value = ref.get();
 
 							if (value == null) {
-								File file = new File(data, entry.getKey());
+								File file = keyToFile(entry.getKey());
 								value = (V) codec.dec()
 									.from(file)
 									.get(type);
@@ -191,7 +198,7 @@ public class PersistentMap<V> extends AbstractMap<String, V> implements Closeabl
 
 			FileLock lock = lock();
 			try {
-				File file = new File(data, key);
+				File file = keyToFile(key);
 				codec.enc()
 					.to(file)
 					.put(value);
@@ -241,7 +248,7 @@ public class PersistentMap<V> extends AbstractMap<String, V> implements Closeabl
 			init();
 			FileLock lock = lock();
 			try {
-				File file = new File(data, key);
+				File file = keyToFile(key);
 				IO.deleteWithException(file);
 				return cache.remove(key)
 					.get();
@@ -312,4 +319,13 @@ public class PersistentMap<V> extends AbstractMap<String, V> implements Closeabl
 		}
 	}
 
+	private File keyToFile(String key) {
+		String escaped = Strings.escape(key, Pattern.compile("[\\\\/$:><\"|?*~]"), '~');
+		if (escaped.equals(".."))
+			escaped = "~002D.";
+		else if (escaped.equals("."))
+			escaped = "~002D";
+
+		return new File(data, escaped);
+	}
 }

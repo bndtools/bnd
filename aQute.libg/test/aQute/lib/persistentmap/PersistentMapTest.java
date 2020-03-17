@@ -11,6 +11,9 @@ import junit.framework.TestCase;
 
 public class PersistentMapTest extends TestCase {
 
+	private static final String	UNIX_KEY	= "abc/../../";
+	private static final String	WINDOWS_KEY	= "abc\\..\\..\\";
+
 	public void testSimple() throws Exception {
 		File tmp = new File("tmp");
 		PersistentMap<String> pm = new PersistentMap<>(new File(tmp, "simple"), String.class);
@@ -37,6 +40,60 @@ public class PersistentMapTest extends TestCase {
 		}
 	}
 
+	public void testZipSlipnames() throws Exception {
+		File tmp = new File("tmp");
+		IO.delete(tmp);
+		PersistentMap<String> pm = new PersistentMap<>(new File(tmp, "simple"), String.class);
+		try {
+
+			assertNull(pm.put(UNIX_KEY, "def"));
+			assertEquals("def", pm.get(UNIX_KEY));
+
+			pm.close();
+
+			PersistentMap<String> pm2 = new PersistentMap<>(new File(tmp, "simple"), String.class);
+			assertEquals("def", pm2.get(UNIX_KEY));
+
+			assertEquals(Arrays.asList(UNIX_KEY), new ArrayList<>(pm2.keySet()));
+
+			for (Map.Entry<String, String> e : pm2.entrySet()) {
+				e.setValue("XXX");
+			}
+			assertEquals("XXX", pm2.get(UNIX_KEY));
+			pm2.clear();
+			pm2.close();
+		} finally {
+			pm.close();
+			IO.delete(tmp);
+		}
+	}
+
+	public void testZipSlipnamesWindows() throws Exception {
+		File tmp = new File("tmp");
+		IO.delete(tmp);
+		PersistentMap<String> pm = new PersistentMap<>(new File(tmp, "simple"), String.class);
+		try {
+
+			assertNull(pm.put(WINDOWS_KEY, "def"));
+			assertEquals("def", pm.get(WINDOWS_KEY));
+
+			pm.close();
+
+			PersistentMap<String> pm2 = new PersistentMap<>(new File(tmp, "simple"), String.class);
+			assertEquals("def", pm2.get(WINDOWS_KEY));
+
+			assertEquals(Arrays.asList(WINDOWS_KEY), new ArrayList<>(pm2.keySet()));
+
+			for (Map.Entry<String, String> e : pm2.entrySet()) {
+				e.setValue("XXX");
+			}
+			assertEquals("XXX", pm2.get(WINDOWS_KEY));
+			pm2.close();
+		} finally {
+			pm.close();
+			IO.delete(tmp);
+		}
+	}
 	public static class X {
 		public String		abc;
 		public int			def;
