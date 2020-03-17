@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import aQute.lib.hex.Hex;
 import aQute.libg.qtokens.QuotedTokenizer;
 
 public class Strings {
@@ -518,5 +520,87 @@ public class Strings {
 			}
 		}
 		throw new IllegalArgumentException();
+	}
+
+	/**
+	 * Escape illegal characters in a string with an escape character and the
+	 * 4-digit hex Unicode encoding. A string escaped like this can be unescaped
+	 * with {@link #unescape(String, char)} using the same escape character.
+	 *
+	 * @param string a string to be escaped
+	 * @param illegalCharacters a pattern matching illegal characters, must
+	 *            include the escape character
+	 * @param escape an escape character, must be included in the
+	 *            illegalCharacters
+	 * @return a string that does not contain the illegalCharacters except the
+	 *         escape
+	 */
+	public static String escape(String string, Pattern illegalCharacters, char escape) {
+		if (string == null)
+			return null;
+
+		assert illegalCharacters != null : "illegalCharacters is mandator";
+		assert illegalCharacters.matcher("" + escape)
+			.find() : "the escape character must be in the set of illegalCharacters";
+
+		Matcher m = illegalCharacters.matcher(string);
+		if (!m.find())
+			return string;
+
+		StringBuffer sb = new StringBuffer();
+		do {
+
+			m.appendReplacement(sb, "");
+			for (int i = m.start(); i < m.end(); i++) {
+				char ch = string.charAt(i);
+				sb.append(escape);
+				Hex.append(sb, ch);
+			}
+		} while (m.find());
+
+		m.appendTail(sb);
+		return sb.toString();
+	}
+
+	/**
+	 * Unescape a string with the given escape character. There must be 4 hex
+	 * digits after each escape character.
+	 *
+	 * @param string the string to unescape, can be null
+	 * @param escape the escape character
+	 * @return an Optional, present if the escaping was successful
+	 */
+	public static Optional<String> unescape(String string, char escape) {
+
+		if (string == null)
+			return Optional.empty();
+
+		int n = string.indexOf(escape);
+		if (n < 0)
+			return Optional.of(string);
+
+		StringBuffer sb = new StringBuffer();
+		int start = 0;
+		do {
+			sb.append(string, start, n);
+			if (n + 5 > string.length())
+				return Optional.empty();
+
+			int ch = 0;
+
+			for (int i = n + 1; i < n + 5; i++) {
+				char c = string.charAt(i);
+				if (!Hex.isHexCharacter(c)) {
+					return Optional.empty();
+				}
+				int nibble = Hex.nibble(c);
+				ch = (ch << 4) + nibble;
+			}
+			sb.append((char) ch);
+			start = n + 5;
+			n = string.indexOf(escape, start);
+		} while (n >= 0);
+		sb.append(string, start, string.length());
+		return Optional.of(sb.toString());
 	}
 }
