@@ -1304,6 +1304,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param propertiesFile
 	 */
 	public void setProperties(File propertiesFile) {
+		if (propertiesFile == null)
+			return;
 		propertiesFile = propertiesFile.getAbsoluteFile();
 		setProperties(propertiesFile, propertiesFile.getParentFile());
 	}

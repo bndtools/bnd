@@ -3,6 +3,7 @@ package aQute.bnd.build.model.clauses;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.BundleId;
 
 public class VersionedClause extends HeaderClause implements Cloneable {
 	public VersionedClause(String name, Attrs attribs) {
@@ -11,6 +12,11 @@ public class VersionedClause extends HeaderClause implements Cloneable {
 
 	public VersionedClause(String v) {
 		super(v);
+	}
+
+	public VersionedClause(BundleId bundleId) {
+		super(bundleId.getBsn());
+		setVersionRange(bundleId.getShortVersion());
 	}
 
 	public String getVersionRange() {

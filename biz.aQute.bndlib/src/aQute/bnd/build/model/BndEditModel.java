@@ -54,6 +54,7 @@ import aQute.bnd.build.model.conversions.RequirementListConverter;
 import aQute.bnd.build.model.conversions.SimpleListConverter;
 import aQute.bnd.build.model.conversions.VersionedClauseConverter;
 import aQute.bnd.help.instructions.ResolutionInstructions;
+import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.properties.Document;
@@ -854,7 +855,21 @@ public class BndEditModel {
 
 	public void setBuildPath(List<? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
+		if (oldValue == null)
+			oldValue = Collections.emptyList();
+
 		doSetObject(aQute.bnd.osgi.Constants.BUILDPATH, oldValue, paths, headerClauseListFormatter);
+	}
+
+	public void addPath(VersionedClause versionedClause, String header) {
+		List<VersionedClause> oldValue = doGetObject(header, buildPathConverter);
+		List<VersionedClause> newValue = oldValue == null ? new ArrayList<>() : new ArrayList<>(oldValue);
+		newValue.add(versionedClause);
+		doSetObject(header, oldValue, newValue, headerClauseListFormatter);
+	}
+
+	public void addPath(BundleId bundleId, String header) {
+		addPath(new VersionedClause(bundleId), header);
 	}
 
 	public void setTestPath(List<? extends VersionedClause> paths) {
@@ -1390,4 +1405,9 @@ public class BndEditModel {
 	public void setDirty(boolean isDirty) {
 		this.dirty = isDirty;
 	}
+
+	public void load() throws IOException {
+		loadFrom(project.getPropertiesFile());
+	}
+
 }
