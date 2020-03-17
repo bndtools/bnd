@@ -45,6 +45,7 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.osgi.service.repository.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,11 +58,14 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.maven.support.Maven;
 import aQute.bnd.osgi.About;
+import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.osgi.repository.AggregateRepository;
+import aQute.bnd.osgi.repository.AugmentRepository;
 import aQute.bnd.remoteworkspace.server.RemoteWorkspaceServer;
 import aQute.bnd.resource.repository.ResourceRepositoryImpl;
 import aQute.bnd.service.BndListener;
@@ -73,6 +77,7 @@ import aQute.bnd.service.lifecycle.LifeCyclePlugin;
 import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.service.repository.RepositoryDigest;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.service.result.Result;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.url.MultiURLConnectionHandler;
 import aQute.bnd.util.home.Home;
@@ -84,6 +89,7 @@ import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.lib.io.NonClosingInputStream;
+import aQute.lib.lazy.Lazy;
 import aQute.lib.settings.Settings;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -106,9 +112,10 @@ public class Workspace extends Processor {
 	static final int			BUFFER_SIZE						= IOConstants.PAGE_SIZE * 16;
 	private static final String	PLUGIN_STANDALONE		= Constants.PLUGIN + ".standalone_";
 
-	static class WorkspaceData {
+	class WorkspaceData {
 		List<RepositoryPlugin>	repositories;
 		RemoteWorkspaceServer	remoteServer;
+		Lazy<ClassIndex>		classIndex	= new Lazy<ClassIndex>(() -> new ClassIndex(Workspace.this));
 	}
 
 	private final static Map<File, WeakReference<Workspace>>	cache				= newHashMap();
@@ -358,10 +365,10 @@ public class Workspace extends Processor {
 	@Override
 	public void propertiesChanged() {
 
-		if (data.remoteServer != null)
-			IO.close(data.remoteServer);
-
+		IO.close(data.remoteServer);
+		IO.close(data.classIndex);
 		data = new WorkspaceData();
+
 		File extDir = new File(getBuildDir(), EXT);
 		File[] extensions = extDir.listFiles();
 		if (extensions != null) {
@@ -1184,7 +1191,8 @@ public class Workspace extends Processor {
 		MapStream<String, Object> runProperties = MapStream.of(run.getProperties())
 			.mapKey(String.class::cast);
 		if (!copyAll.get()) {
-			runProperties = runProperties.filterKey(k -> k.equals(Constants.PLUGIN) || k.startsWith(Constants.PLUGIN + "."));
+			runProperties = runProperties
+				.filterKey(k -> k.equals(Constants.PLUGIN) || k.startsWith(Constants.PLUGIN + "."));
 		}
 		Properties wsProperties = ws.getProperties();
 		runProperties.filterKey(k -> !k.startsWith(PLUGIN_STANDALONE))
@@ -1395,5 +1403,37 @@ public class Workspace extends Processor {
 				exception(e, "Updating listener plugin %s", listener);
 			}
 		}
+	}
+
+	/**
+	 * Search for a partial class name. The partialClass name may be a simple
+	 * class name (Foo) or a fully qualified class name line (foo.bar.Foo),
+	 * including nested classes, or only a package name prefix (foo.bar).
+	 *
+	 * @param partialFqn a packagename ( '.' classname )*
+	 * @return a map with suggestion what to add to the -buildpath/-testpath
+	 * @throws Exception
+	 */
+	public Result<Map<String, List<BundleId>>, String> search(String partialFqn) throws Exception {
+		return data.classIndex.get()
+			.search(partialFqn);
+	}
+
+	/**
+	 * Return an aggregate repository of all the workspace's repository and the
+	 * projects repository. This workspace must be gotten for each operation, it
+	 * might become stale over time.
+	 *
+	 * @return an aggregate repository
+	 * @throws Exception
+	 */
+	public Repository getResourceRepository() throws Exception {
+		List<Repository> plugins = getPlugins(Repository.class);
+		AggregateRepository repository = new AggregateRepository(plugins);
+		Parameters augments = getMergedParameters(Constants.AUGMENT);
+		if (augments.isEmpty())
+			return repository;
+
+		return new AugmentRepository(augments, repository);
 	}
 }

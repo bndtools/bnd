@@ -70,6 +70,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.Export;
 import aQute.bnd.apiguardian.api.API;
+import aQute.bnd.classindex.ClassIndexerAnalyzer;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -159,6 +160,11 @@ public class Analyzer extends Processor {
 
 	public Analyzer() {}
 
+	@Override
+	protected void setTypeSpecificPlugins(Set<Object> list) {
+		super.setTypeSpecificPlugins(list);
+		list.add(new ClassIndexerAnalyzer());
+	}
 	/**
 	 * Specifically for Maven
 	 */

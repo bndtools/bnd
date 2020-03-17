@@ -44,10 +44,12 @@ import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
+import aQute.lib.collections.MultiMap;
 import aQute.lib.converter.Converter;
 import aQute.lib.filter.Filter;
 import aQute.lib.strings.Strings;
@@ -199,6 +201,14 @@ public class ResourceUtils {
 			.orElse(null);
 	}
 
+	public static BundleId getBundleId(Resource resource) {
+		BundleCap b = getBundleCapability(resource);
+		if (b == null)
+			return null;
+
+		return new BundleId(b.osgi_wiring_bundle(), b.bundle_version());
+	}
+
 	public static String getIdentityVersion(Resource resource) {
 		return capabilityStream(resource, IdentityNamespace.IDENTITY_NAMESPACE, IdentityCapability.class).findFirst()
 			.map(c -> c.getAttributes()
@@ -336,13 +346,22 @@ public class ResourceUtils {
 
 		Object value;
 		if (name.startsWith("$"))
-			value = directives.get(name.substring(1));
-		else
-			value = attrs.get(name);
+			value = getValue(directives, name.substring(1));
+		else {
+			value = getValue(attrs, name);
+		}
 		if (value == null && args != null && args.length == 1)
 			value = args[0];
 
 		return cnv.convert(method.getGenericReturnType(), value);
+	}
+
+	private static Object getValue(Map<String, ?> attrs, String name) {
+		Object object = attrs.get(name);
+		if (object != null)
+			return object;
+
+		return attrs.get(name.replace('.', '-'));
 	}
 
 	public static Set<Resource> getResources(Collection<? extends Capability> providers) {
@@ -350,6 +369,18 @@ public class ResourceUtils {
 			return Collections.emptySet();
 
 		return getResources(providers.stream());
+	}
+
+	public static Map<Resource, List<Capability>> getIndexedByResource(Collection<? extends Capability> providers) {
+		if (providers == null || providers.isEmpty())
+			return Collections.emptyMap();
+
+		MultiMap<Resource, Capability> map = new MultiMap<>();
+
+		providers.stream()
+			.forEach(c -> map.add(c.getResource(), c));
+
+		return map;
 	}
 
 	private static Set<Resource> getResources(Stream<? extends Capability> providers) {

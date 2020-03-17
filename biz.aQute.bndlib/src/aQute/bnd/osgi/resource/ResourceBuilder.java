@@ -6,10 +6,12 @@ import static aQute.bnd.osgi.Constants.MIME_TYPE_JAR;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,6 +27,7 @@ import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.framework.namespace.NativeNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.namespace.service.ServiceNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
@@ -33,9 +36,11 @@ import org.osgi.resource.Resource;
 import org.osgi.service.repository.ContentNamespace;
 
 import aQute.bnd.build.model.EE;
+import aQute.bnd.classindex.ClassIndexerAnalyzer;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
@@ -43,6 +48,9 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.Filter;
+import aQute.lib.hierarchy.FolderNode;
+import aQute.lib.hierarchy.Hierarchy;
+import aQute.lib.zip.JarIndex;
 import aQute.libg.cryptography.SHA256;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
@@ -81,7 +89,7 @@ public class ResourceBuilder {
 
 	private Capability addCapability0(CapReqBuilder builder) {
 		Capability cap = buildCapability(builder);
-		Capability previous = capabilities.putIfAbsent(cap, cap);
+		Capability previous = capabilities.put(cap, cap);
 		if (previous != null) {
 			return previous;
 		}
@@ -682,7 +690,75 @@ public class ResourceBuilder {
 		String sha256 = SHA256.digest(file)
 			.asHex();
 		addContentCapability(uri, sha256, file.length(), mime);
+
+		if (hasIdentity) {
+			addHashes(file);
+		}
 		return hasIdentity;
+	}
+
+	/**
+	 * Add simple class name hashes to the exported packages. This should not be
+	 * called before any package capabilities are set since we only hash class
+	 * names in exports. So no exports, no hash.
+	 */
+	public void addHashes(File file) throws IOException {
+
+		Set<Capability> caps = new HashSet<>();
+
+		for (Capability cap : capabilities.keySet()) {
+			if (!PackageNamespace.PACKAGE_NAMESPACE.equals(cap.getNamespace()))
+				continue;
+
+			if (cap.getAttributes()
+				.containsKey(ClassIndexerAnalyzer.BND_HASHES))
+				return;
+
+			caps.add(cap);
+		}
+		if (caps.isEmpty())
+			return;
+
+		Hierarchy index = new JarIndex(file);
+
+		for (Capability cap : caps) {
+
+			String packageName = (String) cap.getAttributes()
+				.get(PackageNamespace.PACKAGE_NAMESPACE);
+			if (packageName == null)
+				continue;
+
+			String folder = Descriptors.fqnToBinary(packageName);
+
+			FolderNode resources = index.findFolder(folder)
+				.orElse(null);
+			if (resources == null)
+				continue;
+
+			List<Integer> hashes = new ArrayList<>();
+
+			resources.forEach(node -> {
+				String name = node.name();
+				if (!Descriptors.isBinaryClass(name))
+					return;
+
+				String simple = Descriptors.binaryToSimple(name);
+				if (Verifier.isNumber(simple))
+					return;
+
+				int hash = ClassIndexerAnalyzer.hash(simple);
+				hashes.add(hash);
+			});
+
+			if (hashes.isEmpty())
+				continue;
+
+
+			capabilities.remove(cap);
+			CapReqBuilder crb = CapReqBuilder.clone(cap);
+			crb.addAttribute(ClassIndexerAnalyzer.BND_HASHES, hashes);
+			addCapability(crb);
+		}
 	}
 
 	public ResourceBuilder safeResourceBuilder() {
