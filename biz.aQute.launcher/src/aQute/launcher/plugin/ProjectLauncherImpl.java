@@ -32,10 +32,13 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.help.instructions.LauncherInstructions.RunOption;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Instructions;
@@ -44,6 +47,7 @@ import aQute.bnd.osgi.Jar.Compression;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.Verifier;
 import aQute.launcher.constants.LauncherConstants;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.io.ByteBufferDataInput;
@@ -357,7 +361,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			if (!file.isFile())
 				getProject().error("Invalid entry in -runbundles %s", file);
 			else {
-				String newPath = nonCollidingPath(file, jar);
+
+				String newPath = nonCollidingPath(file, jar, getExecutableLocation());
 				jar.putResource(newPath, getJarFileResource(file, rejar, strip));
 				actualPaths.add(newPath);
 			}
@@ -423,6 +428,24 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		cleanup();
 		return jar;
+	}
+
+	/**
+	 * Temp method until we can use the 5.1 interface parsing
+	 *
+	 * @return location or null
+	 */
+	private String getExecutableLocation() {
+		String executableString = getProject().getProperty("-executable");
+		if (executableString == null)
+			return null;
+
+		try {
+			Attrs executable = OSGiHeader.parseProperties(executableString);
+			return executable.get("location");
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	private Map<Glob, List<Glob>> extractStripMapping(List<String> strip) {
@@ -504,6 +527,53 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			}
 		}
 		return path;
+	}
+
+	String nonCollidingPath(File file, Jar jar, String locationFormat) throws Exception {
+		if (locationFormat == null)
+			return nonCollidingPath(file, jar);
+
+		try {
+			Domain domain = Domain.domain(file);
+			Entry<String, Attrs> bundleSymbolicName = domain.getBundleSymbolicName();
+			if (bundleSymbolicName == null) {
+				warning("Cannot find bsn in %s, required because it is on the -runbundles", file);
+				return nonCollidingPath(file, jar, null);
+			}
+			String bundleVersion = domain.getBundleVersion();
+			if (bundleVersion == null)
+				bundleVersion = "0";
+			else {
+				if (!Verifier.isVersion(bundleVersion)) {
+					error("Invalid bundle version in %s", file);
+					return nonCollidingPath(file, jar, null);
+				}
+			}
+			try (Processor p = new Processor(this)) {
+
+				p.setProperty("@bsn", bundleSymbolicName.getKey());
+				p.setProperty("@version", bundleVersion);
+				p.setProperty("@name", file.getName());
+
+				String fileName = p.getReplacer()
+					.process(locationFormat);
+
+				if (fileName.contains("/")) {
+					error("Invalid bundle version in %s", file);
+					return nonCollidingPath(file, jar, null);
+				}
+
+				String filePath = "jar/" + fileName;
+				if (jar.getResources()
+					.containsKey(filePath)) {
+					error("Duplicate locations for %s for file %s", filePath, file);
+				}
+				return filePath;
+			}
+		} catch (Exception e) {
+			exception(e, "failed to use location pattern %s for location for file %", locationFormat, file);
+			return nonCollidingPath(file, jar);
+		}
 	}
 
 	/*

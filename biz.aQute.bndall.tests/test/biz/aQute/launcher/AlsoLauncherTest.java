@@ -96,6 +96,64 @@ public class AlsoLauncherTest {
 		System.setProperties(prior);
 	}
 
+	@Test
+	public void testLocationFormat() throws Exception {
+		project.setProperty(Constants.RUNPROPERTIES, "test.cmd=exit");
+		project.setProperty(Constants.RUNTRACE, "true");
+		project.setProperty("-executable", "location='${@bsn}'");
+		Entry<String, Resource> export = project.export("bnd.executablejar", null);
+		assertThat(export).isNotNull();
+
+		try (Jar jar = new Jar(".", export.getValue()
+			.openInputStream())) {
+
+			assertThat(jar.getResources()
+				.keySet()).contains(//
+					"jar/biz.aQute.launcher.jar", // -runpath
+					"jar/org.apache.felix.framework-5.6.10.jar", // -runpath
+					"jar/apiguardian-api-1.1.0.jar", // not a bundle
+					"jar/demo", //
+					// the following were not a bundle yet
+					// "jar/junit-jupiter-api", //
+					// "jar/junit-jupiter-engine", //
+					// "jar/junit-jupiter-params", //
+					// "jar/junit-platform-commons", //
+					// "jar/junit-platform-engine", //
+					// "jar/junit-vintage-engine", //
+					"jar/org.apache.felix.configadmin", //
+					"jar/org.apache.felix.scr", //
+					"jar/org.apache.servicemix.bundles.junit", //
+					"jar/org.opentest4j" //
+			);
+
+			File tmp = File.createTempFile("foo", ".jar");
+			try {
+
+				jar.write(tmp);
+				Command cmd = new Command();
+				cmd.add(project.getJavaExecutable("java"));
+				cmd.add("-jar");
+				cmd.add(tmp.getAbsolutePath());
+
+				StringBuilder stdout = new StringBuilder();
+				StringBuilder stderr = new StringBuilder();
+				int execute = cmd.execute(stdout, stderr);
+				String output = stdout.append(stderr)
+					.toString();
+				System.out.println(output);
+
+				// These must be bsns ow
+				assertThat(output).contains("installing jar/org.apache.felix.scr",
+					"installing jar/org.apache.felix.configadmin");
+
+				assertThat(execute).isEqualTo(42);
+
+			} finally {
+				tmp.delete();
+			}
+		}
+	}
+
 	/**
 	 * Test that the Bndrun file is loaded when we create a run
 	 *
