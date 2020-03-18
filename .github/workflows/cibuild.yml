@@ -56,8 +56,8 @@ jobs:
       shell: bash
       run: |
         ./.github/scripts/build.sh
-  OpenJDK13_Linux:
-    name: OpenJDK13 Linux
+  OpenJDK14_Linux:
+    name: OpenJDK14 Linux
     runs-on: ubuntu-latest
     steps:
     - name: Git Checkout
@@ -67,7 +67,7 @@ jobs:
     - name: Set up Java
       uses: actions/setup-java@v1
       with:
-        java-version: 13
+        java-version: 14
     - name: Build
       shell: bash
       run: |
