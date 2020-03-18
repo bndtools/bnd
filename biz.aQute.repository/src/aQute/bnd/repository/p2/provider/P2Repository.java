@@ -97,7 +97,8 @@ public class P2Repository extends BaseRepository
 
 	@Override
 	public String getLocation() {
-		return getP2Index().location.getPath();
+		P2Indexer index = getP2Index();
+		return index.location.getPath();
 	}
 
 	@Override
@@ -131,7 +132,8 @@ public class P2Repository extends BaseRepository
 
 	@Override
 	public File getRoot() throws Exception {
-		return getP2Index().location;
+		P2Indexer index = getP2Index();
+		return index.location;
 	}
 
 	@Override

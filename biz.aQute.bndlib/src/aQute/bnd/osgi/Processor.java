@@ -490,7 +490,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	@Override
 	public boolean isPedantic() {
-		return current().pedantic;
+		Processor p = current();
+		return p.pedantic;
 	}
 
 	public void setPedantic(boolean pedantic) {
@@ -2118,7 +2119,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public boolean isTrace() {
-		return current().trace;
+		Processor p = current();
+		return p.trace;
 	}
 
 	private static final Pattern DURATION_P = Pattern

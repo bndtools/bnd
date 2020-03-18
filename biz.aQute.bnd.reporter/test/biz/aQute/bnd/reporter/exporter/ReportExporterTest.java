@@ -58,11 +58,12 @@ public class ReportExporterTest extends TestCase {
 			.exportReportsOf(jar);
 
 		assertEquals(1, result.size());
-		assertTrue(result.values()
+		Resource resource = result
+			.values()
 			.stream()
 			.findFirst()
-			.get()
-			.buffer()
+			.get();
+		assertTrue(resource.buffer()
 			.array().length > 0);
 		assertTrue(processor.isOk());
 	}
