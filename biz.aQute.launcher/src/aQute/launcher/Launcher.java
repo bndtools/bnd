@@ -1179,7 +1179,9 @@ public class Launcher implements ServiceListener {
 		} else {
 			trace("using embedded mini framework because we were told not to use META-INF/services");
 			// we have to use our own dummy framework
-			systemBundle = new MiniFramework(p).setTracing(this::trace);
+			@SuppressWarnings("resource")
+			MiniFramework miniFramework = new MiniFramework(p);
+			systemBundle = miniFramework.setTracing(this::trace);
 		}
 		if (systemBundle == null) {
 			error("Cannot find a framework on the classpath");

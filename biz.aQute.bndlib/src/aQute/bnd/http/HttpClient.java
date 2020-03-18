@@ -682,12 +682,13 @@ public class HttpClient implements Closeable, URLConnector {
 				// 526 Invalid SSL Certificate
 				// Cloudflare could not validate the SSL/TLS certificate that
 				// the origin server presented.
-				throw new RetryException(
-					new TaggedData(request.url.toURI(), HTTP_INVALID_SSL_CERTIFICATE, request.useCacheFile), e);
+				TaggedData tag = new TaggedData(request.url.toURI(), HTTP_INVALID_SSL_CERTIFICATE,
+					request.useCacheFile);
+				throw new RetryException(tag, e);
 			} catch (SocketTimeoutException e) {
 				task.done(e.toString(), null);
-				throw new RetryException(
-					new TaggedData(request.url.toURI(), HTTP_GATEWAY_TIMEOUT, request.useCacheFile), e);
+				TaggedData tag = new TaggedData(request.url.toURI(), HTTP_GATEWAY_TIMEOUT, request.useCacheFile);
+				throw new RetryException(tag, e);
 			} catch (IOException e) {
 				task.done(e.toString(), null);
 				// 520 Unknown Error (Cloudflare)
@@ -695,8 +696,8 @@ public class HttpClient implements Closeable, URLConnector {
 				// the event that the origin server yields something unexpected.
 				// This could include listing large headers, connection resets
 				// or invalid or empty responses.
-				throw new RetryException(new TaggedData(request.url.toURI(), HTTP_UNKNOWN_ERROR, request.useCacheFile),
-					e);
+				TaggedData tag = new TaggedData(request.url.toURI(), HTTP_UNKNOWN_ERROR, request.useCacheFile);
+				throw new RetryException(tag, e);
 			} catch (RetryException e) {
 				throw e;
 			} catch (Throwable t) {
