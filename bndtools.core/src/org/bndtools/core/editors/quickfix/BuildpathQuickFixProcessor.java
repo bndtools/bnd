@@ -36,7 +36,7 @@ import aQute.lib.exceptions.Exceptions;
 import bndtools.Plugin;
 import bndtools.central.Central;
 
-public class BuildpathQuickfixProcessor implements IQuickFixProcessor {
+public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 
 	@Override
 	public boolean hasCorrections(ICompilationUnit unit, int problemId) {
