@@ -37,6 +37,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
@@ -58,6 +59,8 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.progress.ProgressPlugin.Task;
+import aQute.bnd.service.progress.TaskManager;
 import aQute.lib.exceptions.Exceptions;
 import bndtools.central.RepositoriesViewRefresher.RefreshModel;
 import bndtools.preferences.BndPreferences;
@@ -649,8 +652,8 @@ public class Central implements IStartupParticipant {
 	 * Used to serialize access to bnd code which is not thread safe.
 	 *
 	 * @param callable The code to execute while holding the central lock.
-	 * @param monitor If the monitor is cancelled, a TimeoutException will be
-	 *            thrown.
+	 * @param monitorOrNull If the monitor is cancelled, a TimeoutException will
+	 *            be thrown, can be null
 	 * @return The result of the specified callable.
 	 * @throws InterruptedException If the thread is interrupted while waiting
 	 *             for the lock.
@@ -659,12 +662,34 @@ public class Central implements IStartupParticipant {
 	 *             obtain the lock.
 	 * @throws Exception If the callable throws an exception.
 	 */
-	public static <V> V bndCall(Callable<V> callable, IProgressMonitor monitor) throws Exception {
+	public static <V> V bndCall(Callable<V> callable, IProgressMonitor monitorOrNull) throws Exception {
+
+		IProgressMonitor monitor = monitorOrNull == null ? new NullProgressMonitor() : monitorOrNull;
+		Task task = new Task() {
+
+			@Override
+			public void worked(int units) {
+				monitor.worked(units);
+			}
+
+			@Override
+			public void done(String message, Throwable e) {}
+
+			@Override
+			public boolean isCanceled() {
+				return monitor.isCanceled();
+			}
+
+			@Override
+			public void abort() {
+				monitor.setCanceled(true);
+			}
+		};
 		boolean interrupted = Thread.interrupted();
 		try {
 			long progress = bndLock.progress();
 			for (int i = 0; i < 120; i++) {
-				if ((monitor != null) && monitor.isCanceled()) {
+				if (monitor.isCanceled()) {
 					throw (CancellationException) new CancellationException("Cancelled waiting to acquire bndLock["
 						+ bndLock + "]; has waiters: " + bndLock.getQueueLength()).initCause(bndLock.getOwnerCause());
 				}
@@ -677,7 +702,7 @@ public class Central implements IStartupParticipant {
 				}
 				if (locked) {
 					try {
-						return callable.call();
+						return TaskManager.with(task, callable::call);
 					} finally {
 						bndLock.unlock();
 					}

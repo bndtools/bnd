@@ -48,6 +48,12 @@ public interface ProgressPlugin {
 		 * Check if this task is canceled.
 		 */
 		boolean isCanceled();
+
+		/**
+		 * Cancel this task. This might not be implemented
+		 */
+		default void abort() {
+		}
 	}
 
 }
