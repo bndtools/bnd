@@ -30,9 +30,10 @@ class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletio
 	final Project				project;
 	final String				pathtype;
 	final String				fqn;
+	final boolean				doImport;
 
 	public AddBundleCompletionProposal(String fqn, BundleId bundle, int relevance, IInvocationContext context,
-		Project project, String pathtype) {
+		Project project, String pathtype, boolean doImport) {
 		super("Adding '" + bundle + "' to " + project + " " + pathtype);
 		this.fqn = fqn;
 		this.bundle = bundle;
@@ -40,6 +41,7 @@ class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletio
 		this.context = context;
 		this.project = project;
 		this.pathtype = pathtype;
+		this.doImport = doImport;
 		this.displayString = Strings.format("Add %s %s to %s (found %s)", bundle.getBsn(), bundle.getShortVersion(),
 			pathtype, fqn);
 	}
@@ -74,24 +76,7 @@ class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletio
 
 	@Override
 	public IContextInformation getContextInformation() {
-		return new IContextInformation() {
-
-			@Override
-			public String getContextDisplayString() {
-				return "Added " + bundle + " to build path";
-			}
-
-			@Override
-			public Image getImage() {
-				return Icons.image("bundle");
-			}
-
-			@Override
-			public String getInformationDisplayString() {
-				return "Added " + bundle + " to build path - info";
-			}
-
-		};
+		return null;
 	}
 
 	@Override
@@ -103,6 +88,7 @@ class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletio
 	public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 		try {
 			IStatus status = Central.bndCall(() -> {
+
 				BndEditModel model = new BndEditModel(project);
 				model.load();
 
@@ -116,27 +102,29 @@ class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletio
 						model.addPath(bundle, Constants.BUILDPATH);
 						break;
 				}
+
 				model.saveChanges();
 				Central.refreshFile(project.getPropertiesFile());
 				return Status.OK_STATUS;
-			});
+
+			}, monitor);
 
 			String[] determine = Descriptors.determine(fqn)
 				.unwrap();
 
 			assert determine[0] != null : "We must have found a package";
-
-			if (determine[1] == null) {
-				context.getCompilationUnit()
-					.createImport(fqn + ".*", null, monitor);
-			} else {
-				context.getCompilationUnit()
-					.createImport(fqn, null, monitor);
+			if (doImport) {
+				if (determine[1] == null) {
+					context.getCompilationUnit()
+						.createImport(fqn + ".*", null, monitor);
+				} else {
+					context.getCompilationUnit()
+						.createImport(fqn, null, monitor);
+				}
 			}
 			return status;
 		} catch (Exception e) {
-			throw new CoreException(
-				new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "Failed to add bundle to -buildpath", e));
+			return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "Failed to add bundle " + bundle + " to " + pathtype, e);
 		}
 	}
 }

@@ -31,6 +31,7 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.BundleId;
+import aQute.bnd.osgi.Descriptors;
 import aQute.lib.exceptions.Exceptions;
 import bndtools.Plugin;
 import bndtools.central.Central;
@@ -41,10 +42,13 @@ public class BuildpathQuickfixProcessor implements IQuickFixProcessor {
 	public boolean hasCorrections(ICompilationUnit unit, int problemId) {
 		switch (problemId) {
 			case IProblem.IsClassPathCorrect :
+				// System.out.println("IsClassPathCorrect");
 				return true;
 			case IProblem.ImportNotFound :
+				// System.out.println("ImportNotFound");
 				return true;
 			case IProblem.UndefinedType :
+				// System.out.println("UndefinedType");
 				return true;
 			default :
 				return false;
@@ -72,7 +76,7 @@ public class BuildpathQuickfixProcessor implements IQuickFixProcessor {
 			for (IProblemLocation location : locations) {
 
 				if (!hasCorrections(context.getCompilationUnit(), location.getProblemId()))
-					return null;
+					continue;
 
 				String partialClassName = getPartialClassName(location.getCoveringNode(context.getASTRoot()));
 				if (partialClassName == null && location.getProblemArguments().length > 0)
@@ -80,6 +84,10 @@ public class BuildpathQuickfixProcessor implements IQuickFixProcessor {
 
 				if (partialClassName == null)
 					continue;
+
+				boolean doImport = Descriptors.determine(partialClassName)
+					.map(sa -> sa[0] == null)
+					.orElse(false);
 
 				Map<String, List<BundleId>> result = workspace.search(partialClassName)
 					.orElseThrow(s -> new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, s)));
@@ -92,10 +100,12 @@ public class BuildpathQuickfixProcessor implements IQuickFixProcessor {
 						for (BundleId id : e.getValue()) {
 
 							if (test && !testpath.contains(id) && !buildpath.contains(id))
-								proposals.add(propose(e.getKey(), id, context, location, project, "-testpath"));
+								proposals.add(
+									propose(e.getKey(), id, context, location, project, "-testpath", doImport));
 
 							if (!buildpath.contains(id))
-								proposals.add(propose(e.getKey(), id, context, location, project, "-buildpath"));
+								proposals.add(propose(e.getKey(), id, context, location, project, "-buildpath",
+									doImport));
 
 						}
 					});
@@ -133,9 +143,9 @@ public class BuildpathQuickfixProcessor implements IQuickFixProcessor {
 	}
 
 	private IJavaCompletionProposal propose(String proposalString, BundleId bundle, IInvocationContext context,
-		IProblemLocation location, Project project, String type) {
+		IProblemLocation location, Project project, String type, boolean doImport) {
 
-		return new AddBundleCompletionProposal(proposalString, bundle, 15, context, project, type);
+		return new AddBundleCompletionProposal(proposalString, bundle, 15, context, project, type, doImport);
 	}
 
 	/**
