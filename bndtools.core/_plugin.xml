@@ -209,9 +209,9 @@
 				</with>
 			</enablement>
 		</quickFixProcessor>
-		<quickFixProcessor id="org.bndtools.core.editors.quickfix.BuildpathQuickfixProcessor"
+		<quickFixProcessor id="org.bndtools.core.editors.quickfix.BuildpathQuickFixProcessor"
 			name="bnd -buildpath Quick Fix" requiredSourceLevel="1.5"
-			class="org.bndtools.core.editors.quickfix.BuildpathQuickfixProcessor"
+			class="org.bndtools.core.editors.quickfix.BuildpathQuickFixProcessor"
 			icon="icons/bricks.png">
  			<handledMarkerTypes>
 				<markerType id="org.eclipse.jdt.core.problem" />
