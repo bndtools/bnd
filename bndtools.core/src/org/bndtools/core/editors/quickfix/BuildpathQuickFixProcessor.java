@@ -110,7 +110,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 						}
 					});
 			}
-			return proposals.toArray(new IJavaCompletionProposal[0]);
+			return proposals.isEmpty() ? null : proposals.toArray(new IJavaCompletionProposal[0]);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
