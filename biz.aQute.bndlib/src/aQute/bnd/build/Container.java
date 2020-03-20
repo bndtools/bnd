@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import aQute.bnd.build.DownloadBlocker.Stage;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
@@ -408,4 +409,11 @@ public class Container {
 		return new Container(project, message);
 	}
 
+	public boolean isOk() {
+		return getError() == null;
+	}
+
+	public BundleId getBundleId() {
+		return new BundleId(getBundleSymbolicName(), getVersion());
+	}
 }

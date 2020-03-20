@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.osgi.annotation.versioning.ProviderType;
 
+import aQute.bnd.service.result.Result;
 import aQute.bnd.signatures.ClassSignature;
 import aQute.bnd.signatures.FieldSignature;
 import aQute.bnd.signatures.MethodSignature;
@@ -92,6 +93,8 @@ public class Descriptors {
 		String getDottedOnly();
 
 		boolean isArray();
+
+		boolean isNested();
 
 	}
 
@@ -298,6 +301,11 @@ public class Descriptors {
 			return false;
 		}
 
+		@Override
+		public boolean isNested() {
+			return binaryName.indexOf('$') >= 0;
+		}
+
 	}
 
 	private static class ArrayRef implements TypeRef {
@@ -409,6 +417,11 @@ public class Descriptors {
 		@Override
 		public boolean isArray() {
 			return true;
+		}
+
+		@Override
+		public boolean isNested() {
+			return component.isNested();
 		}
 
 	}
@@ -606,8 +619,16 @@ public class Descriptors {
 		return binary.replace('/', '.');
 	}
 
+	public static String binaryClassToFQN(String path) {
+		return binaryToFQN(path.substring(0, path.length() - 6));
+	}
+
 	public static String fqnToBinary(String binary) {
 		return binary.replace('.', '/');
+	}
+
+	public static String fqnClassToBinary(String binary) {
+		return binary.replace('.', '/') + ".class";
 	}
 
 	public static String getPackage(String binaryNameOrFqn) {
@@ -652,6 +673,114 @@ public class Descriptors {
 	public TypeRef getTypeRefFromPath(String path) {
 		assert path.endsWith(".class");
 		return getTypeRef(path.substring(0, path.length() - 6));
+	}
+
+	public static String pathToFqn(String path) {
+		assert path.endsWith(".class");
+
+		StringBuilder sb = new StringBuilder();
+		int j = path.length() - 6;
+		for (int i = 0; i < j; i++) {
+			char c = path.charAt(i);
+			if (c == '/')
+				sb.append('.');
+			else
+				sb.append(c);
+		}
+		return sb.toString();
+	}
+
+	public static boolean isBinaryClass(String resource) {
+		return resource.endsWith(".class");
+	}
+
+	/**
+	 * Java really screwed up in using different names for the binary path and
+	 * the fqns. This calculates the simple name of a potentially nested class.
+	 *
+	 * @param resource ( segment '/')+ (name '$')* name '.class'
+	 * @return the last name
+	 */
+	public static String binaryToSimple(String resource) {
+		if (resource == null)
+			return null;
+
+		assert isBinaryClass(resource);
+
+		int end = resource.length() - 6;
+		int rover = end;
+		while (rover >= 0) {
+			char ch = resource.charAt(rover--);
+			if (ch == '$' || ch == '/')
+				break;
+		}
+		return resource.substring(rover + 1, end);
+	}
+
+	/**
+	 * Heuristic for a class name. We assume a segment with
+	 *
+	 * @param fqn can be a class name, nested class, or simple name
+	 * @return true if the last segment starts with an upper case
+	 */
+	public static boolean isClassName(String fqn) {
+		if (fqn.isEmpty())
+			return false;
+
+		int n = fqn.lastIndexOf('.') + 1;
+		if (n >= fqn.length())
+			return false;
+
+		char ch = fqn.charAt(n);
+
+		return Character.isUpperCase(ch);
+	}
+
+	/**
+	 * Return a 2 element array based on the fqn. The first element is the
+	 * package name, the second is the class name. Each can be absent, but not
+	 * both. The class name can be a nested class (will contain a '.' then)
+	 *
+	 * @param fqn a Java identifier name, either a simple class name, a
+	 *            qualified class name, or a package name
+	 * @return a Result with 2 element array with [package, class]
+	 */
+	public static Result<String[], String> determine(String fqn) {
+		if (fqn == null || fqn.isEmpty())
+			return Result.err("No qualified name given (either null or empty) %s", fqn);
+
+		int cstart = -1;
+		boolean start = true;
+		for (int i = 0; i < fqn.length(); i++) {
+			char ch = fqn.charAt(i);
+			if (start) {
+				if (!Character.isJavaIdentifierStart(ch)) {
+					return Result.err("Could not match %s to a qualified Java Identifier :: package? classname", fqn);
+				}
+				if (Character.isUpperCase(ch)) {
+					cstart = i;
+					break;
+				}
+				start = false;
+			} else {
+				if (ch == '.') {
+					start = true;
+				} else if (!Character.isJavaIdentifierPart(ch)) {
+					return Result.err(
+						"Could not match %s to a qualified Java Identifier :: package? classname, char %s", fqn, i);
+				}
+			}
+		}
+		String[] result = new String[2];
+		if (cstart == 0) {
+			result[1] = fqn;
+		} else if (cstart > 0) {
+			result[0] = fqn.substring(0, cstart - 1);
+			result[1] = fqn.substring(cstart);
+		} else {
+			result[0] = fqn;
+		}
+		return Result.ok(result);
 	}
 
 }

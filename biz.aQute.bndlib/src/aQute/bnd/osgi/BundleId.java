@@ -2,6 +2,8 @@ package aQute.bnd.osgi;
 
 import java.util.Objects;
 
+import aQute.bnd.version.Version;
+
 /**
  * Holds the bundle bsn + version pair
  */
@@ -11,7 +13,12 @@ public class BundleId implements Comparable<BundleId> {
 
 	public BundleId(String bsn, String version) {
 		this.bsn = bsn.trim();
-		this.version = version.trim();
+		this.version = version == null ? "0" : version.trim();
+	}
+
+	public BundleId(String bsn, Version version) {
+		this.bsn = bsn;
+		this.version = version.toString();
 	}
 
 	public String getVersion() {
@@ -43,5 +50,19 @@ public class BundleId implements Comparable<BundleId> {
 			return result;
 
 		return version.compareTo(other.version);
+	}
+
+	@Override
+	public String toString() {
+		return bsn + ";version=" + version;
+	}
+
+	public String getShortVersion() {
+		try {
+			Version v = new Version(version);
+			return v.toStringWithoutQualifier();
+		} catch (Exception e) {
+			return version;
+		}
 	}
 }
