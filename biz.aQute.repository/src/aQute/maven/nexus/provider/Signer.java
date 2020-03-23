@@ -10,13 +10,19 @@ import aQute.lib.io.IO;
 import aQute.libg.command.Command;
 
 public class Signer {
-	private static Logger	logger	= LoggerFactory.getLogger(Signer.class);
-	private String			passphrase;
-	private String			cmd;
+	private static final Logger	logger	= LoggerFactory.getLogger(Signer.class);
+	private final String	key;
+	private final String	passphrase;
+	private final String	cmd;
 
-	public Signer(String passphrase, String cmd) {
+	public Signer(String key, String passphrase, String cmd) {
+		this.key = key;
 		this.passphrase = passphrase;
 		this.cmd = cmd == null ? getDefault() : cmd;
+	}
+
+	public Signer(String passphrase, String cmd) {
+		this(null, passphrase, cmd);
 	}
 
 	private String getDefault() {
@@ -31,7 +37,7 @@ public class Signer {
 			.toFile();
 		IO.delete(tmp);
 		try {
-			int result = sign(f, cmd, passphrase, tmp);
+			int result = sign(f, cmd, key, passphrase, tmp);
 			if (result == 0) {
 				return IO.read(tmp);
 			} else
@@ -42,7 +48,7 @@ public class Signer {
 	}
 
 	/**
-	 * Sign the given file with gpg.
+	 * Sign the given file with gpg using the default key.
 	 *
 	 * @param f the file to sign
 	 * @param cmdName the name of the gpg command
@@ -50,11 +56,29 @@ public class Signer {
 	 * @return null if failed, otherwise the bytes of the signature
 	 */
 	public static int sign(File f, String cmdName, String passphrase, File output) throws Exception {
+		return sign(f, cmdName, null, passphrase, output);
+	}
+
+	/**
+	 * Sign the given file with gpg.
+	 *
+	 * @param f the file to sign
+	 * @param cmdName the name of the gpg command
+	 * @param key the key to use
+	 * @param passphrase the passphrase to use
+	 * @return null if failed, otherwise the bytes of the signature
+	 */
+	public static int sign(File f, String cmdName, String key, String passphrase, File output) throws Exception {
 
 		Command cmd = new Command();
 
 		cmd.add(cmdName);
 		cmd.add("--batch");
+
+		if (key != null) {
+			cmd.add("--local-user");
+			cmd.add(key);
+		}
 
 		if (passphrase != null) {
 			cmd.add("--passphrase-fd");
@@ -64,7 +88,9 @@ public class Signer {
 		cmd.add("--output");
 		cmd.add(output.getAbsolutePath());
 
-		cmd.add("-ab");
+		cmd.add("--detach-sign");
+		cmd.add("--armor");
+
 		cmd.add(f.getAbsolutePath());
 
 		StringBuffer out = new StringBuffer();
