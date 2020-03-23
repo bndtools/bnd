@@ -1,0 +1,41 @@
+{"gogoCommands":[{
+  "functions":[{
+    "methods":[{
+      "arguments":[],"description":null,"options":[]
+    }],"name":"methodA"
+  }],"name":"scopeB"
+},{
+  "functions":[{
+    "methods":[{
+      "arguments":[],"description":null,"options":[]
+    },{
+      "arguments":[{
+        "description":null,"multiValue":true,"name":"arg"
+      }],"description":"DescriptionMethodC - one array param","options":[]
+    }],"name":"methodC"
+  },{
+    "methods":[{
+      "arguments":[],"description":null,"options":[]
+    },{
+      "arguments":[],"description":"DescriptionMethodA - no param","options":[]
+    },{
+      "arguments":[],"description":"DescriptionMethodA - two docu params","options":[{
+        "description":"DescriptionParamA","isFlag":true,"multiValue":false,"names":["-a","--aa"]
+      },{
+        "description":"DescriptionParamB","isFlag":false,"multiValue":false,"names":["-y"]
+      }]
+    }],"name":"methodA"
+  },{
+    "methods":[{
+      "arguments":[{
+        "description":null,"multiValue":false,"name":"arg"
+      }],"description":"DescriptionMethodB - one param","options":[]
+    },{
+      "arguments":[{
+        "description":null,"multiValue":false,"name":"arg1"
+      },{
+        "description":null,"multiValue":false,"name":"arg2"
+      }],"description":"DescriptionMethodB - two param","options":[]
+    }],"name":"methodB"
+  }],"name":"scopeA"
+}]}
