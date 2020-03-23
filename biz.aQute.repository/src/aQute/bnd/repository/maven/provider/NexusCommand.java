@@ -9,6 +9,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Formatter;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
@@ -27,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
@@ -34,6 +36,7 @@ import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.collections.Iterables;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
+import aQute.lib.getopt.OptionArgument;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -48,8 +51,8 @@ import aQute.maven.nexus.provider.Signer;
 public class NexusCommand extends Processor {
 	private final static Logger	logger	= LoggerFactory.getLogger(NexusCommand.class);
 
-	private NexusOptions		options;
-	private Nexus				nexus;
+	private final NexusOptions	options;
+	private final Nexus			nexus;
 	final HttpClient			client;
 	final Crawler				crawler;
 
@@ -60,8 +63,16 @@ public class NexusCommand extends Processor {
 	}
 
 	@ProviderType
+	@Description("Nexus repository command. Provides a number of sub commands to manipulate a Nexus repository.")
+	@Arguments(arg = {
+		"sub-cmd", "..."
+	})
 	public interface NexusOptions extends Options {
+		@Description("Specify the URL of the Nexus repository.")
 		URI url();
+
+		@Description("Specify the connection-settings for the HttpClient. Default looks for the normal settings files.")
+		String settings();
 
 		Compatible compatible(Compatible deflt);
 	}
@@ -71,8 +82,18 @@ public class NexusCommand extends Processor {
 		super(parent);
 		use(parent);
 		this.options = options;
+		String settings = options.settings();
+		if (settings != null) {
+			setProperty(Constants.CONNECTION_SETTINGS, settings);
+		}
 		client = new HttpClient();
-		client.readSettings(parent);
+		client.readSettings(this);
+		if (isTrace()) {
+			try (Formatter f = new Formatter()) {
+				client.reportSettings(f);
+				trace("%s", f.toString());
+			}
+		}
 		this.crawler = new Crawler(client, getPromiseFactory());
 		if (this.options.url() == null) {
 			nexus = null;
@@ -81,51 +102,61 @@ public class NexusCommand extends Processor {
 		}
 	}
 
+	@Description("Artifact signing subcommand.")
 	@Arguments(arg = {
 		"path..."
 	})
 	interface SignOptions extends Options {
+		@Description("Specify the path to the gpg command. The gpg path can also be specified using the 'gpg' system property or the 'GPG' environment variable. Defaults to 'gpg'.")
+		@OptionArgument("<path>")
 		String command(String s);
 
+		@Description("Only compute and display the signatures but do not upload them.")
 		boolean show();
 
+		@Description("Specify the passpharse to the gpg command. Defaults to reading stdin for the passphrase.")
 		String password();
 
+		@Description("Specify the local-user USER-ID for signing. Defaults to signing with the default key.")
 		String key();
 
+		@Description("Specify the URL to a Nexus repository from which to obtain the artifacts to sign. Defaults to signing the specified paths to the sign subcommand.")
 		URI from();
 
+		@Description("Specify the include pattern for artifacts from the '--from' option. Defaults to '**'.")
 		String include();
 
+		@Description("Specify the exclude pattern for artifacts from the '--from' option. Defaults to no exclude pattern.")
 		String xclude();
 
+		@Description("Specify the number of threads to use when downloading, signing, and uploading artifacts. Defaults to one thread.")
 		int threads();
-
 	}
 
 	public void _sign(SignOptions options) throws Exception {
 		if (!checkNexus())
 			return;
 
-		String password = null;
-		if (options.password() == null) {
+		String passphrase = options.password();
+		if (passphrase == null) {
 			Console console = System.console();
 			if (console == null) {
-				error("No -p/--password set for PGP key and no console to ask");
+				error("No -p/--password set for PGP key and no console to ask for passphrase");
 			} else {
-				char[] pw = console.readPassword("Passsword for pgp: ");
+				char[] pw = console.readPassword("Passphrase for gpg: ");
 				if (pw == null || pw.length == 0) {
-					error("Password not entered");
+					error("Passphrase not entered");
+				} else {
+					passphrase = new String(pw);
 				}
-				password = new String(pw);
 			}
-		} else
-			password = options.password();
+		}
 
-		Signer signer = new Signer(new String(password), options.command(getProperty("gpg", System.getenv("GPG"))));
-
-		if (password == null || !isOk())
+		if (passphrase == null || !isOk())
 			return;
+
+		Signer signer = new Signer(options.key(), passphrase,
+			options.command(getProperty("gpg", System.getenv("GPG"))));
 
 		List<String> args = options._arguments();
 
@@ -257,7 +288,7 @@ public class NexusCommand extends Processor {
 
 	private boolean checkNexus() {
 		if (nexus == null) {
-			error("The -u option to define the maven repo to use was not given");
+			error("The -u/--url option to define the Nexus repo to use was not given");
 			return false;
 		}
 		return true;
