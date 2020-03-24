@@ -5,6 +5,7 @@ import static org.osgi.framework.namespace.IdentityNamespace.CAPABILITY_TYPE_ATT
 import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.lib.exceptions.Exceptions;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom.Dependency;
 import aQute.maven.api.MavenScope;
@@ -206,8 +208,9 @@ class Traverser {
 			}
 			addInformationCapability(rb, archive.toString(), parent);
 		} catch (Exception e) {
+			Throwable theException = Exceptions.unrollCause(e, InvocationTargetException.class);
 			addReserveIdentity(rb, bsn, frameworkVersion);
-			addInformationCapability(rb, archive.toString(), parent, e);
+			addInformationCapability(rb, archive.toString(), parent, theException);
 		}
 		resources.put(archive, rb.build());
 	}
