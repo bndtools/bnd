@@ -1,4 +1,4 @@
 @Version("5.0.1")
-package biz.aQute.resolve;
+package aQute.lib.bundles;
 
 import org.osgi.annotation.versioning.Version;
