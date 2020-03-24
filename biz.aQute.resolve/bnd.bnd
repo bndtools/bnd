@@ -4,6 +4,7 @@
 -maven-scope: provided
 
 -buildpath: \
+	osgi.annotation;version=latest,\
 	osgi.core;version=latest,\
 	org.osgi.namespace.contract;version=latest,\
 	org.osgi.namespace.service;version=latest,\
