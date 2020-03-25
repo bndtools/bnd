@@ -5,9 +5,11 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,6 +21,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.WriteResource;
+import aQute.bnd.stream.MapStream;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
 import aQute.libg.glob.Glob;
@@ -339,7 +342,11 @@ public class PomResource extends WriteResource {
 		Parameters dependencies = processor.getMergedParameters(Constants.MAVEN_DEPENDENCIES);
 		if (!dependencies.isEmpty()) {
 			Tag tdependencies = new Tag("dependencies");
-			dependencies.values()
+			dependencies.stream()
+				.mapKey(Processor::removeDuplicateMarker)
+				.collect(MapStream.toMap((oldValue, value) -> value,
+					(Supplier<Map<String, Attrs>>) LinkedHashMap::new))
+				.values()
 				.forEach(attrs -> tdependencies.addContent(new Tag("dependency").addContent(attrs)));
 			if (!tdependencies.getContents()
 				.isEmpty()) {

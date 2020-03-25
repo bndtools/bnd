@@ -3,13 +3,13 @@
 
 jtwig.version: 5.86.1.RELEASE
 -maven-dependencies.jtwig:\
-	jtwig-core;\
+	org.jtwig:jtwig-core:${jtwig.version};\
 	groupId=org.jtwig;\
 	artifactId=jtwig-core;\
 	version=${jtwig.version};\
 	scope=compile,\
 	\
-	jtwig-reflection;\
+	org.jtwig:jtwig-reflection:${jtwig.version};\
 	groupId=org.jtwig;\
 	artifactId=jtwig-reflection;\
 	version=${jtwig.version};\

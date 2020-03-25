@@ -342,6 +342,12 @@ public class MavenTest extends TestCase {
 		b.setBundleSymbolicName(bsn);
 		b.setBundleVersion(version);
 		b.setProperty("-resourceonly", "true");
+		b.setProperty(
+			"-maven-dependencies",
+			"group1:artifact1:1.0.0-SNAPSHOT;groupId=group1;artifactId=artifact1;version=1.0.0-SNAPSHOT,group2:artifact2:2.0.0;groupId=group2;artifactId=artifact2;version=2.0.0");
+		b.setProperty(
+			"-maven-dependencies.fix",
+			"group1:artifact1:1.0.0-SNAPSHOT;groupId=group1;artifactId=artifact1;version=1.0.0");
 		if (developers != null)
 			b.setProperty(Constants.BUNDLE_DEVELOPERS, developers);
 
@@ -368,5 +374,13 @@ public class MavenTest extends TestCase {
 		assertEquals((scm == null) ? "0" : "1", xpath.evaluate("count(/project/scm)", d));
 		assertEquals(((license == null) || license.trim()
 			.equals("<<EXTERNAL>>")) ? "0" : "1", xpath.evaluate("count(/project/licenses)", d));
+
+		assertEquals("2", xpath.evaluate("count(/project/dependencies/dependency)", d));
+		assertEquals("group1", xpath.evaluate("/project/dependencies/dependency[1]/groupId", d));
+		assertEquals("artifact1", xpath.evaluate("/project/dependencies/dependency[1]/artifactId", d));
+		assertEquals("1.0.0", xpath.evaluate("/project/dependencies/dependency[1]/version", d));
+		assertEquals("group2", xpath.evaluate("/project/dependencies/dependency[2]/groupId", d));
+		assertEquals("artifact2", xpath.evaluate("/project/dependencies/dependency[2]/artifactId", d));
+		assertEquals("2.0.0", xpath.evaluate("/project/dependencies/dependency[2]/version", d));
 	}
 }
