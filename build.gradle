@@ -84,6 +84,9 @@ subprojects {
         jvmArgs jpmsOptions
         environment 'JAVA_OPTS': jpmsOptions.join(' ')
       }
+      if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
+        jvmArgs '-XX:+ShowCodeDetailsInExceptionMessages'
+      }
       inputs.files(fileTree(project.projectDir) {
         include 'testresources/', 'testdata/'
         exclude {
