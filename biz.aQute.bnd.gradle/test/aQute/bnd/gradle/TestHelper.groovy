@@ -24,12 +24,10 @@ class TestHelper {
   }
 
   private static String gradleVersion() {
-    JavaVersion current = JavaVersion.current()
-    JavaVersion[] versions = JavaVersion.values()
-    if ((versions.length > 14) && (current.compareTo(versions[14 - 1]) >= 0)) {
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
       return '6.3'
     }
-    if ((versions.length > 13) && (current.compareTo(versions[13 - 1]) >= 0)) {
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_13)) {
       return '6.0'
     }
     return '5.1'

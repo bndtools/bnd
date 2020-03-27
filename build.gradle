@@ -7,7 +7,7 @@
 
 import aQute.lib.io.IO
 
-if (JavaVersion.current().isJava9Compatible()) {
+if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
   ext.jpmsOptions = [
     '--illegal-access=warn',
     '--add-opens=java.base/java.lang=ALL-UNNAMED',
@@ -80,7 +80,7 @@ subprojects {
           }
         }
       }
-      if (JavaVersion.current().isJava9Compatible()) {
+      if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
         jvmArgs jpmsOptions
         environment 'JAVA_OPTS': jpmsOptions.join(' ')
       }
