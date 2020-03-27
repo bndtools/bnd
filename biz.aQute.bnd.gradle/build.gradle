@@ -13,7 +13,7 @@ dependencies {
     }
 }
 
-if (JavaVersion.current().isJava9Compatible()) {
+if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
     tasks.withType(GroovyCompile.class).configureEach {
         groovyOptions.fork 'jvmArgs': jpmsOptions
     }
@@ -34,7 +34,7 @@ tasks.named('test') {
 }
 
 tasks.named('testClasses') {
-    def pluginClasspath = { project.files(configurations.runtimeClasspath.allArtifacts.files, 
+    def pluginClasspath = { project.files(configurations.runtimeClasspath.allArtifacts.files,
        configurations.runtimeClasspath.resolvedConfiguration.files) }
     inputs.files(pluginClasspath).withPropertyName('pluginClasspath')
     def pluginClasspathFile = { new File(tasks.getByName('compileTestJava').destinationDir, 'plugin-under-test-metadata.properties') }
