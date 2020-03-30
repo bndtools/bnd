@@ -210,7 +210,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 				Attrs containedAttrs = contained.get(packageRef);
 				if (containedAttrs != null && containedAttrs.containsKey(INTERNAL_EXPORT_TO_MODULES_DIRECTIVE)) {
 					targets = splitAsStream(containedAttrs.get(INTERNAL_EXPORT_TO_MODULES_DIRECTIVE))
-						.collect(toCollection(LinkedHashSet::new));
+						.collect(toCollection(LinkedHashSet<String>::new));
 				}
 
 				// TODO Do we want to handle access? I can't think of a reason.
@@ -251,7 +251,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 			.filterValue(attrs -> attrs.containsKey(INTERNAL_OPEN_TO_MODULES_DIRECTIVE))
 			.forEach((packageRef, attrs) -> {
 				Set<String> targets = splitAsStream(attrs.get(INTERNAL_OPEN_TO_MODULES_DIRECTIVE))
-					.collect(toCollection(LinkedHashSet::new));
+					.collect(toCollection(LinkedHashSet<String>::new));
 
 				// TODO Do we want to handle access? I can't think of a reason.
 				// Allowed: 0 | ACC_SYNTHETIC | ACC_MANDATED
@@ -397,7 +397,7 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 					.map(attrs -> attrs.get(SERVICELOADER_REGISTER_DIRECTIVE))
 					.map(impl -> analyzer.getTypeRefFromFQN(impl)
 						.getBinary())
-					.collect(toCollection(LinkedHashSet::new));
+					.collect(toCollection(LinkedHashSet<String>::new));
 				builder.provides(typeRef.getBinary(), impls);
 			});
 	}

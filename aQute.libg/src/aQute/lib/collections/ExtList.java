@@ -48,7 +48,7 @@ public class ExtList<T> extends ArrayList<T> {
 	}
 
 	private static Collector<String, ?, ExtList<String>> collector() {
-		return Collector.of(ExtList::new, List::add, (left, right) -> {
+		return Collector.of(ExtList<String>::new, List::add, (left, right) -> {
 			left.addAll(right);
 			return left;
 		});

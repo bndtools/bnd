@@ -102,7 +102,7 @@ public class CDIAnnotations implements AnalyzerPlugin {
 					Resource beansResource = currentJar.getResource(Processor.appendPath(path, "META-INF/beans.xml"));
 					return findDiscoveryMode(beansResource);
 				}
-			}), (u, v) -> u, HashMap::new));
+			}), (u, v) -> u, HashMap<String, Discover>::new));
 
 		Instructions instructions = new Instructions(header);
 		Packages contained = analyzer.getContained();

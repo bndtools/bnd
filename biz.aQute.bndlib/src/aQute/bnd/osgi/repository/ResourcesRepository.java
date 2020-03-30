@@ -88,7 +88,7 @@ public class ResourcesRepository extends BaseRepository {
 	}
 
 	public static Collector<Capability, List<Capability>, List<Capability>> toCapabilities() {
-		return Collector.of(ArrayList::new, ResourcesRepository::accumulator, ResourcesRepository::merger);
+		return Collector.of(ArrayList<Capability>::new, ResourcesRepository::accumulator, ResourcesRepository::merger);
 	}
 
 	private static <E, C extends Collection<E>> void accumulator(C c, E e) {

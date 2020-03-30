@@ -499,7 +499,7 @@ public class MapStreamTest {
 		Supplier<MapStream<String, String>> supplier = () -> MapStream.concat(MapStream.of(testMap),
 			MapStream.of(testMap));
 		LinkedHashMap<String, String> result = supplier.get()
-			.collect(MapStream.toMap((v1, v2) -> v1.concat(v2), LinkedHashMap::new));
+			.collect(MapStream.toMap((v1, v2) -> v1.concat(v2), LinkedHashMap<String, String>::new));
 		assertThat(result).isInstanceOf(LinkedHashMap.class)
 			.containsOnly(entry("key1", "value1value1"), entry("key2", "value2value2"), entry("key3", "value3value3"),
 				entry("key4", "value4value4"), entry("key5", "value5value5"));
