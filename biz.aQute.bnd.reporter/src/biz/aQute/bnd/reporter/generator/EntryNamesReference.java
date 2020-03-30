@@ -64,4 +64,9 @@ public interface EntryNamesReference {
 	 * The version, the artifactId and the groupId of the analyzed object.
 	 */
 	String	MAVEN_COORDINATE	= "mavenCoordinate";
+
+	/**
+	 * A list of gogo-commands.
+	 */
+	String	GOGO_COMMANDS		= "gogoCommands";
 }

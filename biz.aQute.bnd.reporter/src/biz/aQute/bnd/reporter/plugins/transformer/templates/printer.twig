@@ -384,3 +384,57 @@ No information available.
 {%- endif -%}
 {%- endif -%}
 {%- endmacro %}
+
+{# 
+# GOGO COMMANDs
+#}
+{% macro printGogoCommands (commandScopes) -%}
+{%- import _self as this -%}
+{%- for scope in commandScopes -%}
+{%- for function in scope.functions -%}
+{%- if not empty(scope.name) -%}
+{{ this.printTitle(scope.name~':'~function.name,3) }}
+{%- else -%}
+{{ this.printTitle(function.name,3) }}
+{%- endif -%}
+{%- for method in function.methods -%}
+{{- '\n\n' -}}**Synopsis**{{- '\n\n' -}}
+{{- (scope.name is empty)? '`' : '`'~scope.name~':' -}}
+{{- function.name -}}
+{{- (method.options is empty)? '' : ' [OPTIONS]' -}}
+{%- if not empty(method.arguments) -%}
+{%- for argument in method.arguments -%}
+{{- ' '~argument.name|upper -}}{{- (argument.multiValue)? '...' : '' -}}
+{%- endfor -%}
+{%- endif -%}
+{{- '`' -}}
+{%- if not (method.description is empty) -%}
+{{- '\n\n' -}}**Description**{{- '\n\n' -}}
+{{-  method.description }}
+{%- endif -%}
+{%- if not (method.arguments is empty) -%}
+{{ '\n\n' }}**Arguments**{{ '\n' -}}
+{%- for argument in method.arguments -%}
+{{ '\n' }}{{- '* `'~argument.name|upper~'`  ' }}{{ (argument.description is empty)? '' : argument.description -}}
+{% endfor -%}
+{%- endif -%}
+{%- if not (method.options is empty) -%}
+{{ '\n\n' }}**Options**{{ '\n' }}
+{%- for option in method.options -%}
+{{ '\n* `' }}{%- for name in option.names %}{{ name }}{{ (option.isFlag)? '': ' VALUE'}}{{ (option.isFlag and option.multiValue)? '...': ''}}{{ (loop.last )? '' : ', '}}{%- endfor -%}
+{{ '`  ' }}{{(option.description is empty)? '' : option.description -}}
+{%- endfor -%}
+{%- endif -%}
+{%- if not (loop.last) -%}
+{{-  '\n\n---' -}}
+{%- endif -%}
+{%- endfor -%}
+{%- if not (loop.last) -%}
+{{-  '\n\n' -}}
+{%- endif -%}
+{%- endfor -%}
+{%- if not (loop.last) -%}
+{{-  '\n\n' -}}
+{%- endif -%}
+{%- endfor -%}
+{%- endmacro %}

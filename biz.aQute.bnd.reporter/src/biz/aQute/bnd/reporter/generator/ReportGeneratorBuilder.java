@@ -19,6 +19,7 @@ import biz.aQute.bnd.reporter.plugins.entries.bndproject.CommonInfoProjectPlugin
 import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.BndWorkspaceContentsPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.CommonInfoPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.ComponentsPlugin;
+import biz.aQute.bnd.reporter.plugins.entries.bundle.GogoPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.ImportJarResourcePlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.MavenCoordinatePlugin;
@@ -130,6 +131,7 @@ public class ReportGeneratorBuilder {
 		addPlugin(EntryNamesReference.MANIFEST);
 		addPlugin(EntryNamesReference.MAVEN_COORDINATE);
 		addPlugin(EntryNamesReference.METATYPES);
+		addPlugin(EntryNamesReference.GOGO_COMMANDS);
 
 		return this;
 	}
@@ -222,6 +224,7 @@ public class ReportGeneratorBuilder {
 		registerPlugin(ManifestPlugin.class.getCanonicalName());
 		registerPlugin(MetatypesPlugin.class.getCanonicalName());
 		registerPlugin(CodeSnippetPlugin.class.getCanonicalName());
+		registerPlugin(GogoPlugin.class.getCanonicalName());
 	}
 
 	private Processor configureProcessor(final Processor processor) {

@@ -156,4 +156,14 @@
 {%- endif -%}
 {%- endmacro %}
 
+{# 
+# GOGO COMMANDS
+#}
+{% macro gogoCommandsBlock (printer, report, iconUrl) -%}
+{%- if not empty(report.gogoCommands) -%}
+{{ '\n\n' }}{{ printer.printTitle('Gogo Commands',2, iconUrl) }}
 
+{% block beforeGogoCommands %}{% endblock -%}
+{{ printer.printGogoCommands(report.gogoCommands) }}
+{%- endif -%}
+{%- endmacro %}

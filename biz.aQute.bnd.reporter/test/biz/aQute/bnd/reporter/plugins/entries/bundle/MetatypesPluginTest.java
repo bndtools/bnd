@@ -1,8 +1,9 @@
 package biz.aQute.bnd.reporter.plugins.entries.bundle;
 
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import static biz.aQute.bnd.reporter.matcher.IsDTODeepEquals.deepEqualsTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Locale;
@@ -11,7 +12,7 @@ import java.util.Map;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.reporter.ReportEntryPlugin;
-import biz.aQute.bnd.reporter.plugins.serializer.JsonReportSerializerPlugin;
+import aQute.lib.json.JSONCodec;
 import junit.framework.TestCase;
 
 public class MetatypesPluginTest extends TestCase {
@@ -29,18 +30,9 @@ public class MetatypesPluginTest extends TestCase {
 			.get(ReportEntryPlugin.ENTRY_NAME_PROPERTY), e.extract(jar, Locale.forLanguageTag("und")));
 
 		assertTrue(p.isOk());
-
-		final ByteArrayOutputStream s = new ByteArrayOutputStream();
-		new JsonReportSerializerPlugin().serialize(result, s);
-
-		final StringBuffer ee = new StringBuffer();
-
-		for (final String l : Files.readAllLines(Paths.get("testresources/metatypesEntry/result.json"),
-			StandardCharsets.UTF_8)) {
-
-			ee.append(l + "\n");
-		}
-		ee.deleteCharAt(ee.length() - 1);
-		assertEquals(ee.toString(), new String(s.toByteArray()));
+		assertThat(result, is(deepEqualsTo(new JSONCodec().dec()
+			.from(Paths.get("testresources/metatypesEntry/result.json")
+				.toFile())
+			.get())));
 	}
 }
