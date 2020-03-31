@@ -9,6 +9,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
@@ -35,11 +36,23 @@ class ReleasePluginImpl {
 			return;
 
 		releasedArtifacts.add(pom);
-		if (context == indexProject) {
+		if (isIndexProject(context)) {
 			master = pom;
 		} else {
 
 		}
+	}
+
+	private boolean isIndexProject(Processor context) {
+		if (context instanceof Project) {
+			return context == indexProject;
+		}
+
+		if (context instanceof ProjectBuilder) {
+			return (((ProjectBuilder) context).getProject()) == indexProject;
+		}
+
+		return false;
 	}
 
 	/*
