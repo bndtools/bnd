@@ -9,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -345,7 +344,7 @@ public class PomResource extends WriteResource {
 			dependencies.stream()
 				.mapKey(Processor::removeDuplicateMarker)
 				.collect(MapStream.toMap((oldValue, value) -> value,
-					(Supplier<Map<String, Attrs>>) LinkedHashMap::new))
+					LinkedHashMap<String, Attrs>::new))
 				.values()
 				.forEach(attrs -> tdependencies.addContent(new Tag("dependency").addContent(attrs)));
 			if (!tdependencies.getContents()

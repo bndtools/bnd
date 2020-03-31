@@ -54,7 +54,7 @@ public class MiniBundle implements Bundle, BundleContext, Closeable {
 	private volatile int					state;
 	private final JarFile					jar;
 	private final Headers					headers;
-	private final TreeMap<String, JarEntry>	entries;
+	private final Map<String, JarEntry>	entries;
 	private final File						jarFile;
 	private final URLClassLoader			loader;
 
@@ -76,7 +76,7 @@ public class MiniBundle implements Bundle, BundleContext, Closeable {
 				// .peek(entry -> fw.trace("entry %s",entry.getName()))
 				.collect(toMap(JarEntry::getName, Function.identity(), (u, v) -> {
 					throw new IllegalStateException(String.format("Duplicate jar entry %s", u));
-				}, TreeMap::new));
+				}, TreeMap<String, JarEntry>::new));
 		} catch (IOException e) {
 			throw new BundleException("Failure to create MiniBundle", BundleException.READ_ERROR, e);
 		}

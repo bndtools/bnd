@@ -488,7 +488,7 @@ public class ResourceUtils {
 			// ContentCapability::osgi_content values.
 			// .collect(toMap(ContentCapability::url,
 			// ContentCapability::osgi_content));
-			.collect(Collector.of(HashMap::new, (m, c) -> m.put(c.url(), c.osgi_content()), (m1, m2) -> {
+			.collect(Collector.of(HashMap<URI, String>::new, (m, c) -> m.put(c.url(), c.osgi_content()), (m1, m2) -> {
 				m1.putAll(m2);
 				return m1;
 			}));

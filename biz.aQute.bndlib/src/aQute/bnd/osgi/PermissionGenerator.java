@@ -104,7 +104,7 @@ public class PermissionGenerator {
 			.map(attrs -> attrs.get(ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE))
 			.filter(Objects::nonNull)
 			.flatMap(Strings::splitAsStream)
-			.collect(toCollection(TreeSet::new));
+			.collect(toCollection(TreeSet<String>::new));
 		return declaredServices;
 	}
 
@@ -174,7 +174,7 @@ public class PermissionGenerator {
 			.flatMap(filter -> new FilterParser().parse(filter)
 				.visit(new FindReferencedServices())
 				.stream())
-			.collect(toCollection(TreeSet::new));
+			.collect(toCollection(TreeSet<String>::new));
 
 		if (referencedServices.contains(MATCH_ALL)) {
 			return Collections.singleton(MATCH_ALL);

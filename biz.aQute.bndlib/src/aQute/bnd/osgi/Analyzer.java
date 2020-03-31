@@ -1214,7 +1214,8 @@ public class Analyzer extends Processor {
 			profiles = OSGiHeader.parseProperties(ee)
 				.stream()
 				.mapValue(v -> Strings.splitAsStream(v)
-					.collect(Collectors.collectingAndThen(toList(), SortedList::new)))
+					.collect(Collectors.collectingAndThen(toList(),
+						SortedList<String>::new)))
 				.collect(MapStream.toMap());
 		}
 		SortedSet<String> found = new TreeSet<>();
@@ -2087,7 +2088,7 @@ public class Analyzer extends Processor {
 			.distinct()
 			.filter(this::isProvider)
 			.map(TypeRef::getPackageRef)
-			.collect(toCollection(LinkedHashSet::new));
+			.collect(toCollection(LinkedHashSet<PackageRef>::new));
 		return providers;
 	}
 
@@ -3189,7 +3190,7 @@ public class Analyzer extends Processor {
 			.stream()
 			.filter(packageRef -> !packageRef.isMetaData())
 			.sorted()
-			.collect(toCollection(LinkedList::new));
+			.collect(toCollection(LinkedList<PackageRef>::new));
 
 		if (nomatch == null)
 			nomatch = Create.set();

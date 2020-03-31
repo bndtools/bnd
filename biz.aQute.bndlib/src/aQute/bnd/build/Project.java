@@ -2206,7 +2206,7 @@ public class Project extends Processor {
 		Map<String, Action> actions = MapStream.of(all)
 			.mapKey(key -> getReplacer().process(key))
 			.filterKey(Strings::nonNullOrTrimmedEmpty)
-			.collect(MapStream.toMap((u, v) -> v, LinkedHashMap::new));
+			.collect(MapStream.toMap((u, v) -> v, LinkedHashMap<String, Action>::new));
 		return actions;
 	}
 
