@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -53,6 +55,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 	@SuppressWarnings("deprecation")
 	private static final String		ATTR_LOGLEVEL	= LaunchConstants.ATTR_LOGLEVEL;
 	private static final ILogger	logger			= Logger.getLogger(AbstractOSGiLaunchDelegate.class);
+	private static final Pattern	vmArgPattern	= Pattern.compile("^-D([a-zA-Z\\.]*)=((?!\").*(?!\"))");
 
 	protected Run					run;
 
@@ -301,7 +304,14 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 		StringBuilder builder = new StringBuilder();
 		Collection<String> runVM = getProjectLauncher().getRunVM();
 		for (Iterator<String> iter = runVM.iterator(); iter.hasNext();) {
-			builder.append(iter.next());
+			String vmArg = iter.next();
+			Matcher matcher = vmArgPattern.matcher(vmArg);
+
+			if (matcher.matches())
+				vmArg = MessageFormat.format("-D{0}=\"{1}\"", matcher.group(1), matcher.group(2));
+
+			builder.append(vmArg);
+
 			if (iter.hasNext())
 				builder.append(" ");
 		}
