@@ -88,6 +88,7 @@ import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.command.Command;
 import aQute.libg.cryptography.Digester;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.generics.Create;
@@ -2853,13 +2854,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public String system(boolean allowFail, String command, String input) throws IOException, InterruptedException {
 		List<String> args;
 		if (IO.isWindows()) {
-			args = new ArrayList<>();
-			args.add("cmd");
-			args.add("/c");
-			args.add("\"" + command + "\"");
+			args = Arrays.asList("cmd", "/c", Command.windowsQuote(command));
 		} else {
-			QuotedTokenizer qt = new QuotedTokenizer(command, " ");
-			args = qt.getTokenSet();
+			args = new QuotedTokenizer(command, " \t", false, true).stream()
+				.filter(token -> !token.isEmpty())
+				.collect(toList());
 		}
 
 		Process process = new ProcessBuilder(args).directory(getBase())
