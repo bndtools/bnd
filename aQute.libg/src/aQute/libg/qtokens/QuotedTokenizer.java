@@ -65,9 +65,16 @@ public class QuotedTokenizer implements Iterable<String> {
 
 		boolean hadstring = false; // means no further trimming
 		boolean validspace = false; // means include spaces
+		boolean escaped = false; // means previous char was backslash
 
 		while (index < string.length()) {
 			char c = string.charAt(index++);
+
+			if (escaped) {
+				sb.append(c);
+				escaped = false;
+				continue;
+			}
 
 			if (separators.indexOf(c) >= 0) {
 				if (returnTokens) {
@@ -97,6 +104,9 @@ public class QuotedTokenizer implements Iterable<String> {
 					validspace = false;
 					break;
 
+				case '\\' :
+					escaped = true;
+					// FALL-THROUGH
 				default :
 					sb.append(c);
 					validspace = true;

@@ -1,16 +1,21 @@
 package aQute.libg.qtokens;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.stream.Stream;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class TestQuotedTokenizer extends TestCase {
+import aQute.lib.strings.Strings;
 
+public class TestQuotedTokenizer {
+
+	@Test
 	public void testNativeSeps() {
 		String s[] = new QuotedTokenizer("x;c;d=4", ";,=", true).getTokens();
-		assertEquals("Length", 7, s.length);
+		assertEquals(7, s.length, "Length");
 		assertEquals("x", s[0]);
 		assertEquals(";", s[1]);
 		assertEquals("c", s[2]);
@@ -20,34 +25,39 @@ public class TestQuotedTokenizer extends TestCase {
 		assertEquals("4", s[6]);
 	}
 
+	@Test
 	public void testSimple() {
 		String s[] = new QuotedTokenizer("1.jar, 2.jar,    \t   3.jar", ",").getTokens();
-		assertEquals("Length", 3, s.length);
+		assertEquals(3, s.length, "Length");
 		assertEquals("1.jar", s[0]);
 		assertEquals("2.jar", s[1]);
 		assertEquals("3.jar", s[2]);
 	}
 
+	@Test
 	public void testQuoted() {
 		String s[] = new QuotedTokenizer("'1 ,\t.jar'", ",").getTokens();
-		assertEquals("Length", 1, s.length);
+		assertEquals(1, s.length, "Length");
 		assertEquals("1 ,\t.jar", s[0]);
 	}
 
+	@Test
 	public void testWhiteSpace() {
 		String s[] = new QuotedTokenizer("               1.jar,               2.jar         ", ",").getTokens();
-		assertEquals("Length", 2, s.length);
+		assertEquals(2, s.length, "Length");
 		assertEquals("1.jar", s[0]);
 		assertEquals("2.jar", s[1]);
 	}
 
+	@Test
 	public void testMultipleSeps() {
 		String s[] = new QuotedTokenizer("1.jar,,,,,,,,,,,    , ,2.jar", ",").getTokens();
-		assertEquals("Length", 14, s.length);
+		assertEquals(14, s.length, "Length");
 		assertEquals("1.jar", s[0]);
 		assertEquals("2.jar", s[13]);
 	}
 
+	@Test
 	public void testIteration() {
 		Iterable<String> iterable = new QuotedTokenizer("1.jar,,,,,,,,,,,    , ,2.jar", ",");
 		assertThat(iterable).hasSize(14)
@@ -59,6 +69,7 @@ public class TestQuotedTokenizer extends TestCase {
 				"org.assertj.core;version=\"[3,4)\"");
 	}
 
+	@Test
 	public void testStream() {
 		Stream<String> stream = new QuotedTokenizer("1.jar,,,,,,,,,,,    , ,2.jar", ",").stream();
 		assertThat(stream).hasSize(14)
@@ -71,9 +82,10 @@ public class TestQuotedTokenizer extends TestCase {
 				"org.assertj.core;version=\"[3,4)\"");
 	}
 
+	@Test
 	public void testNative() {
 		String s[] = new QuotedTokenizer("x.dll;y.dll;abc=3;def=5;version=\"1.2.34,123\"", ";,=").getTokens();
-		assertEquals("Length", 8, s.length);
+		assertEquals(8, s.length, "Length");
 		assertEquals("x.dll", s[0]);
 		assertEquals("y.dll", s[1]);
 		assertEquals("abc", s[2]);
@@ -84,12 +96,35 @@ public class TestQuotedTokenizer extends TestCase {
 		assertEquals("1.2.34,123", s[7]);
 	}
 
+	// http://msdn.microsoft.com/en-us/library/17w5ykft.aspx
+	@Test
+	public void testSplitCommandLine() {
+		assertThat(new QuotedTokenizer("a\\\\\\\"b c\td", " \t", false,
+			true)
+			.stream()
+			.filter(Strings::notEmpty)).containsExactly("a\\\\\\\"b", "c", "d");
+
+		assertThat(new QuotedTokenizer("a\\\\b d\"e f\"g   h", " \t", false, true)
+			.stream()
+			.filter(Strings::notEmpty)).containsExactly("a\\\\b", "d\"e f\"g", "h");
+
+		assertThat(new QuotedTokenizer("a\\\\\\\\\"b c\" d e", " \t", false, true)
+			.stream()
+			.filter(Strings::notEmpty)).containsExactly("a\\\\\\\\\"b c\"", "d", "e");
+
+		assertThat(new QuotedTokenizer("\"abc\"  \t  d e", " \t", false, true)
+			.stream()
+			.filter(Strings::notEmpty)).containsExactly("\"abc\"", "d", "e");
+	}
+
+	@Test
 	public void testEscapedQuote() {
 		QuotedTokenizer qt = new QuotedTokenizer("'\\'y'", ",");
 		String s = qt.nextToken();
 		assertEquals("'y", s);
 	}
 
+	@Test
 	public void testRetainQuotes() {
 		QuotedTokenizer qt = new QuotedTokenizer(" \" foo \", 'bar' ", ",", false, true);
 		assertThat(qt.nextToken()).isEqualTo("\" foo \"");
@@ -105,24 +140,27 @@ public class TestQuotedTokenizer extends TestCase {
 			.containsSequence("someone", "quote", "He said, \"What!?\"");
 	}
 
+	@Test
 	public void testLongEscapedQuote() {
 		QuotedTokenizer qt = new QuotedTokenizer(
 			"\"{\\\":configurator:resource-version\\\": 1, \\\":configurator:version\\\":\\\"1\\\", \\\":configurator:symbolic-name\\\":\\\"dummy\\\", \\\"org.apache.aries.rsa.discovery.zookeeper\\\" : {}, \\\"org.apache.aries.rsa.discovery.zookeeper.server\\\" : {}}\",'{\":configurator:resource-version\": 1, \":configurator:version\":\"1\", \":configurator:symbolic-name\":\"dummy\", \"org.apache.aries.rsa.discovery.zookeeper\" : {}, \"org.apache.aries.rsa.discovery.zookeeper.server\" : {}}'",
 			",");
 		String s[] = qt.getTokens();
-		assertEquals("Length", 2, s.length);
+		assertEquals(2, s.length, "Length");
 		assertEquals(
 			"{\":configurator:resource-version\": 1, \":configurator:version\":\"1\", \":configurator:symbolic-name\":\"dummy\", \"org.apache.aries.rsa.discovery.zookeeper\" : {}, \"org.apache.aries.rsa.discovery.zookeeper.server\" : {}}",
 			s[0]);
 		assertEquals(s[0], s[1]);
 	}
 
+	@Test
 	public void testExplicitEmptyString() {
 		QuotedTokenizer qt = new QuotedTokenizer("literal=''", ";=,");
 		qt.nextToken();
 		assertEquals("", qt.nextToken());
 	}
 
+	@Test
 	public void testImplicitEmptyStringTurnedToNull() {
 		QuotedTokenizer qt = new QuotedTokenizer("literal=", ";=,");
 		qt.nextToken();
