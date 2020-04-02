@@ -43,7 +43,6 @@ public class Plugin extends AbstractUIPlugin {
 
 	public static final String										PLUGIN_ID			= "bndtools.core";
 	public static final String										BND_EDITOR_ID		= PLUGIN_ID + ".bndEditor";
-	public static final String										JPM_BROWSER_VIEW_ID	= "org.bndtools.core.views.jpm.JPMBrowserView";
 
 	public static final Version										DEFAULT_VERSION		= new Version(0, 0, 0);
 
