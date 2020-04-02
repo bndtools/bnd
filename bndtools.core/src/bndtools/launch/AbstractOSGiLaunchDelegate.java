@@ -4,7 +4,6 @@ import java.io.File;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -298,29 +297,16 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
 	@Override
 	public String getVMArguments(ILaunchConfiguration configuration) throws CoreException {
-		StringBuilder builder = new StringBuilder();
-		Collection<String> runVM = getProjectLauncher().getRunVM();
-		for (Iterator<String> iter = runVM.iterator(); iter.hasNext();) {
-			builder.append(iter.next());
-			if (iter.hasNext())
-				builder.append(" ");
-		}
-		String args = builder.toString();
-		return args;
+		return renderArguments(getProjectLauncher().getRunVM());
 	}
 
 	@Override
 	public String getProgramArguments(ILaunchConfiguration configuration) throws CoreException {
-		StringBuilder builder = new StringBuilder();
+		return renderArguments(getProjectLauncher().getRunProgramArgs());
+	}
 
-		Collection<String> args = getProjectLauncher().getRunProgramArgs();
-		for (Iterator<String> iter = args.iterator(); iter.hasNext();) {
-			builder.append(iter.next());
-			if (iter.hasNext())
-				builder.append(" ");
-		}
-
-		return builder.toString();
+	private static String renderArguments(Collection<String> arguments) {
+		return DebugPlugin.renderArguments(arguments.toArray(new String[0]), null);
 	}
 
 	/**

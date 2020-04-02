@@ -9,7 +9,7 @@ import aQute.lib.justif.Justif;
 import aQute.libg.reporter.ReporterAdapter;
 import junit.framework.TestCase;
 
-public class CommandTest extends TestCase {
+public class CommandLineTest extends TestCase {
 	ReporterAdapter rp = new ReporterAdapter(System.err);
 
 	public static void testWrap() {

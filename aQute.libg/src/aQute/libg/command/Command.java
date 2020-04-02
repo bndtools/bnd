@@ -1,6 +1,7 @@
 package aQute.libg.command;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,19 +12,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.lib.io.IO;
+import aQute.libg.qtokens.QuotedTokenizer;
 import aQute.service.reporter.Reporter;
 
 public class Command {
@@ -38,11 +39,11 @@ public class Command {
 	File						cwd			= new File("").getAbsoluteFile();
 	volatile Process			process;
 	volatile boolean			timedout;
-	String						fullCommand;
 	private boolean				useThreadForInput;
 
 	public Command(String fullCommand) {
-		this.fullCommand = fullCommand;
+		this();
+		full(fullCommand);
 	}
 
 	public Command() {}
@@ -72,42 +73,35 @@ public class Command {
 		return false;
 	}
 
+	private static final Pattern	escapedDoubleQuote	= Pattern.compile("([\\\\]*)\"");
+	private static final Pattern	trailingBackslash	= Pattern.compile("([\\\\]*)\\z");
 	public static String windowsQuote(String s) {
 		if (!needsWindowsQuoting(s))
 			return s;
-		s = s.replaceAll("([\\\\]*)\"", "$1$1\\\\\"");
-		s = s.replaceAll("([\\\\]*)\\z", "$1$1");
+		s = escapedDoubleQuote.matcher(s)
+			.replaceAll("$1$1\\\\\"");
+		s = trailingBackslash.matcher(s)
+			.replaceAll("$1$1");
 		return "\"" + s + "\"";
 	}
 
 	public int execute(final InputStream in, Appendable stdout, Appendable stderr) throws Exception {
-		logger.debug("executing cmd: {}", arguments);
+		logger.debug("executing cmd: {}", getArguments());
 
-		ProcessBuilder p;
-		if (fullCommand != null) {
-			// TODO do proper splitting
-			p = new ProcessBuilder(fullCommand.split("\\s+"));
-		} else {
-			// [cs] Arguments on windows aren't processed correctly. Thus the
-			// below junk
+		ProcessBuilder p = new ProcessBuilder(getArguments());
+		if (IO.isWindows()) {
+			// [cs] Arguments on windows aren't processed correctly.
+			// So we need to perform some escaping.
 			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6511002
-
-			if (System.getProperty("os.name")
-				.startsWith("Windows")) {
-				List<String> adjustedStrings = new LinkedList<>();
-				for (String a : arguments) {
-					adjustedStrings.add(windowsQuote(a));
-				}
-				p = new ProcessBuilder(adjustedStrings);
-			} else {
-				p = new ProcessBuilder(arguments);
-			}
+			// http://msdn.microsoft.com/en-us/library/17w5ykft.aspx
+			p.command(p.command()
+				.stream()
+				.map(Command::windowsQuote)
+				.collect(toList()));
 		}
 
-		Map<String, String> env = p.environment();
-		for (Entry<String, String> s : variables.entrySet()) {
-			env.put(s.getKey(), s.getValue());
-		}
+		p.environment()
+			.putAll(variables);
 
 		p.directory(cwd);
 		if (in == System.in)
@@ -115,7 +109,7 @@ public class Command {
 		Process process = this.process = p.start();
 
 		// Make sure the command will not linger when we go
-		Thread hook = new Thread(() -> process.destroy(), arguments.toString());
+		Thread hook = new Thread(process::destroy, getArguments().toString());
 		Runtime.getRuntime()
 			.addShutdownHook(hook);
 		final OutputStream stdin = process.getOutputStream();
@@ -195,8 +189,8 @@ public class Command {
 			rdInThread.interrupt();
 		}
 
-		logger.debug("cmd {} executed with result={}, result: {}/{}, timedout={}", arguments, exitValue, stdout, stderr,
-			timedout);
+		logger.debug("cmd {} executed with result={}, result: {}/{}, timedout={}", getArguments(), exitValue, stdout,
+			stderr, timedout);
 
 		if (timedout)
 			return TIMEDOUT;
@@ -286,16 +280,17 @@ public class Command {
 	}
 
 	public Command full(String full) {
-		fullCommand = full;
+		arguments.clear();
+		new QuotedTokenizer(full, " \t", false, true).stream()
+			.filter(token -> !token
+				.isEmpty())
+			.forEachOrdered(this::add);
 		return this;
 	}
 
 	public void inherit() {
 		ProcessBuilder pb = new ProcessBuilder();
-		for (Entry<String, String> e : pb.environment()
-			.entrySet()) {
-			var(e.getKey(), e.getValue());
-		}
+		var(pb.environment());
 	}
 
 	public String var(String name) {
@@ -307,7 +302,7 @@ public class Command {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 
-		for (String argument : arguments) {
+		for (String argument : getArguments()) {
 			sb.append(del);
 			sb.append(argument);
 			del = " ";
