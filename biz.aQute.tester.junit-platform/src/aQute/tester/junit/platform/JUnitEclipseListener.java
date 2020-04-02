@@ -209,7 +209,6 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 	@Override
 	public void testPlanExecutionFinished(TestPlan testPlan) {
 		message("%RUNTIME", Long.toString(System.currentTimeMillis() - startTime));
-		client.out.flush();
 		info("JUnitEclipseListener: testPlanExecutionFinished: Waiting .25 seconds");
 		try {
 			Thread.sleep(250L);
@@ -368,6 +367,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 
 		String message = key.concat(payload.toString());
 		client.out.println(message);
+		client.out.flush();
 		info("JUnitEclipseListener: %s", message);
 	}
 

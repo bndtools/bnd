@@ -103,7 +103,6 @@ public class JUnitEclipseReport implements TestReporter {
 	@Override
 	public void end() {
 		message("%RUNTIME", Long.toString(System.currentTimeMillis() - startTime));
-		client.out.flush();
 		if (verbose) {
 			System.err.println("Test run ended; waiting .25 seconds");
 		}
@@ -157,6 +156,7 @@ public class JUnitEclipseReport implements TestReporter {
 
 		String message = key.concat(payload);
 		client.out.println(message);
+		client.out.flush();
 		if (verbose)
 			System.err.println(message);
 	}
