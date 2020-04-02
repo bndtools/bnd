@@ -67,8 +67,6 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.swt.dnd.URLTransfer;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -107,14 +105,12 @@ import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.central.RepositoriesViewRefresher;
 import bndtools.central.RepositoryUtils;
-import bndtools.model.repo.ContinueSearchElement;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryEntry;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 import bndtools.preferences.BndPreferences;
-import bndtools.preferences.JpmPreferences;
 import bndtools.preferences.WorkspaceOfflineChangeAdapter;
 import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
@@ -247,9 +243,6 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 		viewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
 		getViewSite().setSelectionProvider(viewer);
 		Central.addRepositoriesViewer(viewer, RepositoriesView.this);
-
-		JpmPreferences jpmPrefs = new JpmPreferences();
-		final boolean showJpmOnClick = jpmPrefs.getBrowserSelection() != JpmPreferences.PREF_BROWSER_EXTERNAL;
 
 		// LISTENERS
 		filterPart.addPropertyChangeListener(event -> {
@@ -388,23 +381,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 			}
 			addBundlesAction.setEnabled(writableRepoSelected);
 		});
-		tree.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseUp(MouseEvent ev) {
-				Object element = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-				if (element instanceof ContinueSearchElement) {
-					try {
-						getViewSite().getPage()
-							.showView(Plugin.JPM_BROWSER_VIEW_ID, null,
-								showJpmOnClick ? IWorkbenchPage.VIEW_ACTIVATE : IWorkbenchPage.VIEW_CREATE);
-					} catch (PartInitException e) {
-						Plugin.getDefault()
-							.getLog()
-							.log(e.getStatus());
-					}
-				}
-			}
-		});
+
 		viewer.addDoubleClickListener(event -> {
 			if (!event.getSelection()
 				.isEmpty()) {
@@ -434,30 +411,6 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 						}
 					} else if (uri != null) {
 						openURI(uri);
-					}
-				} else if (element instanceof ContinueSearchElement) {
-					ContinueSearchElement searchElement = (ContinueSearchElement) element;
-					try {
-						JpmPreferences jpmPrefs1 = new JpmPreferences();
-						if (jpmPrefs1.getBrowserSelection() == JpmPreferences.PREF_BROWSER_EXTERNAL) {
-							URI browseUrl = searchElement.browse();
-							getViewSite().getWorkbenchWindow()
-								.getWorkbench()
-								.getBrowserSupport()
-								.getExternalBrowser()
-								.openURL(browseUrl.toURL());
-						} else
-							getViewSite().getPage()
-								.showView(Plugin.JPM_BROWSER_VIEW_ID, null, IWorkbenchPage.VIEW_VISIBLE);
-					} catch (PartInitException e1) {
-						Plugin.getDefault()
-							.getLog()
-							.log(e1.getStatus());
-					} catch (Exception e2) {
-						Plugin.getDefault()
-							.getLog()
-							.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
-								"Failed to load repository browser view", e2));
 					}
 				} else if (element instanceof RepositoryPlugin) {
 					viewer.setExpandedState(element, !viewer.getExpandedState(element));

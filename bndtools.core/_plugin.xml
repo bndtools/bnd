@@ -255,14 +255,6 @@
             name="Repositories"
             restorable="true">
       </view>
-      <view
-            category="bndtools.viewCategory"
-            class="org.bndtools.core.views.jpm.JPMBrowserView"
-            icon="icons/jpm.gif"
-            id="org.bndtools.core.views.jpm.JPMBrowserView"
-            name="Searchable Repositories"
-            restorable="true">
-      </view>
    </extension>
    <extension point="org.eclipse.ui.commands">
       <command
@@ -773,13 +765,6 @@
              id="bndtools.prefPages.generatedResources"
              category="bndtools.prefPages.basic"
              name="Generated Resources">
-             <keywordReference id="bndtools.core"/>
-       </page>
-       <page
-             class="bndtools.preferences.ui.JpmPreferencePage"
-             id="bndtools.prefPages.jpm"
-             category="bndtools.prefPages.basic"
-             name="Searchable Repositories">
              <keywordReference id="bndtools.core"/>
        </page>
     </extension>
