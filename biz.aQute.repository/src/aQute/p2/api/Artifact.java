@@ -129,6 +129,8 @@ import aQute.bnd.util.dto.DTO;
  */
 public class Artifact extends DTO {
 
+	public static final String	FORMAT_PACKED	= "packed";
+
 	@Deprecated
 	public String		type;
 	public Classifier	classifier;
@@ -137,5 +139,6 @@ public class Artifact extends DTO {
 	public Version		version;
 	public String		md5;
 	public long			download_size;
+	public String		format;
 
 }

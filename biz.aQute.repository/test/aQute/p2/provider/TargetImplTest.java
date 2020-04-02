@@ -9,6 +9,7 @@ import org.junit.Test;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.p2.api.Artifact;
+import aQute.p2.packed.Unpack200;
 
 public class TargetImplTest {
 
@@ -28,7 +29,9 @@ public class TargetImplTest {
 
 	@Test
 	public void jmdns() throws Exception {
-		TargetImpl impl = new TargetImpl(new HttpClient(), TargetImplTest.class.getResource("jmdns.target")
+		TargetImpl impl = new TargetImpl(new Unpack200(), new HttpClient(), TargetImplTest.class
+			.getResource(
+			"jmdns.target")
 			.toURI(), Processor.getPromiseFactory());
 
 		List<Artifact> artifacts = impl.getAllArtifacts();

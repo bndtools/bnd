@@ -33,15 +33,18 @@ import aQute.lib.strings.Strings;
 import aQute.p2.api.Artifact;
 import aQute.p2.api.ArtifactProvider;
 import aQute.p2.api.P2Index;
+import aQute.p2.packed.Unpack200;
 
 public class P2Impl implements ArtifactProvider {
 	private static final Logger		logger		= LoggerFactory.getLogger(P2Impl.class);
+	private final Unpack200			processor;
 	private final HttpClient		client;
 	private final URI				base;
 	private final Set<URI>			defaults	= Collections.newSetFromMap(new ConcurrentHashMap<URI, Boolean>());
 	private final PromiseFactory	promiseFactory;
 
-	public P2Impl(HttpClient c, URI base, PromiseFactory promiseFactory) throws Exception {
+	public P2Impl(Unpack200 processor, HttpClient c, URI base, PromiseFactory promiseFactory) throws Exception {
+		this.processor = processor;
 		this.client = c;
 		this.promiseFactory = promiseFactory;
 		this.base = normalize(base);
@@ -104,7 +107,7 @@ public class P2Impl implements ArtifactProvider {
 
 		return promiseFactory.submit(() -> {
 			try {
-				ArtifactRepository ar = new ArtifactRepository(in, uri);
+				ArtifactRepository ar = new ArtifactRepository(in, uri, processor.canUnpack());
 				return ar.getArtifacts();
 			} finally {
 				IO.close(in);

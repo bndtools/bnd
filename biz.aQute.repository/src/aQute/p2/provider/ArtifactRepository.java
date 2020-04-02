@@ -72,10 +72,12 @@ class ArtifactRepository extends XML {
 	List<Rule>		rules;
 	List<Artifact>	artifacts	= new ArrayList<>();
 	private URI		base;
+	private boolean	unpack;
 
-	ArtifactRepository(InputStream in, URI base) throws Exception {
+	ArtifactRepository(InputStream in, URI base, boolean unpack) throws Exception {
 		super(getDocument(in));
 		this.base = base;
+		this.unpack = unpack;
 		parse();
 	}
 
@@ -112,8 +114,8 @@ class ArtifactRepository extends XML {
 
 				Map<String, String> artifactProperties = getProperties(artifactNode, "properties/property");
 				xmlArtifact.format = artifactProperties.get("format");
-				if (xmlArtifact.format != null) {
-					continue; // we do not currently support packed format
+				if (Artifact.FORMAT_PACKED.equals(xmlArtifact.format) && !unpack) {
+					continue;
 				}
 
 				Map<String, String> map = Converter.cnv(new TypeReference<Map<String, String>>() {}, xmlArtifact);
@@ -132,6 +134,7 @@ class ArtifactRepository extends XML {
 							artifact.id = xmlArtifact.id;
 							artifact.version = new Version(xmlArtifact.version);
 							artifact.md5 = artifactProperties.get("download.md5");
+							artifact.format = xmlArtifact.format;
 							String download_size = artifactProperties.getOrDefault("download.size", "-1L");
 							try {
 								artifact.download_size = Long.parseLong(download_size);

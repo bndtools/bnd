@@ -49,6 +49,7 @@ import aQute.lib.io.IO;
 import aQute.libg.cryptography.MD5;
 import aQute.p2.api.Artifact;
 import aQute.p2.api.ArtifactProvider;
+import aQute.p2.packed.Unpack200;
 import aQute.p2.provider.P2Impl;
 import aQute.p2.provider.TargetImpl;
 import aQute.service.reporter.Reporter;
@@ -61,6 +62,7 @@ class P2Indexer implements Closeable {
 	private final static Logger			logger					= LoggerFactory.getLogger(P2Indexer.class);
 	private static final long			MAX_STALE				= TimeUnit.DAYS.toMillis(100);
 	private final Reporter				reporter;
+	private final Unpack200				processor;
 	final File							location;
 	private final HttpClient			client;
 	private final PromiseFactory		promiseFactory;
@@ -76,7 +78,10 @@ class P2Indexer implements Closeable {
 		.filter("(" + MD5_ATTRIBUTE + "=*)")
 		.buildSyntheticRequirement();
 
-	P2Indexer(Reporter reporter, File location, HttpClient client, URI url, String name) throws Exception {
+	P2Indexer(Unpack200 processor, Reporter reporter, File location, HttpClient client, URI url,
+		String name)
+		throws Exception {
+		this.processor = processor;
 		this.reporter = reporter;
 		this.location = location;
 		this.indexFile = new File(location, "index.xml.gz");
@@ -117,8 +122,9 @@ class P2Indexer implements Closeable {
 
 		Promise<File> go = client.build()
 			.useCache(MAX_STALE)
+			.asTag()
 			.async(url.toURL())
-			.map(file -> link);
+			.map(tag -> processor.unpackAndLinkIfNeeded(tag, link));
 
 		if (listeners.length == 0)
 			return go.getValue();
@@ -161,9 +167,9 @@ class P2Indexer implements Closeable {
 		ArtifactProvider p2;
 		if (this.url.getPath()
 			.endsWith(".target"))
-			p2 = new TargetImpl(client, this.url, promiseFactory);
+			p2 = new TargetImpl(processor, client, this.url, promiseFactory);
 		else
-			p2 = new P2Impl(client, this.url, promiseFactory);
+			p2 = new P2Impl(processor, client, this.url, promiseFactory);
 
 		List<Artifact> artifacts = p2.getBundles();
 		Set<ArtifactID> visitedArtifacts = new HashSet<>(artifacts.size());
@@ -181,9 +187,12 @@ class P2Indexer implements Closeable {
 						return promiseFactory.resolved(knownResources.get(id));
 					}
 				}
-				return fetch(a, 2, 1000L).map(tag -> {
+					return fetch(a, 2, 1000L)
+							.map(tag -> processor.unpackAndLinkIfNeeded(tag,
+								null))
+						.map(file -> {
 					ResourceBuilder rb = new ResourceBuilder();
-					rb.addFile(tag.getFile(), a.uri);
+					rb.addFile(file, a.uri);
 					if (a.md5 != null) {
 						rb.addCapability(
 							new CapabilityBuilder(P2_CAPABILITY_NAMESPACE).addAttribute(MD5_ATTRIBUTE, a.md5));

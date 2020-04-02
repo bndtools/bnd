@@ -40,7 +40,8 @@ Export-Package: \
 	aQute.maven.*, \
 
 -includepackage: \
-	aQute.p2.provider
+	aQute.p2.provider,\
+	aQute.p2.packed
 
 -conditionalpackage:\
 	aQute.lib.*,\
