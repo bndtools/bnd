@@ -122,7 +122,8 @@ public class Shell implements AutoCloseable {
 							if (key.startsWith("$"))
 								key = key.substring(1);
 							input.remove(0);
-							String value = Strings.join(" ", input);
+							String joined = Strings.join(" ", input);
+							String value = joined.replaceAll(" ; ", ";");
 							domain.setProperty(key, value);
 						} else {
 							if (cmdline.getCommands(bnd)
@@ -144,6 +145,8 @@ public class Shell implements AutoCloseable {
 								bnd.out.println(process(domain.getReplacer(), line.trim()));
 							}
 						}
+						domain.check();
+						domain.clear();
 						break;
 				}
 			}
