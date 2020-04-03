@@ -11,6 +11,7 @@ import org.eclipse.swt.graphics.Image;
 import aQute.bnd.build.Project;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.exceptions.Exceptions;
 
 public class RepositoryTreeLabelProvider extends StyledCellLabelProvider {
 
@@ -137,7 +138,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider {
 				label.append(element.toString());
 			}
 		} catch (Exception e) {
-			label.append("error: " + e.getMessage());
+			label.append("error: " + Exceptions.causes(e));
 			image = Icons.image("error");
 		}
 

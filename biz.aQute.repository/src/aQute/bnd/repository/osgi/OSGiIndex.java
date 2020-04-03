@@ -49,6 +49,7 @@ class OSGiIndex {
 	private final File						cache;
 	private final String					name;
 	private final List<URI>					uris;
+	private volatile String					status;
 
 	OSGiIndex(String name, HttpClient client, File cache, List<URI> uris, int staleTime, boolean refresh)
 		throws Exception {
@@ -97,6 +98,7 @@ class OSGiIndex {
 			.map(file -> {
 				if (file == null) {
 					logger.debug("{}: No file downloaded for {}", name, uri);
+					this.status = "Not Found " + uri;
 					return Collections.emptyList();
 				}
 				// file could be xml, gzipped xml, OR zip with index.xml or
@@ -274,5 +276,9 @@ class OSGiIndex {
 		throws Exception {
 		return getBridge().getRepository()
 			.findProviders(requirements);
+	}
+
+	String getStatus() {
+		return status;
 	}
 }

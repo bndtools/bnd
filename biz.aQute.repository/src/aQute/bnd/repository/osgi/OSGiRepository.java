@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Formatter;
@@ -44,6 +45,7 @@ import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
 @BndPlugin(name = "OSGiRepository", parameters = Config.class)
@@ -75,6 +77,13 @@ public class OSGiRepository extends BaseRepository
 	private ScheduledFuture<?>	poller;
 	private volatile boolean	stale	= false;
 	private final AtomicBoolean	inPoll	= new AtomicBoolean();
+	private HttpClient			client;
+	private Workspace			ws;
+	private File				cache;
+	private List<URI>			urls;
+	private boolean				inited	= false;
+	private String				status;
+	private boolean				remote;
 
 	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
@@ -109,37 +118,19 @@ public class OSGiRepository extends BaseRepository
 
 	synchronized OSGiIndex getIndex(boolean refresh) throws Exception {
 
-		HttpClient client = registry.getPlugin(HttpClient.class);
-
-		Workspace ws = registry.getPlugin(Workspace.class);
-		if (ws == null) {
-			ws = Workspace.createDefaultWorkspace();
-		}
-		String cachePath = config.cache();
-		File cache = (cachePath == null) ? ws.getCache(config.name()) : ws.getFile(cachePath);
+		prepare();
 
 		if (refresh) {
 			IO.delete(cache);
 		}
 
-		List<String> strings = Strings.split(config.locations());
-		List<URI> urls = new ArrayList<>(strings.size());
-		for (String s : strings) {
-			urls.add(new URI(s));
-		}
-
-		if (poller == null) {
-			Parameters gestalt = ws.getGestalt();
-			if (!(gestalt.containsKey(Constants.GESTALT_BATCH) || gestalt.containsKey(Constants.GESTALT_CI)
-				|| gestalt.containsKey(Constants.GESTALT_OFFLINE))) {
-				int polltime = config.poll_time(DEFAULT_POLL_TIME);
-				if (polltime > 0) {
-					poller = Processor.getScheduledExecutor()
-						.scheduleAtFixedRate(this::pollTask, polltime, polltime, TimeUnit.SECONDS);
-				}
-			}
-		}
 		index = new OSGiIndex(config.name(), client, cache, urls, config.max_stale(YEAR), refresh);
+		status(index.getStatus());
+		index.getBridgeRepository()
+			.onSuccess(bridge -> {
+				status(bridge.getStatus());
+			})
+			.onFailure(e -> status(Exceptions.causes(e)));
 		if (refresh) {
 			index.getBridgeRepository()
 				.onResolve(this::notifyRepositoryListeners);
@@ -250,6 +241,10 @@ public class OSGiRepository extends BaseRepository
 	public String tooltip(Object... target) throws Exception {
 		if (target.length == 0) {
 			try (Formatter f = new Formatter()) {
+				if (status != null) {
+					f.format("Status           : %s\n", status);
+				}
+
 				if (stale) {
 					f.format("[stale] Needs reload, see menu\n");
 				}
@@ -313,7 +308,53 @@ public class OSGiRepository extends BaseRepository
 
 	@Override
 	public void prepare() throws Exception {
-		getIndex();
+		if (inited)
+			return;
+
+		inited = true;
+
+		try {
+			client = registry.getPlugin(HttpClient.class);
+			ws = registry.getPlugin(Workspace.class);
+			if (ws == null) {
+				ws = Workspace.createDefaultWorkspace();
+			}
+			String cachePath = config.cache();
+			cache = (cachePath == null) ? ws.getCache(config.name()) : ws.getFile(cachePath);
+
+			List<String> strings = Strings.split(config.locations());
+			urls = new ArrayList<>(strings.size());
+
+			for (String s : strings)
+				try {
+					URI uri = new URI(s);
+					this.remote |= URIUtil.isRemote(uri);
+					String msg = client.validateURI(uri);
+					if (msg != null) {
+						status(msg);
+					} else {
+						urls.add(uri);
+					}
+				} catch (URISyntaxException e) {
+					status(Exceptions.causes(e));
+				}
+
+			if (poller == null) {
+				Parameters gestalt = ws.getGestalt();
+				if (!(gestalt.containsKey(Constants.GESTALT_BATCH) || gestalt.containsKey(Constants.GESTALT_CI)
+					|| gestalt.containsKey(Constants.GESTALT_OFFLINE))) {
+					int polltime = config.poll_time(DEFAULT_POLL_TIME);
+					if (polltime > 0) {
+						poller = Processor.getScheduledExecutor()
+							.scheduleAtFixedRate(this::pollTask, polltime * 4, polltime, TimeUnit.SECONDS);
+					}
+				}
+			}
+
+			index = getIndex(false);
+		} catch (Exception e) {
+			status(Exceptions.causes(e));
+		}
 	}
 
 	@Override
@@ -346,4 +387,25 @@ public class OSGiRepository extends BaseRepository
 		}
 	}
 
+	@Override
+	public String getStatus() {
+		return status;
+	}
+
+	@Override
+	public boolean isRemote() {
+		return remote;
+	}
+
+	private void status(String s) {
+		if (s == null)
+			return;
+
+		if (status == null)
+			status = s;
+		else {
+			status = status.concat("\n")
+				.concat(s);
+		}
+	}
 }

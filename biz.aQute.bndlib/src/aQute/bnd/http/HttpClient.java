@@ -897,7 +897,7 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 		if (!Strings.in(new String[] {
 			"http", "https", "file"
-		}, scheme)) {
+		}, scheme.toLowerCase())) {
 			return "Invalid scheme " + scheme + "for uri " + u;
 		}
 		return null;
