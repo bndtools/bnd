@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
@@ -44,7 +45,10 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 import org.osgi.service.repository.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +70,8 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.repository.AggregateRepository;
 import aQute.bnd.osgi.repository.AugmentRepository;
+import aQute.bnd.osgi.resource.RequirementBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.remoteworkspace.server.RemoteWorkspaceServer;
 import aQute.bnd.resource.repository.ResourceRepositoryImpl;
 import aQute.bnd.service.BndListener;
@@ -1436,4 +1442,35 @@ public class Workspace extends Processor {
 
 		return new AugmentRepository(augments, repository);
 	}
+
+	/**
+	 * A macro that returns a set of resources in bundle selection format from
+	 * the repository. For example:
+	 *
+	 * <pre>
+	 * ${findproviders;osgi.wiring.package;(osgi.wiring.package=aQute.bnd.build)}
+	 * </pre>
+	 */
+
+
+	public String _findproviders(String[] args) throws Exception {
+		Macro.verifyCommand(args, _findprovidersHelp, null, 2, 3);
+		RequirementBuilder rb = new RequirementBuilder(args[1]);
+		if (args.length > 2)
+			rb.filter(args[2]);
+		Requirement requirement = rb.buildSyntheticRequirement();
+		return getResourceRepository().findProviders(Collections.singleton(requirement))
+			.get(requirement)
+			.stream()
+			.map(Capability::getResource)
+			.distinct()
+			.map(ResourceUtils::getBundleId)
+			.filter(Objects::nonNull)
+			.sorted()
+			.map(BundleId::toString)
+			.collect(Collectors.joining(","));
+	}
+
+	static final String _findprovidersHelp = "${findproviders;<namespace>;<filter>}";
+
 }
