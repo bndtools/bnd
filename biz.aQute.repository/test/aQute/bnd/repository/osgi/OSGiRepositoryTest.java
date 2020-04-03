@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import aQute.bnd.build.DownloadBlocker;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
@@ -24,6 +25,7 @@ import aQute.bnd.service.progress.ProgressPlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
+import aQute.lib.exceptions.ConsumerWithException;
 import aQute.lib.io.IO;
 import aQute.maven.provider.FakeNexus;
 import junit.framework.TestCase;
@@ -60,6 +62,49 @@ public class OSGiRepositoryTest extends TestCase {
 	public void testSimple() throws Exception {
 		try (OSGiRepository r = new OSGiRepository()) {
 			assertTrue(testRepo(r));
+		}
+	}
+
+	public void testStatus() throws Exception {
+		workspaceSetup(r -> {
+			Map<String, String> map = new HashMap<>();
+			map.put("locations", "httpx://foo.bar,http://www.foo.bar");
+			r.setProperties(map);
+			r.prepare();
+			assertThat(r.getStatus()).contains("Invalid scheme httpxfor uri httpx://foo.bar");
+		});
+	}
+
+	public void testRemote() throws Exception {
+		workspaceSetup(r -> {
+			Map<String, String> map = new HashMap<>();
+			map.put("locations", IO.getFile("testdata/minir5.xml")
+				.toURI()
+				.toString());
+			r.setProperties(map);
+			r.prepare();
+
+			assertThat(r.getStatus()).isNull();
+			assertThat(r.isRemote()).isFalse();
+		});
+	}
+
+	private void workspaceSetup(ConsumerWithException<OSGiRepository> test) throws Exception {
+		try (Processor p = new Processor(); HttpClient httpClient = new HttpClient()) {
+			httpClient.setCache(cache);
+			httpClient.setRegistry(p);
+			p.addBasicPlugin(httpClient);
+			p.setBase(ws);
+
+			try (Workspace workspace = Workspace.createStandaloneWorkspace(p, ws.toURI())) {
+				try (OSGiRepository r = new OSGiRepository()) {
+					r.setRegistry(workspace);
+					r.setReporter(p);
+					test.accept(r);
+				}
+				assertThat(workspace.check()).isTrue();
+			}
+			assertThat(p.check()).isTrue();
 		}
 	}
 
@@ -125,6 +170,18 @@ public class OSGiRepositoryTest extends TestCase {
 				// second one should not have downloaded
 				assertThat(tasks).hasValue(2);
 
+				// Test with listener
+				DownloadBlocker dlb = new DownloadBlocker(workspace);
+				r.get("dummybundle", new Version("0"), null, dlb);
+				file = dlb.getFile();
+				assertThat(file).exists();
+
+				// check api
+
+				assertThat(r.canWrite()).isFalse();
+				assertThat(r.getLocation()).contains("/repo/minir5.xml");
+
+				assertThat(r.getStatus()).isNull();
 				p.getInfo(workspace);
 				return p.check(checks);
 			}
