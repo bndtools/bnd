@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import aQute.lib.strings.Strings;
 
-public class TestQuotedTokenizer {
+public class QuotedTokenizerTest {
 
 	@Test
 	public void testNativeSeps() {
@@ -43,10 +43,15 @@ public class TestQuotedTokenizer {
 
 	@Test
 	public void testWhiteSpace() {
-		String s[] = new QuotedTokenizer("               1.jar,               2.jar         ", ",").getTokens();
-		assertEquals(2, s.length, "Length");
-		assertEquals("1.jar", s[0]);
-		assertEquals("2.jar", s[1]);
+		assertThat(new QuotedTokenizer("               1.jar,               2.jar         ", ",").stream()
+			.filter(token -> !token.isEmpty())).containsExactly("1.jar", "2.jar");
+
+		assertThat(new QuotedTokenizer("  a; version=\"[1,2)\",  'b' ,,\"c\"  ", ",", false, true).stream()
+			.filter(token -> !token.isEmpty())).containsExactly("a; version=\"[1,2)\"", "'b'", "\"c\"");
+		assertThat(new QuotedTokenizer("-Dfoo=\"xyz abc\"  , ack", ",").stream()
+			.filter(token -> !token.isEmpty())).containsExactly("-Dfoo=\"xyz abc\"", "ack");
+		assertThat(new QuotedTokenizer("-XstartOnFirstThread -Dfoo=\"xyz abc\" -ea", ",", false, false).stream()
+			.filter(token -> !token.isEmpty())).containsExactly("-XstartOnFirstThread -Dfoo=\"xyz abc\" -ea");
 	}
 
 	@Test

@@ -64,62 +64,58 @@ public class QuotedTokenizer implements Iterable<String> {
 		StringBuilder sb = new StringBuilder();
 
 		boolean hadstring = false; // means no further trimming
-		boolean validspace = false; // means include spaces
 		boolean escaped = false; // means previous char was backslash
-
+		int lastNonWhitespace = 0;
 		while (index < string.length()) {
 			char c = string.charAt(index++);
 
 			if (escaped) {
 				sb.append(c);
 				escaped = false;
-				continue;
-			}
-
-			if (separators.indexOf(c) >= 0) {
-				if (returnTokens) {
-					peek = Character.toString(c);
-				} else {
-					separator = c;
-				}
-				break;
-			}
-
-			if (Character.isWhitespace(c)) {
-				if (index == string.length()) {
+			} else {
+				if (separators.indexOf(c) >= 0) {
+					if (returnTokens) {
+						peek = Character.toString(c);
+					} else {
+						separator = c;
+					}
 					break;
 				}
-				if (validspace) {
-					sb.append(c);
+
+				if (Character.isWhitespace(c)) {
+					if (index == string.length()) {
+						break;
+					}
+					if (sb.length() > 0) {
+						sb.append(c);
+					}
+					continue;
 				}
-				continue;
+
+				switch (c) {
+					case '"' :
+					case '\'' :
+						hadstring = true;
+						quotedString(sb, c);
+						break;
+
+					case '\\' :
+						escaped = true;
+						// FALL-THROUGH
+					default :
+						sb.append(c);
+						break;
+				}
 			}
 
-			switch (c) {
-				case '"' :
-				case '\'' :
-					hadstring = true;
-					quotedString(sb, c);
-					// skip remaining space
-					validspace = false;
-					break;
-
-				case '\\' :
-					escaped = true;
-					// FALL-THROUGH
-				default :
-					sb.append(c);
-					validspace = true;
-					break;
-			}
+			lastNonWhitespace = sb.length();
 		}
+		sb.setLength(lastNonWhitespace);
 		String result = sb.toString();
 		if (!hadstring) {
-			result = result.trim();
-		}
-
-		if (!hadstring && result.isEmpty() && (index == string.length())) {
-			return null;
+			if (result.isEmpty() && (index == string.length())) {
+				return null;
+			}
 		}
 		return result;
 	}
