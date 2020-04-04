@@ -26,6 +26,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
+import aQute.p2.packed.Unpack200;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -69,7 +70,7 @@ public class P2Repository extends BaseRepository
 			IO.mkdirs(location);
 			File indexFile = new File(location, "index.xml.gz");
 
-			return new P2Indexer(reporter, location, client, url, name);
+			return new P2Indexer(new Unpack200(this.workspace), reporter, location, client, url, name);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
