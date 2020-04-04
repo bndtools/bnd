@@ -7,10 +7,10 @@
 	org.eclipse.core.net.linux.x86_64
 
 -runvm: \
-	-Dosgi.dataAreaRequiresExplicitInit=true \
-	-Dosgi.requiredJavaVersion=1.8 \
-	-XX:+UseG1GC \
-	-XX:+UseStringDeduplication \
+	-Dosgi.dataAreaRequiresExplicitInit=true, \
+	-Dosgi.requiredJavaVersion=1.8, \
+	-XX:+UseG1GC, \
+	-XX:+UseStringDeduplication, \
 	${crossplatform.vmargs}
 
 -runproperties: \
