@@ -12,8 +12,8 @@ The contract specification is exactly the same syntax used in the `Provide-Capab
 ```properties
 -define-contract:\
   osgi.contract;\
-    osgi.contract=Servlet;\
-    uses:="javax.servlet,javax.servlet.http";\
+    osgi.contract=JavaServlet;\
+    uses:="javax.servlet,javax.servlet.annotation,javax.servlet.descriptor,javax.servlet.http";\
     version="3.0"
 ```
 
