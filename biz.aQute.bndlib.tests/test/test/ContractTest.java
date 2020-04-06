@@ -74,6 +74,46 @@ public class ContractTest extends TestCase {
 			.hasValueSatisfying(new Condition<>(a -> a.get("version") == null, "no version"));
 	}
 
+	public void testDefinedContractMultiple() throws Exception {
+		Builder b = newBuilder();
+		b.setTrace(true);
+		b.setProperty(Constants.FIXUPMESSAGES, "The JAR is empty...");
+		b.addClasspath(IO.getFile("jar/jsp-api.jar"));
+		b.addClasspath(IO.getFile("jar/jsr311-api-1.1.1.jar"));
+		b.setImportPackage("javax.ws.rs.ext,javax.el");
+
+		b.setProperty(Constants.DEFINE_CONTRACT,
+			"osgi.contract;osgi.contract=JavaJAXRS;version:Version=1.1.1;uses:='javax.ws.rs,javax.ws.rs.core,javax.ws.rs.ext',"
+				+ "osgi.contract;osgi.contract=JavaEL;version:Version=2.1;uses:='javax.el'");
+
+		Jar ajar = b.build();
+		assertTrue(b.check());
+		ajar.getManifest()
+			.write(System.out);
+
+		Domain domain = Domain.domain(ajar.getManifest());
+		Parameters p = domain.getRequireCapability();
+
+		assertThat(p
+			.stream()
+			.filterValue(a -> "JavaJAXRS".equals(a.get("osgi.contract")))
+			.values()
+			.findFirst()
+			.orElse(null)).containsEntry("filter:", "(&(osgi.contract=JavaJAXRS)(version=1.1.1))");
+		assertThat(domain.getImportPackage()).containsKey("javax.ws.rs.ext")
+			.hasValueSatisfying(new Condition<>(a -> a.get("version") == null, "no version"));
+
+		assertThat(p
+			.stream()
+			.filterValue(a -> "JavaEL".equals(a.get("osgi.contract")))
+			.values()
+			.findFirst()
+			.orElse(null)).containsEntry("filter:", "(&(osgi.contract=JavaEL)(version=2.1.0))");
+		assertThat(domain.getImportPackage()).containsKey(
+			"javax.el")
+			.hasValueSatisfying(new Condition<>(a -> a.get("version") == null, "no version"));
+	}
+
 	public void testNoContract() throws Exception {
 		Builder b = newBuilder();
 		b.setTrace(true);

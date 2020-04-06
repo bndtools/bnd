@@ -79,7 +79,7 @@ class Contracts {
 		logger.debug("collecting Contracts {} from {}", pcs, from);
 
 		contract: for (Entry<String, Attrs> p : pcs.entrySet()) {
-			String namespace = p.getKey();
+			String namespace = Processor.removeDuplicateMarker(p.getKey());
 
 			if (namespace.equals(ContractNamespace.CONTRACT_NAMESPACE)) {
 				Attrs capabilityAttrs = p.getValue();
