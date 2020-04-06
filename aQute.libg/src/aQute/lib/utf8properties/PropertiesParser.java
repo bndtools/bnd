@@ -260,6 +260,16 @@ final class PropertiesParser {
 					case '\f' :
 						break;
 
+					// Macro terminators
+					case '}' :
+					case ')' :
+					case ']' :
+					case '>' :
+					case '\u00bb' : // Guillemet double >>
+					case '\u203a' : // Guillemet single >
+						expectDelimeter = false;
+						break;
+					// other delimiters
 					case ';' :
 					case ',' :
 					case '=' :
