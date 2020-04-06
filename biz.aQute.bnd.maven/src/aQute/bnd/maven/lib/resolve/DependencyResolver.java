@@ -174,11 +174,6 @@ public class DependencyResolver {
 		List<RemoteRepository> remoteRepositories) throws MojoExecutionException {
 
 		for (DependencyNode node : nodes) {
-			if (!scopes.contains(node.getDependency()
-				.getScope())) {
-				continue;
-			}
-
 			List<RemoteRepository> combinedRepositories = new ArrayList<>(remoteRepositories);
 			combinedRepositories.addAll(node.getRepositories());
 
@@ -189,12 +184,17 @@ public class DependencyResolver {
 				logger.debug("Located file: {} for artifact {}", resolvedArtifact.getArtifact()
 					.getFile(), resolvedArtifact);
 
-				files.put(resolvedArtifact.getArtifact()
-					.getFile(), resolvedArtifact);
+				// Add artifact only if the scope of this artifact matches.
+				if (scopes.contains(node.getDependency()
+					.getScope())) {
+					files.put(resolvedArtifact.getArtifact()
+						.getFile(), resolvedArtifact);
+				}
 			} catch (ArtifactResolutionException e) {
 				throw new MojoExecutionException("Failed to resolve the dependency " + node.getArtifact()
 					.toString(), e);
 			}
+
 			if (includeTransitive) {
 				discoverArtifacts(files, node.getChildren(), node.getRequestContext(), combinedRepositories);
 			} else {
