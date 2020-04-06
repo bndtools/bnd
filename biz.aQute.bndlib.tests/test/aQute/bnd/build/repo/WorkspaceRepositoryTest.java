@@ -47,7 +47,7 @@ public class WorkspaceRepositoryTest {
 	}
 
 	@Test
-	public void findprrovidersWithRunRequiresTest() throws Exception {
+	public void findprovidersWithRunRequiresTest() throws Exception {
 
 		test((ws) -> {
 			Run run = Run.createRun(ws, null);
