@@ -6,15 +6,13 @@
 	org.eclipse.core.filesystem.linux.x86_64,\
 	org.eclipse.core.net.linux.x86_64
 
--runvm: \
+-runvm.linux: \
 	-Dosgi.dataAreaRequiresExplicitInit=true, \
 	-Dosgi.requiredJavaVersion=1.8, \
 	-XX:+UseG1GC, \
-	-XX:+UseStringDeduplication, \
-	${crossplatform.vmargs}
+	-XX:+UseStringDeduplication
 
--runproperties: \
-	${crossplatform.runprops},\
+-runproperties.linux: \
 	osgi.ws=gtk,\
 	osgi.arch=x86_64,\
 	osgi.os=linux

@@ -8,13 +8,12 @@
 	org.eclipse.core.filesystem.macosx,\
 	org.eclipse.jdt.launching.macosx
 
--runvm: \
+-runvm.macos: \
   -XstartOnFirstThread, \
   -Djava.awt.headless=true, \
-  -Dorg.eclipse.swt.internal.carbon.smallFonts, \
-  ${crossplatform.vmargs}
+  -Dorg.eclipse.swt.internal.carbon.smallFonts
 
--runproperties: ${crossplatform.runprops},\
+-runproperties.macos: \
 	osgi.ws=cocoa,\
 	osgi.arch=x86_64,\
 	osgi.os=macosx

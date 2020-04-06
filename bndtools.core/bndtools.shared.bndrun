@@ -4,11 +4,11 @@
 
 -runfw: org.eclipse.osgi;version='[3.13.200.v20181130-2106,3.13.200.v20181130-2106]'
 
-crossplatform.vmargs: \
+-runvm: \
   -Xmx2g, \
   -ea
 
-crossplatform.runprops: \
+-runproperties: \
 	eclipse.application=org.eclipse.ui.ide.workbench,\
 	eclipse.consoleLog=,\
 	eclipse.product=org.eclipse.sdk.ide,\

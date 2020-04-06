@@ -27,7 +27,7 @@ We use [LGTM](https://lgtm.com/projects/g/bndtools/bnd) for continuous security 
 
 ## Workflow
 
-We use [git triangular workflow](https://www.sociomantic.com/blog/2014/05/git-triangular-workflow/).
+We use [git triangular workflow](https://github.blog/2015-07-29-git-2-5-including-multiple-worktrees-and-triangular-workflows/).
 This means that no one, not even the Bnd/Bndtools maintainers, push contributions directly into the [main Bnd/Bndtools repo](https://github.com/bndtools/bnd).
 All contribution come in through pull requests.
 So each contributor will need to [fork the main Bnd/Bndtools repo](https://github.com/bndtools/bnd/fork) on GitHub.
