@@ -45,7 +45,7 @@ import aQute.p2.api.Classifier;
  * @formatter:on
  */
 
-class ArtifactRepository extends XML {
+class ArtifactRepository extends XMLBase {
 
 	static class Rule {
 		final Filter	filter;

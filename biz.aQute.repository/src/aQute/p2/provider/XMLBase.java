@@ -28,13 +28,13 @@ import org.xml.sax.SAXException;
 
 import aQute.lib.converter.Converter;
 
-public class XML {
+class XMLBase {
 	final static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
 	final static XPathFactory			xpf	= XPathFactory.newInstance();
 	final XPath							xp;
 	final Document						document;
 
-	public XML(Document document) {
+	XMLBase(Document document) {
 		this.document = document;
 		xp = xpf.newXPath();
 	}
