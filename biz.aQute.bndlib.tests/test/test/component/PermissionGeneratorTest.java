@@ -93,6 +93,7 @@ public class PermissionGeneratorTest extends TestCase {
             "aQute.bnd.version",
             "aQute.lib.filter",
             "aQute.lib.io",
+            "aQute.lib.xml",
             "aQute.service.reporter",
             "javax.xml.namespace",
             "javax.xml.parsers",

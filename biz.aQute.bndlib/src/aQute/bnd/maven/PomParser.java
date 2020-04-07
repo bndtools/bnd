@@ -22,6 +22,7 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.lib.xml.XML;
 
 /**
  * Provides a way to parse a maven pom as properties. This provides most of the
@@ -31,7 +32,7 @@ import aQute.lib.utf8properties.UTF8Properties;
  * for this.
  */
 public class PomParser extends Processor {
-	static DocumentBuilderFactory	dbf			= DocumentBuilderFactory.newInstance();
+	static DocumentBuilderFactory	dbf			= XML.newDocumentBuilderFactory();
 	static XPathFactory				xpathf		= XPathFactory.newInstance();
 	static Set<String>				multiple	= new HashSet<>();
 	static Set<String>				skip		= new HashSet<>();

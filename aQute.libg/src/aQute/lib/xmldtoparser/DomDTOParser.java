@@ -25,13 +25,14 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 import aQute.lib.converter.Converter;
+import aQute.lib.xml.XML;
 
 /**
  * Parse an XML file based on a DTO as schema
  */
 public class DomDTOParser {
 
-	final static DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+	final static DocumentBuilderFactory dbf = XML.newDocumentBuilderFactory();
 
 	/**
 	 * parse the given XML file based on the type as the schema. Attributes and

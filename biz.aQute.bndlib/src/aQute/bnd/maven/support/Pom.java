@@ -22,11 +22,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import aQute.lib.io.IO;
+import aQute.lib.xml.XML;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
 public abstract class Pom {
-	static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
+	static DocumentBuilderFactory	dbf	= XML.newDocumentBuilderFactory();
 	static XPathFactory				xpf	= XPathFactory.newInstance();
 
 	static {

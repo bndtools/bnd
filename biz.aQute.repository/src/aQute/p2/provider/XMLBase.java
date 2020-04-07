@@ -27,9 +27,10 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import aQute.lib.converter.Converter;
+import aQute.lib.xml.XML;
 
 class XMLBase {
-	final static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
+	final static DocumentBuilderFactory	dbf	= XML.newDocumentBuilderFactory();
 	final static XPathFactory			xpf	= XPathFactory.newInstance();
 	final XPath							xp;
 	final Document						document;

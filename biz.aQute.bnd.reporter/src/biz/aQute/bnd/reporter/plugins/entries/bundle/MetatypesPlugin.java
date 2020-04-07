@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -23,6 +22,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.reporter.ReportEntryPlugin;
+import aQute.lib.xml.XML;
 import aQute.service.reporter.Reporter;
 import biz.aQute.bnd.reporter.component.dto.AttributeDefinitionDTO;
 import biz.aQute.bnd.reporter.component.dto.IconDTO;
@@ -78,7 +78,7 @@ public class MetatypesPlugin implements ReportEntryPlugin<Jar>, Plugin {
 		Objects.requireNonNull(jar, "jar");
 		Objects.requireNonNull(locale, "locale");
 
-		final DocumentBuilder db = DocumentBuilderFactory.newInstance()
+		final DocumentBuilder db = XML.newDocumentBuilderFactory()
 			.newDocumentBuilder();
 
 		final List<ObjectClassDefinitionDTO> metas = new LinkedList<>();

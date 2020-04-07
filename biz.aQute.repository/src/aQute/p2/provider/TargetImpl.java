@@ -31,6 +31,7 @@ import aQute.bnd.service.url.TaggedData;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
+import aQute.lib.xml.XML;
 import aQute.p2.api.Artifact;
 import aQute.p2.api.ArtifactProvider;
 import aQute.p2.api.Classifier;
@@ -41,7 +42,7 @@ public class TargetImpl implements ArtifactProvider {
 	private static final String			FEATURE_GROUP_SUFFIX	= ".feature.group";
 	private static final Version		ZERO					= new Version("0");
 	final static Logger					logger					= LoggerFactory.getLogger(TargetImpl.class);
-	final static DocumentBuilderFactory	dbf						= DocumentBuilderFactory.newInstance();
+	final static DocumentBuilderFactory	dbf						= XML.newDocumentBuilderFactory();
 	final static XPathFactory			xpf						= XPathFactory.newInstance();
 
 	final Unpack200						processor;

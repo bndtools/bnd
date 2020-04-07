@@ -31,6 +31,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
+import aQute.lib.xml.XML;
 import junit.framework.TestCase;
 
 /**
@@ -42,7 +43,7 @@ import junit.framework.TestCase;
 public class ComponentTest extends TestCase {
 	static final int					BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
 
-	static final DocumentBuilderFactory	dbf			= DocumentBuilderFactory.newInstance();
+	static final DocumentBuilderFactory	dbf			= XML.newDocumentBuilderFactory();
 	static final XPathFactory			xpathf		= XPathFactory.newInstance();
 	XPath								xpath;
 

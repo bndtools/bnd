@@ -18,8 +18,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import aQute.lib.xml.XML;
+
 public class MavenDependencyGraph {
-	final static DocumentBuilderFactory	docFactory		= DocumentBuilderFactory.newInstance();
+	final static DocumentBuilderFactory	docFactory		= XML.newDocumentBuilderFactory();
 	final static XPathFactory			xpathFactory	= XPathFactory.newInstance();
 	final List<Artifact>				dependencies	= new ArrayList<>();
 	final List<URL>						repositories	= new ArrayList<>();

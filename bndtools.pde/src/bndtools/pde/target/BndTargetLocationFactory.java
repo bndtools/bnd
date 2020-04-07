@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.util.Objects;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.bndtools.api.Logger;
 import org.eclipse.core.runtime.CoreException;
@@ -13,6 +12,8 @@ import org.eclipse.pde.core.target.ITargetLocationFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import aQute.lib.xml.XML;
 
 public abstract class BndTargetLocationFactory implements ITargetLocationFactory {
 	private final String type;
@@ -26,7 +27,8 @@ public abstract class BndTargetLocationFactory implements ITargetLocationFactory
 		if (this.type.equals(type)) {
 			Element locationElement;
 			try {
-				DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance()
+				DocumentBuilder docBuilder = XML
+					.newDocumentBuilderFactory()
 					.newDocumentBuilder();
 				Document document = docBuilder.parse(new ByteArrayInputStream(serializedXML.getBytes("UTF-8")));
 				locationElement = document.getDocumentElement();
