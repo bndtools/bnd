@@ -30,6 +30,7 @@ import aQute.bnd.osgi.repository.SimpleIndexer;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.service.Registry;
+import aQute.lib.xml.XML;
 
 public class R5RepoContentProvider implements IRepositoryContentProvider {
 
@@ -78,11 +79,10 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	public CheckResult checkStream(String name, InputStream stream) throws IOException {
 		XMLStreamReader reader = null;
 		try {
-			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+			XMLInputFactory inputFactory = XML.newXMLInputFactory();
 
 			inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
 			inputFactory.setProperty(XMLInputFactory.IS_VALIDATING, false);
-			inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
 
 			reader = inputFactory.createXMLStreamReader(stream);
 			ParserState state = ParserState.beforeRoot;
@@ -157,11 +157,10 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 		throws Exception {
 		XMLStreamReader reader = null;
 		try {
-			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+			XMLInputFactory inputFactory = XML.newXMLInputFactory();
 
 			inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
 			inputFactory.setProperty(XMLInputFactory.IS_VALIDATING, false);
-			inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
 
 			reader = inputFactory.createXMLStreamReader(stream);
 

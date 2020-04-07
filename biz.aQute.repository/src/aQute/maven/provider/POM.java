@@ -37,6 +37,7 @@ import aQute.lib.io.ByteBufferInputStream;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.lib.xml.XML;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;
 import aQute.maven.api.MavenScope;
@@ -49,7 +50,7 @@ import aQute.maven.api.Revision;
 public class POM implements IPom {
 	static Logger						l						= LoggerFactory.getLogger(POM.class);
 
-	static DocumentBuilderFactory		dbf						= DocumentBuilderFactory.newInstance();
+	static DocumentBuilderFactory		dbf						= XML.newDocumentBuilderFactory();
 	static XPathFactory					xpf						= XPathFactory.newInstance();
 	private Revision					revision;
 	private String						packaging;

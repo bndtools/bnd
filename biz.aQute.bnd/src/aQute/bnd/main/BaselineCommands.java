@@ -55,13 +55,14 @@ import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
+import aQute.lib.xml.XML;
 
 /**
  * Implements commands to maintain the Package versions db.
  */
 public class BaselineCommands {
 	private final static Logger	logger				= LoggerFactory.getLogger(BaselineCommands.class);
-	static TransformerFactory	transformerFactory	= TransformerFactory.newInstance();
+	static TransformerFactory	transformerFactory	= XML.newTransformerFactory();
 	final bnd					bnd;
 	final Baseline				baseline;
 	final DiffPluginImpl		differ				= new DiffPluginImpl();

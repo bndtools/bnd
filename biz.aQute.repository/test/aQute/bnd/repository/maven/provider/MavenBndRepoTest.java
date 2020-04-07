@@ -43,6 +43,7 @@ import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
+import aQute.lib.xml.XML;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;
 import aQute.maven.api.MavenScope;
@@ -58,7 +59,7 @@ import junit.framework.TestCase;
  */
 public class MavenBndRepoTest extends TestCase {
 	private static final Version		DTO_VERSION	= Version.parseVersion("1.0.0.201505202023");
-	final static DocumentBuilderFactory	dbf			= DocumentBuilderFactory.newInstance();
+	final static DocumentBuilderFactory	dbf			= XML.newDocumentBuilderFactory();
 	final static XPathFactory			xpf			= XPathFactory.newInstance();
 	String								tmpName;
 	File								tmp;

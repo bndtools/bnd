@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.jar.Manifest;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -27,6 +26,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.reporter.ReportEntryPlugin;
+import aQute.lib.xml.XML;
 import aQute.service.reporter.Reporter;
 import biz.aQute.bnd.reporter.component.dto.ComponentDescriptionDTO;
 import biz.aQute.bnd.reporter.component.dto.ReferenceDTO;
@@ -86,7 +86,7 @@ public class ComponentsPlugin implements ReportEntryPlugin<Jar>, Plugin {
 		Objects.requireNonNull(locale, "locale");
 
 		final Set<String> componentPaths = new HashSet<>();
-		final DocumentBuilder db = DocumentBuilderFactory.newInstance()
+		final DocumentBuilder db = XML.newDocumentBuilderFactory()
 			.newDocumentBuilder();
 
 		try {

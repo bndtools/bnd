@@ -42,28 +42,18 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.AnalyzerPlugin;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.exceptions.FunctionWithException;
 import aQute.lib.strings.Strings;
+import aQute.lib.xml.XML;
 import aQute.libg.glob.PathSet;
 
 /**
  * Analyze the class space for any classes that have an OSGi annotation for CCR.
  */
 public class CDIAnnotations implements AnalyzerPlugin {
-	static final DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
+	static final DocumentBuilderFactory		dbf					= XML.newDocumentBuilderFactory();
 	static final XPathFactory			xpf	= XPathFactory.newInstance();
 	private static final Predicate<String>	beansResourceFilter	= new PathSet("META-INF/beans.xml").matches();
-
-	static {
-		try {
-			dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-			dbf.setXIncludeAware(false);
-			dbf.setExpandEntityReferences(false);
-		} catch (Throwable t) {
-			throw Exceptions.duck(t);
-		}
-	}
 
 	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {

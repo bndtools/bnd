@@ -131,6 +131,7 @@ import aQute.lib.settings.Settings;
 import aQute.lib.strings.Strings;
 import aQute.lib.tag.Tag;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.lib.xml.XML;
 import aQute.libg.classdump.ClassDumper;
 import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
@@ -2218,7 +2219,7 @@ public class bnd extends Processor {
 
 	private void doPerReport(Tag report, File file) throws Exception {
 		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilderFactory factory = XML.newDocumentBuilderFactory();
 			factory.setNamespaceAware(true); // never forget this!
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(file);
@@ -2250,7 +2251,7 @@ public class bnd extends Processor {
 		File html = new File(path);
 		logger.debug("Creating html report: {}", html);
 
-		TransformerFactory fact = TransformerFactory.newInstance();
+		TransformerFactory fact = XML.newTransformerFactory();
 
 		try (InputStream in = getClass().getResourceAsStream("testreport.xsl")) {
 			if (in == null) {

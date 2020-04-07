@@ -4,10 +4,8 @@ import java.io.StringWriter;
 import java.util.Objects;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -29,6 +27,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import aQute.lib.xml.XML;
 
 public abstract class BndTargetLocation extends AbstractBundleContainer
 	implements ITargetLocationUpdater, ITargetLocationEditor, ILabelProvider {
@@ -121,7 +121,8 @@ public abstract class BndTargetLocation extends AbstractBundleContainer
 	public String serialize() {
 		Document document;
 		try {
-			DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance()
+			DocumentBuilder docBuilder = XML
+				.newDocumentBuilderFactory()
 				.newDocumentBuilder();
 			document = docBuilder.newDocument();
 
@@ -132,7 +133,8 @@ public abstract class BndTargetLocation extends AbstractBundleContainer
 			serialize(document, locationElement);
 
 			StreamResult result = new StreamResult(new StringWriter());
-			Transformer transformer = TransformerFactory.newInstance()
+			Transformer transformer = XML
+				.newTransformerFactory()
 				.newTransformer();
 			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			transformer.transform(new DOMSource(document), result);

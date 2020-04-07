@@ -17,8 +17,10 @@ import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import aQute.lib.xml.XML;
+
 public class XmlTester {
-	final static DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
+	final static DocumentBuilderFactory	dbf		= XML.newDocumentBuilderFactory();
 	final static XPathFactory			xpathf	= XPathFactory.newInstance();
 
 	static {

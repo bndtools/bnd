@@ -14,7 +14,7 @@ import org.w3c.dom.NodeList;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 
-public class Feature extends XML {
+public class Feature extends XMLBase {
 
 	public static class Plugin {
 		public String	id;
@@ -42,7 +42,7 @@ public class Feature extends XML {
 			if (resource == null) {
 				throw new IllegalArgumentException("JAR does not contain proper 'feature.xml");
 			}
-			DocumentBuilder db = XML.dbf.newDocumentBuilder();
+			DocumentBuilder db = XMLBase.dbf.newDocumentBuilder();
 			Document doc = db.parse(resource.openInputStream());
 			return doc;
 		}

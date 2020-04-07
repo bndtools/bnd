@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -37,6 +36,7 @@ import aQute.bnd.osgi.ParameterAnnotation;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.reporter.ReportEntryPlugin;
+import aQute.lib.xml.XML;
 import aQute.service.reporter.Reporter;
 import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 import biz.aQute.bnd.reporter.gogo.dto.GogoArgumentDTO;
@@ -84,7 +84,7 @@ public class GogoPlugin implements ReportEntryPlugin<Jar>, Plugin {
 		Objects.requireNonNull(locale, "locale");
 
 		final List<GogoScopeDTO> gogoCommands = new LinkedList<>();
-		final DocumentBuilder db = DocumentBuilderFactory.newInstance()
+		final DocumentBuilder db = XML.newDocumentBuilderFactory()
 			.newDocumentBuilder();
 
 		findComponentResources(jar).forEach((path, resource) -> {

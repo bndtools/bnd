@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
@@ -39,6 +38,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
+import aQute.lib.xml.XML;
 import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
@@ -361,7 +361,8 @@ public class MavenTest extends TestCase {
 		assertTrue(b.check());
 		Resource r = jar.getResource(where);
 		IO.copy(r.openInputStream(), System.out);
-		Document d = DocumentBuilderFactory.newInstance()
+		Document d = XML
+			.newDocumentBuilderFactory()
 			.newDocumentBuilder()
 			.parse(r.openInputStream());
 		XPath xpath = XPathFactory.newInstance()

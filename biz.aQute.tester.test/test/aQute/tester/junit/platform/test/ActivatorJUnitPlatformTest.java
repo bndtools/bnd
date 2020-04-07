@@ -37,6 +37,7 @@ import org.xmlunit.assertj.XmlAssert;
 
 import aQute.launchpad.LaunchpadBuilder;
 import aQute.lib.io.IO;
+import aQute.lib.xml.XML;
 import aQute.tester.test.assertions.CustomAssertionError;
 import aQute.tester.test.utils.ServiceLoaderMask;
 import aQute.tester.test.utils.TestEntry;
@@ -548,7 +549,7 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorTest {
 		AtomicReference<Document> docContainer = new AtomicReference<>();
 
 		Assertions.assertThatCode(() -> {
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilderFactory dbFactory = XML.newDocumentBuilderFactory();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			docContainer.set(dBuilder.parse(xmlFile));
 		})

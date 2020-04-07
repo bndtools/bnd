@@ -16,6 +16,7 @@ import aQute.bnd.version.MavenVersion;
 import aQute.lib.date.Dates;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
+import aQute.lib.xml.XML;
 
 /**
  * Utilities to parse the metadata XML files. Maven uses a single XSD (see
@@ -27,7 +28,7 @@ import aQute.lib.tag.Tag;
  * overlap. The parser is a best effort, no validation will take place.
  */
 public class MetadataParser {
-	final static XMLInputFactory	inputFactory		= XMLInputFactory.newInstance();
+	final static XMLInputFactory	inputFactory	= XML.newXMLInputFactory();
 	static final DateTimeFormatter	MAVEN_DATE_TIME	= DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ROOT)
 		.withZone(Dates.UTC_ZONE_ID);
 

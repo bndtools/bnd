@@ -22,6 +22,7 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
+import aQute.lib.xml.XML;
 
 public class XMLType {
 
@@ -122,7 +123,7 @@ public class XMLType {
 	}
 
 	protected Transformer getTransformer(java.net.URL url) throws Exception {
-		TransformerFactory tf = TransformerFactory.newInstance();
+		TransformerFactory tf = XML.newTransformerFactory();
 		Source source = new StreamSource(url.openStream());
 		return tf.newTransformer(source);
 	}

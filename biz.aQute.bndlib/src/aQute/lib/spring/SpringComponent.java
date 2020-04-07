@@ -25,6 +25,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.AnalyzerPlugin;
 import aQute.lib.io.IO;
+import aQute.lib.xml.XML;
 
 /**
  * This component is called when we find a resource in the META-INF/*.xml
@@ -43,7 +44,7 @@ public class SpringComponent implements AnalyzerPlugin {
 
 	public static Set<CharSequence> analyze(InputStream in) throws Exception {
 		if (transformer == null) {
-			TransformerFactory tf = TransformerFactory.newInstance();
+			TransformerFactory tf = XML.newTransformerFactory();
 			Source source = new StreamSource(SpringComponent.class.getResourceAsStream("extract.xsl"));
 			transformer = tf.newTransformer(source);
 		}

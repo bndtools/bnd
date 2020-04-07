@@ -15,8 +15,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import aQute.lib.xml.XML;
+
 public class Transform {
-	static TransformerFactory	transformerFactory	= TransformerFactory.newInstance();
+	static TransformerFactory	transformerFactory	= XML.newTransformerFactory();
 
 	static Map<URI, Templates>	cache				= new ConcurrentHashMap<>();
 

@@ -24,16 +24,16 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.strings.Strings;
+import aQute.lib.xml.XML;
 import aQute.libg.gzip.GZipUtils;
 
 public class XMLResourceParser extends Processor {
 	private final static Logger		logger			= LoggerFactory.getLogger(XMLResourceParser.class);
-	final static XMLInputFactory	inputFactory	= XMLInputFactory.newInstance();
+	final static XMLInputFactory	inputFactory	= XML.newXMLInputFactory();
 
 	static {
 		inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
 		inputFactory.setProperty(XMLInputFactory.IS_VALIDATING, false);
-		inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
 	}
 
 	private static final String		NS_URI						= "http://www.osgi.org/xmlns/repository/v1.0.0";

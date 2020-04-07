@@ -1,18 +1,18 @@
 package aQute.libg.sax;
 
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Result;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.XMLReader;
 
+import aQute.lib.xml.XML;
+
 public class SAXUtil {
 
 	public static XMLReader buildPipeline(Result output, ContentFilter... filters) throws Exception {
-		SAXTransformerFactory factory = (SAXTransformerFactory) TransformerFactory.newInstance();
+		SAXTransformerFactory factory = (SAXTransformerFactory) XML.newTransformerFactory();
 		TransformerHandler handler = factory.newTransformerHandler();
 		handler.setResult(output);
 
@@ -22,7 +22,8 @@ public class SAXUtil {
 				filter.setParent(last);
 				last = filter;
 			}
-		XMLReader reader = SAXParserFactory.newInstance()
+		XMLReader reader = XML
+			.newSAXParserFactory()
 			.newSAXParser()
 			.getXMLReader();
 		reader.setContentHandler(last);
