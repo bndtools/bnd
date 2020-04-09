@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.resource.Capability;
@@ -75,6 +76,7 @@ public class BridgeRepository {
 		boolean			error;
 		String			tooltip;
 		private String	title;
+		private String	name;
 
 		public String getTooltip() {
 			init();
@@ -102,7 +104,7 @@ public class BridgeRepository {
 			String sha256 = cc == null ? "<>" : cc.osgi_content();
 
 			String error = null;
-			String name = null;
+			name = null;
 			String from = null;
 
 			if (info != null) {
@@ -159,6 +161,11 @@ public class BridgeRepository {
 
 		public InfoCapability getInfo() {
 			return BridgeRepository.getInfo(resource);
+		}
+
+		public String getName() {
+			init();
+			return name;
 		}
 
 		public String getTitle() {
@@ -390,5 +397,13 @@ public class BridgeRepository {
 				.negate())
 			.findAny()
 			.orElse(null);
+	}
+
+	public List<ResourceInfo> getResourceInfos() {
+		return index.values()
+			.stream()
+			.flatMap(map -> map.values()
+				.stream())
+			.collect(Collectors.toList());
 	}
 }

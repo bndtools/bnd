@@ -244,6 +244,7 @@ public class Central implements IStartupParticipant {
 
 					ws.setOffline(new BndPreferences().isWorkspaceOffline());
 
+					ws.addBasicPlugin(new SWTClipboard());
 					ws.addBasicPlugin(new WorkspaceListener(ws));
 					ws.addBasicPlugin(getInstance().repoListenerTracker);
 					ws.addBasicPlugin(getWorkspaceR5Repository());
