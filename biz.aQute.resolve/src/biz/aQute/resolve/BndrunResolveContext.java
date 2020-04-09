@@ -122,9 +122,8 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		if (initialized)
 			return;
 
-		initialized = true;
-
 		try {
+			initialized = true;
 
 			if (getLevel() <= 0) {
 				Integer level = Converter.cnv(Integer.class, properties.getProperty("-resolvedebug", "0"));

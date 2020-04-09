@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
@@ -104,12 +105,13 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	private Map<String, Set<String>>				effectiveSet				= new HashMap<>();
 	private final List<ResolverHook>				resolverHooks				= new ArrayList<>();
 	private final List<ResolutionCallback>			callbacks					= new LinkedList<>();
-	private boolean									initialised					= false;
+	private boolean									initialized					= false;
 	private Resource								systemResource;
 	private Resource								inputResource;
 	private Set<Resource>							blacklistedResources		= new HashSet<>();
 	private int										level						= 0;
 	private Resource								framework;
+	private final AtomicBoolean						reported					= new AtomicBoolean();
 
 	public AbstractResolveContext(LogService log) {
 		this.log = log;
@@ -117,28 +119,30 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	protected synchronized void init() {
-		if (initialised)
+		if (initialized)
 			return;
 
 		try {
+			initialized = true;
+
 			failed.clear();
-
 			systemCapabilityIndex.addResource(getSystemResource());
-
-			if (level > 0) {
-				DebugReporter dr = new DebugReporter(System.out, this, level);
-				dr.report();
-			}
-
-			initialised = true;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
+	private void initAndReport() {
+		init();
+		if ((getLevel() > 0) && reported.compareAndSet(false, true)) {
+			DebugReporter dr = new DebugReporter(System.out, this, level);
+			dr.report();
+		}
+	}
+
 	@Override
 	public List<Capability> findProviders(Requirement requirement) {
-		init();
+		initAndReport();
 		List<Capability> result = findProviders0(requirement);
 		if (result.isEmpty()) {
 			failed.add(requirement);
@@ -148,13 +152,13 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	@Override
 	public Collection<Resource> getMandatoryResources() {
-		init();
+		initAndReport();
 		return Collections.singleton(getInputResource());
 	}
 
 	@Override
 	public int insertHostedCapability(List<Capability> caps, HostedCapability hc) {
-		init();
+		initAndReport();
 		Integer prioObj = resourcePriorities.get(hc.getResource());
 		int priority = prioObj != null ? prioObj.intValue() : Integer.MAX_VALUE;
 
@@ -179,7 +183,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	@Override
 	public boolean isEffective(Requirement requirement) {
-		init();
+		initAndReport();
 		String effective = requirement.getDirectives()
 			.get(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE);
 		if (effective == null || Namespace.EFFECTIVE_RESOLVE.equals(effective))
@@ -194,12 +198,11 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	@Override
 	public Map<Resource, Wiring> getWirings() {
-		init();
+		initAndReport();
 		return Collections.emptyMap();
 	}
 
 	private List<Capability> findProviders0(Requirement requirement) {
-		init();
 		List<Capability> cached = providerCache.computeIfAbsent(getCacheKey(requirement), k -> {
 			// First stage: framework and self-capabilities. This should never
 			// be reordered by preferences or resolver

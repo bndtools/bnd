@@ -16,7 +16,7 @@ public class GenericResolveContext extends AbstractResolveContext {
 	protected static final String	IDENTITY_INITIAL_RESOURCE	= "<<INITIAL>>";
 	protected static final String	IDENTITY_SYSTEM_RESOURCE	= "<<SYSTEM>>";
 
-	private boolean					initialised					= false;
+	private boolean					initialized					= false;
 	private ResourceBuilder			system						= new ResourceBuilder();
 	private ResourceBuilder			input						= new ResourceBuilder();
 
@@ -26,20 +26,18 @@ public class GenericResolveContext extends AbstractResolveContext {
 
 	@Override
 	public synchronized void init() {
-		if (initialised)
+		if (initialized)
 			return;
 
 		try {
-
-			initialised = true;
+			initialized = true;
 
 			setInputResource(input.build());
 			setSystemResource(system.build());
-
-			super.init();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+		super.init();
 	}
 
 	public ResourceBuilder getInput() {
