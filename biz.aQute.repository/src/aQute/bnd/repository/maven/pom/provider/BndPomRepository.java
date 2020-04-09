@@ -1,6 +1,7 @@
 package aQute.bnd.repository.maven.pom.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import java.io.Closeable;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,6 +38,7 @@ import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.clipboard.Clipboard;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
@@ -293,7 +296,23 @@ public class BndPomRepository extends BaseRepository
 
 	@Override
 	public Map<String, Runnable> actions(Object... target) throws Exception {
-		return null;
+		init();
+		Clipboard cb = registry.getPlugin(Clipboard.class);
+		if (cb == null)
+			return null;
+
+		Map<String, Runnable> menu = new TreeMap<>();
+		menu.put("Copy GAVs", () -> {
+			String gavs = bridge.getResourceInfos()
+				.stream()
+				.map(ri -> {
+
+					return ri.getName();
+				})
+				.collect(joining("\n"));
+			cb.copy(gavs);
+		});
+		return menu;
 	}
 
 	@Override
