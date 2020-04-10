@@ -177,10 +177,6 @@ public class Util {
 		// Loop through JAR entries.
 		for (JarEntry je; (je = jis.getNextJarEntry()) != null;) {
 			String path = ZipUtil.cleanPath(je.getName());
-			if (path.startsWith("/")) {
-				throw new IOException("JAR resource cannot contain absolute paths.");
-			}
-
 			File target = new File(dir, path);
 
 			// Check to see if the JAR entry is a directory.
