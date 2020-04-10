@@ -326,7 +326,11 @@ public class Jar implements Closeable {
 		} else if (path.equals(Constants.MODULE_INFO_CLASS)) {
 			moduleAttribute = null;
 		}
-		Map<String, Resource> s = directories.computeIfAbsent(getParent(path), dir -> {
+		String dir = getParent(path);
+		Map<String, Resource> s = directories.get(dir);
+		if (s == null) {
+			s = new TreeMap<>();
+			directories.put(dir, s);
 			// make ancestor directories
 			for (int n; (n = dir.lastIndexOf('/')) > 0;) {
 				dir = dir.substring(0, n);
@@ -334,8 +338,7 @@ public class Jar implements Closeable {
 					break;
 				directories.put(dir, null);
 			}
-			return new TreeMap<>();
-		});
+		}
 		boolean duplicate = s.containsKey(path);
 		if (!duplicate || overwrite) {
 			resources.put(path, resource);
