@@ -3,17 +3,27 @@ package test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.data.Offset.strictOffset;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Method;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
@@ -22,25 +32,22 @@ import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-@SuppressWarnings("resource")
 
-public class JarTest extends TestCase {
+public class JarTest {
 
 	File tmp;
 
-	private String getTestName() {
-		return getClass().getName() + "/" + getName();
-	}
-
-	@Override
-	protected void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+	@BeforeEach
+	public void setUp(TestInfo info) throws Exception {
+		Method testMethod = info.getTestMethod()
+			.get();
+		tmp = new File("generated/tmp/test/" + getClass().getName() + "/" + testMethod.getName()).getAbsoluteFile();
 		IO.delete(tmp);
 		IO.mkdirs(tmp);
 	}
 
+	@Test
 	public void testDeletePrefix() {
 		Resource r = new EmbeddedResource(new byte[1], 0L);
 
@@ -68,6 +75,7 @@ public class JarTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDeleteSubDirs() {
 		Resource r = new EmbeddedResource(new byte[1], 0L);
 
@@ -97,6 +105,7 @@ public class JarTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDeleteSubDirs2() {
 		Resource r = new EmbeddedResource(new byte[1], 0L);
 
@@ -124,6 +133,36 @@ public class JarTest extends TestCase {
 		}
 	}
 
+	@Test
+	public void testPackages() {
+		Resource r = new EmbeddedResource(new byte[1], 0L);
+
+		try (Jar jar = new Jar("test")) {
+			jar.putResource("com/example/foo/bar/x.class", r);
+			jar.putResource("com/example/foo/bar/package-info.class", r);
+
+			assertThat(jar.getDirectories()).containsKeys("com/example/foo/bar", "com/example/foo", "com/example",
+				"com");
+
+			assertThat(jar.getPackages()).contains("com.example.foo.bar")
+				.doesNotContain("com.example.foo", "com.example", "com");
+
+			jar.remove("com/example/foo/bar/x.class");
+			assertThat(jar.getDirectories()).containsKeys("com/example/foo/bar", "com/example/foo", "com/example",
+				"com");
+			assertThat(jar.getPackages()).contains("com.example.foo.bar")
+				.doesNotContain("com.example.foo", "com.example", "com");
+
+			jar.remove("com/example/foo/bar/package-info.class");
+			assertThat(jar.getDirectories()).containsKeys("com/example/foo/bar", "com/example/foo", "com/example",
+				"com");
+			assertThat(jar.getPackages()).doesNotContain("com.example.foo.bar", "com.example.foo", "com.example",
+				"com");
+
+		}
+	}
+
+	@Test
 	public void testWriteFolder() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setIncludeResource("/a/b.txt;literal='ab', /a/c.txt;literal='ac', /a/c/d/e.txt;literal='acde'");
@@ -140,6 +179,7 @@ public class JarTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNoManifest() throws Exception {
 		try (Jar jar = new Jar("dot")) {
 			jar.setManifest(new Manifest());
@@ -149,14 +189,16 @@ public class JarTest extends TestCase {
 			ByteArrayOutputStream bout = new ByteArrayOutputStream();
 			jar.write(bout);
 
-			Jar jin = new Jar("dotin", new ByteArrayInputStream(bout.toByteArray()));
-			Resource m = jin.getResource("META-INF/MANIFEST.MF");
-			assertNull(m);
-			Resource r = jin.getResource("a/b");
-			assertNotNull(r);
+			try (Jar jin = new Jar("dotin", new ByteArrayInputStream(bout.toByteArray()))) {
+				Resource m = jin.getResource("META-INF/MANIFEST.MF");
+				assertNull(m);
+				Resource r = jin.getResource("a/b");
+				assertNotNull(r);
+			}
 		}
 	}
 
+	@Test
 	public void testManualManifest() throws Exception {
 		try (Jar jar = new Jar("dot")) {
 			jar.setManifest(new Manifest());
@@ -176,6 +218,7 @@ public class JarTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRenameManifest() throws Exception {
 		try (Jar jar = new Jar("dot")) {
 			Manifest manifest = new Manifest();
@@ -202,6 +245,7 @@ public class JarTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testSimple() throws ZipException, IOException {
 		File file = IO.getFile("jar/asm.jar");
 		try (Jar jar = new Jar("asm.jar", file)) {
@@ -232,6 +276,7 @@ public class JarTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNewLine() throws Exception {
 		try (Jar jar = new Jar("dot")) {
 			Manifest manifest = new Manifest();
@@ -257,6 +302,7 @@ public class JarTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testZipSlip() throws Exception {
 		assertThat(catchThrowable(() -> {
 			try (Jar jar = new Jar(new File("jar/zip-slip.zip"))) {
@@ -266,6 +312,7 @@ public class JarTest extends TestCase {
 			.isInstanceOfAny(IOException.class, UncheckedIOException.class);
 	}
 
+	@Test
 	public void testCreateZipSlip() throws Exception {
 		try (Jar jar = new Jar("zipzlip")) {
 			assertThat(catchThrowable(() -> {

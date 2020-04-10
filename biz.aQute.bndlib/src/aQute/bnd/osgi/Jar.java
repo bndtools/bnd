@@ -987,7 +987,8 @@ public class Jar implements Closeable {
 	public List<String> getPackages() {
 		check();
 		return MapStream.of(directories)
-			.filterValue(Objects::nonNull)
+			.filterValue(mdir -> Objects.nonNull(mdir) && !mdir
+				.isEmpty())
 			.keys()
 			.map(k -> k.replace('/', '.'))
 			.collect(toList());
