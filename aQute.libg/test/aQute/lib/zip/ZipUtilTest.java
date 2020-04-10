@@ -19,6 +19,7 @@ public class ZipUtilTest {
 				assertThat(cleanPath("./" + in)).isEqualTo(out);
 				assertThat(cleanPath("./././" + in)).isEqualTo(out);
 				assertThat(cleanPath("./bar/../" + in)).isEqualTo(out);
+				assertThat(cleanPath("./bar/baz/../../" + in)).isEqualTo(out);
 			}
 		} else {
 			assertThatExceptionOfType(UncheckedIOException.class).isThrownBy(() -> cleanPath(in));
@@ -62,6 +63,7 @@ public class ZipUtilTest {
 		testCleanpath("abc/.def./ghi", "abc/.def./ghi");
 		testCleanpath("abc/..def./ghi", "abc/..def./ghi");
 		testCleanpath("abc/.def../ghi", "abc/.def../ghi");
+		testCleanpath("abc/.def..../ghi", "abc/.def..../ghi");
 	}
 
 	@Test
@@ -90,7 +92,6 @@ public class ZipUtilTest {
 		assertThatExceptionOfType(UncheckedIOException.class).isThrownBy(() -> cleanPath("x/../../z/y"));
 		assertThatExceptionOfType(UncheckedIOException.class).isThrownBy(() -> cleanPath("./x/../../z/y"));
 
-		assertThatExceptionOfType(UncheckedIOException.class).isThrownBy(() -> cleanPath("./x/../.."));
 		assertThatExceptionOfType(UncheckedIOException.class).isThrownBy(() -> cleanPath("./x/./././././././../.."));
 	}
 }
