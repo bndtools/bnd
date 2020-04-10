@@ -29,6 +29,7 @@
 # javac --release 11 -cp src src/jdk_11_0/*.java
 # javac --release 12 -cp src src/jdk_12_0/*.java
 # javac --release 13 -cp src src/jdk_13_0/*.java
+# javac --release 14 -cp src src/jdk_14_0/*.java
 
 # java -jar ../jar/ecj_3.2.2.jar -target 1.1 -source 1.3 -cp src src/eclipse_1_1/*.java
 # java -jar ../jar/ecj_3.2.2.jar -target 1.2 -source 1.3 -cp src src/eclipse_1_2/*.java
@@ -43,6 +44,7 @@
 # java -jar ../jar/ecj-4.7.3a.jar -10 -cp src src/eclipse_10_0/*.java
 # java -jar ../jar/ecj-4.10.jar --release 11 -cp src src/eclipse_11_0/*.java
 # java -jar ../jar/ecj-4.13.jar --release 12 -cp src src/eclipse_12_0/*.java
-# java -jar ../jar/ecj-I20191007-0625.jar --release 13 -cp src src/eclipse_13_0/*.java
+# java -jar ../jar/ecj-4.14.jar --release 13 -cp src src/eclipse_13_0/*.java
+# java -jar ../jar/ecj-4.16M1.jar --release 14 -cp src src/eclipse_14_0/*.java
 
 
