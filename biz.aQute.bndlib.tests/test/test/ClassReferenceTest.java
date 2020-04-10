@@ -50,6 +50,7 @@ public class ClassReferenceTest {
 		"jdk_11_0", //
 		"jdk_12_0", //
 		"jdk_13_0", //
+		"jdk_14_0", //
 		"eclipse_1_1", //
 		"eclipse_1_2", //
 		"eclipse_1_3", //
@@ -62,7 +63,8 @@ public class ClassReferenceTest {
 		"eclipse_10_0", //
 		"eclipse_11_0", //
 		"eclipse_12_0", //
-		"eclipse_13_0" //
+		"eclipse_13_0", //
+		"eclipse_14_0" //
 	})
 	@DisplayName("Class Reference Test")
 	public void doit(String pkg) throws Exception {

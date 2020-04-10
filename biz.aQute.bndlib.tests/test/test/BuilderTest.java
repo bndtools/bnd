@@ -1010,6 +1010,7 @@ public class BuilderTest {
 		"eclipse_11_0,JavaSE-11,11", //
 		"eclipse_12_0,JavaSE-12,12", //
 		"eclipse_13_0,JavaSE-13,13", //
+		"eclipse_14_0,JavaSE-14,14", //
 		"sun_1_1,JRE-1.1,1.1", //
 		"sun_1_2,J2SE-1.2,1.2", //
 		"sun_1_3,J2SE-1.3,1.3", //
@@ -1022,7 +1023,8 @@ public class BuilderTest {
 		"jdk_10_0,JavaSE-10,10", //
 		"jdk_11_0,JavaSE-11,11", //
 		"jdk_12_0,JavaSE-12,12", //
-		"jdk_13_0,JavaSE-13,13" //
+		"jdk_13_0,JavaSE-13,13", //
+		"jdk_14_0,JavaSE-14,14" //
 	})
 	@DisplayName("${ee} Macro Testing")
 	public void testEEMacro2(String pkg, String eename, String version) throws Exception {
