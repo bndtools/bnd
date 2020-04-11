@@ -485,8 +485,9 @@ public class Jar implements Closeable {
 
 	public void setManifestName(String manifestName) {
 		check();
-		if (manifestName == null || manifestName.length() == 0)
-			throw new IllegalArgumentException("Manifest name cannot be null or empty!");
+		manifestName = ZipUtil.cleanPath(manifestName);
+		if (manifestName.isEmpty())
+			throw new IllegalArgumentException("Manifest name must not be empty");
 		this.manifestName = manifestName;
 	}
 

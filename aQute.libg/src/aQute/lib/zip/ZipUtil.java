@@ -1,5 +1,7 @@
 package aQute.lib.zip;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.TimeZone;
@@ -35,29 +37,28 @@ public class ZipUtil {
 	 * Clean the input path to avoid ZipSlip issues.
 	 * <p>
 	 * All double '/', '.' and '..' path entries are resolved and removed. The
-	 * returned path will have a '/' at the end when the path has a '/' at the
-	 * end. A '/' is stripped. An empty string is
+	 * returned path will have a '/' at the end when the input path has a '/' at
+	 * the end. A leading '/' is stripped. An empty string is unmodified.
 	 *
-	 * @param path ZipEntry path
+	 * @param path ZipEntry path. Must not be {@code null}.
 	 * @return Cleansed ZipEntry path.
 	 * @throws UncheckedIOException If the entry used '..' relative paths to
 	 *             back up past the start of the path.
 	 */
 
-	public static String cleanPath(String path) {
-		StringBuilder out = new StringBuilder();
-
-		int l = path.length();
+	public static String cleanPath(final String path) {
+		final StringBuilder out = new StringBuilder();
+		final int length = requireNonNull(path).length();
 		State state = State.begin;
 		int level = 0;
 
-		for (int i = path.length() - 1; i >= 0; i--) {
+		for (int i = length - 1; i >= 0; i--) {
 			char c = path.charAt(i);
 			switch (state) {
 				case begin :
 					switch (c) {
 						case '/' :
-							if (i == l - 1)
+							if (i == length - 1)
 								out.append('/');
 							break;
 
@@ -66,10 +67,9 @@ public class ZipUtil {
 							break;
 
 						default :
+							state = State.segment;
 							if (level >= 0)
 								out.append(c);
-
-							state = State.segment;
 							break;
 					}
 					break;
@@ -86,10 +86,9 @@ public class ZipUtil {
 
 						default :
 							state = State.segment;
-							if (level >= 0) {
-								out.append('.');
-								out.append(c);
-							}
+							if (level >= 0)
+								out.append('.')
+									.append(c);
 							break;
 					}
 					break;
@@ -102,11 +101,10 @@ public class ZipUtil {
 
 						default :
 							state = State.segment;
-							if (level >= 0) {
-								out.append('.');
-								out.append('.');
-								out.append(c);
-							}
+							if (level >= 0)
+								out.append('.')
+									.append('.')
+									.append(c);
 							break;
 					}
 					break;
@@ -132,26 +130,24 @@ public class ZipUtil {
 		int last = out.length() - 1;
 
 		if (last > 0 && out.charAt(last) == '/')
-			out.setLength(last--);
+			out.setLength(last);
 
-		if (out.length() == path.length())
+		if (out.length() == length)
 			return path;
 
 		if ((state == State.one && level == -1) || state == State.two || level < -1)
 			throw new UncheckedIOException(new IOException("Entry path is outside of zip file: " + path));
 
-
-		out.reverse();
-
-		return out.toString();
+		return out.reverse()
+			.toString();
 	}
 
 	public static boolean isCompromised(String path) {
 		try {
 			cleanPath(path);
-			return true;
-		} catch (UncheckedIOException e) {
 			return false;
+		} catch (UncheckedIOException e) {
+			return true;
 		}
 	}
 }
