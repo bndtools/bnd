@@ -165,6 +165,7 @@ public class Clazz {
 		OpenJDK12(56, "JavaSE-12", "(&(osgi.ee=JavaSE)(version=12))"), //
 		OpenJDK13(57, "JavaSE-13", "(&(osgi.ee=JavaSE)(version=13))"), //
 		OpenJDK14(58, "JavaSE-14", "(&(osgi.ee=JavaSE)(version=14))"), //
+		OpenJDK15(59, "JavaSE-15", "(&(osgi.ee=JavaSE)(version=15))"), //
 		UNKNOWN(Integer.MAX_VALUE, "<UNKNOWN>", "(osgi.ee=UNKNOWN)");
 
 		final int		major;
