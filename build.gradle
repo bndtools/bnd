@@ -101,6 +101,7 @@ subprojects {
           }
         }
       }).withPropertyName('testFolders')
+      systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', gradle.startParameter.logLevel.name()
       if (System.properties['maven.repo.local']) {
         systemProperty 'maven.repo.local', IO.getFile(gradle.startParameter.currentDir, System.properties['maven.repo.local'])
       }
