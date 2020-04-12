@@ -40,8 +40,11 @@ jobs:
       env:
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
-  OpenJDK11_Linux:
-    name: OpenJDK11 Linux
+  OpenJDKxx_Linux:
+    strategy:
+      matrix:
+        java: [ 11, 14 ]
+    name: OpenJDK${{ matrix.java }} Linux
     runs-on: ubuntu-latest
     steps:
     - name: Git Checkout
@@ -51,23 +54,7 @@ jobs:
     - name: Set up Java
       uses: actions/setup-java@v1
       with:
-        java-version: 11
-    - name: Build
-      shell: bash
-      run: |
-        ./.github/scripts/build.sh
-  OpenJDK14_Linux:
-    name: OpenJDK14 Linux
-    runs-on: ubuntu-latest
-    steps:
-    - name: Git Checkout
-      uses: actions/checkout@v2
-    - name: Gradle Wrapper Validation
-      uses: gradle/wrapper-validation-action@v1
-    - name: Set up Java
-      uses: actions/setup-java@v1
-      with:
-        java-version: 14
+        java-version: ${{ matrix.java }}
     - name: Build
       shell: bash
       run: |
