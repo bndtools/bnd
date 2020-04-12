@@ -1,9 +1,7 @@
 package aQute.bnd.repository.p2.provider;
 
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -14,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -48,8 +47,8 @@ public class P2RepositoryTest {
 
 	@Test
 	public void testSimple() throws Exception {
-		try (P2Repository p2r = new P2Repository()) {
-			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			P2Repository p2r = new P2Repository()) {
 			w.setBase(tmp);
 			p2r.setRegistry(w);
 
@@ -59,16 +58,16 @@ public class P2RepositoryTest {
 			p2r.setProperties(config);
 
 			List<String> list = p2r.list(null);
-			assertNotNull(list);
-			assertTrue(list.size() > 1);
+			assertThat(list).as("list(null)")
+				.hasSizeGreaterThan(1);
 		}
 	}
 
 	@Test
 	public void testXtext() throws Exception {
 
-		try (P2Repository p2r = new P2Repository()) {
-			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			P2Repository p2r = new P2Repository()) {
 			w.setTrace(true);
 			w.setBase(tmp);
 			p2r.setRegistry(w);
@@ -78,17 +77,18 @@ public class P2RepositoryTest {
 			config.put("name", "test");
 			p2r.setProperties(config);
 			List<String> list = p2r.list(null);
-			assertTrue(w.check());
-			assertNotNull(list);
-			assertTrue(list.size() > 1);
+			assertThat(w.check()).as("Workspace check")
+				.isTrue();
+			assertThat(list).as("list(null)")
+				.hasSizeGreaterThan(1);
 		}
 	}
 
+	@EnabledIfUnpack200 // https://openjdk.java.net/jeps/367
 	@Test
 	public void testPack200Async() throws Exception {
-
-		try (P2Repository p2r = new P2Repository()) {
-			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			P2Repository p2r = new P2Repository()) {
 			w.setTrace(true);
 			w.setBase(tmp);
 			p2r.setRegistry(w);
@@ -98,12 +98,14 @@ public class P2RepositoryTest {
 			config.put("name", "test");
 			p2r.setProperties(config);
 			List<String> list = p2r.list(null);
-			assertTrue(w.check());
-			assertNotNull(list);
-			assertTrue(list.size() > 1);
+			assertThat(w.check()).as("Workspace check")
+				.isTrue();
+			assertThat(list).as("list(null)")
+				.hasSizeGreaterThan(1);
 
 			SortedSet<Version> versions = p2r.versions("org.eclipse.xtext");
-			assertTrue(versions.size() > 0);
+			assertThat(versions).as("versions(\"org.eclipse.xtext\")")
+				.isNotEmpty();
 			final AtomicReference<File> asyncResult = new AtomicReference<>();
 			final CountDownLatch countDownLatch = new CountDownLatch(1);
 			p2r.get("org.eclipse.xtext", versions.last(), null, new DownloadListener() {
@@ -125,37 +127,42 @@ public class P2RepositoryTest {
 					return true;
 				}
 			});
-			countDownLatch.await();
+			assertThat(countDownLatch.await(5, TimeUnit.SECONDS)).as("wait for async download")
+				.isTrue();
 			File file = asyncResult.get();
-			assertNotNull(file);
+			assertThat(file).as("get(\"org.eclipse.xtext\", %s)", versions.last())
+				.isNotNull();
 
 			// Make sure file is valid jar
 			try (Jar jar = new Jar(file)) {
-				assertEquals(Version.parseVersion(jar.getVersion()), versions.last());
+				assertThat(Version.parseVersion(jar.getVersion())).as("jar version")
+					.isEqualTo(versions.last());
 			}
 			Resource resource = p2r.getP2Index0()
 				.getBridge()
 				.get("org.eclipse.xtext", versions.last());
-			assertNotNull(resource);
+			assertThat(resource).as("get(\"org.eclipse.xtext\", %s)", versions.last())
+				.isNotNull();
 			ContentCapability contentCapability = ResourceUtils.getContentCapability(resource);
-			assertNotNull(contentCapability);
+			assertThat(contentCapability).as("content capability")
+				.isNotNull();
 			URI url = contentCapability.url();
-			boolean packed = url.getPath()
+			assertThat(url.getPath()).as("content capability url path")
 				.endsWith(Unpack200.PACKED_SUFFIX);
-			assertTrue(packed);
 
 			HttpClient client = w.getPlugin(HttpClient.class);
 			File cacheFile = client.getCacheFileFor(url);
 			File originalCacheFile = new File(cacheFile.getParentFile(), cacheFile.getName() + ".original");
-			assertTrue(originalCacheFile.exists());
+			assertThat(originalCacheFile).as("originalCacheFile")
+				.isFile();
 		}
 	}
 
+	@EnabledIfUnpack200 // https://openjdk.java.net/jeps/367
 	@Test
 	public void testPack200() throws Exception {
-
-		try (P2Repository p2r = new P2Repository()) {
-			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		try (Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			P2Repository p2r = new P2Repository()) {
 			w.setTrace(true);
 			w.setBase(tmp);
 			p2r.setRegistry(w);
@@ -165,34 +172,40 @@ public class P2RepositoryTest {
 			config.put("name", "test");
 			p2r.setProperties(config);
 			List<String> list = p2r.list(null);
-			assertTrue(w.check());
-			assertNotNull(list);
-			assertTrue(list.size() > 1);
+			assertThat(w.check()).as("Workspace check")
+				.isTrue();
+			assertThat(list).as("list(null)")
+				.hasSizeGreaterThan(1);
 
 			SortedSet<Version> versions = p2r.versions("org.eclipse.xtext");
-			assertTrue(versions.size() > 0);
+			assertThat(versions).as("versions(\"org.eclipse.xtext\")")
+				.isNotEmpty();
 			File file = p2r.get("org.eclipse.xtext", versions.last(), null);
-			assertNotNull(file);
+			assertThat(file).as("get(\"org.eclipse.xtext\", %s)", versions.last())
+				.isNotNull();
 
 			// Make sure file is valid jar
 			try (Jar jar = new Jar(file)) {
-				assertEquals(Version.parseVersion(jar.getVersion()), versions.last());
+				assertThat(Version.parseVersion(jar.getVersion())).as("jar version")
+					.isEqualTo(versions.last());
 			}
 			Resource resource = p2r.getP2Index0()
 				.getBridge()
 				.get("org.eclipse.xtext", versions.last());
-			assertNotNull(resource);
+			assertThat(resource).as("get(\"org.eclipse.xtext\", %s)", versions.last())
+				.isNotNull();
 			ContentCapability contentCapability = ResourceUtils.getContentCapability(resource);
-			assertNotNull(contentCapability);
+			assertThat(contentCapability).as("content capability")
+				.isNotNull();
 			URI url = contentCapability.url();
-			boolean packed = url.getPath()
+			assertThat(url.getPath()).as("content capability url path")
 				.endsWith(Unpack200.PACKED_SUFFIX);
-			assertTrue(packed);
 
 			HttpClient client = w.getPlugin(HttpClient.class);
 			File cacheFile = client.getCacheFileFor(url);
 			File originalCacheFile = new File(cacheFile.getParentFile(), cacheFile.getName() + ".original");
-			assertTrue(originalCacheFile.exists());
+			assertThat(originalCacheFile).as("originalCacheFile")
+				.isFile();
 		}
 	}
 }
