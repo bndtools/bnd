@@ -43,7 +43,7 @@ jobs:
   OpenJDKxx_Linux:
     strategy:
       matrix:
-        java: [ 11, 14 ]
+        java: [ 11, 14, 15-ea ]
     name: OpenJDK${{ matrix.java }} Linux
     runs-on: ubuntu-latest
     steps:
