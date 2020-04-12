@@ -2,6 +2,7 @@ package aQute.bnd.osgi;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Formatter;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,6 +16,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
@@ -58,33 +60,25 @@ public class Verifier extends Processor {
 			+ "|CDC-1\\.0/PersonalJava-1\\.0"																												//
 			+ "|CDC-1\\.1/PersonalBasis-1\\.1"																												//
 			+ "|CDC-1\\.1/PersonalJava-1\\.1");
-	public final static String	EES[]							= {																							//
-		"CDC-1.0/Foundation-1.0",																															//
-		"CDC-1.1/Foundation-1.1",																															//
-		"OSGi/Minimum-1.0",																																	//
-		"OSGi/Minimum-1.1",																																	//
-		"OSGi/Minimum-1.2",																																	//
-		"JRE-1.1",																																			//
-		"J2SE-1.2",																																			//
-		"J2SE-1.3",																																			//
-		"J2SE-1.4",																																			//
-		"J2SE-1.5",																																			//
-		"JavaSE-1.6",																																		//
-		"JavaSE-1.7",																																		//
-		"JavaSE-1.8",																																		//
-		"JavaSE-9",																																			//
-		"JavaSE-10",																																		//
-		"JavaSE-11",																																		//
-		"JavaSE-12",																																		//
-		"JavaSE-13",																																		//
-		"JavaSE-14",																																						//
-		"PersonalJava-1.1",																																	//
-		"PersonalJava-1.2",																																	//
-		"CDC-1.0/PersonalBasis-1.0",																														//
-		"CDC-1.0/PersonalJava-1.0",																															//
-		"CDC-1.1/PersonalBasis-1.1",																														//
-		"CDC-1.1/PersonalJava-1.1"
-	};
+	public final static String	EES[];
+	static {
+		Clazz.JAVA[] ees = Clazz.JAVA.values();
+		EES = Stream.concat(Arrays.stream(ees, 0, ees.length - 1)
+			.map(Clazz.JAVA::getEE),
+			Stream.of("CDC-1.0/Foundation-1.0", //
+				"CDC-1.1/Foundation-1.1", //
+				"OSGi/Minimum-1.0", //
+				"OSGi/Minimum-1.1", //
+				"OSGi/Minimum-1.2", //
+				"PersonalJava-1.1", //
+				"PersonalJava-1.2", //
+				"CDC-1.0/PersonalBasis-1.0", //
+				"CDC-1.0/PersonalJava-1.0", //
+				"CDC-1.1/PersonalBasis-1.1", //
+				"CDC-1.1/PersonalJava-1.1"))
+			.toArray(String[]::new);
+	}
+
 	public final static Pattern	ReservedFileNames				= Pattern
 		.compile("CON(\\..+)?|PRN(\\..+)?|AUX(\\..+)?|CLOCK\\$|NUL(\\..+)?|COM[1-9](\\..+)?|LPT[1-9](\\..+)?|"
 			+ "\\$Mft|\\$MftMirr|\\$LogFile|\\$Volume|\\$AttrDef|\\$Bitmap|\\$Boot|\\$BadClus|\\$Secure|"
