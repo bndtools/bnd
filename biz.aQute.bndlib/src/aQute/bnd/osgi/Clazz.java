@@ -166,6 +166,8 @@ public class Clazz {
 		OpenJDK13(57, "JavaSE-13", "(&(osgi.ee=JavaSE)(version=13))"), //
 		OpenJDK14(58, "JavaSE-14", "(&(osgi.ee=JavaSE)(version=14))"), //
 		OpenJDK15(59, "JavaSE-15", "(&(osgi.ee=JavaSE)(version=15))"), //
+		OpenJDK16(60, "JavaSE-16", "(&(osgi.ee=JavaSE)(version=16))"), //
+		OpenJDK17(61, "JavaSE-17", "(&(osgi.ee=JavaSE)(version=17))"), //
 		UNKNOWN(Integer.MAX_VALUE, "<UNKNOWN>", "(osgi.ee=UNKNOWN)");
 
 		final int		major;
@@ -201,12 +203,8 @@ public class Clazz {
 			return major >= J2SE5.major;
 		}
 
-		public static JAVA getJava(int major, @SuppressWarnings("unused") int minor) {
-			for (JAVA j : JAVA.values()) {
-				if (j.major == major)
-					return j;
-			}
-			return UNKNOWN;
+		public static JAVA getJava(int major, int minor) {
+			return format(major);
 		}
 
 		public String getEE() {

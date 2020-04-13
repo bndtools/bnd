@@ -53,21 +53,23 @@ public enum EE {
 
 	JavaSE_13_0("JavaSE-13", "JavaSE", "13", JavaSE_12_0),
 	JavaSE_14_0("JavaSE-14", "JavaSE", "14", JavaSE_13_0),
-	JavaSE_15_0("JavaSE-15", "JavaSE", "15", JavaSE_14_0),
+	JavaSE_15("JavaSE-15", "JavaSE", "15", JavaSE_14_0),
+	JavaSE_16("JavaSE-16", "JavaSE", "16", JavaSE_15),
+	JavaSE_17("JavaSE-17", "JavaSE", "17", JavaSE_16),
 
-	UNKNOWN("Unknown", "unknown", "0");
+	UNKNOWN("<UNKNOWN>", "UNKNOWN", "0");
 
 	private final String			eeName;
 	private final String			capabilityName;
+	private final String			versionLabel;
 	private final Version			capabilityVersion;
 	private final EE[]				compatible;
 	private transient EnumSet<EE>	compatibleSet;
 	private transient Parameters	packages	= null;
 	private transient Parameters	modules		= null;
-	private String					versionLabel;
 
-	EE(String name, String capabilityName, String versionLabel, EE... compatible) {
-		this.eeName = name;
+	EE(String eeName, String capabilityName, String versionLabel, EE... compatible) {
+		this.eeName = eeName;
 		this.capabilityName = capabilityName;
 		this.versionLabel = versionLabel;
 		this.capabilityVersion = new Version(versionLabel);
