@@ -266,7 +266,9 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 		String eeAttribute = instruction.getValue()
 			.get(Constants.EE_ATTRIBUTE);
 
-		EE moduleEE = (eeAttribute != null) ? EE.valueOf(eeAttribute) : DEFAULT_MODULE_EE;
+		EE moduleEE = (eeAttribute != null) ? Optional.of(eeAttribute)
+			.map(EE::parse)
+			.orElseThrow(() -> new IllegalArgumentException("unrecognize ee name: " + eeAttribute)) : DEFAULT_MODULE_EE;
 
 		Packages exports = analyzer.getExports();
 		Packages imports = analyzer.getImports();
