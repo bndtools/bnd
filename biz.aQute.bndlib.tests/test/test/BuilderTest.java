@@ -35,8 +35,11 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
@@ -54,7 +57,9 @@ import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.SortedList;
 import aQute.lib.hex.Hex;
+import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.service.reporter.Report.Location;
 
 @SuppressWarnings("resource")
@@ -994,38 +999,7 @@ public class BuilderTest {
 		.compile("\\(&\\(osgi.ee=JavaSE\\)\\(version=(" + Version.VERSION_STRING + ")\\)\\)");
 
 	@ParameterizedTest(name = "package={0}, ee={1}, version={2}")
-	@CsvSource({
-		"eclipse_1_1,JRE-1.1,1.1", //
-		"eclipse_1_1,JRE-1.1,1.1", //
-		"eclipse_1_2,J2SE-1.2,1.2", //
-		"eclipse_1_3,J2SE-1.3,1.3", //
-		"eclipse_1_4,J2SE-1.4,1.4", //
-		"eclipse_jsr14,J2SE-1.4,1.4", //
-		"eclipse_1_5,J2SE-1.5,1.5", //
-		"eclipse_1_6,JavaSE-1.6,1.6", //
-		"eclipse_1_7,JavaSE-1.7,1.7", //
-		"eclipse_1_8,JavaSE-1.8,1.8", //
-		"eclipse_9_0,JavaSE-9,9", //
-		"eclipse_10_0,JavaSE-10,10", //
-		"eclipse_11_0,JavaSE-11,11", //
-		"eclipse_12_0,JavaSE-12,12", //
-		"eclipse_13_0,JavaSE-13,13", //
-		"eclipse_14_0,JavaSE-14,14", //
-		"sun_1_1,JRE-1.1,1.1", //
-		"sun_1_2,J2SE-1.2,1.2", //
-		"sun_1_3,J2SE-1.3,1.3", //
-		"sun_1_4,J2SE-1.4,1.4", //
-		"sun_1_5,J2SE-1.5,1.5", //
-		"sun_1_6,JavaSE-1.6,1.6", //
-		"sun_1_7,JavaSE-1.7,1.7", //
-		"sun_1_8,JavaSE-1.8,1.8", //
-		"jdk_9_0,JavaSE-9,9", //
-		"jdk_10_0,JavaSE-10,10", //
-		"jdk_11_0,JavaSE-11,11", //
-		"jdk_12_0,JavaSE-12,12", //
-		"jdk_13_0,JavaSE-13,13", //
-		"jdk_14_0,JavaSE-14,14" //
-	})
+	@ArgumentsSource(CompilerVersionsArgumentsProvider.class)
 	@DisplayName("${ee} Macro Testing")
 	public void testEEMacro2(String pkg, String eename, String version) throws Exception {
 		try (Builder b = new Builder()) {
@@ -1049,6 +1023,35 @@ public class BuilderTest {
 			Matcher m = FILTER_VERSION.matcher(filter);
 			assertTrue(m.matches());
 			assertThat(new Version(m.group(1))).isEqualTo(new Version(version));
+		}
+	}
+
+	static class CompilerVersionsArgumentsProvider implements ArgumentsProvider {
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+			FileTree tree = new FileTree();
+			List<File> files = tree.getFiles(new File("compilerversions/src"), "*");
+			return files.stream()
+				.filter(File::isDirectory)
+				.map(File::getName)
+				.map(name -> {
+					String[] split = Strings.first(name, '_');
+					Version v = split[1].equals("jsr14") ? new Version(1, 4)
+						: Version.parseVersion(split[1].replace('_', '.'));
+					String eebase = "JavaSE";
+					String version;
+					if (v.getMajor() == 1) {
+						version = "1." + v.getMinor();
+						if (v.getMinor() == 1) {
+							eebase = "JRE";
+						} else if (v.getMinor() <= 5) {
+							eebase = "J2SE";
+						}
+					} else {
+						version = Integer.toString(v.getMajor());
+					}
+					return Arguments.of(name, eebase + "-" + version, version);
+				});
 		}
 	}
 
