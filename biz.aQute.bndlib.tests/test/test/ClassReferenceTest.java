@@ -2,72 +2,35 @@ package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 
+import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
+import aQute.lib.io.FileTree;
 
 public class ClassReferenceTest {
-	class Inner {
-
-	}
-
-	static {
-		System.err.println(Inner.class);
-	}
-
-	/**
-	 * We create a JAR with the test.classreferenc.ClassReference class. This
-	 * class contains a javax.swing.Box.class reference Prior to Java 1.5, this
-	 * was done in a silly way that is handled specially. After 1.5 it is a
-	 * normal reference.
-	 *
-	 * @throws Exception
-	 */
-
 	@ParameterizedTest(name = "Check code in compilerversions/src/{arguments}")
-	@ValueSource(strings = {
-		"sun_1_1", //
-		"sun_1_2", //
-		"sun_1_3", //
-		"sun_1_4", //
-		"sun_1_5", //
-		"sun_jsr14", //
-		"sun_1_6", //
-		"sun_1_7", //
-		"sun_1_8", //
-		"jdk_9_0", //
-		"jdk_10_0", //
-		"jdk_11_0", //
-		"jdk_12_0", //
-		"jdk_13_0", //
-		"jdk_14_0", //
-		"eclipse_1_1", //
-		"eclipse_1_2", //
-		"eclipse_1_3", //
-		"eclipse_1_4", //
-		"eclipse_1_5", //
-		"eclipse_1_6", //
-		"eclipse_1_7", //
-		"eclipse_1_8", //
-		"eclipse_9_0", //
-		"eclipse_10_0", //
-		"eclipse_11_0", //
-		"eclipse_12_0", //
-		"eclipse_13_0", //
-		"eclipse_14_0" //
-	})
+	@ArgumentsSource(CompilerVersionsArgumentsProvider.class)
 	@DisplayName("Class Reference Test")
-	public void doit(String pkg) throws Exception {
+	public void classReferences(String pkg) throws Exception {
 		Properties properties = new Properties();
 		properties.put("-classpath", "compilerversions/compilerversions.jar");
 		System.out.println("compiler version " + pkg);
@@ -93,6 +56,35 @@ public class ClassReferenceTest {
 				.contains("javax.swing")
 				.as("Package %s should not contain ClassRef", pkg)
 				.doesNotContain("ClassRef");
+		}
+	}
+
+	static class CompilerVersionsArgumentsProvider implements ArgumentsProvider {
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+			FileTree tree = new FileTree();
+			List<File> files = tree.getFiles(new File("compilerversions/src"), "*");
+			return files.stream()
+				.filter(File::isDirectory)
+				.map(File::getName)
+				.map(Arguments::of);
+		}
+	}
+
+	@ParameterizedTest(name = "Validate EE exists for {arguments}")
+	@ArgumentsSource(JAVAArgumentsProvider.class)
+	@DisplayName("Validate an EE exists for each JAVA")
+	public void checkEEFor(Clazz.JAVA java) throws Exception {
+		EE ee = EE.parse(java.getEE());
+		assertThat(ee).isNotNull();
+	}
+
+	static class JAVAArgumentsProvider implements ArgumentsProvider {
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+			Clazz.JAVA[] values = Clazz.JAVA.values();
+			return Arrays.stream(values, 0, values.length - 1)
+				.map(Arguments::of);
 		}
 	}
 }

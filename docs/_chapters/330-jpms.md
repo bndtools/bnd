@@ -52,7 +52,7 @@ When calculating the module **requires** the following is considered:
    e.g. `-jpms-module-info: foo.module;modules='java.desktop,java.logging'`, the modules `java.desktop`, and `java.logging` are added to module requires
 
 2. In addition, if the `-jpms-module-info` instruction contains a key having a `ee` attribute, the `ee` attribute indicates the Java module name mapping table to use for Java SE packages using bnd's `aQute.bnd.build.model.EE` definitions which define a set of Java module name mapping tables keyed by `EE`.
-   e.g. `-jpms-module-info: foo.module;ee=JavaSE_10_0`, bnd will use the Java module name mapping table for Java SE 10 when determining module name for a given Java SE package
+   e.g. `-jpms-module-info: foo.module;ee=JavaSE-10`, bnd will use the Java module name mapping table for Java SE 10 when determining module name for a given Java SE package
 
    If no `ee` attribute is specified, bnd will use the Java module name mapping table for Java SE 11 when determining module name for a given Java SE package
 

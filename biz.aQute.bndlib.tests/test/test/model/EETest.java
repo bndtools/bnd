@@ -3,39 +3,58 @@ package test.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 import org.assertj.core.api.Condition;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import aQute.bnd.build.model.EE;
+import aQute.bnd.osgi.Clazz;
+import aQute.bnd.version.MavenVersion;
+import aQute.bnd.version.Version;
 
 public class EETest {
 
+	@ParameterizedTest(name = "Check ee {1} label {0}")
+	@ArgumentsSource(EEVersionsArgumentsProvider.class)
+	@DisplayName("Test EE.highestFromTargetVersion")
+	public void highestFromTargetVersion(String label, EE ee) throws Exception {
+		assertThat(EE.highestFromTargetVersion(label)).contains(ee);
+	}
+
+	static class EEVersionsArgumentsProvider implements ArgumentsProvider {
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+			EE[] values = EE.values();
+			return Arrays.stream(values, 0, values.length - 1)
+				.filter(ee -> ee.getCapabilityName()
+					.indexOf('/') < 0)
+				.map(ee -> Arguments.of(ee.getVersionLabel(), ee));
+		}
+	}
+
 	@Test
-	public void highestFromTargetVersion() throws Exception {
+	public void highestFromTargetVersionOther() throws Exception {
 		assertThat(EE.highestFromTargetVersion("1.0")).contains(EE.OSGI_Minimum_1_0);
-		assertThat(EE.highestFromTargetVersion("1.1")).contains(EE.JRE_1_1);
-		assertThat(EE.highestFromTargetVersion("1.2")).contains(EE.J2SE_1_2);
-		assertThat(EE.highestFromTargetVersion("1.3")).contains(EE.J2SE_1_3);
-		assertThat(EE.highestFromTargetVersion("1.4")).contains(EE.J2SE_1_4);
-		assertThat(EE.highestFromTargetVersion("1.5")).contains(EE.J2SE_1_5);
-		assertThat(EE.highestFromTargetVersion("1.6")).contains(EE.JavaSE_1_6);
-		assertThat(EE.highestFromTargetVersion("1.7")).contains(EE.JavaSE_1_7);
-		assertThat(EE.highestFromTargetVersion("1.8")).contains(EE.JavaSE_1_8);
 		assertThat(EE.highestFromTargetVersion("1.9")).isEmpty();
-		assertThat(EE.highestFromTargetVersion("9")).contains(EE.JavaSE_9_0);
-		assertThat(EE.highestFromTargetVersion("10")).contains(EE.JavaSE_10_0);
-		assertThat(EE.highestFromTargetVersion("11")).contains(EE.JavaSE_11_0);
 		assertThat(EE.highestFromTargetVersion("1.11")).isEmpty();
-		assertThat(EE.highestFromTargetVersion("12")).contains(EE.JavaSE_12_0);
-		assertThat(EE.highestFromTargetVersion("13")).contains(EE.JavaSE_13_0);
-		assertThat(EE.highestFromTargetVersion("14")).contains(EE.JavaSE_14_0);
-		assertThat(EE.highestFromTargetVersion("15")).contains(EE.JavaSE_15_0);
 	}
 
 	@Test
 	public void getEEFromJvm() throws Exception {
-		assertThat(EE.highestFromTargetVersion(System.getProperty("java.version"))).hasValueSatisfying( //
-			new Condition<>(ee -> ee.compareTo(EE.JavaSE_1_8) >= 0, "At least JavaSE-1.8"));
+		String java_version = System.getProperty("java.version");
+		Version version = MavenVersion.parseMavenString(java_version)
+			.getOSGiVersion();
+		assertThat(EE.highestFromTargetVersion(java_version)).hasValueSatisfying( //
+			new Condition<>(ee -> ee.getCapabilityVersion()
+				.getMajor() == version.getMajor(), "EE capability version same version as JDK"));
 	}
 
 	@Test
@@ -49,6 +68,26 @@ public class EETest {
 	public void failsWithNullInput() throws Exception {
 		assertThatExceptionOfType(NullPointerException.class).isThrownBy( //
 			() -> EE.highestFromTargetVersion(null));
+	}
+
+	@ParameterizedTest(name = "Validate JAVA exists for {arguments}")
+	@ArgumentsSource(EEsArgumentsProvider.class)
+	@DisplayName("Validate a JAVA exists for each EE")
+	public void checkJAVAFor(EE ee) throws Exception {
+		assertThat(Clazz.JAVA.values()).anyMatch(j -> j
+			.getEE()
+			.equals(ee.getEEName()));
+	}
+
+	static class EEsArgumentsProvider implements ArgumentsProvider {
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+			EE[] values = EE.values();
+			return Arrays.stream(values, 0, values.length - 1)
+				.filter(ee -> ee.getCapabilityName()
+					.indexOf('/') < 0)
+				.map(Arguments::of);
+		}
 	}
 
 }

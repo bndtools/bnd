@@ -18,6 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import aQute.bnd.build.model.EE;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -62,14 +63,11 @@ public class Verifier extends Processor {
 			+ "|CDC-1\\.1/PersonalJava-1\\.1");
 	public final static String	EES[];
 	static {
-		Clazz.JAVA[] ees = Clazz.JAVA.values();
+		EE[] ees = EE.values();
 		EES = Stream.concat(Arrays.stream(ees, 0, ees.length - 1)
-			.map(Clazz.JAVA::getEE),
+			.map(EE::getEEName),
 			Stream.of("CDC-1.0/Foundation-1.0", //
 				"CDC-1.1/Foundation-1.1", //
-				"OSGi/Minimum-1.0", //
-				"OSGi/Minimum-1.1", //
-				"OSGi/Minimum-1.2", //
 				"PersonalJava-1.1", //
 				"PersonalJava-1.2", //
 				"CDC-1.0/PersonalBasis-1.0", //
