@@ -3,6 +3,7 @@ package test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -17,7 +18,9 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
+import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -64,6 +67,23 @@ public class ClassReferenceTest {
 			return files.stream()
 				.filter(File::isDirectory)
 				.map(File::getName)
+				.map(Arguments::of);
+		}
+	}
+
+	@ParameterizedTest(name = "Validate EE exists for {arguments}")
+	@ArgumentsSource(JAVAArgumentsProvider.class)
+	@DisplayName("Validate an EE exists for each JAVA")
+	public void checkEEFor(Clazz.JAVA java) throws Exception {
+		EE ee = EE.parse(java.getEE());
+		assertThat(ee).isNotNull();
+	}
+
+	static class JAVAArgumentsProvider implements ArgumentsProvider {
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+			Clazz.JAVA[] values = Clazz.JAVA.values();
+			return Arrays.stream(values, 0, values.length - 1)
 				.map(Arguments::of);
 		}
 	}

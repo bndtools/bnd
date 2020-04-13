@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import aQute.bnd.build.model.EE;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 
@@ -67,6 +68,26 @@ public class EETest {
 	public void failsWithNullInput() throws Exception {
 		assertThatExceptionOfType(NullPointerException.class).isThrownBy( //
 			() -> EE.highestFromTargetVersion(null));
+	}
+
+	@ParameterizedTest(name = "Validate JAVA exists for {arguments}")
+	@ArgumentsSource(EEsArgumentsProvider.class)
+	@DisplayName("Validate a JAVA exists for each EE")
+	public void checkJAVAFor(EE ee) throws Exception {
+		assertThat(Clazz.JAVA.values()).anyMatch(j -> j
+			.getEE()
+			.equals(ee.getEEName()));
+	}
+
+	static class EEsArgumentsProvider implements ArgumentsProvider {
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+			EE[] values = EE.values();
+			return Arrays.stream(values, 0, values.length - 1)
+				.filter(ee -> ee.getCapabilityName()
+					.indexOf('/') < 0)
+				.map(Arguments::of);
+		}
 	}
 
 }
