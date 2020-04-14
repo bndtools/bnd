@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.osgi.annotation.versioning.ProviderType;
 
+import aQute.bnd.classfile.preview.RecordAttribute;
 import aQute.lib.io.LimitedDataInput;
 
 @ProviderType
@@ -115,6 +116,9 @@ public interface Attribute {
 			}
 			case SyntheticAttribute.NAME : {
 				return SyntheticAttribute.read(in, constant_pool);
+			}
+			case RecordAttribute.NAME : {
+				return RecordAttribute.read(in, constant_pool);
 			}
 			default : {
 				return UnrecognizedAttribute.read(in, attribute_name, attribute_length);
