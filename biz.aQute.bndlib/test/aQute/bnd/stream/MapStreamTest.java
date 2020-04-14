@@ -1223,4 +1223,263 @@ public class MapStreamTest {
 			.hasCharacteristics(Spliterator.ORDERED)).isFalse();
 	}
 
+	@Test
+	public void takeWhile() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap)
+			.sortedByKey()
+			.takeWhile((k, v) -> !k.equals("key3"));
+		assertThat(supplier.get()
+			.count()).isEqualTo(2);
+		assertThat(supplier.get()
+			.entries()
+			.count()).isEqualTo(2);
+		assertThat(supplier.get()
+			.keys()
+			.count()).isEqualTo(2);
+		assertThat(supplier.get()
+			.values()
+			.count()).isEqualTo(2);
+		assertThat(supplier.get()
+			.keys()).containsExactly("key1", "key2");
+		assertThat(supplier.get()
+			.values()).containsExactly("value1", "value2");
+		assertThat(supplier.get()
+			.entries()).containsExactly(entry("key1", "value1"), entry("key2", "value2"));
+		assertThat(supplier.get()
+			.collect(MapStream.toMap())).contains(entry("key1", "value1"), entry("key2", "value2"));
+	}
+
+	@Test
+	public void takeWhileAll() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap)
+			.takeWhile((k, v) -> !k.equals("all"));
+		assertThat(supplier.get()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.entries()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.keys()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.values()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.keys()).containsExactlyInAnyOrder("key1", "key2", "key3", "key4", "key5");
+		assertThat(supplier.get()
+			.values()).containsExactlyInAnyOrder("value1", "value2", "value3", "value4", "value5");
+		assertThat(supplier.get()
+			.entries()).containsExactlyInAnyOrder(entry("key1", "value1"), entry("key2", "value2"),
+				entry("key3", "value3"), entry("key4", "value4"), entry("key5", "value5"));
+		assertThat(supplier.get()
+			.collect(MapStream.toMap())).contains(entry("key1", "value1"), entry("key2", "value2"),
+				entry("key3", "value3"), entry("key4", "value4"), entry("key5", "value5"));
+	}
+
+	@Test
+	public void takeWhileNone() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap)
+			.takeWhile((k, v) -> k.equals("none"));
+		assertThat(supplier.get()
+			.count()).isEqualTo(0);
+		assertThat(supplier.get()
+			.entries()
+			.count()).isEqualTo(0);
+		assertThat(supplier.get()
+			.keys()
+			.count()).isEqualTo(0);
+		assertThat(supplier.get()
+			.values()
+			.count()).isEqualTo(0);
+		assertThat(supplier.get()
+			.keys()).isEmpty();
+		assertThat(supplier.get()
+			.values()).isEmpty();
+		assertThat(supplier.get()
+			.entries()).isEmpty();
+	}
+
+	@Test
+	public void takeWhileKey() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap)
+			.sortedByKey()
+			.takeWhileKey(k -> !k.equals("key3"));
+		assertThat(supplier.get()
+			.count()).isEqualTo(2);
+		assertThat(supplier.get()
+			.entries()
+			.count()).isEqualTo(2);
+		assertThat(supplier.get()
+			.keys()
+			.count()).isEqualTo(2);
+		assertThat(supplier.get()
+			.values()
+			.count()).isEqualTo(2);
+		assertThat(supplier.get()
+			.keys()).containsExactly("key1", "key2");
+		assertThat(supplier.get()
+			.values()).containsExactly("value1", "value2");
+		assertThat(supplier.get()
+			.entries()).containsExactly(entry("key1", "value1"), entry("key2", "value2"));
+		assertThat(supplier.get()
+			.collect(MapStream.toMap())).contains(entry("key1", "value1"), entry("key2", "value2"));
+	}
+
+	@Test
+	public void takeWhileValue() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap)
+			.sortedByValue(Comparator.reverseOrder())
+			.takeWhileValue(v -> !v.equals("value3"));
+		assertThat(supplier.get()
+			.count()).isEqualTo(2);
+		assertThat(supplier.get()
+			.entries()
+			.count()).isEqualTo(2);
+		assertThat(supplier.get()
+			.keys()
+			.count()).isEqualTo(2);
+		assertThat(supplier.get()
+			.values()
+			.count()).isEqualTo(2);
+		assertThat(supplier.get()
+			.keys()).containsExactly("key5", "key4");
+		assertThat(supplier.get()
+			.values()).containsExactly("value5", "value4");
+		assertThat(supplier.get()
+			.entries()).containsExactly(entry("key5", "value5"), entry("key4", "value4"));
+		assertThat(supplier.get()
+			.collect(MapStream.toMap())).contains(entry("key5", "value5"), entry("key4", "value4"));
+	}
+
+	@Test
+	public void dropWhile() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap)
+			.sortedByKey()
+			.dropWhile((k, v) -> !k.equals("key3"));
+		assertThat(supplier.get()
+			.count()).isEqualTo(3);
+		assertThat(supplier.get()
+			.entries()
+			.count()).isEqualTo(3);
+		assertThat(supplier.get()
+			.keys()
+			.count()).isEqualTo(3);
+		assertThat(supplier.get()
+			.values()
+			.count()).isEqualTo(3);
+		assertThat(supplier.get()
+			.keys()).containsExactly("key3", "key4", "key5");
+		assertThat(supplier.get()
+			.values()).containsExactly("value3", "value4", "value5");
+		assertThat(supplier.get()
+			.entries()).containsExactly(entry("key3", "value3"), entry("key4", "value4"), entry("key5", "value5"));
+		assertThat(supplier.get()
+			.collect(MapStream.toMap())).contains(entry("key3", "value3"), entry("key4", "value4"),
+				entry("key5", "value5"));
+	}
+
+	@Test
+	public void dropWhileNone() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap)
+			.dropWhile((k, v) -> k.equals("none"));
+		assertThat(supplier.get()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.entries()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.keys()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.values()
+			.count()).isEqualTo(testMap.size());
+		assertThat(supplier.get()
+			.keys()).containsExactlyInAnyOrder("key1", "key2", "key3", "key4", "key5");
+		assertThat(supplier.get()
+			.values()).containsExactlyInAnyOrder("value1", "value2", "value3", "value4", "value5");
+		assertThat(supplier.get()
+			.entries()).containsExactlyInAnyOrder(entry("key1", "value1"), entry("key2", "value2"),
+				entry("key3", "value3"), entry("key4", "value4"), entry("key5", "value5"));
+		assertThat(supplier.get()
+			.collect(MapStream.toMap())).contains(entry("key1", "value1"), entry("key2", "value2"),
+				entry("key3", "value3"), entry("key4", "value4"), entry("key5", "value5"));
+	}
+
+	@Test
+	public void dropWhileAll() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap)
+			.dropWhile((k, v) -> !k.equals("none"));
+		assertThat(supplier.get()
+			.count()).isEqualTo(0);
+		assertThat(supplier.get()
+			.entries()
+			.count()).isEqualTo(0);
+		assertThat(supplier.get()
+			.keys()
+			.count()).isEqualTo(0);
+		assertThat(supplier.get()
+			.values()
+			.count()).isEqualTo(0);
+		assertThat(supplier.get()
+			.keys()).isEmpty();
+		assertThat(supplier.get()
+			.values()).isEmpty();
+		assertThat(supplier.get()
+			.entries()).isEmpty();
+	}
+
+	@Test
+	public void dropWhileKey() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap)
+			.sortedByKey()
+			.dropWhileKey(k -> !k.equals("key3"));
+		assertThat(supplier.get()
+			.count()).isEqualTo(3);
+		assertThat(supplier.get()
+			.entries()
+			.count()).isEqualTo(3);
+		assertThat(supplier.get()
+			.keys()
+			.count()).isEqualTo(3);
+		assertThat(supplier.get()
+			.values()
+			.count()).isEqualTo(3);
+		assertThat(supplier.get()
+			.keys()).containsExactly("key3", "key4", "key5");
+		assertThat(supplier.get()
+			.values()).containsExactly("value3", "value4", "value5");
+		assertThat(supplier.get()
+			.entries()).containsExactly(entry("key3", "value3"), entry("key4", "value4"), entry("key5", "value5"));
+		assertThat(supplier.get()
+			.collect(MapStream.toMap())).contains(entry("key3", "value3"), entry("key4", "value4"),
+				entry("key5", "value5"));
+	}
+
+	@Test
+	public void dropWhileValue() {
+		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap)
+			.sortedByValue(Comparator.reverseOrder())
+			.dropWhileValue(v -> !v.equals("value3"));
+		assertThat(supplier.get()
+			.count()).isEqualTo(3);
+		assertThat(supplier.get()
+			.entries()
+			.count()).isEqualTo(3);
+		assertThat(supplier.get()
+			.keys()
+			.count()).isEqualTo(3);
+		assertThat(supplier.get()
+			.values()
+			.count()).isEqualTo(3);
+		assertThat(supplier.get()
+			.keys()).containsExactly("key3", "key2", "key1");
+		assertThat(supplier.get()
+			.values()).containsExactly("value3", "value2", "value1");
+		assertThat(supplier.get()
+			.entries()).containsExactly(entry("key3", "value3"), entry("key2", "value2"), entry("key1", "value1"));
+		assertThat(supplier.get()
+			.collect(MapStream.toMap())).contains(entry("key3", "value3"), entry("key2", "value2"),
+				entry("key1", "value1"));
+	}
+
 }

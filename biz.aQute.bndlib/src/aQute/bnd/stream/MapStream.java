@@ -198,4 +198,16 @@ public interface MapStream<K, V> extends BaseStream<Entry<K, V>, MapStream<K, V>
 	Optional<Entry<K, V>> findFirst();
 
 	Entry<K, V>[] toArray();
+
+	MapStream<K, V> takeWhile(BiPredicate<? super K, ? super V> predicate);
+
+	MapStream<K, V> takeWhileKey(Predicate<? super K> predicate);
+
+	MapStream<K, V> takeWhileValue(Predicate<? super V> predicate);
+
+	MapStream<K, V> dropWhile(BiPredicate<? super K, ? super V> predicate);
+
+	MapStream<K, V> dropWhileKey(Predicate<? super K> predicate);
+
+	MapStream<K, V> dropWhileValue(Predicate<? super V> predicate);
 }

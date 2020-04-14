@@ -22,6 +22,7 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 final class EntryPipeline<K, V> implements MapStream<K, V> {
 	private final Stream<Entry<K, V>> stream;
@@ -364,5 +365,135 @@ final class EntryPipeline<K, V> implements MapStream<K, V> {
 		@SuppressWarnings("unchecked")
 		Entry<K, V>[] array = entries().toArray(Entry[]::new);
 		return array;
+	}
+
+	@Override
+	public MapStream<K, V> takeWhile(BiPredicate<? super K, ? super V> predicate) {
+		requireNonNull(predicate);
+		return new EntryPipeline<>(takeWhile(e -> predicate.test(e.getKey(), e.getValue())));
+	}
+
+	@Override
+	public MapStream<K, V> takeWhileKey(Predicate<? super K> predicate) {
+		requireNonNull(predicate);
+		return new EntryPipeline<>(takeWhile(e -> predicate.test(e.getKey())));
+	}
+
+	@Override
+	public MapStream<K, V> takeWhileValue(Predicate<? super V> predicate) {
+		requireNonNull(predicate);
+		return new EntryPipeline<>(takeWhile(e -> predicate.test(e.getValue())));
+	}
+
+	@Override
+	public MapStream<K, V> dropWhile(BiPredicate<? super K, ? super V> predicate) {
+		requireNonNull(predicate);
+		return new EntryPipeline<>(dropWhile(e -> predicate.test(e.getKey(), e.getValue())));
+	}
+
+	@Override
+	public MapStream<K, V> dropWhileKey(Predicate<? super K> predicate) {
+		requireNonNull(predicate);
+		return new EntryPipeline<>(dropWhile(e -> predicate.test(e.getKey())));
+	}
+
+	@Override
+	public MapStream<K, V> dropWhileValue(Predicate<? super V> predicate) {
+		requireNonNull(predicate);
+		return new EntryPipeline<>(dropWhile(e -> predicate.test(e.getValue())));
+	}
+
+	private Stream<Entry<K, V>> takeWhile(Predicate<? super Entry<K, V>> predicate) {
+		return StreamSupport.stream(new While.Take<>(spliterator(), predicate), isParallel())
+			.onClose(this::close);
+	}
+
+	private Stream<Entry<K, V>> dropWhile(Predicate<? super Entry<K, V>> predicate) {
+		return StreamSupport.stream(new While.Drop<>(spliterator(), predicate), isParallel())
+			.onClose(this::close);
+	}
+
+	abstract static class While<T> implements Spliterator<T>, Consumer<T> {
+		final Spliterator<T>		spliterator;
+		final Predicate<? super T>	predicate;
+		T							item;
+
+		While(Spliterator<T> spliterator, Predicate<? super T> predicate) {
+			this.spliterator = spliterator;
+			this.predicate = predicate;
+		}
+
+		@Override
+		public Spliterator<T> trySplit() {
+			return null;
+		}
+
+		@Override
+		public long estimateSize() {
+			return spliterator.estimateSize();
+		}
+
+		@Override
+		public long getExactSizeIfKnown() {
+			return -1L;
+		}
+
+		@Override
+		public int characteristics() {
+			return spliterator.characteristics() & ~(Spliterator.SIZED | Spliterator.SUBSIZED);
+		}
+
+		@Override
+		public Comparator<? super T> getComparator() {
+			return spliterator.getComparator();
+		}
+
+		@Override
+		public void accept(T item) {
+			this.item = item;
+		}
+
+		static final class Take<T> extends While<T> {
+			private boolean take = true;
+
+			Take(Spliterator<T> spliterator, Predicate<? super T> predicate) {
+				super(spliterator, predicate);
+			}
+
+			@Override
+			public boolean tryAdvance(Consumer<? super T> action) {
+				if (take) {
+					if (spliterator.tryAdvance(this) && predicate.test(item)) {
+						action.accept(item);
+						return true;
+					}
+					take = false;
+				}
+				return false;
+			}
+		}
+
+		static final class Drop<T> extends While<T> {
+			private boolean drop = true;
+
+			Drop(Spliterator<T> spliterator, Predicate<? super T> predicate) {
+				super(spliterator, predicate);
+			}
+
+			@Override
+			public boolean tryAdvance(Consumer<? super T> action) {
+				if (drop) {
+					drop = false;
+					while (spliterator.tryAdvance(this)) {
+						if (!predicate.test(item)) {
+							action.accept(item);
+							return true;
+						}
+					}
+					return false;
+				}
+				return spliterator.tryAdvance(action);
+			}
+		}
 	}
 }
