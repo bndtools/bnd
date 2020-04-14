@@ -1187,9 +1187,10 @@ public class MapStreamTest {
 	public void onClose() {
 		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap);
 		AtomicBoolean closed = new AtomicBoolean(false);
-		try (MapStream<String, String> stream = supplier.get()) {
-			stream.onClose(() -> closed.set(true));
-		}
+		MapStream<String, String> stream = supplier.get()
+			.onClose(() -> closed.set(true));
+		assertThat(closed).isFalse();
+		stream.close();
 		assertThat(closed).isTrue();
 	}
 
