@@ -13,6 +13,7 @@ import aQute.bnd.service.Plugin;
 import aQute.bnd.service.reporter.ReportEntryPlugin;
 import aQute.service.reporter.Reporter;
 import biz.aQute.bnd.reporter.generator.EntryNamesReference;
+import biz.aQute.bnd.reporter.maven.dto.MavenCoordinatesDTO;
 
 /**
  * This plugin find and add the content of the pom.properties file to the
@@ -34,7 +35,7 @@ public class MavenCoordinatePlugin implements ReportEntryPlugin<Jar>, Plugin {
 		Objects.requireNonNull(jar, "jar");
 		Objects.requireNonNull(locale, "locale");
 
-		final Map<String, Object> result = new HashMap<>();
+		MavenCoordinatesDTO dto = new MavenCoordinatesDTO();
 
 		jar.getResources()
 			.entrySet()
@@ -47,15 +48,22 @@ public class MavenCoordinatePlugin implements ReportEntryPlugin<Jar>, Plugin {
 				try {
 					p.load(e.getValue()
 						.openInputStream());
-					result.put("version", p.getProperty("version"));
-					result.put("groupId", p.getProperty("groupId"));
-					result.put("artifactId", p.getProperty("artifactId"));
+						dto.groupId = p.getProperty("groupId");
+						dto.artifactId = p.getProperty("artifactId");
+						dto.version = p.getProperty("version");
+						// dto.type = p.getProperty("type");//may interrest on
+						// .eas
+						dto.classifier = p.getProperty("classifier");
+
 				} catch (final Exception exception) {
 					_reporter.exception(exception, "Failed to read pom.properties file at %s", e.getKey());
 				}
 			});
 
-		return !result.isEmpty() ? result : null;
+			if (dto.groupId == null && dto.artifactId == null) {
+				return null;
+			}
+			return dto;
 	}
 
 	@Override
