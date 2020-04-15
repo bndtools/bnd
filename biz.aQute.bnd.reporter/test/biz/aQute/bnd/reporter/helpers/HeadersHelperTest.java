@@ -943,7 +943,7 @@ public class HeadersHelperTest extends TestCase {
 	}
 
 	public void perform(final String headerName, final String header, final Object expected) throws Exception {
-		final Jar jar = new Jar("jar");
+		try (final Jar jar = new Jar("jar");) {
 		final Map<String, Resource> dir = new HashMap<>();
 		dir.put("com/test", new FileResource(new File("")));
 		jar.addDirectory(dir, true);
@@ -981,4 +981,5 @@ public class HeadersHelperTest extends TestCase {
 				.from(as.toString())
 				.get());
 	}
+}
 }

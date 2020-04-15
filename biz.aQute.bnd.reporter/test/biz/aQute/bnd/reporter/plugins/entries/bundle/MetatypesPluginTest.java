@@ -19,20 +19,21 @@ public class MetatypesPluginTest extends TestCase {
 
 	public void testMetatype() throws Exception {
 
-		final Jar jar = new Jar("jar", "testresources/metatypesEntry/source.jar");
+		try (final Jar jar = new Jar("jar", "testresources/metatypesEntry/source.jar");
+			final Processor p = new Processor();) {
 
-		final Processor p = new Processor();
-		final MetatypesPlugin e = new MetatypesPlugin();
-		e.setReporter(p);
-		final Map<String, Object> result = new HashMap<>();
+			final MetatypesPlugin e = new MetatypesPlugin();
+			e.setReporter(p);
+			final Map<String, Object> result = new HashMap<>();
 
-		result.put(e.getProperties()
-			.get(ReportEntryPlugin.ENTRY_NAME_PROPERTY), e.extract(jar, Locale.forLanguageTag("und")));
+			result.put(e.getProperties()
+				.get(ReportEntryPlugin.ENTRY_NAME_PROPERTY), e.extract(jar, Locale.forLanguageTag("und")));
 
-		assertTrue(p.isOk());
-		assertThat(result, is(deepEqualsTo(new JSONCodec().dec()
-			.from(Paths.get("testresources/metatypesEntry/result.json")
-				.toFile())
-			.get())));
+			assertTrue(p.isOk());
+			assertThat(result, is(deepEqualsTo(new JSONCodec().dec()
+				.from(Paths.get("testresources/metatypesEntry/result.json")
+					.toFile())
+				.get())));
+		}
 	}
 }

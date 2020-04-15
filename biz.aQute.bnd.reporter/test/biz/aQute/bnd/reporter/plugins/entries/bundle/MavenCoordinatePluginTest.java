@@ -3,6 +3,7 @@ package biz.aQute.bnd.reporter.plugins.entries.bundle;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Locale;
 import java.util.Map;
@@ -19,40 +20,40 @@ public class MavenCoordinatePluginTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testMavenCoordinatePlugin() {
+	public void testMavenCoordinatePlugin() throws IOException {
 		final MavenCoordinatePlugin plugin = new MavenCoordinatePlugin();
-		final Jar jar = new Jar("jar");
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue("Bundle-Name", "test");
+		try (final Jar jar = new Jar("jar"); final Processor p = new Processor();) {
+			final Manifest manifest = new Manifest();
+			jar.setManifest(manifest);
+			manifest.getMainAttributes()
+				.putValue("Bundle-Name", "test");
 
-		final Properties prop = new Properties();
-		prop.setProperty("version", "1.0.0");
-		prop.setProperty("groupId", "com.test");
-		prop.setProperty("artifactId", "test");
+			final Properties prop = new Properties();
+			prop.setProperty("version", "1.0.0");
+			prop.setProperty("groupId", "com.test");
+			prop.setProperty("artifactId", "test");
 
-		jar.putResource("META-INF/maven/pom.properties", new WriteResource() {
+			jar.putResource("META-INF/maven/pom.properties", new WriteResource() {
 
-			@Override
-			public void write(final OutputStream out) throws Exception {
-				prop.store(out, null);
-			}
+				@Override
+				public void write(final OutputStream out) throws Exception {
+					prop.store(out, null);
+				}
 
-			@Override
-			public long lastModified() {
-				return 0;
-			}
-		});
+				@Override
+				public long lastModified() {
+					return 0;
+				}
+			});
 
-		final Processor p = new Processor();
-		plugin.setReporter(p);
+			plugin.setReporter(p);
 
-		final Map<String, Object> r = (Map<String, Object>) plugin.extract(jar, Locale.forLanguageTag("und"));
+			final Map<String, Object> r = (Map<String, Object>) plugin.extract(jar, Locale.forLanguageTag("und"));
 
-		assertEquals(r.get("version"), "1.0.0");
-		assertEquals(r.get("groupId"), "com.test");
-		assertEquals(r.get("artifactId"), "test");
-		assertTrue(p.isOk());
+			assertEquals(r.get("version"), "1.0.0");
+			assertEquals(r.get("groupId"), "com.test");
+			assertEquals(r.get("artifactId"), "test");
+			assertTrue(p.isOk());
+		}
 	}
 }
