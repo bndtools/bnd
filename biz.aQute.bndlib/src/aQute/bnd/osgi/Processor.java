@@ -2899,25 +2899,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public String getJavaExecutable(String java) {
 		String path = getProperty(requireNonNull(java));
 		if ((path == null) || path.equals(java)) {
-			return getJavaHomeExecutable(java);
+			return IO.getJavaExecutablePath(java);
 		}
 		return path;
-	}
-
-	private static String getJavaHomeExecutable(String java) {
-		String command = "bin/".concat(java);
-		File executable = new File(IO.JAVA_HOME, command);
-		if (executable.exists()) {
-			return IO.absolutePath(executable);
-		}
-		if (IO.JAVA_HOME.getName()
-			.equals("jre")) {
-			executable = new File(IO.JAVA_HOME.getParentFile(), command);
-		}
-		if (executable.exists()) {
-			return IO.absolutePath(executable);
-		}
-		return java;
 	}
 
 	/**
