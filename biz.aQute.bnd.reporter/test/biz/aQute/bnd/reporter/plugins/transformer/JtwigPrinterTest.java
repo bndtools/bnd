@@ -88,8 +88,53 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("**</dependency>")
 			.expect("**```")
 			.check();
+
+		checker.with(map().set("groupId", "groupIdTest")
+			.set("artifactId", "artifactIdTest")
+			.set("version", "versionTest")
+			.set("classifier", "extra"))
+			.expect("```xml")
+			.expect("<dependency>")
+			.expect("    <groupId>groupIdTest</groupId>")
+			.expect("    <artifactId>artifactIdTest</artifactId>")
+			.expect("    <version>versionTest</version>")
+			.expect("    <classifier>extra</classifier>")
+			.expect("</dependency>")
+			.expect("```")
+			.check();
 	}
 
+	public void testSlingFeatureCoordinates() throws Exception {
+		TwigChecker checker = checker("printFeatureCoordinate");
+
+		checker.with(map().set("groupId", "groupIdTest")
+			.set("artifactId", "artifactIdTest")
+			.set("version", "versionTest"))
+			.expect("```")
+			.expect("\"bundles\": [")
+			.expect("   {")
+			.expect("    \"id\": \"groupIdTest:artifactIdTest:versionTest\"")
+			.expect("   }")
+			.expect("]")
+			.expect("```")
+			.check();
+
+		checker.with(map().set("groupId", "groupIdTest")
+			.set("artifactId", "artifactIdTest")
+			.set("version", "versionTest")
+			.set("classifier", "extra"))
+			.with(map().set("sha1", "theChecksum"))
+			.expect("```")
+			.expect("\"bundles\": [")
+			.expect("   {")
+			.expect("    \"id\": \"groupIdTest:artifactIdTest:versionTest:jar:extra\"")
+			.expect("    \"hash\": \"theChecksum\"")
+			.expect("   }")
+			.expect("]")
+			.expect("```")
+			.check();
+
+	}
 	public void testOSGiCoordinate() throws Exception {
 		TwigChecker checker = checker("printOsgiCoordinate");
 

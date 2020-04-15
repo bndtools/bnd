@@ -64,6 +64,13 @@
 {{ '\n\n' }}{{ printer.printTitle('OSGi',3) }}
 
 {{ printer.printOsgiCoordinate(report.manifest.bundleSymbolicName.symbolicName,report.manifest.bundleVersion) }}
+
+{%- if not empty(report.mavenCoordinate) -%}
+{{ '\n\n' }}{{ printer.printTitle('Feature-Coordinate',3) }}
+
+{{ printer.printFeatureCoordinate(report.mavenCoordinate,report.checksum) }}
+{%- endif -%}
+
 {%- endif -%}
 {%- endif -%}
 {%- endmacro %}

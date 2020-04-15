@@ -13,10 +13,26 @@
 {{ prefix }}<dependency>
 {{ prefix }}    <groupId>{{ trim(mavenCoordinate.groupId) }}</groupId>
 {{ prefix }}    <artifactId>{{ trim(mavenCoordinate.artifactId) }}</artifactId>
-{{ prefix }}    <version>{{ trim(mavenCoordinate.version) }}</version>
+{{ prefix }}    <version>{{ trim(mavenCoordinate.version) }}</version>{{'\n'}}
+{%- if not empty(mavenCoordinate.classifier) %}{{ prefix }}    <classifier>{{ trim(mavenCoordinate.classifier) }}</classifier>{{'\n'}}{%- endif -%}
 {{ prefix }}</dependency>
 {{ prefix }}```
 {%- endmacro %}
+
+{# 
+# SLING FEATURE COORDINATE
+#}
+{% macro printFeatureCoordinate (mavenCoordinate, checksum) -%}
+```
+{{ prefix }}"bundles": [
+{{ prefix }}   {
+{{ prefix }}    "id": "{{ trim(mavenCoordinate.groupId) }}:{{ trim(mavenCoordinate.artifactId) }}:{{ trim(mavenCoordinate.version) }}{%- if not empty(mavenCoordinate.classifier) %}{{ prefix }}:jar:{{ trim(mavenCoordinate.classifier) }}{%- endif -%}"
+{% if not empty(checksum.sha1) %}{{ prefix }}    "hash": "{{ trim(checksum.sha1) }}"{{'\n'}}{%- endif -%}
+{{ prefix }}   }
+{{ prefix }}]
+{{ prefix }}```
+{%- endmacro %}
+
 
 {# 
 # OSGI COORDINATE
