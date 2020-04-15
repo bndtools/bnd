@@ -15,8 +15,8 @@ env:
   GRADLE_OPTS: -Dorg.gradle.parallel=true
 
 jobs:
-  OpenJDK8_Linux:
-    name: OpenJDK8 Linux
+  JDK8_Linux:
+    name: JDK8 ubuntu-latest
     runs-on: ubuntu-latest
     steps:
     - name: Git Checkout
@@ -32,7 +32,7 @@ jobs:
     - name: Set up Java
       uses: actions/setup-java@v1
       with:
-        java-version: 1.8
+        java-version: 8
     - name: Build
       shell: bash
       run: |
@@ -40,12 +40,16 @@ jobs:
       env:
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
-  OpenJDKxx_Linux:
+  JDKxx_Matrix:
     strategy:
       matrix:
         java: [ 11, 14, 15-ea ]
-    name: OpenJDK${{ matrix.java }} Linux
-    runs-on: ubuntu-latest
+        os: [ ubuntu-latest ]
+        include:
+        - os: windows-latest
+          java: 8
+    name: JDK${{ matrix.java }} ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Git Checkout
       uses: actions/checkout@v2
@@ -59,8 +63,8 @@ jobs:
       shell: bash
       run: |
         ./.github/scripts/build.sh
-  OpenJDK8_Local_Rebuild:
-    name: OpenJDK8 Local Rebuild
+  JDK8_Local_Rebuild:
+    name: JDK8 Local Rebuild
     runs-on: ubuntu-latest
     steps:
     - name: Git Checkout
@@ -70,24 +74,8 @@ jobs:
     - name: Set up Java
       uses: actions/setup-java@v1
       with:
-        java-version: 1.8
+        java-version: 8
     - name: Build
       shell: bash
       run: |
         ./.github/scripts/rebuild.sh
-  OpenJDK8_Windows:
-    name: OpenJDK8 Windows
-    runs-on: windows-latest
-    steps:
-    - name: Git Checkout
-      uses: actions/checkout@v2
-    - name: Gradle Wrapper Validation
-      uses: gradle/wrapper-validation-action@v1
-    - name: Set up Java
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.8
-    - name: Build
-      shell: bash
-      run: |
-        ./.github/scripts/build.sh
