@@ -906,7 +906,7 @@ public class IO {
 
 	public static long drain(InputStream in) throws IOException {
 		try {
-			long result = 0;
+			long result = 0L;
 			byte[] buffer = new byte[BUFFER_SIZE];
 			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
 				result += size;
@@ -1616,6 +1616,23 @@ public class IO {
 			}
 		}
 		return new String(string, 0, len);
+	}
+
+	public static String getJavaExecutablePath(String name) {
+		Path java_home = JAVA_HOME.toPath();
+		Path command = Paths.get("bin", name);
+		Path executable = java_home.resolve(command);
+		if (Files.exists(executable)) {
+			return absolutePath(executable);
+		}
+		if (java_home.endsWith("jre")) {
+			executable = java_home.getParent()
+				.resolve(command);
+			if (Files.exists(executable)) {
+				return absolutePath(executable);
+			}
+		}
+		return name;
 	}
 
 }
