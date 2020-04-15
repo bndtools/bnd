@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,6 +40,7 @@ import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.clipboard.Clipboard;
+import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
@@ -57,11 +59,12 @@ import aQute.service.reporter.Reporter;
  */
 @BndPlugin(name = "BndPomRepository")
 public class BndPomRepository extends BaseRepository
-	implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Actionable, Closeable {
+	implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Actionable, Closeable, Prepare {
 	private static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 	private static final int	DEFAULT_POLL_TIME	= 300;
 
-	private boolean				inited;
+	private Promise<Boolean>	initialized;
+
 	private PomConfiguration	configuration;
 	private Registry			registry;
 	private String				name;
@@ -75,21 +78,89 @@ public class BndPomRepository extends BaseRepository
 	private String				queryUrl;
 	private ScheduledFuture<?>	pomPoller;
 
-	public synchronized void init() {
-		try {
-			if (inited)
-				return;
-			inited = true;
+	private String				status;
 
+	@SuppressWarnings("deprecation")
+	private boolean init() {
+		try {
+			if (initialized == null) {
+				prepare();
+			}
+			return initialized.getValue();
+		} catch (Exception e) {
+			Exceptions.duck(e);
+		}
+		return false;
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public void prepare() throws Exception {
+		if (configuration.name() == null) {
+			status("Must get a name");
+		}
+
+		this.name = configuration.name();
+
+		if (configuration.snapshotUrl() != null && configuration.snapshotUrls() != null) {
+			status("snapshotUrl and snapshotUrls property is set. Please only use snapshotUrl.");
+		}
+
+		if (configuration.releaseUrl() != null && configuration.releaseUrls() != null) {
+			status("releaseUrl and releaseUrls property is set. Please only use releaseUrl.");
+		}
+
+		if (configuration.pom() != null) {
+			pomFiles = Strings.split(configuration.pom())
+				.stream()
+				.map(part -> {
+					File f = IO.getFile(part);
+					return f.isFile() ? f.toURI() : URI.create(part);
+				})
+				.collect(toList());
+			if (pomFiles.isEmpty()) {
+				status("Pom is neither a file nor a revision " + configuration.pom());
+			}
+		} else if (configuration.revision() != null) {
+			revisions = Strings.split(configuration.revision())
+				.stream()
+				.map(Revision::valueOf)
+				.filter(Objects::nonNull)
+				.collect(toList());
+			if (revisions.isEmpty()) {
+				status("Revision is neither a file nor a revision " + configuration.revision());
+			}
+		} else if (configuration.query() != null) {
+			this.query = configuration.query();
+			this.queryUrl = configuration.queryUrl("http://search.maven.org/solrsearch/select");
+		} else {
+			status("Neither pom, revision nor query property are set");
+		}
+
+		initialized = Processor.getPromiseFactory()
+			.submit(this::internalInitialize);
+	}
+
+	@SuppressWarnings("deprecation")
+	private boolean internalInitialize() {
+		if (!isOk()) {
+			return false;
+		}
+		try {
 			Workspace workspace = registry.getPlugin(Workspace.class);
 			HttpClient client = registry.getPlugin(HttpClient.class);
 			localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
 			File location = workspace.getFile(getLocation());
 
-			List<MavenBackingRepository> release = MavenBackingRepository.create(configuration.releaseUrls(), reporter,
-				localRepo, client);
-			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrls(),
-				reporter, localRepo, client);
+			String releaseUrl = configuration.releaseUrl() != null ? configuration.releaseUrl()
+				: configuration.releaseUrls();
+			String snapshotUrl = configuration.snapshotUrl() != null ? configuration.snapshotUrl()
+				: configuration.snapshotUrls();
+
+			List<MavenBackingRepository> release = MavenBackingRepository.create(releaseUrl, reporter, localRepo,
+				client);
+			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(snapshotUrl, reporter, localRepo,
+				client);
 
 			MavenRepository repository = new MavenRepository(localRepo, name, release, snapshot, client.promiseFactory()
 				.executor(), reporter);
@@ -104,14 +175,16 @@ public class BndPomRepository extends BaseRepository
 				repoImpl = new SearchRepository(repository, location, query, queryUrl, workspace, client, transitive);
 			} else {
 				repository.close();
-				throw new IllegalStateException("We have neither a pom, revision, or query set!");
+				return false;
 			}
 			bridge = new BridgeRepository(repoImpl);
 
 			startPoll();
+			return true;
 		} catch (Exception e) {
 			reporter.exception(e, "Init for BndPomRepository failed %s", configuration);
-			throw Exceptions.duck(e);
+			status(Exceptions.causes(e));
+			return false;
 		}
 	}
 
@@ -151,7 +224,9 @@ public class BndPomRepository extends BaseRepository
 
 	@Override
 	public boolean refresh() throws Exception {
-		init();
+		if (!init()) {
+			return false;
+		}
 		repoImpl.refresh();
 		bridge = new BridgeRepository(repoImpl);
 		for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class)) {
@@ -166,49 +241,14 @@ public class BndPomRepository extends BaseRepository
 
 	@Override
 	public void setProperties(Map<String, String> map) throws Exception {
-
 		configuration = Converter.cnv(PomConfiguration.class, map);
-
-		if (configuration.name() == null)
-			throw new IllegalArgumentException("Must get a name");
-
-		this.name = configuration.name();
-
-		if (configuration.pom() != null) {
-			pomFiles = Strings.split(configuration.pom())
-				.stream()
-				.map(part -> {
-					File f = IO.getFile(part);
-					return f.isFile() ? f.toURI() : URI.create(part);
-				})
-				.collect(toList());
-			if (pomFiles.isEmpty()) {
-				throw new IllegalArgumentException("Pom is neither a file nor a revision " + configuration.pom());
-			}
-		} else if (configuration.revision() != null) {
-			revisions = Strings.split(configuration.revision())
-				.stream()
-				.map(Revision::valueOf)
-				.filter(Objects::nonNull)
-				.collect(toList());
-			if (revisions.isEmpty()) {
-				throw new IllegalArgumentException(
-					"Revision is neither a file nor a revision " + configuration.revision());
-			}
-		} else if (configuration.query() != null) {
-			this.query = configuration.query();
-			this.queryUrl = configuration.queryUrl("http://search.maven.org/solrsearch/select");
-		} else {
-			throw new IllegalArgumentException("Neither pom, revision nor query property are set");
-		}
-		synchronized (this) {
-			inited = false;
-		}
 	}
 
 	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
-		init();
+		if (!init()) {
+			return Collections.emptyMap();
+		}
 		return repoImpl.findProviders(requirements);
 	}
 
@@ -230,7 +270,9 @@ public class BndPomRepository extends BaseRepository
 	@Override
 	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
 		throws Exception {
-		init();
+		if (!init()) {
+			return null;
+		}
 
 		Archive archive;
 		ResourceInfo resource = bridge.getInfo(bsn, version);
@@ -263,13 +305,17 @@ public class BndPomRepository extends BaseRepository
 
 	@Override
 	public List<String> list(String pattern) throws Exception {
-		init();
+		if (!init()) {
+			return Collections.emptyList();
+		}
 		return bridge.list(pattern);
 	}
 
 	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
-		init();
+		if (!init()) {
+			return Collections.emptySortedSet();
+		}
 		return bridge.versions(bsn);
 	}
 
@@ -285,8 +331,7 @@ public class BndPomRepository extends BaseRepository
 
 	@Override
 	public String toString() {
-		return "BndPomRepository [name=" + getName() + ", localRepo=" + localRepo + ", location=" + getLocation()
-			+ ", inited=" + inited + "]";
+		return "BndPomRepository [name=" + getName() + ", localRepo=" + localRepo + ", location=" + getLocation() + "]";
 	}
 
 	@Override
@@ -295,8 +340,27 @@ public class BndPomRepository extends BaseRepository
 	}
 
 	@Override
+	public String getStatus() {
+		return status;
+	}
+
+	private void status(String s) {
+		if (s == null)
+			return;
+
+		if (status == null)
+			status = s;
+		else {
+			status = status.concat("\n")
+				.concat(s);
+		}
+	}
+
+	@Override
 	public Map<String, Runnable> actions(Object... target) throws Exception {
-		init();
+		if (!init()) {
+			return Collections.emptyMap();
+		}
 		Clipboard cb = registry.getPlugin(Clipboard.class);
 		if (cb == null)
 			return null;
@@ -317,13 +381,17 @@ public class BndPomRepository extends BaseRepository
 
 	@Override
 	public String tooltip(Object... target) throws Exception {
-		init();
+		if (!init()) {
+			return getStatus();
+		}
 		return bridge.tooltip(target);
 	}
 
 	@Override
 	public String title(Object... target) throws Exception {
-		init();
+		if (!init()) {
+			return null;
+		}
 		return bridge.title(target);
 	}
 
