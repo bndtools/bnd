@@ -4,23 +4,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
+import aQute.lib.io.IO;
+
 public class CommandTest {
 
 	@Test
-	public void testSimple() throws Exception {
+	public void testExecution() throws Exception {
 		Command c = new Command();
-		c.add("java");
+		c.add(IO.getJavaExecutablePath("java"));
 		c.add("-Dx=\"foo bar\"");
 		c.add("-version");
-		assertThat(c.getArguments()).containsExactly("java", "-Dx=\"foo bar\"", "-version");
+		assertThat(c.getArguments()).containsExactly(IO.getJavaExecutablePath("java"), "-Dx=\"foo bar\"", "-version");
 		assertThat(c.execute(System.out, System.err)).isZero();
 	}
 
 	@Test
 	public void testFull() throws Exception {
-		Command c = new Command("java -Dx=\"foo bar\" -version");
-		assertThat(c.getArguments()).containsExactly("java", "-Dx=\"foo bar\"", "-version");
-		assertThat(c.execute(System.out, System.err)).isZero();
+
+		Command c = new Command("app -Dx=\"foo bar\" -version");
+		assertThat(c.getArguments()).containsExactly("app", "-Dx=\"foo bar\"", "-version");
+
+		c = new Command().full("app -Dx=\"foo bar\" -version");
+		assertThat(c.getArguments()).containsExactly("app", "-Dx=\"foo bar\"", "-version");
 	}
 
 	@Test
