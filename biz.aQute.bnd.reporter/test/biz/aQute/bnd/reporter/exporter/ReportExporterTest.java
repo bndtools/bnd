@@ -1,5 +1,6 @@
 package biz.aQute.bnd.reporter.exporter;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.jar.Manifest;
 
@@ -13,234 +14,241 @@ import junit.framework.TestCase;
 
 public class ReportExporterTest extends TestCase {
 
-	public void testUnscopedAvailableReport() {
-		final Processor processor = new Processor();
+	public void testUnscopedAvailableReport() throws IOException {
+		try (final Processor processor = new Processor();) {
+			processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION + ".first",
+				"readme1.md;scope=scope1");
+			processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION + ".second",
+				"readme2.md;scope=scope2");
 
-		processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION + ".first", "readme1.md;scope=scope1");
-		processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION + ".second", "readme2.md;scope=scope2");
-
-		assertEquals(2, ReportExporterBuilder.create()
-			.setProcessor(processor)
-			.build()
-			.getAvailableReportsOf(new Object())
-			.size());
-		assertTrue(processor.isOk());
+			assertEquals(2, ReportExporterBuilder.create()
+				.setProcessor(processor)
+				.build()
+				.getAvailableReportsOf(new Object())
+				.size());
+			assertTrue(processor.isOk());
+		}
 	}
 
-	public void testScopedAvailableReport() {
-		final Processor processor = new Processor();
+	public void testScopedAvailableReport() throws IOException {
+		try (final Processor processor = new Processor();) {
 
-		processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION + ".first", "readme1.md;scope=scope1");
-		processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION + ".second", "readme2.md;scope=scope2");
+			processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION + ".first",
+				"readme1.md;scope=scope1");
+			processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION + ".second",
+				"readme2.md;scope=scope2");
 
-		assertEquals(1, ReportExporterBuilder.create()
-			.setProcessor(processor)
-			.setScope("scope2")
-			.build()
-			.getAvailableReportsOf(new Object())
-			.size());
-		assertTrue(processor.isOk());
+			assertEquals(1, ReportExporterBuilder.create()
+				.setProcessor(processor)
+				.setScope("scope2")
+				.build()
+				.getAvailableReportsOf(new Object())
+				.size());
+			assertTrue(processor.isOk());
+		}
 	}
 
 	public void testBasicExport() throws Exception {
-		final Jar jar = new Jar("jar");
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue("Bundle-SymbolicName", "test");
-		final Processor processor = new Processor();
+		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
+			final Manifest manifest = new Manifest();
+			jar.setManifest(manifest);
+			manifest.getMainAttributes()
+				.putValue("Bundle-SymbolicName", "test");
 
-		processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION, "readme.json");
+			processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION, "readme.json");
 
-		final Map<String, Resource> result = ReportExporterBuilder.create()
-			.setProcessor(processor)
-			.build()
-			.exportReportsOf(jar);
+			final Map<String, Resource> result = ReportExporterBuilder.create()
+				.setProcessor(processor)
+				.build()
+				.exportReportsOf(jar);
 
-		assertEquals(1, result.size());
-		Resource resource = result
-			.values()
-			.stream()
-			.findFirst()
-			.get();
-		assertTrue(resource.buffer()
-			.array().length > 0);
-		assertTrue(processor.isOk());
+			assertEquals(1, result.size());
+			Resource resource = result.values()
+				.stream()
+				.findFirst()
+				.get();
+			assertTrue(resource.buffer()
+				.array().length > 0);
+			assertTrue(processor.isOk());
+		}
 	}
 
 	public void testExportWithTemplate() throws Exception {
-		final Jar jar = new Jar("jar");
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue("Bundle-SymbolicName", "test");
-		final Processor processor = new Processor();
+		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
+			final Manifest manifest = new Manifest();
+			jar.setManifest(manifest);
+			manifest.getMainAttributes()
+				.putValue("Bundle-SymbolicName", "test");
 
-		processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION,
-			"readme.md;template=testresources/exporter/template.twig");
+			processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION,
+				"readme.md;template=testresources/exporter/template.twig");
 
-		final Map<String, Resource> result = ReportExporterBuilder.create()
-			.setProcessor(processor)
-			.setGenerator(ReportGeneratorBuilder.create()
-				.addPlugin(ManifestPlugin.class.getCanonicalName())
-				.build())
-			.build()
-			.exportReportsOf(jar);
+			final Map<String, Resource> result = ReportExporterBuilder.create()
+				.setProcessor(processor)
+				.setGenerator(ReportGeneratorBuilder.create()
+					.addPlugin(ManifestPlugin.class.getCanonicalName())
+					.build())
+				.build()
+				.exportReportsOf(jar);
 
-		assertEquals(1, result.size());
-		assertEquals("test", new String(result.values()
-			.stream()
-			.findFirst()
-			.get()
-			.buffer()
-			.array()));
-		assertTrue(processor.isOk());
+			assertEquals(1, result.size());
+			assertEquals("test", new String(result.values()
+				.stream()
+				.findFirst()
+				.get()
+				.buffer()
+				.array()));
+			assertTrue(processor.isOk());
+		}
 	}
 
 	public void testExportWithDefaultTemplate() throws Exception {
-		final Jar jar = new Jar("jar");
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue("Bundle-SymbolicName", "test");
-		final Processor processor = new Processor();
+		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
+			final Manifest manifest = new Manifest();
 
-		processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION,
-			"readme.md;template=default:readme.twig");
+			jar.setManifest(manifest);
+			manifest.getMainAttributes()
+				.putValue("Bundle-SymbolicName", "test");
 
-		final Map<String, Resource> result = ReportExporterBuilder.create()
-			.setProcessor(processor)
-			.setGenerator(ReportGeneratorBuilder.create()
-				.addPlugin(ManifestPlugin.class.getCanonicalName())
-				.build())
-			.build()
-			.exportReportsOf(jar);
+			processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION,
+				"readme.md;template=default:readme.twig");
 
-		assertEquals(1, result.size());
-		assertTrue(new String(result.values()
-			.stream()
-			.findFirst()
-			.get()
-			.buffer()
-			.array()).startsWith("# test"));
-		assertTrue(processor.isOk());
+			final Map<String, Resource> result = ReportExporterBuilder.create()
+				.setProcessor(processor)
+				.setGenerator(ReportGeneratorBuilder.create()
+					.addPlugin(ManifestPlugin.class.getCanonicalName())
+					.build())
+				.build()
+				.exportReportsOf(jar);
+
+			assertEquals(1, result.size());
+			assertTrue(new String(result.values()
+				.stream()
+				.findFirst()
+				.get()
+				.buffer()
+				.array()).startsWith("# test"));
+			assertTrue(processor.isOk());
+		}
 	}
 
 	public void testExportWithTemplateOverride() throws Exception {
-		final Jar jar = new Jar("jar");
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue("Bundle-SymbolicName", "test");
-		final Processor processor = new Processor();
+		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
+			final Manifest manifest = new Manifest();
+			jar.setManifest(manifest);
+			manifest.getMainAttributes()
+				.putValue("Bundle-SymbolicName", "test");
 
-		processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION,
-			"testresources/exporter/readme.md;template=testresources/exporter/template.twig");
+			processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION,
+				"testresources/exporter/readme.md;template=testresources/exporter/template.twig");
 
-		final Map<String, Resource> result = ReportExporterBuilder.create()
-			.setProcessor(processor)
-			.setGenerator(ReportGeneratorBuilder.create()
-				.addPlugin(ManifestPlugin.class.getCanonicalName())
-				.build())
-			.build()
-			.exportReportsOf(jar);
+			final Map<String, Resource> result = ReportExporterBuilder.create()
+				.setProcessor(processor)
+				.setGenerator(ReportGeneratorBuilder.create()
+					.addPlugin(ManifestPlugin.class.getCanonicalName())
+					.build())
+				.build()
+				.exportReportsOf(jar);
 
-		assertEquals(1, result.size());
-		assertEquals("testOverride", new String(result.values()
-			.stream()
-			.findFirst()
-			.get()
-			.buffer()
-			.array()));
-		assertTrue(processor.isOk());
+			assertEquals(1, result.size());
+			assertEquals("testOverride", new String(result.values()
+				.stream()
+				.findFirst()
+				.get()
+				.buffer()
+				.array()));
+			assertTrue(processor.isOk());
+		}
 	}
 
 	public void testExportWithTemplateUnknowType() throws Exception {
-		final Jar jar = new Jar("jar");
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue("Bundle-SymbolicName", "test");
-		final Processor processor = new Processor();
+		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
+			final Manifest manifest = new Manifest();
+			jar.setManifest(manifest);
+			manifest.getMainAttributes()
+				.putValue("Bundle-SymbolicName", "test");
 
-		processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION,
-			"readme.md;template=testresources/exporter/template.un;templateType=twig");
+			processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION,
+				"readme.md;template=testresources/exporter/template.un;templateType=twig");
 
-		final Map<String, Resource> result = ReportExporterBuilder.create()
-			.setProcessor(processor)
-			.setGenerator(ReportGeneratorBuilder.create()
-				.addPlugin(ManifestPlugin.class.getCanonicalName())
-				.build())
-			.build()
-			.exportReportsOf(jar);
+			final Map<String, Resource> result = ReportExporterBuilder.create()
+				.setProcessor(processor)
+				.setGenerator(ReportGeneratorBuilder.create()
+					.addPlugin(ManifestPlugin.class.getCanonicalName())
+					.build())
+				.build()
+				.exportReportsOf(jar);
 
-		assertEquals(1, result.size());
-		assertEquals("test", new String(result.values()
-			.stream()
-			.findFirst()
-			.get()
-			.buffer()
-			.array()));
-		assertTrue(processor.isOk());
+			assertEquals(1, result.size());
+			assertEquals("test", new String(result.values()
+				.stream()
+				.findFirst()
+				.get()
+				.buffer()
+				.array()));
+			assertTrue(processor.isOk());
+		}
 	}
 
 	public void testExportWithTemplateParameter() throws Exception {
-		final Jar jar = new Jar("jar");
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue("Bundle-SymbolicName", "test");
-		final Processor processor = new Processor();
+		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
+			final Manifest manifest = new Manifest();
+			jar.setManifest(manifest);
+			manifest.getMainAttributes()
+				.putValue("Bundle-SymbolicName", "test");
 
-		processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION,
-			"readme.md;template=testresources/exporter/template.twig;parameters='key=value'");
+			processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION,
+				"readme.md;template=testresources/exporter/template.twig;parameters='key=value'");
 
-		final Map<String, Resource> result = ReportExporterBuilder.create()
-			.setProcessor(processor)
-			.setGenerator(ReportGeneratorBuilder.create()
-				.addPlugin(ManifestPlugin.class.getCanonicalName())
-				.build())
-			.build()
-			.exportReportsOf(jar);
+			final Map<String, Resource> result = ReportExporterBuilder.create()
+				.setProcessor(processor)
+				.setGenerator(ReportGeneratorBuilder.create()
+					.addPlugin(ManifestPlugin.class.getCanonicalName())
+					.build())
+				.build()
+				.exportReportsOf(jar);
 
-		assertEquals(1, result.size());
-		assertEquals("testvalue", new String(result.values()
-			.stream()
-			.findFirst()
-			.get()
-			.buffer()
-			.array()));
-		assertTrue(processor.isOk());
+			assertEquals(1, result.size());
+			assertEquals("testvalue", new String(result.values()
+				.stream()
+				.findFirst()
+				.get()
+				.buffer()
+				.array()));
+			assertTrue(processor.isOk());
+		}
+
 	}
 
 	public void testExportWithConfigName() throws Exception {
-		final Jar jar = new Jar("jar");
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue("Bundle-SymbolicName", "test");
-		final Processor processor = new Processor();
+		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
+			final Manifest manifest = new Manifest();
+			jar.setManifest(manifest);
+			manifest.getMainAttributes()
+				.putValue("Bundle-SymbolicName", "test");
 
-		processor.setProperty(ReportGeneratorConstants.REPORT_CONFIG_INSTRUCTION + ".api",
-			"anyEntry;key=test;value=valueTest");
-		processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION, "readme.json;configName=api");
+			processor.setProperty(ReportGeneratorConstants.REPORT_CONFIG_INSTRUCTION + ".api",
+				"anyEntry;key=test;value=valueTest");
+			processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION, "readme.json;configName=api");
 
-		final Map<String, Resource> result = ReportExporterBuilder.create()
-			.setProcessor(processor)
-			.setGenerator(ReportGeneratorBuilder.create()
+			final Map<String, Resource> result = ReportExporterBuilder
+				.create()
 				.setProcessor(processor)
-				.useCustomConfig()
-				.build())
-			.build()
-			.exportReportsOf(jar);
+				.setGenerator(ReportGeneratorBuilder.create()
+					.setProcessor(processor)
+					.useCustomConfig()
+					.build())
+				.build()
+				.exportReportsOf(jar);
 
-		assertEquals(1, result.size());
-		assertTrue(new String(result.values()
-			.stream()
-			.findFirst()
-			.get()
-			.buffer()
-			.array()).contains("valueTest"));
-		assertTrue(processor.isOk());
+			assertEquals(1, result.size());
+			assertTrue(new String(result.values()
+				.stream()
+				.findFirst()
+				.get()
+				.buffer()
+				.array()).contains("valueTest"));
+			assertTrue(processor.isOk());
+		}
 	}
 }

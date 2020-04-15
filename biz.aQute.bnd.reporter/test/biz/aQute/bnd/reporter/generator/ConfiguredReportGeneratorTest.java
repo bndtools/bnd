@@ -1,5 +1,6 @@
 package biz.aQute.bnd.reporter.generator;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,111 +16,115 @@ import junit.framework.TestCase;
 
 public class ConfiguredReportGeneratorTest extends TestCase {
 
-	public void testNoConfiguredEntryPluginWithNoDefaults() {
-		final Processor processor = new Processor();
-		final ReportGeneratorService generator = getGenerator(processor);
+	public void testNoConfiguredEntryPluginWithNoDefaults() throws IOException {
+		try (final Processor processor = new Processor();) {
+			final ReportGeneratorService generator = getGenerator(processor);
 
-		assertTrue(generator.generateReportOf(new String("any"))
-			.isEmpty());
+			assertTrue(generator.generateReportOf(new String("any"))
+				.isEmpty());
+		}
 	}
 
-	public void testNoConfiguredEntryPluginWithDefaults() {
-		final Processor processor = new Processor();
-		final ReportGeneratorService generator = getGenerator(processor, new ArrayList<>(),
-			Collections.singletonList(ManifestPlugin.class.getCanonicalName()));
+	public void testNoConfiguredEntryPluginWithDefaults() throws IOException {
+		try (final Processor processor = new Processor(); final Jar jar = new Jar("jar");) {
+			final ReportGeneratorService generator = getGenerator(processor, new ArrayList<>(),
+				Collections.singletonList(ManifestPlugin.class.getCanonicalName()));
 
-		final Jar jar = new Jar("jar");
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue(Constants.BUNDLE_SYMBOLICNAME, "test.test");
+			final Manifest manifest = new Manifest();
+			jar.setManifest(manifest);
+			manifest.getMainAttributes()
+				.putValue(Constants.BUNDLE_SYMBOLICNAME, "test.test");
 
-		final Map<String, Object> generated = generator.generateReportOf(jar);
+			final Map<String, Object> generated = generator.generateReportOf(jar);
 
-		assertEquals(1, generated.size());
-		assertTrue(generated.containsKey("manifest"));
-		assertTrue(processor.isOk());
+			assertEquals(1, generated.size());
+			assertTrue(generated.containsKey("manifest"));
+			assertTrue(processor.isOk());
+		}
 	}
 
-	public void testNoConfiguredEntryPluginWithExtendedDefaults() {
-		final Processor processor = new Processor();
-		final ReportGeneratorService generator = getGenerator(processor,
-			Collections.singletonList(TestEntryPlugin.class.getCanonicalName()),
-			Collections.singletonList("entryTest"));
+	public void testNoConfiguredEntryPluginWithExtendedDefaults() throws IOException {
+		try (final Processor processor = new Processor();) {
 
-		final Map<String, Object> generated = generator.generateReportOf(new String());
+			final ReportGeneratorService generator = getGenerator(processor,
+				Collections.singletonList(TestEntryPlugin.class.getCanonicalName()),
+				Collections.singletonList("entryTest"));
 
-		assertEquals(1, generated.size());
-		assertTrue(generated.containsKey("entryTest"));
-		assertTrue(processor.isOk());
+			final Map<String, Object> generated = generator.generateReportOf(new String());
+
+			assertEquals(1, generated.size());
+			assertTrue(generated.containsKey("entryTest"));
+			assertTrue(processor.isOk());
+		}
 	}
 
-	public void testConfiguredEntryPlugin() {
-		final Processor processor = new Processor();
-		processor.setProperty("-reportconfig.myConfigName", "anyEntry;key=any;value=test");
+	public void testConfiguredEntryPlugin() throws IOException {
+		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
+			processor.setProperty("-reportconfig.myConfigName", "anyEntry;key=any;value=test");
 
-		final ReportGeneratorService generator = getGenerator(processor);
+			final ReportGeneratorService generator = getGenerator(processor);
 
-		final Jar jar = new Jar("jar");
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue(Constants.BUNDLE_SYMBOLICNAME, "test.test");
+			final Manifest manifest = new Manifest();
+			jar.setManifest(manifest);
+			manifest.getMainAttributes()
+				.putValue(Constants.BUNDLE_SYMBOLICNAME, "test.test");
 
-		final Map<String, Object> generated = generator.generateReportOf(jar,
-			"(" + ReportGeneratorConstants.CONFIG_NAME_PROPERTY + "=myConfigName)");
+			final Map<String, Object> generated = generator.generateReportOf(jar,
+				"(" + ReportGeneratorConstants.CONFIG_NAME_PROPERTY + "=myConfigName)");
 
-		assertEquals(1, generated.size());
-		assertTrue(generated.containsKey("any"));
+			assertEquals(1, generated.size());
+			assertTrue(generated.containsKey("any"));
 
-		assertTrue(processor.isOk());
+			assertTrue(processor.isOk());
+		}
 	}
 
-	public void testConfiguredEntryPluginWithDuplicate() {
-		final Processor processor = new Processor();
-		processor.setProperty("-reportconfig.myConfigName",
-			"anyEntry;key=any;value=test,anyEntry;key=any2;value=test2");
+	public void testConfiguredEntryPluginWithDuplicate() throws IOException {
+		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
+			processor.setProperty("-reportconfig.myConfigName",
+				"anyEntry;key=any;value=test,anyEntry;key=any2;value=test2");
 
-		final ReportGeneratorService generator = getGenerator(processor);
+			final ReportGeneratorService generator = getGenerator(processor);
 
-		final Jar jar = new Jar("jar");
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue(Constants.BUNDLE_SYMBOLICNAME, "test.test");
+			final Manifest manifest = new Manifest();
+			jar.setManifest(manifest);
+			manifest.getMainAttributes()
+				.putValue(Constants.BUNDLE_SYMBOLICNAME, "test.test");
 
-		final Map<String, Object> generated = generator.generateReportOf(jar,
-			"(" + ReportGeneratorConstants.CONFIG_NAME_PROPERTY + "=myConfigName)");
+			final Map<String, Object> generated = generator.generateReportOf(jar,
+				"(" + ReportGeneratorConstants.CONFIG_NAME_PROPERTY + "=myConfigName)");
 
-		assertEquals(2, generated.size());
-		assertTrue(generated.containsKey("any"));
-		assertTrue(generated.containsKey("any2"));
+			assertEquals(2, generated.size());
+			assertTrue(generated.containsKey("any"));
+			assertTrue(generated.containsKey("any2"));
 
-		assertTrue(processor.isOk());
+			assertTrue(processor.isOk());
+		}
 	}
 
-	public void testConfiguredEntryPluginWithoutDefaults() {
-		final Processor processor = new Processor();
-		processor.setProperty("-reportconfig.myConfigName",
-			"anyEntry;key=any;value=test,anyEntry;key=any2;value=test2,clearDefaults");
+	public void testConfiguredEntryPluginWithoutDefaults() throws IOException {
+		try (final Jar jar = new Jar("jar"); final Processor processor = new Processor();) {
 
-		final ReportGeneratorService generator = getGenerator(processor, new ArrayList<>(),
-			Collections.singletonList(ManifestPlugin.class.getCanonicalName()));
+			processor.setProperty("-reportconfig.myConfigName",
+				"anyEntry;key=any;value=test,anyEntry;key=any2;value=test2,clearDefaults");
 
-		final Jar jar = new Jar("jar");
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue(Constants.BUNDLE_SYMBOLICNAME, "test.test");
+			final ReportGeneratorService generator = getGenerator(processor, new ArrayList<>(),
+				Collections.singletonList(ManifestPlugin.class.getCanonicalName()));
 
-		final Map<String, Object> generated = generator.generateReportOf(jar,
-			"(" + ReportGeneratorConstants.CONFIG_NAME_PROPERTY + "=myConfigName)");
+			final Manifest manifest = new Manifest();
+			jar.setManifest(manifest);
+			manifest.getMainAttributes()
+				.putValue(Constants.BUNDLE_SYMBOLICNAME, "test.test");
 
-		assertEquals(2, generated.size());
-		assertTrue(generated.containsKey("any"));
-		assertTrue(generated.containsKey("any2"));
+			final Map<String, Object> generated = generator.generateReportOf(jar,
+				"(" + ReportGeneratorConstants.CONFIG_NAME_PROPERTY + "=myConfigName)");
 
-		assertTrue(processor.isOk());
+			assertEquals(2, generated.size());
+			assertTrue(generated.containsKey("any"));
+			assertTrue(generated.containsKey("any2"));
+
+			assertTrue(processor.isOk());
+		}
 	}
 
 	public ReportGeneratorService getGenerator(final Processor processor) {

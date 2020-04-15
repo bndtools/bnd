@@ -19,20 +19,21 @@ public class ComponentsPluginTest extends TestCase {
 
 	public void testComponents() throws Exception {
 
-		final Jar jar = new Jar("jar", "testresources/componentsEntry/source.jar");
-		final Processor p = new Processor();
-		final ComponentsPlugin e = new ComponentsPlugin();
-		final Map<String, Object> result = new HashMap<>();
-		e.setReporter(p);
+		try (final Jar jar = new Jar("jar", "testresources/componentsEntry/source.jar");
+			final Processor p = new Processor();) {
 
-		result.put(e.getProperties()
-			.get(ReportEntryPlugin.ENTRY_NAME_PROPERTY), e.extract(jar, Locale.forLanguageTag("und")));
+			final ComponentsPlugin e = new ComponentsPlugin();
+			final Map<String, Object> result = new HashMap<>();
+			e.setReporter(p);
 
-		assertTrue(p.isOk());
-		assertThat(result, is(deepEqualsTo(new JSONCodec()
-			.dec()
-			.from(Paths.get("testresources/componentsEntry/result.json")
-				.toFile())
-			.get())));
+			result.put(e.getProperties()
+				.get(ReportEntryPlugin.ENTRY_NAME_PROPERTY), e.extract(jar, Locale.forLanguageTag("und")));
+
+			assertTrue(p.isOk());
+			assertThat(result, is(deepEqualsTo(new JSONCodec().dec()
+				.from(Paths.get("testresources/componentsEntry/result.json")
+					.toFile())
+				.get())));
+		}
 	}
 }
