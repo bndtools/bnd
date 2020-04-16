@@ -115,6 +115,10 @@
 {{ this._printComponentProperties(c) }}
 
 {{ this._printComponentConfiguration(c, metatypes) }}
+
+{{ this._printComponentReferences(c) }}
+
+{{ this._printComponentJsonConfiguratorSnippet(c, metatypes) }}
 {%- endfor -%}
 {%- endmacro %}
 
@@ -228,6 +232,117 @@ No information available.
 {%- endif -%}
 {%- endfor -%}
 {%- endif -%}
+{%- endmacro %}
+
+
+{# 
+# COMPONENT REFERENCES
+#}
+{% macro _printComponentReferences (c) -%}
+{%- import _self as this -%}
+{{ this.printTitle('Reference bindings',4) }}{{ '\n\n' }}
+
+{%- if c.references is empty -%}
+No bindings.
+{%- else -%}
+{%- for r in c.references %}
+{{- this.printTableHeaders(['Attribute','Value']) }}
+|name |{{r.name}} |
+|interfaceName |{{r.interfaceName}} |
+|target |{{r.target}} |
+|cardinality |{{r.cardinality}} |
+|policy |{{r.policy}} |
+|policyOption |{{r.policyOption}} |
+|scope |{{r.scope}} |
+{%- endfor -%}
+{%- endif -%}
+{%- endmacro %}
+
+
+{# 
+# COMPONENT JSON-CONFIGURATOR-SNIPPET
+#}
+{% macro _printComponentJsonConfiguratorSnippet (c, metatypes) -%}
+{%- import _self as this -%}
+
+{{ this.printTitle('OSGi-Configurator',4) }}
+
+{% for pid in c.configurationPid %}
+```
+/*
+ * Component: {{ c.name }}
+ * policy:    {{ c.configurationPolicy }}
+ */
+{% set pidOcd = "notset" -%}
+{%- set factoryPidOcd = "notset" -%}
+{%- for ocd in metatypes -%}
+{%- if pid in ocd.pids -%}
+{%- set pidOcd = ocd -%}
+{%- elseif pid in ocd.factoryPids -%}
+{%- set factoryPidOcd = ocd -%}
+{%- endif -%}
+{%- endfor -%}
+{%- set o = "notset" -%}
+{%- if pidOcd != 'notset' -%}
+    "{{ pid }}":{
+{%- set o = pidOcd -%}
+{%- elseif factoryPidOcd != 'notset' -%}
+    "{{ pid }}~FactoryNameChangeIt":{
+{%- set o = factoryPidOcd -%}
+{%- else -%}
+    "{{ pid }}":{
+
+{%- endif %}
+        //# Component properties    
+{%- if c.properties is empty %}
+        // none
+{% else %}
+{%- for key, a in c.properties %}
+        /*
+         * Type = {{ this.printPropertyType(a.type,a.multiValue) }}
+{%- if length(a.values) > 0 %}
+         * Default = {{ this.printPropertyValues(a.type,a.values,a.multiValue) }}
+{%- endif %}
+         */
+         // "{{ key }}": null,{% if loop.last %}{{ '\n' }}{% else%}{% endif %}{{ '\n' }}
+{%- endfor %}
+{%- endif %}
+        //# Reference bindings    
+{%- if c.references is empty %}
+        // none
+{%- else -%}
+{%- for r in c.references %}
+        // "{{r.name}}.target": {% if r.target=='' %}"(component.pid=*)"{% else %}"{{r.target}}"{% endif -%}
+{%- if loop.last -%}{%- if loop.parent.o == 'notset' %}{% else %},{% endif %}{{ '\n' }}{% else %},{%- endif -%}
+{%- endfor %}
+{%- endif %}
+
+        //# ObjectClassDefinition - Attributes
+{%- if o == 'notset' %}
+        // (No PidOcd available.)
+{% else %}
+{%- for a in o.attributes %}
+        /*
+         * Required = {{a.required}}
+         * Type = {{ this.printPropertyType(a.type,(a.cardinality != 0)) }}
+{%- if not empty(a.description) %}
+         * Description = {{ a.description }}
+{%- endif %}
+{%- if length(a.values) > 0 %}
+         * Default = {{ this.printPropertyValues(a.type,a.values,(a.cardinality != 0)) }}
+{%- endif %}
+{%- if (not empty(a.max)) or (not empty(a.min)) %}
+         * Value restriction = `min = {{a.min}}` / `max = {{a.max}}`
+{%- elseif length(a.options) > 0 %}
+         * Value restriction = {{ this.printOptions(a.options) }}
+{%- endif %}
+         */
+         {% if a.required!='true' %}// {% endif -%}"{{ a.id }}": null{% if loop.last %}{% else%},{% endif %}{{ '\n' }}
+{%- endfor %}
+{%- endif -%}
+}
+```
+{%- endfor %}
 {%- endmacro %}
 
 {# 
