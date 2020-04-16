@@ -2423,6 +2423,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			FileLine info = getHeader(header, clause);
 			if (info != null) {
 				info.set(setLocation);
+			} else {
+				setLocation.header(header)
+					.context(clause);
 			}
 		} catch (Exception e) {
 			exception(e, "unexpected exception in setLocation");

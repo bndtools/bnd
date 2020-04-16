@@ -22,9 +22,12 @@ class AttrsHandler implements InvocationHandler {
 
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		if (method.getDeclaringClass() == Object.class) {
+		if (method.getDeclaringClass() == Object.class || method.getDeclaringClass() == AttrsHandler.class) {
 			return method.invoke(this);
 		}
+		if (method.getName()
+			.equals("_attrs"))
+			return attrs;
 
 		String name = Syntax.toProperty(method);
 

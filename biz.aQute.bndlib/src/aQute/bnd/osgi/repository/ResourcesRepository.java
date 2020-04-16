@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -40,6 +41,7 @@ public class ResourcesRepository extends BaseRepository {
 	}
 
 	public List<Capability> findProvider(Requirement requirement) {
+
 		String namespace = requirement.getNamespace();
 		return resources.stream()
 			.flatMap(resource -> ResourceUtils.capabilityStream(resource, namespace))
@@ -52,6 +54,12 @@ public class ResourcesRepository extends BaseRepository {
 			return ResourceUtils.filterPredicate(null);
 		}
 		return cache.computeIfAbsent(filterString, ResourceUtils::filterPredicate);
+	}
+
+	public Stream<Capability> getCapabilitiesAsStream(String namespace) {
+		return resources.stream()
+			.flatMap(r -> r.getCapabilities(namespace)
+				.stream());
 	}
 
 	public void add(Resource resource) {
