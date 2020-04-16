@@ -6,7 +6,11 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
@@ -26,10 +30,11 @@ import aQute.lib.json.JSONCodec;
 
 public class JtwigTransformerPlugin implements ReportTransformerPlugin {
 
-	static private final String[]	_extT	= {
+	public static final String		BND_REPORTER_MD_TAGS	= "bnd.reporter.md.tags";
+	static private final String[]	_extT					= {
 		"twig", "jtwig"
 	};
-	static private final String[]	_extI	= {
+	static private final String[]	_extI					= {
 		"json"
 	};
 
@@ -40,7 +45,19 @@ public class JtwigTransformerPlugin implements ReportTransformerPlugin {
 			.from(data)
 			.get();
 
-		final EnvironmentConfigurationBuilder eb = EnvironmentConfigurationBuilder.configuration();
+		String sTags = parameters.getOrDefault(BND_REPORTER_MD_TAGS, "default");
+		List<String> tags = Stream.of(sTags.split(","))
+			.filter(Objects::nonNull)
+			.map(
+				String::trim)
+			.collect(Collectors.toList());
+		TaggedFunctions showWhenTaggedFunction = new TaggedFunctions(tags);
+
+		final EnvironmentConfigurationBuilder eb = EnvironmentConfigurationBuilder.configuration()
+			.functions()
+			.add(
+				showWhenTaggedFunction)
+			.and();
 
 		eb.resources()
 			.resourceLoaders()
@@ -58,7 +75,8 @@ public class JtwigTransformerPlugin implements ReportTransformerPlugin {
 		final JtwigTemplate template = JtwigTemplate.inlineTemplate(IO.collect(templateInputStream), eb.build());
 		final JtwigModel model = JtwigModel.newModel()
 			.with("report", modelDto);
-		parameters.forEach((k, v) -> model.with(k, v));
+
+		parameters.forEach((k, v) -> model.with(k.replace(".", "_"), v));
 
 		template.render(model, output);
 	}
