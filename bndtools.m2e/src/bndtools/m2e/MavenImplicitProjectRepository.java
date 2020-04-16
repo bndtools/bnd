@@ -1,6 +1,7 @@
 package bndtools.m2e;
 
 import static aQute.lib.exceptions.ConsumerWithException.asConsumer;
+import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.util.Collection;
@@ -156,6 +157,7 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 			.stream()
 			.filter(Refreshable.class::isInstance)
 			.map(Refreshable.class::cast)
+			.collect(toList()) // make a copy before we iterate
 			.forEach(asConsumer(Central::refreshPlugin));
 	}
 
