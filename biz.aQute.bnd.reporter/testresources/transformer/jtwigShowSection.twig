@@ -1,0 +1,7 @@
+{% if tagged("default") %}a{% else %}b{% endif %}
+{% if not tagged("default") %}a{% else %}b{% endif %}
+{% if tagged() %}a{% else %}b{% endif %}
+{% if tagged("osgi-spec") %}a{% else %}b{% endif %}
+{% if tagged("default","osgi-spec") %}a{% else %}b{% endif %}
+{% if tagged("default","osgi-spec") %}a{% else %}b{% endif %}
+{% if tagged(["default","osgi-spec"],"other") %}a{% else %}b{% endif %}
