@@ -180,4 +180,9 @@ public final class Ok<V, E> implements Result<V, E> {
 			throw Exceptions.duck(e);
 		}
 	}
+
+	@Override
+	public <X> Result<X, E> asError() {
+		throw new IllegalArgumentException("must be an error");
+	}
 }

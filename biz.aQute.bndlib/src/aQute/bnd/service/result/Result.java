@@ -242,4 +242,6 @@ public interface Result<V, E> {
 	 */
 	void accept(ConsumerWithException<? super V> ok, ConsumerWithException<? super E> err);
 
+	<X> Result<X, E> asError();
+
 }
