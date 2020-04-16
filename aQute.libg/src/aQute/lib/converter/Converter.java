@@ -3,6 +3,7 @@ package aQute.lib.converter;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.lang.invoke.MethodType.methodType;
 
+import java.io.File;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Array;
@@ -40,6 +41,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import aQute.lib.base64.Base64;
+import aQute.lib.fileset.FileSet;
+import aQute.lib.io.IO;
 
 /**
  * General Java type converter from an object to any type. Supports number
@@ -57,6 +60,7 @@ public class Converter {
 	boolean			fatal	= true;
 	Map<Type, Hook>	hooks;
 	List<Hook>		allHooks;
+	File			base	= IO.work;
 
 	public <T> T convert(Class<T> type, Object o) throws Exception {
 		// Is it a compatible type?
@@ -204,6 +208,10 @@ public class Converter {
 
 		if (Map.class.isAssignableFrom(actualType) && resultType.isInterface()) {
 			return proxy(resultType, (Map) o);
+		}
+
+		if (resultType == File.class && o instanceof String) {
+			return IO.getFile(base, (String) o);
 		}
 
 		// Simple type coercion
@@ -427,7 +435,13 @@ public class Converter {
 		if (collectionType instanceof ParameterizedType) {
 			ParameterizedType ptype = (ParameterizedType) collectionType;
 			subType = ptype.getActualTypeArguments()[0];
+
+			if (subType == File.class && o instanceof String) {
+				FileSet tree = new FileSet(base, (String) o);
+				return tree.getFiles();
+			}
 		}
+
 
 		Collection input = toCollection(o);
 
@@ -493,6 +507,13 @@ public class Converter {
 	}
 
 	public Object array(Type type, Object o) throws Exception {
+
+		if (type == File.class && o instanceof String) {
+			FileSet tree = new FileSet(base, (String) o);
+			return tree.getFiles()
+				.toArray(new File[0]);
+		}
+
 		Collection<?> input = toCollection(o);
 		Class<?> componentClass = getRawClass(type);
 		Object array = Array.newInstance(componentClass, input.size());
@@ -613,9 +634,12 @@ public class Converter {
 		return (T) Proxy.newProxyInstance(interfc.getClassLoader(), new Class[] {
 			interfc
 		}, new InvocationHandler() {
-
 			@Override
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+
+				if (method.getName()
+					.equals("toString") && method.getParameterCount() == 0)
+					return properties + "'";
 
 				if (Object.class == method.getDeclaringClass()) {
 					MethodHandle mh = publicLookup().unreflect(method)
@@ -634,13 +658,7 @@ public class Converter {
 						o = method.getDefaultValue();
 					}
 				}
-
 				return convert(method.getGenericReturnType(), o);
-			}
-
-			@Override
-			public String toString() {
-				return properties + "'";
 			}
 		});
 	}
@@ -700,7 +718,7 @@ public class Converter {
 
 	/**
 	 * Return if the class's instances can hold multiple values.
-	 * 
+	 *
 	 * @param c the class to test
 	 * @return true if the class's instances can hold multiple values
 	 */
@@ -715,5 +733,28 @@ public class Converter {
 			return true;
 
 		return false;
+	}
+
+	/**
+	 * Return if the class's instances can hold multiple values.
+	 *
+	 * @param c the class to test
+	 * @return true if the class's instances can hold multiple values
+	 */
+	public static boolean isMultiple(Type c) {
+		if (c instanceof Class)
+			return isMultiple((Class<?>) c);
+
+		if (c instanceof ParameterizedType) {
+			Type rawType = ((ParameterizedType) c).getRawType();
+			if (c instanceof Class)
+				return isMultiple((Class<?>) c);
+		}
+
+		return false;
+	}
+
+	public void setBase(File base) {
+		this.base = base;
 	}
 }

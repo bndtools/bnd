@@ -169,11 +169,19 @@ public class Strings {
 		return splitQuotedAsStream(s, true);
 	}
 
+	public static Stream<String> splitQuotedAsStream(String s, String separators) {
+		return splitQuotedAsStream(s, separators, true);
+	}
+
 	public static Stream<String> splitQuotedAsStream(String s, boolean retainQuotes) {
+		return splitQuotedAsStream(s, COMMA, retainQuotes);
+	}
+
+	public static Stream<String> splitQuotedAsStream(String s, String separators, boolean retainQuotes) {
 		if ((s == null) || (s = s.trim()).isEmpty()) {
 			return Stream.empty();
 		}
-		return new QuotedTokenizer(s, COMMA, false, retainQuotes).stream()
+		return new QuotedTokenizer(s, separators, false, retainQuotes).stream()
 			.filter(Strings::notEmpty);
 	}
 
@@ -192,6 +200,10 @@ public class Strings {
 
 	public static List<String> splitQuoted(String s) {
 		return splitQuotedAsStream(s).collect(toList());
+	}
+
+	public static List<String> splitQuoted(String s, String separators) {
+		return splitQuotedAsStream(s, separators).collect(toList());
 	}
 
 	public static List<String> split(String regex, String s) {

@@ -61,7 +61,9 @@ public class Exceptions {
 	public static String causes(Throwable t) {
 		StringJoiner sj = new StringJoiner(" -> ");
 		while (t != null) {
-			sj.add(t.getMessage());
+			String message = t.getMessage();
+			sj.add(message == null ? t.getClass()
+				.getSimpleName() : message);
 			t = t.getCause();
 		}
 		return sj.toString();

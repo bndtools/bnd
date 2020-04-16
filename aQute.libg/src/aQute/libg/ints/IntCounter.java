@@ -176,4 +176,12 @@ public class IntCounter extends Number {
 		return set((int) value);
 	}
 
+	public boolean isZero() {
+		return count == 0;
+	}
+
+	public boolean isNotZero() {
+		return count != 0;
+	}
+
 }
