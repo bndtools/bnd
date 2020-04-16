@@ -1,7 +1,6 @@
 package aQute.bnd.build;
 
 import static aQute.bnd.build.Container.toPaths;
-import static java.util.stream.Collectors.toList;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -45,6 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -105,6 +105,7 @@ import aQute.lib.exceptions.ConsumerWithException;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
+import aQute.lib.lazy.Lazy;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.command.Command;
@@ -122,8 +123,14 @@ import aQute.libg.tuple.Pair;
 public class Project extends Processor {
 	private final static Logger logger = LoggerFactory.getLogger(Project.class);
 
-	static class RefreshData {
-		Parameters installRepositories;
+	class RefreshData implements AutoCloseable {
+		Parameters				installRepositories;
+		Lazy<ProjectGenerate>	generate	= new Lazy<>(() -> new ProjectGenerate(Project.this));
+
+		@Override
+		public void close() throws Exception {
+			this.generate.close();
+		}
 	}
 
 	final static String				DEFAULT_ACTIONS					= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
@@ -572,6 +579,7 @@ public class Project extends Processor {
 
 		return getBundles(Strategy.HIGHEST, spec, Constants.RUNBUNDLES);
 	}
+
 	private List<Container> parseRunFw() throws Exception {
 		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNFW), Constants.RUNFW);
 	}
@@ -2167,6 +2175,7 @@ public class Project extends Processor {
 	@Override
 	public boolean refresh() {
 		versionMap.clear();
+		IO.close(data);
 		data = new RefreshData();
 		boolean changed = false;
 		if (isCnf()) {
@@ -2191,6 +2200,7 @@ public class Project extends Processor {
 		setChanged();
 		makefile = null;
 		versionMap.clear();
+		IO.close(data);
 		data = new RefreshData();
 	}
 
@@ -2365,31 +2375,37 @@ public class Project extends Processor {
 		clean(getTargetDir(), "target");
 		clean(getSrcOutput(), "source output");
 		clean(getTestOutput(), "test output");
+		for (File output : getGenerate().getOutputs())
+			clean(output, "generate output " + output, false);
 	}
 
 	void clean(File dir, String type) throws IOException {
-		if (!dir.exists())
-			return;
+		clean(dir, type, true);
+	}
 
-		String basePath = getBase().getCanonicalPath();
-		String dirPath = dir.getCanonicalPath();
-		if (!dirPath.startsWith(basePath)) {
-			logger.debug("path outside the project dir {}", type);
-			return;
+	void clean(File dirOrFile, String type, boolean recreate) throws IOException {
+		if (dirOrFile.exists()) {
+
+			String basePath = getBase().getCanonicalPath();
+			String dirPath = dirOrFile.getCanonicalPath();
+			if (!dirPath.startsWith(basePath)) {
+				logger.debug("path outside the project dir {}", type);
+				return;
+			}
+
+			if (dirPath.length() == basePath.length()) {
+				error("Trying to delete the project directory for %s", type);
+				return;
+			}
+
+			IO.delete(dirOrFile);
+			if (dirOrFile.exists()) {
+				error("Trying to delete %s (%s), but failed", dirOrFile, type);
+				return;
+			}
 		}
-
-		if (dirPath.length() == basePath.length()) {
-			error("Trying to delete the project directory for %s", type);
-			return;
-		}
-
-		IO.delete(dir);
-		if (dir.exists()) {
-			error("Trying to delete %s (%s), but failed", dir, type);
-			return;
-		}
-
-		IO.mkdirs(dir);
+		if (recreate)
+			IO.mkdirs(dirOrFile);
 	}
 
 	public File[] build() throws Exception {
@@ -3483,14 +3499,14 @@ public class Project extends Processor {
 
 			List<String> defaultIncludes = Strings.splitAsStream(st.newer())
 				.map(p -> getFile(p).isDirectory() && !p.endsWith("/") ? p + "/" : p)
-				.collect(toList());
+				.collect(Collectors.toList());
 
 			List<File> dependentFiles = tree.getFiles(getBase(), defaultIncludes)
 				.stream()
 				.filter(File::isFile)
 				.filter(f -> f.lastModified() < time)
 				.sorted()
-				.collect(toList());
+				.collect(Collectors.toList());
 
 			boolean staleFiles = !dependentFiles.isEmpty();
 
@@ -3552,6 +3568,17 @@ public class Project extends Processor {
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	/**
+	 * Get the object responsible for source code generation. This object should
+	 * not be stored, a new one is created if the properties of this project
+	 * change.
+	 *
+	 * @return a fresh ProjectGenerate object
+	 */
+	public ProjectGenerate getGenerate() {
+		return data.generate.get();
 	}
 
 }
