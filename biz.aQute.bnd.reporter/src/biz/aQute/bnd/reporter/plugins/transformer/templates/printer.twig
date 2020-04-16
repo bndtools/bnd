@@ -46,6 +46,20 @@
 {%- endmacro %}
 
 {# 
+# CHECKSUM
+#}
+{% macro printChecksum (checksum, prefix) -%}
+{% import _self as this -%}
+```{{'\n'}}
+{%- if not empty(checksum.md5) %}{{ prefix }}md5:    {{ checksum.md5 }}{{'\n'}}{%- endif -%}
+{%- if not empty(checksum.sha1) %}{{ prefix }}sha1:   {{ checksum.sha1 }}{{'\n'}}{%- endif -%}
+{%- if not empty(checksum.sha256) %}{{ prefix }}sha256: {{ checksum.sha256 }}{{'\n'}}{%- endif -%}
+{%- if not empty(checksum.sha256) %}{{ prefix }}sha512: {{ checksum.sha512 }}{{'\n'}}{%- endif -%}
+
+{{ prefix }}```
+{%- endmacro %}
+
+{# 
 # OSGI VERSION
 #}
 {% macro printOsgiVersion (osgiVersion) -%}

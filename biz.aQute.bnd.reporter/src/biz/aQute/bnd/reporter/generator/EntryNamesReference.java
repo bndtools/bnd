@@ -69,4 +69,9 @@ public interface EntryNamesReference {
 	 * A list of gogo-commands.
 	 */
 	String	GOGO_COMMANDS		= "gogoCommands";
+
+	/**
+	 * The checksum, of the bundle / ouptut file.
+	 */
+	String	CHECKSUM			= "checksum";
 }
