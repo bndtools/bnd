@@ -55,15 +55,17 @@ public class CapReqComparator implements Comparator<Object> {
 
 		// Compare the main attribute
 		String attribName = R5LabelFormatter.getMainAttributeName(ns1);
-		String attrib1 = c1.getAttributes()
-			.get(attribName)
-			.toString();
-		String attrib2 = c2.getAttributes()
-			.get(attribName)
-			.toString();
-		int attribDiff = attrib1.compareTo(attrib2);
-		if (attribDiff != 0)
-			return attribDiff;
+		Object attrib1 = c1.getAttributes()
+			.get(attribName);
+		Object attrib2 = c2.getAttributes()
+			.get(attribName);
+
+		if (attrib1 != null && attrib2 != null) {
+			int attribDiff = attrib1.toString()
+				.compareTo(attrib2.toString());
+			if (attribDiff != 0)
+				return attribDiff;
+		}
 
 		// Compare the versions
 		String versionAttribName = R5LabelFormatter.getVersionAttributeName(ns1);
