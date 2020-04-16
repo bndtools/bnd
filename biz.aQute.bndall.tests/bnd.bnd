@@ -3,17 +3,14 @@
 #
 # This is not a bundle ...
 #
+-dependson biz.aQute.bnd.javagen
 
 -include: ${workspace}/cnf/includes/jdt.bnd
-
--nobundles: true
 
 -testpath: \
     osgi.core;version=latest,\
     org.osgi.service.cm;version=latest,\
     org.osgi.service.component.annotations;version=latest,\
-    aQute.libg;version=project, \
-    biz.aQute.bndlib;version=latest, \
     biz.aQute.resolve;version=latest, \
     biz.aQute.repository;version=latest, \
     biz.aQute.bnd.annotation;version=project,\
@@ -25,3 +22,8 @@
     slf4j.simple;version=latest
 
 -runtrace: true
+-buildpath:  \
+    aQute.libg;version=project, \
+    biz.aQute.bndlib;version=5.1.0
+    
+-sub: *.bnd
