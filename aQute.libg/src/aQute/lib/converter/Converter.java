@@ -747,8 +747,8 @@ public class Converter {
 
 		if (c instanceof ParameterizedType) {
 			Type rawType = ((ParameterizedType) c).getRawType();
-			if (c instanceof Class)
-				return isMultiple((Class<?>) c);
+			if (rawType instanceof Class)
+				return isMultiple((Class<?>) rawType);
 		}
 
 		return false;

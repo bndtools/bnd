@@ -43,17 +43,27 @@ public class ResourcesRepository extends BaseRepository {
 	public List<Capability> findProvider(Requirement requirement) {
 
 		String namespace = requirement.getNamespace();
-		return resources.stream()
-			.flatMap(resource -> ResourceUtils.capabilityStream(resource, namespace))
-			.filter(ResourceUtils.matcher(requirement, this::filterPredicate))
-			.collect(ResourceUtils.toCapabilities());
-	}
+		String filter = requirement.getDirectives()
+			.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 
-	private Predicate<Map<String, Object>> filterPredicate(String filterString) {
-		if (filterString == null) {
-			return ResourceUtils.filterPredicate(null);
-		}
-		return cache.computeIfAbsent(filterString, ResourceUtils::filterPredicate);
+		Stream<Capability> capabilities = getCapabilitiesAsStream(namespace);
+		if ( filter == null)
+			return capabilities.collect(Collectors.toList());
+
+		Filter f = cache.computeIfAbsent(filter, (k) -> new Filter(k));
+
+		return capabilities
+			.filter(capability -> {
+				if (!ResourceUtils.isEffective(requirement, capability))
+					return false;
+
+				try {
+					return f.matchMap(capability.getAttributes());
+				} catch (Exception e) {
+					return false;
+				}
+			})
+			.collect(toCapabilities());
 	}
 
 	public Stream<Capability> getCapabilitiesAsStream(String namespace) {
