@@ -16,11 +16,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
-import org.osgi.resource.Capability;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.repository.SimpleIndexer;
-import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.central.WorkspaceR5Repository;
@@ -65,12 +63,9 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
 					.toURI())
 				.name(project.getName())
 				.analyzer((f, rb) -> {
-					Capability cap = new CapabilityBuilder("bndtools.workspace")
-						.addAttribute("bndtools.workspace", workspaceRootUri.toString())
-						.addAttribute("project.path", project.getFullPath()
-							.toString())
-						.buildSyntheticCapability();
-					rb.addCapability(cap);
+					// Add a capability specific to the workspace so that we can
+					// identify this fact later during resource processing.
+					rb.addWorkspaceNamespace(model.getName());
 				})
 				.index(indexFile);
 			indexPath.refreshLocal(IResource.DEPTH_ZERO, null);
