@@ -20,10 +20,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.felix.resolver.reason.ReasonException;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
@@ -96,21 +96,19 @@ public class ResolveProcess {
 		final List<Resource> resources = new ArrayList<>();
 		for (Resource r : rc.getMandatoryResources()) {
 			reqs: for (Requirement req : r.getRequirements(null)) {
+				String filterDirective = req.getDirectives()
+					.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+				if (filterDirective == null) {
+					continue;
+				}
+				Predicate<Capability> predicate = ResourceUtils.filterMatcher(req);
 				for (Resource found : wirings.keySet()) {
-					String filterStr = req.getDirectives()
-						.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-					try {
-						org.osgi.framework.Filter filter = filterStr != null
-							? org.osgi.framework.FrameworkUtil.createFilter(filterStr)
-							: null;
-
-						for (Capability c : found.getCapabilities(req.getNamespace())) {
-							if (filter != null && filter.matches(c.getAttributes())) {
-								resources.add(found);
-								continue reqs;
-							}
+					for (Capability c : found.getCapabilities(req.getNamespace())) {
+						if (predicate.test(c)) {
+							resources.add(found);
+							continue reqs;
 						}
-					} catch (InvalidSyntaxException e) {}
+					}
 				}
 			}
 		}
@@ -541,10 +539,10 @@ public class ResolveProcess {
 		if (rc.isSystemResource(resource) || (ResourceUtils.isFragment(resource) && resources.contains(resource))) {
 			return resource;
 		}
-
+		Predicate<Capability> predicate = ResourceUtils.matcher(wire.getRequirement());
 		for (Resource resolved : resources) {
 			for (Capability resolvedCap : resolved.getCapabilities(capability.getNamespace())) {
-				if (ResourceUtils.matches(wire.getRequirement(), resolvedCap)) {
+				if (predicate.test(resolvedCap)) {
 					return resolved;
 				}
 			}

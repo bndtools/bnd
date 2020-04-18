@@ -10,19 +10,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collector;
 
 import org.osgi.resource.Capability;
-import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.lib.filter.Filter;
 
 public class ResourcesRepository extends BaseRepository {
-	final Set<Resource>			resources	= new LinkedHashSet<>();
-	final Map<String, Filter>	cache		= new ConcurrentHashMap<>();
+	private final Set<Resource>			resources	= new LinkedHashSet<>();
+	private final Map<String, Predicate<Map<String, Object>>>	cache		= new ConcurrentHashMap<>();
 
 	public ResourcesRepository(Resource resource) {
 		add(resource);
@@ -43,29 +42,16 @@ public class ResourcesRepository extends BaseRepository {
 	public List<Capability> findProvider(Requirement requirement) {
 		String namespace = requirement.getNamespace();
 		return resources.stream()
-			.flatMap(resource -> resource.getCapabilities(namespace)
-				.stream())
-			.filter(capability -> {
-				if (!requirement.getNamespace()
-					.equals(capability.getNamespace()))
-					return false;
-
-				if (!ResourceUtils.isEffective(requirement, capability))
-					return false;
-
-				String filter = requirement.getDirectives()
-					.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-				if (filter == null)
-					return true;
-
-				try {
-					Filter f = cache.computeIfAbsent(filter, (k) -> new Filter(k));
-					return f.matchMap(capability.getAttributes());
-				} catch (Exception e) {
-					return false;
-				}
-			})
+			.flatMap(resource -> ResourceUtils.capabilityStream(resource, namespace))
+			.filter(ResourceUtils.matcher(requirement, this::filterPredicate))
 			.collect(toCapabilities());
+	}
+
+	private Predicate<Map<String, Object>> filterPredicate(String filterString) {
+		if (filterString == null) {
+			return m -> true;
+		}
+		return cache.computeIfAbsent(filterString, ResourceUtils::filterPredicate);
 	}
 
 	public void add(Resource resource) {

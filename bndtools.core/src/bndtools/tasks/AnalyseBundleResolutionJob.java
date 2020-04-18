@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -17,6 +18,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.io.IO;
 import bndtools.model.resolution.RequirementWrapper;
 
@@ -77,15 +79,16 @@ public class AnalyseBundleResolutionJob extends Job {
 					continue;
 
 				for (RequirementWrapper rw : rws) {
-					String filterStr = rw.requirement.getDirectives()
+					String filterDirective = rw.requirement.getDirectives()
 						.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-					if (filterStr != null) {
-						aQute.lib.filter.Filter filter = new aQute.lib.filter.Filter(filterStr);
-						for (Capability cand : candidates) {
-							if (filter.matchMap(cand.getAttributes())) {
-								rw.resolved = true;
-								break;
-							}
+					if (filterDirective == null) {
+						continue;
+					}
+					Predicate<Capability> predicate = ResourceUtils.filterMatcher(rw.requirement);
+					for (Capability cand : candidates) {
+						if (predicate.test(cand)) {
+							rw.resolved = true;
+							break;
 						}
 					}
 				}

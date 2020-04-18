@@ -108,7 +108,7 @@ public class ResolveProcessTest extends TestCase {
 			Collection<Resource> optionalResources = process.getOptionalResources();
 
 			assertEquals(1, requiredResources.size());
-			assertEquals(13, optionalResources.size());
+			assertEquals(12, optionalResources.size());
 
 			SortedSet<Resource> set = new TreeSet<>(new ResourceComparator());
 
@@ -122,8 +122,6 @@ public class ResolveProcessTest extends TestCase {
 				"org.osgi.service.cm");
 			checkOptionalResource(process, it.next(), "org.apache.felix.gogo.command", parseVersion("0.12.0"),
 				"org.osgi.service.log");
-			checkOptionalResource(process, it.next(), "org.apache.felix.gogo.runtime", parseVersion("0.10.0"),
-				"org.apache.felix.service.command");
 			checkOptionalResource(process, it.next(), "org.apache.felix.log", parseVersion("1.0.1"),
 				"org.osgi.service.log");
 			checkOptionalResource(process, it.next(), "org.apache.felix.metatype", parseVersion("1.0.4"),
