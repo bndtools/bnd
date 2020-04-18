@@ -8,17 +8,22 @@ import org.apache.maven.project.MavenProject;
 import org.bndtools.api.RunMode;
 import org.bndtools.api.RunProvider;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.build.Run;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.maven.lib.resolve.BndrunContainer;
+import biz.aQute.resolve.Bndrun;
 
 /*
  * This provider must be processed before the DefaultRunProvider because
@@ -32,14 +37,51 @@ public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 	private final MavenBndrunContainer mbc = new MavenBndrunContainer();
 
 	@Override
-	public Run create(IResource targetResource, RunMode mode) throws Exception {
+	public Bndrun create(IResource targetResource, RunMode mode) throws Exception {
 		if (!isMavenProject(targetResource)) {
 			return null;
 		}
 
+		final IMavenProjectFacade projectFacade = getMavenProjectFacade(targetResource);
+
+		Bndrun bndrun = create0(targetResource, projectFacade, mode);
+
+		Workspace workspace = bndrun.getWorkspace();
+
+		final MavenImplicitProjectRepository implicitRepo = new MavenImplicitProjectRepository( //
+			projectFacade, bndrun);
+
+		mavenProjectRegistry.addMavenProjectChangedListener( //
+			implicitRepo);
+		iWorkspace.addResourceChangeListener( //
+			implicitRepo, IResourceChangeEvent.POST_CHANGE);
+
+		workspace.addBasicPlugin(implicitRepo);
+
+		if ((mode == RunMode.LAUNCH) || (mode == RunMode.TEST)) {
+			workspace.addBasicPlugin(new MavenWorkspaceRepository());
+		}
+
+		workspace.refresh();
+
+		if (mode == RunMode.EDIT) {
+			new Job("Create implicit repo") {
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					implicitRepo.createRepo(projectFacade, monitor);
+					return Status.OK_STATUS;
+				}
+			}.schedule();
+		} else {
+			implicitRepo.createRepo(projectFacade, new NullProgressMonitor());
+		}
+
+		return bndrun;
+	}
+
+	private Bndrun create0(IResource targetResource, IMavenProjectFacade projectFacade, RunMode mode) throws Exception {
 		logger.info("Creating a Run for IResource {}", targetResource);
 
-		final IMavenProjectFacade projectFacade = getMavenProjectFacade(targetResource);
 		final MavenProject mavenProject = getMavenProject(projectFacade);
 		final IProgressMonitor monitor = new NullProgressMonitor();
 
