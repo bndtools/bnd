@@ -72,9 +72,9 @@ import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.exceptions.Exceptions;
+import biz.aQute.resolve.WorkspaceResourcesRepository;
 import bndtools.Plugin;
 import bndtools.central.Central;
-import bndtools.central.WorkspaceR5Repository;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.editor.common.UpDownButtonBarPart;
 import bndtools.editor.common.UpDownButtonBarPart.UpDownListener;
@@ -279,7 +279,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
 				}
 				image = repoImg;
 
-				if (repo instanceof WorkspaceR5Repository) {
+				if (repo instanceof WorkspaceResourcesRepository) {
 					image = projectImg;
 				}
 

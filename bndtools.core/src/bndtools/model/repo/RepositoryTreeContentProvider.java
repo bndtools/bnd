@@ -37,9 +37,9 @@ import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
 import aQute.bnd.version.Version;
+import biz.aQute.resolve.WorkspaceResourcesRepository;
 import bndtools.Plugin;
 import bndtools.central.Central;
-import bndtools.central.WorkspaceR5Repository;
 
 public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
@@ -264,7 +264,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 				result = searchR5Repository(repoPlugin, (Repository) repoPlugin);
 			} else if (repoPlugin instanceof WorkspaceRepository) {
 				try {
-					WorkspaceR5Repository workspaceRepo = Central.getWorkspaceR5Repository();
+					WorkspaceResourcesRepository workspaceRepo = Central.getWorkspaceResourcesRepository();
 					result = searchR5Repository(repoPlugin, workspaceRepo);
 				} catch (Exception e) {
 					logger.logError("Error querying workspace repository", e);

@@ -62,6 +62,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.progress.TaskManager;
 import aQute.lib.exceptions.Exceptions;
+import biz.aQute.resolve.WorkspaceResourcesRepository;
 import bndtools.central.RepositoriesViewRefresher.RefreshModel;
 import bndtools.preferences.BndPreferences;
 
@@ -73,7 +74,7 @@ public class Central implements IStartupParticipant {
 	private static final Deferred<Workspace>			workspaceQueue				= Processor.getPromiseFactory()
 		.deferred();
 
-	static WorkspaceR5Repository						r5Repository				= null;
+	static WorkspaceResourcesRepository					resourceRepository			= null;
 
 	private static Auxiliary							auxiliary;
 
@@ -181,14 +182,17 @@ public class Central implements IStartupParticipant {
 		return matches[0];
 	}
 
-	public synchronized static WorkspaceR5Repository getWorkspaceR5Repository() throws Exception {
-		if (r5Repository != null)
-			return r5Repository;
+	public synchronized static WorkspaceResourcesRepository getWorkspaceResourcesRepository() throws Exception {
+		if (resourceRepository == null) {
+			resourceRepository = new WorkspaceResourcesRepository(getWorkspace());
+			getWorkspace().addBasicPlugin(getWorkspaceResourcesRepository());
+		}
 
-		r5Repository = new WorkspaceR5Repository();
-		r5Repository.init();
+		return resourceRepository;
+	}
 
-		return r5Repository;
+	public synchronized static WorkspaceResourcesRepository refreshWorkspaceResourcesRepository() throws Exception {
+		return getWorkspaceResourcesRepository().refresh();
 	}
 
 	public synchronized static RepositoryPlugin getWorkspaceRepository() throws Exception {
@@ -247,7 +251,6 @@ public class Central implements IStartupParticipant {
 					ws.addBasicPlugin(new SWTClipboard());
 					ws.addBasicPlugin(new WorkspaceListener(ws));
 					ws.addBasicPlugin(getInstance().repoListenerTracker);
-					ws.addBasicPlugin(getWorkspaceR5Repository());
 					ws.addBasicPlugin(new JobProgress());
 
 					// Initialize projects in synchronized block
@@ -562,14 +565,6 @@ public class Central implements IStartupParticipant {
 
 	public void close() {
 		repositoriesViewRefresher.close();
-	}
-
-	public static void invalidateIndex() {
-		indexValid.set(false);
-	}
-
-	public static boolean needsIndexing() {
-		return indexValid.compareAndSet(false, true);
 	}
 
 	public static Project getProject(File projectDir) throws Exception {

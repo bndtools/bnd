@@ -1,6 +1,7 @@
 package biz.aQute.resolve;
 
 import java.io.File;
+import java.util.Collections;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -15,7 +16,25 @@ public class WorkspaceResourcesRepository extends ResourcesRepository implements
 
 	public static final String WORKSPACE_NAMESPACE = ResourceUtils.WORKSPACE_NAMESPACE;
 
+	private final Workspace		workspace;
+
 	public WorkspaceResourcesRepository(Workspace workspace) throws Exception {
+		this.workspace = workspace;
+		prepare();
+	}
+
+	public WorkspaceResourcesRepository refresh() throws Exception {
+		set(Collections.emptySet());
+		prepare();
+		return this;
+	}
+
+	@Override
+	public String toString() {
+		return "Workspace";
+	}
+
+	void prepare() throws Exception {
 		for (Project p : workspace.getAllProjects()) {
 			File[] files = p.getBuildFiles(false);
 			if (files != null) {
@@ -33,11 +52,6 @@ public class WorkspaceResourcesRepository extends ResourcesRepository implements
 				}
 			}
 		}
-	}
-
-	@Override
-	public String toString() {
-		return "Workspace";
 	}
 
 }

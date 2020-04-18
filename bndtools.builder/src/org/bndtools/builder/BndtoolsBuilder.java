@@ -247,8 +247,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 							myProject.getName());
 					}
 
-					Central.invalidateIndex();
-
 					File buildFiles[] = model.build();
 
 					if (buildFiles != null) {
