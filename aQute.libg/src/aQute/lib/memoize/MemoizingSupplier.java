@@ -5,34 +5,32 @@ import static java.util.Objects.requireNonNull;
 import java.util.function.Supplier;
 
 class MemoizingSupplier<T> implements Supplier<T> {
-	private volatile boolean		empty;
-	// @GuardedBy("empty")
-	private Supplier<? extends T>	delegate;
-	// @GuardedBy("empty")
-	private T						memoized;
+	private volatile boolean	delegate;
+	// @GuardedBy("delegate")
+	private Object				memoized;
 
-	MemoizingSupplier(Supplier<? extends T> delegate) {
-		this.delegate = requireNonNull(delegate);
-		// write empty _after_ write delegate
-		this.empty = true;
+	MemoizingSupplier(Supplier<? extends T> supplier) {
+		memoized = requireNonNull(supplier);
+		// write delegate _after_ write memoized
+		delegate = true;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public T get() {
-		// read empty _before_ read memoized
-		if (empty) {
+		// read delegate _before_ read memoized
+		if (delegate) {
 			// critical section: only one resolver at a time
 			synchronized (this) {
-				if (empty) {
-					T result = delegate.get();
+				if (delegate) {
+					T result = ((Supplier<? extends T>) memoized).get();
 					memoized = result;
-					delegate = null; // dereference for GC
-					// write empty _after_ write memoized
-					empty = false;
+					// write delegate _after_ write memoized
+					delegate = false;
 					return result;
 				}
 			}
 		}
-		return memoized;
+		return (T) memoized;
 	}
 }
