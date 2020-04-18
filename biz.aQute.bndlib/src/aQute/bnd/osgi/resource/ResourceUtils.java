@@ -3,6 +3,7 @@ package aQute.bnd.osgi.resource;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -21,9 +22,17 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
+import org.osgi.framework.Filter;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
@@ -51,7 +60,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.converter.Converter;
-import aQute.lib.filter.Filter;
+import aQute.lib.memoize.Memoize;
 import aQute.lib.strings.Strings;
 
 public class ResourceUtils {
@@ -171,7 +180,7 @@ public class ResourceUtils {
 		Version bundle_version();
 	}
 
-	private static Stream<Capability> capabilityStream(Resource resource, String namespace) {
+	public static Stream<Capability> capabilityStream(Resource resource, String namespace) {
 		return resource.getCapabilities(namespace)
 			.stream();
 	}
@@ -421,30 +430,79 @@ public class ResourceUtils {
 		return capabilityEffective.equals(requirementEffective);
 	}
 
+	public static Predicate<Map<String, Object>> filterPredicate(String filterString) {
+		if (filterString == null) {
+			return m -> true;
+		}
+		try {
+			Filter filter = FrameworkUtil.createFilter(filterString);
+			return filter::matches;
+		} catch (InvalidSyntaxException e) {
+			return m -> false;
+		}
+	}
+
 	public static boolean matches(Requirement requirement, Resource resource) {
 		return capabilityStream(resource, requirement.getNamespace())
-			.anyMatch(capability -> matches(requirement, capability));
+			.anyMatch(matcher(requirement));
 	}
 
 	public static boolean matches(Requirement requirement, Capability capability) {
-		if (!requirement.getNamespace()
-			.equals(capability.getNamespace()))
-			return false;
+		return matcher(requirement).test(capability);
+	}
 
-		if (!isEffective(requirement, capability))
-			return false;
+	public static Predicate<Capability> matcher(Requirement requirement) {
+		return matcher(requirement, ResourceUtils::filterPredicate);
+	}
 
-		String filter = requirement.getDirectives()
+	public static Predicate<Capability> matcher(Requirement requirement,
+		Function<String, Predicate<Map<String, Object>>> filter) {
+		Predicate<Capability> matcher = capability -> Objects.equals(requirement.getNamespace(),
+			capability.getNamespace()) && isEffective(requirement, capability);
+		return matcher.and(filterMatcher(requirement, filter));
+	}
+
+	// Pattern to find attr names in a filter string
+	private static final Pattern ATTR_NAME = Pattern.compile("\\(\\s*([^()=<>~\\s]+)\\s*[=<>~][^)]+\\)");
+
+	public static Predicate<Capability> filterMatcher(Requirement requirement) {
+		return filterMatcher(requirement, ResourceUtils::filterPredicate);
+	}
+
+	public static Predicate<Capability> filterMatcher(Requirement requirement,
+		Function<String, Predicate<Map<String, Object>>> filter) {
+		String filterDirective = requirement.getDirectives()
 			.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-		if (filter == null)
-			return true;
+		Supplier<Predicate<Map<String, Object>>> predicate = Memoize
+			.supplier(filter, filterDirective);
 
-		try {
-			Filter f = new Filter(filter);
-			return f.matchMap(capability.getAttributes());
-		} catch (Exception e) {
-			return false;
-		}
+		Predicate<Capability> matcher = capability -> {
+			if ((filterDirective != null) && !predicate.get()
+				.test(capability.getAttributes())) {
+				return false;
+			}
+			// Mandatory attribute matching (Core 3.7.8) for wiring namespaces
+			if (capability.getNamespace()
+				.startsWith("osgi.wiring.")) {
+				String mandatoryDirective = capability.getDirectives()
+					.get(AbstractWiringNamespace.CAPABILITY_MANDATORY_DIRECTIVE);
+				if (mandatoryDirective == null) {
+					return true;
+				}
+				if (filterDirective == null) {
+					return false;
+				}
+				Set<String> mandatory = Strings.splitAsStream(mandatoryDirective)
+					.collect(toSet());
+				for (Matcher m = ATTR_NAME.matcher(filterDirective); m.find();) {
+					String attr = m.group(1);
+					mandatory.remove(attr);
+				}
+				return mandatory.isEmpty();
+			}
+			return true;
+		};
+		return matcher;
 	}
 
 	public static String getEffective(Map<String, String> directives) {
@@ -497,7 +555,7 @@ public class ResourceUtils {
 	public static List<Capability> findProviders(Requirement requirement,
 		Collection<? extends Capability> capabilities) {
 		return capabilities.stream()
-			.filter(capability -> matches(requirement, capability))
+			.filter(matcher(requirement))
 			.collect(toList());
 	}
 
