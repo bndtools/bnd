@@ -49,7 +49,7 @@ public class ResourcesRepository extends BaseRepository {
 
 	private Predicate<Map<String, Object>> filterPredicate(String filterString) {
 		if (filterString == null) {
-			return m -> true;
+			return ResourceUtils.filterPredicate(null);
 		}
 		return cache.computeIfAbsent(filterString, ResourceUtils::filterPredicate);
 	}
