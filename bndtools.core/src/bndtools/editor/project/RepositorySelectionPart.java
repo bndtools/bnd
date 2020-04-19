@@ -74,7 +74,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.exceptions.Exceptions;
 import bndtools.Plugin;
 import bndtools.central.Central;
-import bndtools.central.WorkspaceR5Repository;
+import bndtools.central.EclipseWorkspaceRepository;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.editor.common.UpDownButtonBarPart;
 import bndtools.editor.common.UpDownButtonBarPart.UpDownListener;
@@ -279,7 +279,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
 				}
 				image = repoImg;
 
-				if (repo instanceof WorkspaceR5Repository) {
+				if (repo instanceof EclipseWorkspaceRepository) {
 					image = projectImg;
 				}
 

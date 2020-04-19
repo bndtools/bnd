@@ -17,6 +17,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,6 +63,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.progress.TaskManager;
 import aQute.lib.exceptions.Exceptions;
+import aQute.lib.memoize.Memoize;
 import bndtools.central.RepositoriesViewRefresher.RefreshModel;
 import bndtools.preferences.BndPreferences;
 
@@ -73,7 +75,8 @@ public class Central implements IStartupParticipant {
 	private static final Deferred<Workspace>			workspaceQueue				= Processor.getPromiseFactory()
 		.deferred();
 
-	static WorkspaceR5Repository						r5Repository				= null;
+	private static final Supplier<EclipseWorkspaceRepository>	eclipseWorkspaceRepository				= Memoize
+		.supplier(EclipseWorkspaceRepository::new);
 
 	private static Auxiliary							auxiliary;
 
@@ -181,14 +184,8 @@ public class Central implements IStartupParticipant {
 		return matches[0];
 	}
 
-	public synchronized static WorkspaceR5Repository getWorkspaceR5Repository() throws Exception {
-		if (r5Repository != null)
-			return r5Repository;
-
-		r5Repository = new WorkspaceR5Repository();
-		r5Repository.init();
-
-		return r5Repository;
+	public static EclipseWorkspaceRepository getEclipseWorkspaceRepository() {
+		return eclipseWorkspaceRepository.get();
 	}
 
 	public synchronized static RepositoryPlugin getWorkspaceRepository() throws Exception {
@@ -247,7 +244,7 @@ public class Central implements IStartupParticipant {
 					ws.addBasicPlugin(new SWTClipboard());
 					ws.addBasicPlugin(new WorkspaceListener(ws));
 					ws.addBasicPlugin(getInstance().repoListenerTracker);
-					ws.addBasicPlugin(getWorkspaceR5Repository());
+					ws.addBasicPlugin(getEclipseWorkspaceRepository());
 					ws.addBasicPlugin(new JobProgress());
 
 					// Initialize projects in synchronized block
