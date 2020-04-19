@@ -382,8 +382,8 @@ public class JarPrinter extends Processor {
 			Object key = entry.getKey();
 			Map<?, ?> clause = Create.copy((Map<?, ?>) entry.getValue());
 			clause.remove("uses:");
-			out.format("  %-38s %s\n", key.toString()
-				.trim(), clause.isEmpty() ? "" : clause.toString());
+			out.format("  %-38s %s\n", Processor.removeDuplicateMarker(key.toString()
+				.trim()), clause.isEmpty() ? "" : clause.toString());
 		}
 	}
 
