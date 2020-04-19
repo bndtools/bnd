@@ -200,13 +200,14 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
 		includedRepos = (tmp == null) ? null : new HashSet<>(tmp);
 		Workspace workspace = model.getWorkspace();
 
-		List<RepositoryPlugin> repos;
-		try {
-			repos = RepositoryUtils.listRepositories(workspace, true);
-		} catch (Exception e) {
-			repos = Collections.emptyList();
+		if (workspace == null) {
+			return Collections.emptyList();
 		}
-		return repos;
+		try {
+			return RepositoryUtils.listRepositories(workspace, true);
+		} catch (Exception e) {
+			return Collections.emptyList();
+		}
 	}
 
 	@Override
