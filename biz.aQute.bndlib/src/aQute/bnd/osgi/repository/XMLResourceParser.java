@@ -1,5 +1,22 @@
 package aQute.bnd.osgi.repository;
 
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_NAME;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_NAMESPACE;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_REFERRAL_DEPTH;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_REFERRAL_URL;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_REPOSITORY_INCREMENT;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_REPOSITORY_NAME;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_TYPE;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_VALUE;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.NS_URI;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_ATTRIBUTE;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_CAPABILITY;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_DIRECTIVE;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_REFERRAL;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_REPOSITORY;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_REQUIREMENT;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_RESOURCE;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +40,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.xml.XML;
 import aQute.libg.gzip.GZipUtils;
@@ -36,25 +54,6 @@ public class XMLResourceParser extends Processor {
 		inputFactory.setProperty(XMLInputFactory.IS_VALIDATING, false);
 	}
 
-	private static final String		NS_URI						= "http://www.osgi.org/xmlns/repository/v1.0.0";
-	private static final String		TAG_REPOSITORY				= "repository";
-	private static final String		TAG_REFERRAL				= "referral";
-	private static final String		TAG_RESOURCE				= "resource";
-	private static final String		TAG_CAPABILITY				= "capability";
-	private static final String		TAG_REQUIREMENT				= "requirement";
-	private static final String		TAG_ATTRIBUTE				= "attribute";
-	private static final String		TAG_DIRECTIVE				= "directive";
-
-	private static final String		ATTR_REFERRAL_URL			= "url";
-	private static final String		ATTR_REFERRAL_DEPTH			= "depth";
-
-	private static final String		ATTR_NAMESPACE				= "namespace";
-
-	private static final String		ATTR_REPOSITORY_NAME		= "name";
-	private static final String		ATTR_REPOSITORY_INCREMENT	= "increment";
-	private static final String		ATTR_NAME					= "name";
-	private static final String		ATTR_VALUE					= "value";
-	private static final String		ATTR_TYPE					= "type";
 
 	final private List<Resource>	resources					= new ArrayList<>();
 	final private XMLStreamReader	reader;
@@ -78,6 +77,12 @@ public class XMLResourceParser extends Processor {
 		}
 	}
 
+	public static List<Resource> getResources(File file, URI base) throws Exception {
+		try (XMLResourceParser parser = new XMLResourceParser(file, base)) {
+			return parser.parse();
+		}
+	}
+
 	public static List<Resource> getResources(InputStream in, URI base) throws Exception {
 		try (XMLResourceParser parser = new XMLResourceParser(in, "parse", base)) {
 			return parser.parse();
@@ -85,8 +90,7 @@ public class XMLResourceParser extends Processor {
 	}
 
 	public XMLResourceParser(URI url) throws Exception {
-		this(url.toURL()
-			.openStream(), url.toString(), url);
+		this(IO.stream(url.toURL()), url.toString(), url);
 	}
 
 	public XMLResourceParser(InputStream in, String what, URI uri) throws Exception {
@@ -108,7 +112,11 @@ public class XMLResourceParser extends Processor {
 	}
 
 	public XMLResourceParser(File location) throws Exception {
-		this(location.toURI());
+		this(location, location.toURI());
+	}
+
+	public XMLResourceParser(File location, URI url) throws Exception {
+		this(IO.stream(location), location.getAbsolutePath(), url);
 	}
 
 	@Override
@@ -305,7 +313,7 @@ public class XMLResourceParser extends Processor {
 		String attributeValue = reader.getAttributeValue(null, ATTR_VALUE);
 		String attributeType = reader.getAttributeValue(null, ATTR_TYPE);
 
-		if (isContent(capReqBuilder) && attributeName.equals("url")) {
+		if (isContent(capReqBuilder) && ContentNamespace.CAPABILITY_URL_ATTRIBUTE.equals(attributeName)) {
 			attributeValue = url.resolve(attributeValue)
 				.toString();
 		}

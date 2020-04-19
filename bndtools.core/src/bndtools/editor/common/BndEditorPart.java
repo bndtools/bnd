@@ -61,6 +61,7 @@ public abstract class BndEditorPart extends SectionPart implements PropertyChang
 			refreshFromModel();
 		} else {
 			Central.onWorkspaceAsync(workspace -> {
+				model.setWorkspace(workspace);
 				ScrolledForm form = getManagedForm().getForm();
 				if (form.isDisposed())
 					return;
