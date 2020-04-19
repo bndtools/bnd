@@ -2,6 +2,7 @@ package aQute.lib.memoize;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -16,6 +17,10 @@ public class Memoize {
 			return supplier;
 		}
 		return new MemoizingSupplier<>(delegate);
+	}
+
+	public static <T> Supplier<T> supplier(Supplier<? extends T> delegate, long duration, TimeUnit unit) {
+		return new TimeboundMemoizingSupplier<>(delegate, duration, unit);
 	}
 
 	public static <T, R> Supplier<R> supplier(Function<? super T, ? extends R> function, T argument) {
