@@ -40,6 +40,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.xml.XML;
 import aQute.libg.gzip.GZipUtils;
@@ -76,6 +77,12 @@ public class XMLResourceParser extends Processor {
 		}
 	}
 
+	public static List<Resource> getResources(File file, URI base) throws Exception {
+		try (XMLResourceParser parser = new XMLResourceParser(file, base)) {
+			return parser.parse();
+		}
+	}
+
 	public static List<Resource> getResources(InputStream in, URI base) throws Exception {
 		try (XMLResourceParser parser = new XMLResourceParser(in, "parse", base)) {
 			return parser.parse();
@@ -83,8 +90,7 @@ public class XMLResourceParser extends Processor {
 	}
 
 	public XMLResourceParser(URI url) throws Exception {
-		this(url.toURL()
-			.openStream(), url.toString(), url);
+		this(IO.stream(url.toURL()), url.toString(), url);
 	}
 
 	public XMLResourceParser(InputStream in, String what, URI uri) throws Exception {
@@ -106,7 +112,11 @@ public class XMLResourceParser extends Processor {
 	}
 
 	public XMLResourceParser(File location) throws Exception {
-		this(location.toURI());
+		this(location, location.toURI());
+	}
+
+	public XMLResourceParser(File location, URI url) throws Exception {
+		this(IO.stream(location), location.getAbsolutePath(), url);
 	}
 
 	@Override
