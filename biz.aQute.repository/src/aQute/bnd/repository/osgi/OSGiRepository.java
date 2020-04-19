@@ -346,7 +346,7 @@ public class OSGiRepository extends BaseRepository
 					int polltime = config.poll_time(DEFAULT_POLL_TIME);
 					if (polltime > 0) {
 						poller = Processor.getScheduledExecutor()
-							.scheduleAtFixedRate(this::pollTask, polltime * 4, polltime, TimeUnit.SECONDS);
+							.scheduleAtFixedRate(this::pollTask, polltime * 4L, polltime, TimeUnit.SECONDS);
 					}
 				}
 			}

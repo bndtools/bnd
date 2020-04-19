@@ -115,7 +115,7 @@ public class JarIndex extends Hierarchy {
 				if (!element.isDirectory()) {
 					Object payload = f == null ? null
 						: getPayload(f, getNodeInfo(element, () -> zipFile.getInputStream(element)));
-					addFile(map, element.getName(), payload);
+					addFile(map, ZipUtil.cleanPath(element.getName()), payload);
 				}
 			}
 			return map;
@@ -138,7 +138,7 @@ public class JarIndex extends Hierarchy {
 			for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
 				if (!entry.isDirectory()) {
 					Object payload = f == null ? null : f.apply(getNodeInfo(entry, () -> jin));
-					addFile(map, entry.getName(), payload);
+					addFile(map, ZipUtil.cleanPath(entry.getName()), payload);
 				}
 			}
 		}
@@ -152,11 +152,13 @@ public class JarIndex extends Hierarchy {
 		return o;
 	}
 
+	private static final Pattern PATH_SPLITTER = Pattern.compile("/");
+
 	private static void addFile(Map<String, Object> map, String path, Object payload) {
 		if (path.isEmpty())
 			return;
 
-		String parts[] = path.split("/");
+		String parts[] = PATH_SPLITTER.split(path);
 
 		addFile(map, parts, 0, path, payload);
 	}
