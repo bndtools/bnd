@@ -1,5 +1,22 @@
 package aQute.bnd.osgi.repository;
 
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_NAME;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_NAMESPACE;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_REFERRAL_DEPTH;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_REFERRAL_URL;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_REPOSITORY_INCREMENT;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_REPOSITORY_NAME;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_TYPE;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_VALUE;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.NS_URI;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_ATTRIBUTE;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_CAPABILITY;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_DIRECTIVE;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_REFERRAL;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_REPOSITORY;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_REQUIREMENT;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_RESOURCE;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,25 +53,6 @@ public class XMLResourceParser extends Processor {
 		inputFactory.setProperty(XMLInputFactory.IS_VALIDATING, false);
 	}
 
-	private static final String		NS_URI						= "http://www.osgi.org/xmlns/repository/v1.0.0";
-	private static final String		TAG_REPOSITORY				= "repository";
-	private static final String		TAG_REFERRAL				= "referral";
-	private static final String		TAG_RESOURCE				= "resource";
-	private static final String		TAG_CAPABILITY				= "capability";
-	private static final String		TAG_REQUIREMENT				= "requirement";
-	private static final String		TAG_ATTRIBUTE				= "attribute";
-	private static final String		TAG_DIRECTIVE				= "directive";
-
-	private static final String		ATTR_REFERRAL_URL			= "url";
-	private static final String		ATTR_REFERRAL_DEPTH			= "depth";
-
-	private static final String		ATTR_NAMESPACE				= "namespace";
-
-	private static final String		ATTR_REPOSITORY_NAME		= "name";
-	private static final String		ATTR_REPOSITORY_INCREMENT	= "increment";
-	private static final String		ATTR_NAME					= "name";
-	private static final String		ATTR_VALUE					= "value";
-	private static final String		ATTR_TYPE					= "type";
 
 	final private List<Resource>	resources					= new ArrayList<>();
 	final private XMLStreamReader	reader;
@@ -305,7 +303,7 @@ public class XMLResourceParser extends Processor {
 		String attributeValue = reader.getAttributeValue(null, ATTR_VALUE);
 		String attributeType = reader.getAttributeValue(null, ATTR_TYPE);
 
-		if (isContent(capReqBuilder) && attributeName.equals("url")) {
+		if (isContent(capReqBuilder) && ContentNamespace.CAPABILITY_URL_ATTRIBUTE.equals(attributeName)) {
 			attributeValue = url.resolve(attributeValue)
 				.toString();
 		}

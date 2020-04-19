@@ -1,5 +1,22 @@
 package aQute.bnd.osgi.repository;
 
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_NAME;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_NAMESPACE;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_REFERRAL_DEPTH;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_REFERRAL_URL;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_REPOSITORY_INCREMENT;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_REPOSITORY_NAME;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_TYPE;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.ATTR_VALUE;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.NS_URI;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_ATTRIBUTE;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_CAPABILITY;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_DIRECTIVE;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_REFERRAL;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_REPOSITORY;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_REQUIREMENT;
+import static aQute.bnd.osgi.repository.XMLResourceConstants.TAG_RESOURCE;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -35,13 +52,13 @@ import aQute.lib.tag.Tag;
  */
 public class XMLResourceGenerator {
 
-	private Tag				repository	= new Tag("repository");
+	private Tag				repository	= new Tag(TAG_REPOSITORY);
 	private Set<Resource>	visited		= new HashSet<>();
 	private int				indent		= 0;
 	private boolean			compress	= false;
 
 	public XMLResourceGenerator() {
-		repository.addAttribute("xmlns", "http://www.osgi.org/xmlns/repository/v1.0.0");
+		repository.addAttribute("xmlns", NS_URI);
 	}
 
 	public void save(File location) throws IOException {
@@ -84,8 +101,8 @@ public class XMLResourceGenerator {
 	 * @return this
 	 */
 	public XMLResourceGenerator name(String name) {
-		repository.addAttribute("name", name);
-		repository.addAttribute("increment", System.currentTimeMillis());
+		repository.addAttribute(ATTR_REPOSITORY_NAME, name);
+		repository.addAttribute(ATTR_REPOSITORY_INCREMENT, System.currentTimeMillis());
 		return this;
 	}
 
@@ -99,15 +116,15 @@ public class XMLResourceGenerator {
 	 * @return this
 	 */
 	public XMLResourceGenerator increment(long increment) {
-		repository.addAttribute("increment", increment);
+		repository.addAttribute(ATTR_REPOSITORY_INCREMENT, increment);
 		return this;
 	}
 
 	public XMLResourceGenerator referral(URI reference, int depth) {
-		Tag referall = new Tag(repository, "referral");
-		referall.addAttribute("url", reference);
+		Tag referall = new Tag(repository, TAG_REFERRAL);
+		referall.addAttribute(ATTR_REFERRAL_URL, reference);
 		if (depth > 0)
-			referall.addAttribute("depth", depth);
+			referall.addAttribute(ATTR_REFERRAL_DEPTH, depth);
 		return this;
 	}
 
@@ -131,19 +148,19 @@ public class XMLResourceGenerator {
 		if (!visited.contains(resource)) {
 			visited.add(resource);
 
-			Tag r = new Tag(repository, "resource");
+			Tag r = new Tag(repository, TAG_RESOURCE);
 			List<Capability> caps = resource.getCapabilities(null);
 			caps.forEach(cap -> {
-				Tag cr = new Tag(r, "capability");
-				cr.addAttribute("namespace", cap.getNamespace());
+				Tag cr = new Tag(r, TAG_CAPABILITY);
+				cr.addAttribute(ATTR_NAMESPACE, cap.getNamespace());
 				directives(cr, cap.getDirectives());
 				attributes(cr, cap.getAttributes());
 			});
 
 			List<Requirement> reqs = resource.getRequirements(null);
 			reqs.forEach(req -> {
-				Tag cr = new Tag(r, "requirement");
-				cr.addAttribute("namespace", req.getNamespace());
+				Tag cr = new Tag(r, TAG_REQUIREMENT);
+				cr.addAttribute(ATTR_NAMESPACE, req.getNamespace());
 				directives(cr, req.getDirectives());
 				attributes(cr, req.getAttributes());
 			});
@@ -154,9 +171,9 @@ public class XMLResourceGenerator {
 	private void directives(Tag cr, Map<String, String> directives) {
 		MapStream.of(directives)
 			.forEach((key, value) -> {
-				Tag d = new Tag(cr, "directive");
-				d.addAttribute("name", key);
-				d.addAttribute("value", value);
+				Tag d = new Tag(cr, TAG_DIRECTIVE);
+				d.addAttribute(ATTR_NAME, key);
+				d.addAttribute(ATTR_VALUE, value);
 			});
 	}
 
@@ -166,11 +183,11 @@ public class XMLResourceGenerator {
 			.mapValue(TypedAttribute::getTypedAttribute)
 			.filterValue(Objects::nonNull)
 			.forEach((key, ta) -> {
-				Tag d = new Tag(cr, "attribute");
-				d.addAttribute("name", key);
-				d.addAttribute("value", ta.value);
+				Tag d = new Tag(cr, TAG_ATTRIBUTE);
+				d.addAttribute(ATTR_NAME, key);
+				d.addAttribute(ATTR_VALUE, ta.value);
 				if (ta.type != null)
-					d.addAttribute("type", ta.type);
+					d.addAttribute(ATTR_TYPE, ta.type);
 			});
 	}
 
