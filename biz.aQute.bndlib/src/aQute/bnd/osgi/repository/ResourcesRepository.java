@@ -44,7 +44,7 @@ public class ResourcesRepository extends BaseRepository {
 		return resources.stream()
 			.flatMap(resource -> ResourceUtils.capabilityStream(resource, namespace))
 			.filter(ResourceUtils.matcher(requirement, this::filterPredicate))
-			.collect(toCapabilities());
+			.collect(ResourceUtils.toCapabilities());
 	}
 
 	private Predicate<Map<String, Object>> filterPredicate(String filterString) {
@@ -74,13 +74,7 @@ public class ResourcesRepository extends BaseRepository {
 	}
 
 	public static Collector<Capability, List<Capability>, List<Capability>> toCapabilities() {
-		return Collector.of(ArrayList<Capability>::new, ResourcesRepository::accumulator, ResourcesRepository::merger);
-	}
-
-	private static <E, C extends Collection<E>> void accumulator(C c, E e) {
-		if (!c.contains(e)) {
-			c.add(e);
-		}
+		return ResourceUtils.toCapabilities();
 	}
 
 	private static <E, C extends Collection<E>> C merger(C t, C u) {

@@ -1,6 +1,7 @@
 package aQute.bnd.osgi.resource;
 
 import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -12,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -58,7 +60,6 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
-import aQute.lib.collections.MultiMap;
 import aQute.lib.converter.Converter;
 import aQute.lib.memoize.Memoize;
 import aQute.lib.strings.Strings;
@@ -130,7 +131,7 @@ public class ResourceUtils {
 			fragment(IdentityNamespace.TYPE_FRAGMENT),
 			unknown(IdentityNamespace.TYPE_UNKNOWN);
 
-			private String s;
+			private final String s;
 
 			private Type(String s) {
 				this.s = s;
@@ -202,7 +203,7 @@ public class ResourceUtils {
 
 	public static List<ContentCapability> getContentCapabilities(Resource resource) {
 		return capabilityStream(resource, ContentNamespace.CONTENT_NAMESPACE, ContentCapability.class)
-			.collect(toList());
+			.collect(toCapabilities());
 	}
 
 	public static IdentityCapability getIdentityCapability(Resource resource) {
@@ -383,13 +384,8 @@ public class ResourceUtils {
 	public static Map<Resource, List<Capability>> getIndexedByResource(Collection<? extends Capability> providers) {
 		if (providers == null || providers.isEmpty())
 			return Collections.emptyMap();
-
-		MultiMap<Resource, Capability> map = new MultiMap<>();
-
-		providers.stream()
-			.forEach(c -> map.add(c.getResource(), c));
-
-		return map;
+		return providers.stream()
+			.collect(groupingBy(Capability::getResource, toCapabilities()));
 	}
 
 	private static Set<Resource> getResources(Stream<? extends Capability> providers) {
@@ -556,7 +552,7 @@ public class ResourceUtils {
 		Collection<? extends Capability> capabilities) {
 		return capabilities.stream()
 			.filter(matcher(requirement))
-			.collect(toList());
+			.collect(toCapabilities());
 	}
 
 	public static boolean isFragment(Resource resource) {
@@ -692,4 +688,19 @@ public class ResourceUtils {
 		return Constants.IDENTITY_INITIAL_RESOURCE.equals(osgi_identity);
 	}
 
+	public static <C extends Capability> Collector<C, List<C>, List<C>> toCapabilities() {
+		return Collector.of(ArrayList<C>::new, ResourceUtils::accumulator, ResourceUtils::merger);
+	}
+
+	private static <E, C extends Collection<E>> void accumulator(C c, E e) {
+		if (!c.contains(e)) {
+			c.add(e);
+		}
+	}
+
+	private static <E, C extends Collection<E>> C merger(C t, C u) {
+		u.removeAll(t);
+		t.addAll(u);
+		return t;
+	}
 }
