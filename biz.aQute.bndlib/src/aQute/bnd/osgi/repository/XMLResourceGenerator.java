@@ -24,6 +24,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,6 +38,7 @@ import java.util.zip.GZIPOutputStream;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+import org.osgi.service.repository.ContentNamespace;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
@@ -56,6 +58,7 @@ public class XMLResourceGenerator {
 	private Set<Resource>	visited		= new HashSet<>();
 	private int				indent		= 0;
 	private boolean			compress	= false;
+	private URI				base;
 
 	public XMLResourceGenerator() {
 		repository.addAttribute("xmlns", NS_URI);
@@ -178,17 +181,39 @@ public class XMLResourceGenerator {
 	}
 
 	private void attributes(Tag cr, Map<String, Object> attributes) {
+		boolean isContent = isContent(cr);
 		MapStream.of(attributes)
 			.filterValue(Objects::nonNull)
 			.mapValue(TypedAttribute::getTypedAttribute)
 			.filterValue(Objects::nonNull)
 			.forEach((key, ta) -> {
+				String value = (isContent && ContentNamespace.CAPABILITY_URL_ATTRIBUTE.equals(key))
+					? relativize(ta.value)
+					: ta.value;
+
 				Tag d = new Tag(cr, TAG_ATTRIBUTE);
 				d.addAttribute(ATTR_NAME, key);
-				d.addAttribute(ATTR_VALUE, ta.value);
+				d.addAttribute(ATTR_VALUE, value);
 				if (ta.type != null)
 					d.addAttribute(ATTR_TYPE, ta.type);
 			});
+	}
+
+	private boolean isContent(Tag cr) {
+		return ContentNamespace.CONTENT_NAMESPACE.equals(cr.getAttribute(ATTR_NAMESPACE));
+	}
+
+	private String relativize(String value) {
+		if (base == null) {
+			return value;
+		}
+		try {
+			URI uri = new URI(value);
+			return base.relativize(uri)
+				.toString();
+		} catch (URISyntaxException e) {
+			return value;
+		}
 	}
 
 	public XMLResourceGenerator indent(int n) {
@@ -198,6 +223,14 @@ public class XMLResourceGenerator {
 
 	public XMLResourceGenerator compress() {
 		this.compress = true;
+		return this;
+	}
+
+	/**
+	 * @param base the base URI from which the index urls are relative
+	 */
+	public XMLResourceGenerator base(URI base) {
+		this.base = base;
 		return this;
 	}
 }
