@@ -14,6 +14,7 @@ import java.net.Proxy;
 import java.net.Proxy.Type;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.cert.X509Certificate;
@@ -49,6 +50,7 @@ import aQute.lib.mavenpasswordobfuscator.MavenPasswordObfuscator;
 import aQute.lib.strings.Strings;
 import aQute.lib.xpath.XPathParser;
 import aQute.libg.glob.Glob;
+import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter.SetLocation;
 
 public class ConnectionSettings {
@@ -208,9 +210,34 @@ public class ConnectionSettings {
 
 			if (server.id == null)
 				server.id = "*";
-
+			else
+				server.id = normalize(server.id);
 			add(server);
 		}
+	}
+
+	private static String normalize(String id) {
+		try {
+			URI url = new URI(id);
+			String scheme = url.getScheme()
+				.toLowerCase();
+
+			StringBuilder address = new StringBuilder();
+			address.append(scheme)
+				.append("://")
+				.append(url.getHost());
+
+			int defaultPort = URIUtil.getDefaultPort(scheme);
+			if (defaultPort != -1) {
+				if (url.getPort() > 0 && url.getPort() != defaultPort)
+					address.append(":")
+						.append(url.getPort());
+			}
+			return address.toString();
+		} catch (Exception e) {
+			// ignore
+		}
+		return id;
 	}
 
 	private boolean isPrivateKey(ServerDTO server) {
@@ -279,19 +306,7 @@ public class ConnectionSettings {
 
 		@Override
 		public boolean matches(URL url) {
-			String scheme = url.getProtocol()
-				.toLowerCase();
-
-			StringBuilder address = new StringBuilder();
-			address.append(scheme)
-				.append("://")
-				.append(url.getHost());
-
-			if (url.getPort() > 0 && url.getPort() != url.getDefaultPort())
-				address.append(":")
-					.append(url.getPort());
-
-			return match.matcher(address)
+			return match.matcher(normalize(url.toString()))
 				.matches();
 		}
 

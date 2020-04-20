@@ -136,4 +136,16 @@ public final class URIUtil {
 		}
 	}
 
+	public static int getDefaultPort(String scheme) {
+		switch(scheme) {
+			case "http" :
+				return 80;
+			case "https" :
+				return 443;
+			case "ftp" :
+				return 20;
+		}
+		return -1;
+	}
+
 }
