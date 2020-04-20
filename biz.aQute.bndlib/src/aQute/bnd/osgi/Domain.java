@@ -27,11 +27,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
@@ -301,10 +302,7 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public void setSources(boolean b) {
-		if (b)
-			set(SOURCES, "true");
-		else
-			set(SOURCES, "false");
+		set(SOURCES, Boolean.toString(b));
 	}
 
 	public boolean isSources() {
@@ -334,8 +332,7 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public void setBundleVersion(String version) {
-		Version v = new Version(version);
-		set(BUNDLE_VERSION, v.toString());
+		setBundleVersion(new Version(version));
 	}
 
 	public void setBundleVersion(Version version) {
@@ -343,7 +340,7 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public void setFailOk(boolean b) {
-		set(FAIL_OK, b + "");
+		set(FAIL_OK, Boolean.toString(b));
 	}
 
 	public void setRunfw(String runfw) {
@@ -453,7 +450,7 @@ public abstract class Domain implements Iterable<String> {
 
 	public static Domain domain(byte[] data) {
 		try (JarInputStream jin = new JarInputStream(new ByteBufferInputStream(data))) {
-			return Domain.domain(jin);
+			return domain(jin);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -463,8 +460,7 @@ public abstract class Domain implements Iterable<String> {
 		Manifest m = jin.getManifest();
 		if (m != null) {
 			Domain domain = domain(m);
-			String path = domain.get(Constants.BUNDLE_LOCALIZATION,
-				org.osgi.framework.Constants.BUNDLE_LOCALIZATION_DEFAULT_BASENAME) + ".properties";
+			String path = domain.getLocalization();
 			for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
 				if (entry.isDirectory()) {
 					continue;
@@ -511,21 +507,26 @@ public abstract class Domain implements Iterable<String> {
 		}
 
 		// default & last. Assume JAR
-		try (JarInputStream jin = new JarInputStream(IO.stream(file))) {
-			domain(jin);
-		}
-
-		// BUT WAIT! Maybe it's just a zip file (bad jar, bad jar...)
-
-		try (ZipFile zf = new ZipFile(file)) {
-			ZipEntry entry = zf.getEntry("META-INF/MANIFEST.MF");
-			if (entry == null)
-				return null;
-			Manifest m = new Manifest(zf.getInputStream(entry));
-			return domain(m);
+		try (JarFile jf = new JarFile(file, false)) {
+			Manifest m = jf.getManifest();
+			if (m != null) {
+				Domain domain = domain(m);
+				JarEntry entry = jf.getJarEntry(domain.getLocalization());
+				if (entry != null) {
+					domain.translation.load(jf.getInputStream(entry));
+				}
+				return domain;
+			}
 		} catch (ZipException e) {
-			return null;
+			return null; // maybe it was not a zip file
 		}
+
+		return null;
+	}
+
+	private String getLocalization() {
+		return get(Constants.BUNDLE_LOCALIZATION, org.osgi.framework.Constants.BUNDLE_LOCALIZATION_DEFAULT_BASENAME)
+			.concat(".properties");
 	}
 
 	public String getBundleName() {
