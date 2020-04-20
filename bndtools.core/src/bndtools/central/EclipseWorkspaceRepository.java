@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.eclipse.core.resources.IProject;
@@ -30,14 +29,14 @@ public class EclipseWorkspaceRepository extends BaseRepository implements Worksp
 	private static final String							NAME			= "Workspace";
 	public static final String							INDEX_FILENAME	= ".index";
 	private final Map<IProject, Collection<Resource>>	repositories;
-	private final Supplier<ResourcesRepository>			repository;
+	private volatile Supplier<ResourcesRepository>		repository;
 
 	/**
 	 * Can only be instantiated within the package.
 	 */
 	EclipseWorkspaceRepository() {
 		repositories = new ConcurrentHashMap<>();
-		repository = Memoize.supplier(this::aggregate, 500, TimeUnit.MILLISECONDS);
+		repository = Memoize.supplier(this::aggregate);
 		Central.onWorkspace(this::setupProjects);
 	}
 
@@ -74,6 +73,7 @@ public class EclipseWorkspaceRepository extends BaseRepository implements Worksp
 
 	public void update(IProject project, Collection<Resource> resources) {
 		repositories.put(project, resources);
+		repository = Memoize.supplier(this::aggregate);
 	}
 
 	@Override
