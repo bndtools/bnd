@@ -101,7 +101,7 @@ The purpose of the proxy definitions is to define a communication proxy. We supp
 In maven, the servers are identified by an _id_; when you define a repository you tell which id to use. In bnd this works 
 slightly different. Instead of using the id we use the id in the settings as a _glob_ expression on the protocol, host name, 
 and port number.  The glob expression must match the scheme, the host and the port if the port is not the default port. 
-To match the url `https://maven2-repository.dev.java.net/`, the server component could look like:
+To match the url `https://maven2-repository.dev.java.net/`, the server component could look like (pay attention to the missing trailing slash):
 
 	<server>
 		<id>https://*java.net</id>
