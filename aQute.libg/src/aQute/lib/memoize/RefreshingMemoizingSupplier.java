@@ -5,17 +5,17 @@ import static java.util.Objects.requireNonNull;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-class TimeboundMemoizingSupplier<T> implements Supplier<T> {
+class RefreshingMemoizingSupplier<T> implements Supplier<T> {
 	private final Supplier<? extends T>	supplier;
-	private final long					duration;
+	private final long					time_to_live;
 	private volatile long				timebound;
 	// @GuardedBy("timebound")
 	private T							memoized;
 
-	TimeboundMemoizingSupplier(Supplier<? extends T> supplier, long duration, TimeUnit unit) {
+	RefreshingMemoizingSupplier(Supplier<? extends T> supplier, long time_to_live, TimeUnit unit) {
 		this.supplier = requireNonNull(supplier);
-		this.duration = requireNonNull(unit).toNanos((duration < 0L) ? 0L : duration);
-		this.timebound = System.nanoTime(); // mark expired
+		this.time_to_live = requireNonNull(unit).toNanos((time_to_live < 0L) ? 0L : time_to_live);
+		this.timebound = System.nanoTime(); // mark ttl expired
 	}
 
 	@Override
@@ -29,7 +29,7 @@ class TimeboundMemoizingSupplier<T> implements Supplier<T> {
 					T result = supplier.get();
 					memoized = result;
 					// write timebound _after_ write memoized
-					timebound = System.nanoTime() + duration;
+					timebound = System.nanoTime() + time_to_live;
 					return result;
 				}
 			}
