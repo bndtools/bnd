@@ -34,8 +34,8 @@ In a bndrun file in the same directory we can now use this `pom.xml` file as our
     -standalone: true
     -plugin.enroute-distro = \
         aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
-            snapshotUrls=https://oss.sonatype.org/content/repositories/osgi/; \
-            releaseUrls=https://repo.maven.apache.org/maven2/; \
+            snapshotUrl=https://oss.sonatype.org/content/repositories/osgi/; \
+            releaseUrl=https://repo.maven.apache.org/maven2/; \
             pom=${.}/pom.xml; \
             name=enRouteDistroPom
 
@@ -48,7 +48,7 @@ Maven Central supports a [searching facility](http://blog.sonatype.com/2011/06/y
     -standalone: true
     -plugin.query = \
         aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
-            releaseUrls=https://repo.maven.apache.org/maven2; \
+            releaseUrl=https://repo.maven.apache.org/maven2; \
             query='q=g:%22biz.aQute.bnd%22'; \
             name=Query
 
@@ -58,8 +58,8 @@ The query must return a JSON response.
 
 | Property         | Type  | Default | Description |
 |------------------|-------|---------|-------------|
-| `releaseUrls`    | `URI...` |      | Comma separated list of URLs to the repositories of released artifacts.| 
-| `snapshotUrls`   | `URI...` |      | Comma separated list of URLs to the repositories of snapshot artifacts.|
+| `releaseUrl`    | `URI...` |      | Comma separated list of URLs to the repositories of released artifacts.| 
+| `snapshotUrl`   | `URI...` |      | Comma separated list of URLs to the repositories of snapshot artifacts.|
 |                  |       |         | If this is not specified, it falls back to the release repository or just `local` if that is also not specified.|
 | `local`          | `PATH`| `~/.m2/repository` | The file path to the local Maven repository.  |
 |                  |       |                    | If specified, it should use forward slashes. If the directory does not exist, the plugin will attempt to create it.|
@@ -107,7 +107,7 @@ The repository view in the IDE will show detailed information when you hover the
 * The repository does not use any Maven code to parse the POMs to keep the dependencies to bnd low. It attempts to strictly follow the rules prescribed for POMs concerning properties, inheritance, and ordering. However, there are a number of issues with this approach. 
     * bnd attempts to follow the rules, maven sometimes relaxes its own and other specification rules so you could run into errors where POMs are wrong but still accepted by Maven.
     * It is possible to add dependencies via a plugin. This is not supported for what should be obvious reasons.
-* The parser ignores repositories in POMs and restricts the repositories to the ones listes in the `releaseUrls` and `snapshotUrls` configuration parameters. This is for security reasons.
-* The parser ignores any restrictions on dependencies beause the intention of these restrictions is to handle unicity of the class path. The primary purpose of the Bnd Pom Repository is to be used in assembling. Since this is not an issue for the resolver we ignore this. You can always override this with the `-runblacklist` instruction.
+* The parser ignores repositories in POMs and restricts the repositories to the ones listes in the `releaseUrl` and `snapshotUrl` configuration parameters. This is for security reasons.
+* The parser ignores any restrictions on dependencies because the intention of these restrictions is to handle unicity of the class path. The primary purpose of the Bnd Pom Repository is to be used in assembling. Since this is not an issue for the resolver we ignore this. You can always override this with the `-runblacklist` instruction.
 
 [-connection-settings]: /instructions/connection-settings
