@@ -11,6 +11,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,6 +141,62 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	public void testRepoIndexFileRefreshOnReload() throws Exception {
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("revision", "org.apache.aries.blueprint:org.apache.aries.blueprint.cm:1.0.8");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("transitive", "false");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			File file = bpr.get("org.apache.aries.blueprint.cm", new Version("1.0.8"), Collections.emptyMap());
+			assertNotNull(file);
+			assertTrue(file.exists());
+		}
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("revision", "org.apache.aries.blueprint:org.apache.aries.blueprint.cm:1.0.7");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("transitive", "false");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			File file = bpr.get("org.apache.aries.blueprint.cm", new Version("1.0.7"), Collections.emptyMap());
+			assertNotNull(file);
+			assertTrue(file.exists());
+		}
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("revision", "org.apache.aries.blueprint:org.apache.aries.blueprint.cm:1.0.8");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("transitive", "false");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			File file = bpr.get("org.apache.aries.blueprint.cm", new Version("1.0.8"), Collections.emptyMap());
+			assertNotNull(file);
+			assertTrue(file.exists());
+			file = bpr.get("org.apache.aries.blueprint.cm", new Version("1.0.7"), Collections.emptyMap());
+			assertNull(file);
+		}
+	}
+
 	public void testWithSources() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -152,6 +209,7 @@ public class PomRepositoryTest extends TestCase {
 			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
+			bpr.list(null);
 
 			File file = bpr.get("slf4j.api", new Version("1.7.5"), null);
 			assertNotNull(file);
