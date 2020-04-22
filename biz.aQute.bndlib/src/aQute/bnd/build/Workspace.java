@@ -91,6 +91,7 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.Iterables;
 import aQute.lib.deployer.FileRepo;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
@@ -320,13 +321,18 @@ public class Workspace extends Processor {
 	}
 
 	public Project getProjectFromFile(File projectDir) {
-		projectDir = projectDir.getAbsoluteFile();
-		assert projectDir.isDirectory();
+		try {
+			projectDir = projectDir.getCanonicalFile();
+			assert projectDir.isDirectory();
 
-		if (getBase().equals(projectDir.getParentFile())) {
-			return getProject(projectDir.getName());
+			if (getBase().getCanonicalFile()
+				.equals(projectDir.getParentFile())) {
+				return getProject(projectDir.getName());
+			}
+			return null;
+		} catch (IOException e) {
+			throw Exceptions.duck(e);
 		}
-		return null;
 	}
 
 	public Project getProject(String bsn) {
