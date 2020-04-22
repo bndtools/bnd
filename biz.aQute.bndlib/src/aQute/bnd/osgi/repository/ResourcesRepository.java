@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
-import java.util.stream.Stream;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -41,35 +40,18 @@ public class ResourcesRepository extends BaseRepository {
 	}
 
 	public List<Capability> findProvider(Requirement requirement) {
-
 		String namespace = requirement.getNamespace();
-		String filter = requirement.getDirectives()
-			.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-
-		Stream<Capability> capabilities = getCapabilitiesAsStream(namespace);
-		if ( filter == null)
-			return capabilities.collect(Collectors.toList());
-
-		Filter f = cache.computeIfAbsent(filter, (k) -> new Filter(k));
-
-		return capabilities
-			.filter(capability -> {
-				if (!ResourceUtils.isEffective(requirement, capability))
-					return false;
-
-				try {
-					return f.matchMap(capability.getAttributes());
-				} catch (Exception e) {
-					return false;
-				}
-			})
-			.collect(toCapabilities());
+		return resources.stream()
+			.flatMap(resource -> ResourceUtils.capabilityStream(resource, namespace))
+			.filter(ResourceUtils.matcher(requirement, this::filterPredicate))
+			.collect(ResourceUtils.toCapabilities());
 	}
 
-	public Stream<Capability> getCapabilitiesAsStream(String namespace) {
-		return resources.stream()
-			.flatMap(r -> r.getCapabilities(namespace)
-				.stream());
+	private Predicate<Map<String, Object>> filterPredicate(String filterString) {
+		if (filterString == null) {
+			return ResourceUtils.filterPredicate(null);
+		}
+		return cache.computeIfAbsent(filterString, ResourceUtils::filterPredicate);
 	}
 
 	public void add(Resource resource) {
