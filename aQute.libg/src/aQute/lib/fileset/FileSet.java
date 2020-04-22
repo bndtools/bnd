@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import aQute.lib.io.IO;
 import aQute.libg.glob.Glob;
 
 /**
@@ -33,7 +34,7 @@ public class FileSet {
 
 	public FileSet(File base, String filesetSpec) {
 		this.source = filesetSpec;
-		this.dfa = compile(filesetSpec);
+		this.dfa = compile(base, filesetSpec);
 		this.base = base;
 	}
 
@@ -50,14 +51,14 @@ public class FileSet {
 			del = ",";
 		}
 		this.source = sb.toString();
-		this.dfa = compile(this.source);
+		this.dfa = compile(base, this.source);
 		this.base = base;
 	}
 
 	/*
 	 * Compile the file set specification to a DFA
 	 */
-	private static DFA compile(String filesetSpec) {
+	private static DFA compile(File base, String filesetSpec) {
 
 		String parts[] = filesetSpec.trim()
 			.split("\\s*,\\s*");
@@ -65,13 +66,23 @@ public class FileSet {
 
 		for (String part : parts) {
 
+
 			if (part.startsWith("/"))
 				throw new IllegalArgumentException("FileSet must not start with a /");
+
 
 			// if we end in allfile (**), turn it in to any/all
 
 			if (part.endsWith("**"))
 				part = part + "/*";
+
+			if (part.endsWith("/"))
+				part = part + "**/*";
+			else {
+				File dirq = IO.getFile(base, part);
+				if (dirq.isDirectory())
+					part += "/**/*";
+			}
 
 			String[] segments = part.split("/");
 			String lastSegment = segments[segments.length - 1];

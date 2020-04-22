@@ -180,4 +180,10 @@ public final class Err<V, E> implements Result<V, E> {
 		return String.format("Err(%s)", error);
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public <X> Result<X, E> asError() {
+		return (Result<X, E>) this;
+	}
+
 }

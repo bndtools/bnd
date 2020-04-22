@@ -1583,4 +1583,39 @@ public class Verifier extends Processor {
 		return NUMBERPATTERN.matcher(number)
 			.matches();
 	}
+
+	/**
+	 * The -runvm header is often wrongly used as a space separated header
+	 * instead of a properties. This checks if a header uses commas to separate
+	 * the parts or spaces.
+	 *
+	 * @param r a header
+	 * @return true if spaces are used for separation, false if 1 parameter or
+	 *         commas used
+	 */
+	public static boolean isSpaceSeparated(String r) {
+		QuotedTokenizer qt = new QuotedTokenizer(r, ", \t", true);
+		String token = qt.nextToken();
+		boolean foundSpaceSeparator = false;
+		while (token != null) {
+			switch (token) {
+				case " " :
+				case "\t" :
+					foundSpaceSeparator = true;
+					break;
+
+				case "," :
+					return false;
+
+				case "" :
+					break;
+
+				default :
+					if (foundSpaceSeparator)
+						return true;
+			}
+			token = qt.nextToken();
+		}
+		return false;
+	}
 }

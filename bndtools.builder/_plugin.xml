@@ -41,6 +41,21 @@
 			>
 		</compilationParticipant>
 	</extension>
+	
+    <extension
+        point="org.eclipse.jdt.core.compilationParticipant"
+        name="Bnd Source Generation Compilation Participant"
+        >
+        <compilationParticipant class="org.bndtools.builder.BndSourceGenerateCompilationParticipant"
+            id="bndtools.builder.generate.compilationparticipant"
+            modifiesEnvironment="true"
+            createsProblems="true"
+            >
+        </compilationParticipant>
+    </extension>
+    
+    
+	
 
 	<extension point="org.eclipse.ui.decorators">
 		<decorator

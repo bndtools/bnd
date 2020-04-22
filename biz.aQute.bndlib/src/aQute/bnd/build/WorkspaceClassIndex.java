@@ -29,10 +29,10 @@ import aQute.lib.hierarchy.Hierarchy;
 import aQute.lib.hierarchy.NamedNode;
 import aQute.lib.zip.JarIndex;
 
-public class ClassIndex implements Closeable {
+public class WorkspaceClassIndex implements Closeable {
 	final Workspace workspace;
 
-	public ClassIndex(Workspace workspace) {
+	public WorkspaceClassIndex(Workspace workspace) {
 		this.workspace = workspace;
 	}
 

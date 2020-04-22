@@ -1,5 +1,7 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.util.Properties;
 import java.util.jar.Manifest;
@@ -18,6 +20,11 @@ import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class VerifierTest extends TestCase {
+
+	public void testSpaceSeparated() {
+		assertThat(Verifier.isSpaceSeparated("a='x x, ' b c")).isTrue();
+		assertThat(Verifier.isSpaceSeparated("a\t , b, c")).isFalse();
+	}
 
 	public void testExports() throws Exception {
 		try (Builder b = new Builder()) {

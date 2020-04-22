@@ -46,6 +46,7 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -83,6 +84,7 @@ import aQute.bnd.service.lifecycle.LifeCyclePlugin;
 import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.service.repository.RepositoryDigest;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.service.result.FunctionWithException;
 import aQute.bnd.service.result.Result;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.url.MultiURLConnectionHandler;
@@ -122,7 +124,10 @@ public class Workspace extends Processor {
 	class WorkspaceData {
 		List<RepositoryPlugin>	repositories;
 		RemoteWorkspaceServer	remoteServer;
-		Lazy<ClassIndex>		classIndex	= new Lazy<ClassIndex>(() -> new ClassIndex(Workspace.this));
+		Lazy<WorkspaceClassIndex>				classIndex	= new Lazy<>(
+			() -> new WorkspaceClassIndex(Workspace.this));
+		Lazy<WorkspaceExternalPluginHandler>	externalPlugins	= new Lazy<>(
+			() -> new WorkspaceExternalPluginHandler(Workspace.this));
 	}
 
 	private final static Map<File, WeakReference<Workspace>>	cache				= newHashMap();
@@ -379,6 +384,7 @@ public class Workspace extends Processor {
 
 		IO.close(data.remoteServer);
 		IO.close(data.classIndex);
+		IO.close(data.externalPlugins);
 		data = new WorkspaceData();
 
 		File extDir = new File(getBuildDir(), EXT);
@@ -1458,19 +1464,11 @@ public class Workspace extends Processor {
 	 * </pre>
 	 */
 
-
 	public String _findproviders(String[] args) throws Exception {
 		Macro.verifyCommand(args, _findprovidersHelp, null, 2, 3);
-		RequirementBuilder rb = new RequirementBuilder(args[1]);
-		if (args.length > 2)
-			rb.filter(args[2]);
-		Requirement requirement = rb.buildSyntheticRequirement();
-		return getResourceRepository().findProviders(Collections.singleton(requirement))
-			.get(requirement)
-			.stream()
-			.map(Capability::getResource)
-			.distinct()
+		return findProviders(args[1], args.length > 2 ? args[2] : null).map(Capability::getResource)
 			.map(ResourceUtils::getBundleId)
+			.distinct()
 			.filter(Objects::nonNull)
 			.sorted()
 			.map(BundleId::toString)
@@ -1479,4 +1477,66 @@ public class Workspace extends Processor {
 
 	static final String _findprovidersHelp = "${findproviders;<namespace>;<filter>}";
 
+	/**
+	 * Convenient findProviders
+	 *
+	 * @throws Exception
+	 */
+
+	public Stream<Capability> findProviders(String namespace, String filter) throws Exception {
+		RequirementBuilder rb = new RequirementBuilder(namespace);
+		if (filter != null)
+			rb.filter(filter);
+		Requirement requirement = rb.buildSyntheticRequirement();
+		return getResourceRepository().findProviders(Collections.singleton(requirement))
+			.get(requirement)
+			.stream();
+	}
+
+	/**
+	 * Execute a function with a class from a plugin loaded from the
+	 * repositories. See {@link WorkspaceExternalPluginHandler}.
+	 */
+	public <T, R> Result<R, String> call(String pluginName, Class<T> c, FunctionWithException<T, Result<R, String>> f) {
+		return data.externalPlugins.get()
+			.call(pluginName, c, f);
+	}
+
+	public Result<File, String> getBundle(org.osgi.resource.Resource resource) {
+		BundleId bundleId = ResourceUtils.getBundleId(resource);
+		if (bundleId == null)
+			return Result.err("Not a bundle %s", resource);
+
+		if (bundleId.getVersion() != null && !Verifier.isVersion(bundleId.getVersion()))
+			return Result.err("Not a proper version %s for %s", bundleId.getVersion(), resource);
+
+		Version version = Version.valueOf(bundleId.getVersion());
+		return getBundle(bundleId.getBsn(), version, null);
+	}
+
+	public Result<File, String> getBundle(String bsn, Version version, Map<String, String> attrs) {
+		try {
+
+			List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
+			for (RepositoryPlugin rp : plugins) {
+				SortedSet<Version> versions = rp.versions(bsn);
+				File file = rp.get(bsn, version, attrs);
+				if (file != null)
+					return Result.ok(file);
+			}
+
+			WorkspaceRepository workspaceRepository = getWorkspaceRepository();
+			SortedSet<Version> versions = workspaceRepository.versions(bsn);
+			if (!versions.isEmpty()) {
+				File f = workspaceRepository.get(bsn, versions.last(), attrs);
+				if (f != null && f.isFile())
+					return Result.ok(f);
+			}
+
+			return Result.err("Cannot find bundle %s %s", bsn, version);
+		} catch (Exception e) {
+			return Result.err("failed to get bundle %s %s %s", bsn, version, e);
+		}
+
+	}
 }

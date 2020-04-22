@@ -5,6 +5,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +65,8 @@ import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.progress.TaskManager;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.memoize.Memoize;
+import aQute.libg.ints.IntCounter;
+import aQute.service.reporter.Reporter;
 import bndtools.central.RepositoriesViewRefresher.RefreshModel;
 import bndtools.preferences.BndPreferences;
 
@@ -764,5 +767,23 @@ public class Central implements IStartupParticipant {
 
 	public static void setRepositories(TreeViewer viewer, RefreshModel model) {
 		repositoriesViewRefresher.setRepositories(viewer, model);
+	}
+
+	public static boolean refreshFiles(Reporter reporter, Collection<File> files, IProgressMonitor monitor,
+		boolean derived) {
+		IntCounter errors = new IntCounter();
+
+		files.forEach(t -> {
+			try {
+				Central.refreshFile(t, monitor, derived);
+			} catch (CoreException e) {
+				errors.inc();
+				if (reporter != null)
+					reporter.error("failed to refresh %s : %s", t, Exceptions.causes(e));
+				else
+					throw Exceptions.duck(e);
+			}
+		});
+		return errors.isZero();
 	}
 }

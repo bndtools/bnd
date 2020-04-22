@@ -108,6 +108,29 @@ public abstract class ProjectLauncher extends Processor {
 		this.setBase(project.getBase());
 		builderInstrs = project.getInstructions(BuilderInstructions.class);
 		launcherInstrs = project.getInstructions(LauncherInstructions.class);
+
+		validate();
+	}
+
+	/**
+	 * Validate some settings
+	 */
+	protected void validate() {
+		Collection<String> runvm = getRunVM();
+		if (runvm.size() == 1)
+			try {
+			for (String r : runvm) {
+				if (Verifier.isSpaceSeparated(r)) {
+					SetLocation location = project.warning(
+						"%s is a comma (,) separated instruction, it looks like you separate its values with spaces? If you need spaces, please quote them: %s",
+						Constants.RUNVM, runvm);
+					project.getHeader(Constants.RUNVM)
+						.set(location);
+				}
+			}
+		} catch (Exception e) {
+			// ignore
+		}
 	}
 
 	/**
