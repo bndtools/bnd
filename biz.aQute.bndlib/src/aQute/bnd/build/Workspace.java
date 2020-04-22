@@ -444,7 +444,7 @@ public class Workspace extends Processor {
 			try {
 				l.changed(f);
 			} catch (Exception e) {
-				logger.debug("Exception in a BndListener changedFile method call", e);
+				logger.debug("Exception in a BndListener changed method call", e);
 			}
 	}
 

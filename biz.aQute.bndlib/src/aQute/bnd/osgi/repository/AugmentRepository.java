@@ -18,7 +18,6 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.bnd.stream.MapStream;
 import aQute.lib.collections.MultiMap;
 
 public class AugmentRepository extends BaseRepository {
@@ -27,7 +26,7 @@ public class AugmentRepository extends BaseRepository {
 	private final Map<Capability, Capability>	wrapped					= new HashMap<>();
 	private final List<Capability>				augmentedCapabilities	= new ArrayList<>();
 
-	public AugmentRepository(Parameters augments, Repository repository) throws Exception {
+	public AugmentRepository(Parameters augments, Repository repository) {
 		this.repository = repository;
 		init(augments);
 	}
@@ -71,11 +70,10 @@ public class AugmentRepository extends BaseRepository {
 
 	}
 
-	private void init(Parameters augments) throws Exception {
+	private void init(Parameters augments) {
 		MultiMap<Requirement, Augment> operations = new MultiMap<>();
 
-		MapStream.of(augments)
-			.forEachOrdered((bsn, attrs) -> createAugmentOperation(operations, bsn, attrs));
+		augments.forEach((bsn, attrs) -> createAugmentOperation(operations, bsn, attrs));
 
 		Map<Requirement, Collection<Capability>> allBundles = repository.findProviders(operations.keySet());
 
@@ -98,7 +96,7 @@ public class AugmentRepository extends BaseRepository {
 	}
 
 	private void executeAugmentOperations(Map<Requirement, Collection<Capability>> allBundles,
-		Requirement bundleRequirement, List<Augment> augments) throws Exception {
+		Requirement bundleRequirement, List<Augment> augments) {
 
 		Collection<Capability> matchedBundleCapabilities = allBundles.get(bundleRequirement);
 		Collection<Resource> bundles = ResourceUtils.getResources(matchedBundleCapabilities);
@@ -119,7 +117,7 @@ public class AugmentRepository extends BaseRepository {
 		}
 	}
 
-	private List<Capability> augment(Augment augment, ResourceBuilder builder) throws Exception {
+	private List<Capability> augment(Augment augment, ResourceBuilder builder) {
 		builder.addRequireCapabilities(augment.additionalRequirements);
 		return builder.addProvideCapabilities(augment.additionalCapabilities);
 	}

@@ -27,5 +27,5 @@ import aQute.bnd.osgi.resource.ResourceUtils;
  * in the workspace but this is deemed too much work for now.
  */
 public interface WorkspaceRepositoryMarker {
-	String WORKSPACE_NAMESPACE = ResourceUtils.WORKSPACE_NAMESPACE;
+	String	NAME				= "Workspace";
 }
