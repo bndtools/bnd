@@ -10,9 +10,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
-
-import org.osgi.service.repository.Repository;
+import java.util.regex.Pattern;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
@@ -34,6 +32,8 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		this.workspace = workspace;
 	}
 
+	private static final Pattern EXACT_VERSION_MATCH = Pattern.compile("[0-9]+\\.[0-9]+\\.[0-9]+\\..*");
+
 	private File[] get(String bsn, String range) throws Exception {
 		Collection<Project> projects = workspace.getAllProjects();
 		SortedMap<Version, File> foundVersion = new TreeMap<>();
@@ -43,7 +43,8 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 				continue;
 			}
 			Version version = versions.get(bsn);
-			boolean exact = range.matches("[0-9]+\\.[0-9]+\\.[0-9]+\\..*");
+			boolean exact = EXACT_VERSION_MATCH.matcher(range)
+				.matches();
 			if (Constants.VERSION_ATTR_LATEST.equals(range) || matchVersion(range, version, exact)) {
 				File file = project.getOutputFile(bsn, version.toString());
 				if (!file.exists()) {
@@ -93,7 +94,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 
 	private boolean matchVersion(String range, Version version, boolean exact) {
 		if (range == null || range.trim()
-			.length() == 0)
+			.isEmpty())
 			return true;
 		VersionRange vr = new VersionRange(range);
 
@@ -122,22 +123,17 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 
 	@Override
 	public List<String> list(String pattern) throws Exception {
+		Glob glob = (pattern != null) ? new Glob(pattern) : null;
 		List<String> names = new ArrayList<>();
 		Collection<Project> projects = workspace.getAllProjects();
 		for (Project project : projects) {
 			for (String bsn : project.getBsns()) {
-				if (pattern != null) {
-					Glob glob = new Glob(pattern);
-					Matcher matcher = glob.matcher(bsn);
-					if (matcher.matches()) {
-						if (!names.contains(bsn)) {
-							names.add(bsn);
-						}
-					}
-				} else {
-					if (!names.contains(bsn)) {
-						names.add(bsn);
-					}
+				if ((glob != null) && !glob.matcher(bsn)
+					.matches()) {
+					continue;
+				}
+				if (!names.contains(bsn)) {
+					names.add(bsn);
 				}
 			}
 		}
@@ -155,7 +151,6 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 				continue;
 			}
 			versions.add(projectVersions.get(bsn));
-			break;
 		}
 		if (versions.isEmpty())
 			return SortedList.empty();
@@ -192,7 +187,6 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 
 	@Override
 	public Map<String, Runnable> actions(Object... target) throws Exception {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -209,7 +203,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 				f.format("Workspace warnings  : \n    %s\n", Strings.join("\n    ", workspace.getWarnings()));
 				f.format("Plugins             : \n    %s\n", Strings.join("\n    ", workspace.getPlugins()
 					.stream()
-					.filter(p -> !(p instanceof Repository))
+					.filter(p -> !(p instanceof RepositoryPlugin))
 					.toArray()));
 				f.format("Repositories        : \n    %s\n", Strings.join("\n    ", workspace.getRepositories()
 					.stream()

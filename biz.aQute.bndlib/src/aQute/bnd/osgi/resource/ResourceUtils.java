@@ -250,7 +250,7 @@ public class ResourceUtils {
 		return null;
 	}
 
-	public static final Version getVersion(Capability cap) {
+	public static Version getVersion(Capability cap) {
 		String attr = getVersionAttributeForNamespace(cap.getNamespace());
 		if (attr == null)
 			return null;
@@ -439,8 +439,7 @@ public class ResourceUtils {
 	}
 
 	public static boolean matches(Requirement requirement, Resource resource) {
-		return capabilityStream(resource, requirement.getNamespace())
-			.anyMatch(matcher(requirement));
+		return capabilityStream(resource, requirement.getNamespace()).anyMatch(matcher(requirement));
 	}
 
 	public static boolean matches(Requirement requirement, Capability capability) {
@@ -469,8 +468,7 @@ public class ResourceUtils {
 		Function<String, Predicate<Map<String, Object>>> filter) {
 		String filterDirective = requirement.getDirectives()
 			.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-		Supplier<Predicate<Map<String, Object>>> predicate = Memoize
-			.supplier(filter, filterDirective);
+		Supplier<Predicate<Map<String, Object>>> predicate = Memoize.supplier(filter, filterDirective);
 
 		Predicate<Capability> matcher = capability -> {
 			if ((filterDirective != null) && !predicate.get()
@@ -688,19 +686,22 @@ public class ResourceUtils {
 		return Constants.IDENTITY_INITIAL_RESOURCE.equals(osgi_identity);
 	}
 
-	public static <C extends Capability> Collector<C, List<C>, List<C>> toCapabilities() {
-		return Collector.of(ArrayList<C>::new, ResourceUtils::accumulator, ResourceUtils::merger);
+	public static <CAPABILITY extends Capability> Collector<CAPABILITY, List<CAPABILITY>, List<CAPABILITY>> toCapabilities() {
+		return Collector.of(ArrayList<CAPABILITY>::new, ResourceUtils::capabilitiesAccumulator,
+			ResourceUtils::capabilitiesCombiner);
 	}
 
-	private static <E, C extends Collection<E>> void accumulator(C c, E e) {
-		if (!c.contains(e)) {
-			c.add(e);
+	public static <CAPABILITY extends Capability, COLLECTION extends Collection<CAPABILITY>> void capabilitiesAccumulator(
+		COLLECTION collection, CAPABILITY capability) {
+		if (!collection.contains(capability)) {
+			collection.add(capability);
 		}
 	}
 
-	private static <E, C extends Collection<E>> C merger(C t, C u) {
-		u.removeAll(t);
-		t.addAll(u);
-		return t;
+	public static <CAPABILITY extends Capability, COLLECTION extends Collection<CAPABILITY>> COLLECTION capabilitiesCombiner(
+		COLLECTION leftCollection, COLLECTION rightCollection) {
+		rightCollection.removeAll(leftCollection);
+		leftCollection.addAll(rightCollection);
+		return leftCollection;
 	}
 }
