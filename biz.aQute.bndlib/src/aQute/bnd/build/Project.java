@@ -83,6 +83,7 @@ import aQute.bnd.osgi.eclipse.EclipseClasspath;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
+import aQute.bnd.service.BndListener;
 import aQute.bnd.service.CommandPlugin;
 import aQute.bnd.service.DependencyContributor;
 import aQute.bnd.service.Deploy;
@@ -1979,7 +1980,7 @@ public class Project extends Processor {
 				getWorkspace().changedFile(bfs);
 			}
 			bfs = null; // avoid delete in finally block
-
+			builtFiles(buildFilesSet);
 			return files = buildFilesSet.toArray(new File[0]);
 		} finally {
 			if (tstamp)
@@ -1989,6 +1990,16 @@ public class Project extends Processor {
 				getWorkspace().changedFile(bfs);
 			}
 		}
+	}
+
+	private void builtFiles(Collection<File> files) {
+		List<BndListener> listeners = getWorkspace().getPlugins(BndListener.class);
+		for (BndListener l : listeners)
+			try {
+				l.built(this, files);
+			} catch (Exception e) {
+				logger.debug("Exception in a BndListener built method call", e);
+			}
 	}
 
 	/**
