@@ -62,11 +62,11 @@ public final class URIUtil {
 	 * <li>http://server/path/to/file => <tt>null</tt></li>
 	 * </ul>
 	 *
-	 * @param uriString The string containing the URI for which we are
-	 *            attempting to construct a path.
+	 * @param uriString The URI string for which we are attempting to construct
+	 *            a path.
 	 * @return The method's best guess as to which file on the local filesystem
-	 *         this URI refers, or <tt>null</tt> if it's invalid or not a local
-	 *         filesystem URI.
+	 *         this URI refers, or an empty Optional if it's invalid or not a
+	 *         local filesystem URI.
 	 */
 	public static Optional<Path> pathFromURI(String uriString) {
 		if (uriString == null) {
@@ -75,8 +75,40 @@ public final class URIUtil {
 
 		try {
 			URI uri = resolve(EMPTYURI, uriString);
-			while (!EMPTYURI.equals(uri)) {
+			return pathFromURI(uriString, uri);
+		} catch (URISyntaxException e1) {
+			return Optional.empty();
+		}
+	}
 
+	/**
+	 * Attempts to fetch a path on the file system for the given URI. Tries a
+	 * few more tricks than the standard method of <tt>Paths.get(uri)</tt> - it
+	 * can handle plain paths, and also nested URI pseudo-schemes like
+	 * <tt>reference:</tt> and <tt>jar:</tt>. Examples:
+	 * <ul>
+	 * <li>/path/to/file => /path/to/file</li>
+	 * <li>reference:file:/path/to/file => /path/to/file</li>
+	 * <li>jar:file:/path/to/file.jar!/some/contained/element =>
+	 * /path/to/file.jar</li>
+	 * <li>http://server/path/to/file => <tt>null</tt></li>
+	 * </ul>
+	 *
+	 * @param uri The URI for which we are attempting to construct a path.
+	 * @return The method's best guess as to which file on the local filesystem
+	 *         this URI refers, or an empty Optional if it's invalid or not a
+	 *         local filesystem URI.
+	 */
+	public static Optional<Path> pathFromURI(URI uri) {
+		if (uri == null) {
+			return Optional.empty();
+		}
+		return pathFromURI(uri.getSchemeSpecificPart(), uri);
+	}
+
+	private static Optional<Path> pathFromURI(String uriString, URI uri) {
+		try {
+			while (!EMPTYURI.equals(uri)) {
 				final String scheme = uri.getScheme();
 				if (scheme == null) {
 					try {
@@ -124,7 +156,7 @@ public final class URIUtil {
 		if (scheme == null)
 			return false;
 
-		switch (scheme.toLowerCase()) {
+		switch (scheme.toLowerCase(Locale.ROOT)) {
 			case "file" :
 			case "jar" :
 			case "data" :
@@ -147,5 +179,4 @@ public final class URIUtil {
 		}
 		return -1;
 	}
-
 }
