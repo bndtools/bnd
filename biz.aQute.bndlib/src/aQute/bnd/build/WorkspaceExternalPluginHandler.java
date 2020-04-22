@@ -1,8 +1,6 @@
 package aQute.bnd.build;
 
-import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Optional;
@@ -14,7 +12,7 @@ import aQute.bnd.service.result.FunctionWithException;
 import aQute.bnd.service.result.Result;
 import aQute.lib.exceptions.Exceptions;
 
-public class WorkspaceExternalPluginHandler implements Closeable {
+class WorkspaceExternalPluginHandler {
 
 	WorkspaceExternalPluginHandler(Workspace workspace) {
 		this.workspace = workspace;
@@ -22,7 +20,7 @@ public class WorkspaceExternalPluginHandler implements Closeable {
 
 	final Workspace workspace;
 
-	public <T, R> Result<R, String> call(String pluginName, Class<T> c, FunctionWithException<T, Result<R, String>> f) {
+	<T, R> Result<R, String> call(String pluginName, Class<T> c, FunctionWithException<T, Result<R, String>> f) {
 		try {
 
 			String filter = ExternalPluginNamespace.filter(pluginName, c);
@@ -70,9 +68,5 @@ public class WorkspaceExternalPluginHandler implements Closeable {
 			return Result.err("could not instantiate class %s in %s for plugin %s: %s", e.getMessage(), pluginName,
 				Exceptions.causes(e));
 		}
-	}
-
-	@Override
-	public void close() throws IOException {
 	}
 }

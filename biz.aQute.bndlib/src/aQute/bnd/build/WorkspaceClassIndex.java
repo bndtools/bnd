@@ -2,7 +2,6 @@ package aQute.bnd.build;
 
 import static aQute.bnd.classindex.ClassIndexerAnalyzer.BND_HASHES;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
@@ -29,10 +28,10 @@ import aQute.lib.hierarchy.Hierarchy;
 import aQute.lib.hierarchy.NamedNode;
 import aQute.lib.zip.JarIndex;
 
-public class WorkspaceClassIndex implements Closeable {
+class WorkspaceClassIndex {
 	final Workspace workspace;
 
-	public WorkspaceClassIndex(Workspace workspace) {
+	WorkspaceClassIndex(Workspace workspace) {
 		this.workspace = workspace;
 	}
 
@@ -46,7 +45,7 @@ public class WorkspaceClassIndex implements Closeable {
 	 * @param partialFqn package and/or class name
 	 * @return a multimap of fqn|pack->bundleid
 	 */
-	public Result<Map<String, List<BundleId>>, String> search(String partialFqn) throws Exception {
+	Result<Map<String, List<BundleId>>, String> search(String partialFqn) throws Exception {
 
 		Result<String[], String> determine = Descriptors.determine(partialFqn);
 		if (determine.isErr())
@@ -209,6 +208,4 @@ public class WorkspaceClassIndex implements Closeable {
 		return sb.toString();
 	}
 
-	@Override
-	public void close() throws IOException {}
 }
