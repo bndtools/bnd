@@ -402,19 +402,19 @@ public class Central implements IStartupParticipant {
 	}
 
 	public static IJavaProject getJavaProject(Project model) {
-		for (IProject iproj : ResourcesPlugin.getWorkspace()
+		return getProject(model).map(JavaCore::create)
+			.filter(IJavaProject::exists)
+			.orElse(null);
+	}
+
+	public static Optional<IProject> getProject(Project model) {
+		String name = model.getName();
+		return Arrays.stream(ResourcesPlugin.getWorkspace()
 			.getRoot()
-			.getProjects()) {
-			if (iproj.getName()
-				.equals(model.getName())) {
-				IJavaProject ij = JavaCore.create(iproj);
-				if (ij != null && ij.exists()) {
-					return ij;
-				}
-				break; // current project is not a Java project
-			}
-		}
-		return null;
+			.getProjects())
+			.filter(p -> p.getName()
+				.equals(name))
+			.findFirst();
 	}
 
 	public static IPath toPath(File file) throws Exception {

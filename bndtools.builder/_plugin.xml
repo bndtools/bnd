@@ -168,11 +168,6 @@
 			class="org.bndtools.builder.jobs.newproject.NewProjectJobsStartupParticipant" />
 	</extension>
 
-	<extension point="bndtools.core.buildListeners">
-		<listener name="Bundle Index Generation"
-			class="org.bndtools.builder.indexer.BuiltBundleIndexer" />
-	</extension>
-
 	<extension point="bndtools.core.buildErrorDetailsHandlers">
 		<handler typeMatch="aQute.bnd.differ.Baseline$Info"
 			class="org.bndtools.builder.handlers.baseline.BaselineErrorHandler" />
