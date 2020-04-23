@@ -3,15 +3,17 @@ package aQute.bnd.build;
 import static aQute.bnd.service.result.Result.err;
 import static aQute.bnd.service.result.Result.ok;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import aQute.bnd.help.instructions.ProjectInstructions.GeneratorSpec;
@@ -24,6 +26,7 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.lib.fileset.FileSet;
 import aQute.lib.specinterface.SpecInterface;
 import aQute.lib.strings.Strings;
+import aQute.service.reporter.Reporter.SetLocation;
 
 public class ProjectGenerate implements AutoCloseable {
 
@@ -40,11 +43,13 @@ public class ProjectGenerate implements AutoCloseable {
 
 			Result<Set<File>, String> step = step(e.getKey(), e.getValue(), force);
 			if (step.isErr()) {
-				String qsrc = Pattern.quote(e.getKey());
-				project.setLocation(Constants.GENERATE, qsrc, project.error("%s : %s;%s", step.error()
+				String qsrc = e.getKey();
+				SetLocation error = project.error("%s : %s;%s", step.error()
 					.get(), e.getKey(),
 					e.getValue()
-						._attrs()));
+						._attrs());
+				error.context(qsrc);
+				error.header(Constants.GENERATE);
 				return step.asError();
 			}
 			files.addAll(step.unwrap());
@@ -66,10 +71,11 @@ public class ProjectGenerate implements AutoCloseable {
 			if (!output.endsWith("/"))
 				output += "/";
 
+			Set<File> sourceFiles = new FileSet(project.getBase(), source).getFiles();
+			if (sourceFiles.isEmpty())
+				return err("No source files/directories specified");
+
 			if (!force) {
-				Set<File> sourceFiles = new FileSet(project.getBase(), source).getFiles();
-				if (sourceFiles.isEmpty())
-					return err("No source files/directories specified");
 
 				long latestModifiedSource = sourceFiles.stream()
 					.mapToLong(File::lastModified)
@@ -158,13 +164,31 @@ public class ProjectGenerate implements AutoCloseable {
 			.orElse(null);
 	}
 
-	public Set<File> getInputs() {
-		return project.instructions.generate()
-			.keySet()
-			.stream()
-			.flatMap((String s) -> new FileSet(project.getBase(), s).getFiles()
-				.stream())
-			.collect(Collectors.toSet());
+	public Result<Set<File>, String> getInputs() {
+
+		Set<String> inputs = project.instructions.generate()
+			.keySet();
+
+		if (inputs.isEmpty())
+			return Result.ok(Collections.emptySet());
+
+		Set<File> files = new HashSet<>();
+		String errors = "";
+		for (String input : inputs) {
+			Set<File> inputFiles = new FileSet(project.getBase(), input).getFiles();
+			if (inputFiles.isEmpty()) {
+				project.error("-generate: no content for %s", input);
+
+				errors = errors.concat(input)
+					.concat(" has no matching files\n");
+			} else {
+				files.addAll(inputFiles);
+			}
+		}
+		if (errors.isEmpty())
+			return Result.ok(files);
+		else
+			return Result.err(errors);
 	}
 
 	public Set<File> getOutputs() {
