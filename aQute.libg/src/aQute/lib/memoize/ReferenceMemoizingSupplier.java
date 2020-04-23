@@ -7,7 +7,7 @@ import java.lang.ref.WeakReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-class ReferenceMemoizingSupplier<T> implements Supplier<T> {
+class ReferenceMemoizingSupplier<T> implements Memoize<T> {
 	private final Supplier<? extends T>									supplier;
 	private final Function<? super T, ? extends Reference<? extends T>>	reference;
 	private volatile Reference<? extends T>								memoized;
@@ -31,6 +31,12 @@ class ReferenceMemoizingSupplier<T> implements Supplier<T> {
 				}
 			}
 		}
+		return referent;
+	}
+
+	@Override
+	public T peek() {
+		T referent = memoized.get();
 		return referent;
 	}
 }
