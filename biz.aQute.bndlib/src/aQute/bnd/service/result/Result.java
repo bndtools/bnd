@@ -18,6 +18,7 @@ package aQute.bnd.service.result;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -243,5 +244,7 @@ public interface Result<V, E> {
 	void accept(ConsumerWithException<? super V> ok, ConsumerWithException<? super E> err);
 
 	<X> Result<X, E> asError();
+
+	<X extends Throwable> V unwrap(Function<E, X> constructor) throws X;
 
 }
