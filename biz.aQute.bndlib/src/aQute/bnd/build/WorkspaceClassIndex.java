@@ -2,15 +2,18 @@ package aQute.bnd.build;
 
 import static aQute.bnd.classindex.ClassIndexerAnalyzer.BND_HASHES;
 
-import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Capability;
@@ -28,11 +31,12 @@ import aQute.lib.collections.MultiMap;
 import aQute.lib.hierarchy.Hierarchy;
 import aQute.lib.hierarchy.NamedNode;
 import aQute.lib.zip.JarIndex;
+import aQute.libg.uri.URIUtil;
 
-public class WorkspaceClassIndex implements Closeable {
+class WorkspaceClassIndex {
 	final Workspace workspace;
 
-	public WorkspaceClassIndex(Workspace workspace) {
+	WorkspaceClassIndex(Workspace workspace) {
 		this.workspace = workspace;
 	}
 
@@ -46,7 +50,7 @@ public class WorkspaceClassIndex implements Closeable {
 	 * @param partialFqn package and/or class name
 	 * @return a multimap of fqn|pack->bundleid
 	 */
-	public Result<Map<String, List<BundleId>>, String> search(String partialFqn) throws Exception {
+	Result<Map<String, List<BundleId>>, String> search(String partialFqn) throws Exception {
 
 		Result<String[], String> determine = Descriptors.determine(partialFqn);
 		if (determine.isErr())
@@ -94,8 +98,16 @@ public class WorkspaceClassIndex implements Closeable {
 	private void matchClassNameAgainstResource(URI uri, String binaryClassName, List<Capability> caps, BundleId bundle,
 		MultiMap<BundleId, String> result) {
 		try {
-			Hierarchy zipIndex = new JarIndex(uri.toURL()
-				.openStream());
+			Hierarchy zipIndex;
+			Optional<File> file = URIUtil.pathFromURI(uri)
+				.filter(Files::isRegularFile)
+				.map(Path::toFile);
+			if (file.isPresent()) {
+				zipIndex = new JarIndex(file.get());
+			} else {
+				zipIndex = new JarIndex(uri.toURL()
+					.openStream());
+			}
 
 			caps: for (Capability cap : caps) {
 
@@ -209,6 +221,4 @@ public class WorkspaceClassIndex implements Closeable {
 		return sb.toString();
 	}
 
-	@Override
-	public void close() throws IOException {}
 }

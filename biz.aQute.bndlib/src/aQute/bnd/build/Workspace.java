@@ -4,6 +4,7 @@ import static aQute.lib.exceptions.BiFunctionWithException.asBiFunction;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.lang.invoke.MethodType.methodType;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +41,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -98,7 +100,7 @@ import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.lib.io.NonClosingInputStream;
-import aQute.lib.lazy.Lazy;
+import aQute.lib.memoize.Memoize;
 import aQute.lib.settings.Settings;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -121,13 +123,22 @@ public class Workspace extends Processor {
 	static final int			BUFFER_SIZE						= IOConstants.PAGE_SIZE * 16;
 	private static final String	PLUGIN_STANDALONE		= Constants.PLUGIN + ".standalone_";
 
-	class WorkspaceData {
-		List<RepositoryPlugin>	repositories;
-		RemoteWorkspaceServer	remoteServer;
-		Lazy<WorkspaceClassIndex>				classIndex	= new Lazy<>(
-			() -> new WorkspaceClassIndex(Workspace.this));
-		Lazy<WorkspaceExternalPluginHandler>	externalPlugins	= new Lazy<>(
-			() -> new WorkspaceExternalPluginHandler(Workspace.this));
+	class WorkspaceData implements Closeable {
+		final Supplier<List<RepositoryPlugin>>			repositories;
+		volatile RemoteWorkspaceServer					remoteServer;
+		final Supplier<WorkspaceClassIndex>				classIndex;
+		final Supplier<WorkspaceExternalPluginHandler>	externalPlugins;
+
+		WorkspaceData() {
+			repositories = Memoize.supplier(Workspace.this::initRepositories);
+			classIndex = Memoize.supplier(() -> new WorkspaceClassIndex(Workspace.this));
+			externalPlugins = Memoize.supplier(() -> new WorkspaceExternalPluginHandler(Workspace.this));
+		}
+
+		@Override
+		public void close() {
+			IO.close(remoteServer);
+		}
 	}
 
 	private final static Map<File, WeakReference<Workspace>>	cache				= newHashMap();
@@ -150,7 +161,7 @@ public class Workspace extends Processor {
 	private final WorkspaceLayout								layout;
 	final Set<Project>											trail				= Collections
 		.newSetFromMap(new ConcurrentHashMap<Project, Boolean>());
-	private WorkspaceData										data				= new WorkspaceData();
+	private volatile WorkspaceData								data				= new WorkspaceData();
 	private File												buildDir;
 	private final ProjectTracker								projects;
 	private final ReadWriteLock									lock				= new ReentrantReadWriteLock(true);
@@ -356,7 +367,9 @@ public class Workspace extends Processor {
 
 	@Override
 	public boolean refresh() {
+		WorkspaceData oldData = data;
 		data = new WorkspaceData();
+		oldData.close();
 
 		gestalt = null;
 		if (super.refresh()) {
@@ -381,11 +394,9 @@ public class Workspace extends Processor {
 
 	@Override
 	public void propertiesChanged() {
-
-		IO.close(data.remoteServer);
-		IO.close(data.classIndex);
-		IO.close(data.externalPlugins);
+		WorkspaceData oldData = data;
 		data = new WorkspaceData();
+		oldData.close();
 
 		File extDir = new File(getBuildDir(), EXT);
 		File[] extensions = extDir.listFiles();
@@ -568,16 +579,22 @@ public class Workspace extends Processor {
 		cf.close();
 	}
 
-	public List<RepositoryPlugin> getRepositories() throws Exception {
-		if (data.repositories == null) {
-			data.repositories = getPlugins(RepositoryPlugin.class);
-			for (RepositoryPlugin repo : data.repositories) {
-				if (repo instanceof Prepare) {
+	public List<RepositoryPlugin> getRepositories() {
+		return data.repositories.get();
+	}
+
+	private List<RepositoryPlugin> initRepositories() {
+		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
+		for (RepositoryPlugin repo : plugins) {
+			if (repo instanceof Prepare) {
+				try {
 					((Prepare) repo).prepare();
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
 				}
 			}
 		}
-		return data.repositories;
+		return plugins;
 	}
 
 	public Collection<Project> getBuildOrder() throws Exception {
@@ -909,9 +926,9 @@ public class Workspace extends Processor {
 
 	@Override
 	public void close() {
-		if (data.remoteServer != null) {
-			IO.close(data.remoteServer);
-		}
+		WorkspaceData oldData = data;
+		data = new WorkspaceData();
+		oldData.close();
 		synchronized (cache) {
 			WeakReference<Workspace> wsr = cache.get(getBase());
 			if ((wsr != null) && (wsr.get() == this)) {

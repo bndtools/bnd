@@ -3,9 +3,7 @@ package aQute.bnd.build;
 import static aQute.bnd.service.result.Result.err;
 import static aQute.bnd.service.result.Result.ok;
 
-import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +25,7 @@ import aQute.lib.fileset.FileSet;
 import aQute.lib.specinterface.SpecInterface;
 import aQute.lib.strings.Strings;
 
-public class ProjectGenerate implements Closeable {
+public class ProjectGenerate {
 
 	final Project project;
 
@@ -178,8 +176,4 @@ public class ProjectGenerate implements Closeable {
 				.stream())
 			.collect(Collectors.toSet());
 	}
-
-	@Override
-	public void close() throws IOException {}
-
 }

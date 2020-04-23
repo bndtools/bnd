@@ -42,6 +42,7 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -106,7 +107,7 @@ import aQute.lib.exceptions.ConsumerWithException;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
-import aQute.lib.lazy.Lazy;
+import aQute.lib.memoize.Memoize;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.command.Command;
@@ -124,13 +125,13 @@ import aQute.libg.tuple.Pair;
 public class Project extends Processor {
 	private final static Logger logger = LoggerFactory.getLogger(Project.class);
 
-	class RefreshData implements AutoCloseable {
-		Parameters				installRepositories;
-		Lazy<ProjectGenerate>	generate	= new Lazy<>(() -> new ProjectGenerate(Project.this));
+	class RefreshData {
+		final Supplier<Parameters>		installRepositories;
+		final Supplier<ProjectGenerate>	generate;
 
-		@Override
-		public void close() throws Exception {
-			this.generate.close();
+		RefreshData() {
+			installRepositories = Memoize.supplier(() -> new Parameters(mergeProperties(BUILDREPO), Project.this));
+			generate = Memoize.supplier(() -> new ProjectGenerate(Project.this));
 		}
 	}
 
@@ -1718,10 +1719,7 @@ public class Project extends Processor {
 	}
 
 	public Parameters getInstallRepositories() {
-		if (data.installRepositories == null) {
-			data.installRepositories = new Parameters(mergeProperties(BUILDREPO), this);
-		}
-		return data.installRepositories;
+		return data.installRepositories.get();
 	}
 
 	private void install(RepositoryPlugin repo, Processor context, File f, Attrs value) throws Exception {
@@ -2186,7 +2184,6 @@ public class Project extends Processor {
 	@Override
 	public boolean refresh() {
 		versionMap.clear();
-		IO.close(data);
 		data = new RefreshData();
 		boolean changed = false;
 		if (isCnf()) {
@@ -2211,7 +2208,6 @@ public class Project extends Processor {
 		setChanged();
 		makefile = null;
 		versionMap.clear();
-		IO.close(data);
 		data = new RefreshData();
 	}
 
