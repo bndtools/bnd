@@ -6,5 +6,9 @@
 -testpath: \
 	${junit}
 
-
 -conditionalpackage: aQute.lib*
+
+-buildrepo:
+-releaserepo:
+-nojunit: true
+-nojunitosgi: true
