@@ -25,7 +25,7 @@ import aQute.lib.fileset.FileSet;
 import aQute.lib.specinterface.SpecInterface;
 import aQute.lib.strings.Strings;
 
-public class ProjectGenerate {
+public class ProjectGenerate implements AutoCloseable {
 
 	final Project project;
 
@@ -176,4 +176,7 @@ public class ProjectGenerate {
 				.stream())
 			.collect(Collectors.toSet());
 	}
+
+	@Override
+	public void close() {}
 }

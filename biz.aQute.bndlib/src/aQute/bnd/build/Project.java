@@ -42,7 +42,6 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -107,6 +106,7 @@ import aQute.lib.exceptions.ConsumerWithException;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
+import aQute.lib.memoize.CloseableMemoize;
 import aQute.lib.memoize.Memoize;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -125,13 +125,18 @@ import aQute.libg.tuple.Pair;
 public class Project extends Processor {
 	private final static Logger logger = LoggerFactory.getLogger(Project.class);
 
-	class RefreshData {
-		final Supplier<Parameters>		installRepositories;
-		final Supplier<ProjectGenerate>	generate;
+	class RefreshData implements AutoCloseable {
+		final Memoize<Parameters>				installRepositories;
+		final CloseableMemoize<ProjectGenerate>	generate;
 
 		RefreshData() {
 			installRepositories = Memoize.supplier(() -> new Parameters(mergeProperties(BUILDREPO), Project.this));
-			generate = Memoize.supplier(() -> new ProjectGenerate(Project.this));
+			generate = CloseableMemoize.closeableSupplier(() -> new ProjectGenerate(Project.this));
+		}
+
+		@Override
+		public void close() {
+			IO.close(generate);
 		}
 	}
 
@@ -2184,7 +2189,9 @@ public class Project extends Processor {
 	@Override
 	public boolean refresh() {
 		versionMap.clear();
+		RefreshData oldData = data;
 		data = new RefreshData();
+		IO.close(oldData);
 		boolean changed = false;
 		if (isCnf()) {
 			changed = workspace.refresh();
@@ -2208,7 +2215,9 @@ public class Project extends Processor {
 		setChanged();
 		makefile = null;
 		versionMap.clear();
+		RefreshData oldData = data;
 		data = new RefreshData();
+		IO.close(oldData);
 	}
 
 	public String getName() {

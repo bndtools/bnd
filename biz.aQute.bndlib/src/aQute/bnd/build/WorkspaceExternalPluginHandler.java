@@ -12,7 +12,7 @@ import aQute.bnd.service.result.FunctionWithException;
 import aQute.bnd.service.result.Result;
 import aQute.lib.exceptions.Exceptions;
 
-class WorkspaceExternalPluginHandler {
+class WorkspaceExternalPluginHandler implements AutoCloseable {
 
 	WorkspaceExternalPluginHandler(Workspace workspace) {
 		this.workspace = workspace;
@@ -69,4 +69,7 @@ class WorkspaceExternalPluginHandler {
 				Exceptions.causes(e));
 		}
 	}
+
+	@Override
+	public void close() {}
 }
