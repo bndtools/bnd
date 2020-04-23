@@ -4,6 +4,7 @@ import static aQute.bnd.build.Container.toPaths;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -2189,14 +2190,19 @@ public class Project extends Processor {
 	@Override
 	public boolean refresh() {
 		versionMap.clear();
-		RefreshData oldData = data;
-		data = new RefreshData();
-		IO.close(oldData);
+		refreshData();
+
 		boolean changed = false;
 		if (isCnf()) {
 			changed = workspace.refresh();
 		}
 		return super.refresh() || changed;
+	}
+
+	private void refreshData() {
+		RefreshData tmp = data;
+		data = new RefreshData();
+		tmp.close();
 	}
 
 	public boolean isCnf() {
@@ -2215,9 +2221,7 @@ public class Project extends Processor {
 		setChanged();
 		makefile = null;
 		versionMap.clear();
-		RefreshData oldData = data;
-		data = new RefreshData();
-		IO.close(oldData);
+		refreshData();
 	}
 
 	public String getName() {

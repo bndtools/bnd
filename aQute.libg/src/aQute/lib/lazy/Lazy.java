@@ -1,6 +1,5 @@
 package aQute.lib.lazy;
 
-import java.io.Closeable;
 import java.util.function.Supplier;
 
 import aQute.lib.exceptions.ConsumerWithException;
@@ -18,7 +17,7 @@ import aQute.lib.exceptions.SupplierWithException;
  */
 public class Lazy<T> implements AutoCloseable, Supplier<T> {
 	final SupplierWithException<T>	supplier;
-	volatile T						target;
+	T								target;
 
 	/**
 	 * Factory function
@@ -36,13 +35,14 @@ public class Lazy<T> implements AutoCloseable, Supplier<T> {
 	 */
 	@Override
 	public synchronized void close() {
-		target = null;
+
 		if (target instanceof AutoCloseable)
 			try {
-				((Closeable) target).close();
+				((AutoCloseable) target).close();
 			} catch (Exception e) {
 				// ignore
 			}
+		this.target = null;
 	}
 
 	/**
@@ -52,19 +52,8 @@ public class Lazy<T> implements AutoCloseable, Supplier<T> {
 	 * It allows the majority of cases to only cross a read barrier
 	 */
 	@Override
-	public T get() {
-		if (target != null)
-			return target;
-
-		synchronized (this) {
-			if (target != null)
-				return target;
-			try {
-				return target = supplier.get();
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
-		}
+	public synchronized T get() {
+		return get0();
 	}
 
 	/**
@@ -73,9 +62,9 @@ public class Lazy<T> implements AutoCloseable, Supplier<T> {
 	 *
 	 * @param c the consumer
 	 */
-	public synchronized void run(ConsumerWithException<T> c) {
+	public synchronized void apply(ConsumerWithException<T> c) {
 		try {
-			c.accept(get());
+			c.accept(get0());
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -89,7 +78,7 @@ public class Lazy<T> implements AutoCloseable, Supplier<T> {
 	 */
 	public synchronized <R> R map(FunctionWithException<T, R> c) {
 		try {
-			return c.apply(get());
+			return c.apply(get0());
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -100,7 +89,27 @@ public class Lazy<T> implements AutoCloseable, Supplier<T> {
 	 *
 	 * @return true if initialized
 	 */
-	public boolean isInitialized() {
+	public synchronized boolean isInitialized() {
 		return target != null;
 	}
+
+	/**
+	 * Check if initialized. Clearly this is a snapshot
+	 *
+	 * @return true if initialized
+	 */
+	public synchronized T peek() {
+		return target;
+	}
+
+	private T get0() {
+		if (target == null)
+			try {
+				target = supplier.get();
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+		return target;
+	}
+
 }
