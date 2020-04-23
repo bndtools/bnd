@@ -6,7 +6,7 @@ import static java.util.stream.Collectors.toList;
 import java.io.BufferedReader;
 import java.io.File;
 import java.util.Collections;
-import java.util.function.Consumer;
+import java.util.function.BiFunction;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -48,11 +48,14 @@ public class WorkspaceResourcesRepository extends AbstractIndexingRepository<Pro
 	}
 
 	@Override
-	protected Consumer<ResourceBuilder> customizer(Project project) {
-		// Add a capability specific to the workspace so that we can
-		// identify this fact later during resource processing.
+	protected BiFunction<ResourceBuilder, File, ResourceBuilder> fileIndexer(Project project) {
 		String name = project.getName();
-		return rb -> rb.addWorkspaceNamespace(name);
+		return super.fileIndexer(project).andThen(rb -> {
+			// Add a capability specific to the workspace so that we can
+			// identify this fact later during resource processing.
+			rb.addWorkspaceNamespace(name);
+			return rb;
+		});
 	}
 
 	@Override

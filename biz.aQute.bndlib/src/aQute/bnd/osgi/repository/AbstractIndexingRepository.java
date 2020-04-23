@@ -1,6 +1,6 @@
 package aQute.bnd.osgi.repository;
 
-import static aQute.lib.exceptions.FunctionWithException.asFunction;
+import static aQute.lib.exceptions.BiFunctionWithException.asBiFunction;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import org.osgi.resource.Capability;
@@ -22,16 +22,25 @@ import aQute.lib.memoize.Memoize;
 
 public abstract class AbstractIndexingRepository<KEY> extends BaseRepository {
 	private final Map<KEY, Supplier<? extends Collection<Resource>>>	resources;
-	private volatile Supplier<ResourcesRepository>							repository;
+	private volatile Supplier<ResourcesRepository>						repository;
 
 	protected AbstractIndexingRepository() {
 		resources = new ConcurrentHashMap<>();
-		repository = Memoize.supplier(this::aggregate);
+		repository = memoize(this::aggregate);
+	}
+
+	protected <S> Supplier<S> memoize(Supplier<S> supplier) {
+		return Memoize.supplier(supplier);
 	}
 
 	protected abstract boolean isValid(KEY key);
 
-	protected abstract Consumer<? super ResourceBuilder> customizer(KEY key);
+	protected BiFunction<ResourceBuilder, File, ? extends ResourceBuilder> fileIndexer(KEY key) {
+		return asBiFunction((rb, file) -> {
+			rb.addFile(file, file.toURI());
+			return rb;
+		});
+	}
 
 	public void index(KEY key, Collection<File> files) {
 		index(key, () -> files);
@@ -40,23 +49,26 @@ public abstract class AbstractIndexingRepository<KEY> extends BaseRepository {
 	public void index(KEY key, Supplier<? extends Collection<File>> files) {
 		resources.keySet()
 			.removeIf(p -> !isValid(p));
-		resources.put(key, Memoize.supplier(indexer(files, customizer(key))));
-		repository = Memoize.supplier(this::aggregate);
+		resources.put(key, memoize(indexer(files, fileIndexer(key))));
+		repository = memoize(this::aggregate);
 	}
 
-	private Supplier<List<Resource>> indexer(
-		Supplier<? extends Collection<File>> files, Consumer<? super ResourceBuilder> customizer) {
+	protected void remove(KEY key) {
+		resources.remove(key);
+		resources.keySet()
+			.removeIf(p -> !isValid(p));
+		repository = memoize(this::aggregate);
+	}
+
+	private Supplier<List<Resource>> indexer(Supplier<? extends Collection<File>> files,
+		BiFunction<? super ResourceBuilder, File, ? extends ResourceBuilder> fileIndexer) {
 		requireNonNull(files);
-		requireNonNull(customizer);
+		requireNonNull(fileIndexer);
 		return () -> files.get()
 			.stream()
 			.filter(File::isFile)
-			.map(asFunction(file -> {
-				ResourceBuilder rb = new ResourceBuilder();
-				rb.addFile(file, file.toURI());
-				customizer.accept(rb);
-				return rb.build();
-			}))
+			.map(file -> fileIndexer.apply(new ResourceBuilder(), file))
+			.map(ResourceBuilder::build)
 			.collect(toList());
 	}
 
