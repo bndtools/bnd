@@ -4,7 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.function.Supplier;
 
-class MemoizingSupplier<T> implements Supplier<T> {
+class MemoizingSupplier<T> implements Memoize<T> {
 	private volatile boolean	delegate;
 	// @GuardedBy("delegate")
 	private Object				memoized;
@@ -30,6 +30,16 @@ class MemoizingSupplier<T> implements Supplier<T> {
 					return result;
 				}
 			}
+		}
+		return (T) memoized;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public T peek() {
+		// read delegate _before_ read memoized
+		if (delegate) {
+			return null;
 		}
 		return (T) memoized;
 	}

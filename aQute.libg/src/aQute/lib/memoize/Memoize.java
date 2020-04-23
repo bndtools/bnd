@@ -4,16 +4,19 @@ import static java.util.Objects.requireNonNull;
 
 import java.lang.ref.Reference;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
  * Memoization support.
+ * <p>
+ * This type extends {@code Supplier} and adds a {@link #peek()} method.
+ *
+ * @param <S> Type of the value returned.
  */
-public class Memoize {
-
-	private Memoize() {}
-
+public interface Memoize<S> extends Supplier<S> {
 	/**
 	 * Creates a supplier which memoizes the value returned by the specified
 	 * supplier.
@@ -25,10 +28,10 @@ public class Memoize {
 	 * @param supplier The source supplier. Must not be {@code null}.
 	 * @return A memoized supplier wrapping the specified supplier.
 	 */
-	public static <T> Supplier<T> supplier(Supplier<? extends T> supplier) {
+	static <T> Memoize<T> supplier(Supplier<? extends T> supplier) {
 		if (supplier instanceof MemoizingSupplier) {
 			@SuppressWarnings("unchecked")
-			Supplier<T> memoized = (Supplier<T>) supplier;
+			Memoize<T> memoized = (Memoize<T>) supplier;
 			return memoized;
 		}
 		return new MemoizingSupplier<>(supplier);
@@ -47,7 +50,7 @@ public class Memoize {
 	 * @param argument The argument to the source function.
 	 * @return A memoized supplier wrapping the specified function and argument.
 	 */
-	public static <T, R> Supplier<R> supplier(Function<? super T, ? extends R> function, T argument) {
+	static <T, R> Memoize<R> supplier(Function<? super T, ? extends R> function, T argument) {
 		requireNonNull(function);
 		return supplier(() -> function.apply(argument));
 	}
@@ -68,7 +71,7 @@ public class Memoize {
 	 *            {@code null}.
 	 * @return A memoized supplier wrapping the specified supplier.
 	 */
-	public static <T> Supplier<T> refreshingSupplier(Supplier<? extends T> supplier, long time_to_live, TimeUnit unit) {
+	static <T> Memoize<T> refreshingSupplier(Supplier<? extends T> supplier, long time_to_live, TimeUnit unit) {
 		return new RefreshingMemoizingSupplier<>(supplier, time_to_live, unit);
 	}
 
@@ -91,8 +94,76 @@ public class Memoize {
 	 *            queue is used. The function must not return {@code null}.
 	 * @return A memoized supplier wrapping the specified supplier.
 	 */
-	public static <T> Supplier<T> referenceSupplier(Supplier<? extends T> supplier,
+	static <T> Memoize<T> referenceSupplier(Supplier<? extends T> supplier,
 		Function<? super T, ? extends Reference<? extends T>> reference) {
 		return new ReferenceMemoizingSupplier<>(supplier, reference);
+	}
+
+	/**
+	 * Peek the value.
+	 * <p>
+	 * This method will not result in a call the to source supplier.
+	 *
+	 * @return The value if a value is memoized; otherwise {@code null}.
+	 */
+	S peek();
+
+	/**
+	 * Map this memoized supplier to a new memoized supplier.
+	 *
+	 * @param <R> Type of the value returned by the new memoized supplier.
+	 * @param mapper The function to map the value of this memoized supplier.
+	 *            Must not be {@code null}.
+	 * @return A new memoized supplier which memoizes the value returned by the
+	 *         specified function.
+	 */
+	default <R> Memoize<R> map(Function<? super S, ? extends R> mapper) {
+		requireNonNull(mapper);
+		return supplier(() -> mapper.apply(get()));
+	}
+
+	/**
+	 * Flat map this memoized supplier to a new memoized supplier.
+	 *
+	 * @param <R> Type of the value returned by the new memoized supplier.
+	 * @param mapper The function to flat map the value of this memoized
+	 *            supplier to a supplier. Must not be {@code null}. The returned
+	 *            supplier must not be {@code null}.
+	 * @return A new memoized supplier which memoizes the value returned by the
+	 *         supplier returned by the specified function.
+	 */
+	default <R> Memoize<R> flatMap(Function<? super S, ? extends Supplier<? extends R>> mapper) {
+		requireNonNull(mapper);
+		return supplier(() -> mapper.apply(get())
+			.get());
+	}
+
+	/**
+	 * Filter this memoized supplier to a new memoized supplier.
+	 *
+	 * @param predicate The predicate to test the value of this memoized
+	 *            supplier. Must not be {@code null}.
+	 * @return A new memoized supplier which memoizes the value returned by this
+	 *         supplier if the predicate accepts the value or {@code null}
+	 *         otherwise.
+	 */
+	default Memoize<S> filter(Predicate<? super S> predicate) {
+		requireNonNull(predicate);
+		return supplier(() -> {
+			S value = get();
+			return predicate.test(value) ? value : null;
+		});
+	}
+
+	/**
+	 * Call the consumer with the value of this memoized supplier.
+	 *
+	 * @param consumer The consumer to acceot the value of this memoized
+	 *            supplier. Must not be {@code null}.
+	 * @return This memoized supplier.
+	 */
+	default Memoize<S> accept(Consumer<? super S> consumer) {
+		consumer.accept(get());
+		return this;
 	}
 }

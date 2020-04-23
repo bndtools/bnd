@@ -8,7 +8,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiFunction;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -60,11 +60,14 @@ public class EclipseWorkspaceRepository extends AbstractIndexingRepository<IProj
 	}
 
 	@Override
-	protected Consumer<ResourceBuilder> customizer(IProject project) {
-		// Add a capability specific to the workspace so that we can
-		// identify this fact later during resource processing.
+	protected BiFunction<ResourceBuilder, File, ResourceBuilder> fileIndexer(IProject project) {
 		String name = project.getName();
-		return rb -> rb.addWorkspaceNamespace(name);
+		return super.fileIndexer(project).andThen(rb -> {
+			// Add a capability specific to the workspace so that we can
+			// identify this fact later during resource processing.
+			rb.addWorkspaceNamespace(name);
+			return rb;
+		});
 	}
 
 	@Override
