@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
+import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,7 @@ public abstract class AbstractIndexingRepository<KEY> extends BaseRepository {
 	}
 
 	protected <S> Supplier<S> memoize(Supplier<S> supplier) {
-		return Memoize.supplier(supplier);
+		return Memoize.referenceSupplier(supplier, SoftReference::new);
 	}
 
 	protected abstract boolean isValid(KEY key);
