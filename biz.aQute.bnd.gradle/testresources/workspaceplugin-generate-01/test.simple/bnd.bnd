@@ -1,6 +1,7 @@
+Bundle-Version: 0.0.0.${tstamp}
 
-src = ${^src},src-gen
--generate \
-    src-gen/**.java, \
+src: ${^src},src-gen
+-generate: \
+        gen/**.java; \
         output=src-gen; \
-        generate="javagen -o src-gen gen/**.java
+        generate="javagen -o src-gen gen/**.java"

@@ -95,6 +95,26 @@ public class BndPlugin implements Plugin<Project> {
           }
         }
       }
+      /* Set up Bnd generate support */
+      def generateInputs = bndProject.getGenerate().getInputs()
+      def generate = null
+      if (!generateInputs.isErr() && !generateInputs.unwrap().isEmpty()) {
+        generate = tasks.register('generate') { t ->
+          t.description 'Generate source code'
+          t.group 'build'
+          t.inputs.files(generateInputs.unwrap())
+          t.outputs.dirs(bndProject.getGenerate().getOutputDirs())
+          t.doLast {
+            try {
+              def result = bndProject.getGenerate().generate(false)
+              result.unwrap(result.error().orElse(null)) // will throw exception if an error occured
+            } catch (Exception e) {
+              throw new GradleException("Project ${bndProject.getName()} failed to generate", e)
+            }
+            checkErrors(t.logger)
+          }
+        }
+      }
       /* Set up source sets */
       sourceSets {
         /* bnd uses the same directory for java and resources. */
@@ -107,6 +127,9 @@ public class BndPlugin implements Plugin<Project> {
           output.resourcesDir = destinationDir
           tasks.named(compileJavaTaskName) { t ->
             t.destinationDir = destinationDir
+            if (generate) {
+              t.inputs.files(generate)
+            }
           }
           output.dir(destinationDir, builtBy: compileJavaTaskName)
           jarLibraryElements(project, compileClasspathConfigurationName)
@@ -137,6 +160,9 @@ public class BndPlugin implements Plugin<Project> {
                 try {
                   tasks.named(compileTaskName) { t ->
                     t.destinationDir = destinationDir
+                    if (generate) {
+                      t.inputs.files(generate)
+                    }
                   }
                   sourceDirSet.srcDirs = java.srcDirs
                   sourceDirSet.outputDir = destinationDir

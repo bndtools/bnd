@@ -5,15 +5,15 @@
       <attribute name="license" value="Apache-2.0;description=&quot;Apache License, Version 2.0&quot;;link=&quot;https://opensource.org/licenses/Apache-2.0&quot;,EPL-2.0;description=&quot;Eclipse Public License, Version 2.0&quot;;link=&quot;https://opensource.org/licenses/EPL-2.0&quot;"/>
       <attribute name="osgi.identity" value="biz.aQute.bnd.javagen"/>
       <attribute name="type" value="osgi.bundle"/>
-      <attribute name="version" value="5.1.0.202004231431-SNAPSHOT" type="Version"/>
+      <attribute name="version" value="5.1.0.202004231648-SNAPSHOT" type="Version"/>
       <attribute name="documentation" value="https://bnd.bndtools.org/"/>
     </capability>
     <capability namespace="osgi.wiring.bundle">
-      <attribute name="bundle-version" value="5.1.0.202004231431-SNAPSHOT" type="Version"/>
+      <attribute name="bundle-version" value="5.1.0.202004231648-SNAPSHOT" type="Version"/>
       <attribute name="osgi.wiring.bundle" value="biz.aQute.bnd.javagen"/>
     </capability>
     <capability namespace="osgi.wiring.host">
-      <attribute name="bundle-version" value="5.1.0.202004231431-SNAPSHOT" type="Version"/>
+      <attribute name="bundle-version" value="5.1.0.202004231648-SNAPSHOT" type="Version"/>
       <attribute name="osgi.wiring.host" value="biz.aQute.bnd.javagen"/>
     </capability>
     <capability namespace="bnd.external.plugin">
@@ -22,10 +22,10 @@
       <attribute name="bnd.external.plugin" value="javagen"/>
     </capability>
     <capability namespace="osgi.content">
-      <attribute name="size" value="121110" type="Long"/>
+      <attribute name="size" value="121109" type="Long"/>
       <attribute name="url" value="biz.aQute.bnd.javagen/biz.aQute.bnd.javagen-5.1.0.jar"/>
       <attribute name="mime" value="application/vnd.osgi.bundle"/>
-      <attribute name="osgi.content" value="641C5AC069CDA3DDF5C841E87992CFE74A2BBB8341DE5903C791983695785978"/>
+      <attribute name="osgi.content" value="e0a11be0e86d8f80c14e9ace2faf795dc52456e1b5f317eb354f2b4071779256"/>
     </capability>
     <requirement namespace="osgi.wiring.package">
       <directive name="filter" value="(&amp;(osgi.wiring.package=aQute.bnd.osgi)(version&gt;=4.5.0)(!(version&gt;=5.0.0)))"/>
