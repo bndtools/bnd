@@ -196,8 +196,8 @@ public class MavenBndRepoTest extends TestCase {
 	}
 
 	public void testZipFileWithContents() throws Exception {
-		IO.copy(IO.getFile("testresources/mavenrepo2"), remote);
-		IO.copy(IO.getFile("testresources/mavenrepo2/index.maven"), index);
+		IO.copy(IO.getFile("testresources/mavenrepo3"), remote);
+		IO.copy(IO.getFile("testresources/mavenrepo3/index.maven"), index);
 		Map<String, String> config = new HashMap<>();
 		config.put("index", index.getAbsolutePath());
 		config.put("multi", " zip , par, foo");
@@ -205,6 +205,7 @@ public class MavenBndRepoTest extends TestCase {
 		String multi_version = "1.0.0";
 		domain.setProperty("multi_version", multi_version);
 		File file = repo.get("group:artifact:zip:", Version.parseVersion(multi_version), null);
+		assertThat(repo.getStatus()).isNull();
 		assertNotNull(file);
 		assertTrue(file.isFile());
 
