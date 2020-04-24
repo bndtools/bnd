@@ -326,6 +326,7 @@ class IndexFile {
 				}
 			}
 		}
+		parseSingle(archive, multi);
 	}
 
 	boolean refresh(Runnable refreshAction) throws Exception {
