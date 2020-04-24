@@ -1183,6 +1183,24 @@ public class BundleEngineTest {
 			.haveExactly(0, finishedWithFailure(instanceOf(JUnitException.class)));
 	}
 
+	// Test for https://github.com/bndtools/bnd/issues/3966
+	@Test
+	public void bundle_withSingleTestClass_andItIsNotResolvable_raisesAnError() {
+		Bundle test = testBundler.bundleWithEE()
+			.header("Test-Cases", "some.other.Clazz")
+			.start();
+
+		engineInFramework().configurationParameter(CHECK_UNRESOLVED, "false")
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(0, event(container("unresolvedClasses")))
+			.haveExactly(1,
+				event(test("some.other.Clazz"), withParentLastSegment("bundle", test.getSymbolicName()),
+					finishedWithFailure(instanceOf(ClassNotFoundException.class))));
+	}
+
 	public static class SubEngine implements TestEngine {
 
 		static EngineDiscoveryRequest request;
@@ -1219,8 +1237,7 @@ public class BundleEngineTest {
 		synchronized (SubEngine.class) {
 			SubEngine.request = null;
 
-			engineInFramework()
-				.selectors(selectBundle(testBundle))
+			engineInFramework().selectors(selectBundle(testBundle))
 				.execute()
 				.all()
 				.debug(debugStr);
@@ -1233,7 +1250,8 @@ public class BundleEngineTest {
 		List<Class<?>> selectedClasses = new ArrayList<>();
 
 		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-			softly.assertThat(request.getSelectorsByType(BundleSelector.class)).as("should remove BundleSelectors")
+			softly.assertThat(request.getSelectorsByType(BundleSelector.class))
+				.as("should remove BundleSelectors")
 				.isEmpty();
 			List<DiscoverySelector> selectors = request.getSelectorsByType(DiscoverySelector.class);
 			softly.assertThat(selectors)
