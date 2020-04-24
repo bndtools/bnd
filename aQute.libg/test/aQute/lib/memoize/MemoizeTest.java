@@ -2,7 +2,9 @@ package aQute.lib.memoize;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
+import java.io.Closeable;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.TimeUnit;
@@ -195,6 +197,59 @@ public class MemoizeTest {
 		Memoize<Number> mapped = memoized.flatMap(s -> supplier);
 		assertThat(Stream.generate(mapped::get)
 			.limit(10)).containsOnly(Integer.valueOf(10));
+	}
+
+	static class CloseableClass implements Closeable {
+		boolean		closed	= false;
+		final int	count;
+
+		CloseableClass(int count) {
+			this.count = count;
+		}
+
+		@Override
+		public void close() {
+			closed = true;
+		}
+
+		@Override
+		public String toString() {
+			return Integer.toString(count);
+		}
+	}
+
+	@Test
+	public void closeable() throws Exception {
+		Supplier<CloseableClass> source = () -> new CloseableClass(count.incrementAndGet());
+		CloseableMemoize<CloseableClass> memoized = CloseableMemoize.closeableSupplier(source);
+		assertThat(count).hasValue(0);
+		assertThat(memoized.peek()).isNull();
+		assertThat(count).hasValue(0);
+
+		assertThat(Stream.generate(memoized::get)
+			.limit(100)).allMatch(
+				s -> !s.closed && s.count == 1);
+		assertThat(count).hasValue(1);
+
+		CloseableClass o = memoized.get();
+		assertThat(o).isNotNull();
+		assertThat(o.count).isEqualTo(1);
+		assertThat(o.closed).isFalse();
+		assertThat(count).hasValue(1);
+		assertThat(memoized.peek()).isNotNull();
+		assertThat(count).hasValue(1);
+
+		assertThat(catchThrowable(() -> memoized.close())).doesNotThrowAnyException();
+		assertThat(o.closed).isTrue();
+		assertThat(memoized.peek()).isNull();
+		assertThat(count).hasValue(1);
+
+		assertThat(catchThrowable(() -> memoized.close())).doesNotThrowAnyException();
+		assertThat(memoized.peek()).isNull();
+		assertThat(count).hasValue(1);
+
+		assertThat(memoized.get()).isNull();
+		assertThat(count).hasValue(1);
 	}
 
 }

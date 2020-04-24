@@ -33,7 +33,7 @@ import aQute.lib.hierarchy.NamedNode;
 import aQute.lib.zip.JarIndex;
 import aQute.libg.uri.URIUtil;
 
-class WorkspaceClassIndex {
+class WorkspaceClassIndex implements AutoCloseable {
 	final Workspace workspace;
 
 	WorkspaceClassIndex(Workspace workspace) {
@@ -220,5 +220,8 @@ class WorkspaceClassIndex {
 		}
 		return sb.toString();
 	}
+
+	@Override
+	public void close() {}
 
 }

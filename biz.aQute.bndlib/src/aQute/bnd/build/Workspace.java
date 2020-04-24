@@ -4,7 +4,6 @@ import static aQute.lib.exceptions.BiFunctionWithException.asBiFunction;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.lang.invoke.MethodType.methodType;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,7 +40,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -100,6 +98,7 @@ import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.lib.io.NonClosingInputStream;
+import aQute.lib.memoize.CloseableMemoize;
 import aQute.lib.memoize.Memoize;
 import aQute.lib.settings.Settings;
 import aQute.lib.strings.Strings;
@@ -123,21 +122,24 @@ public class Workspace extends Processor {
 	static final int			BUFFER_SIZE						= IOConstants.PAGE_SIZE * 16;
 	private static final String	PLUGIN_STANDALONE		= Constants.PLUGIN + ".standalone_";
 
-	class WorkspaceData implements Closeable {
-		final Supplier<List<RepositoryPlugin>>			repositories;
+	class WorkspaceData implements AutoCloseable {
+		final Memoize<List<RepositoryPlugin>>					repositories;
 		volatile RemoteWorkspaceServer					remoteServer;
-		final Supplier<WorkspaceClassIndex>				classIndex;
-		final Supplier<WorkspaceExternalPluginHandler>	externalPlugins;
+		final CloseableMemoize<WorkspaceClassIndex>				classIndex;
+		final CloseableMemoize<WorkspaceExternalPluginHandler>	externalPlugins;
 
 		WorkspaceData() {
 			repositories = Memoize.supplier(Workspace.this::initRepositories);
-			classIndex = Memoize.supplier(() -> new WorkspaceClassIndex(Workspace.this));
-			externalPlugins = Memoize.supplier(() -> new WorkspaceExternalPluginHandler(Workspace.this));
+			classIndex = CloseableMemoize.closeableSupplier(() -> new WorkspaceClassIndex(Workspace.this));
+			externalPlugins = CloseableMemoize
+				.closeableSupplier(() -> new WorkspaceExternalPluginHandler(Workspace.this));
 		}
 
 		@Override
 		public void close() {
 			IO.close(remoteServer);
+			IO.close(classIndex);
+			IO.close(externalPlugins);
 		}
 	}
 
@@ -369,7 +371,7 @@ public class Workspace extends Processor {
 	public boolean refresh() {
 		WorkspaceData oldData = data;
 		data = new WorkspaceData();
-		oldData.close();
+		IO.close(oldData);
 
 		gestalt = null;
 		if (super.refresh()) {
@@ -396,7 +398,7 @@ public class Workspace extends Processor {
 	public void propertiesChanged() {
 		WorkspaceData oldData = data;
 		data = new WorkspaceData();
-		oldData.close();
+		IO.close(oldData);
 
 		File extDir = new File(getBuildDir(), EXT);
 		File[] extensions = extDir.listFiles();
@@ -928,7 +930,7 @@ public class Workspace extends Processor {
 	public void close() {
 		WorkspaceData oldData = data;
 		data = new WorkspaceData();
-		oldData.close();
+		IO.close(oldData);
 		synchronized (cache) {
 			WeakReference<Workspace> wsr = cache.get(getBase());
 			if ((wsr != null) && (wsr.get() == this)) {
