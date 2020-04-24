@@ -7,6 +7,16 @@ import java.lang.ref.WeakReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * The object can exist in one of two states:
+ * <ul>
+ * <li>cleared which means memoized holds a cleared reference. This is the
+ * initial state. The object transitions to this state if the garbage collector
+ * clears the reference. From this state, the object transitions to valued
+ * when @{code get} is called.</li>
+ * <li>valued which means memoized holds a reference with a value.</li>
+ * </ul>
+ */
 class ReferenceMemoizingSupplier<T> implements Memoize<T> {
 	private final Supplier<? extends T>									supplier;
 	private final Function<? super T, ? extends Reference<? extends T>>	reference;

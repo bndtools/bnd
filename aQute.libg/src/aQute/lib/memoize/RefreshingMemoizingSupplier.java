@@ -5,6 +5,17 @@ import static java.util.Objects.requireNonNull;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+/**
+ * The object can exist in one of two states:
+ * <ul>
+ * <li>expired which means that System.nanoTime is greater than timebound.
+ * memoized may hold an expired value or null. The object transitions to this
+ * state when time_to_live elapses. This is the initial state. From this state,
+ * the object transitions to valued when @{code get} is called.</li>
+ * <li>valued which means that System.nanoTime is less than timebound. memoized
+ * holds the current value.</li>
+ * </ul>
+ */
 class RefreshingMemoizingSupplier<T> implements Memoize<T> {
 	private final Supplier<? extends T>	supplier;
 	private final long					time_to_live;
