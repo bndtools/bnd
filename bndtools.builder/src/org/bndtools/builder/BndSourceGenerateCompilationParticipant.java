@@ -48,9 +48,11 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 			MarkerSupport markers = new MarkerSupport(javaProject.getProject());
 
 			Result<Set<File>, String> result = project.getGenerate()
-				.generate(true);
+				.generate(false);
 			if (!result.isErr()) {
-				Set<File> outputs = result.unwrap();
+				Set<File> generated = result.unwrap();
+				Set<File> outputs = project.getGenerate()
+					.getOutputs();
 				Central.refreshFiles(project, outputs, null, true);
 			}
 			markers.setMarkers(project, MARKER_BND_GENERATE);

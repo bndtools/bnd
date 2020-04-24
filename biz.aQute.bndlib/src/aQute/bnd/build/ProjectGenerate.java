@@ -3,9 +3,7 @@ package aQute.bnd.build;
 import static aQute.bnd.service.result.Result.err;
 import static aQute.bnd.service.result.Result.ok;
 
-import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
