@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import java.io.Closeable;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -200,7 +201,7 @@ public class MemoizeTest {
 	}
 
 	static class CloseableClass implements Closeable {
-		boolean		closed	= false;
+		int			closed	= 0;
 		final int	count;
 
 		CloseableClass(int count) {
@@ -209,7 +210,7 @@ public class MemoizeTest {
 
 		@Override
 		public void close() {
-			closed = true;
+			closed++;
 		}
 
 		@Override
@@ -227,29 +228,69 @@ public class MemoizeTest {
 		assertThat(count).hasValue(0);
 
 		assertThat(Stream.generate(memoized::get)
-			.limit(100)).allMatch(
-				s -> !s.closed && s.count == 1);
+			.limit(100)).allMatch(s -> s.closed == 0 && s.count == 1);
 		assertThat(count).hasValue(1);
 
 		CloseableClass o = memoized.get();
 		assertThat(o).isNotNull();
 		assertThat(o.count).isEqualTo(1);
-		assertThat(o.closed).isFalse();
+		assertThat(o.closed).isEqualTo(0);
 		assertThat(count).hasValue(1);
 		assertThat(memoized.peek()).isNotNull();
 		assertThat(count).hasValue(1);
 
 		assertThat(catchThrowable(() -> memoized.close())).doesNotThrowAnyException();
-		assertThat(o.closed).isTrue();
+		assertThat(o.closed).isEqualTo(1);
 		assertThat(memoized.peek()).isNull();
 		assertThat(count).hasValue(1);
 
+		// close
 		assertThat(catchThrowable(() -> memoized.close())).doesNotThrowAnyException();
 		assertThat(memoized.peek()).isNull();
+		assertThat(o.closed).isEqualTo(1);
 		assertThat(count).hasValue(1);
+		assertThat(catchThrowable(() -> memoized.get())).isInstanceOf(IllegalStateException.class);
 
-		assertThat(memoized.get()).isNull();
+		// close again
+		assertThat(catchThrowable(() -> memoized.close())).isNull();
+		assertThat(o.closed).isEqualTo(1);
 		assertThat(count).hasValue(1);
+	}
+
+	@Test
+	public void acceptWhileCloseIsBlocked() {
+		CloseableMemoize<Closeable> memoized = CloseableMemoize.closeableSupplier(() -> () -> {});
+		CallOnOtherThread s = new CallOnOtherThread(memoized::close, 200);
+		memoized.accept(c -> {
+			s.call();
+			assertThat(s.hasEnded()).isFalse();
+		});
+		assertThat(s.hasEnded()).isTrue();
+	}
+
+	@Test
+	public void exceptionWhileInsideClose() throws InterruptedException {
+		Semaphore makeCloseWait = new Semaphore(0);
+		CloseableMemoize<Closeable> memoized = CloseableMemoize.closeableSupplier(() -> () -> {
+			try {
+				makeCloseWait.acquire();
+			} catch (InterruptedException e) {}
+		});
+
+		CallOnOtherThread close = new CallOnOtherThread(memoized::close, 200);
+		assertThat(memoized.get()).isNotNull();
+		assertThat(memoized.isClosed()).isFalse();
+		assertThat(memoized.peek()).isNotNull();
+
+		close.call();
+
+		assertThat(close.hasEnded()).isFalse();
+		makeCloseWait.release();
+		assertThat(close.hasEnded()).isTrue();
+
+		assertThat(memoized.isClosed()).isTrue();
+		assertThat(memoized.peek()).isNull();
+		assertThat(catchThrowable(() -> memoized.get())).isInstanceOf(IllegalStateException.class);
 	}
 
 }
