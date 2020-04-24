@@ -19,6 +19,7 @@ package aQute.bnd.service.result;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -185,4 +186,10 @@ public final class Ok<V, E> implements Result<V, E> {
 	public <X> Result<X, E> asError() {
 		throw new IllegalArgumentException("must be an error");
 	}
+
+	@Override
+	public <X extends Throwable> V unwrap(Function<E, X> constructor) {
+		return unwrap();
+	}
+
 }

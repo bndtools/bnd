@@ -19,6 +19,7 @@ package aQute.bnd.service.result;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -183,6 +184,11 @@ public final class Err<V, E> implements Result<V, E> {
 	@Override
 	public <X> Result<X, E> asError() {
 		return coerce();
+	}
+
+	@Override
+	public <X extends Throwable> V unwrap(Function<E, X> constructor) throws X {
+		throw constructor.apply(error);
 	}
 
 }

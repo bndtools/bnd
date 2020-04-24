@@ -2,18 +2,15 @@ package aQute.bnd.build;
 
 import static aQute.bnd.classindex.ClassIndexerAnalyzer.BND_HASHES;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Capability;
@@ -27,11 +24,12 @@ import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.result.Result;
+import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.hierarchy.Hierarchy;
 import aQute.lib.hierarchy.NamedNode;
 import aQute.lib.zip.JarIndex;
-import aQute.libg.uri.URIUtil;
 
 class WorkspaceClassIndex implements AutoCloseable {
 	final Workspace workspace;
@@ -82,10 +80,10 @@ class WorkspaceClassIndex implements AutoCloseable {
 
 			String binaryClassName = Descriptors.fqnClassToBinary(className);
 
-			ResourceUtils.getURI(resource)
-				.ifPresent(uri -> {
-					matchClassNameAgainstResource(uri, binaryClassName, e.getValue(), bundle, result);
-				});
+			String error = matchClassNameAgainstResource(binaryClassName, e.getValue(), bundle, result);
+			if (error != null) {
+				return Result.err(error);
+			}
 		}
 		return Result.ok(result.transpose());
 	}
@@ -95,19 +93,17 @@ class WorkspaceClassIndex implements AutoCloseable {
 	 * found via the hashes or the package prefix. We try to find the class name
 	 * in the package directory of the resource
 	 */
-	private void matchClassNameAgainstResource(URI uri, String binaryClassName, List<Capability> caps, BundleId bundle,
+	private String matchClassNameAgainstResource(String binaryClassName, List<Capability> caps, BundleId bundle,
 		MultiMap<BundleId, String> result) {
 		try {
-			Hierarchy zipIndex;
-			Optional<File> file = URIUtil.pathFromURI(uri)
-				.filter(Files::isRegularFile)
-				.map(Path::toFile);
-			if (file.isPresent()) {
-				zipIndex = new JarIndex(file.get());
-			} else {
-				zipIndex = new JarIndex(uri.toURL()
-					.openStream());
+
+			Result<File, String> r = workspace.getBundle(bundle.getBsn(), Version.valueOf(bundle.getVersion()), null);
+			if (r.isErr()) {
+				return r.error()
+					.get();
 			}
+
+			Hierarchy zipIndex = new JarIndex(r.unwrap());
 
 			caps: for (Capability cap : caps) {
 
@@ -133,8 +129,9 @@ class WorkspaceClassIndex implements AutoCloseable {
 					});
 			}
 		} catch (IOException e1) {
-			// ignore
+			return Exceptions.causes(e1);
 		}
+		return null;
 	}
 
 	/*

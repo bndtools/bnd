@@ -2,64 +2,75 @@ package aQute.lib.memoize;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMemoize<T> {
 	private final Supplier<? extends T>	supplier;
-	private volatile boolean			delegate;
-	// @GuardedBy("delegate")
-	private T							memoized;
+	// @GuardedBy("this")
+	private boolean						closed	= false;
+	private volatile T					memoized;
 
 	CloseableMemoizingSupplier(Supplier<? extends T> supplier) {
 		this.supplier = requireNonNull(supplier);
-		delegate = true;
 	}
 
 	@Override
 	public T get() {
-		// read delegate _before_ read memoized
-		if (delegate) {
-			// critical section: only one at a time
+		if (memoized == null) {
 			synchronized (this) {
-				if (delegate) {
-					T result = supplier.get();
-					memoized = result;
-					// write delegate _after_ write memoized
-					delegate = false;
-					return result;
-				}
+				if (closed)
+					throw new IllegalStateException("Already closed");
+				return get0();
 			}
+		}
+		return memoized;
+	}
+
+	private T get0() {
+		if (memoized == null) {
+			memoized = supplier.get();
+			assert memoized != null;
 		}
 		return memoized;
 	}
 
 	@Override
 	public T peek() {
-		// read delegate _before_ read memoized
-		if (delegate) {
-			return null;
-		}
 		return memoized;
 	}
 
 	@Override
+	public synchronized boolean isClosed() {
+		return closed;
+	}
+
+	@Override
 	public void close() throws Exception {
-		// read delegate _before_ read memoized
-		if (delegate) {
-			// critical section: only one at a time
-			synchronized (this) {
-				if (delegate) {
-					delegate = false;
-					return; // no value to close
-				}
+		T current;
+		synchronized (this) {
+			if (closed)
+				return;
+
+			closed = true;
+
+			if (memoized == null)
+				return;
+
+			current = memoized;
+			memoized = null;
+		}
+		current.close();
+	}
+
+	@Override
+	public Memoize<T> accept(Consumer<? super T> consumer) {
+		synchronized (this) {
+			if (closed) {
+				throw new IllegalStateException("Already closed");
 			}
+			consumer.accept(get0());
 		}
-		T value = memoized;
-		memoized = null; // release to GC
-		// write delegate _after_ write memoized
-		delegate = false; // even though it is already false
-		if (value != null) {
-			value.close();
-		}
+		return this;
 	}
 }

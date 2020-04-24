@@ -124,7 +124,7 @@ public class Workspace extends Processor {
 
 	class WorkspaceData implements AutoCloseable {
 		final Memoize<List<RepositoryPlugin>>					repositories;
-		volatile RemoteWorkspaceServer					remoteServer;
+		final RemoteWorkspaceServer					remoteServer;
 		final CloseableMemoize<WorkspaceClassIndex>				classIndex;
 		final CloseableMemoize<WorkspaceExternalPluginHandler>	externalPlugins;
 
@@ -133,6 +133,15 @@ public class Workspace extends Processor {
 			classIndex = CloseableMemoize.closeableSupplier(() -> new WorkspaceClassIndex(Workspace.this));
 			externalPlugins = CloseableMemoize
 				.closeableSupplier(() -> new WorkspaceExternalPluginHandler(Workspace.this));
+			RemoteWorkspaceServer s = null;
+			if (remoteWorkspaces || Processor.isTrue(getProperty(Constants.REMOTEWORKSPACE))) {
+				try {
+					s = new RemoteWorkspaceServer(Workspace.this);
+				} catch (IOException e) {
+					exception(e, "Could not create remote workspace %s", getBase());
+				}
+			}
+			this.remoteServer = s;
 		}
 
 		@Override
@@ -369,10 +378,7 @@ public class Workspace extends Processor {
 
 	@Override
 	public boolean refresh() {
-		WorkspaceData oldData = data;
-		data = new WorkspaceData();
-		IO.close(oldData);
-
+		refreshData();
 		gestalt = null;
 		if (super.refresh()) {
 
@@ -396,9 +402,7 @@ public class Workspace extends Processor {
 
 	@Override
 	public void propertiesChanged() {
-		WorkspaceData oldData = data;
-		data = new WorkspaceData();
-		IO.close(oldData);
+		refreshData();
 
 		File extDir = new File(getBuildDir(), EXT);
 		File[] extensions = extDir.listFiles();
@@ -416,13 +420,6 @@ public class Workspace extends Processor {
 			}
 		}
 
-		if (remoteWorkspaces || Processor.isTrue(getProperty(Constants.REMOTEWORKSPACE))) {
-			try {
-				data.remoteServer = new RemoteWorkspaceServer(this);
-			} catch (IOException e) {
-				exception(e, "Could not create remote workspace %s", getBase());
-			}
-		}
 		super.propertiesChanged();
 	}
 
@@ -945,6 +942,12 @@ public class Workspace extends Processor {
 		} catch (IOException e) {
 			/* For backwards compatibility, we ignore the exception */
 		}
+	}
+
+	private void refreshData() {
+		WorkspaceData oldData = data;
+		data = new WorkspaceData();
+		oldData.close();
 	}
 
 	/**

@@ -1,6 +1,8 @@
 package aQute.bnd.build;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Optional;
@@ -14,11 +16,11 @@ import aQute.lib.exceptions.Exceptions;
 
 class WorkspaceExternalPluginHandler implements AutoCloseable {
 
+	final Workspace workspace;
+
 	WorkspaceExternalPluginHandler(Workspace workspace) {
 		this.workspace = workspace;
 	}
-
-	final Workspace workspace;
 
 	<T, R> Result<R, String> call(String pluginName, Class<T> c, FunctionWithException<T, Result<R, String>> f) {
 		try {
@@ -26,8 +28,7 @@ class WorkspaceExternalPluginHandler implements AutoCloseable {
 			String filter = ExternalPluginNamespace.filter(pluginName, c);
 
 			Optional<Capability> optCap = workspace
-				.findProviders(ExternalPluginNamespace.EXTERNAL_PLUGIN_NAMESPACE,
-					filter)
+				.findProviders(ExternalPluginNamespace.EXTERNAL_PLUGIN_NAMESPACE, filter)
 				.findAny();
 
 			if (!optCap.isPresent())

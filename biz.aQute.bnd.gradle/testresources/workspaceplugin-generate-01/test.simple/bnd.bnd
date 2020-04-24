@@ -1,0 +1,6 @@
+
+src = ${^src},src-gen
+-generate \
+    src-gen/**.java, \
+        output=src-gen; \
+        generate="javagen -o src-gen gen/**.java

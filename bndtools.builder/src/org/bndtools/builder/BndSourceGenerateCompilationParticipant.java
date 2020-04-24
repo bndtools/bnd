@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.compiler.CompilationParticipant;
 
@@ -16,19 +15,27 @@ import bndtools.central.Central;
 public class BndSourceGenerateCompilationParticipant extends CompilationParticipant {
 	private static final ILogger	logger				= Logger
 		.getLogger(BndSourceGenerateCompilationParticipant.class);
-	public static final String		MARKER_BND_GENERATE	= "bndtools.builder.generate";
+	public static final String		MARKER_BND_GENERATE	= "bndtools.builder.bndgenerate";
 	private Project					project;
 
 	@Override
 	public boolean isActive(IJavaProject javaProject) {
 		try {
+			MarkerSupport markers = new MarkerSupport(javaProject.getProject());
 			project = Central.getProject(javaProject.getProject());
 			if (project == null)
 				return false;
 
-			Set<File> inputs = project.getGenerate()
+			Result<Set<File>, String> inputs = project.getGenerate()
 				.getInputs();
-			return !inputs.isEmpty();
+			if (inputs.isErr()) {
+				// handle any errors
+				// in the aboutToBuild method
+				return true;
+			}
+
+			return !inputs.unwrap()
+				.isEmpty();
 		} catch (Exception e) {
 			logger.logError("generating phase, isActive", e);
 			return false;
@@ -39,19 +46,17 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 	public int aboutToBuild(IJavaProject javaProject) {
 		try {
 			MarkerSupport markers = new MarkerSupport(javaProject.getProject());
-			markers.deleteMarkers(MARKER_BND_GENERATE);
-			project.clear();
 
 			Result<Set<File>, String> result = project.getGenerate()
-				.generate(true);
-			if (result.isErr()) {
-				markers.createMarker(project, IMarker.SEVERITY_ERROR, result.error()
-					.get(), MARKER_BND_GENERATE);
-			} else {
-				Set<File> outputs = result.unwrap();
+				.generate(false);
+			if (!result.isErr()) {
+				Set<File> generated = result.unwrap();
+				Set<File> outputs = project.getGenerate()
+					.getOutputs();
 				Central.refreshFiles(project, outputs, null, true);
 			}
 			markers.setMarkers(project, MARKER_BND_GENERATE);
+			project.clear();
 			return READY_FOR_BUILD;
 		} catch (Exception e) {
 			logger.logError("generating phase, aboutToBuild", e);
