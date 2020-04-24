@@ -1,5 +1,7 @@
 package bndtools.central;
 
+import static aQute.lib.exceptions.FunctionWithException.asFunction;
+
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -577,8 +579,10 @@ public class Central implements IStartupParticipant {
 	}
 
 	public static Project getProject(IProject p) throws Exception {
-		return getProject(p.getLocation()
-			.toFile());
+		return Optional.ofNullable(p.getLocation())
+			.map(IPath::toFile)
+			.map(asFunction(Central::getProject))
+			.orElse(null);
 	}
 
 	/**
