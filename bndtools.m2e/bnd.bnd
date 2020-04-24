@@ -39,7 +39,6 @@ Bundle-ActivationPolicy: lazy
 
 Import-Package: \
 	org.apache.maven.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
-	org.codehaus.plexus.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
 	${eclipse.importpackage},\
 	*
 

@@ -5,6 +5,10 @@
 	<extension point="org.eclipse.m2e.core.lifecycleMappingMetadataSource">
 	</extension>
 
+	<extension point="org.eclipse.m2e.core.mavenProjectChangedListeners">
+		<listener class="bndtools.m2e.MavenProjectChangedListenersTracker" />
+	</extension>
+
 	<extension point="org.eclipse.m2e.core.projectConfigurators">
 		<configurator
 			class="bndtools.m2e.BndConfigurator"

@@ -5,11 +5,14 @@ import static java.util.stream.Collectors.toList;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.apache.maven.lifecycle.MavenExecutionPlan;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
@@ -73,13 +76,11 @@ public interface MavenRunListenerHelper {
 	}
 
 	default boolean hasBndMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
-		return getMavenProject(projectFacade).getPlugin("biz.aQute.bnd:bnd-maven-plugin")
-			.getExecutionsAsMap()
-			.values()
-			.stream()
-			.flatMap(pe -> pe.getGoals()
-				.stream())
-			.anyMatch("bnd-process"::equals);
+		return getBndMavenPlugin(projectFacade).isPresent();
+	}
+
+	default Optional<PluginExecution> getBndMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
+		return getBndMavenPluginById(projectFacade, "biz.aQute.bnd:bnd-maven-plugin");
 	}
 
 	default boolean hasBndResolverMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
@@ -88,14 +89,7 @@ public interface MavenRunListenerHelper {
 
 	default Optional<PluginExecution> getBndResolverMavenPlugin(IMavenProjectFacade projectFacade)
 		throws CoreException {
-		return getMavenProject(projectFacade).getPlugin("biz.aQute.bnd:bnd-resolver-maven-plugin")
-			.getExecutionsAsMap()
-			.values()
-			.stream()
-			.filter(pe -> pe.getGoals()
-				.stream()
-				.anyMatch("resolve"::equals))
-			.findFirst();
+		return getBndMavenPluginById(projectFacade, "biz.aQute.bnd:bnd-resolver-maven-plugin");
 	}
 
 	default MojoExecution getBndResolverMojoExecution(IMavenProjectFacade projectFacade,
@@ -112,23 +106,22 @@ public interface MavenRunListenerHelper {
 	}
 
 	default boolean hasBndTestingMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
-		return getMavenProject(projectFacade).getPlugin("biz.aQute.bnd:bnd-testing-maven-plugin")
-			.getExecutionsAsMap()
-			.values()
-			.stream()
-			.flatMap(pe -> pe.getGoals()
-				.stream())
-			.anyMatch("testing"::equals);
+		return getBndTestingMavenPlugin(projectFacade).isPresent();
 	}
 
 	default Optional<PluginExecution> getBndTestingMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
-		return getMavenProject(projectFacade).getPlugin("biz.aQute.bnd:bnd-testing-maven-plugin")
-			.getExecutionsAsMap()
-			.values()
+		return getBndMavenPluginById(projectFacade, "biz.aQute.bnd:bnd-testing-maven-plugin");
+	}
+
+	default Optional<PluginExecution> getBndMavenPluginById(IMavenProjectFacade projectFacade, String id)
+		throws CoreException {
+		return Optional.ofNullable(getMavenProject(projectFacade).getPlugin(
+			id))
+			.map(Plugin::getExecutionsAsMap)
+			.map(Map<String, PluginExecution>::values)
+			.orElseGet(
+				ArrayList::new)
 			.stream()
-			.filter(pe -> pe.getGoals()
-				.stream()
-				.anyMatch("resolve"::equals))
 			.findFirst();
 	}
 

@@ -43,6 +43,48 @@ public class MavenBndrunContainer implements MavenRunListenerHelper {
 
 	public BndrunContainer getBndrunContainer(IMavenProjectFacade projectFacade, MojoExecution mojoExecution,
 		IProgressMonitor monitor) {
+
+		MavenProject mavenProject = getMavenProject(projectFacade);
+
+		Bundles bundles = null;
+		boolean useMavenDependencies = true;
+		boolean includeDependencyManagement = false;
+		Set<String> scopeValues = null;
+
+		if (mojoExecution != null) {
+			try {
+				bundles = maven.getMojoParameterValue(mavenProject, mojoExecution, "bundles", Bundles.class, monitor);
+				if (bundles == null) {
+					bundles = new Bundles();
+				}
+
+				useMavenDependencies = maven.getMojoParameterValue(mavenProject, mojoExecution, "useMavenDependencies",
+					Boolean.class, monitor);
+
+				// Comparing OSGi versions makes '4.2.0.SNAPSHOT' > '4.2.0'.
+				// Comparing Maven versions fails because '4.2.0-SNAPSHOT' is <
+				// '4.2.0'.
+				Version mojoVersion = new MavenVersion(mojoExecution.getVersion()).getOSGiVersion();
+
+				if (mojoVersion.compareTo(scopesVersion) >= 0) {
+					includeDependencyManagement = maven.getMojoParameterValue(mavenProject, mojoExecution,
+						"includeDependencyManagement", Boolean.class, monitor);
+
+					scopeValues = maven.getMojoParameterValue(mavenProject, mojoExecution, "scopes", Set.class, monitor);
+				}
+			} catch (Exception e) {
+				logger.logError("Failed to create Run for m2e project " + mavenProject.getName(), e);
+
+				return null;
+			}
+		}
+
+		return getBndrunContainer(projectFacade, bundles, useMavenDependencies, includeDependencyManagement, scopeValues, monitor);
+	}
+
+	public BndrunContainer getBndrunContainer(IMavenProjectFacade projectFacade, Bundles bundles,
+		boolean useMavenDependencies, boolean includeDependencyManagement, Set<String> scopeValues,
+		IProgressMonitor monitor) {
 		MavenProject mavenProject = getMavenProject(projectFacade);
 		try {
 			ResolverConfiguration resolverConfiguration = configurationManager
@@ -63,36 +105,18 @@ public class MavenBndrunContainer implements MavenRunListenerHelper {
 				lookupComponent(org.apache.maven.artifact.factory.ArtifactFactory.class),
 				lookupComponent(RepositorySystem.class));
 
-			if (mojoExecution != null) {
-				Bundles bundles = maven.getMojoParameterValue(mavenProject, mojoExecution, "bundles", Bundles.class,
-					monitor);
-				if (bundles == null) {
-					bundles = new Bundles();
-				}
+			if (bundles == null) {
+				bundles = new Bundles();
+			}
 
-				containerBuilder.setBundles(bundles.getFiles(mavenProject.getBasedir()));
+			containerBuilder.setBundles(bundles.getFiles(mavenProject.getBasedir()));
 
-				containerBuilder.setUseMavenDependencies(maven.getMojoParameterValue(mavenProject, mojoExecution,
-					"useMavenDependencies", Boolean.class, monitor));
+			containerBuilder.setIncludeDependencyManagement(includeDependencyManagement);
 
-				// Comparing OSGi versions makes '4.2.0.SNAPSHOT' > '4.2.0'.
-				// Comparing Maven versions fails because '4.2.0-SNAPSHOT' is <
-				// '4.2.0'.
-				Version mojoVersion = new MavenVersion(mojoExecution.getVersion()).getOSGiVersion();
-
-				if (mojoVersion.compareTo(scopesVersion) >= 0) {
-					containerBuilder.setIncludeDependencyManagement(maven.getMojoParameterValue(mavenProject,
-						mojoExecution, "includeDependencyManagement", Boolean.class, monitor));
-
-					@SuppressWarnings("unchecked")
-					Set<String> scopeValues = maven.getMojoParameterValue(mavenProject, mojoExecution, "scopes",
-						Set.class, monitor);
-					if (!scopeValues.isEmpty()) {
-						containerBuilder.setScopes(scopeValues.stream()
-							.map(Scope::valueOf)
-							.collect(Collectors.toSet()));
-					}
-				}
+			if ((scopeValues != null) && !scopeValues.isEmpty()) {
+				containerBuilder.setScopes(scopeValues.stream()
+					.map(Scope::valueOf)
+					.collect(Collectors.toSet()));
 			}
 
 			containerBuilder.setPostProcessor(new WorkspaceProjectPostProcessor(monitor));

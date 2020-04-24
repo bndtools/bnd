@@ -128,7 +128,8 @@ public class DependencyResolver {
 		try {
 			result = resolver.resolve(request);
 		} catch (DependencyResolutionException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
+			result = e.getResult();
+			logger.warn(e.getMessage());
 		}
 
 		Map<File, ArtifactResult> dependencies = new LinkedHashMap<>();
@@ -152,8 +153,14 @@ public class DependencyResolver {
 			Map<File, ArtifactResult> dependencies = resolve();
 			bundles.addAll(dependencies.keySet());
 
-			// TODO Find a better way to get all the artifacts produced by this
-			// project!!!
+			project.getAttachedArtifacts()
+				.forEach(a -> {
+					File file = a.getFile();
+					if ((file != null) && file.exists() && !bundles.contains(file)) {
+						bundles.add(file);
+					}
+				});
+
 			File current = new File(project.getBuild()
 				.getDirectory(),
 				project.getBuild()
@@ -191,8 +198,7 @@ public class DependencyResolver {
 						.getFile(), resolvedArtifact);
 				}
 			} catch (ArtifactResolutionException e) {
-				throw new MojoExecutionException("Failed to resolve the dependency " + node.getArtifact()
-					.toString(), e);
+				logger.warn("Failed to resolve dependency {}", node.getArtifact());
 			}
 
 			if (includeTransitive) {
