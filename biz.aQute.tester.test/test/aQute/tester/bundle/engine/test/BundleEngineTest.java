@@ -73,9 +73,11 @@ import aQute.tester.testclasses.bundle.engine.JUnit3And4Test;
 import aQute.tester.testclasses.bundle.engine.JUnit3And5Test;
 import aQute.tester.testclasses.bundle.engine.JUnit3AndVenusTest;
 import aQute.tester.testclasses.bundle.engine.JUnit4Test;
+import aQute.tester.testclasses.bundle.engine.JUnit5ParameterizedSubclassTest;
 import aQute.tester.testclasses.bundle.engine.JUnit5ParameterizedTest;
 import aQute.tester.testclasses.bundle.engine.JUnit5Test;
 import aQute.tester.testclasses.bundle.engine.TestClass;
+import aQute.tester.testclasses.bundle.engine.TestWithField;
 
 @SuppressWarnings("restriction")
 public class BundleEngineTest {
@@ -1183,6 +1185,64 @@ public class BundleEngineTest {
 			.haveExactly(0, finishedWithFailure(instanceOf(JUnitException.class)));
 	}
 
+	// Tests for https://github.com/bndtools/bnd/issues/3882
+	@Test
+	@Tag(CUSTOM_LAUNCH)
+	public void testClass_withUnsatisifiedField_raisesAnError() {
+		builder.excludeExport("aQute.tester.test.params");
+		startLaunchpad();
+		Bundle test = buildTestBundle(TestWithField.class, TestClass.class)
+			.importPackage("aQute.tester.test.params;resolution:=optional")
+			.start();
+
+		engineInFramework().execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(uniqueIdSubstring(test.getSymbolicName()), testClass(TestWithField.class),
+					finishedWithFailure(instanceOf(NoClassDefFoundError.class),
+						message(x -> x.matches("^(?si).*" + CustomParameter.class.getName() + ".*")))));
+	}
+
+	@Test
+	@Tag(CUSTOM_LAUNCH)
+	public void testClass_withUnsatisifiedParameter_raisesAnError() {
+		builder.excludeExport("aQute.tester.test.params");
+		startLaunchpad();
+		Bundle test = buildTestBundle(JUnit5ParameterizedTest.class, TestClass.class)
+			.importPackage("aQute.tester.test.params;resolution:=optional")
+			.start();
+
+		engineInFramework().execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(uniqueIdSubstring(test.getSymbolicName()), testClass(JUnit5ParameterizedTest.class),
+					finishedWithFailure(instanceOf(NoClassDefFoundError.class),
+						message(x -> x.matches("^(?si).*" + CustomParameter.class.getName())))));
+	}
+
+	@Test
+	@Tag(CUSTOM_LAUNCH)
+	public void testClass_withUnsatisifiedSuperclass_raisesAnError() {
+		builder.excludeExport("aQute.tester.test.params");
+		startLaunchpad();
+		Bundle test = buildTestBundle(JUnit5ParameterizedSubclassTest.class, TestClass.class)
+			.importPackage("aQute.tester.test.params;resolution:=optional")
+			.start();
+
+		engineInFramework().execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(uniqueIdSubstring(test.getSymbolicName()), testClass(JUnit5ParameterizedSubclassTest.class),
+					finishedWithFailure(instanceOf(NoClassDefFoundError.class),
+						message(x -> x.matches("^(?si).*" + JUnit5ParameterizedTest.class.getName())))));
+	}
+
 	// Test for https://github.com/bndtools/bnd/issues/3966
 	@Test
 	public void bundle_withSingleTestClass_andItIsNotResolvable_raisesAnError() {
@@ -1190,15 +1250,12 @@ public class BundleEngineTest {
 			.header("Test-Cases", "some.other.Clazz")
 			.start();
 
-		engineInFramework().configurationParameter(CHECK_UNRESOLVED, "false")
-			.execute()
+		engineInFramework().execute()
 			.all()
 			.debug(debugStr)
 			.assertThatEvents()
-			.haveExactly(0, event(container("unresolvedClasses")))
-			.haveExactly(1,
-				event(test("some.other.Clazz"), withParentLastSegment("bundle", test.getSymbolicName()),
-					finishedWithFailure(instanceOf(ClassNotFoundException.class))));
+			.haveExactly(1, event(test("some.other.Clazz"), withParentLastSegment("bundle", test.getSymbolicName()),
+				finishedWithFailure(instanceOf(ClassNotFoundException.class))));
 	}
 
 	public static class SubEngine implements TestEngine {

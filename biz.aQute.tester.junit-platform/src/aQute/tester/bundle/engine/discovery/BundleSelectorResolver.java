@@ -371,6 +371,25 @@ public class BundleSelectorResolver {
 			.forEach(unresolvedClassNames::remove);
 	}
 
+	private Class<?> tryToResolveTestClass(Bundle host, String className, BundleDescriptor bd) {
+		try {
+			Class<?> testClass = host.loadClass(className);
+			// The following is necessary to attempt to resolve the
+			// method parameters and force NoClassDefFoundError if they
+			// can't be resolved; see
+			// https://github.com/bndtools/bnd/issues/3882
+			testClass.getDeclaredMethods();
+			testClass.getDeclaredFields();
+			return testClass;
+		} catch (ClassNotFoundException | NoClassDefFoundError cnfe) {
+			info(() -> "error: " + cnfe);
+			StaticFailureDescriptor unresolvedClassDescriptor = new StaticFailureDescriptor(bd.getUniqueId()
+				.append("test", className), className, cnfe);
+			bd.addChild(unresolvedClassDescriptor);
+		}
+		return null;
+	}
+
 	private List<DiscoverySelector> getSelectorsFromTestCasesHeader(BundleDescriptor bd) {
 		Bundle bundle = bd.getBundle();
 		Bundle host = BundleUtils.getHost(bundle)
@@ -379,21 +398,14 @@ public class BundleSelectorResolver {
 			.map(testcase -> {
 				int index = testcase.indexOf('#');
 				String className = (index < 0) ? testcase : testcase.substring(0, index);
-				try {
-					Class<?> testClass = host.loadClass(className);
-					if (!resolvedClasses.contains(testClass)) {
-						checkForMixedJUnit34(bd, testClass);
-						if (index < 0) {
-							resolvedClasses.add(testClass);
-							return selectClass(testClass);
-						}
-						return selectMethod(testClass, DiscoverySelectors.selectMethod(testcase));
+				Class<?> testClass = tryToResolveTestClass(host, className, bd);
+				if (testClass != null && !resolvedClasses.contains(testClass)) {
+					checkForMixedJUnit34(bd, testClass);
+					if (index < 0) {
+						resolvedClasses.add(testClass);
+						return selectClass(testClass);
 					}
-				} catch (ClassNotFoundException cnfe) {
-					info(() -> "error: " + cnfe);
-					StaticFailureDescriptor unresolvedClassDescriptor = new StaticFailureDescriptor(bd.getUniqueId()
-						.append("test", testcase), testcase, cnfe);
-					bd.addChild(unresolvedClassDescriptor);
+					return selectMethod(testClass, DiscoverySelectors.selectMethod(testcase));
 				}
 				return null;
 			})
