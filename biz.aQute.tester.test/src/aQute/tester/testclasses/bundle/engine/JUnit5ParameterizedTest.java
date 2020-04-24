@@ -13,8 +13,7 @@ public class JUnit5ParameterizedTest {
 
 	@ParameterizedTest
 	@MethodSource("provideArgs")
-	public void parameterizedMethod(String param, float param2) {
-	}
+	public void parameterizedMethod(String param, float param2) {}
 
 	public static Stream<Arguments> provideArgs() {
 		return Stream.of(Arguments.of("one", 1.0f), Arguments.of("two", 2.0f), Arguments.of("three", 3.0f),

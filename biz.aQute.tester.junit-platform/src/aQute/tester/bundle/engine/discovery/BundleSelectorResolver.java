@@ -68,7 +68,7 @@ public class BundleSelectorResolver {
 		};
 
 	final boolean						testUnresolved;
-	final Map<Long, BundleDescriptor>	bundleMap	= new HashMap<>();
+	final Map<Long, BundleDescriptor>	bundleMap			= new HashMap<>();
 
 	private String dump(TestDescriptor t, String indent) {
 		return indent + t + "\n" + t.getChildren()
@@ -96,8 +96,8 @@ public class BundleSelectorResolver {
 	final Set<TestEngine>			engines;
 	final Set<String>				unresolvedClassNames	= new HashSet<>();
 	final Map<String, Set<String>>	unresolvedMethodNames	= new HashMap<>();
-	final Set<Class<?>>				resolvedClasses		= new HashSet<>();
-	private boolean					verbose				= false;
+	final Set<Class<?>>				resolvedClasses			= new HashSet<>();
+	private boolean					verbose					= false;
 
 	public static void resolve(BundleContext context, EngineDiscoveryRequest request, EngineDescriptor descriptor) {
 		new BundleSelectorResolver(context, request, descriptor).resolve();
@@ -371,6 +371,25 @@ public class BundleSelectorResolver {
 			.forEach(unresolvedClassNames::remove);
 	}
 
+	private Class<?> tryToResolveTestClass(Bundle host, String className, BundleDescriptor bd) {
+		try {
+			Class<?> testClass = host.loadClass(className);
+			// The following is necessary to attempt to resolve the
+			// method parameters and force NoClassDefFoundError if they
+			// can't be resolved; see
+			// https://github.com/bndtools/bnd/issues/3882
+			testClass.getDeclaredMethods();
+			testClass.getDeclaredFields();
+			return testClass;
+		} catch (ClassNotFoundException | NoClassDefFoundError cnfe) {
+			info(() -> "error: " + cnfe);
+			StaticFailureDescriptor unresolvedClassDescriptor = new StaticFailureDescriptor(bd.getUniqueId()
+				.append("test", className), className, cnfe);
+			bd.addChild(unresolvedClassDescriptor);
+		}
+		return null;
+	}
+
 	private List<DiscoverySelector> getSelectorsFromTestCasesHeader(BundleDescriptor bd) {
 		Bundle bundle = bd.getBundle();
 		Bundle host = BundleUtils.getHost(bundle)
@@ -379,20 +398,14 @@ public class BundleSelectorResolver {
 			.map(testcase -> {
 				int index = testcase.indexOf('#');
 				String className = (index < 0) ? testcase : testcase.substring(0, index);
-				try {
-					Class<?> testClass = host.loadClass(className);
-					if (!resolvedClasses.contains(testClass)) {
-						checkForMixedJUnit34(bd, testClass);
-						if (index < 0) {
-							resolvedClasses.add(testClass);
-							return selectClass(testClass);
-						}
-						return selectMethod(testClass, DiscoverySelectors.selectMethod(testcase));
+				Class<?> testClass = tryToResolveTestClass(host, className, bd);
+				if (testClass != null && !resolvedClasses.contains(testClass)) {
+					checkForMixedJUnit34(bd, testClass);
+					if (index < 0) {
+						resolvedClasses.add(testClass);
+						return selectClass(testClass);
 					}
-				} catch (ClassNotFoundException cnfe) {
-					StaticFailureDescriptor unresolvedClassDescriptor = new StaticFailureDescriptor(bd.getUniqueId()
-						.append("test", testcase), testcase, cnfe);
-					bd.addChild(unresolvedClassDescriptor);
+					return selectMethod(testClass, DiscoverySelectors.selectMethod(testcase));
 				}
 				return null;
 			})
@@ -436,8 +449,7 @@ public class BundleSelectorResolver {
 				bd.addChild(mixedError);
 			}
 
-		} catch (ClassNotFoundException e) {
-		}
+		} catch (ClassNotFoundException e) {}
 	}
 
 	private boolean hasJUnit4Annotations(Class<?> clazz) {
@@ -539,8 +551,8 @@ public class BundleSelectorResolver {
 			return Stream.concat( //
 				request.getSelectorsByType(selectorType)
 					.stream()
-					.filter(selector -> !(selector instanceof ClassSelector || selector instanceof MethodSelector
-						|| selector instanceof BundleSelector)),
+					.filter(selector -> !(selector instanceof ClassSelector
+						|| selector instanceof MethodSelector || selector instanceof BundleSelector)),
 				selectors.stream()
 					.filter(selectorType::isInstance))
 				.map(selectorType::cast)
@@ -569,7 +581,8 @@ public class BundleSelectorResolver {
 			selectors = getSelectorsFromSuppliedSelectors(bd);
 		}
 		info(() -> "Computed selectors: " + selectors);
-		if (selectors.isEmpty()) {
+		if (selectors.isEmpty() && bd.getChildren()
+			.size() == 0) {
 			return false;
 		}
 		SubDiscoveryRequest subRequest = new SubDiscoveryRequest(selectors);
