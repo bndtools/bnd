@@ -39,10 +39,13 @@ class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMe
 			final long stamp = lock.writeLock();
 			try {
 				if (initial) {
-					T result = requireNonNull(supplier.get());
+					T result = supplier.get();
 					memoized = result;
 					// write initial _after_ write memoized
 					initial = false;
+					if (result == null) {
+						throw new IllegalStateException("closed");
+					}
 					return result;
 				}
 			} finally {
