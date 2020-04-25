@@ -4,7 +4,6 @@ import static aQute.bnd.build.Container.toPaths;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

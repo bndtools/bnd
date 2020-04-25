@@ -2,7 +2,6 @@ package aQute.bnd.build;
 
 import static aQute.bnd.classindex.ClassIndexerAnalyzer.BND_HASHES;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
