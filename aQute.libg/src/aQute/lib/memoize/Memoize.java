@@ -10,9 +10,10 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
- * Memoization support.
+ * Memoizing supplier.
  * <p>
- * This type extends {@code Supplier} and adds a {@link #peek()} method.
+ * This type extends {@code Supplier} and adds a {@link #peek()} method as well
+ * as some monadic methods.
  *
  * @param <S> Type of the value returned.
  */
@@ -102,7 +103,7 @@ public interface Memoize<S> extends Supplier<S> {
 	/**
 	 * Peek the value.
 	 * <p>
-	 * This method will not result in a call the to source supplier.
+	 * This method will not result in a call to the source supplier.
 	 *
 	 * @return The value if a value is memoized; otherwise {@code null}.
 	 */
@@ -158,7 +159,7 @@ public interface Memoize<S> extends Supplier<S> {
 	/**
 	 * Call the consumer with the value of this memoized supplier.
 	 *
-	 * @param consumer The consumer to acceot the value of this memoized
+	 * @param consumer The consumer to accept the value of this memoized
 	 *            supplier. Must not be {@code null}.
 	 * @return This memoized supplier.
 	 */

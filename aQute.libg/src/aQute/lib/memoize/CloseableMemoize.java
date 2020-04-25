@@ -1,23 +1,32 @@
 package aQute.lib.memoize;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * Closable memoizing supplier.
+ * <p>
+ * This type extends {@link Memoize} and {@code AutoCloseable}.
+ *
+ * @param <S> Type of the value returned.
+ */
 public interface CloseableMemoize<S extends AutoCloseable> extends Memoize<S>, AutoCloseable {
 	/**
 	 * Creates an AutoClosable supplier which memoizes the AutoCloseable value
 	 * returned by the specified supplier.
 	 * <p>
 	 * When the returned supplier is called to get a value, it will call the
-	 * specified supplier at most once to obtain a value. An
-	 * IllegalStateException is called when the Memoize has been closed.
+	 * specified supplier at most once to obtain a value.
 	 * <p>
 	 * When {@code close()} is called on the returned supplier, it will call
-	 * {@code close()} on the memoized value if present and close the value.
-	 * After {@code close()} is called, this supplier will throw an
-	 * IllegalStateException.
+	 * {@code close()} on the memoized value, if present, and dereference the
+	 * value. After {@code close()} is called on the returned supplier, the
+	 * {@code get()} method of the returned supplier will throw an
+	 * {@code IllegalStateException}.
 	 *
 	 * @param <T> Type of the value returned by the supplier.
-	 * @param supplier The source supplier. Must not be {@code null}.
+	 * @param supplier The source supplier. Must not be {@code null}. The
+	 *            supplier must not return a {@code null} value.
 	 * @return A memoized supplier wrapping the specified supplier.
 	 */
 	static <T extends AutoCloseable> CloseableMemoize<T> closeableSupplier(Supplier<? extends T> supplier) {
@@ -30,10 +39,23 @@ public interface CloseableMemoize<S extends AutoCloseable> extends Memoize<S>, A
 	}
 
 	/**
-	 * Check if this Memoize has been closed
+	 * Returns whether this memoizing supplier is closed.
 	 *
-	 * @return {@code true} if this Memoize has been closed
+	 * @return {@code true} If this memoizing supplier is closed; otherwise
+	 *         {@code false}.
 	 */
 	boolean isClosed();
 
+	/**
+	 * Call the consumer with the value of this memoized supplier.
+	 * <p>
+	 * This method will block closing this memoized supplier while this method
+	 * is executing.
+	 *
+	 * @param consumer The consumer to accept the value of this memoized
+	 *            supplier. Must not be {@code null}.
+	 * @return This memoized supplier.
+	 */
+	@Override
+	CloseableMemoize<S> accept(Consumer<? super S> consumer);
 }

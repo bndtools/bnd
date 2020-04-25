@@ -1,16 +1,22 @@
 package aQute.lib.memoize;
 
+import static aQute.lib.exceptions.ConsumerWithException.asConsumer;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.io.Closeable;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -201,16 +207,17 @@ public class MemoizeTest {
 	}
 
 	static class CloseableClass implements Closeable {
-		int			closed	= 0;
-		final int	count;
+		AtomicInteger	closed;
+		final int		count;
 
 		CloseableClass(int count) {
 			this.count = count;
+			closed = new AtomicInteger();
 		}
 
 		@Override
 		public void close() {
-			closed++;
+			closed.incrementAndGet();
 		}
 
 		@Override
@@ -228,32 +235,32 @@ public class MemoizeTest {
 		assertThat(count).hasValue(0);
 
 		assertThat(Stream.generate(memoized::get)
-			.limit(100)).allMatch(s -> s.closed == 0 && s.count == 1);
+			.limit(100)).allMatch(s -> s.closed.get() == 0 && s.count == 1);
 		assertThat(count).hasValue(1);
 
 		CloseableClass o = memoized.get();
 		assertThat(o).isNotNull();
 		assertThat(o.count).isEqualTo(1);
-		assertThat(o.closed).isEqualTo(0);
+		assertThat(o.closed).hasValue(0);
 		assertThat(count).hasValue(1);
 		assertThat(memoized.peek()).isNotNull();
 		assertThat(count).hasValue(1);
 
-		assertThat(catchThrowable(() -> memoized.close())).doesNotThrowAnyException();
-		assertThat(o.closed).isEqualTo(1);
+		assertThat(catchThrowable(memoized::close)).doesNotThrowAnyException();
+		assertThat(o.closed).hasValue(1);
 		assertThat(memoized.peek()).isNull();
 		assertThat(count).hasValue(1);
 
 		// close
-		assertThat(catchThrowable(() -> memoized.close())).doesNotThrowAnyException();
+		assertThat(catchThrowable(memoized::close)).doesNotThrowAnyException();
 		assertThat(memoized.peek()).isNull();
-		assertThat(o.closed).isEqualTo(1);
+		assertThat(o.closed).hasValue(1);
 		assertThat(count).hasValue(1);
-		assertThat(catchThrowable(() -> memoized.get())).isInstanceOf(IllegalStateException.class);
+		assertThatIllegalStateException().isThrownBy(memoized::get);
 
 		// close again
-		assertThat(catchThrowable(() -> memoized.close())).isNull();
-		assertThat(o.closed).isEqualTo(1);
+		assertThat(catchThrowable(memoized::close)).doesNotThrowAnyException();
+		assertThat(o.closed).hasValue(1);
 		assertThat(count).hasValue(1);
 	}
 
@@ -290,7 +297,97 @@ public class MemoizeTest {
 
 		assertThat(memoized.isClosed()).isTrue();
 		assertThat(memoized.peek()).isNull();
-		assertThat(catchThrowable(() -> memoized.get())).isInstanceOf(IllegalStateException.class);
+		assertThatIllegalStateException().isThrownBy(memoized::get);
+	}
+
+	@Test
+	public void closeable_initial() throws Exception {
+		Supplier<CloseableClass> source = () -> new CloseableClass(count.incrementAndGet());
+		CloseableMemoize<CloseableClass> memoized = CloseableMemoize.closeableSupplier(source);
+		assertThat(count).hasValue(0);
+		assertThat(memoized.peek()).isNull();
+		assertThat(count).hasValue(0);
+
+		assertThat(catchThrowable(memoized::close)).doesNotThrowAnyException();
+		assertThat(memoized.peek()).isNull();
+		assertThat(count).hasValue(0);
+
+		assertThat(catchThrowable(memoized::close)).doesNotThrowAnyException();
+		assertThat(memoized.peek()).isNull();
+		assertThat(count).hasValue(0);
+
+		assertThatIllegalStateException().isThrownBy(memoized::get);
+		assertThat(memoized.peek()).isNull();
+		assertThat(count).hasValue(0);
+	}
+
+	@Test
+	public void closeable_null() {
+		assertThatNullPointerException()
+			.isThrownBy(() -> CloseableMemoize.closeableSupplier((Supplier<AutoCloseable>) null));
+		assertThatNullPointerException()
+			.isThrownBy(() -> CloseableMemoize.closeableSupplier((Supplier<AutoCloseable>) () -> null)
+				.get());
+	}
+
+	@SuppressWarnings("resource")
+	@Test
+	public void closeable_accept() throws Exception {
+		Supplier<CloseableClass> source = () -> new CloseableClass(count.incrementAndGet());
+		CloseableMemoize<CloseableClass> memoized = CloseableMemoize.closeableSupplier(source);
+		AtomicReference<CloseableClass> value = new AtomicReference<>();
+
+		assertThat(catchThrowable(() -> memoized.accept(value::set))).doesNotThrowAnyException();
+
+		CloseableClass o = value.get();
+		assertThat(o).isNotNull();
+		assertThat(o.count).isEqualTo(1);
+		assertThat(o.closed).hasValue(0);
+		assertThat(count).hasValue(1);
+		assertThat(memoized.peek()).isNotNull();
+		assertThat(count).hasValue(1);
+
+		assertThat(catchThrowable(memoized::close)).doesNotThrowAnyException();
+		assertThat(o.closed).hasValue(1);
+		assertThat(memoized.peek()).isNull();
+		assertThat(count).hasValue(1);
+
+		assertThatIllegalStateException().isThrownBy(() -> memoized.accept(value::set));
+		assertThat(memoized.peek()).isNull();
+		assertThat(o.closed).hasValue(1);
+		assertThat(count).hasValue(1);
+		assertThat(value).hasValue(o);
+
+	}
+
+	@Test
+	public void closeable_accept_multi() throws Exception {
+		final int multi = 5;
+		CountDownLatch sync = new CountDownLatch(1);
+		CountDownLatch ready = new CountDownLatch(multi);
+		CountDownLatch done = new CountDownLatch(multi);
+		Supplier<CloseableClass> source = () -> new CloseableClass(count.incrementAndGet());
+		Consumer<AutoCloseable> consumer = asConsumer(s -> {
+			ready.countDown();
+			if (sync.await(1000, TimeUnit.MILLISECONDS)) {
+				done.countDown();
+			}
+		});
+		ExecutorService threadPool = Executors.newFixedThreadPool(multi);
+		try (CloseableMemoize<AutoCloseable> memoized = CloseableMemoize.closeableSupplier(source)) {
+			for (int i = 0; i < multi; i++) {
+				threadPool.execute(() -> memoized.accept(consumer));
+			}
+			assertThat(ready.await(2000, TimeUnit.MILLISECONDS))
+				.as("%s consumers ready: count %s", multi, ready.getCount())
+				.isTrue();
+			sync.countDown();
+			assertThat(done.await(2000, TimeUnit.MILLISECONDS))
+				.as("%s consumers done: count %s", multi, done.getCount())
+				.isTrue();
+		} finally {
+			threadPool.shutdown();
+		}
 	}
 
 }
