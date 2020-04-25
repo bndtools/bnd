@@ -1,43 +1,50 @@
 package aQute.lib.memoize;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
-import java.util.function.BooleanSupplier;
+import java.util.concurrent.TimeUnit;
 
 import aQute.lib.exceptions.RunnableWithException;
 
 public class CallOnOtherThread {
+	final Executor				executor;
 	final long					timeout;
 	final RunnableWithException	call;
 
-	volatile boolean			started;
-	volatile boolean			ended;
+	final CountDownLatch		started	= new CountDownLatch(1);
+	final CountDownLatch		ended	= new CountDownLatch(1);
 	volatile Throwable			exception;
 
 	public CallOnOtherThread(RunnableWithException call, long timeout) {
-		this.timeout = 0;
+		this(call, timeout, ForkJoinPool.commonPool());
+	}
+
+	public CallOnOtherThread(RunnableWithException call, long timeout, Executor executor) {
+		this.timeout = timeout;
 		this.call = call;
+		this.executor = executor;
 	}
 
 	public void call() {
-		ForkJoinPool.commonPool()
-			.execute(() -> {
-				started = true;
-				try {
-					call.run();
-				} catch (Throwable e) {
-					exception = e;
-				} finally {
-					ended = true;
-				}
-			});
+		executor.execute(() -> {
+			started.countDown();
+			try {
+				call.run();
+			} catch (Throwable e) {
+				exception = e;
+			} finally {
+				ended.countDown();
+			}
+		});
 	}
 
 	public boolean hasStarted() {
-		return check(() -> started);
+		return check(started);
 	}
 
 	public boolean hasEnded() {
-		return check(() -> ended);
+		return check(ended);
 	}
 
 	public Throwable getThrowable() {
@@ -45,18 +52,16 @@ public class CallOnOtherThread {
 		return exception;
 	}
 
-	private boolean check(BooleanSupplier condition) {
-		long deadline = System.currentTimeMillis() + timeout;
-		while (!condition.getAsBoolean()) {
-			if (deadline < System.currentTimeMillis())
-				return false;
-
+	private boolean check(CountDownLatch condition) {
+		for (long end = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeout), delay; (delay = end - System.nanoTime()) >= 0L;) {
 			try {
-				Thread.sleep(1);
+				if (condition.await(delay, TimeUnit.NANOSECONDS)) {
+					return true;
+				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		return true;
+		return false;
 	}
 }

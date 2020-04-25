@@ -267,7 +267,7 @@ public class MemoizeTest {
 	@Test
 	public void acceptWhileCloseIsBlocked() {
 		CloseableMemoize<Closeable> memoized = CloseableMemoize.closeableSupplier(() -> () -> {});
-		CallOnOtherThread s = new CallOnOtherThread(memoized::close, 200);
+		CallOnOtherThread s = new CallOnOtherThread(memoized::close, 2000);
 		memoized.accept(c -> {
 			s.call();
 			assertThat(s.hasEnded()).isFalse();
@@ -284,7 +284,7 @@ public class MemoizeTest {
 			} catch (InterruptedException e) {}
 		});
 
-		CallOnOtherThread close = new CallOnOtherThread(memoized::close, 200);
+		CallOnOtherThread close = new CallOnOtherThread(memoized::close, 2000);
 		assertThat(memoized.get()).isNotNull();
 		assertThat(memoized.isClosed()).isFalse();
 		assertThat(memoized.peek()).isNotNull();
@@ -369,7 +369,7 @@ public class MemoizeTest {
 		Supplier<CloseableClass> source = () -> new CloseableClass(count.incrementAndGet());
 		Consumer<AutoCloseable> consumer = asConsumer(s -> {
 			ready.countDown();
-			if (sync.await(1000, TimeUnit.MILLISECONDS)) {
+			if (sync.await(20, TimeUnit.SECONDS)) {
 				done.countDown();
 			}
 		});
@@ -378,11 +378,11 @@ public class MemoizeTest {
 			for (int i = 0; i < multi; i++) {
 				threadPool.execute(() -> memoized.accept(consumer));
 			}
-			assertThat(ready.await(2000, TimeUnit.MILLISECONDS))
+			assertThat(ready.await(10, TimeUnit.SECONDS))
 				.as("%s consumers ready: count %s", multi, ready.getCount())
 				.isTrue();
 			sync.countDown();
-			assertThat(done.await(2000, TimeUnit.MILLISECONDS))
+			assertThat(done.await(10, TimeUnit.SECONDS))
 				.as("%s consumers done: count %s", multi, done.getCount())
 				.isTrue();
 		} finally {
