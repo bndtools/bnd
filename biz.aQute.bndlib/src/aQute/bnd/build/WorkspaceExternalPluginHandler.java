@@ -1,8 +1,6 @@
 package aQute.bnd.build;
 
-import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Optional;
