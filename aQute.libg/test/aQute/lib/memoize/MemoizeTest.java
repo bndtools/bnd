@@ -1,6 +1,7 @@
 package aQute.lib.memoize;
 
 import static aQute.lib.exceptions.ConsumerWithException.asConsumer;
+import static aQute.lib.exceptions.RunnableWithException.asRunnable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
@@ -364,28 +365,41 @@ public class MemoizeTest {
 	@Test
 	public void closeable_accept_multi() throws Exception {
 		final int multi = 5;
-		CountDownLatch sync = new CountDownLatch(1);
-		CountDownLatch ready = new CountDownLatch(multi);
-		CountDownLatch done = new CountDownLatch(multi);
-		Supplier<CloseableClass> source = () -> new CloseableClass(count.incrementAndGet());
+		CountDownLatch consumerReady = new CountDownLatch(multi);
+		CountDownLatch consumerSync = new CountDownLatch(1);
+		CountDownLatch consumerDone = new CountDownLatch(multi);
 		Consumer<AutoCloseable> consumer = asConsumer(s -> {
-			ready.countDown();
-			if (sync.await(20, TimeUnit.SECONDS)) {
-				done.countDown();
+			consumerReady.countDown();
+			if (consumerSync.await(20, TimeUnit.SECONDS)) {
+				consumerDone.countDown();
 			}
 		});
+
+		CountDownLatch threadReady = new CountDownLatch(multi);
+		CountDownLatch threadSync = new CountDownLatch(1);
 		ExecutorService threadPool = Executors.newFixedThreadPool(multi);
+		Supplier<CloseableClass> source = () -> new CloseableClass(count.incrementAndGet());
 		try (CloseableMemoize<AutoCloseable> memoized = CloseableMemoize.closeableSupplier(source)) {
 			for (int i = 0; i < multi; i++) {
-				threadPool.execute(() -> memoized.accept(consumer));
+				threadPool.execute(asRunnable(() -> {
+					threadReady.countDown();
+					if (threadSync.await(20, TimeUnit.SECONDS)) {
+						memoized.accept(consumer);
+					}
+				}));
 			}
-			assertThat(ready.await(10, TimeUnit.SECONDS))
-				.as("%s consumers ready: count %s", multi, ready.getCount())
+			assertThat(threadReady.await(10, TimeUnit.SECONDS))
+				.as("%s threads ready: count %s", multi, threadReady.getCount())
 				.isTrue();
-			sync.countDown();
-			assertThat(done.await(10, TimeUnit.SECONDS))
-				.as("%s consumers done: count %s", multi, done.getCount())
+			threadSync.countDown();
+			assertThat(consumerReady.await(10, TimeUnit.SECONDS))
+				.as("%s consumers ready: count %s", multi, consumerReady.getCount())
 				.isTrue();
+			consumerSync.countDown();
+			assertThat(consumerDone.await(10, TimeUnit.SECONDS))
+				.as("%s consumers done: count %s", multi, consumerDone.getCount())
+				.isTrue();
+			assertThat(count).hasValue(1);
 		} finally {
 			threadPool.shutdown();
 		}

@@ -38,25 +38,31 @@ class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMe
 			// critical section: only one at a time
 			final long stamp = lock.writeLock();
 			try {
-				if (initial) {
-					T result = supplier.get();
-					memoized = result;
-					// write initial _after_ write memoized
-					initial = false;
-					if (result == null) {
-						throw new IllegalStateException("closed");
-					}
-					return result;
-				}
+				return initial();
 			} finally {
 				lock.unlockWrite(stamp);
 			}
 		}
-		T result = memoized;
-		if (result == null) {
+		return value(memoized);
+	}
+
+	// @GuardedBy("lock.writeLock()")
+	private T initial() {
+		if (initial) {
+			T supplied = supplier.get();
+			memoized = supplied;
+			// write initial _after_ write memoized
+			initial = false;
+			return value(supplied);
+		}
+		return value(memoized);
+	}
+
+	private static <T> T value(T value) {
+		if (value == null) {
 			throw new IllegalStateException("closed");
 		}
-		return result;
+		return value;
 	}
 
 	@Override
@@ -98,13 +104,25 @@ class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMe
 
 	@Override
 	public CloseableMemoize<T> accept(Consumer<? super T> consumer) {
-		T value = get(); // may need write lock
 		// prevent closing during accept while allowing multiple accepts
-		final long stamp = lock.readLock();
-		try {
-			if (isClosed()) {
-				throw new IllegalStateException("closed");
+		if (initial) {
+			// critical section: only one at a time
+			long stamp = lock.tryWriteLock();
+			if (stamp != 0L) {
+				try {
+					T value = initial();
+					// downgrade to readLock before calling consumer
+					stamp = lock.tryConvertToReadLock(stamp);
+					consumer.accept(value);
+				} finally {
+					lock.unlock(stamp);
+				}
+				return this;
 			}
+		}
+		long stamp = lock.readLock();
+		try {
+			T value = value(memoized);
 			consumer.accept(value);
 		} finally {
 			lock.unlockRead(stamp);
