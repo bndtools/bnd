@@ -10,14 +10,16 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
@@ -50,6 +52,7 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.Filter;
 import aQute.lib.hierarchy.FolderNode;
 import aQute.lib.hierarchy.Hierarchy;
+import aQute.lib.hierarchy.NamedNode;
 import aQute.lib.zip.JarIndex;
 import aQute.libg.cryptography.SHA256;
 import aQute.libg.reporter.ReporterAdapter;
@@ -57,8 +60,8 @@ import aQute.service.reporter.Reporter;
 
 public class ResourceBuilder {
 	private final ResourceImpl					resource		= new ResourceImpl();
-	private final Map<Capability, Capability>	capabilities	= new LinkedHashMap<>();
-	private final Map<Requirement, Requirement>	requirements	= new LinkedHashMap<>();
+	private final Map<String, Set<Capability>>	capabilities	= new TreeMap<>(new NamespaceComparator());
+	private final Map<String, Set<Requirement>>	requirements	= new TreeMap<>(new NamespaceComparator());
 	private ReporterAdapter						reporter		= new ReporterAdapter();
 
 	private boolean								built			= false;
@@ -89,11 +92,20 @@ public class ResourceBuilder {
 
 	private Capability addCapability0(CapReqBuilder builder) {
 		Capability cap = buildCapability(builder);
-		Capability previous = capabilities.put(cap, cap);
-		if (previous != null) {
-			return previous;
-		}
+		add(capabilities, cap.getNamespace(), cap);
 		return cap;
+	}
+
+	private static <CR> void add(Map<String, Set<CR>> map, String namespace, CR capreq) {
+		map.computeIfAbsent(namespace, k -> new LinkedHashSet<>())
+			.add(capreq);
+	}
+
+	private static <CR> List<CR> flatten(Map<String, Set<CR>> map) {
+		return map.values()
+			.stream()
+			.flatMap(Set<CR>::stream)
+			.collect(toList());
 	}
 
 	protected Capability buildCapability(CapReqBuilder builder) {
@@ -124,10 +136,7 @@ public class ResourceBuilder {
 
 	private Requirement addRequirement0(CapReqBuilder builder) {
 		Requirement req = buildRequirement(builder);
-		Requirement previous = requirements.putIfAbsent(req, req);
-		if (previous != null) {
-			return previous;
-		}
+		add(requirements, req.getNamespace(), req);
 		return req;
 	}
 
@@ -142,17 +151,17 @@ public class ResourceBuilder {
 			throw new IllegalStateException("Resource already built");
 		built = true;
 
-		resource.setCapabilities(capabilities.values());
-		resource.setRequirements(requirements.values());
+		resource.setCapabilities(flatten(capabilities));
+		resource.setRequirements(flatten(requirements));
 		return resource;
 	}
 
 	public List<Capability> getCapabilities() {
-		return new ArrayList<>(capabilities.values());
+		return flatten(capabilities);
 	}
 
 	public List<Requirement> getRequirements() {
-		return new ArrayList<>(requirements.values());
+		return flatten(requirements);
 	}
 
 	/**
@@ -647,7 +656,7 @@ public class ResourceBuilder {
 	}
 
 	public Map<Capability, Capability> from(Resource bundle) {
-		Map<Capability, Capability> mapping = new HashMap<>();
+		Map<Capability, Capability> mapping = new LinkedHashMap<>();
 
 		addRequirements(bundle.getRequirements(null));
 
@@ -703,62 +712,47 @@ public class ResourceBuilder {
 	 * names in exports. So no exports, no hash.
 	 */
 	public void addHashes(File file) throws IOException {
-
-		Set<Capability> caps = new HashSet<>();
-
-		for (Capability cap : capabilities.keySet()) {
-			if (!PackageNamespace.PACKAGE_NAMESPACE.equals(cap.getNamespace()))
-				continue;
-
-			if (cap.getAttributes()
-				.containsKey(ClassIndexerAnalyzer.BND_HASHES))
-				return;
-
-			caps.add(cap);
-		}
-		if (caps.isEmpty())
+		Set<Capability> packageCapabilities = capabilities.remove(PackageNamespace.PACKAGE_NAMESPACE);
+		if ((packageCapabilities == null) || packageCapabilities.isEmpty()) {
 			return;
+		}
+		if (packageCapabilities.stream()
+			.anyMatch(cap -> cap.getAttributes()
+				.containsKey(ClassIndexerAnalyzer.BND_HASHES))) {
+			capabilities.put(PackageNamespace.PACKAGE_NAMESPACE, packageCapabilities);
+			return;
+		}
 
 		Hierarchy index = new JarIndex(file);
-
-		for (Capability cap : caps) {
-
-			String packageName = (String) cap.getAttributes()
-				.get(PackageNamespace.PACKAGE_NAMESPACE);
-			if (packageName == null)
-				continue;
-
-			String folder = Descriptors.fqnToBinary(packageName);
-
-			FolderNode resources = index.findFolder(folder)
-				.orElse(null);
-			if (resources == null)
-				continue;
-
-			List<Integer> hashes = new ArrayList<>();
-
-			resources.forEach(node -> {
-				String name = node.name();
-				if (!Descriptors.isBinaryClass(name))
-					return;
-
-				String simple = Descriptors.binaryToSimple(name);
-				if (Verifier.isNumber(simple))
-					return;
-
-				int hash = ClassIndexerAnalyzer.hash(simple);
-				hashes.add(hash);
-			});
-
-			if (hashes.isEmpty())
-				continue;
-
-
-			capabilities.remove(cap);
-			CapReqBuilder crb = CapReqBuilder.clone(cap);
-			crb.addAttribute(ClassIndexerAnalyzer.BND_HASHES, hashes);
-			addCapability(crb);
+		for (Capability cap : packageCapabilities) {
+			CapReqBuilder builder = CapReqBuilder.clone(cap);
+			addHashes(index, cap, builder);
+			addCapability(builder);
 		}
+	}
+
+	private void addHashes(Hierarchy index, Capability cap, CapReqBuilder builder) {
+		FolderNode resources = Optional.ofNullable((String) cap.getAttributes()
+			.get(PackageNamespace.PACKAGE_NAMESPACE))
+			.map(Descriptors::fqnToBinary)
+			.flatMap(index::findFolder)
+			.orElse(null);
+		if (resources == null) {
+			return;
+		}
+
+		List<Integer> hashes = resources.stream()
+			.map(NamedNode::name)
+			.filter(Descriptors::isBinaryClass)
+			.map(Descriptors::binaryToSimple)
+			.filter(simple -> !Verifier.isNumber(simple))
+			.map(ClassIndexerAnalyzer::hash)
+			.collect(toList());
+		if (hashes.isEmpty()) {
+			return;
+		}
+
+		builder.addAttribute(ClassIndexerAnalyzer.BND_HASHES, hashes);
 	}
 
 	public ResourceBuilder safeResourceBuilder() {
@@ -993,11 +987,38 @@ public class ResourceBuilder {
 
 	@Override
 	public String toString() {
-		return new StringBuilder("ResourceBuilder [caps=").append(capabilities.values())
+		return new StringBuilder("ResourceBuilder [caps=").append(capabilities)
 			.append(", reqs=")
-			.append(requirements.values())
+			.append(requirements)
 			.append(']')
 			.toString();
+	}
+
+	/**
+	 * We order the wiring namespaces ahead of the other namespaces. This makes
+	 * the resolver happier in some tests which otherwise fail when using simple
+	 * namespace ordering.
+	 */
+	private static class NamespaceComparator implements Comparator<String> {
+		@Override
+		public int compare(String left, String right) {
+			return map(left).compareTo(map(right));
+		}
+
+		private static String map(String namespace) {
+			switch (namespace) {
+				case IdentityNamespace.IDENTITY_NAMESPACE :
+					return "1";
+				case PackageNamespace.PACKAGE_NAMESPACE :
+					return "2";
+				case BundleNamespace.BUNDLE_NAMESPACE :
+					return "3";
+				case HostNamespace.HOST_NAMESPACE :
+					return "4";
+				default :
+					return namespace;
+			}
+		}
 	}
 
 }

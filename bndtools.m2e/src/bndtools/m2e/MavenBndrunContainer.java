@@ -70,7 +70,11 @@ public class MavenBndrunContainer implements MavenRunListenerHelper {
 					includeDependencyManagement = maven.getMojoParameterValue(mavenProject, mojoExecution,
 						"includeDependencyManagement", Boolean.class, monitor);
 
-					scopeValues = maven.getMojoParameterValue(mavenProject, mojoExecution, "scopes", Set.class, monitor);
+					@SuppressWarnings({
+						"rawtypes", "unchecked"
+					})
+					Class<Set<String>> asType = (Class) Set.class;
+					scopeValues = maven.getMojoParameterValue(mavenProject, mojoExecution, "scopes", asType, monitor);
 				}
 			} catch (Exception e) {
 				logger.logError("Failed to create Run for m2e project " + mavenProject.getName(), e);
