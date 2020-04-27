@@ -365,21 +365,21 @@ public class MemoizeTest {
 	@Test
 	public void closeable_accept_multi() throws Exception {
 		final int multi = 5;
-		CountDownLatch consumerReady = new CountDownLatch(multi);
-		CountDownLatch consumerSync = new CountDownLatch(1);
-		CountDownLatch consumerDone = new CountDownLatch(multi);
-		Consumer<AutoCloseable> consumer = asConsumer(s -> {
-			consumerReady.countDown();
-			if (consumerSync.await(20, TimeUnit.SECONDS)) {
-				consumerDone.countDown();
-			}
-		});
-
-		CountDownLatch threadReady = new CountDownLatch(multi);
-		CountDownLatch threadSync = new CountDownLatch(1);
-		ExecutorService threadPool = Executors.newFixedThreadPool(multi);
 		Supplier<CloseableClass> source = () -> new CloseableClass(count.incrementAndGet());
+		ExecutorService threadPool = Executors.newFixedThreadPool(multi);
 		try (CloseableMemoize<AutoCloseable> memoized = CloseableMemoize.closeableSupplier(source)) {
+			CountDownLatch consumerReady = new CountDownLatch(multi);
+			CountDownLatch consumerSync = new CountDownLatch(1);
+			CountDownLatch consumerDone = new CountDownLatch(multi);
+			Consumer<AutoCloseable> consumer = asConsumer(s -> {
+				consumerReady.countDown();
+				if (consumerSync.await(20, TimeUnit.SECONDS)) {
+					memoized.accept(x -> consumerDone.countDown());
+				}
+			});
+
+			CountDownLatch threadReady = new CountDownLatch(multi);
+			CountDownLatch threadSync = new CountDownLatch(1);
 			for (int i = 0; i < multi; i++) {
 				threadPool.execute(asRunnable(() -> {
 					threadReady.countDown();
