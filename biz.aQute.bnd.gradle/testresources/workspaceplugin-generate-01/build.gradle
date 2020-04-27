@@ -1,0 +1,13 @@
+/*
+ * Master Gradle build script
+ */
+
+if (plugins.hasPlugin('biz.aQute.bnd.workspace')) {
+  println "### Project ${name} has BndWorkspacePlugin applied"
+}
+
+subprojects {
+  if (plugins.hasPlugin('biz.aQute.bnd')) {
+    println "### Project ${name} has BndPlugin applied"
+  }
+}

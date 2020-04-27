@@ -1,8 +1,1 @@
--plugin: \
-    aQute.bnd.deployer.repository.LocalIndexedRepo;\
-        name=repo1;\
-        local=${workspace}/cnf/repo;\
-        pretty=true,\
-javac.source=1.8
-javac.target=1.8
-        
+

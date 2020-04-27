@@ -447,4 +447,42 @@ class TestBndPlugin extends Specification {
           new File(testReports, 'testrun.testOSGi2/TEST-testrun.testOSGi2.xml').isFile()
     }
 
+    def "Bnd Workspace Plugin generate task"() {
+        given:
+          String testProject = 'workspaceplugin-generate-01'
+          File testProjectDir = new File(testResources, testProject)
+          assert testProjectDir.isDirectory()
+
+        when:
+          def result = TestHelper.getGradleRunner()
+            .withProjectDir(testProjectDir)
+            .withArguments("-Pbnd_plugin=${pluginClasspath}", '--parallel', '--stacktrace', '--debug', 'build', 'release')
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(':test.simple:generate').outcome == SUCCESS
+          result.task(':test.simple:jar').outcome == SUCCESS
+          result.task(':test.simple:build').outcome == SUCCESS
+          result.task(':test.simple:release').outcome == SUCCESS
+
+          File generated = new File(testProjectDir, 'test.simple/src-gen/test/simple/Simple.java')
+          generated.isFile()
+
+          File simple_bundle = new File(testProjectDir, 'test.simple/generated/test.simple.jar')
+          simple_bundle.isFile()
+
+          JarFile simple_jar = new JarFile(simple_bundle)
+          Attributes simple_manifest = simple_jar.getManifest().getMainAttributes()
+          simple_manifest.getValue('Bundle-SymbolicName') == 'test.simple'
+          simple_manifest.getValue('Bundle-Version') =~ /0\.0\.0\./
+          simple_jar.getEntry('test/simple/Simple.class')
+          simple_jar.getEntry('test/simple/Test.class')
+          simple_jar.getEntry('OSGI-OPT/src/')
+          simple_jar.close()
+
+          File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
+          release_jar.isFile()
+    }
+
 }

@@ -199,6 +199,15 @@ public class ProjectGenerate implements AutoCloseable {
 			.collect(Collectors.toSet());
 	}
 
+	public Set<File> getOutputDirs() {
+		return project.instructions.generate()
+			.values()
+			.stream()
+			.map(GeneratorSpec::output)
+			.map(project::getFile)
+			.collect(Collectors.toSet());
+	}
+
 	@Override
 	public void close() {}
 }
