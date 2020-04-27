@@ -26,7 +26,10 @@ public interface CloseableMemoize<S extends AutoCloseable> extends Memoize<S>, A
 	 *
 	 * @param <T> Type of the value returned by the supplier.
 	 * @param supplier The source supplier. Must not be {@code null}. The
-	 *            supplier must not return a {@code null} value.
+	 *            supplier should not return a {@code null} value. If the
+	 *            supplier does return a {@code null} value, the returned
+	 *            supplier will be marked closed and its {@code get()} method
+	 *            will throw an {@code IllegalStateException}.
 	 * @return A memoized supplier wrapping the specified supplier.
 	 */
 	static <T extends AutoCloseable> CloseableMemoize<T> closeableSupplier(Supplier<? extends T> supplier) {
