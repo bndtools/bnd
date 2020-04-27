@@ -1207,6 +1207,46 @@ public class BundleEngineTest {
 
 	@Test
 	@Tag(CUSTOM_LAUNCH)
+	public void testClass_withClassSelector_withUnsatisifiedField_raisesAnError() {
+		builder.excludeExport("aQute.tester.test.params");
+		startLaunchpad();
+		Bundle test = buildTestBundle(TestWithField.class, TestClass.class)
+			.importPackage("aQute.tester.test.params;resolution:=optional")
+			.start();
+
+		engineInFramework().selectors(selectClass(TestWithField.class))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(uniqueIdSubstring(test.getSymbolicName()), testClass(TestWithField.class),
+					finishedWithFailure(instanceOf(NoClassDefFoundError.class),
+						message(x -> x.matches("^(?si).*" + CustomParameter.class.getName() + ".*")))));
+	}
+
+	@Test
+	@Tag(CUSTOM_LAUNCH)
+	public void testClass_withMethodSelector_withUnsatisifiedField_raisesAnError() {
+		builder.excludeExport("aQute.tester.test.params");
+		startLaunchpad();
+		Bundle test = buildTestBundle(TestWithField.class, TestClass.class)
+			.importPackage("aQute.tester.test.params;resolution:=optional")
+			.start();
+
+		engineInFramework().selectors(selectMethod(TestWithField.class, "thisIsATest"))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(uniqueIdSubstring(test.getSymbolicName()), testClass(TestWithField.class),
+					finishedWithFailure(instanceOf(NoClassDefFoundError.class),
+						message(x -> x.matches("^(?si).*" + CustomParameter.class.getName() + ".*")))));
+	}
+
+	@Test
+	@Tag(CUSTOM_LAUNCH)
 	public void testClass_withUnsatisifiedParameter_raisesAnError() {
 		builder.excludeExport("aQute.tester.test.params");
 		startLaunchpad();
@@ -1226,6 +1266,46 @@ public class BundleEngineTest {
 
 	@Test
 	@Tag(CUSTOM_LAUNCH)
+	public void testClass_withClassSelector_withUnsatisifiedParameter_raisesAnError() {
+		builder.excludeExport("aQute.tester.test.params");
+		startLaunchpad();
+		Bundle test = buildTestBundle(JUnit5ParameterizedTest.class, TestClass.class)
+			.importPackage("aQute.tester.test.params;resolution:=optional")
+			.start();
+
+		engineInFramework().selectors(selectClass(JUnit5ParameterizedTest.class))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(uniqueIdSubstring(test.getSymbolicName()), testClass(JUnit5ParameterizedTest.class),
+					finishedWithFailure(instanceOf(NoClassDefFoundError.class),
+						message(x -> x.matches("^(?si).*" + CustomParameter.class.getName())))));
+	}
+
+	@Test
+	@Tag(CUSTOM_LAUNCH)
+	public void testClass_withMethodSelector_withUnsatisifiedParameter_raisesAnError() {
+		builder.excludeExport("aQute.tester.test.params");
+		startLaunchpad();
+		Bundle test = buildTestBundle(JUnit5ParameterizedTest.class, TestClass.class)
+			.importPackage("aQute.tester.test.params;resolution:=optional")
+			.start();
+
+		engineInFramework().selectors(selectMethod(JUnit5ParameterizedTest.class, "thisIsATest"))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(uniqueIdSubstring(test.getSymbolicName()), testClass(JUnit5ParameterizedTest.class),
+					finishedWithFailure(instanceOf(NoClassDefFoundError.class),
+						message(x -> x.matches("^(?si).*" + CustomParameter.class.getName())))));
+	}
+
+	@Test
+	@Tag(CUSTOM_LAUNCH)
 	public void testClass_withUnsatisifiedSuperclass_raisesAnError() {
 		builder.excludeExport("aQute.tester.test.params");
 		startLaunchpad();
@@ -1234,6 +1314,46 @@ public class BundleEngineTest {
 			.start();
 
 		engineInFramework().execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(uniqueIdSubstring(test.getSymbolicName()), testClass(JUnit5ParameterizedSubclassTest.class),
+					finishedWithFailure(instanceOf(NoClassDefFoundError.class),
+						message(x -> x.matches("^(?si).*" + JUnit5ParameterizedTest.class.getName())))));
+	}
+
+	@Test
+	@Tag(CUSTOM_LAUNCH)
+	public void testClass_withClassSelector_withUnsatisifiedSuperclass_raisesAnError() {
+		builder.excludeExport("aQute.tester.test.params");
+		startLaunchpad();
+		Bundle test = buildTestBundle(JUnit5ParameterizedSubclassTest.class, TestClass.class)
+			.importPackage("aQute.tester.test.params;resolution:=optional")
+			.start();
+
+		engineInFramework().selectors(selectClass(JUnit5ParameterizedSubclassTest.class))
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(uniqueIdSubstring(test.getSymbolicName()), testClass(JUnit5ParameterizedSubclassTest.class),
+					finishedWithFailure(instanceOf(NoClassDefFoundError.class),
+						message(x -> x.matches("^(?si).*" + JUnit5ParameterizedTest.class.getName())))));
+	}
+
+	@Test
+	@Tag(CUSTOM_LAUNCH)
+	public void testClass_withMethodSelector_withUnsatisifiedSuperclass_raisesAnError() {
+		builder.excludeExport("aQute.tester.test.params");
+		startLaunchpad();
+		Bundle test = buildTestBundle(JUnit5ParameterizedSubclassTest.class, TestClass.class)
+			.importPackage("aQute.tester.test.params;resolution:=optional")
+			.start();
+
+		engineInFramework().selectors(selectMethod(JUnit5ParameterizedSubclassTest.class, "thisIsATest"))
+			.execute()
 			.all()
 			.debug(debugStr)
 			.assertThatEvents()
