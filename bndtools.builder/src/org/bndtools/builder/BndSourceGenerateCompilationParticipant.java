@@ -52,7 +52,7 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 			if (!result.isErr()) {
 				Set<File> generated = result.unwrap();
 				Set<File> outputs = project.getGenerate()
-					.getOutputs();
+					.getOutputDirs();
 				Central.refreshFiles(project, outputs, null, true);
 			}
 			markers.setMarkers(project, MARKER_BND_GENERATE);

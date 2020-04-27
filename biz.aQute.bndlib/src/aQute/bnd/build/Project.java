@@ -2394,7 +2394,7 @@ public class Project extends Processor {
 		clean(getTargetDir(), "target");
 		clean(getSrcOutput(), "source output");
 		clean(getTestOutput(), "test output");
-		for (File output : getGenerate().getOutputs())
+		for (File output : getGenerate().getOutputDirs())
 			clean(output, "generate output " + output, false);
 	}
 
