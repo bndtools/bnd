@@ -382,7 +382,7 @@ public class BundleSelectorResolver {
 			testClass.getDeclaredFields();
 			return testClass;
 		} catch (ClassNotFoundException | NoClassDefFoundError cnfe) {
-			info(() -> "error: " + cnfe);
+			info(() -> "Couldn't load and/or resolve class " + className + ": " + cnfe);
 			StaticFailureDescriptor unresolvedClassDescriptor = new StaticFailureDescriptor(bd.getUniqueId()
 				.append("test", className), className, cnfe);
 			bd.addChild(unresolvedClassDescriptor);
@@ -486,18 +486,15 @@ public class BundleSelectorResolver {
 				.map(selector -> {
 					String className = selector.getClassName();
 					if (testCases.contains(className)) {
-						try {
-							Class<?> testClass = host.loadClass(className);
-							unresolvedClassNames.remove(className);
-							info(() -> "removing resolved class: " + testClass + ", that leaves: "
-								+ unresolvedClassNames);
+						unresolvedClassNames.remove(className);
+						info(
+							() -> "removing discovered class: " + className + ", that leaves: " + unresolvedClassNames);
+						Class<?> testClass = tryToResolveTestClass(host, className, bd);
+						if (testClass != null) {
 							if (resolvedClasses.add(testClass)) {
 								checkForMixedJUnit34(bd, testClass);
 								return selectClass(testClass);
 							}
-						} catch (ClassNotFoundException cnfe) {
-							info(() -> "Unresolved class: " + className + ", bundle: " + bundle.getSymbolicName(),
-								cnfe);
 						}
 					}
 					return null;
@@ -506,28 +503,27 @@ public class BundleSelectorResolver {
 				.map(selector -> {
 					String className = selector.getClassName();
 					if (testCases.contains(className)) {
-						try {
-							Class<?> testClass = host.loadClass(className);
-							if (!resolvedClasses.contains(testClass)) {
-								checkForMixedJUnit34(bd, testClass);
-								unresolvedClassNames.remove(className);
-								MethodSelector methodSelector = selectMethod(testClass, selector);
-								if (methodSelector != null) {
-									unresolvedMethodNames.compute(className, (k, methods) -> {
-										if (methods != null) {
-											methods.remove(methodSelector.getMethodName());
-											if (!methods.isEmpty()) {
-												return methods;
-											}
+						unresolvedClassNames.remove(className);
+						Class<?> testClass = tryToResolveTestClass(host, className, bd);
+						if (testClass == null) {
+							// Don't report individual unresolved method errors
+							// if the test class failed to resolve.
+							unresolvedMethodNames.remove(className);
+						} else if (!resolvedClasses.contains(testClass)) {
+							checkForMixedJUnit34(bd, testClass);
+							MethodSelector methodSelector = selectMethod(testClass, selector);
+							if (methodSelector != null) {
+								unresolvedMethodNames.compute(className, (k, methods) -> {
+									if (methods != null) {
+										methods.remove(methodSelector.getMethodName());
+										if (!methods.isEmpty()) {
+											return methods;
 										}
-										return null;
-									});
-								}
-								return methodSelector;
+									}
+									return null;
+								});
 							}
-						} catch (ClassNotFoundException cnfe) {
-							info(() -> "Unresolved class: " + className + ", bundle: " + bundle.getSymbolicName(),
-								cnfe);
+							return methodSelector;
 						}
 					}
 					return null;
