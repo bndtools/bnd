@@ -8,7 +8,6 @@ import static java.util.stream.Collectors.toList;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -31,8 +30,8 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 
 	private volatile transient Map<URI, String>		locations;
 
-	void setCapabilities(Collection<Capability> capabilities) {
-		allCapabilities = unmodifiableList(new ArrayList<>(capabilities));
+	void setCapabilities(List<Capability> capabilities) {
+		allCapabilities = unmodifiableList(capabilities);
 		capabilityMap = capabilities.stream()
 			.collect(groupingBy(Capability::getNamespace, collectingAndThen(toList(), Collections::unmodifiableList)));
 
@@ -47,8 +46,8 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		return (caps != null) ? caps : Collections.emptyList();
 	}
 
-	void setRequirements(Collection<Requirement> requirements) {
-		allRequirements = unmodifiableList(new ArrayList<>(requirements));
+	void setRequirements(List<Requirement> requirements) {
+		allRequirements = unmodifiableList(requirements);
 		requirementMap = requirements.stream()
 			.collect(groupingBy(Requirement::getNamespace, collectingAndThen(toList(), Collections::unmodifiableList)));
 	}
