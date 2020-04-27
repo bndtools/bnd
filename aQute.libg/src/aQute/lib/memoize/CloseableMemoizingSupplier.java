@@ -92,6 +92,9 @@ class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMe
 					return; // no value to close
 				}
 				closeable = memoized;
+				if (closeable == null) {
+					return; // already closed
+				}
 				memoized = null; // mark closed
 				// write initial _after_ write memoized
 				initial = false; // even though it is already false
