@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,8 @@ public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 	private static final Logger			logger	= LoggerFactory.getLogger(MavenRunProvider.class);
 
 	private final MavenBndrunContainer mbc = new MavenBndrunContainer();
+
+	private MavenWorkspaceRepository	mavenWorkspaceRepository;
 
 	@Override
 	public Bndrun create(IResource targetResource, RunMode mode) throws Exception {
@@ -58,8 +61,8 @@ public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 
 		workspace.addBasicPlugin(implicitRepo);
 
-		if ((mode == RunMode.LAUNCH) || (mode == RunMode.TEST)) {
-			workspace.addBasicPlugin(new MavenWorkspaceRepository());
+		if (((mode == RunMode.LAUNCH) || (mode == RunMode.TEST)) && (mavenWorkspaceRepository != null)) {
+			workspace.addBasicPlugin(mavenWorkspaceRepository);
 		}
 
 		workspace.refresh();
@@ -133,6 +136,17 @@ public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 					.getDirectory()));
 		} else {
 			return null;
+		}
+	}
+
+	@Reference
+	public void setMavenWorkspaceRepository(MavenWorkspaceRepository mavenWorkspaceRepository) {
+		this.mavenWorkspaceRepository = mavenWorkspaceRepository;
+	}
+
+	public void unsetMavenWorkspaceRepository(MavenWorkspaceRepository mavenWorkspaceRepository) {
+		if (this.mavenWorkspaceRepository == mavenWorkspaceRepository) {
+			this.mavenWorkspaceRepository = null;
 		}
 	}
 

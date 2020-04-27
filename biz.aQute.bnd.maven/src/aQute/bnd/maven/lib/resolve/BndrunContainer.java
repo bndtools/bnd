@@ -219,6 +219,20 @@ public class BndrunContainer {
 	}
 
 	/**
+	 * Return a fully configured dependency resolver instance.
+	 *
+	 * @param project
+	 * @return a fully configured dependency resolver instance
+	 */
+	public DependencyResolver getDependencyResolver(MavenProject project) {
+		if (includeDependencyManagement) {
+			includeDependencyManagement(project, artifactFactory);
+		}
+
+		return new DependencyResolver(project, repositorySession, resolver, system, scopes, transitive, postProcessor);
+	}
+
+	/**
 	 * Creates a new repository in every invocation.
 	 *
 	 * @return a new {@link ImplicitFileSetRepository}
@@ -236,12 +250,7 @@ public class BndrunContainer {
 	 * @throws Exception
 	 */
 	public FileSetRepository getFileSetRepository(MavenProject project) throws Exception {
-		if (includeDependencyManagement) {
-			includeDependencyManagement(project, artifactFactory);
-		}
-
-		DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver, system,
-			scopes, transitive, postProcessor);
+		DependencyResolver dependencyResolver = getDependencyResolver(project);
 
 		String name = project.getName()
 			.isEmpty() ? project.getArtifactId() : project.getName();
