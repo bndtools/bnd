@@ -745,6 +745,7 @@ public class ResourceBuilder {
 			.map(NamedNode::name)
 			.filter(Descriptors::isBinaryClass)
 			.map(Descriptors::binaryToSimple)
+			.distinct()
 			.filter(simple -> !Verifier.isNumber(simple))
 			.map(ClassIndexerAnalyzer::hash)
 			.collect(toList());
