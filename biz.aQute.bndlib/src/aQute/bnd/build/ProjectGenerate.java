@@ -189,16 +189,6 @@ public class ProjectGenerate implements AutoCloseable {
 			return Result.err(errors);
 	}
 
-	public Set<File> getOutputs() {
-		return project.instructions.generate()
-			.values()
-			.stream()
-			.map(GeneratorSpec::output)
-			.flatMap((String s) -> new FileSet(project.getBase(), s).getFiles()
-				.stream())
-			.collect(Collectors.toSet());
-	}
-
 	public Set<File> getOutputDirs() {
 		return project.instructions.generate()
 			.values()
