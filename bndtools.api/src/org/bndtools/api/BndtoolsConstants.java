@@ -40,4 +40,10 @@ public final class BndtoolsConstants {
 	 */
 	public static final String	BNDTOOLS_MARKER_FILE_ATTR		= "bndtools.marker.file";
 
+	/**
+	 * Marker attribute name for the bnd/eclipse project name. This is used to
+	 * report markers on files in cnf but are not workspace related. These must
+	 * be cleared when the project markers are cleared, otherwise they hang.
+	 */
+	public static final String	BNDTOOLS_MARKER_PROJECT_ATTR	= "bndtools.marker.project";
 }

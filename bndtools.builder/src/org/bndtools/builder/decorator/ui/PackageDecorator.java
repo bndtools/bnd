@@ -85,7 +85,10 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 				continue;
 			}
 			for (IPackageFragmentRoot pkgRoot : javaProject.findPackageFragmentRoots(cpe)) {
-				assert pkgRoot.getKind() == IPackageFragmentRoot.K_SOURCE;
+
+				if (pkgRoot.getKind() != IPackageFragmentRoot.K_SOURCE)
+					continue;
+
 				IResource pkgRootResource = pkgRoot.getCorrespondingResource();
 				if (pkgRootResource == null) {
 					continue;
@@ -96,7 +99,9 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 					.contains(pkgRootFile);
 				for (IJavaElement child : pkgRoot.getChildren()) {
 					IPackageFragment pkg = (IPackageFragment) child;
-					assert pkg.getKind() == IPackageFragmentRoot.K_SOURCE;
+					if (pkg.getKind() != IPackageFragmentRoot.K_SOURCE)
+						continue;
+
 					IResource pkgResource = pkg.getCorrespondingResource();
 					if (pkgResource == null) {
 						continue;

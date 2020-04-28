@@ -3,6 +3,7 @@ package org.bndtools.builder;
 import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_CONTEXT_ATTR;
 import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_FILE_ATTR;
 import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_HEADER_ATTR;
+import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_PROJECT_ATTR;
 import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_REFERENCE_ATTR;
 import static org.bndtools.api.BndtoolsConstants.CORE_PLUGIN_ID;
 import static org.bndtools.api.BndtoolsConstants.MARKER_BND_MISSING_WORKSPACE;
@@ -16,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.IProjectValidator;
 import org.bndtools.api.IValidator;
@@ -27,6 +29,7 @@ import org.bndtools.build.api.MarkerData;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IStatus;
@@ -85,8 +88,27 @@ class MarkerSupport {
 			deleteMarkers(MARKER_BND_WORKSPACE_PROBLEM);
 			deleteMarkers(MARKER_BND_MISSING_WORKSPACE);
 			deleteMarkers(MARKER_JAVA_BASELINE);
-		} else
+		} else {
 			project.deleteMarkers(markerType, true, IResource.DEPTH_INFINITE);
+			deleteCnfMarkersForThisProject(markerType);
+		}
+	}
+
+	private void deleteCnfMarkersForThisProject(String markerType) throws CoreException {
+		IProject cnf = ResourcesPlugin.getWorkspace()
+			.getRoot()
+			.getProject("cnf");
+		if (cnf != null) {
+			IMarker[] markers = cnf.findMarkers(markerType, true, IResource.DEPTH_INFINITE);
+			if (markers != null) {
+				for (IMarker marker : markers) {
+					String projectName = marker.getAttribute(BndtoolsConstants.BNDTOOLS_MARKER_PROJECT_ATTR, null);
+					if (projectName == null || projectName.equals(project.getName())) {
+						marker.delete();
+					}
+				}
+			}
+		}
 	}
 
 	private void createMarkers(Processor model, int severity, Collection<String> msgs, String markerType)
@@ -122,6 +144,8 @@ class MarkerSupport {
 						marker.setAttribute(BNDTOOLS_MARKER_FILE_ATTR, location.file);
 					if (location.reference != null)
 						marker.setAttribute(BNDTOOLS_MARKER_REFERENCE_ATTR, location.reference);
+
+					marker.setAttribute(BNDTOOLS_MARKER_PROJECT_ATTR, project.getName());
 
 					marker.setAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, markerData.hasResolutions());
 					for (Entry<String, Object> attrib : markerData.getAttribs()

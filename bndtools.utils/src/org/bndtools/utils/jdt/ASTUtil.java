@@ -22,7 +22,7 @@ public class ASTUtil {
 			ITypeBinding typeBinding = param.getType()
 				.resolveBinding();
 			if (typeBinding != null)
-				paramType = typeBinding.getBinaryName();
+				paramType = typeBinding.getName();
 			else
 				paramType = param.getName()
 					.getIdentifier();
@@ -34,5 +34,55 @@ public class ASTUtil {
 
 		builder.append(')');
 		return builder.toString();
+	}
+
+	/**
+	 * Compare the methodName with the signature of this method declaration
+	 *
+	 * @param methodName a method name, with FQ class names (int, a.b.Foo)
+	 * @param methodDecl a AST method declaration
+	 * @return true if the methodName matches the methodDecl
+	 */
+	public static boolean isEqual(String methodName, MethodDeclaration methodDecl) {
+
+		String name = methodDecl.getName()
+			.getFullyQualifiedName();
+		if (!methodName.startsWith(name))
+			return false;
+
+		int l = name.length();
+		if (methodName.charAt(l) != '(')
+			return false;
+
+		l++;
+
+		List<SingleVariableDeclaration> params = methodDecl.parameters();
+		if (params.isEmpty()) {
+			return methodName.charAt(l) == ')';
+		}
+
+		char delim = ',';
+		for (SingleVariableDeclaration param : params) {
+			if (delim != ',')
+				return false;
+
+			ITypeBinding typeBinding = param.getType()
+				.resolveBinding();
+			if (typeBinding == null)
+				return false;
+
+			String typeName = typeBinding.getQualifiedName();
+			int ll = methodName.indexOf(typeName, l);
+			if (ll < 0)
+				return false;
+
+			l += typeName.length();
+			delim = methodName.charAt(l);
+			l++;
+		}
+		if (delim != ')')
+			return false;
+
+		return true;
 	}
 }
