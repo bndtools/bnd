@@ -144,7 +144,6 @@ class WorkspaceClassIndex implements AutoCloseable {
 				.get(PackageNamespace.PACKAGE_NAMESPACE))
 			.filter(Objects::nonNull)
 			.map(String.class::cast)
-			.filter(Objects::nonNull)
 			.filter(s -> s.startsWith(packageName))
 			.sorted((a, b) -> Integer.compare(a.length(), b.length()))
 			.findFirst()
@@ -200,7 +199,7 @@ class WorkspaceClassIndex implements AutoCloseable {
 
 				sb.append('(')
 					.append(PackageNamespace.PACKAGE_NAMESPACE)
-					.append("=")
+					.append('=')
 					.append(packageName)
 					.append(')');
 			}
@@ -210,9 +209,10 @@ class WorkspaceClassIndex implements AutoCloseable {
 
 			sb.append('(')
 				.append(PackageNamespace.PACKAGE_NAMESPACE)
-				.append("=")
+				.append('=')
 				.append(packageName)
-				.append("*)"); // not sure if we got the full package
+				.append('*')
+				.append(')'); // not sure if we got the full package
 		}
 		return sb.toString();
 	}
