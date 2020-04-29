@@ -483,6 +483,18 @@ class TestBndPlugin extends Specification {
 
           File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
+
+        when:
+          result = TestHelper.getGradleRunner()
+            .withProjectDir(testProjectDir)
+            .withArguments("-Pbnd_plugin=${pluginClasspath}", '--parallel', '--stacktrace', '--debug', 'clean')
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(':test.simple:clean').outcome == SUCCESS
+          !generated.exists()
+          !simple_bundle.exists()
     }
 
 }

@@ -394,6 +394,9 @@ public class BndPlugin implements Plugin<Project> {
       def clean = tasks.named('clean') { t ->
         t.description 'Cleans the build and compiler output directories of this project.'
         t.delete project.layout.buildDirectory, project.sourceSets.main.output, project.sourceSets.test.output
+        if (generate) {
+          t.delete generate
+        }
       }
 
       def cleanDependencies = tasks.register('cleanDependencies') { t ->
