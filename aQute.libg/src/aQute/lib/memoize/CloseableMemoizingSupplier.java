@@ -107,6 +107,7 @@ class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMe
 
 	@Override
 	public CloseableMemoize<T> accept(Consumer<? super T> consumer) {
+		requireNonNull(consumer);
 		// prevent closing during accept while allowing multiple accepts
 		if (initial) {
 			// critical section: only one at a time
