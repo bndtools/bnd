@@ -2970,4 +2970,30 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			throw Exceptions.duck(e);
 		}
 	}
+
+	/**
+	 * Return a list of all files that provide the properties for this
+	 * Processor. This includes its own properties file, all included files, and
+	 * the same for its ancestor Processor.
+	 * <p>
+	 * The order of the list is parent?.getSelfAndAncestors(), includes,
+	 * properties file
+	 *
+	 * @return a list of files that this processor depends on
+	 */
+	public List<File> getSelfAndAncestors() {
+		List<File> l = new ArrayList<>();
+		return getSelfAndAncestors(l);
+	}
+
+	private List<File> getSelfAndAncestors(List<File> l) {
+		if (parent != null)
+			parent.getSelfAndAncestors(l);
+		l.addAll(getIncluded());
+
+		File f = getPropertiesFile();
+		if (f != null)
+			l.add(f);
+		return l;
+	}
 }
