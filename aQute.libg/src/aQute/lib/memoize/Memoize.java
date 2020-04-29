@@ -164,6 +164,7 @@ public interface Memoize<S> extends Supplier<S> {
 	 * @return This memoized supplier.
 	 */
 	default Memoize<S> accept(Consumer<? super S> consumer) {
+		requireNonNull(consumer);
 		consumer.accept(get());
 		return this;
 	}

@@ -173,6 +173,11 @@ public class MemoizeTest {
 	@Test
 	public void accept() {
 		Memoize<String> memoized = Memoize.supplier(source);
+
+		assertThatNullPointerException().isThrownBy(() -> memoized.accept(null));
+		assertThat(memoized.peek()).isNull();
+		assertThat(count).hasValue(0);
+
 		AtomicReference<Object> value = new AtomicReference<>();
 		memoized.accept(value::set);
 		assertThat(value).hasValue("1");
@@ -337,6 +342,11 @@ public class MemoizeTest {
 	public void closeable_accept() throws Exception {
 		Supplier<CloseableClass> source = () -> new CloseableClass(count.incrementAndGet());
 		CloseableMemoize<CloseableClass> memoized = CloseableMemoize.closeableSupplier(source);
+
+		assertThatNullPointerException().isThrownBy(() -> memoized.accept(null));
+		assertThat(memoized.peek()).isNull();
+		assertThat(count).hasValue(0);
+
 		AtomicReference<CloseableClass> value = new AtomicReference<>();
 
 		assertThat(catchThrowable(() -> memoized.accept(value::set))).doesNotThrowAnyException();
