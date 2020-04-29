@@ -110,6 +110,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.action.Action;
 import aQute.bnd.service.repository.InfoRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.service.result.Result;
 import aQute.bnd.util.home.Home;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
@@ -973,6 +974,8 @@ public class bnd extends Processor {
 		@Description("Build for test")
 		boolean test();
 
+		@Description("Force non-incremental")
+		boolean force();
 	}
 
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
@@ -3409,7 +3412,6 @@ public class bnd extends Processor {
 
 	@Description("experimental - parallel build")
 	interface ParallelBuildOptions extends buildoptions {
-
 		long synctime();
 	}
 
@@ -3432,10 +3434,13 @@ public class bnd extends Processor {
 					if (!quit.get()) {
 
 						try {
-							proj.compile(options.test());
-							if (!quit.get()) {
+							proj.getGenerate()
+								.generate(options.force());
+							if (!quit.get())
+								proj.compile(options.test());
+							if (!quit.get())
 								proj.build(options.test());
-							}
+
 							if (!proj.isOk()) {
 								quit.set(true);
 							}
@@ -4475,4 +4480,21 @@ public class bnd extends Processor {
 		getInfo(c);
 	}
 
+	@Description("Generate source code")
+	interface GenerateOptions extends ProjectWorkspaceOptions {
+
+		@Description("Force generation, bypasses file time check")
+		boolean force();
+	}
+
+	@Description("Generate source code")
+	public void _generate(GenerateOptions options) throws Exception {
+		perProject(options, p -> {
+			Result<Set<File>, String> result = p.getGenerate()
+				.generate(options.force());
+			if (options.verbose()) {
+				out.println(result);
+			}
+		});
+	}
 }

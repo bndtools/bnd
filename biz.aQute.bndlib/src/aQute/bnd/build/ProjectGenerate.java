@@ -22,6 +22,7 @@ import aQute.bnd.service.generate.Generator;
 import aQute.bnd.service.result.Result;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.fileset.FileSet;
+import aQute.lib.io.IO;
 import aQute.lib.specinterface.SpecInterface;
 import aQute.lib.strings.Strings;
 import aQute.service.reporter.Reporter.SetLocation;
@@ -73,6 +74,8 @@ public class ProjectGenerate implements AutoCloseable {
 			if (sourceFiles.isEmpty())
 				return err("No source files/directories specified");
 
+			sourceFiles.addAll(project.getSelfAndAncestors());
+
 			if (!force) {
 
 				long latestModifiedSource = sourceFiles.stream()
@@ -91,11 +94,13 @@ public class ProjectGenerate implements AutoCloseable {
 					.min()
 					.orElse(0);
 
-				boolean staleFiles = force || latestModifiedSource >= latestModifiedTarget;
+				boolean staleFiles = latestModifiedSource >= latestModifiedTarget;
 
 				if (!force && !staleFiles)
 					return Result.ok(Collections.emptySet());
+
 			}
+			IO.delete(project.getFile(output));
 
 			if (st.system()
 				.isPresent())
@@ -153,6 +158,9 @@ public class ProjectGenerate implements AutoCloseable {
 
 				@SuppressWarnings("unchecked")
 				Optional<String> error = p.generate(bc, spec.instance());
+
+				project.getInfo(bc);
+
 				if (error.isPresent())
 					return err(error.get());
 
