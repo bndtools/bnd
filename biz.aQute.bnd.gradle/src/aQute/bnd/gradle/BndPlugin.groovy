@@ -102,12 +102,13 @@ public class BndPlugin implements Plugin<Project> {
         generate = tasks.register('generate') { t ->
           t.description 'Generate source code'
           t.group 'build'
-          t.inputs.files(generateInputs.unwrap())
+          t.inputs.files(generateInputs.unwrap()).withPropertyName('generateInputs')
+          /* bnd can include from -dependson */
+          t.inputs.files(getBuildDependencies('jar')).withPropertyName('buildDependencies')
           t.outputs.dirs(bndProject.getGenerate().getOutputDirs())
           t.doLast {
             try {
-              def result = bndProject.getGenerate().generate(false)
-              result.unwrap(result.error().orElse(null)) // will throw exception if an error occured
+              bndProject.getGenerate().generate(false)
             } catch (Exception e) {
               throw new GradleException("Project ${bndProject.getName()} failed to generate", e)
             }
@@ -582,8 +583,7 @@ Project ${project.name}
     boolean failed = !ignoreFailures && !p.isOk()
     int errorCount = p.getErrors().size()
     logReport(p, logger)
-    p.getWarnings().clear()
-    p.getErrors().clear()
+    p.clear()
     if (failed) {
       String str = ' even though no errors were reported'
       if (errorCount == 1) {
