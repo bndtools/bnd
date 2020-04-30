@@ -31,17 +31,29 @@
 		</builder>
 	</extension>
 
+
 	<extension
 		point="org.eclipse.jdt.core.compilationParticipant"
-		name="Bnd Container Compilation Participant"
+		name="Bnd Source Folder Checker"
 		>
-		<compilationParticipant class="org.bndtools.builder.classpath.BndContainerCompilationParticipant"
-			id="bndtools.builder.classpath.compilationparticipant"
+		<compilationParticipant class="org.bndtools.builder.classpath.BndFolderChecker"
+			id="bndtools.builder.classpath.bndfolderchecker"
 			modifiesEnvironment="true"
 			>
 		</compilationParticipant>
 	</extension>
 	
+    <extension
+        point="org.eclipse.jdt.core.compilationParticipant"
+        name="Bnd Container Compilation Participant"
+        >
+        <compilationParticipant class="org.bndtools.builder.classpath.BndContainerCompilationParticipant"
+            id="bndtools.builder.classpath.compilationparticipant"
+            modifiesEnvironment="true"
+            >
+        </compilationParticipant>
+    </extension>
+
     <extension
         point="org.eclipse.jdt.core.compilationParticipant"
         name="Bnd Source Generation Compilation Participant"
