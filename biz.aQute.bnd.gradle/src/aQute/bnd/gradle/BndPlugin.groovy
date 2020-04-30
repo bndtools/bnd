@@ -106,12 +106,14 @@ public class BndPlugin implements Plugin<Project> {
           t.outputs.dirs(bndProject.getGenerate().getOutputDirs())
           t.doLast {
             try {
-              def result = bndProject.getGenerate().generate(false)
-              result.unwrap(result.error().orElse(null)) // will throw exception if an error occured
+              def result = bndProject.getGenerate()
+              checkErrors(t.logger)
+              result.generate(false).unwrap(GradleException.metaClass.&invokeConstructor)
+            } catch( GradleException ge) {
+                throw ge;
             } catch (Exception e) {
               throw new GradleException("Project ${bndProject.getName()} failed to generate", e)
             }
-            checkErrors(t.logger)
           }
         }
       }
