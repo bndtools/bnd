@@ -27,7 +27,7 @@ public class BndDependencySourceLookupDirector extends AbstractSourceLookupDirec
 		dispose();
 		setLaunchConfiguration(configuration);
 		setSourceContainers(new ISourceContainer[] {
-			new DefaultSourceContainer(), new BndDependencySourceContainer()
+			new BndDependencySourceContainer(), new DefaultSourceContainer()
 		});
 		initializeParticipants();
 	}
