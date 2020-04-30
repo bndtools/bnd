@@ -467,24 +467,6 @@
          <perspectiveShortcut id="bndtools.perspective"/>
       </perspectiveExtension>
    </extension>
-   <!-- COMPLETION PROPOSALS
-   <extension
-      point="org.eclipse.jdt.ui.javaCompletionProposalComputer"
-      id="bundleImports"
-      name="Bundle Import Proposals">
-      <proposalCategory icon="icons/bricks.png"/>
-   </extension>
-   <extension
-      point="org.eclipse.jdt.ui.javaCompletionProposalComputer"
-      id="bundleImportClassProposalComputer"
-      name="Bundle Import Proposal Computer">
-      <javaCompletionProposalComputer
-         class="bndtools.classpath.BundleClassCompletionProposalComputer"
-         categoryId="bndtools.core.bundleImports">
-         <partition type="__dftl_partition_content_type"/>
-      </javaCompletionProposalComputer>
-   </extension>
-   -->
 
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
