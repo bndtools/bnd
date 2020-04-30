@@ -1,10 +1,10 @@
 package bndtools.launch;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -25,9 +25,9 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.sourcelookup.containers.JavaProjectSourceContainer;
 
-import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Run;
+import aQute.lib.exceptions.Exceptions;
 import bndtools.central.Central;
 import bndtools.launch.util.LaunchUtils;
 
@@ -79,67 +79,75 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
 
 			Run run = LaunchUtils.createRun(config, RunMode.SOURCES);
 			if (run != null) {
-				Collection<Container> runbundles = run.getRunbundles();
-				for (Container runbundle : runbundles) {
-					if (runbundle.getType() == TYPE.PROJECT) {
-						String targetProjName = runbundle.getProject()
-							.getName();
-						if (projectsAdded.add(targetProjName)) {
-							IProject targetProj = ResourcesPlugin.getWorkspace()
-								.getRoot()
-								.getProject(targetProjName);
-							if (targetProj != null) {
-								IJavaProject targetJavaProj = JavaCore.create(targetProj);
-								result.add(new JavaProjectSourceContainer(targetJavaProj));
-							}
-						}
-					} else if (runbundle.getType() == TYPE.REPO) {
-						IPath bundlePath = Central.toPath(runbundle.getFile());
-						IFile bundleFile = null;
-						if (bundlePath != null) {
-							bundleFile = ResourcesPlugin.getWorkspace()
-								.getRoot()
-								.getFile(bundlePath);
-						}
-						if (bundleFile != null) {
-							ISourceContainer sourceContainer = null;
-
-							// check to see if this archive came from a repo
-							// that encodes the source project name
-							final String sourceProjectName = runbundle.getAttributes()
-								.get("sourceProjectName");
-
-							if (sourceProjectName != null) {
-								try {
-									IProject sourceProject = ResourcesPlugin.getWorkspace()
-										.getRoot()
-										.getProject(sourceProjectName);
-
-									if (sourceProject.exists()) {
-										IJavaProject javaSourceProject = JavaCore.create(sourceProject);
-
-										sourceContainer = new JavaProjectSourceContainer(javaSourceProject);
-									}
-								} catch (Exception e) {
-									logger.logError("Error getting source java project", e);
+				Stream.concat(run.getRunFw()
+					.stream(),
+					run.getRunbundles()
+						.stream())
+					.forEach(runbundle -> {
+						if (runbundle.getType() == TYPE.PROJECT) {
+							String targetProjName = runbundle.getProject()
+								.getName();
+							if (projectsAdded.add(targetProjName)) {
+								IProject targetProj = ResourcesPlugin.getWorkspace()
+									.getRoot()
+									.getProject(targetProjName);
+								if (targetProj != null) {
+									IJavaProject targetJavaProj = JavaCore.create(targetProj);
+									result.add(new JavaProjectSourceContainer(targetJavaProj));
 								}
 							}
-
-							if (sourceContainer == null) {
-								// default to archive source container
-								sourceContainer = new ArchiveSourceContainer(bundleFile, false);
+						} else if (runbundle.getType() == TYPE.REPO) {
+							IPath bundlePath;
+							try {
+								bundlePath = Central.toPath(runbundle.getFile());
+							} catch (Exception e1) {
+								throw Exceptions.duck(e1);
 							}
+							IFile bundleFile = null;
+							if (bundlePath != null) {
+								bundleFile = ResourcesPlugin.getWorkspace()
+									.getRoot()
+									.getFile(bundlePath);
+							}
+							if (bundleFile != null) {
+								ISourceContainer sourceContainer = null;
 
-							result.add(sourceContainer);
-						} else {
-							ExternalArchiveSourceContainer container = new ExternalArchiveSourceContainer(
-								runbundle.getFile()
-									.toString(),
-								false);
-							result.add(container);
+								// check to see if this archive came from a repo
+								// that encodes the source project name
+								final String sourceProjectName = runbundle.getAttributes()
+									.get("sourceProjectName");
+
+								if (sourceProjectName != null) {
+									try {
+										IProject sourceProject = ResourcesPlugin.getWorkspace()
+											.getRoot()
+											.getProject(sourceProjectName);
+
+										if (sourceProject.exists()) {
+											IJavaProject javaSourceProject = JavaCore.create(sourceProject);
+
+											sourceContainer = new JavaProjectSourceContainer(javaSourceProject);
+										}
+									} catch (Exception e) {
+										logger.logError("Error getting source java project", e);
+									}
+								}
+
+								if (sourceContainer == null) {
+									// default to archive source container
+									sourceContainer = new ArchiveSourceContainer(bundleFile, false);
+								}
+
+								result.add(sourceContainer);
+							} else {
+								ExternalArchiveSourceContainer container = new ExternalArchiveSourceContainer(
+									runbundle.getFile()
+										.toString(),
+									false);
+								result.add(container);
+							}
 						}
-					}
-				}
+					});
 
 				lastRun = run;
 			}
