@@ -19,6 +19,7 @@ import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES
 import static aQute.bnd.gradle.BndUtils.jarLibraryElements
 import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.osgi.Processor.isTrue
+import static aQute.bnd.osgi.Processor.removeDuplicateMarker
 
 import aQute.lib.strings.Strings
 import aQute.bnd.build.Container
@@ -535,6 +536,24 @@ Project ${project.name}
           }
           println()
           checkErrors(t.logger, true)
+        }
+      }
+
+      // Depend upon an output dir to avoid parallel task execution.
+      // This effectively claims the resource and prevents
+      // tasks claiming the same resource from executing concurrently.
+      // -noparallel: launchpad;task="test,echo"
+      def noparallel = bndProject.getMergedParameters('-noparallel')
+      noparallel.each { key, attrs ->
+        def taskNames = attrs?.'task'
+        if (taskNames) {
+          def category = removeDuplicateMarker(key)
+          def resource = parent.project('cnf').layout.buildDirectory.dir("noparallel/${category}")
+          taskNames.trim().tokenize(',').each { taskName ->
+            tasks.named(taskName.trim()) { t ->
+              t.outputs.dir resource
+            }
+          }
         }
       }
     }

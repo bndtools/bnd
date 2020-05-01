@@ -25,5 +25,8 @@
 -buildpath:  \
     aQute.libg;version=project, \
     biz.aQute.bndlib;version=5.1.0
-    
+
 -sub: *.bnd
+
+-buildrepo:
+-releaserepo:
