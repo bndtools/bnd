@@ -54,6 +54,9 @@ Import-Package: \
 
 -baseline: *
 
+# Don't run tests in parallel with other projects claiming launchpad
+-noparallel: launchpad;task="test"
+
 # For testing purpose, see BundleBuilderTest.java
 Project                 true
 LaunchPadInheritTest    Project

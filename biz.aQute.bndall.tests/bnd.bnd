@@ -30,3 +30,6 @@
 
 -buildrepo:
 -releaserepo:
+
+# Don't run tests in parallel with other projects claiming launchpad
+-noparallel: launchpad;task="test"
