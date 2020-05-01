@@ -67,6 +67,8 @@ import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.lib.zip.ZipUtil;
+import aQute.libg.cryptography.Digester;
+import aQute.libg.cryptography.SHA256;
 import aQute.libg.glob.PathSet;
 
 public class Jar implements Closeable {
@@ -116,6 +118,9 @@ public class Jar implements Closeable {
 	private Compression											compression				= Compression.DEFLATE;
 	private boolean												closed;
 	private String[]											algorithms;
+	private SHA256												sha256;
+	private boolean												calculateFileDigest;
+	private int													fileLength				= -1;
 
 	public Jar(String name) {
 		this.name = name;
@@ -507,12 +512,21 @@ public class Jar implements Closeable {
 		write(new File(file));
 	}
 
-	public void write(OutputStream out) throws Exception {
+	public void write(OutputStream to) throws Exception {
 		check();
 
 		if (!doNotTouchManifest && !nomanifest && algorithms != null) {
-			doChecksums(out);
+			doChecksums(to);
 			return;
+		}
+
+		OutputStream out = to;
+		Digester<SHA256> digester = null;
+		sha256 = null;
+		fileLength = -1;
+
+		if (calculateFileDigest) {
+			out = digester = SHA256.getDigester(out);
 		}
 
 		ZipOutputStream jout = nomanifest || doNotTouchManifest ? new ZipOutputStream(out) : new JarOutputStream(out);
@@ -546,6 +560,11 @@ public class Jar implements Closeable {
 				writeResource(jout, directories, entry.getKey(), entry.getValue());
 		}
 		jout.finish();
+
+		if (digester != null) {
+			this.sha256 = digester.digest();
+			this.fileLength = digester.getLength();
+		}
 	}
 
 	public void writeFolder(File dir) throws Exception {
@@ -991,8 +1010,7 @@ public class Jar implements Closeable {
 	public List<String> getPackages() {
 		check();
 		return MapStream.of(directories)
-			.filterValue(mdir -> Objects.nonNull(mdir) && !mdir
-				.isEmpty())
+			.filterValue(mdir -> Objects.nonNull(mdir) && !mdir.isEmpty())
 			.keys()
 			.map(k -> k.replace('/', '.'))
 			.collect(toList());
@@ -1292,4 +1310,39 @@ public class Jar implements Closeable {
 		return getResources(pomXmlFilter);
 	}
 
+	/**
+	 * Make this jar calculate the SHA256 when it is saved as a file. When this
+	 * JAR is written, the digest is always cleared. If this flag is on, it will
+	 * be calculated and set when the file is successfully saved.
+	 *
+	 * @param onOrOff state of calculating the digest when writing this jar.
+	 *            true is on, otherwise off
+	 */
+
+	public Jar setCalculateFileDigest(boolean onOrOff) {
+		this.calculateFileDigest = onOrOff;
+		return this;
+	}
+
+	/**
+	 * Get the SHA256 digest of the last write operation when
+	 * {@link #setCalculateFileDigest(boolean)} was on.
+	 *
+	 * @return the SHA 256 digest or empty
+	 */
+
+	public Optional<byte[]> getSHA256() {
+		return Optional.ofNullable(sha256)
+			.map(SHA256::digest);
+	}
+
+	/**
+	 * Get the length of the last written file or -1 if unavailable. The length
+	 * is only calculated when the checksum calculation was on during the write.
+	 *
+	 * @return the length of the last written file or -1 if unavailable.
+	 */
+	public int getLength() {
+		return fileLength;
+	}
 }

@@ -32,7 +32,7 @@ import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
-
+import aQute.libg.cryptography.SHA256;
 
 public class JarTest {
 
@@ -291,14 +291,41 @@ public class JarTest {
 			ByteArrayOutputStream bout = new ByteArrayOutputStream();
 			jar.write(bout);
 
-			JarInputStream jin = new JarInputStream(new ByteArrayInputStream(bout.toByteArray()));
-			Manifest m = jin.getManifest();
-			assertNotNull(m);
+			assertThat(jar.getSHA256()).isEmpty(); // default no checksum
+			assertThat(jar.getLength()).isEqualTo(-1); // default no length
 
-			String parsedValue = m.getMainAttributes()
-				.getValue(Constants.BUNDLE_DESCRIPTION);
+			try (JarInputStream jin = new JarInputStream(new ByteArrayInputStream(bout.toByteArray()))) {
+				Manifest m = jin.getManifest();
+				assertNotNull(m);
 
-			assertEquals(expectedValue, parsedValue);
+				String parsedValue = m.getMainAttributes()
+					.getValue(Constants.BUNDLE_DESCRIPTION);
+
+				assertEquals(expectedValue, parsedValue);
+			}
+		}
+	}
+
+	@Test
+	public void testChecksumAndLengthOnWriteOption() throws Exception {
+		try (Jar jar = new Jar("dot")) {
+			Manifest manifest = new Manifest();
+			jar.setManifest(manifest);
+
+			String value = "Test\nTest\nTest\nTest";
+
+			manifest.getMainAttributes()
+				.putValue(Constants.BUNDLE_DESCRIPTION, value);
+
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			jar.setCalculateFileDigest(true)
+				.write(bout);
+			byte[] digest = SHA256.digest(bout.toByteArray())
+				.digest();
+			assertThat(jar.getSHA256()).isPresent()
+				.get()
+				.isEqualTo(digest);
+			assertThat(jar.getLength()).isEqualTo(bout.size());
 		}
 	}
 
