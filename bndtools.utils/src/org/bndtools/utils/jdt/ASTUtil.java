@@ -56,6 +56,7 @@ public class ASTUtil {
 
 		l++;
 
+		@SuppressWarnings("unchecked")
 		List<SingleVariableDeclaration> params = methodDecl.parameters();
 		if (params.isEmpty()) {
 			return methodName.charAt(l) == ')';
