@@ -1,12 +1,15 @@
 package bndtools.explorer;
 
 import java.beans.PropertyChangeListener;
+import java.util.Objects;
 
 import org.bndtools.utils.swt.FilterPanelPart;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.ui.packageview.PackageExplorerPart;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
@@ -14,6 +17,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.actions.ActionFactory;
 
 import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
@@ -74,6 +81,23 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 			getTreeViewer().refresh();
 		};
 		filterPart.addPropertyChangeListener(listener);
+
+		IActionBars actionBars = getViewSite().getActionBars();
+
+		IAction originalPaste = actionBars.getGlobalActionHandler(ActionFactory.PASTE.getId());
+
+		actionBars.setGlobalActionHandler(ActionFactory.PASTE.getId(), new Action() {
+			@Override
+			public void runWithEvent(Event event) {
+				Text filterText = filterPart.getFilterControl();
+
+				if (Objects.equals(event.widget, filterText)) {
+					filterText.paste();
+				} else {
+					originalPaste.runWithEvent(event);
+				}
+			}
+		});
 	}
 
 	@Override
