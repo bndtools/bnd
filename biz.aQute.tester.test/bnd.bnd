@@ -40,3 +40,6 @@
 	org.eclipse.core.runtime;version=latest,\
 	org.eclipse.equinox.preferences;version=latest,\
 	org.eclipse.equinox.common;version=latest
+
+# Don't run tests in parallel with other projects claiming launchpad
+-noparallel: launchpad;task="test"
