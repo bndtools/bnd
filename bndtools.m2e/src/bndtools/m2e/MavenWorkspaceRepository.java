@@ -38,6 +38,7 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,7 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
+import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.MavenVersion;
@@ -62,7 +64,8 @@ import bndtools.central.Central;
 })
 public class MavenWorkspaceRepository extends
 	AbstractIndexingRepository<IProject>
-	implements IMavenProjectChangedListener, MavenRunListenerHelper, PopulatedRepository, RepositoryPlugin {
+	implements IMavenProjectChangedListener, MavenRunListenerHelper, PopulatedRepository, Refreshable,
+	RepositoryPlugin {
 
 	enum Kind {
 		ADDED(MavenProjectChangedEvent.KIND_ADDED),
@@ -100,7 +103,11 @@ public class MavenWorkspaceRepository extends
 
 	public MavenWorkspaceRepository() {
 		super();
-		collect();
+	}
+
+	@Activate
+	void activate() {
+		process();
 		list = memoize(this::list0);
 	}
 
@@ -142,6 +149,14 @@ public class MavenWorkspaceRepository extends
 	}
 
 	@Override
+	public File getRoot() throws Exception {
+		Location location = Platform.getInstanceLocation();
+
+		return new File(location.getURL()
+			.getPath());
+	}
+
+	@Override
 	public boolean isEmpty() {
 		return list.get()
 			.isEmpty();
@@ -177,30 +192,45 @@ public class MavenWorkspaceRepository extends
 
 	@Override
 	public void mavenProjectChanged(MavenProjectChangedEvent[] events, IProgressMonitor monitor) {
+		boolean changed = false;
+
 		for (MavenProjectChangedEvent event : ((events != null) ? events : new MavenProjectChangedEvent[0])) {
 			Kind kind = Kind.get(event);
 			logger.debug("{}: mavenProjectChanged({}, {})", getName(), kind, event.getSource());
 			switch (kind) {
 				case ADDED :
 				case CHANGED :
-					IMavenProjectFacade projectFacade = event.getMavenProject();
-					IProject iProject = projectFacade.getProject();
-					index(iProject, collect(projectFacade, monitor));
+					if (process(event.getMavenProject(), monitor)) {
+						changed = true;
+					}
 					break;
 				case REMOVED :
-					remove(event.getOldMavenProject()
-						.getProject());
+					if (remove(event.getOldMavenProject()
+						.getProject())) {
+						changed = true;
+					}
 					break;
 			}
 		}
 
-		list = memoize(this::list0);
-		unchecked(() -> Central.refreshPlugins());
+		if (changed) {
+			list = memoize(this::list0);
+			unchecked(() -> Central.refreshPlugins());
+		}
 	}
 
 	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		throw new IllegalStateException(getName() + " is read-only");
+	}
+
+	@Override
+	public boolean refresh() throws Exception {
+		if (process()) {
+			list = memoize(this::list0);
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -305,11 +335,24 @@ public class MavenWorkspaceRepository extends
 		}
 	}
 
-	private void collect() {
+	private boolean process() {
+		boolean changed = false;
 		IProgressMonitor monitor = new NullProgressMonitor();
 		for (IMavenProjectFacade projectFacade : mavenProjectRegistry.getProjects()) {
-			IProject iProject = projectFacade.getProject();
-			index(iProject, collect(projectFacade, monitor));
+			if (process(projectFacade, monitor)) {
+				changed = true;
+			}
+		}
+		return changed;
+	}
+
+	private boolean process(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
+		Set<File> collected = collect(projectFacade, monitor);
+		if (collected.isEmpty()) {
+			return remove(projectFacade.getProject());
+		} else {
+			index(projectFacade.getProject(), collected);
+			return true;
 		}
 	}
 
@@ -358,54 +401,58 @@ public class MavenWorkspaceRepository extends
 	}
 
 	@Override
-	protected void remove(IProject iProject) {
+	protected boolean remove(IProject iProject) {
 		logger.debug("{}: Removing project {}", getName(), iProject);
-		super.remove(iProject);
+		return super.remove(iProject);
 	}
 
-	Supplier<Set<File>> collect(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
-		logger.debug("{}: Adding project {}", getName(), projectFacade.getProject());
+	Set<File> collect(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
+		logger.debug("{}: Collecting files for project {}", getName(), projectFacade.getProject());
 
-		return () -> {
-			try {
-				Set<File> files = new HashSet<>();
-				MavenProject mavenProject = projectFacade.getMavenProject(monitor);
+		Set<File> files = new HashSet<>();
 
-				List<MojoExecution> mojoExecutions = projectFacade.getMojoExecutions( //
-					"org.apache.maven.plugins", "maven-jar-plugin", monitor, "jar", "test-jar");
+		if (!isValid(projectFacade.getProject())) {
+			logger.debug("{}: Project {} determined invalid", getName(), projectFacade.getProject());
+			return files;
+		}
 
-				logger.debug("Project {} found {} mojos", projectFacade.getFullPath(), mojoExecutions.size());
+		try {
+			MavenProject mavenProject = projectFacade.getMavenProject(monitor);
 
-				for (MojoExecution mojoExecution : mojoExecutions) {
-					String finalName = Optional.ofNullable( //
-						maven.getMojoParameterValue(mavenProject, mojoExecution, "finalName", String.class, monitor))
-						.orElse("");
-					String classifier = Optional.ofNullable( //
-						maven.getMojoParameterValue(mavenProject, mojoExecution, "classifier", String.class, monitor))
-						.orElse("");
+			List<MojoExecution> mojoExecutions = projectFacade.getMojoExecutions( //
+				"org.apache.maven.plugins", "maven-jar-plugin", monitor, "jar", "test-jar");
 
-					StringBuilder fileName = new StringBuilder(finalName);
-					if (!classifier.isEmpty()) {
-						fileName.append("-")
-							.append(classifier);
-					}
-					fileName.append(".jar");
+			logger.debug("Project {} found {} mojos", projectFacade.getFullPath(), mojoExecutions.size());
 
-					File bundleFile = new File(mavenProject.getBuild()
-						.getDirectory(), fileName.toString());
+			for (MojoExecution mojoExecution : mojoExecutions) {
+				String finalName = Optional.ofNullable( //
+					maven.getMojoParameterValue(mavenProject, mojoExecution, "finalName", String.class, monitor))
+					.orElse("");
+				String classifier = Optional.ofNullable( //
+					maven.getMojoParameterValue(mavenProject, mojoExecution, "classifier", String.class, monitor))
+					.orElse("");
 
-					if (bundleFile.exists()) {
-						logger.debug("Project {} indexing file {}", projectFacade.getFullPath(), bundleFile);
-						files.add(bundleFile);
-					}
+				StringBuilder fileName = new StringBuilder(finalName);
+				if (!classifier.isEmpty()) {
+					fileName.append("-")
+						.append(classifier);
 				}
+				fileName.append(".jar");
 
-				return files;
-			} catch (Exception e) {
-				logger.error("Failed to index project {}", projectFacade.getFullPath(), e);
-				return Collections.emptySet();
+				File bundleFile = new File(mavenProject.getBuild()
+					.getDirectory(), fileName.toString());
+
+				if (bundleFile.exists()) {
+					logger.debug("{}: Collected file {} for project {}", getName(), bundleFile,
+						projectFacade.getProject());
+					files.add(bundleFile);
+				}
 			}
-		};
+		} catch (Exception e) {
+			logger.error("{}: Failed to collected files for project {}", getName(), projectFacade.getProject(), e);
+		}
+
+		return files;
 	}
 
 }
