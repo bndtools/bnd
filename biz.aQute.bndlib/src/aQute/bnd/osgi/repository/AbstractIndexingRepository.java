@@ -54,11 +54,13 @@ public abstract class AbstractIndexingRepository<KEY> extends BaseRepository {
 		repository = memoize(this::aggregate);
 	}
 
-	protected void remove(KEY key) {
-		resources.remove(key);
-		resources.keySet()
+	protected boolean remove(KEY key) {
+		boolean modified = (resources.remove(key) != null) | resources.keySet()
 			.removeIf(p -> !isValid(p));
-		repository = memoize(this::aggregate);
+		if (modified) {
+			repository = memoize(this::aggregate);
+		}
+		return modified;
 	}
 
 	private Supplier<List<Resource>> indexer(Supplier<? extends Collection<File>> files,
