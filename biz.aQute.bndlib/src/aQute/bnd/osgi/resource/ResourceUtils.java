@@ -33,7 +33,6 @@ import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import org.osgi.framework.Filter;
-import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
@@ -431,7 +430,7 @@ public class ResourceUtils {
 			return m -> true;
 		}
 		try {
-			Filter filter = FrameworkUtil.createFilter(filterString);
+			Filter filter = FilterImpl.createFilter(filterString);
 			return filter::matches;
 		} catch (InvalidSyntaxException e) {
 			return m -> false;
