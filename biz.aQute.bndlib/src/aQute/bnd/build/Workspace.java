@@ -71,6 +71,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.repository.AggregateRepository;
 import aQute.bnd.osgi.repository.AugmentRepository;
+import aQute.bnd.osgi.repository.WorkspaceRepositoryMarker;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.remoteworkspace.server.RemoteWorkspaceServer;
@@ -1466,24 +1467,14 @@ public class Workspace extends Processor {
 	 * <p>
 	 * TODO make this public in 5.2.0 & use everywhere
 	 * <p>
-	 * 
+	 *
 	 * @return an aggregate repository
 	 * @throws Exception
 	 */
 	Repository getResourceRepository() throws Exception {
 		List<Repository> plugins = getPlugins(Repository.class);
-		Repository found = null;
-		outer: for ( Repository r : plugins) {
-			for ( Class<?> c : r.getClass().getInterfaces()) {
-				if ( c.getName().endsWith("WorkspaceRepositoryMarker")) {
-					found = r;
-					break outer;
-				}
-			}
-		}
-		if (found != null) {
-			plugins.remove(found);
-		}
+		// replace any WorkspaceRepositoryMarker plugin
+		plugins.removeIf(WorkspaceRepositoryMarker.class::isInstance);
 		plugins.add(new WorkspaceRepositoryDynamic(this));
 
 		AggregateRepository repository = new AggregateRepository(plugins);

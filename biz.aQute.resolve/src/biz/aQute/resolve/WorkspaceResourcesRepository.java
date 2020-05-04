@@ -12,6 +12,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.repository.AbstractIndexingRepository;
+import aQute.bnd.osgi.repository.WorkspaceRepositoryMarker;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.io.IO;
 

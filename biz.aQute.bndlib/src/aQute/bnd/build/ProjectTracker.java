@@ -102,4 +102,10 @@ class ProjectTracker implements AutoCloseable {
 			.map(models::remove)
 			.forEach(IO::close);
 	}
+
+	@Override
+	public String toString() {
+		return models.keySet()
+			.toString();
+	}
 }

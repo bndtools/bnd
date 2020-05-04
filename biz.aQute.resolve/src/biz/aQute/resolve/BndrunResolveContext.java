@@ -40,6 +40,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.AggregateRepository;
 import aQute.bnd.osgi.repository.AugmentRepository;
+import aQute.bnd.osgi.repository.WorkspaceRepositoryMarker;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
@@ -51,7 +52,6 @@ import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.lib.converter.Converter;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
-
 /**
  * This class does the resolving for bundles. It loads the details from a
  * BndEditModel & Project
