@@ -42,6 +42,7 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -81,6 +82,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.eclipse.EclipseClasspath;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.BndListener;
@@ -140,44 +142,47 @@ public class Project extends Processor {
 		}
 	}
 
-	final static String				DEFAULT_ACTIONS					= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
-	public final static String		BNDFILE							= "bnd.bnd";
-	final static Path				BNDPATH							= Paths.get(BNDFILE);
-	public final static String		BNDCNF							= "cnf";
-	public final static String		SHA_256							= "SHA-256";
-	final Workspace					workspace;
-	private final AtomicBoolean		preparedPaths					= new AtomicBoolean();
-	private final Set<Project>		dependenciesFull				= new LinkedHashSet<>();
-	private final Set<Project>		dependenciesBuild				= new LinkedHashSet<>();
-	private final Set<Project>		dependenciesTest				= new LinkedHashSet<>();
-	private final Set<Project>		dependents						= new LinkedHashSet<>();
-	final Collection<Container>		classpath						= new LinkedHashSet<>();
-	final Collection<Container>		buildpath						= new LinkedHashSet<>();
-	final Collection<Container>		testpath						= new LinkedHashSet<>();
-	final Collection<Container>		runpath							= new LinkedHashSet<>();
-	final Collection<Container>		runbundles						= new LinkedHashSet<>();
-	final Collection<Container>		runfw							= new LinkedHashSet<>();
-	File							runstorage;
-	final Map<File, Attrs>			sourcepath						= new LinkedHashMap<>();
-	final Collection<File>			allsourcepath					= new LinkedHashSet<>();
-	final Collection<Container>		bootclasspath					= new LinkedHashSet<>();
-	final Map<String, Version>		versionMap						= new LinkedHashMap<>();
-	File							output;
-	File							target;
-	private final AtomicInteger		revision						= new AtomicInteger();
-	private File					files[];
-	boolean							delayRunDependencies			= true;
-	final ProjectMessages			msgs							= ReporterMessages.base(this,
-		ProjectMessages.class);
-	private Properties				ide;
-	final Packages					exportedPackages				= new Packages();
-	final Packages					importedPackages				= new Packages();
-	final Packages					containedPackages				= new Packages();
-	final PackageInfo				packageInfo						= new PackageInfo(this);
-	private Makefile				makefile;
-	private volatile RefreshData	data							= new RefreshData();
-	public Map<String, Container>	unreferencedClasspathEntries	= new HashMap<>();
-	public ProjectInstructions		instructions					= getInstructions(ProjectInstructions.class);
+	final static String											DEFAULT_ACTIONS					= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
+	public final static String									BNDFILE							= "bnd.bnd";
+	final static Path											BNDPATH							= Paths.get(BNDFILE);
+	public final static String									BNDCNF							= "cnf";
+	public final static String									SHA_256							= "SHA-256";
+	final Workspace												workspace;
+	private final AtomicBoolean									preparedPaths					= new AtomicBoolean();
+	private final Set<Project>									dependenciesFull				= new LinkedHashSet<>();
+	private final Set<Project>									dependenciesBuild				= new LinkedHashSet<>();
+	private final Set<Project>									dependenciesTest				= new LinkedHashSet<>();
+	private final Set<Project>									dependents						= new LinkedHashSet<>();
+	final Collection<Container>									classpath						= new LinkedHashSet<>();
+	final Collection<Container>									buildpath						= new LinkedHashSet<>();
+	final Collection<Container>									testpath						= new LinkedHashSet<>();
+	final Collection<Container>									runpath							= new LinkedHashSet<>();
+	final Collection<Container>									runbundles						= new LinkedHashSet<>();
+	final Collection<Container>									runfw							= new LinkedHashSet<>();
+	File														runstorage;
+	final Map<File, Attrs>										sourcepath						= new LinkedHashMap<>();
+	final Collection<File>										allsourcepath					= new LinkedHashSet<>();
+	final Collection<Container>									bootclasspath					= new LinkedHashSet<>();
+	final Map<String, Version>									versionMap						= new LinkedHashMap<>();
+	File														output;
+	File														target;
+	private final AtomicInteger									revision						= new AtomicInteger();
+	private File												files[];
+	boolean														delayRunDependencies			= true;
+	final ProjectMessages										msgs							= ReporterMessages
+		.base(this, ProjectMessages.class);
+	private Properties											ide;
+	final Packages												exportedPackages				= new Packages();
+	final Packages												importedPackages				= new Packages();
+	final Packages												containedPackages				= new Packages();
+	final PackageInfo											packageInfo						= new PackageInfo(this);
+	private Makefile											makefile;
+	private volatile Memoize<List<org.osgi.resource.Resource>>	resources						= Memoize
+		.supplier(this::parseBuildResources);
+	private volatile RefreshData								data							= new RefreshData();
+	public Map<String, Container>								unreferencedClasspathEntries	= new HashMap<>();
+	public ProjectInstructions									instructions					= getInstructions(
+		ProjectInstructions.class);
 
 	public Project(Workspace workspace, File unused, File buildFile) {
 		super(workspace);
@@ -1901,18 +1906,29 @@ public class Project extends Processor {
 			//
 
 			Set<File> buildFilesSet = Create.set();
+			Set<Supplier<org.osgi.resource.Resource>> resourceBuilders = new HashSet<>();
+
 			long lastModified = 0L;
-			for (Jar jar : jars) {
-				File file = saveBuild(jar);
-				if (file == null) {
-					error("Could not save %s", jar.getName());
-				} else {
-					buildFilesSet.add(file);
-					if (lastModified < jar.lastModified()) {
-						lastModified = jar.lastModified();
+			for (Jar jar : jars)
+				try {
+					Manifest m = jar.getManifest();
+					jar.setCalculateFileDigest(true);
+					File file = saveBuildWithoutClose(jar);
+					if (file == null) {
+						error("Could not save %s", jar.getName());
+					} else {
+						buildFilesSet.add(file);
+						if (lastModified < jar.lastModified()) {
+							lastModified = jar.lastModified();
+						}
+						Supplier<org.osgi.resource.Resource> indexer = ResourceBuilder.memoize(jar, file.toURI(),
+							getName());
+						if (indexer != null)
+							resourceBuilders.add(indexer);
 					}
+				} finally {
+					jar.close();
 				}
-			}
 
 			if (!isOk())
 				return null;
@@ -1971,6 +1987,13 @@ public class Project extends Processor {
 					}
 				}
 			}
+
+			this.resources = Memoize.supplier(() -> {
+				return resourceBuilders.stream()
+					.map(Supplier::get)
+					.collect(Collectors.toList());
+			});
+
 			// Write out the filenames in the buildfiles file
 			// so we can get them later even in another process
 			if (bfsWrite) {
@@ -2014,41 +2037,45 @@ public class Project extends Processor {
 
 	public File saveBuild(Jar jar) throws Exception {
 		try {
-			File outputFile = getOutputFile(jar.getName(), jar.getVersion());
-
-			reportNewer(outputFile.lastModified(), jar);
-			File logicalFile = write(jar::write, outputFile);
-
-			logger.debug("{} ({}) {}", jar.getName(), outputFile.getName(), jar.getResources()
-				.size());
-			//
-			// For maven we've got the shitty situation that the
-			// files in the generated directories have an ever changing
-			// version number so it is hard to refer to them in test cases
-			// and from for example bndtools if you want to refer to the
-			// latest so the following code attempts to create a link to the
-			// output file if this is using some other naming scheme,
-			// creating a constant name. Would probably be more logical to
-			// always output in the canonical name and then create a link to
-			// the desired name but not sure how much that would break BJ's
-			// maven handling that caused these versioned JARs
-			//
-
-			File canonical = new File(getTarget(), jar.getName() + ".jar");
-			if (!canonical.equals(logicalFile)) {
-				IO.delete(canonical);
-				if (!IO.createSymbolicLink(canonical, outputFile)) {
-					//
-					// As alternative, we copy the file
-					//
-					IO.copy(outputFile, canonical);
-				}
-				getWorkspace().changedFile(canonical);
-			}
-			return logicalFile;
+			return saveBuildWithoutClose(jar);
 		} finally {
 			jar.close();
 		}
+	}
+
+	private File saveBuildWithoutClose(Jar jar) throws Exception {
+		File outputFile = getOutputFile(jar.getName(), jar.getVersion());
+
+		reportNewer(outputFile.lastModified(), jar);
+		File logicalFile = write(jar::write, outputFile);
+
+		logger.debug("{} ({}) {}", jar.getName(), outputFile.getName(), jar.getResources()
+			.size());
+		//
+		// For maven we've got the shitty situation that the
+		// files in the generated directories have an ever changing
+		// version number so it is hard to refer to them in test cases
+		// and from for example bndtools if you want to refer to the
+		// latest so the following code attempts to create a link to the
+		// output file if this is using some other naming scheme,
+		// creating a constant name. Would probably be more logical to
+		// always output in the canonical name and then create a link to
+		// the desired name but not sure how much that would break BJ's
+		// maven handling that caused these versioned JARs
+		//
+
+		File canonical = new File(getTarget(), jar.getName() + ".jar");
+		if (!canonical.equals(logicalFile)) {
+			IO.delete(canonical);
+			if (!IO.createSymbolicLink(canonical, outputFile)) {
+				//
+				// As alternative, we copy the file
+				//
+				IO.copy(outputFile, canonical);
+			}
+			getWorkspace().changedFile(canonical);
+		}
+		return logicalFile;
 	}
 
 	private File write(ConsumerWithException<File> jar, File outputFile)
@@ -3600,4 +3627,26 @@ public class Project extends Processor {
 		return data.generate.get();
 	}
 
+	public List<org.osgi.resource.Resource> getResources() {
+		return resources.get();
+	}
+
+	private List<org.osgi.resource.Resource> parseBuildResources() {
+		List<org.osgi.resource.Resource> result = new ArrayList<>();
+		try {
+			File[] fs = getBuildFiles(false);
+			if (fs == null)
+				return result;
+
+			for (File f : fs) {
+				ResourceBuilder rb = new ResourceBuilder();
+				rb.addFile(f, f.toURI());
+				rb.addWorkspaceNamespace(getName());
+				result.add(rb.build());
+			}
+		} catch (Exception e) {
+			this.exception(e, "trying to parse resources");
+		}
+		return result;
+	}
 }

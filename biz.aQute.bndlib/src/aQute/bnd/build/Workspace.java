@@ -1463,12 +1463,29 @@ public class Workspace extends Processor {
 	 * Return an aggregate repository of all the workspace's repository and the
 	 * projects repository. This workspace must be gotten for each operation, it
 	 * might become stale over time.
-	 *
+	 * <p>
+	 * TODO make this public in 5.2.0 & use everywhere
+	 * <p>
+	 * 
 	 * @return an aggregate repository
 	 * @throws Exception
 	 */
-	public Repository getResourceRepository() throws Exception {
+	Repository getResourceRepository() throws Exception {
 		List<Repository> plugins = getPlugins(Repository.class);
+		Repository found = null;
+		outer: for ( Repository r : plugins) {
+			for ( Class<?> c : r.getClass().getInterfaces()) {
+				if ( c.getName().endsWith("WorkspaceRepositoryMarker")) {
+					found = r;
+					break outer;
+				}
+			}
+		}
+		if (found != null) {
+			plugins.remove(found);
+		}
+		plugins.add(new WorkspaceRepositoryDynamic(this));
+
 		AggregateRepository repository = new AggregateRepository(plugins);
 		Parameters augments = getMergedParameters(Constants.AUGMENT);
 		if (augments.isEmpty())
@@ -1561,4 +1578,5 @@ public class Workspace extends Processor {
 		}
 
 	}
+
 }

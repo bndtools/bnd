@@ -165,10 +165,14 @@ public class ProjectGenerateTest {
 	}
 
 	private void getRepo(Workspace ws) throws IOException, Exception {
+		System.out.println("current working dir " + IO.work);
 		FileTree tree = new FileTree();
 		List<File> files = tree.getFiles(IO.getFile("generated/"), "*.jar");
-		files.addAll(tree.getFiles(IO.getFile("../biz.aQute.bnd.javagen/generated/"), "*.jar"));
-
+		File file = IO.getFile("../biz.aQute.bnd.javagen/generated/")
+			.getCanonicalFile();
+		System.out.println("where " + file);
+		files.addAll(tree.getFiles(file, "*.jar"));
+		System.out.println("tmp repo " + files);
 		FileSetRepository repo = new FileSetRepository("test", files);
 		ws.addBasicPlugin(repo);
 	}

@@ -20,6 +20,8 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Supplier;
+import java.util.jar.Manifest;
 
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
@@ -44,12 +46,14 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.Filter;
+import aQute.lib.hex.Hex;
 import aQute.lib.hierarchy.FolderNode;
 import aQute.lib.hierarchy.Hierarchy;
 import aQute.lib.hierarchy.NamedNode;
@@ -1020,6 +1024,51 @@ public class ResourceBuilder {
 					return namespace;
 			}
 		}
+	}
+
+	/**
+	 * Create a deferred resource builder so that any expensive actions are
+	 * deferred until the supplier is called to get the resource.
+	 *
+	 * @param jar a Jar, preferably with checksum calculated, or null
+	 * @param uri the uri to use or null (will use file uri as default)
+	 * @param projectName if in a workspace, the project name or otherwise null
+	 * @return a memo for creating the corresponding resource
+	 */
+	public static Supplier<Resource> memoize(Jar jar, URI uri, String projectName) throws Exception {
+
+		assert jar != null : "jar is mandatory";
+		assert jar.getSHA256()
+			.isPresent() : "jar must have sha256";
+		assert uri != null : "uri must be set";
+
+		Manifest m = jar.getManifest();
+		if (m == null)
+			return null;
+
+		byte[] digest = jar.getSHA256()
+			.get();
+		int length = jar.getLength();
+
+		jar = null; // ensure jar not referenced from lambda
+
+		return () -> {
+			try {
+				ResourceBuilder rb = new ResourceBuilder();
+				boolean hasIdentity = rb.addManifest(Domain.domain(m));
+				if (hasIdentity) {
+					String mime = hasIdentity ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
+					String sha256 = Hex.toHexString(digest);
+					rb.addContentCapability(uri, sha256, length, mime);
+				}
+				if (projectName != null) {
+					rb.addWorkspaceNamespace(projectName);
+				}
+				return rb.build();
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+		};
 	}
 
 }
