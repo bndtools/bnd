@@ -1,6 +1,11 @@
 package aQute.bnd.build;
 
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.osgi.resource.Capability;
@@ -9,36 +14,40 @@ import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.osgi.repository.BaseRepository;
+import aQute.bnd.osgi.repository.WorkspaceRepositoryMarker;
 import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.lib.collections.MultiMap;
 
-public class WorkspaceRepositoryDynamic extends BaseRepository implements Repository {
+class WorkspaceRepositoryDynamic extends BaseRepository implements Repository, WorkspaceRepositoryMarker {
+	private final Workspace workspace;
 
-	final Workspace workspace;
-
-	public WorkspaceRepositoryDynamic(Workspace workspace) {
+	WorkspaceRepositoryDynamic(Workspace workspace) {
 		this.workspace = workspace;
 	}
 
-	@SuppressWarnings({
-		"unchecked", "rawtypes"
-	})
 	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
-		MultiMap<Requirement, Capability> map = new MultiMap<>();
+		List<Resource> resources = workspace.getAllProjects()
+			.stream()
+			.map(Project::getResources)
+			.flatMap(Collection::stream)
+			.collect(toList());
 
-		for (Project project : workspace.getAllProjects()) {
-			for (Resource resource : project.getResources()) {
-				for (Requirement requirement : requirements) {
-					for (Capability capability : resource.getCapabilities(requirement.getNamespace())) {
-						if (ResourceUtils.matches(requirement, capability)) {
-							map.add(requirement, capability);
-						}
-					}
-				}
-			}
-		}
-		return (Map) map;
+		Map<Requirement, Collection<Capability>> result =  requirements.stream()
+			.collect(toMap(identity(), requirement -> findProvider(resources, requirement),
+				ResourceUtils::capabilitiesCombiner));
+		return result;
 	}
 
+	private List<Capability> findProvider(Collection<? extends Resource> resources, Requirement requirement) {
+		String namespace = requirement.getNamespace();
+		return resources.stream()
+			.flatMap(resource -> ResourceUtils.capabilityStream(resource, namespace))
+			.filter(ResourceUtils.matcher(requirement))
+			.collect(ResourceUtils.toCapabilities());
+	}
+
+	@Override
+	public String toString() {
+		return NAME;
+	}
 }
