@@ -104,7 +104,7 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
-		if (event.getDelta()
+		if ((event != null) && event.getDelta()
 			.findMember(bndrunFilePath) != null) {
 			createRepo(projectFacade, new NullProgressMonitor());
 		}

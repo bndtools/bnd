@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.maven.lib.configuration.Bndruns;
-import aQute.bnd.maven.lib.resolve.BndrunContainer;
 import biz.aQute.resolve.Bndrun;
 
 /*
@@ -34,8 +33,6 @@ import biz.aQute.resolve.Bndrun;
 public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 
 	private static final Logger			logger	= LoggerFactory.getLogger(MavenRunProvider.class);
-
-	private final MavenBndrunContainer mbc = new MavenBndrunContainer();
 
 	private MavenWorkspaceRepository	mavenWorkspaceRepository;
 
@@ -113,9 +110,10 @@ public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 					.get(0);
 			}
 
-			BndrunContainer bndrunContainer = mbc.getBndrunContainer(projectFacade, mojoExecution, monitor);
+			MavenBndrunContainer mavenBndrunContainer = MavenBndrunContainer.getBndrunContainer(projectFacade, mojoExecution,
+				monitor);
 
-			return bndrunContainer.init(bndrunFile, mode.name(),
+			return mavenBndrunContainer.init(bndrunFile, mode.name(),
 				new File(mavenProject.getBuild()
 					.getDirectory()));
 		} else if ((mode == RunMode.TEST)
@@ -129,9 +127,10 @@ public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 					.get(0);
 			}
 
-			BndrunContainer bndrunContainer = mbc.getBndrunContainer(projectFacade, mojoExecution, monitor);
+			MavenBndrunContainer mavenBndrunContainer = MavenBndrunContainer.getBndrunContainer(projectFacade, mojoExecution,
+				monitor);
 
-			return bndrunContainer.init(bndrunFile, mode.name(),
+			return mavenBndrunContainer.init(bndrunFile, mode.name(),
 				new File(mavenProject.getBuild()
 					.getDirectory()));
 		} else {
