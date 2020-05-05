@@ -174,6 +174,18 @@ public class ResourceBuilder {
 	 * @param manifest The manifest to parse
 	 */
 	public boolean addManifest(Domain manifest) {
+
+		//
+		// Check if this JAR has a main class header
+		//
+
+		String mainClass = manifest.get("Main-Class");
+		if (mainClass != null) {
+			CapabilityBuilder mc = new CapabilityBuilder(MainClassNamespace.MAINCLASS_NAMESPACE);
+			MainClassNamespace.build(mc, manifest);
+			addCapability(mc);
+		}
+
 		//
 		// Identity capability
 		//

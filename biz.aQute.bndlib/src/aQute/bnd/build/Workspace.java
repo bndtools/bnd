@@ -74,6 +74,7 @@ import aQute.bnd.osgi.repository.AugmentRepository;
 import aQute.bnd.osgi.repository.WorkspaceRepositoryMarker;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.remoteworkspace.server.RemoteWorkspaceServer;
 import aQute.bnd.resource.repository.ResourceRepositoryImpl;
 import aQute.bnd.service.BndListener;
@@ -85,7 +86,6 @@ import aQute.bnd.service.lifecycle.LifeCyclePlugin;
 import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.service.repository.RepositoryDigest;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.service.result.FunctionWithException;
 import aQute.bnd.service.result.Result;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.url.MultiURLConnectionHandler;
@@ -1527,15 +1527,29 @@ public class Workspace extends Processor {
 	 * Execute a function with a class from a plugin loaded from the
 	 * repositories. See {@link WorkspaceExternalPluginHandler}.
 	 */
-	public <T, R> Result<R, String> call(String pluginName, Class<T> c, FunctionWithException<T, Result<R, String>> f) {
-		return data.externalPlugins.get()
-			.call(pluginName, c, f);
+	public WorkspaceExternalPluginHandler getExternalPlugins() {
+		return data.externalPlugins.get();
 	}
 
 	public Result<File, String> getBundle(org.osgi.resource.Resource resource) {
 		BundleId bundleId = ResourceUtils.getBundleId(resource);
-		if (bundleId == null)
-			return Result.err("Not a bundle %s", resource);
+		if (bundleId == null) {
+
+			//
+			// might not be a bundle
+			// hack: fetch through GAV, works for maven resources
+			//
+
+			IdentityCapability cap = ResourceUtils.getIdentityCapability(resource);
+
+			String bsn = cap.osgi_identity();
+			Version version = cap.version();
+			if (bsn == null || version == null) {
+				return Result.err("Not a bundle %s", resource);
+			}
+
+			bundleId = new BundleId(bsn, version);
+		}
 
 		if (bundleId.getVersion() != null && !Verifier.isVersion(bundleId.getVersion()))
 			return Result.err("Not a proper version %s for %s", bundleId.getVersion(), resource);

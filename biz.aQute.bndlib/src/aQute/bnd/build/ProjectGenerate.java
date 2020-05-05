@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import org.osgi.framework.VersionRange;
+
 import aQute.bnd.help.instructions.ProjectInstructions.GeneratorSpec;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
@@ -102,7 +104,7 @@ public class ProjectGenerate implements AutoCloseable {
 					plugin = plugin.substring(1);
 				}
 
-				String result = doGenerate(plugin, st._attrs());
+				String result = doGenerate(plugin, st);
 
 				if (result != null)
 					return err(ignoreErrors ? "-" + result : result);
@@ -118,17 +120,34 @@ public class ProjectGenerate implements AutoCloseable {
 		}
 	}
 
-	private String doGenerate(String plugin, Map<String, String> attrs) {
+	private String doGenerate(String plugin, GeneratorSpec st) {
 
 		List<String> arguments = Strings.splitQuoted(plugin, " \t");
 		if (arguments.isEmpty()) {
 			return "no plugin name";
 		}
 
-		String pluginName = arguments.get(0);
+		String pluginName = arguments.remove(0);
+		if (pluginName.indexOf('.') >= 0) {
+			if (pluginName.startsWith("."))
+				pluginName = pluginName.substring(1);
+
+			VersionRange range = st.version()
+				.map(VersionRange::valueOf)
+				.orElse(null);
+
+			return doGenerateMain(pluginName, range, st.classpath()
+				.orElse(null), st._attrs(), arguments.toArray(new String[0]));
+		} else {
+			return doGeneratePlugin(pluginName, st._attrs(), arguments);
+		}
+	}
+
+	private String doGeneratePlugin(String pluginName, Map<String, String> attrs, List<String> arguments) {
 		BuildContext bc = new BuildContext(project, attrs, arguments);
 
 		Result<Boolean, String> call = project.getWorkspace()
+			.getExternalPlugins()
 			.call(pluginName, Generator.class, p -> {
 
 				Class<?> type = SpecInterface.getParameterizedInterfaceType(p.getClass(), Generator.class);
@@ -150,6 +169,17 @@ public class ProjectGenerate implements AutoCloseable {
 			});
 		return call.error()
 			.orElse(null);
+	}
+
+	private String doGenerateMain(String mainClass, VersionRange range, String classpath, Map<String, String> attrs,
+		String[] args) {
+		Result<String, String> call = project.getWorkspace()
+			.getExternalPlugins()
+			.call(mainClass, range, project, attrs.get("classpath"), args);
+		if (call.isErr())
+			return call.error()
+				.get();
+		return null;
 	}
 
 	public Result<Set<File>, String> getInputs() {

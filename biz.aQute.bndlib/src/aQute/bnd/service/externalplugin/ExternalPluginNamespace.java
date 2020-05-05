@@ -34,14 +34,9 @@ public interface ExternalPluginNamespace {
 	String	CAPABILITY_OBJECTCLASS_ATTRIBUTE	= Constants.OBJECTCLASS;
 
 	/**
-	 * The type of the interface under which it will be used
+	 * The implementation class
 	 */
 	String	CAPABILITY_IMPLEMENTATION_ATTRIBUTE	= "implementation";
-
-	/**
-	 * An optional generic parameter to the objectClass type
-	 */
-	String	CAPABILITY_SUBTYPE_ATTRIBUTE		= "subtype";
 
 	static String filter(String name, Class<?> type) {
 		StringBuilder sb = new StringBuilder();
