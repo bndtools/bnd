@@ -16,26 +16,20 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 	private static final ILogger	logger				= Logger
 		.getLogger(BndSourceGenerateCompilationParticipant.class);
 	public static final String		MARKER_BND_GENERATE	= "bndtools.builder.bndgenerate";
-	private Project					project;
 
 	@Override
 	public boolean isActive(IJavaProject javaProject) {
 		try {
 			MarkerSupport markers = new MarkerSupport(javaProject.getProject());
-			project = Central.getProject(javaProject.getProject());
+			Project project = Central.getProject(javaProject.getProject());
 			if (project == null)
 				return false;
 
-			Result<Set<File>, String> inputs = project.getGenerate()
-				.getInputs();
-			if (inputs.isErr()) {
-				// handle any errors
-				// in the aboutToBuild method
-				return true;
-			}
+			boolean result = project.getGenerate()
+				.needsBuild();
 
-			return !inputs.unwrap()
-				.isEmpty();
+			System.out.println("isActive " + project + " " + result);
+			return result;
 		} catch (Exception e) {
 			logger.logError("generating phase, isActive", e);
 			return false;
@@ -45,11 +39,16 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 	@Override
 	public int aboutToBuild(IJavaProject javaProject) {
 		try {
+			Project project = Central.getProject(javaProject.getProject());
+			if (project == null)
+				return READY_FOR_BUILD;
+
+			System.out.println("aboutToBuild " + project);
 			MarkerSupport markers = new MarkerSupport(javaProject.getProject());
 
 			Result<Set<File>, String> result = project.getGenerate()
-				.generate(false);
-			if (!result.isErr()) {
+				.generate(true);
+			if (result.isOk()) {
 				Set<File> generated = result.unwrap();
 				Set<File> outputs = project.getGenerate()
 					.getOutputDirs();

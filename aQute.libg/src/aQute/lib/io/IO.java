@@ -54,6 +54,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import aQute.lib.exceptions.ConsumerWithException;
 import aQute.lib.stringrover.StringRover;
@@ -769,6 +770,21 @@ public class IO {
 	 */
 	public static void delete(File file) {
 		delete(file.toPath());
+	}
+
+	/**
+	 * Deletes the specified content of the given directory. Folders are
+	 * recursively deleted. This method will not delete the given dir, this can
+	 * be useful in Eclipse or other systems that detect delete-create<br>
+	 * If file(s) cannot be deleted, no feedback is provided (fail silently).
+	 *
+	 * @param dir of whose contents are to be deleted
+	 */
+	public static void deleteContent(File dir) {
+		if (!dir.isDirectory())
+			return;
+		Stream.of(dir.listFiles())
+			.forEach(IO::delete);
 	}
 
 	/**
