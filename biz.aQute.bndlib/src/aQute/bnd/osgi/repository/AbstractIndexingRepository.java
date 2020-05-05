@@ -1,6 +1,5 @@
 package aQute.bnd.osgi.repository;
 
-import static aQute.lib.exceptions.BiFunctionWithException.asBiFunction;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
@@ -19,11 +18,12 @@ import org.osgi.resource.Resource;
 
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.stream.MapStream;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.memoize.Memoize;
 
 public abstract class AbstractIndexingRepository<KEY> extends BaseRepository {
-	private final Map<KEY, Supplier<? extends Collection<Resource>>>	resources;
-	private volatile Supplier<ResourcesRepository>						repository;
+	private final Map<KEY, Supplier<? extends Collection<? extends Resource>>>	resources;
+	private volatile Supplier<ResourcesRepository>								repository;
 
 	protected AbstractIndexingRepository() {
 		resources = new ConcurrentHashMap<>();
@@ -37,10 +37,14 @@ public abstract class AbstractIndexingRepository<KEY> extends BaseRepository {
 	protected abstract boolean isValid(KEY key);
 
 	protected BiFunction<ResourceBuilder, File, ? extends ResourceBuilder> fileIndexer(KEY key) {
-		return asBiFunction((rb, file) -> {
-			rb.addFile(file, file.toURI());
+		return (rb, file) -> {
+			try {
+				rb.addFile(file, file.toURI());
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
 			return rb;
-		});
+		};
 	}
 
 	public void index(KEY key, Collection<File> files) {
@@ -48,19 +52,22 @@ public abstract class AbstractIndexingRepository<KEY> extends BaseRepository {
 	}
 
 	public void index(KEY key, Supplier<? extends Collection<File>> files) {
-		resources.keySet()
-			.removeIf(p -> !isValid(p));
-		resources.put(key, memoize(indexer(files, fileIndexer(key))));
+		add(key, indexer(files, fileIndexer(key)));
+	}
+
+	protected void add(KEY key, Supplier<? extends Collection<? extends Resource>> supplier) {
+		resources.put(key, memoize(supplier));
 		repository = memoize(this::aggregate);
 	}
 
 	protected boolean remove(KEY key) {
-		boolean modified = (resources.remove(key) != null) | resources.keySet()
-			.removeIf(p -> !isValid(p));
-		if (modified) {
+		// Using | operator as we do not want to short-circuit
+		if ((resources.remove(key) != null) | resources.keySet()
+			.removeIf(p -> !isValid(p))) {
 			repository = memoize(this::aggregate);
+			return true;
 		}
-		return modified;
+		return false;
 	}
 
 	private Supplier<List<Resource>> indexer(Supplier<? extends Collection<File>> files,
