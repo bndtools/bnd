@@ -69,6 +69,7 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.lib.memoize.Memoize;
 import aQute.libg.ints.IntCounter;
 import aQute.service.reporter.Reporter;
+import bndtools.Plugin;
 import bndtools.central.RepositoriesViewRefresher.RefreshModel;
 import bndtools.preferences.BndPreferences;
 
@@ -583,6 +584,12 @@ public class Central implements IStartupParticipant {
 			.map(IPath::toFile)
 			.map(asFunction(Central::getProject))
 			.orElse(null);
+	}
+
+	public static boolean isBndProject(IProject project) {
+		return Optional.ofNullable(project)
+			.map(asFunction(p -> p.getNature(Plugin.BNDTOOLS_NATURE)))
+			.isPresent();
 	}
 
 	/**

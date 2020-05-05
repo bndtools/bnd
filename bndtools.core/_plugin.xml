@@ -57,6 +57,8 @@
 	<extension point="bndtoolsStartupParticipant">
 		<startupParticipant
 			class="bndtools.central.Central" />
+		<startupParticipant
+			class="bndtools.javasearch.AddQueryListenerStartupParticipant" />
 	</extension>
 
    <!-- EDITORS -->
