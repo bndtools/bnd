@@ -36,11 +36,14 @@ public class ProjectGenerate implements AutoCloseable {
 	}
 
 	public Result<Set<File>, String> generate(boolean force) {
+		if (force)
+			clean();
+
 		Set<File> files = new TreeSet<>();
 		for (Entry<String, GeneratorSpec> e : project.instructions.generate()
 			.entrySet()) {
 
-			Result<Set<File>, String> step = step(e.getKey(), e.getValue(), force);
+			Result<Set<File>, String> step = step(e.getKey(), e.getValue());
 			if (step.isErr()) {
 				String qsrc = e.getKey();
 				SetLocation error = project.error("%s : %s;%s", step.error()
@@ -56,7 +59,7 @@ public class ProjectGenerate implements AutoCloseable {
 		return Result.ok(files);
 	}
 
-	private Result<Set<File>, String> step(String sourceWithDuplicate, GeneratorSpec st, boolean force) {
+	private Result<Set<File>, String> step(String sourceWithDuplicate, GeneratorSpec st) {
 		try {
 
 			String source = Strings.trim(Processor.removeDuplicateMarker(sourceWithDuplicate));
@@ -74,33 +77,14 @@ public class ProjectGenerate implements AutoCloseable {
 			if (sourceFiles.isEmpty())
 				return err("No source files/directories specified");
 
-			sourceFiles.addAll(project.getSelfAndAncestors());
-
-			if (!force) {
-
-				long latestModifiedSource = sourceFiles.stream()
-					.mapToLong(File::lastModified)
-					.max()
-					.getAsLong();
-
-				FileSet outputSpec = new FileSet(project.getBase(), output);
-				List<File> outputFiles = outputSpec.getFiles()
-					.stream()
-					.filter(File::isFile)
-					.collect(Collectors.toList());
-
-				long latestModifiedTarget = outputFiles.stream()
-					.mapToLong(File::lastModified)
-					.min()
-					.orElse(0);
-
-				boolean staleFiles = latestModifiedSource >= latestModifiedTarget;
-
-				if (!force && !staleFiles)
-					return Result.ok(Collections.emptySet());
-
+			File out = project.getFile(output);
+			if (out.isDirectory()) {
+				for (File f : out.listFiles()) {
+					IO.delete(f);
+				}
+			} else {
+				out.mkdirs();
 			}
-			IO.delete(project.getFile(output));
 
 			if (st.system()
 				.isPresent())
@@ -159,8 +143,6 @@ public class ProjectGenerate implements AutoCloseable {
 				@SuppressWarnings("unchecked")
 				Optional<String> error = p.generate(bc, spec.instance());
 
-				project.getInfo(bc);
-
 				if (error.isPresent())
 					return err(error.get());
 
@@ -206,6 +188,57 @@ public class ProjectGenerate implements AutoCloseable {
 			.collect(Collectors.toSet());
 	}
 
+	public boolean needsBuild() {
+		for (Entry<String, GeneratorSpec> e : project.instructions.generate()
+			.entrySet()) {
+
+			GeneratorSpec spec = e.getValue();
+
+			String source = Strings.trim(Processor.removeDuplicateMarker(e.getKey()));
+			if (source.isEmpty() || source.equals(Constants.EMPTY_HEADER))
+				continue;
+
+			String output = spec.output();
+			if (output == null)
+				return true; // error handling
+
+			if (!output.endsWith("/"))
+				output += "/";
+
+			Set<File> sourceFiles = new FileSet(project.getBase(), source).getFiles();
+			if (sourceFiles.isEmpty())
+				return true; // error handling
+
+			sourceFiles.addAll(project.getSelfAndAncestors());
+
+			long latestModifiedSource = sourceFiles.stream()
+				.mapToLong(File::lastModified)
+				.max()
+				.getAsLong();
+
+			Set<File> outputFiles = new FileSet(project.getBase(), output).getFiles();
+			if (outputFiles.isEmpty())
+				return true;
+
+			long latestModifiedTarget = outputFiles.stream()
+				.filter(File::isFile)
+				.mapToLong(File::lastModified)
+				.min()
+				.orElse(0);
+
+			boolean staleFiles = latestModifiedSource >= latestModifiedTarget;
+			if (staleFiles)
+				return true;
+		}
+		return false;
+	}
+
+	public void clean() {
+		getOutputDirs().stream()
+			.forEach(IO::delete);
+	}
+
 	@Override
 	public void close() {}
+
 }

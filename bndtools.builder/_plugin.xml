@@ -111,7 +111,6 @@
         name="Bndtools Generate Marker"
         >
         <persistent value="true"/>
-        <super type="bndtools.builder.bndproblem"/>
         <super type="org.eclipse.core.resources.problemmarker"/>
         <super type="org.eclipse.core.resources.textmarker"/>
     </extension>
