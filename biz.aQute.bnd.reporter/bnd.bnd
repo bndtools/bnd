@@ -2,18 +2,6 @@
 -include: ${workspace}/cnf/includes/jdt.bnd
 
 jtwig.version: 5.86.1.RELEASE
--maven-dependencies.jtwig:\
-	org.jtwig:jtwig-core:${jtwig.version};\
-	groupId=org.jtwig;\
-	artifactId=jtwig-core;\
-	version=${jtwig.version};\
-	scope=compile,\
-	\
-	org.jtwig:jtwig-reflection:${jtwig.version};\
-	groupId=org.jtwig;\
-	artifactId=jtwig-reflection;\
-	version=${jtwig.version};\
-	scope=compile
  
 -buildpath: \
 	osgi.annotation;version=latest;maven-scope=provided,\
