@@ -1,5 +1,6 @@
 package aQute.maven.api;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.regex.Pattern;
@@ -170,5 +171,12 @@ public class Program implements Comparable<Program> {
 			return n;
 
 		return artifact.compareTo(o.artifact);
+	}
+
+	public Map<String, String> attributes() {
+		Map<String, String> attrs = new HashMap<>();
+		attrs.put("maven-groupId", group);
+		attrs.put("maven-artifactId", artifact);
+		return attrs;
 	}
 }
