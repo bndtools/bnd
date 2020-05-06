@@ -86,6 +86,7 @@ Import-Package: \
     org.eclipse.core.expressions,\
     org.eclipse.core.filesystem,\
     org.eclipse.core.contenttype,\
+    org.eclipse.search,\
 	bndtools.api;version=latest,\
 	org.bndtools.headless.build.manager;version=latest,\
 	org.bndtools.versioncontrol.ignores.manager;version=latest,\
