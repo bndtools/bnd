@@ -293,7 +293,8 @@ public class BndPomRepository extends BaseRepository
 		if (listeners.length == 0)
 			return p.getValue();
 
-		new DownloadListenerPromise(reporter, name + ": get " + bsn + ";" + version, p, listeners);
+		Map<String, String> attrs = archive.attributes();
+		new DownloadListenerPromise(reporter, name + ": get " + bsn + ";" + version, p, attrs, listeners);
 		return repoImpl.getMavenRepository()
 			.toLocalFile(archive);
 	}
