@@ -534,7 +534,7 @@
          id="org.bndtools.core.launch.sourceContainerTypes.bndDependencies"
          name="Bnd Dependencies"
          description=""
-         class="bndtools.launch.BndDependencySourceContainerType"
+         class="bndtools.launch.sourcelookup.containers.BndDependencySourceContainerType"
       />
    </extension>
    <extension point="org.eclipse.debug.ui.sourceContainerPresentations">
@@ -545,12 +545,58 @@
       />
    </extension>
 
+   <!-- DEFINE THE SOURCE CONTAINER TYPES FOR THE SUB-CONTAINERS -->
+   <extension point="org.eclipse.debug.core.sourceContainerTypes">
+      <sourceContainerType
+         id="org.bndtools.core.launch.sourceContainerTypes.bundle"
+         name="Bundle"
+         description="Represents a resolved bundle from the current workspace"
+      />
+   </extension>
+   <extension point="org.eclipse.debug.ui.sourceContainerPresentations">
+      <sourceContainerPresentation
+         id="org.bndtools.core.launch.sourceContainerTypes.bundle.presentation"
+         containerTypeID="org.bndtools.core.launch.sourceContainerTypes.bundle"
+         icon="icons/bundle.png"
+      />
+   </extension>
+   
+   <extension point="org.eclipse.debug.core.sourceContainerTypes">
+      <sourceContainerType
+         id="org.bndtools.core.launch.sourceContainerTypes.bndrunDirective"
+         name="Bndrun Directive"
+         description="Represents the bundles/jars listed under a particular directive in the bnd(run) file"
+      />
+   </extension>
+   <extension point="org.eclipse.debug.ui.sourceContainerPresentations">
+      <sourceContainerPresentation
+         id="org.bndtools.core.launch.sourceContainerTypes.bndrunDirective.presentation"
+         containerTypeID="org.bndtools.core.launch.sourceContainerTypes.bndrunDirective"
+         icon="icons/bndrun.gif"
+      />
+   </extension>
+
+   <extension point="org.eclipse.debug.core.sourceContainerTypes">
+      <sourceContainerType
+         id="org.bndtools.core.launch.sourceContainerTypes.bndrunEE"
+         name="Bndrun Execution Environment"
+         description="Represents the jars for the VM that is/will be used to launch this bnd(run) file"
+      />
+   </extension>
+   <extension point="org.eclipse.debug.ui.sourceContainerPresentations">
+      <sourceContainerPresentation
+         id="org.bndtools.core.launch.sourceContainerTypes.bndrunDEE.presentation"
+         containerTypeID="org.bndtools.core.launch.sourceContainerTypes.bndrunEE"
+         icon="icons/bndrun.gif"
+      />
+   </extension>
+
    <!-- DEFINE THE SOURCE LOOKUP DIRECTOR -->
    <extension point="org.eclipse.debug.core.sourceLocators">
       <sourceLocator
          id="org.bndtools.core.launch.BndDependencySourceLookupDirector"
          name="Bndtools Source Lookup Director"
-         class="bndtools.launch.BndDependencySourceLookupDirector"
+         class="bndtools.launch.sourcelookup.BndDependencySourceLookupDirector"
       />
    </extension>
 

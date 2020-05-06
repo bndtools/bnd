@@ -1,4 +1,4 @@
-package bndtools.launch;
+package bndtools.launch.sourcelookup.containers;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.sourcelookup.ISourceContainer;
