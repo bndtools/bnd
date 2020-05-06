@@ -217,7 +217,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private long								lastModified;
 	private File								propertiesFile;
 	private boolean								fixup			= true;
-	long										modified;
 	Processor									parent;
 	private final CopyOnWriteArrayList<File>	included		= new CopyOnWriteArrayList<>();
 
@@ -1318,13 +1317,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		try {
 			if (propertiesFile.isFile()) {
 				// System.err.println("Loading properties " + propertiesFile);
-				long modified = propertiesFile.lastModified();
-				if (modified > System.currentTimeMillis() + 100) {
-					System.err.println("Huh? This is in the future " + propertiesFile);
-					this.modified = System.currentTimeMillis();
-				} else
-					this.modified = modified;
-
 				included.clear();
 				Properties p = loadProperties(propertiesFile);
 				setProperties(p);
