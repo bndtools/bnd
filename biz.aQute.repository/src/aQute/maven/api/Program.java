@@ -2,6 +2,7 @@ package aQute.maven.api;
 
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.regex.Pattern;
 
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.strings.Strings;
@@ -33,7 +34,7 @@ public class Program implements Comparable<Program> {
 	 * @param version the version
 	 * @return the revision
 	 */
-	public synchronized Revision version(String version) {
+	public Revision version(String version) {
 		MavenVersion v = new MavenVersion(version);
 		return version(v);
 	}
@@ -54,12 +55,12 @@ public class Program implements Comparable<Program> {
 	}
 
 	static String validate(String gav) {
-		String parts[] = gav.split(":");
+		String parts[] = GAV_SPLITTER.split(gav);
 		return validate(parts);
 	}
 
 	static String validate(String parts[]) {
-		if (parts.length != 1)
+		if (parts.length != 3)
 			return "A GAV must consists of at least of <g>:<a>:<v>";
 
 		if (!isValidName(parts[0]))
@@ -152,9 +153,10 @@ public class Program implements Comparable<Program> {
 		return path + "/maven-metadata-" + id + ".xml";
 	}
 
+	static final Pattern GAV_SPLITTER = Pattern.compile(":");
+
 	public static Program valueOf(String bsn) {
-		String parts[] = Strings.trim(bsn)
-			.split(":");
+		String parts[] = GAV_SPLITTER.split(Strings.trim(bsn));
 		if (parts.length != 2)
 			return null;
 
