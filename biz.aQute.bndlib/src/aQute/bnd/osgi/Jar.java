@@ -504,7 +504,7 @@ public class Jar implements Closeable {
 			IO.delete(file);
 			throw t;
 		}
-		file.setLastModified(lastModified);
+		file.setLastModified(lastModified());
 	}
 
 	public void write(String file) throws Exception {
@@ -660,7 +660,7 @@ public class Jar implements Closeable {
 		if (isReproducible()) {
 			ze.setTime(ZIP_ENTRY_CONSTANT_TIME);
 		} else {
-			ZipUtil.setModifiedTime(ze, lastModified);
+			ZipUtil.setModifiedTime(ze, lastModified());
 		}
 		Resource r = new WriteResource() {
 
@@ -927,7 +927,7 @@ public class Jar implements Closeable {
 			if (isReproducible()) {
 				ze.setTime(ZIP_ENTRY_CONSTANT_TIME);
 			} else {
-				ZipUtil.setModifiedTime(ze, lastModified);
+				ZipUtil.setModifiedTime(ze, lastModified());
 			}
 			if (compression == Compression.STORE) {
 				ze.setCrc(0L);

@@ -217,7 +217,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private long								lastModified;
 	private File								propertiesFile;
 	private boolean								fixup			= true;
-	long										modified;
 	Processor									parent;
 	private final CopyOnWriteArrayList<File>	included		= new CopyOnWriteArrayList<>();
 
@@ -272,13 +271,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public Processor(Processor parent, Properties props, boolean wrap) {
 		this(props, wrap);
 		this.parent = parent;
+		updateModified(parent.lastModified(), "parent");
 	}
 
-	public void setParent(Processor processor) {
-		this.parent = processor;
-		Properties updated = new UTF8Properties(processor.getProperties0());
+	public void setParent(Processor parent) {
+		this.parent = parent;
+		Properties updated = new UTF8Properties(parent.getProperties0());
 		updated.putAll(getProperties0());
 		properties = updated;
+		propertiesChanged();
 	}
 
 	public Processor getParent() {
@@ -1296,7 +1297,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		propertiesChanged();
 	}
 
-	public void propertiesChanged() {}
+	public void propertiesChanged() {
+		Processor p = getParent();
+		if (p != null) {
+			updateModified(p.lastModified(), "propertiesChanged");
+		}
+	}
 
 	/**
 	 * Set the properties by file. Setting the properties this way will also set
@@ -1318,13 +1324,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		try {
 			if (propertiesFile.isFile()) {
 				// System.err.println("Loading properties " + propertiesFile);
-				long modified = propertiesFile.lastModified();
-				if (modified > System.currentTimeMillis() + 100) {
-					System.err.println("Huh? This is in the future " + propertiesFile);
-					this.modified = System.currentTimeMillis();
-				} else
-					this.modified = modified;
-
 				included.clear();
 				Properties p = loadProperties(propertiesFile);
 				setProperties(p);
@@ -1647,7 +1646,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return result;
 	}
 
-	public boolean updateModified(long time, @SuppressWarnings("unused") String reason) {
+	public boolean updateModified(long time, String reason) {
 		if (time > lastModified) {
 			lastModified = time;
 			return true;
