@@ -2,6 +2,8 @@ package aQute.bnd.util.repository;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Collections;
+import java.util.Map;
 
 import org.osgi.util.promise.Promise;
 import org.slf4j.Logger;
@@ -18,8 +20,6 @@ import aQute.service.reporter.Reporter;
  */
 public class DownloadListenerPromise {
 	private final static Logger	logger	= LoggerFactory.getLogger(DownloadListenerPromise.class);
-	final DownloadListener		dls[];
-	final Promise<File>			promise;
 	private final String		task;
 	private File				linked;
 
@@ -29,14 +29,14 @@ public class DownloadListenerPromise {
 	 * @param r a reporter or null (will use a SLF4 in that case)
 	 * @param task
 	 * @param promise
+	 * @param attrs
 	 * @param downloadListeners
 	 */
 	public DownloadListenerPromise(Reporter r, String task, Promise<File> promise,
+		Map<String, String> attrs,
 		DownloadListener... downloadListeners) {
 		Reporter reporter = Slf4jReporter.getAlternative(DownloadListenerPromise.class, r);
 		this.task = task;
-		this.promise = promise;
-		this.dls = downloadListeners;
 		logger.debug("{}: starting", task);
 		promise.thenAccept(file -> {
 			if (file == null) {
@@ -48,9 +48,9 @@ public class DownloadListenerPromise {
 				IO.createSymbolicLinkOrCopy(linked, file);
 			}
 
-			for (DownloadListener dl : dls) {
+			for (DownloadListener dl : downloadListeners) {
 				try {
-					dl.success(file);
+					dl.success(file, attrs);
 				} catch (Throwable e) {
 					reporter.warning("%s: Success callback failed to %s: %s", this, dl, e);
 				}
@@ -59,7 +59,7 @@ public class DownloadListenerPromise {
 			.onFailure(failure -> {
 				logger.debug("{}: failure", this, failure);
 				String reason = failure.toString();
-				for (DownloadListener dl : dls) {
+				for (DownloadListener dl : downloadListeners) {
 					try {
 						dl.failure(null, reason);
 					} catch (Throwable e) {
@@ -67,6 +67,11 @@ public class DownloadListenerPromise {
 					}
 				}
 			});
+	}
+
+	public DownloadListenerPromise(Reporter r, String task, Promise<File> promise,
+		DownloadListener... downloadListeners) {
+		this(r, task, promise, Collections.emptyMap(), downloadListeners);
 	}
 
 	@Override

@@ -136,36 +136,57 @@ public class ProjectBuilder extends Builder {
 		Jar jar = new Jar(file);
 		super.addClasspath(jar);
 		project.unreferencedClasspathEntries.put(jar.getName(), c);
-		if ((dependencies != null) && !Boolean.parseBoolean(c.getAttributes()
-			.getOrDefault("maven-optional", "false"))) {
-			jar.getResources(pomPropertiesFilter)
-				.forEachOrdered(r -> {
-					UTF8Properties pomProperties = new UTF8Properties();
-					try (InputStream in = r.openInputStream()) {
-						pomProperties.load(in);
-					} catch (Exception e) {
-						logger.debug("unable to read pom.properties resource {}", r, e);
-						return;
-					}
-					String depVersion = pomProperties.getProperty("version");
-					String depGroupId = pomProperties.getProperty("groupId");
-					String depArtifactId = pomProperties.getProperty("artifactId");
-					if ((depGroupId != null) && (depArtifactId != null) && (depVersion != null)) {
-						Attrs attrs = new Attrs();
-						attrs.put("groupId", depGroupId);
-						attrs.put("artifactId", depArtifactId);
-						attrs.put("version", depVersion);
-						attrs.put("scope", c.getAttributes()
-							.getOrDefault("maven-scope", getProperty(MAVEN_SCOPE, "compile")));
-						String key = new StringBuilder().append(depGroupId)
-							.append(':')
-							.append(depArtifactId)
-							.append(':')
-							.append(depVersion)
-							.toString();
-						dependencies.add(key, attrs);
-					}
-				});
+		Map<String, String> containerAttributes = c.getAttributes();
+		if ((dependencies != null)
+			&& !Boolean.parseBoolean(containerAttributes.getOrDefault("maven-optional", "false"))) {
+			String depGroupId = containerAttributes.get("maven-groupId");
+			String depArtifactId = containerAttributes.get("maven-artifactId");
+			String depVersion = containerAttributes.get("maven-version");
+			String scope = containerAttributes.getOrDefault("maven-scope", getProperty(MAVEN_SCOPE, "compile"));
+			if ((depGroupId != null) && (depArtifactId != null) && (depVersion != null)) {
+				// the repo provided maven attributes to the container
+				Attrs attrs = new Attrs();
+				attrs.put("groupId", depGroupId);
+				attrs.put("artifactId", depArtifactId);
+				attrs.put("version", depVersion);
+				attrs.put("scope", scope);
+				String key = new StringBuilder().append(depGroupId)
+					.append(':')
+					.append(depArtifactId)
+					.append(':')
+					.append(depVersion)
+					.toString();
+				dependencies.add(key, attrs);
+			} else {
+				// fall back to pom.properties in jar
+				jar.getResources(pomPropertiesFilter)
+					.forEachOrdered(r -> {
+						UTF8Properties pomProperties = new UTF8Properties();
+						try (InputStream in = r.openInputStream()) {
+							pomProperties.load(in);
+						} catch (Exception e) {
+							logger.debug("unable to read pom.properties resource {}", r, e);
+							return;
+						}
+						String pomGroupId = pomProperties.getProperty("groupId");
+						String pomArtifactId = pomProperties.getProperty("artifactId");
+						String pomVersion = pomProperties.getProperty("version");
+						if ((pomGroupId != null) && (pomArtifactId != null) && (pomVersion != null)) {
+							Attrs attrs = new Attrs();
+							attrs.put("groupId", pomGroupId);
+							attrs.put("artifactId", pomArtifactId);
+							attrs.put("version", pomVersion);
+							attrs.put("scope", scope);
+							String key = new StringBuilder().append(pomGroupId)
+								.append(':')
+								.append(pomArtifactId)
+								.append(':')
+								.append(pomVersion)
+								.toString();
+							dependencies.add(key, attrs);
+						}
+					});
+			}
 		}
 	}
 

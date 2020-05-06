@@ -1,6 +1,8 @@
 package aQute.bnd.build;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
@@ -30,6 +32,7 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	private volatile Stage			stage	= Stage.INIT;
 	private String					failure;
 	private File					file;
+	private Map<String, String>		attrs	= Collections.emptyMap();
 	private final Reporter			reporter;
 	private final CountDownLatch	resolved;
 
@@ -45,6 +48,17 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	 */
 	@Override
 	public void success(File file) throws Exception {
+		success(file, Collections.emptyMap());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * aQute.bnd.service.RepositoryPlugin.DownloadListener#success(java.io.File,
+	 * java.util.Map)
+	 */
+	@Override
+	public void success(File file, Map<String, String> attrs) throws Exception {
 		synchronized (resolved) {
 			if (resolved.getCount() == 0) {
 				throw new IllegalStateException("already resolved");
@@ -52,9 +66,10 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 			assert stage == Stage.INIT;
 			stage = Stage.SUCCESS;
 			this.file = file;
+			this.attrs = attrs;
 			resolved.countDown();
 		}
-		logger.debug("successfully downloaded {}", file);
+		logger.debug("successfully downloaded {} with attributes {}", file, attrs);
 	}
 
 	/*
@@ -120,6 +135,15 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 		try {
 			resolved.await();
 			return file;
+		} catch (InterruptedException e) {
+			return null;
+		}
+	}
+
+	public Map<String, String> getAttributes() {
+		try {
+			resolved.await();
+			return attrs;
 		} catch (InterruptedException e) {
 			return null;
 		}

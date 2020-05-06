@@ -498,9 +498,10 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			return f;
 		}
 
+		Map<String, String> attrs = archive.attributes();
 		for (DownloadListener dl : listeners) {
 			try {
-				dl.success(f);
+				dl.success(f, attrs);
 			} catch (Exception e) {
 				logger.warn("updating listener has error", e);
 			}
@@ -929,8 +930,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		Promise<File> promise = storage.get(sourcesArchive);
 		if (listeners.length != 0) {
+			Map<String, String> attrs = sourcesArchive.attributes();
 			new DownloadListenerPromise(reporter, "Get sources " + sourceBsn + "-" + version + " for " + getName(),
-				promise, listeners);
+				promise, attrs, listeners);
 			return storage.toLocalFile(sourcesArchive);
 		} else
 			return promise.getValue();

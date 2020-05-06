@@ -129,6 +129,19 @@ public interface RepositoryPlugin {
 		void success(File file) throws Exception;
 
 		/**
+		 * Called when the file is successfully downloaded from a remote
+		 * repository.
+		 *
+		 * @param file The file that was downloaded
+		 * @param attrs Additional attributes about the file. This may include
+		 *            maven coordinates.
+		 * @throws Exception , are logged and ignored
+		 */
+		default void success(File file, Map<String, String> attrs) throws Exception {
+			success(file);
+		}
+
+		/**
 		 * Called when the file could not be downloaded from a remote
 		 * repository.
 		 *

@@ -27,6 +27,7 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.w3c.dom.Document;
 
+import aQute.bnd.build.DownloadBlocker;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
@@ -420,6 +421,19 @@ public class MavenBndRepoTest extends TestCase {
 		File file = repo.get("commons-cli:commons-cli", new Version("1.0.0"), null);
 		assertNotNull(file);
 		assertTrue(file.isFile());
+	}
+
+	public void testGetAttributes() throws Exception {
+		config(null);
+		DownloadBlocker db = new DownloadBlocker(null);
+		File file = repo.get("commons-cli:commons-cli", new Version("1.0.0"), null, db);
+		assertThat(file).isFile();
+		assertThat(db.getFile()).isEqualTo(file);
+		assertThat(db.getAttributes()).containsEntry("maven-groupId", "commons-cli")
+			.containsEntry("maven-artifactId", "commons-cli")
+			.containsEntry("maven-version", "1.0")
+			.containsEntry("maven-classifier", "")
+			.containsEntry("maven-extension", "jar");
 	}
 
 	public void testGetWithSource() throws Exception {

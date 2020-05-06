@@ -1,5 +1,6 @@
 package aQute.maven.api;
 
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -242,5 +243,12 @@ public class Archive implements Comparable<Archive> {
 
 	public Archive update(MavenVersion version) {
 		return new Archive(new Revision(revision.program, version), version, extension, classifier);
+	}
+
+	public Map<String, String> attributes() {
+		Map<String, String> attrs = revision.attributes();
+		attrs.put("maven-classifier", classifier);
+		attrs.put("maven-extension", extension);
+		return attrs;
 	}
 }
