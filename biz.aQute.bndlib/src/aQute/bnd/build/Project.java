@@ -2222,7 +2222,7 @@ public class Project extends Processor {
 		if (isCnf()) {
 			changed = workspace.refresh();
 		}
-		return super.refresh() || changed;
+		return super.refresh() | changed;
 	}
 
 	private void refreshData() {
@@ -2243,11 +2243,11 @@ public class Project extends Processor {
 
 	@Override
 	public void propertiesChanged() {
-		super.propertiesChanged();
 		setChanged();
 		makefile = null;
 		versionMap.clear();
 		refreshData();
+		super.propertiesChanged();
 	}
 
 	public String getName() {
