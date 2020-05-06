@@ -1,4 +1,4 @@
-package bndtools.launch;
+package bndtools.launch.sourcelookup;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -7,6 +7,8 @@ import org.eclipse.debug.core.sourcelookup.ISourceContainer;
 import org.eclipse.debug.core.sourcelookup.ISourceLookupParticipant;
 import org.eclipse.debug.core.sourcelookup.containers.DefaultSourceContainer;
 import org.eclipse.jdt.launching.sourcelookup.containers.JavaSourceLookupParticipant;
+
+import bndtools.launch.sourcelookup.containers.BndDependencySourceContainer;
 
 public class BndDependencySourceLookupDirector extends AbstractSourceLookupDirector {
 

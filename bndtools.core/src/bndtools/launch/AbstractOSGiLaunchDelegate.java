@@ -86,6 +86,10 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
 	@Override
 	public IVMInstall getVMInstall(ILaunchConfiguration configuration) throws CoreException {
+		return getVMInstall(configuration, run);
+	}
+
+	public static IVMInstall getVMInstall(ILaunchConfiguration configuration, Run run) throws CoreException {
 		IExecutionEnvironmentsManager eeMgr = JavaRuntime.getExecutionEnvironmentsManager();
 
 		// Look for a matching JVM install from the -runee setting
@@ -126,10 +130,10 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 			return defaultVm;
 		}
 
-		// You still here?? The superclass will look into the Java project, if
-		// the run file is in one.
+		// You still here?? The JavaRuntime will look into the Java project, if
+		// the run file is in one (this is what the superclass would do).
 		try {
-			return super.getVMInstall(configuration);
+			return JavaRuntime.computeVMInstall(configuration);
 		} catch (CoreException e) {
 			// ignore
 		}
