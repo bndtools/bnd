@@ -96,6 +96,10 @@ public class Container {
 		DownloadBlocker blocker = db;
 		if (blocker != null) {
 			File f = blocker.getFile();
+			Map<String, String> dbAttrs = blocker.getAttributes();
+			if (!dbAttrs.isEmpty()) {
+				dbAttrs.forEach(getWritableAttributes()::putIfAbsent);
+			}
 			if (blocker.getStage() == Stage.FAILURE) {
 				String r = blocker.getReason();
 				if (error == null) {
@@ -201,12 +205,16 @@ public class Container {
 		return attributes;
 	}
 
-	public synchronized void putAttribute(String name, String value) {
-		if (attributes == Collections.<String, String> emptyMap())
-			attributes = new HashMap<>(1);
-		attributes.put(name, value);
+	public void putAttribute(String name, String value) {
+		getWritableAttributes().put(name, value);
 	}
 
+	private synchronized Map<String, String> getWritableAttributes() {
+		if (attributes == Collections.<String, String> emptyMap()) {
+			return attributes = new HashMap<>();
+		}
+		return attributes;
+	}
 	/**
 	 * Return the this if this is anything else but a library. If it is a
 	 * library, return the members. This could work recursively, e.g., libraries
