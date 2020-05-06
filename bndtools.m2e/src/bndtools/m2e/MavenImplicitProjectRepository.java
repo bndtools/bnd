@@ -65,6 +65,14 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 	}
 
 	@Override
+	public MetadataFile getWithMetadata(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners) throws Exception {
+		if (fileSetRepository == null) {
+			return null;
+		}
+		return fileSetRepository.getWithMetadata(bsn, version, properties, listeners);
+	}
+
+	@Override
 	public String getName() {
 		return projectFacade.getProject()
 			.getName() + " (implicit)";

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -24,6 +25,14 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 	Maven		maven;
 
 	public File get(String bsn, String version, Strategy strategy, Map<String, String> properties) throws Exception {
+		MetadataFile metadataFile = getWithMetadata(bsn, version, strategy, properties);
+		if (metadataFile == null)
+			return null;
+		return metadataFile.file;
+	}
+
+	public MetadataFile getWithMetadata(String bsn, String version, Strategy strategy, Map<String, String> properties)
+		throws Exception {
 		String groupId = null;
 
 		if (properties != null)
@@ -46,20 +55,28 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 			return null;
 		}
 
+		MetadataFile metadataFile = new MetadataFile();
+		metadataFile.metadata = new HashMap<>(4);
+		metadataFile.metadata.put("groupId", groupId);
+		metadataFile.metadata.put("artifactId", artifactId);
+		metadataFile.metadata.put("version", version);
+
 		CachedPom pom = getMaven().getPom(groupId, artifactId, version, repositories);
 
 		String value = properties == null ? null : properties.get("scope");
-		if (value == null)
-			return pom.getArtifact();
+		if (value == null) {
+			metadataFile.file = pom.getArtifact();
+		} else {
+			Pom.Scope action = null;
 
-		Pom.Scope action = null;
-
-		try {
-			action = Pom.Scope.valueOf(value);
-			return pom.getLibrary(action, repositories);
-		} catch (Exception e) {
-			return pom.getArtifact();
+			try {
+				action = Pom.Scope.valueOf(value);
+				metadataFile.file = pom.getLibrary(action, repositories);
+			} catch (Exception e) {
+				metadataFile.file = pom.getArtifact();
+			}
 		}
+		return metadataFile;
 	}
 
 	public Maven getMaven() {
@@ -146,18 +163,26 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 	@Override
 	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
 		throws Exception {
-		File f = get(bsn, version.toString(), Strategy.EXACT, properties);
-		if (f == null)
+		MetadataFile metadataFile = getWithMetadata(bsn, version, properties, listeners);
+		if (metadataFile == null)
+			return null;
+		return metadataFile.file;
+	}
+
+	@Override
+	public MetadataFile getWithMetadata(String bsn, Version version, Map<String, String> properties,
+		DownloadListener... listeners) throws Exception {
+		MetadataFile metadataFile = getWithMetadata(bsn, version.toString(), Strategy.EXACT, properties);
+		if (metadataFile == null)
 			return null;
 
 		for (DownloadListener l : listeners) {
 			try {
-				l.success(f);
+				l.success(metadataFile.file);
 			} catch (Exception e) {
-				reporter.exception(e, "Download listener for %s", f);
+				reporter.exception(e, "Download listener for %s", metadataFile.file);
 			}
 		}
-		return f;
+		return metadataFile;
 	}
-
 }

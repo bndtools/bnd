@@ -41,6 +41,7 @@ public class Container {
 	private final Project					project;
 	private volatile DownloadBlocker		db;
 	private volatile Map<String, String>	attributes;
+	private volatile Map<String, String>	metadata;
 	private long							manifestTime;
 	private Manifest						manifest;
 	private volatile File[]					bundleClasspathExpansion;
@@ -63,6 +64,7 @@ public class Container {
 			this.bundleClasspathExpansion = new File[0];
 		}
 		this.attributes = attributes;
+		this.metadata = Collections.emptyMap();
 		this.db = db;
 
 	}
@@ -205,6 +207,24 @@ public class Container {
 		if (attributes == Collections.<String, String> emptyMap())
 			attributes = new HashMap<>(1);
 		attributes.put(name, value);
+	}
+
+	public Map<String, String> getMetadata() {
+		return attributes;
+	}
+
+	public synchronized void putMetadata(String name, String value) {
+		if (metadata == Collections.<String, String> emptyMap())
+			metadata = new HashMap<>(1);
+		metadata.put(name, value);
+	}
+
+	public synchronized void putMetadata(Map<String, String> data) {
+		if (data == null)
+			return;
+		for (Map.Entry<String, String> entry : data.entrySet()) {
+			putMetadata(entry.getKey(), entry.getValue());
+		}
 	}
 
 	/**

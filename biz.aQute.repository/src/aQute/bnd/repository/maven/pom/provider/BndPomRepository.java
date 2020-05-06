@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -270,6 +271,14 @@ public class BndPomRepository extends BaseRepository
 	@Override
 	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
 		throws Exception {
+		MetadataFile metadataFile = getWithMetadata(bsn, version, properties, listeners);
+		if(metadataFile == null)
+			return null;
+		return metadataFile.file;
+	}
+
+	@Override
+	public MetadataFile getWithMetadata(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners) throws Exception {
 		if (!init()) {
 			return null;
 		}
@@ -287,15 +296,26 @@ public class BndPomRepository extends BaseRepository
 			archive = Archive.valueOf(name);
 		}
 
+		MetadataFile metadataFile = new MetadataFile();
+		metadataFile.metadata = new HashMap<>(4);
+		metadataFile.metadata.put("groupId", archive.revision.group);
+		metadataFile.metadata.put("artifactId", archive.revision.artifact);
+		metadataFile.metadata.put("version", archive.revision.version.toString());
+		metadataFile.metadata.put("classifier", archive.classifier);
+
 		Promise<File> p = repoImpl.getMavenRepository()
 			.get(archive);
 
-		if (listeners.length == 0)
-			return p.getValue();
+		if (listeners.length == 0) {
+			metadataFile.file = p.getValue();
+			return metadataFile;
+		}
 
 		new DownloadListenerPromise(reporter, name + ": get " + bsn + ";" + version, p, listeners);
-		return repoImpl.getMavenRepository()
+		File file = repoImpl.getMavenRepository()
 			.toLocalFile(archive);
+		metadataFile.file = file;
+		return metadataFile;
 	}
 
 	@Override

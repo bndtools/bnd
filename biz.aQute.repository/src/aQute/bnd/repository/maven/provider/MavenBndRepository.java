@@ -479,6 +479,14 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Override
 	public File get(String bsn, Version version, Map<String, String> properties, final DownloadListener... listeners)
 		throws Exception {
+		MetadataFile metadataFile = getWithMetadata(bsn, version, properties, listeners);
+		if(metadataFile == null)
+			return null;
+		return metadataFile.file;
+	}
+
+	@Override
+	public MetadataFile getWithMetadata(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners) throws Exception {
 		if (!init())
 			throw new IllegalStateException(status);
 
@@ -486,16 +494,27 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		Archive archive = index.find(bsn, version);
 		if (archive == null) {
-			return trySources(bsn, version, listeners);
+			MetadataFile metadataFile = new MetadataFile();
+			metadataFile.file = trySources(bsn, version, listeners);
+			return metadataFile;
 		}
+
+		MetadataFile metadataFile = new MetadataFile();
+		metadataFile.metadata = new HashMap<>(4);
+		metadataFile.metadata.put("groupId", archive.revision.group);
+		metadataFile.metadata.put("artifactId", archive.revision.artifact);
+		metadataFile.metadata.put("version", archive.revision.version.toString());
+		metadataFile.metadata.put("classifier", archive.classifier);
 
 		File f = storage.toLocalFile(archive);
 		File withSources = new File(f.getParentFile(), "+" + f.getName());
 		if (withSources.isFile() && withSources.lastModified() > f.lastModified())
 			f = withSources;
 
+		metadataFile.file = f;
+
 		if (listeners.length == 0) {
-			return f;
+			return metadataFile;
 		}
 
 		for (DownloadListener dl : listeners) {
@@ -505,7 +524,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				logger.warn("updating listener has error", e);
 			}
 		}
-		return f;
+		return metadataFile;
 	}
 
 	@Override

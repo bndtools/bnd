@@ -3,6 +3,7 @@ package aQute.bnd.maven;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -44,7 +45,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		return false;
 	}
 
-	private File[] get(String bsn, String version) throws Exception {
+	private MetadataFile[] get(String bsn, String version) throws Exception {
 		VersionRange range = new VersionRange("0");
 		if (version != null)
 			range = new VersionRange(version);
@@ -56,7 +57,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		for (BsnToMavenPath cvr : plugins) {
 			String[] paths = cvr.getGroupAndArtifact(bsn);
 			if (paths != null) {
-				File[] files = find(paths[0], paths[1], range);
+				MetadataFile[] files = find(paths[0], paths[1], range);
 				if (files != null)
 					return files;
 			}
@@ -65,7 +66,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		return null;
 	}
 
-	File[] find(String groupId, String artifactId, VersionRange range) {
+	MetadataFile[] find(String groupId, String artifactId, VersionRange range) {
 		String path = groupId.replace(".", "/");
 		File vsdir = Processor.getFile(root, path);
 		if (!vsdir.isDirectory())
@@ -73,7 +74,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 
 		vsdir = Processor.getFile(vsdir, artifactId);
 
-		List<File> result = new ArrayList<>();
+		List<MetadataFile> result = new ArrayList<>();
 		if (vsdir.isDirectory()) {
 			String versions[] = vsdir.list();
 			for (String v : versions) {
@@ -82,10 +83,17 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 					Version vvv = new Version(vv);
 					if (range.includes(vvv)) {
 						File file = Processor.getFile(vsdir, v + "/" + artifactId + "-" + v + ".jar");
-						if (file.isFile())
-							result.add(file);
-						else
+						if (file.isFile()) {
+							MetadataFile metadataFile = new MetadataFile();
+							metadataFile.file = file;
+							metadataFile.metadata = new HashMap<>(4);
+							metadataFile.metadata.put("groupId", groupId);
+							metadataFile.metadata.put("artifactId", artifactId);
+							metadataFile.metadata.put("version", v);
+							result.add(metadataFile);
+						} else {
 							reporter.warning("Expected maven entry was not a valid file %s ", file);
+						}
 					}
 				} else {
 					reporter.warning(
@@ -96,7 +104,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		} else
 			return null;
 
-		return result.toArray(new File[0]);
+		return result.toArray(new MetadataFile[0]);
 	}
 
 	@Override
@@ -141,9 +149,10 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
 
-		File files[] = get(bsn, null);
+		MetadataFile files[] = get(bsn, null);
 		List<Version> versions = new ArrayList<>();
-		for (File f : files) {
+		for (MetadataFile metadataFile : files) {
+			File f = metadataFile.file;
 			String version = f.getParentFile()
 				.getName();
 			version = Analyzer.cleanupVersion(version);
@@ -210,7 +219,15 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 	}
 
 	public File get(String bsn, String range, Strategy strategy, Map<String, String> properties) throws Exception {
-		File[] files = get(bsn, range);
+		MetadataFile metadataFile = getWithMetadata(bsn, range, strategy, properties);
+		if (metadataFile == null)
+			return null;
+		return metadataFile.file;
+	}
+
+	public MetadataFile getWithMetadata(String bsn, String range, Strategy strategy, Map<String, String> properties)
+		throws Exception {
+		MetadataFile[] files = get(bsn, range);
 		if ((files != null) && (files.length > 0)) {
 			switch (strategy) {
 				case LOWEST :
@@ -237,17 +254,25 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 	@Override
 	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
 		throws Exception {
-		File file = get(bsn, version.toString(), Strategy.EXACT, properties);
-		if (file == null)
+		MetadataFile metadataFile = getWithMetadata(bsn, version, properties, listeners);
+		if(metadataFile == null)
+			return null;
+		return metadataFile.file;
+	}
+
+	@Override
+	public MetadataFile getWithMetadata(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners) throws Exception {
+		MetadataFile metadataFile = getWithMetadata(bsn, version.toString(), Strategy.EXACT, properties);
+		if (metadataFile == null)
 			return null;
 
 		for (DownloadListener l : listeners) {
 			try {
-				l.success(file);
+				l.success(metadataFile.file);
 			} catch (Exception e) {
-				reporter.exception(e, "Download listener for %s", file);
+				reporter.exception(e, "Download listener for %s", metadataFile.file);
 			}
 		}
-		return file;
+		return metadataFile;
 	}
 }

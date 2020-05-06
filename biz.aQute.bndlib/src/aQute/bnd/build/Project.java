@@ -90,6 +90,7 @@ import aQute.bnd.service.CommandPlugin;
 import aQute.bnd.service.DependencyContributor;
 import aQute.bnd.service.Deploy;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.RepositoryPlugin.MetadataFile;
 import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.Scripter;
@@ -1275,7 +1276,7 @@ public class Project extends Processor {
 			Version version = new Version(range);
 			for (RepositoryPlugin plugin : plugins) {
 				DownloadBlocker blocker = new DownloadBlocker(this);
-				File result = plugin.get(bsn, version, attrs, blocker);
+				MetadataFile result = plugin.getWithMetadata(bsn, version, attrs, blocker);
 				if (result != null)
 					return toContainer(bsn, range, attrs, result, blocker);
 			}
@@ -1311,7 +1312,7 @@ public class Project extends Processor {
 					if (!versions.isEmpty() && Verifier.isVersion(range)) {
 						Version version = new Version(range);
 						DownloadBlocker blocker = new DownloadBlocker(this);
-						File file = plugin.get(bsn, version, attrs, blocker);
+						MetadataFile file = plugin.getWithMetadata(bsn, version, attrs, blocker);
 						// and the entry must exist
 						// if it does, return this as a result
 						if (file != null)
@@ -1361,7 +1362,7 @@ public class Project extends Processor {
 
 					String version = provider.toString();
 					DownloadBlocker blocker = new DownloadBlocker(this);
-					File result = repo.get(bsn, provider, attrs, blocker);
+					MetadataFile result = repo.getWithMetadata(bsn, provider, attrs, blocker);
 					if (result != null)
 						return toContainer(bsn, version, attrs, result, blocker);
 				} else {
@@ -1444,11 +1445,29 @@ public class Project extends Processor {
 	 */
 	protected Container toContainer(String bsn, String range, Map<String, String> attrs, File result,
 		DownloadBlocker db) {
-		File f = result;
-		if (f == null) {
-			msgs.ConfusedNoContainerFile();
-			f = new File("was null");
+		MetadataFile metadataFile = null;
+		if (result != null) {
+			metadataFile = new MetadataFile();
+			metadataFile.file = result;
 		}
+		return toContainer(bsn, range, attrs, metadataFile, db);
+	}
+
+	/**
+	 * @param bsn
+	 * @param range
+	 * @param attrs
+	 * @param result
+	 */
+	protected Container toContainer(String bsn, String range, Map<String, String> attrs, MetadataFile result,
+		DownloadBlocker db) {
+		MetadataFile metadataFile = result;
+		if (metadataFile == null) {
+			msgs.ConfusedNoContainerFile();
+			metadataFile = new MetadataFile();
+			metadataFile.file = new File("was null");
+		}
+		File f = metadataFile.file;
 		Container container;
 		if (f.getName()
 			.endsWith("lib"))
@@ -1456,6 +1475,8 @@ public class Project extends Processor {
 		else
 			container = new Container(this, bsn, range, Container.TYPE.REPO, f, null, attrs, db);
 
+		if (metadataFile.metadata != null)
+			container.putMetadata(metadataFile.metadata);
 		return container;
 	}
 
@@ -1498,7 +1519,8 @@ public class Project extends Processor {
 		for (RepositoryPlugin plugin : workspace.getRepositories()) {
 			// The plugin *may* understand version=hash directly
 			DownloadBlocker blocker = new DownloadBlocker(this);
-			File result = plugin.get(bsn, Version.LOWEST, Collections.unmodifiableMap(attrs), blocker);
+			MetadataFile result = plugin.getWithMetadata(bsn, Version.LOWEST, Collections.unmodifiableMap(attrs),
+				blocker);
 
 			// If not, and if the repository implements the OSGi Repository
 			// Service, use a capability search on the osgi.content namespace.
@@ -1532,7 +1554,7 @@ public class Project extends Processor {
 						return new Container(this, bsn, "hash", Container.TYPE.ERROR, null, error, null, null);
 					}
 
-					result = plugin.get(id, bndVersion, null, blocker);
+					result = plugin.getWithMetadata(id, bndVersion, null, blocker);
 				}
 			}
 

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.function.Function;
@@ -138,34 +139,60 @@ public class ProjectBuilder extends Builder {
 		project.unreferencedClasspathEntries.put(jar.getName(), c);
 		if ((dependencies != null) && !Boolean.parseBoolean(c.getAttributes()
 			.getOrDefault("maven-optional", "false"))) {
-			jar.getResources(pomPropertiesFilter)
-				.forEachOrdered(r -> {
-					UTF8Properties pomProperties = new UTF8Properties();
-					try (InputStream in = r.openInputStream()) {
-						pomProperties.load(in);
-					} catch (Exception e) {
-						logger.debug("unable to read pom.properties resource {}", r, e);
-						return;
-					}
-					String depVersion = pomProperties.getProperty("version");
-					String depGroupId = pomProperties.getProperty("groupId");
-					String depArtifactId = pomProperties.getProperty("artifactId");
-					if ((depGroupId != null) && (depArtifactId != null) && (depVersion != null)) {
-						Attrs attrs = new Attrs();
-						attrs.put("groupId", depGroupId);
-						attrs.put("artifactId", depArtifactId);
-						attrs.put("version", depVersion);
-						attrs.put("scope", c.getAttributes()
-							.getOrDefault("maven-scope", getProperty(MAVEN_SCOPE, "compile")));
-						String key = new StringBuilder().append(depGroupId)
-							.append(':')
-							.append(depArtifactId)
-							.append(':')
-							.append(depVersion)
-							.toString();
-						dependencies.add(key, attrs);
-					}
-				});
+			addMavenDependencies(dependencies, c, jar);
+		}
+	}
+
+	private void addMavenDependencies(Parameters dependencies, Container c, Jar jar) {
+		// first try to get the maven coordinates from the pom properties file
+		// in the jar
+		Parameters innerDeps = getMavenDependenciesFromProperties(c, jar);
+		if (innerDeps.isEmpty()) {
+			// if there is no properties file or the file does not contain the
+			// necessary information
+			// we try to get the information from the container metadata
+			Map<String, String> metadata = c.getMetadata();
+			UTF8Properties metadataProps = new UTF8Properties();
+			metadataProps.putAll(metadata);
+			addMavenDependency(innerDeps, metadataProps, c.getAttributes());
+		}
+		dependencies.putAll(innerDeps);
+	}
+
+	private Parameters getMavenDependenciesFromProperties(Container c, Jar jar) {
+		Parameters dependencies = new Parameters();
+		jar.getResources(pomPropertiesFilter)
+			.forEachOrdered(r -> {
+				UTF8Properties pomProperties = new UTF8Properties();
+				try (InputStream in = r.openInputStream()) {
+					pomProperties.load(in);
+				} catch (Exception e) {
+					logger.debug("unable to read pom.properties resource {}", r, e);
+					return;
+				}
+				addMavenDependency(dependencies, pomProperties, c.getAttributes());
+			});
+		return dependencies;
+	}
+
+	private void addMavenDependency(Parameters dependencies, Properties pomProperties,
+		Map<String, String> containerAttributed) {
+		String depVersion = pomProperties.getProperty("version");
+		String depGroupId = pomProperties.getProperty("groupId");
+		String depArtifactId = pomProperties.getProperty("artifactId");
+		if ((depGroupId != null) && (depArtifactId != null) && (depVersion != null)) {
+			Attrs attrs = new Attrs();
+			attrs.put("groupId", depGroupId);
+			attrs.put("artifactId", depArtifactId);
+			attrs.put("version", depVersion);
+			attrs.put("scope", containerAttributed.getOrDefault("maven-scope", getProperty(MAVEN_SCOPE, "compile")));
+			String key = new StringBuilder().append(depGroupId)
+				.append(':')
+				.append(depArtifactId)
+				.append(':')
+				.append(depVersion)
+				.toString();
+			dependencies.add(key, attrs);
 		}
 	}
 

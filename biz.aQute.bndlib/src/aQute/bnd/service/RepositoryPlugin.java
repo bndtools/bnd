@@ -153,6 +153,22 @@ public interface RepositoryPlugin {
 	}
 
 	/**
+	 * The repository has the possibility to add additional metadata to
+	 * a retrieved file which could be useful for the caller.
+	 */
+	class MetadataFile {
+		/**
+		 * Metadata for the file
+		 */
+		public Map<String, String> metadata;
+
+		/**
+		 * Path to a file on the FileSystem
+		 */
+		public File file;
+	}
+
+	/**
 	 * Return a URL to a matching version of the given bundle.
 	 * <p/>
 	 * If download listeners are specified then the returned file is not
@@ -175,6 +191,34 @@ public interface RepositoryPlugin {
 	 */
 	File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
 		throws Exception;
+
+	/**
+	 * Return a URL to a matching version of the given bundle.
+	 * <p/>
+	 * If download listeners are specified then the returned file is not
+	 * guaranteed to exist before a download listener is notified of success or
+	 * failure. The callback can happen before the method has returned. If the
+	 * returned file is null then download listeners are not called back.
+	 * <p/>
+	 * The intention of the Download Listeners is to allow a caller to obtain
+	 * references to files that do not yet exist but are to be downloaded. If
+	 * the downloads were done synchronously in the call, then no overlap of
+	 * downloads could take place.
+	 *
+	 * @param bsn Bundle-SymbolicName of the searched bundle
+	 * @param version Version requested
+	 * @param listeners Zero or more download listener that will be notified of
+	 *            the outcome.
+	 * @return A file with metadata to the revision or null if not found
+	 * @throws Exception when anything goes wrong, in this case no listeners
+	 *             will be called back.
+	 */
+	default MetadataFile getWithMetadata(String bsn, Version version, Map<String, String> properties,
+		DownloadListener... listeners) throws Exception {
+		MetadataFile metadataFile = new MetadataFile();
+		metadataFile.file = get(bsn, version, properties, listeners);
+		return metadataFile;
+	}
 
 	/**
 	 * Answer if this repository can be used to store files.
