@@ -14,7 +14,4 @@ public @interface ExternalPlugin {
 	@Attribute(ExternalPluginNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE)
 	Class<?> objectClass();
 
-	@Attribute(ExternalPluginNamespace.CAPABILITY_SUBTYPE_ATTRIBUTE)
-	Class<?> subtype() default Object.class;
-
 }

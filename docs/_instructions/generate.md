@@ -1,7 +1,7 @@
 ---
 layout: default
 class: Project
-title: -generate srcs ';output=' DIR ( ';' ( system | generate ))* ...
+title: -generate srcs ';output=' DIR ( ';' ( system | generate | classpath))* ...
 summary: Generate sources 
 since: 5.1
 ---
@@ -15,6 +15,7 @@ This `-generate` instruction specifies the code generating steps that must be ex
 	src		::=	FILESET
 	option		::= 	'system=' STRING
 			|   'generate=' STRING
+            |   'classpath=' PATH
 
 For each clause, the key of the clause is used to establish an Ant File Set, e.g. `foo/**.in`. This a glob expression with the exception that the double wildcard ('**') indicates to any depth of directories. The `output` attribute _must_ specify a directory. If the output must be compiled this directory must be on the bnd source path.
 
@@ -25,11 +26,15 @@ If either a warning or error option is given, these will be executed on the proj
 If a command `STRING` is given it is executed as in the `${system}` macro. If the command `STRING` starts with a 
 minus sign (`-`) then a failure is not an error, it is reported as warning.
 
-The generate option will execute an _external plugin_ with the `objectClass` (service type) of `Generator<? extends Options>`. External plugins can come from an external repository or a local workspace project.
+The generate option will execute an _external plugin_ or plain JAR with a `Main-Class` manifest header. The choice is made by looking at the first word in the `generate` attribute.
+
+If this _name_ has a dot in it, like in a fully qualified class name, it is assume that species a _class name_. (If the name starts with a dot, it will be assume to be a name in the default package.) In this case, the `classpath` attribute of the instruction can be used to provide additional JARs on the command's classpath. The format of PATH is the standard format for instructions like -buildpath. 
+
+Without a dot in the name, the name is assumes to be an _external plugin_ name, with the `objectClass` (service type) of `Generator<? extends Options>`. External , or Main-Class jars, can come from an external repository or a local workspace project.
 
 The `generate` value is a _command line_. It can use the standard _unix_ like way of specifying a command. It supports flags (boolean parameters) and parameter that take a value. When this external plugin is executed, it is expected to create files fall within the _target_, if not, an error is reported. These changed or created files are refreshed in Eclipse.
 
-## Examples
+## Plugin Example
 
 Include in the bnd build is a _javagen_ external plugin that is useful to generate Java code based on build information. It uses a template directory with Java files. When the external plugin runs, it will use all these files to write matching Java files in the output directory, in a matching package directory. The input Java files can be prefixed with a properties header:
 
@@ -53,4 +58,21 @@ Assuming that the input files are in the `gen` directory, the following can be u
         gen/**.java; \ 
             output='src-gen/' ; \ 
             generate='javagen -o src-gen gen/'
+
+## Main Class Example
+
+JFlex and CUP are popular tools to create _lexers_ and _parsers_. The JARs are on Maven Central with  Main-Class manifest attribute. The JFlex JAR, however, requires the `cup_runtime` JAR on the classpath.
+
+We can directly use these executable JARs with the `-generate` instruction.
+
+    -generate: \
+        lex/Foo.lex; \
+            output      = gen-src/ \
+            generate    = `jflex.Main -d lex-gen/ lex/Foo.lex'; \
+            classpath   = 'de.jflex:cup_runtime;version=11b-20160615'
+
+Notice that we use the `maven` GAV format here to find the `cup_runtime` because these JARs are unfortunately not bundles.
+
+
+
 

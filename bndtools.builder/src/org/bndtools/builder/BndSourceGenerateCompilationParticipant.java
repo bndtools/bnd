@@ -28,7 +28,6 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 			boolean result = project.getGenerate()
 				.needsBuild();
 
-			System.out.println("isActive " + project + " " + result);
 			return result;
 		} catch (Exception e) {
 			logger.logError("generating phase, isActive", e);
@@ -43,7 +42,6 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 			if (project == null)
 				return READY_FOR_BUILD;
 
-			System.out.println("aboutToBuild " + project);
 			MarkerSupport markers = new MarkerSupport(javaProject.getProject());
 
 			Result<Set<File>, String> result = project.getGenerate()

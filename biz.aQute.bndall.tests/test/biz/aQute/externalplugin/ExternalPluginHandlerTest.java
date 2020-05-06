@@ -32,7 +32,8 @@ public class ExternalPluginHandlerTest {
 		try (Workspace ws = getWorkspace("resources/ws-1")) {
 			getRepo(ws);
 
-			Result<Object, String> call = ws.call("hellocallable", Callable.class, callable -> {
+			Result<Object, String> call = ws.getExternalPlugins()
+				.call("hellocallable", Callable.class, callable -> {
 				Object o = callable.call();
 				if (o == null)
 					return Result.err("null return");
@@ -46,11 +47,26 @@ public class ExternalPluginHandlerTest {
 	}
 
 	@Test
+	public void testCallMainClass() throws Exception {
+		try (Workspace ws = getWorkspace("resources/ws-1")) {
+			getRepo(ws);
+
+			Result<String, String> call = ws.getExternalPlugins()
+				.call("biz.aQute.bndall.tests.plugin_2.MainClass", null, ws, null,
+					new String[] {});
+			System.out.println(call);
+			assertThat(call.isOk()).isTrue();
+			assertThat(call.unwrap()).contains("Hello world");
+		}
+	}
+
+	@Test
 	public void testNotFound() throws Exception {
 		try (Workspace ws = getWorkspace("resources/ws-1")) {
 			getRepo(ws);
 
-			Result<Object, String> call = ws.call("doesnotexist", Callable.class, callable -> {
+			Result<Object, String> call = ws.getExternalPlugins()
+				.call("doesnotexist", Callable.class, callable -> {
 				return Result.ok(callable.call());
 			});
 			System.out.println(call);
@@ -60,108 +76,8 @@ public class ExternalPluginHandlerTest {
 		}
 	}
 
-	// @Test
-//	@SuppressWarnings({
-//		"unchecked", "rawtypes"
-//	})
-//	public void testSimpleGenerator() throws Exception {
-//		try (Workspace ws = getWorkspace("resources/ws-1")) {
-//			getRepo(ws);
-//
-//			Result<Boolean, String> result = ws.call("emptyset", Generator.class, (Generator p) -> {
-//				String r = p.generate(null, null);
-//				if (r == null)
-//					return Result.ok(true);
-//				else
-//					return Result.err(r);
-//			});
-//			assertThat(result.isOk()).isTrue();
-//		}
-//	}
-//
-//	@Test
-//	public void testCallable() throws Exception {
-//		try (Workspace ws = getWorkspace("resources/ws-1")) {
-//			getRepo(ws);
-//
-//			Result<Boolean, String> result = ws.call("emptyset", Generator.class, (Generator p) -> {
-//				String r = p.generate(null, null);
-//				if (r == null)
-//					return Result.ok(true);
-//				else
-//					return Result.err(r);
-//			});
-//			assertThat(result.isOk()).isTrue();
-//		}
-//	}
-//
-//
-//	@Test
-//	public void testCopyNonExistent() throws Exception {
-//		try (Workspace ws = getWorkspace("resources/ws-1")) {
-//			getRepo(ws);
-//			Project p1 = ws.getProject("p1");
-//
-//			p1.setProperty("-stalecheck",
-//				"t1/foo.source; newer=t1/foo.source.target; before=compile;generate=testcopy");
-//			File source = p1.getFile("t1/foo.source");
-//			File target = p1.getFile("t1/foo.source.target");
-//			assertThat(target).doesNotExist();
-//			Result<Set<File>, String> result = p1.beforeCompile(false);
-//			System.out.println(result);
-//			assertThat(result.unwrap()).contains(target);
-//			assertThat(target.lastModified()).isGreaterThanOrEqualTo(source.lastModified());
-//
-//			assertThat(result.isOk()).isTrue();
-//			assertThat(result.unwrap()).isNotEmpty();
-//
-//			// try again, should have no files changed
-//			result = p1.beforeCompile(false);
-//			assertThat(result.unwrap()).isEmpty();
-//
-//		}
-//	}
-//
-//	@Test
-//	public void testNoPlugin() throws Exception {
-//		try (Workspace ws = getWorkspace("resources/ws-1")) {
-//			getRepo(ws);
-//			Project p1 = ws.getProject("p1");
-//
-//			p1.setProperty("-stalecheck",
-//				"t1/foo.source; newer=t1/foo.source.target; before=compile;generate=notexistent");
-//			File source = p1.getFile("t1/foo.source");
-//			File target = p1.getFile("t1/foo.source.target");
-//			assertThat(target).doesNotExist();
-//			Result<Set<File>, String> result = p1.beforeCompile(false);
-//			System.out.println(result);
-//			assertThat(result.error())
-//				.contains("no such plugin notexistent for type aQute.bnd.service.generate.Generator");
-//
-//		}
-//	}
-//
-//	@Test
-//	public void testOutputDir() throws Exception {
-//		try (Workspace ws = getWorkspace("resources/ws-1")) {
-//			getRepo(ws);
-//			Project p1 = ws.getProject("p1");
-//
-//			p1.setProperty("-stalecheck", "t2/foo.source; newer=t2/out/; before=compile;generate=testcopytodir");
-//			File source = p1.getFile("t2/foo.source");
-//			File target = p1.getFile("t2/out/b.txt");
-//			assertThat(target).doesNotExist();
-//			Result<Set<File>, String> result = p1.beforeCompile(false);
-//			System.out.println(result);
-//			assertThat(result.unwrap()).contains(target)
-//				.hasSize(3);
-//			assertThat(target.lastModified()).isGreaterThanOrEqualTo(source.lastModified());
-//
-//			assertThat(result.isOk()).isTrue();
-//			assertThat(result.unwrap()).isNotEmpty();
-//		}
-//	}
-//
+
+
 	private void getRepo(Workspace ws) throws IOException, Exception {
 		FileTree tree = new FileTree();
 		List<File> files = tree.getFiles(IO.getFile("generated"), "*.jar");

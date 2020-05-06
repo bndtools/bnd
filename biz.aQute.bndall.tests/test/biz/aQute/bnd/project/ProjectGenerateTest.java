@@ -106,6 +106,26 @@ public class ProjectGenerateTest {
 	@SuppressWarnings({
 		"unchecked", "rawtypes"
 	})
+	public void testMainClassGenerator() throws Exception {
+		try (Workspace ws = getWorkspace("resources/ws-stalecheck")) {
+			getRepo(ws);
+			Project project = ws.getProject("p3");
+			project.setProperty("-generate",
+				"lex/Foo.lex;output=lex-gen/;generate='jflex.Main -d lex-gen/ lex/Foo.lex';classpath='de.jflex:cup_runtime;version=11b-20160615'");
+
+			File out = project.getFile("lex-gen/Foo.java");
+			assertThat(out).doesNotExist();
+			project.getGenerate()
+				.generate(true);
+			assertThat(project.check()).isTrue();
+			assertThat(out).isFile();
+		}
+	}
+
+	@Test
+	@SuppressWarnings({
+		"unchecked", "rawtypes"
+	})
 	public void testThrowExceptionn() throws Exception {
 		try (Workspace ws = getWorkspace("resources/ws-stalecheck")) {
 			getRepo(ws);
@@ -168,10 +188,13 @@ public class ProjectGenerateTest {
 		System.out.println("current working dir " + IO.work);
 		FileTree tree = new FileTree();
 		List<File> files = tree.getFiles(IO.getFile("generated/"), "*.jar");
-		File file = IO.getFile("../biz.aQute.bnd.javagen/generated/")
+		File jar = IO.getFile("jar/")
 			.getCanonicalFile();
-		System.out.println("where " + file);
-		files.addAll(tree.getFiles(file, "*.jar"));
+		File javagen = IO.getFile("../biz.aQute.bnd.javagen/generated/")
+			.getCanonicalFile();
+
+		files.addAll(tree.getFiles(jar, "*.jar"));
+		files.addAll(tree.getFiles(javagen, "*.jar"));
 		System.out.println("tmp repo " + files);
 		FileSetRepository repo = new FileSetRepository("test", files);
 		ws.addBasicPlugin(repo);
