@@ -176,7 +176,7 @@ public class ProjectBuilder extends Builder {
 	}
 
 	private void addMavenDependency(Parameters dependencies, Properties pomProperties,
-		Map<String, String> containerAttributed) {
+		Map<String, String> containerAttributes) {
 		String depVersion = pomProperties.getProperty("version");
 		String depGroupId = pomProperties.getProperty("groupId");
 		String depArtifactId = pomProperties.getProperty("artifactId");
@@ -185,7 +185,7 @@ public class ProjectBuilder extends Builder {
 			attrs.put("groupId", depGroupId);
 			attrs.put("artifactId", depArtifactId);
 			attrs.put("version", depVersion);
-			attrs.put("scope", containerAttributed.getOrDefault("maven-scope", getProperty(MAVEN_SCOPE, "compile")));
+			attrs.put("scope", containerAttributes.getOrDefault("maven-scope", getProperty(MAVEN_SCOPE, "compile")));
 			String key = new StringBuilder().append(depGroupId)
 				.append(':')
 				.append(depArtifactId)
