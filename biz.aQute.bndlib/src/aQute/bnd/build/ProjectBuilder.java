@@ -150,13 +150,18 @@ public class ProjectBuilder extends Builder {
 				attrs.put("artifactId", depArtifactId);
 				attrs.put("version", depVersion);
 				attrs.put("scope", scope);
-				String key = new StringBuilder().append(depGroupId)
+				StringBuilder key = new StringBuilder().append(depGroupId)
 					.append(':')
 					.append(depArtifactId)
 					.append(':')
-					.append(depVersion)
-					.toString();
-				dependencies.add(key, attrs);
+					.append(depVersion);
+				String depClassifier = containerAttributes.get("maven-classifier");
+				if ((depClassifier != null) && !depClassifier.isEmpty()) {
+					attrs.put("classifier", depClassifier);
+					key.append(":jar:")
+						.append(depClassifier);
+				}
+				dependencies.add(key.toString(), attrs);
 			} else {
 				// fall back to pom.properties in jar
 				jar.getResources(pomPropertiesFilter)
