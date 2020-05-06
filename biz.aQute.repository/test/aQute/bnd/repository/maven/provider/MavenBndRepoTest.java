@@ -99,6 +99,25 @@ public class MavenBndRepoTest extends TestCase {
 		super.tearDown();
 	}
 
+	public void testAutomaticSources() throws Exception {
+		config(null);
+		assertThat(repo.getStatus()).isNull();
+		File sources = repo.get("org.osgi.dto.source", DTO_VERSION, null);
+		assertThat(sources).isFile();
+	}
+
+	public void testAutomaticSourcesForSnapshotWithoutBsn() throws Exception {
+		config(null);
+		assertThat(repo.getStatus()).isNull();
+		String title = repo.title("org.apache.commons.cli");
+
+		File commons = repo.get("commons-cli:commons-cli", new Version("1.4.0.SNAPSHOT"), null);
+		assertThat(commons).isFile();
+
+		File source = repo.get("commons-cli:commons-cli.source", new Version("1.4.0.SNAPSHOT"), null);
+		assertThat(source).isFile();
+	}
+
 	public void testProgramRemoveFromIndex() throws Exception {
 		config(null);
 		assertThat(repo.getStatus()).isNull();
@@ -191,7 +210,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertEquals("1.0.0 [" + Constants.NOT_A_BUNDLE_S + "]", title);
 
 		title = repo.title("commons-cli:commons-cli", new Version("1.4.0.SNAPSHOT"));
-		assertEquals("1.4.0.SNAPSHOT [Not found]", title);
+		assertEquals("1.4.0.SNAPSHOT [Not a bundle]", title);
 
 	}
 
@@ -762,6 +781,7 @@ public class MavenBndRepoTest extends TestCase {
 		Map<String, String> config = new HashMap<>();
 		config.put("local", tmpName + "/local");
 		config.put("index", tmpName + "/index");
+		config.put("snapshotUrl", fnx.getBaseURI() + "/repo/");
 		config.put("releaseUrl", fnx.getBaseURI() + "/repo/");
 
 		if (override != null)

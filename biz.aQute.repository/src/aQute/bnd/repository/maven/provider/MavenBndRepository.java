@@ -923,15 +923,15 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		if (primaryArchive == null)
 			return null; // don't get sources when not in index
 
-		Archive sources = primaryArchive.getOther("jar", Archive.SOURCES_CLASSIFIER);
-		if (sources == null)
+		Archive sourcesArchive = primaryArchive.getOther("jar", Archive.SOURCES_CLASSIFIER);
+		if (sourcesArchive == null)
 			return null;
 
-		Promise<File> promise = storage.get(primaryArchive);
+		Promise<File> promise = storage.get(sourcesArchive);
 		if (listeners.length != 0) {
 			new DownloadListenerPromise(reporter, "Get sources " + sourceBsn + "-" + version + " for " + getName(),
 				promise, listeners);
-			return storage.toLocalFile(primaryArchive);
+			return storage.toLocalFile(sourcesArchive);
 		} else
 			return promise.getValue();
 	}
