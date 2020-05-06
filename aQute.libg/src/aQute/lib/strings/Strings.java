@@ -154,15 +154,23 @@ public class Strings {
 	private final static Pattern SIMPLE_LIST_SPLITTER = Pattern.compile("\\s*,\\s*");
 
 	public static Stream<String> splitAsStream(String s) {
+		return splitAsStream(s, SIMPLE_LIST_SPLITTER);
+	}
+
+	public static Stream<String> splitAsStream(String s, Pattern splitter) {
 		if ((s == null) || (s = s.trim()).isEmpty()) {
 			return Stream.empty();
 		}
-		return SIMPLE_LIST_SPLITTER.splitAsStream(s)
+		return splitter.splitAsStream(s)
 			.filter(Strings::notEmpty);
 	}
 
 	public static List<String> split(String s) {
 		return splitAsStream(s).collect(toList());
+	}
+
+	public static List<String> split(String s, Pattern splitter) {
+		return splitAsStream(s, splitter).collect(toList());
 	}
 
 	public static Stream<String> splitQuotedAsStream(String s) {
@@ -209,10 +217,7 @@ public class Strings {
 	public static List<String> split(String regex, String s) {
 		if ((s == null) || (s = s.trim()).isEmpty())
 			return new ArrayList<>();
-		return Pattern.compile(regex)
-			.splitAsStream(s)
-			.filter(Strings::notEmpty)
-			.collect(toList());
+		return split(s, Pattern.compile(regex));
 	}
 
 	public static boolean in(String[] skip, String key) {
