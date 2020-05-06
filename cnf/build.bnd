@@ -54,7 +54,15 @@ Bundle-Developers: \
         organization=Bndtools; \
         organizationUrl=https://github.com/bndtools; \
         roles="architect,developer"; \
-        timezone=1
+        timezone=1, \
+    bjhargrave; \
+        name="BJ Hargrave"; \
+        email="bj@bjhargrave.com"; \
+        url="https://github.com/bjhargrave"; \
+        organization="IBM"; \
+        organizationUrl="https://developer.ibm.com"; \
+        roles="developer"; \
+        timezone="America/New_York"
 
 -make:                  (*).(jar);type=bnd; recipe="bnd/$1.bnd"
 -reproducible: true
