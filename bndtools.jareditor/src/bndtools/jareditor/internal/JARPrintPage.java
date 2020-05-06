@@ -231,6 +231,11 @@ public class JARPrintPage extends FormPage {
 		stackLayout.topControl = styledText;
 		styledText.setEditable(false);
 		styledText.setFont(JFaceResources.getTextFont());
+		styledText.addModifyListener(e -> {
+			String find = findText.getText();
+			if (find.length() > 0)
+				highlightText(find);
+		});
 
 		findAction = new Action() {
 			@Override
