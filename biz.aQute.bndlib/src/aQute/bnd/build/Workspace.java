@@ -373,17 +373,13 @@ public class Workspace extends Processor {
 			.isPresent();
 	}
 
-	public Collection<Project> getCurrentProjects() {
-		return projects.getAllProjects();
-	}
-
 	@Override
 	public boolean refresh() {
 		refreshData();
 		gestalt = null;
 		if (super.refresh()) {
 
-			for (Project project : getCurrentProjects()) {
+			for (Project project : getAllProjects()) {
 				project.propertiesChanged();
 			}
 			return true;
@@ -442,6 +438,13 @@ public class Workspace extends Processor {
 
 	public Collection<Project> getAllProjects() {
 		return projects.getAllProjects();
+	}
+
+	/**
+	 * @see #getAllProjects() "Use getAllProjects() instead."
+	 */
+	public Collection<Project> getCurrentProjects() {
+		return getAllProjects();
 	}
 
 	/**
@@ -599,7 +602,7 @@ public class Workspace extends Processor {
 
 	public Collection<Project> getBuildOrder() throws Exception {
 		Set<Project> result = new LinkedHashSet<>();
-		for (Project project : projects.getAllProjects()) {
+		for (Project project : getAllProjects()) {
 			Collection<Project> dependsOn = project.getDependson();
 			getBuildOrder(dependsOn, result);
 			result.add(project);

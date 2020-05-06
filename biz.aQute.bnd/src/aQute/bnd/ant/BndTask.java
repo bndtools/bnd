@@ -147,7 +147,7 @@ public class BndTask extends BaseTask {
 			else
 				project.action(command);
 
-			for (Project p : ws.getCurrentProjects())
+			for (Project p : ws.getAllProjects())
 				ws.getInfo(p, p + ":");
 
 			if (report(ws))
