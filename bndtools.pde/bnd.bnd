@@ -22,7 +22,7 @@
 	org.eclipse.ui.workbench,\
 	org.eclipse.osgi;maven-scope=provided
 
-Bundle-SymbolicName: ${p}; singleton:=true
+Bundle-SymbolicName: ${p};singleton:=true
 Bundle-ActivationPolicy: lazy
 
 Import-Package: \

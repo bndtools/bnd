@@ -2,7 +2,7 @@
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 Test: true
-Bundle-SymbolicName: bndtools.release;singleton:=true
+Bundle-SymbolicName: ${p};singleton:=true
 Bundle-Activator: bndtools.release.Activator
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: plugin

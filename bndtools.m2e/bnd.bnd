@@ -34,7 +34,7 @@
 	org.eclipse.osgi;maven-scope=provided,\
 	org.sonatype.plexus:plexus-build-api
 
-Bundle-SymbolicName: bndtools.m2e; singleton:=true
+Bundle-SymbolicName: ${p};singleton:=true
 Bundle-ActivationPolicy: lazy
 
 Import-Package: \
