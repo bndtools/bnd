@@ -279,8 +279,12 @@ public class JarPrinter extends Processor {
 		MultiMap<String, String> table = new MultiMap<>();
 		MapStream.of(manifest.getMainAttributes())
 			.forEach((k, v) -> {
-				List<String> split = Strings.splitQuoted(v.toString());
-				table.put(k.toString(), split);
+				String key = k.toString();
+				if (Strings.in(OSGI_SYNTAX_HEADERS, key)) {
+					table.put(key, Strings.splitQuoted(v.toString()));
+				} else {
+					table.add(key, v.toString());
+				}
 			});
 		println(MultiMap.format(table));
 		return this;
