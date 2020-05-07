@@ -53,7 +53,7 @@ public class Command {
 	}
 
 	public int execute(String input, Appendable stdout, Appendable stderr) throws Exception {
-		InputStream in = IO.stream(input, UTF_8);
+		InputStream in = input == null ? null : IO.stream(input, UTF_8);
 		return execute(in, stdout, stderr);
 	}
 
