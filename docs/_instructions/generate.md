@@ -35,6 +35,8 @@ Without a dot in the name, the name is assumes to be an _external plugin_ name, 
 
 The `generate` value is a _command line_. It can use the standard _unix_ like way of specifying a command. It supports flags (boolean parameters) and parameter that take a value. When this external plugin is executed, it is expected to create files fall within the _target_, if not, an error is reported. These changed or created files are refreshed in Eclipse.
 
+The command line can be broken in different commands with the semicolon (`';'`), like a unix shell. Redirection of stdin (`'<'`), stdout (`'>'`, or `'1>'`), and stderr (`'1>'`) are supported.  The path for redirection is relative to the project directory, even if `workingdir` has been specified. 
+
 ## Plugin Example
 
 Include in the bnd build is a _javagen_ external plugin that is useful to generate Java code based on build information. It uses a template directory with Java files. When the external plugin runs, it will use all these files to write matching Java files in the output directory, in a matching package directory. The input Java files can be prefixed with a properties header:

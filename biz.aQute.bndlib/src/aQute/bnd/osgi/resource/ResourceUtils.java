@@ -130,7 +130,7 @@ public class ResourceUtils {
 			fragment(IdentityNamespace.TYPE_FRAGMENT),
 			unknown(IdentityNamespace.TYPE_UNKNOWN);
 
-			private final String s;
+			private String s;
 
 			private Type(String s) {
 				this.s = s;
@@ -212,10 +212,42 @@ public class ResourceUtils {
 
 	public static BundleId getBundleId(Resource resource) {
 		BundleCap b = getBundleCapability(resource);
-		if (b == null)
+		if (b != null && b.osgi_wiring_bundle() != null)
+			return new BundleId(b.osgi_wiring_bundle(), b.bundle_version());
+
+		//
+		// might not be a bundle. Since Maven is our primary repo,
+		// we can try to find the common ways the bsn is simulated.
+		// in maven repos.
+		//
+
+		IdentityCapability identity = ResourceUtils.getIdentityCapability(resource);
+		if (identity != null) {
+			String bsn = identity.osgi_identity();
+			Version version = identity.version();
+			if (version == null)
+				version = Version.LOWEST;
+
+			if (bsn != null) {
+				return new BundleId(bsn, version.toString());
+			}
+		}
+
+		List<Capability> capabilities = resource.getCapabilities("bnd.info");
+		if (capabilities.isEmpty())
 			return null;
 
-		return new BundleId(b.osgi_wiring_bundle(), b.bundle_version());
+		Capability cap = capabilities.get(0);
+		String bsn = (String) cap.getAttributes()
+			.get("name");
+		Version version = (Version) cap.getAttributes()
+			.get("version");
+		if (version == null)
+			version = Version.LOWEST;
+		if (bsn == null)
+			return null;
+
+		return new BundleId(bsn, version);
 	}
 
 	public static String getIdentityVersion(Resource resource) {

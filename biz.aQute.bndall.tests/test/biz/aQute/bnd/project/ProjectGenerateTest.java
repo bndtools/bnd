@@ -19,6 +19,7 @@ import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.result.Result;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 
 public class ProjectGenerateTest {
 	@Rule
@@ -93,12 +94,28 @@ public class ProjectGenerateTest {
 			project.setProperty("-generate",
 				"gen/**.java;output=src-gen/;generate='javagen -o src-gen/ gen/**.java'");
 
+			File outputdir = project.getFile("src-gen");
+
+			assertThat(project.getGenerate()
+				.getOutputDirs()).contains(outputdir);
+
+			File in = project.getFile("gen/Buildpath.java");
+			in.setLastModified(System.currentTimeMillis() - 2000);
+
 			File out = project.getFile("src-gen/foo/bar/Buildpath.java");
 			assertThat(out).doesNotExist();
+
+			assertThat(project.getGenerate()
+				.needsBuild()).isTrue();
+
 			project.getGenerate()
 				.generate(true);
 			assertThat(project.check()).isTrue();
 			assertThat(out).isFile();
+
+			assertThat(project.getGenerate()
+				.needsBuild()).isFalse();
+
 		}
 	}
 
@@ -119,6 +136,87 @@ public class ProjectGenerateTest {
 				.generate(true);
 			assertThat(project.check()).isTrue();
 			assertThat(out).isFile();
+		}
+	}
+
+	@Test
+	public void testMultipleBlocks() throws Exception {
+		try (Workspace ws = getWorkspace("resources/ws-stalecheck")) {
+			getRepo(ws);
+			Project project = ws.getProject("p4");
+			project.setProperty("-generate",
+				"in/;output=out/;generate='" //
+					+ "javagen -o out in/In1.java" //
+					+ ";" //
+					+ "javagen -o out in/In2.java'");
+
+			File out1 = project.getFile("out/In1.java");
+			File out2 = project.getFile("out/In2.java");
+			assertThat(out1).doesNotExist();
+			assertThat(out2).doesNotExist();
+			project.getGenerate()
+				.generate(true);
+			assertThat(project.check()).isTrue();
+			assertThat(out1).isFile();
+			assertThat(out2).isFile();
+		}
+	}
+
+	@Test
+	public void testWorkingDirectoryAndRedirect() throws Exception {
+		try (Workspace ws = getWorkspace("resources/ws-stalecheck")) {
+			getRepo(ws);
+			Project project = ws.getProject("p4");
+			project.setProperty("-generate", "in/;" //
+				+ "output=out/;" //
+				+ "workingdir=out/;" //
+				+ "generate='" //
+				+ "biz.aQute.bndall.tests.plugin_3.MainClass <tst >out/report1 2>out/report2'");
+
+			File tst = project.getFile("tst");
+			IO.store("oopsiedaisy", tst);
+
+			File report = project.getFile("out/report1");
+			File report2 = project.getFile("out/report2");
+			assertThat(report).doesNotExist();
+			assertThat(report2).doesNotExist();
+			project.getGenerate()
+				.generate(true);
+			assertThat(project.check()).isTrue();
+			assertThat(report).isFile();
+			assertThat(report2).isFile();
+			String collect = IO.collect(report);
+			assertThat(Strings.trim(collect)).endsWith("out")
+				.contains("oopsiedaisy");
+		}
+	}
+
+	@Test
+	public void testWorkingDirectoryAndRedirect2() throws Exception {
+		try (Workspace ws = getWorkspace("resources/ws-stalecheck")) {
+			getRepo(ws);
+			Project project = ws.getProject("p4");
+			project.setProperty("-generate", "in/;" //
+				+ "output=out/;" //
+				+ "workingdir=out/;" //
+				+ "generate='" //
+				+ "biz.aQute.bndall.tests.plugin_3.MainClass <tst 1>out/report1 2>out/report2'");
+
+			File tst = project.getFile("tst");
+			IO.store("oopsiedaisy", tst);
+
+			File report = project.getFile("out/report1");
+			File report2 = project.getFile("out/report2");
+			assertThat(report).doesNotExist();
+			assertThat(report2).doesNotExist();
+			project.getGenerate()
+				.generate(true);
+			assertThat(project.check()).isTrue();
+			assertThat(report).isFile();
+			assertThat(report2).isFile();
+			String collect = IO.collect(report);
+			assertThat(Strings.trim(collect)).endsWith("out")
+				.contains("oopsiedaisy");
 		}
 	}
 
@@ -170,10 +268,9 @@ public class ProjectGenerateTest {
 				.generate(true);
 			assertThat(result.error()
 				.get()).contains("error");
-			assertThat(project.check("error : gen/")).isTrue();
+			assertThat(project.check("error : .* gen/")).isTrue();
 		}
 	}
-
 
 	private Workspace getWorkspace(File file) throws Exception {
 		IO.copy(file, tmp);

@@ -2,6 +2,7 @@ package biz.aQute.externalplugin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -51,13 +52,13 @@ public class ExternalPluginHandlerTest {
 	public void testCallMainClass() throws Exception {
 		try (Workspace ws = getWorkspace("resources/ws-1")) {
 			getRepo(ws);
-
-			Result<String, String> call = ws.getExternalPlugins()
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			Result<Integer, String> call = ws.getExternalPlugins()
 				.call("biz.aQute.bndall.tests.plugin_2.MainClass", null, ws, Collections.emptyMap(),
-					new String[] {});
+					Collections.emptyList(), null, bout, null);
 			System.out.println(call);
 			assertThat(call.isOk()).isTrue();
-			assertThat(call.unwrap()).contains("Hello world");
+			assertThat(new String(bout.toByteArray(), "UTF-8")).contains("Hello world");
 		}
 	}
 

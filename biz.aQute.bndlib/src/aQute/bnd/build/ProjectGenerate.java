@@ -4,8 +4,11 @@ import static aQute.bnd.service.result.Result.err;
 import static aQute.bnd.service.result.Result.ok;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,6 +29,7 @@ import aQute.bnd.service.result.Result;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.fileset.FileSet;
 import aQute.lib.io.IO;
+import aQute.lib.redirect.Redirect;
 import aQute.lib.specinterface.SpecInterface;
 import aQute.lib.strings.Strings;
 import aQute.service.reporter.Reporter.SetLocation;
@@ -113,7 +117,8 @@ public class ProjectGenerate implements AutoCloseable {
 
 			Set<File> affected = new FileSet(project.getBase(), st.output()).getFiles();
 			if (affected.isEmpty()) {
-				return err("ran command or generate but no files were changed; Is `newer` correct wrt to the command?");
+				return err(
+					"ran command or generate but no files were changed; Is `output` correct wrt to the command?");
 			}
 			return ok(affected);
 		} catch (Exception e) {
@@ -121,30 +126,94 @@ public class ProjectGenerate implements AutoCloseable {
 		}
 	}
 
-	private String doGenerate(String plugin, GeneratorSpec st) {
+	private String doGenerate(String commandline, GeneratorSpec st) {
+		try {
+			String result = null;
 
-		List<String> arguments = Strings.splitQuoted(plugin, " \t");
-		if (arguments.isEmpty()) {
-			return "no plugin name";
-		}
+			List<String> blocks = Strings.splitQuoted(commandline, ";");
+			for (String block : blocks) {
+				if (block.isEmpty())
+					continue;
 
-		String pluginName = arguments.remove(0);
-		if (pluginName.indexOf('.') >= 0) {
-			if (pluginName.startsWith("."))
-				pluginName = pluginName.substring(1);
+				List<String> arguments = Strings.splitQuoted(block, " \t");
+				if (arguments.isEmpty()) {
+					return block + " : no command name";
+				}
 
-			VersionRange range = st.version()
-				.map(VersionRange::valueOf)
-				.orElse(null);
+				File fstdin = null;
+				File fstdout = null;
+				File fstderr = null;
 
-			return doGenerateMain(pluginName, range, st._attrs(), arguments.toArray(new String[0]));
-		} else {
-			return doGeneratePlugin(pluginName, st._attrs(), arguments);
+				String pluginName = arguments.remove(0);
+
+				for (Iterator<String> it = arguments.iterator(); it.hasNext();) {
+					String arg = it.next();
+
+					if (arg.startsWith("<")) {
+						if (fstdin != null)
+							return "only 1 redirection of stdin supported";
+
+						fstdin = getFile(arg.substring(1), false);
+						if (fstdin == null || !fstdin.isFile())
+							return "cannot find redirected input file " + fstdin;
+						it.remove();
+					} else if (arg.startsWith(">")) {
+						if (fstdout != null)
+							return "only 1 redirection of stdout supported";
+						fstdout = getFile(arg.substring(1), true);
+						it.remove();
+					} else if (arg.startsWith("1>")) {
+						if (fstdout != null)
+							return "only 1 redirection of stdout supported";
+						fstdout = getFile(arg.substring(2), true);
+						it.remove();
+					} else if (arg.startsWith("2>")) {
+						if (fstderr != null)
+							return "only 1 redirection of stderr supported";
+						fstderr = getFile(arg.substring(2), true);
+						it.remove();
+					}
+				}
+
+				InputStream stdin = fstdin == null ? null : IO.stream(fstdin);
+				OutputStream stdout = fstdout == null ? null : IO.outputStream(fstdout);
+				OutputStream stderr = fstderr == null ? null : IO.outputStream(fstderr);
+				try {
+					if (pluginName.indexOf('.') >= 0) {
+						if (pluginName.startsWith("."))
+							pluginName = pluginName.substring(1);
+
+						VersionRange range = st.version()
+							.map(VersionRange::valueOf)
+							.orElse(null);
+
+						result = doGenerateMain(pluginName, range, st._attrs(), arguments, stdin, stdout, stderr);
+					} else {
+						result = doGeneratePlugin(pluginName, st._attrs(), arguments, stdin, stdout, stderr);
+					}
+					if (result != null)
+						return block + " : " + result;
+				} finally {
+					IO.closeAll(stdout, stderr, stdin);
+				}
+			}
+			return result;
+		} catch (Exception e) {
+			return Exceptions.causes(e);
 		}
 	}
 
-	private String doGeneratePlugin(String pluginName, Map<String, String> attrs, List<String> arguments) {
-		BuildContext bc = new BuildContext(project, attrs, arguments);
+	private File getFile(String path, boolean mkdirs) {
+		File f = project.getFile(path);
+		if (mkdirs)
+			f.getParentFile()
+				.mkdirs();
+		return f;
+	}
+
+	private String doGeneratePlugin(String pluginName, Map<String, String> attrs, List<String> arguments,
+		InputStream stdin, OutputStream stdout, OutputStream stderr) {
+		BuildContext bc = new BuildContext(project, attrs, arguments, stdin, stdout, stderr);
 
 		Result<Boolean, String> call = project.getWorkspace()
 			.getExternalPlugins()
@@ -159,11 +228,14 @@ public class ProjectGenerate implements AutoCloseable {
 					return err(spec.failure());
 				}
 
+				Redirect redirect = new Redirect(stdin, stdout, stderr).captureStdout()
+					.captureStderr();
+
 				@SuppressWarnings("unchecked")
-				Optional<String> error = p.generate(bc, spec.instance());
+				Optional<String> error = redirect.apply(() -> p.generate(bc, spec.instance()));
 
 				if (error.isPresent())
-					return err(error.get());
+					return err(error.get() + " : " + redirect.getContent());
 
 				return ok(true);
 			});
@@ -172,13 +244,17 @@ public class ProjectGenerate implements AutoCloseable {
 	}
 
 	private String doGenerateMain(String mainClass, VersionRange range, Map<String, String> attrs,
-		String[] args) {
-		Result<String, String> call = project.getWorkspace()
+		List<String> arguments, InputStream stdin, OutputStream stdout, OutputStream stderr) {
+		Result<Integer, String> call = project.getWorkspace()
 			.getExternalPlugins()
-			.call(mainClass, range, project, attrs, args);
+			.call(mainClass, range, project, attrs, arguments, stdin, stdout, stderr);
 		if (call.isErr())
 			return call.error()
 				.get();
+
+		if (call.unwrap() != 0) {
+			return "process returned with non-zero exit code: " + call.unwrap();
+		}
 		return null;
 	}
 
@@ -257,7 +333,7 @@ public class ProjectGenerate implements AutoCloseable {
 				.min()
 				.orElse(0);
 
-			boolean staleFiles = latestModifiedSource >= latestModifiedTarget;
+			boolean staleFiles = latestModifiedSource > latestModifiedTarget;
 			if (staleFiles)
 				return true;
 		}
