@@ -106,6 +106,11 @@ public class BndPlugin implements Plugin<Project> {
           t.inputs.files(generateInputs.unwrap()).withPropertyName('generateInputs')
           /* bnd can include from -dependson */
           t.inputs.files(getBuildDependencies('jar')).withPropertyName('buildDependencies')
+          /* Workspace and project configuration changes should trigger task */
+          t.inputs.files(bndProject.getWorkspace().getPropertiesFile(),
+            bndProject.getWorkspace().getIncluded(),
+            bndProject.getPropertiesFile(),
+            bndProject.getIncluded()).withPropertyName('bndFiles')
           t.outputs.dirs(bndProject.getGenerate().getOutputDirs())
           t.doLast {
             try {
