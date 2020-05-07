@@ -86,7 +86,6 @@ Import-Package: \
 -builderignore: testresources
 
 Bundle-Icon: img/bnd-64.png;size=64
-Bundle-Developers: peter.kriens@aQute.biz, njbartlett@gmail.com
 Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic.nl, bj@bjhargrave.com
 
 -baseline: *
