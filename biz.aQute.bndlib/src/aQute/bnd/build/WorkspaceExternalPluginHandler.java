@@ -84,7 +84,8 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 		}
 	}
 
-	public Result<String, String> call(String mainClass, VersionRange range, Processor context, String classpathSpec,
+	public Result<String, String> call(String mainClass, VersionRange range, Processor context,
+		Map<String, String> attrs,
 		String[] args) {
 		List<File> cp = new ArrayList<>();
 		try {
@@ -108,13 +109,23 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 			Command c = new Command();
 
 			c.setTrace();
-			c.setCwd(context.getBase());
+
+			File cwd = context.getBase();
+			String workingdir = attrs.get("workingdir");
+			if (workingdir != null) {
+				cwd = context.getFile(workingdir);
+				cwd.mkdirs();
+				if (!cwd.isDirectory()) {
+					return Result.err("Working dir set to %s but cannot make it a directory", cwd);
+				}
+			}
+			c.setCwd(cwd);
 			c.setTimeout(1, TimeUnit.MINUTES);
 
 			c.add(context.getProperty("java", IO.getJavaExecutablePath("java")));
 			c.add("-cp");
 
-			Parameters cpp = new Parameters(classpathSpec);
+			Parameters cpp = new Parameters(attrs.get("classpath"));
 
 			for (Map.Entry<String, Attrs> e : cpp.entrySet()) {
 				String v = e.getValue()

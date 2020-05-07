@@ -74,7 +74,6 @@ import aQute.bnd.osgi.repository.AugmentRepository;
 import aQute.bnd.osgi.repository.WorkspaceRepositoryMarker;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.remoteworkspace.server.RemoteWorkspaceServer;
 import aQute.bnd.resource.repository.ResourceRepositoryImpl;
 import aQute.bnd.service.BndListener;
@@ -1543,13 +1542,17 @@ public class Workspace extends Processor {
 			// hack: fetch through GAV, works for maven resources
 			//
 
-			IdentityCapability cap = ResourceUtils.getIdentityCapability(resource);
+			List<Capability> capabilities = resource.getCapabilities("bnd.info");
+			if (capabilities.isEmpty())
+				return Result.err("not a bundle, cannot locate it even through bnd.info capability");
 
-			String bsn = cap.osgi_identity();
-			Version version = cap.version();
-			if (bsn == null || version == null) {
-				return Result.err("Not a bundle %s", resource);
-			}
+			Capability cap = capabilities.get(0);
+			String bsn = (String) cap.getAttributes()
+				.get("name");
+			Version version = (Version) cap.getAttributes()
+				.get("version");
+			if (bsn == null || version == null)
+				return Result.err("Not a bundle %s, bnd.info found but was not sufficient: ", resource, cap);
 
 			bundleId = new BundleId(bsn, version);
 		}

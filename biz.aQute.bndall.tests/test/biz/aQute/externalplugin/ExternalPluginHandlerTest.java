@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -52,7 +53,7 @@ public class ExternalPluginHandlerTest {
 			getRepo(ws);
 
 			Result<String, String> call = ws.getExternalPlugins()
-				.call("biz.aQute.bndall.tests.plugin_2.MainClass", null, ws, null,
+				.call("biz.aQute.bndall.tests.plugin_2.MainClass", null, ws, Collections.emptyMap(),
 					new String[] {});
 			System.out.println(call);
 			assertThat(call.isOk()).isTrue();

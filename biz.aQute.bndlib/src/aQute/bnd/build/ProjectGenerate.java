@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -136,8 +137,7 @@ public class ProjectGenerate implements AutoCloseable {
 				.map(VersionRange::valueOf)
 				.orElse(null);
 
-			return doGenerateMain(pluginName, range, st.classpath()
-				.orElse(null), st._attrs(), arguments.toArray(new String[0]));
+			return doGenerateMain(pluginName, range, st._attrs(), arguments.toArray(new String[0]));
 		} else {
 			return doGeneratePlugin(pluginName, st._attrs(), arguments);
 		}
@@ -171,11 +171,11 @@ public class ProjectGenerate implements AutoCloseable {
 			.orElse(null);
 	}
 
-	private String doGenerateMain(String mainClass, VersionRange range, String classpath, Map<String, String> attrs,
+	private String doGenerateMain(String mainClass, VersionRange range, Map<String, String> attrs,
 		String[] args) {
 		Result<String, String> call = project.getWorkspace()
 			.getExternalPlugins()
-			.call(mainClass, range, project, attrs.get("classpath"), args);
+			.call(mainClass, range, project, attrs, args);
 		if (call.isErr())
 			return call.error()
 				.get();
@@ -214,6 +214,7 @@ public class ProjectGenerate implements AutoCloseable {
 			.values()
 			.stream()
 			.map(GeneratorSpec::output)
+			.filter(Objects::nonNull)
 			.map(project::getFile)
 			.collect(Collectors.toSet());
 	}
