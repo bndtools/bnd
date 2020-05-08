@@ -1,5 +1,7 @@
 package aQute.bnd.service.generate;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -13,9 +15,16 @@ public class BuildContext extends Processor {
 
 	private final Project		project;
 	private final List<String>	arguments;
+	private final InputStream	stdin;
+	private final OutputStream	stdout;
+	private final OutputStream	stderr;
 
-	public BuildContext(Project project, Map<String, String> localProperties, List<String> arguments) {
+	public BuildContext(Project project, Map<String, String> localProperties, List<String> arguments, InputStream stdin,
+		OutputStream stdout, OutputStream stderr) {
 		super(project);
+		this.stdin = stdin;
+		this.stdout = stdout;
+		this.stderr = stderr;
 		this.setBase(project.getBase());
 		use(project);
 		this.project = project;
@@ -32,5 +41,17 @@ public class BuildContext extends Processor {
 
 	public List<String> getArguments() {
 		return arguments;
+	}
+
+	public InputStream getStdin() {
+		return stdin;
+	}
+
+	public OutputStream getStdout() {
+		return stdout;
+	}
+
+	public OutputStream getStderr() {
+		return stderr;
 	}
 }

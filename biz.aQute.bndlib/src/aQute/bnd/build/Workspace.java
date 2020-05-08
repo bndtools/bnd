@@ -74,7 +74,6 @@ import aQute.bnd.osgi.repository.AugmentRepository;
 import aQute.bnd.osgi.repository.WorkspaceRepositoryMarker;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.remoteworkspace.server.RemoteWorkspaceServer;
 import aQute.bnd.resource.repository.ResourceRepositoryImpl;
 import aQute.bnd.service.BndListener;
@@ -110,22 +109,22 @@ import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
-	private final static Logger	logger							= LoggerFactory.getLogger(Workspace.class);
-	public static final File	BND_DEFAULT_WS					= IO.getFile(Home.getUserHomeBnd() + "/default-ws");
-	public static final String	BND_CACHE_REPONAME				= "bnd-cache";
-	public static final String	EXT								= "ext";
-	public static final String	BUILDFILE						= "build.bnd";
-	public static final String	CNFDIR							= "cnf";
-	public static final String	BNDDIR							= "bnd";
-	public static final String	CACHEDIR						= "cache/" + About.CURRENT;
-	public static final String	STANDALONE_REPO_CLASS			= "aQute.bnd.repository.osgi.OSGiRepository";
+	private final static Logger	logger					= LoggerFactory.getLogger(Workspace.class);
+	public static final File	BND_DEFAULT_WS			= IO.getFile(Home.getUserHomeBnd() + "/default-ws");
+	public static final String	BND_CACHE_REPONAME		= "bnd-cache";
+	public static final String	EXT						= "ext";
+	public static final String	BUILDFILE				= "build.bnd";
+	public static final String	CNFDIR					= "cnf";
+	public static final String	BNDDIR					= "bnd";
+	public static final String	CACHEDIR				= "cache/" + About.CURRENT;
+	public static final String	STANDALONE_REPO_CLASS	= "aQute.bnd.repository.osgi.OSGiRepository";
 
-	static final int			BUFFER_SIZE						= IOConstants.PAGE_SIZE * 16;
+	static final int			BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
 	private static final String	PLUGIN_STANDALONE		= Constants.PLUGIN + ".standalone_";
 
 	class WorkspaceData implements AutoCloseable {
 		final Memoize<List<RepositoryPlugin>>					repositories;
-		final RemoteWorkspaceServer					remoteServer;
+		final RemoteWorkspaceServer								remoteServer;
 		final CloseableMemoize<WorkspaceClassIndex>				classIndex;
 		final CloseableMemoize<WorkspaceExternalPluginHandler>	externalPlugins;
 
@@ -1537,21 +1536,7 @@ public class Workspace extends Processor {
 	public Result<File, String> getBundle(org.osgi.resource.Resource resource) {
 		BundleId bundleId = ResourceUtils.getBundleId(resource);
 		if (bundleId == null) {
-
-			//
-			// might not be a bundle
-			// hack: fetch through GAV, works for maven resources
-			//
-
-			IdentityCapability cap = ResourceUtils.getIdentityCapability(resource);
-
-			String bsn = cap.osgi_identity();
-			Version version = cap.version();
-			if (bsn == null || version == null) {
-				return Result.err("Not a bundle %s", resource);
-			}
-
-			bundleId = new BundleId(bsn, version);
+			return Result.err("Not a bundle %s, identity & bnd.info found but was not sufficient: ", resource);
 		}
 
 		if (bundleId.getVersion() != null && !Verifier.isVersion(bundleId.getVersion()))

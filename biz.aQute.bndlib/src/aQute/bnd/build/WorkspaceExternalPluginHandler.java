@@ -1,6 +1,9 @@
 package aQute.bnd.build;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -84,8 +87,8 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 		}
 	}
 
-	public Result<String, String> call(String mainClass, VersionRange range, Processor context, String classpathSpec,
-		String[] args) {
+	public Result<Integer, String> call(String mainClass, VersionRange range, Processor context,
+		Map<String, String> attrs, List<String> args, InputStream stdin, OutputStream stdout, OutputStream stderr) {
 		List<File> cp = new ArrayList<>();
 		try {
 
@@ -108,13 +111,23 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 			Command c = new Command();
 
 			c.setTrace();
-			c.setCwd(context.getBase());
+
+			File cwd = context.getBase();
+			String workingdir = attrs.get("workingdir");
+			if (workingdir != null) {
+				cwd = context.getFile(workingdir);
+				cwd.mkdirs();
+				if (!cwd.isDirectory()) {
+					return Result.err("Working dir set to %s but cannot make it a directory", cwd);
+				}
+			}
+			c.setCwd(cwd);
 			c.setTimeout(1, TimeUnit.MINUTES);
 
 			c.add(context.getProperty("java", IO.getJavaExecutablePath("java")));
 			c.add("-cp");
 
-			Parameters cpp = new Parameters(classpathSpec);
+			Parameters cpp = new Parameters(attrs.get("classpath"));
 
 			for (Map.Entry<String, Attrs> e : cpp.entrySet()) {
 				String v = e.getValue()
@@ -132,18 +145,24 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 			c.add(classpath);
 
 			c.add(mainClass);
-			for (String arg : args)
+
+			for (String arg : args) {
 				c.add(arg);
+			}
 
-			StringBuilder stdout = new StringBuilder();
-			StringBuilder stderr = new StringBuilder();
+			int exitCode = TaskManager.with(getTask(c), () -> {
 
-			int exitCode = TaskManager.with(getTask(c), () -> c.execute(stdout, stderr));
+				PrintWriter lstdout = IO.writer(stdout == null ? System.out : stdout);
+				PrintWriter lstderr = IO.writer(stderr == null ? System.err : stderr);
+				try {
+					return c.execute(stdin, lstdout, lstderr);
+				} finally {
+					lstdout.flush();
+					lstderr.flush();
+				}
+			});
 
-			if (exitCode == 0)
-				return Result.ok(stdout.toString());
-			else
-				return Result.err(stdout.toString() + "\n---\n" + stderr.toString());
+			return Result.ok(exitCode);
 
 		} catch (Exception e) {
 			return Result.err("Failed with: %s", Exceptions.causes(e));

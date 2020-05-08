@@ -23,7 +23,13 @@ public class MainClassNamespace {
 
 	public static void build(CapabilityBuilder mc, Domain manifest) {
 
-		mc.addAttribute(MainClassNamespace.MAINCLASS_NAMESPACE, manifest.get("Main-Class"));
+		String mainClass = manifest.get("Main-Class");
+		if (mainClass == null)
+			return;
+
+		mainClass = mainClass.replace('/', '.'); // yeah, it happens!
+
+		mc.addAttribute(MainClassNamespace.MAINCLASS_NAMESPACE, mainClass);
 		String version = manifest.get(Constants.BUNDLE_VERSION);
 		if (version != null)
 			mc.addAttribute(VERSION_ATTRIBUTE, version);
