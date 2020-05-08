@@ -8,7 +8,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IMember;
-import org.eclipse.jdt.core.IType;
 import org.eclipse.search.ui.IQueryListener;
 import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
@@ -54,30 +53,30 @@ public class AddQueryListenerStartupParticipant implements IStartupParticipant, 
 			if (searchResult instanceof AbstractTextSearchResult) {
 				AbstractTextSearchResult result = (AbstractTextSearchResult) searchResult;
 				Arrays.stream(result.getElements())
-					.filter(IType.class::isInstance)
-					.map(IType.class::cast)
+					.filter(IMember.class::isInstance)
+					.map(IMember.class::cast)
 					.filter(IMember::isBinary)
-					.filter(type -> Optional.ofNullable(type.getPath())
-						.map(IPath::lastSegment)
-						.filter(path -> path.endsWith(".jar"))
+					.filter(member -> Optional.ofNullable(member.getResource())
+						.map(IResource::getProject)
+						.filter(Central::isBndProject)
 						.isPresent())
-					.filter(type -> {
-						return Optional.ofNullable(type.getResource())
-							.map(IResource::getProject)
-							.filter(Central::isBndProject)
-							.map(project -> {
-								IResource member = ResourcesPlugin.getWorkspace()
-									.getRoot()
-									.findMember(type.getPath());
-								return member != null && member.isDerived(IResource.CHECK_ANCESTORS);
-							})
-							.orElse(false);
-					})
-					.flatMap(type -> Arrays.stream(result.getMatches(
-						type)))
+					.filter(member -> Optional.ofNullable(member.getPath())
+						.filter(this::isDerived)
+						.map(IPath::lastSegment)
+						.filter(file -> file.endsWith(
+							".jar"))
+						.isPresent())
+					.flatMap(member -> Arrays.stream(result.getMatches(
+						member)))
 					.forEach(result::removeMatch);
 			}
 		}
 	}
 
+	private boolean isDerived(IPath path) {
+		IResource resource = ResourcesPlugin.getWorkspace()
+			.getRoot()
+			.findMember(path);
+		return resource != null && resource.isDerived(IResource.CHECK_ANCESTORS);
+	}
 }
