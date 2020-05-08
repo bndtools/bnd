@@ -513,6 +513,10 @@ public class Builder extends Analyzer {
 		}
 	}
 
+	private static final String[] fixed = {
+		"packageinfo", "package.html", "module-info.java", "package-info.java"
+	};
+
 	/**
 	 * @throws IOException
 	 */
@@ -527,15 +531,9 @@ public class Builder extends Analyzer {
 			String sourcePath = typeRef.getSourcePath();
 			String packagePath = packageRef.getPath();
 
-			boolean found = false;
-			String[] fixed = {
-				"packageinfo", "package.html", "module-info.java", "package-info.java"
-			};
-
 			for (File root : getSourcePath()) {
 				File f = getFile(root, sourcePath);
 				if (f.exists()) {
-					found = true;
 					if (!packages.contains(packageRef)) {
 						packages.add(packageRef);
 						for (int j = 0; j < fixed.length; j++) {
