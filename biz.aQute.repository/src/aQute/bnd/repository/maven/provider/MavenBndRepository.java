@@ -1,9 +1,7 @@
 package aQute.bnd.repository.maven.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
-import static aQute.lib.exceptions.ConsumerWithException.asConsumer;
 import static aQute.lib.exceptions.FunctionWithException.asFunction;
-import static java.util.stream.Collectors.toList;
 
 import java.io.Closeable;
 import java.io.File;
@@ -19,7 +17,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -222,7 +219,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 							if (instructions.sources != null) {
 								if (!NONE.equals(instructions.sources.path)) {
 									try (Jar jar = getSources(tool, options.context, instructions.sources.path,
-										instructions.sources.sourcepath)) {
+										instructions.sources.options)) {
 										save(releaser, pom.getRevision(), jar);
 									}
 								}
@@ -309,64 +306,17 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return instructions.type == ReleaseType.LOCAL;
 	}
 
-	private static final String[] PACKAGE_FILES = {
-		"packageinfo", "package.html", "module-info.java", "package-info.java"
-	};
-
-	private Jar getSources(Tool tool, Processor context, String path, String sourcepath) throws Exception {
+	private Jar getSources(Tool tool, Processor context, String path, Map<String, String> options) throws Exception {
 		Jar jar = toJar(context, path);
-		if (path != null) {
-			if (jar == null) {
-				logger.warn(
-					"A sources path was set in the -maven-release instuction, but the path does not exist {} (base path: {}) ",
-					path, context.getBase());
-			}
-		} else if (sourcepath != null) {
-			// We split the dirs on unix or windows path separators or comma
-			List<File> sourceDirs = Strings.splitQuotedAsStream(sourcepath, ":;,")
-				.map(context::getFile)
-				.filter(File::isDirectory)
-				.collect(toList());
-			if (sourceDirs.isEmpty()) {
-				logger.warn(
-					"A sources sourcepath was set in the -maven-release instuction, but no direcories in the sourcepath exist {} (base path: {}) ",
-					sourcepath, context.getBase());
-			} else {
-				jar = new Jar(Archive.SOURCES_CLASSIFIER);
-				Jar sourceJar = jar;
-				Set<String> packagePaths = new HashSet<>();
-				tool.getJar()
-					.getResourceNames(name -> name.endsWith(".class"))
-					.forEach(asConsumer(name -> {
-						int n = name.lastIndexOf('/');
-						String packagePath = (n < 0) ? "" : name.substring(0, n + 1);
-						String sourcePath = name.substring(0, name.length() - 5)
-							.concat("java");
-						for (File dir : sourceDirs) {
-							File sourceFile = IO.getFile(dir, sourcePath);
-							if (sourceFile.isFile()) {
-								packagePaths.add(packagePath);
-								sourceJar.putResource(sourcePath, new FileResource(sourceFile));
-							}
-						}
-					}));
-				packagePaths.stream()
-					.flatMap(packagePath -> Arrays.stream(PACKAGE_FILES)
-						.map(packagePath::concat))
-					.forEach(asConsumer(sourcePath -> {
-						for (File dir : sourceDirs) {
-							File sourceFile = IO.getFile(dir, sourcePath);
-							if (sourceFile.isFile()) {
-								sourceJar.putResource(sourcePath, new FileResource(sourceFile));
-							}
-						}
-					}));
-			}
+		if ((path != null) && (jar == null)) {
+			logger.warn(
+				"A sources path was set in the -maven-release instuction, but the path does not exist {} (base path: {}) ",
+				path, context.getBase());
 		}
 		if (jar != null) {
 			tool.setSources(jar, "");
 		} else {
-			jar = tool.doSource();
+			jar = tool.doSource(options);
 		}
 		jar.ensureManifest();
 		jar.setName(Archive.SOURCES_CLASSIFIER); // set jar name to classifier
@@ -469,7 +419,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			if (NONE.equals(release.sources.path)) {
 				release.sources = null;
 			} else {
-				release.sources.sourcepath = sources.remove("sourcepath");
+				release.sources.options = sources;
 			}
 		}
 

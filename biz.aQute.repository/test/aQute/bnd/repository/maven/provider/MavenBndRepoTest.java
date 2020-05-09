@@ -314,7 +314,7 @@ public class MavenBndRepoTest extends TestCase {
 			options.context = context;
 			PutResult put = repo.put(new FileInputStream(jar), options);
 
-			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 88858);
+			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 89400);
 			File sources = assertIsFile(remote,
 				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-sources.jar", 0);
 			try (Jar sourcesJar = new Jar(sources)) {
@@ -328,21 +328,56 @@ public class MavenBndRepoTest extends TestCase {
 		}
 	}
 
-	public void testPutMavenReleaseSourcesPath() throws Exception {
+	public void testPutMavenReleaseSourcesDefaultSourcepath() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("releaseUrl", remote.toURI()
 			.toString());
 		config(map);
 		try (Processor context = new Processor()) {
-			context.setProperty("sourcepath", "testresources/srcpath1,testresources/srcpath2");
-			context.setProperty("-maven-release",
-				"sources;sourcepath=\"${sourcepath}\",javadoc;packages=all");
+			context.setProperty("-sourcepath", "testresources/srcpath2");
+			context.setProperty("-maven-release", "javadoc;packages=all");
 			File jar = IO.getFile("testresources/release-nosource.jar");
 			PutOptions options = new PutOptions();
 			options.context = context;
 			PutResult put = repo.put(new FileInputStream(jar), options);
 
-			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 88858);
+			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 89400);
+			File sources = assertIsFile(remote,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-sources.jar", 0);
+			try (Jar sourcesJar = new Jar(sources)) {
+				assertThat(sourcesJar.getResources())
+					.containsKeys("aQute/maven/bnd/LocalRepoWatcher.java", "aQute/maven/bnd/MavenBndRepository.java",
+						"aQute/maven/bnd/MavenPlugin.java", "aQute/maven/bnd/ReleaseDTO.java",
+						"aQute/maven/bnd/package-info.java")
+					.doesNotContainKeys("aQute/bnd/tool/Tool.java", "aQute/bnd/tool/packageinfo");
+			}
+			File javadoc = assertIsFile(remote,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-javadoc.jar", 0);
+			try (Jar javadocJar = new Jar(javadoc)) {
+				assertThat(javadocJar.getResources())
+					.containsKeys("aQute/maven/bnd/LocalRepoWatcher.html", "aQute/maven/bnd/MavenBndRepository.html",
+						"aQute/maven/bnd/MavenPlugin.html", "aQute/maven/bnd/ReleaseDTO.html")
+					.doesNotContainKeys("aQute/bnd/tool/Tool.html");
+			}
+		}
+	}
+
+	public void testPutMavenReleaseSourcesSourcepath() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI()
+			.toString());
+		config(map);
+		try (Processor context = new Processor()) {
+			context.setProperty("project.allsourcepath",
+				"testresources/srcpath1" + File.pathSeparator + "testresources/srcpath2");
+			context.setProperty("-maven-release",
+				"sources;-sourcepath=\"${project.allsourcepath}\",javadoc;packages=all");
+			File jar = IO.getFile("testresources/release-nosource.jar");
+			PutOptions options = new PutOptions();
+			options.context = context;
+			PutResult put = repo.put(new FileInputStream(jar), options);
+
+			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 89400);
 			File sources = assertIsFile(remote,
 				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-sources.jar", 0);
 			try (Jar sourcesJar = new Jar(sources)) {
