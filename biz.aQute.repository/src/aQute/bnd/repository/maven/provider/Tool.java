@@ -1,5 +1,8 @@
 package aQute.bnd.repository.maven.provider;
 
+import static aQute.lib.exceptions.ConsumerWithException.asConsumer;
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -7,11 +10,15 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
@@ -49,10 +56,6 @@ public class Tool extends Processor {
 		javadocOptions = new File(tmp, "javadoc.options");
 	}
 
-	Jar getJar() {
-		return jar;
-	}
-
 	void setSources(Jar sourcesJar, String prefix) throws Exception {
 		IO.delete(sources);
 		IO.mkdirs(sources);
@@ -77,12 +80,10 @@ public class Tool extends Processor {
 	}
 
 	public Jar doJavadoc(Map<String, String> options, boolean exportsOnly) throws Exception {
-		if (!hasSources()) {
-			return new Jar(Archive.JAVADOC_CLASSIFIER);
-		}
+		prepareSource(Collections.emptyMap());
 
-		if (!sources.isDirectory()) { // extract source if not already present
-			setSources(jar, OSGI_OPT_SRC_PREFIX);
+		if (!sources.isDirectory()) {
+			return new Jar(Archive.JAVADOC_CLASSIFIER);
 		}
 
 		IO.mkdirs(javadoc);
@@ -171,7 +172,7 @@ public class Tool extends Processor {
 		if (result != 0) {
 			warning("Error during execution of javadoc command: %s\n******************\n%s", out, err);
 		}
-		return new Jar(javadoc);
+		return new Jar(Archive.JAVADOC_CLASSIFIER, javadoc);
 	}
 
 	private String fileName(File f) {
@@ -217,16 +218,80 @@ public class Tool extends Processor {
 		pp.put(key, value);
 	}
 
-	public Jar doSource() throws Exception {
-		if (!hasSources()) {
+	private static final String[]	PACKAGE_FILES	= {
+		"packageinfo", "package.html"
+	};
+
+	private static final String		PATH_SEPARATORS	= File.pathSeparator.concat(",");
+
+	private void prepareSource(Map<String, String> options) throws Exception {
+		if (sources.isDirectory()) { // extract source if not already present
+			return;
+		}
+		if (jar.hasDirectory(OSGI_OPT_SRC)) {
+			setSources(jar, OSGI_OPT_SRC_PREFIX);
+			return;
+		}
+
+		IO.delete(sources);
+		IO.mkdirs(sources);
+
+		String sourcepath = options.get(Constants.SOURCEPATH);
+		if (sourcepath == null) {
+			sourcepath = getProperty(Constants.SOURCEPATH);
+		}
+		// We split the dirs on path separators or comma
+		List<File> sourceDirs = Strings.splitQuotedAsStream(sourcepath, PATH_SEPARATORS)
+			.map(this::getFile)
+			.filter(File::isDirectory)
+			.collect(toList());
+		if (sourceDirs.isEmpty()) {
+			return;
+		}
+		Set<String> packagePaths = new HashSet<>();
+		jar.getResourceNames(name -> name.endsWith(".class"))
+			.forEach(asConsumer(name -> {
+				int n = name.lastIndexOf('/');
+				String packagePath = (n < 0) ? "" : name.substring(0, n + 1);
+				String sourcePath = name.substring(0, name.length() - 5)
+					.concat("java");
+				for (File dir : sourceDirs) {
+					File sourceFile = IO.getFile(dir, sourcePath);
+					if (sourceFile.isFile()) {
+						packagePaths.add(packagePath);
+						File targetFile = IO.getFile(sources, sourcePath);
+						IO.mkdirs(targetFile.getParentFile());
+						IO.copy(sourceFile, targetFile);
+					}
+				}
+			}));
+		packagePaths.stream()
+			.flatMap(packagePath -> Arrays.stream(PACKAGE_FILES)
+				.map(packagePath::concat))
+			.forEach(asConsumer(sourcePath -> {
+				for (File dir : sourceDirs) {
+					File sourceFile = IO.getFile(dir, sourcePath);
+					if (sourceFile.isFile()) {
+						File targetFile = IO.getFile(sources, sourcePath);
+						IO.mkdirs(targetFile.getParentFile());
+						IO.copy(sourceFile, targetFile);
+					}
+				}
+			}));
+	}
+
+	public Jar doSource(Map<String, String> options) throws Exception {
+		prepareSource(options);
+
+		if (!sources.isDirectory()) {
 			return new Jar(Archive.SOURCES_CLASSIFIER);
 		}
 
-		if (!sources.isDirectory()) { // extract source if not already present
-			setSources(jar, OSGI_OPT_SRC_PREFIX);
-		}
+		return new Jar(Archive.SOURCES_CLASSIFIER, sources);
+	}
 
-		return new Jar(sources);
+	public Jar doSource() throws Exception {
+		return doSource(Collections.emptyMap());
 	}
 
 	@Override
