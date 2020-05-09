@@ -1,0 +1,39 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
+Bundle-Description: Class file and Manifest header Transformation Support
+
+-exportcontents: \
+	aQute.bnd.*;-noimport:=true,\
+	aQute.service.*;-noimport:=true
+
+-includepackage: \
+	aQute.bnd.classfile.*,\
+	aQute.bnd.signatures.*,\
+	aQute.bnd.header.*,\
+	aQute.lib.utf8properties.*;-split-package:=first,\
+	aQute.libg.uri.*;-split-package:=first
+
+-conditionalpackage: \
+	aQute.*;-split-package:=first
+
+-sources: false
+
+-maven-release: pom;path=JAR,\
+	sources;-sourcepath="${project.allsourcepath}",\
+	javadoc;-classpath="${project.buildpath}"
+
+-maven-scope: provided
+
+-buildpath: \
+	osgi.annotation;version=latest,\
+	osgi.core;version=latest,\
+	aQute.libg;version=project,\
+	biz.aQute.bndlib;version=latest,\
+	slf4j.api;version=latest;maven-scope=compile
+
+-testpath: \
+	${junit},\
+	slf4j.simple;version=latest
+
+#-baseline: *
