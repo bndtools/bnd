@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.stream.Collector;
 
 import aQute.bnd.stream.MapStream;
-import aQute.lib.collections.SortedList;
 import aQute.service.reporter.Reporter;
 
 public class Parameters implements Map<String, Attrs> {
@@ -217,9 +216,7 @@ public class Parameters implements Map<String, Attrs> {
 		if (isEmpty())
 			return true;
 
-		SortedList<String> l = new SortedList<>(keySet());
-		SortedList<String> lo = new SortedList<>(other.keySet());
-		if (!l.isEqual(lo))
+		if (!keySet().equals(other.keySet()))
 			return false;
 
 		for (String key : keySet()) {

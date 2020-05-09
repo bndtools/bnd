@@ -3,13 +3,13 @@ package aQute.bnd.header;
 import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import aQute.lib.regex.PatternConstants;
-import aQute.libg.generics.Create;
 import aQute.libg.qtokens.QuotedTokenizer;
 import aQute.service.reporter.Reporter;
 
@@ -44,7 +44,7 @@ public class OSGiHeader {
 		do {
 			boolean hadAttribute = false;
 			Attrs clause = new Attrs();
-			List<String> aliases = Create.list();
+			List<String> aliases = new ArrayList<>();
 			String name = qt.nextToken(",;");
 
 			del = qt.getSeparator();

@@ -15,6 +15,7 @@ Though this instruction is not specific for a plugin, it was developed in conjun
     option         ::= sources | javadoc | pom
     sources        ::= 'sources' 
                        ( ';path=' ( 'NONE' | PATH ) )?
+                       ( ';sourcepath=' PATH ( ',' PATH )* )?
     javadoc        ::= 'javadoc'
                        ( ';path=' ( 'NONE' | PATH ) )?
                        ( ';packages=' ( 'EXPORTS' | 'ALL' ) )?

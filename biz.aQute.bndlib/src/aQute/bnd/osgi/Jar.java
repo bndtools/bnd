@@ -359,11 +359,14 @@ public class Jar implements Closeable {
 		return resources.get(path);
 	}
 
-	public Stream<Resource> getResources(Predicate<String> matches) {
-		check();
-		return resources.keySet()
+	public Stream<String> getResourceNames(Predicate<String> matches) {
+		return getResources().keySet()
 			.stream()
-			.filter(matches)
+			.filter(matches);
+	}
+
+	public Stream<Resource> getResources(Predicate<String> matches) {
+		return getResourceNames(matches)
 			.map(resources::get);
 	}
 
@@ -472,6 +475,11 @@ public class Jar implements Closeable {
 		check();
 		path = ZipUtil.cleanPath(path);
 		return resources.containsKey(path);
+	}
+
+	public boolean isEmpty() {
+		check();
+		return resources.isEmpty();
 	}
 
 	public void setManifest(Manifest manifest) {

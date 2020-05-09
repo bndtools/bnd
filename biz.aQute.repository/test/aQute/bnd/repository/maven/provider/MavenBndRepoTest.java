@@ -309,21 +309,54 @@ public class MavenBndRepoTest extends TestCase {
 		config(map);
 		try (Processor context = new Processor()) {
 			context.setProperty("-maven-release", "sources;path=\"testresources/src\",javadoc;packages=all");
-			File jar = IO.getFile("testresources/release.jar");
+			File jar = IO.getFile("testresources/release-nosource.jar");
 			PutOptions options = new PutOptions();
 			options.context = context;
 			PutResult put = repo.put(new FileInputStream(jar), options);
 
-			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 140212);
+			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 88858);
 			File sources = assertIsFile(remote,
 				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-sources.jar", 0);
 			try (Jar sourcesJar = new Jar(sources)) {
-				assertThat(sourcesJar.exists("X.java")).isTrue();
+				assertThat(sourcesJar.getResources()).containsKeys("X.java");
 			}
 			File javadoc = assertIsFile(remote,
 				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-javadoc.jar", 0);
 			try (Jar javadocJar = new Jar(javadoc)) {
-				assertThat(javadocJar.exists("X.html")).isTrue();
+				assertThat(javadocJar.getResources()).containsKeys("X.html");
+			}
+		}
+	}
+
+	public void testPutMavenReleaseSourcesPath() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI()
+			.toString());
+		config(map);
+		try (Processor context = new Processor()) {
+			context.setProperty("sourcepath", "testresources/srcpath1,testresources/srcpath2");
+			context.setProperty("-maven-release",
+				"sources;sourcepath=\"${sourcepath}\",javadoc;packages=all");
+			File jar = IO.getFile("testresources/release-nosource.jar");
+			PutOptions options = new PutOptions();
+			options.context = context;
+			PutResult put = repo.put(new FileInputStream(jar), options);
+
+			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 88858);
+			File sources = assertIsFile(remote,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-sources.jar", 0);
+			try (Jar sourcesJar = new Jar(sources)) {
+				assertThat(sourcesJar.getResources()).containsKeys("aQute/bnd/tool/Tool.java",
+					"aQute/bnd/tool/packageinfo", "aQute/maven/bnd/LocalRepoWatcher.java",
+					"aQute/maven/bnd/MavenBndRepository.java", "aQute/maven/bnd/MavenPlugin.java",
+					"aQute/maven/bnd/ReleaseDTO.java", "aQute/maven/bnd/package-info.java");
+			}
+			File javadoc = assertIsFile(remote,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-javadoc.jar", 0);
+			try (Jar javadocJar = new Jar(javadoc)) {
+				assertThat(javadocJar.getResources()).containsKeys("aQute/bnd/tool/Tool.html",
+					"aQute/maven/bnd/LocalRepoWatcher.html", "aQute/maven/bnd/MavenBndRepository.html",
+					"aQute/maven/bnd/MavenPlugin.html", "aQute/maven/bnd/ReleaseDTO.html");
 			}
 		}
 	}
@@ -776,8 +809,8 @@ public class MavenBndRepoTest extends TestCase {
 		assertThat(file).as("%s does not exist", path)
 			.isFile();
 		if (size > 0) {
-			assertThat(file.length()).as("Unexpected file size")
-				.isEqualTo(size);
+			assertThat(file).as("Unexpected file size")
+				.hasSize(size);
 		}
 		return file;
 	}

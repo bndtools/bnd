@@ -27,6 +27,7 @@ import aQute.lib.strings.Strings;
 import aQute.lib.tag.Tag;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.command.Command;
+import aQute.maven.api.Archive;
 
 public class Tool extends Processor {
 
@@ -46,6 +47,10 @@ public class Tool extends Processor {
 		sources = new File(tmp, "sources");
 		javadoc = new File(tmp, "javadoc");
 		javadocOptions = new File(tmp, "javadoc.options");
+	}
+
+	Jar getJar() {
+		return jar;
 	}
 
 	void setSources(Jar sourcesJar, String prefix) throws Exception {
@@ -73,7 +78,7 @@ public class Tool extends Processor {
 
 	public Jar doJavadoc(Map<String, String> options, boolean exportsOnly) throws Exception {
 		if (!hasSources()) {
-			return new Jar("javadoc");
+			return new Jar(Archive.JAVADOC_CLASSIFIER);
 		}
 
 		if (!sources.isDirectory()) { // extract source if not already present
@@ -214,7 +219,7 @@ public class Tool extends Processor {
 
 	public Jar doSource() throws Exception {
 		if (!hasSources()) {
-			return new Jar("sources");
+			return new Jar(Archive.SOURCES_CLASSIFIER);
 		}
 
 		if (!sources.isDirectory()) { // extract source if not already present

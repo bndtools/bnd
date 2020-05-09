@@ -28,6 +28,7 @@ public class ReleaseDTO extends DTO {
 
 	public static class SourceDTO extends DTO {
 		public String path;
+		public String	sourcepath;
 	}
 
 	public ReleaseType	type		= ReleaseType.LOCAL;

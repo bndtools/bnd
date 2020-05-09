@@ -1,7 +1,9 @@
 package aQute.bnd.repository.maven.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
+import static aQute.lib.exceptions.ConsumerWithException.asConsumer;
 import static aQute.lib.exceptions.FunctionWithException.asFunction;
+import static java.util.stream.Collectors.toList;
 
 import java.io.Closeable;
 import java.io.File;
@@ -17,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -218,7 +221,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 						try (Tool tool = new Tool(options.context, binary)) {
 							if (instructions.sources != null) {
 								if (!NONE.equals(instructions.sources.path)) {
-									try (Jar jar = getSources(tool, options.context, instructions.sources.path)) {
+									try (Jar jar = getSources(tool, options.context, instructions.sources.path,
+										instructions.sources.sourcepath)) {
 										save(releaser, pom.getRevision(), jar);
 									}
 								}
@@ -305,12 +309,59 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return instructions.type == ReleaseType.LOCAL;
 	}
 
-	private Jar getSources(Tool tool, Processor context, String path) throws Exception {
+	private static final String[] PACKAGE_FILES = {
+		"packageinfo", "package.html", "module-info.java", "package-info.java"
+	};
+
+	private Jar getSources(Tool tool, Processor context, String path, String sourcepath) throws Exception {
 		Jar jar = toJar(context, path);
-		if (path != null && jar == null) {
-			logger.warn(
-				"A sources path was set in the -maven-release instuction, but no sources could be found in {} (base path: {}) ",
-				path, context.getBase());
+		if (path != null) {
+			if (jar == null) {
+				logger.warn(
+					"A sources path was set in the -maven-release instuction, but the path does not exist {} (base path: {}) ",
+					path, context.getBase());
+			}
+		} else if (sourcepath != null) {
+			// We split the dirs on unix or windows path separators or comma
+			List<File> sourceDirs = Strings.splitQuotedAsStream(sourcepath, ":;,")
+				.map(context::getFile)
+				.filter(File::isDirectory)
+				.collect(toList());
+			if (sourceDirs.isEmpty()) {
+				logger.warn(
+					"A sources sourcepath was set in the -maven-release instuction, but no direcories in the sourcepath exist {} (base path: {}) ",
+					sourcepath, context.getBase());
+			} else {
+				jar = new Jar(Archive.SOURCES_CLASSIFIER);
+				Jar sourceJar = jar;
+				Set<String> packagePaths = new HashSet<>();
+				tool.getJar()
+					.getResourceNames(name -> name.endsWith(".class"))
+					.forEach(asConsumer(name -> {
+						int n = name.lastIndexOf('/');
+						String packagePath = (n < 0) ? "" : name.substring(0, n + 1);
+						String sourcePath = name.substring(0, name.length() - 5)
+							.concat("java");
+						for (File dir : sourceDirs) {
+							File sourceFile = IO.getFile(dir, sourcePath);
+							if (sourceFile.isFile()) {
+								packagePaths.add(packagePath);
+								sourceJar.putResource(sourcePath, new FileResource(sourceFile));
+							}
+						}
+					}));
+				packagePaths.stream()
+					.flatMap(packagePath -> Arrays.stream(PACKAGE_FILES)
+						.map(packagePath::concat))
+					.forEach(asConsumer(sourcePath -> {
+						for (File dir : sourceDirs) {
+							File sourceFile = IO.getFile(dir, sourcePath);
+							if (sourceFile.isFile()) {
+								sourceJar.putResource(sourcePath, new FileResource(sourceFile));
+							}
+						}
+					}));
+			}
 		}
 		if (jar != null) {
 			tool.setSources(jar, "");
@@ -319,6 +370,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		}
 		jar.ensureManifest();
 		jar.setName(Archive.SOURCES_CLASSIFIER); // set jar name to classifier
+		jar.setReproducible(context.is(Constants.REPRODUCIBLE));
 		tool.addClose(jar);
 		return jar;
 	}
@@ -336,6 +388,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		}
 		jar.ensureManifest();
 		jar.setName(Archive.JAVADOC_CLASSIFIER); // set jar name to classifier
+		jar.setReproducible(context.is(Constants.REPRODUCIBLE));
 		tool.addClose(jar);
 		return jar;
 	}
@@ -353,7 +406,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	private void save(Release releaser, Revision revision, Jar jar) throws Exception {
 		String classifier = jar.getName(); // jar name is classifier
-		String extension = "jar";
+		String extension = Archive.JAR_EXTENSION;
 		File tmp = File.createTempFile(classifier, extension);
 		try {
 			jar.write(tmp);
@@ -412,9 +465,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		Attrs sources = p.remove("sources");
 		if (sources != null) {
-			release.sources.path = sources.get("path");
-			if (NONE.equals(release.sources.path))
+			release.sources.path = sources.remove("path");
+			if (NONE.equals(release.sources.path)) {
 				release.sources = null;
+			} else {
+				release.sources.sourcepath = sources.remove("sourcepath");
+			}
 		}
 
 		Attrs pom = p.remove("pom");
@@ -924,7 +980,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		if (primaryArchive == null)
 			return null; // don't get sources when not in index
 
-		Archive sourcesArchive = primaryArchive.getOther("jar", Archive.SOURCES_CLASSIFIER);
+		Archive sourcesArchive = primaryArchive.getOther(Archive.JAR_EXTENSION, Archive.SOURCES_CLASSIFIER);
 		if (sourcesArchive == null)
 			return null;
 

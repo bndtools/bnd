@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -435,9 +434,7 @@ public class Attrs implements Map<String, String> {
 		if (isEmpty())
 			return true;
 
-		TreeSet<String> l = new TreeSet<>(keySet());
-		TreeSet<String> lo = new TreeSet<>(other.keySet());
-		if (!l.equals(lo))
+		if (!keySet().equals(other.keySet()))
 			return false;
 
 		for (String key : keySet()) {
