@@ -11,6 +11,7 @@
             biz.aQute.bnd.exporters, \
             biz.aQute.bnd.reporter, \
             biz.aQute.bnd.runtime, \
+            biz.aQute.bnd.transform, \
             biz.aQute.bnd.embedded-repo, \
             biz.aQute.bnd.gradle, \
             biz.aQute.bndlib, \
