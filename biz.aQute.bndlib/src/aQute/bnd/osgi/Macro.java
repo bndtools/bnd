@@ -11,7 +11,6 @@ import java.io.StringWriter;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.WrongMethodTypeException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -43,6 +42,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,6 +71,7 @@ import aQute.lib.filter.ExtendedFilter;
 import aQute.lib.formatter.Formatters;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
+import aQute.lib.memoize.Memoize;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.glob.Glob;
@@ -102,6 +104,7 @@ public class Macro {
 	StringWriter					stdout			= new StringWriter();
 	StringWriter					stderr			= new StringWriter();
 	public boolean					inTest;
+	private final Map<Class<?>, Map<String, BiFunction<Object, String[], Object>>>	macrosByClass	= new ConcurrentHashMap<>();
 
 	public Macro(Processor domain, Object... targets) {
 		this.domain = domain;
@@ -400,34 +403,60 @@ public class Macro {
 			; // System.err.println("Huh? Target should never be null " +
 		// domain);
 		else {
-			// Assume macro names do not start with '-'
-			if (method.startsWith("-")) {
-				return null;
-			}
-
-			String part = method.replaceAll("-", "_");
-			for (int i = 0; i < part.length(); i++) {
-				if (!Character.isJavaIdentifierPart(part.charAt(i)))
+			for (int i = 0, len = method.length(); i < len; i++) {
+				char c = method.charAt(i);
+				if (c == '-') {
+					// Assume macro names do not start with '-'
+					if (i == 0) {
+						return null;
+					}
+				} else if (!Character.isJavaIdentifierPart(c)) {
 					return null;
+				}
 			}
 
-			String cname = "_" + part;
-			Method m;
-			try {
-				m = target.getClass()
-					.getMethod(cname, String[].class);
-			} catch (NoSuchMethodException e) {
+			Map<String, BiFunction<Object, String[], Object>> macros = macrosByClass.computeIfAbsent(target.getClass(),
+				c -> Arrays.stream(c.getMethods())
+					.filter(m -> (m.getName()
+						.charAt(0) == '_') && (m.getParameterCount() == 1)
+						&& (m.getParameterTypes()[0] == String[].class))
+					.collect(toMap(m -> m.getName()
+						.substring(1), m -> {
+							Memoize<MethodHandle> mh = Memoize.supplier(() -> {
+								try {
+									return publicLookup().unreflect(m);
+								} catch (Exception e) {
+									throw Exceptions.duck(e);
+								}
+							});
+							if (Modifier.isStatic(m.getModifiers())) {
+								return (Object t, String[] a) -> {
+									try {
+										return mh.get()
+											.invoke(a);
+									} catch (Throwable e) {
+										throw Exceptions.duck(e);
+									}
+								};
+							} else {
+								return (Object t, String[] a) -> {
+									try {
+										return mh.get()
+											.invoke(t, a);
+									} catch (Throwable e) {
+										throw Exceptions.duck(e);
+									}
+								};
+							}
+						})));
+
+			String macro = method.replace('-', '_');
+			BiFunction<Object, String[], Object> invoker = macros.get(macro);
+			if (invoker == null) {
 				return null;
 			}
-			MethodHandle mh;
 			try {
-				mh = publicLookup().unreflect(m);
-			} catch (Exception e) {
-				reporter.warning("Exception in replace: method=%s %s ", method, Exceptions.toString(e));
-				return NULLVALUE;
-			}
-			try {
-				Object result = Modifier.isStatic(m.getModifiers()) ? mh.invoke(args) : mh.invoke(target, args);
+				Object result = invoker.apply(target, args);
 				return result == null ? NULLVALUE : result.toString();
 			} catch (Error e) {
 				throw e;
