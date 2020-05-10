@@ -1,5 +1,6 @@
 package aQute.bnd.osgi;
 
+import static aQute.lib.exceptions.FunctionWithException.asFunction;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -82,12 +84,22 @@ public class Builder extends Analyzer {
 	private final Make				make						= new Make(this);
 	private Instructions			defaultPreProcessMatcher	= null;
 	private BuilderInstructions		buildInstrs					= getInstructions(BuilderInstructions.class);
+	private final Map<Integer, String>	cachedSystemCalls;
+
 
 	public Builder(Processor parent) {
 		super(parent);
+		cachedSystemCalls = new ConcurrentHashMap<>();
 	}
 
-	public Builder() {}
+	public Builder(Builder parent) {
+		super(parent);
+		cachedSystemCalls = parent.cachedSystemCalls;
+	}
+
+	public Builder() {
+		cachedSystemCalls = new ConcurrentHashMap<>();
+	}
 
 	public Jar build() throws Exception {
 		logger.debug("build");
@@ -1947,11 +1959,24 @@ public class Builder extends Analyzer {
 			setProperty(Constants.REQUIRE_CAPABILITY, new Parameters(spec.requireCapability).toString());
 		}
 
-		MapStream.of(spec.other)
-			.forEach(this::setProperty);
+		spec.other.forEach(this::setProperty);
 
 		return this;
 
+	}
+
+	/**
+	 * We override system so that, for the duration of a build operation, we may
+	 * cache the result of a given system call. In a large build with many
+	 * 'make' build jars, such as some OSGi CT build projects, we may call
+	 * system hundreds of time to compute headers based upon git information
+	 * such as 'git describe'. Since this information will not change during the
+	 * course of a single build operation, we cache results to only call once.
+	 */
+	@Override
+	public String system(boolean allowFail, String command, String input) throws IOException, InterruptedException {
+		Integer key = Objects.hash(command, input);
+		return cachedSystemCalls.computeIfAbsent(key, asFunction(k -> super.system(allowFail, command, input)));
 	}
 
 }
