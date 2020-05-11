@@ -36,12 +36,10 @@ Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
 Automatic-Module-Name:  ${def;bsn}
 Bundle-Vendor:          Bndtools https://bndtools.org/
 Bundle-Copyright:       Copyright (c) aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
-Bundle-License:         Apache-2.0;\
-                        description="Apache License, Version 2.0";\
-                        link="https://opensource.org/licenses/Apache-2.0",\
-                        EPL-2.0;\
-                        description="Eclipse Public License, Version 2.0";\
-                        link="https://opensource.org/licenses/EPL-2.0"
+SPDX-License-Identifier: (Apache-2.0 OR EPL-2.0)
+Bundle-License:         "${SPDX-License-Identifier}";\
+                        description="This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0, or the Eclipse Public License 2.0.";\
+                        link="https://opensource.org/licenses/Apache-2.0,https://opensource.org/licenses/EPL-2.0"
 Bundle-DocURL:          https://bnd.bndtools.org/
 Bundle-SCM:             url=https://github.com/bndtools/bnd, \
                         connection=scm:git:https://github.com/bndtools/bnd.git, \
