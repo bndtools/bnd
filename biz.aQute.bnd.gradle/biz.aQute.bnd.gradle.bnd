@@ -9,7 +9,6 @@ Bundle-Description: The Bnd Gradle plugins.
     aQute.libg.*
 
 -includeresource: \
-    OSGI-OPT/src=src, \
     resources
 #
 # The groovy compiler must be run from the gradle build
