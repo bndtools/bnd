@@ -10,6 +10,7 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -221,6 +222,34 @@ public class TestActivator implements BundleActivator {
 			props.setProperty("main.thread", "true");
 			context.registerService(Callable.class.getName(), r, (Dictionary) props);
 			// throws exception ...
+		} else if ("framework.restart".equals(p)) {
+			int count = Integer.getInteger("launch.framework.restart.count");
+			if (count == 0) {
+				System.err.println("framework restart, first time");
+				CompletableFuture.runAsync(() -> {
+					try {
+						Thread.sleep(4000);
+						context.getBundle(0)
+							.stop();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				});
+			} else {
+				System.err.println("framework restart, second time");
+				Callable<Integer> r = new Callable<Integer>() {
+
+					@Override
+					public Integer call() throws Exception {
+						System.err.println("In main, return null");
+						return 197;
+					}
+
+				};
+				Properties props = new Properties();
+				props.setProperty("main.thread", "true");
+				context.registerService(Callable.class.getName(), r, (Dictionary) props);
+			}
 		}
 
 		System.err.println("Done " + p);

@@ -237,6 +237,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		lc.name = getProject().getName();
 		lc.activationEager = launcherInstrs.runoptions()
 			.contains(RunOption.eager);
+		lc.frameworkRestart = isRunFrameworkRestart();
 
 		if (!exported && !getNotificationListeners().isEmpty()) {
 			if (listenerComms == null) {

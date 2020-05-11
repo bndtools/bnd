@@ -31,6 +31,7 @@ public class LauncherConstants {
 	public final static int			ACTIVATOR_ERROR				= 126 - 8;
 	public static final int			STOPPED						= 126 - 9;
 	public static final int			RETURN_INSTEAD_OF_EXIT		= 197;
+	public final static String		LAUNCH_FRAMEWORK_RESTART_REASON	= "launch.framework.restart.reason";
 
 	// Local names
 	final static String				LAUNCH_SERVICES				= "launch.services";
@@ -44,11 +45,12 @@ public class LauncherConstants {
 	final static String				LAUNCH_NAME					= "launch.name";
 	final static String				LAUNCH_NOREFERENCES			= "launch.noreferences";
 	final static String				LAUNCH_NOTIFICATION_PORT	= "launch.notificationPort";
+	public final static String		LAUNCH_FRAMEWORK_RESTART		= "launch.framework.restart";
 
 	public final static String[]	LAUNCHER_PROPERTY_KEYS		= {
 		LAUNCH_SERVICES, LAUNCH_STORAGE_DIR, LAUNCH_KEEP, LAUNCH_NOREFERENCES, LAUNCH_RUNBUNDLES, LAUNCH_SYSTEMPACKAGES,
 		LAUNCH_SYSTEMCAPABILITIES, LAUNCH_SYSTEMPACKAGES, Constants.LAUNCH_TRACE, LAUNCH_TIMEOUT,
-		Constants.LAUNCH_ACTIVATORS,
+		Constants.LAUNCH_ACTIVATORS, LAUNCH_FRAMEWORK_RESTART,
 		LAUNCH_EMBEDDED, LAUNCH_NAME, LAUNCH_NOREFERENCES, LAUNCH_NOTIFICATION_PORT, Constants.LAUNCH_ACTIVATION_EAGER
 	};
 	/**
@@ -73,6 +75,7 @@ public class LauncherConstants {
 	public String					name;
 	public int						notificationPort			= -1;
 	public boolean					activationEager				= false;
+	public boolean					frameworkRestart			= false;
 
 	/**
 	 * Translate a constants to properties.
@@ -94,6 +97,7 @@ public class LauncherConstants {
 		p.setProperty(LAUNCH_TIMEOUT, timeout + "");
 		p.setProperty(Constants.LAUNCH_ACTIVATORS, join(activators, ","));
 		p.setProperty(LAUNCH_EMBEDDED, embedded + "");
+		p.setProperty(LAUNCH_FRAMEWORK_RESTART, frameworkRestart + "");
 
 		if (name != null)
 			p.setProperty(LAUNCH_NAME, name);
@@ -142,6 +146,7 @@ public class LauncherConstants {
 		name = p.getProperty(LAUNCH_NAME);
 		notificationPort = Integer.valueOf(p.getProperty(LAUNCH_NOTIFICATION_PORT, "-1"));
 		activationEager = Boolean.valueOf(p.getProperty(Constants.LAUNCH_ACTIVATION_EAGER));
+		frameworkRestart = Boolean.valueOf(p.getProperty(LAUNCH_FRAMEWORK_RESTART));
 		@SuppressWarnings({
 			"unchecked", "rawtypes"
 		})

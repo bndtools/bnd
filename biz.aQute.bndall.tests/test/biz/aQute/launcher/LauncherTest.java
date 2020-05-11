@@ -143,6 +143,21 @@ public class LauncherTest {
 		assertThat(result).contains("not updating jar/demo.jar because identical digest");
 	}
 
+	@Test
+	public void testFrameworkRestart() throws Exception {
+		File file = buildPackage("frameworkrestart.bndrun");
+
+		System.setProperty("test.cmd", "framework.restart");
+
+		assertThat(file).isFile();
+
+		String result = runFramework(file);
+		System.out.println(result);
+
+		assertThat(result).contains("framework restart, first time")
+			.contains("framework restart, second time");
+	}
+
 	/**
 	 * Tests the EmbeddedLauncher by creating an instance and calling the run
 	 * method. We Check if the expected exit value is printed in the result.
