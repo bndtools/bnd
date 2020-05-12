@@ -117,6 +117,7 @@ public class Launcher implements ServiceListener {
 	private StartLevelRuntimeHandler		startLevelhandler;
 	private boolean							connect;
 	private BundleActivator					externalActivator;
+	private boolean							restart					= false;
 
 	enum EmbeddedActivatorPhase {
 
@@ -152,6 +153,8 @@ public class Launcher implements ServiceListener {
 			try {
 
 				exitcode = Launcher.run(args);
+			} catch (FrameworkRestart r) {
+				throw r;
 			} catch (Throwable t) {
 				exitcode = 127;
 				// Last resort ... errors should be handled lower
@@ -183,14 +186,13 @@ public class Launcher implements ServiceListener {
 	 *
 	 * @param args
 	 * @param properties the properties or null
-	 * @param activator null, or a Bundle Activator that will be called
-	 *            back before the bundles are started, see
+	 * @param activator null, or a Bundle Activator that will be called back
+	 *            before the bundles are started, see
 	 *            {@link EmbeddedActivatorPhase#BEFORE_BUNDLES_START}.
 	 * @return the exit code
 	 * @throws Throwable
 	 */
-	public static int launch(String[] args, Properties properties, BundleActivator activator)
-		throws Throwable {
+	public static int launch(String[] args, Properties properties, BundleActivator activator) throws Throwable {
 		Launcher target;
 		if (properties == null) {
 			target = new Launcher();
@@ -378,6 +380,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	private int launch(String args[]) throws Throwable {
+		Integer exitCode = null;
 		try {
 			setSystemProperties();
 			this.parms = new LauncherConstants(properties);
@@ -434,16 +437,19 @@ public class Launcher implements ServiceListener {
 			// not that this will never happen when we're running on the mini fw
 			// but the test case normally exits.
 			synchronized (this) {
-				while (mainThread == null) {
+				while (mainThread == null && !restart) {
 					trace("will wait for a registered Runnable");
+
 					wait();
 				}
 			}
-			trace("will call main");
-			// report(System.err);
-			Integer exitCode = mainThread.call();
-			trace("main return, code %s", exitCode);
-			return exitCode == null ? 0 : exitCode;
+
+			if (mainThread != null) {
+				trace("will call main");
+				// report(System.err);
+				exitCode = mainThread.call();
+				trace("main return, code %s", exitCode);
+			}
 		} catch (Throwable e) {
 			error("Unexpected error in the run body: %s", e);
 			throw e;
@@ -453,6 +459,9 @@ public class Launcher implements ServiceListener {
 			System.setProperties(initialSystemProperties);
 			// TODO should we wait here?
 		}
+		if (restart)
+			throw new FrameworkRestart();
+		return exitCode == null ? 0 : exitCode;
 	}
 
 	private List<String> split(String value, String separator) {
@@ -1019,10 +1028,6 @@ public class Launcher implements ServiceListener {
 
 					trace("framework event %s %s", result, result.getType());
 					switch (result.getType()) {
-						case FrameworkEvent.STOPPED :
-							trace("framework event stopped");
-							System.exit(LauncherConstants.STOPPED);
-							break;
 
 						case FrameworkEvent.STARTLEVEL_CHANGED :
 							trace("start level changed");
@@ -1041,10 +1046,21 @@ public class Launcher implements ServiceListener {
 							System.exit(WARNING);
 							break;
 
+						case FrameworkEvent.STOPPED :
+							trace("framework event stopped");
+							if (!parms.frameworkRestart)
+								System.exit(LauncherConstants.STOPPED);
+							else
+								restart();
+							break;
+
 						case FrameworkEvent.STOPPED_BOOTCLASSPATH_MODIFIED :
 						case FrameworkEvent.STOPPED_UPDATE :
 							trace("framework event update");
-							System.exit(UPDATE_NEEDED);
+							if (!parms.frameworkRestart)
+								System.exit(UPDATE_NEEDED);
+							else
+								restart();
 							break;
 					}
 				} catch (InterruptedException e) {
@@ -1053,6 +1069,11 @@ public class Launcher implements ServiceListener {
 			}
 		};
 		wait.start();
+	}
+
+	protected synchronized void restart() {
+		this.restart = true;
+		notifyAll();
 	}
 
 	private void doSecurity() {
@@ -1198,7 +1219,7 @@ public class Launcher implements ServiceListener {
 							break;
 						case FrameworkEvent.WAIT_TIMEDOUT :
 							trace("Refresh will end due to error or timeout %s", event.toString());
-
+							break;
 					}
 				});
 		} catch (Exception e) {
@@ -1638,5 +1659,4 @@ public class Launcher implements ServiceListener {
 			throw new RuntimeException(e);
 		}
 	}
-
 }

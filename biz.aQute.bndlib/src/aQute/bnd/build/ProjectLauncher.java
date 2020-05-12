@@ -68,6 +68,7 @@ public abstract class ProjectLauncher extends Processor {
 
 	private final List<String>			runvm				= new ArrayList<>();
 	private final List<String>			runprogramargs		= new ArrayList<>();
+	private boolean						runframeworkrestart;
 	private Map<String, String>			runproperties;
 	private Command						java;
 	private Parameters					runsystempackages;
@@ -87,6 +88,7 @@ public abstract class ProjectLauncher extends Processor {
 	protected Appendable				out					= System.out;
 	protected Appendable				err					= System.err;
 	protected InputStream				in					= System.in;
+
 
 	public final static int				SERVICES			= 10111;
 	public final static int				NONE				= 20123;
@@ -182,6 +184,7 @@ public abstract class ProjectLauncher extends Processor {
 		runvm.addAll(getProject().getRunVM());
 		runprogramargs.addAll(getProject().getRunProgramArgs());
 		runproperties = getProject().getRunProperties();
+		runframeworkrestart = isTrue(getProject().getProperty(Constants.RUNFRAMEWORKRESTART));
 		storageDir = getProject().getRunStorage();
 
 		setKeep(getProject().getRunKeep());
@@ -871,5 +874,9 @@ public abstract class ProjectLauncher extends Processor {
 				}, 600, TimeUnit.MILLISECONDS);
 			}
 		}
+	}
+
+	public boolean isRunFrameworkRestart() {
+		return runframeworkrestart;
 	}
 }

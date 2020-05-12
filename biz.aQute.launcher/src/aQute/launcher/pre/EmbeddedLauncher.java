@@ -33,6 +33,7 @@ public class EmbeddedLauncher {
 	public static final String	LAUNCHER_PATH		= "launcher.runpath";
 
 	public static Manifest		MANIFEST;
+	static int					restarts			= 0;
 
 	public static void main(String... args) throws Throwable {
 
@@ -45,7 +46,22 @@ public class EmbeddedLauncher {
 			return;
 		}
 
-		findAndExecute(isVerbose, "main", void.class, args);
+		do {
+			try {
+				System.setProperty("launch.framework.restart.count", Integer.toString(restarts));
+				findAndExecute(isVerbose, "main", void.class, args);
+				return;
+			} catch (Throwable e) {
+				if (e.getClass()
+					.getSimpleName()
+					.equals("FrameworkRestart")) {
+					restarts++;
+					continue;
+				}
+				throw e;
+			}
+		} while (true);
+
 	}
 
 	/**
