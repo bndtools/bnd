@@ -1073,6 +1073,42 @@
          categoryId="bndtools.runEditor"/>
    </extension>
 
+   <extension point="org.eclipse.ui.commands">
+      <command
+         defaultHandler="bndtools.command.BndExportJarHandler"
+         id="bnd.command.export.jar"
+         name="bnd export jar"
+      >
+         <commandParameter
+            id="bnd.command.bndrunFile"
+            name="bndrun file"
+            optional="false"
+            values="bndtools.command.BndrunFilesParameterValues"/>
+      </command>
+      <command
+         defaultHandler="bndtools.command.BndExportRunbundlesHandler"
+         id="bnd.command.export.runbundles"
+         name="bnd export runbundles"
+      >
+         <commandParameter
+            id="bnd.command.bndrunFile"
+            name="bndrun file"
+            optional="false"
+            values="bndtools.command.BndrunFilesParameterValues"/>
+      </command>
+      <command
+         defaultHandler="bndtools.command.BndResolveHandler"
+         id="bnd.command.resolve"
+         name="bnd resolve"
+      >
+         <commandParameter
+            id="bnd.command.bndrunFile"
+            name="bndrun file"
+            optional="false"
+            values="bndtools.command.BndrunFilesParameterValues"/>
+      </command>
+   </extension>
+
    <extension point="org.eclipse.ui.bindings">
       <key
          sequence="M3+M2+X B"
