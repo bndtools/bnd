@@ -1,7 +1,7 @@
->---
+---
 layout: default
 class: Project
-title: -generate srcs ';output=' DIR ( ';' ( system | generate | classpath))* ...
+title: "-generate srcs ';output=' DIR ( ';' ( system | generate | classpath))* ..."
 summary: Generate sources 
 since: 5.1
 ---
