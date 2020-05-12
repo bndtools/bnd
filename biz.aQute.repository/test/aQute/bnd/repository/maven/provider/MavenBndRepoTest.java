@@ -369,7 +369,7 @@ public class MavenBndRepoTest extends TestCase {
 		config(map);
 		try (Processor context = new Processor()) {
 			context.setProperty("project.allsourcepath",
-				"testresources/srcpath1" + File.pathSeparator + "testresources/srcpath2");
+				"${path;${osfile;testresources;srcpath1};${osfile;testresources;srcpath2}}");
 			context.setProperty("-maven-release",
 				"sources;-sourcepath=\"${project.allsourcepath}\",javadoc;packages=all");
 			File jar = IO.getFile("testresources/release-nosource.jar");
