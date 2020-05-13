@@ -518,7 +518,10 @@ public abstract class Domain implements Iterable<String> {
 				return domain;
 			}
 		} catch (ZipException e) {
-			return null; // maybe it was not a zip file
+			if (file.getName()
+				.toLowerCase()
+				.endsWith(".jar"))
+				throw new ZipException("invalid jar format: " + file);
 		}
 
 		return null;

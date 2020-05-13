@@ -244,8 +244,8 @@ class IndexFile {
 		}
 		// snapshot archive resources
 		ResourcesRepository resourcesRepository = promiseFactory.all(results)
-				.map(ignore -> new ResourcesRepository(archives.values()))
-				.getValue();
+			.map(ignore -> new ResourcesRepository(archives.values()))
+			.getValue();
 
 		return promiseFactory.submit(() -> new BridgeRepository(resourcesRepository));
 	}
@@ -276,6 +276,7 @@ class IndexFile {
 			}
 		} catch (Exception e) {
 			logger.warn("parse ", e);
+			IO.delete(file);
 		}
 	}
 
@@ -289,17 +290,22 @@ class IndexFile {
 
 	private void parseSingle(Archive archive, File single) throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
-		boolean hasIdentity = rb.addFile(single, single.toURI());
+		Resource resource;
+		try {
+			boolean hasIdentity = rb.addFile(single, single.toURI());
 
-		if (!hasIdentity) {
-			String name = archive.getWithoutVersion();
-			MavenVersion version = archive.revision.version;
+			if (!hasIdentity) {
+				String name = archive.getWithoutVersion();
+				MavenVersion version = archive.revision.version;
 
-			BridgeRepository.addInformationCapability(rb, name, version.getOSGiVersion(), repo.toString(),
-				Constants.NOT_A_BUNDLE_S);
+				BridgeRepository.addInformationCapability(rb, name, version.getOSGiVersion(), repo.toString(),
+					Constants.NOT_A_BUNDLE_S);
+			}
+			resource = rb.build();
+
+		} catch (Exception e) {
+			resource = info(archive, Exceptions.causes(e) + ":" + single);
 		}
-
-		Resource resource = rb.build();
 		put(archive, resource);
 	}
 

@@ -211,7 +211,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertEquals("1.0.0 [" + Constants.NOT_A_BUNDLE_S + "]", title);
 
 		title = repo.title("commons-cli:commons-cli", new Version("1.4.0.SNAPSHOT"));
-		assertEquals("1.4.0.SNAPSHOT [Not a bundle]", title);
+		assertThat(title).contains("1.4.0.SNAPSHOT [invalid jar format: ");
 
 	}
 
