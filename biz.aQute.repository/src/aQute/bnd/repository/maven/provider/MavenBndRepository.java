@@ -488,8 +488,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		if (!init())
 			throw new IllegalStateException(status);
 
-		index.sync(); // make sure all is downloaded & parsed
-
 		Archive archive = index.find(bsn, version);
 		if (archive == null) {
 			return trySources(bsn, version, listeners);
