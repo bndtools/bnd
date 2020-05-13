@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.exporter.executable.ExecutableJarExporter;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 import biz.aQute.resolve.Bndrun;
@@ -28,6 +27,7 @@ import bndtools.Plugin;
 import bndtools.central.Central;
 
 public class BndExportJarHandler extends AbstractHandler {
+	private static final String EXECUTABLE_JAR = "bnd.executablejar";
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -46,7 +46,7 @@ public class BndExportJarHandler extends AbstractHandler {
 					Project bndProject = Central.getProject(project);
 					bndrun.setBase(bndProject.getBase());
 
-					Entry<String, Resource> export = bndrun.export(ExecutableJarExporter.EXECUTABLE_JAR,
+					Entry<String, Resource> export = bndrun.export(EXECUTABLE_JAR,
 						Collections.emptyMap());
 
 					if (export != null) {
