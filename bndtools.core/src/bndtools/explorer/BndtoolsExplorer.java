@@ -4,7 +4,10 @@ import java.beans.PropertyChangeListener;
 import java.util.Objects;
 
 import org.bndtools.utils.swt.FilterPanelPart;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.ui.packageview.PackageExplorerPart;
@@ -32,6 +35,7 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 	private PropertyChangeListener	listener;
 	private Glob					glob;
 	boolean							installed;
+
 	@Override
 	public void createPartControl(Composite parent) {
 		Composite c = new Composite(parent, SWT.NONE);
@@ -65,13 +69,38 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 							if (element instanceof JavaProject) {
 								IJavaProject project = (JavaProject) element;
 								String name = project.getElementName();
-								return glob.finds(name) >= 0;
+								return isSelected(project.getProject(), name);
 
 							} else if (element instanceof IProject) {
-								String name = ((IProject) element).getName();
-								return glob.finds(name) >= 0;
+								IProject project = (IProject) element;
+								String name = project.getName();
+								return isSelected(project, name);
 							} else
 								return true;
+						}
+
+						private boolean isSelected(IProject project, String name) {
+							if (glob.finds(name) >= 0)
+								return true;
+
+							try {
+								int maxSeverity = project.findMaxProblemSeverity(null, false, IResource.DEPTH_INFINITE);
+
+								switch (maxSeverity) {
+									case 0 :
+										return false;
+									case IMarker.SEVERITY_ERROR :
+										return glob.finds(":error") >= 0;
+
+									case IMarker.SEVERITY_WARNING :
+										return glob.finds(":warning") >= 0;
+								}
+							} catch (CoreException e) {
+								// ignore
+							}
+
+							return false;
+
 						}
 					});
 				}
