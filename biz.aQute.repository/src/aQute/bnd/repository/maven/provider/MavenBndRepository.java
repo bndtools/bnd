@@ -584,14 +584,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			if (source != null) {
 				source = source.replaceAll("(\\s|,|;|\n|\r)+", "\n");
 			}
-			String tmp = configuration.multi();
-			String[] multi;
-			if (tmp == null) {
-				multi = new String[0];
-			} else {
-				multi = tmp.trim()
-					.split("\\s*,\\s*");
-			}
+			String[] multi = Strings.splitAsStream(configuration.multi())
+				.toArray(String[]::new);
 			this.index = new IndexFile(domain, reporter, indexFile, source, storage, client.promiseFactory(), multi);
 			this.index.open();
 
@@ -753,7 +747,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 						f.format("STATUS = %s", status);
 					else {
 						f.format("MavenBndRepository           : %s\n", getName());
-						f.format("Revisions                    : %s\n", index.archives.size());
+						f.format("Revisions                    : %s\n", index.getArchives()
+							.size());
 						f.format("Storage                      : %s\n", localRepo);
 						f.format("Index                        : %s\n", index.indexFile);
 						f.format("Release repos                : \n    %s\n",
@@ -950,7 +945,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	public Set<Archive> getArchives() {
 		init();
-		return index.archives.keySet();
+		return index.getArchives();
 	}
 
 	public List<Revision> getRevisions(Program program) throws Exception {

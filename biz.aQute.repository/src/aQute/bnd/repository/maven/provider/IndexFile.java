@@ -409,8 +409,9 @@ class IndexFile {
 			s = s.substring(0, n);
 		}
 		s = Strings.trim(s);
-		if (Archive.isValid(s))
-			return Archive.valueOf(s);
+		Archive archive = Archive.valueOf(s);
+		if (archive != null)
+			return archive;
 
 		if (status == null)
 			status = "Invalid GAV " + s;

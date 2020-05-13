@@ -7,16 +7,14 @@ import java.util.regex.Pattern;
 import aQute.bnd.version.MavenVersion;
 
 public class Archive implements Comparable<Archive> {
-	public static final Pattern	ARCHIVE_P			= Pattern.compile(																																																							//
-		"\\s*"																																																																					// skip
-																																																																								// whitespace
-			+ "(?<program>[^:]+:[^:]+)         # program\n"																																																										//
-			+ "(:(?<extension>[^:]+)         # optional extension\n"																																																							//
-			+ "    (:(?<classifier>[^:]*))?  # optional classifer (must be preceded by extension)\n"																																															//
-			+ ")?                            # end of extension\n"																																																								//
-			+ ":(?<version>[^:]+)           # version is last\n"																																																								//
-			+ "\\s*",																																																																			// skip
-																																																																								// whitespace
+	public static final Pattern	ARCHIVE_P			= Pattern.compile(									//
+		"\\s*"																							//
+			+ "(?<program>(?<group>[^:]+):(?<artifact>[^:]+)) # program\n"								//
+			+ "(:(?<extension>[^:]+)         # optional extension\n"									//
+			+ "    (:(?<classifier>[^:]*))?  # optional classifer (must be preceded by extension)\n"	//
+			+ ")?                            # end of extension\n"										//
+			+ ":(?<version>[^:]+)           # version is last\n"										//
+			+ "\\s*",																					//
 		Pattern.COMMENTS);
 
 	public static final String	SOURCES_CLASSIFIER	= "sources";
@@ -170,7 +168,7 @@ public class Archive implements Comparable<Archive> {
 		if (!m.matches())
 			return null;
 
-		Program p = Program.valueOf(m.group("program"));
+		Program p = Program.valueOf(m.group("group"), m.group("artifact"));
 		return p.version(m.group("version"))
 			.archive(m.group("extension"), m.group("classifier"));
 	}

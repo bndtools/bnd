@@ -90,4 +90,9 @@ public class ResourcesRepository extends BaseRepository {
 		t.addAll(u.resources);
 		return t;
 	}
+
+	@Override
+	public String toString() {
+		return resources.toString();
+	}
 }
