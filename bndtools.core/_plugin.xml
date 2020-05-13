@@ -560,7 +560,7 @@
          icon="icons/bundle.png"
       />
    </extension>
-   
+
    <extension point="org.eclipse.debug.core.sourceContainerTypes">
       <sourceContainerType
          id="org.bndtools.core.launch.sourceContainerTypes.bndrunDirective"
@@ -1106,6 +1106,17 @@
             name="bndrun file"
             optional="false"
             values="bndtools.command.BndrunFilesParameterValues"/>
+      </command>
+      <command
+         defaultHandler="bndtools.command.OpenProjectHandler"
+         id="bnd.command.open.project"
+         name="open project"
+      >
+         <commandParameter
+            id="bnd.command.projectName"
+            name="project name"
+            optional="false"
+            values="bndtools.command.ProjectNamesParameterValues"/>
       </command>
    </extension>
 

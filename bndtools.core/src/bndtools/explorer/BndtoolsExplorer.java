@@ -30,6 +30,8 @@ import aQute.libg.glob.Glob;
 import bndtools.Plugin;
 
 public class BndtoolsExplorer extends PackageExplorerPart {
+	public static final String		VIEW_ID		= "bndtools.PackageExplorer";
+
 	private final FilterPanelPart	filterPart	= new FilterPanelPart(Plugin.getDefault()
 		.getScheduler());
 	private PropertyChangeListener	listener;
