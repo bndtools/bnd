@@ -79,6 +79,8 @@ public class BndrunFilesParameterValues implements IParameterValues {
 	}
 
 	private static class InvalidateMapListener implements IResourceChangeListener {
+		private final int kind = IResourceDelta.ADDED | IResourceDelta.REMOVED;
+
 		@Override
 		public void resourceChanged(IResourceChangeEvent event) {
 			final AtomicBoolean bndrunChanged = new AtomicBoolean(false);
@@ -90,7 +92,7 @@ public class BndrunFilesParameterValues implements IParameterValues {
 					public boolean visit(IResourceDelta delta) throws CoreException {
 						String name = delta.getFullPath()
 							.lastSegment();
-						if (name != null && name.endsWith(".bndrun")) {
+						if (name != null && name.endsWith(".bndrun") && (delta.getKind() & kind) > 0) {
 							bndrunChanged.set(true);
 							return false;
 						}
