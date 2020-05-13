@@ -1,6 +1,11 @@
 package aQute.bnd.repository.maven.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -22,6 +27,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -52,13 +61,12 @@ import aQute.maven.api.Revision;
 import aQute.maven.provider.FakeNexus;
 import aQute.maven.provider.MavenRepository;
 import aQute.maven.provider.POM;
-import junit.framework.TestCase;
 
 /*
  * Create a remote and local repository with a lot of bad stuff. The repo contains:
  *
  */
-public class MavenBndRepoTest extends TestCase {
+public class MavenBndRepoTest {
 	private static final Version		DTO_VERSION	= Version.parseVersion("1.0.0.201505202023");
 	final static DocumentBuilderFactory	dbf			= XML.newDocumentBuilderFactory();
 	final static XPathFactory			xpf			= XPathFactory.newInstance();
@@ -72,10 +80,12 @@ public class MavenBndRepoTest extends TestCase {
 	private FakeNexus					fnx;
 	private Processor					domain;
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		tmpName = "generated/tmp/test/" + getClass().getName() + "/" + getName();
+	@BeforeEach
+	public void setUp(TestInfo testInfo) throws Exception {
+		String name = testInfo.getTestMethod()
+			.get()
+			.getName();
+		tmpName = "generated/tmp/test/" + getClass().getName() + "/" + name;
 		tmp = IO.getFile(tmpName);
 		IO.delete(tmp);
 		local = IO.getFile(tmp, "local");
@@ -92,14 +102,14 @@ public class MavenBndRepoTest extends TestCase {
 		fnx.start();
 	}
 
-	@Override
-	protected void tearDown() throws Exception {
-		IO.close(domain);
+	@AfterEach
+	public void tearDown() throws Exception {
 		IO.close(repo);
 		IO.close(fnx);
-		super.tearDown();
+		IO.close(domain);
 	}
 
+	@Test
 	public void testAutomaticSources() throws Exception {
 		config(null);
 		assertThat(repo.getStatus()).isNull();
@@ -107,18 +117,20 @@ public class MavenBndRepoTest extends TestCase {
 		assertThat(sources).isFile();
 	}
 
+	@Test
 	public void testAutomaticSourcesForSnapshotWithoutBsn() throws Exception {
 		config(null);
 		assertThat(repo.getStatus()).isNull();
 		String title = repo.title("org.apache.commons.cli");
 
-		File commons = repo.get("commons-cli:commons-cli", new Version("1.4.0.SNAPSHOT"), null);
+		File commons = repo.get("commons-cli:commons-cli", new Version("1.2.0"), null);
 		assertThat(commons).isFile();
 
-		File source = repo.get("commons-cli:commons-cli.source", new Version("1.4.0.SNAPSHOT"), null);
+		File source = repo.get("commons-cli:commons-cli.source", new Version("1.2.0"), null);
 		assertThat(source).isFile();
 	}
 
+	@Test
 	public void testProgramRemoveFromIndex() throws Exception {
 		config(null);
 		assertThat(repo.getStatus()).isNull();
@@ -136,6 +148,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertThat(indexContent).doesNotContain("org.osgi.dto:1.0.0");
 	}
 
+	@Test
 	public void testRevisionRemoveFromIndex() throws Exception {
 		config(null);
 		assertNotNull(repo.get("org.osgi.dto", DTO_VERSION, null));
@@ -150,6 +163,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertThat(indexContent).doesNotContain("org.osgi.dto:1.0.0");
 	}
 
+	@Test
 	public void testAdd() throws Exception {
 		config(null);
 		assertThat(repo.list("org.osgi.service.log")).isEmpty();
@@ -161,14 +175,16 @@ public class MavenBndRepoTest extends TestCase {
 		assertThat(indexContent).contains("org.osgi.service.log:1.3.0");
 	}
 
+	@Test
 	public void testBadUrl() throws Exception {
 		Map<String, String> config = new HashMap<>();
 		config.put("releaseUrl", "httpx://goo.bar/adshasdh");
 		config(config);
-		repo.init();
+		repo.list(null);
 		assertThat(repo.getStatus()).contains("Invalid scheme");
 	}
 
+	@Test
 	public void testUseSource() throws Exception {
 		Map<String, String> config = new HashMap<>();
 		config.put("source", "org.osgi:org.osgi.service.log:1.3.0, ; \torg.osgi:org.osgi.service.log:1.2.0");
@@ -177,14 +193,16 @@ public class MavenBndRepoTest extends TestCase {
 		assertThat(repo.list("org.osgi.service.log")).isNotEmpty();
 	}
 
+	@Test
 	public void testUseSourceWithError() throws Exception {
 		Map<String, String> config = new HashMap<>();
 		config.put("source", "foobar\n");
 		config(config);
-		repo.init();
+		repo.list(null);
 		assertThat(repo.getStatus()).contains("foobar");
 	}
 
+	@Test
 	public void testTooltip() throws Exception {
 		config(null);
 		assertThat(repo.init()).isTrue();
@@ -215,6 +233,7 @@ public class MavenBndRepoTest extends TestCase {
 
 	}
 
+	@Test
 	public void testZipFileWithContents() throws Exception {
 		IO.copy(IO.getFile("testresources/mavenrepo3"), remote);
 		IO.copy(IO.getFile("testresources/mavenrepo3/index.maven"), index);
@@ -246,6 +265,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertNull(file3);
 	}
 
+	@Test
 	public void testPut() throws Exception {
 
 		Map<String, String> map = new HashMap<>();
@@ -302,6 +322,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertEquals("biz.aQute.bnd.maven", bc.osgi_identity());
 	}
 
+	@Test
 	public void testPutMavenReleaseSources() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("releaseUrl", remote.toURI()
@@ -328,6 +349,7 @@ public class MavenBndRepoTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPutMavenReleaseSourcesDefaultSourcepath() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("releaseUrl", remote.toURI()
@@ -362,6 +384,7 @@ public class MavenBndRepoTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPutMavenReleaseSourcesSourcepath() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("releaseUrl", remote.toURI()
@@ -396,6 +419,7 @@ public class MavenBndRepoTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPomGenerate() throws Exception {
 		config(null);
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
@@ -414,6 +438,7 @@ public class MavenBndRepoTest extends TestCase {
 		System.out.println(new String(bout.toByteArray(), StandardCharsets.UTF_8));
 	}
 
+	@Test
 	public void testPutLocalTwiceNoSnapshot() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("releaseUrl", remote.toURI()
@@ -448,6 +473,7 @@ public class MavenBndRepoTest extends TestCase {
 			.hasSize(size + 1);
 	}
 
+	@Test
 	public void testPutReleaseAndThenIndex() throws Exception {
 		Workspace ws = new Workspace(IO.getFile("testdata/releasews"));
 		Project p1 = ws.getProject("p1");
@@ -476,6 +502,7 @@ public class MavenBndRepoTest extends TestCase {
 			.isFile());
 	}
 
+	@Test
 	public void testNoIndexFile() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("index", "generated/does_not_exist");
@@ -484,6 +511,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertTrue(domain.check());
 	}
 
+	@Test
 	public void testGet() throws Exception {
 		config(null);
 		File file = repo.get("commons-cli:commons-cli", new Version("1.0.0"), null);
@@ -491,6 +519,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertTrue(file.isFile());
 	}
 
+	@Test
 	public void testGetAttributes() throws Exception {
 		config(null);
 		DownloadBlocker db = new DownloadBlocker(null);
@@ -504,6 +533,7 @@ public class MavenBndRepoTest extends TestCase {
 			.containsEntry("maven-extension", "jar");
 	}
 
+	@Test
 	public void testGetWithSource() throws Exception {
 		config(null);
 		File jar = repo.get("org.osgi.dto", new Version("1.0.0.201505202023"), null);
@@ -514,6 +544,7 @@ public class MavenBndRepoTest extends TestCase {
 
 	}
 
+	@Test
 	public void testGetFileRepo() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("releaseUrl", remote.toURI()
@@ -527,6 +558,7 @@ public class MavenBndRepoTest extends TestCase {
 	/*
 	 * Commons CLI 1.2 is in there as GAV & as BSN
 	 */
+	@Test
 	public void testGetViaBSNAndGAV() throws Exception {
 		config(null);
 
@@ -541,6 +573,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertEquals(f12maven, f12osgi);
 	}
 
+	@Test
 	public void testList() throws Exception {
 		config(null);
 		List<String> l = repo.list(null);
@@ -566,6 +599,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertEquals(2, resources.size());
 	}
 
+	@Test
 	public void testPutDefaultLocal() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("releaseUrl", null);
@@ -584,6 +618,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertTrue(s.contains("biz.aQute.bnd.maven"));
 	}
 
+	@Test
 	public void testPutDefaultLocalSnapshot() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("releaseUrl", null);
@@ -604,6 +639,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertFalse(s.contains("biz.aQute.bnd.maven"));
 	}
 
+	@Test
 	public void testPutDefaultLocalSnapshotFileRepo() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("snapshotUrl", remote.toURI()
@@ -624,6 +660,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertFalse(s.contains("biz.aQute.bnd.maven"));
 	}
 
+	@Test
 	public void testPutRemoteSnapshot() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("releaseUrl", null);
@@ -714,6 +751,7 @@ public class MavenBndRepoTest extends TestCase {
 
 	}
 
+	@Test
 	public void testPutRemoteSnapshotFileRepo() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("snapshotUrl", remote.toURI()
@@ -853,6 +891,7 @@ public class MavenBndRepoTest extends TestCase {
 	void config(Map<String, String> override) throws Exception {
 		Processor domain = new Processor();
 		HttpClient client = new HttpClient();
+		client.retries(0);
 		client.setRegistry(domain);
 		domain.addBasicPlugin(client);
 		config(domain, override);
@@ -898,6 +937,7 @@ public class MavenBndRepoTest extends TestCase {
 		repo.setProperties(config);
 	}
 
+	@Test
 	public void testPutPlainJarInRepo() throws Exception {
 
 		Map<String, String> map = new HashMap<>();
@@ -913,6 +953,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertNotNull(file);
 	}
 
+	@Test
 	public void testPutPlainJarAndNoMetaInfMaven() throws Exception {
 
 		Map<String, String> map = new HashMap<>();
@@ -930,6 +971,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertNotNull(file);
 	}
 
+	@Test
 	public void testPutBundledNoMetaInfMaven() throws Exception {
 
 		Map<String, String> map = new HashMap<>();
@@ -947,6 +989,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertNotNull(file);
 	}
 
+	@Test
 	public void testPutBundledWithMetaInfMaven() throws Exception {
 
 		Map<String, String> map = new HashMap<>();

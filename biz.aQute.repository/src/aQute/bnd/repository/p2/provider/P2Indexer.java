@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.service.repository.Repository;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
@@ -141,7 +140,7 @@ class P2Indexer implements Closeable {
 		return getBridge().versions(bsn);
 	}
 
-	private Repository readRepository(File index) throws Exception {
+	private ResourcesRepository readRepository(File index) throws Exception {
 		if (index.isFile()) {
 			try (XMLResourceParser xp = new XMLResourceParser(index.toURI())) {
 				List<Resource> resources = xp.parse();
@@ -153,7 +152,7 @@ class P2Indexer implements Closeable {
 		return save(readRepository());
 	}
 
-	private Repository readRepository() throws Exception {
+	private ResourcesRepository readRepository() throws Exception {
 		Map<ArtifactID, Resource> knownResources = (getBridge() != null) ? getBridge().getRepository()
 			.findProviders(singleton(MD5_REQUIREMENT))
 			.get(MD5_REQUIREMENT)
@@ -267,7 +266,7 @@ class P2Indexer implements Closeable {
 		}
 	}
 
-	private Repository save(Repository repository) throws IOException, Exception {
+	private ResourcesRepository save(ResourcesRepository repository) throws IOException, Exception {
 		XMLResourceGenerator xrg = new XMLResourceGenerator();
 		xrg.repository(repository)
 			.name(urlHash)

@@ -129,10 +129,8 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		return promiseFactory.submit(() -> {
 			File f = getFile(archive, file);
 			if (thrw && f == null) {
-				if (archive.isSnapshot())
-					throw new FileNotFoundException("For Maven artifact " + archive + " from " + snapshot);
-				else
-					throw new FileNotFoundException("For Maven artifact " + archive + " from " + release);
+				throw new FileNotFoundException(
+					"For Maven artifact " + archive + " from " + (archive.isSnapshot() ? snapshot : release));
 			}
 			return f;
 		});

@@ -50,8 +50,6 @@ public class BridgeRepository {
 		allBndInfo = rb.buildSyntheticRequirement();
 	}
 
-	private static final SortedSet<Version>					EMPTY_VERSIONS	= new TreeSet<>();
-
 	private final Repository								repository;
 	private final Map<String, Map<Version, ResourceInfo>>	index			= new HashMap<>();
 
@@ -196,27 +194,26 @@ public class BridgeRepository {
 		}
 	}
 
-	public BridgeRepository(Repository repository) throws Exception {
+	public BridgeRepository(Repository repository) {
 		this.repository = repository;
-		index();
+		Set<Resource> resources = new HashSet<>();
+		find(resources, allIdentity);
+		find(resources, allBndInfo);
+		resources.forEach(this::index);
 	}
 
-	public BridgeRepository(Collection<Resource> resources) throws Exception {
+	public BridgeRepository(ResourcesRepository repository) {
+		this.repository = repository;
+		repository.getResources()
+			.forEach(this::index);
+	}
+
+	public BridgeRepository(Collection<Resource> resources) {
 		this(new ResourcesRepository(resources));
 	}
 
 	public BridgeRepository() {
-		this.repository = new ResourcesRepository();
-	}
-
-	private void index() throws Exception {
-
-		Set<Resource> resources = new HashSet<>();
-
-		find(resources, allIdentity);
-		find(resources, allBndInfo);
-
-		resources.forEach(this::index);
+		this(new ResourcesRepository());
 	}
 
 	private void find(Set<Resource> resources, Requirement req) {
@@ -301,7 +298,7 @@ public class BridgeRepository {
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		Map<Version, ResourceInfo> map = index.get(bsn);
 		if (map == null || map.isEmpty()) {
-			return EMPTY_VERSIONS;
+			return new TreeSet<>();
 		}
 		return new TreeSet<>(map.keySet());
 	}
@@ -369,13 +366,10 @@ public class BridgeRepository {
 	}
 
 	private static InfoCapability getInfo(Resource resource) {
-		List<Capability> capabilities = resource.getCapabilities(BND_INFO);
-		InfoCapability info;
-		if (capabilities.size() >= 1) {
-			info = ResourceUtils.as(capabilities.get(0), InfoCapability.class);
-		} else
-			info = null;
-		return info;
+		return ResourceUtils.capabilityStream(resource, BND_INFO,
+			InfoCapability.class)
+			.findFirst()
+			.orElse(null);
 	}
 
 	public Set<Resource> getResources() {

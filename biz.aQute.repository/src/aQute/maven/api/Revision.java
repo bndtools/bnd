@@ -1,7 +1,5 @@
 package aQute.maven.api;
 
-import static aQute.maven.api.Program.GAV_SPLITTER;
-
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -119,7 +117,7 @@ public class Revision implements Comparable<Revision> {
 		if (s == null)
 			return null;
 
-		String[] parts = GAV_SPLITTER.split(s);
+		String[] parts = Program.split(s);
 		if (parts.length != 3)
 			return null;
 

@@ -21,7 +21,7 @@ public class Program implements Comparable<Program> {
 	public final String							path;
 
 	final private static Map<String, Program>	programCache	= new WeakHashMap<>();
-	final private Map<MavenVersion, Revision>	revisionCache	= new WeakHashMap<>();
+	final private Map<String, Revision>			revisionCache	= new WeakHashMap<>();
 
 	Program(String group, String artifact) {
 		this.group = group;
@@ -46,17 +46,20 @@ public class Program implements Comparable<Program> {
 	 * @param version the version
 	 * @return the revision
 	 */
-	public synchronized Revision version(MavenVersion version) {
-		Revision r = revisionCache.get(version);
-		if (r == null) {
-			r = new Revision(this, version);
-			revisionCache.put(version, r);
+	public Revision version(MavenVersion version) {
+		synchronized (revisionCache) {
+			String key = version.toString();
+			Revision r = revisionCache.get(key);
+			if (r == null) {
+				r = new Revision(this, version);
+				revisionCache.put(key, r);
+			}
+			return r;
 		}
-		return r;
 	}
 
 	static String validate(String gav) {
-		String parts[] = GAV_SPLITTER.split(gav);
+		String parts[] = split(gav);
 		return validate(parts);
 	}
 
@@ -154,14 +157,19 @@ public class Program implements Comparable<Program> {
 		return path + "/maven-metadata-" + id + ".xml";
 	}
 
-	static final Pattern GAV_SPLITTER = Pattern.compile(":");
+	private static final Pattern GAV_SPLITTER = Pattern.compile(":");
 
 	public static Program valueOf(String bsn) {
-		String parts[] = GAV_SPLITTER.split(Strings.trim(bsn));
+		String parts[] = split(Strings.trim(bsn));
 		if (parts.length != 2)
 			return null;
 
 		return valueOf(parts[0], parts[1]);
+	}
+
+	public static String[] split(String line) {
+		String parts[] = GAV_SPLITTER.split(line);
+		return parts;
 	}
 
 	@Override

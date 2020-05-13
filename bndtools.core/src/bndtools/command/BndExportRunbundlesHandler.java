@@ -19,7 +19,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.exporter.runbundles.RunbundlesExporter;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Resource;
 import biz.aQute.resolve.Bndrun;
@@ -27,6 +26,7 @@ import bndtools.Plugin;
 import bndtools.central.Central;
 
 public class BndExportRunbundlesHandler extends AbstractHandler {
+	private static final String RUNBUNDLES = "bnd.runbundles";
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -45,7 +45,7 @@ public class BndExportRunbundlesHandler extends AbstractHandler {
 					Project bndProject = Central.getProject(project);
 					bndrun.setBase(bndProject.getBase());
 
-					Entry<String, Resource> export = bndrun.export(RunbundlesExporter.RUNBUNDLES,
+					Entry<String, Resource> export = bndrun.export(RUNBUNDLES,
 						Collections.emptyMap());
 
 					if (export != null) {
