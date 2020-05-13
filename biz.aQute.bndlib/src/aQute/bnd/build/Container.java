@@ -308,10 +308,17 @@ public class Container {
 	}
 
 	/**
+	 * Returns the expanded Bundle-ClassPath if expansion is enabled. The first
+	 * element in the array is always the bundle itself ({@see #getFile()}). If
+	 * this bundle had the {@code expand-bcp} attribute set in its bundle spec
+	 * and there are other jars in Bundle-ClassPath, then these jars will be
+	 * extracted into a subdirectory in the same directory as the source bundle
+	 * and then added to the returned array.
+	 *
 	 * @throws Exception
 	 */
 
-	private File[] getBundleClasspathFiles() throws Exception {
+	public File[] getBundleClasspathFiles() throws Exception {
 		File[] bce = bundleClasspathExpansion;
 		if (bce == null) {
 			return bundleClasspathExpansion = new File[] {
@@ -357,10 +364,12 @@ public class Container {
 						} else {
 							IO.copy(resource.openInputStream(), member);
 							member.setLastModified(file.lastModified());
+							files.add(member);
 						}
 
+					} else {
+						files.add(member);
 					}
-					files.add(member);
 				}
 				n++;
 			}

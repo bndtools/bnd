@@ -497,4 +497,23 @@ class TestBndPlugin extends Specification {
           !simple_bundle.exists()
     }
 
+    def "Bnd Workspace Plugin Bundle-ClassPath test"() {
+        given:
+          String testProject = 'workspaceplugin10'
+          File testProjectDir = new File(testResources, testProject)
+          assert testProjectDir.isDirectory()
+
+        when:
+          def result = TestHelper.getGradleRunner()
+            .withProjectDir(testProjectDir)
+            .withArguments("-Pbnd_plugin=${pluginClasspath}", '--parallel', '--stacktrace', '--debug', '--continue', 'build')
+            .forwardOutput()
+            .buildAndFail()
+
+        then:
+          result.task(':test.bcp:compileJava').outcome == SUCCESS
+          result.task(':test.bcp-noexpand:compileJava').outcome == FAILED
+          result.task(':test.bcp-testpath:compileTestJava').outcome == SUCCESS
+    }
+
 }

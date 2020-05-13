@@ -1,0 +1,4 @@
+Bundle-Version: 0.0.0.${tstamp}
+Private-Package: test.bcp
+
+-buildpath: org.eclipse.jdt.debug;expand-bcp=true

@@ -393,11 +393,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 							 * from appearing in the Open Type dialog.
 							 */
 							extraAttrs.add(EMPTY_INDEX);
-							addLibraryEntry(path, file, accessRules, extraAttrs);
+							addLibraryEntry(c, instruction, path, file, accessRules, extraAttrs);
 						}
 						break;
 					default :
-						addLibraryEntry(path, file, accessRules, extraAttrs);
+						addLibraryEntry(c, instruction, path, file, accessRules, extraAttrs);
 						break;
 				}
 			}
@@ -477,12 +477,35 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 			return info;
 		}
 
-		private void addLibraryEntry(IPath path, File file, List<IAccessRule> accessRules,
-			List<IClasspathAttribute> extraAttrs) {
-			IPath sourceAttachmentPath = calculateSourceAttachmentPath(path, file);
-			builder.entry(JavaCore.newLibraryEntry(path, sourceAttachmentPath, null, toAccessRulesArray(accessRules),
-				toClasspathAttributesArray(extraAttrs), false));
+		private void addLibraryEntry(Container c, String instruction, IPath path, File file,
+			List<IAccessRule> accessRules, List<IClasspathAttribute> extraAttrs) {
+			final IPath sourceAttachmentPath = calculateSourceAttachmentPath(path, file);
+			final IClasspathAttribute[] extraAttrsArr = toClasspathAttributesArray(extraAttrs);
+			final IAccessRule[] accessRulesArr = toAccessRulesArray(accessRules);
+			builder.entry(
+				JavaCore.newLibraryEntry(path, sourceAttachmentPath, null, accessRulesArr, extraAttrsArr, false));
 			builder.updateLastModified(file.lastModified());
+
+			try {
+				File[] files = c.getBundleClasspathFiles();
+				for (File contribution : files) {
+					if (!contribution.exists() || contribution.equals(file)) {
+						continue;
+					}
+					try {
+						IPath subPath = fileToPath(contribution);
+						builder.entry(JavaCore.newLibraryEntry(subPath, sourceAttachmentPath, null, accessRulesArr,
+							extraAttrsArr, false));
+						if (builder.lastModified() < contribution.lastModified()) {
+							builder.updateLastModified(contribution.lastModified());
+						}
+					} catch (Exception e) {
+						error(c, instruction, "Failed to convert file %s to Eclipse path: %s", e, file, e.getMessage());
+					}
+				}
+			} catch (Exception e) {
+				logger.logWarning("Failed to process container files", e);
+			}
 		}
 
 		private List<IClasspathAttribute> calculateContainerAttributes(Container c) {

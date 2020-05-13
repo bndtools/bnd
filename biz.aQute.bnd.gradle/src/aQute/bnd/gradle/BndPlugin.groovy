@@ -565,7 +565,8 @@ Project ${project.name}
   }
 
   private FileCollection pathFiles(Collection<Container> path) {
-    return project.files(path*.getFile()) {
+	List<File> allFiles = path*.getBundleClasspathFiles().flatten()
+    return project.files(allFiles) {
       builtBy path.findAll { Container c ->
         c.getType() == TYPE.PROJECT
       }.collect { Container c ->
