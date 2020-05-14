@@ -2,7 +2,6 @@ package aQute.maven.api;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 
 import aQute.bnd.version.MavenVersion;
@@ -19,9 +18,6 @@ public class Program implements Comparable<Program> {
 	public final String							group;
 	public final String							artifact;
 	public final String							path;
-
-	final private static Map<String, Program>	programCache	= new WeakHashMap<>();
-	final private Map<String, Revision>			revisionCache	= new WeakHashMap<>();
 
 	Program(String group, String artifact) {
 		this.group = group;
@@ -47,15 +43,7 @@ public class Program implements Comparable<Program> {
 	 * @return the revision
 	 */
 	public Revision version(MavenVersion version) {
-		synchronized (revisionCache) {
-			String key = version.toString();
-			Revision r = revisionCache.get(key);
-			if (r == null) {
-				r = new Revision(this, version);
-				revisionCache.put(key, r);
-			}
-			return r;
-		}
+		return new Revision(this, version);
 	}
 
 	static String validate(String gav) {
@@ -130,16 +118,7 @@ public class Program implements Comparable<Program> {
 	 * @return the Program
 	 */
 	public static Program valueOf(String group, String artifact) {
-
-		synchronized (programCache) {
-			String key = group + ":" + artifact;
-			Program p = programCache.get(key);
-			if (p == null) {
-				p = new Program(group, artifact);
-				programCache.put(key, p);
-			}
-			return p;
-		}
+		return new Program(group, artifact);
 	}
 
 	/**
