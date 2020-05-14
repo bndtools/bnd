@@ -127,7 +127,7 @@ class IndexFile {
 					.recover(failed -> {
 						Throwable failure = Exceptions.unrollCause(failed.getFailure(),
 							InvocationTargetException.class);
-						logger.debug("Failure occured updating index {}", getMessage(failure), failure);
+						logger.debug("Failure occured updating index {}", getMessage(failure), failed.getFailure());
 						return Boolean.FALSE;
 					});
 			}
@@ -252,27 +252,21 @@ class IndexFile {
 		} else {
 			promises = toAdd.stream()
 				.map(archive -> {
-					Promise<Map<Archive, Resource>> promise = null;
 					if (!archive.isSnapshot()) {
 						File localFile = repo.toLocalFile(archive);
 						if (localFile.isFile() && localFile.length() > 0) {
-							promise = promiseFactory.submit(() -> parseSingleOrMultiFile(archive, localFile));
+							return promiseFactory.submit(() -> parseSingleOrMultiFile(archive, localFile))
+								.recover(p -> failed(archive, p.getFailure()));
 						}
 					}
-					if (promise == null) {
-						try {
-							promise = repo.get(archive)
-								.map(file -> (file == null) ? failed(archive, "Not found")
-									: parseSingleOrMultiFile(archive, file));
-						} catch (Exception e) {
-							promise = promiseFactory.failed(e);
-						}
+					try {
+						return repo.get(archive)
+							.map(file -> (file == null) ? failed(archive, "Not found")
+								: parseSingleOrMultiFile(archive, file))
+							.recover(p -> failed(archive, p.getFailure()));
+					} catch (Exception e) {
+						return promiseFactory.resolved(failed(archive, e));
 					}
-					return promise.recover(p -> {
-						String message = getMessage(p.getFailure());
-						logger.debug("Failed to get {}: {}", archive, message);
-						return failed(archive, message);
-					});
 				})
 				.collect(toList());
 		}
@@ -287,6 +281,13 @@ class IndexFile {
 			});
 	}
 
+	private Map<Archive, Resource> failed(Archive archive, Throwable t) {
+		Throwable failure = Exceptions.unrollCause(t, InvocationTargetException.class);
+		String message = getMessage(failure);
+		logger.debug("Failed to get {}: {}", archive, message, t);
+		return failed(archive, message);
+	}
+
 	private Map<Archive, Resource> failed(Archive archive, String msg) {
 		return Collections.singletonMap(archive, info(archive, msg));
 	}
@@ -299,7 +300,7 @@ class IndexFile {
 		return failure.getMessage();
 	}
 
-	private Map<Archive, Resource> parseSingleOrMultiFile(Archive archive, File file) throws Exception {
+	private Map<Archive, Resource> parseSingleOrMultiFile(Archive archive, File file) {
 		try {
 			if (isMulti(file.getName())) {
 				return parseMulti(archive, file);
@@ -308,7 +309,7 @@ class IndexFile {
 			}
 		} catch (Exception e) {
 			IO.delete(file);
-			throw e;
+			return failed(archive, e);
 		}
 	}
 
