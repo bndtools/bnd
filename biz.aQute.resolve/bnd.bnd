@@ -22,6 +22,7 @@
 -testpath: \
 	${junit},\
 	${mockito},\
+	biz.aQute.bnd.embedded-repo;version=snapshot,\
 	slf4j.simple;version=latest
 
 Export-Package:  \
