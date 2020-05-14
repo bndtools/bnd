@@ -19,7 +19,9 @@ import java.util.jar.Manifest;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.JRE;
 
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
@@ -612,15 +614,6 @@ public class MacroTest {
 		assertEquals("false", processor.getReplacer()
 			.process("${apply;isnumber;1,2,3,a,4}"));
 
-		processor.setProperty("double", "${1}${1}");
-		processor.setProperty("mulbyindex", "${js;${1}*${2}}");
-		assertEquals("A,B,C,D,E,F", processor.getReplacer()
-			.process("${map;toupper;a, b, c, d, e, f}"));
-		assertEquals("aa,bb,cc,dd,ee,ff", processor.getReplacer()
-			.process("${map;double;a, b, c, d, e, f}"));
-		assertEquals("0,2,6,12,20,30,42,56,72,90", processor.getReplacer()
-			.process("${foreach;mulbyindex;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-
 		assertEquals("6", processor.getReplacer()
 			.process("${size;a, b, c, d, e, f}"));
 		assertEquals("0", processor.getReplacer()
@@ -680,6 +673,24 @@ public class MacroTest {
 			.process("${min;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
 		assertEquals("9", processor.getReplacer()
 			.process("${max;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
+	}
+
+	/**
+	 * String functions
+	 */
+
+	@Test
+	@EnabledForJreRange(max = JRE.JAVA_14)
+	public void testJSMacroLists() throws Exception {
+		Processor processor = new Processor();
+		processor.setProperty("double", "${1}${1}");
+		processor.setProperty("mulbyindex", "${js;${1}*${2}}");
+		assertEquals("A,B,C,D,E,F", processor.getReplacer()
+			.process("${map;toupper;a, b, c, d, e, f}"));
+		assertEquals("aa,bb,cc,dd,ee,ff", processor.getReplacer()
+			.process("${map;double;a, b, c, d, e, f}"));
+		assertEquals("0,2,6,12,20,30,42,56,72,90", processor.getReplacer()
+			.process("${foreach;mulbyindex;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
 	}
 
 	/**
@@ -910,6 +921,7 @@ public class MacroTest {
 	 */
 
 	@Test
+	@EnabledForJreRange(max = JRE.JAVA_14)
 	public void testJSSimple() {
 		Processor processor = new Processor();
 		processor.setProperty("alpha", "25");
@@ -926,6 +938,7 @@ public class MacroTest {
 	 * Check if we can initialize
 	 */
 	@Test
+	@EnabledForJreRange(max = JRE.JAVA_14)
 	public void testJSINit() {
 		Processor processor = new Processor();
 		processor.setProperty("javascript", "function top() { return 13; }");
@@ -937,6 +950,7 @@ public class MacroTest {
 	 * See if the initcode is concatenated correctly
 	 */
 	@Test
+	@EnabledForJreRange(max = JRE.JAVA_14)
 	public void testJSINit2() {
 		Processor processor = new Processor();
 		processor.setProperty("javascript", "function top() { return 1; }");
