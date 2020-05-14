@@ -237,8 +237,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 						}
 					}
 				}
-				if (configuration.noupdateOnRelease() == false && !binaryArchive.isSnapshot())
+				if (configuration.noupdateOnRelease() == false) {
 					index.add(binaryArchive);
+				}
 			}
 			return result;
 		} catch (Exception e) {

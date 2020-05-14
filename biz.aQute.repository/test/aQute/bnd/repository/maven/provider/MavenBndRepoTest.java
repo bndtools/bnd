@@ -2,7 +2,6 @@ package aQute.bnd.repository.maven.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -636,7 +635,31 @@ public class MavenBndRepoTest {
 		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata-local.xml", 0);
 
 		String s = IO.collect(index);
-		assertFalse(s.contains("biz.aQute.bnd.maven"));
+		// snapshots added to index
+		assertThat(s).contains("biz.aQute.bnd.maven");
+	}
+
+	@Test
+	public void testPutDefaultLocalSnapshotNoUpdate() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", null);
+		map.put("snapshotUrl", null);
+		map.put("noupdateOnRelease", "true");
+		config(map);
+
+		File jar = IO.getFile("testresources/snapshot.jar");
+
+		PutResult put = repo.put(new FileInputStream(jar), null);
+
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.jar",
+			0);
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.pom",
+			0);
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata-local.xml", 0);
+
+		String s = IO.collect(index);
+		// snapshots not added to index
+		assertThat(s).doesNotContain("biz.aQute.bnd.maven");
 	}
 
 	@Test
@@ -656,8 +679,30 @@ public class MavenBndRepoTest {
 			0);
 
 		String s = IO.collect(index);
+		// snapshots added to index
+		assertThat(s).contains("biz.aQute.bnd.maven");
+	}
+
+	@Test
+	public void testPutDefaultLocalSnapshotFileRepoNoUpdate() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("snapshotUrl", remote.toURI()
+			.toString());
+		map.put("noupdateOnRelease", "true");
+		config(map);
+
+		File jar = IO.getFile("testresources/snapshot.jar");
+
+		PutResult put = repo.put(new FileInputStream(jar), null);
+
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.jar",
+			0);
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.pom",
+			0);
+
+		String s = IO.collect(index);
 		// snapshots not added to index
-		assertFalse(s.contains("biz.aQute.bnd.maven"));
+		assertThat(s).doesNotContain("biz.aQute.bnd.maven");
 	}
 
 	@Test
