@@ -614,6 +614,16 @@ public class MacroTest {
 		assertEquals("false", processor.getReplacer()
 			.process("${apply;isnumber;1,2,3,a,4}"));
 
+		processor.setProperty("double", "${1}${1}");
+		assertEquals("A,B,C,D,E,F", processor.getReplacer()
+			.process("${map;toupper;a, b, c, d, e, f}"));
+		assertEquals("aa,bb,cc,dd,ee,ff", processor.getReplacer()
+			.process("${map;double;a, b, c, d, e, f}"));
+
+		processor.setProperty("sumbyindex", "${sum;${1},${2}}");
+		assertEquals("1,3,5,7,9,11,13,15,17,19", processor.getReplacer()
+			.process("${foreach;sumbyindex;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+
 		assertEquals("6", processor.getReplacer()
 			.process("${size;a, b, c, d, e, f}"));
 		assertEquals("0", processor.getReplacer()
@@ -673,24 +683,6 @@ public class MacroTest {
 			.process("${min;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
 		assertEquals("9", processor.getReplacer()
 			.process("${max;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
-	}
-
-	/**
-	 * String functions
-	 */
-
-	@Test
-	@EnabledForJreRange(max = JRE.JAVA_14)
-	public void testJSMacroLists() throws Exception {
-		Processor processor = new Processor();
-		processor.setProperty("double", "${1}${1}");
-		processor.setProperty("mulbyindex", "${js;${1}*${2}}");
-		assertEquals("A,B,C,D,E,F", processor.getReplacer()
-			.process("${map;toupper;a, b, c, d, e, f}"));
-		assertEquals("aa,bb,cc,dd,ee,ff", processor.getReplacer()
-			.process("${map;double;a, b, c, d, e, f}"));
-		assertEquals("0,2,6,12,20,30,42,56,72,90", processor.getReplacer()
-			.process("${foreach;mulbyindex;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
 	}
 
 	/**
@@ -932,6 +924,9 @@ public class MacroTest {
 		assertEquals("5", processor.getReplacer()
 			.process("${js;domain.get('alpha')/5;}"));
 
+		processor.setProperty("mulbyindex", "${js;${1}*${2}}");
+		assertEquals("0,2,6,12,20,30,42,56,72,90", processor.getReplacer()
+			.process("${foreach;mulbyindex;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
 	}
 
 	/**
