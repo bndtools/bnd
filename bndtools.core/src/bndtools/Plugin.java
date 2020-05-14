@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -43,6 +44,7 @@ public class Plugin extends AbstractUIPlugin {
 
 	public static final String										PLUGIN_ID			= "bndtools.core";
 	public static final String										BND_EDITOR_ID		= PLUGIN_ID + ".bndEditor";
+	public static final String										IMG_OK				= "OK";
 
 	public static final Version										DEFAULT_VERSION		= new Version(0, 0, 0);
 
@@ -263,5 +265,10 @@ public class Plugin extends AbstractUIPlugin {
 
 	public ScheduledExecutorService getScheduler() {
 		return scheduler;
+	}
+
+	@Override
+	protected void initializeImageRegistry(ImageRegistry registry) {
+		registry.put(IMG_OK, imageDescriptorFromPlugin("icons/testok.png"));
 	}
 }
