@@ -148,7 +148,7 @@ class IndexFile {
 		Set<Archive> toAdd = Collections.singleton(archive);
 		Promise<Boolean> serializer = serialize(
 			() -> update(toAdd).thenAccept(b -> save(toAdd, Collections.emptySet())));
-		serializer.getFailure(); // sync
+		sync(serializer);
 	}
 
 	/*
@@ -164,7 +164,7 @@ class IndexFile {
 			Set<Archive> toRemove = Collections.singleton(archive);
 			return update(null).thenAccept(b -> save(Collections.emptySet(), toRemove));
 		});
-		serializer.getFailure(); // sync
+		sync(serializer);
 	}
 
 	/*
@@ -191,7 +191,7 @@ class IndexFile {
 			}
 			return update(null).thenAccept(b -> save(Collections.emptySet(), toRemove));
 		});
-		serializer.getFailure(); // sync
+		sync(serializer);
 	}
 
 	/*
@@ -367,7 +367,7 @@ class IndexFile {
 		if (indexFile.lastModified() != lastModified && last + 10000 < System.currentTimeMillis()) {
 			last = System.currentTimeMillis();
 			Promise<Boolean> serializer = serialize(this::load).onResolve(refreshAction);
-			serializer.getFailure(); // sync
+			sync(serializer);
 			return true;
 		}
 		return false;
@@ -446,7 +446,7 @@ class IndexFile {
 	}
 
 	BridgeRepository getBridge() {
-		sync();
+		sync(updateSerializer);
 		return bridge.get();
 	}
 
@@ -462,7 +462,7 @@ class IndexFile {
 	}
 
 	Set<Archive> getArchives() {
-		sync();
+		sync(updateSerializer);
 		return archives.keySet();
 	}
 
@@ -563,9 +563,9 @@ class IndexFile {
 		return archive;
 	}
 
-	private void sync() {
+	private void sync(Promise<?> promise) {
 		try {
-			updateSerializer.getFailure();
+			promise.getFailure();
 		} catch (InterruptedException e) {
 			logger.info("Interrupted");
 			Thread.currentThread()
