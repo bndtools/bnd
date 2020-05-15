@@ -58,7 +58,7 @@ class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMe
 		return value(memoized);
 	}
 
-	private static <T> T value(T value) {
+	private static <T extends AutoCloseable> T value(T value) {
 		if (value == null) {
 			throw new IllegalStateException("closed");
 		}
