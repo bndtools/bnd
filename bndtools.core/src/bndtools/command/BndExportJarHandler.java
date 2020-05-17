@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Map.Entry;
 
+import org.bndtools.api.RunMode;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -25,6 +26,7 @@ import aQute.lib.io.IO;
 import biz.aQute.resolve.Bndrun;
 import bndtools.Plugin;
 import bndtools.central.Central;
+import bndtools.launch.util.LaunchUtils;
 
 public class BndExportJarHandler extends AbstractHandler {
 	private static final String EXECUTABLE_JAR = "bnd.executablejar";
@@ -42,23 +44,30 @@ public class BndExportJarHandler extends AbstractHandler {
 			public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 				IStatus status = Status.OK_STATUS;
 				try {
-					Bndrun bndrun = Bndrun.createBndrun(Central.getWorkspace(), new File(bndrunFile.getLocationURI()));
-					Project bndProject = Central.getProject(project);
-					bndrun.setBase(bndProject.getBase());
+					Bndrun bndrun = (Bndrun) LaunchUtils.createRun(bndrunFile, RunMode.LAUNCH);
+
+					File exportDir = bndrun.getBase();
+
+					if (Central.isBndProject(project)) {
+						Project bndProject = Central.getProject(project);
+						bndrun.setBase(bndProject.getBase());
+						exportDir = IO.getBasedFile(bndProject.getTargetDir(), "export");
+						exportDir.mkdirs();
+					}
 
 					Entry<String, Resource> export = bndrun.export(EXECUTABLE_JAR,
 						Collections.emptyMap());
 
 					if (export != null) {
 						try (Resource resource = export.getValue()) {
-							File exportDir = IO.getBasedFile(bndProject.getTargetDir(), "export");
-							exportDir.mkdirs();
 							File exported = IO.getBasedFile(exportDir, export.getKey());
 							try (OutputStream out = IO.outputStream(exported)) {
 								resource.write(out);
 							}
 							exported.setLastModified(resource.lastModified());
-							project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+							if (Central.isBndProject(project)) {
+								project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+							}
 						}
 					}
 				} catch (Exception e) {
