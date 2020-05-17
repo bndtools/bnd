@@ -1,13 +1,14 @@
 package bndtools.command;
 
+import static java.util.stream.Collectors.toMap;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
 
 import org.eclipse.core.commands.IParameterValues;
 import org.eclipse.core.resources.IFile;
@@ -21,44 +22,37 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 
-import aQute.bnd.build.Workspace;
-import bndtools.central.Central;
+import aQute.lib.memoize.Memoize;
 
 public class BndrunFilesParameterValues implements IParameterValues {
 
 	static final String BNDRUN_FILE = "bnd.command.bndrunFile";
 
-	private static Map<String, String> bndrunFilesMap;
-	private static IResourceChangeListener	listener	= new InvalidateMapListener();
+	private IResourceChangeListener					listener	= new InvalidateMapListener();
+	private volatile Supplier<Map<String, String>>	bndrunFilesMap;
+
+	public BndrunFilesParameterValues() {
+		bndrunFilesMap = reset();
+
+		ResourcesPlugin.getWorkspace()
+			.addResourceChangeListener(listener);
+	}
+
+	Supplier<Map<String, String>> reset() {
+		return Memoize.supplier(() -> Arrays.stream(ResourcesPlugin.getWorkspace()
+			.getRoot()
+			.getProjects())
+			.filter(IProject::isOpen)
+			.map(this::findBndrunFiles)
+			.flatMap(Collection::stream)
+			.map(
+				IResource::getFullPath)
+			.collect(toMap(IPath::toPortableString, IPath::toPortableString)));
+	}
 
 	@Override
 	public Map getParameterValues() {
-		Workspace ws = Central.getWorkspaceIfPresent();
-
-		if (ws == null)
-			return Collections.EMPTY_MAP;
-
-		synchronized (ws) {
-			if (bndrunFilesMap == null) {
-				bndrunFilesMap = ws
-					.getAllProjects()
-					.stream()
-					.map(Central::getProject)
-					.filter(Optional::isPresent)
-					.map(Optional::get)
-					.map(
-						this::findBndrunFiles)
-					.flatMap(Collection::stream)
-					.map(IResource::getFullPath)
-					.collect(Collectors.toMap(IPath::toPortableString,
-						IPath::toPortableString));
-
-				ResourcesPlugin.getWorkspace()
-					.addResourceChangeListener(listener);
-			}
-		}
-
-		return bndrunFilesMap;
+		return bndrunFilesMap.get();
 	}
 
 	private List<IFile> findBndrunFiles(IProject project) {
@@ -78,7 +72,7 @@ public class BndrunFilesParameterValues implements IParameterValues {
 		return bndrunFiles;
 	}
 
-	private static class InvalidateMapListener implements IResourceChangeListener {
+	private class InvalidateMapListener implements IResourceChangeListener {
 		private final int kind = IResourceDelta.ADDED | IResourceDelta.REMOVED;
 
 		@Override
@@ -102,7 +96,7 @@ public class BndrunFilesParameterValues implements IParameterValues {
 			} catch (CoreException e) {}
 
 			if (bndrunChanged.get())
-				bndrunFilesMap = null;
+				bndrunFilesMap = BndrunFilesParameterValues.this.reset();
 		}
 	}
 }
