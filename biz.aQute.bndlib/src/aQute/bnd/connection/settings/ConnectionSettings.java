@@ -14,7 +14,6 @@ import java.net.Proxy;
 import java.net.Proxy.Type;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.cert.X509Certificate;
@@ -24,6 +23,8 @@ import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,28 +217,28 @@ public class ConnectionSettings {
 		}
 	}
 
+	private static final Pattern URI_P = Pattern.compile("([^:/?#]+)://([^:/?#]+)(?::(\\d+))?.*");
+
 	private static String normalize(String id) {
-		try {
-			URI url = new URI(id);
-			String scheme = url.getScheme()
-				.toLowerCase();
-
-			StringBuilder address = new StringBuilder();
-			address.append(scheme)
-				.append("://")
-				.append(url.getHost());
-
-			int defaultPort = URIUtil.getDefaultPort(scheme);
-			if (defaultPort != -1) {
-				if (url.getPort() > 0 && url.getPort() != defaultPort)
-					address.append(":")
-						.append(url.getPort());
-			}
-			return address.toString();
-		} catch (Exception e) {
-			// ignore
+		Matcher m = URI_P.matcher(id);
+		if (!m.matches()) {
+			return id;
 		}
-		return id;
+
+		String scheme = m.group(1).toLowerCase();
+		String host = m.group(2);
+		String port = m.group(3);
+
+		StringBuilder address = new StringBuilder();
+		address.append(scheme)
+			.append("://")
+			.append(host);
+
+		if (port != null && !port.equals(Integer.toString(URIUtil.getDefaultPort(scheme)))) {
+			address.append(":")
+				.append(port);
+		}
+		return address.toString();
 	}
 
 	private boolean isPrivateKey(ServerDTO server) {
