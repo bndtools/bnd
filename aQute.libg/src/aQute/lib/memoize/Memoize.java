@@ -102,6 +102,29 @@ public interface Memoize<S> extends Supplier<S> {
 	}
 
 	/**
+	 * Creates a supplier which memoizes the first value returned by the
+	 * specified supplier which is accepted by the specified predicate.
+	 * <p>
+	 * When the returned supplier is called to get a value, it will call the
+	 * specified supplier to obtain a value and then call the specified
+	 * predicate to ask if the value is acceptable. If the value is not accepted
+	 * by the predicate, the value is not memoized before it is returned. If the
+	 * value is accepted by the predicate, the value is memoized before it is
+	 * returned and the specified supplier and specified predicate will no
+	 * longer be called.
+	 *
+	 * @param <T> Type of the value returned by the supplier.
+	 * @param supplier The source supplier. Must not be {@code null}.
+	 * @param predicate The accepting predicate. Must not be {@code null}.
+	 * @return A memoizing supplier wrapping the specified supplier and
+	 *         specified predicate.
+	 * @since 1.1
+	 */
+	static <T> Memoize<T> predicateSupplier(Supplier<? extends T> supplier, Predicate<? super T> predicate) {
+		return new PredicateMemoizingSupplier<>(supplier, predicate);
+	}
+
+	/**
 	 * Peek the memoized value, if any.
 	 * <p>
 	 * This method will not result in a call to the source supplier.

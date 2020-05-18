@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import java.io.Closeable;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -413,6 +415,61 @@ public class MemoizeTest {
 		} finally {
 			threadPool.shutdown();
 		}
+	}
+
+	@Test
+	public void predicate_supplier() {
+		Memoize<String> memoized = Memoize.predicateSupplier(source, Objects::nonNull);
+		assertThat(count).hasValue(0);
+		assertThat(memoized.peek()).isNull();
+		assertThat(count).hasValue(0);
+
+		assertThat(Stream.generate(memoized::get)
+			.limit(100)).containsOnly("1");
+		assertThat(count).hasValue(1);
+		assertThat(memoized.peek()).isEqualTo("1");
+		assertThat(count).hasValue(1);
+	}
+
+	@Test
+	public void predicate_supplier_someaccepted() {
+		source = () -> {
+			int n = count.incrementAndGet();
+			if (n <= 10) {
+				return null;
+			}
+			return Integer.toString(n);
+		};
+		AtomicInteger acceptorCount = new AtomicInteger();
+		Predicate<String> acceptor = s -> {
+			acceptorCount.incrementAndGet();
+			return Objects.nonNull(s);
+		};
+		Memoize<String> memoized = Memoize.predicateSupplier(source, acceptor);
+		assertThat(count).hasValue(0);
+		assertThat(acceptorCount).hasValue(0);
+		assertThat(memoized.peek()).isNull();
+		assertThat(count).hasValue(0);
+		assertThat(acceptorCount).hasValue(0);
+
+		assertThat(Stream.generate(memoized::get)
+			.limit(10)).containsOnly((String) null);
+		assertThat(count).hasValue(10);
+		assertThat(acceptorCount).hasValue(10);
+		assertThat(Stream.generate(memoized::get)
+			.limit(100)).containsOnly("11");
+		assertThat(count).hasValue(11);
+		assertThat(acceptorCount).hasValue(11);
+		assertThat(memoized.peek()).isEqualTo("11");
+		assertThat(count).hasValue(11);
+		assertThat(acceptorCount).hasValue(11);
+	}
+
+	@Test
+	public void predicate_supplier_null() {
+		assertThatNullPointerException().isThrownBy(() -> Memoize.predicateSupplier(null, null));
+		assertThatNullPointerException().isThrownBy(() -> Memoize.predicateSupplier(source, null));
+		assertThatNullPointerException().isThrownBy(() -> Memoize.predicateSupplier(null, Objects::nonNull));
 	}
 
 }
