@@ -63,7 +63,7 @@ import bndtools.central.Central;
 	IMavenProjectChangedListener.class, MavenWorkspaceRepository.class, RepositoryPlugin.class
 })
 public class MavenWorkspaceRepository extends
-	AbstractIndexingRepository<IProject>
+	AbstractIndexingRepository<IProject, File>
 	implements IMavenProjectChangedListener, MavenRunListenerHelper, PopulatedRepository, Refreshable,
 	RepositoryPlugin {
 
@@ -251,11 +251,13 @@ public class MavenWorkspaceRepository extends
 	}
 
 	@Override
-	protected BiFunction<ResourceBuilder, File, ResourceBuilder> fileIndexer(IProject project) {
+	protected BiFunction<ResourceBuilder, File, ResourceBuilder> indexer(IProject project) {
 		String name = project.getName();
-		BiFunction<ResourceBuilder, File, ? extends ResourceBuilder> fileIndexer = super.fileIndexer(project);
 		return (rb, file) -> {
-			rb = fileIndexer.apply(rb, file);
+			rb = fileIndexer(rb, file);
+			if (rb == null) {
+				return null;
+			}
 
 			boolean hasIdentity = rb.getCapabilities()
 				.stream()
