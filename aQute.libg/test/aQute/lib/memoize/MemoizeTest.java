@@ -77,7 +77,7 @@ public class MemoizeTest {
 
 	@Test
 	public void refreshing() throws Exception {
-		Memoize<String> memoized = Memoize.refreshingSupplier(source, 100, TimeUnit.MILLISECONDS);
+		Memoize<String> memoized = Memoize.refreshingSupplier(source, 300, TimeUnit.MILLISECONDS);
 		assertThat(count).hasValue(0);
 		assertThat(memoized.peek()).isNull();
 		assertThat(count).hasValue(0);
@@ -88,7 +88,7 @@ public class MemoizeTest {
 		assertThat(memoized.peek()).isEqualTo("1");
 		assertThat(count).hasValue(1);
 
-		sleep(200, TimeUnit.MILLISECONDS);
+		sleep(400, TimeUnit.MILLISECONDS);
 
 		assertThat(memoized.peek()).isNull();
 		assertThat(count).hasValue(1);
@@ -99,7 +99,7 @@ public class MemoizeTest {
 		assertThat(memoized.peek()).isEqualTo("2");
 		assertThat(count).hasValue(2);
 
-		sleep(200, TimeUnit.MILLISECONDS);
+		sleep(400, TimeUnit.MILLISECONDS);
 
 		assertThat(memoized.peek()).isNull();
 		assertThat(count).hasValue(2);
