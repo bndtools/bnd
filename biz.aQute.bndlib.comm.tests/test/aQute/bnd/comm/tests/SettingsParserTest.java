@@ -160,4 +160,32 @@ public class SettingsParserTest extends TestCase {
 		SettingsDTO settings = msp.getSettings();
 		return settings;
 	}
+
+	public void testWildcardURL() throws Exception {
+		try (Processor proc = new Processor(); HttpClient hc = new HttpClient()) {
+			proc.setProperty("-connection-settings",
+				"server;id=\"https://*.server.net:8080\";username=\"myUser\";password=\"myPassword\","
+					+ "server;id=\"https://*.server.net/\";username=\"myUser\";password=\"myPassword\"");
+			ConnectionSettings cs = new ConnectionSettings(proc, hc);
+			cs.readSettings();
+			List<ServerDTO> serverDTOs = cs.getServerDTOs();
+			assertEquals(2, serverDTOs.size());
+
+			ServerDTO s = serverDTOs.get(0);
+
+			assertEquals("https://*.server.net:8080", s.id);
+
+			URLConnectionHandler handler = cs.createURLConnectionHandler(s);
+
+			assertTrue(handler.matches(new URL("https://www.server.net:8080")));
+
+			s = serverDTOs.get(1);
+
+			assertEquals("https://*.server.net", s.id);
+
+			handler = cs.createURLConnectionHandler(s);
+
+			assertTrue(handler.matches(new URL("https://www.server.net")));
+		}
+	}
 }
