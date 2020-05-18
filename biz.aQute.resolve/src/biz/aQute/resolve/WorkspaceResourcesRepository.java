@@ -16,7 +16,7 @@ import aQute.bnd.osgi.repository.WorkspaceRepositoryMarker;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.io.IO;
 
-public class WorkspaceResourcesRepository extends AbstractIndexingRepository<Project>
+public class WorkspaceResourcesRepository extends AbstractIndexingRepository<Project, File>
 	implements WorkspaceRepositoryMarker {
 	private final Workspace		workspace;
 
@@ -49,14 +49,18 @@ public class WorkspaceResourcesRepository extends AbstractIndexingRepository<Pro
 	}
 
 	@Override
-	protected BiFunction<ResourceBuilder, File, ResourceBuilder> fileIndexer(Project project) {
+	protected BiFunction<ResourceBuilder, File, ResourceBuilder> indexer(Project project) {
 		String name = project.getName();
-		return super.fileIndexer(project).andThen(rb -> {
+		return (rb, file) -> {
+			rb = fileIndexer(rb, file);
+			if (rb == null) {
+				return null; // file is not a file
+			}
 			// Add a capability specific to the workspace so that we can
 			// identify this fact later during resource processing.
 			rb.addWorkspaceNamespace(name);
 			return rb;
-		});
+		};
 	}
 
 	@Override
