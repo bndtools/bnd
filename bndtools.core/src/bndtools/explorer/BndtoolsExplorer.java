@@ -1,18 +1,28 @@
 package bndtools.explorer;
 
+import static aQute.lib.exceptions.FunctionWithException.asFunction;
+
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.Objects;
 
+import org.bndtools.build.api.AbstractBuildListener;
+import org.bndtools.build.api.BuildListener;
 import org.bndtools.utils.swt.FilterPanelPart;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.ui.packageview.PackageExplorerPart;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
@@ -23,7 +33,11 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 
 import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
@@ -41,17 +55,39 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		Composite c = new Composite(parent, SWT.NONE);
-		GridLayout sl = new GridLayout(1, true);
-		c.setLayout(sl);
-		filterPart.createControl(c);
+		GridLayout compactLayout = GridLayoutFactory
+			.fillDefaults()
+			.spacing(0, 0)
+			.margins(0,
+				0)
+			.create();
+		c.setLayout(compactLayout);
+
+		Composite header = new Composite(c, SWT.NONE);
+		header.setLayout(GridLayoutFactory.createFrom(compactLayout)
+			.numColumns(2)
+			.equalWidth(false)
+			.create());
+		GridData fillData = GridDataFactory.fillDefaults()
+			.grab(true, true)
+			.create();
+		header.setLayoutData(GridDataFactory.createFrom(fillData)
+			.grab(true, false)
+			.create());
+
+		ToolBarManager toolBarManager = new ToolBarManager(SWT.HORIZONTAL);
+		toolBarManager.createControl(header);
+
+		Control filterControl = filterPart.createControl(header);
+		filterControl.setLayoutData(fillData);
 
 		super.createPartControl(c);
+
 		Control[] children = c.getChildren();
 		if (children.length > 1) {
-			children[1].setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+			children[1].setLayoutData(fillData);
 		}
 		c.layout();
-
 
 		filterPart.setHint("Filter for projects (glob)");
 		listener = e -> {
@@ -111,6 +147,7 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 			}
 			getTreeViewer().refresh();
 		};
+
 		filterPart.addPropertyChangeListener(listener);
 
 		IActionBars actionBars = getViewSite().getActionBars();
@@ -129,6 +166,64 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 				}
 			}
 		});
+
+		ISharedImages sharedImages = PlatformUI.getWorkbench()
+			.getSharedImages();
+		ImageDescriptor warnImage = sharedImages.getImageDescriptor(ISharedImages.IMG_OBJS_WARN_TSK);
+		ImageDescriptor errorImage = sharedImages.getImageDescriptor(ISharedImages.IMG_OBJS_ERROR_TSK);
+		ImageDescriptor okImage = Plugin.getDefault()
+			.getImageRegistry()
+			.getDescriptor(Plugin.IMG_OK);
+
+		Action action = new Action("Build status", okImage) {
+			@Override
+			public void runWithEvent(Event event) {
+				ImageDescriptor desc = getImageDescriptor();
+
+				if (desc.equals(errorImage)) {
+					filterPart.getFilterControl()
+						.setText(":error");
+				} else if (desc.equals(warnImage)) {
+					filterPart.getFilterControl()
+						.setText(":warning");
+				}
+			}
+		};
+
+		toolBarManager.add(action);
+		toolBarManager.update(true);
+		header.layout(true);
+
+		BundleContext bundleContext = FrameworkUtil.getBundle(BndtoolsExplorer.class)
+			.getBundleContext();
+
+		BuildListener buildListener = new AbstractBuildListener() {
+			@Override
+			public void released(IProject project) {
+				int maxStatus = Arrays.stream(ResourcesPlugin.getWorkspace()
+					.getRoot()
+					.getProjects())
+					.filter(
+						IProject::isOpen)
+					.map(asFunction(p -> p.findMaxProblemSeverity(null, false, IResource.DEPTH_INFINITE)))
+					.reduce(IMarker.SEVERITY_INFO, Integer::max);
+
+				switch (maxStatus) {
+					case IMarker.SEVERITY_INFO :
+						action.setImageDescriptor(okImage);
+						break;
+					case IMarker.SEVERITY_WARNING :
+						action.setImageDescriptor(warnImage);
+						break;
+					case IMarker.SEVERITY_ERROR :
+						action.setImageDescriptor(errorImage);
+						break;
+				}
+				toolBarManager.update(true);
+			}
+		};
+
+		bundleContext.registerService(BuildListener.class, buildListener, null);
 	}
 
 	@Override
