@@ -27,7 +27,7 @@ public interface Memoize<S> extends Supplier<S> {
 	 *
 	 * @param <T> Type of the value returned by the supplier.
 	 * @param supplier The source supplier. Must not be {@code null}.
-	 * @return A memoized supplier wrapping the specified supplier.
+	 * @return A memoizing supplier wrapping the specified supplier.
 	 */
 	static <T> Memoize<T> supplier(Supplier<? extends T> supplier) {
 		if (supplier instanceof MemoizingSupplier) {
@@ -49,7 +49,8 @@ public interface Memoize<S> extends Supplier<S> {
 	 * @param <T> Type of the value returned by the supplier.
 	 * @param function The source function. Must not be {@code null}.
 	 * @param argument The argument to the source function.
-	 * @return A memoized supplier wrapping the specified function and argument.
+	 * @return A memoizing supplier wrapping the specified function and
+	 *         argument.
 	 */
 	static <T, R> Memoize<R> supplier(Function<? super T, ? extends R> function, T argument) {
 		requireNonNull(function);
@@ -70,7 +71,7 @@ public interface Memoize<S> extends Supplier<S> {
 	 *            treated as zero.
 	 * @param unit The time unit of the time-to-live value. Must not be
 	 *            {@code null}.
-	 * @return A memoized supplier wrapping the specified supplier.
+	 * @return A memoizing supplier wrapping the specified supplier.
 	 */
 	static <T> Memoize<T> refreshingSupplier(Supplier<? extends T> supplier, long time_to_live, TimeUnit unit) {
 		return new RefreshingMemoizingSupplier<>(supplier, time_to_live, unit);
@@ -81,9 +82,9 @@ public interface Memoize<S> extends Supplier<S> {
 	 * returned by the specified supplier.
 	 * <p>
 	 * When the returned supplier is called to get a value, if the reference
-	 * object holding any prior obtained value is cleared, then the specified
-	 * supplier is called to obtain a new value and the specified reference
-	 * function is called to wrap the new value in a reference object.
+	 * object holding any previously obtained value is cleared, then the
+	 * specified supplier is called to obtain a new value and the specified
+	 * reference function is called to wrap the new value in a reference object.
 	 *
 	 * @param <T> Type of the value returned by the supplier.
 	 * @param supplier The source supplier. Must not be {@code null}. The
@@ -93,7 +94,7 @@ public interface Memoize<S> extends Supplier<S> {
 	 *            the specified supplier in a reference object. This allows the
 	 *            caller to control the reference type and whether a reference
 	 *            queue is used. The function must not return {@code null}.
-	 * @return A memoized supplier wrapping the specified supplier.
+	 * @return A memoizing supplier wrapping the specified supplier.
 	 */
 	static <T> Memoize<T> referenceSupplier(Supplier<? extends T> supplier,
 		Function<? super T, ? extends Reference<? extends T>> reference) {
@@ -101,7 +102,7 @@ public interface Memoize<S> extends Supplier<S> {
 	}
 
 	/**
-	 * Peek the value.
+	 * Peek the memoized value, if any.
 	 * <p>
 	 * This method will not result in a call to the source supplier.
 	 *
@@ -110,12 +111,12 @@ public interface Memoize<S> extends Supplier<S> {
 	S peek();
 
 	/**
-	 * Map this memoized supplier to a new memoized supplier.
+	 * Map this memoizing supplier to a new memoizing supplier.
 	 *
-	 * @param <R> Type of the value returned by the new memoized supplier.
-	 * @param mapper The function to map the value of this memoized supplier.
+	 * @param <R> Type of the value returned by the new memoizing supplier.
+	 * @param mapper The function to map the value of this memoizing supplier.
 	 *            Must not be {@code null}.
-	 * @return A new memoized supplier which memoizes the value returned by the
+	 * @return A new memoizing supplier which memoizes the value returned by the
 	 *         specified function.
 	 */
 	default <R> Memoize<R> map(Function<? super S, ? extends R> mapper) {
@@ -124,13 +125,13 @@ public interface Memoize<S> extends Supplier<S> {
 	}
 
 	/**
-	 * Flat map this memoized supplier to a new memoized supplier.
+	 * Flat map this memoizing supplier to a new memoizing supplier.
 	 *
-	 * @param <R> Type of the value returned by the new memoized supplier.
-	 * @param mapper The function to flat map the value of this memoized
+	 * @param <R> Type of the value returned by the new memoizing supplier.
+	 * @param mapper The function to flat map the value of this memoizing
 	 *            supplier to a supplier. Must not be {@code null}. The returned
 	 *            supplier must not be {@code null}.
-	 * @return A new memoized supplier which memoizes the value returned by the
+	 * @return A new memoizing supplier which memoizes the value returned by the
 	 *         supplier returned by the specified function.
 	 */
 	default <R> Memoize<R> flatMap(Function<? super S, ? extends Supplier<? extends R>> mapper) {
@@ -140,12 +141,12 @@ public interface Memoize<S> extends Supplier<S> {
 	}
 
 	/**
-	 * Filter this memoized supplier to a new memoized supplier.
+	 * Filter this memoizing supplier to a new memoizing supplier.
 	 *
-	 * @param predicate The predicate to test the value of this memoized
+	 * @param predicate The predicate to test the value of this memoizing
 	 *            supplier. Must not be {@code null}.
-	 * @return A new memoized supplier which memoizes the value returned by this
-	 *         supplier if the predicate accepts the value or {@code null}
+	 * @return A new memoizing supplier which memoizes the value returned by
+	 *         this supplier if the predicate accepts the value or {@code null}
 	 *         otherwise.
 	 */
 	default Memoize<S> filter(Predicate<? super S> predicate) {
@@ -157,11 +158,11 @@ public interface Memoize<S> extends Supplier<S> {
 	}
 
 	/**
-	 * Call the consumer with the value of this memoized supplier.
+	 * Call the consumer with the value of this memoizing supplier.
 	 *
-	 * @param consumer The consumer to accept the value of this memoized
+	 * @param consumer The consumer to accept the value of this memoizing
 	 *            supplier. Must not be {@code null}.
-	 * @return This memoized supplier.
+	 * @return This memoizing supplier.
 	 */
 	default Memoize<S> accept(Consumer<? super S> consumer) {
 		requireNonNull(consumer);
