@@ -8,6 +8,7 @@ import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -21,7 +22,7 @@ import aQute.bnd.stream.MapStream;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.memoize.Memoize;
 
-public abstract class AbstractIndexingRepository<KEY> extends BaseRepository {
+public abstract class AbstractIndexingRepository<KEY, FILE> extends BaseRepository {
 	private final Map<KEY, Supplier<? extends Collection<? extends Resource>>>	resources;
 	private volatile Supplier<ResourcesRepository>								repository;
 
@@ -36,23 +37,26 @@ public abstract class AbstractIndexingRepository<KEY> extends BaseRepository {
 
 	protected abstract boolean isValid(KEY key);
 
-	protected BiFunction<ResourceBuilder, File, ? extends ResourceBuilder> fileIndexer(KEY key) {
-		return (rb, file) -> {
-			try {
-				rb.addFile(file, file.toURI());
-			} catch (Exception e) {
-				throw Exceptions.duck(e);
-			}
-			return rb;
-		};
+	protected abstract BiFunction<ResourceBuilder, FILE, ? extends ResourceBuilder> indexer(KEY key);
+
+	protected ResourceBuilder fileIndexer(ResourceBuilder rb, File file) {
+		if (!file.isFile()) {
+			return null;
+		}
+		try {
+			rb.addFile(file, file.toURI());
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+		return rb;
 	}
 
-	public void index(KEY key, Collection<File> files) {
+	public void index(KEY key, Collection<FILE> files) {
 		index(key, () -> files);
 	}
 
-	public void index(KEY key, Supplier<? extends Collection<File>> files) {
-		add(key, indexer(files, fileIndexer(key)));
+	public void index(KEY key, Supplier<? extends Collection<FILE>> files) {
+		add(key, indexer(files, indexer(key)));
 	}
 
 	protected void add(KEY key, Supplier<? extends Collection<? extends Resource>> supplier) {
@@ -70,14 +74,14 @@ public abstract class AbstractIndexingRepository<KEY> extends BaseRepository {
 		return false;
 	}
 
-	private Supplier<List<Resource>> indexer(Supplier<? extends Collection<File>> files,
-		BiFunction<? super ResourceBuilder, File, ? extends ResourceBuilder> fileIndexer) {
+	private Supplier<List<Resource>> indexer(Supplier<? extends Collection<FILE>> files,
+		BiFunction<? super ResourceBuilder, FILE, ? extends ResourceBuilder> indexer) {
 		requireNonNull(files);
-		requireNonNull(fileIndexer);
+		requireNonNull(indexer);
 		return () -> files.get()
 			.stream()
-			.filter(File::isFile)
-			.map(file -> fileIndexer.apply(new ResourceBuilder(), file))
+			.map(file -> indexer.apply(new ResourceBuilder(), file))
+			.filter(Objects::nonNull)
 			.map(ResourceBuilder::build)
 			.collect(toList());
 	}
