@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -30,7 +29,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ElementChangedEvent;
@@ -40,7 +38,6 @@ import org.eclipse.jdt.core.IJavaElementDelta;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.IWorkingSetUpdater;
@@ -140,7 +137,7 @@ public class BndtoolsJavaWorkingSetUpdater implements IWorkingSetUpdater {
 			if (workingSet.getName()
 				.equals(WORKING_SET_NAME)) {
 				bndtoolsWorkingSet = workingSet;
-				workingSet.setElements(restore(workingSet));
+				triggerUpdate();
 			}
 		}
 	}
@@ -176,23 +173,7 @@ public class BndtoolsJavaWorkingSetUpdater implements IWorkingSetUpdater {
 		};
 		updateInUIJob = new UpdateUIJob();
 		updateJob.setSystem(true);
-	}
-
-	private IAdaptable[] restore(IWorkingSet workingSet) {
-		String name = workingSet.getName();
-		if (!WORKING_SET_NAME.equals(name)) {
-			return new IAdaptable[0];
-		}
-		IAdaptable[] elements = null;
-		if (initialContents.length == 0) {
-			try {
-				elements = collectData(new NullProgressMonitor());
-			} catch (CoreException e) {
-				JavaPlugin.log(e);
-			}
-			JavaCore.addElementChangedListener(javaElementChangeListener, ElementChangedEvent.POST_CHANGE);
-		}
-		return elements;
+		JavaCore.addElementChangedListener(javaElementChangeListener, ElementChangedEvent.POST_CHANGE);
 	}
 
 	@Override
@@ -205,10 +186,12 @@ public class BndtoolsJavaWorkingSetUpdater implements IWorkingSetUpdater {
 	}
 
 	public void triggerUpdate() {
-		if (isDisposed.get())
-			return;
-		updateJob.cancel();
-		updateJob.schedule(1000L);
+		synchronized (this) {
+			if (isDisposed.get())
+				return;
+			updateJob.cancel();
+			updateJob.schedule(1000L);
+		}
 	}
 
 	private IStatus updateElements(IWorkingSet workingSet, IProgressMonitor monitor) {
@@ -249,25 +232,22 @@ public class BndtoolsJavaWorkingSetUpdater implements IWorkingSetUpdater {
 		for (IJavaProject javaProject : model.getJavaProjects()) {
 			if (monitor.isCanceled() || isDisposed.get())
 				return new IAdaptable[0];
-			IProject project = javaProject.getProject();
-			if (project.isOpen()) {
-				Arrays.stream(javaProject
-					.getPackageFragmentRoots())
-					.filter(packageFragmentRoot -> {
-						boolean isBndGeneratedJar = Optional.ofNullable(packageFragmentRoot.getResource())
-							.filter(res -> Central.isBndProject(res.getProject()))
-							.filter(IResource::isDerived)
-							.map(IResource::getFullPath)
-							.map(IPath::lastSegment)
-							.filter(path -> path.endsWith(".jar"))
-							.isPresent();
+			Arrays.stream(javaProject.getPackageFragmentRoots())
+				.filter(packageFragmentRoot -> {
+					boolean isBndGeneratedJar = Optional.ofNullable(packageFragmentRoot.getResource())
+						.filter(res -> Central.isBndProject(res.getProject()))
+						.filter(IResource::isDerived)
+						.map(IResource::getFullPath)
+						.map(IPath::lastSegment)
+						.filter(path -> path.endsWith(".jar"))
+						.isPresent();
 
-						return !isBndGeneratedJar;
+					return !isBndGeneratedJar;
 
-						})
-					.forEach(result::add);
-					}
+				})
+				.forEach(result::add);
 		}
+
 		data = result.toArray(new IAdaptable[0]);
 		if (initialContents.length == 0)
 			initialContents = data;
