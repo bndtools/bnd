@@ -205,10 +205,12 @@ public class BndtoolsJavaWorkingSetUpdater implements IWorkingSetUpdater {
 	}
 
 	public void triggerUpdate() {
-		if (isDisposed.get())
-			return;
-		updateJob.cancel();
-		updateJob.schedule(1000L);
+		synchronized (this) {
+			if (isDisposed.get())
+				return;
+			updateJob.cancel();
+			updateJob.schedule(1000L);
+		}
 	}
 
 	private IStatus updateElements(IWorkingSet workingSet, IProgressMonitor monitor) {
