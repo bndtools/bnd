@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.bndtools.api.IStartupParticipant;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.search.ui.IQueryListener;
@@ -13,14 +14,30 @@ import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
+import org.eclipse.ui.IWorkingSet;
+import org.eclipse.ui.IWorkingSetManager;
+import org.eclipse.ui.PlatformUI;
 
 import bndtools.central.Central;
 
-public class AddQueryListenerStartupParticipant implements IStartupParticipant, IQueryListener {
+public class JavaSearchStartupParticipant implements IStartupParticipant, IQueryListener {
 
 	@Override
 	public void start() {
 		NewSearchUI.addQueryListener(this);
+		createBndtoolsJavaWorkingSet();
+	}
+
+	private void createBndtoolsJavaWorkingSet() {
+		IWorkingSetManager workingSetManager = PlatformUI.getWorkbench()
+			.getWorkingSetManager();
+		IWorkingSet workingSet = workingSetManager.getWorkingSet(BndtoolsJavaWorkingSetUpdater.WORKING_SET_NAME);
+		if (workingSet == null) {
+			workingSet = workingSetManager.createWorkingSet(BndtoolsJavaWorkingSetUpdater.WORKING_SET_NAME, new IAdaptable[0]);
+			workingSet.setLabel(BndtoolsJavaWorkingSetUpdater.WORKING_SET_NAME);
+			workingSet.setId(BndtoolsJavaWorkingSetUpdater.ID);
+			workingSetManager.addWorkingSet(workingSet);
+		}
 	}
 
 	@Override
