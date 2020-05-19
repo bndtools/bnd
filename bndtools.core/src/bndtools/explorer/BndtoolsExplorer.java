@@ -30,6 +30,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IActionBars;
@@ -219,7 +220,8 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 						action.setImageDescriptor(errorImage);
 						break;
 				}
-				toolBarManager.update(true);
+				Display.getDefault()
+					.asyncExec(() -> toolBarManager.update(true));
 			}
 		};
 
