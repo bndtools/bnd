@@ -1198,6 +1198,13 @@
             class="bndtools.explorer.BndProjects"
             id="bndtools.explorer.BndProjects">
       </filter>
+      <filter
+            name="Hide Bnd Generated Jars"
+            enabled="false"
+            description="Hide Java elements from bnd generated jars"
+            class="bndtools.javasearch.BndGeneratedJarFilter"
+            id="bndtools.javasearch.BndGeneratedJarFilter">
+      </filter>
    </extension>
    <extension point="org.eclipse.ui.workingSets">
       <workingSet
