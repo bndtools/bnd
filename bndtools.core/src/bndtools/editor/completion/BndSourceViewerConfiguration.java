@@ -24,6 +24,8 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.SWT;
 
+import bndtools.editor.BndEditor;
+
 public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
 
 	Token					T_DEFAULT;
@@ -39,8 +41,10 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
 
 	BndScanner				scanner;
 	MultiLineCommentScanner	multiLineCommentScanner;
+	private BndEditor		bndEditor;
 
-	public BndSourceViewerConfiguration(IColorManager colorManager) {
+	public BndSourceViewerConfiguration(BndEditor bndEditor, IColorManager colorManager) {
+		this.bndEditor = bndEditor;
 		T_DEFAULT = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVA_DEFAULT)));
 		T_MACRO = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.TASK_TAG), null, SWT.BOLD));
 		T_ERROR = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVA_KEYWORD), null, SWT.BOLD));
@@ -103,7 +107,7 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
 
 	@Override
 	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-		return new BndHover(sourceViewer);
+		return new BndHover(bndEditor, sourceViewer);
 	}
 
 	@Override

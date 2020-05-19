@@ -1,5 +1,7 @@
 package bndtools.editor.completion;
 
+import java.util.stream.Collectors;
+
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DefaultTextHover;
 import org.eclipse.jface.text.IDocument;
@@ -7,26 +9,42 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.graphics.Point;
 
 import aQute.bnd.help.Syntax;
+import aQute.bnd.osgi.Processor;
+import bndtools.editor.BndEditor;
 
 public class BndHover extends DefaultTextHover {
 
-	public BndHover(ISourceViewer sourceViewer) {
+	private final BndEditor bndEditor;
+
+	public BndHover(BndEditor bndEditor, ISourceViewer sourceViewer) {
 		super(sourceViewer);
+		this.bndEditor = bndEditor;
 	}
 
 	@Deprecated
 	@Override
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-		String info = super.getHoverInfo(textViewer, hoverRegion);
-		if (info != null)
-			return info;
 
 		if (hoverRegion != null) {
 			IDocument doc = textViewer.getDocument();
 			try {
-				String key = doc.get(hoverRegion.getOffset(), hoverRegion.getLength());
+				String key = doc.get(hoverRegion.getOffset(), hoverRegion.getLength())
+					.trim();
+				if (key.indexOf('$') >= 0) {
+					Processor properties = bndEditor.getModel()
+						.getProperties();
+					String replaced = properties.getReplacer()
+						.process(key);
+					if (properties.isOk())
+						return replaced;
+
+					return properties.getErrors()
+						.stream()
+						.collect(Collectors.joining());
+				}
 
 				Syntax syntax = Syntax.HELP.get(key);
 				if (syntax == null)
@@ -42,18 +60,27 @@ public class BndHover extends DefaultTextHover {
 				if (text.length() > 30) {
 					text = wrap(text, 30);
 				}
-				return text;
+				if (!text.isEmpty())
+					return text;
+
 			} catch (Exception e) {
 				return e + "";
 			}
 		}
-		return null;
+		String info = super.getHoverInfo(textViewer, hoverRegion);
+		return info;
 	}
 
 	@Override
 	public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
 		IDocument doc = textViewer.getDocument();
 		try {
+
+			Point selectedRange = textViewer.getSelectedRange();
+			if (selectedRange.y > 0) {
+				return new Region(selectedRange.x, selectedRange.y);
+			}
+
 			int start = offset;
 			int end = offset;
 			while (start >= 0 && isWordChar(doc.getChar(start)))

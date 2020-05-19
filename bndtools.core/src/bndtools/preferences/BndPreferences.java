@@ -40,6 +40,7 @@ public class BndPreferences {
 	private static final String		PREF_BUILDBEFORELAUNCH			= "buildBeforeLaunch";
 	private static final String		PREF_ENABLE_TEMPLATE_REPO		= "enableTemplateRepo";
 	private static final String		PREF_TEMPLATE_REPO_URI_LIST		= "templateRepoUriList";
+	private static final String		PREF_EXPLORER_PROMPT			= "prompt";
 
 	static final String				PREF_WORKSPACE_OFFLINE			= "workspaceIsOffline";
 
@@ -61,6 +62,7 @@ public class BndPreferences {
 			"https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz");
 		store.setDefault(PREF_WORKSPACE_OFFLINE, false);
 		store.setDefault(PREF_USE_ALIAS_REQUIREMENTS, true);
+		store.setDefault(PREF_EXPLORER_PROMPT, "");
 	}
 
 	private String mapToPreference(Map<String, Boolean> names) {
@@ -278,6 +280,13 @@ public class BndPreferences {
 		return preferenceToMap(store.getString(PREF_VCS_IGNORES_PLUGINS), allPluginsInformation, onlyEnabled);
 	}
 
+	public void setPrompt(String prompt) {
+		store.setValue(PREF_EXPLORER_PROMPT, prompt);
+	}
+
+	public String getPrompt() {
+		return store.getString(PREF_EXPLORER_PROMPT);
+	}
 	/**
 	 * Return the enabled version control ignores plugins.
 	 * <ul>
