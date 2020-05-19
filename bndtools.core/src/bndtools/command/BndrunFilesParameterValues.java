@@ -28,22 +28,21 @@ public class BndrunFilesParameterValues implements IParameterValues {
 
 	static final String BNDRUN_FILE = "bnd.command.bndrunFile";
 
-	private IResourceChangeListener					listener	= new InvalidateMapListener();
-	private volatile Supplier<Map<String, String>>	bndrunFilesMap;
+	private static IResourceChangeListener					listener	= new InvalidateMapListener();
+	private volatile static Supplier<Map<String, String>>	bndrunFilesMap	= reset();
 
-	public BndrunFilesParameterValues() {
-		bndrunFilesMap = reset();
-
+	static {
 		ResourcesPlugin.getWorkspace()
 			.addResourceChangeListener(listener);
 	}
 
-	Supplier<Map<String, String>> reset() {
+	static Supplier<Map<String, String>> reset() {
 		return Memoize.supplier(() -> Arrays.stream(ResourcesPlugin.getWorkspace()
 			.getRoot()
 			.getProjects())
 			.filter(IProject::isOpen)
-			.map(this::findBndrunFiles)
+			.map(
+				BndrunFilesParameterValues::findBndrunFiles)
 			.flatMap(Collection::stream)
 			.map(
 				IResource::getFullPath)
@@ -55,7 +54,7 @@ public class BndrunFilesParameterValues implements IParameterValues {
 		return bndrunFilesMap.get();
 	}
 
-	private List<IFile> findBndrunFiles(IProject project) {
+	private static List<IFile> findBndrunFiles(IProject project) {
 		List<IFile> bndrunFiles = new ArrayList<>();
 
 		try {
@@ -72,7 +71,7 @@ public class BndrunFilesParameterValues implements IParameterValues {
 		return bndrunFiles;
 	}
 
-	private class InvalidateMapListener implements IResourceChangeListener {
+	private static class InvalidateMapListener implements IResourceChangeListener {
 		private final int kind = IResourceDelta.ADDED | IResourceDelta.REMOVED;
 
 		@Override
@@ -96,7 +95,7 @@ public class BndrunFilesParameterValues implements IParameterValues {
 			} catch (CoreException e) {}
 
 			if (bndrunChanged.get())
-				bndrunFilesMap = BndrunFilesParameterValues.this.reset();
+				bndrunFilesMap = BndrunFilesParameterValues.reset();
 		}
 	}
 }
