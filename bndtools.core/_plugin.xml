@@ -58,7 +58,7 @@
 		<startupParticipant
 			class="bndtools.central.Central" />
 		<startupParticipant
-			class="bndtools.javasearch.AddQueryListenerStartupParticipant" />
+			class="bndtools.javasearch.JavaSearchStartupParticipant" />
 	</extension>
 
    <!-- EDITORS -->
@@ -1198,5 +1198,14 @@
             class="bndtools.explorer.BndProjects"
             id="bndtools.explorer.BndProjects">
       </filter>
+   </extension>
+   <extension point="org.eclipse.ui.workingSets">
+      <workingSet
+           name="Bndtools Java Model"
+           description="Bndtools Java Model Working Set"
+           icon="icons/bricks.png"
+           updaterClass="bndtools.javasearch.BndtoolsJavaWorkingSetUpdater"
+           id="bndtools.core.BndtoolsJavaWorkingSet">
+      </workingSet>
    </extension>
  </plugin>
