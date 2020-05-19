@@ -127,13 +127,12 @@ public class BndtoolsJavaWorkingSetUpdater implements IWorkingSetUpdater {
 		}
 	}
 
-	private IElementChangedListener		javaElementChangeListener	= new JavaElementChangeListener();
-	private IWorkingSet					bndtoolsWorkingSet	= null;
-	private static final IAdaptable[]	NOT_INIALIZED		= new IAdaptable[0];
-	private IAdaptable[]				initialContents		= NOT_INIALIZED;
-	private Job							updateJob;
-	private UpdateUIJob					updateInUIJob;
-	private AtomicBoolean				isDisposed			= new AtomicBoolean();
+	private IElementChangedListener	javaElementChangeListener	= new JavaElementChangeListener();
+	private IWorkingSet				bndtoolsWorkingSet			= null;
+	private IAdaptable[]			initialContents				= new IAdaptable[0];
+	private Job						updateJob;
+	private UpdateUIJob				updateInUIJob;
+	private AtomicBoolean			isDisposed					= new AtomicBoolean();
 
 	@Override
 	public void add(IWorkingSet workingSet) {
@@ -182,10 +181,10 @@ public class BndtoolsJavaWorkingSetUpdater implements IWorkingSetUpdater {
 	private IAdaptable[] restore(IWorkingSet workingSet) {
 		String name = workingSet.getName();
 		if (!WORKING_SET_NAME.equals(name)) {
-			return NOT_INIALIZED;
+			return new IAdaptable[0];
 		}
 		IAdaptable[] elements = null;
-		if (NOT_INIALIZED.equals(initialContents)) {
+		if (initialContents.length == 0) {
 			try {
 				elements = collectData(new NullProgressMonitor());
 			} catch (CoreException e) {
@@ -270,7 +269,7 @@ public class BndtoolsJavaWorkingSetUpdater implements IWorkingSetUpdater {
 					}
 		}
 		data = result.toArray(new IAdaptable[0]);
-		if (NOT_INIALIZED.equals(initialContents))
+		if (initialContents.length == 0)
 			initialContents = data;
 		return data;
 	}
