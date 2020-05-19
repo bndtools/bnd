@@ -48,6 +48,9 @@ public class ResolverMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession								repositorySession;
 
+	@Parameter(defaultValue = "${project.basedir}", required = true)
+	private File												baseDir;
+
 	@Parameter
 	private Bndruns												bndruns	= new Bndruns();
 
@@ -103,7 +106,7 @@ public class ResolverMojo extends AbstractMojo {
 
 		try {
 			BndrunContainer container = new BndrunContainer.Builder(project, session, repositorySession, resolver,
-				artifactFactory, system).setBundles(bundles.getFiles(project.getBasedir()))
+				artifactFactory, system).setBundles(bundles.getFiles(baseDir))
 					.setIncludeDependencyManagement(includeDependencyManagement)
 					.setScopes(scopes)
 					.setUseMavenDependencies(useMavenDependencies)
@@ -111,7 +114,7 @@ public class ResolverMojo extends AbstractMojo {
 
 			Operation operation = getOperation();
 
-			for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
+			for (File runFile : bndruns.getFiles(baseDir, "*.bndrun")) {
 				errors += container.execute(runFile, "resolve", targetDir, operation);
 			}
 		} catch (Exception e) {
