@@ -1,11 +1,15 @@
-package aQute.lib.map;
+package aQute.lib.unmodifiable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
+import java.util.AbstractMap.SimpleEntry;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +17,7 @@ public class MapsTest {
 
 	@Test
 	public void zero() {
-		Map<String, String> map = Maps.mapOf();
+		Map<String, String> map = Maps.of();
 		assertThat(map).hasSize(0)
 			.isEmpty();
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
@@ -23,7 +27,7 @@ public class MapsTest {
 
 	@Test
 	public void one() {
-		Map<String, String> map = Maps.mapOf("k1", "v1");
+		Map<String, String> map = Maps.of("k1", "v1");
 		assertThat(map).hasSize(1)
 			.containsEntry("k1", "v1");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
@@ -34,7 +38,7 @@ public class MapsTest {
 
 	@Test
 	public void two() {
-		Map<String, String> map = Maps.mapOf("k1", "v1", "k2", "v2");
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2");
 		assertThat(map).hasSize(2)
 			.containsEntry("k1", "v1")
 			.containsEntry("k2", "v2");
@@ -46,7 +50,7 @@ public class MapsTest {
 
 	@Test
 	public void three() {
-		Map<String, String> map = Maps.mapOf("k1", "v1", "k2", "v2", "k3", "v3");
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3");
 		assertThat(map).hasSize(3)
 			.containsEntry("k1", "v1")
 			.containsEntry("k2", "v2")
@@ -59,7 +63,7 @@ public class MapsTest {
 
 	@Test
 	public void four() {
-		Map<String, String> map = Maps.mapOf("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4");
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4");
 		assertThat(map).hasSize(4)
 			.containsEntry("k1", "v1")
 			.containsEntry("k2", "v2")
@@ -73,7 +77,7 @@ public class MapsTest {
 
 	@Test
 	public void five() {
-		Map<String, String> map = Maps.mapOf("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5");
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5");
 		assertThat(map).hasSize(5)
 			.containsEntry("k1", "v1")
 			.containsEntry("k2", "v2")
@@ -88,7 +92,7 @@ public class MapsTest {
 
 	@Test
 	public void six() {
-		Map<String, String> map = Maps.mapOf("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6");
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6");
 		assertThat(map).hasSize(6)
 			.containsEntry("k1", "v1")
 			.containsEntry("k2", "v2")
@@ -104,7 +108,7 @@ public class MapsTest {
 
 	@Test
 	public void seven() {
-		Map<String, String> map = Maps.mapOf("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6",
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6",
 			"k7", "v7");
 		assertThat(map).hasSize(7)
 			.containsEntry("k1", "v1")
@@ -122,7 +126,7 @@ public class MapsTest {
 
 	@Test
 	public void eight() {
-		Map<String, String> map = Maps.mapOf("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6",
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6",
 			"k7", "v7", "k8", "v8");
 		assertThat(map).hasSize(8)
 			.containsEntry("k1", "v1")
@@ -141,7 +145,7 @@ public class MapsTest {
 
 	@Test
 	public void nine() {
-		Map<String, String> map = Maps.mapOf("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6",
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6",
 			"k7", "v7", "k8", "v8", "k9", "v9");
 		assertThat(map).hasSize(9)
 			.containsEntry("k1", "v1")
@@ -161,7 +165,7 @@ public class MapsTest {
 
 	@Test
 	public void ten() {
-		Map<String, String> map = Maps.mapOf("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6",
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6",
 			"k7", "v7", "k8", "v8", "k9", "v9", "k10", "v10");
 		assertThat(map).hasSize(10)
 			.containsEntry("k1", "v1")
@@ -182,16 +186,79 @@ public class MapsTest {
 
 	@Test
 	public void duplicate_key() {
-		assertThatIllegalArgumentException().isThrownBy(() -> Maps.mapOf("k1", "v1", "k1", "v2"));
-		assertThatIllegalArgumentException().isThrownBy(() -> Maps.mapOf("k1", "v1", "k2", "v2", "k2", "v3"));
+		assertThatIllegalArgumentException().isThrownBy(() -> Maps.of("k1", "v1", "k1", "v2"));
+		assertThatIllegalArgumentException().isThrownBy(() -> Maps.of("k1", "v1", "k2", "v2", "k2", "v3"));
 		assertThatIllegalArgumentException()
-			.isThrownBy(() -> Maps.mapOf("k1", "v1", "k2", "v2", "k3", "v3", "k3", "v4"));
+			.isThrownBy(() -> Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k3", "v4"));
 	}
 
 	@Test
 	public void null_arguments() {
-		assertThatNullPointerException().isThrownBy(() -> Maps.mapOf("k1", "v1", null, "v2"));
-		assertThatNullPointerException().isThrownBy(() -> Maps.mapOf("k1", "v1", "k2", null));
+		assertThatNullPointerException().isThrownBy(() -> Maps.of("k1", "v1", null, "v2"));
+		assertThatNullPointerException().isThrownBy(() -> Maps.of("k1", "v1", "k2", null));
+		assertThatNullPointerException().isThrownBy(() -> Maps.entry(null, "v2"));
+		assertThatNullPointerException().isThrownBy(() -> Maps.entry("k2", null));
+		Map<String, String> nullKey = new HashMap<>();
+		nullKey.put("k1", "v1");
+		nullKey.put(null, "v2");
+		assertThatNullPointerException().isThrownBy(() -> Maps.copyOf(nullKey));
+		Map<String, String> nullValue = new HashMap<>();
+		nullValue.put("k1", "v1");
+		nullValue.put("k2", null);
+		assertThatNullPointerException().isThrownBy(() -> Maps.copyOf(nullValue));
+	}
+
+	@Test
+	public void entry() {
+		Entry<String, String> entry = Maps.entry("k1", "v1");
+		assertThat(entry.getKey()).isEqualTo("k1");
+		assertThat(entry.getValue()).isEqualTo("v1");
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> entry.setValue("b"));
+	}
+
+	@Test
+	public void entries() {
+		Map<String, String> map = Maps.ofEntries(new SimpleEntry<>("k1", "v1"));
+		assertThat(map).hasSize(1)
+			.containsEntry("k1", "v1");
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("k1"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.clear());
+		Entry<String, String> entry = map.entrySet()
+			.iterator()
+			.next();
+		assertThat(entry.getKey()).isEqualTo("k1");
+		assertThat(entry.getValue()).isEqualTo("v1");
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> entry.setValue("b"));
+	}
+
+	@Test
+	public void copy() {
+		Map<String, String> source = new LinkedHashMap<>();
+		source.put("k1", "v1");
+		source.put("k2", "v2");
+		Map<String, String> map = Maps.copyOf(source);
+		assertThat(map).hasSize(2)
+			.containsEntry("k1", "v1")
+			.containsEntry("k2", "v2");
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("k1"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.clear());
+		Entry<String, String> entry = map.entrySet()
+			.iterator()
+			.next();
+		assertThat(entry.getKey()).isEqualTo("k1");
+		assertThat(entry.getValue()).isEqualTo("v1");
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> entry.setValue("b"));
+	}
+
+	@Test
+	public void copy_unmodifiable() {
+		Map<String, String> source = Maps.of("k1", "v1", "k2", "v2");
+		Map<String, String> map = Maps.copyOf(source);
+		assertThat(map).isSameAs(source);
 	}
 
 }
