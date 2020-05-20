@@ -5,12 +5,14 @@ import static aQute.lib.exceptions.FunctionWithException.asFunction;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.expressions.IEvaluationContext;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
@@ -24,6 +26,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ISetSelectionTarget;
 
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
 import bndtools.explorer.BndtoolsExplorer;
 
@@ -75,10 +79,25 @@ public class OpenProjectHandler extends AbstractHandler {
 				.getId());
 		}
 
+		IResource select = getNotNull(() -> project.findMember(Workspace.BUILDFILE),
+			() -> project.findMember(Project.BNDFILE), () -> project);
+
+		assert select != null;
+
 		viewPartId.map(asFunction(partId -> activePage.showView(
 			partId)))
 			.map(ISetSelectionTarget.class::cast)
-			.ifPresent(target -> target.selectReveal(new StructuredSelection(project)));
+			.ifPresent(target -> target.selectReveal(new StructuredSelection(select)));
+	}
+
+	@SafeVarargs
+	private static <T> T getNotNull(Supplier<T>... suppliers) {
+		for (Supplier<T> s : suppliers) {
+			T t = s.get();
+			if (t != null)
+				return t;
+		}
+		throw new IllegalArgumentException("Caller must provide a last supplier that is not null");
 	}
 
 	private static Optional<String> restoreViewPartId(IWorkbenchPage page, String viewId) {
