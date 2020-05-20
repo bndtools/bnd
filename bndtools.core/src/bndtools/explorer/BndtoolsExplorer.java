@@ -3,7 +3,11 @@ package bndtools.explorer;
 import static org.eclipse.jface.layout.GridLayoutFactory.fillDefaults;
 
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import org.bndtools.build.api.AbstractBuildListener;
@@ -24,6 +28,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -34,7 +39,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IActionBars;
@@ -46,85 +50,40 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
+import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
+import org.eclipse.ui.forms.events.IHyperlinkListener;
+import org.eclipse.ui.forms.widgets.FormText;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.exceptions.FunctionWithException;
-import aQute.lib.strings.Strings;
-import aQute.libg.glob.Glob;
+import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
+import bndtools.preferences.ui.BndPreferencePage;
 
 public class BndtoolsExplorer extends PackageExplorerPart {
-	public static final String					VIEW_ID					= "bndtools.PackageExplorer";
+	public static final String			VIEW_ID		= "bndtools.PackageExplorer";
+	static final ImageDescriptor		warnImage	= Icons.desc("warnings");
+	static final ImageDescriptor		errorImage	= Icons.desc("errors");
+	static final ImageDescriptor		okImage		= Icons.desc("allok");
+	static final BndPreferences			preferences	= new BndPreferences();
+	static final IWorkbench				workbench	= PlatformUI.getWorkbench();
 
-	private final FilterPanelPart				filterPart				= new FilterPanelPart(Plugin.getDefault()
-		.getScheduler());
-	private Glob								glob;
-	private IProject							selectedProject;
-
-	private IPartListener						partListener			= new IPartListener() {
-
-																			@Override
-																			public void partOpened(
-																				IWorkbenchPart part) {}
-
-																			@Override
-																			public void partDeactivated(
-																				IWorkbenchPart part) {}
-
-																			@Override
-																			public void partClosed(
-																				IWorkbenchPart part) {
-																				if (part instanceof IEditorPart) {
-																					IProject selectedProject = getProject(
-																						((IEditorPart) part)
-																							.getEditorInput());
-																					if (selectedProject == BndtoolsExplorer.this.selectedProject)
-																						setSelection(null);
-																				}
-
-																			}
-
-																			@Override
-																			public void partBroughtToTop(
-																				IWorkbenchPart part) {}
-
-																			@Override
-																			public void partActivated(
-																				IWorkbenchPart part) {
-																				if (part instanceof IEditorPart) {
-																					IProject selectedProject = getProject(
-																						((IEditorPart) part)
-																							.getEditorInput());
-																					setSelection(selectedProject);
-																				}
-																			}
-																		};
-	private PropertyChangeListener				filterListener			= e -> {
-																			setFilterText((String) e.getNewValue());
-																		};
-
-	boolean										installed;
-
-	static ImageDescriptor						warnImage				= Icons.desc("warnings");
-	static ImageDescriptor						errorImage				= Icons.desc("errors");
-	static ImageDescriptor						okImage					= Icons.desc("allok");
-	static IWorkbench							workbench				= PlatformUI.getWorkbench();
-	private ToolBarManager						toolBarManager			= new ToolBarManager(SWT.HORIZONTAL);
-	private IWorkbenchWindow					activeWorkbenchWindow	= workbench.getActiveWorkbenchWindow();
-	private IWorkbenchPage						activePage				= activeWorkbenchWindow.getActivePage();
-
-	private ServiceRegistration<BuildListener>	buildListenerRegistration;
-	private Label								message;
-	private BndPreferences						preferences				= new BndPreferences();
+	private Model						model		= new Model();
+	private boolean						installed;
+	private final List<AutoCloseable>	closeables	= new ArrayList<>();
 
 	/**
+	 * The GUI:
+	 *
 	 * <pre>
 	 *
 	 * 		parent
@@ -148,6 +107,8 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 
 		Composite header = doHeader(explorer);
 
+		FilterPanelPart filterPart = new FilterPanelPart(Plugin.getDefault()
+			.getScheduler());
 		Control filterControl = filterPart.createControl(explorer);
 		filterPart.setHint("Filter for projects (glob)");
 
@@ -170,18 +131,69 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 			.grab(true, false)
 			.applyTo(header);
 
-		fixupRefactoringPasteAction();
+		fixupRefactoringPasteAction(filterPart);
 
+		PropertyChangeListener filterListener = e -> {
+			model.setFilterText((String) e.getNewValue());
+		};
 		filterPart.addPropertyChangeListener(filterListener);
+		model.onUpdate(() -> filterPart.setFilter(model.filterText));
+		closeables.add(() -> filterPart.removePropertyChangeListener(filterListener));
+
+		IWorkbenchWindow activeWorkbenchWindow = workbench.getActiveWorkbenchWindow();
+		IWorkbenchPage activePage = activeWorkbenchWindow.getActivePage();
+
+		IPartListener partListener = getPartListener();
 		activePage.addPartListener(partListener);
+		closeables.add(() -> activePage.removePartListener(partListener));
+
+		closeables.add(preferences.onPrompt(model::setPrompt));
+
+		model.onUpdate(this::updateTreeViewer);
+
+		model.update();
 	}
 
 	private Composite doHeader(Composite parent) {
+		ToolBarManager toolBarManager = new ToolBarManager(SWT.HORIZONTAL);
+
 		Composite header = new Composite(parent, SWT.NONE);
 		ToolBar toolbar = toolBarManager.createControl(header);
-		message = new Label(header, SWT.NONE);
+		FormText message = new FormText(header, SWT.NONE);
 		message.setBackground(null);
-		message.setText(getPrompt());
+		message.addHyperlinkListener(new IHyperlinkListener() {
+
+			@Override
+			public void linkExited(HyperlinkEvent e) {}
+
+			@Override
+			public void linkEntered(HyperlinkEvent e) {}
+
+			@Override
+			public void linkActivated(HyperlinkEvent e) {
+				if ("prefs".equals(e.getHref())) {
+					PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(null, BndPreferencePage.PAGE_ID,
+						new String[] {}, null);
+					dialog.open();
+				} else {
+					try {
+						PlatformUI.getWorkbench()
+							.getBrowserSupport()
+							.getExternalBrowser()
+							.openURL(new URL((String) e.getHref()));
+					} catch (IOException | PartInitException e1) {
+						// ignore
+					}
+				}
+			}
+		});
+		model.onUpdate(() -> {
+			try {
+				message.setText(asForm(model.message), true, false);
+			} catch (Exception e) {
+				message.setText(asForm(model.message), false, false);
+			}
+		});
 
 		fillDefaults().numColumns(2)
 			.equalWidth(false)
@@ -192,9 +204,15 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 			.indent(0, 4)
 			.applyTo(message);
 
-		Action status = statusAction();
-		toolBarManager.add(status);
-		buildListener(status);
+		Action severity = severityAction();
+		toolBarManager.add(severity);
+		model.onUpdate(() -> {
+			ImageDescriptor descriptor = getImageDescriptor(model.severity);
+			severity.setImageDescriptor(descriptor);
+			toolBarManager.update(true);
+		});
+
+		buildListener();
 
 		Action reloadAction = reloadAction();
 		toolBarManager.add(reloadAction);
@@ -204,18 +222,16 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 
 	@Override
 	public void dispose() {
-		filterPart.removePropertyChangeListener(filterListener);
-		buildListenerRegistration.unregister();
-		activePage.removePartListener(partListener);
+		closeables.forEach(IO::close);
 		super.dispose();
 	}
 
 	@Override
 	public int tryToReveal(Object element) {
 		if (element instanceof IResource) {
-			setSelection(getProject((IResource) element));
+			model.setSelectedProject(getProject((IResource) element));
 		} else
-			setSelection(null);
+			model.setSelectedProject(null);
 		return super.tryToReveal(element);
 	}
 
@@ -232,18 +248,11 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 			if (firstElement instanceof IResource) {
 				IProject project = getProject((IResource) firstElement);
 				if (project != null) {
-					setSelection(project);
+					model.setSelectedProject(project);
 				}
 			}
 		}
 		super.selectReveal(selection);
-	}
-
-	private void setSelection(IProject project) {
-		if (project != selectedProject) {
-			this.selectedProject = project;
-			update();
-		}
 	}
 
 	private IProject getProject(IEditorInput iEditorInput) {
@@ -268,21 +277,8 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 		return null;
 	}
 
-	private void setFilterText(String newValue) {
-		Glob old = glob;
-		glob = null;
-
-		if (Strings.nonNullOrEmpty(newValue))
-			glob = new Glob(newValue);
-		if (!Objects.equals(old, glob))
-			update();
-
-	}
-
-	private ImageDescriptor getImageDescriptor() {
-		int maxStatus = getMaxSeverity();
-
-		switch (maxStatus) {
+	private ImageDescriptor getImageDescriptor(int severity) {
+		switch (severity) {
 			case IMarker.SEVERITY_INFO :
 				return okImage;
 
@@ -305,7 +301,7 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 		return maxStatus;
 	}
 
-	private void update() {
+	private void updateTreeViewer() {
 		if (!installed) {
 			installed = true;
 			installFilter();
@@ -319,7 +315,7 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 
 			@Override
 			public boolean select(Viewer viewer, Object parentElement, Object element) {
-				if (glob == null)
+				if (model.glob == null)
 					return true;
 
 				if (element instanceof JavaProject) {
@@ -336,9 +332,9 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 			}
 
 			private boolean isSelected(IProject project, String name) {
-				if (project == selectedProject)
+				if (project == model.selectedProject)
 					return true;
-				if (glob.finds(name) >= 0)
+				if (model.glob.finds(name) >= 0)
 					return true;
 
 				try {
@@ -348,10 +344,10 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 						case 0 :
 							return false;
 						case IMarker.SEVERITY_ERROR :
-							return glob.finds(":error") >= 0;
+							return model.glob.finds(":error") >= 0;
 
 						case IMarker.SEVERITY_WARNING :
-							return glob.finds(":warning") >= 0;
+							return model.glob.finds(":warning") >= 0;
 					}
 				} catch (CoreException e) {
 					// ignore
@@ -386,7 +382,7 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 		return rebuild;
 	}
 
-	private void fixupRefactoringPasteAction() {
+	private void fixupRefactoringPasteAction(FilterPanelPart filterPart) {
 		IActionBars actionBars = getViewSite().getActionBars();
 		IAction originalPaste = actionBars.getGlobalActionHandler(ActionFactory.PASTE.getId());
 
@@ -404,59 +400,80 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 		});
 	}
 
-	private void buildListener(Action buildStatusAction) {
+	private void buildListener() {
 		BundleContext bundleContext = FrameworkUtil.getBundle(BndtoolsExplorer.class)
 			.getBundleContext();
 
 		BuildListener buildListener = new AbstractBuildListener() {
 			@Override
 			public void released(IProject project) {
-				String info = getPrompt();
-
-				Display.getDefault()
-					.asyncExec(() -> {
-						message.setText(info == null ? "" : info);
-						ImageDescriptor descriptor = getImageDescriptor();
-						buildStatusAction.setImageDescriptor(descriptor);
-						toolBarManager.update(true);
-					});
+				model.setSeverity(getMaxSeverity());
+				model.updateMessage();
 			}
 
 		};
 
-		buildListenerRegistration = bundleContext.registerService(BuildListener.class, buildListener, null);
+		ServiceRegistration<BuildListener> buildListenerRegistration = bundleContext
+			.registerService(BuildListener.class, buildListener, null);
+		closeables.add(buildListenerRegistration::unregister);
 	}
 
-	private String getPrompt() {
-		try {
-			String prompt = preferences.getPrompt();
-			String info = prompt == null ? null
-				: Central.getWorkspace()
-					.getReplacer()
-					.process(prompt);
-			return info;
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
-		}
-	}
-
-	private Action statusAction() {
-		Action buildStatusAction = new Action("Build status", getImageDescriptor()) {
+	private Action severityAction() {
+		Action action = new Action("Build status", getImageDescriptor(IMarker.SEVERITY_INFO)) {
 			@Override
 			public void runWithEvent(Event event) {
-				ImageDescriptor desc = getImageDescriptor();
+				switch (model.severity) {
+					case IMarker.SEVERITY_ERROR :
+						model.setFilterText(":error");
+						break;
 
-				if (desc.equals(errorImage)) {
-					filterPart.getFilterControl()
-						.setText(":error");
-				} else if (desc.equals(warnImage)) {
-					filterPart.getFilterControl()
-						.setText(":warning");
+					case IMarker.SEVERITY_WARNING :
+						model.setFilterText(":warning");
+						break;
+
+					default :
 				}
 			}
 		};
+		return action;
+	}
 
-		return buildStatusAction;
+	private String asForm(String s) {
+		StringBuilder prompt = new StringBuilder();
+		prompt.append("<form><p>")
+			.append(s)
+			.append("</p></form>");
+		return prompt.toString();
+	}
+
+	private IPartListener getPartListener() {
+		return new IPartListener() {
+			@Override
+			public void partOpened(IWorkbenchPart part) {}
+
+			@Override
+			public void partDeactivated(IWorkbenchPart part) {}
+
+			@Override
+			public void partClosed(IWorkbenchPart part) {
+				if (part instanceof IEditorPart) {
+					IProject selectedProject = getProject(((IEditorPart) part).getEditorInput());
+					model.closeProject(selectedProject);
+				}
+
+			}
+
+			@Override
+			public void partBroughtToTop(IWorkbenchPart part) {}
+
+			@Override
+			public void partActivated(IWorkbenchPart part) {
+				if (part instanceof IEditorPart) {
+					IProject selectedProject = getProject(((IEditorPart) part).getEditorInput());
+					model.setSelectedProject(selectedProject);
+				}
+			}
+		};
 	}
 
 }

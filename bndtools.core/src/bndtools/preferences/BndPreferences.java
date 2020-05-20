@@ -1,5 +1,6 @@
 package bndtools.preferences;
 
+import java.io.Closeable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 
 import org.bndtools.api.NamedPlugin;
 import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
@@ -287,6 +289,22 @@ public class BndPreferences {
 	public String getPrompt() {
 		return store.getString(PREF_EXPLORER_PROMPT);
 	}
+
+	public Closeable onPrompt(Consumer<String> listener) {
+		return onString(PREF_EXPLORER_PROMPT, listener);
+	}
+
+	public Closeable onString(String key, Consumer<String> listener) {
+		IPropertyChangeListener l = e -> {
+			if (e.getProperty()
+				.equals(key))
+				listener.accept((String) e.getNewValue());
+		};
+		addPropertyChangeListener(l);
+		listener.accept(store.getString(key));
+		return () -> removePropertyChangeListener(l);
+	}
+
 	/**
 	 * Return the enabled version control ignores plugins.
 	 * <ul>

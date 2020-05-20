@@ -620,4 +620,18 @@ public class Strings {
 		sb.append(string, start, string.length());
 		return Optional.of(sb.toString());
 	}
+
+	public static String removeQuotes(String s) {
+		if (s == null)
+			return s;
+
+		s = trim(s);
+		if (s.length() >= 2) {
+			char begin = s.charAt(0), end = s.charAt(s.length() - 1);
+			if (begin == end && "'\"".indexOf(begin) >= 0) {
+				s = s.substring(1, s.length() - 1);
+			}
+		}
+		return s;
+	}
 }

@@ -76,7 +76,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		prompt = new Text(explorerGroup, SWT.NONE);
 		prompt.setText(prefs.getPrompt());
 		Label promptLabel = new Label(explorerGroup, SWT.NONE);
-		promptLabel.setText("Macro definition for Explorer message");
+		promptLabel.setText("Macro definition for Explorer message, set to '-' to not have any text");
 		explorerGroup.setLayout(new GridLayout(2, false));
 
 		// Load Data

@@ -77,7 +77,7 @@ public class BndHover extends DefaultTextHover {
 		try {
 
 			Point selectedRange = textViewer.getSelectedRange();
-			if (selectedRange.y > 0) {
+			if (selectedRange.y > 0 && offset >= selectedRange.x && offset <= selectedRange.x + selectedRange.y) {
 				return new Region(selectedRange.x, selectedRange.y);
 			}
 
