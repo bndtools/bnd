@@ -184,4 +184,28 @@ public class SetsTest {
 		assertThat(set).isSameAs(source);
 	}
 
+	@Test
+	public void array() {
+		Set<String> source = Sets.of("e1", "e2", "e3", "e4", "e5");
+		Object[] array = source.toArray();
+		assertThat(array).hasSize(5)
+			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5");
+	}
+
+	@Test
+	public void array_string() {
+		Set<String> source = Sets.of("e1", "e2", "e3", "e4", "e5");
+		String[] target = new String[0];
+		String[] array = source.toArray(target);
+		assertThat(array).isNotSameAs(target)
+			.hasSize(5)
+			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5");
+
+		target = new String[source.size() + 1];
+		array = source.toArray(target);
+		assertThat(array).isSameAs(target)
+			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", null);
+		assertThat(array[target.length - 1]).isNull();
+	}
+
 }

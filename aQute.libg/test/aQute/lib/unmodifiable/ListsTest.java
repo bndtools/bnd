@@ -7,6 +7,8 @@ import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.Test;
 
@@ -180,6 +182,147 @@ public class ListsTest {
 		List<String> source = Lists.of("e1", "e2");
 		List<String> list = Lists.copyOf(source);
 		assertThat(list).isSameAs(source);
+	}
+
+	@Test
+	public void list() {
+		List<String> list = Lists.of("e1", "e2");
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.replaceAll(i -> i));
+		assertThatExceptionOfType(UnsupportedOperationException.class)
+			.isThrownBy(() -> list.sort(String.CASE_INSENSITIVE_ORDER));
+	}
+
+	@Test
+	public void list_iterator() {
+		List<String> list = Lists.of("e1", "e2", "e3", "e1", "e5");
+		assertThat(list.indexOf("e1")).isEqualTo(0);
+		assertThat(list.lastIndexOf("e1")).isEqualTo(3);
+		ListIterator<String> listIterator = list.listIterator(0);
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> listIterator.add("a"));
+
+		assertThat(listIterator.hasPrevious()).isFalse();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(-1);
+		assertThat(listIterator.nextIndex()).isEqualTo(0);
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> listIterator.previous());
+		assertThat(listIterator.next()).isEqualTo("e1");
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> listIterator.set("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> listIterator.remove());
+
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(0);
+		assertThat(listIterator.nextIndex()).isEqualTo(1);
+		assertThat(listIterator.next()).isEqualTo("e2");
+
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(1);
+		assertThat(listIterator.nextIndex()).isEqualTo(2);
+		assertThat(listIterator.next()).isEqualTo("e3");
+
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(2);
+		assertThat(listIterator.nextIndex()).isEqualTo(3);
+		assertThat(listIterator.next()).isEqualTo("e1");
+
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(3);
+		assertThat(listIterator.nextIndex()).isEqualTo(4);
+		assertThat(listIterator.next()).isEqualTo("e5");
+
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isFalse();
+		assertThat(listIterator.previousIndex()).isEqualTo(4);
+		assertThat(listIterator.nextIndex()).isEqualTo(5);
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> listIterator.next());
+
+		assertThat(listIterator.previous()).isEqualTo("e5");
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(3);
+		assertThat(listIterator.nextIndex()).isEqualTo(4);
+
+		assertThat(listIterator.previous()).isEqualTo("e1");
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(2);
+		assertThat(listIterator.nextIndex()).isEqualTo(3);
+
+		assertThat(listIterator.previous()).isEqualTo("e3");
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(1);
+		assertThat(listIterator.nextIndex()).isEqualTo(2);
+
+		assertThat(listIterator.previous()).isEqualTo("e2");
+		assertThat(listIterator.hasPrevious()).isTrue();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(0);
+		assertThat(listIterator.nextIndex()).isEqualTo(1);
+
+		assertThat(listIterator.previous()).isEqualTo("e1");
+		assertThat(listIterator.hasPrevious()).isFalse();
+		assertThat(listIterator.hasNext()).isTrue();
+		assertThat(listIterator.previousIndex()).isEqualTo(-1);
+		assertThat(listIterator.nextIndex()).isEqualTo(0);
+
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(() -> listIterator.previous());
+	}
+
+	@Test
+	public void list_iterator_bad_index() {
+		List<String> list = Lists.of("e1", "e2", "e3", "e1", "e5");
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> list.listIterator(-1));
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> list.listIterator(list.size() + 1));
+		assertThatCode(() -> list.listIterator(list.size())).doesNotThrowAnyException();
+	}
+
+	@Test
+	public void sublist() {
+		List<String> source = Lists.of("e1", "e2", "e3", "e1", "e5");
+		List<String> list = source.subList(1, 3);
+		assertThat(list).hasSize(2)
+			.containsExactly("e2", "e3");
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("e1"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.clear());
+
+		List<String> empty = source.subList(1, 1);
+		assertThat(empty).hasSize(0)
+			.isEmpty();
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> source.subList(-1, 1));
+		assertThatExceptionOfType(IndexOutOfBoundsException.class)
+			.isThrownBy(() -> source.subList(0, source.size() + 1));
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> source.subList(2, 1));
+		assertThatCode(() -> source.subList(0, source.size())).doesNotThrowAnyException();
+	}
+
+	@Test
+	public void array() {
+		List<String> source = Lists.of("e1", "e2", "e3", "e1", "e5");
+		Object[] array = source.toArray();
+		assertThat(array).hasSize(5)
+			.containsExactly("e1", "e2", "e3", "e1", "e5");
+	}
+
+	@Test
+	public void array_string() {
+		List<String> source = Lists.of("e1", "e2", "e3", "e1", "e5");
+		String[] target = new String[0];
+		String[] array = source.toArray(target);
+		assertThat(array).isNotSameAs(target)
+			.hasSize(5)
+			.containsExactly("e1", "e2", "e3", "e1", "e5");
+
+		target = new String[source.size() + 1];
+		array = source.toArray(target);
+		assertThat(array).isSameAs(target)
+			.containsExactly("e1", "e2", "e3", "e1", "e5", null);
 	}
 
 }
