@@ -3,7 +3,6 @@ package bndtools.model.resolution;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -17,24 +16,16 @@ import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
 
+import aQute.lib.unmodifiable.Sets;
+
 public class CapReqMapContentProvider implements ITreeContentProvider {
 
 	private static final Object[]		EMPTY			= new Object[0];
 
-	private static final String[]		NAMESPACE_ORDER	= new String[] {
-		BundleNamespace.BUNDLE_NAMESPACE, IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE,
-		PackageNamespace.PACKAGE_NAMESPACE
-	};
-
-	private static final Set<String>	NAMESPACES;
+	private static final Set<String>	NAMESPACES	= Sets.of(BundleNamespace.BUNDLE_NAMESPACE,
+		IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE, PackageNamespace.PACKAGE_NAMESPACE);
 
 	private final Comparator<Object>	comparator		= new CapReqComparator();
-
-	static {
-		NAMESPACES = new HashSet<>();
-		for (String s : NAMESPACE_ORDER)
-			NAMESPACES.add(s);
-	}
 
 	@Override
 	public void dispose() {}
@@ -50,7 +41,7 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 		Map<String, List<Object>> map = (Map<String, List<Object>>) input;
 
 		// Add entries for our preferred ordering of namespaces
-		for (String namespace : NAMESPACE_ORDER) {
+		for (String namespace : NAMESPACES) {
 			List<Object> listForNs = map.get(namespace);
 			if (listForNs != null) {
 				Object[] array = listForNs.toArray();

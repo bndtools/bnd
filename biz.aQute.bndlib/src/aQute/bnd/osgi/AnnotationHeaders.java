@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -18,7 +17,6 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +48,7 @@ import aQute.lib.collections.MultiMap;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
+import aQute.lib.unmodifiable.Sets;
 
 /**
  * This class parses the 'header annotations'. Header annotations are
@@ -111,14 +110,9 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	// for annotations that aren't supposed to be needed on the classpath
 	// (usually
 	// OSGi versioning annotations).
-	static final Set<String>			DO_NOT_SCAN;
-
-	static {
-		DO_NOT_SCAN = Stream
-			.of("org.osgi.annotation.versioning.ProviderType", "org.osgi.annotation.versioning.ConsumerType",
-				"org.osgi.annotation.versioning.Version")
-			.collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
-	}
+	static final Set<String>			DO_NOT_SCAN					= Sets.of(
+		"org.osgi.annotation.versioning.ProviderType", "org.osgi.annotation.versioning.ConsumerType",
+		"org.osgi.annotation.versioning.Version");
 
 	final Analyzer					analyzer;
 	final MultiMap<String, String>	headers						= new MultiMap<>();

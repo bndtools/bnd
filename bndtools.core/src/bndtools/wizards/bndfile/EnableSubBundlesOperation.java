@@ -30,6 +30,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.properties.Document;
+import aQute.lib.unmodifiable.Sets;
 import bndtools.Plugin;
 import bndtools.central.Central;
 
@@ -43,10 +44,8 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
 		BUNDLE_SPECIFIC_HEADERS.add(Constants.BUNDLE_VERSION);
 	}
 
-	private static final Set<String>	PROJECT_ONLY_HEADERS	= new HashSet<>(Arrays.asList(new String[] {
-		"-buildpath", "-runbundles", "-runsystempackages", "-runpath", "-runvm", "-runtrace", "-runframework", "-runfw",
-		"-sub", "-debug"
-	}));
+	private static final Set<String>	PROJECT_ONLY_HEADERS	= Sets.of("-buildpath", "-runbundles",
+		"-runsystempackages", "-runpath", "-runvm", "-runtrace", "-runframework", "-runfw", "-sub", "-debug");
 
 	private final Shell					parentShell;
 	private final IWorkspace			workspace;

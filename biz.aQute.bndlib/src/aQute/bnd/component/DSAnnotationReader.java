@@ -8,7 +8,6 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +60,7 @@ import aQute.bnd.version.Version;
 import aQute.bnd.xmlattribute.ExtensionDef;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
 import aQute.lib.collections.MultiMap;
+import aQute.lib.unmodifiable.Maps;
 
 /**
  * Processes spec DS annotations into xml.
@@ -90,7 +90,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 	private static final Instruction			COMPONENT_PROPERTY_INSTR	= new Instruction(
 		"org.osgi.service.component.annotations.ComponentPropertyType");
 
-	final static Map<String, Class<?>>			wrappers;
+	final static Map<String, Class<?>>			wrappers					= Maps.of("boolean", Boolean.class, "byte",
+		Byte.class, "short", Short.class, "char", Character.class, "int", Integer.class, "long", Long.class, "float",
+		Float.class, "double", Double.class);
 
 	private static final Entry<Pattern, String>	unbind1						= new SimpleImmutableEntry<>(
 		Pattern.compile("add(.*)"), "remove$1");
@@ -102,19 +104,6 @@ public class DSAnnotationReader extends ClassDataCollector {
 		Pattern.compile("(.*)"), "updated$1");
 
 	private static final String					constructorArgFormat		= "$%03d";
-
-	static {
-		Map<String, Class<?>> map = new HashMap<>();
-		map.put("boolean", Boolean.class);
-		map.put("byte", Byte.class);
-		map.put("short", Short.class);
-		map.put("char", Character.class);
-		map.put("int", Integer.class);
-		map.put("long", Long.class);
-		map.put("float", Float.class);
-		map.put("double", Double.class);
-		wrappers = Collections.unmodifiableMap(map);
-	}
 
 	ComponentDef											component;
 
