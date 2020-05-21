@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -206,6 +207,35 @@ public class SetsTest {
 		assertThat(array).isSameAs(target)
 			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", null);
 		assertThat(array[target.length - 1]).isNull();
+	}
+
+	@Test
+	public void contains() {
+		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5");
+		assertThat(set.contains("e1")).isTrue();
+		assertThat(set.contains("e3")).isTrue();
+		assertThat(set.contains("e5")).isTrue();
+		assertThat(set.contains("e6")).isFalse();
+		assertThat(set.contains(null)).isFalse();
+	}
+
+	@Test
+	public void hashcode() {
+		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5");
+		Set<String> hashSet = new HashSet<>(Arrays.asList("e5", "e2", "e3", "e4", "e1"));
+
+		assertThat(set.hashCode()).isEqualTo(hashSet.hashCode());
+	}
+
+	@Test
+	public void equals() {
+		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5");
+		Set<String> hashSet = new HashSet<>(Arrays.asList("e5", "e2", "e3", "e4", "e1"));
+
+		assertThat(set).isEqualTo(hashSet);
+		assertThat(set).isNotEqualTo(new HashSet<>(Arrays.asList("e1", "e2", "e3", "e4")));
+		assertThat(set).isNotEqualTo(new HashSet<>(Arrays.asList("e1", "e2", "e3", "e4", "e6")));
+		assertThat(set).isNotEqualTo(new HashSet<>(Arrays.asList("e1", "e2", "e3", "e4", "e5", "e6")));
 	}
 
 }

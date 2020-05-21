@@ -40,6 +40,18 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E> {
 	}
 
 	@Override
+	public boolean contains(Object o) {
+		if (o != null) {
+			for (E element : elements) {
+				if (o.equals(element)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
 	public Object[] toArray() {
 		return Arrays.copyOf(elements, elements.length);
 	}
@@ -56,6 +68,40 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E> {
 			array[length] = null;
 		}
 		return array;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == this) {
+			return true;
+		}
+		if (!(o instanceof Set)) {
+			return false;
+		}
+		int len = elements.length;
+		Set<?> other = (Set<?>) o;
+		if (len != other.size()) {
+			return false;
+		}
+		try {
+			for (int i = 0; i < len; i++) {
+				if (!other.contains(elements[i])) {
+					return false;
+				}
+			}
+		} catch (ClassCastException checkedSet) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		int hashCode = 0;
+		for (E element : elements) {
+			hashCode += element.hashCode();
+		}
+		return hashCode;
 	}
 
 	@Override
