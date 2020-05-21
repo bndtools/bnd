@@ -1,13 +1,7 @@
 package aQute.lib.unmodifiable;
 
-import static java.util.Objects.requireNonNull;
-
-import java.util.AbstractSet;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.function.Predicate;
 
 public class Sets {
 
@@ -71,91 +65,5 @@ public class Sets {
 			.distinct()
 			.toArray();
 		return new ImmutableSet<>(elements);
-	}
-
-	static final class ImmutableSet<E> extends AbstractSet<E> {
-		final E[] elements;
-
-		@SafeVarargs
-		ImmutableSet(E... elements) {
-			this.elements = requireNonNull(elements);
-			for (int i = 0, len = elements.length; i < len; i++) {
-				E element = requireNonNull(elements[i]);
-				for (int j = i + 1; j < len; j++) {
-					if (element.equals(elements[j])) {
-						throw new IllegalArgumentException("duplicate element: " + element);
-					}
-				}
-			}
-		}
-
-		@Override
-		public Iterator<E> iterator() {
-			return new ElementIterator();
-		}
-
-		@Override
-		public int size() {
-			return elements.length;
-		}
-
-		@Override
-		public boolean add(E e) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean remove(Object o) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean addAll(Collection<? extends E> collection) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean removeAll(Collection<?> collection) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean retainAll(Collection<?> collection) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public void clear() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean removeIf(Predicate<? super E> filter) {
-			throw new UnsupportedOperationException();
-		}
-
-		final class ElementIterator implements Iterator<E> {
-			private int index = 0;
-
-			ElementIterator() {}
-
-			@Override
-			public boolean hasNext() {
-				return index < elements.length;
-			}
-
-			@Override
-			public E next() {
-				if (hasNext()) {
-					return elements[index++];
-				}
-				throw new NoSuchElementException();
-			}
-
-			@Override
-			public void remove() {
-				throw new UnsupportedOperationException();
-			}
-		}
 	}
 }
