@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
@@ -323,6 +324,53 @@ public class ListsTest {
 		array = source.toArray(target);
 		assertThat(array).isSameAs(target)
 			.containsExactly("e1", "e2", "e3", "e1", "e5", null);
+	}
+
+	@Test
+	public void contains() {
+		List<String> list = Lists.of("e1", "e2", "e3", "e4", "e5");
+		assertThat(list.contains("e1")).isTrue();
+		assertThat(list.contains("e3")).isTrue();
+		assertThat(list.contains("e5")).isTrue();
+		assertThat(list.contains("e6")).isFalse();
+		assertThat(list.contains(null)).isFalse();
+	}
+
+	@Test
+	public void index() {
+		List<String> list = Lists.of("e1", "e2", "e3", "e2", "e1");
+		assertThat(list.indexOf("e1")).isEqualTo(0);
+		assertThat(list.indexOf("e2")).isEqualTo(1);
+		assertThat(list.indexOf("e6")).isEqualTo(-1);
+		assertThat(list.indexOf(null)).isEqualTo(-1);
+	}
+
+	@Test
+	public void last_index() {
+		List<String> list = Lists.of("e1", "e2", "e3", "e2", "e1");
+		assertThat(list.lastIndexOf("e1")).isEqualTo(4);
+		assertThat(list.lastIndexOf("e2")).isEqualTo(3);
+		assertThat(list.lastIndexOf("e6")).isEqualTo(-1);
+		assertThat(list.lastIndexOf(null)).isEqualTo(-1);
+	}
+
+	@Test
+	public void hashcode() {
+		List<String> list = Lists.of("e1", "e2", "e3", "e4", "e5");
+		List<String> arrayList = new ArrayList<>(Arrays.asList("e1", "e2", "e3", "e4", "e5"));
+
+		assertThat(list.hashCode()).isEqualTo(arrayList.hashCode());
+	}
+
+	@Test
+	public void equals() {
+		List<String> list = Lists.of("e1", "e2", "e3", "e4", "e5");
+		List<String> arrayList = new ArrayList<>(Arrays.asList("e1", "e2", "e3", "e4", "e5"));
+
+		assertThat(list).isEqualTo(arrayList);
+		assertThat(list).isNotEqualTo(Arrays.asList("e5", "e2", "e3", "e4", "e1"));
+		assertThat(list).isNotEqualTo(Arrays.asList("e1", "e2", "e3", "e4"));
+		assertThat(list).isNotEqualTo(Arrays.asList("e1", "e2", "e3", "e4", "e5", "e6"));
 	}
 
 }

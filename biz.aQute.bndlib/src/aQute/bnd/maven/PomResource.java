@@ -3,8 +3,6 @@ package aQute.bnd.maven;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +21,7 @@ import aQute.bnd.osgi.WriteResource;
 import aQute.bnd.stream.MapStream;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
+import aQute.lib.unmodifiable.Lists;
 import aQute.libg.glob.Glob;
 
 public class PomResource extends WriteResource {
@@ -30,8 +29,8 @@ public class PomResource extends WriteResource {
 	private static final String	ARTIFACTID	= "artifactid";
 	private static final String	GROUPID		= "groupid";
 	private static final String	WHERE		= "where";
-	private static final List<String>	local		= Collections
-		.unmodifiableList(Arrays.asList(VERSION, ARTIFACTID, GROUPID, WHERE, "artifactId", "groupId"));
+	private static final List<String>	local		= Lists.of(VERSION, ARTIFACTID, GROUPID, WHERE, "artifactId",
+		"groupId");
 	final Manifest				manifest;
 	private Map<String, String>	scm;
 	final Processor				processor;

@@ -1,6 +1,5 @@
 package org.bndtools.core.ui.resource;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -36,19 +35,16 @@ import aQute.bnd.osgi.resource.FilterParser.Op;
 import aQute.bnd.osgi.resource.FilterParser.RangeExpression;
 import aQute.bnd.osgi.resource.FilterParser.SimpleExpression;
 import aQute.bnd.osgi.resource.FilterParser.WithRangeExpression;
+import aQute.lib.unmodifiable.Maps;
 import bndtools.Plugin;
 
 public class R5LabelFormatter {
 
 	private final static Pattern				EE_PATTERN	= Pattern.compile("osgi.ee=([^)]*).*version=([^)]*)");
 
-	private static final Map<String, Pattern>	FILTER_PATTERNS;
-
-	static {
-		FILTER_PATTERNS = new HashMap<>();
-		FILTER_PATTERNS.put(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, EE_PATTERN);
-		FILTER_PATTERNS.put(PackageNamespace.PACKAGE_NAMESPACE, Pattern.compile("osgi\\.wiring\\.package=([^)]*)"));
-	}
+	private static final Map<String, Pattern>	FILTER_PATTERNS	= Maps.of(
+		ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, EE_PATTERN, PackageNamespace.PACKAGE_NAMESPACE,
+		Pattern.compile("osgi\\.wiring\\.package=([^)]*)"));
 
 	public static String getVersionAttributeName(String ns) {
 		String r;

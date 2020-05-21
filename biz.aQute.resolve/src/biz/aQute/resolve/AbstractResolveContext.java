@@ -62,6 +62,7 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
 import aQute.lib.io.IO;
+import aQute.lib.unmodifiable.Sets;
 
 /**
  * This is the Resolve Context as outlined in the Resolver specification. It
@@ -74,14 +75,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 * These are the namespaces that we ignore when we copy capabilities from
 	 * -runpath resources.
 	 */
-	static Set<String> IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES = new HashSet<>();
-
-	static {
-		IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(IDENTITY_NAMESPACE);
-		IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(CONTENT_NAMESPACE);
-		IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(BUNDLE_NAMESPACE);
-		IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(HOST_NAMESPACE);
-	}
+	final static Set<String>						IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES	= Sets
+		.of(IDENTITY_NAMESPACE, CONTENT_NAMESPACE, BUNDLE_NAMESPACE, HOST_NAMESPACE);
 
 	/**
 	 * The 'OSGiFramework' contract was something invented by the old indexer

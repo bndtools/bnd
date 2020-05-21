@@ -65,6 +65,42 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 	}
 
 	@Override
+	public boolean contains(Object o) {
+		if (o != null) {
+			for (E element : elements) {
+				if (o.equals(element)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public int indexOf(Object o) {
+		if (o != null) {
+			for (int i = 0, len = elements.length; i < len; i++) {
+				if (o.equals(elements[i])) {
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+
+	@Override
+	public int lastIndexOf(Object o) {
+		if (o != null) {
+			for (int i = elements.length - 1; i >= 0; i--) {
+				if (o.equals(elements[i])) {
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+
+	@Override
 	public Object[] toArray() {
 		return Arrays.copyOf(elements, elements.length);
 	}
@@ -81,6 +117,32 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 			array[length] = null;
 		}
 		return array;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == this) {
+			return true;
+		}
+		if (!(o instanceof List)) {
+			return false;
+		}
+		ListIterator<?> iter = ((List<?>) o).listIterator();
+		for (int i = 0, len = elements.length; i < len; i++) {
+			if (!iter.hasNext() || !elements[i].equals(iter.next())) {
+				return false;
+			}
+		}
+		return !iter.hasNext();
+	}
+
+	@Override
+	public int hashCode() {
+		int hashCode = 1;
+		for (E element : elements) {
+			hashCode = 31 * hashCode + element.hashCode();
+		}
+		return hashCode;
 	}
 
 	@Override

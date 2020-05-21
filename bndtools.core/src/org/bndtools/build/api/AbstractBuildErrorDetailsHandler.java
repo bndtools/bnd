@@ -1,7 +1,6 @@
 package org.bndtools.build.api;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,27 +37,14 @@ import org.eclipse.ui.IMarkerResolution;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Processor;
+import aQute.lib.unmodifiable.Maps;
 import aQute.service.reporter.Report.Location;
 
 public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDetailsHandler {
 
-	private static final Map<Code, String> PRIMITIVES_TO_SIGNATURES;
-
-	static {
-		Map<Code, String> tmp = new HashMap<>();
-
-		tmp.put(PrimitiveType.VOID, "V");
-		tmp.put(PrimitiveType.BOOLEAN, "Z");
-		tmp.put(PrimitiveType.BYTE, "B");
-		tmp.put(PrimitiveType.SHORT, "S");
-		tmp.put(PrimitiveType.CHAR, "C");
-		tmp.put(PrimitiveType.INT, "I");
-		tmp.put(PrimitiveType.FLOAT, "F");
-		tmp.put(PrimitiveType.LONG, "J");
-		tmp.put(PrimitiveType.DOUBLE, "D");
-
-		PRIMITIVES_TO_SIGNATURES = Collections.unmodifiableMap(tmp);
-	}
+	private static final Map<Code, String> PRIMITIVES_TO_SIGNATURES = Maps.of(PrimitiveType.VOID, "V",
+		PrimitiveType.BOOLEAN, "Z", PrimitiveType.BYTE, "B", PrimitiveType.SHORT, "S", PrimitiveType.CHAR, "C",
+		PrimitiveType.INT, "I", PrimitiveType.FLOAT, "F", PrimitiveType.LONG, "J", PrimitiveType.DOUBLE, "D");
 
 	public static final IResource getDefaultResource(IProject project) {
 		return getDefaultResource(project, Project.BNDFILE);

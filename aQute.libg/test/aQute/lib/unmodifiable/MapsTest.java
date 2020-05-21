@@ -261,4 +261,71 @@ public class MapsTest {
 		assertThat(map).isSameAs(source);
 	}
 
+	@Test
+	public void contains_key() {
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2");
+		assertThat(map.containsKey("k1")).isTrue();
+		assertThat(map.containsKey("k2")).isTrue();
+		assertThat(map.containsKey("k3")).isFalse();
+		assertThat(map.containsKey(null)).isFalse();
+	}
+
+	@Test
+	public void contains_value() {
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2");
+		assertThat(map.containsValue("v1")).isTrue();
+		assertThat(map.containsValue("v2")).isTrue();
+		assertThat(map.containsValue("v3")).isFalse();
+		assertThat(map.containsValue(null)).isFalse();
+	}
+
+	@Test
+	public void get() {
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2");
+		assertThat(map.get("k1")).isEqualTo("v1");
+		assertThat(map.get("k2")).isEqualTo("v2");
+		assertThat(map.get("k3")).isEqualTo(null);
+		assertThat(map.get(null)).isEqualTo(null);
+	}
+
+	@Test
+	public void hashcode() {
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2");
+		Map<String, String> hashMap = new HashMap<>();
+		hashMap.put("k2", "v2");
+		hashMap.put("k1", "v1");
+
+		assertThat(map.hashCode()).isEqualTo(hashMap.hashCode());
+	}
+
+	@Test
+	public void equals() {
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2");
+		Map<String, String> hashMap = new HashMap<>();
+		hashMap.put("k2", "v2");
+		hashMap.put("k1", "v1");
+
+		assertThat(map).isEqualTo(hashMap);
+
+		hashMap = new HashMap<>();
+		hashMap.put("k1", "v1");
+		hashMap.put("k2", "v1");
+		assertThat(map).isNotEqualTo(hashMap);
+
+		hashMap = new HashMap<>();
+		hashMap.put("k1", "v1");
+		hashMap.put("k3", "v3");
+		assertThat(map).isNotEqualTo(hashMap);
+
+		hashMap = new HashMap<>();
+		hashMap.put("k1", "v1");
+		assertThat(map).isNotEqualTo(hashMap);
+
+		hashMap = new HashMap<>();
+		hashMap.put("k1", "v1");
+		hashMap.put("k2", "v2");
+		hashMap.put("k3", "v3");
+		assertThat(map).isNotEqualTo(hashMap);
+	}
+
 }

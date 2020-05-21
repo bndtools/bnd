@@ -9,7 +9,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -45,6 +44,7 @@ import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
+import aQute.lib.unmodifiable.Sets;
 import aQute.remote.api.Agent;
 import aQute.remote.api.Event;
 import aQute.remote.api.Supervisor;
@@ -59,13 +59,8 @@ class RemoteCommand extends Processor {
 	private Agent								agent;
 	private int									port;
 	private String								host;
-	private static Set<String>					IGNORED_NAMESPACES	= new HashSet<>();
-
-	static {
-		IGNORED_NAMESPACES.add(PackageNamespace.PACKAGE_NAMESPACE); // handled
-																	// specially
-		IGNORED_NAMESPACES.add(ContentNamespace.CONTENT_NAMESPACE);
-	}
+	private static Set<String>					IGNORED_NAMESPACES	= Sets.of(PackageNamespace.PACKAGE_NAMESPACE,
+		ContentNamespace.CONTENT_NAMESPACE);
 
 	/**
 	 * This is the supervisor on the bnd launcher side. It provides the SHA
