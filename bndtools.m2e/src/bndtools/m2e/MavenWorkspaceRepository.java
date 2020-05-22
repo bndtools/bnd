@@ -121,7 +121,25 @@ public class MavenWorkspaceRepository extends
 		throws Exception {
 		File promise = get(bsn, version);
 		if (promise == null) {
+			if (listeners != null) {
+				for (DownloadListener dl : listeners) {
+					try {
+						dl.failure(null, "bundle " + bsn + ":" + version + " does not exist in this workspace");
+					} catch (Exception e) {
+						logger.warn("updating listener has error", e);
+					}
+				}
+			}
 			return null;
+		}
+		if (listeners != null) {
+			for (DownloadListener dl : listeners) {
+				try {
+					dl.success(promise);
+				} catch (Exception e) {
+					logger.warn("updating listener has error", e);
+				}
+			}
 		}
 		return promise;
 	}
