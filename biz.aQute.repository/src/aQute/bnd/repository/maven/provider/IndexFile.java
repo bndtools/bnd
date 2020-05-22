@@ -29,6 +29,7 @@ import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.maven.MavenCapability;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Macro;
@@ -331,6 +332,8 @@ class IndexFile {
 			BridgeRepository.addInformationCapability(rb, name, version.getOSGiVersion(), repo.toString(),
 				Constants.NOT_A_BUNDLE_S);
 		}
+		MavenCapability.addMavenCapability(rb, archive.revision.group, archive.revision.artifact,
+			archive.revision.version, archive.classifier, repo.toString());
 		Resource resource = rb.build();
 		return Collections.singletonMap(archive, resource);
 	}
@@ -458,6 +461,8 @@ class IndexFile {
 		String bsn = archive.getWithoutVersion();
 		MavenVersion version = archive.revision.version;
 		BridgeRepository.addInformationCapability(rb, bsn, version.getOSGiVersion(), repo.toString(), msg);
+		MavenCapability.addMavenCapability(rb, archive.revision.group, archive.revision.artifact,
+			archive.revision.version, archive.classifier, repo.toString());
 		return rb.build();
 	}
 
