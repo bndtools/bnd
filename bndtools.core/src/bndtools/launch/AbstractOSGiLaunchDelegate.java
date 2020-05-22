@@ -155,7 +155,12 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 	public boolean buildForLaunch(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor)
 		throws CoreException {
 		BndPreferences prefs = new BndPreferences();
-		boolean result = !prefs.getBuildBeforeLaunch() || super.buildForLaunch(configuration, mode, monitor);
+		return prefs.getBuildBeforeLaunch();
+	}
+
+	@Override
+	public boolean finalLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor)
+		throws CoreException {
 
 		try {
 			run = LaunchUtils.createRun(configuration, getRunMode());
@@ -166,12 +171,6 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 				new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error initialising bnd launcher", e));
 		}
 
-		return result;
-	}
-
-	@Override
-	public boolean finalLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor)
-		throws CoreException {
 		// Check for existing launches of same resource
 		BndPreferences prefs = new BndPreferences();
 		if (prefs.getWarnExistingLaunches()) {
