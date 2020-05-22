@@ -77,8 +77,7 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 			return false;
 		}
 		try {
-			for (int i = 0; i < len; i++) {
-				Entry<K, V> entry = entries[i];
+			for (Entry<K, V> entry : entries) {
 				if (!entry.getValue()
 					.equals(other.get(entry.getKey()))) {
 					return false;

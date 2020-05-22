@@ -19,8 +19,8 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 	@SafeVarargs
 	ImmutableList(E... elements) {
 		this.elements = requireNonNull(elements);
-		for (int i = 0, len = elements.length; i < len; i++) {
-			requireNonNull(elements[i]);
+		for (E element : elements) {
+			requireNonNull(element);
 		}
 	}
 
@@ -59,21 +59,15 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 			return this;
 		}
 		if ((fromIndex < 0) || (toIndex > elements.length) || (fromIndex > toIndex)) {
-			throw new IndexOutOfBoundsException();
+			throw new IndexOutOfBoundsException(
+				"size " + elements.length + ", fromIndex " + fromIndex + ", toIndex " + toIndex);
 		}
 		return new ImmutableList<>(elements, fromIndex, toIndex);
 	}
 
 	@Override
 	public boolean contains(Object o) {
-		if (o != null) {
-			for (E element : elements) {
-				if (o.equals(element)) {
-					return true;
-				}
-			}
-		}
-		return false;
+		return indexOf(o) >= 0;
 	}
 
 	@Override
@@ -127,9 +121,9 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 		if (!(o instanceof List)) {
 			return false;
 		}
-		ListIterator<?> iter = ((List<?>) o).listIterator();
-		for (int i = 0, len = elements.length; i < len; i++) {
-			if (!iter.hasNext() || !elements[i].equals(iter.next())) {
+		Iterator<?> iter = ((List<?>) o).iterator();
+		for (E element : elements) {
+			if (!iter.hasNext() || !element.equals(iter.next())) {
 				return false;
 			}
 		}

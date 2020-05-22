@@ -84,8 +84,8 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E> {
 			return false;
 		}
 		try {
-			for (int i = 0; i < len; i++) {
-				if (!other.contains(elements[i])) {
+			for (E element : elements) {
+				if (!other.contains(element)) {
 					return false;
 				}
 			}
