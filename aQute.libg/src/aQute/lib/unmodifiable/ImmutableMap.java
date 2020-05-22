@@ -71,9 +71,8 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 		if (!(o instanceof Map)) {
 			return false;
 		}
-		int len = entries.length;
 		Map<?, ?> other = (Map<?, ?>) o;
-		if (len != other.size()) {
+		if (entries.length != other.size()) {
 			return false;
 		}
 		try {
