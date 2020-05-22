@@ -78,9 +78,8 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E> {
 		if (!(o instanceof Set)) {
 			return false;
 		}
-		int len = elements.length;
 		Set<?> other = (Set<?>) o;
-		if (len != other.size()) {
+		if (elements.length != other.size()) {
 			return false;
 		}
 		try {
