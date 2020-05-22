@@ -9,7 +9,11 @@ final class ImmutableListIterator<E> extends ImmutableIterator<E> implements Lis
 	}
 
 	ImmutableListIterator(E[] elements, int index) {
-		super(elements, index);
+		super(elements);
+		this.index = index;
+		if ((index < 0) || (index > elements.length)) {
+			throw new IndexOutOfBoundsException("size " + elements.length + ", index " + index);
+		}
 	}
 
 	@Override

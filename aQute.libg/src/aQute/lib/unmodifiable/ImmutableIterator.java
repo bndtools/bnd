@@ -9,15 +9,6 @@ class ImmutableIterator<E> implements Iterator<E> {
 
 	ImmutableIterator(E[] elements) {
 		this.elements = elements;
-		this.index = 0;
-	}
-
-	ImmutableIterator(E[] elements, int index) {
-		this.elements = elements;
-		this.index = index;
-		if ((index < 0) || (index > elements.length)) {
-			throw new IndexOutOfBoundsException();
-		}
 	}
 
 	@Override
