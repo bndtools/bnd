@@ -126,34 +126,36 @@ class MarkerSupport {
 			BuildErrorDetailsHandler handler = BuildErrorDetailsHandlers.INSTANCE.findHandler(type);
 
 			List<MarkerData> markers = handler.generateMarkerData(project, model, location);
-			for (MarkerData markerData : markers) {
-				IResource resource = markerData.getResource();
-				if (resource != null && resource.exists()) {
-					String typeOverride = markerData.getTypeOverride();
-					IMarker marker = resource.createMarker(typeOverride != null ? typeOverride : markerType);
-					marker.setAttribute(IMarker.SEVERITY, severity);
-					marker.setAttribute("$bndType", type);
+			if (!markers.isEmpty()) {
+				for (MarkerData markerData : markers) {
+					IResource resource = markerData.getResource();
+					if (resource != null && resource.exists()) {
+						String typeOverride = markerData.getTypeOverride();
+						IMarker marker = resource.createMarker(typeOverride != null ? typeOverride : markerType);
+						marker.setAttribute(IMarker.SEVERITY, severity);
+						marker.setAttribute("$bndType", type);
 
-					//
-					// Set location information
-					if (location.header != null)
-						marker.setAttribute(BNDTOOLS_MARKER_HEADER_ATTR, location.header);
-					if (location.context != null)
-						marker.setAttribute(BNDTOOLS_MARKER_CONTEXT_ATTR, location.context);
-					if (location.file != null)
-						marker.setAttribute(BNDTOOLS_MARKER_FILE_ATTR, location.file);
-					if (location.reference != null)
-						marker.setAttribute(BNDTOOLS_MARKER_REFERENCE_ATTR, location.reference);
+						//
+						// Set location information
+						if (location.header != null)
+							marker.setAttribute(BNDTOOLS_MARKER_HEADER_ATTR, location.header);
+						if (location.context != null)
+							marker.setAttribute(BNDTOOLS_MARKER_CONTEXT_ATTR, location.context);
+						if (location.file != null)
+							marker.setAttribute(BNDTOOLS_MARKER_FILE_ATTR, location.file);
+						if (location.reference != null)
+							marker.setAttribute(BNDTOOLS_MARKER_REFERENCE_ATTR, location.reference);
 
-					marker.setAttribute(BNDTOOLS_MARKER_PROJECT_ATTR, project.getName());
+						marker.setAttribute(BNDTOOLS_MARKER_PROJECT_ATTR, project.getName());
 
-					marker.setAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, markerData.hasResolutions());
-					for (Entry<String, Object> attrib : markerData.getAttribs()
-						.entrySet())
-						marker.setAttribute(attrib.getKey(), attrib.getValue());
+						marker.setAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, markerData.hasResolutions());
+						for (Entry<String, Object> attrib : markerData.getAttribs()
+							.entrySet())
+							marker.setAttribute(attrib.getKey(), attrib.getValue());
+					}
 				}
+				return;
 			}
-			return;
 		}
 
 		String defaultResource = model instanceof Project ? Project.BNDFILE
