@@ -46,4 +46,6 @@ public final class BndtoolsConstants {
 	 * be cleared when the project markers are cleared, otherwise they hang.
 	 */
 	public static final String	BNDTOOLS_MARKER_PROJECT_ATTR	= "bndtools.marker.project";
+
+	public static final String	BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME	= "BndtoolsJAREditorTempFiles";
 }

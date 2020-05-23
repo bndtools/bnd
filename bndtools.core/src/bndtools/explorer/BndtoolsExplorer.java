@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.build.api.AbstractBuildListener;
 import org.bndtools.build.api.BuildListener;
 import org.bndtools.core.ui.icons.Icons;
@@ -292,13 +293,15 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 	}
 
 	private int getMaxSeverity() {
-		int maxStatus = Arrays.stream(ResourcesPlugin.getWorkspace()
+		return Arrays.stream(ResourcesPlugin
+			.getWorkspace()
 			.getRoot()
 			.getProjects())
 			.filter(IProject::isOpen)
+			.filter(p -> !Objects.equals(p.getName(),
+				BndtoolsConstants.BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME))
 			.map(FunctionWithException.asFunction(p -> p.findMaxProblemSeverity(null, false, IResource.DEPTH_INFINITE)))
 			.reduce(IMarker.SEVERITY_INFO, Integer::max);
-		return maxStatus;
 	}
 
 	private void updateTreeViewer() {

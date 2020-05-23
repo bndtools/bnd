@@ -1,5 +1,6 @@
 package bndtools.jareditor.internal;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -18,8 +19,6 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.JavaRuntime;
 
 public class TemporaryProject {
-
-	public static final String PROJECT_NAME = "BndtoolsJAREditorTempFiles";
 
 	public TemporaryProject() {}
 
@@ -41,7 +40,7 @@ public class TemporaryProject {
 	private void checkForSupportProject() throws CoreException {
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IWorkspaceRoot root = workspace.getRoot();
-		IProject project = root.getProject(PROJECT_NAME);
+		IProject project = root.getProject(BndtoolsConstants.BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME);
 		IProgressMonitor monitor = new NullProgressMonitor();
 
 		if (!project.exists()) {
@@ -78,7 +77,7 @@ public class TemporaryProject {
 		IProgressMonitor monitor = new NullProgressMonitor();
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IProject project = workspace.getRoot()
-			.getProject(PROJECT_NAME);
+			.getProject(BndtoolsConstants.BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME);
 
 		if (project.exists()) {
 			if (!project.isOpen()) {
@@ -88,12 +87,13 @@ public class TemporaryProject {
 			return project;
 		}
 
-		IProjectDescription description = workspace.newProjectDescription(PROJECT_NAME);
+		IProjectDescription description = workspace
+			.newProjectDescription(BndtoolsConstants.BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME);
 
 		IPath stateLocation = Plugin.getInstance()
 			.getStateLocation();
 
-		description.setLocation(stateLocation.append(PROJECT_NAME));
+		description.setLocation(stateLocation.append(BndtoolsConstants.BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME));
 
 		project.create(description, monitor);
 		project.open(monitor);
@@ -115,7 +115,7 @@ public class TemporaryProject {
 		checkForSupportProject();
 		IProject project = ResourcesPlugin.getWorkspace()
 			.getRoot()
-			.getProject(PROJECT_NAME);
+			.getProject(BndtoolsConstants.BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME);
 
 		if (project.exists() && project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
 			return JavaCore.create(project);
