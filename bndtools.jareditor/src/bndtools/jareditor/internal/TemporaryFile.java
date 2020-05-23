@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -58,7 +59,7 @@ public class TemporaryFile {
 	private static Result<IFolder, String> selectTempProject() throws CoreException, IOException {
 		IJavaProject javaProject = tempProject.getJavaProject();
 		if (javaProject == null) {
-			return Result.err("Unable to get temp project %s", TemporaryProject.PROJECT_NAME);
+			return Result.err("Unable to get temp project %s", BndtoolsConstants.BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME);
 		}
 		IProject project = javaProject.getProject();
 		return Result.ok(project.getFolder("temp"));
