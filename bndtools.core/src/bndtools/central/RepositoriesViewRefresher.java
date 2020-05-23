@@ -16,7 +16,6 @@ import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.TreePath;
@@ -27,6 +26,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
@@ -72,14 +72,10 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 		// Since this can delay, we move this to the background
 		//
 
-		new WorkspaceJob("Updating repositories content") {
-
-			@Override
-			public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-				try {
-					if (monitor == null)
-						monitor = new NullProgressMonitor();
-
+		Central.onWorkspace(ws -> {
+			new WorkspaceJob("Updating repositories content") {
+				@Override
+				public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 					Set<RepositoryPlugin> repos = new HashSet<>();
 					if (target != null)
 						repos.add(target);
@@ -89,7 +85,7 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 						}
 					}
 
-					ensureLoaded(monitor, repos);
+					ensureLoaded(monitor, repos, ws);
 
 					// get repositories first, then do UI thread work
 
@@ -128,19 +124,17 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 							}
 						}
 					});
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				return Status.OK_STATUS;
-			}
 
-		}.schedule(1000);
+					return Status.OK_STATUS;
+				}
+			}.schedule(1000);
+		});
 	}
 
-	private IStatus ensureLoaded(IProgressMonitor monitor, Collection<RepositoryPlugin> repos) {
+	private IStatus ensureLoaded(IProgressMonitor monitor, Collection<RepositoryPlugin> repos, Workspace ws) {
 		int n = 0;
 		try {
-			final RepositoryPlugin workspaceRepo = Central.getWorkspaceRepository();
+			final RepositoryPlugin workspaceRepo = ws.getWorkspaceRepository();
 			for (RepositoryPlugin repo : repos) {
 				if (monitor.isCanceled()) {
 					return Status.CANCEL_STATUS;
@@ -223,24 +217,24 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 			}
 			busy = true;
 		}
-		new WorkspaceJob("Setting repositories") {
+		Central.onWorkspace(ws -> {
+			new WorkspaceJob("Setting repositories") {
+				@Override
+				public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+					ensureLoaded(monitor, refresh.getRepositories(), ws);
 
-			@Override
-			public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+					SWTConcurrencyUtil.execForControl(viewer.getControl(), true, () -> {
+						viewer.setInput(refresh.getRepositories());
 
-				ensureLoaded(monitor, refresh.getRepositories());
-
-				SWTConcurrencyUtil.execForControl(viewer.getControl(), true, () -> {
-					viewer.setInput(refresh.getRepositories());
-
-					synchronized (RepositoriesViewRefresher.this) {
-						busy = false;
-						if (redo)
-							refreshRepositories(null);
-					}
-				});
-				return Status.OK_STATUS;
-			}
-		}.schedule();
+						synchronized (RepositoriesViewRefresher.this) {
+							busy = false;
+							if (redo)
+								refreshRepositories(null);
+						}
+					});
+					return Status.OK_STATUS;
+				}
+			};
+		});
 	}
 }
