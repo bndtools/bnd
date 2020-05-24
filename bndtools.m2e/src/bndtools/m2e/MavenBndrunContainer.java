@@ -4,6 +4,7 @@ import static aQute.lib.exceptions.Exceptions.unchecked;
 import static aQute.lib.exceptions.FunctionWithException.asFunction;
 
 import java.io.File;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -15,6 +16,7 @@ import org.apache.maven.project.ProjectDependenciesResolver;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.IMavenExecutionContext;
@@ -162,12 +164,11 @@ public class MavenBndrunContainer implements MavenRunListenerHelper {
 			(c, m) -> unchecked(() -> bndrunContainer.init(runFile, task, workingDir)), monitor);
 	}
 
-	public Set<File> resolve() throws Exception {
+	public Map<File, ArtifactResult> resolve() throws Exception {
 		return context.execute( //
 			(c, m) -> unchecked(() -> bndrunContainer.getDependencyResolver(mavenProject)
 				.resolve()),
-			monitor)
-			.keySet();
+			monitor);
 	}
 
 }

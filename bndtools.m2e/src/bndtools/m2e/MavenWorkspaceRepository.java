@@ -1,11 +1,8 @@
 package bndtools.m2e;
 
 import static aQute.lib.exceptions.Exceptions.unchecked;
-import static aQute.lib.exceptions.FunctionWithException.asFunction;
-import static aQute.lib.exceptions.FunctionWithException.asFunctionOrElse;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -26,6 +23,8 @@ import java.util.stream.Collectors;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.bndtools.api.PopulatedRepository;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -35,37 +34,39 @@ import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.osgi.framework.namespace.IdentityNamespace;
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.repository.ExpressionCombiner;
+import org.osgi.service.repository.RequirementExpression;
+import org.osgi.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.repository.AbstractIndexingRepository;
+import aQute.bnd.osgi.repository.BridgeRepository;
+import aQute.bnd.osgi.repository.BridgeRepository.InfoCapability;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
-import aQute.bnd.service.Refreshable;
+import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
+import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
+import aQute.lib.exceptions.Exceptions;
 import aQute.libg.glob.Glob;
-import aQute.maven.api.Revision;
-import aQute.maven.provider.POM;
 import bndtools.central.Central;
 
 @Component(service = {
 	IMavenProjectChangedListener.class, MavenWorkspaceRepository.class, RepositoryPlugin.class
 })
 public class MavenWorkspaceRepository extends
-	AbstractIndexingRepository<IProject, File>
-	implements IMavenProjectChangedListener, MavenRunListenerHelper, PopulatedRepository, Refreshable,
-	RepositoryPlugin {
+	AbstractIndexingRepository<IProject, Artifact>
+	implements IMavenProjectChangedListener, MavenRunListenerHelper, PopulatedRepository, RepositoryPlugin, Actionable {
 
 	enum Kind {
 		ADDED(MavenProjectChangedEvent.KIND_ADDED),
@@ -87,22 +88,43 @@ public class MavenWorkspaceRepository extends
 		private final int kind;
 	}
 
-	private final static Logger				logger	= LoggerFactory.getLogger(MavenWorkspaceRepository.class);
+	private final static Logger											logger						= LoggerFactory
+		.getLogger(MavenWorkspaceRepository.class);
 
+	private final static String											BND_INFO	= "bnd.info";
 	private volatile Supplier<Set<String>>								list;
-	private final Function<String, Collection<Requirement>>	bsnRequirements			= bsn -> Collections
-		.singleton(CapReqBuilder.createSimpleRequirement(IdentityNamespace.IDENTITY_NAMESPACE, bsn, null)
-			.buildSyntheticRequirement());
-	private final BiFunction<String, Version, Collection<Requirement>>	bsnAndVersionRequirements	= (
-		bsn, version) -> Collections
-			.singleton(CapReqBuilder.createSimpleRequirement(IdentityNamespace.IDENTITY_NAMESPACE, bsn, version
-				.toString())
-				.buildSyntheticRequirement());
-	private final Collection<Requirement>					identityRequirements	= Collections
-		.singleton(ResourceUtils.createWildcardRequirement());
+	private final Function<String, RequirementExpression>				identificationExpressionFunction;
+	private final BiFunction<String, Version, RequirementExpression>	identificationAndVersionExpressionFunction;
+	private final RequirementExpression									identificationExpression;
 
 	public MavenWorkspaceRepository() {
 		super();
+
+		ExpressionCombiner combiner = getExpressionCombiner();
+
+		identificationExpression = combiner.or( //
+			combiner.identity(ResourceUtils.createWildcardRequirement()), //
+			combiner.identity(new RequirementBuilder(BND_INFO).addFilter("(name=*)")
+				.buildSyntheticRequirement()));
+
+		identificationExpressionFunction = bsn -> {
+			RequirementBuilder builder = new RequirementBuilder(BND_INFO);
+			builder.addFilter("name", bsn, null, null);
+			return combiner.or( //
+				combiner.identity(CapReqBuilder.createSimpleRequirement(IdentityNamespace.IDENTITY_NAMESPACE, bsn, null)
+					.buildSyntheticRequirement()), //
+				combiner.identity(builder.buildSyntheticRequirement()));
+		};
+
+		identificationAndVersionExpressionFunction = (bsn, version) -> {
+			RequirementBuilder builder = new RequirementBuilder(BND_INFO);
+			builder.addFilter("name", bsn, version.toString(), null);
+			return combiner.or( //
+				combiner.identity(
+					CapReqBuilder.createSimpleRequirement(IdentityNamespace.IDENTITY_NAMESPACE, bsn, version.toString())
+						.buildSyntheticRequirement()), //
+				combiner.identity(builder.buildSyntheticRequirement()));
+		};
 	}
 
 	@Activate
@@ -167,14 +189,6 @@ public class MavenWorkspaceRepository extends
 	}
 
 	@Override
-	public File getRoot() throws Exception {
-		Location location = Platform.getInstanceLocation();
-
-		return new File(location.getURL()
-			.getPath());
-	}
-
-	@Override
 	public boolean isEmpty() {
 		return list.get()
 			.isEmpty();
@@ -232,6 +246,7 @@ public class MavenWorkspaceRepository extends
 		}
 
 		if (changed) {
+			logger.debug("{}: mavenProjectChanged resulting in a refresh", getName());
 			list = memoize(this::list0);
 			unchecked(() -> Central.refreshPlugins());
 		}
@@ -243,25 +258,26 @@ public class MavenWorkspaceRepository extends
 	}
 
 	@Override
-	public boolean refresh() throws Exception {
-		if (process()) {
-			list = memoize(this::list0);
-			return true;
-		}
-		return false;
-	}
-
-	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
-		Map<Requirement, Collection<Capability>> providers = findProviders(bsnRequirements.apply(bsn));
+		Promise<Collection<Resource>> promise = findProviders(identificationExpressionFunction.apply(bsn));
 
-		SortedSet<Version> versions = providers.values()
+		Throwable failure = promise.getFailure();
+
+		if (failure != null) {
+			throw Exceptions.duck(failure);
+		}
+
+		SortedSet<Version> versions = promise
+			.getValue()
 			.stream()
-			.flatMap(Collection<Capability>::stream)
-			.map(Capability::getAttributes)
-			.map(m -> m.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE))
-			.map(String::valueOf)
-			.map(Version::new)
+			.map(r -> {
+				InfoCapability info = getInfo(r);
+				if (info != null) {
+					return info.version();
+				}
+				IdentityCapability identity = ResourceUtils.getIdentityCapability(r);
+				return identity.version();
+			})
 			.collect(Collectors.toCollection(TreeSet<Version>::new));
 
 		logger.debug("{}: versions({}) {}", getName(), bsn, versions);
@@ -269,77 +285,42 @@ public class MavenWorkspaceRepository extends
 	}
 
 	@Override
-	protected BiFunction<ResourceBuilder, File, ResourceBuilder> indexer(IProject project) {
+	protected BiFunction<ResourceBuilder, Artifact, ResourceBuilder> indexer(IProject project) {
 		String name = project.getName();
-		return (rb, file) -> {
-			rb = fileIndexer(rb, file);
-			if (rb == null) {
-				return null;
-			}
+		return (rb, artifact) -> {
+			try {
+				rb = fileIndexer(rb, artifact.getFile());
+				if (rb == null) {
+					return null;
+				}
 
-			boolean hasIdentity = rb.getCapabilities()
-				.stream()
-				.map(Capability::getNamespace)
-				.anyMatch(IdentityNamespace.IDENTITY_NAMESPACE::equals);
+				Optional<IdentityCapability> identityCapability = rb.getCapabilities()
+					.stream()
+					.filter(c -> c.getNamespace()
+						.equals(IdentityNamespace.IDENTITY_NAMESPACE))
+					.map(c -> ResourceUtils.as(c, IdentityCapability.class))
+					.findFirst();
 
-			if (!hasIdentity) {
-				try (Jar jar = new Jar(file)) {
-					Optional<Revision> revision = jar.getPomXmlResources()
-						.findFirst()
-						.map(asFunctionOrElse(pomResource -> new POM(null, pomResource.openInputStream(), true), null))
-						.map(POM::getRevision);
+				String identifier = identityCapability.map(IdentityCapability::osgi_identity)
+					.orElseGet(() -> artifact.getGroupId()
+						.concat(":")
+						.concat(artifact.getArtifactId()));
 
-					if (!revision.isPresent()) {
-						revision = Optional.of(new File(file.getAbsolutePath()
-							.replaceFirst("\\.jar$", ".pom")))
-							.filter(File::exists)
-							.map(asFunction(FileInputStream::new))
-							.map(asFunctionOrElse(is -> new POM(null, is, true),
-								null))
-							.map(POM::getRevision);
-					}
+				MavenVersion mavenVersion = new MavenVersion(artifact.getVersion());
+				String from = artifact.getProperty("from", "");
 
-					String identifier = jar.getModuleName();
-					if (identifier == null) {
-						identifier = revision.map(r -> r.program.toString())
-							.orElse(null);
-						if (identifier == null) {
-							logger.debug("{}: Project {} ignore indexing file {}", getName(), project.getName(), file);
+				if (!identityCapability.isPresent()) {
+					BridgeRepository.addInformationCapability(rb, identifier, mavenVersion.getOSGiVersion(),
+						from, Constants.NOT_A_BUNDLE_S);
+				}
 
-							return rb;
-						}
-					}
-
-					Version version = revision.map(r -> r.version.getOSGiVersion())
-						.orElse(null);
-					if (version == null) {
-						version = new MavenVersion(jar.getModuleVersion()).getOSGiVersion();
-					}
-
-					CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-						.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, identifier)
-						.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version)
-						.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_UNKNOWN);
-					rb.addCapability(identity);
-				} catch (Exception e) {
-					logger.error("{}: Project {} error indexing file {}", getName(), project.getName(), file, e);
+				if (logger.isDebugEnabled()) {
+					logger.debug("{}: Project {} indexing artifact {} as {}", getName(), project.getName(), artifact,
+						identifier);
 				}
 			}
-
-			if (logger.isDebugEnabled()) {
-				String identifier = MapStream.of(//
-					rb.getCapabilities()
-						.stream()
-						.map(Capability::getAttributes)
-						.map(Map<String, Object>::entrySet)
-						.flatMap(Set::stream)) //
-					.filterKey(IdentityNamespace.IDENTITY_NAMESPACE::equals)
-					.values()
-					.map(String::valueOf)
-					.findFirst()
-					.orElse(null);
-
-				logger.debug("{}: Project {} indexing file {} as {}", getName(), project.getName(), file, identifier);
+			catch (Throwable t) {
+				logger.error("{}: Error in {} indexing artifact {}", getName(), project.getName(), artifact, t);
 			}
 
 			return rb;
@@ -367,7 +348,7 @@ public class MavenWorkspaceRepository extends
 	}
 
 	private boolean process(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
-		Set<File> collected = collect(projectFacade, monitor);
+		Set<Artifact> collected = collect(projectFacade, monitor);
 		if (collected.isEmpty()) {
 			return remove(projectFacade.getProject());
 		} else {
@@ -376,18 +357,42 @@ public class MavenWorkspaceRepository extends
 		}
 	}
 
+	private Resource getResource(final String bsn) throws Exception {
+		Promise<Collection<Resource>> promise = findProviders(identificationExpressionFunction.apply(bsn));
+
+		Throwable failure = promise.getFailure();
+
+		if (failure != null) {
+			throw Exceptions.duck(failure);
+		}
+
+		return promise.getValue()
+			.stream()
+			.findFirst()
+			.orElse(null);
+	}
+
+	private Resource getResource(final String bsn, final Version version) throws Exception {
+		Promise<Collection<Resource>> promise = findProviders(
+			identificationAndVersionExpressionFunction.apply(bsn, version));
+
+		Throwable failure = promise.getFailure();
+
+		if (failure != null) {
+			throw Exceptions.duck(failure);
+		}
+
+		return promise
+			.getValue()
+			.stream()
+			.findFirst()
+			.orElse(null);
+	}
+
 	private File get(final String bsn, final Version version) throws Exception {
 		logger.trace("{}: get {} {}", getName(), bsn, version);
 
-		Map<Requirement, Collection<Capability>> providers = findProviders(
-			bsnAndVersionRequirements.apply(bsn, version));
-
-		Resource resource = providers.values()
-			.stream()
-			.flatMap(Collection<Capability>::stream)
-			.map(Capability::getResource)
-			.findFirst()
-			.orElse(null);
+		Resource resource = getResource(bsn, version);
 
 		if (resource == null) {
 			logger.trace("{}: resource not found {} {}", getName(), bsn, version);
@@ -408,16 +413,29 @@ public class MavenWorkspaceRepository extends
 	}
 
 	private Set<String> list0() {
-		Map<Requirement, Collection<Capability>> providers = findProviders(identityRequirements);
+		Promise<Collection<Resource>> promise = findProviders(identificationExpression);
 
-		return providers.values()
-			.stream()
-			.flatMap(Collection<Capability>::stream)
-			.map(c -> c.getAttributes()
-				.get(IdentityNamespace.IDENTITY_NAMESPACE))
-			.map(
-				String::valueOf)
-			.collect(Collectors.toSet());
+		try {
+			Throwable failure = promise.getFailure();
+
+			if (failure != null) {
+				throw Exceptions.duck(failure);
+			}
+
+			return promise.getValue()
+				.stream()
+				.map(r -> {
+					InfoCapability info = getInfo(r);
+					if (info != null) {
+						return info.name();
+					}
+					IdentityCapability identity = ResourceUtils.getIdentityCapability(r);
+					return identity.osgi_identity();
+				})
+				.collect(Collectors.toSet());
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 	}
 
 	@Override
@@ -426,10 +444,10 @@ public class MavenWorkspaceRepository extends
 		return super.remove(iProject);
 	}
 
-	Set<File> collect(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
+	Set<Artifact> collect(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
 		logger.debug("{}: Collecting files for project {}", getName(), projectFacade.getProject());
 
-		Set<File> files = new HashSet<>();
+		Set<Artifact> files = new HashSet<>();
 
 		if (!isValid(projectFacade.getProject())) {
 			logger.debug("{}: Project {} determined invalid", getName(), projectFacade.getProject());
@@ -465,7 +483,12 @@ public class MavenWorkspaceRepository extends
 				if (bundleFile.exists()) {
 					logger.debug("{}: Collected file {} for project {}", getName(), bundleFile,
 						projectFacade.getProject());
-					files.add(bundleFile);
+					Artifact artifact = new DefaultArtifact(mavenProject.getGroupId(), mavenProject.getArtifactId(),
+						classifier, "jar", mavenProject.getVersion(), Collections.singletonMap("from", projectFacade
+							.getProject()
+							.toString()),
+						bundleFile);
+					files.add(artifact);
 				}
 			}
 		} catch (Exception e) {
@@ -473,6 +496,66 @@ public class MavenWorkspaceRepository extends
 		}
 
 		return files;
+	}
+
+	@Override
+	public Map<String, Runnable> actions(Object... target) throws Exception {
+		return null;
+	}
+
+	@Override
+	public String tooltip(Object... target) throws Exception {
+		return null;
+	}
+
+	@Override
+	public String title(Object... target) throws Exception {
+		switch (target.length) {
+			case 0 :
+				return getName();
+			case 1 :
+				return getArtifactName((String) target[0]);
+			case 2 :
+				return getVersionName((String) target[0], (Version) target[1]);
+			default :
+				return null;
+		}
+	}
+
+	private String getVersionName(String bsn, Version version) throws Exception {
+		Resource resource = getResource(bsn, version);
+		IdentityCapability identityCapability = ResourceUtils.getIdentityCapability(resource);
+		if (identityCapability != null) {
+			return identityCapability.version()
+				.toString();
+		}
+		InfoCapability info = getInfo(resource);
+		if (info.error()
+			.equals(Constants.NOT_A_BUNDLE_S)) {
+			return String.format("%s [%s]", info.version(), info.error());
+		}
+		return info.version()
+			.toString();
+	}
+
+	private String getArtifactName(String bsn) throws Exception {
+		Resource resource = getResource(bsn);
+		IdentityCapability identityCapability = ResourceUtils.getIdentityCapability(resource);
+		if (identityCapability != null) {
+			return identityCapability.osgi_identity();
+		}
+		InfoCapability info = getInfo(resource);
+		if (info.error()
+			.equals(Constants.NOT_A_BUNDLE_S)) {
+			return String.format("%s [!]", info.name());
+		}
+		return bsn;
+	}
+
+	static InfoCapability getInfo(Resource resource) {
+		return ResourceUtils.capabilityStream(resource, BND_INFO, InfoCapability.class)
+			.findFirst()
+			.orElse(null);
 	}
 
 }
