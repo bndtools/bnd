@@ -54,6 +54,7 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import aQute.bnd.classfile.ClassFile;
 import aQute.bnd.classfile.ModuleAttribute;
@@ -101,8 +102,8 @@ public class Jar implements Closeable {
 		.compile(Constants.DEFAULT_DO_NOT_COPY);
 
 	public static final Object[]								EMPTY_ARRAY				= new Jar[0];
-	private final NavigableMap<String, Resource>				resources				= new TreeMap<>();
-	private final NavigableMap<String, Map<String, Resource>>	directories				= new TreeMap<>();
+	private final NavigableMap<String, Resource>				resources				= new ConcurrentSkipListMap<>();
+	private final NavigableMap<String, Map<String, Resource>>	directories				= new ConcurrentSkipListMap<>();
 	private Optional<Manifest>									manifest;
 	private Optional<ModuleAttribute>							moduleAttribute;
 	private boolean												manifestFirst;
@@ -334,7 +335,7 @@ public class Jar implements Closeable {
 		String dir = getParent(path);
 		Map<String, Resource> s = directories.get(dir);
 		if (s == null) {
-			s = new TreeMap<>();
+			s = new ConcurrentSkipListMap<>();
 			directories.put(dir, s);
 			// make ancestor directories
 			for (int n; (n = dir.lastIndexOf('/')) > 0;) {
