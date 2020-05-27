@@ -803,6 +803,9 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		if (IContentOutlinePage.class == adapter) {
 			return (T) new BndEditorContentOutlinePage(this, model);
 		}
+		else if (Control.class == adapter) {
+			return getSourcePage().getAdapter(adapter);
+		}
 		return super.getAdapter(adapter);
 	}
 

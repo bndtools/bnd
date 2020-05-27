@@ -365,7 +365,7 @@ public class BridgeRepository {
 		return null;
 	}
 
-	private static InfoCapability getInfo(Resource resource) {
+	public static InfoCapability getInfo(Resource resource) {
 		return ResourceUtils.capabilityStream(resource, BND_INFO,
 			InfoCapability.class)
 			.findFirst()

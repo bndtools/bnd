@@ -2,11 +2,13 @@ package bndtools.model.repo;
 
 import java.util.Map;
 
+import org.osgi.resource.Resource;
+
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;
 
-public class RepositoryBundleVersion extends RepositoryEntry implements Actionable {
+public class RepositoryBundleVersion extends RepositoryEntry implements Actionable, ResourceProvider {
 
 	private final Version			version;
 	private final RepositoryBundle	bundle;
@@ -83,6 +85,11 @@ public class RepositoryBundleVersion extends RepositoryEntry implements Actionab
 		} catch (Exception e) {
 			return version.toString();
 		}
+	}
+
+	@Override
+	public Resource getResource() {
+		return bundle.getResource();
 	}
 
 }

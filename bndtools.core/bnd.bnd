@@ -93,7 +93,8 @@ Import-Package: \
 	org.bndtools.templating; version=latest,\
 	org.apache.servicemix.bundles.kxml2;version=latest;maven-scope=provided,\
 	org.apache.servicemix.bundles.xmlpull;version=latest;maven-scope=provided,\
-	bndtools.utils;version=project;packages=*
+	bndtools.utils;version=project;packages=*,\
+	slf4j.api
 
 -testpath: \
 	slf4j.api,\
