@@ -1,6 +1,5 @@
 package bndtools.m2e;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.unmodifiable.Sets;
 
 @Component(service = {
 	IMavenProjectChangedListener.class, RepositoryPlugin.class
@@ -28,8 +28,7 @@ public class MavenDependenciesRepository extends MavenWorkspaceRepository {
 	private final static Logger					logger		= LoggerFactory
 		.getLogger(MavenDependenciesRepository.class);
 
-	private final Set<String>			allScopes	= new HashSet<>(
-		Arrays.asList("compile", "provided", "runtime", "system", "test"));
+	private final Set<String>	allScopes	= Sets.of("compile", "provided", "runtime", "system", "test");
 
 	@Override
 	public String getName() {

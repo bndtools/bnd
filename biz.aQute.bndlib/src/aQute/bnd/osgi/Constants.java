@@ -2,12 +2,12 @@ package aQute.bnd.osgi;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import aQute.lib.unmodifiable.Sets;
 
 public interface Constants {
 	String				AUTOMATIC_MODULE_NAME						= "Automatic-Module-Name";
@@ -489,13 +489,13 @@ public interface Constants {
 		COMPONENT_NAMESPACE
 	};
 
-	Set<String>			SET_COMPONENT_DIRECTIVES					= new HashSet<>(Arrays.asList(componentDirectives));
+	Set<String>			SET_COMPONENT_DIRECTIVES					= Sets.of(componentDirectives);
 
 	Set<String>			SET_COMPONENT_DIRECTIVES_1_1				=																																										//
-		new HashSet<>(Arrays.asList(COMPONENT_VERSION, COMPONENT_CONFIGURATION_POLICY, COMPONENT_MODIFIED,
-			COMPONENT_ACTIVATE, COMPONENT_DEACTIVATE));
+		Sets.of(COMPONENT_VERSION, COMPONENT_CONFIGURATION_POLICY, COMPONENT_MODIFIED, COMPONENT_ACTIVATE,
+			COMPONENT_DEACTIVATE);
 
-	Set<String>			SET_COMPONENT_DIRECTIVES_1_2				= new HashSet<>(Arrays.asList(COMPONENT_GREEDY));
+	Set<String>			SET_COMPONENT_DIRECTIVES_1_2				= Sets.of(COMPONENT_GREEDY);
 
 	String				VERSION_ATTR_LATEST							= "latest";
 	String				VERSION_ATTR_SNAPSHOT						= "snapshot";

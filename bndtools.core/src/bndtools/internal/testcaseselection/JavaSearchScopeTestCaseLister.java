@@ -2,7 +2,6 @@ package bndtools.internal.testcaseselection;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -25,6 +24,7 @@ import org.eclipse.jdt.core.search.SearchRequestor;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
+import aQute.lib.unmodifiable.Lists;
 import bndtools.internal.pkgselection.SearchUtils;
 
 public class JavaSearchScopeTestCaseLister implements ITestCaseLister {
@@ -41,7 +41,7 @@ public class JavaSearchScopeTestCaseLister implements ITestCaseLister {
 	public String[] getTestCases(boolean includeNonSource, ITestCaseFilter filter) throws TestCaseListException {
 		final List<IJavaElement> testCaseList = new LinkedList<>();
 
-		search(Arrays.asList("junit.framework.TestCase", "junit.framework.TestSuite"), testCaseList); //$NON-NLS-1$ //$NON-NLS-2$
+		search(Lists.of("junit.framework.TestCase", "junit.framework.TestSuite"), testCaseList); //$NON-NLS-1$ //$NON-NLS-2$
 
 		// Remove non-source and excludes
 		Set<String> testCaseNames = new LinkedHashSet<>();

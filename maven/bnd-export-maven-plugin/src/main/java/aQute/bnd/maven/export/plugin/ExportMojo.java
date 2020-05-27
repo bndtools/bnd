@@ -5,9 +5,7 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 
 import java.io.File;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -41,6 +39,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
+import aQute.lib.unmodifiable.Sets;
 import biz.aQute.resolve.ResolveProcess;
 
 @Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true)
@@ -90,8 +89,7 @@ public class ExportMojo extends AbstractMojo {
 	private MavenSession										session;
 
 	@Parameter(property = "bnd.export.scopes", defaultValue = "compile,runtime")
-	private Set<Scope>											scopes	= new HashSet<>(
-		Arrays.asList(Scope.compile, Scope.runtime));
+	private Set<Scope>											scopes	= Sets.of(Scope.compile, Scope.runtime);
 
 	@Parameter(property = "bnd.export.skip", defaultValue = "false")
 	private boolean												skip;

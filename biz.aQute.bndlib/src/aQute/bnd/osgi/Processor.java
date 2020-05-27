@@ -87,6 +87,7 @@ import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.lib.strings.Strings;
+import aQute.lib.unmodifiable.Lists;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.command.Command;
 import aQute.libg.cryptography.Digester;
@@ -2856,7 +2857,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public String system(boolean allowFail, String command, String input) throws IOException, InterruptedException {
 		List<String> args;
 		if (IO.isWindows()) {
-			args = Arrays.asList("cmd", "/c", Command.windowsQuote(command));
+			args = Lists.of("cmd", "/c", Command.windowsQuote(command));
 		} else {
 			args = new QuotedTokenizer(command, " \t", false, true).stream()
 				.filter(token -> !token.isEmpty())

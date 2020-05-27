@@ -2,7 +2,6 @@ package bndtools.editor.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -23,6 +22,7 @@ import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
+import aQute.lib.unmodifiable.Lists;
 import bndtools.utils.ModificationLock;
 
 public class SubBundlesPart extends SectionPart implements PropertyChangeListener {
@@ -57,9 +57,7 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
 			public void widgetSelected(SelectionEvent e) {
 				lock.ifNotModifying(() -> {
 					if (button.getSelection()) {
-						subBundleList = Arrays.asList(new String[] {
-							ALL_BND
-						});
+						subBundleList = Lists.of(ALL_BND);
 					} else {
 						subBundleList = null;
 					}

@@ -106,6 +106,7 @@ import aQute.bnd.stream.MapStream;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.strings.Strings;
+import aQute.lib.unmodifiable.Lists;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.generics.Create;
 import aQute.libg.glob.Glob;
@@ -1998,7 +1999,7 @@ public class Clazz {
 	}
 
 	public List<TypeRef> interfaces() {
-		return (interfaces != null) ? Arrays.asList(interfaces) : emptyList();
+		return (interfaces != null) ? Lists.of(interfaces) : emptyList();
 	}
 
 	public Set<TypeRef> annotations() {
