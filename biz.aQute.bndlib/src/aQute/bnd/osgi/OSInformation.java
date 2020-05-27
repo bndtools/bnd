@@ -1,7 +1,7 @@
 package aQute.bnd.osgi;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -221,7 +221,10 @@ public class OSInformation {
 			OSInformation osi = new OSInformation();
 			clause.osname.addAll(Strings.split(osi.osnames));
 			clause.osversion = osi.osversion;
-			clause.processor.addAll(Arrays.asList(getProcessorAliases(System.getProperty("os.arch"))));
+			String[] processorAliases = getProcessorAliases(System.getProperty("os.arch"));
+			if (processorAliases != null && processorAliases.length > 0) {
+				Collections.addAll(clause.processor, processorAliases);
+			}
 			clause.language = Locale.getDefault()
 				.toString();
 
@@ -264,7 +267,7 @@ public class OSInformation {
 							}
 							String[] processorAliases = getProcessorAliases(value);
 							if (processorAliases != null && processorAliases.length > 0) {
-								clause.processor.addAll(Arrays.asList(processorAliases));
+								Collections.addAll(clause.processor, processorAliases);
 							} else {
 								clause.processor.add(value);
 							}
