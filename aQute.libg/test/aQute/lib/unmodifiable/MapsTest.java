@@ -218,9 +218,16 @@ public class MapsTest {
 
 	@Test
 	public void entries() {
-		Map<String, String> map = Maps.ofEntries(new SimpleEntry<>("k1", "v1"));
-		assertThat(map).hasSize(1)
-			.containsEntry("k1", "v1");
+		@SuppressWarnings("unchecked")
+		Entry<String, String>[] entries = new Entry[2];
+		entries[0] = new SimpleEntry<String, String>("k1", "v1");
+		entries[1] = new SimpleEntry<String, String>("k2", "v2");
+		Map<String, String> map = Maps.ofEntries(entries);
+		entries[0].setValue("changed");
+		entries[1] = new SimpleEntry<String, String>("changed", "v2");
+		assertThat(map).hasSize(2)
+			.containsEntry("k1", "v1")
+			.containsEntry("k2", "v2");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("k1"));
@@ -239,6 +246,7 @@ public class MapsTest {
 		source.put("k1", "v1");
 		source.put("k2", "v2");
 		Map<String, String> map = Maps.copyOf(source);
+		source.put("k2", "changed");
 		assertThat(map).hasSize(2)
 			.containsEntry("k1", "v1")
 			.containsEntry("k2", "v2");

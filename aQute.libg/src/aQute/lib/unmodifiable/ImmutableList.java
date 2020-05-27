@@ -96,7 +96,7 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 
 	@Override
 	public Object[] toArray() {
-		return Arrays.copyOf(elements, elements.length);
+		return Arrays.copyOf(elements, elements.length, Object[].class);
 	}
 
 	@Override

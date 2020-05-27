@@ -137,7 +137,11 @@ public class SetsTest {
 
 	@Test
 	public void entries() {
-		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10", "e11");
+		String[] entries = new String[] {
+			"e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10", "e11"
+		};
+		Set<String> set = Sets.of(entries);
+		entries[0] = "changed";
 		assertThat(set).hasSize(11)
 			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10", "e11");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
@@ -170,6 +174,7 @@ public class SetsTest {
 		source.add("e2");
 		source.add("e1");
 		Set<String> set = Sets.copyOf(source);
+		source.set(0, "changed");
 		assertThat(set).hasSize(2)
 			.containsExactlyInAnyOrder("e1", "e2");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));

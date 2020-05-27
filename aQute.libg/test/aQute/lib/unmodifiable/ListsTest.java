@@ -137,7 +137,11 @@ public class ListsTest {
 
 	@Test
 	public void entries() {
-		List<String> list = Lists.of("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10", "e11");
+		String[] entries = new String[] {
+			"e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10", "e11"
+		};
+		List<String> list = Lists.of(entries);
+		entries[0] = "changed";
 		assertThat(list).hasSize(11)
 			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10", "e11");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
@@ -170,6 +174,7 @@ public class ListsTest {
 		source.add("e2");
 		source.add("e1");
 		List<String> list = Lists.copyOf(source);
+		source.set(0, "changed");
 		assertThat(list).hasSize(3)
 			.containsExactly("e1", "e2", "e1");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));

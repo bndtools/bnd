@@ -53,7 +53,7 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E> {
 
 	@Override
 	public Object[] toArray() {
-		return Arrays.copyOf(elements, elements.length);
+		return Arrays.copyOf(elements, elements.length, Object[].class);
 	}
 
 	@Override
