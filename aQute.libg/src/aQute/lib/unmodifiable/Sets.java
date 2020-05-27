@@ -10,7 +10,7 @@ public class Sets {
 	private Sets() {}
 
 	public static <E> Set<E> of() {
-		return new ImmutableSet<>();
+		return (Set<E>) ImmutableSet.EMPTY;
 	}
 
 	public static <E> Set<E> of(E e1) {
@@ -55,12 +55,19 @@ public class Sets {
 
 	@SafeVarargs
 	public static <E> Set<E> of(E... elements) {
-		return new ImmutableSet<>((E[]) Arrays.copyOf(elements, elements.length, Object[].class));
+		int length = elements.length;
+		if (length == 0) {
+			return of();
+		}
+		return new ImmutableSet<>((E[]) Arrays.copyOf(elements, length, Object[].class));
 	}
 
 	public static <E> Set<E> copyOf(Collection<? extends E> collection) {
 		if (collection instanceof ImmutableSet) {
 			return (Set<E>) collection;
+		}
+		if (collection.isEmpty()) {
+			return of();
 		}
 		return new ImmutableSet<>((E[]) collection.stream()
 			.distinct()

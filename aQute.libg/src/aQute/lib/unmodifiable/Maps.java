@@ -10,7 +10,7 @@ public class Maps {
 	private Maps() {}
 
 	public static <K, V> Map<K, V> of() {
-		return new ImmutableMap<>();
+		return (Map<K, V>) ImmutableMap.EMPTY;
 	}
 
 	public static <K, V> Map<K, V> of(K k1, V v1) {
@@ -64,12 +64,19 @@ public class Maps {
 
 	@SafeVarargs
 	public static <K, V> Map<K, V> ofEntries(Entry<? extends K, ? extends V>... entries) {
-		return new ImmutableMap<>(entries(Arrays.copyOf(entries, entries.length, Entry[].class)));
+		int length = entries.length;
+		if (length == 0) {
+			return of();
+		}
+		return new ImmutableMap<>(entries(Arrays.copyOf(entries, length, Entry[].class)));
 	}
 
 	public static <K, V> Map<K, V> copyOf(Map<? extends K, ? extends V> map) {
 		if (map instanceof ImmutableMap) {
 			return (Map<K, V>) map;
+		}
+		if (map.isEmpty()) {
+			return of();
 		}
 		return new ImmutableMap<>(entries(map.entrySet()
 			.toArray(new Entry[0])));
