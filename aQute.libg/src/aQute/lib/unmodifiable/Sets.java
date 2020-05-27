@@ -3,6 +3,7 @@ package aQute.lib.unmodifiable;
 import java.util.Collection;
 import java.util.Set;
 
+@SuppressWarnings("unchecked")
 public class Sets {
 
 	private Sets() {}
@@ -56,7 +57,6 @@ public class Sets {
 		return new ImmutableSet<>(elements);
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <E> Set<E> copyOf(Collection<? extends E> collection) {
 		if (collection instanceof ImmutableSet) {
 			return (Set<E>) collection;

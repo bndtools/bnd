@@ -3,6 +3,7 @@ package aQute.lib.unmodifiable;
 import java.util.Collection;
 import java.util.List;
 
+@SuppressWarnings("unchecked")
 public class Lists {
 
 	private Lists() {}
@@ -56,7 +57,6 @@ public class Lists {
 		return new ImmutableList<>(elements);
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <E> List<E> copyOf(Collection<? extends E> collection) {
 		if (collection instanceof ImmutableList) {
 			return (List<E>) collection;

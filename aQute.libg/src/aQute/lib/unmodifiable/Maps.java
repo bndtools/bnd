@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
+@SuppressWarnings("unchecked")
 public class Maps {
 
 	private Maps() {}
@@ -67,7 +68,6 @@ public class Maps {
 		return new ImmutableMap<>(entries(Arrays.stream(entries)));
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <K, V> Map<K, V> copyOf(Map<? extends K, ? extends V> map) {
 		if (map instanceof ImmutableMap) {
 			return (Map<K, V>) map;
