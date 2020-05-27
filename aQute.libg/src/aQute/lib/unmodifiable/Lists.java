@@ -1,8 +1,10 @@
 package aQute.lib.unmodifiable;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+@SuppressWarnings("unchecked")
 public class Lists {
 
 	private Lists() {}
@@ -53,15 +55,13 @@ public class Lists {
 
 	@SafeVarargs
 	public static <E> List<E> of(E... elements) {
-		return new ImmutableList<>(elements);
+		return new ImmutableList<>((E[]) Arrays.copyOf(elements, elements.length, Object[].class));
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <E> List<E> copyOf(Collection<? extends E> collection) {
 		if (collection instanceof ImmutableList) {
 			return (List<E>) collection;
 		}
-		E[] elements = (E[]) collection.toArray();
-		return new ImmutableList<>(elements);
+		return new ImmutableList<>((E[]) collection.toArray());
 	}
 }

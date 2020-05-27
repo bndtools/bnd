@@ -30,6 +30,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.properties.Document;
+import aQute.lib.unmodifiable.Lists;
 import aQute.lib.unmodifiable.Sets;
 import bndtools.Plugin;
 import bndtools.central.Central;
@@ -124,9 +125,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
 			// Enable subs and copy entries from project model to new bundle
 			// model
 			if (enableSubs) {
-				projectModel.setSubBndFiles(Arrays.asList(new String[] {
-					"*.bnd"
-				}));
+				projectModel.setSubBndFiles(Lists.of("*.bnd"));
 				for (String propertyName : bundleSpecificHeaders) {
 					Object value = projectModel.genericGet(propertyName);
 					projectModel.genericSet(propertyName, null);

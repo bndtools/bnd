@@ -5,10 +5,8 @@ import static aQute.bnd.component.DSAnnotationReader.V1_1;
 import static aQute.bnd.component.DSAnnotationReader.V1_2;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,12 +31,12 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.Version;
 import aQute.lib.tag.Tag;
+import aQute.lib.unmodifiable.Sets;
 
 public class HeaderReader extends Processor {
 	private final static Pattern		PROPERTY_PATTERN	= Pattern
 		.compile("(([^=:@]+)([:@](Boolean|Byte|Char|Short|Integer|Long|Float|Double|String))?)\\s*=(.*)");
-	private final static Set<String>	LIFECYCLE_METHODS	= new HashSet<>(
-		Arrays.asList("activate", "deactivate", "modified"));
+	private final static Set<String>	LIFECYCLE_METHODS	= Sets.of("activate", "deactivate", "modified");
 
 	private final Analyzer				analyzer;
 
@@ -46,10 +44,9 @@ public class HeaderReader extends Processor {
 	private final static String			BundleContextTR		= "org.osgi.framework.BundleContext";
 	private final static String			MapTR				= Map.class.getName();
 	private final static String			IntTR				= int.class.getName();
-	final static Set<String>			allowed				= new HashSet<>(
-		Arrays.asList(ComponentContextTR, BundleContextTR, MapTR));
-	final static Set<String>			allowedDeactivate	= new HashSet<>(
-		Arrays.asList(ComponentContextTR, BundleContextTR, MapTR, IntTR));
+	final static Set<String>			allowed				= Sets.of(ComponentContextTR, BundleContextTR, MapTR);
+	final static Set<String>			allowedDeactivate	= Sets.of(ComponentContextTR, BundleContextTR, MapTR,
+		IntTR);
 
 	private final static String			ServiceReferenceTR	= "org.osgi.framework.ServiceReference";
 

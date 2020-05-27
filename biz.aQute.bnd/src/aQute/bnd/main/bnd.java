@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -131,6 +130,7 @@ import aQute.lib.justif.Justif;
 import aQute.lib.settings.Settings;
 import aQute.lib.strings.Strings;
 import aQute.lib.tag.Tag;
+import aQute.lib.unmodifiable.Lists;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.lib.xml.XML;
 import aQute.libg.classdump.ClassDumper;
@@ -774,7 +774,7 @@ public class bnd extends Processor {
 					}
 				}
 			} else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
-				doRun(Arrays.asList(path), false, null);
+				doRun(Lists.of(path), false, null);
 			} else
 				messages.UnrecognizedFileType_(path);
 		}
@@ -1289,7 +1289,7 @@ public class bnd extends Processor {
 
 		Collection<Project> projects;
 		if (options.limit())
-			projects = Arrays.asList(project);
+			projects = Lists.of(project);
 		else
 			projects = project.getWorkspace()
 				.getAllProjects();
@@ -3034,7 +3034,7 @@ public class bnd extends Processor {
 		long total = 0;
 		List<Alg> algs = o.algorithm();
 		if (algs == null)
-			algs = Arrays.asList(Alg.SHA1);
+			algs = Lists.of(Alg.SHA1);
 
 		for (String s : o._arguments()) {
 			File f = getFile(s);
@@ -4270,7 +4270,7 @@ public class bnd extends Processor {
 	public void _classtoresource(Options options) throws IOException {
 		try (Analyzer a = new Analyzer()) {
 			List<String> l = options._arguments()
-				.isEmpty() ? Arrays.asList("--") : options._arguments();
+				.isEmpty() ? Lists.of("--") : options._arguments();
 
 			for (String f : l) {
 				forEachLine(f, s -> {
@@ -4290,7 +4290,7 @@ public class bnd extends Processor {
 	public void _packagetoresource(Options options) throws IOException {
 		try (Analyzer a = new Analyzer()) {
 			List<String> l = options._arguments()
-				.isEmpty() ? Arrays.asList("--") : options._arguments();
+				.isEmpty() ? Lists.of("--") : options._arguments();
 
 			for (String f : l) {
 				forEachLine(f, s -> {

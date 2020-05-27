@@ -1,9 +1,7 @@
 package aQute.bnd.maven.lib.resolve;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -31,6 +29,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.unmodifiable.Sets;
 import biz.aQute.resolve.Bndrun;
 
 @ProviderType
@@ -76,8 +75,8 @@ public class BndrunContainer {
 		private List<File>												bundles						= Collections
 			.emptyList();
 		private boolean													includeDependencyManagement	= false;
-		private Set<Scope>												scopes						= new HashSet<>(
-			Arrays.asList(Scope.compile, Scope.runtime));
+		private Set<Scope>												scopes						= Sets
+			.of(Scope.compile, Scope.runtime);
 		private boolean													useMavenDependencies		= true;
 		private boolean													transitive					= true;
 		private PostProcessor											postProcessor				= new LocalPostProcessor();

@@ -2,9 +2,7 @@ package bndtools.views.resolution;
 
 import java.io.File;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -72,6 +70,7 @@ import org.osgi.resource.Resource;
 
 import aQute.bnd.osgi.Clazz;
 import aQute.lib.io.IO;
+import aQute.lib.unmodifiable.Sets;
 import bndtools.Plugin;
 import bndtools.model.repo.RepositoryResourceElement;
 import bndtools.model.resolution.CapReqMapContentProvider;
@@ -88,10 +87,6 @@ import bndtools.utils.PartAdapter;
 import bndtools.utils.SelectionUtils;
 
 public class ResolutionView extends ViewPart implements ISelectionListener, IResourceChangeListener {
-
-	private static String[]		FILTERED_CAPABILITY_NAMESPACES	= {
-		IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE
-	};
 
 	private Display				display							= null;
 
@@ -111,7 +106,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 	private final Set<String>	filteredCapabilityNamespaces;
 
 	public ResolutionView() {
-		filteredCapabilityNamespaces = new HashSet<>(Arrays.asList(FILTERED_CAPABILITY_NAMESPACES));
+		filteredCapabilityNamespaces = Sets.of(IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE);
 		loaders = Collections.emptySet();
 	}
 

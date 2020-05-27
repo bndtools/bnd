@@ -1,8 +1,10 @@
 package aQute.lib.unmodifiable;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
+@SuppressWarnings("unchecked")
 public class Sets {
 
 	private Sets() {}
@@ -53,17 +55,15 @@ public class Sets {
 
 	@SafeVarargs
 	public static <E> Set<E> of(E... elements) {
-		return new ImmutableSet<>(elements);
+		return new ImmutableSet<>((E[]) Arrays.copyOf(elements, elements.length, Object[].class));
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <E> Set<E> copyOf(Collection<? extends E> collection) {
 		if (collection instanceof ImmutableSet) {
 			return (Set<E>) collection;
 		}
-		E[] elements = (E[]) collection.stream()
+		return new ImmutableSet<>((E[]) collection.stream()
 			.distinct()
-			.toArray();
-		return new ImmutableSet<>(elements);
+			.toArray());
 	}
 }

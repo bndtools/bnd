@@ -63,6 +63,7 @@ import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.regex.PatternConstants;
 import aQute.lib.strings.Strings;
+import aQute.lib.unmodifiable.Sets;
 import aQute.libg.generics.Create;
 
 /**
@@ -1543,7 +1544,7 @@ public class Builder extends Analyzer {
 	 *
 	 */
 	public void removeBundleSpecificHeaders() {
-		Set<String> set = new HashSet<>(Arrays.asList(BUNDLE_SPECIFIC_HEADERS));
+		Set<String> set = Sets.of(BUNDLE_SPECIFIC_HEADERS);
 		setForceLocal(set);
 	}
 

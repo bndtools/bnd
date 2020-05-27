@@ -3,8 +3,8 @@ package aQute.lib.unmodifiable;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Stream;
 
+@SuppressWarnings("unchecked")
 public class Maps {
 
 	private Maps() {}
@@ -64,21 +64,25 @@ public class Maps {
 
 	@SafeVarargs
 	public static <K, V> Map<K, V> ofEntries(Entry<? extends K, ? extends V>... entries) {
-		return new ImmutableMap<>(entries(Arrays.stream(entries)));
+		return new ImmutableMap<>(entries(Arrays.copyOf(entries, entries.length, Entry[].class)));
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <K, V> Map<K, V> copyOf(Map<? extends K, ? extends V> map) {
 		if (map instanceof ImmutableMap) {
 			return (Map<K, V>) map;
 		}
 		return new ImmutableMap<>(entries(map.entrySet()
-			.stream()));
+			.toArray(new Entry[0])));
 	}
 
-	private static <K, V> Entry<K, V>[] entries(Stream<? extends Entry<? extends K, ? extends V>> stream) {
-		return stream.map(e -> (e instanceof ImmutableEntry) ? e : entry(e.getKey(), e.getValue()))
-			.toArray(Entry[]::new);
+	private static <K, V> Entry<K, V>[] entries(Entry<? extends K, ? extends V>[] entries) {
+		for (int i = 0, len = entries.length; i < len; i++) {
+			Entry<? extends K, ? extends V> entry = entries[i];
+			if (!(entry instanceof ImmutableEntry)) {
+				entries[i] = entry(entry.getKey(), entry.getValue());
+			}
+		}
+		return (Entry<K, V>[]) entries;
 	}
 
 	public static <K, V> Entry<K, V> entry(K key, V value) {

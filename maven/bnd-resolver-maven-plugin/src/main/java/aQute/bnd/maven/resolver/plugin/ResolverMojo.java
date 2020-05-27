@@ -3,8 +3,6 @@ package aQute.bnd.maven.resolver.plugin;
 import static aQute.bnd.maven.lib.resolve.BndrunContainer.report;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.maven.execution.MavenSession;
@@ -30,6 +28,7 @@ import aQute.bnd.maven.lib.resolve.BndrunContainer;
 import aQute.bnd.maven.lib.resolve.Operation;
 import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.Constants;
+import aQute.lib.unmodifiable.Sets;
 import biz.aQute.resolve.ResolveProcess;
 
 /**
@@ -76,8 +75,7 @@ public class ResolverMojo extends AbstractMojo {
 	private boolean												reportOptional;
 
 	@Parameter(property = "bnd.resolve.scopes", defaultValue = "compile,runtime")
-	private Set<Scope>											scopes	= new HashSet<>(
-		Arrays.asList(Scope.compile, Scope.runtime));
+	private Set<Scope>											scopes	= Sets.of(Scope.compile, Scope.runtime);
 
 	@Parameter(property = "bnd.resolve.skip", defaultValue = "false")
 	private boolean												skip;

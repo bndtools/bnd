@@ -2146,7 +2146,7 @@ public class Macro {
 	 */
 	public Map<String, String> getCommands() {
 		Set<Object> targets = new LinkedHashSet<>();
-		targets.addAll(Arrays.asList(targets));
+		Collections.addAll(targets, this.targets);
 		Processor rover = domain;
 		while (rover != null) {
 			targets.add(rover);

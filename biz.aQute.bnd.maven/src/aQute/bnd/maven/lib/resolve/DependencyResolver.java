@@ -2,7 +2,6 @@ package aQute.bnd.maven.lib.resolve;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.repository.fileset.FileSetRepository;
+import aQute.lib.unmodifiable.Lists;
 
 @ProviderType
 public class DependencyResolver {
@@ -63,7 +63,7 @@ public class DependencyResolver {
 	public DependencyResolver(MavenProject project, RepositorySystemSession session,
 		ProjectDependenciesResolver resolver, RepositorySystem system) {
 
-		this(project, session, resolver, system, Arrays.asList("compile", "runtime"), true, new LocalPostProcessor());
+		this(project, session, resolver, system, Lists.of("compile", "runtime"), true, new LocalPostProcessor());
 	}
 
 	public DependencyResolver(MavenProject project, RepositorySystemSession session,

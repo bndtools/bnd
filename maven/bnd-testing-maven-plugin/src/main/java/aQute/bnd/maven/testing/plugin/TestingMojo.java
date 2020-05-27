@@ -3,8 +3,6 @@ package aQute.bnd.maven.testing.plugin;
 import static aQute.bnd.maven.lib.resolve.BndrunContainer.report;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -36,6 +34,7 @@ import aQute.bnd.maven.lib.resolve.Operation;
 import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.strings.Strings;
+import aQute.lib.unmodifiable.Sets;
 import aQute.libg.glob.Glob;
 import biz.aQute.resolve.ResolveProcess;
 
@@ -95,8 +94,7 @@ public class TestingMojo extends AbstractMojo {
 	private MavenSession										session;
 
 	@Parameter(property = "bnd.testing.scopes", defaultValue = "compile,runtime")
-	private Set<Scope>											scopes	= new HashSet<>(
-		Arrays.asList(Scope.compile, Scope.runtime));
+	private Set<Scope>											scopes	= Sets.of(Scope.compile, Scope.runtime);
 
 	@Parameter(property = "bnd.testing.include.dependency.management", defaultValue = "false")
 	private boolean												includeDependencyManagement;
