@@ -1,7 +1,5 @@
 package aQute.lib.unmodifiable;
 
-import static java.util.Objects.requireNonNull;
-
 import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,23 +8,48 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 final class ImmutableSet<E> extends AbstractSet<E> implements Set<E> {
-	final E[] elements;
+	final static ImmutableSet<?>	EMPTY	= new ImmutableSet<>();
+	final E[]						elements;
+	final int[]						hash_bucket;
 
 	@SafeVarargs
 	ImmutableSet(E... elements) {
-		this.elements = requireNonNull(elements);
-		for (int i = 0, len = elements.length; i < len; i++) {
-			E element = requireNonNull(elements[i]);
-			for (int j = i + 1; j < len; j++) {
-				if (element.equals(elements[j])) {
-					throw new IllegalArgumentException("duplicate element: " + element);
-				}
+		this.elements = elements;
+		this.hash_bucket = hash(elements);
+	}
+
+	private static <E> int[] hash(E[] elements) {
+		int length = elements.length;
+		if (length == 0) {
+			return new int[1];
+		}
+		int[] hash_bucket = new int[length * 2];
+		for (int i = 0; i < length;) {
+			int slot = linear_probe(elements, hash_bucket, elements[i]);
+			if (slot >= 0) {
+				throw new IllegalArgumentException("duplicate element: " + elements[i]);
+			}
+			hash_bucket[-1 - slot] = ++i;
+		}
+		return hash_bucket;
+	}
+
+	// https://en.wikipedia.org/wiki/Linear_probing
+	private static <E> int linear_probe(E[] elements, int[] hash_bucket, Object e) {
+		int length = hash_bucket.length;
+		for (int hash = (e.hashCode() & 0x7FFF_FFFF) % length;; hash = (hash + 1) % length) {
+			int slot = hash_bucket[hash] - 1;
+			if (slot < 0) { // empty
+				return -1 - hash;
+			}
+			if (elements[slot].equals(e)) { // found
+				return slot;
 			}
 		}
 	}
 
-	ImmutableSet(E[] elements, boolean nocheck) {
-		this.elements = elements;
+	private int linear_probe(Object e) {
+		return linear_probe(elements, hash_bucket, e);
 	}
 
 	@Override
@@ -42,11 +65,7 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E> {
 	@Override
 	public boolean contains(Object o) {
 		if (o != null) {
-			for (E element : elements) {
-				if (o.equals(element)) {
-					return true;
-				}
-			}
+			return linear_probe(o) >= 0;
 		}
 		return false;
 	}

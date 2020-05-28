@@ -14,11 +14,12 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomAccess {
+	final static ImmutableList<?>	EMPTY	= new ImmutableList<>();
 	final E[] elements;
 
 	@SafeVarargs
 	ImmutableList(E... elements) {
-		this.elements = requireNonNull(elements);
+		this.elements = elements;
 		for (E element : elements) {
 			requireNonNull(element);
 		}

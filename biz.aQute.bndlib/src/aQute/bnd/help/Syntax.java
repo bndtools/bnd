@@ -21,6 +21,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.Version;
 import aQute.lib.strings.Strings;
+import aQute.lib.unmodifiable.Maps;
 
 public class Syntax implements Constants {
 	final String							header;
@@ -731,41 +732,34 @@ public class Syntax implements Constants {
 			"-x-overwritestrategy=gc", "(classic|delay|gc|windows-only-disposable-names|disposable-names)", null)
 	};
 
-	public final static Map<String, Syntax>	HELP					= new HashMap<>();
+	final static Map<Class<?>, Pattern>		BASE_PATTERNS			= Maps.ofEntries(
+		Maps.entry(Byte.class, Verifier.NUMBERPATTERN), Maps.entry(byte.class, Verifier.NUMBERPATTERN),
+		Maps.entry(Short.class, Verifier.NUMBERPATTERN), Maps.entry(short.class, Verifier.NUMBERPATTERN),
+		Maps.entry(Integer.class, Verifier.NUMBERPATTERN), Maps.entry(int.class, Verifier.NUMBERPATTERN),
+		Maps.entry(Long.class, Verifier.NUMBERPATTERN), Maps.entry(long.class, Verifier.NUMBERPATTERN),
+		Maps.entry(Float.class, Verifier.FLOATPATTERN), Maps.entry(float.class, Verifier.FLOATPATTERN),
+		Maps.entry(Double.class, Verifier.FLOATPATTERN), Maps.entry(double.class, Verifier.FLOATPATTERN),
+		Maps.entry(Boolean.class, Verifier.BOOLEANPATTERN), Maps.entry(boolean.class, Verifier.BOOLEANPATTERN));
 
-	final static Map<Class<?>, Pattern>		BASE_PATTERNS			= new HashMap<>();
-
+	public final static Map<String, Syntax>	HELP;
 	static {
-		BASE_PATTERNS.put(Byte.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(byte.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(Short.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(short.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(Integer.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(int.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(Long.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(long.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(Float.class, Verifier.FLOATPATTERN);
-		BASE_PATTERNS.put(float.class, Verifier.FLOATPATTERN);
-		BASE_PATTERNS.put(Double.class, Verifier.FLOATPATTERN);
-		BASE_PATTERNS.put(double.class, Verifier.FLOATPATTERN);
-		BASE_PATTERNS.put(Boolean.class, Verifier.BOOLEANPATTERN);
-		BASE_PATTERNS.put(boolean.class, Verifier.BOOLEANPATTERN);
-
+		Map<String, Syntax> help = new HashMap<>();
 		for (Syntax s : syntaxes) {
-			add(s);
+			add(help, s);
 		}
-		add(BuilderInstructions.class);
-		add(LauncherInstructions.class);
-		add(ResolutionInstructions.class);
+		add(help, BuilderInstructions.class);
+		add(help, LauncherInstructions.class);
+		add(help, ResolutionInstructions.class);
+		HELP = Maps.copyOf(help);
 	}
 
-	private static void add(Syntax s) {
-		HELP.put(s.header, s);
+	private static void add(Map<String, Syntax> help, Syntax s) {
+		help.put(s.header, s);
 	}
 
-	private static void add(Class<?> class1) {
+	private static void add(Map<String, Syntax> help, Class<?> class1) {
 		for (Syntax syntax : create(class1, Syntax::toInstruction, true)) {
-			add(syntax);
+			add(help, syntax);
 		}
 	}
 

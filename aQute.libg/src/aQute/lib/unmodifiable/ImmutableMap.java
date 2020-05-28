@@ -7,34 +7,71 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
-	final Entry<K, V>[] entries;
+	@SuppressWarnings("unchecked")
+	final static ImmutableMap<?, ?>	EMPTY	= new ImmutableMap<>();
+	final Entry<K, V>[]				entries;
+	final int[]						hash_bucket;
+	transient Set<Entry<K, V>>		entrySet;
 
 	@SafeVarargs
 	ImmutableMap(Entry<K, V>... entries) {
 		this.entries = entries;
-		for (int i = 0, len = entries.length, outer = len - 1; i < outer; i++) {
-			K key = entries[i].getKey();
-			for (int j = i + 1; j < len; j++) {
-				if (key.equals(entries[j].getKey())) {
-					throw new IllegalArgumentException("duplicate key: " + key);
-				}
+		this.hash_bucket = hash(entries);
+	}
+
+	private static <K, V> int[] hash(Entry<K, V>[] entries) {
+		int length = entries.length;
+		if (length == 0) {
+			return new int[1];
+		}
+		int[] hash_bucket = new int[length * 2];
+		for (int i = 0; i < length;) {
+			int slot = linear_probe(entries, hash_bucket, entries[i].getKey());
+			if (slot >= 0) {
+				throw new IllegalArgumentException("duplicate key: " + entries[i].getKey());
+			}
+			hash_bucket[-1 - slot] = ++i;
+		}
+		return hash_bucket;
+	}
+
+	// https://en.wikipedia.org/wiki/Linear_probing
+	private static <K, V> int linear_probe(Entry<K, V>[] entries, int[] hash_bucket, Object key) {
+		int length = hash_bucket.length;
+		for (int hash = (key.hashCode() & 0x7FFF_FFFF) % length;; hash = (hash + 1) % length) {
+			int slot = hash_bucket[hash] - 1;
+			if (slot < 0) { // empty
+				return -1 - hash;
+			}
+			if (entries[slot].getKey()
+				.equals(key)) { // found
+				return slot;
 			}
 		}
 	}
 
+	private int linear_probe(Object key) {
+		return linear_probe(entries, hash_bucket, key);
+	}
+
 	@Override
 	public Set<Entry<K, V>> entrySet() {
-		return new ImmutableSet<>(entries, true);
+		Set<Entry<K, V>> set = entrySet;
+		if (set != null) {
+			return set;
+		}
+		return entrySet = new ImmutableSet<>(entries);
+	}
+
+	@Override
+	public int size() {
+		return entries.length;
 	}
 
 	@Override
 	public boolean containsKey(Object key) {
 		if (key != null) {
-			for (Entry<K, V> entry : entries) {
-				if (key.equals(entry.getKey())) {
-					return true;
-				}
-			}
+			return linear_probe(key) >= 0;
 		}
 		return false;
 	}
@@ -54,10 +91,9 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 	@Override
 	public V get(Object key) {
 		if (key != null) {
-			for (Entry<K, V> entry : entries) {
-				if (key.equals(entry.getKey())) {
-					return entry.getValue();
-				}
+			int slot = linear_probe(key);
+			if (slot >= 0) {
+				return entries[slot].getValue();
 			}
 		}
 		return null;

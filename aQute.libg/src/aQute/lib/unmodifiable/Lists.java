@@ -10,7 +10,7 @@ public class Lists {
 	private Lists() {}
 
 	public static <E> List<E> of() {
-		return new ImmutableList<>();
+		return (List<E>) ImmutableList.EMPTY;
 	}
 
 	public static <E> List<E> of(E e1) {
@@ -55,12 +55,19 @@ public class Lists {
 
 	@SafeVarargs
 	public static <E> List<E> of(E... elements) {
-		return new ImmutableList<>((E[]) Arrays.copyOf(elements, elements.length, Object[].class));
+		int length = elements.length;
+		if (length == 0) {
+			return of();
+		}
+		return new ImmutableList<>((E[]) Arrays.copyOf(elements, length, Object[].class));
 	}
 
 	public static <E> List<E> copyOf(Collection<? extends E> collection) {
 		if (collection instanceof ImmutableList) {
 			return (List<E>) collection;
+		}
+		if (collection.isEmpty()) {
+			return of();
 		}
 		return new ImmutableList<>((E[]) collection.toArray());
 	}

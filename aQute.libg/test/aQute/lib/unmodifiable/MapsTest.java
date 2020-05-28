@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -20,6 +21,12 @@ public class MapsTest {
 		Map<String, String> map = Maps.of();
 		assertThat(map).hasSize(0)
 			.isEmpty();
+		assertThat(map.containsKey("k3")).isFalse();
+		assertThat(map.containsKey(null)).isFalse();
+		assertThat(map.containsValue("v3")).isFalse();
+		assertThat(map.containsValue(null)).isFalse();
+		assertThat(map.get("k3")).isEqualTo(null);
+		assertThat(map.get(null)).isEqualTo(null);
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.put("a", "b"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> map.clear());
@@ -334,6 +341,23 @@ public class MapsTest {
 		hashMap.put("k2", "v2");
 		hashMap.put("k3", "v3");
 		assertThat(map).isNotEqualTo(hashMap);
+	}
+
+	@Test
+	public void entry_set_contains() {
+		Set<Entry<String, String>> entrySet = Maps.of("k1", "v1", "k2", "v2")
+			.entrySet();
+		assertThat(entrySet).containsExactly(new SimpleEntry<>("k1", "v1"), new SimpleEntry<>("k2", "v2"));
+
+		assertThat(entrySet.contains(new SimpleEntry<>("k1", "v1"))).isTrue();
+		assertThat(entrySet.contains(new SimpleEntry<>("k2", "v2"))).isTrue();
+		assertThat(entrySet.contains(new SimpleEntry<>("k1", "v2"))).isFalse();
+		assertThat(entrySet.contains(null)).isFalse();
+
+		entrySet = Maps.<String, String> of()
+			.entrySet();
+		assertThat(entrySet.contains(new SimpleEntry<>("k1", "v2"))).isFalse();
+		assertThat(entrySet.contains(null)).isFalse();
 	}
 
 }

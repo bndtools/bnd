@@ -222,6 +222,10 @@ public class SetsTest {
 		assertThat(set.contains("e5")).isTrue();
 		assertThat(set.contains("e6")).isFalse();
 		assertThat(set.contains(null)).isFalse();
+
+		set = Sets.of();
+		assertThat(set.contains("e6")).isFalse();
+		assertThat(set.contains(null)).isFalse();
 	}
 
 	@Test
