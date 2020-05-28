@@ -2,6 +2,8 @@ package aQute.bnd.repository.maven.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
 import static aQute.lib.exceptions.FunctionWithException.asFunction;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.Closeable;
 import java.io.File;
@@ -68,6 +70,7 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.lib.exceptions.FunctionWithException;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.lib.unmodifiable.Sets;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.PathSet;
@@ -583,8 +586,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			if (source != null) {
 				source = source.replaceAll("(\\s|,|;|\n|\r)+", "\n");
 			}
-			String[] multi = Strings.splitAsStream(configuration.multi())
-				.toArray(String[]::new);
+			Set<String> multi = Strings.splitAsStream(configuration.multi())
+				.collect(collectingAndThen(toSet(), Sets::copyOf));
 			this.index = new IndexFile(domain, reporter, indexFile, source, storage, client.promiseFactory(), multi);
 			this.index.open();
 

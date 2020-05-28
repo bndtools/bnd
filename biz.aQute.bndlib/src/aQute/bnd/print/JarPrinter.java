@@ -31,6 +31,7 @@ import aQute.bnd.stream.MapStream;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.lib.unmodifiable.Sets;
 import aQute.libg.generics.Create;
 
 public class JarPrinter extends Processor {
@@ -50,6 +51,7 @@ public class JarPrinter extends Processor {
 	final public static int	API				= 512;
 	final public static int	CAPABILITIES	= 1024;
 	static public final int	HEX				= 0;
+	private static final Set<String> syntax_headers = Sets.of(OSGI_SYNTAX_HEADERS);
 
 	public JarPrinter(Processor bnd) {
 		super(bnd);
@@ -280,7 +282,7 @@ public class JarPrinter extends Processor {
 		MapStream.of(manifest.getMainAttributes())
 			.forEach((k, v) -> {
 				String key = k.toString();
-				if (Strings.in(OSGI_SYNTAX_HEADERS, key)) {
+				if (syntax_headers.contains(key)) {
 					table.put(key, Strings.splitQuoted(v.toString()));
 				} else {
 					table.add(key, v.toString());
