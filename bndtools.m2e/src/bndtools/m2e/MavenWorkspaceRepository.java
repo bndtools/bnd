@@ -43,6 +43,7 @@ import org.osgi.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.maven.MavenCapability;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.repository.AbstractIndexingRepository;
 import aQute.bnd.osgi.repository.BridgeRepository;
@@ -313,6 +314,9 @@ public class MavenWorkspaceRepository extends
 					BridgeRepository.addInformationCapability(rb, identifier, mavenVersion.getOSGiVersion(),
 						from, Constants.NOT_A_BUNDLE_S);
 				}
+
+				MavenCapability.addMavenCapability(rb, artifact.getGroupId(), artifact.getArtifactId(), mavenVersion,
+					artifact.getClassifier(), from);
 
 				if (logger.isDebugEnabled()) {
 					logger.debug("{}: Project {} indexing artifact {} as {}", getName(), project.getName(), artifact,

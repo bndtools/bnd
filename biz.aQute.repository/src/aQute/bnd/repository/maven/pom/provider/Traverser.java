@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.maven.MavenCapability;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.exceptions.Exceptions;
@@ -137,6 +138,8 @@ class Traverser {
 						Version version = toFrameworkVersion(archive.revision.version.getOSGiVersion());
 						addReserveIdentity(rb, bsn, version);
 						addInformationCapability(rb, archive.toString(), parent, throwable);
+							MavenCapability.addMavenCapability(rb, archive.revision.group, archive.revision.artifact,
+								archive.revision.version, archive.classifier, parent);
 						resources.put(archive, rb.build());
 					} finally {
 						finish();
@@ -207,10 +210,14 @@ class Traverser {
 				addReserveIdentity(rb, bsn, frameworkVersion);
 			}
 			addInformationCapability(rb, archive.toString(), parent);
+			MavenCapability.addMavenCapability(rb, archive.revision.group, archive.revision.artifact,
+				archive.revision.version, archive.classifier, parent);
 		} catch (Exception e) {
 			Throwable theException = Exceptions.unrollCause(e, InvocationTargetException.class);
 			addReserveIdentity(rb, bsn, frameworkVersion);
 			addInformationCapability(rb, archive.toString(), parent, theException);
+			MavenCapability.addMavenCapability(rb, archive.revision.group, archive.revision.artifact,
+				archive.revision.version, archive.classifier, parent);
 		}
 		resources.put(archive, rb.build());
 	}

@@ -6,7 +6,7 @@ import org.osgi.resource.Resource;
 
 import aQute.bnd.service.RepositoryPlugin;
 
-public class RepositoryResourceElement {
+public class RepositoryResourceElement implements ResourceProvider {
 
 	private final Resource					resource;
 	private final String					name;
@@ -34,6 +34,7 @@ public class RepositoryResourceElement {
 		return version.toString();
 	}
 
+	@Override
 	public Resource getResource() {
 		return resource;
 	}

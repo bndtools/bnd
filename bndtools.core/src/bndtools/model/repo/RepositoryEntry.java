@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Collections;
 
 import org.bndtools.api.ILogger;
@@ -13,7 +14,15 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.resource.Resource;
+import org.osgi.service.repository.ExpressionCombiner;
+import org.osgi.service.repository.OrExpression;
+import org.osgi.service.repository.Repository;
+import org.osgi.util.promise.Promise;
 
+import aQute.bnd.osgi.resource.RequirementBuilder;
+import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResourceHandle;
@@ -39,7 +48,7 @@ abstract class VersionFinder {
 	}
 }
 
-public abstract class RepositoryEntry implements IAdaptable {
+public abstract class RepositoryEntry implements IAdaptable, ResourceProvider {
 
 	private static final ILogger	logger	= Logger.getLogger(RepositoryEntry.class);
 
@@ -128,6 +137,52 @@ public abstract class RepositoryEntry implements IAdaptable {
 				repo.getName(), bsn, versionFinder), Exceptions.unrollCause(e, InvocationTargetException.class));
 			return null;
 		}
+	}
+
+	@Override
+	public Resource getResource() {
+		RepositoryPlugin repositoryPlugin = getRepo();
+		try {
+			if (repositoryPlugin instanceof Repository) {
+				Repository repository = (Repository) repositoryPlugin;
+				ExpressionCombiner combiner = repository.getExpressionCombiner();
+
+				RequirementBuilder identBuilder = new RequirementBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
+				identBuilder.addFilter(IdentityNamespace.IDENTITY_NAMESPACE, bsn, versionFinder.findVersion()
+					.toString(), null);
+				RequirementBuilder infoBuilder = new RequirementBuilder("bnd.info");
+				infoBuilder.addFilter("name", bsn, versionFinder.findVersion()
+					.toString(), null);
+				OrExpression expression = combiner.or( //
+					combiner.identity(identBuilder
+						.buildSyntheticRequirement()),
+					combiner.identity(infoBuilder.buildSyntheticRequirement()));
+
+				Promise<Collection<Resource>> promise = repository.findProviders(expression);
+
+				Throwable failure = promise.getFailure();
+
+				if (failure != null) {
+					throw Exceptions.duck(failure);
+				}
+
+				return promise.getValue()
+					.stream()
+					.findFirst()
+					.orElse(null);
+			}
+
+			File file = repositoryPlugin.get(bsn, versionFinder.findVersion(), null);
+
+			if (file != null && file.exists()) {
+				ResourceBuilder rb = new ResourceBuilder();
+				rb.addFile(file, file.toURI());
+				return rb.build();
+			}
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+		return null;
 	}
 
 }

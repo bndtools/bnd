@@ -105,6 +105,7 @@ import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.central.RepositoriesViewRefresher;
 import bndtools.central.RepositoryUtils;
+import bndtools.dnd.gav.GAVIPageListener;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryEntry;
@@ -130,6 +131,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 	private SearchableRepositoryTreeContentProvider	contentProvider;
 	private TreeViewer								viewer;
 	private Control									filterPanel;
+	private GAVIPageListener						dndgaviPageListener;
 
 	private Action									collapseAllAction;
 	private Action									refreshAction;
@@ -218,6 +220,12 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 		filterPanel.setBackground(tree.getBackground());
 
 		viewer = new TreeViewer(tree);
+		dndgaviPageListener = new GAVIPageListener();
+
+		PlatformUI.getWorkbench()
+			.getActiveWorkbenchWindow()
+			.getPartService()
+			.addPartListener(dndgaviPageListener);
 
 		contentProvider = new SearchableRepositoryTreeContentProvider() {
 			@Override
@@ -368,7 +376,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 			LocalSelectionTransfer.getTransfer()
 		}, dropAdapter);
 		viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-			LocalSelectionTransfer.getTransfer()
+			TextTransfer.getInstance(), LocalSelectionTransfer.getTransfer()
 		}, new SelectionDragAdapter(viewer));
 
 		viewer.addSelectionChangedListener(event -> {
@@ -531,6 +539,10 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
 	@Override
 	public void dispose() {
+		PlatformUI.getWorkbench()
+			.getActiveWorkbenchWindow()
+			.getPartService()
+			.removePartListener(dndgaviPageListener);
 		Central.removeRepositoriesViewer(viewer);
 		prefs.removePropertyChangeListener(workspaceOfflineListener);
 		super.dispose();
