@@ -74,7 +74,7 @@ class IndexFile {
 	final Reporter								reporter;
 	final PromiseFactory						promiseFactory;
 	final Map<Archive, Resource>				archives	= new ConcurrentHashMap<>();
-	final String[]								multi;
+	final Set<String>							multi;
 	final String								source;
 
 	private volatile long						lastModified;
@@ -88,7 +88,7 @@ class IndexFile {
 	 * Constructor
 	 */
 	IndexFile(Processor domain, Reporter reporter, File file, String source, IMavenRepo repo,
-		PromiseFactory promiseFactory, String... multi) throws Exception {
+		PromiseFactory promiseFactory, Set<String> multi) throws Exception {
 		this.source = source;
 		this.domain = (domain != null) ? domain : new Processor();
 		this.replacer = this.domain.getReplacer();
@@ -315,11 +315,11 @@ class IndexFile {
 	}
 
 	private boolean isMulti(String name) {
-		if (multi == null)
+		if (multi.isEmpty())
 			return false;
 
 		String[] extension = Strings.extension(name.toLowerCase());
-		return extension.length == 2 && Strings.in(multi, extension[1]);
+		return extension.length == 2 && multi.contains(extension[1]);
 	}
 
 	private Map<Archive, Resource> parseSingle(Archive archive, File single) throws Exception {
