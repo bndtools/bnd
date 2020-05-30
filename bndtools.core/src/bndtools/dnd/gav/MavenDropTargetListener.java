@@ -9,7 +9,6 @@ import org.eclipse.swt.custom.StyledText;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.maven.MavenCapability;
-import aQute.bnd.service.RepositoryPlugin;
 
 public class MavenDropTargetListener extends GAVDropTargetListener {
 
@@ -25,12 +24,17 @@ public class MavenDropTargetListener extends GAVDropTargetListener {
 	}
 
 	@Override
-	String format(Resource resource, RepositoryPlugin repositoryPlugin, boolean noVersion, boolean useAlternateSyntax,
-		String lineAtInsertionPoint, String indentPrefix) {
-		if (noVersion) {
-			return format(resource, MAVEN_NO_VERSION, indentPrefix, indent(isTabs(), getSize()));
+	void format(FormatEvent formatEvent) {
+		if (formatEvent.isNoVersion()) {
+			format(formatEvent.getResource(), MAVEN_NO_VERSION, formatEvent.getLineAtInsertionPoint(),
+				formatEvent
+					.getIndentPrefix(),
+				indent(isTabs(), getSize()));
 		}
-		return format(resource, MAVEN, indentPrefix, indent(isTabs(), getSize()));
+		else {
+			format(formatEvent.getResource(), MAVEN, formatEvent.getLineAtInsertionPoint(),
+				formatEvent.getIndentPrefix(), indent(isTabs(), getSize()));
+		}
 	}
 
 	@Override
@@ -50,12 +54,17 @@ public class MavenDropTargetListener extends GAVDropTargetListener {
 			.equals("tab");
 	}
 
-	@SuppressWarnings("null")
-	String format(Resource resource, Syntax syntax, String indentPrefix, String indent) {
+	private void format(Resource resource, Syntax syntax, String lineAtInsertionPoint, String indentPrefix,
+		String indent) {
 		MavenCapability mc = MavenCapability.getMavenCapability(resource);
 
 		if (mc == null) {
-			return "No maven information was indexed for resource " + resource;
+			return;
+		}
+
+		if (lineAtInsertionPoint.trim()
+			.startsWith("<dependencies>")) {
+			indentPrefix += indent;
 		}
 
 		String group = mc.maven_groupId();
@@ -96,7 +105,7 @@ public class MavenDropTargetListener extends GAVDropTargetListener {
 		sb.append(indentPrefix)
 			.append("</dependency>");
 
-		return sb.toString();
+		getStyledText().insert(sb.toString());
 	}
 
 }

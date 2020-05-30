@@ -10,7 +10,6 @@ import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.BridgeRepository.InfoCapability;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
-import aQute.bnd.service.RepositoryPlugin;
 
 public class BndDropTargetListener extends GAVDropTargetListener {
 
@@ -28,18 +27,19 @@ public class BndDropTargetListener extends GAVDropTargetListener {
 	}
 
 	@Override
-	String format(Resource resource, RepositoryPlugin repositoryPlugin, boolean noVersion, boolean useAlternateSyntax,
-		String lineAtInsertionPoint, String indentPrefix) {
-		if (noVersion) {
+	void format(FormatEvent formatEvent) {
+		if (formatEvent.isNoVersion()) {
 			Syntax syntax = Syntax.BND_VERSION_LATEST;
-			if (repositoryPlugin instanceof WorkspaceRepository) {
+			if (formatEvent.getRepositoryPlugin() instanceof WorkspaceRepository) {
 				syntax = Syntax.BND_VERSION_SNAPSHOT;
 			}
-			return format(resource, useAlternateSyntax ? Syntax.BND_NO_VERSION : syntax, lineAtInsertionPoint,
-				indentPrefix,
-				indent(isTabs(), getSize()));
+			format(formatEvent.getResource(), formatEvent.useAlternateSyntax() ? Syntax.BND_NO_VERSION
+				: syntax,
+				formatEvent.getLineAtInsertionPoint(), formatEvent.getIndentPrefix(), indent(isTabs(), getSize()));
+		} else {
+			format(formatEvent.getResource(), Syntax.BND, formatEvent.getLineAtInsertionPoint(),
+				formatEvent.getIndentPrefix(), indent(isTabs(), getSize()));
 		}
-		return format(resource, Syntax.BND, lineAtInsertionPoint, indentPrefix, indent(isTabs(), getSize()));
 	}
 
 	@Override
@@ -55,10 +55,11 @@ public class BndDropTargetListener extends GAVDropTargetListener {
 	}
 
 	boolean isTabs() {
-		return prefsService.getBoolean("org.eclipse.ui.editors.prefs", "spacesForTabs", false, null);
+		return !prefsService.getBoolean("org.eclipse.ui.editors.prefs", "spacesForTabs", false, null);
 	}
 
-	private String format(Resource resource, Syntax syntax, String lineAtInsertionPoint, String indentPrefix,
+	private void format(Resource resource, Syntax syntax, String lineAtInsertionPoint,
+		String indentPrefix,
 		String indent) {
 		IdentityCapability ic = ResourceUtils.getIdentityCapability(resource);
 		InfoCapability info = BridgeRepository.getInfo(resource);
@@ -69,7 +70,7 @@ public class BndDropTargetListener extends GAVDropTargetListener {
 		if (ic == null) {
 			if (info == null) {
 				// we shouldn't be able to get here!
-				return "No information was indexed for resource " + resource;
+				return;
 			} else {
 				identity = info.name();
 				version = info.version()
@@ -81,6 +82,11 @@ public class BndDropTargetListener extends GAVDropTargetListener {
 				.toString();
 		}
 
+		if (lineAtInsertionPoint.trim()
+			.startsWith("-")) {
+			indentPrefix += indent;
+		}
+
 		boolean lineHasContinuation = lineAtInsertionPoint.endsWith("\\");
 
 		StringBuilder sb = new StringBuilder();
@@ -89,8 +95,7 @@ public class BndDropTargetListener extends GAVDropTargetListener {
 			sb.append(",\\");
 		}
 
-		sb.append(
-			"\n")
+		sb.append("\n")
 			.append(indentPrefix.isEmpty() ? indent
 				: indentPrefix)
 			.append(identity);
@@ -115,7 +120,7 @@ public class BndDropTargetListener extends GAVDropTargetListener {
 			sb.append(",\\");
 		}
 
-		return sb.toString();
+		getStyledText().insert(sb.toString());
 	}
 
 }
