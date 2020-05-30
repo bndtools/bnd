@@ -118,7 +118,7 @@ public class WorkspaceMainPart extends SectionPart {
 		fillLayout.marginHeight = fillLayout.marginWidth = 10;
 		labelParent.setLayout(fillLayout);
 
-		if (!Central.isWorkspaceInited()) {
+		if (!Central.hasAnyWorkspace()) {
 			Label label = new Label(labelParent, SWT.NONE);
 			label.setText("Workspace is loading, please wait...");
 			label.setBackground(container.getBackground());
@@ -128,7 +128,7 @@ public class WorkspaceMainPart extends SectionPart {
 		stackLayout.topControl = labelParent;
 		container.layout();
 
-		Central.onWorkspaceAsync(workspace -> {
+		Central.onAnyWorkspaceAsync(workspace -> {
 			IFile buildFile = Central.getWorkspaceBuildFile();
 			if (buildFile == null)
 				return;

@@ -379,7 +379,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
 			// Load the repos and clear the error message if the Workspace is
 			// initialised later.
 			Central
-				.onWorkspace(workspace -> SWTConcurrencyUtil.execForControl(runReposViewer.getControl(), true, () -> {
+				.onAnyWorkspace(workspace -> SWTConcurrencyUtil.execForControl(runReposViewer.getControl(), true, () -> {
 					allRepos.clear();
 					allRepos.addAll(workspace.getPlugins(Repository.class));
 					runReposViewer.setInput(allRepos);

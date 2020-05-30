@@ -1262,9 +1262,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		boolean changed = updateModified(propertiesFile.lastModified(), "properties file");
 		for (File file : getIncluded()) {
-			if (changed)
-				break;
-
 			changed |= !file.exists() || updateModified(file.lastModified(), "include file: " + file);
 		}
 

@@ -63,7 +63,6 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.build.WorkspaceLayout;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.exceptions.FunctionWithException;
 import aQute.lib.io.IO;
@@ -368,7 +367,7 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 			public void run() {
 				try {
 					Workspace ws = Central.getWorkspace();
-					if ((ws != null) && (ws.getLayout() != WorkspaceLayout.STANDALONE)) {
+					if ((ws != null) && (!ws.isDefaultWorkspace())) {
 						setImageDescriptor(Icons.desc("refresh.disable"));
 						setEnabled(false);
 						IFile workspaceBuildFile = Central.getWorkspaceBuildFile();

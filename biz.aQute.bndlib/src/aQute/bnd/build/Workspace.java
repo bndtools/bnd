@@ -115,6 +115,7 @@ public class Workspace extends Processor {
 	public static final String	EXT						= "ext";
 	public static final String	BUILDFILE				= "build.bnd";
 	public static final String	CNFDIR					= "cnf";
+	@Deprecated
 	public static final String	BNDDIR					= "bnd";
 	public static final String	CACHEDIR				= "cache/" + About.CURRENT;
 	public static final String	STANDALONE_REPO_CLASS	= "aQute.bnd.repository.osgi.OSGiRepository";

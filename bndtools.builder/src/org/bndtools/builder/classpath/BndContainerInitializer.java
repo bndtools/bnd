@@ -68,7 +68,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
 	public BndContainerInitializer() {
 		super();
-		Central.onWorkspace(workspace -> Central.getInstance()
+		Central.onCnfWorkspace(workspace -> Central.getInstance()
 			.addModelListener(BndContainerInitializer.this));
 		JavaRuntime.addContainerResolver(new BndContainerRuntimeClasspathEntryResolver(),
 			BndtoolsConstants.BND_CLASSPATH_ID.segment(0));
@@ -83,7 +83,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 		 * information, then update the container now.
 		 */
 		File containerFile = getContainerFile(project);
-		if (Central.isWorkspaceInited() || !containerFile.isFile()) {
+		if (Central.hasCnfWorkspace() || !containerFile.isFile()) {
 			Updater updater = new Updater(project, javaProject);
 			updater.updateClasspathContainer(true);
 			return;
@@ -96,7 +96,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 		 */
 		BndContainer container = loadClasspathContainer(project);
 		Updater.setClasspathContainer(javaProject, container);
-		Central.onWorkspace(
+		Central.onCnfWorkspace(
 			workspace -> requestClasspathContainerUpdate(BndtoolsConstants.BND_CLASSPATH_ID, javaProject, null));
 	}
 
