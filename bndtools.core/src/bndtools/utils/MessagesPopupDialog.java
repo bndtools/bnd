@@ -122,9 +122,8 @@ public class MessagesPopupDialog extends PopupDialog {
 					fixLink.addHyperlinkListener(new HyperlinkAdapter() {
 						@Override
 						public void linkActivated(HyperlinkEvent e) {
-							fix.run();
 							close();
-							// part.getSite().getPage().activate(part);
+							fix.run();
 							part.setFocus();
 						}
 					});
