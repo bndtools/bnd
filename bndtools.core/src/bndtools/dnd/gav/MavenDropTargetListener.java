@@ -26,7 +26,7 @@ public class MavenDropTargetListener extends GAVDropTargetListener {
 
 	@Override
 	String format(Resource resource, RepositoryPlugin repositoryPlugin, boolean noVersion, boolean useAlternateSyntax,
-		String indentPrefix) {
+		String lineAtInsertionPoint, String indentPrefix) {
 		if (noVersion) {
 			return format(resource, MAVEN_NO_VERSION, indentPrefix, indent(isTabs(), getSize()));
 		}

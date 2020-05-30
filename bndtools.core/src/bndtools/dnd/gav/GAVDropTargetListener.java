@@ -8,6 +8,7 @@ import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetEvent;
@@ -45,7 +46,7 @@ public abstract class GAVDropTargetListener implements DropTargetListener {
 	abstract boolean hasAlternateSyntax();
 
 	abstract String format(Resource resource, RepositoryPlugin repositoryPlugin, boolean noVersion,
-		boolean useAlternateSyntax, String indentPrefix);
+		boolean useAlternateSyntax, String line, String indentPrefix);
 
 	public boolean isAlternateSyntaxEnabled() {
 		return alternateSyntaxEnabled;
@@ -56,6 +57,8 @@ public abstract class GAVDropTargetListener implements DropTargetListener {
 		if (textTransfer.isSupportedType(event.currentDataType)) {
 			String lineAtInsertionPoint = styledText.getLine(styledText.getLineAtOffset(styledText.getCaretOffset()));
 			String indentPrefix = lineAtInsertionPoint.split("\\S", 2)[0];
+			// always move the caret to the end of the line
+			styledText.invokeAction(ST.LINE_END);
 
 			String text = (String) event.data;
 			ISelection selection = localSelectionTransfer.getSelection();
@@ -64,16 +67,18 @@ public abstract class GAVDropTargetListener implements DropTargetListener {
 				Object item = iterator.next();
 				if (item instanceof RepositoryBundle) {
 					RepositoryBundle rb = (RepositoryBundle) item;
-					text = format(rb.getResource(), rb.getRepo(), true, isAlternateSyntaxEnabled(), indentPrefix);
+					text = format(rb.getResource(), rb.getRepo(), true, isAlternateSyntaxEnabled(),
+						lineAtInsertionPoint, indentPrefix);
 					break;
 				} else if (item instanceof RepositoryBundleVersion) {
 					RepositoryBundleVersion rbv = (RepositoryBundleVersion) item;
-					text = format(rbv.getResource(), rbv.getRepo(), false, isAlternateSyntaxEnabled(), indentPrefix);
+					text = format(rbv.getResource(), rbv.getRepo(), false, isAlternateSyntaxEnabled(),
+						lineAtInsertionPoint, indentPrefix);
 					break;
 				} else if (item instanceof RepositoryResourceElement) {
 					RepositoryResourceElement rbe = (RepositoryResourceElement) item;
 					text = format(rbe.getResource(), rbe.getRepositoryBundleVersion()
-						.getRepo(), true, isAlternateSyntaxEnabled(), indentPrefix);
+						.getRepo(), true, isAlternateSyntaxEnabled(), lineAtInsertionPoint, indentPrefix);
 					break;
 				}
 				logger.debug("drop event.data {}", event.data);

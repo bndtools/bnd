@@ -29,16 +29,17 @@ public class BndDropTargetListener extends GAVDropTargetListener {
 
 	@Override
 	String format(Resource resource, RepositoryPlugin repositoryPlugin, boolean noVersion, boolean useAlternateSyntax,
-		String indentPrefix) {
+		String lineAtInsertionPoint, String indentPrefix) {
 		if (noVersion) {
 			Syntax syntax = Syntax.BND_VERSION_LATEST;
 			if (repositoryPlugin instanceof WorkspaceRepository) {
 				syntax = Syntax.BND_VERSION_SNAPSHOT;
 			}
-			return format(resource, useAlternateSyntax ? Syntax.BND_NO_VERSION : syntax, indentPrefix,
+			return format(resource, useAlternateSyntax ? Syntax.BND_NO_VERSION : syntax, lineAtInsertionPoint,
+				indentPrefix,
 				indent(isTabs(), getSize()));
 		}
-		return format(resource, Syntax.BND, indentPrefix, indent(isTabs(), getSize()));
+		return format(resource, Syntax.BND, lineAtInsertionPoint, indentPrefix, indent(isTabs(), getSize()));
 	}
 
 	@Override
@@ -57,7 +58,8 @@ public class BndDropTargetListener extends GAVDropTargetListener {
 		return prefsService.getBoolean("org.eclipse.ui.editors.prefs", "spacesForTabs", false, null);
 	}
 
-	private String format(Resource resource, Syntax syntax, String indentPrefix, String indent) {
+	private String format(Resource resource, Syntax syntax, String lineAtInsertionPoint, String indentPrefix,
+		String indent) {
 		IdentityCapability ic = ResourceUtils.getIdentityCapability(resource);
 		InfoCapability info = BridgeRepository.getInfo(resource);
 
@@ -79,9 +81,18 @@ public class BndDropTargetListener extends GAVDropTargetListener {
 				.toString();
 		}
 
+		boolean lineHasContinuation = lineAtInsertionPoint.endsWith("\\");
+
 		StringBuilder sb = new StringBuilder();
-		sb.append(",\\\n")
-			.append(indentPrefix)
+
+		if (!lineHasContinuation) {
+			sb.append(",\\");
+		}
+
+		sb.append(
+			"\n")
+			.append(indentPrefix.isEmpty() ? indent
+				: indentPrefix)
 			.append(identity);
 
 		switch (syntax) {
@@ -99,6 +110,9 @@ public class BndDropTargetListener extends GAVDropTargetListener {
 			case BND_VERSION_SNAPSHOT :
 				sb.append(";version=snapshot");
 				break;
+		}
+		if (lineHasContinuation) {
+			sb.append(",\\");
 		}
 
 		return sb.toString();

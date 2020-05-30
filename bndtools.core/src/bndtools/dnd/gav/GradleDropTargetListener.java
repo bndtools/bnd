@@ -30,7 +30,7 @@ public class GradleDropTargetListener extends GAVDropTargetListener {
 
 	@Override
 	String format(Resource resource, RepositoryPlugin repositoryPlugin, boolean noVersion, boolean useAlternateSyntax,
-		String indentPrefix) {
+		String lineAtInsertionPoint, String indentPrefix) {
 		if (noVersion) {
 			return format(resource, useAlternateSyntax ? GRADLE_MAP_NO_VERSION : GRADLE_STRING_NO_VERSION, indentPrefix,
 				indent(isTabs(), getSize()));
