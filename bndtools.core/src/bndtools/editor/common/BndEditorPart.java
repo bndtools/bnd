@@ -60,7 +60,7 @@ public abstract class BndEditorPart extends SectionPart implements PropertyChang
 		if (!Central.hasWorkspaceDirectory()) {
 			refreshFromModel();
 		} else {
-			Central.onWorkspaceAsync(workspace -> {
+			Central.onAnyWorkspaceAsync(workspace -> {
 				model.setWorkspace(workspace);
 				ScrolledForm form = getManagedForm().getForm();
 				if (form.isDisposed())

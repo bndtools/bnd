@@ -208,14 +208,14 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	}
 
 	private static boolean isMainWorkspaceConfig(String path, String projectName) {
-		if (Workspace.CNFDIR.equals(projectName) || Workspace.BNDDIR.equals(projectName)) {
+		if (Workspace.CNFDIR.equals(projectName)) {
 			return Workspace.BUILDFILE.equals(path);
 		}
 		return false;
 	}
 
 	private static boolean isExtWorkspaceConfig(String path, String projectName) {
-		if (Workspace.CNFDIR.equals(projectName) || Workspace.BNDDIR.equals(projectName)) {
+		if (Workspace.CNFDIR.equals(projectName)) {
 			return path.startsWith("ext/") && path.endsWith(".bnd");
 		}
 		return false;
@@ -449,7 +449,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
 		showHighestPriorityPage();
 
-		if (!Central.isWorkspaceInited()) {
+		if (!Central.hasAnyWorkspace()) {
 			IFormPage activePage = getActivePageInstance();
 
 			if (activePage != null && activePage.getManagedForm() != null) {
@@ -561,7 +561,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 														// immediately
 					modelReady = loadEditModel();
 				} else { // a real ws will be resolved so we need to load async
-					modelReady = Central.onWorkspace(workspace -> loadEditModel());
+					modelReady = Central.onAnyWorkspace(workspace -> loadEditModel());
 				}
 			} else {
 				modelReady = Central.promiseFactory()

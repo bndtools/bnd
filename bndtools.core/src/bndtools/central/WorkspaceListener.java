@@ -26,7 +26,7 @@ public final class WorkspaceListener extends BndListener {
 				// so we use a job to refresh the file
 				final RefreshFileJob job = new RefreshFileJob(file, true);
 				if (job.needsToSchedule()) {
-					Central.onWorkspace(workspace -> job.schedule());
+					Central.onAnyWorkspace(workspace -> job.schedule());
 				}
 			} else {
 				Central.refreshFile(file, null, true);

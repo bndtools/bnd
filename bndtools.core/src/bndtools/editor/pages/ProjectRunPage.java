@@ -110,7 +110,7 @@ public class ProjectRunPage extends FormPage {
 		final ScrolledForm form = managedForm.getForm();
 		form.setText("Resolve/Run");
 
-		Central.onWorkspaceAsync(workspace -> {
+		Central.onAnyWorkspaceAsync(workspace -> {
 			model.setWorkspace(workspace);
 			updateFormImage(form);
 		});

@@ -167,7 +167,7 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 
 	public void addViewer(TreeViewer viewer, RefreshModel model) {
 		this.viewers.put(viewer, model);
-		Central.onWorkspace(workspace -> new Job("Updating repositories") {
+		Central.onAnyWorkspace(workspace -> new Job("Updating repositories") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				List<RepositoryPlugin> repositories = model.getRepositories();

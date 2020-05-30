@@ -25,7 +25,7 @@ public class EclipseWorkspaceRepository extends AbstractIndexingRepository<IProj
 	implements WorkspaceRepositoryMarker {
 	EclipseWorkspaceRepository() {
 		super();
-		Central.onWorkspace(this::initialize);
+		Central.onCnfWorkspace(this::initialize);
 	}
 
 	private void initialize(Workspace workspace) throws Exception {
