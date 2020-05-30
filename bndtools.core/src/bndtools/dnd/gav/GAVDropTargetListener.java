@@ -19,8 +19,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.osgi.resource.Resource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.model.repo.RepositoryBundle;
@@ -29,8 +27,46 @@ import bndtools.model.repo.RepositoryResourceElement;
 
 public abstract class GAVDropTargetListener implements DropTargetListener {
 
-	private final static Logger					logger					= LoggerFactory
-		.getLogger(GAVDropTargetListener.class);
+	public class FormatEvent {
+		private final Resource			resource;
+		private final RepositoryPlugin	repositoryPlugin;
+		private final boolean			noVersion;
+		private final boolean			useAlternateSyntax;
+
+		public FormatEvent(Resource resource, RepositoryPlugin repositoryPlugin, boolean noVersion,
+			boolean useAlternateSyntax) {
+			this.resource = resource;
+			this.repositoryPlugin = repositoryPlugin;
+			this.noVersion = noVersion;
+			this.useAlternateSyntax = useAlternateSyntax;
+		}
+
+		public Resource getResource() {
+			return resource;
+		}
+
+		public RepositoryPlugin getRepositoryPlugin() {
+			return repositoryPlugin;
+		}
+
+		public boolean isNoVersion() {
+			return noVersion;
+		}
+
+		public boolean useAlternateSyntax() {
+			return useAlternateSyntax;
+		}
+
+		public String getLineAtInsertionPoint() {
+			return styledText.getLine(styledText.getLineAtOffset(styledText.getCaretOffset()));
+		}
+
+		public String getIndentPrefix() {
+			return styledText.getLine(styledText.getLineAtOffset(styledText.getCaretOffset()))
+				.split("\\S", 2)[0];
+		}
+
+	}
 
 	private volatile boolean				alternateSyntaxEnabled	= false;
 
@@ -43,48 +79,45 @@ public abstract class GAVDropTargetListener implements DropTargetListener {
 		addAlternateSyntaxKeyListener(this.styledText);
 	}
 
+	abstract void format(FormatEvent formatEvent);
+
+	public StyledText getStyledText() {
+		return styledText;
+	}
+
 	abstract boolean hasAlternateSyntax();
 
-	abstract String format(Resource resource, RepositoryPlugin repositoryPlugin, boolean noVersion,
-		boolean useAlternateSyntax, String line, String indentPrefix);
-
-	public boolean isAlternateSyntaxEnabled() {
+	public final boolean isAlternateSyntaxEnabled() {
 		return alternateSyntaxEnabled;
 	}
 
 	@Override
 	public void drop(DropTargetEvent event) {
 		if (textTransfer.isSupportedType(event.currentDataType)) {
-			String lineAtInsertionPoint = styledText.getLine(styledText.getLineAtOffset(styledText.getCaretOffset()));
-			String indentPrefix = lineAtInsertionPoint.split("\\S", 2)[0];
 			// always move the caret to the end of the line
 			styledText.invokeAction(ST.LINE_END);
 
-			String text = (String) event.data;
 			ISelection selection = localSelectionTransfer.getSelection();
 			Iterator<?> iterator = ((IStructuredSelection) selection).iterator();
 			while (iterator.hasNext()) {
 				Object item = iterator.next();
 				if (item instanceof RepositoryBundle) {
 					RepositoryBundle rb = (RepositoryBundle) item;
-					text = format(rb.getResource(), rb.getRepo(), true, isAlternateSyntaxEnabled(),
-						lineAtInsertionPoint, indentPrefix);
+					format(
+						new FormatEvent(rb.getResource(), rb.getRepo(), true, isAlternateSyntaxEnabled()));
 					break;
 				} else if (item instanceof RepositoryBundleVersion) {
 					RepositoryBundleVersion rbv = (RepositoryBundleVersion) item;
-					text = format(rbv.getResource(), rbv.getRepo(), false, isAlternateSyntaxEnabled(),
-						lineAtInsertionPoint, indentPrefix);
+					format(new FormatEvent(rbv.getResource(), rbv.getRepo(), false,
+						isAlternateSyntaxEnabled()));
 					break;
 				} else if (item instanceof RepositoryResourceElement) {
 					RepositoryResourceElement rbe = (RepositoryResourceElement) item;
-					text = format(rbe.getResource(), rbe.getRepositoryBundleVersion()
-						.getRepo(), true, isAlternateSyntaxEnabled(), lineAtInsertionPoint, indentPrefix);
+					RepositoryBundleVersion rbv = rbe.getRepositoryBundleVersion();
+					format(new FormatEvent(rbv.getResource(), rbv.getRepo(), true,
+						isAlternateSyntaxEnabled()));
 					break;
 				}
-				logger.debug("drop event.data {}", event.data);
-			}
-			if (text != null) {
-				styledText.insert(text);
 			}
 		}
 	}
@@ -138,4 +171,5 @@ public abstract class GAVDropTargetListener implements DropTargetListener {
 			}
 		});
 	}
+
 }
