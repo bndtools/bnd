@@ -1,5 +1,6 @@
 package bndtools.m2e;
 
+import static aQute.lib.exceptions.BiConsumerWithException.asBiConsumer;
 import static aQute.lib.exceptions.ConsumerWithException.asConsumer;
 
 import java.io.File;
@@ -9,10 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.BiConsumer;
 
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -149,7 +152,18 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 	}
 
 	private void fullRefresh() throws Exception {
-		Central.refreshPlugin(this);
+		if (ResourcesPlugin.getWorkspace()
+			.isTreeLocked()) {
+			// Sometimes we may be called from a resource delta event
+			// handler so we use a job to refresh the repo
+			Central.onAnyWorkspaceAsync(w -> refresh.accept(run, this));
+		} else {
+			refresh.accept(run, this);
+		}
+	}
+
+	private final BiConsumer<Run, MavenImplicitProjectRepository> refresh = asBiConsumer((run, repo) -> {
+		Central.refreshPlugin(repo);
 		run.refresh();
 		run.getWorkspace()
 			.getRepositories()
@@ -157,6 +171,6 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 			.filter(Refreshable.class::isInstance)
 			.map(Refreshable.class::cast)
 			.forEach(asConsumer(Central::refreshPlugin));
-	}
+	});
 
 }

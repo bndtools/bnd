@@ -1,7 +1,5 @@
 package bndtools.m2e;
 
-import static aQute.lib.exceptions.Exceptions.unchecked;
-
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
@@ -15,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -39,12 +38,15 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.repository.ExpressionCombiner;
 import org.osgi.service.repository.RequirementExpression;
+import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.maven.MavenCapability;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.AbstractIndexingRepository;
 import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.BridgeRepository.InfoCapability;
@@ -55,7 +57,9 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.Actionable;
+import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.lib.exceptions.Exceptions;
@@ -67,7 +71,8 @@ import bndtools.central.Central;
 })
 public class MavenWorkspaceRepository extends
 	AbstractIndexingRepository<IProject, Artifact>
-	implements IMavenProjectChangedListener, MavenRunListenerHelper, PopulatedRepository, RepositoryPlugin, Actionable {
+	implements IMavenProjectChangedListener, MavenRunListenerHelper, PopulatedRepository, RepositoryPlugin, Refreshable,
+	Actionable {
 
 	enum Kind {
 		ADDED(MavenProjectChangedEvent.KIND_ADDED),
@@ -92,11 +97,13 @@ public class MavenWorkspaceRepository extends
 	private final static Logger											logger						= LoggerFactory
 		.getLogger(MavenWorkspaceRepository.class);
 
+	private final PromiseFactory										promiseFactory	= Processor.getPromiseFactory();
 	private final static String											BND_INFO	= "bnd.info";
 	private volatile Supplier<Set<String>>								list;
 	private final Function<String, RequirementExpression>				identificationExpressionFunction;
 	private final BiFunction<String, Version, RequirementExpression>	identificationAndVersionExpressionFunction;
 	private final RequirementExpression									identificationExpression;
+	private final Map<Artifact, Set<IProject>>							artifactsPerProject	= new ConcurrentHashMap<Artifact, Set<IProject>>();
 
 	public MavenWorkspaceRepository() {
 		super();
@@ -126,12 +133,13 @@ public class MavenWorkspaceRepository extends
 						.buildSyntheticRequirement()), //
 				combiner.identity(builder.buildSyntheticRequirement()));
 		};
+
+		list = memoize(this::list0);
 	}
 
 	@Activate
 	void activate() {
 		process();
-		list = memoize(this::list0);
 	}
 
 	@Override
@@ -225,32 +233,36 @@ public class MavenWorkspaceRepository extends
 
 	@Override
 	public void mavenProjectChanged(MavenProjectChangedEvent[] events, IProgressMonitor monitor) {
-		boolean changed = false;
-
+		Deferred<Boolean> deferred = promiseFactory.deferred();
+		Promise<Boolean> promise = deferred.getPromise();
 		for (MavenProjectChangedEvent event : ((events != null) ? events : new MavenProjectChangedEvent[0])) {
 			Kind kind = Kind.get(event);
 			logger.debug("{}: mavenProjectChanged({}, {})", getName(), kind, event.getSource());
 			switch (kind) {
 				case ADDED :
 				case CHANGED :
-					if (process(event.getMavenProject(), monitor)) {
-						changed = true;
-					}
+					promise = promise.thenAccept(processed -> process(event.getMavenProject(), monitor))
+						.thenAccept(processed -> {
+							if (processed) {
+									list = memoize(this::list0);
+									Central.refreshPlugin(this);
+							}
+						});
 					break;
 				case REMOVED :
-					if (remove(event.getOldMavenProject()
-						.getProject())) {
-						changed = true;
-					}
+					promise = promise.thenAccept(processed -> remove(event
+						.getOldMavenProject()
+						.getProject()))
+						.thenAccept(processed -> {
+							if (processed) {
+								list = memoize(this::list0);
+								Central.refreshPlugin(this);
+							}
+						});
 					break;
 			}
 		}
-
-		if (changed) {
-			logger.debug("{}: mavenProjectChanged resulting in a refresh", getName());
-			list = memoize(this::list0);
-			unchecked(() -> Central.refreshPlugins());
-		}
+		deferred.resolve(true);
 	}
 
 	@Override
@@ -289,6 +301,13 @@ public class MavenWorkspaceRepository extends
 	protected BiFunction<ResourceBuilder, Artifact, ResourceBuilder> indexer(IProject project) {
 		String name = project.getName();
 		return (rb, artifact) -> {
+			Set<IProject> set = artifactsPerProject.computeIfAbsent(artifact, k -> new HashSet<IProject>());
+			set.add(project);
+			if (set.size() > 1) {
+				// This artifact is already indexed by some other project
+				return null;
+			}
+
 			try {
 				rb = fileIndexer(rb, artifact.getFile());
 				if (rb == null) {
@@ -340,15 +359,23 @@ public class MavenWorkspaceRepository extends
 		}
 	}
 
-	private boolean process() {
-		boolean changed = false;
+	private void process() {
+		Deferred<Boolean> deferred = promiseFactory.deferred();
+		Promise<Boolean> promise = deferred.getPromise();
+
 		IProgressMonitor monitor = new NullProgressMonitor();
 		for (IMavenProjectFacade projectFacade : mavenProjectRegistry.getProjects()) {
-			if (process(projectFacade, monitor)) {
-				changed = true;
-			}
+			promise = promise.thenAccept(processed -> process(
+				projectFacade,
+				monitor))
+				.thenAccept(processed -> {
+					if (processed) {
+							list = memoize(this::list0);
+							Central.refreshPlugin(this);
+					}
+				});
 		}
-		return changed;
+		deferred.resolve(true);
 	}
 
 	private boolean process(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
@@ -445,6 +472,13 @@ public class MavenWorkspaceRepository extends
 	@Override
 	protected boolean remove(IProject iProject) {
 		logger.debug("{}: Removing project {}", getName(), iProject);
+
+		MapStream.of(artifactsPerProject)
+			.filterValue(set -> set.contains(iProject))
+			.filterValue(set -> set.size() == 1)
+			.keys()
+			.forEach(artifactsPerProject::remove);
+
 		return super.remove(iProject);
 	}
 
@@ -560,6 +594,16 @@ public class MavenWorkspaceRepository extends
 		return ResourceUtils.capabilityStream(resource, BND_INFO, InfoCapability.class)
 			.findFirst()
 			.orElse(null);
+	}
+
+	@Override
+	public boolean refresh() throws Exception {
+		return true;
+	}
+
+	@Override
+	public File getRoot() throws Exception {
+		return new File(getName());
 	}
 
 }
