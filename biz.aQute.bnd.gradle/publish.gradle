@@ -1,9 +1,7 @@
 // Edit ext.artifactVersion below to the version you wish to publish.
 // This version must already be visible in maven central.
 // Then run the following commands from the biz.aQute.bnd.gradle folder:
-// touch settings.gradle
-// ../gradlew --no-daemon -b publish.gradle displayArtifacts publishPlugins
-// rm settings.gradle
+// ../gradlew --no-daemon --settings-file publishsettings.gradle displayArtifacts publishPlugins
 
 plugins {
   id 'com.gradle.plugin-publish' version '0.11.0'
@@ -14,7 +12,7 @@ plugins {
 
 ext.groupId = 'biz.aQute.bnd'
 ext.artifactId = 'biz.aQute.bnd.gradle'
-ext.artifactVersion = '5.0.1'
+ext.artifactVersion = '5.1.0'
 
 repositories {
   mavenCentral()
