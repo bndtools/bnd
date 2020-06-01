@@ -36,4 +36,4 @@ Bundle-Description: Class file and Manifest header Transformation Support
 	${junit},\
 	slf4j.simple;version=latest
 
-#-baseline: *
+-baseline: *
