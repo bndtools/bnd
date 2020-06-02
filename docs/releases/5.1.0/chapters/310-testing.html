@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/5.1.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Testing</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Testing" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This section describes how bnd implements a pluggable testing framework. With most tools that use bnd this information is hidden behind a pleasant GUI (sometimes). However, in certain cases it is necessary to understand how bnd handles testing." />
+<meta property="og:description" content="This section describes how bnd implements a pluggable testing framework. With most tools that use bnd this information is hidden behind a pleasant GUI (sometimes). However, in certain cases it is necessary to understand how bnd handles testing." />
+<script type="application/ld+json">
+{"url":"/releases/5.1.0/chapters/310-testing.html","headline":"Testing","description":"This section describes how bnd implements a pluggable testing framework. With most tools that use bnd this information is hidden behind a pleasant GUI (sometimes). However, in certain cases it is necessary to understand how bnd handles testing.","@type":"WebPage","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+		<style>
+			 body {
+				counter-reset: h1 21;
+			}
+		</style>
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/5.1.0/"><img
+			class=menu-logo src="/releases/5.1.0/img/bnd-80x40-white.png"></a>
+			<a href="/releases/5.1.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/5.1.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/5.1.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/5.1.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/5.1.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">5.1.0</button><div class="dropdown-content"></div></div>
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/releases/5.1.0/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li class=selected>Testing
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/875-external-plugins.html">External Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+				<h1> Testing</h1>
+				<p>This section describes how bnd implements a pluggable testing framework. With most tools that use bnd this information is hidden behind a pleasant GUI (sometimes). However, in certain cases it is necessary to understand how bnd handles testing.</p>
+
+<h2 id="model">Model</h2>
+<p>In the classic way testing consists of launching a new VM, dynamically loading the classes to be tested and then running the test framework on those. As this violates module boundaries as if they did not exist there is another way.</p>
+
+<p>In bnd there is a header that allows a bundle to define what tests it contains:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Test-Cases ::= fqn+
+</code></pre></div></div>
+
+<p>Such a bundle therefore exports a number of test cases to the environment. These test cases can then be executed by the tester. The default tester in bnd is the <code class="highlighter-rouge">biz.aQute.tester</code> bundle, but this can be overridden because the launcher and the tester are pluggable (see <a href="#other-tester-frameworks">Other Tester Frameworks</a>).</p>
+
+<p>The default tester can run in <strong>one shot</strong> mode or in <strong>automatic</strong> mode. The <strong>one shot mode</strong> is specified using the <code class="highlighter-rouge">tester.names</code> property - the tester will run the specified tests and then exit. This mode is typically used by build tools, which set the <code class="highlighter-rouge">tester.names</code> property, run the tests, and then parse the results.</p>
+
+<p>In <strong>automatic mode</strong>, the default tester creates a list of available bundles with the <code class="highlighter-rouge">Test-Cases</code> header set and executes all of them. Automatic mode will then end, or if the <code class="highlighter-rouge">tester.continuous</code> property is set it will continue running (known as <strong>continuous mode</strong>).</p>
+
+<p>In <strong>continuous mode</strong>, every time a test bundle is started the tester will run that bundle’s tests. Continuous mode is intended for developing test bundles. You just run a framework and edit your test bundle’s code. Any changes are saved and deployed, triggering a restart of the bundles and hence a re-run of the tests.</p>
+
+<h2 id="how-to-set-the-test-cases-header-automatically">How to set the <code class="highlighter-rouge">Test-Cases</code> header Automatically</h2>
+<p>The <code class="highlighter-rouge">Test-Cases</code> header can be set by hand but this can become a maintenance nightmare. A very useful macro is the <code class="highlighter-rouge">${classes}</code> macro. This macro inspects the JAR and can find all classes that are considered test cases:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Test-Cases = ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
+</code></pre></div></div>
+
+<p>This example looks for concrete classes that extend the JUnit 3 base class. For non JUnit 3 tests, you can use a naming convention:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Test-Cases: ${classes;CONCRETE;PUBLIC;NAMED;*Test*} 
+</code></pre></div></div>
+
+<p>This will include all concrete public classes whose name includes the word <code class="highlighter-rouge">Test</code>.</p>
+
+<h2 id="default-tester---bizaqutetester">Default Tester - <code class="highlighter-rouge">biz.aQute.tester</code></h2>
+
+<p>If you do not explicitly specify the tester module to use, bnd will use <code class="highlighter-rouge">biz.aQute.tester</code>. The configuration of this module is as follows.</p>
+
+<h3 id="supported-framework-properties">Supported Framework Properties</h3>
+
+<p>The default tester uses the project information to parameterize the tester’s runtime component. However, it is also possible to set these runtime parameters explicitly with framework properties when you want to run the framework in automatic mode. The default tester obeys the following framework properties:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Default</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">tester.port</code></td>
+      <td>-</td>
+      <td style="text-align: left">The port to send the JUnit information to in a format defined by Eclipse. If this property is not set, no information is send but tests are still run.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">tester.host</code></td>
+      <td><code class="highlighter-rouge">localhost</code></td>
+      <td style="text-align: left">The host to send the JUnit information to in a formatted defined by Eclipse. If this property is not set localhost is assumed.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">tester.names</code></td>
+      <td> </td>
+      <td style="text-align: left">Fully qualified names of classes to test. If this property is <code class="highlighter-rouge">null</code> automatic mode is chosen, otherwise these classes are tested and then the test exits.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">tester.dir</code></td>
+      <td><code class="highlighter-rouge">testdir</code></td>
+      <td style="text-align: left">A directory to put the test reports. If the directory does not exist, no reports are generated. The default is <code class="highlighter-rouge">testdir</code> in the default directory. This directory is not automatically created so to see the results it is necessary to ensure such a directory exists. the files in the test directory are usable in Hudson/Jenkins as test reports</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">tester.continuous</code></td>
+      <td><code class="highlighter-rouge">false</code></td>
+      <td style="text-align: left">In automatic mode (ie, when no <code class="highlighter-rouge">tester.names</code> are set), continue watching the bundles and (re-)run a bundle’s tests when it is started.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">tester.trace</code></td>
+      <td><code class="highlighter-rouge">false</code></td>
+      <td style="text-align: left">Trace the test framework in detail. Default is false, must be set to true or false.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="continuous-testing">Continuous Testing</h3>
+<p>To setup an environment to test continuously, the following launcher configuration can be used:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
+-runfw: org.apache.felix.framework
+-buildpath: osgi.core;version='[4.1,5)', \
+  osgi.cmpn,  \
+  junit.osgi
+Private-Package: org.example.tests
+-runtrace: true
+-runbundles: biz.aQute.junit
+-runproperties:  \
+  tester.trace=true, \
+  tester.continuous=true, \
+  tester.dir=testdir
+</code></pre></div></div>
+
+<p>The example setup creates a bundle containing the <code class="highlighter-rouge">org.example.tests</code> package and sets the <code class="highlighter-rouge">Test-Cases</code> header to all JUnit 3 test cases in that package. If you run this setup, it runs the project bundle with the <code class="highlighter-rouge">biz.aQute.junit</code> bundle. This tester bundle is parameterized with the <code class="highlighter-rouge">tester.*</code> properties to have trace on, continuous mode on, and to put the test reports in <code class="highlighter-rouge">./testdir</code>.</p>
+
+<p>You can find a bndtools project that shows this at <a href="https://github.com/bnd/aQute/tree/master/aQute.testing">Github</a>.</p>
+
+<h2 id="testing-with-junit-5---bizaqutetesterjunit-platform">Testing With JUnit 5 - <code class="highlighter-rouge">biz.aQute.tester.junit-platform</code></h2>
+
+<p>As of Bnd 5.0, bnd includes a new tester bundle <code class="highlighter-rouge">biz.aQute.tester.junit-platform</code> that supports JUnit 5.</p>
+
+<p>As per the <a href="https://junit.org/junit5/docs/current/user-guide/#overview-what-is-junit-5">JUnit 5 documentation</a>, JUnit 5 is comprised of three modules:</p>
+
+<ol>
+  <li>JUnit Platform - the framework for launching test engines.</li>
+  <li>JUnit Jupiter - a test engine for executing the latest JUnit 5 tests.</li>
+  <li>JUnit Vintage - a test engine for executing JUnit 3 &amp; 4 tests.</li>
+</ol>
+
+<p><code class="highlighter-rouge">biz.aQute.tester.junit-platform</code> leverages JUnit Platform for discovering and launching tests. This tester will:</p>
+
+<ul>
+  <li>scan all running bundles for any JUnit Platform-compliant <code class="highlighter-rouge">TestEngine</code> implementations;</li>
+  <li>scan all running bundles for any bundles with the <code class="highlighter-rouge">Test-Cases</code> header set, or with any classes matching the <code class="highlighter-rouge">-tester.testnames</code> property;</li>
+  <li>execute all of the discovered tests for each of the discovered engines.</li>
+</ul>
+
+<h3 id="feature-compatibility-with-bizaqutetester">Feature compatibility with <code class="highlighter-rouge">biz.aQute.tester</code></h3>
+
+<p>At the moment, <code class="highlighter-rouge">biz.aQute.tester.junit-platform</code> supports most of the features of <code class="highlighter-rouge">biz.aQute.tester</code>, including continuous testing and XML reporting. There are a couple of notable exceptions:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">biz.aQute.tester</code> uses a number of mechanisms to inject a <code class="highlighter-rouge">BundleContext</code> into a running test case. Due to significant architectural differences between JUnit Platform and JUnit 3/4, this feature is not yet supported by <code class="highlighter-rouge">biz.aQute.tester.junit-platform</code> and may never be fully supported (or at least, not in a way that is 100% backward compatible). However, it is not difficult to work around this by manually fetching the bundle context in your tests using <code class="highlighter-rouge">FrameworkUtil</code> (eg, in a <code class="highlighter-rouge">@Before</code> method).</li>
+  <li>The legacy XML reporting output will not include the stdout/stderr output from the tests unless you are running against a version of <code class="highlighter-rouge">junit-platform-launcher</code> &gt;= 1.4.0.</li>
+</ul>
+
+<h3 id="improved-eclipse-integration">Improved Eclipse integration</h3>
+
+<p>In addition to JUnit Platform support, the new tester has some features that weren’t available in the old tester, which makes its integration with Eclipse a bit more user-friendly:</p>
+
+<ul>
+  <li>Test failures are reported blue, and errors as a red x.</li>
+  <li>For assertions that support it, the visual diff for failed comparisons is available.</li>
+  <li>Double-clicking on a test result will take you to the source code of the test.</li>
+  <li>Tests are hierarchically grouped by bundle. Fragments are grouped under their host bundle.</li>
+  <li>Handles the following JUnit features that were previously not supported:
+    <ul>
+      <li>Aborted tests (assumption failures)</li>
+      <li>Ignored/skipped tests</li>
+      <li>Custom display names (including full Unicode support)</li>
+      <li>Parameterized tests</li>
+    </ul>
+  </li>
+  <li>Better continuous mode support. With <code class="highlighter-rouge">biz.aQute.tester</code>, when running in continuous mode only the results of the first test run are displayed in Eclipse. With <code class="highlighter-rouge">biz.aQute.junit-platform</code>, if you select the <em>Display JUnit results in IDE every time the tester reruns tests</em> property in the launch configuration, then it will display the results afresh for every test run. This allows you to combine the power of continuous testing with the convenience of Eclipse’s JUnit GUI.</li>
+</ul>
+
+<h3 id="using-bizaqutetesterjunit-platform">Using <code class="highlighter-rouge">biz.aQute.tester.junit-platform</code></h3>
+
+<ul>
+  <li>Set <code class="highlighter-rouge">-tester: biz.aQute.tester.junit-platform</code> in your bnd file (see <a href="#other-tester-frameworks">Other Tester Frameworks</a>).</li>
+  <li>Ensure that <code class="highlighter-rouge">biz.aQute.tester.junit-platform</code>’s dependencies are installed in your <code class="highlighter-rouge">-runbundles</code>.</li>
+  <li>Ensure that the test engines you need (and their dependencies) are also installed in your <code class="highlighter-rouge">-runbundles</code>.</li>
+</ul>
+
+<p>Bnd can help with the last two steps by adding the tester and engine bundles to <code class="highlighter-rouge">-runrequires</code> and using the resolver:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-runrequires: \
+	bnd.identity;id='org.junit.jupiter.engine',\
+	bnd.identity;id='org.junit.vintage.engine',\
+	bnd.identity;id='biz.aQute.tester.junit-platform'
+</code></pre></div></div>
+
+<p>See the <a href="http://bnd.bndtools.org/chapters/250-resolving.html">chapter on resolving</a> for more information.</p>
+
+<p>Note that if you’re only using JUnit 3/4, you can omit the <code class="highlighter-rouge">-runrequires</code> line for the Jupiter engine, and conversely if you’re only using JUnit Jupiter you can omit the Vintage engine. Alternatively/additionally, if you have any other <code class="highlighter-rouge">TestEngine</code> implementation bundles available, you can list these here instead/as well (though this has not been tested).</p>
+
+<h4 id="finding-the-junit-platform-bundles">Finding the JUnit Platform bundles</h4>
+
+<p>As noted above, <code class="highlighter-rouge">biz.aQute.tester.junit-platform</code> requires JUnit Platform (and its dependencies) on the classpath, and if it is to do much that is useful it will also require at least one <code class="highlighter-rouge">TestEngine</code>. Bundled versions of these are part of Eclipse since Oxygen. You can include them in your workspace from:</p>
+
+<ul>
+  <li>Eclipse’s Orbit repository</li>
+  <li>Bnd project’s Eclipse mirror: https://dl.bintray.com/bndtools/eclipse-repo/4.10:
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  -plugin.repository: \
+      aQute.bnd.repository.osgi.OSGiRepository;\
+          name="Eclipse 2018-12";\
+          locations="https://dl.bintray.com/bndtools/eclipse-repo/4.10/index.xml.gz";\
+          poll.time=-1;\
+          cache="${workspace}/cnf/cache/stable/Eclipse-2018-12"
+</code></pre></div>    </div>
+  </li>
+  <li>Your local Eclipse installation (using the P2Repository plugin):
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  -plugin.repository: \
+      aQute.bnd.repository.p2.provider.P2Repository;\
+          name="Eclipse Local";\
+          url="file:///path/to/eclipse/";\
+          location="${workspace}/cnf/cache/stable/EclipseLocal"
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<p>Alternatively, it is not difficult to download the required (non-OSGi) modules from Maven Central and include them as-is on <code class="highlighter-rouge">-runpath</code>, or else (preferably) wrap them into bundles and include them in <code class="highlighter-rouge">-runrequires</code>/<code class="highlighter-rouge">-runbundles</code>. 
+As of JUnit 5.6, the JUnit jars already have the OSGi metadata and so can be used as bundles 
+direct from Maven Central.</p>
+
+<p>Also note that unfortunately, due to a bug in <code class="highlighter-rouge">biz.aQute.tester.junit-platform</code>, Bndtools 5.0 
+<em>does not work with JUnit 5.5+</em>. A fix is already available in the latest development snapshot, and we expect the 
+fix to be included in a future Bndtools release (hopefully soon).</p>
+
+<h2 id="other-tester-frameworks">Other Tester Frameworks</h2>
+<p>The biz.aQute.tester is a normal bundle that gets started from the launcher framework. However, before bnd chooses the default tester, it scans the classpath for a tester (set with <code class="highlighter-rouge">-runpath</code>) for JARs that have the following header set:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Tester-Plugin ::= fqn
+</code></pre></div></div>
+
+<p>If no such tester is found on the <code class="highlighter-rouge">-runpath</code> it will look in the <code class="highlighter-rouge">-tester</code> instruction and loads that bundle:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-tester:				biz.aQute.junit
+</code></pre></div></div>
+
+<p>Otherwise it will use <code class="highlighter-rouge">biz.aQute.tester</code> (if it still can find it).</p>
+
+<p>The <code class="highlighter-rouge">Tester-Plugin</code> header points to a class that must extend the <code class="highlighter-rouge">aQute.bnd.build.ProjectTester</code> class. This class is loaded in the bnd environment and not in the target environment. This ProjectTester plugin then gets a chance to configure the launcher as it sees fit. It can get properties from the project and set these in the Project Launcher so they can be picked up in the target environment.</p>
+
+<p>As this is a quite specific area the rest of the documentation is found in the source code.</p>
+
+<h2 id="older-versions">Older Versions</h2>
+
+<p>For a long time bnd had <code class="highlighter-rouge">biz.aQute.junit</code> as the default tester. <code class="highlighter-rouge">biz.aQute.junit</code> has the same functionality as <code class="highlighter-rouge">biz.aQute.tester</code>, but with the following key differences:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">biz.aQute.junit</code> embedded the JUnit 3/4 classes and exported them. <code class="highlighter-rouge">biz.aQute.tester</code> imports the JUnit classes like any other bundle, giving you flexibility in which version you wish to use.</li>
+  <li><code class="highlighter-rouge">biz.aQute.junit</code> added itself to the <code class="highlighter-rouge">-runpath</code> and then executed the tests from there, making itself (and JUnit) part of the system bundle. In contrast, <code class="highlighter-rouge">biz.aQute.tester</code> adds itself to <code class="highlighter-rouge">-runbundles</code>.</li>
+</ul>
+
+<p>Unfortunately the design of <code class="highlighter-rouge">biz.aQute.junit</code> caused constraints between JUnit and bnd that was not good because JUnit itself is not directly a shining example of software engineering. :-( So for this reason, <code class="highlighter-rouge">biz.aQute.tester</code> (or the newer <code class="highlighter-rouge">biz.aQute.tester.junit-platform</code>) is generally preferred.</p>
+
+<p>If for some reason you need to be backward compatible with the older model, set:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-tester: biz.aQute.junit
+</code></pre></div></div>
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/releases/5.1.0/chapters/305-startlevels.html'></a> <a href='/releases/5.1.0/chapters/315-launchpad-testing.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/5.1.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>
