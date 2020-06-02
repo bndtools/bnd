@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/5.1.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>-generate srcs ‘;output=’ DIR ( ‘;’ ( system generate classpath))* …</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="-generate srcs ‘;output=’ DIR ( ‘;’ ( system generate classpath))* …" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Virtually all the work bnd is concerned about happens in generating the JAR file. The key idea is to pull resources in the JAR, instead of the more traditional push model of other builders. This works well, except for generating source code. This generating step must happen before the compiler is called, and the compiler is generally called before bnd becomes active." />
+<meta property="og:description" content="Virtually all the work bnd is concerned about happens in generating the JAR file. The key idea is to pull resources in the JAR, instead of the more traditional push model of other builders. This works well, except for generating source code. This generating step must happen before the compiler is called, and the compiler is generally called before bnd becomes active." />
+<script type="application/ld+json">
+{"url":"/releases/5.1.0/instructions/generate.html","headline":"-generate srcs ‘;output=’ DIR ( ‘;’ ( system generate classpath))* …","description":"Virtually all the work bnd is concerned about happens in generating the JAR file. The key idea is to pull resources in the JAR, instead of the more traditional push model of other builders. This works well, except for generating source code. This generating step must happen before the compiler is called, and the compiler is generally called before bnd becomes active.","@type":"WebPage","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/5.1.0/"><img
+			class=menu-logo src="/releases/5.1.0/img/bnd-80x40-white.png"></a>
+			<a href="/releases/5.1.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/5.1.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/5.1.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/5.1.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/5.1.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">5.1.0</button><div class="dropdown-content"></div></div>
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/releases/5.1.0/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/875-external-plugins.html">External Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+				<h1> -generate srcs ';output=' DIR ( ';' ( system | generate | classpath))* ...</h1>
+				<p>Virtually all the work bnd is concerned about happens in generating the JAR file. The key idea is to <em>pull</em> resources in the JAR, instead of the more traditional <em>push</em> model of other builders. This works well, except for <em>generating source code</em>. This generating step must happen before the compiler is called, and the compiler is generally called before bnd becomes active.</p>
+
+<p>This <code class="highlighter-rouge">-generate</code> instruction specifies the code generating steps that must be executed. Source code can be generated by <em>system</em> commands or the bnd <em>external plugins</em>.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-generate	::= 	clause ( ',' clause )*
+clause		::= 	FILESET ';' 'output=' DIR (';' option )*
+src		::=	FILESET
+option		::= 	'system=' STRING
+		|   'generate=' STRING
+        |   'classpath=' PATH
+        |   'workingdir=' FILE
+</code></pre></div></div>
+
+<p>For each clause, the key of the clause is used to establish an Ant File Set, e.g. <code class="highlighter-rouge">foo/**.in</code>. This a glob expression with the exception that the double wildcard (‘**’) indicates to any depth of directories. The <code class="highlighter-rouge">output</code> attribute <em>must</em> specify a directory. If the output must be compiled this directory must be on the bnd source path.</p>
+
+<p>If any file in the source is older than any file in the target (to any depth), or the target is empty, the clause is considered <em>stale</em>. If the clause is not stale, it is further ignored. If no further options are set on the clause, a warning is generated that some files are out of date.</p>
+
+<p>If either a warning or error option is given, these will be executed on the project.</p>
+
+<p>If a command <code class="highlighter-rouge">STRING</code> is given it is executed as in the <code class="highlighter-rouge">${system}</code> macro. If the command <code class="highlighter-rouge">STRING</code> starts with a 
+minus sign (<code class="highlighter-rouge">-</code>) then a failure is not an error, it is reported as warning.</p>
+
+<p>The generate option will execute an <em>external plugin</em> or plain JAR with a <code class="highlighter-rouge">Main-Class</code> manifest header. The choice is made by looking at the first word in the <code class="highlighter-rouge">generate</code> attribute.</p>
+
+<p>If this <em>name</em> has a dot in it, like in a fully qualified class name, it is assume that species a <em>class name</em>. (If the name starts with a dot, it will be assume to be a name in the default package.) In this case, the <code class="highlighter-rouge">classpath</code> attribute of the instruction can be used to provide additional JARs on the command’s classpath. The format of PATH is the standard format for instructions like -buildpath. Inn this case, you can also set the <code class="highlighter-rouge">workingdir</code> to a directory. This directory is specified relative to the project.</p>
+
+<p>Without a dot in the name, the name is assumes to be an <em>external plugin</em> name, with the <code class="highlighter-rouge">objectClass</code> (service type) of <code class="highlighter-rouge">Generator&lt;? extends Options&gt;</code>. External , or Main-Class jars, can come from an external repository or a local workspace project.</p>
+
+<p>The <code class="highlighter-rouge">generate</code> value is a <em>command line</em>. It can use the standard <em>unix</em> like way of specifying a command. It supports flags (boolean parameters) and parameter that take a value. When this external plugin is executed, it is expected to create files fall within the <em>target</em>, if not, an error is reported. These changed or created files are refreshed in Eclipse.</p>
+
+<p>The command line can be broken in different commands with the semicolon (<code class="highlighter-rouge">';'</code>), like a unix shell. Redirection of stdin (<code class="highlighter-rouge">'&lt;'</code>), stdout (<code class="highlighter-rouge">'&gt;'</code>, or <code class="highlighter-rouge">'1&gt;'</code>), and stderr (<code class="highlighter-rouge">'2&gt;'</code>) are supported.  The path for redirection is relative to the project directory, even if <code class="highlighter-rouge">workingdir</code> has been specified.</p>
+
+<h2 id="example-with-an-external-plugin">Example with an External Plugin</h2>
+
+<p>Include in the bnd build is a <em>javagen</em> external plugin that is useful to generate Java code based on build information. It uses a template directory with Java files. When the external plugin runs, it will use all these files to write matching Java files in the output directory, in a matching package directory. The input Java files can be prefixed with a properties header:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">---</span>
+<span class="n">foo</span><span class="p">:</span> <span class="m">1</span>
+<span class="p">---</span>
+<span class="k">package</span> <span class="n">foo</span><span class="p">.</span><span class="n">bar</span><span class="p">;</span>
+<span class="n">class</span> <span class="n">Foo</span> <span class="p">{</span>
+    <span class="n">int</span> <span class="n">foo</span> <span class="p">=</span> <span class="p">${</span><span class="n">foo</span><span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The optional header is removed and then the remainder of the file is ran through the bnd macro processor.</p>
+
+<p>If this example is used, it is necessary to add a new <em>source folder</em>. In Eclipse, this requires adding an entry in the <code class="highlighter-rouge">.classpath</code> file, in bnd it requires the modification of the <code class="highlighter-rouge">src</code> property.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>src=${^src},src-gen
+</code></pre></div></div>
+
+<p>Assuming that the input files are in the <code class="highlighter-rouge">gen</code> directory, the following can be used to automatically generate the output files based on the input files.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-generate:   \
+    gen/**.java; \ 
+        output='src-gen/' ; \ 
+        generate='javagen -o src-gen gen/'
+</code></pre></div></div>
+
+<h2 id="example-with-a-main-class-jar">Example with a Main Class JAR</h2>
+
+<p>JFlex and CUP are popular tools to create <em>lexers</em> and <em>parsers</em>. The JARs are on Maven Central with  Main-Class manifest attribute. The JFlex JAR, however, requires the <code class="highlighter-rouge">cup_runtime</code> JAR on the classpath.</p>
+
+<p>We can directly use these executable JARs with the <code class="highlighter-rouge">-generate</code> instruction.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-generate: \
+    lex/Foo.lex; \
+        output      = gen-src/ \
+        generate    = `jflex.Main -d lex-gen/ lex/Foo.lex'; \
+        classpath   = 'de.jflex:cup_runtime;version=11b-20160615'
+</code></pre></div></div>
+
+<p>Notice that we use the <code class="highlighter-rouge">maven</code> GAV format here to find the <code class="highlighter-rouge">cup_runtime</code> because these JARs are unfortunately not bundles.</p>
+
+<h2 id="writing-a-command">Writing a Command</h2>
+
+<p>It is possible to create an External Plugin or a Main Class command your in the same workspace as where you apply the command. This makes it easy to develop commands interactively. The easiest way is to make an External Plugin. The support for Main-Class is mostly to support existing JAR.</p>
+
+<p>The following is an Generate external plugin that outputs “hello”:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@ExternalPlugin(name = "hello", objectClass = Generator.class)
+public class Hello implements Generator&lt;HelloOptions&gt; {
+
+    public interface HelloOptions extends Options {
+        boolean upper();
+        String name(String defaultName)
+    }
+    
+    public Optional&lt;String&gt; generate(
+        BuildContext context, 
+        HelloOptions options) throws Exception {
+        String hello = "Hello " + options.name("World");
+        if ( options.upper() )
+            hello = hello.toUpperCase();
+            
+        System.out.println( hello );
+        return Optional.empty();
+    }
+}
+</code></pre></div></div>
+
+<p>The ` @ExternalPlugin` annotation creates an external plugin <em>capability</em> in the bundle’s manifest. The name is the name we can use as the command name. Do not use a name that has dots in it, this will then be confused with a main class command.</p>
+
+<p>The Hello class implements <code class="highlighter-rouge">Generator&lt;HelloOptions&gt;</code>. This is the type the generate code expects.</p>
+
+<p>The type parameter specifies a <em>specification interface</em>. This interface is used to specify the command line. A <code class="highlighter-rouge">boolean</code> method is a <em>flag</em>, and any other type is an <em>option</em>. The first character of the method is the name of the flag or option. For example, <code class="highlighter-rouge">boolean upper()</code> is a flag and has the <code class="highlighter-rouge">-u</code> and <code class="highlighter-rouge">--upper</code>. Flags can be combined. For example, if you have a flag <code class="highlighter-rouge">-a</code> and <code class="highlighter-rouge">-b</code> then you can also use <code class="highlighter-rouge">-ab</code>.</p>
+
+<p>Options take parameters. For example, a <code class="highlighter-rouge">String name()</code> option would be set as <code class="highlighter-rouge">-n World</code>. The method on the spec interface can optionally take an argument, this argument is used as default if the option is not used in the command line. The argument type and the return type can be different. For example, if the return type is <code class="highlighter-rouge">File</code>, then the parameter type can be <code class="highlighter-rouge">String</code> so that the returned <code class="highlighter-rouge">File</code> is resolved against the base directory of the build.</p>
+
+<p>Options that return <code class="highlighter-rouge">File</code> will resolve the input against the project directory. A Set<File> will accept an ant file set specification like `gen/**.java`.</File></p>
+
+<p>The Options interface specifies a number of additional keys:</p>
+
+<ul>
+  <li>_arguments – A list with the arguments, flags and options removed</li>
+  <li>_properties – The properties that contains the flags and options</li>
+</ul>
+
+<p>The actual code is in the <code class="highlighter-rouge">generate(BuildContext,HelloOptions)</code> method. the Build Context contains useful context information.</p>
+
+<p>It is ok to write to the System.out and System.err. The output is captured and can be redirected in the command line in the standard Unix way.</p>
+
+<p>The code is expected to return an <code class="highlighter-rouge">Optional.empty()</code> when everything is ok. If something is wrong, an actualString can be used to explain the error. Return a non-empty fails the call and the error will be reported.</p>
+
+<p>If you the plugin source code is in the same workspace as the project using this plugin, you must make sure that the external plugin project is build before the project that uses it. You can achieve this with <a href="dependson.html">-dependson</a>.</p>
+
+<p>You can take a look at the <a href="https://github.com/bndtools/bnd/tree/master/biz.aQute.bnd.javagen">JavaGen</a> project in the bnd build to see how an actual external plugin is made.</p>
+
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/releases/5.1.0/instructions/fixupmessages.html'></a> <a href='/releases/5.1.0/instructions/groupid.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/5.1.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

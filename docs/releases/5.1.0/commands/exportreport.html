@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/5.1.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>exportreport [options]</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="exportreport [options]" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Description" />
+<meta property="og:description" content="Description" />
+<script type="application/ld+json">
+{"url":"/releases/5.1.0/commands/exportreport.html","headline":"exportreport [options]","description":"Description","@type":"WebPage","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/5.1.0/"><img
+			class=menu-logo src="/releases/5.1.0/img/bnd-80x40-white.png"></a>
+			<a href="/releases/5.1.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/5.1.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/5.1.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/5.1.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/5.1.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">5.1.0</button><div class="dropdown-content"></div></div>
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/releases/5.1.0/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/875-external-plugins.html">External Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+				<h1> exportreport <sub-cmd> [options]</h1>
+				<h2 id="description">Description</h2>
+
+<p>Generate and export reports of a workspace, a project or of a Jar.</p>
+
+<p>Custom reports must first be configured in the project or the workspace with the <a href="../instructions/exportreport.html">-exportreport</a> intruction and optionaly with the <a href="../instructions/reportconfig.html">-reportconfig</a> intruction. For an “external” Jar the reports can be configured directly with the command line (replacing the <code class="highlighter-rouge">-exportreport</code> instruction), however if you need to fine tune the report the <code class="highlighter-rouge">-reportconfig</code> has to be in a properties file.</p>
+
+<p>For a general introduction of the feature you can look at the <a href="../chapters/395-generating-documentation.html">here</a>.</p>
+
+<h2 id="synopsis">Synopsis</h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>exportreport &lt;[sub-cmd]&gt; [options]
+</code></pre></div></div>
+
+<h2 id="options">Options</h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Available sub-commands: 
+
+  list                        - List the user defined reports.
+  export                      - Export the user defined reports. 
+  jarexport                   - Export a custom report of a Jar. 
+  readme                      - Export a set of readme files. 
+  jarreadme                   - Export a readme file of a Jar 
+</code></pre></div></div>
+
+<h2 id="sub-commands">Sub-commands</h2>
+
+<h3 id="list">List</h3>
+
+<h4 id="description-1">Description</h4>
+
+<p>List the user defined reports absolute path which could be exported by the workpace and/or the projects. If this command is applied on a workspace, the command will also list reports of all the projects (except if you exclude them).</p>
+
+<h4 id="synopsis-1">Synopsis</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>list [options]
+</code></pre></div></div>
+
+<h4 id="options-1">Options</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ -e, --exclude &lt;string;&gt; ]   - Exclude files by pattern
+[ -p, --project &lt;string&gt; ]    - Identify another project
+[ -v, --verbose ]             - Prints more processing information
+[ -w, --workspace &lt;string&gt; ]  - Use the following workspace
+</code></pre></div></div>
+
+<h3 id="export">Export</h3>
+
+<h4 id="description-2">Description</h4>
+
+<p>Generate and export the user defined reports. If this command is applied on a workspace, the command will also export reports of all the projects (except if you exclude them).</p>
+
+<h4 id="synopsis-2">Synopsis</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>export [options]
+</code></pre></div></div>
+
+<h4 id="options-2">Options</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ -e, --exclude &lt;string;&gt; ]   - Exclude files by pattern
+[ -p, --project &lt;string&gt; ]    - Identify another project
+[ -v, --verbose ]             - Prints more processing information
+[ -w, --workspace &lt;string&gt; ]  - Use the following workspace
+</code></pre></div></div>
+
+<h3 id="jar-export">Jar Export</h3>
+
+<h4 id="description-3">Description</h4>
+
+<p>Generate and export a custom report of a Jar.</p>
+
+<h4 id="synopsis-3">Synopsis</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>jarexport [options] &lt;jar path&gt; &lt;output path&gt;
+</code></pre></div></div>
+
+<h4 id="options-3">Options</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ -c, --configName &lt;string&gt; ]   - A configuration name defined in the property
+                                  file (check -reportconfig documentation), if not
+                                  set a default configuration will be used.
+[ -l, --locale &lt;string&gt; ]       - A locale (language-COUNTRY-variant) used to
+                                  localized the report data.
+[ -p, --parameters &lt;string;&gt; ]  - A list of parameters that will be provided
+                                  to the transformation process if any.
+[ -P, --properties &lt;string&gt; ]   - Path to a property file
+[ -t, --template &lt;string&gt; ]     - Path or URL to a template file used to
+                                  transform the generated report (twig or xslt).
+[ -T, --templateType &lt;string&gt; ] - The template type (aka template file
+                                  extension), must be set if it could not be guess
+                                  from the template file name.
+</code></pre></div></div>
+
+<h4 id="examples">Examples</h4>
+
+<p>Create an <code class="highlighter-rouge">XML</code> report of a Jar:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bnd exportreport jarexport ./m2/.../my.bundle.jar ./my-report.xml
+</code></pre></div></div>
+
+<p>Create a <code class="highlighter-rouge">JSON</code> report of a Jar:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bnd exportreport jarexport ./m2/.../my.bundle.jar ./my-report.json
+</code></pre></div></div>
+
+<p>Generate a web page from a Jar. Here, we specify the template type because the URL is ambiguous and a locale to get data in French:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bnd exportreport jarexport --locale fr-FR --template https://..../templates/56z5f --templateType xslt ./m2/.../my.bundle.jar ./webpage.html
+</code></pre></div></div>
+
+<h3 id="readme">Readme</h3>
+
+<h4 id="description-4">Description</h4>
+
+<p>Generate and export a set of readme files. If this command is applied on a workspace, the command will also export readme files for each projects (except if you exclude them).</p>
+
+<h4 id="synopsis-4">Synopsis</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>readme [options]
+</code></pre></div></div>
+
+<h4 id="options-4">Options</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ -e, --exclude &lt;string;&gt; ]   - Exclude files by pattern
+[ -p, --project &lt;string&gt; ]    - Identify another project
+[ -v, --verbose ]             - Prints more processing information
+[ -w, --workspace &lt;string&gt; ]  - Use the following workspace
+</code></pre></div></div>
+
+<blockquote>
+  <p>Template can be parametrized with system properties starting with ‘bnd.reporter.*’. See 
+<a href="../chapters/395-generating-documentation.html">here</a> for a complete list of parameters.</p>
+</blockquote>
+
+<h3 id="jar-readme">Jar Readme</h3>
+
+<h4 id="description-5">Description</h4>
+
+<p>Generate and export a readme file of a Jar.</p>
+
+<h4 id="synopsis-5">Synopsis</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>jarreadme &lt;jar path&gt; &lt;output path&gt;
+</code></pre></div></div>
+
+<h4 id="options-5">Options</h4>
+
+<blockquote>
+  <p>Template can be parametrized with system properties starting with ‘bnd.reporter.*’. See 
+<a href="../chapters/395-generating-documentation.html">here</a> for a complete list of parameters.</p>
+</blockquote>
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/releases/5.1.0/commands/enroute.html'></a> <a href='/releases/5.1.0/commands/extract.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/5.1.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>
