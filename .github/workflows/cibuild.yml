@@ -42,6 +42,12 @@ jobs:
       env:
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+    - name: JUnit JDK8 ubuntu-latest
+      uses: check-run-reporter/action@v1.1.0
+      if: always() && (github.repository == 'bndtools/bnd')
+      env:
+        CHECK_RUN_REPORTER_REPORT: '*/generated/test-reports/test/TEST-*.xml'
+        CHECK_RUN_REPORTER_TOKEN: ${{ secrets.CHECK_RUN_REPORTER_TOKEN }}
   JDKxx_Matrix:
     strategy:
       matrix:
