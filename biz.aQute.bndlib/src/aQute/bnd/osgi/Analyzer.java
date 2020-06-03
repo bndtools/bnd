@@ -570,8 +570,7 @@ public class Analyzer extends Processor {
 		if (clazz.annotations()
 			.contains(referencedAnnotation)) {
 			Set<PackageRef> referenced = clazz.annotations(referencedAnnotation.getBinary())
-				.flatMap(ann -> Arrays.stream((Object[]) ann.get("value")))
-				.map(TypeRef.class::cast)
+				.flatMap(ann -> ann.stream("value", TypeRef.class))
 				.map(TypeRef::getPackageRef)
 				.collect(toSet());
 			return referenced;
