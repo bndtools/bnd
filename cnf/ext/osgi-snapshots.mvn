@@ -1,2 +1,2 @@
 org.osgi:org.osgi.framework:1.10.0-SNAPSHOT
-
+org.osgi:org.osgi.annotation.bundle:1.1.0-SNAPSHOT

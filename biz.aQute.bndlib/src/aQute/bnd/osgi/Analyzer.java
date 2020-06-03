@@ -564,6 +564,21 @@ public class Analyzer extends Processor {
 		return exportedByAnnotation;
 	}
 
+	// Handle org.osgi.annotation.bundle.Referenced annotation
+	private Set<PackageRef> referencesByAnnotation(Clazz clazz) {
+		TypeRef referencedAnnotation = descriptors.getTypeRef("org/osgi/annotation/bundle/Referenced");
+		if (clazz.annotations()
+			.contains(referencedAnnotation)) {
+			Set<PackageRef> referenced = clazz.annotations(referencedAnnotation.getBinary())
+				.flatMap(ann -> Arrays.stream((Object[]) ann.get("value")))
+				.map(TypeRef.class::cast)
+				.map(TypeRef::getPackageRef)
+				.collect(toSet());
+			return referenced;
+		}
+		return Collections.emptySet();
+	}
+
 	public Clazz getPackageInfo(PackageRef packageRef) {
 		TypeRef tr = descriptors.getPackageInfo(packageRef);
 		try {
@@ -2630,10 +2645,10 @@ public class Analyzer extends Processor {
 
 						// Look at the referred packages
 						// and copy them to our baseline
-						Set<PackageRef> refs = Create.set();
-						for (PackageRef p : clazz.getReferred()) {
+						Set<PackageRef> refs = new LinkedHashSet<>(clazz.getReferred());
+						refs.addAll(referencesByAnnotation(clazz));
+						for (PackageRef p : refs) {
 							referred.put(p);
-							refs.add(p);
 						}
 						refs.remove(packageRef);
 						uses.addAll(packageRef, refs);
