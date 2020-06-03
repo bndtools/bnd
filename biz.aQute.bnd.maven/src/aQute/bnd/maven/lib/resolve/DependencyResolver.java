@@ -178,7 +178,8 @@ public class DependencyResolver {
 	}
 
 	private void readConfiguration(Xpp3Dom xpp3Dom, String finalName, Collection<File> bundles) {
-		String classifier = Optional.ofNullable(xpp3Dom.getChild("classifier"))
+		String classifier = Optional.ofNullable(xpp3Dom)
+			.map(c -> c.getChild("classifier"))
 			.map(Xpp3Dom::getValue)
 			.orElse("");
 		StringBuilder fileName = new StringBuilder(finalName);
