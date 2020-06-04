@@ -46,7 +46,7 @@ import aQute.lib.settings.Settings;
  * {@code InetAddress} returned by {@link InetAddress#getLocalHost()})
  * </ul>
  */
-@aQute.bnd.annotation.plugin.BndPlugin(name = "url.bnd.authentication", parameters = BndAuthentication.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "url.bnd.authentication", hide = true, parameters = BndAuthentication.Config.class)
 public class BndAuthentication extends DefaultURLConnectionHandler {
 	private final static Logger logger = LoggerFactory.getLogger(BndAuthentication.class);
 

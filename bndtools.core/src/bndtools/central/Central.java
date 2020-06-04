@@ -56,6 +56,7 @@ import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
 
+import aQute.bnd.annotation.plugin.InternalPluginDefinition;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
@@ -96,6 +97,7 @@ public class Central implements IStartupParticipant {
 	private final List<ModelListener>					listeners					= new CopyOnWriteArrayList<>();
 
 	private RepositoryListenerPluginTracker				repoListenerTracker;
+	private final InternalPluginTracker							internalPlugins;
 
 	@SuppressWarnings("unused")
 	private static WorkspaceRepositoryChangeDetector	workspaceRepositoryChangeDetector;
@@ -108,6 +110,7 @@ public class Central implements IStartupParticipant {
 				.getBundleContext();
 			Bundle bndlib = FrameworkUtil.getBundle(Workspace.class);
 			auxiliary = new Auxiliary(context, bndlib);
+
 		} catch (Exception e) {
 			// ignore
 		}
@@ -122,6 +125,8 @@ public class Central implements IStartupParticipant {
 	public Central() {
 		bundleContext = FrameworkUtil.getBundle(Central.class)
 			.getBundleContext();
+		internalPlugins = new InternalPluginTracker(bundleContext);
+
 	}
 
 	@Override
@@ -130,6 +135,7 @@ public class Central implements IStartupParticipant {
 
 		repoListenerTracker = new RepositoryListenerPluginTracker(bundleContext);
 		repoListenerTracker.open();
+		internalPlugins.open();
 
 	}
 
@@ -150,6 +156,7 @@ public class Central implements IStartupParticipant {
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
+		internalPlugins.close();
 	}
 
 	public static Central getInstance() {
@@ -646,6 +653,9 @@ public class Central implements IStartupParticipant {
 	 */
 
 	public static IResource toResource(File file) {
+		if (file == null)
+			return null;
+
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
 			.getRoot();
 		return toFullPath(file).map(p -> file.isDirectory() ? root.getFolder(p) : root.getFile(p))
@@ -843,5 +853,13 @@ public class Central implements IStartupParticipant {
 			}
 		});
 		return errors.isZero();
+	}
+
+	public static List<InternalPluginDefinition> getInternalPluginDefinitions() {
+		return instance.internalPlugins.getTracked()
+			.values()
+			.stream()
+			.flatMap(Collection::stream)
+			.collect(Collectors.toList());
 	}
 }

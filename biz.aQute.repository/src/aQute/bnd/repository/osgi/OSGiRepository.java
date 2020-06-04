@@ -40,7 +40,6 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
-import aQute.configurable.Config;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
@@ -48,7 +47,7 @@ import aQute.lib.strings.Strings;
 import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
-@BndPlugin(name = "OSGiRepository", parameters = Config.class)
+@BndPlugin(name = "OSGiRepository", parameters = OSGiRepository.Config.class)
 public class OSGiRepository extends BaseRepository
 	implements Plugin, RepositoryPlugin, Actionable, Refreshable, RegistryPlugin, Prepare, Closeable {
 	private final static Logger	logger				= LoggerFactory.getLogger(OSGiRepository.class);

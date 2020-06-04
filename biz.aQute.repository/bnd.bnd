@@ -9,6 +9,7 @@
 	org.osgi.service.coordinator;version=latest,\
 	org.osgi.service.log;version=latest,\
 	org.osgi.service.repository;version=latest,\
+    org.osgi.service.metatype.annotations;version=latest,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
 	aQute.libg;version=project,\
@@ -61,3 +62,4 @@ Import-Package:\
 -fixupmessages.configurable: "Export aQute.bnd.repository.osgi,* private references \\[aQute.configurable\\]"
 
 -baseline: *
+-metatypeannotations: *

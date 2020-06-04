@@ -74,7 +74,7 @@ import aQute.service.reporter.Reporter;
  * managed with bnd).
  */
 
-@aQute.bnd.annotation.plugin.BndPlugin(name = "filerepo", parameters = FileRepo.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "Filerepo", parameters = FileRepo.Config.class)
 public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable {
 	private final static Logger logger = LoggerFactory.getLogger(FileRepo.class);
 

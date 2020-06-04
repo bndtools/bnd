@@ -37,7 +37,7 @@ import aQute.lib.collections.MultiMap;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 
-@BndPlugin(name = "subsystem")
+@BndPlugin(name = "Subsystem Exporter")
 public class SubsystemExporter implements Exporter {
 
 	private static final String	ARCHIVE_CONTENT_TYPE		= "-archiveContentType";

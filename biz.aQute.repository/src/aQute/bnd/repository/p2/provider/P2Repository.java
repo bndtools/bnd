@@ -32,7 +32,7 @@ import aQute.service.reporter.Reporter;
 /**
  * A p2 repository
  */
-@BndPlugin(name = "p2", parameters = P2Config.class)
+@BndPlugin(name = "P2 Repo", parameters = P2Config.class)
 public class P2Repository extends BaseRepository
 	implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Closeable {
 	private P2Config	config;

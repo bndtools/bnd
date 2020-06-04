@@ -34,7 +34,7 @@ import aQute.lib.strings.Strings;
  * {@link #EXECUTABLE_PACK} was used from bnd build, we needed to handle them
  * slightly differently since it is difficult to ensure backward compatibility.
  */
-@BndPlugin(name = "exporter.executablejar")
+@BndPlugin(name = "exporter.executablejar", hide = true)
 public class ExecutableJarExporter implements Exporter {
 	public static final String	EXECUTABLE_JAR	= "bnd.executablejar";
 	public static final String	EXECUTABLE_PACK	= "bnd.executablejar.pack";

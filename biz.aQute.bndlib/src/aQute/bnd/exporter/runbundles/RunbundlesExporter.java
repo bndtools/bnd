@@ -16,7 +16,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.export.Exporter;
 import aQute.lib.strings.Strings;
 
-@BndPlugin(name = "exporter.runbundles")
+@BndPlugin(name = "exporter.runbundles", hide = true)
 public class RunbundlesExporter implements Exporter {
 	public static final String RUNBUNDLES = "bnd.runbundles";
 
