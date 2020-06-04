@@ -79,6 +79,24 @@ public class EETest {
 			.equals(ee.getEEName()));
 	}
 
+	@ParameterizedTest(name = "Validate Packages exist for {arguments}")
+	@ArgumentsSource(EEsArgumentsProvider.class)
+	@DisplayName("Validate Packages exist for each EE")
+	public void checkEEHasPackages(EE ee) throws Exception {
+		if (ee == EE.JRE_1_1) {
+			// skip JRE_1_1
+			return;
+		}
+		assertThat(ee.getPackages()).isNotEmpty();
+	}
+
+	@ParameterizedTest(name = "Validate Modules exist for {arguments}")
+	@ArgumentsSource(ModularEEsArgumentsProvider.class)
+	@DisplayName("Validate Modules exist for each EE beyond Java 8")
+	public void checkEEHasModules(EE ee) throws Exception {
+		assertThat(ee.getModules()).isNotEmpty();
+	}
+
 	static class EEsArgumentsProvider implements ArgumentsProvider {
 		@Override
 		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
@@ -86,6 +104,16 @@ public class EETest {
 			return Arrays.stream(values, 0, values.length - 1)
 				.filter(ee -> ee.getCapabilityName()
 					.indexOf('/') < 0)
+				.map(Arguments::of);
+		}
+	}
+
+	static class ModularEEsArgumentsProvider implements ArgumentsProvider {
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+			EE[] values = EE.values();
+			return Arrays.stream(values, 0, values.length - 1)
+				.filter(ee -> ee.compareTo(EE.JavaSE_1_8) > 0)
 				.map(Arguments::of);
 		}
 	}
