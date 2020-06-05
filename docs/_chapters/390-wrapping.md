@@ -16,7 +16,7 @@ production using only command line tools.
 
 ## Introduction
 
-￼This article details a simple and repeatable process to wrap
+This article details a simple and repeatable process to wrap
 arbitrary Java libraries as OSGi bundles, using bnd as a command line
 tool.
 
@@ -124,7 +124,7 @@ example:
 
 Since this is so unreadable, Bnd offers a print command that formats in
 the manifest of a specified bundle JAR. We can request Bnd to print only
-the imports and exports by using the `-impexp` switch: ￼
+the imports and exports by using the `-impexp` switch: 
 
     $ bnd print -impexp org.jdom-1.1.2.jar
     [IMPEXP]
@@ -154,7 +154,7 @@ the imports and exports by using the `-impexp` switch: ￼
       org.jdom.transform          {version=1.1.2}
       org.jdom.xpath              {version=1.1.2}
 
-￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼Reviewing the imports, we see that most of them come
+Reviewing the imports, we see that most of them come
 from JRE packages. However there are three groups of dependencies that
 may cause problems: the Oracle XML parser; the Xerces XML parser; and
 the Jaxen XPath library. Unless something is done to fix these, our JDOM
@@ -211,7 +211,7 @@ JDOM depends on Jaxen, an XPath evaluation library. However not all
 use-cases for JDOM involve evaluating XPath expressions, so this may be
 an optional dependency. To get further information to help us make this
 decision, we can use the Bnd `print` command again with the `-usedby`
-option: ￼￼￼
+option: 
 
     $ bnd print -usedby org.jdom-1.1.2.jar
     [USEDBY]
@@ -226,7 +226,7 @@ option: ￼￼￼
                                org.jdom.filter
     ...
 
-￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼This tells us that the Jaxen dependencies (i.e. the
+This tells us that the Jaxen dependencies (i.e. the
 org.jaxen and org.jaxen.jdom packages) are used only from one package in
 JDOM, namely org.jdom.xpath. Additionally by looking at the full results
 we can see that org.jdom.xpath does not appear on the left hand side,
@@ -275,11 +275,11 @@ JDOM XPath bundle. This is based on our original recipe:
     Bundle-Version: ${ver}
     Export-Package: org.jdom.xpath;version=${ver}
 
-￼￼￼￼￼￼￼￼￼￼￼￼￼￼
+
 
 ### Class Level Used-By Analysis
 
-￼The previous used-by analysis yielded the package from which an import
+The previous used-by analysis yielded the package from which an import
 dependency resulted. Sometimes we need to dig deeper and find the
 individual class(es) responsible for the dependency. Unfortunately this
 feature is not available from the Bnd command line, instead we have to
@@ -365,7 +365,7 @@ version 1.1.2. The Jaxen imports can be refined by adding the following
         org.jaxen.*;version="[1.1,2)",\
         *
 
-￼Note the import range 1.1 through 2, exclusive of 2 — this is in
+Note the import range 1.1 through 2, exclusive of 2 — this is in
 compliance with OSGi [Semantic Versioning][] guidelines. The
 API library may not follow the OSGi guidelines so sometimes an
 alternative range may be required.
