@@ -1,6 +1,6 @@
 package aQute.bnd.osgi.resource;
 
-import org.osgi.framework.Constants;
+import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 
 import aQute.bnd.osgi.Domain;
@@ -30,9 +30,11 @@ public class MainClassNamespace {
 		mainClass = mainClass.replace('/', '.'); // yeah, it happens!
 
 		mc.addAttribute(MainClassNamespace.MAINCLASS_NAMESPACE, mainClass);
-		String version = manifest.get(Constants.BUNDLE_VERSION);
-		if (version != null)
+		String versionString = manifest.getBundleVersion();
+		if ((versionString != null) && aQute.bnd.version.Version.isVersion(versionString)) {
+			Version version = Version.parseVersion(versionString);
 			mc.addAttribute(VERSION_ATTRIBUTE, version);
+		}
 	}
 
 	public static String filter(String mainClass, VersionRange range) {
