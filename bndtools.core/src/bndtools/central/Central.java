@@ -179,18 +179,19 @@ public class Central implements IStartupParticipant {
 	}
 
 	public static IFile getWorkspaceBuildFile() throws Exception {
-		File file = Central.getWorkspace()
-			.getPropertiesFile();
-		IFile[] matches = ResourcesPlugin.getWorkspace()
-			.getRoot()
-			.findFilesForLocationURI(file.toURI());
-
-		if (matches == null || matches.length != 1) {
+		Workspace ws = Central.getWorkspace();
+		if ((ws == null) || (ws.isDefaultWorkspace())) {
+			return null;
+		}
+		File file = ws.getPropertiesFile();
+		IPath path = toPathMustBeInEclipseWorkspace(file);
+		if (path == null) {
 			logger.logError("Cannot find workspace location for bnd configuration file " + file, null);
 			return null;
 		}
-
-		return matches[0];
+		return ResourcesPlugin.getWorkspace()
+			.getRoot()
+			.getFile(path);
 	}
 
 	public static EclipseWorkspaceRepository getEclipseWorkspaceRepository() {
