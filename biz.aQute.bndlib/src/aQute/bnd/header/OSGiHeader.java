@@ -171,20 +171,24 @@ public class OSGiHeader {
 	 * @param value
 	 */
 	public static boolean quote(StringBuilder sb, String value) {
+		return quote(sb, value, '"');
+	}
+
+	public static boolean quote(StringBuilder sb, String value, char quoteChar) {
 		try {
-			return quote((Appendable) sb, value);
+			return quote((Appendable) sb, value, quoteChar);
 		} catch (IOException e) {
 			// this wont happen
 			throw new RuntimeException(e);
 		}
 	}
 
-	/**
-	 * @param sb
-	 * @param value
-	 * @throws IOException
-	 */
 	public static boolean quote(Appendable sb, String value) throws IOException {
+		return quote(sb, value, '"');
+	}
+	/**
+	 */
+	public static boolean quote(Appendable sb, String value, char quoteChar) throws IOException {
 		if (value.startsWith("\\\""))
 			value = value.substring(2);
 		if (value.endsWith("\\\""))
@@ -196,21 +200,17 @@ public class OSGiHeader {
 			|| TOKEN_P.matcher(value)
 				.matches();
 		if (!clean)
-			sb.append("\"");
+			sb.append(quoteChar);
 		for (int i = 0; i < value.length(); i++) {
 			char c = value.charAt(i);
-			switch (c) {
-				case '"' :
-					sb.append('\\')
-						.append('"');
-					break;
-
-				default :
-					sb.append(c);
-			}
+			if (c == quoteChar) {
+				sb.append('\\')
+					.append(quoteChar);
+			} else
+				sb.append(c);
 		}
 		if (!clean)
-			sb.append("\"");
+			sb.append(quoteChar);
 		return clean;
 	}
 
