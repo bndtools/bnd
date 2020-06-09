@@ -1124,6 +1124,50 @@ public class BuilderTest {
 
 	}
 
+	@Test
+	public void testPackageNamesection() throws Exception {
+		Builder b = new Builder();
+		try {
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.setProperty(Constants.NAMESECTION,
+				"org/osgi/service/event/;Foo=bar");
+			b.setProperty(Constants.PRIVATEPACKAGE, "org.osgi.service.event");
+			Jar build = b.build();
+			assertOk(b);
+			assertTrue(b.check());
+			Manifest m = build.getManifest();
+			m.write(System.err);
+
+			assertNotNull(m.getAttributes(
+				"org/osgi/service/event/")
+				.getValue("Foo"));
+		} finally {
+			b.close();
+		}
+
+	}
+
+	@Test
+	public void testGlobPackageNamesection() throws Exception {
+		Builder b = new Builder();
+		try {
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.setProperty(Constants.NAMESECTION, "org/osgi/service/*/;Foo=bar");
+			b.setProperty(Constants.PRIVATEPACKAGE, "org.osgi.service.event");
+			Jar build = b.build();
+			assertOk(b);
+			assertTrue(b.check());
+			Manifest m = build.getManifest();
+			m.write(System.err);
+
+			assertNotNull(m.getAttributes("org/osgi/service/event/")
+				.getValue("Foo"));
+		} finally {
+			b.close();
+		}
+
+	}
+
 	/**
 	 * Test the digests
 	 */
