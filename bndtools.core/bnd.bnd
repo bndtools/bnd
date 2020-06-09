@@ -13,6 +13,8 @@ Import-Package: \
  ${eclipse.importpackage},\
  *
 
+Export-Package: org.osgi.service.metatype.annotations 
+
 # Bundle Content
 
 -includepackage: \
@@ -21,8 +23,7 @@ Import-Package: \
 	org.bndtools.core.*
 
 -conditionalpackage: \
-	aQute.lib.*;-split-package:=merge-first,\
-	aQute.libg.*;-split-package:=merge-first, \
+	aQute.lib*;-split-package:=merge-first, \
 	org.bndtools.utils.*,\
 	org.apache.felix.metatype,\
 	org.kxml2.*,\
@@ -35,6 +36,7 @@ Import-Package: \
 
 -buildpath: \
 	osgi.annotation;version=latest;maven-scope=provided,\
+	org.osgi.service.metatype.annotations;version=latest;maven-scope=provided,\
 	osgi.core;version=latest;maven-scope=provided,\
 	org.osgi.service.component;version=1.3.0,\
 	org.osgi.service.component.annotations;version=1.3.0;maven-scope=provided,\
@@ -43,58 +45,59 @@ Import-Package: \
 	org.osgi.namespace.extender;version=latest;maven-scope=provided,\
 	org.osgi.namespace.service;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
-    biz.aQute.bndlib;version=latest,\
+	biz.aQute.bndlib;version=latest,\
 	biz.aQute.repository;version=latest,\
 	biz.aQute.resolve;version=latest,\
-    org.eclipse.core.runtime,\
-    org.eclipse.jface,\
-    org.eclipse.jface.text,\
-    org.eclipse.core.resources,\
-    org.eclipse.swt,\
-    org.eclipse.swt.cocoa.macosx.x86_64,\
-    org.eclipse.text,\
-    org.eclipse.ui,\
-    org.eclipse.ui.ide,\
-    org.eclipse.ui.browser,\
-    org.eclipse.ui.editors,\
-    org.eclipse.ui.workbench,\
-    org.eclipse.e4.ui.workbench,\
-    org.eclipse.core.jobs,\
-    org.eclipse.equinox.common,\
-    org.eclipse.equinox.registry,\
-    org.eclipse.jdt.core,\
-    org.eclipse.jdt.ui,\
-    org.eclipse.jdt.core.manipulation,\
-    org.eclipse.osgi,\
-    org.eclipse.core.commands,\
-    org.eclipse.team.core,\
-    org.eclipse.ui.forms,\
-    org.eclipse.ui.workbench.texteditor,\
-    org.eclipse.ui.views,\
-    org.eclipse.debug.core,\
-    org.eclipse.debug.ui,\
-    org.eclipse.jdt.launching,\
-    org.eclipse.jdt.debug,\
-    org.eclipse.jdt.debug.ui,\
-    org.eclipse.jdt.junit,\
-    org.eclipse.jdt.junit.core,\
-    org.eclipse.equinox.preferences,\
-    org.eclipse.help.base,\
-    org.eclipse.ltk.core.refactoring,\
-    org.eclipse.ltk.ui.refactoring,\
-    org.eclipse.core.filebuffers,\
-    org.eclipse.core.expressions,\
-    org.eclipse.core.filesystem,\
-    org.eclipse.core.contenttype,\
-    org.eclipse.search,\
+	org.eclipse.core.runtime,\
+	org.eclipse.jface,\
+	org.eclipse.jface.text,\
+	org.eclipse.core.resources,\
+	org.eclipse.swt,\
+	org.eclipse.swt.cocoa.macosx.x86_64,\
+	org.eclipse.text,\
+	org.eclipse.ui,\
+	org.eclipse.ui.ide,\
+	org.eclipse.ui.browser,\
+	org.eclipse.ui.editors,\
+	org.eclipse.ui.workbench,\
+	org.eclipse.e4.ui.workbench,\
+	org.eclipse.core.jobs,\
+	org.eclipse.equinox.common,\
+	org.eclipse.equinox.registry,\
+	org.eclipse.jdt.core,\
+	org.eclipse.jdt.ui,\
+	org.eclipse.jdt.core.manipulation,\
+	org.eclipse.osgi,\
+	org.eclipse.core.commands,\
+	org.eclipse.team.core,\
+	org.eclipse.ui.forms,\
+	org.eclipse.ui.workbench.texteditor,\
+	org.eclipse.ui.views,\
+	org.eclipse.debug.core,\
+	org.eclipse.debug.ui,\
+	org.eclipse.jdt.launching,\
+	org.eclipse.jdt.debug,\
+	org.eclipse.jdt.debug.ui,\
+	org.eclipse.jdt.junit,\
+	org.eclipse.jdt.junit.core,\
+	org.eclipse.equinox.preferences,\
+	org.eclipse.help.base,\
+	org.eclipse.ltk.core.refactoring,\
+	org.eclipse.ltk.ui.refactoring,\
+	org.eclipse.core.filebuffers,\
+	org.eclipse.core.expressions,\
+	org.eclipse.core.filesystem,\
+	org.eclipse.core.contenttype,\
+	org.eclipse.search,\
 	bndtools.api;version=latest,\
 	org.bndtools.headless.build.manager;version=latest,\
 	org.bndtools.versioncontrol.ignores.manager;version=latest,\
-	org.bndtools.templating; version=latest,\
+	org.bndtools.templating;version=latest,\
 	org.apache.servicemix.bundles.kxml2;version=latest;maven-scope=provided,\
 	org.apache.servicemix.bundles.xmlpull;version=latest;maven-scope=provided,\
 	bndtools.utils;version=project;packages=*,\
-	slf4j.api
+	slf4j.api, \
+	org.eclipse.ui.ide.application;version=1.3
 
 -testpath: \
 	slf4j.api,\

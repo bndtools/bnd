@@ -1,5 +1,7 @@
 package aQute.bnd.build.model.clauses;
 
+import static aQute.bnd.header.OSGiHeader.quote;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -9,9 +11,9 @@ import java.util.Objects;
 import java.util.StringTokenizer;
 
 import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.stream.MapStream;
 import aQute.lib.strings.Strings;
-import aQute.bnd.header.Parameters;
 
 public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 
@@ -30,15 +32,17 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 
 	/**
 	 * Accept String syntax as defined by 1 element of a Parameters
-	 * 
+	 *
 	 * @param v one element of Parameter
 	 */
 	public HeaderClause(String v) {
 		Parameters parameters = new Parameters(v);
-		if ( parameters.size() != 1)
+		if (parameters.size() != 1)
 			throw new IllegalArgumentException("Invalid header clause (not exactly 1 element) " + v);
 
-		Entry<String, Attrs> next = parameters.entrySet().iterator().next();
+		Entry<String, Attrs> next = parameters.entrySet()
+			.iterator()
+			.next();
 		this.name = next.getKey();
 		this.attribs = next.getValue();
 	}
@@ -87,26 +91,43 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 	}
 
 	public void formatTo(StringBuilder buffer) {
-		formatTo(buffer, null);
+		formatTo(buffer, null, newlinesBetweenAttributes());
+	}
+
+	public void formatTo(StringBuilder buffer, boolean newlinesBetweenAttributes) {
+		formatTo(buffer, null, newlinesBetweenAttributes);
 	}
 
 	public void formatTo(StringBuilder buffer, Comparator<Entry<String, String>> sorter) {
-		String separator = newlinesBetweenAttributes() ? INTERNAL_LIST_SEPARATOR_NEWLINES : INTERNAL_LIST_SEPARATOR;
-		// If the name contains a comma, then quote the whole thing
-		buffer.append((name.indexOf(',') > -1) ? "'" + name + "'" : name);
+		formatTo(buffer, sorter, newlinesBetweenAttributes());
+	}
+
+	public void formatTo(StringBuilder buffer, Comparator<Entry<String, String>> sorter,
+		boolean newlinesBetweenAttributes) {
+		String separator = newlinesBetweenAttributes ? INTERNAL_LIST_SEPARATOR_NEWLINES : INTERNAL_LIST_SEPARATOR;
+
+		if (name.indexOf(',') >= 0)
+			quote(buffer, name, '\'');
+		else
+			buffer.append(name);
 
 		MapStream<String, String> entries = MapStream.ofNullable(attribs);
 		if (sorter != null) {
 			entries = entries.sorted(sorter);
 		}
 		entries.filterValue(Strings::nonNullOrEmpty)
-			// If the value contains any comma or equals, then quote the
-			// whole thing
-			.mapValue(value -> (value.indexOf(',') > -1 || value.indexOf('=') > -1) ? "'" + value + "'" : value)
-			.forEachOrdered((name, value) -> buffer.append(separator)
-				.append(name)
-				.append('=')
-				.append(value));
+			.forEachOrdered((name, value) -> {
+				buffer.append(separator);
+				int n = buffer.length();
+				quote(buffer, name, '\'');
+				n = buffer.length() - n;
+
+				while (newlinesBetweenAttributes && n++ < 20) {
+					buffer.append(' ');
+				}
+				buffer.append('=');
+				quote(buffer, value, '\'');
+			});
 	}
 
 	protected boolean newlinesBetweenAttributes() {

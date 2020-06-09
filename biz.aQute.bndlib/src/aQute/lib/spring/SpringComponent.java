@@ -35,7 +35,7 @@ import aQute.lib.xml.XML;
  *
  * @author aqute
  */
-@BndPlugin(name = "spring")
+@BndPlugin(name = "Spring")
 public class SpringComponent implements AnalyzerPlugin {
 	static Transformer				transformer;
 	private final static Pattern	SPRING_SOURCE	= Pattern.compile("META-INF/spring/.*\\.xml");

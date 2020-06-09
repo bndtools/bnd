@@ -64,6 +64,7 @@ import aQute.bnd.properties.LineType;
 import aQute.bnd.properties.PropertiesLineReader;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.Iterables;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 
@@ -74,6 +75,7 @@ import aQute.lib.utf8properties.UTF8Properties;
  *
  * @author Neil Bartlett
  */
+@SuppressWarnings("deprecation")
 public class BndEditModel {
 
 	public static final String										NEWLINE_LINE_SEPARATOR		= "\\n\\\n\t";
@@ -102,8 +104,8 @@ public class BndEditModel {
 	public static final String										BUNDLE_VERSION_MACRO		= "${"
 		+ Constants.BUNDLE_VERSION + "}";
 
-	private final Map<String, Converter<? extends Object, String>>	converters					= new HashMap<>();
-	private final Map<String, Converter<String, ? extends Object>>	formatters					= new HashMap<>();
+	private static final Map<String, Converter<? extends Object, String>>	converters					= new HashMap<>();
+	private static final Map<String, Converter<String, ? extends Object>>	formatters					= new HashMap<>();
 	// private final DataModelHelper obrModelHelper = new DataModelHelperImpl();
 
 	private File													bndResource;
@@ -119,7 +121,7 @@ public class BndEditModel {
 	private volatile boolean										dirty;
 
 	// CONVERTERS
-	private Converter<List<VersionedClause>, String>				buildPathConverter			= new HeaderClauseListConverter<>(
+	private final static Converter<List<VersionedClause>, String>				buildPathConverter			= new HeaderClauseListConverter<>(
 		new Converter<VersionedClause, HeaderClause>() {
 																										@Override
 																										public VersionedClause convert(
@@ -140,7 +142,8 @@ public class BndEditModel {
 																											return null;
 																										}
 																									});
-	private Converter<List<VersionedClause>, String>				buildPackagesConverter		= new HeaderClauseListConverter<>(
+
+	private final static Converter<List<VersionedClause>, String>				buildPackagesConverter		= new HeaderClauseListConverter<>(
 		new Converter<VersionedClause, HeaderClause>() {
 																										@Override
 																										public VersionedClause convert(
@@ -163,10 +166,10 @@ public class BndEditModel {
 																													msg);
 																										}
 																									});
-	private Converter<List<VersionedClause>, String>				clauseListConverter			= new HeaderClauseListConverter<>(
+	private final static Converter<List<VersionedClause>, String>				clauseListConverter			= new HeaderClauseListConverter<>(
 		new VersionedClauseConverter());
-	private Converter<String, String>								stringConverter				= new NoopConverter<>();
-	private Converter<Boolean, String>								includedSourcesConverter	= new Converter<Boolean, String>() {
+	private final static Converter<String, String>								stringConverter				= new NoopConverter<>();
+	private final static Converter<Boolean, String>								includedSourcesConverter	= new Converter<Boolean, String>() {
 																									@Override
 																									public Boolean convert(
 																										String string)
@@ -182,13 +185,11 @@ public class BndEditModel {
 																										return Boolean.FALSE;
 																									}
 																								};
-	private Converter<List<String>, String>							listConverter				= SimpleListConverter
+	private final static Converter<List<String>, String>						listConverter				= SimpleListConverter
 		.create();
 
-	private Converter<List<HeaderClause>, String>					headerClauseListConverter	= new HeaderClauseListConverter<>(
-		new NoopConverter<>());
 
-	private Converter<List<ExportedPackage>, String>				exportPackageConverter		= new HeaderClauseListConverter<>(
+	private final static Converter<List<ExportedPackage>, String>				exportPackageConverter		= new HeaderClauseListConverter<>(
 		new Converter<ExportedPackage, HeaderClause>() {
 																										@Override
 																										public ExportedPackage convert(
@@ -211,7 +212,7 @@ public class BndEditModel {
 																										}
 																									});
 
-	private Converter<List<ServiceComponent>, String>				serviceComponentConverter	= new HeaderClauseListConverter<>(
+	private final static Converter<List<ServiceComponent>, String>				serviceComponentConverter	= new HeaderClauseListConverter<>(
 		new Converter<ServiceComponent, HeaderClause>() {
 																										@Override
 																										public ServiceComponent convert(
@@ -234,7 +235,7 @@ public class BndEditModel {
 																													msg);
 																										}
 																									});
-	private Converter<List<ImportPattern>, String>					importPatternConverter		= new HeaderClauseListConverter<>(
+	private final static Converter<List<ImportPattern>, String>					importPatternConverter		= new HeaderClauseListConverter<>(
 		new Converter<ImportPattern, HeaderClause>() {
 																										@Override
 																										public ImportPattern convert(
@@ -258,33 +259,40 @@ public class BndEditModel {
 																										}
 																									});
 
-	private Converter<Map<String, String>, String>					propertiesConverter			= new PropertiesConverter();
+	private final static Converter<Map<String, String>, String>					propertiesConverter			= new PropertiesConverter();
 
-	private Converter<List<Requirement>, String>					requirementListConverter	= new RequirementListConverter();
-	private Converter<EE, String>									eeConverter					= new EEConverter();
+	private final static Converter<List<Requirement>, String>					requirementListConverter	= new RequirementListConverter();
+	private final static Converter<EE, String>									eeConverter					= new EEConverter();
 
 	// Converter<ResolveMode, String> resolveModeConverter =
 	// EnumConverter.create(ResolveMode.class, ResolveMode.manual);
 
 	// FORMATTERS
-	private Converter<String, String>								newlineEscapeFormatter		= new NewlineEscapedStringFormatter();
-	private Converter<String, Boolean>								defaultFalseBoolFormatter	= new DefaultBooleanFormatter(
+	private final static Converter<String, String>								newlineEscapeFormatter		= new NewlineEscapedStringFormatter();
+	private final static Converter<String, Boolean>								defaultFalseBoolFormatter	= new DefaultBooleanFormatter(
 		false);
-	private Converter<String, Collection<?>>						stringListFormatter			= new CollectionFormatter<>(
+	private final static Converter<String, Collection<?>>						stringListFormatter			= new CollectionFormatter<>(
 		LIST_SEPARATOR, (String) null);
-	private Converter<String, Collection<? extends HeaderClause>>	headerClauseListFormatter	= new CollectionFormatter<>(
+
+	private final static Converter<List<HeaderClause>, String>					headerClauseListConverter			= new HeaderClauseListConverter<>(
+		new NoopConverter<>());
+	private final static Converter<String, Collection<? extends HeaderClause>>	headerClauseListFormatter	= new CollectionFormatter<>(
 		LIST_SEPARATOR, new HeaderClauseFormatter(), null);
-	private Converter<String, Map<String, String>>					propertiesFormatter			= new MapFormatter(
+
+	private final static Converter<String, Collection<? extends HeaderClause>>	complexHeaderClauseListFormatter	= new CollectionFormatter<>(
+		LIST_SEPARATOR, new HeaderClauseFormatter(true), null);
+
+	private final static Converter<String, Map<String, String>>					propertiesFormatter			= new MapFormatter(
 		LIST_SEPARATOR, new PropertiesEntryFormatter(), null);
 
-	private Converter<String, Collection<? extends Requirement>>	requirementListFormatter	= new CollectionFormatter<>(
+	private final static Converter<String, Collection<? extends Requirement>>	requirementListFormatter	= new CollectionFormatter<>(
 		LIST_SEPARATOR, new RequirementFormatter(), null);
 
-	private Converter<String, Collection<? extends HeaderClause>>	standaloneLinkListFormatter	= new CollectionFormatter<>(
+	private final static Converter<String, Collection<? extends HeaderClause>>	standaloneLinkListFormatter	= new CollectionFormatter<>(
 		LIST_SEPARATOR, new HeaderClauseFormatter(), "");
 
-	private Converter<String, EE>									eeFormatter					= new EEFormatter();
-	private Converter<String, Collection<? extends String>>			runReposFormatter			= new CollectionFormatter<>(
+	private final static Converter<String, EE>									eeFormatter					= new EEFormatter();
+	private final static Converter<String, Collection<? extends String>>		runReposFormatter			= new CollectionFormatter<>(
 		LIST_SEPARATOR, aQute.bnd.osgi.Constants.EMPTY_HEADER);
 	private Workspace												workspace;
 	private IDocument												document;
@@ -292,8 +300,7 @@ public class BndEditModel {
 	// Converter<String, ResolveMode> resolveModeFormatter =
 	// EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
 
-	@SuppressWarnings("deprecation")
-	public BndEditModel() {
+	static {
 		// register converters
 		converters.put(aQute.bnd.osgi.Constants.BUNDLE_LICENSE, stringConverter);
 		converters.put(aQute.bnd.osgi.Constants.BUNDLE_CATEGORY, stringConverter);
@@ -327,7 +334,6 @@ public class BndEditModel {
 		// converters.put(BndConstants.RUNVMARGS, stringConverter);
 		converters.put(aQute.bnd.osgi.Constants.TESTSUITES, listConverter);
 		converters.put(aQute.bnd.osgi.Constants.TESTCASES, listConverter);
-		converters.put(aQute.bnd.osgi.Constants.PLUGIN, headerClauseListConverter);
 		converters.put(aQute.bnd.osgi.Constants.RUNREQUIRES, requirementListConverter);
 		converters.put(aQute.bnd.osgi.Constants.RUNEE, eeConverter);
 		converters.put(aQute.bnd.osgi.Constants.RUNREPOS, listConverter);
@@ -370,7 +376,6 @@ public class BndEditModel {
 		// formatters.put(BndConstants.RUNVMARGS, newlineEscapeFormatter);
 		// formatters.put(BndConstants.TESTSUITES, stringListFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.TESTCASES, stringListFormatter);
-		formatters.put(aQute.bnd.osgi.Constants.PLUGIN, headerClauseListFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.RUNREQUIRES, requirementListFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.RUNEE, eeFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.RUNREPOS, runReposFormatter);
@@ -379,6 +384,13 @@ public class BndEditModel {
 		formatters.put(Constants.INCLUDE_RESOURCE, stringListFormatter);
 		formatters.put(Constants.INCLUDERESOURCE, stringListFormatter);
 		formatters.put(Constants.STANDALONE, standaloneLinkListFormatter);
+
+		converters.put(aQute.bnd.osgi.Constants.PLUGIN, headerClauseListConverter);
+		formatters.put(aQute.bnd.osgi.Constants.PLUGIN, complexHeaderClauseListFormatter);
+
+	}
+
+	public BndEditModel() {
 	}
 
 	public BndEditModel(BndEditModel model) {
@@ -997,7 +1009,7 @@ public class BndEditModel {
 
 	public void setPlugins(List<HeaderClause> plugins) {
 		List<HeaderClause> old = getPlugins();
-		doSetObject(aQute.bnd.osgi.Constants.PLUGIN, old, plugins, headerClauseListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.PLUGIN, old, plugins, complexHeaderClauseListFormatter);
 	}
 
 	public List<String> getPluginPath() {
@@ -1408,6 +1420,65 @@ public class BndEditModel {
 
 	public void load() throws IOException {
 		loadFrom(project.getPropertiesFile());
+	}
+
+	/**
+	 * If this is on the cnf project
+	 *
+	 * @return true if it is the cnf project
+	 */
+	public boolean isCnf() {
+		return bndResource != null && Workspace.CNFDIR.equals(bndResource.getParentFile()
+			.getName()) && Workspace.BUILDFILE.equals(bndResource.getName());
+	}
+
+	/**
+	 * Use the built in formatters to take an unformatted header and turn it
+	 * into a formatted header useful in the editor, for example escaped
+	 * newlines.
+	 *
+	 * @param <T> the intermediate type, doesn't matter
+	 * @param header the name of the instruction
+	 * @param input the source string
+	 * @return the input or a formatted input if there is converter
+	 */
+
+	@SuppressWarnings("unchecked")
+	public static <T> String format(String header, String input) {
+		Converter<T, String> converter = (Converter<T, String>) converters.get(header);
+		if (converter == null)
+			return input;
+
+		T converted = converter.convert(input);
+
+		Converter<String, T> formatter = (Converter<String, T>) formatters.get(header);
+		return formatter.convert(converted);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T extends Collection<Object>> String add(String header, String toAdd) {
+		try {
+			Converter<T, String> converter = (Converter<T, String>) converters.get(header);
+			T last = converter.convert(toAdd);
+			T oldValue = doGetObject(header, converter);
+
+			@SuppressWarnings("rawtypes")
+			T newValue = (T) last.getClass()
+				.newInstance();
+			if (oldValue != null)
+				newValue.addAll(oldValue);
+			else
+				oldValue = (T) last.getClass()
+					.newInstance();
+
+			newValue.addAll(last);
+
+			Converter<String, T> formatter = (Converter<String, T>) formatters.get(header);
+			doSetObject(header, oldValue, newValue, formatter);
+			return header + ": " + formatter.convert(newValue);
+		} catch (IllegalArgumentException | InstantiationException | IllegalAccessException e) {
+			throw Exceptions.duck(e);
+		}
 	}
 
 }

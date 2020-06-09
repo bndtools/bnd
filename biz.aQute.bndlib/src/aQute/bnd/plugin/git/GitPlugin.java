@@ -13,7 +13,7 @@ import aQute.lib.io.IO;
 /**
  * Adds .gitignore files to projects when created.
  */
-@BndPlugin(name = "git")
+@BndPlugin(name = "Git", hide = true)
 public class GitPlugin extends LifeCyclePlugin {
 
 	private static final String GITIGNORE = ".gitignore";

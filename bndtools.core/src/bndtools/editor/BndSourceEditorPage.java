@@ -2,12 +2,23 @@ package bndtools.editor;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -20,9 +31,13 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import aQute.bnd.annotation.plugin.InternalPluginDefinition;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.help.Syntax;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.properties.IDocument;
 import bndtools.Plugin;
+import bndtools.central.Central;
 import bndtools.editor.completion.BndSourceViewerConfiguration;
 import bndtools.editor.model.IDocumentWrapper;
 
@@ -175,5 +190,82 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
 	@Override
 	public Image getTitleImage() {
 		return icon;
+	}
+
+	@Override
+	protected void editorContextMenuAboutToShow(IMenuManager menu) {
+		super.editorContextMenuAboutToShow(menu);
+
+		if (editModel != null && editModel.isCnf()) {
+			List<InternalPluginDefinition> plugins = Central.getInternalPluginDefinitions();
+			Collections.sort(plugins, (a, b) -> a.getName()
+				.compareTo(b.getName()));
+			MenuManager submenu = new MenuManager("Insert Plugin");
+			for (InternalPluginDefinition p : plugins) {
+
+				if (p.getImplementation() == null || p.isHidden())
+					continue;
+
+				submenu.add(new Action(p.getName()) {
+					@Override
+					public void run() {
+						commit(false);
+						String text = editModel.add(Constants.PLUGIN, p.getTemplate());
+						refresh();
+					}
+				});
+			}
+
+			submenu.update(true);
+			menu.add(submenu);
+		}
+
+		doSyntaxMenu(menu, "Insert Instruction", "-");
+		doSyntaxMenu(menu, "Insert Header", "[A-Z]");
+		doSyntaxMenu(menu, "Insert Macro", "[a-z]");
+
+		menu.update(true);
+	}
+
+	private void doSyntaxMenu(IMenuManager menu, String title, String pattern) {
+		MenuManager submenu = new MenuManager(title);
+		Pattern p = Pattern.compile(pattern);
+		for (Entry<String, Syntax> e : new TreeMap<>(Syntax.HELP).entrySet()) {
+			String name = e.getKey();
+			if (!p.matcher(name)
+				.lookingAt())
+				continue;
+
+			Syntax syntax = e.getValue();
+			String example = syntax.getExample() == null ? "" : syntax.getExample();
+
+			Action action = new Action(name) {
+				@Override
+				public void run() {
+					insert("\n" + syntax.getInsert() + "\n");
+				}
+			};
+			String help = syntax.getLead();
+			if (help != null && !help.isEmpty()) {
+				action.setToolTipText(help);
+			}
+			submenu.add(action);
+		}
+
+		submenu.update(true);
+		menu.add(submenu);
+	}
+
+	private void insert(String text) {
+		try {
+			IDocumentProvider docProvider = getDocumentProvider();
+			IEditorInput input = getEditorInput();
+			org.eclipse.jface.text.IDocument document = docProvider.getDocument(input);
+			ISelection s = getSelectionProvider().getSelection();
+			if (s instanceof ITextSelection) {
+				int offset = ((ITextSelection) s).getOffset();
+				document.replace(offset, 0, text);
+			}
+		} catch (BadLocationException e) {}
 	}
 }

@@ -57,7 +57,7 @@ import aQute.service.reporter.Reporter;
 /**
  * This is the Bnd repository for Maven.
  */
-@BndPlugin(name = "BndPomRepository")
+@BndPlugin(name = "BndPomRepository", parameters = PomConfiguration.class)
 public class BndPomRepository extends BaseRepository
 	implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Actionable, Closeable, Prepare {
 	private static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");

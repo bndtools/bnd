@@ -1,5 +1,6 @@
 package aQute.bnd.help;
 
+import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -10,9 +11,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.help.instructions.BuilderInstructions;
 import aQute.bnd.help.instructions.LauncherInstructions;
 import aQute.bnd.help.instructions.ResolutionInstructions;
@@ -237,7 +240,7 @@ public class Syntax implements Constants {
 			META_PERSISTENCE + ": persistence/myPu.xml", null, null),
 		new Syntax(PRIVATEPACKAGE, "The " + PRIVATEPACKAGE
 			+ " header contains a declaration of packages to be included in the resulting bundle, the only difference is, is that these packages will not be exported.",
-			PRIVATEPACKAGE + ": com.*", "${packages}", null),
+			PRIVATEPACKAGE + ": com.example.*, foo.bar", "${packages}", null),
 		new Syntax(PRIVATE_PACKAGE, "The " + PRIVATE_PACKAGE
 			+ " header contains a declaration of packages to be included in the resulting bundle, the only difference is, is that these packages will not be exported.",
 			PRIVATE_PACKAGE + ": com.*", "${packages}", null),
@@ -494,10 +497,11 @@ public class Syntax implements Constants {
 			INCLUDEPACKAGE + ": !com.foo.bar, com.foo.* ", null, Verifier.WILDCARDNAMEPATTERN),
 		new Syntax(INCLUDERESOURCE,
 			"Include resources from the file system. You can specify a directory, or file. All files are copied to the root, unless a destination directory is indicated.",
-			INCLUDERESOURCE + ": lib=jar", null, null),
+			INCLUDERESOURCE + ": lib/=jar/, {preprocess.txt}, license.txt;literal:='ASL 2.0, -doesnotexit.txt'", null,
+			null),
 		new Syntax(INCLUDE_RESOURCE,
 			"Include resources from the file system. You can specify a directory, or file. All files are copied to the root, unless a destination directory is indicated.",
-			INCLUDE_RESOURCE + ": lib=jar", null, null),
+			INCLUDE_RESOURCE + ": lib/=jar/, {preprocess.txt}, 'literal';literal;=true,", null, null),
 		new Syntax(INIT, "Executes macros while initializing the project for building", INIT + ": ${my_macro} ", null,
 			null),
 		new Syntax(JAVAAGENT, "Specify if classpath jars with Premain-Class headers are to be used as java agents.",
@@ -548,11 +552,9 @@ public class Syntax implements Constants {
 
 		new Syntax(NOUSES,
 			"Do not calculate the " + USES_DIRECTIVE + " directive on package exports or on capabilities.",
-			NOUSES + "=true",
-			"true,false", Verifier.TRUEORFALSEPATTERN),
-		new Syntax(NOCLASSFORNAME,
-			"Do not calculate " + IMPORT_PACKAGE
-				+ " references for 'Class.forName(\"some.Class\")' usage found in method bodies during class processing.",
+			NOUSES + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(NOCLASSFORNAME, "Do not calculate " + IMPORT_PACKAGE
+			+ " references for 'Class.forName(\"some.Class\")' usage found in method bodies during class processing.",
 			NOCLASSFORNAME + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 
 		new Syntax(NOEE, "Do not calculate the osgi.ee name space Execution Environment from the class file version.",
@@ -672,13 +674,9 @@ public class Syntax implements Constants {
 			"This setting enables the workspace to be available over a remote procedure call interface.",
 			REMOTEWORKSPACE + ": true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(RUNVM, "Additional comma-separated arguments for the VM invocation.",
-			RUNVM + "=-Xmax=30, -DsecondOption=secondValue",
-			null,
-			null),
+			RUNVM + "=-Xmax=30, -DsecondOption=secondValue", null, null),
 		new Syntax(RUNPROGRAMARGS, "Additional comma-separated arguments for the program invocation.",
-			RUNPROGRAMARGS + "=/some/file, /another/file, some_argument",
-			null,
-			null),
+			RUNPROGRAMARGS + "=/some/file, /another/file, some_argument", null, null),
 		new Syntax(RUNREPOS, "The " + RUNREPOS + " instruction is used to restrict or order the available repositories",
 			RUNREPOS + "=Maven Central, Main, Distro, ...", null, null),
 		new Syntax(RUNREQUIRES, "Comma seperated list of root requirements for a resolve operation.",
@@ -944,6 +942,25 @@ public class Syntax implements Constants {
 
 	public static <T> T getInstructions(Processor processor, Class<T> type) {
 		return ProcessorHandler.getInstructions(processor, type);
+	}
+
+	public String getInsert() {
+		if (example != null) {
+			try {
+				Properties p = new Properties();
+				p.load(new StringReader(example));
+				String value = p.getProperty(header);
+				if (value != null) {
+					String insert = BndEditModel.format(header, value);
+					if (insert != null)
+						return header + ": " + insert;
+				}
+			} catch (Exception e) {
+				// ignore
+			}
+			return example;
+		}
+		return header + ":";
 	}
 
 }
