@@ -5,10 +5,12 @@ on:
     paths-ignore:
     - 'docs/**'
     - '.github/**/*docs*'
+    - '.github/*.yml'
   pull_request:
     paths-ignore:
     - 'docs/**'
     - '.github/**/*docs*'
+    - '.github/*.yml'
 
 env:
   LC_ALL: en_US.UTF-8
