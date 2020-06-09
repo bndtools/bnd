@@ -1309,6 +1309,14 @@ public class Analyzer extends Processor {
 		Instructions instructions = new Instructions(namesection);
 		Set<String> resources = new HashSet<>(dot.getResources()
 			.keySet());
+		// Support package attributes. See
+		// https://docs.oracle.com/javase/8/docs/technotes/guides/versioning/spec/versioning2.html#wp89936
+		MapStream.of(dot.getDirectories())
+			.filterValue(mdir -> Objects.nonNull(mdir) && !mdir.isEmpty())
+			.keys()
+			.map(d -> d.concat(
+				"/"))
+			.forEach(resources::add);
 
 		//
 		// For each instruction, iterator over the resources and filter
@@ -1326,8 +1334,12 @@ public class Analyzer extends Processor {
 				String path = i.next();
 				// For each resource
 
-				if (instr.getKey()
-					.matches(path)) {
+				Instruction instruction = instr.getKey();
+
+				if (path.endsWith("/") && !instruction.toString()
+					.endsWith("/")) {
+					// continue
+				} else if (instruction.matches(path)) {
 
 					// Instruction matches the resource
 

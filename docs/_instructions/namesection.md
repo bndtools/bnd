@@ -2,81 +2,63 @@
 layout: default
 class: Builder
 title: -namesection RESOURCE-SPEC ( ',' RESOURCE-SPEC ) *   
-summary:  Create a name section (second part of manifest) with optional property expansion and addition of custom attributes. 
+summary:  Create a name section (second part of manifest) with optional property expansion and addition of custom attributes. Patterns not ending with \"/\" target resources. Those ending with \"/\" target packages. 
 ---
 
-	/**
-	 * Parse the namesection as instructions and then match them against the
-	 * current set of resources For example:
-	 * 
-	 * <pre>
-	 * 	-namesection: *;baz=true, abc/def/bar/X.class=3
-	 * </pre>
-	 * 
-	 * The raw value of {@link Constants#NAMESECTION} is used but the values of
-	 * the attributes are replaced where @ is set to the resource name. This
-	 * allows macro to operate on the resource
-	 */
+Create a name section (second part of manifest) with optional property expansion and addition of custom attributes.
 
-	private void doNamesection(Jar dot, Manifest manifest) {
+### Matching
+The key of the `-namesection` instruction is an _ant style_ glob. And there are two target groups for matching:
 
-		Parameters namesection = parseHeader(getProperties().getProperty(NAMESECTION));
-		Instructions instructions = new Instructions(namesection);
-		Set<String> resources = new HashSet<String>(dot.getResources().keySet());
+* **resources** - the pattern not ending with `/` or is an exact match for a resource path
+* **packages** - the pattern ends with `/` or is an exact match for a package path 
 
-		//
-		// For each instruction, iterator over the resources and filter
-		// them. If a resource matches, it must be removed even if the
-		// instruction is negative. If positive, add a name section
-		// to the manifest for the given resource name. Then add all
-		// attributes from the instruction to that name section.
-		//
-		for (Map.Entry<Instruction,Attrs> instr : instructions.entrySet()) {
-			boolean matched = false;
+#### Custom attributes
 
-			// For each instruction
+The goal of named sections is to provide attributes over a specific subset of resources and paths in the jar file. Attributes are specified using the same syntax used elsewhere (such as package attributes). Attributes can contain properties and macros for expansion and replacement.
 
-			for (Iterator<String> i = resources.iterator(); i.hasNext();) {
-				String path = i.next();
-				// For each resource
+Each attribute is processed by bnd and the matching value is passed using the `@` property.
 
-				if (instr.getKey().matches(path)) {
+#### Resources
+Resources are targeted by using a glob pattern not ending with `/`.
 
-					// Instruction matches the resource
+For example, the following instruction sets the content type attribute for `png` files:
 
-					matched = true;
-					if (!instr.getKey().isNegated()) {
+```properties
+-namesection: com/foo/*.png; Content-Type=image/png
+```
 
-						// Positive match, add the attributes
+This produces a result like the following:
+```properties
+Name: org/foo/icon_12x12.png
+Content-Type: image/png
 
-						Attributes attrs = manifest.getAttributes(path);
-						if (attrs == null) {
-							attrs = new Attributes();
-							manifest.getEntries().put(path, attrs);
-						}
+Name: org/foo/icon_48x48.png
+Content-Type: image/png
+```
 
-						//
-						// Add all the properties from the instruction to the
-						// name section
-						//
+#### Packages
+Packages are targeted by using a glob pattern that ends with `/`.
 
-						for (Map.Entry<String,String> property : instr.getValue().entrySet()) {
-							setProperty("@", path);
-							try {
-								String processed = getReplacer().process(property.getValue());
-								attrs.putValue(property.getKey(), processed);
-							}
-							finally {
-								unsetProperty("@");
-							}
-						}
-					}
-					i.remove();
-				}
-			}
+For example, to produce a Java [Package Version Information](https://docs.oracle.com/javase/tutorial/deployment/jar/packageman.html) section use an instruction like this one:
+```properties
+-namesection: jakarta/annotation/*/;\
+	Specification-Title=Jakarta Annotations;\
+	Specification-Version=${annotation.spec.version};\
+	Specification-Vendor=Eclipse Foundation;\
+	Implementation-Title=jakarta.annotation;\
+	Implementation-Version=${annotation.spec.version}.${annotation.revision};\
+	Implementation-Vendor=Apache Software Foundation
+```
 
-			if (!matched && resources.size() > 0)
-				warning("The instruction %s in %s did not match any resources", instr.getKey(), NAMESECTION);
-		}
+This produces a result like the following:
+```properties
+Name: jakarta/annotation/
+Implementation-Title: jakarta.annotation
+Implementation-Vendor: Apache Software Foundation
+Implementation-Version: 2.0.0-M1
+Specification-Title: Jakarta Annotations
+Specification-Vendor: Eclipse Foundation
+Specification-Version: 2.0
+```
 
-	}
