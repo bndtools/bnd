@@ -27,7 +27,7 @@ import aQute.service.reporter.Reporter;
  * <li>{@code user} — The user ID
  * </ul>
  */
-@aQute.bnd.annotation.plugin.BndPlugin(name = "url.basic.authentication", parameters = BasicAuthentication.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "url.basic.authentication", hide = true, parameters = BasicAuthentication.Config.class)
 public class BasicAuthentication extends DefaultURLConnectionHandler {
 	private final static Logger logger = LoggerFactory.getLogger(BasicAuthentication.class);
 

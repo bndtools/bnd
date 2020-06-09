@@ -29,7 +29,7 @@ import aQute.libg.glob.Glob;
 import aQute.service.reporter.Reporter;
 
 @Deprecated
-@aQute.bnd.annotation.plugin.BndPlugin(name = "urlconnector", parameters = HttpBasicAuthURLConnector.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "urlconnector", hide = true, parameters = HttpBasicAuthURLConnector.Config.class)
 public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 	private final static Logger logger = LoggerFactory.getLogger(HttpBasicAuthURLConnector.class);
 

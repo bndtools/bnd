@@ -14,7 +14,7 @@ import aQute.lib.converter.Converter;
  * propeties any property key that starts with an upper case is considered to be
  * a header.
  */
-@aQute.bnd.annotation.plugin.BndPlugin(name = "url.settings", parameters = ConnectionSettings.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "url.settings", hide = true, parameters = ConnectionSettings.Config.class)
 public class ConnectionSettings extends DefaultURLConnectionHandler {
 	final Map<String, String>	headers	= new HashMap<>();
 	Config						config;

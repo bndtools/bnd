@@ -88,7 +88,7 @@ import aQute.service.reporter.Reporter;
 /**
  * This is the Bnd repository for Maven.
  */
-@BndPlugin(name = "MavenBndRepository")
+@BndPlugin(name = "MavenBndRepository", parameters = Configuration.class)
 public class MavenBndRepository extends BaseRepository implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable,
 	Refreshable, Actionable, ToDependencyPom, ReleaseBracketingPlugin {
 

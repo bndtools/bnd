@@ -32,7 +32,7 @@ import aQute.service.reporter.Reporter;
 /**
  * TODO Needs testing Can be used to override default verification of HTTPS.
  */
-@aQute.bnd.annotation.plugin.BndPlugin(name = "url.https.verification", parameters = HttpsVerification.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "url.https.verification", hide = true, parameters = HttpsVerification.Config.class)
 public class HttpsVerification extends DefaultURLConnectionHandler {
 	static Logger				logger	= LoggerFactory.getLogger(HttpsVerification.class);
 	private SSLSocketFactory	factory;
