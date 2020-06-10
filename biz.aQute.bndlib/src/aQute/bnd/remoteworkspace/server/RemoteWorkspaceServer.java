@@ -156,7 +156,7 @@ public class RemoteWorkspaceServer implements Closeable {
 					return project.getSpecification();
 
 				} else {
-					try (Run run = new Run(workspace, file)) {
+					try (Run run = Run.createRun(workspace, file)) {
 						return run.getSpecification();
 					}
 				}
