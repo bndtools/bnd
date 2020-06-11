@@ -988,7 +988,7 @@ public interface BundleSpecBuilder {
 	default Bundle install() throws Exception {
 		BundleBuilder x = x();
 		BuilderSpecification spec = x.spec;
-		byte[] build = LaunchpadBuilder.workspace.build(LaunchpadBuilder.projectDir.getAbsolutePath(), spec);
+		byte[] build = x.ws.workspace.build(LaunchpadBuilder.projectDir.getAbsolutePath(), spec);
 		String location;
 		if (spec.location == null) {
 			String name = spec.bundleSymbolicName.toString();

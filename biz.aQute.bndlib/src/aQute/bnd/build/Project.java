@@ -3469,17 +3469,22 @@ public class Project extends Processor {
 
 		RunSpecification runspecification = new RunSpecification();
 		try {
-			ProjectLauncher l = getProjectLauncher();
 			runspecification.bin = getOutput().getAbsolutePath();
 			runspecification.bin_test = getTestOutput().getAbsolutePath();
 			runspecification.target = getTarget().getAbsolutePath();
 			runspecification.errors.addAll(getErrors());
 			runspecification.extraSystemCapabilities = getRunSystemCapabilities().toBasic();
 			runspecification.extraSystemPackages = getRunSystemPackages().toBasic();
-			runspecification.properties = l.getRunProperties();
 			runspecification.runbundles = toPaths(runspecification.errors, getRunbundles());
 			runspecification.runfw = toPaths(runspecification.errors, getRunFw());
 			runspecification.runpath = toPaths(runspecification.errors, getRunpath());
+
+			try {
+				ProjectLauncher l = getProjectLauncher();
+				runspecification.properties = l.getRunProperties();
+			} catch (IllegalArgumentException iae) {
+				runspecification.properties = null;
+			}
 
 			for (String key : Iterables.iterable(getProperties().propertyNames(), String.class::cast)) {
 				// skip non instructions to prevent macro expansions we do not
