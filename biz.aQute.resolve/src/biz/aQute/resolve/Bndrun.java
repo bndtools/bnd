@@ -17,6 +17,7 @@ import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.build.model.conversions.CollectionFormatter;
 import aQute.bnd.build.model.conversions.Converter;
 import aQute.bnd.build.model.conversions.HeaderClauseFormatter;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.help.instructions.ResolutionInstructions;
 import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
@@ -150,12 +151,33 @@ public class Bndrun extends Run {
 		return model;
 	}
 
+	/**
+	 * We override to resolve before we get the runbundles.
+	 */
 	@Override
 	public Collection<Container> getRunbundles() throws Exception {
-		if (resolutionInstructions.resolve() == ResolveMode.beforelaunch) {
-			return RunResolution.getRunBundles(this, true)
-				.map(this::parseRunbundles)
-				.orElseThrow(s -> new IllegalArgumentException(s));
+		Parameters gestalt = getWorkspace().getGestalt();
+
+		ResolveMode resolve = resolutionInstructions.resolve();
+		if (resolve == null)
+			resolve = ResolveMode.manual;
+
+		switch (resolve) {
+			case auto :
+			case manual :
+			default :
+				break;
+
+			case batch :
+				if (!gestalt.containsKey(Constants.GESTALT_BATCH) && !super.getRunbundles().isEmpty())
+					break;
+
+				// fall through
+
+			case beforelaunch :
+				return RunResolution.getRunBundles(this, true)
+					.map(this::parseRunbundles)
+					.orElseThrow(s -> new IllegalArgumentException(s));
 		}
 		return super.getRunbundles();
 	}

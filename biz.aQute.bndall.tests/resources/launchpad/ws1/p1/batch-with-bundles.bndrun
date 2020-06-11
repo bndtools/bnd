@@ -1,0 +1,5 @@
+-runrequires: osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)'
+-runfw: org.apache.felix.framework;version='[5.6.10,5.6.10]'
+-runee: JavaSE-1.8
+-resolve: batch
+-runbundles org.apache.felix.gogo.runtime
