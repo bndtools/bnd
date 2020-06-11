@@ -504,6 +504,13 @@ public class Central implements IStartupParticipant {
 			.min((a, b) -> Integer.compare(a.segmentCount(), b.segmentCount()));
 	}
 
+	public static Optional<IPath> toBestPath(IResource resource) {
+		return Optional.ofNullable(resource
+			.getLocationURI())
+			.map(File::new)
+			.flatMap(Central::toFullPath);
+	}
+
 	public static void refresh(IPath path) {
 		try {
 			IResource r = ResourcesPlugin.getWorkspace()
