@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -23,6 +25,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 
 import aQute.lib.memoize.Memoize;
+import bndtools.central.Central;
 
 public class BndrunFilesParameterValues implements IParameterValues {
 
@@ -45,7 +48,10 @@ public class BndrunFilesParameterValues implements IParameterValues {
 				BndrunFilesParameterValues::findBndrunFiles)
 			.flatMap(Collection::stream)
 			.map(
-				IResource::getFullPath)
+				Central::toBestPath)
+			.map(Optional::get)
+			.filter(Objects::nonNull)
+			.distinct()
 			.collect(toMap(IPath::toPortableString, IPath::toPortableString)));
 	}
 
