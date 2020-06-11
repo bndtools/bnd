@@ -133,7 +133,6 @@ public class DependencyResolver {
 			result = resolver.resolve(request);
 		} catch (DependencyResolutionException e) {
 			result = e.getResult();
-			logger.warn(e.getMessage());
 		}
 
 		Map<File, ArtifactResult> dependencies = new LinkedHashMap<>();
