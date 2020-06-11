@@ -16,7 +16,7 @@ import aQute.launchpad.junit.LaunchpadRunner;
 public class BeforeAfterTest {
 
 	static LaunchpadBuilder	builder	= new LaunchpadBuilder().runfw("org.apache.felix.framework")
-		.bundles("org.assertj.core, org.apache.felix.scr")
+		.bundles("assertj-core, org.apache.felix.scr")
 		.debug();
 
 	@Service

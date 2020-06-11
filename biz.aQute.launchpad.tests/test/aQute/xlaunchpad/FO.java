@@ -22,7 +22,7 @@ public class FO {
 	static LaunchpadBuilder builder = new LaunchpadBuilder().snapshot()
 		.runfw("jar/org.apache.felix.framework-6.0.2.jar;version=file")
 		.bundles(
-			"org.osgi.util.promise, org.osgi.util.function, jar/org.apache.felix.scr-2.1.16.jar;version=file, org.assertj.core, org.apache.servicemix.bundles.junit")
+			"org.osgi.util.promise, org.osgi.util.function, jar/org.apache.felix.scr-2.1.16.jar;version=file, assertj-core, org.apache.servicemix.bundles.junit")
 		.debug();
 
 	@Component(service = X.class, enabled = false)

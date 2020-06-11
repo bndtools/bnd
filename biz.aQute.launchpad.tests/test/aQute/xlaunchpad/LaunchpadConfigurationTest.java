@@ -26,7 +26,7 @@ public class LaunchpadConfigurationTest {
 		.runfw("jar/org.apache.felix.framework-6.0.2.jar;version=file")
 		.export("*")
 		.bundles(
-			"org.osgi.util.promise, org.osgi.util.function, jar/org.apache.felix.scr-2.1.16.jar;version=file, jar/org.apache.felix.configadmin-1.9.8.jar;version=file, jar/org.apache.felix.configurator-1.0.8.jar;version=file, org.assertj.core")
+			"org.osgi.util.promise, org.osgi.util.function, jar/org.apache.felix.scr-2.1.16.jar;version=file, jar/org.apache.felix.configadmin-1.9.8.jar;version=file, jar/org.apache.felix.configurator-1.0.8.jar;version=file, assertj-core")
 		.debug();
 
 	@Component(name = "TestService", service = X.class, configurationPolicy = ConfigurationPolicy.REQUIRE)
