@@ -1,4 +1,4 @@
-@Version("1.2.0")
+@Version("1.3.0")
 @Export
 package aQute.bnd.maven.lib.resolve;
 

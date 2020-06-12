@@ -10,7 +10,6 @@ import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
@@ -224,11 +223,8 @@ public class BndrunContainer {
 	 * @return a fully configured dependency resolver instance
 	 */
 	public DependencyResolver getDependencyResolver(MavenProject project) {
-		if (includeDependencyManagement) {
-			includeDependencyManagement(project, artifactFactory);
-		}
-
-		return new DependencyResolver(project, repositorySession, resolver, system, scopes, transitive, postProcessor);
+		return new DependencyResolver(project, repositorySession, resolver, system, artifactFactory, scopes, transitive,
+			postProcessor);
 	}
 
 	/**
@@ -254,7 +250,8 @@ public class BndrunContainer {
 		String name = project.getName()
 			.isEmpty() ? project.getArtifactId() : project.getName();
 
-		return dependencyResolver.getFileSetRepository(name, bundles, useMavenDependencies);
+		return dependencyResolver.getFileSetRepository(name, bundles, useMavenDependencies,
+			includeDependencyManagement);
 	}
 
 	public void setRunrequiresFromProjectArtifact(Run run) {
@@ -311,24 +308,6 @@ public class BndrunContainer {
 		Properties mavenProperties = new Properties(beanProperties);
 		mavenProperties.putAll(project.getProperties());
 		return new Processor(workspace, mavenProperties, false);
-	}
-
-	@SuppressWarnings("deprecation")
-	private void includeDependencyManagement(MavenProject mavenProject,
-		org.apache.maven.artifact.factory.ArtifactFactory artifactFactory) {
-		if (mavenProject.getDependencyManagement() != null) {
-			List<Dependency> dependencies = mavenProject.getDependencies();
-
-			mavenProject.getDependencyManagement()
-				.getDependencies()
-				.forEach(dependencies::add);
-
-			try {
-				mavenProject.setDependencyArtifacts(mavenProject.createArtifacts(artifactFactory, null, null));
-			} catch (Exception e) {
-				throw aQute.lib.exceptions.Exceptions.duck(e);
-			}
-		}
 	}
 
 }

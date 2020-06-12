@@ -3,15 +3,19 @@ package aQute.bnd.maven.lib.resolve;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -34,12 +38,31 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.repository.fileset.FileSetRepository;
+import aQute.bnd.stream.MapStream;
 import aQute.lib.unmodifiable.Lists;
 
 @ProviderType
 public class DependencyResolver {
 
 	private static final Logger					logger	= LoggerFactory.getLogger(DependencyResolver.class);
+
+	private static final BiPredicate<ArtifactResult, ArtifactResult>				sameExceptVersion	= (
+		a,
+		b) -> Objects.equals(a.getArtifact()
+			.getArtifactId(),
+			b.getArtifact()
+				.getArtifactId())
+			&& Objects.equals(a.getArtifact()
+				.getGroupId(),
+				b.getArtifact()
+					.getGroupId())
+			&& Objects.equals(a.getArtifact()
+				.getClassifier(),
+				b.getArtifact()
+					.getClassifier());
+	private static final BiPredicate<ArtifactResult, Collection<ArtifactResult>>	containsAnotherVersion	= (
+		resolvedArtifact, collection) -> collection.stream()
+			.anyMatch(ra -> sameExceptVersion.test(ra, resolvedArtifact));
 
 	private final boolean						includeTransitive;
 	private final MavenProject					project;
@@ -48,8 +71,8 @@ public class DependencyResolver {
 	private final RepositorySystem				system;
 	private final ProjectDependenciesResolver	resolver;
 	private final PostProcessor					postProcessor;
-
-	private Map<File, ArtifactResult>			resolvedDependencies;
+	@SuppressWarnings("deprecation")
+	private final org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
 
 	/**
 	 * Shortcut with {@code scopes = ['compile', 'runtime']},
@@ -63,28 +86,30 @@ public class DependencyResolver {
 	public DependencyResolver(MavenProject project, RepositorySystemSession session,
 		ProjectDependenciesResolver resolver, RepositorySystem system) {
 
-		this(project, session, resolver, system, Lists.of("compile", "runtime"), true, new LocalPostProcessor());
+		this(project, session, resolver, system, null, Lists.of("compile", "runtime"), true, new LocalPostProcessor());
 	}
 
 	public DependencyResolver(MavenProject project, RepositorySystemSession session,
 		ProjectDependenciesResolver resolver, RepositorySystem system, Set<Scope> scopes) {
 
-		this(project, session, resolver, system, scopes.stream()
+		this(project, session, resolver, system, null, scopes
+			.stream()
 			.map(Scope::name)
-			.collect(Collectors.toList()));
+			.collect(Collectors.toList()), true, new LocalPostProcessor());
 	}
 
 	public DependencyResolver(MavenProject project, RepositorySystemSession session,
 		ProjectDependenciesResolver resolver, RepositorySystem system, List<String> scopes) {
 
-		this(project, session, resolver, system, scopes, true, new LocalPostProcessor());
+		this(project, session, resolver, system, null, scopes, true, new LocalPostProcessor());
 	}
 
 	public DependencyResolver(MavenProject project, RepositorySystemSession session,
 		ProjectDependenciesResolver resolver, RepositorySystem system, Set<Scope> scopes, boolean includeTransitive,
 		PostProcessor postProcessor) {
 
-		this(project, session, resolver, system, scopes.stream()
+		this(project, session, resolver, system, null, scopes
+			.stream()
 			.map(Scope::name)
 			.collect(Collectors.toList()), includeTransitive, postProcessor);
 	}
@@ -93,10 +118,30 @@ public class DependencyResolver {
 		ProjectDependenciesResolver resolver, RepositorySystem system, List<String> scopes, boolean includeTransitive,
 		PostProcessor postProcessor) {
 
+		this(project, session, resolver, system, null, scopes, includeTransitive, postProcessor);
+	}
+
+	public DependencyResolver(MavenProject project, RepositorySystemSession session,
+		ProjectDependenciesResolver resolver, RepositorySystem system,
+		@SuppressWarnings("deprecation") org.apache.maven.artifact.factory.ArtifactFactory artifactFactory,
+		Set<Scope> scopes, boolean includeTransitive, PostProcessor postProcessor) {
+
+		this(project, session, resolver, system, artifactFactory, scopes
+			.stream()
+			.map(Scope::name)
+			.collect(Collectors.toList()), includeTransitive, postProcessor);
+	}
+
+	public DependencyResolver(MavenProject project, RepositorySystemSession session,
+		ProjectDependenciesResolver resolver, RepositorySystem system,
+		@SuppressWarnings("deprecation") org.apache.maven.artifact.factory.ArtifactFactory artifactFactory,
+		List<String> scopes, boolean includeTransitive, PostProcessor postProcessor) {
+
 		this.project = project;
 		this.session = session;
 		this.resolver = resolver;
 		this.system = system;
+		this.artifactFactory = artifactFactory;
 		this.scopes = scopes;
 		this.includeTransitive = includeTransitive;
 		this.postProcessor = postProcessor;
@@ -122,10 +167,6 @@ public class DependencyResolver {
 	}
 
 	private Map<File, ArtifactResult> resolve(List<RemoteRepository> remoteRepositories) throws MojoExecutionException {
-		if (resolvedDependencies != null) {
-			return resolvedDependencies;
-		}
-
 		DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session);
 
 		DependencyResolutionResult result;
@@ -133,7 +174,6 @@ public class DependencyResolver {
 			result = resolver.resolve(request);
 		} catch (DependencyResolutionException e) {
 			result = e.getResult();
-			logger.warn(e.getMessage());
 		}
 
 		Map<File, ArtifactResult> dependencies = new LinkedHashMap<>();
@@ -146,15 +186,25 @@ public class DependencyResolver {
 				.getId(), remoteRepositories);
 		}
 
-		return resolvedDependencies = dependencies;
+		return dependencies;
 	}
 
 	public FileSetRepository getFileSetRepository(String name, Collection<File> bundlesInputParameter,
 		boolean useMavenDependencies) throws Exception {
 
+		return getFileSetRepository(name, bundlesInputParameter, useMavenDependencies, false);
+	}
+
+	public FileSetRepository getFileSetRepository(String name, Collection<File> bundlesInputParameter,
+		boolean useMavenDependencies, boolean includeDependencyManagement) throws Exception {
+
 		Collection<File> bundles = new ArrayList<>();
+		Map<File, ArtifactResult> dependencies = new HashMap<>();
+
 		if (useMavenDependencies) {
-			Map<File, ArtifactResult> dependencies = resolve();
+			Map<File, ArtifactResult> resolved = resolve();
+
+			dependencies.putAll(resolved);
 
 			bundles.addAll(dependencies.keySet());
 
@@ -168,6 +218,27 @@ public class DependencyResolver {
 				.map(PluginExecution::getConfiguration)
 				.map(Xpp3Dom.class::cast)
 				.forEach(c -> readConfiguration(c, finalName, bundles));
+		}
+
+		if (includeDependencyManagement && (project.getDependencyManagement() != null) && (artifactFactory != null)) {
+			List<Dependency> originalDependencies = Lists.copyOf(project.getDependencies());
+
+			try {
+				setDependencyManagementDependencies();
+
+				Map<File, ArtifactResult> resolved = resolve();
+
+				MapStream.of(
+					resolved)
+					.filterValue(v -> containsAnotherVersion
+						.negate()
+						.test(v, dependencies
+							.values()))
+					.keys()
+					.forEach(bundles::add);
+			} finally {
+				resetOriginalDependencies(originalDependencies);
+			}
 		}
 
 		if (bundlesInputParameter != null) {
@@ -208,9 +279,13 @@ public class DependencyResolver {
 				logger.debug("Located file: {} for artifact {}", resolvedArtifact.getArtifact()
 					.getFile(), resolvedArtifact);
 
-				// Add artifact only if the scope of this artifact matches.
+				// Add artifact only if the scope of this artifact matches and if
+				// we don't already have another version (earlier means higher
+				// precedence regardless of version)
 				if (scopes.contains(node.getDependency()
-					.getScope())) {
+					.getScope()) && containsAnotherVersion
+						.negate()
+						.test(resolvedArtifact, files.values())) {
 					files.put(resolvedArtifact.getArtifact()
 						.getFile(), resolvedArtifact);
 				}
@@ -223,6 +298,42 @@ public class DependencyResolver {
 			} else {
 				logger.debug("Ignoring transitive dependencies of {}", node.getDependency());
 			}
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	private void setDependencyManagementDependencies() {
+		List<Dependency> dependencies = project.getDependencies();
+
+		// We already have a copy
+		dependencies.clear();
+
+		project
+			.getDependencyManagement()
+			.getDependencies()
+			.stream()
+			.forEach(dependencies::add);
+
+		try {
+			project.setDependencyArtifacts(project.createArtifacts(artifactFactory, null, null));
+		} catch (Exception e) {
+			throw aQute.lib.exceptions.Exceptions.duck(e);
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	private void resetOriginalDependencies(List<Dependency> originalDependencies) {
+		project
+			.getDependencies()
+			.clear();
+		project
+			.getDependencies()
+			.addAll(originalDependencies);
+
+		try {
+			project.setDependencyArtifacts(project.createArtifacts(artifactFactory, null, null));
+		} catch (Exception e) {
+			throw aQute.lib.exceptions.Exceptions.duck(e);
 		}
 	}
 
