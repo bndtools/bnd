@@ -1,0 +1,7 @@
+-remoteworkspace: true
+-plugin:\
+    aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        name="Maven Central";\
+        releaseUrl=https://repo.maven.apache.org/maven2;\
+        index="${.}/central.mvn";\
+        readOnly=true,\

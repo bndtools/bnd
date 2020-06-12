@@ -55,6 +55,7 @@ import org.osgi.framework.wiring.FrameworkWiring;
 //import org.osgi.service.component.runtime.dto.ComponentDescriptionDTO;
 import org.osgi.util.tracker.ServiceTracker;
 
+import aQute.bnd.service.remoteworkspace.RemoteWorkspace;
 import aQute.bnd.service.specifications.RunSpecification;
 import aQute.launchpad.internal.ProbeImpl;
 import aQute.lib.converter.Converter;
@@ -102,6 +103,7 @@ public class Launchpad implements AutoCloseable {
 	final RunSpecification						runspec;
 	final boolean								hasTestBundle;
 	final StartLevelRuntimeHandler				startlevels;
+	final RemoteWorkspace						workspace;
 
 	Bundle										testbundle;
 	boolean										debug;
@@ -113,8 +115,9 @@ public class Launchpad implements AutoCloseable {
 	private Bundle								proxyBundle;
 	private Probe								probe					= new ProbeImpl();
 
-	Launchpad(Framework framework, String name, String className, RunSpecification runspec, long closeTimeout,
-		boolean debug, boolean hasTestBundle, boolean byReference) {
+	Launchpad(RemoteWorkspace workspace, Framework framework, String name, String className, RunSpecification runspec,
+		long closeTimeout, boolean debug, boolean hasTestBundle, boolean byReference) {
+		this.workspace = workspace;
 		this.runspec = runspec;
 		this.closeTimeout = closeTimeout;
 		this.hasTestBundle = hasTestBundle;
@@ -251,7 +254,7 @@ public class Launchpad implements AutoCloseable {
 	 */
 	public List<Bundle> bundles(String specification) {
 		try {
-			return LaunchpadBuilder.workspace.getLatestBundles(projectDir.getAbsolutePath(), specification)
+			return workspace.getLatestBundles(projectDir.getAbsolutePath(), specification)
 				.stream()
 				.map(File::new)
 				.map(this::bundle)

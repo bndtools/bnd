@@ -1,7 +1,7 @@
 ---
 layout: default
 class: Workspace
-title: -resolve (manual|auto|beforelaunch)
+title: -resolve (manual|auto|beforelaunch|batch)
 summary: Defines when/how resolving is done to calculate the -runbundles
 ---
 
@@ -12,7 +12,8 @@ The values are:
 * `manual` – It is up to the user to resolve the initial requirements
 * `auto` – Whenever the initial requirements are saved, the resolver will be used to set new `-runbundles`
 * `beforelaunch` – Calculate the `-runbundles` on demand. This ignores the value of the `-runbundles` and runs the resolver. The results of the resolver are cached. This cache works by creating a checksum over all the properties of the project.
-
+* `batch` – When running in batch mode, the run bundles will be resolved. In all other modes this will only resolve when the `-runbundles` are empty.
+ 
 ## Example
 
     -resolve beforelaunch

@@ -48,13 +48,13 @@ public class LaunchpadBuilder implements AutoCloseable {
 	private static final String		EXCLUDEEXPORTS		= "-excludeexports";
 	final static ExecutorService	executor			= Executors.newCachedThreadPool();
 	final static File				projectDir			= IO.work;
-	final static RemoteWorkspace	workspace			= RemoteWorkspaceClientFactory.create(projectDir,
+	final static RemoteWorkspace	defaultWorkspace	= RemoteWorkspaceClientFactory.create(projectDir,
 		new RemoteWorkspaceClient() {});
 	final static RunSpecification	projectTestSetup;
 	final static AtomicInteger		counter				= new AtomicInteger();
 
 	static {
-		projectTestSetup = workspace.analyzeTestSetup(IO.work.getAbsolutePath());
+		projectTestSetup = defaultWorkspace.analyzeTestSetup(IO.work.getAbsolutePath());
 
 		//
 		// We only want the raw setup and not the run spec since this
@@ -74,7 +74,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 		Runtime.getRuntime()
 			.addShutdownHook(new Thread(() -> {
 				try {
-					workspace.close();
+					defaultWorkspace.close();
 				} catch (IOException e) {
 					// ignore
 				}
@@ -92,6 +92,17 @@ public class LaunchpadBuilder implements AutoCloseable {
 	final List<String>				exports			= new ArrayList<>();
 	ClassLoader						myClassLoader;
 	String							parentLoader	= Constants.FRAMEWORK_BUNDLE_PARENT_BOOT;
+	final RemoteWorkspace			workspace;
+
+	/**
+	 * Provide a remote workspace to use, mainly for testing
+	 */
+	public LaunchpadBuilder(RemoteWorkspace workspace) {
+		assert workspace != null;
+		local = new RunSpecification();
+		this.workspace = workspace;
+		this.local.mergeWith(projectTestSetup);
+	}
 
 	/**
 	 * Start a framework assuming the current working directory is the project
@@ -99,6 +110,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 	 */
 	public LaunchpadBuilder() {
 		// This ensures a deep clone.
+		this.workspace = defaultWorkspace;
 		local = new RunSpecification();
 		local.mergeWith(projectTestSetup);
 	}
@@ -272,7 +284,8 @@ public class LaunchpadBuilder implements AutoCloseable {
 			Framework framework = getFramework(runspec);
 
 			@SuppressWarnings("resource")
-			Launchpad launchpad = new Launchpad(framework, name, className, runspec, closeTimeout, debug, testbundle,
+			Launchpad launchpad = new Launchpad(workspace, framework, name, className, runspec, closeTimeout, debug,
+				testbundle,
 				byReference);
 
 			launchpad.report("ALL extra system packages\n     %s", toLines(local.extraSystemPackages.keySet()));
