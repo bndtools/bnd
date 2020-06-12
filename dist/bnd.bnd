@@ -36,6 +36,7 @@
             bndtools.m2e, \
             bndtools.pde, \
             bndtools.release, \
+            org.bndtools.applaunch, \
             org.bndtools.headless.build.manager, \
             org.bndtools.headless.build.plugin.ant, \
             org.bndtools.headless.build.plugin.gradle, \
