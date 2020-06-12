@@ -196,7 +196,7 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
 	protected void editorContextMenuAboutToShow(IMenuManager menu) {
 		super.editorContextMenuAboutToShow(menu);
 
-		if (editModel != null && editModel.isCnf()) {
+		if (editModel != null) {
 			List<InternalPluginDefinition> plugins = Central.getInternalPluginDefinitions();
 			Collections.sort(plugins, (a, b) -> a.getName()
 				.compareTo(b.getName()));
