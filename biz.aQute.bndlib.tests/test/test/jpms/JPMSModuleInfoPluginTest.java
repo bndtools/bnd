@@ -10,6 +10,9 @@ import java.io.File;
 import java.util.Arrays;
 
 import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import aQute.bnd.classfile.ClassFile;
 import aQute.bnd.classfile.ModuleAttribute;
@@ -21,6 +24,68 @@ import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 
 public class JPMSModuleInfoPluginTest {
+
+	@ParameterizedTest(name = "Validate Module Access inputs {arguments}")
+	@CsvSource({
+		"OPEN,32", //
+		"open,32", //
+		"0x0020,32", //
+		"0x20,32", //
+		"32,32", //
+		"SYNTHETIC,4096", //
+		"synthetic,4096", //
+		"0x1000,4096", //
+		"4096,4096", //
+		"MANDATED,32768", //
+		"mandated,32768", //
+		"0x8000,32768", //
+		"32768,32768" //
+	})
+	@DisplayName("Validate Module Access inputs produce correct access")
+	public void moduleAccess(String access, int flags) throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.JPMS_MODULE_INFO, "foo;access=" + access);
+			b.setProperty(Constants.BUNDLE_SYMBOLICNAME, "foo");
+			b.setProperty(Constants.BUNDLE_VERSION, "1.2.7");
+			b.setProperty(Constants.PRIVATEPACKAGE, "test.jpms.a.*");
+			b.addClasspath(new File("bin_test"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+
+			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
+			assertNotNull(moduleInfo);
+
+			ClassFile module_info = ClassFile.parseClassFile(new DataInputStream(moduleInfo.openInputStream()));
+
+			assertThat(module_info.this_class).isEqualTo("module-info");
+
+			ModuleAttribute moduleAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModuleAttribute.class::isInstance)
+				.map(ModuleAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(moduleAttribute.module_name).isEqualTo("foo");
+			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7");
+			assertThat(moduleAttribute.module_flags).isEqualTo(flags);
+			assertThat(moduleAttribute.opens).hasSize(0);
+			assertThat(moduleAttribute.exports).hasSize(0);
+			assertThat(moduleAttribute.provides).hasSize(0);
+			assertThat(moduleAttribute.requires).hasSize(1)
+				.anyMatch(e -> e.requires.equals("java.base"));
+			assertThat(moduleAttribute.uses).hasSize(0);
+
+			ModuleMainClassAttribute moduleMainClassAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModuleMainClassAttribute.class::isInstance)
+				.map(ModuleMainClassAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(moduleMainClassAttribute).isNull();
+		}
+	}
 
 	@Test
 	public void moduleWithOptionsIgnore() throws Exception {

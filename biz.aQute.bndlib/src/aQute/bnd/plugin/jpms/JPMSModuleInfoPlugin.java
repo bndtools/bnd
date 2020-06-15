@@ -1,6 +1,8 @@
 package aQute.bnd.plugin.jpms;
 
+import static aQute.bnd.classfile.ModuleAttribute.ACC_MANDATED;
 import static aQute.bnd.classfile.ModuleAttribute.ACC_OPEN;
+import static aQute.bnd.classfile.ModuleAttribute.ACC_SYNTHETIC;
 import static aQute.bnd.osgi.Constants.ACCESS_ATTRIBUTE;
 import static aQute.bnd.osgi.Constants.AUTOMATIC_MODULE_NAME;
 import static aQute.bnd.osgi.Constants.DYNAMICIMPORT_PACKAGE;
@@ -34,6 +36,7 @@ import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static org.osgi.namespace.extender.ExtenderNamespace.EXTENDER_NAMESPACE;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -75,6 +78,50 @@ import aQute.lib.strings.Strings;
  * annotations.
  */
 public class JPMSModuleInfoPlugin implements VerifierPlugin {
+
+	enum Access {
+		CLOSED(
+			0),
+		OPEN(ACC_OPEN),
+		SYNTHETIC(ACC_SYNTHETIC),
+		MANDATED(ACC_MANDATED);
+
+		public static Access parse(String input) {
+			switch (input) {
+				case "OPEN" :
+				case "open" :
+				case "0x0020" :
+				case "32" :
+					return OPEN;
+				case "SYNTHETIC" :
+				case "synthetic" :
+				case "0x1000" :
+				case "4096" :
+					return SYNTHETIC;
+				case "MANDATED" :
+				case "mandated" :
+				case "0x8000" :
+				case "32768" :
+					return MANDATED;
+				default :
+					int parsedValue = Integer.decode(input);
+					return Arrays.stream(values())
+						.filter(a -> a.getValue() == parsedValue)
+						.findFirst()
+						.orElseThrow(() -> new IllegalArgumentException(input));
+			}
+		}
+
+		private Access(int value) {
+			this.value = value;
+		}
+
+		public int getValue() {
+			return value;
+		}
+
+		private final int value;
+	}
 
 	private static final Logger		logger						= LoggerFactory.getLogger(JPMSModuleInfoPlugin.class);
 
@@ -241,7 +288,8 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
 		ModuleInfoBuilder builder = new ModuleInfoBuilder().module_name(name)
 			.module_version(version)
-			.module_flags(Integer.parseInt(access));
+			.module_flags(Access.parse(access)
+				.getValue());
 		return builder;
 	}
 

@@ -36,9 +36,9 @@ When calculating the **module access**, the following is considered:
 1. If the `-jpms-module-info` instruction contains a key having an `access` attribute, the `access` attribute value is used as the module access
    e.g. `-jpms-module-info: foo.module;access=0x0020`, the module access is `0x0020` (OPEN)
    *Legal values are:*
-   1.  `0x0020` (OPEN)
-   2.  `0x1000` (SYNTHETIC)
-   3.  `0x8000` (MANDATED)
+   1.  `OPEN` or  `open`, `0x0020`, `32`
+   2.  `SYNTHETIC` or `synthetic`, `0x1000`, `4096`
+   3.  `MANDATED` or `mandated`, `0x8000`, `32768`
 2. If the header `Require-Capability` contains **any** capability in the `osgi.extender` namespace, the module access is **open**
 3. Otherwise, module access is `0`
 
