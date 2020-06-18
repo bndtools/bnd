@@ -27,6 +27,7 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
 
 	private final ResolutionSuccessPanel	resolutionSuccessPanel;
 	private final ResolutionFailurePanel	resolutionFailurePanel	= new ResolutionFailurePanel();
+	private final ResolutionCanceledPanel	resolutionCanceledPanel	= new ResolutionCanceledPanel();
 
 	private StackLayout						stack;
 
@@ -63,6 +64,7 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
 
 		resolutionSuccessPanel.createControl(container);
 		resolutionFailurePanel.createControl(container);
+		resolutionCanceledPanel.createControl(container);
 
 		updateUi();
 	}
@@ -82,9 +84,10 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
 	@Override
 	public void recalculate() {
 		try {
+			result.getLogger()
+				.close();
 			ResolveOperation resolver = new ResolveOperation(model);
 			getContainer().run(true, true, resolver);
-
 			setResult(resolver.getResult());
 		} catch (InvocationTargetException e) {
 			ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
@@ -98,21 +101,31 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
 	}
 
 	private void updateUi() {
-		resolutionSuccessPanel.setInput(result);
-		resolutionFailurePanel.setInput(result);
 		// String log = (result != null) ? result.getLog() : null;
 		// txtLog.setText(log != null ? log : "<<UNAVAILABLE>>");
-
-		boolean resolved = result != null && result.getOutcome()
-			.equals(ResolutionResult.Outcome.Resolved);
+		ResolutionResult.Outcome outcome = result != null ? result.getOutcome() : ResolutionResult.Outcome.Unresolved;
 		// SWTUtil.recurseEnable(resolved, tbtmResults.getControl());
 		// SWTUtil.recurseEnable(!resolved, tbtmErrors.getControl());
-		stack.topControl = resolved ? resolutionSuccessPanel.getControl() : resolutionFailurePanel.getControl();
+		switch (outcome) {
+			case Resolved :
+				resolutionSuccessPanel.setInput(result);
+				stack.topControl = resolutionSuccessPanel.getControl();
+				break;
+			case Cancelled :
+				resolutionCanceledPanel.setInput(result);
+				setErrorMessage("Resolution canceled!");
+				stack.topControl = resolutionCanceledPanel.getControl();
+				break;
+			default :
+				resolutionFailurePanel.setInput(result);
+				setErrorMessage("Resolution failed!");
+				stack.topControl = resolutionFailurePanel.getControl();
+				break;
+		}
+		// stack.topControl = resolutionSuccessPanel.getControl();
 		((Composite) getControl()).layout(true, true);
 
 		updateButtons();
-		String error = result != null && resolved ? null : "Resolution failed!";
-		setErrorMessage(error);
 	}
 
 	@Override
@@ -153,6 +166,7 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
 
 		resolutionFailurePanel.dispose();
 		resolutionSuccessPanel.dispose();
+		resolutionCanceledPanel.dispose();
 
 	}
 
