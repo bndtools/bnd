@@ -47,7 +47,7 @@ import bndtools.preferences.BndPreferences;
 
 @Component(name = "org.bndtools.templating.repos", property = {
 	"source=workspace", Constants.SERVICE_DESCRIPTION + "=Load templates from the Workspace and Repositories",
-	Constants.SERVICE_RANKING + "=" + ReposTemplateLoader.RANKING
+	Constants.SERVICE_RANKING + ":Integer=" + ReposTemplateLoader.RANKING
 })
 public class ReposTemplateLoader implements TemplateLoader {
 
