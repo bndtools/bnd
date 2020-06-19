@@ -48,6 +48,17 @@ public class ResolutionWizard extends Wizard {
 		return true;
 	}
 
+	@Override
+	public void dispose() {
+		if (resultsPage.getResult() != null && resultsPage.getResult()
+			.getLogger() != null) {
+			resultsPage.getResult()
+				.getLogger()
+				.close();
+		}
+		super.dispose();
+	}
+
 	public void setAllowFinishUnresolved(boolean allowFinishUnresolved) {
 		resultsPage.setAllowCompleteUnresolved(allowFinishUnresolved);
 	}

@@ -92,6 +92,11 @@ public class ResolveJob extends Job {
 		return Status.OK_STATUS;
 	}
 
+	@Override
+	protected void canceling() {
+		this.getThread().interrupt();
+	}
+
 	public ResolutionResult getResolutionResult() {
 		return result;
 	}

@@ -73,10 +73,28 @@ public class RunResolution {
 	 */
 	public static RunResolution resolve(Project project, Processor actualProperties,
 		Collection<ResolutionCallback> callbacks) {
+		return resolve(project, actualProperties, callbacks, null);
+	}
+
+	/**
+	 * The main workhorse to resolve
+	 *
+	 * @param project used for reporting errors
+	 * @param actualProperties the actual properties used for resolving. This
+	 *            can be the project in builders that do not use the
+	 *            {@link BndEditModel}, otherwise it is generally the
+	 *            {@link BndEditModel}.
+	 * @param callbacks any callbacks
+	 * @param resolverLogger an optional Logger for the resolve Process. The
+	 *            Logger needs to be closed manually.
+	 * @return a Resolution
+	 */
+	public static RunResolution resolve(Project project, Processor actualProperties,
+		Collection<ResolutionCallback> callbacks, ResolverLogger resolverLogger) {
 		if (callbacks == null)
 			callbacks = Collections.emptyList();
-
-		try (ResolverLogger logger = new ResolverLogger()) {
+		ResolverLogger logger = resolverLogger == null ? new ResolverLogger() : resolverLogger;
+		try {
 			try {
 				ResolveProcess resolve = new ResolveProcess();
 				Resolver resolver = new BndResolver(logger);
@@ -87,6 +105,10 @@ public class RunResolution {
 				return new RunResolution(project, actualProperties, e, logger.getLog());
 			} catch (Exception e) {
 				return new RunResolution(project, actualProperties, e, logger.getLog());
+			}
+		} finally {
+			if (resolverLogger == null) {
+				logger.close();
 			}
 		}
 	}

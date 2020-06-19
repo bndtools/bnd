@@ -29,6 +29,8 @@ public class ResolverLogger implements LogService, AutoCloseable {
 
 	private String				log;
 
+	private boolean				keepLogFile		= false;
+
 	public ResolverLogger() {
 		this(DEFAULT_LEVEL);
 	}
@@ -133,9 +135,13 @@ public class ResolverLogger implements LogService, AutoCloseable {
 	@Override
 	public void close() {
 		IO.close(printer);
-		if (file != null) {
+		if (file != null && !keepLogFile) {
 			IO.delete(file);
 		}
+	}
+
+	public void setKeepLogFileTillExit(boolean keep) {
+		this.keepLogFile = keep;
 	}
 
 	public int getLogLevel() {

@@ -8,6 +8,7 @@ import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 import org.osgi.service.resolver.ResolutionException;
 
+import biz.aQute.resolve.ResolverLogger;
 import biz.aQute.resolve.RunResolution;
 
 public class ResolutionResult {
@@ -15,6 +16,7 @@ public class ResolutionResult {
 	private final Outcome		outcome;
 	private final IStatus		status;
 	private final RunResolution	resolution;
+	private final ResolverLogger	logger;
 
 	public enum Outcome {
 		Resolved,
@@ -23,10 +25,11 @@ public class ResolutionResult {
 		Cancelled
 	}
 
-	public ResolutionResult(Outcome outcome, RunResolution resolution, IStatus status) {
+	public ResolutionResult(Outcome outcome, RunResolution resolution, IStatus status, ResolverLogger logger) {
 		this.outcome = outcome;
 		this.resolution = resolution;
 		this.status = status;
+		this.logger = logger;
 	}
 
 	public Outcome getOutcome() {
@@ -59,4 +62,7 @@ public class ResolutionResult {
 		return resolution;
 	}
 
+	public ResolverLogger getLogger() {
+		return logger;
+	}
 }
