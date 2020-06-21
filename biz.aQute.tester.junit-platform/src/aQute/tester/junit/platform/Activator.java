@@ -358,7 +358,7 @@ public class Activator implements BundleActivator, Runnable {
 			}
 
 			return summary.getSummary()
-				.getTestsFailedCount();
+				.getTotalFailureCount();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
