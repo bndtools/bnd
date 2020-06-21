@@ -54,6 +54,8 @@ import aQute.tester.testclasses.junit.platform.JUnit4AbortTest;
 import aQute.tester.testclasses.junit.platform.JUnit4ComparisonTest;
 import aQute.tester.testclasses.junit.platform.JUnit4Skipper;
 import aQute.tester.testclasses.junit.platform.JUnit5AbortTest;
+import aQute.tester.testclasses.junit.platform.JUnit5ContainerError;
+import aQute.tester.testclasses.junit.platform.JUnit5ContainerFailure;
 import aQute.tester.testclasses.junit.platform.JUnit5ContainerSkipped;
 import aQute.tester.testclasses.junit.platform.JUnit5ContainerSkippedWithCustomDisplayName;
 import aQute.tester.testclasses.junit.platform.JUnit5DisplayNameTest;
@@ -584,5 +586,12 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorTest {
 		XmlAssert.assertThat(doc)
 			.nodesByXPath(testCaseFailure(With2Failures.class, "test3", CustomAssertionError.class))
 			.hasSize(1);
+	}
+
+	// Unlike JUnit 4, Jupiter skips the tests when the parent container
+	// fails and does not report the children as test failures.
+	@Test
+	public void exitCode_countsJupiterContainerErrorsAndFailures() {
+		runTests(2, JUnit5ContainerFailure.class, JUnit5ContainerError.class);
 	}
 }

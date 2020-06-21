@@ -53,6 +53,8 @@ import aQute.tester.testclasses.JUnit3Test;
 import aQute.tester.testclasses.JUnit4Test;
 import aQute.tester.testclasses.With1Error1Failure;
 import aQute.tester.testclasses.With2Failures;
+import aQute.tester.testclasses.junit.platform.JUnit4ContainerError;
+import aQute.tester.testclasses.junit.platform.JUnit4ContainerFailure;
 
 // Because we're not in the same project as aQute.junit.TesterConstants and its bundle-private.
 public abstract class AbstractActivatorTest extends SoftAssertions {
@@ -514,6 +516,11 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 	public void exitCode_countsErrorsAndFailures() {
 		final ExitCode exitCode = runTests(JUnit4Test.class, With2Failures.class, With1Error1Failure.class);
 		assertThat(exitCode.exitCode).isEqualTo(4);
+	}
+
+	@Test
+	public void exitCode_countsContainerErrorsAndFailures() {
+		runTests(8, JUnit4ContainerFailure.class, JUnit4ContainerError.class);
 	}
 
 	protected TestRunData runTestsEclipse(Callback postCreateCallback, Class<?>... tests) {
