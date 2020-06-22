@@ -1,4 +1,4 @@
-package bndtools.launch;
+package bndtools.launch.api;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +39,7 @@ import aQute.bnd.build.ProjectLauncher.NotificationType;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.result.Result;
 import bndtools.Plugin;
+import bndtools.launch.TerminationListener;
 
 public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 	private ProjectLauncher			bndLauncher	= null;

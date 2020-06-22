@@ -1,4 +1,4 @@
-package bndtools.launch;
+package bndtools.launch.api;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -46,6 +46,8 @@ import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.StatusCode;
 import bndtools.central.Central;
+import bndtools.launch.LaunchConstants;
+import bndtools.launch.TerminationListener;
 import bndtools.launch.util.LaunchUtils;
 import bndtools.preferences.BndPreferences;
 

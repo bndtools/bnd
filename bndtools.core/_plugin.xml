@@ -492,7 +492,7 @@
    <!-- DEFINE LAUNCH CONFIGURATION TYPES -->
    <extension point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
-        delegate="bndtools.launch.OSGiRunLaunchDelegate"
+        delegate="bndtools.launch.api.OSGiRunLaunchDelegate"
         id="bndtools.launch"
         modes="run, debug"
         name="OSGi Framework"
@@ -500,7 +500,7 @@
         sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer"
       />
       <launchConfigurationType
-         delegate="bndtools.launch.OSGiJUnitLaunchDelegate"
+         delegate="bndtools.launch.api.OSGiJUnitLaunchDelegate"
          id="bndtools.launch.junit"
          modes="run, debug"
          name="OSGi Framework JUnit Tests"

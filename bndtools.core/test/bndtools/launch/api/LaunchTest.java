@@ -1,4 +1,4 @@
-package bndtools.launch;
+package bndtools.launch.api;
 
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;

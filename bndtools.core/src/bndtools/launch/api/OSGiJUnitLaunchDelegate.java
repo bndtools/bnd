@@ -1,4 +1,4 @@
-package bndtools.launch;
+package bndtools.launch.api;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -43,6 +43,8 @@ import aQute.bnd.build.ProjectTester;
 import aQute.bnd.service.EclipseJUnitTester;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
+import bndtools.launch.LaunchConstants;
+import bndtools.launch.TerminationListener;
 import bndtools.launch.util.LaunchUtils;
 
 public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {

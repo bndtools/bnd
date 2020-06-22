@@ -25,7 +25,7 @@ import org.osgi.framework.FrameworkUtil;
 
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.RunSession;
-import bndtools.launch.OSGiRunLaunchDelegate;
+import bndtools.launch.api.OSGiRunLaunchDelegate;
 import bndtools.launch.UpdateGuard;
 
 class LaunchThread extends Thread implements IProcess {

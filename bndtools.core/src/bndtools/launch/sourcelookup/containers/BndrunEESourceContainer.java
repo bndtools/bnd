@@ -16,7 +16,7 @@ import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.LibraryLocation;
 
 import aQute.bnd.build.Run;
-import bndtools.launch.AbstractOSGiLaunchDelegate;
+import bndtools.launch.api.AbstractOSGiLaunchDelegate;
 
 public class BndrunEESourceContainer extends CompositeSourceContainer {
 	private static final ILogger	logger	= Logger.getLogger(BndrunEESourceContainer.class);
