@@ -1,0 +1,22 @@
+# GitHub Dependabot configuration file
+
+version: 2
+updates:
+
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+
+  # Maintain dependencies for maven
+  - package-ecosystem: "maven"
+    directory: "/maven"
+    schedule:
+      interval: "daily"
+
+  # Maintain dependencies for bundler
+  - package-ecosystem: "bundler"
+    directory: "/docs"
+    schedule:
+      interval: "daily"
