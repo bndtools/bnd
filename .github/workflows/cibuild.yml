@@ -21,63 +21,41 @@ defaults:
     shell: bash
 
 jobs:
-  JDK8_Linux:
-    name: JDK8 ubuntu-latest
-    runs-on: ubuntu-latest
-    steps:
-    - name: Git Checkout
-      uses: actions/checkout@v2
-    - name: Git Unshallow
-      if: (github.repository == 'bndtools/bnd') && (github.event_name != 'pull_request')
-      run: |
-        git fetch --prune --unshallow
-        git describe --dirty --always --abbrev=9
-    - name: Gradle Wrapper Validation
-      uses: gradle/wrapper-validation-action@v1
-    - name: Set up Java
-      uses: actions/setup-java@v1
-      with:
-        java-version: 8
-    - name: Build
-      run: |
-        ./.github/scripts/build.sh
-      env:
-        JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
-        JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
-  JDKxx_Matrix:
+  Build_Matrix:
     strategy:
       matrix:
         java: [ 11, 14, 15-ea ]
         os: [ ubuntu-latest ]
+        script: [ 'build.sh' ]
         include:
+        - os: ubuntu-latest
+          java: 8
+          script: 'build.sh'
+          canonical: ${{ (github.repository == 'bndtools/bnd') && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) && (github.event_name != 'pull_request') }}
+          fetch-depth: '0'
+        - os: ubuntu-latest
+          java: 8
+          script: 'rebuild.sh'
         - os: windows-latest
           java: 8
-    name: JDK${{ matrix.java }} ${{ matrix.os }}
+          script: 'build.sh'
+    name: JDK${{ matrix.java }} ${{ matrix.os }} ${{ matrix.script }}
     runs-on: ${{ matrix.os }}
     steps:
     - name: Git Checkout
       uses: actions/checkout@v2
+      with:
+        fetch-depth: ${{ matrix.fetch-depth }}
     - name: Gradle Wrapper Validation
       uses: gradle/wrapper-validation-action@v1
-    - name: Set up Java
+    - name: Set up Java ${{ matrix.java }}
       uses: actions/setup-java@v1
       with:
         java-version: ${{ matrix.java }}
     - name: Build
       run: |
-        ./.github/scripts/build.sh
-  JDK8_Local_Rebuild:
-    name: JDK8 Local Rebuild
-    runs-on: ubuntu-latest
-    steps:
-    - name: Git Checkout
-      uses: actions/checkout@v2
-    - name: Gradle Wrapper Validation
-      uses: gradle/wrapper-validation-action@v1
-    - name: Set up Java
-      uses: actions/setup-java@v1
-      with:
-        java-version: 8
-    - name: Build
-      run: |
-        ./.github/scripts/rebuild.sh
+        ./.github/scripts/${{ matrix.script }}
+      env:
+        CANONICAL: ${{ matrix.canonical }}
+        JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
+        JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}

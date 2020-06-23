@@ -30,36 +30,6 @@ def deploy = tasks.register('deploy', Exec.class) {
   args 'deploy'
 }
 
-def deployOSSRH = tasks.register('deployOSSRH', Exec.class) {
-  enabled !bnd('-releaserepo.ossrh', '').empty
-  onlyIf {
-    def state = deploy.get().state
-    state.didWork && (state.failure == null)
-  }
-  dependsOn deploy
-  if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-    executable 'cmd'
-    args '/c', rootProject.file('mvnw.cmd')
-  } else {
-    executable rootProject.file('mvnw')
-  }
-  args '--batch-mode'
-  args '--no-transfer-progress'
-  if (logger.isDebugEnabled()) {
-    args '--debug'
-  }
-  args '-Possrh'
-  args "--settings=${parent.project('cnf').file('ext/ossrh-settings.xml')}"
-  if (localrepo) {
-    args "-Dmaven.repo.local=${localrepo}"
-  }
-  args 'deploy'
-}
-
-deploy.configure {
-  finalizedBy deployOSSRH
-}
-
 def deployJFrog = tasks.register('deployJFrog', Exec.class) {
   enabled !bnd('-releaserepo.jfrog', '').empty
   onlyIf {

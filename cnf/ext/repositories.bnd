@@ -21,11 +21,6 @@ mavencentral:           https://repo.maven.apache.org/maven2
         snapshotUrl="${fileuri;${releaserepo}}";\
         noupdateOnRelease=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
-        name="OSSRH";\
-        releaseUrl="https://oss.sonatype.org/service/local/staging/deploy/maven2/";\
-        snapshotUrl="https://oss.sonatype.org/content/repositories/snapshots/";\
-        noupdateOnRelease=true,\
-    aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name="JFrog";\
         releaseUrl="https://bndtools.jfrog.io/bndtools/libs-release-local/";\
         snapshotUrl="https://bndtools.jfrog.io/bndtools/libs-snapshot-local/";\
@@ -63,10 +58,8 @@ mavencentral:           https://repo.maven.apache.org/maven2
 
 -buildrepo: Local
 -releaserepo: Release
--releaserepo.ossrh: ${if;(&(|(env.TRAVIS_BRANCH=master)(env.TRAVIS_BRANCH=next))(env.TRAVIS_PULL_REQUEST=false)(env.REPOSITORY_USERNAME=*));OSSRH}
--releaserepo.jfrog: ${if;(&(env.GITHUB_REPOSITORY=bndtools/bnd)(|(env.GITHUB_REF=refs/heads/master)(env.GITHUB_REF=refs/heads/next))(!(env.GITHUB_EVENT_NAME=pull_request))(env.JFROG_USERNAME=*)(!(env.JFROG_USERNAME=$*)));JFrog}
+-releaserepo.jfrog: ${if;${env;CANONICAL};JFrog}
 
--connection-settings.ossrh: ${if;${-releaserepo.ossrh};${.}/ossrh-settings.xml}
 -connection-settings.jfrog: ${if;${-releaserepo.jfrog};${.}/jfrog-settings.xml}
 
 -baselinerepo: Baseline
