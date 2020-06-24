@@ -15,6 +15,7 @@ import org.bndtools.build.api.AbstractBuildListener;
 import org.bndtools.build.api.BuildListener;
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.swt.FilterPanelPart;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -370,6 +371,8 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 						setImageDescriptor(Icons.desc("refresh.disable"));
 						setEnabled(false);
 						Job.create("Reload", (monitor) -> {
+							IContainer parent = workspaceBuildFile.getParent().getParent();
+							parent.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 							workspaceBuildFile.touch(monitor);
 							Display.getDefault()
 								.asyncExec(() -> {
