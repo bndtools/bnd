@@ -1,0 +1,22 @@
+-include: test.shared.bndrun
+
+-runbundles.linux: \
+	org.eclipse.swt.gtk.linux.x86_64,\
+	org.eclipse.equinox.security.linux.x86_64,\
+	org.eclipse.core.filesystem.linux.x86_64,\
+	org.eclipse.core.net.linux.x86_64
+
+-runvm.linux: \
+	-Dosgi.dataAreaRequiresExplicitInit=true, \
+	-Dosgi.requiredJavaVersion=1.8, \
+	-XX:+UseG1GC, \
+	-XX:+UseStringDeduplication
+
+-runproperties.linux: \
+	osgi.ws=gtk,\
+	osgi.arch=x86_64,\
+	osgi.os=linux
+
+-runblacklist.linux: \
+	osgi.identity;filter:='(osgi.identity=*macosx*)',\
+	osgi.identity;filter:='(osgi.identity=*win32*)',\

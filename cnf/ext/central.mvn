@@ -94,6 +94,7 @@ org.objenesis:objenesis:2.6
 args4j:args4j:2.0.26
 
 org.slf4j:slf4j-api:1.7.25
+org.slf4j:slf4j-nop:1.7.25
 org.slf4j:slf4j-simple:1.7.25
 
 org.yaml:snakeyaml:1.15

@@ -1,0 +1,55 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+-sub: *.bnd
+
+-buildrepo:
+-releaserepo:
+
+# These are bundles that are not required for building but for debugging when doing
+# code inspection.
+#-buildpath.debug: \
+#	org.eclipse.search
+
+-conditionalpackage: \
+	aQute.lib.*;-split-package:=merge-first, \
+	aQute.libg.*;-split-package:=merge-first
+
+-buildpath: \
+	aQute.libg;version=project,\
+	biz.aQute.bndlib;version=snapshot,\
+	biz.aQute.repository;version=snapshot,\
+	bndtools.api;version=snapshot,\
+	bndtools.core;version=snapshot,\
+	assertj-core,\
+	javax.inject,\
+	org.apiguardian:apiguardian-api,\
+	org.opentest4j,\
+	org.junit.platform.commons,\
+	org.junit.platform.engine,\
+	org.junit.jupiter.api,\
+	org.junit.jupiter.engine,\
+	org.junit.jupiter.params,\
+	org.eclipse.core.jobs,\
+	org.eclipse.core.resources,\
+	org.eclipse.core.runtime,\
+	org.eclipse.equinox.app,\
+	org.eclipse.equinox.common,\
+	org.eclipse.jdt.core,\
+	org.eclipse.jdt.ui,\
+	org.eclipse.jface,\
+	org.eclipse.jface.text,\
+	org.eclipse.osgi,\
+	org.eclipse.ui.ide,\
+	org.eclipse.ui.ide.application,\
+	org.eclipse.ui.workbench,\
+	org.eclipse.swt,\
+	org.eclipse.swt.win32.win32.x86_64,\
+	org.eclipse.e4.core.contexts,\
+	org.eclipse.e4.core.services,\
+	org.eclipse.e4.ui.di,\
+	org.eclipse.e4.ui.model.workbench,\
+	org.eclipse.e4.ui.workbench,\
+	org.eclipse.e4.ui.workbench.swt,\
+	org.osgi.service.component.annotations,\
+	org.osgi.service.event,\
+	osgi.annotation

@@ -1,0 +1,20 @@
+-include: test.shared.bndrun
+
+-runbundles.macos: \
+	org.eclipse.swt.cocoa.macosx.x86_64,\
+	org.eclipse.e4.ui.workbench.renderers.swt.cocoa,\
+	org.eclipse.equinox.security.macosx,\
+	org.eclipse.jdt.launching.ui.macosx,\
+	org.eclipse.core.filesystem.macosx,\
+	org.eclipse.jdt.launching.macosx
+
+-runvm.macos: \
+  -XstartOnFirstThread, \
+  -Djava.awt.headless=true, \
+  -Dorg.eclipse.swt.internal.carbon.smallFonts
+
+-runproperties.macos: \
+	osgi.ws=cocoa,\
+	osgi.arch=x86_64,\
+	osgi.os=macosx
+
