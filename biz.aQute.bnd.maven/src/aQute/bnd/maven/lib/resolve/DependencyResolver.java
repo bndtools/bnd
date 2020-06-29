@@ -216,6 +216,7 @@ public class DependencyResolver {
 				.orElseGet(ArrayList<PluginExecution>::new)
 				.stream()
 				.map(PluginExecution::getConfiguration)
+				.filter(Objects::nonNull)
 				.map(Xpp3Dom.class::cast)
 				.forEach(c -> readConfiguration(c, finalName, bundles));
 		}
