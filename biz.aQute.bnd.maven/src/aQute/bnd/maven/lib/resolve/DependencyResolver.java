@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -166,6 +167,7 @@ public class DependencyResolver {
 				.orElseGet(ArrayList<PluginExecution>::new)
 				.stream()
 				.map(PluginExecution::getConfiguration)
+				.filter(Objects::nonNull)
 				.map(Xpp3Dom.class::cast)
 				.forEach(c -> readConfiguration(c, finalName, bundles));
 		}
