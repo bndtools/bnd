@@ -128,3 +128,4 @@ An *implicit repository* containing the project artifact and project dependencie
 |`useMavenDependencies`       | If `true`, adds the project dependencies subject to `scopes` to the collection of files to include in the *implicit repository*. _Defaults to `true`._|
 |`scopes`                     | Specify from which scopes to collect dependencies. _Defaults to `compile, runtime`._ Override with property `bnd.run.scopes`.|
 |`includeDependencyManagement`| Include `<dependencyManagement>` subject to `scopes` when collecting files to include in the *implicit repository*. _Defaults to `false`._ Override with property `bnd.run.include.dependency.management`.|
+|`skip`                       | Skip the project. _Defaults to `false`._ Override with property `bnd.run.skip`.|
