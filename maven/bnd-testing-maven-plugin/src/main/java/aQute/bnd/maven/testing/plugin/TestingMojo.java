@@ -136,6 +136,14 @@ public class TestingMojo extends AbstractMojo {
 		int errors = 0;
 
 		try {
+			List<File> bndrunFiles = bndruns.getFiles(project.getBasedir(), "*.bndrun");
+
+			if (bndrunFiles.isEmpty()) {
+				logger.warn(
+					"No bndrun files were specified with <bndrun> or found as *.bndrun in the project. This is unexpected.");
+				return;
+			}
+
 			BndrunContainer container = new BndrunContainer.Builder(project, session, repositorySession, resolver,
 				artifactFactory, system).setBundles(bundles.getFiles(project.getBasedir()))
 					.setIncludeDependencyManagement(includeDependencyManagement)
@@ -145,7 +153,7 @@ public class TestingMojo extends AbstractMojo {
 
 			Operation operation = getOperation();
 
-			for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
+			for (File runFile : bndrunFiles) {
 				errors += container.execute(runFile, "testing", cwd, operation);
 			}
 		} catch (Exception e) {
