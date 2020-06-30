@@ -1,7 +1,6 @@
 package aQute.bnd.repository.maven.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
-import static aQute.lib.exceptions.FunctionWithException.asFunction;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toSet;
 
@@ -32,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -754,18 +754,18 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 						f.format("Storage                      : %s\n", localRepo);
 						f.format("Index                        : %s\n", index.indexFile);
 						f.format("Release repos                : \n    %s\n",
-							Strings.join("\n", storage.getReleaseRepositories()
+							storage.getReleaseRepositories()
 								.stream()
 								.filter(Objects::nonNull)
 								.map(Object::toString)
-								.toArray()));
+								.collect(Collectors.joining("\n    ")));
 
 						f.format("Snapshot repos               : \n    %s\n",
-							Strings.join("\n", storage.getSnapshotRepositories()
+							storage.getSnapshotRepositories()
 								.stream()
 								.filter(Objects::nonNull)
-								.map(asFunction(MavenBackingRepository::getUser))
-								.toArray()));
+								.map(Object::toString)
+								.collect(Collectors.joining("\n    ")));
 					}
 					return f.toString();
 				}
