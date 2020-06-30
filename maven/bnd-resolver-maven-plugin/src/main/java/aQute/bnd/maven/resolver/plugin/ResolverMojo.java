@@ -3,6 +3,7 @@ package aQute.bnd.maven.resolver.plugin;
 import static aQute.bnd.maven.lib.resolve.BndrunContainer.report;
 
 import java.io.File;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.execution.MavenSession;
@@ -100,6 +101,14 @@ public class ResolverMojo extends AbstractMojo {
 		int errors = 0;
 
 		try {
+			List<File> bndrunFiles = bndruns.getFiles(project.getBasedir(), "*.bndrun");
+
+			if (bndrunFiles.isEmpty()) {
+				logger.warn(
+					"No bndrun files were specified with <bndrun> or found as *.bndrun in the project. This is unexpected.");
+				return;
+			}
+
 			BndrunContainer container = new BndrunContainer.Builder(project, session, repositorySession, resolver,
 				artifactFactory, system).setBundles(bundles.getFiles(project.getBasedir()))
 					.setIncludeDependencyManagement(includeDependencyManagement)
@@ -109,7 +118,7 @@ public class ResolverMojo extends AbstractMojo {
 
 			Operation operation = getOperation();
 
-			for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
+			for (File runFile : bndrunFiles) {
 				errors += container.execute(runFile, "resolve", targetDir, operation);
 			}
 		} catch (Exception e) {

@@ -59,6 +59,9 @@ public class RunMojo extends AbstractMojo {
 	@Parameter(property = "bnd.run.scopes", defaultValue = "compile,runtime")
 	private Set<Scope>											scopes	= Sets.of(Scope.compile, Scope.runtime);
 
+	@Parameter(property = "bnd.run.skip", defaultValue = "false")
+	private boolean												skip;
+
 	@Parameter(property = "bnd.run.include.dependency.management", defaultValue = "false")
 	private boolean												includeDependencyManagement;
 
@@ -77,6 +80,11 @@ public class RunMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
+		if (skip) {
+			logger.debug("skip project as configured");
+			return;
+		}
+
 		if (bndrun == null) {
 			logger.info("Nothing to run.");
 			return;
