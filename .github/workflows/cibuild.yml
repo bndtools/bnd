@@ -24,20 +24,24 @@ jobs:
   Build_Matrix:
     strategy:
       matrix:
-        java: [ 11, 14, 15-ea ]
         os: [ ubuntu-latest ]
+        java: [ 11, 14, 15-ea ]
+        runner: [ 'xvfb-run --auto-servernum {0}' ]
         script: [ 'build.sh' ]
         include:
         - os: ubuntu-latest
           java: 8
+          runner: 'xvfb-run --auto-servernum {0}'
           script: 'build.sh'
           canonical: ${{ (github.repository == 'bndtools/bnd') && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) && (github.event_name != 'pull_request') }}
           fetch-depth: '0'
         - os: ubuntu-latest
           java: 8
+          runner: 'xvfb-run --auto-servernum {0}'
           script: 'rebuild.sh'
         - os: windows-latest
           java: 8
+          runner: '{0}'
           script: 'build.sh'
     name: JDK${{ matrix.java }} ${{ matrix.os }} ${{ matrix.script }}
     runs-on: ${{ matrix.os }}
@@ -53,8 +57,9 @@ jobs:
       with:
         java-version: ${{ matrix.java }}
     - name: Build
+      id: build
       run: |
-        ./.github/scripts/${{ matrix.script }}
+        ${{ format(matrix.runner, format('./.github/scripts/{0}', matrix.script)) }}
       env:
         CANONICAL: ${{ matrix.canonical }}
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
