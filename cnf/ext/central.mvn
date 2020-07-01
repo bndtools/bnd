@@ -2,6 +2,8 @@ org.awaitility:awaitility:3.1.6
 
 org.osgi:osgi.annotation:7.0.0
 org.osgi:osgi.core:6.0.0
+org.osgi:org.osgi.framework:1.10.0-SNAPSHOT
+org.osgi:org.osgi.annotation.bundle:1.1.0-SNAPSHOT
 org.osgi:org.osgi.dto:1.0.0
 org.osgi:org.osgi.namespace.contract:1.0.0
 org.osgi:org.osgi.namespace.extender:1.0.1
