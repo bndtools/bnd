@@ -1,16 +1,13 @@
 releaserepo:            ${workspace}/dist/bundles
 mavencentral:           https://repo.maven.apache.org/maven2
+ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
 
 -plugin.0.Main:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name="Maven Central";\
         releaseUrl="${mavencentral}";\
+        snapshotUrl="${ossrh}";\
         index="${.}/central.mvn";\
-        readOnly=true,\
-    aQute.bnd.repository.maven.provider.MavenBndRepository;\
-        name="OSGi Snapshots";\
-        snapshotUrl="https://oss.sonatype.org/content/repositories/snapshots/";\
-        index="${.}/osgi-snapshots.mvn";\
         readOnly=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name="Local";\
