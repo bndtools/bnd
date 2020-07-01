@@ -44,6 +44,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	private final PromiseFactory				promiseFactory;
 	private final boolean						localOnly;
 	private final Map<Revision, Promise<POM>>	poms		= new WeakHashMap<>();
+	private final Reporter						reporter;
 
 	public MavenRepository(File base, String id, List<MavenBackingRepository> release,
 		List<MavenBackingRepository> snapshot, Executor executor, Reporter reporter) throws Exception {
@@ -57,6 +58,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		this.promiseFactory = new PromiseFactory(Objects.requireNonNull(executor));
 		this.localOnly = this.release.isEmpty() && this.snapshot.isEmpty();
 		IO.mkdirs(base);
+		this.reporter = reporter;
 	}
 
 	@Override
@@ -84,6 +86,9 @@ public class MavenRepository implements IMavenRepo, Closeable {
 			List<Archive> snapshotArchives = mbr.getSnapshotArchives(revision);
 			archives.addAll(snapshotArchives);
 		}
+		if (archives.isEmpty()) {
+			reporter.error("No metadata for revision %s", revision);
+		}
 
 		return archives;
 	}
@@ -96,6 +101,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 				if (v != null)
 					return revision.archive(v, extension, classifier);
 			}
+			reporter.error("No metadata for revision %s", revision);
 			return null;
 		} else {
 			return revision.archive(extension, classifier);
@@ -210,7 +216,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 			if (version != null)
 				return archive.resolveSnapshot(version);
 		}
-
+		reporter.error("No metadata for revision %s", archive.revision);
 		return null;
 	}
 

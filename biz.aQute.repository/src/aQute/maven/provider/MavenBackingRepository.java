@@ -154,7 +154,6 @@ public abstract class MavenBackingRepository implements Closeable {
 	public List<Archive> getSnapshotArchives(Revision revision) throws Exception {
 		Optional<RevisionMetadata> metadata = getMetadata(revision);
 		if (!metadata.isPresent()) {
-			reporter.error("No metadata for revision %s", revision);
 			return Collections.emptyList();
 		}
 		return metadata.get().snapshotVersions.stream()
@@ -166,7 +165,6 @@ public abstract class MavenBackingRepository implements Closeable {
 	public MavenVersion getVersion(Revision revision) throws Exception {
 		Optional<RevisionMetadata> metadata = getMetadata(revision);
 		if (!metadata.isPresent()) {
-			reporter.error("No metadata for revision %s", revision);
 			return null;
 		}
 
