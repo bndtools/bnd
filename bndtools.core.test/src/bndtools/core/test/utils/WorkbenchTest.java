@@ -12,10 +12,9 @@ import org.junit.jupiter.api.parallel.ResourceLock;
 
 /**
  * Used to mark a test that uses the WorkspaceExtension.
- * 
  * <p>
  * Usage:
- * 
+ *
  * <pre>
  * <code>
  * package bndtools.core.test.my.pkg;
@@ -25,7 +24,7 @@ import org.junit.jupiter.api.parallel.ResourceLock;
  * class MyTest {
  * }</code>
  * </pre>
- * 
+ *
  * <pre>
  * <code>
  * package bndtools.core.test.my.pkg;
@@ -36,7 +35,7 @@ import org.junit.jupiter.api.parallel.ResourceLock;
  * }</code>
  * </pre>
  *
- * @see WorkspaceExtension
+ * @see WorkbenchExtension
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
