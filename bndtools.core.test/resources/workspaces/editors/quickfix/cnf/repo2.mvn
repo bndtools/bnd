@@ -1,0 +1,5 @@
+# OSGi R7
+org.osgi:osgi.annotation:6.0.0
+org.osgi:org.osgi.framework:1.9.0
+org.osgi:org.osgi.jmx:1.1.0
+org.osgi:org.osgi.util.promise:1.1.1

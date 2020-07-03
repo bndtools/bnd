@@ -1,0 +1,8 @@
+Test-Cases: ${classes;CONCRETE;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.platform.commons.annotation.Testable} 
+
+Private-Package: !bndtools.core.test.launch,bndtools.core.test*
+Bundle-Activator: bndtools.core.test.Activator
+Bundle-ActivationPolicy: lazy
+
+Import-Package: org.eclipse.ui.dialogs;bundle-symbolic-name="org.eclipse.ui.workbench";ui.workbench="split",\
+	${eclipse.importpackage},*

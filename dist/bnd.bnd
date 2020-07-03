@@ -32,6 +32,7 @@
             bndtools.api, \
             bndtools.builder, \
             bndtools.core, \
+            bndtools.core.test, \
             bndtools.jareditor, \
             bndtools.m2e, \
             bndtools.pde, \
