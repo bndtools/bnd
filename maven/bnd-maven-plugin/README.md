@@ -252,11 +252,7 @@ Some details are predefined for simplicity:
 Bnd's integration testing uses the manifest header `Test-Cases` to identify classes within a bundle that are test cases. This eliminates the need for runtime class scanning. The `bnd-process-tests` simplifies this configuration by creating several predefined specifications of test cases that use bnd's `classes` macro:
 - **`junit3`** - represents the filter `${classes;EXTENDS;junit.framework.TestCase;CONCRETE}`
 - **`junit4`** - represents the filter `${classes;HIERARCHY_ANNOTATED;org.junit.Test;CONCRETE}`
-- **`junit5`** - represents the filter `${classes;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.jupiter.api.Test;CONCRETE},\
-${classes;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.jupiter.api.RepeatedTest;CONCRETE},\
-${classes;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.jupiter.params.ParameterizedTest;CONCRETE},\
-${classes;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.jupiter.api.TestFactory;CONCRETE},\
-${classes;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.jupiter.api.TestTemplate;CONCRETE}`
+- **`junit5`** - represents the filter `${classes;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.platform.commons.annotation.Testable;CONCRETE}`
 - **`all`** - represents the filter `junit3` + `junit4` + `junit5`
 - **`useTestCasesHeader`** - indicates that the the `Test-Cases` header in the bnd configuration should be used instead. The build will fail if this value is set and there is no `Test-Cases` header in the bnd configuration
 
