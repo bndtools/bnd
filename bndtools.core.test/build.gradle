@@ -1,26 +1,7 @@
-import aQute.bnd.gradle.TestOSGi
 import org.apache.tools.ant.taskdefs.condition.Os
 
 tasks.named('testOSGi') {
-  [
-    'biz.aQute.bndlib',
-    'biz.aQute.repository',
-    'biz.aQute.resolve',
-    'bndtools.api',
-    'bndtools.builder',
-    'bndtools.core',
-    'org.bndtools.headless.build.manager',
-    'org.bndtools.headless.build.plugin.ant',
-    'org.bndtools.headless.build.plugin.gradle',
-    'org.bndtools.templates.template',
-    'org.bndtools.templating.gitrepo',
-    'org.bndtools.templating',
-    'org.bndtools.versioncontrol.ignores.manager',
-    'org.bndtools.versioncontrol.ignores.plugin.git'
-  ].each { dependsOn ":$it:jar" }
-  description "Bndtools Core Integration tests"
-  group 'test'
-  inputs.files jar
+  description 'Bndtools Core Integration tests'
   if (Os.isFamily(Os.FAMILY_WINDOWS)) {
     enabled true
     bndrun 'test.win32.x86_64.bndrun'
