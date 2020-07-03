@@ -23,13 +23,13 @@ public class Activator implements BundleActivator {
 	}
 
 	@Override
-	public void stop(BundleContext context) throws Exception {
-	}
+	public void stop(BundleContext context) throws Exception {}
 }
 
 class LauncherTracker extends ServiceTracker<Object, ServiceRegistration<ApplicationLauncher>> {
 
-	private final Logger log = Logger.getLogger(Activator.class.getPackage().getName());
+	private final Logger log = Logger.getLogger(Activator.class.getPackage()
+		.getName());
 
 	public LauncherTracker(BundleContext context) {
 		super(context, createFilter(), null);
@@ -55,7 +55,7 @@ class LauncherTracker extends ServiceTracker<Object, ServiceRegistration<Applica
 					bundle.start();
 				} catch (BundleException e) {
 					log.log(Level.SEVERE,
-							"Unable to start bundle org.eclipse.equinox.app. Eclipse application cannot start.", e);
+						"Unable to start bundle org.eclipse.equinox.app. Eclipse application cannot start.", e);
 				}
 				break;
 			}
@@ -74,7 +74,8 @@ class LauncherTracker extends ServiceTracker<Object, ServiceRegistration<Applica
 	}
 
 	private String getBsn(Bundle bundle) {
-		String bsn = bundle.getHeaders().get(Constants.BUNDLE_SYMBOLICNAME);
+		String bsn = bundle.getHeaders()
+			.get(Constants.BUNDLE_SYMBOLICNAME);
 		int semiColonIndex = bsn.indexOf(';');
 		if (semiColonIndex > -1)
 			bsn = bsn.substring(0, semiColonIndex);
