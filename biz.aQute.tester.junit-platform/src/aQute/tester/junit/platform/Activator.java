@@ -63,7 +63,7 @@ public class Activator implements BundleActivator, Runnable {
 	volatile boolean					active;
 	boolean								continuous	= false;
 	boolean								trace		= false;
-	PrintStream							out			= System.err;
+	PrintStream							out			= System.out;
 	JUnitEclipseListener				jUnitEclipseListener;
 	volatile Thread						thread;
 	private File						reportDir;
