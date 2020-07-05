@@ -10,11 +10,10 @@ import aQute.lib.exceptions.Exceptions;
 
 public class TaskUtils {
 
-	private TaskUtils() {
-	};
+	private TaskUtils() {}
 
 	public static void log(String msg) {
-//		System.err.println(System.currentTimeMillis() + ": " + msg);
+		// System.err.println(System.currentTimeMillis() + ": " + msg);
 	}
 
 	public static IProgressMonitor countDownMonitor(CountDownLatch flag) {

@@ -6,5 +6,5 @@ package bndtools.core.test.utils;
  * @author Fr Jeremy Krieg <fr.jkrieg@greekwelfaresa.org.au>
  */
 public interface ResourceLock {
-	public static final String TEST_WORKSPACE = "testWorkspace";
+	String TEST_WORKSPACE = "testWorkspace";
 }

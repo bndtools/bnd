@@ -16,21 +16,18 @@ import org.eclipse.swt.widgets.Display;
 
 /**
  * IPresentationEngine implementation that doesn't render anything or store any
- * state. All it does is spin the event loop.
- * 
- * This engine is useful for testing non-GUI parts of an Eclipse instance. If
- * you need test GUI elements with a headless display, something else will be
- * necessary to store the state of the rendered components.
- *
- * The skeleton of this engine has come from
+ * state. All it does is spin the event loop. This engine is useful for testing
+ * non-GUI parts of an Eclipse instance. If you need test GUI elements with a
+ * headless display, something else will be necessary to store the state of the
+ * rendered components. The skeleton of this engine has come from
  * {@link org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine}.
  */
 public class NullContextPresentationEngine implements IPresentationEngine {
 
-	public static final String EARLY_STARTUP_HOOK = "runEarlyStartup";
+	public static final String	EARLY_STARTUP_HOOK	= "runEarlyStartup";
 
 	@Inject
-	IEventBroker eventBroker;
+	IEventBroker				eventBroker;
 
 	@Override
 	public Object createGui(MUIElement element, Object parentWidget, IEclipseContext parentContext) {
@@ -43,8 +40,7 @@ public class NullContextPresentationEngine implements IPresentationEngine {
 	}
 
 	@Override
-	public void removeGui(MUIElement element) {
-	}
+	public void removeGui(MUIElement element) {}
 
 	protected MApplication theApp;
 
@@ -61,7 +57,8 @@ public class NullContextPresentationEngine implements IPresentationEngine {
 			throw new IllegalStateException("Should not be called with a uiRoot of this type: " + uiRoot.getClass());
 		}
 		theApp = (MApplication) uiRoot;
-		IApplicationContext ac = theApp.getContext().get(IApplicationContext.class);
+		IApplicationContext ac = theApp.getContext()
+			.get(IApplicationContext.class);
 		if (ac != null) {
 			ac.applicationRunning();
 			if (eventBroker != null) {
@@ -74,7 +71,8 @@ public class NullContextPresentationEngine implements IPresentationEngine {
 			earlyStartup.run();
 		}
 
-		IEventLoopAdvisor advisor = runContext.getActiveLeaf().get(IEventLoopAdvisor.class);
+		IEventLoopAdvisor advisor = runContext.getActiveLeaf()
+			.get(IEventLoopAdvisor.class);
 		if (advisor == null) {
 			advisor = new IEventLoopAdvisor() {
 				@Override
@@ -83,8 +81,7 @@ public class NullContextPresentationEngine implements IPresentationEngine {
 				}
 
 				@Override
-				public void eventLoopException(Throwable exception) {
-				}
+				public void eventLoopException(Throwable exception) {}
 			};
 		}
 		final IEventLoopAdvisor finalAdvisor = advisor;
@@ -131,10 +128,8 @@ public class NullContextPresentationEngine implements IPresentationEngine {
 	}
 
 	@Override
-	public void stop() {
-	}
+	public void stop() {}
 
 	@Override
-	public void focusGui(MUIElement element) {
-	}
+	public void focusGui(MUIElement element) {}
 }

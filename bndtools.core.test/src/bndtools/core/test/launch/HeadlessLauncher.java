@@ -12,8 +12,9 @@ import org.osgi.framework.BundleContext;
 
 class HeadlessLauncher implements ApplicationLauncher {
 
-	private final Logger log = Logger.getLogger(HeadlessLauncher.class.getPackage().getName());
-	private final BundleContext bc;
+	private final Logger		log	= Logger.getLogger(HeadlessLauncher.class.getPackage()
+		.getName());
+	private final BundleContext	bc;
 
 	public HeadlessLauncher(BundleContext bc) {
 		this.bc = bc;
@@ -22,11 +23,15 @@ class HeadlessLauncher implements ApplicationLauncher {
 	@Override
 	public void launch(final ParameterizedRunnable runnable, final Object context) {
 		log.log(Level.FINE,
-				"Received launch request from Eclipse application service, registering java.lang.Runnable{main.thread=true}");
+			"Received launch request from Eclipse application service, registering java.lang.Runnable{main.thread=true}");
 		Runnable service = () -> {
 			try {
-				log.log(Level.FINE, "Executing application on thread {0} ({1}).",
-						new Object[] { Thread.currentThread().getName(), Thread.currentThread().getId() });
+				log.log(Level.FINE, "Executing application on thread {0} ({1}).", new Object[] {
+					Thread.currentThread()
+						.getName(),
+					Thread.currentThread()
+						.getId()
+				});
 				runnable.run(context);
 			} catch (Exception e) {
 				log.log(Level.SEVERE, "Error executing application", e);
