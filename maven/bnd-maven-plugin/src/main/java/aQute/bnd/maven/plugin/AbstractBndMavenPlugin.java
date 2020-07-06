@@ -580,7 +580,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		return new Xpp3Dom("configuration");
 	}
 
-	private void reportErrorsAndWarnings(Builder builder) throws MojoFailureException {
+	protected void reportErrorsAndWarnings(Builder builder) throws MojoFailureException {
 		@SuppressWarnings("unchecked")
 		Collection<File> markedFiles = (Collection<File>) buildContext.getValue(MARKED_FILES);
 		if (markedFiles == null) {
