@@ -455,8 +455,6 @@ public class Analyzer extends Processor {
 					.filter(this::isNormalPackage)
 					.collect(toSet()));
 			}
-
-			warning("Host %s for this fragment cannot be found on the classpath", host);
 		}
 		return Optional.empty();
 	}
@@ -502,7 +500,7 @@ public class Analyzer extends Processor {
 			.get(Constants.BUNDLE_VERSION_ATTRIBUTE);
 
 		Jar jar = findClasspathEntry(bsn, v);
-		if (jar == null) {
+		if ((jar == null) && !"system.bundle".equals(bsn)) {
 			warning("Host %s for this fragment/require bundle cannot be found on the classpath", host);
 		}
 		return jar;
