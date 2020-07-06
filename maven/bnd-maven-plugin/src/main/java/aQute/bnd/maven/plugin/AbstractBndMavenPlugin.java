@@ -71,8 +71,7 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.service.reporter.Report.Location;
 
 public abstract class AbstractBndMavenPlugin extends AbstractMojo {
-	private static final Logger						logger					= LoggerFactory
-		.getLogger(AbstractBndMavenPlugin.class);
+	protected final Logger	logger					= LoggerFactory.getLogger(getClass());
 	static final String						MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
 	static final String						MARKED_FILES			= "aQute.bnd.maven.plugin.BndMavenPlugin.markedFiles";
 	static final String						PACKAGING_JAR			= "jar";
