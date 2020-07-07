@@ -1,6 +1,7 @@
 package aQute.tester.bundle.engine.test;
 
 import static aQute.tester.bundle.engine.BundleEngine.CHECK_UNRESOLVED;
+import static aQute.tester.bundle.engine.BundleEngine.PRUNE;
 import static org.assertj.core.api.Assertions.allOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -25,6 +26,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -35,6 +37,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.platform.commons.JUnitException;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.EngineDiscoveryRequest;
@@ -44,6 +48,7 @@ import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.UniqueId.Segment;
 import org.junit.platform.engine.discovery.ClassSelector;
 import org.junit.platform.engine.support.descriptor.EngineDescriptor;
 import org.junit.platform.testkit.engine.EngineTestKit;
@@ -61,13 +66,16 @@ import aQute.lib.io.IO;
 import aQute.tester.bundle.engine.BundleDescriptor;
 import aQute.tester.bundle.engine.BundleEngine;
 import aQute.tester.bundle.engine.BundleEngineDescriptor;
+import aQute.tester.bundle.engine.BundleEngineExecutor;
 import aQute.tester.bundle.engine.StaticFailureDescriptor;
+import aQute.tester.bundle.engine.discovery.BundleEnginePruner;
 import aQute.tester.bundle.engine.discovery.BundleSelector;
 import aQute.tester.bundle.engine.discovery.BundleSelectorResolver;
 import aQute.tester.junit.platform.utils.BundleUtils;
 import aQute.tester.test.params.CustomParameter;
 import aQute.tester.test.utils.ServiceLoaderMask;
 import aQute.tester.test.utils.TestBundler;
+import aQute.tester.testclasses.JUnit3Test;
 import aQute.tester.testclasses.bundle.engine.AnotherTestClass;
 import aQute.tester.testclasses.bundle.engine.JUnit3And4Test;
 import aQute.tester.testclasses.bundle.engine.JUnit3And5Test;
@@ -131,6 +139,25 @@ public class BundleEngineTest {
 		builder.bndrun("bundleenginetest-noengines.bndrun")
 			.excludeExport("aQute.tester.bundle.engine")
 			.excludeExport("aQute.tester.bundle.engine.discovery");
+		startLaunchpad();
+	}
+
+	protected void startLaunchpadNoJupiter() {
+		builder = new LaunchpadBuilder();
+		builder.bndrun("bundleenginetest-nojupiter.bndrun")
+			.excludeExport("aQute.tester.bundle.engine")
+			.excludeExport("aQute.tester.bundle.engine.discovery")
+			.excludeExport("aQute.tester.junit.platform*")
+			.excludeExport("org.junit.platform.launcher*")
+			.excludeExport("org.junit.jupiter*")
+			.excludeExport("org.junit.vintage*")
+			.excludeExport("org.junit")
+			.excludeExport("org.junit.internal*")
+			.excludeExport("org.junit.matchers*")
+			.excludeExport("org.junit.rules*")
+			.excludeExport("org.junit.runner*")
+			.excludeExport("org.junit.validator*")
+			.excludeExport("junit*");
 		startLaunchpad();
 	}
 
@@ -201,7 +228,7 @@ public class BundleEngineTest {
 				event(test("noEngines"),
 					finishedWithFailure(instanceOf(JUnitException.class),
 						message(x -> x.contains("Couldn't find any registered TestEngines")))))
-			.haveExactly(1, event(bundle(testBundle), skippedWithReason("Couldn't find any registered TestEngines")));
+			.haveExactly(1, event(isBundle(testBundle), skippedWithReason("Couldn't find any registered TestEngines")));
 	}
 
 	public class NonEngine {}
@@ -239,10 +266,10 @@ public class BundleEngineTest {
 			.all()
 			.debug(debugStr)
 			.assertThatEvents()
-			.haveExactly(0, event(container("misconfiguredEngines"), bundle(engineBundle)))
+			.haveExactly(0, event(container("misconfiguredEngines"), isBundle(engineBundle)))
 			.haveExactly(0,
 				event(testClass(JUnit4Test.class), finishedWithFailure(instanceOf(ClassCastException.class))))
-			.haveExactly(1, event(bundle(testBundle), finishedSuccessfully()))
+			.haveExactly(1, event(isBundle(testBundle), finishedSuccessfully()))
 			.haveExactly(1, event(test("aTest"), finishedSuccessfully()))
 			.haveExactly(1, event(test("bTest"), finishedSuccessfully()));
 	}
@@ -295,15 +322,23 @@ public class BundleEngineTest {
 			.all()
 			.debug(debugStr)
 			.assertThatEvents()
-			.haveExactly(0, event(container("misconfiguredEngines"), bundle(engineBundle), finishedSuccessfully()))
-			.haveExactly(1, event(bundle(testBundle), finishedSuccessfully()))
+			.haveExactly(0, event(container("misconfiguredEngines"), isBundle(engineBundle), finishedSuccessfully()))
+			.haveExactly(1, event(isBundle(testBundle), finishedSuccessfully()))
 			.haveExactly(1, event(container(CustomEngine.ENGINE_ID), finishedSuccessfully()))
 			.haveExactly(1, event(test("customTest"), finishedWithFailure()));
 	}
 
+	public static Segment getLastSegment(TestDescriptor descriptor) {
+		return getLastSegment(descriptor.getUniqueId());
+	}
+
+	public static Segment getLastSegment(UniqueId uId) {
+		final List<Segment> segments = uId.getSegments();
+		return segments.get(segments.size() - 1);
+	}
+
 	public static boolean lastSegmentMatches(UniqueId uId, String type, String contains) {
-		final List<UniqueId.Segment> segments = uId.getSegments();
-		UniqueId.Segment last = segments.get(segments.size() - 1);
+		Segment last = getLastSegment(uId);
 		return last.getType()
 			.equals(type)
 			&& last.getValue()
@@ -317,6 +352,12 @@ public class BundleEngineTest {
 			"last segment of type '%s' with value '%s'", type, contains);
 	}
 
+	public static Condition<Event> lastSegmentType(String type) {
+		return new Condition<>(
+			byTestDescriptor(where(TestDescriptor::getUniqueId, uniqueId -> lastSegmentMatches(uniqueId, type, ""))),
+			"last segment of type '%s' with value '%s'", type, "");
+	}
+
 	public static Condition<Event> testClass(Class<?> testClass) {
 		return test(testClass.getName());
 	}
@@ -325,11 +366,15 @@ public class BundleEngineTest {
 		return container(testClass.getName());
 	}
 
-	public static Condition<Event> bundle(Bundle bundle) {
+	public static Condition<Event> isBundle(Bundle bundle) {
 		return container(lastSegment("bundle", descriptionOf(bundle)));
 	}
 
-	public static Condition<? super Event> inBundle(Bundle resolvedTestBundle) {
+	public static Condition<Event> isEngine(String engine) {
+		return container(lastSegment("sub-engine", engine));
+	}
+
+	public static Condition<? super Event> containerInBundle(Bundle resolvedTestBundle) {
 		return container(descriptionOf(resolvedTestBundle));
 	}
 
@@ -337,7 +382,7 @@ public class BundleEngineTest {
 		return test(descriptionOf(resolvedTestBundle));
 	}
 
-	public static Condition<Event> fragment(Bundle bundle) {
+	public static Condition<Event> isFragment(Bundle bundle) {
 		return container(lastSegment("fragment", descriptionOf(bundle)));
 	}
 
@@ -357,6 +402,23 @@ public class BundleEngineTest {
 
 	}
 
+	public static Condition<Event> inEngine(String engine) {
+		return new Condition<>(byTestDescriptor(descriptor -> {
+			Optional<TestDescriptor> current = descriptor.getParent();
+			while (current.isPresent()) {
+				Segment last = getLastSegment(current.get());
+				if (last.getType()
+					.equals("sub-engine")) {
+					return last.getValue()
+						.equals(engine);
+				}
+				current = current.get()
+					.getParent();
+			}
+			return false;
+		}), "in sub-engine '%s'", engine);
+	}
+
 	public Builder engineInFramework() {
 		try {
 			if (engineBundle == null) {
@@ -366,6 +428,10 @@ public class BundleEngineTest {
 					.addResourceWithCopy(BundleDescriptor.class)
 					.addResourceWithCopy(StaticFailureDescriptor.class)
 					.addResourceWithCopy(BundleSelector.class)
+					.addResourceWithCopy(BundleEngineExecutor.class)
+					.addResourceWithCopy(BundleEngineDescriptor.FilteredListener.class)
+					.addResourceWithCopy(BundleEnginePruner.class)
+					.addResourceWithCopy(BundleEnginePruner.PruneType.class)
 					.addResourceWithCopy(BundleUtils.class)
 					.addResourceWithCopy(BundleSelectorResolver.class)
 					.addResourceWithCopy(BundleSelectorResolver.SubDiscoveryRequest.class)
@@ -427,7 +493,7 @@ public class BundleEngineTest {
 				event(test(unresolved2),
 					finishedWithFailure(instanceOf(BundleException.class),
 						message(x -> x.contains("Unable to resolve")))))
-			.haveExactly(1, event(bundle(testBundle), skippedWithReason("Unresolved bundles")));
+			.haveExactly(1, event(isBundle(testBundle), skippedWithReason("Unresolved bundles")));
 	}
 
 	@Test
@@ -445,7 +511,7 @@ public class BundleEngineTest {
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("unresolvedBundles")))
-			.haveExactly(1, event(bundle(testBundle), finishedSuccessfully()))
+			.haveExactly(1, event(isBundle(testBundle), finishedSuccessfully()))
 			.haveExactly(1, event(test("aTest"), finishedSuccessfully()))
 			.haveExactly(1, event(test("bTest"), finishedSuccessfully()));
 	}
@@ -463,7 +529,7 @@ public class BundleEngineTest {
 			.assertThatEvents()
 			.haveExactly(1,
 				event(unresolvedBundle(unResolvedTestBundle), finishedWithFailure(instanceOf(BundleException.class))))
-			.haveExactly(1, event(bundle(resolvedTestBundle), finishedSuccessfully()));
+			.haveExactly(1, event(isBundle(resolvedTestBundle), finishedSuccessfully()));
 	}
 
 	// Only generate the "Unresolved Tests" hierarchy for non-test bundles that
@@ -481,7 +547,7 @@ public class BundleEngineTest {
 			.haveExactly(0, event(container("unresolvedBundles")))
 			.haveExactly(1,
 				event(unresolvedBundle(unResolvedTestBundle), finishedWithFailure(instanceOf(BundleException.class))))
-			.haveExactly(1, event(bundle(resolvedTestBundle), finishedSuccessfully()));
+			.haveExactly(1, event(isBundle(resolvedTestBundle), finishedSuccessfully()));
 	}
 
 	@Test
@@ -494,7 +560,7 @@ public class BundleEngineTest {
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
-				event(inBundle(resolvedTestBundle), containerClass(JUnit5Test.class), finishedSuccessfully()))
+				event(containerInBundle(resolvedTestBundle), containerClass(JUnit5Test.class), finishedSuccessfully()))
 			.haveExactly(1, event(testInBundle(resolvedTestBundle), test("thisIsBTest"), finishedSuccessfully()))
 			.haveExactly(0, event(test("thisIsATest")))
 			.haveExactly(0, event(containerClass(TestClass.class), finishedSuccessfully()));
@@ -512,7 +578,8 @@ public class BundleEngineTest {
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
-				event(inBundle(resolvedTestBundle), lastSegment("class", JUnit5ParameterizedTest.class.getName()),
+				event(containerInBundle(resolvedTestBundle),
+					lastSegment("class", JUnit5ParameterizedTest.class.getName()),
 					finishedSuccessfully()))
 			.haveExactly(5,
 				event(testInBundle(resolvedTestBundle), test("parameterizedMethod"), finishedSuccessfully()))
@@ -549,7 +616,8 @@ public class BundleEngineTest {
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
-				event(inBundle(resolvedTestBundle), lastSegment("class", JUnit5ParameterizedTest.class.getName()),
+				event(containerInBundle(resolvedTestBundle),
+					lastSegment("class", JUnit5ParameterizedTest.class.getName()),
 					finishedSuccessfully()))
 			.haveExactly(3, event(testInBundle(resolvedTestBundle), test("customParameter"), finishedSuccessfully()))
 			.haveExactly(0, event(test("thisIsATest")))
@@ -567,7 +635,7 @@ public class BundleEngineTest {
 			.assertThatEvents()
 			.haveExactly(0, event(containerClass(JUnit4Test.class)))
 			.haveExactly(1,
-				event(inBundle(resolvedTestBundle), containerClass(TestClass.class), finishedSuccessfully()));
+				event(containerInBundle(resolvedTestBundle), containerClass(TestClass.class), finishedSuccessfully()));
 	}
 
 	@Test
@@ -586,7 +654,7 @@ public class BundleEngineTest {
 			// event(unresolvedClass("some.unknown.Clazz"),
 			// finishedWithFailure(instanceOf(ClassNotFoundException.class))))
 			.haveExactly(1,
-				event(inBundle(resolvedTestBundle), containerClass(TestClass.class), finishedSuccessfully()));
+				event(containerInBundle(resolvedTestBundle), containerClass(TestClass.class), finishedSuccessfully()));
 	}
 
 	@Test
@@ -600,7 +668,7 @@ public class BundleEngineTest {
 			.assertThatEvents()
 			.haveExactly(1, event(container("unresolvedClasses"), finishedSuccessfully()))
 			.haveExactly(1, event(test("some.unknown.Clazz"), finishedWithFailure(instanceOf(JUnitException.class))))
-			.haveExactly(1, event(bundle(resolvedTestBundle), skippedWithReason("Unresolved classes")));
+			.haveExactly(1, event(isBundle(resolvedTestBundle), skippedWithReason("Unresolved classes")));
 	}
 
 	@Test
@@ -616,7 +684,7 @@ public class BundleEngineTest {
 			.assertThatEvents()
 			.haveExactly(0, event(container("unresolvedClasses")))
 			.haveExactly(1,
-				event(inBundle(resolvedTestBundle), containerClass(TestClass.class), finishedSuccessfully()));
+				event(containerInBundle(resolvedTestBundle), containerClass(TestClass.class), finishedSuccessfully()));
 	}
 
 	@Test
@@ -633,7 +701,7 @@ public class BundleEngineTest {
 			.haveExactly(1, event(container("unresolvedClasses"), finishedSuccessfully()))
 			.haveExactly(1, event(test("some.unknown.Clazz"), finishedWithFailure(instanceOf(JUnitException.class))))
 			.haveExactly(0, event(container("unresolvedMethods")))
-			.haveExactly(1, event(bundle(resolvedTestBundle), skippedWithReason("Unresolved classes")));
+			.haveExactly(1, event(isBundle(resolvedTestBundle), skippedWithReason("Unresolved classes")));
 	}
 
 	@Test
@@ -724,7 +792,7 @@ public class BundleEngineTest {
 					finishedWithFailure(instanceOf(ClassNotFoundException.class))))
 			.haveExactly(1, event(test("aTest"), finishedSuccessfully()))
 			.haveExactly(1, event(test("bTest"), finishedSuccessfully()))
-			.haveExactly(1, event(bundle(resolvedTestBundle), finishedSuccessfully()));
+			.haveExactly(1, event(isBundle(resolvedTestBundle), finishedSuccessfully()));
 	}
 
 	// Only generate the "Unresolved Tests" hierarchy for classes specified in
@@ -748,7 +816,7 @@ public class BundleEngineTest {
 					finishedWithFailure(instanceOf(ClassNotFoundException.class))))
 			.haveExactly(1, event(test("aTest"), finishedSuccessfully()))
 			.haveExactly(1, event(test("bTest"), finishedSuccessfully()))
-			.haveExactly(1, event(bundle(resolvedTestBundle), finishedSuccessfully()));
+			.haveExactly(1, event(isBundle(resolvedTestBundle), finishedSuccessfully()));
 	}
 
 	@Test
@@ -786,7 +854,7 @@ public class BundleEngineTest {
 					finishedWithFailure(instanceOf(BundleException.class),
 						message(x -> x.contains("Unable to resolve")))))
 			.haveExactly(1, event(container("unattachedFragments"), finishedSuccessfully()))
-			.haveExactly(1, event(bundle(testBundle), type(SKIPPED)));
+			.haveExactly(1, event(isBundle(testBundle), type(SKIPPED)));
 	}
 
 	@Test
@@ -812,7 +880,7 @@ public class BundleEngineTest {
 				event(unresolvedBundle(fragment), withParentLastSegment("test", "unattachedFragments"),
 					finishedWithFailure(instanceOf(JUnitException.class),
 						message(x -> x.contains("Fragment was not attached to a host bundle")))))
-			.haveExactly(1, event(bundle(testBundle), skippedWithReason("Unattached fragments")));
+			.haveExactly(1, event(isBundle(testBundle), skippedWithReason("Unattached fragments")));
 	}
 
 	@Test
@@ -831,7 +899,7 @@ public class BundleEngineTest {
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("unattachedFragments")))
-			.haveExactly(1, event(bundle(testBundle), finishedSuccessfully()))
+			.haveExactly(1, event(isBundle(testBundle), finishedSuccessfully()))
 			.haveExactly(1, event(test("aTest"), finishedSuccessfully()))
 			.haveExactly(1, event(test("bTest"), finishedSuccessfully()));
 	}
@@ -922,7 +990,7 @@ public class BundleEngineTest {
 			.haveExactly(0, event(container("unattachedFragments")))
 			.haveExactly(1,
 				event(unresolvedBundle(unAttachedTestFragment), finishedWithFailure(instanceOf(BundleException.class))))
-			.haveExactly(1, event(fragment(attachedTestFragment), finishedSuccessfully()));
+			.haveExactly(1, event(isFragment(attachedTestFragment), finishedSuccessfully()));
 	}
 
 	// Helper methods to call the bundle selector in the engine bundle's class.
@@ -1000,15 +1068,15 @@ public class BundleEngineTest {
 			.assertThatEvents()
 			.haveExactly(1, event(containerClass(JUnit4Test.class), finishedSuccessfully()))
 			.haveExactly(1, event(containerClass(JUnit5Test.class), finishedSuccessfully()))
-			.haveExactly(1, event(bundle(tb1), finishedSuccessfully()))
-			.haveExactly(1, event(fragment(tb2), finishedSuccessfully()));
+			.haveExactly(1, event(isBundle(tb1), finishedSuccessfully()))
+			.haveExactly(1, event(isFragment(tb2), finishedSuccessfully()));
 
 		engineInFramework().selectors(selectBundle(tb2))
 			.execute()
 			.all()
 			.debug(debugStr)
 			.assertThatEvents()
-			.haveExactly(1, event(fragment(tb2), finishedSuccessfully()))
+			.haveExactly(1, event(isFragment(tb2), finishedSuccessfully()))
 			.haveExactly(0, event(containerClass(JUnit4Test.class)));
 	}
 
@@ -1443,5 +1511,223 @@ public class BundleEngineTest {
 				.as("classes")
 				.containsExactlyInAnyOrder(junit4TestInBundle);
 		}
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"bundle", "fragment", "sub-engine"
+	})
+	public void withPruneAlways_removesNodes(String node) throws Exception {
+		Bundle testBundle = installTestBundle(JUnit4Test.class);
+		Bundle testBundle2 = buildTestBundle(JUnit5Test.class).fragmentHost(testBundle.getSymbolicName())
+			.install();
+		testBundle.start();
+
+		engineInFramework().configurationParameter(PRUNE, node + "=always")
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(0, event(lastSegmentType(node)))
+			.haveExactly(1, event(test("aTest"), finishedSuccessfully()))
+			.haveExactly(1, event(test("bTest"), finishedSuccessfully()))
+			.haveExactly(1, event(test("thisIsATest"), finishedSuccessfully()))
+			.haveExactly(1, event(test("thisIsBTest"), finishedSuccessfully()));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"bundle", "fragment", "sub-engine"
+	})
+	@Tag(CUSTOM_LAUNCH)
+	public void withPruneOnlyChild_removesNodes_ifOnlyChild(String node) throws Exception {
+		startLaunchpadNoJupiter();
+
+		Bundle testBundle = installTestBundle();
+		Bundle testBundle2 = buildTestBundle(JUnit4Test.class).fragmentHost(testBundle.getSymbolicName())
+			.install();
+		testBundle.start();
+
+		engineInFramework().configurationParameter(PRUNE, node + "=onlychild")
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(0, event(lastSegmentType(node)))
+			.haveExactly(1, event(test("aTest"), finishedSuccessfully()))
+			.haveExactly(1, event(test("bTest"), finishedSuccessfully()));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"bundle", "fragment", "sub-engine"
+	})
+	@Tag(CUSTOM_LAUNCH)
+	public void withPruneNever_doesNotRemovesNodes_ifOnlyChild(String node) throws Exception {
+		startLaunchpadNoJupiter();
+
+		Bundle testBundle = installTestBundle();
+		Bundle testBundle2 = buildTestBundle(JUnit4Test.class).fragmentHost(testBundle.getSymbolicName())
+			.install();
+		testBundle.start();
+
+		engineInFramework().configurationParameter(PRUNE, node + "=never")
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1, event(isBundle(testBundle), finishedSuccessfully()))
+			.haveExactly(1, event(isFragment(testBundle2), finishedSuccessfully()))
+			.haveExactly(1, event(isEngine("junit-vintage"), finishedSuccessfully()))
+			.haveExactly(1,
+				event(test("aTest"), testInBundle(testBundle), testInBundle(testBundle2), inEngine("junit-vintage"),
+					finishedSuccessfully()))
+			.haveExactly(1, event(test("bTest"), testInBundle(testBundle), testInBundle(testBundle2),
+				inEngine("junit-vintage"), finishedSuccessfully()));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"bundle", "fragment", "sub-engine"
+	})
+	public void withPruneOnlyChild_doesNotRemoveNodes_ifNotOnlyChild(String node) throws Exception {
+		Bundle testBundle = installTestBundle(JUnit4Test.class);
+		Bundle testBundle2 = buildTestBundle(JUnit5Test.class).fragmentHost(testBundle.getSymbolicName())
+			.install();
+		testBundle.start();
+		Bundle testBundle3 = startTestBundle(JUnit3Test.class);
+
+		engineInFramework().configurationParameter(PRUNE, node + "=onlychild")
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1, event(isBundle(testBundle), finishedSuccessfully()))
+			.haveExactly(1, event(isFragment(testBundle2), finishedSuccessfully()))
+			.haveExactly(1, event(isBundle(testBundle3), finishedSuccessfully()))
+			// There are two matches here because the engine node completes in
+			// the bundle and the fragment, both of which are children of the
+			// bundle.
+			.haveExactly(2, event(containerInBundle(testBundle), isEngine("junit-jupiter"), finishedSuccessfully()))
+			.haveExactly(2, event(containerInBundle(testBundle), isEngine("junit-vintage"), finishedSuccessfully()))
+			.haveExactly(1, event(containerInBundle(testBundle2), isEngine("junit-jupiter"), finishedSuccessfully()))
+			.haveExactly(1, event(containerInBundle(testBundle2), isEngine("junit-vintage"), finishedSuccessfully()))
+			.haveExactly(1, event(containerInBundle(testBundle3), isEngine("junit-jupiter"), finishedSuccessfully()))
+			.haveExactly(1, event(containerInBundle(testBundle3), isEngine("junit-vintage"), finishedSuccessfully()))
+			.haveExactly(1,
+				event(test("aTest"), inEngine("junit-vintage"), testInBundle(testBundle), finishedSuccessfully()))
+			.haveExactly(1,
+				event(test("bTest"), inEngine("junit-vintage"), testInBundle(testBundle), finishedSuccessfully()))
+			.haveExactly(1,
+				event(test("thisIsATest"), inEngine("junit-jupiter"), testInBundle(testBundle2),
+					finishedSuccessfully()))
+			.haveExactly(1,
+				event(test("thisIsBTest"), inEngine("junit-jupiter"), testInBundle(testBundle2),
+					finishedSuccessfully()))
+			.haveExactly(1, event(test("testSomething"), inEngine("junit-vintage"), testInBundle(testBundle3),
+				finishedSuccessfully()));
+	}
+
+	@Test
+	public void whenPruningMultipleLevels_bothAreRemoved() throws Exception {
+		Bundle testBundle = installTestBundle(JUnit4Test.class);
+		Bundle testBundle2 = buildTestBundle(JUnit5Test.class).fragmentHost(testBundle.getSymbolicName())
+			.install();
+		testBundle.start();
+
+		engineInFramework().configurationParameter(PRUNE, "fragment=always,sub-engine=always")
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1, event(lastSegmentType("bundle"), finishedSuccessfully()))
+			.haveExactly(0, event(lastSegmentType("fragment")))
+			.haveExactly(0, event(lastSegmentType("sub-engine")))
+			.haveExactly(1, event(test("aTest"), finishedSuccessfully()))
+			.haveExactly(1, event(test("bTest"), finishedSuccessfully()))
+			.haveExactly(1, event(test("thisIsATest"), finishedSuccessfully()))
+			.haveExactly(1, event(test("thisIsBTest"), finishedSuccessfully()));
+	}
+
+	@Test
+	public void whenPruningABundle_childFragmentsAreRemovedToo() throws Exception {
+		Bundle testBundle = installTestBundle(JUnit4Test.class);
+		Bundle testBundle2 = buildTestBundle(JUnit5Test.class).fragmentHost(testBundle.getSymbolicName())
+			.install();
+		testBundle.start();
+
+		engineInFramework().configurationParameter(PRUNE, "bundle=always")
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(0, event(lastSegmentType("bundle")))
+			.haveExactly(0, event(lastSegmentType("fragment")))
+			.haveExactly(1, event(test("aTest"), finishedSuccessfully()))
+			.haveExactly(1, event(test("bTest"), finishedSuccessfully()))
+			.haveExactly(1, event(test("thisIsATest"), finishedSuccessfully()))
+			.haveExactly(1, event(test("thisIsBTest"), finishedSuccessfully()));
+	}
+
+	@Test
+	public void whenPruningBundles_enginesAreMerged() throws Exception {
+		Bundle testBundle = installTestBundle(JUnit4Test.class);
+		Bundle testBundle2 = buildTestBundle(JUnit5Test.class).fragmentHost(testBundle.getSymbolicName())
+			.install();
+		testBundle.start();
+		Bundle testBundle3 = startTestBundle(JUnit3Test.class);
+
+		engineInFramework().configurationParameter(PRUNE, "bundle=always")
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(0, event(lastSegmentType("bundle")))
+			.haveExactly(1, event(lastSegment("sub-engine", "junit-jupiter"), started()))
+			.haveExactly(1, event(lastSegment("sub-engine", "junit-jupiter"), finishedSuccessfully()))
+			.haveExactly(1, event(lastSegment("sub-engine", "junit-vintage"), started()))
+			.haveExactly(1, event(lastSegment("sub-engine", "junit-vintage"), finishedSuccessfully()))
+			.haveExactly(1, event(test("testSomething"), finishedSuccessfully(), inEngine("junit-vintage")))
+			.haveExactly(1, event(test("aTest"), finishedSuccessfully(), inEngine("junit-vintage")))
+			.haveExactly(1, event(test("bTest"), finishedSuccessfully(), inEngine("junit-vintage")))
+			.haveExactly(1, event(test("thisIsATest"), finishedSuccessfully(), inEngine("junit-jupiter")))
+			.haveExactly(1, event(test("thisIsBTest"), finishedSuccessfully(), inEngine("junit-jupiter")));
+	}
+
+	void runWithInvalidPruneDirective(String prune, String msg) {
+		Bundle testBundle = testBundler.startTestBundle(JUnit4Test.class);
+		String fullMsg = "Malformed prune directive: " + msg;
+		engineInFramework().configurationParameter(PRUNE, prune)
+			.execute()
+			.all()
+			.debug(debugStr)
+			.assertThatEvents()
+			.haveExactly(1,
+				event(test("invalidConfig"),
+					finishedWithFailure(instanceOf(IllegalArgumentException.class), message(x -> x.contains(fullMsg)))))
+			.haveExactly(1, event(isBundle(testBundle), skippedWithReason(fullMsg)));
+	}
+
+	@Test
+	public void pruneDirective_withMissingEquals_reportsError_andSkipsMainTests() throws Exception {
+		runWithInvalidPruneDirective("bundle", "missing '='");
+	}
+
+	@Test
+	public void pruneDirective_withUnknownNodeType_reportsError_andSkipsMainTests() throws Exception {
+		runWithInvalidPruneDirective("bndle=always",
+			"unknown node type 'bndle'; expecting bundle, fragment or sub-engine");
+	}
+
+	@Test
+	public void pruneDirective_withUnknownPruneType_reportsError_andSkipsMainTests() throws Exception {
+		runWithInvalidPruneDirective("bundle=sometimes",
+			"unknown prune type 'sometimes'; expecting never, onlychild or always");
+	}
+
+	@Test
+	public void pruneDirective_withUnknownDelimiter_reportsError_andSkipsMainTests() throws Exception {
+		runWithInvalidPruneDirective("bundle=always;fragment=never",
+			"unknown prune type 'always;fragment=never'; expecting never, onlychild or always");
 	}
 }

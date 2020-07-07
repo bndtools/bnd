@@ -38,7 +38,6 @@ import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.discovery.ClassSelector;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.engine.discovery.MethodSelector;
-import org.junit.platform.engine.support.descriptor.EngineDescriptor;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -46,6 +45,7 @@ import org.osgi.framework.wiring.FrameworkWiring;
 
 import aQute.tester.bundle.engine.BundleDescriptor;
 import aQute.tester.bundle.engine.BundleEngine;
+import aQute.tester.bundle.engine.BundleEngineDescriptor;
 import aQute.tester.bundle.engine.StaticFailureDescriptor;
 import aQute.tester.junit.platform.utils.BundleUtils;
 
@@ -83,7 +83,7 @@ public class BundleSelectorResolver {
 
 	final BundleContext				context;
 	final EngineDiscoveryRequest	request;
-	final EngineDescriptor			descriptor;
+	final BundleEngineDescriptor	rootDescriptor;
 	final StaticFailureDescriptor	misconfiguredEnginesDescriptor;
 	final StaticFailureDescriptor	unresolvedBundlesDescriptor;
 	final StaticFailureDescriptor	unattachedFragmentsDescriptor;
@@ -99,14 +99,16 @@ public class BundleSelectorResolver {
 	final Set<Class<?>>				resolvedClasses			= new HashSet<>();
 	private boolean					verbose					= false;
 
-	public static void resolve(BundleContext context, EngineDiscoveryRequest request, EngineDescriptor descriptor) {
+	public static void resolve(BundleContext context, EngineDiscoveryRequest request,
+		BundleEngineDescriptor descriptor) {
 		new BundleSelectorResolver(context, request, descriptor).resolve();
 	}
 
-	private BundleSelectorResolver(BundleContext context, EngineDiscoveryRequest request, EngineDescriptor descriptor) {
+	private BundleSelectorResolver(BundleContext context, EngineDiscoveryRequest request,
+		BundleEngineDescriptor descriptor) {
 		this.context = context;
 		this.request = request;
-		this.descriptor = descriptor;
+		this.rootDescriptor = descriptor;
 		final UniqueId uniqueId = descriptor.getUniqueId();
 		testUnresolved = request.getConfigurationParameters()
 			.getBoolean(CHECK_UNRESOLVED)
@@ -198,7 +200,7 @@ public class BundleSelectorResolver {
 	private void resolve() {
 		FrameworkWiring frameworkWiring = context.getBundle(0)
 			.adapt(FrameworkWiring.class);
-		UniqueId uniqueId = descriptor.getUniqueId();
+		UniqueId uniqueId = rootDescriptor.getUniqueId();
 		Arrays.stream(allBundles)
 			.filter(isATestBundle)
 			.filter(BundleUtils::isNotFragment)
@@ -213,7 +215,7 @@ public class BundleSelectorResolver {
 				} catch (BundleException resolutionFailure) {
 					UniqueId bundleId = uniqueId.append("bundle", uniqueIdOf(bundle));
 					BundleDescriptor bd = new BundleDescriptor(bundle, bundleId, resolutionFailure);
-					descriptor.addChild(bd);
+					rootDescriptor.addChild(bd);
 					markClassesResolved(bundle);
 				}
 			});
@@ -260,7 +262,7 @@ public class BundleSelectorResolver {
 				UniqueId fragmentId = uniqueId.append("bundle", uniqueIdOf(fragment));
 				BundleDescriptor bd = new BundleDescriptor(fragment, fragmentId,
 					new BundleException("Test fragment was not attached to a host bundle"));
-				descriptor.addChild(bd);
+				rootDescriptor.addChild(bd);
 				markClassesResolved(fragment);
 			});
 
@@ -270,11 +272,11 @@ public class BundleSelectorResolver {
 			.forEach(bundle -> {
 				info(() -> "Performing discovery for bundle: " + bundle.getSymbolicName());
 				String bundleDesc = uniqueIdOf(bundle);
-				UniqueId bundleId = descriptor.getUniqueId()
+				UniqueId bundleId = rootDescriptor.getUniqueId()
 					.append("bundle", bundleDesc);
 				BundleDescriptor bd = new BundleDescriptor(bundle, bundleId);
 				if (computeChildren(bd)) {
-					descriptor.addChild(bd);
+					rootDescriptor.addChild(bd);
 					bundleMap.put(bundle.getBundleId(), bd);
 				}
 			});
@@ -290,7 +292,7 @@ public class BundleSelectorResolver {
 				BundleDescriptor bd = bundleMap.computeIfAbsent(host.getBundleId(), id -> {
 					UniqueId hostId = uniqueId.append("bundle", uniqueIdOf(host));
 					BundleDescriptor childDescriptor = new BundleDescriptor(host, hostId);
-					descriptor.addChild(childDescriptor);
+					rootDescriptor.addChild(childDescriptor);
 					return childDescriptor;
 				});
 				BundleDescriptor fd = new BundleDescriptor(fragment, bd.getUniqueId()
@@ -301,13 +303,13 @@ public class BundleSelectorResolver {
 
 		Stream.of(misconfiguredEnginesDescriptor, unresolvedBundlesDescriptor, unattachedFragmentsDescriptor)
 			.filter(StaticFailureDescriptor::hasChildren)
-			.forEach(descriptor::addChild);
+			.forEach(rootDescriptor::addChild);
 
 		if (engines.isEmpty()) {
 			StaticFailureDescriptor noEnginesDescriptor = new StaticFailureDescriptor(
 				uniqueId.append("test", "noEngines"), "Initialization Error",
 				new JUnitException("Couldn't find any registered TestEngines"));
-			descriptor.addChild(noEnginesDescriptor);
+			rootDescriptor.addChild(noEnginesDescriptor);
 			return;
 		}
 
@@ -324,7 +326,7 @@ public class BundleSelectorResolver {
 					// Don't report unresolved methods of unresolved classes
 					unresolvedMethodNames.remove(unresolvedClass);
 				}
-				descriptor.addChild(unresolvedClassesDescriptor);
+				rootDescriptor.addChild(unresolvedClassesDescriptor);
 			}
 			if (!unresolvedMethodNames.isEmpty()) {
 				StaticFailureDescriptor unresolvedMethodsDescriptor = new StaticFailureDescriptor(
@@ -343,10 +345,10 @@ public class BundleSelectorResolver {
 					});
 					unresolvedMethodsDescriptor.addChild(classFailure);
 				});
-				descriptor.addChild(unresolvedMethodsDescriptor);
+				rootDescriptor.addChild(unresolvedMethodsDescriptor);
 			}
 		}
-		info(() -> dump(descriptor, ""));
+		info(() -> dump(rootDescriptor, ""));
 	}
 
 	void info(Supplier<String> msg, Throwable cause) {
@@ -587,7 +589,10 @@ public class BundleSelectorResolver {
 			try {
 				TestDescriptor engineDescriptor = engine.discover(subRequest, bd.getUniqueId()
 					.append("sub-engine", engine.getId()));
-				bd.addChild(engineDescriptor, engine);
+				rootDescriptor.registerEngineFor(engineDescriptor, engine);
+				engineDescriptor.getChildren()
+					.forEach(test -> rootDescriptor.registerSubEngineDescriptorFor(test, engineDescriptor));
+				bd.addChild(engineDescriptor);
 				info(() -> "Finished processing engine: " + engine.getId() + " for bundle " + bundle);
 			} catch (Exception e) {
 				info(() -> "Error processing tests for engine: " + engine.getId() + " for bundle " + bundle + ": "
