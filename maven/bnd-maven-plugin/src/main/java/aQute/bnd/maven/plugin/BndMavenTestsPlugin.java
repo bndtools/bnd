@@ -118,10 +118,20 @@ public class BndMavenTestsPlugin extends AbstractBndMavenPlugin {
 
 		if (testCases != TestCases.useTestCasesHeader) {
 			builder.setProperty(Constants.TESTCASES, "${sort;${uniq;" + testCases.filter() + "}}");
-		} else if (builder.getProperty(Constants.TESTCASES) == null) {
+		} else if (builder.getUnexpandedProperty(Constants.TESTCASES) == null) {
 			throw new MojoFailureException(
 				"<testCases> specified " + TestCases.useTestCasesHeader + " but no Test-Cases header was found");
 		}
+	}
+
+	@Override
+	protected void reportErrorsAndWarnings(Builder builder) throws MojoFailureException {
+		if (builder.getProperty(Constants.TESTCASES, "")
+			.trim()
+			.isEmpty()) {
+			builder.warning("The Test-Cases header is empty. No test case classes were found.");
+		}
+		super.reportErrorsAndWarnings(builder);
 	}
 
 }

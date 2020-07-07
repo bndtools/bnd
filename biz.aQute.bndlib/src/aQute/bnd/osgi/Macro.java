@@ -562,7 +562,7 @@ public class Macro {
 	static final String _sortHelp = "${sort;<list>...}";
 
 	public String _sort(String[] args) {
-		verifyCommand(args, _sortHelp, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _sortHelp, null, 1, Integer.MAX_VALUE);
 		String result = Arrays.stream(args, 1, args.length)
 			.flatMap(Strings::splitQuotedAsStream)
 			.sorted()
@@ -573,7 +573,7 @@ public class Macro {
 	static final String _nsortHelp = "${nsort;<list>...}";
 
 	public String _nsort(String[] args) {
-		verifyCommand(args, _nsortHelp, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _nsortHelp, null, 1, Integer.MAX_VALUE);
 
 		String result = Arrays.stream(args, 1, args.length)
 			.flatMap(Strings::splitAsStream)

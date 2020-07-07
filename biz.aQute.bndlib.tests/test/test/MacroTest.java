@@ -1341,25 +1341,29 @@ public class MacroTest {
 
 	/**
 	 * Check the uniq command
+	 *
+	 * @throws Exception
 	 */
 
 	@Test
-	public void testUniq() {
-		Builder builder = new Builder();
-		Properties p = new Properties();
-		p.setProperty("a", "${uniq;1}");
-		p.setProperty("b", "${uniq;1,2}");
-		p.setProperty("c", "${uniq;1;2}");
-		p.setProperty("d", "${uniq;1; 1,  2 , 3}");
-		p.setProperty("e", "${uniq;1; 1 , 2 ;      3;3,4,5,6}");
-		builder.setProperties(p);
-		assertEquals("1,2,3", builder.getProperty("d"));
-		assertEquals("1,2", builder.getProperty("b"));
-		assertEquals("1", builder.getProperty("a"));
-		assertEquals("1,2", builder.getProperty("c"));
-		assertEquals("1,2,3", builder.getProperty("d"));
-		assertEquals("1,2,3,4,5,6", builder.getProperty("e"));
-
+	public void testUniq() throws Exception {
+		try (Builder builder = new Builder()) {
+			Properties p = new Properties();
+			p.setProperty("a", "${uniq;1}");
+			p.setProperty("b", "${uniq;1,2}");
+			p.setProperty("c", "${uniq;1;2}");
+			p.setProperty("d", "${uniq;1; 1,  2 , 3}");
+			p.setProperty("e", "${uniq;1; 1 , 2 ;      3;3,4,5,6}");
+			p.setProperty("f", "${uniq;}");
+			builder.setProperties(p);
+			assertThat(builder.getProperty("d")).isEqualTo("1,2,3");
+			assertThat(builder.getProperty("b")).isEqualTo("1,2");
+			assertThat(builder.getProperty("a")).isEqualTo("1");
+			assertThat(builder.getProperty("c")).isEqualTo("1,2");
+			assertThat(builder.getProperty("d")).isEqualTo("1,2,3");
+			assertThat(builder.getProperty("e")).isEqualTo("1,2,3,4,5,6");
+			assertThat(builder.getProperty("f")).isEmpty();
+		}
 	}
 
 	/**
@@ -1658,9 +1662,10 @@ public class MacroTest {
 		Processor p = new Processor();
 		p.setProperty("a", "aaaa");
 		Macro m = new Macro(p);
-		assertEquals("aa,bb,cc,dd,ee,ff", m.process("${sort;aa,bb,cc,dd,ee,ff}"));
-		assertEquals("aa,bb,cc,dd,ee,ff", m.process("${sort;ff,ee,cc,bb,dd,aa}"));
-		assertEquals("aaaa,bb,cc,dd,ee,ff", m.process("${sort;ff,ee,cc,bb,dd,$<a>}"));
+		assertThat(m.process("${sort;aa,bb,cc,dd,ee,ff}")).isEqualTo("aa,bb,cc,dd,ee,ff");
+		assertThat(m.process("${sort;ff,ee,cc,bb,dd,aa}")).isEqualTo("aa,bb,cc,dd,ee,ff");
+		assertThat(m.process("${sort;ff,ee,cc,bb,dd,$<a>}")).isEqualTo("aaaa,bb,cc,dd,ee,ff");
+		assertThat(m.process("${sort;}")).isEmpty();
 	}
 
 	@Test
@@ -1668,7 +1673,8 @@ public class MacroTest {
 		Processor p = new Processor();
 		p.setProperty("a", "02");
 		Macro m = new Macro(p);
-		assertEquals("1,02,10", m.process("${nsort;$<a>,1,10}"));
+		assertThat(m.process("${nsort;$<a>,1,10}")).isEqualTo("1,02,10");
+		assertThat(m.process("${nsort;}")).isEmpty();
 	}
 
 	@Test

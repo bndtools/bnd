@@ -71,8 +71,7 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.service.reporter.Report.Location;
 
 public abstract class AbstractBndMavenPlugin extends AbstractMojo {
-	private static final Logger						logger					= LoggerFactory
-		.getLogger(AbstractBndMavenPlugin.class);
+	protected final Logger	logger					= LoggerFactory.getLogger(getClass());
 	static final String						MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
 	static final String						MARKED_FILES			= "aQute.bnd.maven.plugin.BndMavenPlugin.markedFiles";
 	static final String						PACKAGING_JAR			= "jar";
@@ -581,7 +580,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		return new Xpp3Dom("configuration");
 	}
 
-	private void reportErrorsAndWarnings(Builder builder) throws MojoFailureException {
+	protected void reportErrorsAndWarnings(Builder builder) throws MojoFailureException {
 		@SuppressWarnings("unchecked")
 		Collection<File> markedFiles = (Collection<File>) buildContext.getValue(MARKED_FILES);
 		if (markedFiles == null) {
