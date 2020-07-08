@@ -1,0 +1,31 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
+Bundle-Description: Bnd Ant Tasks
+
+-conditionalpackage: \
+	aQute.libg.*,\
+	aQute.lib.*
+
+-includeresource: \
+	${workspace}/LICENSE
+
+Export-Package: \
+    aQute.bnd.ant
+
+-buildpath: \
+	osgi.annotation;version=latest;maven-scope=provided,\
+	aQute.libg;version=project,\
+	biz.aQute.bndlib;version=latest,\
+	slf4j.api;version=latest,\
+	org.apache.ant:ant;version=latest
+
+-testpath: \
+	${junit},\
+	biz.aQute.resolve;version=latest,\
+	biz.aQute.repository;version=latest,\
+	biz.aQute.bnd.embedded-repo;version=snapshot,\
+	org.apache.ant:ant-launcher;version=latest,\
+	org.apache.ant:ant-testutil;version=latest
+
+-builderignore: testresources

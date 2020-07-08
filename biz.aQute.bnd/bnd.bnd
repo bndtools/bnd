@@ -23,6 +23,7 @@
 	${workspace}/LICENSE, \
 	templates=templates, \
 	@${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.bnd.ant;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.repository;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.bnd.embedded-repo;latest}!/!META-INF/*, \
@@ -44,7 +45,6 @@ Import-Package: \
 # by hand even though they are in bndlib. However, they are added
 # and we can unfortunately not see those packages ...
 Private-Package: \
-    aQute.bnd.ant,\
     aQute.bnd.enroute.commands,\
     aQute.bnd.main, \
     org.objectweb.asm.*,\
@@ -74,12 +74,12 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	org.osgi.service.repository;version=latest,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
+    biz.aQute.bnd.ant;version=latest,\
 	biz.aQute.resolve;version=latest,\
 	biz.aQute.repository;version=latest,\
 	biz.aQute.bnd.exporters;version=latest,\
  	biz.aQute.bnd.reporter;version=latest,\
 	biz.aQute.bnd.annotation;version=project,\
-	org.apache.ant:ant;version=latest,\
 	biz.aQute.remote.api;version=latest,\
 	org.yaml.snakeyaml;version=latest,\
 	slf4j.api;version=latest,\

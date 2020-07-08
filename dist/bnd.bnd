@@ -13,6 +13,7 @@
             biz.aQute.bnd.runtime, \
             biz.aQute.bnd.transform, \
             biz.aQute.bnd.embedded-repo, \
+            biz.aQute.bnd.ant, \
             biz.aQute.bnd.gradle, \
             biz.aQute.bndlib, \
             biz.aQute.bndlib.tests, \
