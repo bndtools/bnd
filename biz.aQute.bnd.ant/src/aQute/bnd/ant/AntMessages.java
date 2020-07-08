@@ -6,7 +6,7 @@ import aQute.libg.reporter.Message;
 import aQute.service.reporter.Messages;
 
 @Message("bnd messages for Ant")
-public interface AntMessages extends Messages {
+interface AntMessages extends Messages {
 
 	ERROR NotAJarFile_(File file);
 

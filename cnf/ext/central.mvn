@@ -62,7 +62,9 @@ org.apache.geronimo.specs:geronimo-atinject_1.0_spec:1.1
 org.apache.geronimo.specs:geronimo-interceptor_1.2_spec:1.1
 org.apache.geronimo.specs:geronimo-jcdi_2.0_spec:1.1
 
-org.apache.ant:ant:1.7.1
+org.apache.ant:ant:1.10.8
+org.apache.ant:ant-launcher:1.10.8
+org.apache.ant:ant-testutil:1.10.8
 
 junit:junit:${junit4.tester.version}
 junit:junit:${junit4.version}
