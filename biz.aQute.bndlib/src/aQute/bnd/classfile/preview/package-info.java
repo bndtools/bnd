@@ -7,7 +7,7 @@
  * package.
  */
 
-@Version("0.580.0")
+@Version("0.590.0")
 package aQute.bnd.classfile.preview;
 
 import org.osgi.annotation.versioning.Version;
