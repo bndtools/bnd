@@ -52,4 +52,19 @@ public class DeclarativeServicesAnnotationError {
 		this.fieldName = fieldName;
 		this.errorType = errorType;
 	}
+
+	public String location() {
+		if (fieldName != null) {
+			return String.format("%s.%s", className, fieldName);
+		}
+		if (methodName != null) {
+			return String.format("%s.%s%s", className, methodName, methodSignature);
+		}
+		return className;
+	}
+
+	@Override
+	public String toString() {
+		return location() + " " + errorType;
+	}
 }

@@ -152,11 +152,12 @@ public class DSAnnotationReader extends ClassDataCollector {
 			// These types cannot be components so don't bother scanning them
 
 			if (clazz.is(ANNOTATED, COMPONENT_INSTR, analyzer)) {
+				DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(clazz.getFQN(),
+					null, ErrorType.INVALID_COMPONENT_TYPE);
 				analyzer
-					.error("The type %s is not a class and therfore not suitable for the @Component annotation",
-						clazz.getFQN())
-					.details(
-						new DeclarativeServicesAnnotationError(clazz.getFQN(), null, ErrorType.INVALID_COMPONENT_TYPE));
+					.error("[%s] The type is not a class and therefore not suitable for the @Component annotation",
+						details.location())
+					.details(details);
 			}
 			return null;
 		}
@@ -179,10 +180,11 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 				Clazz ec = analyzer.findClass(extendsClass);
 				if (ec == null) {
+					DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(
+						className.getFQN(), null, null, ErrorType.UNABLE_TO_LOCATE_SUPER_CLASS);
 					analyzer
-						.error("Missing super class for DS annotations: %s from %s", extendsClass, clazz.getClassName())
-						.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
-							ErrorType.UNABLE_TO_LOCATE_SUPER_CLASS));
+						.error("[%s] Missing super class for DS annotations %s", details.location(), extendsClass)
+						.details(details);
 					break;
 				} else {
 					ec.parseClassFileWithCollector(this);
@@ -326,10 +328,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 			if (clazz == null) {
 				analyzer.warning(
-					"Unable to determine whether the annotation %s applied to type %s is a component property type as it is not on the project build path. If this annotation is a component property type then it must be present on the build path in order to be processed",
-					annotation.getName()
-						.getFQN(),
-					className.getFQN())
+					"[%s] Unable to determine whether the annotation %s is a component property type as it is not on the project build path. If this annotation is a component property type then it must be present on the build path in order to be processed",
+					details.location(), annotation.getName()
+						.getFQN())
 					.details(details);
 				return;
 			}
@@ -341,16 +342,15 @@ public class DSAnnotationReader extends ClassDataCollector {
 					new ComponentPropertyTypeDataCollector(propertyDefKey, annotation, details));
 			} else {
 				logger.debug(
-					"The annotation {} on component type {} will not be used for properties as the annotation is not annotated with @ComponentPropertyType",
-					clazz.getFQN(), className.getFQN());
+					"The annotation {} on component {} will not be used for properties as the annotation is not annotated with @ComponentPropertyType",
+					clazz.getFQN(), details.location());
 				return;
 			}
 		} catch (Exception e) {
 			analyzer
-				.exception(e, "An error occurred when attempting to process annotation %s, applied to component %s",
+				.exception(e, "[%s] An error occurred when attempting to process annotation %s", details.location(),
 					annotation.getName()
-						.getFQN(),
-					className.getFQN())
+						.getFQN())
 				.details(details);
 		}
 	}
@@ -420,7 +420,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 					}
 				}
 				analyzer
-					.error("Invalid activation object, type %s for field %s", member.descriptor(), details.fieldName)
+					.error("[%s] Invalid activation object type %s", details.location(), member.descriptor())
 					.details(details);
 
 				break;
@@ -429,12 +429,12 @@ public class DSAnnotationReader extends ClassDataCollector {
 				DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
 					member.getName(), memberDescriptor, ErrorType.CONSTRUCTOR_SIGNATURE_ERROR);
 				if (component.init != null) {
-					analyzer.error("Multiple constructors for %s are annotated @Activate.", details.className)
+					analyzer.error("[%s] Multiple constructors are annotated @Activate.", details.location())
 						.details(details);
 					break;
 				}
 				if (!member.isPublic()) {
-					analyzer.error("Constructors must be public access.")
+					analyzer.error("[%s] Constructors must be public access.", details.location())
 						.details(details);
 					break;
 				}
@@ -507,7 +507,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 			} else if (deactivate && (type == BaseType.I)) {
 				component.updateVersion(V1_1, "deactivate(int)");
 			} else {
-				analyzer.error("Invalid activation object type %s for parameter %s", type, arg)
+				analyzer.error("[%s] Invalid activation object type %s for parameter %s", details.location(), type, arg)
 					.details(details);
 			}
 		}
@@ -522,7 +522,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 			&& ((ClassTypeSignature) resultType).binary.equals("java/util/Map")) {
 			checkMapReturnType(details);
 		} else {
-			analyzer.error("Invalid return type type %s", resultType)
+			analyzer.error("[%s] Invalid return type type %s", details.location(), resultType)
 				.details(details);
 		}
 	}
@@ -543,7 +543,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 				String propertyDefKey = String.format(ComponentDef.PROPERTYDEF_CONSTRUCTORFORMAT, arg);
 				processActivationObject(propertyDefKey, param, memberDescriptor, details, false);
 			} else {
-				analyzer.error("Invalid activation object type %s for constructor parameter %s", type, arg)
+				analyzer
+					.error("[%s] Invalid activation object type %s for constructor parameter %s", details.location(),
+						type, arg)
 					.details(details);
 			}
 		}
@@ -576,15 +578,15 @@ public class DSAnnotationReader extends ClassDataCollector {
 						component.updateVersion(V1_3, "Felix interface type??");
 					} else {
 						analyzer
-							.error("Non annotation type for activation object with descriptor %s, type %s",
-								memberDescriptor, param.binary)
+							.error("[%s] Non annotation type for activation object with descriptor %s, type %s",
+								details.location(), memberDescriptor, param.binary)
 							.details(details);
 					}
 				} catch (Exception e) {
 					analyzer
 						.exception(e,
-							"Exception looking at annotation type for activation object with descriptor %s, type %s",
-							memberDescriptor, param.binary)
+							"[%s] Exception looking at annotation type for activation object with descriptor %s, type %s",
+							details.location(), memberDescriptor, param.binary)
 						.details(details);
 				}
 				break;
@@ -692,7 +694,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 					try {
 						Clazz r = analyzer.findClass(type);
 						if (r.isAnnotation()) {
-							analyzer.warning("Nested annotation type found in member %s, %s", name, type.getFQN())
+							analyzer
+								.warning("[%s] Nested annotation type found in member %s, %s", details.location(), name,
+									type.getFQN())
 								.details(details);
 							return;
 						}
@@ -700,13 +704,13 @@ public class DSAnnotationReader extends ClassDataCollector {
 						if (memberDescriptor != null) {
 							analyzer
 								.exception(e,
-									"Exception looking at annotation type on member with descriptor %s, type %s",
-									memberDescriptor, type)
+									"[%s] Exception looking at annotation type on member with descriptor %s, type %s",
+									details.location(), memberDescriptor, type)
 								.details(details);
 						} else {
 							analyzer
-								.exception(e, "Exception looking at annotation %s applied to type %s", typeRef.getFQN(),
-									className.getFQN())
+								.exception(e, "[%s] Exception looking at annotation %s", details.location(),
+									typeRef.getFQN())
 								.details(details);
 						}
 					}
@@ -740,8 +744,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 				} else {
 					prefix = null;
 					analyzer.warning(
-						"Field PREFIX_ in %s is not a static final String field with a compile-time constant value: %s",
-						typeRef.getFQN(), c)
+						"[%s] Field PREFIX_ in %s is not a static final String field with a compile-time constant value: %s",
+						details.location(), typeRef.getFQN(), c)
 						.details(details);
 				}
 			} else {
@@ -873,7 +877,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 						break;
 					default : // unknown!
 						sb.append(m.group());
-						analyzer.error("unknown mapping %s in property name %s", m.group(), name);
+						analyzer.error("[%s] unknown mapping %s in property name %s", details.location(), m.group(),
+							name);
 						break;
 				}
 			}
@@ -1371,9 +1376,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 	private void checkMapReturnType(DeclarativeServicesAnnotationError details) {
 		if (!options.contains(Options.felixExtensions)) {
 			analyzer.error(
-				"In component %s, to use a return type of Map you must specify the -dsannotations-options felixExtensions flag "
+				"[%s] To use a return type of Map you must specify the -dsannotations-options felixExtensions flag "
 					+ " and use a felix extension attribute or explicitly specify the appropriate xmlns.",
-				className)
+				details.location())
 				.details(details);
 		}
 	}
@@ -1389,22 +1394,10 @@ public class DSAnnotationReader extends ClassDataCollector {
 		if (!mismatchedAnnotations.isEmpty()) {
 			for (Entry<String, List<DeclarativeServicesAnnotationError>> e : mismatchedAnnotations.entrySet()) {
 				for (DeclarativeServicesAnnotationError errorDetails : e.getValue()) {
-					if (errorDetails.fieldName != null) {
-						analyzer.error(
-							"The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s on field %s. It is an error to mix these two types of annotations",
-							componentName, e.getKey(), errorDetails.fieldName)
-							.details(errorDetails);
-					} else if (errorDetails.methodName != null) {
-						analyzer.error(
-							"The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s on method %s with signature %s. It is an error to mix these two types of annotations",
-							componentName, e.getKey(), errorDetails.methodName, errorDetails.methodSignature)
-							.details(errorDetails);
-					} else {
-						analyzer.error(
-							"The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s. It is an error to mix these two types of annotations",
-							componentName, e.getKey())
-							.details(errorDetails);
-					}
+					analyzer.error(
+						"[%s] The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s. It is an error to mix these two types of annotations",
+						errorDetails.location(), componentName, e.getKey())
+						.details(errorDetails);
 				}
 			}
 			return;
@@ -1478,22 +1471,23 @@ public class DSAnnotationReader extends ClassDataCollector {
 			component.service = Stream.of(declaredServices)
 				.map(TypeRef.class::cast)
 				.peek(typeRef -> {
+					DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(
+						className.getFQN(), null, null, ErrorType.INCOMPATIBLE_SERVICE);
 					try {
 						Clazz service = analyzer.findClass(typeRef);
 						if (!analyzer.assignable(clazz, service)) {
 							analyzer
-								.error("Class %s is not assignable to specified service %s", clazz.getFQN(),
+								.error("[%s] The component is not assignable to specified service %s",
+									details.location(),
 									typeRef.getFQN())
-								.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
-									ErrorType.INCOMPATIBLE_SERVICE));
+								.details(details);
 						}
 					} catch (Exception e) {
 						analyzer
 							.exception(e,
-								"An error occurred when attempting to process service %s, applied to component %s",
-								typeRef.getFQN(), className.getFQN())
-							.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
-								ErrorType.INCOMPATIBLE_SERVICE));
+								"[%s] An error occurred when attempting to process service %s", details.location(),
+								typeRef.getFQN())
+							.details(details);
 					}
 				})
 				.toArray(TypeRef[]::new);

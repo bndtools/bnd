@@ -14,7 +14,6 @@ import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,15 +93,17 @@ public class DSAnnotationTest extends TestCase {
 	}
 
 	public void testExceedsVersion() throws Exception {
-		Builder b = new Builder();
-		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ValidNSVersion");
-		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;maximum=1.2.0");
-		b.setProperty("Private-Package", "test.component");
-		b.addClasspath(new File("bin_test"));
-		b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
-		Jar jar = b.build();
-		assertTrue(b.check(
-			"component 1.3.0 version test.component.DSAnnotationTest.ValidNSVersion exceeds -dsannotations-options version;maximum version 1.2.0 because base"));
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.*ValidNSVersion");
+			b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;maximum=1.2.0");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+			Jar jar = b.build();
+			assertThat(b.getErrors()).anyMatch(e -> e.matches(
+				".*ValidNSVersion.*version 1\\.3\\.0 exceeds -dsannotations-options version;maximum version 1\\.2\\.0 because base.*"))
+				.hasSize(1);
+		}
 	}
 
 	@Component()
@@ -115,22 +116,25 @@ public class DSAnnotationTest extends TestCase {
 	}
 
 	public void testRequires1_3() throws Exception {
-		Builder b = new Builder();
-		b.setProperty(Constants.DSANNOTATIONS, "test.component.*RequiresV1_3");
-		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.2.0;maximum=1.2.0");
-		b.setProperty("Private-Package", "test.component");
-		b.addClasspath(new File("bin_test"));
-		b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
-		Jar jar = b.build();
-		assertTrue(b.check("component 1.3.0 version test.component.DSAnnotationTest\\$RequiresV1_3 exceeds"));
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.*RequiresV1_3");
+			b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.2.0;maximum=1.2.0");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+			Jar jar = b.build();
+			assertThat(b.getErrors()).anyMatch(e -> e.matches(
+				".*RequiresV1_3.*version 1\\.3\\.0 exceeds -dsannotations-options version;maximum version 1\\.2\\.0.*"))
+				.hasSize(1);
 
-		System.out.println(jar.getResources()
-			.keySet());
+			System.out.println(jar.getResources()
+				.keySet());
 
-		Resource resource = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$RequiresV1_3.xml");
-		assertThat(resource).isNotNull();
-		String s = IO.collect(resource.openInputStream());
-		System.out.println(s);
+			Resource resource = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$RequiresV1_3.xml");
+			assertThat(resource).isNotNull();
+			String s = IO.collect(resource.openInputStream());
+			System.out.println(s);
+		}
 	}
 
 	public void testValidNamespaceVersion() throws Exception {
@@ -3508,31 +3512,22 @@ public class DSAnnotationTest extends TestCase {
 	}
 
 	public void testMixedStandardBnd() throws Exception {
-		Builder b = new Builder();
-		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$MixedStdBnd");
-		b.setProperty("Private-Package", "test.component");
-		b.addClasspath(new File("bin_test"));
-		Jar build = b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(4, b.getErrors()
-			.size());
-		List<String> errors = new ArrayList<>(b.getErrors());
-		Collections.sort(errors);
-		assertEquals(
-			"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Activate on method start with signature ()V. It is an error to mix these two types of annotations",
-			errors.get(0));
-		assertEquals(
-			"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Deactivate on method stop with signature ()V. It is an error to mix these two types of annotations",
-			errors.get(1));
-		assertEquals(
-			"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Modified on method update with signature (Ljava/util/Map;)V. It is an error to mix these two types of annotations",
-			errors.get(2));
-		assertEquals(
-			"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Reference on method setLog with signature (Lorg/osgi/service/log/LogService;)V. It is an error to mix these two types of annotations",
-			errors.get(3));
-		assertEquals(0, b.getWarnings()
-			.size());
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$MixedStdBnd");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+			Jar build = b.build();
+			System.err.println(b.getErrors());
+			System.err.println(b.getWarnings());
+			assertThat("foo");
+			assertThat(b.getErrors())
+				.anyMatch(e -> e.matches(".*MixedStdBnd\\.stop.*aQute\\.bnd\\.annotation\\.component\\.Deactivate.*"))
+				.anyMatch(e -> e.matches(".*MixedStdBnd\\.update.*aQute\\.bnd\\.annotation\\.component\\.Modified.*"))
+				.anyMatch(e -> e.matches(".*MixedStdBnd\\.start.*aQute\\.bnd\\.annotation\\.component\\.Activate.*"))
+				.anyMatch(e -> e.matches(".*MixedStdBnd\\.setLog.*aQute\\.bnd\\.annotation\\.component\\.Reference.*"))
+				.hasSize(4);
+			assertThat(b.getWarnings()).isEmpty();
+		}
 	}
 
 	@Component
