@@ -25,7 +25,7 @@ public class RecordAttributeTest {
 			ClassFile clazz = ClassFile.parseClassFile(new DataInputStream(stream));
 			assertThat(clazz.this_class).isEqualTo("MinMax");
 			assertThat(clazz.super_class).isEqualTo("java/lang/Record");
-			assertThat(clazz.major_version).isGreaterThanOrEqualTo(Clazz.JAVA.OpenJDK14.getMajor());
+			assertThat(clazz.major_version).isGreaterThanOrEqualTo(Clazz.JAVA.OpenJDK15.getMajor());
 
 			RecordAttribute recordAttribute = Arrays.stream(clazz.attributes)
 				.filter(RecordAttribute.class::isInstance)
