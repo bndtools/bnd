@@ -1,8 +1,11 @@
 package org.bndtools.applaunch;
 
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.eclipse.osgi.internal.framework.EquinoxConfiguration;
+import org.eclipse.osgi.service.environment.EnvironmentInfo;
 import org.eclipse.osgi.service.runnable.ApplicationLauncher;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -31,6 +34,7 @@ class LauncherTracker extends ServiceTracker<Object, ServiceRegistration<Applica
 
 	private final Logger log = Logger.getLogger(Activator.class.getPackage()
 		.getName());
+	private ServiceReference<EnvironmentInfo>	envInfo;
 
 	public LauncherTracker(BundleContext context) {
 		super(context, createFilter(), null);
@@ -46,6 +50,8 @@ class LauncherTracker extends ServiceTracker<Object, ServiceRegistration<Applica
 
 	@Override
 	public ServiceRegistration<ApplicationLauncher> addingService(ServiceReference<Object> reference) {
+		setEquinoxConfigAppArgs(context);
+
 		// Find and start the Equinox Application bundle
 		boolean found = false;
 		Bundle[] bundles = context.getBundles();
@@ -69,8 +75,41 @@ class LauncherTracker extends ServiceTracker<Object, ServiceRegistration<Applica
 		return context.registerService(ApplicationLauncher.class, new BndApplicationLauncher(context), null);
 	}
 
+	private void setEquinoxConfigAppArgs(BundleContext context) {
+		String[] args = null;
+		try {
+			ServiceReference<?>[] serviceReferences = context.getServiceReferences("aQute.launcher.Launcher",
+				"(launcher.arguments=*)");
+			if (serviceReferences != null && serviceReferences.length > 0) {
+				Object property = serviceReferences[0].getProperty("launcher.arguments");
+
+				if (property instanceof String[]) {
+					args = (String[]) property;
+
+					envInfo = context.getServiceReference(EnvironmentInfo.class);
+					if (envInfo != null) {
+						EnvironmentInfo service = context.getService(envInfo);
+						if (service instanceof EquinoxConfiguration) {
+							EquinoxConfiguration equinoxConfig = (EquinoxConfiguration) service;
+							equinoxConfig.setAppArgs(args);
+						}
+					}
+
+					log.log(Level.FINE, "configured program arguments " + Arrays.toString(args));
+				}
+			} else {
+				log.log(Level.SEVERE,
+					"service aQute.launcher.Launcher with props launcher.arguments could not be retrieved");
+			}
+		} catch (Exception e) {
+			log.log(Level.SEVERE, "command line parameters could not be configured.");
+		}
+	}
+
 	@Override
 	public void removedService(ServiceReference<Object> reference, ServiceRegistration<ApplicationLauncher> service) {
+		if (envInfo != null)
+			context.ungetService(envInfo);
 		service.unregister();
 	}
 
