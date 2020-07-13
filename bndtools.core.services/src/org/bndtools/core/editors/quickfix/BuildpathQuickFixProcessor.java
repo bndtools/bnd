@@ -28,6 +28,7 @@ import org.eclipse.jdt.ui.text.java.IInvocationContext;
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
 import org.eclipse.jdt.ui.text.java.IProblemLocation;
 import org.eclipse.jdt.ui.text.java.IQuickFixProcessor;
+import org.osgi.service.component.annotations.Component;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -35,9 +36,9 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Descriptors;
 import aQute.lib.exceptions.Exceptions;
-import bndtools.Plugin;
 import bndtools.central.Central;
 
+@Component
 public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 
 	@Override
@@ -186,7 +187,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			.orElse(false);
 
 		Map<String, List<BundleId>> result = workspace.search(partialClassName)
-			.orElseThrow(s -> new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, s)));
+			.orElseThrow(s -> new CoreException(new Status(IStatus.ERROR, "bndtools.core.services", s)));
 
 		Set<BundleId> buildpath = getBundleIds(project.getBuildpath());
 		Set<BundleId> testpath = test ? getBundleIds(project.getTestpath()) : Collections.emptySet();
@@ -199,7 +200,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 							proposals.add(propose(e.getKey(), id, context, location, project, "-testpath", doImport));
 
 					if (!buildpath.contains(id))
-							proposals.add(propose(e.getKey(), id, context, location, project, "-buildpath", doImport));
+						proposals.add(propose(e.getKey(), id, context, location, project, "-buildpath", doImport));
 
 				}
 			});

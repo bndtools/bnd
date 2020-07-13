@@ -60,6 +60,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
@@ -89,9 +92,23 @@ public class BuildpathQuickFixProcessorTest {
 	IJavaProject								javaProject;
 	Project										bndProject;
 
+	// TODO: Here are some problem types we could potentially quick-fix that
+	// aren't covered:
+	// Discouraged access (can be fixed by adding a bundle that actually exports
+	// the packages)
+	// Missing method (sometimes caused when the hierarchy is incomplete,
+	// similar to HierarchyHasProblems)
+
 	@SuppressWarnings("unchecked")
 	static void initSUTClass() throws Exception {
-		sutClass = (Class<? extends IQuickFixProcessor>) Central.class.getClassLoader()
+		BundleContext bc = FrameworkUtil.getBundle(BuildpathQuickFixProcessorTest.class)
+			.getBundleContext();
+		Bundle but = Stream.of(bc.getBundles())
+			.filter(bundle -> bundle.getSymbolicName()
+				.equals("bndtools.core.services"))
+			.findAny()
+			.orElseThrow(() -> new IllegalArgumentException("Couldn't find bndtools.core.services"));
+		sutClass = (Class<? extends IQuickFixProcessor>) but
 			.loadClass("org.bndtools.core.editors.quickfix.BuildpathQuickFixProcessor");
 		assertThat(IQuickFixProcessor.class).as("sutClass")
 			.isAssignableFrom(sutClass);
@@ -100,8 +117,7 @@ public class BuildpathQuickFixProcessorTest {
 	@BeforeAll
 	static void beforeAll() throws Exception {
 		// Get a handle on the repo. I have seen this come back null on occasion
-		// so spin
-		// until we get it.
+		// so spin until we get it.
 		LocalIndexedRepo localRepo = (LocalIndexedRepo) Central.getWorkspace()
 			.getRepository("Local Index");
 		int count = 0;
@@ -299,9 +315,11 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	// void dumpProblems(Stream<? extends IProblem> problems) {
-	// problems.forEach(System.err::println);
+	// problems.map(problem -> problem + "[" + problem.getSourceStart() + "," +
+	// problem.getSourceEnd() + "]")
+	// .forEach(System.err::println);
 	// }
-	//
+
 	/**
 	 * Workhorse method for driving the quick fix processor and getting the
 	 * results.
@@ -338,8 +356,7 @@ public class BuildpathQuickFixProcessorTest {
 			// System.err.println("cu: " + cu);
 
 			// Note: IProblem instances seem to give more useful diagnostics
-			// than the
-			// IProblemLocation instances
+			// than the IProblemLocation instances
 			// System.err.println("Unfiltered problems: ");
 			// dumpProblems(Stream.of(cu.getProblems()));
 			// Filter out the problems that don't fall within the current editor
@@ -351,13 +368,15 @@ public class BuildpathQuickFixProcessorTest {
 					return problem.getSourceEnd() >= offset && problem.getSourceStart() <= (offset + length);
 				})
 				.collect(Collectors.toList());
+			// System.err.println("Filtered problems:");
 			// dumpProblems(filtered.stream());
 			IProblemLocation[] locs = filtered.stream()
 				.map(ProblemLocation::new)
 				.toArray(IProblemLocation[]::new);
-			// System.err.println(
-			// "Problems: " +
-			// Stream.of(locs).map(IProblemLocation::toString).collect(Collectors.joining(",")));
+
+			// System.err.println("Problems: " + Stream.of(locs)
+			// .map(IProblemLocation::toString)
+			// .collect(Collectors.joining(",")));
 
 			IInvocationContext context = new AssistContext(icu, offset, length);
 			IJavaCompletionProposal[] proposals = sut.getCorrections(context, locs);
@@ -592,10 +611,8 @@ public class BuildpathQuickFixProcessorTest {
 	void withUnqualifiedNameType_returnsNull(SoftAssertions softly) {
 		// If the type is a simple (non-qualified) name, it must refer to a type
 		// and not
-		// a
-		// package; therefore don't provide package import suggestions even if
-		// we have a
-		// package with the matching name.
+		// a package; therefore don't provide package import suggestions even if
+		// we have a package with the matching name.
 		softly.assertThat(proposalsForUndefType("Simple"))
 			.as("capitalized")
 			.isNull();

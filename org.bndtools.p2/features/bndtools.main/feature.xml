@@ -550,6 +550,13 @@ version(s), and exceptions or additional permissions here}.&quot;
          unpack="false"/>
 
    <plugin
+         id="bndtools.core.services"
+         download-size="0"
+         install-size="0"
+         version="@bndtools.core.services-version@"
+         unpack="false"/>
+
+   <plugin
          id="bndtools.builder"
          download-size="0"
          install-size="0"

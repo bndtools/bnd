@@ -9,6 +9,7 @@ timestamp: ${tstamp}
     bndtools.api, \
     bndtools.builder, \
     bndtools.core, \
+    bndtools.core.services, \
     bndtools.jareditor, \
     bndtools.m2e, \
     bndtools.pde, \

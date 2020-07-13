@@ -39,6 +39,7 @@
 	bnd.identity;id='bndtools.api',\
 	bnd.identity;id='bndtools.builder',\
 	bnd.identity;id='bndtools.core',\
+	bnd.identity;id='bndtools.core.services',\
 	bnd.identity;id='bndtools.jareditor',\
 	bnd.identity;id='bndtools.m2e',\
 	bnd.identity;id='bndtools.m2e.debug.fragment',\
@@ -130,6 +131,7 @@
 	bndtools.api;version=snapshot,\
 	bndtools.builder;version=snapshot,\
 	bndtools.core;version=snapshot,\
+	bndtools.core.services;version=snapshot,\
 	bndtools.jareditor;version=snapshot,\
 	bndtools.m2e.debug.fragment;version=snapshot,\
 	bndtools.m2e;version=snapshot,\

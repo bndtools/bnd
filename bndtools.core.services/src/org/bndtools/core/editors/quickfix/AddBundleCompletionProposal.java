@@ -18,7 +18,6 @@ import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
 import aQute.lib.strings.Strings;
-import bndtools.Plugin;
 import bndtools.central.Central;
 
 class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletionProposal {
@@ -124,7 +123,8 @@ class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletio
 			}
 			return status;
 		} catch (Exception e) {
-			return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "Failed to add bundle " + bundle + " to " + pathtype, e);
+			return new Status(IStatus.ERROR, "bndtools.core.services",
+				"Failed to add bundle " + bundle + " to " + pathtype, e);
 		}
 	}
 }

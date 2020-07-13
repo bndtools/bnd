@@ -37,6 +37,7 @@
 	biz.aQute.repository;version=snapshot,\
 	bndtools.api;version=snapshot,\
 	bndtools.core;version=snapshot,\
+	bndtools.core.services;version=snapshot,\
 	assertj-core,\
 	javax.inject,\
 	org.apiguardian:apiguardian-api,\

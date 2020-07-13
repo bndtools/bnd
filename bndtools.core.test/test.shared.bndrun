@@ -81,6 +81,7 @@
 	bndtools.api;version=snapshot,\
 	bndtools.builder;version=snapshot,\
 	bndtools.core;version=snapshot,\
+	bndtools.core.services;version=snapshot,\
 	bndtools.core.test.tests;version=snapshot,\
 	junit-jupiter-api;version='[5.6.2,5.6.3)',\
 	junit-jupiter-engine;version='[5.6.2,5.6.3)',\
