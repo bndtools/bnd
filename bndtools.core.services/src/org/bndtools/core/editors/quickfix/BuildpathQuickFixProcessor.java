@@ -27,6 +27,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.ui.text.java.IInvocationContext;
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
@@ -219,9 +220,30 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 						args.forEach(arg -> visitBindingHierarchy(arg.resolveTypeBinding()));
 						continue;
 					}
-					case IProblem.IsClassPathCorrect :
-					case IProblem.UndefinedType :
 					case IProblem.ImportNotFound : {
+						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						ImportDeclaration importDec = findFirstParentOfType(node, ImportDeclaration.class);
+						if (importDec != null) {
+							Name name = importDec.getName();
+							String partialClassName = null;
+							if (importDec.isStatic() && !importDec.isOnDemand()) {
+								// It should be a QualifiedName unless there is
+								// an error in Eclipse...
+								if (name instanceof QualifiedName) {
+									partialClassName = ((QualifiedName) name).getQualifier()
+										.getFullyQualifiedName();
+								}
+							} else {
+								partialClassName = name.getFullyQualifiedName();
+							}
+							if (partialClassName != null) {
+								addProposals(partialClassName);
+							}
+						}
+						continue;
+					}
+					case IProblem.IsClassPathCorrect :
+					case IProblem.UndefinedType : {
 						String partialClassName = getPartialClassName(location.getCoveringNode(context.getASTRoot()));
 						if (partialClassName == null && location.getProblemArguments().length > 0)
 							partialClassName = location.getProblemArguments()[0];
@@ -306,11 +328,6 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	 *         established
 	 */
 	private String getPartialClassName(ASTNode node) {
-
-		if (node instanceof ImportDeclaration) {
-			node = ((ImportDeclaration) node).getName();
-		}
-
 		Name name = null;
 		while (node instanceof Name) {
 			name = (Name) node;

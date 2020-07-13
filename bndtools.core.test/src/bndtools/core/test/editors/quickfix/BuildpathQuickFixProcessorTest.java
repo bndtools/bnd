@@ -671,7 +671,6 @@ public class BuildpathQuickFixProcessorTest {
 		assertThatContainsBundleSuggestions(proposalsForStaticImport("org.osgi.framework.Bundle.*"));
 	}
 
-	@Disabled("Not yet implemented")
 	@Test
 	void withStaticImport_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
