@@ -769,6 +769,46 @@ public class BuildpathQuickFixProcessorTest {
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
 	}
 
+	@Test
+	void withFQClassLiteral_asAnnotationParameter_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; " + "import simple.annotation.MyTag;" + "@MyTag(";
+		String source = header + "iface.bundle.MyInterface.class)" + "class " + DEFAULT_CLASS_NAME + "{" + "}";
+
+		assertThatProposals(proposalsFor(header.length() + 2, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+	}
+
+	@Test
+	void withUnqualifiedClassLiteral_asAnnotationParameter_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; "
+			+ "import simple.annotation.MyTag; import simple.pkg.InterfaceExtendingInterfaceFromAnotherBundle;"
+			+ "@MyTag(";
+		String source = header + "InterfaceExtendingInterfaceFromAnotherBundle.class)" + "class " + DEFAULT_CLASS_NAME
+			+ "{" + "}";
+
+		assertThatProposals(proposalsFor(header.length() + 2, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+	}
+
+	@Test
+	void withUnqualifiedClassLiteral_forUnimportedType_asAnnotationParameter_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+
+		String header = "package test; " + "import simple.annotation.MyTag; " + "@MyTag(";
+		String source = header + "MyInterface.class)" + "class " + DEFAULT_CLASS_NAME + "{" + "}";
+
+		assertThatProposals(proposalsFor(header.length() + 2, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+	}
+
 	private void assertThatContainsPromiseSuggestions(IJavaCompletionProposal[] proposals) {
 		if (proposals == null) {
 			softly.fail("no proposals returned");
