@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.jdt.core.compiler.IProblem.HierarchyHasProblems;
 import static org.eclipse.jdt.core.compiler.IProblem.ImportNotFound;
 import static org.eclipse.jdt.core.compiler.IProblem.IsClassPathCorrect;
+import static org.eclipse.jdt.core.compiler.IProblem.ParameterMismatch;
 import static org.eclipse.jdt.core.compiler.IProblem.TypeMismatch;
 import static org.eclipse.jdt.core.compiler.IProblem.UndefinedType;
 
@@ -406,7 +407,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	static final Set<Integer> SUPPORTED = Stream
-		.of(ImportNotFound, UndefinedType, IsClassPathCorrect, HierarchyHasProblems, TypeMismatch)
+		.of(ImportNotFound, UndefinedType, IsClassPathCorrect, HierarchyHasProblems, ParameterMismatch, TypeMismatch)
 		.collect(Collectors.toSet());
 
 	// This is just to give nice error feedback
@@ -765,8 +766,51 @@ public class BuildpathQuickFixProcessorTest {
 		// IsClassPathCorrect occurs at [112, 134]
 		assertThatProposals(proposalsFor(112, 0, source)).haveExactly(1,
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
-		// UnknownMethod is on the method at [116,132]
+		// UnknownMethod is on the method at [116,132], which means that it's
+		// redundant as the
+		// IsClassPathCorrect problem covers it completely.
 		assertThatProposals(proposalsFor(117, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+	}
+
+	@Test
+	void withInconsistentHierarchy_forClassUse_thatExtendsAClassFromAnotherBundle_suggestsBundles(
+		SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; class ";
+		String source = header + DEFAULT_CLASS_NAME + "{\n" + "  simple.pkg.ClassExtendingClassFromAnotherBundle var;\n"
+			+ "  void myMethod() {" + "    var.bMethod();" + "  }" + "}";
+
+		// IsClassPathCorrect occurs at [112, 134]
+		assertThatProposals(proposalsFor(112, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+		// UnknownMethod is on the method at [116,132], which means that it's
+		// redundant as the
+		// IsClassPathCorrect problem covers it completely.
+		assertThatProposals(proposalsFor(117, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+	}
+
+	// This is based on a real-world scenario I encountered while using CXF and
+	// SOAP.
+	@Test
+	void withInconsistentHierarchy_forComplicatedGenericHierarchy_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; import java.util.List;" + "import simple.pkg.MyParameterizedClass;"
+			+ "import simple.MyClass;" + "import simple.pkg.ClassExtendingAbstractExtendingMyParameterizedClass;"
+			+ "class ";
+		String source = header + DEFAULT_CLASS_NAME + "{\n" + "  List<MyParameterizedClass<? extends MyClass>> var;\n"
+			+ "  void myMethod() {" + "    var.add(new ClassExtendingAbstractExtendingMyParameterizedClass());" + "  }"
+			+ "}";
+
+		// ParameterMismatch [259, 261]
+		assertThatProposals(proposalsFor(259, 0, source)).haveExactly(1,
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
 	}
 

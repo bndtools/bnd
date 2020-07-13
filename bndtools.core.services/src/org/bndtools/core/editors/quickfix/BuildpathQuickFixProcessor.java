@@ -22,8 +22,10 @@ import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.ui.text.java.IInvocationContext;
@@ -54,6 +56,9 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 				return true;
 			case IProblem.ImportNotFound :
 				// System.out.println("ImportNotFound");
+				return true;
+			case IProblem.ParameterMismatch :
+				// System.out.println("ParameterMismatch");
 				return true;
 			case IProblem.TypeMismatch :
 				// System.out.println("TypeMismatch");
@@ -97,20 +102,49 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	 * @param binding the type binding corresponding to the type with the
 	 *            inconsistent hierarchy.
 	 */
-	void visitBindingHierarchy(ITypeBinding binding) throws Exception {
-		if (binding == null || binding.getQualifiedName()
-			.startsWith("java.")) {
-			return;
+	void visitBindingHierarchy(ITypeBinding binding) {
+		try {
+			if (binding == null || binding.getQualifiedName()
+				.startsWith("java.")) {
+				return;
+			}
+			// A "recovered" type binding indicates the type has not been
+			// fully resolved - usually because it's not on the classpath.
+			if (binding.isRecovered()) {
+				addProposals(binding.getQualifiedName());
+			}
+			visitBindingHierarchy(binding.getSuperclass());
+			for (ITypeBinding iface : binding.getInterfaces()) {
+				visitBindingHierarchy(iface);
+			}
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
 		}
-		// A "recovered" type binding indicates the type has not been
-		// fully resolved - usually because it's not on the classpath.
-		if (binding.isRecovered()) {
-			addProposals(binding.getQualifiedName());
+	}
+
+	void visitNodeAncestry(ASTNode node) throws Exception {
+		while (node != null) {
+			if (node instanceof Type) {
+				visitBindingHierarchy(((Type) node).resolveBinding());
+				break;
+			}
+			if (node instanceof AbstractTypeDeclaration) {
+				visitBindingHierarchy(((AbstractTypeDeclaration) node).resolveBinding());
+				break;
+			}
+			node = node.getParent();
 		}
-		visitBindingHierarchy(binding.getSuperclass());
-		for (ITypeBinding iface : binding.getInterfaces()) {
-			visitBindingHierarchy(iface);
+	}
+
+	@SuppressWarnings("unchecked")
+	<N extends ASTNode> N findFirstParentOfType(ASTNode node, Class<N> type) {
+		while (node != null) {
+			if (type.isAssignableFrom(node.getClass())) {
+				return (N) node;
+			}
+			node = node.getParent();
 		}
+		return null;
 	}
 
 	Project							project;
@@ -119,6 +153,19 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	private Workspace				workspace;
 	List<IJavaCompletionProposal>	proposals;
 	IProblemLocation				location;
+	final ASTVisitor				TYPE_VISITOR	= new ASTVisitor() {
+														@Override
+														public void preVisit(ASTNode node) {
+															if (node instanceof Type) {
+																ITypeBinding binding = ((Type) node).resolveBinding();
+																try {
+																	visitBindingHierarchy(binding);
+																} catch (Exception e) {
+																	throw Exceptions.duck(e);
+																}
+															}
+														}
+													};
 
 	// This implementation is not thread safe. I'm fairly sure that Eclipse will
 	// not call this from multiple threads at the same time so that should be
@@ -143,9 +190,6 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			workspace = project.getWorkspace();
 
 			for (IProblemLocation location : locations) {
-
-				if (!hasCorrections(context.getCompilationUnit(), location.getProblemId()))
-					continue;
 				this.location = location;
 				switch (location.getProblemId()) {
 					case IProblem.HierarchyHasProblems : {
@@ -160,36 +204,19 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 						// and
 						// add those as suggestions.
 						ASTNode node = location.getCoveredNode(context.getASTRoot());
-						System.err.println("HierarchyHasProblems: " + node);
-						if (node.getNodeType() == ASTNode.SIMPLE_NAME) {
-							ASTNode current = node;
-							while (current != null) {
-								if (current instanceof AbstractTypeDeclaration) {
-									AbstractTypeDeclaration dec = (AbstractTypeDeclaration) current;
-									ITypeBinding binding = dec.resolveBinding();
-									visitBindingHierarchy(binding);
-									break;
-								}
-								current = current.getParent();
-							}
-						}
+						visitNodeAncestry(node);
 						continue;
 					}
 					case IProblem.TypeMismatch : {
 						ASTNode node = location.getCoveredNode(context.getASTRoot());
-						node.accept(new ASTVisitor() {
-							@Override
-							public void preVisit(ASTNode node) {
-								if (node instanceof Type) {
-									ITypeBinding binding = ((Type) node).resolveBinding();
-									try {
-										visitBindingHierarchy(binding);
-									} catch (Exception e) {
-										throw Exceptions.duck(e);
-									}
-								}
-							}
-						});
+						node.accept(TYPE_VISITOR);
+						continue;
+					}
+					case IProblem.ParameterMismatch : {
+						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						MethodInvocation invocation = findFirstParentOfType(node, MethodInvocation.class);
+						List<Expression> args = invocation.arguments();
+						args.forEach(arg -> visitBindingHierarchy(arg.resolveTypeBinding()));
 						continue;
 					}
 					case IProblem.IsClassPathCorrect :
