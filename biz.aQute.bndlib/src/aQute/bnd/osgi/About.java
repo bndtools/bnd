@@ -51,7 +51,7 @@ public class About {
 	public static final Version					_4_2		= new Version(4, 2, 0);
 	public static final Version					_4_3		= new Version(4, 3, 0);
 	public static final Version					_5_0		= new Version(5, 0, 0);
-	public static final Version					_5_1		= new Version(5, 1, 1);
+	public static final Version					_5_1		= new Version(5, 1, 2);
 	public static final Version					CURRENT		= _5_1;
 
 	public static final String[]				CHANGES_5_1	= {};

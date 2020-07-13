@@ -12,7 +12,7 @@
 	<version>${revision}</version>
 
 	<properties>
-		<revision>5.1.1</revision>
+		<revision>5.1.2-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.target.version>3.1.1</maven.target.version>
 		<aether.version>0.9.0.M2</aether.version>
