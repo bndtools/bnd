@@ -24,6 +24,7 @@ import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.ui.text.java.IInvocationContext;
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
 import org.eclipse.jdt.ui.text.java.IProblemLocation;
@@ -52,6 +53,9 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 				return true;
 			case IProblem.ImportNotFound :
 				// System.out.println("ImportNotFound");
+				return true;
+			case IProblem.TypeMismatch :
+				// System.out.println("TypeMismatch");
 				return true;
 			case IProblem.UndefinedType :
 				// System.out.println("UndefinedType");
@@ -162,6 +166,18 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 							}
 							current = current.getParent();
 						}
+					}
+					continue;
+				}
+				if (location.getProblemId() == IProblem.TypeMismatch) {
+					ASTNode node = context.getCoveringNode();
+					while (node != null) {
+						if (node instanceof Type) {
+							ITypeBinding binding = ((Type) node).resolveBinding();
+							visitBindingHierarchy(binding);
+							break;
+						}
+						node = node.getParent();
 					}
 					continue;
 				}

@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.jdt.core.compiler.IProblem.HierarchyHasProblems;
 import static org.eclipse.jdt.core.compiler.IProblem.ImportNotFound;
 import static org.eclipse.jdt.core.compiler.IProblem.IsClassPathCorrect;
+import static org.eclipse.jdt.core.compiler.IProblem.TypeMismatch;
 import static org.eclipse.jdt.core.compiler.IProblem.UndefinedType;
 
 import java.io.IOException;
@@ -405,7 +406,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	static final Set<Integer> SUPPORTED = Stream
-		.of(ImportNotFound, UndefinedType, IsClassPathCorrect, HierarchyHasProblems)
+		.of(ImportNotFound, UndefinedType, IsClassPathCorrect, HierarchyHasProblems, TypeMismatch)
 		.collect(Collectors.toSet());
 
 	// This is just to give nice error feedback
@@ -788,6 +789,8 @@ public class BuildpathQuickFixProcessorTest {
 
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
+		// This scenario causes a "TypeMismatch" because it doesn't know the
+		// superinterface of InterfaceExtendingInterfaceFromAnotherBundle
 		String header = "package test; "
 			+ "import simple.annotation.MyTag; import simple.pkg.InterfaceExtendingInterfaceFromAnotherBundle;"
 			+ "@MyTag(";
