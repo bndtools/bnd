@@ -70,7 +70,6 @@
     tester.trace=true,\
     osgi.instance.area=${.}/generated/workspace,\
 	bndtools.core.test.dir=${.}
-#	tester.names=org.bndtools.core.editors.quickfix.BuildpathQuickFixProcessorTest:withAnnotatedFQType_suggestsBundles(org.assertj.core.api.SoftAssertions)
 
 # It is possible that this set of -runbundles could be trimmed, but until the resolver issues
 # are fixed (see https://github.com/bndtools/bnd/issues/4172) it is difficult to produce a
