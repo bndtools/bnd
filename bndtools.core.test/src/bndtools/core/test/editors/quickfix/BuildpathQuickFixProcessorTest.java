@@ -749,6 +749,26 @@ public class BuildpathQuickFixProcessorTest {
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
 	}
 
+	@Test
+	void withInconsistentHierarchy_forClassUse_thatExtendsAnInterfaceFromAnotherBundle_suggestsBundles(
+		SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; class ";
+		String source = header + DEFAULT_CLASS_NAME + "{\n"
+			+ "  simple.pkg.InterfaceExtendingInterfaceFromAnotherBundle var;\n" + "  void myMethod() {"
+			+ "    var.myInterfaceMethod();" + "  }" + "}";
+
+		// IsClassPathCorrect occurs at [112, 134]
+		assertThatProposals(proposalsFor(112, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+		// UnknownMethod is on the method at [116,132]
+		assertThatProposals(proposalsFor(117, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+	}
+
 	private void assertThatContainsPromiseSuggestions(IJavaCompletionProposal[] proposals) {
 		if (proposals == null) {
 			softly.fail("no proposals returned");

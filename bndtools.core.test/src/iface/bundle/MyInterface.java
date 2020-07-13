@@ -1,3 +1,6 @@
 package iface.bundle;
 
-public interface MyInterface {}
+public interface MyInterface {
+
+	void myInterfaceMethod();
+}
