@@ -784,14 +784,13 @@ public class BuildpathQuickFixProcessorTest {
 		String source = header + DEFAULT_CLASS_NAME + "{\n" + "  simple.pkg.ClassExtendingClassFromAnotherBundle var;\n"
 			+ "  void myMethod() {" + "    var.bMethod();" + "  }" + "}";
 
-		// IsClassPathCorrect occurs at [112, 134]
-		assertThatProposals(proposalsFor(112, 0, source)).haveExactly(1,
-			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
-		// UnknownMethod is on the method at [116,132], which means that it's
-		// redundant as the
-		// IsClassPathCorrect problem covers it completely.
-		assertThatProposals(proposalsFor(117, 0, source)).haveExactly(1,
-			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+		// IsClassPathCorrect occurs at [104, 116]
+		assertThatProposals(proposalsFor(104, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
+		// UnknownMethod is on the method at [108,114], which means that it's
+		// redundant as the IsClassPathCorrect problem covers it completely.
+		assertThatProposals(proposalsFor(108, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
 	}
 
 	// This is based on a real-world scenario I encountered while using CXF and
@@ -811,7 +810,8 @@ public class BuildpathQuickFixProcessorTest {
 
 		// ParameterMismatch [259, 261]
 		assertThatProposals(proposalsFor(259, 0, source)).haveExactly(1,
-			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0",
+				"iface.bundle.ClassExtendingMyParameterizedClass"));
 	}
 
 	@Test
