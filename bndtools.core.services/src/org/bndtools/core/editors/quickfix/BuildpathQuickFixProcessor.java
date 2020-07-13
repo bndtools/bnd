@@ -20,6 +20,7 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
@@ -146,50 +147,65 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 				if (!hasCorrections(context.getCompilationUnit(), location.getProblemId()))
 					continue;
 				this.location = location;
-				if (location.getProblemId() == IProblem.HierarchyHasProblems) {
-					// This error often doesn't directly give us information as
-					// to the cause of the problem. It is caused when you
-					// reference a type that is on the classpath, but which
-					// depends on another type which is not on the classpath.
-					// Traverse the type hierarchy looking for incomplete
-					// bindings which indicate types not on the class path, and
-					// add those as suggestions.
-					ASTNode node = location.getCoveredNode(context.getASTRoot());
-					if (node.getNodeType() == ASTNode.SIMPLE_NAME) {
-						ASTNode current = node;
-						while (current != null) {
-							if (current instanceof AbstractTypeDeclaration) {
-								AbstractTypeDeclaration dec = (AbstractTypeDeclaration) current;
-								ITypeBinding binding = dec.resolveBinding();
-								visitBindingHierarchy(binding);
-								break;
+				switch (location.getProblemId()) {
+					case IProblem.HierarchyHasProblems : {
+						// This error often doesn't directly give us information
+						// as
+						// to the cause of the problem. It is caused when you
+						// reference a type that is on the classpath, but which
+						// depends on another type which is not on the
+						// classpath.
+						// Traverse the type hierarchy looking for incomplete
+						// bindings which indicate types not on the class path,
+						// and
+						// add those as suggestions.
+						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						System.err.println("HierarchyHasProblems: " + node);
+						if (node.getNodeType() == ASTNode.SIMPLE_NAME) {
+							ASTNode current = node;
+							while (current != null) {
+								if (current instanceof AbstractTypeDeclaration) {
+									AbstractTypeDeclaration dec = (AbstractTypeDeclaration) current;
+									ITypeBinding binding = dec.resolveBinding();
+									visitBindingHierarchy(binding);
+									break;
+								}
+								current = current.getParent();
 							}
-							current = current.getParent();
 						}
+						continue;
 					}
-					continue;
-				}
-				if (location.getProblemId() == IProblem.TypeMismatch) {
-					ASTNode node = context.getCoveringNode();
-					while (node != null) {
-						if (node instanceof Type) {
-							ITypeBinding binding = ((Type) node).resolveBinding();
-							visitBindingHierarchy(binding);
-							break;
-						}
-						node = node.getParent();
+					case IProblem.TypeMismatch : {
+						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						node.accept(new ASTVisitor() {
+							@Override
+							public void preVisit(ASTNode node) {
+								if (node instanceof Type) {
+									ITypeBinding binding = ((Type) node).resolveBinding();
+									try {
+										visitBindingHierarchy(binding);
+									} catch (Exception e) {
+										throw Exceptions.duck(e);
+									}
+								}
+							}
+						});
+						continue;
 					}
-					continue;
+					case IProblem.IsClassPathCorrect :
+					case IProblem.UndefinedType :
+					case IProblem.ImportNotFound : {
+						String partialClassName = getPartialClassName(location.getCoveringNode(context.getASTRoot()));
+						if (partialClassName == null && location.getProblemArguments().length > 0)
+							partialClassName = location.getProblemArguments()[0];
+
+						if (partialClassName == null)
+							continue;
+
+						addProposals(partialClassName);
+						continue;
+					}
 				}
-
-				String partialClassName = getPartialClassName(location.getCoveringNode(context.getASTRoot()));
-				if (partialClassName == null && location.getProblemArguments().length > 0)
-					partialClassName = location.getProblemArguments()[0];
-
-				if (partialClassName == null)
-					continue;
-
-				addProposals(partialClassName);
 			}
 			return proposals.isEmpty() ? null : proposals.toArray(new IJavaCompletionProposal[0]);
 		} catch (Exception e) {
@@ -213,7 +229,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 				for (BundleId id : e.getValue()) {
 
 					if (test && !testpath.contains(id) && !buildpath.contains(id))
-							proposals.add(propose(e.getKey(), id, context, location, project, "-testpath", doImport));
+						proposals.add(propose(e.getKey(), id, context, location, project, "-testpath", doImport));
 
 					if (!buildpath.contains(id))
 						proposals.add(propose(e.getKey(), id, context, location, project, "-buildpath", doImport));

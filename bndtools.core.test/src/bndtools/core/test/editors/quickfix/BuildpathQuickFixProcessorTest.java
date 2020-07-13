@@ -823,10 +823,12 @@ public class BuildpathQuickFixProcessorTest {
 		}
 	}
 
+	final static IJavaCompletionProposal[] EMPTY_LIST = new IJavaCompletionProposal[0];
+
 	private ProxyableObjectArrayAssert<IJavaCompletionProposal> assertThatProposals(
 		IJavaCompletionProposal[] proposals) {
 		if (proposals == null) {
-			throw new AssertionError("no proposals returned");
+			return softly.assertThat(EMPTY_LIST);
 		}
 		return softly.assertThat(proposals)
 			.withRepresentation(PROPOSAL);
