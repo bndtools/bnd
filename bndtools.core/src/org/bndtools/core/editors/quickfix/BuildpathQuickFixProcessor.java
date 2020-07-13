@@ -20,6 +20,8 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.ui.text.java.IInvocationContext;
@@ -41,6 +43,9 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	@Override
 	public boolean hasCorrections(ICompilationUnit unit, int problemId) {
 		switch (problemId) {
+			case IProblem.HierarchyHasProblems :
+				// System.out.println("HierarchyHasProblems");
+				return true;
 			case IProblem.IsClassPathCorrect :
 				// System.out.println("IsClassPathCorrect");
 				return true;
@@ -55,28 +60,110 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 		}
 	}
 
+	// void dumpBindingHierarchy(ITypeBinding binding) throws Exception {
+	// dumpBindingHierarchy("", binding);
+	// }
+	//
+	// void dumpBindingHierarchy(String indent, ITypeBinding binding) throws
+	// Exception {
+	// if (binding == null) {
+	// System.err.println("type: <null>");
+	// return;
+	// }
+	// System.err.println(indent + "type: " + binding.getQualifiedName());
+	// System.err.println(indent + "complete?: " + binding.isRecovered());
+	// if (binding.isRecovered()) {
+	// addProposals(binding.getQualifiedName());
+	// }
+	// System.err.println(indent + "javaElement: " + binding.getJavaElement());
+	// System.err.println(indent + "superclass: ");
+	// dumpBindingHierarchy(indent + " ", binding.getSuperclass());
+	// System.err.println(indent + "implemented interfaces: ");
+	// for (ITypeBinding iface : binding.getInterfaces()) {
+	// dumpBindingHierarchy(indent + " ", iface);
+	// }
+	// }
+
+	/**
+	 * Traverses the hierarchy of the given type binding looking for incomplete
+	 * types that might be the cause of a "hierarchy is inconsistent" error.
+	 *
+	 * @param binding the type binding corresponding to the type with the
+	 *            inconsistent hierarchy.
+	 */
+	void visitBindingHierarchy(ITypeBinding binding) throws Exception {
+		if (binding == null || binding.getQualifiedName()
+			.startsWith("java.")) {
+			return;
+		}
+		// A "recovered" type binding indicates the type has not been
+		// fully resolved - usually because it's not on the classpath.
+		if (binding.isRecovered()) {
+			addProposals(binding.getQualifiedName());
+		}
+		visitBindingHierarchy(binding.getSuperclass());
+		for (ITypeBinding iface : binding.getInterfaces()) {
+			visitBindingHierarchy(iface);
+		}
+	}
+
+	Project							project;
+	IInvocationContext				context;
+	private boolean					test;
+	private Workspace				workspace;
+	List<IJavaCompletionProposal>	proposals;
+	IProblemLocation				location;
+
+	// This implementation is not thread safe. I'm fairly sure that Eclipse will
+	// not call this from multiple threads at the same time so that should be
+	// ok.
 	@Override
 	public IJavaCompletionProposal[] getCorrections(IInvocationContext context, IProblemLocation[] locations)
 		throws CoreException {
 		try {
-			List<IJavaCompletionProposal> proposals = new ArrayList<>();
+			this.context = context;
+			proposals = new ArrayList<>();
 
 			ICompilationUnit compUnit = context.getCompilationUnit();
 			IJavaProject java = compUnit.getJavaProject();
 			if (java == null)
 				return null;
 
-			Project project = Central.getProject(java.getProject());
+			project = Central.getProject(java.getProject());
 			if (project == null)
 				return null;
 
-			boolean test = isInDir(project.getTestSrc(), compUnit.getResource());
-			Workspace workspace = project.getWorkspace();
+			test = isInDir(project.getTestSrc(), compUnit.getResource());
+			workspace = project.getWorkspace();
 
 			for (IProblemLocation location : locations) {
 
 				if (!hasCorrections(context.getCompilationUnit(), location.getProblemId()))
 					continue;
+				this.location = location;
+				if (location.getProblemId() == IProblem.HierarchyHasProblems) {
+					// This error often doesn't directly give us information as
+					// to the cause of the problem. It is caused when you
+					// reference a type that is on the classpath, but which
+					// depends on another type which is not on the classpath.
+					// Traverse the type hierarchy looking for incomplete
+					// bindings which indicate types not on the class path, and
+					// add those as suggestions.
+					ASTNode node = location.getCoveredNode(context.getASTRoot());
+					if (node.getNodeType() == ASTNode.SIMPLE_NAME) {
+						ASTNode current = node;
+						while (current != null) {
+							if (current instanceof AbstractTypeDeclaration) {
+								AbstractTypeDeclaration dec = (AbstractTypeDeclaration) current;
+								ITypeBinding binding = dec.resolveBinding();
+								visitBindingHierarchy(binding);
+								break;
+							}
+							current = current.getParent();
+						}
+					}
+					continue;
+				}
 
 				String partialClassName = getPartialClassName(location.getCoveringNode(context.getASTRoot()));
 				if (partialClassName == null && location.getProblemArguments().length > 0)
@@ -85,35 +172,37 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 				if (partialClassName == null)
 					continue;
 
-				boolean doImport = Descriptors.determine(partialClassName)
-					.map(sa -> sa[0] == null)
-					.orElse(false);
-
-				Map<String, List<BundleId>> result = workspace.search(partialClassName)
-					.orElseThrow(s -> new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, s)));
-
-				Set<BundleId> buildpath = getBundleIds(project.getBuildpath());
-				Set<BundleId> testpath = test ? getBundleIds(project.getTestpath()) : Collections.emptySet();
-
-				result.entrySet()
-					.forEach(e -> {
-						for (BundleId id : e.getValue()) {
-
-							if (test && !testpath.contains(id) && !buildpath.contains(id))
-								proposals.add(
-									propose(e.getKey(), id, context, location, project, "-testpath", doImport));
-
-							if (!buildpath.contains(id))
-								proposals.add(propose(e.getKey(), id, context, location, project, "-buildpath",
-									doImport));
-
-						}
-					});
+				addProposals(partialClassName);
 			}
 			return proposals.isEmpty() ? null : proposals.toArray(new IJavaCompletionProposal[0]);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	private void addProposals(String partialClassName) throws CoreException, Exception {
+		boolean doImport = Descriptors.determine(partialClassName)
+			.map(sa -> sa[0] == null)
+			.orElse(false);
+
+		Map<String, List<BundleId>> result = workspace.search(partialClassName)
+			.orElseThrow(s -> new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, s)));
+
+		Set<BundleId> buildpath = getBundleIds(project.getBuildpath());
+		Set<BundleId> testpath = test ? getBundleIds(project.getTestpath()) : Collections.emptySet();
+
+		result.entrySet()
+			.forEach(e -> {
+				for (BundleId id : e.getValue()) {
+
+					if (test && !testpath.contains(id) && !buildpath.contains(id))
+							proposals.add(propose(e.getKey(), id, context, location, project, "-testpath", doImport));
+
+					if (!buildpath.contains(id))
+							proposals.add(propose(e.getKey(), id, context, location, project, "-buildpath", doImport));
+
+				}
+			});
 	}
 
 	private boolean isInDir(File dir, IResource resource) {

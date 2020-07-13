@@ -1,9 +1,9 @@
 package bndtools.core.test.utils;
 
 import static aQute.lib.exceptions.RunnableWithException.asRunnable;
-import static bndtools.core.test.utils.TaskUtils.countDownMonitor;
 import static bndtools.core.test.utils.TaskUtils.log;
 
+import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,14 +17,14 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.dialogs.IOverwriteQuery;
-import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
-import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
+
+import aQute.lib.exceptions.Exceptions;
+import bndtools.central.Central;
 
 /**
  * Jupiter extension for setting up a test workspace. This extension does the
@@ -40,6 +40,7 @@ import org.osgi.framework.FrameworkUtil;
  * @see WorkbenchTest
  */
 public class WorkbenchExtension implements BeforeAllCallback {
+
 	@Override
 	public void beforeAll(ExtensionContext context) throws Exception {
 		BundleContext bc = FrameworkUtil.getBundle(context.getRequiredTestClass())
@@ -86,6 +87,22 @@ public class WorkbenchExtension implements BeforeAllCallback {
 		Path ourRoot = srcRoot.resolve(resourcePath);
 		log("Using template workspace: " + ourRoot);
 
+		WorkspaceImporter importer = new WorkspaceImporter(ourRoot);
+
+		Stream.of(context.getRequiredTestClass()
+			.getDeclaredFields())
+			.filter(f -> Modifier.isStatic(f.getModifiers()))
+			.filter(f -> f.getType()
+				.equals(WorkspaceImporter.class))
+			.forEach(field -> {
+				try {
+					field.setAccessible(true);
+					field.set(null, importer);
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+			});
+
 		// Clean the workspace
 		IWorkspaceRoot wsr = ResourcesPlugin.getWorkspace()
 			.getRoot();
@@ -95,23 +112,13 @@ public class WorkbenchExtension implements BeforeAllCallback {
 			project.delete(true, true, null);
 		}
 
-		// Now copy the workspace from our resourcePath into the active
-		// workspace.
-		IOverwriteQuery overwriteQuery = file -> IOverwriteQuery.ALL;
-
 		List<Path> sourceProjects = Files.walk(ourRoot, 1)
 			.filter(x -> !x.equals(ourRoot))
 			.collect(Collectors.toList());
 		CountDownLatch importFlag = new CountDownLatch(sourceProjects.size());
 
 		for (Path sourceProject : sourceProjects) {
-			String projectName = sourceProject.getFileName()
-				.toString();
-			IProject project = wsr.getProject(projectName);
-			ImportOperation importOperation = new ImportOperation(project.getFullPath(), sourceProject.toFile(),
-				FileSystemStructureProvider.INSTANCE, overwriteQuery);
-			importOperation.setCreateContainerStructure(false);
-			importOperation.run(countDownMonitor(importFlag));
+			WorkspaceImporter.importProject(sourceProject, importFlag);
 		}
 
 		log("About to wait for imports to complete " + sourceProjects.size());
@@ -120,6 +127,15 @@ public class WorkbenchExtension implements BeforeAllCallback {
 			throw new IllegalStateException("Import of workspace " + resourcePath + " did not complete within 10s");
 		}
 		log("done waiting for import to complete");
+
+		// Wait for Central to be initialized before continuing; hopefully by
+		// now it's
+		// ready anyway
+		Central central = Central.getInstance();
+		while (central == null) {
+			Thread.sleep(100);
+			central = Central.getInstance();
+		}
 	}
 
 	private static String classToPath(Class<?> requiredTestClass) {

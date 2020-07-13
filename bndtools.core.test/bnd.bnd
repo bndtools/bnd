@@ -41,6 +41,7 @@
 	javax.inject,\
 	org.apiguardian:apiguardian-api,\
 	org.opentest4j,\
+	org.apache.servicemix.bundles.junit,\
 	org.junit.platform.commons,\
 	org.junit.platform.engine,\
 	org.junit.jupiter.api,\
