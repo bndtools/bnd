@@ -84,7 +84,7 @@ class WorkspaceClassIndex implements AutoCloseable {
 				return Result.err(error);
 			}
 		}
-		return Result.ok(result.transpose());
+		return Result.ok(result.transpose(true));
 	}
 
 	/*
