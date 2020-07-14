@@ -216,6 +216,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 					case IProblem.ParameterMismatch : {
 						ASTNode node = location.getCoveredNode(context.getASTRoot());
 						MethodInvocation invocation = findFirstParentOfType(node, MethodInvocation.class);
+						@SuppressWarnings("unchecked")
 						List<Expression> args = invocation.arguments();
 						args.forEach(arg -> visitBindingHierarchy(arg.resolveTypeBinding()));
 						continue;
