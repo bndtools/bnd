@@ -1,7 +1,9 @@
 package bndtools.launch;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -38,10 +40,12 @@ import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.environments.IExecutionEnvironment;
 import org.eclipse.jdt.launching.environments.IExecutionEnvironmentsManager;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.launch.FrameworkFactory;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.Run;
+import aQute.bnd.osgi.Jar;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.StatusCode;
@@ -59,8 +63,6 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 	protected abstract ProjectLauncher getProjectLauncher() throws CoreException;
 
 	protected abstract void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception;
-
-	protected abstract IStatus getLauncherStatus();
 
 	protected abstract RunMode getRunMode();
 
@@ -537,6 +539,42 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 			Level logLevel = Level.parse(logLevelStr);
 			launcher.setTrace(launcher.getTrace() || logLevel.intValue() <= Level.FINE.intValue());
 		}
+	}
+
+	protected IStatus getLauncherStatus() throws CoreException {
+		ProjectLauncher bndLauncher = getProjectLauncher();
+		List<String> launcherErrors = bndLauncher.getErrors();
+		List<String> projectErrors = bndLauncher.getProject()
+			.getErrors();
+		List<String> errors = new ArrayList<>(projectErrors.size() + launcherErrors.size());
+		errors.addAll(launcherErrors);
+		errors.addAll(projectErrors);
+
+		List<String> launcherWarnings = bndLauncher.getWarnings();
+		List<String> projectWarnings = bndLauncher.getProject()
+			.getWarnings();
+		List<String> warnings = new ArrayList<>(launcherWarnings.size() + projectWarnings.size());
+		warnings.addAll(launcherWarnings);
+		warnings.addAll(projectWarnings);
+
+		String frameworkPath = validateClasspath(bndLauncher.getRunpath());
+		if (frameworkPath == null)
+			errors.add("No OSGi framework has been added to the run path.");
+
+		return createStatus("Problem(s) preparing the runtime environment.", errors, warnings);
+	}
+
+	private static String validateClasspath(Collection<String> classpath) {
+		for (String fileName : classpath) {
+			try (Jar jar = new Jar(new File(fileName))) {
+				boolean frameworkExists = jar.exists("META-INF/services/" + FrameworkFactory.class.getName());
+				if (frameworkExists)
+					return fileName;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
 	}
 
 	protected static MultiStatus createStatus(String message, List<String> errors, List<String> warnings) {

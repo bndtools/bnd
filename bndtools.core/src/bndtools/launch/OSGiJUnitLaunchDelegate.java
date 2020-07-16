@@ -94,14 +94,6 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 		return RunMode.TEST;
 	}
 
-	@Override
-	protected IStatus getLauncherStatus() {
-		return createStatus("Problem(s) preparing the runtime environment.", bndTester.getProjectLauncher()
-			.getErrors(),
-			bndTester.getProjectLauncher()
-				.getWarnings());
-	}
-
 	// A couple of hacks to make sure the JUnit plugin is active and notices our
 	// launch.
 	@Override
