@@ -1195,9 +1195,7 @@ public class Macro {
 		if (nosystem)
 			throw new RuntimeException("Macros in this mode cannot excute system commands");
 
-		verifyCommand(args,
-			"${" + (allowFail ? "system-allow-fail" : "system") + ";<command>[;<in>]}, execute a system command", null,
-			2, 3);
+		verifyCommand(args, allowFail ? _system_allow_failHelp : _systemHelp, null, 2, 3);
 		String command = args[1];
 		String input = null;
 
@@ -1208,10 +1206,12 @@ public class Macro {
 		return domain.system(allowFail, command, input);
 	}
 
+	static final String _systemHelp = "${system;<command>[;<in>]}, execute a system command";
 	public String _system(String[] args) throws Exception {
 		return system_internal(false, args);
 	}
 
+	static final String _system_allow_failHelp = "${system-allow-fail;<command>[;<in>]}, execute a system command allowing command failure";
 	public String _system_allow_fail(String[] args) throws Exception {
 		String result = "";
 		try {
@@ -2047,10 +2047,12 @@ public class Macro {
 
 	public String _map(String[] args) throws Exception {
 		verifyCommand(args, _mapHelp, null, 2, Integer.MAX_VALUE);
-		String macro = args[1];
+		String delimiter = SEMICOLON;
+		String prefix = "${" + args[1] + delimiter;
+		String suffix = "}";
 		String result = Arrays.stream(args, 2, args.length)
 			.flatMap(Strings::splitQuotedAsStream)
-			.map(s -> process("${" + macro + SEMICOLON + s + "}"))
+			.map(s -> process(prefix + s + suffix))
 			.collect(Strings.joining());
 		return result;
 	}
@@ -2063,26 +2065,30 @@ public class Macro {
 
 	public String _foreach(String[] args) throws Exception {
 		verifyCommand(args, _foreachHelp, null, 2, Integer.MAX_VALUE);
-		String macro = args[1];
+		String delimiter = SEMICOLON;
+		String prefix = "${" + args[1] + delimiter;
+		String suffix = "}";
 		List<String> list = toList(args, 2, args.length);
 		String result = IntStream.range(0, list.size())
-			.mapToObj(n -> process("${" + macro + SEMICOLON + list.get(n) + SEMICOLON + n + "}"))
+			.mapToObj(n -> process(prefix + list.get(n) + delimiter + n + suffix))
 			.collect(Strings.joining());
 		return result;
 	}
 
 	/**
-	 * Take a list and convert this to the argumets
+	 * Take a list and convert this to the arguments
 	 */
 
 	static final String _applyHelp = "${apply;<macro>[;<list>...]}";
 
 	public String _apply(String[] args) throws Exception {
 		verifyCommand(args, _applyHelp, null, 2, Integer.MAX_VALUE);
-		String macro = args[1];
+		String delimiter = SEMICOLON;
+		String prefix = "${" + args[1] + delimiter;
+		String suffix = "}";
 		String result = Arrays.stream(args, 2, args.length)
 			.flatMap(Strings::splitQuotedAsStream)
-			.collect(Collectors.joining(SEMICOLON, "${" + macro + SEMICOLON, "}"));
+			.collect(Collectors.joining(delimiter, prefix, suffix));
 		return process(result);
 	}
 
