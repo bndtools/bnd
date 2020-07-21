@@ -12,7 +12,7 @@ plugins {
 
 ext.groupId = 'biz.aQute.bnd'
 ext.artifactId = 'biz.aQute.bnd.gradle'
-ext.artifactVersion = '5.1.1'
+ext.artifactVersion = '5.1.2'
 
 repositories {
   mavenCentral()
