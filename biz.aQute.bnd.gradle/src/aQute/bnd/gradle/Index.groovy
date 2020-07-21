@@ -42,10 +42,11 @@ package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.builtBy
 import static aQute.bnd.gradle.BndUtils.logReport
+import static aQute.bnd.gradle.BndUtils.unwrap
 
 import aQute.bnd.osgi.repository.SimpleIndexer
-import aQute.lib.io.IO
 import aQute.bnd.osgi.Processor
+import aQute.lib.io.IO
 
 import java.util.zip.GZIPOutputStream
 
@@ -95,8 +96,8 @@ public class Index extends DefaultTask {
     repositoryName = name
     bundleCollection = project.files()
     destinationDirectory = project.objects.directoryProperty().convention(project.layout.buildDirectory)
-    baseProperty = project.objects.property(URI.class).convention(destinationDirectory.map({ path ->
-      project.uri(path)
+    baseProperty = project.objects.property(URI.class).convention(destinationDirectory.map({ directory ->
+      return unwrap(directory).toURI()
     }))
     indexUncompressed = destinationDirectory.file(project.provider({ ->
       return indexName
@@ -157,7 +158,7 @@ public class Index extends DefaultTask {
   @Deprecated
   @ReplacedBy('destinationDirectory')
   public File getDestinationDir() {
-    return project.file(getDestinationDirectory())
+    return unwrap(getDestinationDirectory())
   }
 
   @Deprecated
@@ -184,9 +185,7 @@ public class Index extends DefaultTask {
    * Project.uri().
    */
   public void setBase(Object path) {
-    baseProperty.set(project.provider({ ->
-      return project.uri(path)
-    }))
+    baseProperty.set(project.uri(path))
   }
 
   /**
@@ -239,12 +238,12 @@ public class Index extends DefaultTask {
    */
   @TaskAction
   void indexer() {
-    File indexUncompressedFile = project.file(getIndexUncompressed())
+    File indexUncompressedFile = unwrap(getIndexUncompressed())
     new Processor().withCloseable { Processor processor ->
       new SimpleIndexer()
         .reporter(processor)
-        .files(bundles.sort())
-        .base(getBase().get())
+        .files(getBundles().sort())
+        .base(unwrap(getBase()))
         .name(getRepositoryName())
         .index(indexUncompressedFile)
 
@@ -255,7 +254,7 @@ public class Index extends DefaultTask {
 
       logger.info 'Generated index {}.', indexUncompressedFile
       if (gzip) {
-        File indexCompressedFile = project.file(getIndexCompressed())
+        File indexCompressedFile = unwrap(getIndexCompressed())
         indexCompressedFile.withOutputStream { out ->
           IO.copy(indexUncompressedFile, new GZIPOutputStream(out)).close()
         }
@@ -265,7 +264,7 @@ public class Index extends DefaultTask {
   }
 
   private void failTask(String msg, File outputFile) {
-    project.delete(outputFile)
+    IO.delete(outputFile)
     throw new GradleException(msg)
   }
 }

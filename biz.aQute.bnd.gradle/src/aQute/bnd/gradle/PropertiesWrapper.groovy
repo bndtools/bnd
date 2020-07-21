@@ -25,7 +25,7 @@ class PropertiesWrapper extends Properties {
       Object value = props.drop(1).inject(get(props.first())) { obj, prop ->
         obj?."${prop}"
       }
-      value = unwrap(value)
+      value = unwrap(value, true)
       return (value != null) ? value.toString() : defaultValue(key)
     } catch (MissingPropertyException mpe) {
       return defaultValue(key)

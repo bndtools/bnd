@@ -48,6 +48,7 @@ package aQute.bnd.gradle
 import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
 import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES
 import static aQute.bnd.gradle.BndUtils.logReport
+import static aQute.bnd.gradle.BndUtils.unwrap
 
 import aQute.lib.io.IO
 
@@ -122,7 +123,7 @@ public class Export extends Bndrun {
   @Deprecated
   @ReplacedBy('destinationDirectory')
   public File getDestinationDir() {
-    return project.file(getDestinationDirectory())
+    return unwrap(getDestinationDirectory())
   }
 
   @Deprecated
@@ -164,8 +165,8 @@ public class Export extends Bndrun {
    */
   @Override
   protected void worker(def run) {
-    String exporterName = getExporter().get()
-    File destinationDirFile = project.file(getDestinationDirectory())
+    String exporterName = unwrap(getExporter())
+    File destinationDirFile = unwrap(getDestinationDirectory())
     logger.info 'Exporting {} to {} with exporter {}', run.getPropertiesFile(), destinationDirFile, exporterName
     try {
       def export = run.export(exporterName, [:])

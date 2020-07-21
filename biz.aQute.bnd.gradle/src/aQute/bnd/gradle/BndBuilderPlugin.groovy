@@ -85,8 +85,8 @@ public class BndBuilderPlugin implements Plugin<Project> {
         Task baselineTask = tasks.getByName('baseline')
         Task bundleTask = baselineTask.getBundleTask()
         if (bundleTask) {
-          String archiveBaseName = unwrap(bundleTask.archiveBaseName)
-          String archiveVersion = unwrap(bundleTask.archiveVersion)
+          String archiveBaseName = unwrap(bundleTask.getArchiveBaseName())
+          String archiveVersion = unwrap(bundleTask.getArchiveVersion(), true)
           logger.debug 'Searching for default baseline {}:{}:(0,{}[', group, archiveBaseName, archiveVersion
           Dependency baselineDep = dependencies.create('group': group, 'name': archiveBaseName) {
             version {

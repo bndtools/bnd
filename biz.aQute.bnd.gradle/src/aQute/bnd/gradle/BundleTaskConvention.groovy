@@ -39,11 +39,14 @@ import aQute.bnd.osgi.Constants
 import aQute.bnd.osgi.Jar
 import aQute.bnd.osgi.Processor
 import aQute.bnd.version.MavenVersion
+import aQute.lib.io.IO
 import aQute.lib.utf8properties.UTF8Properties
+
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.ListProperty
@@ -57,6 +60,8 @@ import org.gradle.api.tasks.SourceSet
 class BundleTaskConvention {
   private final Task task
   private final Project project
+  private final ProjectLayout layout
+  private final File buildFile
   private final RegularFileProperty bndfile
   private final ListProperty<CharSequence> instructions
   private final Provider<String> bndbnd
@@ -73,9 +78,11 @@ class BundleTaskConvention {
    */
   BundleTaskConvention(org.gradle.api.tasks.bundling.Jar task) {
     this.task = task
-    this.project = task.project
-    bndfile = project.objects.fileProperty()
-    instructions = project.objects.listProperty(CharSequence.class).empty()
+    this.project = task.getProject()
+    layout = project.getLayout()
+    buildFile = project.getBuildFile()
+    bndfile = project.getObjects().fileProperty()
+    instructions = project.getObjects().listProperty(CharSequence.class).empty()
     bndbnd = instructions.map({ list ->
       return list.join('\n')
     })
@@ -106,9 +113,7 @@ class BundleTaskConvention {
    * Project.file().
    */
   public void setBndfile(Object file) {
-    bndfile.set(project.layout.file(project.provider({ ->
-      return project.file(file)
-    })))
+    bndfile.set(project.file(file))
   }
 
   /**
@@ -203,6 +208,8 @@ class BundleTaskConvention {
 
   void buildBundle() {
     task.configure {
+      def projectDir = unwrap(layout.getProjectDirectory())
+      def buildDir = unwrap(layout.getBuildDirectory())
       // create Builder
       Properties gradleProperties = new PropertiesWrapper()
       gradleProperties.put('task', task)
@@ -217,23 +224,23 @@ class BundleTaskConvention {
               properties.setProperty(key, value.toString())
             }
             return properties
-          }.replaceHere(project.projectDir).store(writer, null)
+          }.replaceHere(projectDir).store(writer, null)
 
           // if the bnd file exists, add its contents to the tmp bnd file
-          File bndfile = getBndfile().getOrNull()?.getAsFile()
+          File bndfile = unwrap(getBndfile(), true)
           if (bndfile?.isFile()) {
             builder.loadProperties(bndfile).store(writer, null)
           } else {
-            String bnd = getBnd().get()
+            String bnd = unwrap(getBnd())
             if (!bnd.empty) {
               UTF8Properties props = new UTF8Properties()
-              props.load(bnd, project.buildFile, builder)
-              props.replaceHere(project.projectDir).store(writer, null)
+              props.load(bnd, buildFile, builder)
+              props.replaceHere(projectDir).store(writer, null)
             }
           }
         }
-        builder.setProperties(temporaryBndFile, project.projectDir) // this will cause project.dir property to be set
-        builder.setProperty('project.output', project.buildDir.canonicalPath)
+        builder.setProperties(temporaryBndFile, projectDir) // this will cause project.dir property to be set
+        builder.setProperty('project.output', buildDir.getCanonicalPath())
 
         // If no bundle to be built, we have nothing to do
         if (builder.is(Constants.NOBUNDLES)) {
@@ -245,26 +252,23 @@ class BundleTaskConvention {
           throw new GradleException('Sub-bundles are not supported by this task')
         }
 
-        File archiveFile = unwrap(task.archiveFile)
-        String archiveFileName = unwrap(task.archiveFileName)
-        String archiveBaseName = unwrap(task.archiveBaseName)
-        String archiveVersion = unwrap(task.archiveVersion)
+        File archiveFile = unwrap(task.getArchiveFile())
+        String archiveFileName = unwrap(task.getArchiveFileName())
+        String archiveBaseName = unwrap(task.getArchiveBaseName())
+        String archiveVersion = unwrap(task.getArchiveVersion(), true)
 
         // Include entire contents of Jar task generated jar (except the manifest)
-        project.copy {
-          from archiveFile
-          into temporaryDir
-        }
         File archiveCopyFile = new File(temporaryDir, archiveFileName)
+        IO.copy(archiveFile, archiveCopyFile)
         Jar bundleJar = new Jar(archiveFileName, archiveCopyFile)
         String reproducible = builder.getProperty(Constants.REPRODUCIBLE)
-        bundleJar.setReproducible((reproducible != null) ? Processor.isTrue(reproducible) : !task.preserveFileTimestamps)
-        bundleJar.updateModified(archiveCopyFile.lastModified(), 'time of Jar task generated jar')
+        bundleJar.setReproducible((reproducible != null) ? Processor.isTrue(reproducible) : !task.isPreserveFileTimestamps())
+        bundleJar.updateModified(archiveFile.lastModified(), 'time of Jar task generated jar')
         bundleJar.setManifest(new Manifest())
         builder.setJar(bundleJar)
 
         // set builder classpath
-        ConfigurableFileCollection buildpath = project.files(getClasspath().files.findAll { File file ->
+        ConfigurableFileCollection buildpath = layout.configurableFiles(getClasspath().files.findAll { File file ->
           if (!file.exists()) {
             return false
           }
@@ -280,13 +284,13 @@ class BundleTaskConvention {
           }
           return true
         })
-        builder.setProperty('project.buildpath', buildpath.asPath)
+        builder.setProperty('project.buildpath', buildpath.getAsPath())
         builder.setClasspath(buildpath.files as File[])
         logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
 
         // set builder sourcepath
-        ConfigurableFileCollection sourcepath = project.files(getSourceSet().allSource.srcDirs.findAll{it.exists()})
-        builder.setProperty('project.sourcepath', sourcepath.asPath)
+        ConfigurableFileCollection sourcepath = layout.configurableFiles(getSourceSet().allSource.srcDirs.findAll{it.exists()})
+        builder.setProperty('project.sourcepath', sourcepath.getAsPath())
         builder.setSourcepath(sourcepath.files as File[])
         logger.debug 'builder sourcepath: {}', builder.getSourcePath()
 
@@ -327,7 +331,7 @@ class BundleTaskConvention {
   }
 
   private void failTask(String msg, File archiveFile) {
-    project.delete(archiveFile)
+    IO.delete(archiveFile)
     throw new GradleException(msg)
   }
 

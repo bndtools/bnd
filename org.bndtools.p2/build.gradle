@@ -4,6 +4,13 @@
 
 import aQute.bnd.osgi.Jar
 import org.apache.tools.ant.filters.ReplaceTokens
+import javax.inject.Inject
+
+interface Injected {
+    @Inject ObjectFactory getObjects() 
+    @Inject ExecOperations getExec() 
+    @Inject FileSystemOperations getFs() 
+}
 
 /* Configure this project */
 String masterVersion = String.format('%s-%s-g%.7s',
@@ -20,9 +27,11 @@ def p2Plugins = tasks.register('p2Plugins', Sync.class) {
 def p2FeatureProperties = tasks.register('p2FeatureProperties', WriteProperties.class) {
   inputs.files p2Plugins
   outputFile = project.layout.buildDirectory.file('feature.properties')
+  def injected = project.objects.newInstance(Injected) 
+  def p2PluginsDir = p2Plugins.map { it.destinationDir }
   doFirst {
     property('base-version', bnd('base.version'))
-    fileTree(p2Plugins.get().destinationDir).each {
+    injected.objects.fileTree().from(p2PluginsDir).each {
       new Jar(it).withCloseable { jar ->
         property("${jar.getBsn()}-version", jar.getVersion())
       }
@@ -36,9 +45,10 @@ def p2FeatureMain = tasks.register('p2FeatureMain', Zip.class) {
   archiveFileName = 'bndtools.main.feature.jar'
   from             'features/bndtools.main'
   include          'feature.xml'
+  def propertiesFile = p2FeatureProperties.map { it.outputFile }
   doFirst {
     Properties properties = new Properties()
-    p2FeatureProperties.get().outputFile.withInputStream {
+    propertiesFile.get().withInputStream {
         properties.load(it)
         properties['master-version'] = masterVersion
     }
@@ -52,9 +62,10 @@ def p2FeatureM2e = tasks.register('p2FeatureM2e', Zip.class) {
   archiveFileName    = 'bndtools.m2e.feature.jar'
   from             'features/bndtools.m2e'
   include          'feature.xml'
+  def propertiesFile = p2FeatureProperties.map { it.outputFile }
   doFirst {
     Properties properties = new Properties()
-    p2FeatureProperties.get().outputFile.withInputStream {
+    propertiesFile.get().withInputStream {
         properties.load(it)
         properties['master-version'] = masterVersion
     }
@@ -68,9 +79,10 @@ def p2FeaturePde = tasks.register('p2FeaturePde', Zip.class) {
   archiveFileName    = 'bndtools.pde.feature.jar'
   from             'features/bndtools.pde'
   include          'feature.xml'
+  def propertiesFile = p2FeatureProperties.map { it.outputFile }
   doFirst {
     Properties properties = new Properties()
-    p2FeatureProperties.get().outputFile.withInputStream {
+    propertiesFile.get().withInputStream {
         properties.load(it)
         properties['master-version'] = masterVersion
     }
@@ -83,11 +95,14 @@ def p2 = tasks.register('p2') {
   group       'release'
   enabled JavaVersion.current().isJava8()
   inputs.files p2Plugins, p2FeatureMain, p2FeatureM2e, p2FeaturePde, 'p2.xml', 'features/category.xml'
-  ext.destinationDirectory = project.layout.buildDirectory.dir('p2')
+  def injected = project.objects.newInstance(Injected) 
+  def buildDirectoryProperty = project.layout.buildDirectory
+  ext.destinationDirectory = buildDirectoryProperty.dir('p2')
   outputs.dir destinationDirectory
+  def eclipseDir = file('eclipse-3.5.2')
+  def categoryURI = uri('features/category.xml')
   doLast {
-    def eclipseDir = file('eclipse-3.5.2')
-    javaexec {
+    injected.exec.javaexec {
       classpath "${eclipseDir}/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar"
       main = 'org.eclipse.equinox.launcher.Main'
       if (logger.isDebugEnabled()) {
@@ -96,7 +111,7 @@ def p2 = tasks.register('p2') {
       args '-application'
       args 'org.eclipse.ant.core.antRunner'
       args '-data'
-      args file(project.layout.buildDirectory)
+      args buildDirectoryProperty.get().asFile
       if (logger.isDebugEnabled()) {
         args '-debug'
       } else {
@@ -107,7 +122,7 @@ def p2 = tasks.register('p2') {
       args 'p2Bndtools'
     }.assertNormalExitValue()
 
-    javaexec {
+    injected.exec.javaexec {
       classpath "${eclipseDir}/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar"
       main = 'org.eclipse.equinox.launcher.Main'
       if (logger.isDebugEnabled()) {
@@ -116,20 +131,22 @@ def p2 = tasks.register('p2') {
       args '-application'
       args 'org.eclipse.equinox.p2.publisher.CategoryPublisher'
       args '-data'
-      args file(project.layout.buildDirectory)
+      args buildDirectoryProperty.get().asFile
       args '-metadataRepository'
-      args uri(destinationDirectory)
+      args destinationDirectory.get().asFile.toURI()
       args '-categoryDefinition'
-      args uri('features/category.xml')
+      args categoryURI
       args '-compress'
     }.assertNormalExitValue()
 
-    delete fileTree(eclipseDir).include('configuration/*.log'),
-      "${eclipseDir}/configuration/org.eclipse.core.runtime",
-      "${eclipseDir}/configuration/org.eclipse.equinox.app",
-      "${eclipseDir}/configuration/org.eclipse.osgi",
-      "${eclipseDir}/p2"
-  }
+    injected.fs.delete {
+      delete fileTree(eclipseDir).include('configuration/*.log'),
+        "${eclipseDir}/configuration/org.eclipse.core.runtime",
+        "${eclipseDir}/configuration/org.eclipse.equinox.app",
+        "${eclipseDir}/configuration/org.eclipse.osgi",
+        "${eclipseDir}/p2"
+      }
+    }
 }
 
 tasks.named('jar') {

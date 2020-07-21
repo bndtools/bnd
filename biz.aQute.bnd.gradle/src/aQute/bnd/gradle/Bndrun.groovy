@@ -32,6 +32,7 @@
 package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.logReport
+import static aQute.bnd.gradle.BndUtils.unwrap
 
 import java.util.concurrent.Executors
 import java.util.concurrent.ForkJoinPool
@@ -39,6 +40,7 @@ import java.util.concurrent.ScheduledExecutorService
 
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Processor
+import aQute.lib.io.IO
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -101,9 +103,7 @@ public class Bndrun extends DefaultTask {
    * Project.file().
    */
   public void setBndrun(Object file) {
-    bndrunProperty.set(project.layout.file(project.provider({ ->
-      return project.file(file)
-    })))
+    bndrunProperty.set(project.file(file))
   }
 
   /**
@@ -118,7 +118,7 @@ public class Bndrun extends DefaultTask {
   @Deprecated
   @ReplacedBy('workingDirectory')
   public File getWorkingDir() {
-    return project.file(getWorkingDirectory())
+    return unwrap(getWorkingDirectory())
   }
 
   @Deprecated
@@ -132,15 +132,15 @@ public class Bndrun extends DefaultTask {
   @TaskAction
   void bndrun() {
     def workspace = bndWorkspace
-    File bndrunFile = project.file(getBndrun())
-    File workingDirFile = project.file(getWorkingDirectory())
+    File bndrunFile = unwrap(getBndrun())
+    File workingDirFile = unwrap(getWorkingDirectory())
     if ((workspace != null) && project.plugins.hasPlugin(BndPlugin.PLUGINID) && (bndrunFile == project.bnd.project.getPropertiesFile())) {
       worker(project.bnd.project)
       return
     }
     createRun(workspace, bndrunFile).withCloseable { run ->
       def runWorkspace = run.getWorkspace()
-      project.mkdir(workingDirFile)
+      IO.mkdirs(workingDirFile)
       if (workspace == null) {
         Properties gradleProperties = new PropertiesWrapper(runWorkspace.getProperties())
         gradleProperties.put('task', this)
@@ -151,7 +151,7 @@ public class Bndrun extends DefaultTask {
       if (run.isStandalone()) {
         runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)
         File cnf = new File(workingDirFile, Workspace.CNFDIR)
-        project.mkdir(cnf)
+        IO.mkdirs(cnf)
         runWorkspace.setBuildDir(cnf)
         if (convention.findPlugin(FileSetRepositoryConvention)) {
           runWorkspace.addBasicPlugin(getFileSetRepository(name))
