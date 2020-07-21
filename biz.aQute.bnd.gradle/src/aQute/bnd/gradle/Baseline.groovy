@@ -51,6 +51,7 @@
 package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.builtBy
+import static aQute.bnd.gradle.BndUtils.unwrap
 
 import aQute.bnd.differ.DiffPluginImpl
 import aQute.bnd.header.Parameters
@@ -58,6 +59,7 @@ import aQute.bnd.osgi.Instructions
 import aQute.bnd.osgi.Jar
 import aQute.bnd.osgi.Processor
 import aQute.bnd.version.Version
+import aQute.lib.io.IO
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -65,10 +67,13 @@ import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.model.ReplacedBy
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
@@ -77,6 +82,9 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 
 public class Baseline extends DefaultTask {
+  private final ProjectLayout layout
+  private final ProviderFactory providers
+  private final ObjectFactory objects
   private ConfigurableFileCollection bundleCollection
   private ConfigurableFileCollection baselineCollection
   private final ListProperty<String> diffignore
@@ -102,15 +110,18 @@ public class Baseline extends DefaultTask {
    */
   public Baseline() {
     super()
+    layout = project.layout
+    objects = project.objects
+    providers = project.providers
     baselineReportDirName = 'baseline'
-    baselineReportDirectory = project.objects.directoryProperty().convention(project.reporting.baseDirectory.dir(baselineReportDirName))
-    reportFile = baselineReportDirectory.file(project.provider({ ->
-      String bundlename = project.file(getBundle()).name
+    baselineReportDirectory = objects.directoryProperty().convention(project.reporting.baseDirectory.dir(baselineReportDirName))
+    reportFile = baselineReportDirectory.file(providers.provider({ ->
+      String bundlename = unwrap(getBundle()).getName()
       bundlename = bundlename[0..Math.max(-1, bundlename.lastIndexOf('.') - 1)]
       return "${name}/${bundlename}.txt"
     }))
-    diffignore = project.objects.listProperty(String.class).empty()
-    diffpackages = project.objects.listProperty(String.class).empty()
+    diffignore = objects.listProperty(String.class).empty()
+    diffpackages = objects.listProperty(String.class).empty()
     bundleCollection = project.files()
     baselineCollection = project.files()
     dependsOn {
@@ -127,8 +138,8 @@ public class Baseline extends DefaultTask {
    */
   @InputFile
   public Provider<RegularFile> getBundle() {
-    return project.layout.file(project.provider({ ->
-      return bundleCollection.singleFile
+    return layout.file(providers.provider({ ->
+      return bundleCollection.getSingleFile()
     }))
   }
 
@@ -140,7 +151,7 @@ public class Baseline extends DefaultTask {
    * Project.files().
    */
   public void setBundle(Object file) {
-    bundleCollection = project.files(file)
+    bundleCollection = layout.configurableFiles(file)
     builtBy(bundleCollection, file)
   }
 
@@ -153,8 +164,8 @@ public class Baseline extends DefaultTask {
    */
   @InputFile
   public Provider<RegularFile> getBaseline() {
-    return project.layout.file(project.provider({ ->
-      return baselineCollection.singleFile
+    return layout.file(providers.provider({ ->
+      return baselineCollection.getSingleFile()
     }))
   }
 
@@ -165,7 +176,7 @@ public class Baseline extends DefaultTask {
    * Project.files().
    */
   public void setBaseline(Object file) {
-    baselineCollection = project.files(file)
+    baselineCollection = layout.configurableFiles(file)
     builtBy(baselineCollection, file)
   }
 
@@ -266,7 +277,7 @@ public class Baseline extends DefaultTask {
   @Deprecated
   @ReplacedBy('reportFile')
   public File getDestination() {
-    return project.file(getReportFile())
+    return unwrap(getReportFile())
   }
 
   /**
@@ -275,10 +286,10 @@ public class Baseline extends DefaultTask {
    */
   @TaskAction
   void baselineBundle() {
-    File bundle = project.file(getBundle())
-    File baseline = project.file(getBaseline())
-    File report = project.file(getReportFile())
-    project.mkdir(report.parent)
+    File bundle = unwrap(getBundle())
+    File baseline = unwrap(getBaseline())
+    File report = unwrap(getReportFile())
+    IO.mkdirs(report.getParentFile())
     boolean failure = false
     new Processor().withCloseable { Processor processor ->
       Jar newer = new Jar(bundle)
@@ -288,9 +299,9 @@ public class Baseline extends DefaultTask {
       logger.debug 'Baseline bundle {} against baseline {}', bundle, baseline
 
       def differ = new DiffPluginImpl()
-      differ.setIgnore(new Parameters(getDiffignore().get().join(','), processor))
+      differ.setIgnore(new Parameters(unwrap(getDiffignore()).join(','), processor))
       def baseliner = new aQute.bnd.differ.Baseline(processor, differ)
-      def infos = baseliner.baseline(newer, older, new Instructions(new Parameters(getDiffpackages().get().join(','), processor))).sort {it.packageName}
+      def infos = baseliner.baseline(newer, older, new Instructions(new Parameters(unwrap(getDiffpackages()).join(','), processor))).sort {it.packageName}
       def bundleInfo = baseliner.getBundleInfo()
       new Formatter(report, 'UTF-8', Locale.US).withCloseable { Formatter f ->
         f.format '===============================================================%n'

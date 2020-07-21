@@ -54,8 +54,13 @@ class BndUtils {
 
   @CompileStatic
   public static Object unwrap(Object value) {
+    return unwrap(value, false)
+  }
+
+  @CompileStatic
+  public static Object unwrap(Object value, boolean optional) {
     if (value instanceof Provider) {
-      value = value.getOrNull()
+      value = optional ? value.getOrNull() : value.get()
     } 
     if (value instanceof FileSystemLocation) {
       value = value.getAsFile()

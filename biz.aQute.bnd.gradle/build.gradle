@@ -5,47 +5,40 @@ repositories {
 }
 
 dependencies {
-    compileOnly localGroovy()
-    compileOnly gradleApi()
-    testImplementation gradleTestKit()
-    testImplementation('org.spockframework:spock-core:1.1-groovy-2.4')  {
-        exclude module: 'groovy-all'
-    }
+  compileOnly localGroovy()
+  compileOnly gradleApi()
+  testImplementation gradleTestKit()
+  testImplementation('org.spockframework:spock-core:1.1-groovy-2.4')  {
+    exclude module: 'groovy-all'
+  }
 }
 
 if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
-    tasks.withType(GroovyCompile.class).configureEach {
-        groovyOptions.fork 'jvmArgs': jpmsOptions
-    }
+  tasks.withType(GroovyCompile.class).configureEach {
+    groovyOptions.fork 'jvmArgs': jpmsOptions
+  }
+}
+
+def pluginUnderTestMetadata = tasks.register('pluginUnderTestMetadata', WriteProperties.class) {
+ def pluginClasspath = project.providers.provider({ ->
+    return project.files(configurations.runtimeClasspath.allArtifacts.files,
+     configurations.runtimeClasspath.resolvedConfiguration.files)
+  })
+  inputs.files(pluginClasspath).withPropertyName('pluginClasspath')
+  outputFile = tasks.named('compileTestJava').flatMap { it.destinationDirectory.file('plugin-under-test-metadata.properties') }
+  doFirst {
+    property('implementation-classpath',  pluginClasspath.get().asPath)
+  }
+}
+
+def testresources = tasks.register('testresources', Sync.class) {
+  from project.file('testresources')
+  into project.layout.buildDirectory.dir('testresources')
 }
 
 tasks.named('test') {
-    inputs.files tasks.named('jar')
-    systemProperty 'bnd_version', bnd('bnd_version')
-    def source = project.file('testresources')
-    def target = project.layout.buildDirectory.dir('testresources')
-    doFirst { // copy test resources into build dir
-        project.delete(target)
-        copy {
-            from source
-            into target
-        }
-    }
-}
-
-tasks.named('testClasses') {
-    def pluginClasspath = { project.files(configurations.runtimeClasspath.allArtifacts.files,
-       configurations.runtimeClasspath.resolvedConfiguration.files) }
-    inputs.files(pluginClasspath).withPropertyName('pluginClasspath')
-    def pluginClasspathFile = { new File(tasks.getByName('compileTestJava').destinationDir, 'plugin-under-test-metadata.properties') }
-    outputs.file(pluginClasspathFile).withPropertyName('pluginClasspathFile')
-    doLast {
-        Properties properties = new Properties()
-        properties.setProperty('implementation-classpath', pluginClasspath().asPath)
-        pluginClasspathFile().withOutputStream {
-          properties.store(it, 'plugin-under-test-metadata')
-        }
-    }
+  inputs.files tasks.named('jar'), pluginUnderTestMetadata, testresources
+  systemProperty 'bnd_version', bnd('bnd_version')
 }
 
 tasks.named('release') {
