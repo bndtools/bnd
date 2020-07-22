@@ -501,7 +501,6 @@ public class BuildpathQuickFixProcessorTest {
 			proposalsForUndefType("org.osgi.framework.hooks.service.ListenerHook.@NotNull ListenerInfo"));
 	}
 
-	@Disabled("Not yet implemented")
 	@Test
 	void withAnnotatedFQType_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
@@ -521,7 +520,6 @@ public class BuildpathQuickFixProcessorTest {
 		assertThatContainsMyClassSuggestions(proposalsForUndefType("simple.MyClass"));
 	}
 
-	@Disabled("Not yet implemented")
 	@Test
 	void withAnnotatedFQType_andOneLevelPackage_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
@@ -529,8 +527,6 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	// Using a parameterized type as a qualifier forces Eclipse AST to generate
-	// a QualifiedType
 	void withGenericType_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
 		assertThatContainsPromiseSuggestions(proposalsForUndefType("org.osgi.util.promise.Promise<String>"));
@@ -550,7 +546,6 @@ public class BuildpathQuickFixProcessorTest {
 		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType("org.osgi.framework.BundleActivator[]"));
 	}
 
-	@Disabled("Not yet implemented")
 	@Test
 	void withAnnotatedFQArrayType_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
@@ -558,7 +553,6 @@ public class BuildpathQuickFixProcessorTest {
 			proposalsForUndefType("org.osgi.framework.@NotNull BundleActivator[]"));
 	}
 
-	@Disabled("Not yet implemented")
 	@Test
 	void withAnnotatedFQDoubleArrayType_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
@@ -585,7 +579,6 @@ public class BuildpathQuickFixProcessorTest {
 			proposalsForUndefType(6, "List<org.osgi.framework.BundleActivator>"));
 	}
 
-	@Disabled("Not yet implemented")
 	@Test
 	void withFQAnnotatedParameter_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
@@ -600,7 +593,6 @@ public class BuildpathQuickFixProcessorTest {
 			proposalsForUndefType(16, "List<? extends org.osgi.framework.BundleActivator>"));
 	}
 
-	@Disabled("Not yet implemented")
 	@Test
 	void withFQAnnotatedWildcardBound_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
@@ -608,13 +600,13 @@ public class BuildpathQuickFixProcessorTest {
 			proposalsForUndefType(16, "List<? extends org.osgi.framework.@NotNull BundleActivator>"));
 	}
 
-	@Disabled("Not yet implemented")
 	@Test
 	void withUnqualifiedNameType_returnsNull(SoftAssertions softly) {
 		// If the type is a simple (non-qualified) name, it must refer to a type
-		// and not
-		// a package; therefore don't provide package import suggestions even if
-		// we have a package with the matching name.
+		// and not a package; therefore we shouldn't provide package import
+		// suggestions even if we have a package with the matching name. So
+		// these should return null even though we have a bundle with the
+		// package "simple".
 		softly.assertThat(proposalsForUndefType("Simple"))
 			.as("capitalized")
 			.isNull();
@@ -623,13 +615,8 @@ public class BuildpathQuickFixProcessorTest {
 			.isNull();
 	}
 
-	@Disabled("Not yet implemented")
 	@Test
 	void withParameterizedType_thatLooksLikePackage_returnsNull() {
-		// Current implementation returns results for bundles containing package
-		// org.osgi.framework, but it shouldn't because it should know that in
-		// this
-		// context "framework" must be a type and not a package.
 		assertThat(proposalsForUndefType("org.osgi.framework<String>.BundleActivator")).isNull();
 	}
 
@@ -643,6 +630,20 @@ public class BuildpathQuickFixProcessorTest {
 		this.softly = softly;
 		assertThatProposals(proposalsForImport("simple.*")).hasSize(1)
 			.haveExactly(1, suggestsBundle("bndtools.core.test.fodder.simple", "1.0.0", "simple"));
+	}
+
+	@Test
+	void withUnqualifiedNameImport_returnsNull(SoftAssertions softly) {
+		// If the import statement is a simple (non-qualified) name and it's not
+		// an on-demand import, it must refer to a type in the default package.
+		// Therefore we shouldn't generate matches for packages of the same
+		// name.
+		softly.assertThat(proposalsForImport("Simple"))
+			.as("capitalized")
+			.isNull();
+		softly.assertThat(proposalsForImport("simple"))
+			.as("uncapitalized")
+			.isNull();
 	}
 
 	@Test
@@ -808,9 +809,8 @@ public class BuildpathQuickFixProcessorTest {
 			+ "}";
 
 		// ParameterMismatch [259, 261]
-		assertThatProposals(proposalsFor(259, 0, source)).haveExactly(1,
-			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0",
-				"iface.bundle.ClassExtendingMyParameterizedClass"));
+		assertThatProposals(proposalsFor(259, 0, source)).haveExactly(1, suggestsBundle(
+			"bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.ClassExtendingMyParameterizedClass"));
 	}
 
 	@Test
