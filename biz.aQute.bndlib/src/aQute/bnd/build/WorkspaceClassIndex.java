@@ -38,7 +38,7 @@ class WorkspaceClassIndex implements AutoCloseable {
 	}
 
 	/**
-	 * Search the bundles that contain the given partialFqn. A partialFqn is
+	 * Search for the bundles that export the given partialFqn. A partialFqn is
 	 * either a package name, package prefix or a full FQN class name.
 	 * <p>
 	 * The result is a map that has the full class name (FQN) as the key and a
@@ -46,6 +46,7 @@ class WorkspaceClassIndex implements AutoCloseable {
 	 *
 	 * @param partialFqn package and/or class name
 	 * @return a multimap of fqn|pack->bundleid
+	 * @see #search(String, String)
 	 */
 	Result<Map<String, List<BundleId>>, String> search(String partialFqn) throws Exception {
 
@@ -56,6 +57,23 @@ class WorkspaceClassIndex implements AutoCloseable {
 		String[] parts = determine.unwrap();
 		String packageName = parts[0];
 		String className = parts[1];
+
+		return search(packageName, className);
+	}
+
+	/**
+	 * Search for the bundles that export the given class from the specified
+	 * package.
+	 * <p>
+	 * The result is a map that has the full class name (FQN) as the key and a
+	 * list of bundle ids as value.
+	 *
+	 * @param packageName the package in which to search for the matching class.
+	 * @param className the name of the class to search for.
+	 * @return a multimap of fqn|pack->bundleid
+	 * @see #search(String)
+	 */
+	public Result<Map<String, List<BundleId>>, String> search(String packageName, String className) throws Exception {
 
 		String filter = createFilter(packageName, className);
 
