@@ -1,11 +1,5 @@
 package bndtools.launch;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.bndtools.api.RunMode;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -31,23 +25,21 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.internal.Workbench;
-import org.osgi.framework.launch.FrameworkFactory;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectLauncher.NotificationType;
-import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.result.Result;
 import bndtools.Plugin;
 
 public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
-	private ProjectLauncher			bndLauncher	= null;
+	private ProjectLauncher	bndLauncher	= null;
 
-	private Display					display;
+	private Display			display;
 
-	private PopupDialog				dialog;
+	private PopupDialog		dialog;
 
-	private Text					textArea;
+	private Text			textArea;
 
 	@Override
 	protected void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception {
@@ -55,10 +47,9 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 			Result<ProjectLauncher, String> resolvingProjectLauncher = Result.of(model.getProjectLauncher(),
 				"Failed to get projectlauncher");
 
-			bndLauncher = resolvingProjectLauncher
-				.orElseThrow(
-					(e) -> new IllegalStateException(String.format("Failed to obtain launcher for project %s (%s): %s",
-						model.getName(), model.getPropertiesFile(), e)));
+			bndLauncher = resolvingProjectLauncher.orElseThrow(
+				(e) -> new IllegalStateException(String.format("Failed to obtain launcher for project %s (%s): %s",
+					model.getName(), model.getPropertiesFile(), e)));
 		}
 		configureLauncher(configuration);
 
@@ -78,42 +69,6 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 	@Override
 	protected RunMode getRunMode() {
 		return RunMode.LAUNCH;
-	}
-
-	@Override
-	protected IStatus getLauncherStatus() {
-		List<String> launcherErrors = bndLauncher.getErrors();
-		List<String> projectErrors = bndLauncher.getProject()
-			.getErrors();
-		List<String> errors = new ArrayList<>(projectErrors.size() + launcherErrors.size());
-		errors.addAll(launcherErrors);
-		errors.addAll(projectErrors);
-
-		List<String> launcherWarnings = bndLauncher.getWarnings();
-		List<String> projectWarnings = bndLauncher.getProject()
-			.getWarnings();
-		List<String> warnings = new ArrayList<>(launcherWarnings.size() + projectWarnings.size());
-		warnings.addAll(launcherWarnings);
-		warnings.addAll(projectWarnings);
-
-		String frameworkPath = validateClasspath(bndLauncher.getRunpath());
-		if (frameworkPath == null)
-			errors.add("No OSGi framework has been added to the run path.");
-
-		return createStatus("Problem(s) preparing the runtime environment.", errors, warnings);
-	}
-
-	private static String validateClasspath(Collection<String> classpath) {
-		for (String fileName : classpath) {
-			try (Jar jar = new Jar(new File(fileName))) {
-				boolean frameworkExists = jar.exists("META-INF/services/" + FrameworkFactory.class.getName());
-				if (frameworkExists)
-					return fileName;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return null;
 	}
 
 	@Override
