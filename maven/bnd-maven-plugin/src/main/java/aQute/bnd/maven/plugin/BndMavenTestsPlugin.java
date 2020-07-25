@@ -44,7 +44,8 @@ public class BndMavenTestsPlugin extends AbstractBndMavenPlugin {
 	/**
 	 * Possible values are {@link TestCases#junit3 junit3},
 	 * {@link TestCases#junit4 junit4}, {@link TestCases#junit5 junit5},
-	 * {@link TestCases#all all} and {@link TestCases#useTestCasesHeader}
+	 * {@link TestCases#all all}, {@link TestCases#testng testng}, and
+	 * {@link TestCases#useTestCasesHeader}
 	 */
 	@Parameter(defaultValue = "junit5")
 	private TestCases								testCases;
