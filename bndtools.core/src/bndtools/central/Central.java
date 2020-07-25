@@ -229,9 +229,9 @@ public class Central implements IStartupParticipant {
 			if (workspace.peek() == null) { // No workspace has been created
 				ws = workspace.get();
 				// Resolve with new workspace
-				resolve = anyWorkspaceDeferred::resolve;
+				resolve = tryResolve(anyWorkspaceDeferred);
 				if (!ws.isDefaultWorkspace()) {
-					resolve = resolve.andThen(cnfWorkspaceDeferred::resolve);
+					resolve = resolve.andThen(tryResolve(cnfWorkspaceDeferred));
 				}
 			} else {
 				ws = workspace.get();
@@ -246,7 +246,7 @@ public class Central implements IStartupParticipant {
 					ws.forceRefresh();
 					ws.refresh();
 					ws.refreshProjects();
-					resolve = cnfWorkspaceDeferred::resolve;
+					resolve = tryResolve(cnfWorkspaceDeferred);
 				} else if (workspaceDirectory == null && !ws.isDefaultWorkspace()) {
 					// There is no "cnf" project and the current workspace is
 					// not the default, so switch the workspace to the default
@@ -263,6 +263,16 @@ public class Central implements IStartupParticipant {
 			resolve.accept(ws);
 		}
 		return ws;
+	}
+
+	private static <T> java.util.function.Consumer<T> tryResolve(Deferred<T> deferred) {
+		return value -> {
+			try {
+				deferred.resolve(value);
+			} catch (IllegalStateException e) {
+				// ignore race for already resolved
+			}
+		};
 	}
 
 	private static Workspace createWorkspace() {
