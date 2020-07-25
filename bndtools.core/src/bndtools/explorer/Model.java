@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.widgets.Display;
 
+import aQute.bnd.build.Workspace;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
@@ -62,7 +63,7 @@ class Model {
 	}
 
 	void updateMessage() {
-		setMessage(getPrompt());
+		Central.onAnyWorkspace(ws -> setMessage(getPrompt(ws)));
 	}
 
 	void setSeverity(int severity) {
@@ -72,15 +73,14 @@ class Model {
 		}
 	}
 
-	private String getPrompt() {
+	private String getPrompt(Workspace ws) {
 		try {
 			if (prompt == null || prompt.isEmpty())
 				prompt = "<b>${basename;${workspace}}</b> ${def;Bundle-Version} <a href='prefs'>change macro def</a>";
 			else if ("-".equals(prompt))
 				return "";
 
-			String s = Central.getWorkspace()
-				.getReplacer()
+			String s = ws.getReplacer()
 				.process(prompt);
 			s = Strings.removeQuotes(s);
 			return s;
