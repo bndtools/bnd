@@ -29,7 +29,7 @@ minus sign (`-`) then a failure is not an error, it is reported as warning.
 
 The generate option will execute an _external plugin_ or plain JAR with a `Main-Class` manifest header. The choice is made by looking at the first word in the `generate` attribute.
 
-If this _name_ has a dot in it, like in a fully qualified class name, it is assume that species a _class name_. (If the name starts with a dot, it will be assume to be a name in the default package.) In this case, the `classpath` attribute of the instruction can be used to provide additional JARs on the command's classpath. The format of PATH is the standard format for instructions like -buildpath. Inn this case, you can also set the `workingdir` to a directory. This directory is specified relative to the project.
+If this _name_ has a dot in it, like in a fully qualified class name, it is assume that species a _class name_. (If the name starts with a dot, it will be assume to be a name in the default package.) In this case, the `classpath` attribute of the instruction can be used to provide additional JARs on the command's classpath. The format of PATH is the standard format for instructions like -buildpath. In this case, you can also set the `workingdir` to a directory. This directory is specified relative to the project.
 
 Without a dot in the name, the name is assumes to be an _external plugin_ name, with the `objectClass` (service type) of `Generator<? extends Options>`. External , or Main-Class jars, can come from an external repository or a local workspace project.
 
