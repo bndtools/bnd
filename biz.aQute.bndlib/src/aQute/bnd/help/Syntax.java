@@ -556,6 +556,8 @@ public class Syntax implements Constants {
 		new Syntax(NOCLASSFORNAME, "Do not calculate " + IMPORT_PACKAGE
 			+ " references for 'Class.forName(\"some.Class\")' usage found in method bodies during class processing.",
 			NOCLASSFORNAME + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(NOIMPORTJAVA, "Do not calculate " + IMPORT_PACKAGE + " references for java.* packages.",
+			NOIMPORTJAVA + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 
 		new Syntax(NOEE, "Do not calculate the osgi.ee name space Execution Environment from the class file version.",
 			NOEE + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
