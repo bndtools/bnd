@@ -98,7 +98,7 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 				.findAny();
 
 			if (!optCap.isPresent())
-				return Result.err("no such man class %s", mainClass);
+				return Result.err("no such main class %s", mainClass);
 
 			Capability cap = optCap.get();
 

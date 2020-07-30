@@ -75,10 +75,23 @@ class BuildpathQuickFixProcessorTest {
 
 	@BeforeAll
 	static void beforeAll() throws Exception {
-		// Copy bundles from the parent project into our test workspace
-		// LocalIndexedRepo
+		// Get a handle on the repo. I have seen this come back null on occasion
+		// so spin
+		// until we get it.
 		LocalIndexedRepo localRepo = (LocalIndexedRepo) Central.getWorkspace()
 			.getRepository("Local Index");
+		int count = 0;
+		while (localRepo == null) {
+			Thread.sleep(100);
+			localRepo = (LocalIndexedRepo) Central.getWorkspace()
+				.getRepository("Local Index");
+			if (count++ > 100) {
+				throw new IllegalStateException("Timed out waiting for Local Index");
+			}
+		}
+		// Copy bundles from the parent project into our test workspace
+		// LocalIndexedRepo
+		final LocalIndexedRepo theRepo = localRepo;
 		Path bundleRoot = Paths.get(System.getProperty("bndtools.core.test.dir"))
 			.resolve("./generated/");
 		Files.walk(bundleRoot, 1)
@@ -87,7 +100,7 @@ class BuildpathQuickFixProcessorTest {
 				.endsWith("simple.jar"))
 			.forEach(bundle -> {
 				try {
-					localRepo.put(IO.stream(bundle), null);
+					theRepo.put(IO.stream(bundle), null);
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
 				}
