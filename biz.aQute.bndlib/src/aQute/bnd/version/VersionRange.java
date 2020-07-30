@@ -224,7 +224,7 @@ public class VersionRange {
 	}
 
 	public static boolean isVersionRange(String stringRange) {
-		return RANGE.matcher(stringRange)
+		return (stringRange != null) && RANGE.matcher(stringRange)
 			.matches();
 	}
 
