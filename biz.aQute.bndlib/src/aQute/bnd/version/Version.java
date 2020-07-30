@@ -204,7 +204,7 @@ public class Version implements Comparable<Version> {
 	}
 
 	public static boolean isVersion(String version) {
-		return version != null && VERSION.matcher(version)
+		return (version != null) && VERSION.matcher(version)
 			.matches();
 	}
 

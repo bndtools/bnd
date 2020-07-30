@@ -107,6 +107,8 @@ import aQute.libg.tuple.Pair;
 
 public class Analyzer extends Processor {
 	private final static Logger						logger					= LoggerFactory.getLogger(Analyzer.class);
+	private final static VersionRange				frameworkPreR7			= new VersionRange(Version.LOWEST,
+		new Version(1, 9));
 	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<>();
 	static Properties								bndInfo;
 
@@ -335,9 +337,6 @@ public class Analyzer extends Processor {
 				getRequireBundlePackages().ifPresent(hostPackages -> referredAndExported.keySet()
 					.removeAll(hostPackages));
 
-				referredAndExported.keySet()
-					.removeIf(PackageRef::isJava);
-
 				Set<Instruction> unused = Create.set();
 				String h = getProperty(IMPORT_PACKAGE);
 				if (h == null) // If not set use a default
@@ -366,6 +365,33 @@ public class Analyzer extends Processor {
 				// See what information we can find to augment the
 				// imports. I.e. look in the exports
 				augmentImports(imports, exports);
+
+				// Determine if we should elide imports of java packages.
+				boolean noimportjava = is(NOIMPORTJAVA);
+				while (!noimportjava) {
+					if (getHighestEE().compareTo(Clazz.JAVA.OpenJDK11) >= 0) {
+						// Requires Java 11 or later.
+						break; // So we import java packages.
+					}
+					Attrs frameworkPackage = imports.get(getPackageRef("org/osgi/framework"));
+					if (frameworkPackage != null) {
+						VersionRange range = VersionRange.parseOSGiVersionRange(frameworkPackage.getVersion());
+						if (range != null) {
+							VersionRange intersection = frameworkPreR7.intersect(range);
+							if (intersection.isEmpty()) {
+								// Importing Core R7 or later framework.
+								break; // So we import java packages.
+							}
+						}
+					}
+					// We don't import Core R7 (or later) framework and we don't
+					// require Java 11 (or later). So we elide java imports.
+					noimportjava = true;
+				}
+				if (noimportjava) {
+					imports.keySet()
+						.removeIf(PackageRef::isJava);
+				}
 			}
 
 			//
@@ -494,7 +520,7 @@ public class Analyzer extends Processor {
 	}
 
 	private boolean isNormalPackage(PackageRef pRef) {
-		return !(pRef.isJava() || pRef.isMetaData() || pRef.isDefaultPackage());
+		return !pRef.isJava() && !pRef.isMetaData();
 	}
 
 	private Jar toJar(Map.Entry<String, Attrs> host) {
@@ -1953,8 +1979,16 @@ public class Analyzer extends Processor {
 
 			setProperty(CURRENT_PACKAGE, packageName);
 			try {
-				Attrs defaultAttrs = new Attrs();
 				Attrs importAttributes = imports.get(packageRef);
+				//
+				// Check if we have a java.* package. If so, we should remove
+				// all attributes to have a plain import.
+				//
+				if (packageRef.isJava()) {
+					importAttributes.clear();
+					continue;
+				}
+				Attrs defaultAttrs = new Attrs();
 				Attrs exportAttributes = exports.get(packageRef, classpathExports.get(packageRef, defaultAttrs));
 				String bundlesymbolicname = exportAttributes.get(INTERNAL_BUNDLESYMBOLICNAME_DIRECTIVE);
 				if (bundlesymbolicname != null) {
@@ -1982,8 +2016,7 @@ public class Analyzer extends Processor {
 				}
 
 				//
-				// Check if we have a contract. If we have a contract
-				// then we should remove the version
+				// Check if we have a package from a contract.
 				//
 				if (contracts.isContracted(packageRef)) {
 					// yes, contract based, so remove
@@ -1995,7 +2028,10 @@ public class Analyzer extends Processor {
 
 				if (exportVersion == null) {
 					// TODO Should check if the source is from a bundle.
-
+					if (importRange != null) {
+						importRange = cleanupVersion(importRange);
+						importAttributes.put(VERSION_ATTRIBUTE, importRange);
+					}
 				} else {
 
 					//
@@ -2017,8 +2053,7 @@ public class Analyzer extends Processor {
 					exportVersion = cleanupVersion(exportVersion);
 
 					importRange = applyVersionPolicy(exportVersion, importRange, provider);
-					if (!importRange.trim()
-						.isEmpty()) {
+					if (Strings.nonNullOrTrimmedEmpty(importRange)) {
 						importAttributes.put(VERSION_ATTRIBUTE, importRange);
 					}
 				}
@@ -2026,14 +2061,9 @@ public class Analyzer extends Processor {
 				//
 				// Check if exporter has mandatory attributes
 				//
-				String mandatory = exportAttributes.get(MANDATORY_DIRECTIVE);
-				if (mandatory != null) {
-					String[] attrs = mandatory.split("\\s*,\\s*");
-					for (int i = 0; i < attrs.length; i++) {
-						if (!importAttributes.containsKey(attrs[i]))
-							importAttributes.put(attrs[i], exportAttributes.get(attrs[i]));
-					}
-				}
+				Strings.splitAsStream(exportAttributes.get(MANDATORY_DIRECTIVE))
+					.filter(key -> !importAttributes.containsKey(key))
+					.forEachOrdered(key -> importAttributes.put(key, exportAttributes.get(key)));
 
 				if (exportAttributes.containsKey(IMPORT_DIRECTIVE))
 					importAttributes.put(IMPORT_DIRECTIVE, exportAttributes.get(IMPORT_DIRECTIVE));
@@ -2079,13 +2109,12 @@ public class Analyzer extends Processor {
 	String applyVersionPolicy(String exportVersion, String importRange, boolean provider) {
 		try {
 			setProperty(CURRENT_VERSION, exportVersion);
-
 			if (importRange != null) {
 				importRange = cleanupVersion(importRange);
 				importRange = getReplacer().process(importRange);
-			} else
+			} else {
 				importRange = getVersionPolicy(provider);
-
+			}
 		} finally {
 			unsetProperty(CURRENT_VERSION);
 		}

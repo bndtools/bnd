@@ -196,6 +196,7 @@ public interface Constants {
 	String				MANIFEST_NAME								= "-manifest-name";
 	String				NOUSES										= "-nouses";
 	String				NOCLASSFORNAME								= "-noclassforname";
+	String				NOIMPORTJAVA								= "-noimportjava";
 	String				NOBUNDLES									= "-nobundles";
 	String				OUTPUTMASK									= "-outputmask";																																						// default
 																																																											// ${@bsn}.jar
@@ -316,7 +317,7 @@ public interface Constants {
 		RUNREPOS, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE,
 		REPRODUCIBLE, INCLUDEPACKAGE, CDIANNOTATIONS, REMOTEWORKSPACE, MAVEN_DEPENDENCIES, BUILDERIGNORE, STALECHECK,
 		MAVEN_SCOPE, RUNSTARTLEVEL, RUNOPTIONS, NOCLASSFORNAME, EXPORT_APIGUARDIAN, RESOLVE, DEFINE_CONTRACT, GENERATE,
-		RUNFRAMEWORKRESTART
+		RUNFRAMEWORKRESTART, NOIMPORTJAVA
 
 	};
 

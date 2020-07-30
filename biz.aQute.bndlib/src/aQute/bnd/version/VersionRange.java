@@ -224,7 +224,7 @@ public class VersionRange {
 	}
 
 	public static boolean isVersionRange(String stringRange) {
-		return RANGE.matcher(stringRange)
+		return (stringRange != null) && RANGE.matcher(stringRange)
 			.matches();
 	}
 
@@ -282,6 +282,24 @@ public class VersionRange {
 
 	public boolean isSingleVersion() {
 		return high == Version.HIGHEST;
+	}
+
+	/**
+	 * Returns whether this version range is empty. A version range is empty if
+	 * the set of versions defined by the interval is empty.
+	 *
+	 * @return {@code true} if this version range is empty; {@code false}
+	 *         otherwise.
+	 */
+	public boolean isEmpty() {
+		if (isSingleVersion()) { // infinity
+			return false;
+		}
+		int comparison = low.compareTo(high);
+		if (comparison == 0) { // endpoints equal
+			return !includeLow() || !includeHigh();
+		}
+		return comparison > 0; // true if low > high
 	}
 
 	public static VersionRange likeOSGi(String version) {
