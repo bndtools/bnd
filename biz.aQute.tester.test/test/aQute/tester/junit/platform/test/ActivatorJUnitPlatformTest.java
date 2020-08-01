@@ -11,8 +11,13 @@ import static org.eclipse.jdt.internal.junit.model.ITestRunListener2.STATUS_FAIL
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -28,10 +33,15 @@ import org.junit.AssumptionViolatedException;
 import org.junit.ComparisonFailure;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.JUnitException;
+import org.junit.platform.launcher.TestExecutionListener;
 import org.opentest4j.AssertionFailedError;
 import org.opentest4j.MultipleFailuresError;
 import org.opentest4j.TestAbortedException;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
 import org.w3c.dom.Document;
 import org.xmlunit.assertj.XmlAssert;
 
@@ -593,5 +603,69 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorTest {
 	@Test
 	public void exitCode_countsJupiterContainerErrorsAndFailures() {
 		runTests(2, JUnit5ContainerFailure.class, JUnit5ContainerError.class);
+	}
+
+	public static class ListenerGenerator implements BundleActivator, InvocationHandler {
+
+		List<String> invocations;
+
+		@Override
+		public Object invoke(Object proxy, Method method, Object[] args) {
+			if (method.getDeclaringClass()
+				.equals(TestExecutionListener.class)) {
+				invocations.add(method.getName());
+			}
+			return null;
+		}
+
+		ServiceRegistration<TestExecutionListener> reg;
+
+		@Override
+		public void start(BundleContext context) throws Exception {
+			TestExecutionListener listener = (TestExecutionListener) Proxy
+				.newProxyInstance(ListenerGenerator.class.getClassLoader(), new Class<?>[] {
+					TestExecutionListener.class
+				}, this);
+			invocations = new ArrayList<>();
+			reg = context.registerService(TestExecutionListener.class, listener, null);
+		}
+
+		@Override
+		public void stop(BundleContext context) throws Exception {
+			reg.unregister();
+		}
+	}
+
+	@Test
+	public void testListeners_areInvoked() throws Exception {
+		AtomicReference<Bundle> bRef = new AtomicReference<>();
+
+		final ExitCode exitCode = runTests(() -> {
+			Bundle b = lp.bundle()
+				.addResourceWithCopy(ListenerGenerator.class)
+				.bundleActivator(ListenerGenerator.class.getName())
+				.importPackage("org.junit.platform.engine")
+				.importPackage("org.junit.platform.engine.reporting")
+				.importPackage("*")
+				.start();
+			bRef.set(b);
+		}, JUnit3Test.class);
+
+		assertThat(exitCode.exitCode).as("exit code")
+			.isZero();
+		BundleContext context = bRef.get()
+			.getBundleContext();
+		ServiceReference<?> ref = context.getServiceReference(TestExecutionListener.class);
+		Object listener = context.getService(ref);
+		Object invocationHandler = Proxy.getInvocationHandler(listener);
+		Class<?> listenerGenerator = invocationHandler.getClass();
+		Field f = listenerGenerator.getDeclaredField("invocations");
+		f.setAccessible(true);
+		@SuppressWarnings("unchecked")
+		List<String> methods = (List<String>) f.get(invocationHandler);
+
+		assertThat(methods).containsExactly("testPlanExecutionStarted", "executionStarted", "executionStarted",
+			"executionStarted", "executionStarted", "executionStarted", "executionFinished", "executionFinished",
+			"executionFinished", "executionFinished", "executionFinished", "testPlanExecutionFinished");
 	}
 }

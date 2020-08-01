@@ -49,6 +49,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
 import org.osgi.util.tracker.BundleTracker;
+import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.tester.bundle.engine.BundleEngine;
 import aQute.tester.bundle.engine.discovery.BundleSelector;
@@ -68,7 +69,7 @@ public class Activator implements BundleActivator, Runnable {
 	volatile Thread						thread;
 	private File						reportDir;
 	private SummaryGeneratingListener	summary;
-	private TestExecutionListener[]		listeners;
+	private List<TestExecutionListener>	listeners	= new ArrayList<>();
 
 	public Activator() {}
 
@@ -119,11 +120,9 @@ public class Activator implements BundleActivator, Runnable {
 		thread = Thread.currentThread();
 
 		launcher = LauncherFactory.create(LauncherConfig.builder()
-				.enableTestEngineAutoRegistration(false)
-				.addTestEngines(new BundleEngine())
-				.build());
-
-		List<TestExecutionListener> listenerList = new ArrayList<>();
+			.enableTestEngineAutoRegistration(false)
+			.addTestEngines(new BundleEngine())
+			.build());
 
 		String testcases = context.getProperty(TESTER_NAMES);
 		trace("test cases %s", testcases);
@@ -140,7 +139,7 @@ public class Activator implements BundleActivator, Runnable {
 			try {
 				trace("using control port %s, rerun IDE?: %s", port, rerunIDE);
 				jUnitEclipseListener = new JUnitEclipseListener(port, rerunIDE);
-				listenerList.add(jUnitEclipseListener);
+				listeners.add(jUnitEclipseListener);
 			} catch (Exception e) {
 				System.err.println(
 					"Cannot create link Eclipse JUnit control on port " + port + " (rerunIDE: " + rerunIDE + ')');
@@ -170,14 +169,13 @@ public class Activator implements BundleActivator, Runnable {
 		} else {
 			trace("using %s, path: %s", reportDir, reportDir.toPath());
 			try {
-				listenerList
-					.add(new LegacyXmlReportGeneratingListener(reportDir.toPath(), new PrintWriter(System.err)));
+				listeners.add(new LegacyXmlReportGeneratingListener(reportDir.toPath(), new PrintWriter(System.err)));
 			} catch (Exception e) {
 				error("Error trying to create xml reporter: %s", e);
 			}
 		}
 
-		listenerList.add(LoggingListener.forBiConsumer((t, msg) -> {
+		listeners.add(LoggingListener.forBiConsumer((t, msg) -> {
 			if (t == null) {
 				trace(msg.get());
 			} else {
@@ -185,8 +183,8 @@ public class Activator implements BundleActivator, Runnable {
 			}
 		}));
 		summary = new SummaryGeneratingListener();
-		listenerList.add(summary);
-		listenerList.add(new TestExecutionListener() {
+		listeners.add(summary);
+		listeners.add(new TestExecutionListener() {
 			@Override
 			public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
 				switch (testExecutionResult.getStatus()) {
@@ -209,8 +207,6 @@ public class Activator implements BundleActivator, Runnable {
 				message("", "TEST %s <<< SKIPPED", testName(testIdentifier));
 			}
 		});
-		listeners = listenerList.toArray(new TestExecutionListener[0]);
-
 		if (testcases == null) {
 			trace("automatic testing of all bundles with " + aQute.bnd.osgi.Constants.TESTCASES + " header");
 			try {
@@ -348,11 +344,21 @@ public class Activator implements BundleActivator, Runnable {
 	long test(LauncherDiscoveryRequest testRequest) {
 		trace("testing request %s", testRequest);
 		try {
+			ServiceTracker<TestExecutionListener, TestExecutionListener> track = new ServiceTracker<>(context,
+				TestExecutionListener.class, null);
+			track.open();
 			try {
-				launcher.execute(testRequest, listeners);
+				TestExecutionListener[] listenerArray = Stream
+					.concat(listeners.stream(), Optional.ofNullable(track.getServices())
+						.map(Stream::of)
+						.orElseGet(Stream::empty)
+						.map(TestExecutionListener.class::cast))
+					.toArray(TestExecutionListener[]::new);
+				launcher.execute(testRequest, listenerArray);
 			} catch (Throwable t) {
 				trace("%s", t);
 			} finally {
+				track.close();
 				summary.getSummary()
 					.printTo(new PrintWriter(out));
 			}
