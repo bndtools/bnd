@@ -99,43 +99,49 @@ public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 
 		MojoExecution mojoExecution;
 
-		if (((mode == RunMode.LAUNCH) || (mode == RunMode.EDIT))
-			&& ((mojoExecution = getBndResolverMojoExecution(projectFacade, bndrunMatchs, monitor)) != null)) {
+		switch (mode) {
+			case LAUNCH :
+			case EDIT :
+			case SOURCES :
+				if ((mojoExecution = getBndResolverMojoExecution(projectFacade, bndrunMatchs, monitor)) != null) {
 
-			if (bndrunFile == null) {
-				Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns", Bndruns.class,
-					monitor);
+					if (bndrunFile == null) {
+						Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns",
+							Bndruns.class, monitor);
 
-				bndrunFile = bndruns.getFiles(mavenProject.getBasedir())
-					.get(0);
-			}
+						bndrunFile = bndruns.getFiles(mavenProject.getBasedir())
+							.get(0);
+					}
 
-			MavenBndrunContainer mavenBndrunContainer = MavenBndrunContainer.getBndrunContainer(projectFacade, mojoExecution,
-				monitor);
+					MavenBndrunContainer mavenBndrunContainer = MavenBndrunContainer.getBndrunContainer(projectFacade,
+						mojoExecution, monitor);
 
-			return mavenBndrunContainer.init(bndrunFile, mode.name(),
-				new File(mavenProject.getBuild()
-					.getDirectory()));
-		} else if ((mode == RunMode.TEST)
-			&& ((mojoExecution = getBndTestingMojoExecution(projectFacade, bndrunMatchs, monitor)) != null)) {
+					return mavenBndrunContainer.init(bndrunFile, mode.name(), new File(mavenProject.getBuild()
+						.getDirectory()));
+				}
+				break;
+			case TEST :
+				if ((mojoExecution = getBndTestingMojoExecution(projectFacade, bndrunMatchs, monitor)) != null) {
 
-			if (bndrunFile == null) {
-				Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns", Bndruns.class,
-					monitor);
+					if (bndrunFile == null) {
+						Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns",
+							Bndruns.class, monitor);
 
-				bndrunFile = bndruns.getFiles(mavenProject.getBasedir())
-					.get(0);
-			}
+						bndrunFile = bndruns.getFiles(mavenProject.getBasedir())
+							.get(0);
+					}
 
-			MavenBndrunContainer mavenBndrunContainer = MavenBndrunContainer.getBndrunContainer(projectFacade, mojoExecution,
-				monitor);
+					MavenBndrunContainer mavenBndrunContainer = MavenBndrunContainer.getBndrunContainer(projectFacade,
+						mojoExecution, monitor);
 
-			return mavenBndrunContainer.init(bndrunFile, mode.name(),
-				new File(mavenProject.getBuild()
-					.getDirectory()));
-		} else {
-			return null;
+					return mavenBndrunContainer.init(bndrunFile, mode.name(), new File(mavenProject.getBuild()
+						.getDirectory()));
+				}
+				break;
+			default :
+				break;
 		}
+		return null;
 	}
 
 	@Reference
