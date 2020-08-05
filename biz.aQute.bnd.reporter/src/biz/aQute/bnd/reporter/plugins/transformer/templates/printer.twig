@@ -124,6 +124,8 @@
 {%- if not (loop.first) -%}{{ '\n\n---\n\n' }}{%- endif -%}
 {{ this._printComponentTitle(c) }}
 
+{{ this._printComponentServiceDescription(c) }}
+
 {{ this._printComponentServices(c) }}
 
 {{ this._printComponentProperties(c) }}
@@ -142,6 +144,19 @@
 {% macro _printComponentTitle (c) -%}
 {%- import _self as this -%}
 {{ this.printTitle(c.name,3) }} - *state = {{ (c.defaultEnabled) ? 'enabled' : 'not enabled' }}, activation = {{ (c.immediate) ? 'immediate' : 'delayed' }}*
+{%- endmacro %}
+
+{# 
+# DESCRIPTION
+#}
+{% macro _printComponentServiceDescription (c) -%}
+{%- import _self as this -%}
+{{ this.printTitle('Description',4) }}
+{%- for key, value in c.properties -%}
+{%- if key == 'service.description' -%}
+{{ '\n\n' }}{{ value.values[0] }}
+{%- endif -%}
+{%- endfor -%}
 {%- endmacro %}
 
 {# 

@@ -61,6 +61,22 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	public void testDescription() throws Exception {
+		TwigChecker checker = checker("_printComponentServiceDescription");
+
+		checker.with(map().set("properties", map().set("service.description", map().set("type",
+			"String")
+			.set("values",
+				list(
+					"my.description")))))
+			.expect("#### Description")
+			.expectBlankLine()
+			.expect(
+				"my.description")
+			.check();
+
+	}
+
 	public void testMavenCoordinate() throws Exception {
 		TwigChecker checker = checker("printMavenCoordinate");
 
@@ -306,6 +322,8 @@ public class JtwigPrinterTest extends TestCase {
 			.set("configurationPolicy", "ignore")), list())
 			.expect("### name - *state = not enabled, activation = delayed*")
 			.expectBlankLine()
+			.expect("#### Description")
+			.expectBlankLine()
 			.expect("#### Services")
 			.expectBlankLine()
 			.expect("No services.")
@@ -356,6 +374,8 @@ public class JtwigPrinterTest extends TestCase {
 			list())
 			.expect("### name - *state = not enabled, activation = delayed*")
 			.expectBlankLine()
+			.expect("#### Description")
+			.expectBlankLine()
 			.expect("#### Services")
 			.expectBlankLine()
 			.expect("No services.")
@@ -397,6 +417,8 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("---")
 			.expectBlankLine()
 			.expect("### name2 - *state = not enabled, activation = delayed*")
+			.expectBlankLine()
+			.expect("#### Description")
 			.expectBlankLine()
 			.expect("#### Services")
 			.expectBlankLine()
