@@ -131,10 +131,10 @@ Commits that fix or close an issue should include a reference like `Closes #XXX`
 ### Large changes/Work-In-Progress
 
 Sometimes for big changes/feature additions, you may wish to submit a pull request before it is fully ready to merge, in order to solicit feedback from the core developers and ensure you're on the right track before proceeding too far.
-In this case, you can submit a pull request and mark it as a work-in-progress by prefixing the title of the PR with **WIP**.
+In this case, you can submit a pull request and mark it as a Draft (see [draft pull requests](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests#draft-pull-requests))
 
-Once your pull request is ready for consideration to merge, remove the WIP prefix from the title to signal this fact to the core team.
-While the pull request is flagged as WIP the maintainers are unlikely to know that it is ready, the review process won't start and your branch won't get merged.
+Once your pull request is ready for consideration to merge, submit a request for a review.
+While the pull request is flagged as draft the maintainers are unlikely to know that it is ready, the review process won't start and your branch won't get merged.
 
 ### Sign your work
 
