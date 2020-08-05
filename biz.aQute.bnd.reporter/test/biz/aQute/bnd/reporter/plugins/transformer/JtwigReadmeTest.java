@@ -78,6 +78,8 @@ public class JtwigReadmeTest extends TestCase {
 			.expectBlankLine()
 			.expect("### name - *state = not enabled, activation = delayed*")
 			.expectBlankLine()
+			.expect("#### Description")
+			.expectBlankLine()
 			.expect("#### Services")
 			.expectBlankLine()
 			.expect("No services.")
