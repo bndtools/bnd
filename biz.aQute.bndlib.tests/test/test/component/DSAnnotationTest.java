@@ -30,6 +30,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentConstants;
 import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.ComponentFactory;
 import org.osgi.service.component.ComponentServiceObjects;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.CollectionType;
@@ -79,8 +80,8 @@ public class DSAnnotationTest extends TestCase {
 	private static String[]		SERIALIZABLE_RUNNABLE	= {
 		Serializable.class.getName(), Runnable.class.getName()
 	};
-	private static String[]		OBJECT					= {
-		Object.class.getName()
+	private static String[]		FACTORY					= {
+		ComponentFactory.class.getName()
 	};
 
 	/**
@@ -859,7 +860,7 @@ public class DSAnnotationTest extends TestCase {
 			xt.assertAttribute("greedy", "scr:component/reference[1]/@policy-option");
 		}
 		Attributes a = getAttr(jar);
-		checkProvides(a, SERIALIZABLE_RUNNABLE, OBJECT);
+		checkProvides(a, SERIALIZABLE_RUNNABLE, FACTORY);
 		// n.b. we should merge the 2 logService requires, so when we fix that
 		// we'll need to update this test.
 		// one is plain, other has cardinality multiple.
@@ -2221,7 +2222,7 @@ public class DSAnnotationTest extends TestCase {
 			if (!b.check("Not a valid number blabla for Integer", "Not a valid number 3.0 for Integer"))
 				fail();
 			Attributes a = getAttr(jar);
-			checkProvides(a);
+			checkProvides(a, FACTORY);
 			checkRequires(a, "1.4.0");
 
 			//
@@ -2232,6 +2233,7 @@ public class DSAnnotationTest extends TestCase {
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
+			xt.assertAttribute("ds14", "scr:component/@factory");
 			xt.assertAttribute("0", "count(scr:component/properties)");
 			xt.assertAttribute("0", "count(scr:component/property)");
 			xt.assertAttribute("14", "count(scr:component/factory-property)");
@@ -2252,6 +2254,102 @@ public class DSAnnotationTest extends TestCase {
 			xt.assertAttribute("Integer", "scr:component/factory-property[@name='\u0343\u0344\u0345\u0346']/@type");
 
 			xt.assertAttribute("factory.properties", "scr:component/factory-properties[1]/@entry");
+		}
+	}
+
+	/**
+	 * Check that ComponentFactory osgi.service requirement is correct.
+	 */
+	@Component
+	public static class FactoryReferenceTarget {
+		@Reference(target = "(" + ComponentConstants.COMPONENT_FACTORY + "=factory)")
+		ComponentFactory<Object> factory;
+	}
+
+	public void testFactoryReferenceTarget() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryReferenceTarget");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, FACTORY);
+			assertThat(a.getValue(Constants.REQUIRE_CAPABILITY)).contains("(component.factory=factory)");
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FactoryReferenceTarget.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+			xt.assertAttribute("factory", "scr:component/reference[1]/@name");
+			xt.assertAttribute("org.osgi.service.component.ComponentFactory", "scr:component/reference[1]/@interface");
+			xt.assertAttribute("(component.factory=factory)", "scr:component/reference[1]/@target");
+		}
+	}
+
+	@Component
+	public static class FactoryReferenceNoTarget {
+		@Reference
+		ComponentFactory<Object> factory;
+	}
+
+	public void testFactoryReferenceNoTarget() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryReferenceNoTarget");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
+			assertThat(a.getValue(Constants.REQUIRE_CAPABILITY)).doesNotContain("osgi.service");
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FactoryReferenceNoTarget.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+			xt.assertAttribute("factory", "scr:component/reference[1]/@name");
+			xt.assertAttribute("org.osgi.service.component.ComponentFactory", "scr:component/reference[1]/@interface");
+			xt.assertNoAttribute("scr:component/reference[1]/@target");
+		}
+	}
+
+	@Component(factory = "factory")
+	public static class FactoryComponent implements Runnable {
+
+		@Override
+		public void run() {
+			// empty
+		}
+	}
+
+	public void testFactoryComponent() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryComponent");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a, FACTORY);
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
+			assertThat(a.getValue(Constants.PROVIDE_CAPABILITY)).contains("component.factory=factory")
+				.doesNotContain("java.lang.Runnable");
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FactoryComponent.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+			xt.assertAttribute("factory", "scr:component/@factory");
+			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[1]/@interface");
 		}
 	}
 
@@ -3045,7 +3143,11 @@ public class DSAnnotationTest extends TestCase {
 			for (Attrs at : attrs) {
 				if (Arrays.asList(o)
 					.equals(at.getTyped("objectClass"))) {
-					assertEquals(1, at.size());
+					if (o == FACTORY) {
+						assertThat(at.keySet()).containsExactlyInAnyOrder("objectClass", "component.factory");
+					} else {
+						assertThat(at.keySet()).containsExactlyInAnyOrder("objectClass");
+					}
 					found = true;
 				}
 			}
@@ -3062,7 +3164,8 @@ public class DSAnnotationTest extends TestCase {
 		for (String o : objectClass) {
 			boolean found = false;
 			for (Attrs at : attrs) {
-				if (("(objectClass=" + o + ")").equals(at.get("filter:"))) {
+				String filter = at.get("filter:", "");
+				if (filter.contains("(objectClass=" + o + ")")) {
 					assertEquals("no effective:=\"active\"", "active", at.get("effective:"));
 					found = true;
 				}
