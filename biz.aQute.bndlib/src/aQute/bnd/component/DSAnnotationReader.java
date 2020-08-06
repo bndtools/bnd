@@ -1419,9 +1419,6 @@ public class DSAnnotationReader extends ClassDataCollector {
 		if (annotation.get("enabled") != null) {
 			component.enabled = comp.enabled();
 		}
-		if (annotation.get("factory") != null) {
-			component.factory = comp.factory();
-		}
 		if (annotation.get("immediate") != null) {
 			component.immediate = comp.immediate();
 		}
