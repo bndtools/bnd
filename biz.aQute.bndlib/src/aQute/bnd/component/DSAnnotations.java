@@ -184,11 +184,11 @@ public class DSAnnotations implements AnalyzerPlugin {
 						.putResource(path, new TagResource(definition.getTag()));
 
 					if (!options.contains(Options.nocapabilities)) {
-						addServiceCapability(definition.service, provides, nouses);
+						addServiceCapability(definition, provides, nouses);
 					}
 
 					if (!options.contains(Options.norequirements)) {
-						MergedRequirement serviceReqMerge = new MergedRequirement("osgi.service");
+						MergedRequirement serviceReqMerge = new MergedRequirement(ServiceNamespace.SERVICE_NAMESPACE);
 						for (ReferenceDef ref : definition.references.values()) {
 							addServiceRequirement(ref, serviceReqMerge);
 						}
@@ -270,7 +270,20 @@ public class DSAnnotations implements AnalyzerPlugin {
 		return actual;
 	}
 
-	private void addServiceCapability(TypeRef[] services, Set<String> provides, boolean nouses) {
+	private void addServiceCapability(ComponentDef definition, Set<String> provides, boolean nouses) {
+		if (definition.factory != null) { // Alternate capability for factory
+			Attrs a = new Attrs();
+			a.put(ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE + ":List<String>",
+				"org.osgi.service.component.ComponentFactory");
+			a.put(ComponentConstants.COMPONENT_FACTORY, definition.factory);
+			Parameters p = new Parameters();
+			p.put(ServiceNamespace.SERVICE_NAMESPACE, a);
+			String s = p.toString();
+			provides.add(s);
+			return;
+		}
+
+		TypeRef[] services = definition.service;
 		if (services == null) {
 			return;
 		}
@@ -309,6 +322,12 @@ public class DSAnnotations implements AnalyzerPlugin {
 			|| cardinality == ReferenceCardinality.AT_LEAST_ONE;
 
 		String filter = "(" + ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE + "=" + objectClass + ")";
+		if ("org.osgi.service.component.ComponentFactory".equals(objectClass)) {
+			if (ref.target == null) {
+				return; // no requirement if no target filter
+			}
+			filter = "(&" + filter + ref.target + ")";
+		}
 		requires.put(filter, Namespace.EFFECTIVE_ACTIVE, optional, multiple);
 	}
 

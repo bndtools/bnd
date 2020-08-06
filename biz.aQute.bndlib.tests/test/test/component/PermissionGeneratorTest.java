@@ -119,7 +119,7 @@ public class PermissionGeneratorTest extends TestCase {
 		assertEquals("Registered services",
 				new TreeSet<>(Arrays.asList("java.lang.Runnable",
 						"java.io.Serializable",
-						"java.lang.Object")),
+						"org.osgi.service.component.ComponentFactory")),
 						registeredServices);
 		assertEquals("Required services",
 				new TreeSet<>(Arrays.asList("org.osgi.service.log.LogService")),
