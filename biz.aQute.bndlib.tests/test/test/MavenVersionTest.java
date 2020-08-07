@@ -1,10 +1,11 @@
 package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -12,13 +13,18 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.MavenVersionRange;
 import aQute.bnd.version.Version;
-import junit.framework.TestCase;
 
-public class MavenVersionTest extends TestCase {
 
+public class MavenVersionTest {
+
+	@Test
 	public void testRange() {
 		MavenVersionRange mvr = new MavenVersionRange("[1.0.0,2.0.0)");
 		assertEquals("[1.0.0,2.0.0)", mvr.toString());
@@ -32,6 +38,7 @@ public class MavenVersionTest extends TestCase {
 		assertTrue(mvr.includes(MavenVersion.parseMavenString("2")));
 	}
 
+	@Test
 	public void testRangeWithOr() {
 		MavenVersionRange mvr = new MavenVersionRange("[1.0.0  ,  2.0.0)  ,  [ 3.0.0, 4.0.0)");
 		assertEquals("[1.0.0,2.0.0),[3.0.0,4.0.0)", mvr.toString());
@@ -42,6 +49,7 @@ public class MavenVersionTest extends TestCase {
 		assertFalse(mvr.includes(MavenVersion.parseMavenString("4")));
 	}
 
+	@Test
 	public void testRangeWithLowExcludeAndHighInclude() {
 		MavenVersionRange mvr = new MavenVersionRange("(1.0.0  ,  2.0.0]  ,  ( 3.0.0, 4.0.0]");
 		assertEquals("(1.0.0,2.0.0],(3.0.0,4.0.0]", mvr.toString());
@@ -53,6 +61,7 @@ public class MavenVersionTest extends TestCase {
 		assertFalse(mvr.includes(MavenVersion.parseMavenString("4.0.0.1")));
 	}
 
+	@Test
 	public void testRangeWithEmptyLowerBound() {
 		MavenVersionRange mvr = new MavenVersionRange("( , 1.0]");
 		assertEquals("(,1.0]", mvr.toString());
@@ -82,6 +91,7 @@ public class MavenVersionTest extends TestCase {
 		assertFalse(mvr.includes(MavenVersion.parseMavenString("1.0.1")));
 	}
 
+	@Test
 	public void testRangeWithEmptyUpperBound() {
 		MavenVersionRange mvr = new MavenVersionRange("( 1.0, ]");
 		assertEquals("(1.0,]", mvr.toString());
@@ -105,6 +115,7 @@ public class MavenVersionTest extends TestCase {
 		assertTrue(mvr.includes(MavenVersion.HIGHEST));
 	}
 
+	@Test
 	public void testRangeSingle() {
 		MavenVersionRange mvr = new MavenVersionRange("1.0");
 		assertEquals("1.0", mvr.toString());
@@ -113,6 +124,7 @@ public class MavenVersionTest extends TestCase {
 		assertTrue(mvr.includes(MavenVersion.HIGHEST));
 	}
 
+	@Test
 	public void testRangeExact() {
 		MavenVersionRange mvr = new MavenVersionRange("[1.0]");
 		assertEquals("[1.0]", mvr.toString());
@@ -121,12 +133,14 @@ public class MavenVersionTest extends TestCase {
 		assertFalse(mvr.includes(MavenVersion.parseMavenString("1.1")));
 	}
 
+	@Test
 	public void testCleanupWithMajor() {
 		assertEquals("0.0.0.usedbypico", MavenVersion.cleanupVersion("usedbypico"));
 		assertEquals("0.0.0.usedbypico", MavenVersion.cleanupVersion("use^%$#@dbypico"));
 		assertEquals("0.0.0.usedbypico", MavenVersion.cleanupVersion("0.use^%$#@dbypico"));
 	}
 
+	@Test
 	public void testMajorMinorMicro() {
 		MavenVersion mv = MavenVersion.parseMavenString("1.2.3");
 		assertEquals(new Version(1, 2, 3), mv.getOSGiVersion());
@@ -134,16 +148,19 @@ public class MavenVersionTest extends TestCase {
 		assertEquals(new Version(1, 0, 2016062300), mv.getOSGiVersion());
 	}
 
+	@Test
 	public void testMajorMinor() {
 		MavenVersion mv = MavenVersion.parseMavenString("1.2");
 		assertEquals(new Version(1, 2), mv.getOSGiVersion());
 	}
 
+	@Test
 	public void testMajor() {
 		MavenVersion mv = MavenVersion.parseMavenString("1");
 		assertEquals(new Version(1), mv.getOSGiVersion());
 	}
 
+	@Test
 	public void testSnapshot() {
 		MavenVersion mv = MavenVersion.parseMavenString("1.2.3-SNAPSHOT");
 		assertEquals(new Version(1, 2, 3, "SNAPSHOT"), mv.getOSGiVersion());
@@ -165,6 +182,7 @@ public class MavenVersionTest extends TestCase {
 		assertTrue(mv.isSnapshot());
 	}
 
+	@Test
 	public void testNumericQualifier() {
 		MavenVersion mv = MavenVersion.parseMavenString("1.2.3-01");
 		assertEquals(new Version(1, 2, 3, "01"), mv.getOSGiVersion());
@@ -188,12 +206,14 @@ public class MavenVersionTest extends TestCase {
 		assertEquals(new Version(0, 0, 0, "201209091230120234-5"), mv.getOSGiVersion());
 	}
 
+	@Test
 	public void testQualifierWithDashSeparator() {
 		MavenVersion mv = MavenVersion.parseMavenString("1.2.3-beta-1");
 		assertEquals(new Version(1, 2, 3, "beta-1"), mv.getOSGiVersion());
 		assertFalse(mv.isSnapshot());
 	}
 
+	@Test
 	public void testQualifierWithoutSeparator() {
 		MavenVersion mv = MavenVersion.parseMavenString("1.2.3rc1");
 		assertEquals(new Version(1, 2, 3, "rc1"), mv.getOSGiVersion());
@@ -206,6 +226,7 @@ public class MavenVersionTest extends TestCase {
 		assertFalse(mv.isSnapshot());
 	}
 
+	@Test
 	public void testQualifierWithDotSeparator() {
 		MavenVersion mv = MavenVersion.parseMavenString("1.2.3.beta-1");
 		assertEquals(new Version(1, 2, 3, "beta-1"), mv.getOSGiVersion());
@@ -218,6 +239,7 @@ public class MavenVersionTest extends TestCase {
 		assertFalse(mv.isSnapshot());
 	}
 
+	@Test
 	public void testDotsInQualifier() {
 		MavenVersion mv = MavenVersion.parseMavenString("1.2.3.4.5");
 		assertEquals(new Version(1, 2, 3, "45"), mv.getOSGiVersion());
@@ -233,12 +255,14 @@ public class MavenVersionTest extends TestCase {
 		assertFalse(mv.isSnapshot());
 	}
 
+	@Test
 	public void testNull() {
 		MavenVersion mv = MavenVersion.parseMavenString(null);
 		assertEquals(new Version(0, 0, 0), mv.getOSGiVersion());
 		assertFalse(mv.isSnapshot());
 	}
 
+	@Test
 	public void testEmptyString() {
 		MavenVersion mv = MavenVersion.parseMavenString("");
 		assertEquals(new Version(0, 0, 0), mv.getOSGiVersion());
@@ -248,11 +272,13 @@ public class MavenVersionTest extends TestCase {
 		assertFalse(mv.isSnapshot());
 	}
 
+	@Test
 	public void testInvalidVersion() {
 		MavenVersion mv = MavenVersion.parseMavenString("Not a number");
 		assertEquals(new Version(0, 0, 0, "Notanumber"), mv.getOSGiVersion());
 	}
 
+	@Test
 	public void testIsInteger() throws Exception {
 		String max = String.valueOf(Integer.MAX_VALUE);
 		String v = "1." + max + ".0";
@@ -263,6 +289,7 @@ public class MavenVersionTest extends TestCase {
 		assertEquals(v, c);
 	}
 
+	@Test
 	public void testComparableAliases() throws Exception {
 		MavenVersion mv1 = MavenVersion.parseMavenString("1.2.7");
 		MavenVersion mv2 = MavenVersion.parseMavenString("1.2.7-FINAL");
@@ -315,26 +342,35 @@ public class MavenVersionTest extends TestCase {
 			.isEqualByComparingTo(mv6);
 	}
 
+	@Test
 	public void testComparableSorting() throws Exception {
-		List<String> ordered = Arrays.asList("1.2.7-ALPHA", "1.2.7-a2", "1.2.7-beta", "1.2.7-B50", "1.2.7-Milestone",
-			"1.2.7-MILESTONE-2", "1.2.7-RC", "1.2.7-rc5", "1.2.7-SNAPSHOT", "1.2.7", "1.2.7-SP");
-		List<String> shuffled = new ArrayList<>(ordered);
-		Collections.shuffle(shuffled);
-		assertNotEquals(ordered, shuffled);
+		List<MavenVersion> ordered = Stream.of("1.2.7-ALPHA", "1.2.7-a2", "1.2.7-beta", "1.2.7-B50", "1.2.7-Milestone",
+			"1.2.7-MILESTONE-2", "1.2.7-M3", "1.2.7-RC", "1.2.7-CR2", "1.2.7-rc5", "1.2.7-SNAPSHOT", "1.2.7",
+			"1.2.7-SP", "1.2.7-random")
+			.map(MavenVersion::parseMavenString)
+			.collect(Collectors.toList());
+		List<MavenVersion> shuffled = new ArrayList<>(ordered);
+		do {
+			Collections.shuffle(shuffled);
+		} while (shuffled.equals(ordered));
+
 		List<MavenVersion> sorted = shuffled.stream()
-			.map(MavenVersion::new)
 			.sorted()
 			.collect(Collectors.toList());
-		assertEquals(ordered.size(), sorted.size());
+		assertThat(sorted).isEqualTo(ordered);
 		for (int i = 0; i < ordered.size(); i++) {
-			MavenVersion expected = MavenVersion.parseMavenString(ordered.get(i));
+			MavenVersion expected = ordered.get(i);
 			MavenVersion actual = sorted.get(i);
-			assertEquals(expected, actual);
-			assertEquals(0, expected.compareTo(actual));
-			assertEquals(0, actual.compareTo(expected));
+			assertThat(expected).isEqualTo(actual)
+				.isEqualByComparingTo(actual);
+			assertThat(actual).isEqualTo(expected)
+				.isEqualByComparingTo(expected);
 		}
+
+		assertThat(sorted).noneMatch(new MavenVersionRange("(0,1.2.7alpha)")::includes);
 	}
 
+	@Test
 	public void testComparableMax() throws Exception {
 		Optional<MavenVersion> m = Stream.of("1.2.7", "1.2.7-SNAPSHOT")
 			.map(MavenVersion::parseMavenString)
@@ -343,12 +379,14 @@ public class MavenVersionTest extends TestCase {
 		assertEquals(new MavenVersion("1.2.7"), m.get());
 	}
 
+	@Test
 	public void testJavaFXVersion() throws Exception {
 		MavenVersion mv = MavenVersion.parseMavenString("13-ea+8");
 		assertEquals(new Version(13, 0, 0, "ea8"), mv.getOSGiVersion());
 	}
 
 	// See https://maven.apache.org/pom.html#Version_Order_Specification
+	@Test
 	public void testMavenVersionOrder() {
 		MavenVersion mv1, mv2, mv3, mv4, mv5, mv6, mv7;
 
@@ -485,6 +523,45 @@ public class MavenVersionTest extends TestCase {
 		mv1 = MavenVersion.parseMavenString(null);
 		mv2 = MavenVersion.LOWEST;
 		assertThat(mv1).isGreaterThan(mv2);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"alpha", //
+		"1-alpha", //
+		"1alpha", //
+		"1.2.7alpha", //
+		"1.2.7a2", //
+		"1.2.7-beta", //
+		"1.2.7b3", //
+		"1.2.7-M1", //
+		"1.2.7-RC1", //
+		"1.2.7cr", //
+		"1.2.7-SNAPSHOT", //
+		"1.2.7.SNAPSHOT"//
+	})
+	public void non_release_version(String version) {
+		MavenVersion v = MavenVersion.parseMavenString(version);
+		assertThat(v).isLessThan(v.toReleaseVersion());
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"0", //
+		"1-ga", //
+		"1final", //
+		"1.2.7-ga", //
+		"1.2.7", //
+		"1.2.7-final", //
+		"1.2.7.release", //
+		"1.2.7-sp", //
+		"1.2.7-random", //
+		"1.2.7.RANDOM"
+
+	})
+	public void release_version(String version) {
+		MavenVersion v = MavenVersion.parseMavenString(version);
+		assertThat(v).isGreaterThanOrEqualTo(v.toReleaseVersion());
 	}
 
 }
