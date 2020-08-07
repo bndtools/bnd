@@ -25,7 +25,7 @@ import aQute.bnd.osgi.Processor;
 public class InternalPluginTracker extends BundleTracker<List<InternalPluginDefinition>> {
 
 	public InternalPluginTracker(BundleContext context) {
-		super(context, Bundle.ACTIVE + Bundle.STARTING, null);
+		super(context, Bundle.ACTIVE + Bundle.STARTING + Bundle.RESOLVED, null);
 	}
 
 	@Override
