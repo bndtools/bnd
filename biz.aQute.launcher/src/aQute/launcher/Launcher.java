@@ -71,6 +71,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
 import org.osgi.framework.connect.ConnectFrameworkFactory;
@@ -95,7 +96,7 @@ import aQute.libg.uri.URIUtil;
  * This is the primary bnd launcher. It implements a launcher that runs on Java
  * 1.8.
  */
-public class Launcher implements ServiceListener {
+public class Launcher implements ServiceListener, FrameworkListener {
 
 	private static final String				BND_LAUNCHER			= ".bnd.launcher";
 
@@ -118,6 +119,7 @@ public class Launcher implements ServiceListener {
 	private boolean							connect;
 	private BundleActivator					externalActivator;
 	private boolean							restart					= false;
+	private boolean							frameworkInited			= false;
 
 	enum EmbeddedActivatorPhase {
 
@@ -483,6 +485,10 @@ public class Launcher implements ServiceListener {
 		if (systemBundle == null)
 			return LauncherConstants.ERROR;
 
+		BundleContext systemContext = systemBundle.getBundleContext();
+
+		systemContext.addFrameworkListener(this);
+
 		startLevelhandler.beforeStart(systemBundle);
 
 		frameworkWiring = systemBundle.adapt(FrameworkWiring.class);
@@ -494,8 +500,6 @@ public class Launcher implements ServiceListener {
 		doSecurity();
 
 		int result = LauncherConstants.OK;
-
-		BundleContext systemContext = systemBundle.getBundleContext();
 
 		systemContext.addServiceListener(this, "(&(|(objectclass=" + Runnable.class.getName() + ")(objectclass="
 			+ Callable.class.getName() + "))(main.thread=true))");
@@ -1210,22 +1214,6 @@ public class Launcher implements ServiceListener {
 		}
 		systemBundle.init();
 
-		try {
-			systemBundle.getBundleContext()
-				.addFrameworkListener(event -> {
-					switch (event.getType()) {
-						case FrameworkEvent.ERROR :
-							error(event.toString(), event.getThrowable());
-							break;
-						case FrameworkEvent.WAIT_TIMEDOUT :
-							trace("Refresh will end due to error or timeout %s", event.toString());
-							break;
-					}
-				});
-		} catch (Exception e) {
-			trace("could not register a framework listener: %s", e);
-		}
-
 		trace("inited system bundle %s", systemBundle);
 		return systemBundle;
 	}
@@ -1657,6 +1645,34 @@ public class Launcher implements ServiceListener {
 			throw e;
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Will log any errors, warnings, traces info, and will remove itself when
+	 * the framework is started to not interfere with any logging going on in
+	 * the application
+	 */
+	@Override
+	public void frameworkEvent(FrameworkEvent event) {
+		switch (event.getType()) {
+			case FrameworkEvent.ERROR :
+				if (frameworkInited)
+					trace("%s", event);
+				else
+					error("%s", event);
+				break;
+			case FrameworkEvent.WARNING :
+				trace("%s", event);
+				break;
+
+			case FrameworkEvent.INFO :
+				trace("%s", event);
+				break;
+
+			case FrameworkEvent.STARTED :
+				frameworkInited = true;
+				break;
 		}
 	}
 }
