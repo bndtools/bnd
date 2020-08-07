@@ -7,17 +7,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.StandardSoftAssertionsProvider;
 import org.eclipse.jdt.internal.junit.model.ITestRunListener2;
 
 public class TestRunListener implements ITestRunListener2 {
 
-	private volatile TestRunData	data;
-	private CountDownLatch			flag	= new CountDownLatch(1);
-	private SoftAssertions			softly;
-	private boolean					verbose	= false;
+	private volatile TestRunData			data;
+	private CountDownLatch					flag	= new CountDownLatch(1);
+	private StandardSoftAssertionsProvider	softly;
+	private boolean							verbose	= false;
 
-	public TestRunListener(SoftAssertions softly, boolean verbose) {
+	public TestRunListener(StandardSoftAssertionsProvider softly, boolean verbose) {
 		this.softly = softly;
 		this.verbose = verbose;
 	}
@@ -74,7 +75,7 @@ public class TestRunListener implements ITestRunListener2 {
 	@Override
 	public void testRunStopped(long elapsedTime) {
 		info(() -> "=========>testRunStopped");
-		softly.fail("shouldn't be called");
+		softly.check(() -> Assertions.fail("shouldn't be called"));
 		notifyTestEnded();
 	}
 
@@ -93,7 +94,7 @@ public class TestRunListener implements ITestRunListener2 {
 				.as(msgPrefix + "testName")
 				.endsWith(test.testName);
 		} else {
-			softly.fail("No existing test entry for testId: " + testId);
+			softly.check(() -> Assertions.fail("No existing test entry for testId: " + testId));
 		}
 		softly.assertThat(data.started)
 			.as(msgPrefix + "shouldn't be called more than once")
@@ -123,7 +124,7 @@ public class TestRunListener implements ITestRunListener2 {
 	@Override
 	public void testRunTerminated() {
 		info(() -> "=========>testRunTerminated");
-		softly.fail("shouldn't be called");
+		softly.check(() -> Assertions.fail("shouldn't be called"));
 		notifyTestEnded();
 	}
 
@@ -140,7 +141,7 @@ public class TestRunListener implements ITestRunListener2 {
 			data.parentMap.add(Optional.ofNullable(entry.parentId)
 				.orElse(""), entry.testId);
 		} catch (Exception e) {
-			softly.fail("Error trying to parse tree entry string:\n" + description, e);
+			softly.check(() -> Assertions.fail("Error trying to parse tree entry string:\n" + description, e));
 		}
 	}
 
@@ -154,7 +155,7 @@ public class TestRunListener implements ITestRunListener2 {
 			.isIn(STATUS_FAILURE, STATUS_ERROR);
 		TestEntry test = data.getById(testId);
 		if (test == null) {
-			softly.fail(prefix, "test tree entry should already exist");
+			softly.check(() -> Assertions.fail(prefix, "test tree entry should already exist"));
 		} else {
 			softly.assertThat(testName)
 				.as(prefix, "testName")
@@ -180,7 +181,7 @@ public class TestRunListener implements ITestRunListener2 {
 	public void testReran(String testId, String testClass, String testName, int status, String trace, String expected,
 		String actual) {
 		info(() -> "=========>testReran");
-		softly.fail("shouldn't be called");
+		softly.check(() -> Assertions.fail("shouldn't be called"));
 	}
 
 	public void checkRunTime() {

@@ -19,7 +19,7 @@ import aQute.junit.UnresolvedTester;
 import aQute.lib.xml.XML;
 import aQute.tester.test.assertions.CustomAssertionError;
 import aQute.tester.test.utils.TestRunData;
-import aQute.tester.testbase.AbstractActivatorTest;
+import aQute.tester.testbase.AbstractActivatorCommonTest;
 import aQute.tester.testclasses.JUnit3Test;
 import aQute.tester.testclasses.JUnit4Test;
 import aQute.tester.testclasses.With1Error1Failure;
@@ -31,7 +31,7 @@ import junit.framework.AssertionFailedError;
 
 // This suppression is because we're not building in the same project.
 @SuppressWarnings("restriction")
-public class ActivatorTest extends AbstractActivatorTest {
+public class ActivatorTest extends AbstractActivatorCommonTest {
 
 	public ActivatorTest() {
 		super("aQute.junit.Activator", "biz.aQute.tester");

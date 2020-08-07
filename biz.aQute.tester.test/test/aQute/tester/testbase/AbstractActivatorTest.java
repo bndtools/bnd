@@ -1,18 +1,14 @@
 package aQute.tester.testbase;
 
-import static aQute.junit.constants.TesterConstants.TESTER_CONTINUOUS;
 import static aQute.junit.constants.TesterConstants.TESTER_DIR;
-import static aQute.junit.constants.TesterConstants.TESTER_NAMES;
 import static aQute.junit.constants.TesterConstants.TESTER_PORT;
-import static aQute.junit.constants.TesterConstants.TESTER_SEPARATETHREAD;
 import static aQute.junit.constants.TesterConstants.TESTER_TRACE;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.Permission;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -20,20 +16,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.RandomAccess;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
+import org.assertj.core.api.Assert;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.StandardSoftAssertionsProvider;
 import org.eclipse.jdt.internal.junit.model.ITestRunListener2;
 import org.eclipse.jdt.internal.junit.model.RemoteTestRunnerClient;
-import org.junit.After;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
@@ -44,88 +37,49 @@ import aQute.launchpad.BundleSpecBuilder;
 import aQute.launchpad.Launchpad;
 import aQute.launchpad.LaunchpadBuilder;
 import aQute.lib.exceptions.Exceptions;
-import aQute.lib.io.IO;
+import aQute.tester.test.utils.ServiceLoaderMask;
 import aQute.tester.test.utils.TestBundler;
 import aQute.tester.test.utils.TestRunData;
 import aQute.tester.test.utils.TestRunDataAssert;
 import aQute.tester.test.utils.TestRunListener;
-import aQute.tester.testclasses.JUnit3Test;
-import aQute.tester.testclasses.JUnit4Test;
-import aQute.tester.testclasses.With1Error1Failure;
-import aQute.tester.testclasses.With2Failures;
-import aQute.tester.testclasses.junit.platform.JUnit4ContainerError;
-import aQute.tester.testclasses.junit.platform.JUnit4ContainerFailure;
 
-// Because we're not in the same project as aQute.junit.TesterConstants and its bundle-private.
-public abstract class AbstractActivatorTest extends SoftAssertions {
+public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 
-	static final String		BND_TEST_THREAD	= "bnd Runtime Test Bundle";
+	static final String BND_TEST_THREAD = "bnd Runtime Test Bundle";
+	protected final String activatorClass;
+	protected final String tester;
+	protected TestBundler testBundler;
+	protected boolean DEBUG = true;
+	protected LaunchpadBuilder builder;
 
-	private final String	activatorClass;
-	private final String	tester;
-
-	protected TestBundler	testBundler;
-
-	private boolean			DEBUG			= true;
+	// We have the Jupiter engine on the classpath so that the tests will run.
+	// This classloader will hide it from the framework-under-test if necessary.
+	static protected final ClassLoader	SERVICELOADER_MASK	= new ServiceLoaderMask();
 
 	@AfterEach
 	public void after() {
 		assertAll();
 	}
 
-	protected AbstractActivatorTest(String activatorClass, String tester) {
-		this.activatorClass = activatorClass;
-		this.tester = tester;
-	}
-
-	// This extends Error rather than SecurityException so that it can traverse
-	// the catch(Exception) statements in the code-under-test.
-	protected class ExitCode extends Error {
-		private static final long	serialVersionUID	= -1498037177123939551L;
-		public final int			exitCode;
-		final StackTraceElement[]	stack;
-
-		public ExitCode(int exitCode, StackTraceElement[] stack) {
-			this.exitCode = exitCode;
-			this.stack = stack;
-		}
-	}
-
-	// To catch calls to System.exit() calls within bnd.aQute.junit that
-	// otherwise cause the entire test harness to exit.
-	class ExitCheck extends SecurityManager {
-		@Override
-		public void checkPermission(Permission perm) {}
-
-		@Override
-		public void checkPermission(Permission perm, Object context) {}
-
-		@Override
-		public void checkExit(int status) {
-			// Because the activator might have been loaded in a different
-			// classloader, need to check names and not objects.
-			if (Stream.of(getClassContext())
-				.anyMatch(x -> x.getName()
-					.equals(activatorClass))) {
-				throw new ExitCode(status, Thread.currentThread()
-					.getStackTrace());
-			}
-			super.checkExit(status);
-		}
-	}
-
-	protected LaunchpadBuilder	builder;
-	protected Launchpad			lp;
-	SecurityManager				oldManager;
-	Path						tmpDir;
-	protected int				eclipseJUnitPort;
+	protected Launchpad lp;
+	protected SecurityManager oldManager;
+	protected Path tmpDir;
+	protected int eclipseJUnitPort;
+	protected TestInfo info;
 
 	protected TestRunDataAssert assertThat(TestRunData a) {
 		return proxy(TestRunDataAssert.class, TestRunData.class, a);
 	}
 
-	protected TestInfo	info;
-	protected String	name;
+	protected SoftAssertions softly;
+
+	@BeforeEach
+	void beforeEach() {
+		softly = new SoftAssertions();
+	}
+
+	protected String name;
+	protected Bundle testBundle;
 
 	protected File getTmpDir() {
 		return tmpDir.toFile();
@@ -137,62 +91,11 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 		return builder.set(TESTER_DIR, getTmpDir().getAbsolutePath());
 	}
 
-	@BeforeEach
-	public void setUp(TestInfo info) throws Exception {
-		this.info = info;
-		Method testMethod = info.getTestMethod()
-			.get();
-		name = getClass().getName() + "/" + testMethod.getName();
-		tmpDir = Paths.get("generated/tmp/test", name)
-			.toAbsolutePath();
-		IO.delete(tmpDir);
-		IO.mkdirs(tmpDir);
-
-		builder = new LaunchpadBuilder();
-		builder.bndrun(tester + ".bndrun")
-			.excludeExport("aQute.tester.bundle.*")
-			.excludeExport("org.junit*")
-			.excludeExport("junit.*");
-		setTmpDir();
-		if (DEBUG) {
-			builder.debug()
-				.set(TESTER_TRACE, "true");
-		}
-		lp = null;
-		oldManager = System.getSecurityManager();
-		System.setSecurityManager(new ExitCheck());
-	}
-
 	protected BundleSpecBuilder bundle() {
 		return testBundler.bundleWithEE();
 	}
 
-	@After
-	public void tearDown() {
-		System.setSecurityManager(oldManager);
-		IO.close(lp);
-		IO.close(builder);
-	}
-
-	@Test
-	public void start_withNoSeparateThreadProp_runsInMainThread() {
-		runTests(0, JUnit3Test.class);
-		assertThat(testBundler.getCurrentThread(JUnit3Test.class)).as("thread")
-			.isSameAs(Thread.currentThread());
-	}
-
-	@Test
-	public void start_withSeparateThreadPropFalse_startsInMainThread() {
-		builder.set(TESTER_SEPARATETHREAD, "false");
-		runTests(0, JUnit3Test.class);
-		assertThat(testBundler.getCurrentThread(JUnit3Test.class)).as("thread")
-			.isSameAs(Thread.currentThread());
-	}
-
-	// Gets a handle on the Bnd test thread, if it exists.
-	// Try to build some resilience into this test to avoid
-	// race conditions when the new test starts.
-	private Thread getBndTestThread() throws InterruptedException {
+	protected Thread getBndTestThread() throws InterruptedException {
 		final long endTime = System.currentTimeMillis() + 30000;
 
 		while (System.currentTimeMillis() < endTime) {
@@ -208,58 +111,6 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 		return null;
 	}
 
-	@Test
-	public void start_withSeparateThreadProp_startsInNewThread() throws Exception {
-		builder.set(TESTER_SEPARATETHREAD, "true");
-		createLP();
-		addTesterBundle();
-
-		final Thread bndThread = getBndTestThread();
-
-		// Don't assert softly, since if we can't find this thread we can't do
-		// the other tests.
-		Assertions.assertThat(bndThread)
-			.as("thread started")
-			.isNotNull()
-			.isNotSameAs(Thread.currentThread());
-
-		assertThat(lp.getService(Runnable.class)).as("runnable")
-			.isEmpty();
-
-		final AtomicReference<Throwable> exception = new AtomicReference<>();
-		final CountDownLatch latch = new CountDownLatch(1);
-		bndThread.setUncaughtExceptionHandler((thread, e) -> {
-			exception.set(e);
-			latch.countDown();
-		});
-
-		// Can't start the test bundle until after the exception handler
-		// is in place to ensure we're ready to catch System.exit().
-		addTestBundle(JUnit3Test.class);
-
-		// Wait for the exception handler to catch the exit.
-		assertThat(latch.await(20000, TimeUnit.MILLISECONDS)).as("wait for exit")
-			.isTrue();
-
-		assertThat(exception.get()).as("exited")
-			.isInstanceOf(ExitCode.class);
-
-		if (!(exception.get() instanceof ExitCode)) {
-			return;
-		}
-
-		final ExitCode ee = (ExitCode) exception.get();
-
-		assertThat(ee.exitCode).as("exitCode")
-			.isZero();
-
-		final Thread currentThread = testBundler.getCurrentThread(JUnit3Test.class);
-		assertThat(currentThread).as("exec thread")
-			.isNotNull()
-			.isNotSameAs(Thread.currentThread())
-			.isSameAs(bndThread);
-	}
-
 	protected ExitCode runTests(int expectedExit, Class<?>... classes) {
 		final ExitCode exitCode = runTests(classes);
 		assertThat(exitCode.exitCode).as("exitCode")
@@ -267,13 +118,14 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 		return exitCode;
 	}
 
-	protected Bundle		testBundle;
-	protected List<Bundle>	testBundles	= new ArrayList<>(10);
-	protected Bundle		testerBundle;
+	protected List<Bundle> testBundles = new ArrayList<>(10);
+	protected Bundle testerBundle;
 
 	protected interface Callback {
 		void run() throws Exception;
 	}
+
+	protected Thread runThread;
 
 	protected ExitCode runTests(Class<?>... classes) {
 		return runTests((Callback) null, classes);
@@ -328,46 +180,6 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 		}
 	}
 
-	@Test
-	public void multipleMixedTests_areAllRun() {
-		final ExitCode exitCode = runTests(JUnit3Test.class, JUnit4Test.class);
-
-		assertThat(exitCode.exitCode).as("exit code")
-			.isZero();
-		assertThat(testBundler.getCurrentThread(JUnit3Test.class)).as("junit3")
-			.isSameAs(Thread.currentThread());
-		assertThat(testBundler.getCurrentThread(JUnit4Test.class)).as("junit4")
-			.isSameAs(Thread.currentThread());
-	}
-
-	@Test
-	public void multipleTests_acrossMultipleBundles_areAllRun() {
-		final ExitCode exitCode = runTests(new Class<?>[] {
-			JUnit3Test.class
-		}, new Class<?>[] {
-			JUnit4Test.class
-		});
-
-		assertThat(exitCode.exitCode).as("exit code")
-			.isZero();
-		assertThat(testBundler.getCurrentThread(JUnit3Test.class)).as("junit3")
-			.isSameAs(Thread.currentThread());
-		assertThat(testBundler.getCurrentThread(JUnit4Test.class)).as("junit4")
-			.isSameAs(Thread.currentThread());
-	}
-
-	@Test
-	public void testerNames_isHonouredByTester() {
-		builder.set(TESTER_NAMES, With2Failures.class.getName() + "," + JUnit4Test.class.getName() + ":theOther");
-		runTests(2, JUnit3Test.class, JUnit4Test.class, With2Failures.class);
-		assertThat(testBundler.getCurrentThread(JUnit3Test.class)).as("JUnit3 thread")
-			.isNull();
-		assertThat(testBundler.getFlag(JUnit4Test.class, "theOtherFlag")).as("theOther")
-			.isTrue();
-		assertThat(testBundler.getCurrentThread(JUnit4Test.class)).as("JUnit4 thread")
-			.isNull();
-	}
-
 	public void runTesterAndWait() {
 		runTester();
 		// This is to avoid race conditions and make sure that the
@@ -395,24 +207,12 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 		runThread.start();
 	}
 
-	@Test
-	public void whenNoTestBundles_waitForTestBundle_thenRunAndExit() throws Exception {
-		runTesterAndWait();
-		addTestBundle(JUnit4Test.class, With2Failures.class);
-		runThread.join(10000);
-		assertThat(testBundler.getCurrentThread(JUnit4Test.class)).as("thread:after")
-			.isSameAs(runThread);
-		assertThat(testBundler.getStatic(JUnit4Test.class, AtomicBoolean.class, "theOtherFlag")).as("otherFlag:after")
-			.isTrue();
-		assertExitCode(2);
-	}
-
 	public void assertExitCode(int exitCode) {
 		if (uncaught.get() instanceof ExitCode) {
 			assertThat(((ExitCode) uncaught.get()).exitCode).as("exitCode")
 				.isEqualTo(exitCode);
 		} else {
-			failBecauseExceptionWasNotThrown(ExitCode.class);
+			check(() -> Assertions.failBecauseExceptionWasNotThrown(ExitCode.class));
 		}
 	}
 
@@ -448,50 +248,31 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 			.isIn(Thread.State.WAITING, Thread.State.TIMED_WAITING);
 	}
 
-	Thread						runThread;
-	AtomicReference<Throwable>	uncaught	= new AtomicReference<>();
-
-	@Test
-	public void testerContinuous_runsTestsContinuously() {
-		builder.set(TESTER_CONTINUOUS, "true");
-		runTesterAndWait();
-		Bundle old4Bundle = addTestBundle(JUnit4Test.class);
-		waitForTesterToWait();
-		assertThat(testBundler.getCurrentThread(JUnit4Test.class)).as("junit4")
-			.isSameAs(runThread);
-		addTestBundle(JUnit3Test.class);
-		waitForTesterToWait();
-		assertThat(testBundler.getCurrentThread(JUnit3Test.class)).as("junit3")
-			.isSameAs(runThread);
-		addTestBundle(JUnit4Test.class);
-		waitForTesterToWait();
-		assertThat(testBundler.getCurrentThread(JUnit4Test.class)).as("junit4 take 2")
-			.isSameAs(runThread);
-		assertThat(testBundler.getBundleOf(JUnit4Test.class)).as("different bundle")
-			.isNotSameAs(old4Bundle);
-	}
+	AtomicReference<Throwable> uncaught = new AtomicReference<>();
 
 	public static List<Node> asList(NodeList n) {
 		return n.getLength() == 0 ? Collections.<Node> emptyList() : new NodeListWrapper(n);
 	}
 
-	static final class NodeListWrapper extends AbstractList<Node> implements RandomAccess {
-		private final NodeList list;
+	protected static final class NodeListWrapper extends AbstractList<Node> implements RandomAccess {
+			private final NodeList list;
 
-		NodeListWrapper(NodeList l) {
-			list = l;
+			NodeListWrapper(NodeList l) {
+				list = l;
+			}
+
+			@Override
+			public Node get(int index) {
+				return list.item(index);
+			}
+
+			@Override
+			public int size() {
+				return list.getLength();
+			}
 		}
 
-		@Override
-		public Node get(int index) {
-			return list.item(index);
-		}
-
-		@Override
-		public int size() {
-			return list.getLength();
-		}
-	}
+	RemoteTestRunnerClient client;
 
 	protected String testSuite() {
 		return String.format("/testsuite[contains(@name, '%s')]", testBundle.getSymbolicName());
@@ -512,24 +293,19 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 			testSuite(), testClass.getName(), method, failure.getName());
 	}
 
-	@Test
-	public void exitCode_countsErrorsAndFailures() {
-		final ExitCode exitCode = runTests(JUnit4Test.class, With2Failures.class, With1Error1Failure.class);
-		assertThat(exitCode.exitCode).isEqualTo(4);
-	}
-
-	@Test
-	public void exitCode_countsContainerErrorsAndFailures() {
-		runTests(2, JUnit4ContainerFailure.class, JUnit4ContainerError.class);
-	}
-
 	protected TestRunData runTestsEclipse(Callback postCreateCallback, Class<?>... tests) {
 		return runTestsEclipse(postCreateCallback, new Class<?>[][] {
 			tests
 		});
 	}
 
-	RemoteTestRunnerClient client;
+	public static int findFreePort() {
+		try (ServerSocket socket = new ServerSocket(0)) {
+			return socket.getLocalPort();
+		} catch (IOException e) {
+			throw new RuntimeException("Couldn't get port for test", e);
+		}
+	}
 
 	protected TestRunListener startEclipseJUnitListener() {
 		int port = findFreePort();
@@ -574,13 +350,45 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 		return runTestsEclipse(null, testBundles);
 	}
 
-	// Copied from org.eclipse.jdt.launching.SocketUtil
-	public static int findFreePort() {
-		try (ServerSocket socket = new ServerSocket(0)) {
-			return socket.getLocalPort();
-		} catch (IOException e) {
-			throw new RuntimeException("Couldn't get port for test", e);
+	// This extends Error rather than SecurityException so that it can traverse
+	// the catch(Exception) statements in the code-under-test.
+	protected class ExitCode extends Error {
+		private static final long	serialVersionUID	= -1498037177123939551L;
+		public final int			exitCode;
+		final StackTraceElement[]	stack;
+
+		public ExitCode(int exitCode, StackTraceElement[] stack) {
+			this.exitCode = exitCode;
+			this.stack = stack;
 		}
+	}
+
+	// To catch calls to System.exit() calls within bnd.aQute.junit that
+	// otherwise cause the entire test harness to exit.
+	public class ExitCheck extends SecurityManager {
+		@Override
+		public void checkPermission(Permission perm) {}
+
+		@Override
+		public void checkPermission(Permission perm, Object context) {}
+
+		@Override
+		public void checkExit(int status) {
+			// Because the activator might have been loaded in a different
+			// classloader, need to check names and not objects.
+			if (Stream.of(getClassContext())
+				.anyMatch(x -> x.getName()
+					.equals(activatorClass))) {
+				throw new ExitCode(status, Thread.currentThread()
+					.getStackTrace());
+			}
+			super.checkExit(status);
+		}
+	}
+
+	public AbstractActivatorTest(String activatorClass, String tester) {
+		this.activatorClass = activatorClass;
+		this.tester = tester;
 	}
 
 	protected void createLP() {
@@ -610,5 +418,47 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 					Assertions.fail("Couldn't start tester bundle", e);
 				}
 			});
+	}
+
+	protected void readWithTimeout(InputStream inStr) throws Exception {
+		long endTime = System.currentTimeMillis() + 10000;
+		int available;
+		while ((available = inStr.available()) == 0 && System.currentTimeMillis() < endTime) {
+			Thread.sleep(10);
+		}
+		if (available == 0) {
+			Assertions.fail("Timeout waiting for data");
+		}
+		assertThat(available).as("control signal")
+			.isEqualTo(1);
+		int value = inStr.read();
+		assertThat(value).as("control value")
+			.isNotEqualTo(-1);
+	}
+
+	@Override
+	public void assertAll() {
+		softly.assertAll();
+	}
+
+	@Override
+	public boolean wasSuccess() {
+		return softly.wasSuccess();
+	}
+
+	@Override
+	public void collectAssertionError(AssertionError error) {
+		softly.collectAssertionError(error);
+	}
+
+	@Override
+	public List<AssertionError> assertionErrorsCollected() {
+		return softly.assertionErrorsCollected();
+	}
+
+	@Override
+	public <SELF extends Assert<? extends SELF, ? extends ACTUAL>, ACTUAL> SELF proxy(Class<SELF> assertClass,
+		Class<ACTUAL> actualClass, ACTUAL actual) {
+		return softly.proxy(assertClass, actualClass, actual);
 	}
 }

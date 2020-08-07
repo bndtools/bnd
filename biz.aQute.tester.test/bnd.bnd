@@ -5,8 +5,8 @@
 
 -buildpath: \
 	org.apache.servicemix.bundles.junit;version=latest,\
-	org.junit.jupiter.api;version="${junit.jupiter.eclipse.version}",\
-	org.junit.jupiter.params;version="${junit.jupiter.eclipse.version}",\
+	org.junit.jupiter.api;version='${junit.jupiter.eclipse.version}',\
+	org.junit.jupiter.params;version='${junit.jupiter.eclipse.version}',\
 	org.opentest4j,\
 	org.apiguardian,\
 	osgi.core;version=latest

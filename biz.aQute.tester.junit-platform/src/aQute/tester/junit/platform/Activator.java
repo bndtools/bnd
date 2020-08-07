@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.apache.felix.service.command.Descriptor;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.support.descriptor.ClassSource;
@@ -62,18 +63,19 @@ import aQute.tester.junit.platform.utils.BundleUtils;
 
 @Header(name = Constants.BUNDLE_ACTIVATOR, value = "${@class}")
 public class Activator implements BundleActivator, Runnable {
-	String								unresolved;
-	Launcher							launcher;
-	BundleContext						context;
-	volatile boolean					active;
-	boolean								continuous	= false;
-	boolean								trace		= false;
-	PrintStream							out			= System.out;
-	JUnitEclipseListener				jUnitEclipseListener;
-	volatile Thread						thread;
-	private File						reportDir;
-	private SummaryGeneratingListener	summary;
-	private List<TestExecutionListener>	listeners	= new ArrayList<>();
+	String									unresolved;
+	Launcher								launcher;
+	BundleContext							context;
+	volatile boolean						active;
+	boolean									continuous	= false;
+	boolean									trace		= false;
+	PrintStream								out			= System.out;
+	JUnitEclipseListener					jUnitEclipseListener;
+	volatile Thread							thread;
+	private File							reportDir;
+	private SummaryGeneratingListener		summary;
+	private List<TestExecutionListener>		listeners	= new ArrayList<>();
+	final BlockingDeque<DiscoverySelector>	queue		= new LinkedBlockingDeque<>();
 
 	public Activator() {}
 
@@ -127,6 +129,8 @@ public class Activator implements BundleActivator, Runnable {
 			.enableTestEngineAutoRegistration(false)
 			.addTestEngines(new BundleEngine())
 			.build());
+
+		List<TestExecutionListener> listenerList = new ArrayList<>();
 
 		String testcases = context.getProperty(TESTER_NAMES);
 		trace("test cases %s", testcases);
@@ -253,8 +257,6 @@ public class Activator implements BundleActivator, Runnable {
 	}
 
 	void automatic() throws IOException {
-		final BlockingDeque<BundleSelector> queue = new LinkedBlockingDeque<>();
-
 		trace("Opening BundleTracker for finding test bundles");
 		BundleTracker<Bundle> tracker = new BundleTracker<Bundle>(context,
 			Bundle.RESOLVED | Bundle.STARTING | Bundle.ACTIVE, null) {
@@ -295,12 +297,24 @@ public class Activator implements BundleActivator, Runnable {
 		};
 		tracker.open();
 
+		if (Boolean.valueOf(context.getProperty("launch.services")) && continuous) {
+			GogoCommandlet cmd = new GogoCommandlet();
+			Hashtable<String, Object> properties = new Hashtable<>();
+			properties.put("osgi.command.function", new String[] {
+				"runTests"
+			});
+			properties.put("osgi.command.scope", "tester");
+
+			trace("starting gogo commandlet");
+			context.registerService(Object.class, cmd, properties);
+		}
+
 		trace("starting queue");
 		long result = 0;
 		while (active()) {
 			try {
-				List<BundleSelector> selectors = new ArrayList<>();
-				for (BundleSelector selector = queue.takeFirst(); //
+				List<DiscoverySelector> selectors = new ArrayList<>();
+				for (DiscoverySelector selector = queue.takeFirst(); //
 					selector != null; //
 					selector = queue.pollFirst(100, TimeUnit.MILLISECONDS)) {
 					selectors.add(selector);
@@ -336,6 +350,28 @@ public class Activator implements BundleActivator, Runnable {
 			.configurationParameter(LauncherConstants.CAPTURE_STDERR_PROPERTY_NAME, captureStderr.orElse("true"))
 			.selectors(selectors)
 			.build();
+	}
+
+	static DiscoverySelector toSelector(String testcase) {
+		if (testcase.startsWith(":")) {
+			return BundleSelector.selectBundle(testcase.substring(1));
+		}
+		if (testcase.indexOf('#') < 0) {
+			return selectClass(testcase);
+		}
+		return selectMethod(testcase);
+	}
+
+	class GogoCommandlet {
+		@Descriptor("runs the specified tests")
+		public void runTests(@Descriptor("The tests to run. Three syntaxes are available:\n"
+			+ " 1. \":bundle.symbolic.name\" - run all tests in the specified bundle\n"
+			+ " 2. \"fully.qualified.ClassName\" - run all tests in the specified class\n"
+			+ " 3. \"fully.qualified.ClassName#methodName\" - run the specified test method") String... tests) {
+			Stream.of(tests)
+				.map(Activator::toSelector)
+				.forEach(queue::offerLast);
+		}
 	}
 
 	/**
