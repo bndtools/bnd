@@ -56,6 +56,7 @@ import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.core.test.utils.WorkbenchTest;
 
+@Disabled("Currently disabled due to startup flakiness, see https://github.com/bndtools/bnd/issues/4253")
 @ExtendWith(SoftAssertionsExtension.class)
 @WorkbenchTest
 class BuildpathQuickFixProcessorTest {
