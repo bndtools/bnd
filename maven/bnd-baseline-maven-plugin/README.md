@@ -193,6 +193,7 @@ It is possible to only check for correct package versions and leave out the bund
 |`diffignores`          | See [Diffignores](#diffignores). _Optional._|
 |`continueOnError`      | See [Continue on Error](#continue-on-error). _Defaults to `false`._ Override with property `bnd.baseline.continue.on.error`.|
 |`skip`                 | Skip the baseline process altogether. _Defaults to `false`._ Override with property `bnd.baseline.skip`.|
+|`releaseversions`                 | When searching a version range for the baseline, only consider release versions. That is, don't consider `alpha`, `beta`, `milestone`, or `rc` versions. `snapshot` versions are never considered when searching for the baseline. _Defaults to `false`._ Override with property `bnd.baseline.releaseversions`.|
 
 
 [1]: https://docs.osgi.org/whitepaper/semantic-versioning/
