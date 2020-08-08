@@ -40,6 +40,7 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.version.MavenVersion;
 import aQute.lib.strings.Strings;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
@@ -81,6 +82,9 @@ public class BaselineMojo extends AbstractMojo {
 
 	@Parameter(property = "bnd.baseline.skip", defaultValue = "false")
 	private boolean					skip;
+
+	@Parameter(property = "bnd.baseline.releaseversions", defaultValue = "false")
+	private boolean					releaseversions;
 
 	@Component
 	private RepositorySystem		system;
@@ -216,15 +220,28 @@ public class BaselineMojo extends AbstractMojo {
 		List<Version> found = versions.getVersions();
 		logger.debug("Found versions {}", found);
 
+		boolean onlyreleaseversions = releaseversions && (base.getVersion()
+			.startsWith("[")
+			|| base.getVersion()
+				.startsWith("("));
+
 		base.setVersion(null);
 		for (ListIterator<Version> li = found.listIterator(found.size()); li.hasPrevious();) {
 			String highest = li.previous()
 				.toString();
-			if (!toFind.setVersion(highest)
+			if (toFind.setVersion(highest)
 				.isSnapshot()) {
-				base.setVersion(highest);
-				break;
+				continue;
 			}
+			if (onlyreleaseversions) {
+				MavenVersion mavenVersion = MavenVersion.parseMavenString(highest);
+				if (mavenVersion.compareTo(mavenVersion.toReleaseVersion()) < 0) {
+					logger.debug("Version {} not considered since it is not a release version", highest);
+					continue; // not a release version
+				}
+			}
+			base.setVersion(highest);
+			break;
 		}
 
 		logger.info("The baseline version was found to be {}", base.getVersion());

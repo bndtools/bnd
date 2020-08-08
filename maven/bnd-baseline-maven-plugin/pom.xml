@@ -11,7 +11,7 @@
 	</parent>
 
 	<artifactId>bnd-baseline-maven-plugin</artifactId>
-	<description>This maven plugin is used to make OSGi indexes from lists of maven dependencies.</description>
+	<description>This maven plugin is used to baseline OSGi bundles.</description>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<packaging>maven-plugin</packaging>
 	<url>https://bnd.bndtools.org/</url>

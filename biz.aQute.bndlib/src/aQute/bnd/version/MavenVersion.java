@@ -28,6 +28,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	private static final String			SNAPSHOT	= "SNAPSHOT";
 	public static final MavenVersion	HIGHEST		= new MavenVersion("2147483647.2147483647.2147483647.2147483647");
 	public static final MavenVersion	LOWEST		= new MavenVersion("alpha");
+	private static final MavenVersion		ZERO						= new MavenVersion("0");
 
 	private final Version				version;
 	private final ComparableVersion		comparable;
@@ -121,6 +122,32 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	public MavenVersion toSnapshot() {
 		Version newv = new Version(version.getMajor(), version.getMinor(), version.getMicro(), SNAPSHOT);
 		return new MavenVersion(newv);
+	}
+
+	/**
+	 * Return the plain release version for this Maven Version.
+	 * <p>
+	 * The release version contains no alpha characters.
+	 *
+	 * @return The plain release version for this Maven Version.
+	 */
+	public MavenVersion toReleaseVersion() {
+		String mavenVersion = comparable.toString();
+		for (int i = 0, len = mavenVersion.length(), lastDigit = -1; i < len; i++) {
+			char c = mavenVersion.charAt(i);
+			if ((c == '.') || (c == '-')) {
+				continue;
+			}
+			if (Character.isDigit(c)) {
+				lastDigit = i;
+				continue;
+			}
+			if (lastDigit == -1) {
+				return ZERO;
+			}
+			return new MavenVersion(mavenVersion.substring(0, lastDigit + 1));
+		}
+		return this;
 	}
 
 	public static String validate(String v) {

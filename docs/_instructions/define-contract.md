@@ -23,6 +23,6 @@ Now if the current bundle imports packages declared in the `uses` directive of t
 
 ### Further Reading
 
-See also [Portable Contract Definitions](https://www.osgi.org/portable-java-contract-definitions/)
+See also [Portable Contract Definitions](https://docs.osgi.org/reference/portable-java-contracts.html)
 
 
