@@ -48,7 +48,7 @@ build log.
 
 ### What versions should I use?
 
-The [Semantic Versioning Whitepaper](https://www.osgi.org/wp-content/uploads/Semantic-Versioning-20190110.pdf)
+The [Semantic Versioning Whitepaper][1]
 defines the rules for semantic versions. In summary for a version `X.Y.Z`:
 
 1. A change which breaks backward compatibility for consumers necessitates a major version change 
@@ -195,4 +195,4 @@ It is possible to only check for correct package versions and leave out the bund
 |`skip`                 | Skip the baseline process altogether. _Defaults to `false`._ Override with property `bnd.baseline.skip`.|
 
 
-[1]: https://www.osgi.org/wp-content/uploads/Semantic-Versioning-20190110.pdf
+[1]: https://docs.osgi.org/whitepaper/semantic-versioning/
