@@ -17,6 +17,7 @@ import org.osgi.service.coordinator.Coordinator;
 import org.osgi.service.resolver.ResolutionException;
 
 import aQute.bnd.build.model.BndEditModel;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.exceptions.RunnableWithException;
 import biz.aQute.resolve.ResolutionCallback;
 import biz.aQute.resolve.ResolverLogger;
@@ -56,18 +57,23 @@ public class ResolveOperation implements IRunnableWithProgress {
 					logger);
 				if (resolution.isOK()) {
 					result = new ResolutionResult(Outcome.Resolved, resolution, status, logger);
-				} else if (resolution.exception instanceof ResolveCancelledException) {
-					result = new ResolutionResult(Outcome.Cancelled, resolution, status, logger);
-				} else {
-					resolution.reportException();
-					if (resolution.exception instanceof ResolutionException) {
-						status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
-							resolution.exception.getLocalizedMessage(), resolution.exception));
-						result = new ResolutionResult(Outcome.Unresolved, resolution, status, logger);
+				} else if (resolution.exception != null) {
+					Throwable t = Exceptions.unrollCause(resolution.exception);
+					if (resolution.exception instanceof ResolveCancelledException
+						|| t instanceof InterruptedException) {
+						result = new ResolutionResult(Outcome.Cancelled, resolution, status, logger);
 					} else {
-						throw resolution.exception;
+						resolution.reportException();
+						if (resolution.exception instanceof ResolutionException) {
+							status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
+								resolution.exception.getLocalizedMessage(), resolution.exception));
+							result = new ResolutionResult(Outcome.Unresolved, resolution, status, logger);
+						} else {
+							throw resolution.exception;
+						}
 					}
 				}
+
 			});
 
 		} catch (Exception e) {

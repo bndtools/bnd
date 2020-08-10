@@ -15,7 +15,6 @@ import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.osgi.service.resolver.ResolutionException;
 
 import bndtools.Plugin;
 
@@ -102,8 +101,6 @@ public class ResolutionCanceledPanel {
 			throw new IllegalStateException("Control not created");
 		else if (composite.isDisposed())
 			throw new IllegalStateException("Control already disposed");
-
-		ResolutionException resolutionException = resolutionResult.getResolutionException();
 
 		processingLog.setText(resolutionResult.getLog());
 		this.resolutionResult = resolutionResult;
