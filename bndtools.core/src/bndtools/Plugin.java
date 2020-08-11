@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.IStartupParticipant;
 import org.bndtools.api.Logger;
+import org.bndtools.core.editors.quickfix.facade.QuickFixProcessorFacade;
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
 import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
@@ -84,6 +85,7 @@ public class Plugin extends AbstractUIPlugin {
 		registerWorkspaceServiceFactory(context);
 
 		runStartupParticipants();
+		QuickFixProcessorFacade.setup(context);
 	}
 
 	private static void registerWorkspaceServiceFactory(BundleContext context) {
@@ -143,6 +145,7 @@ public class Plugin extends AbstractUIPlugin {
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
+		QuickFixProcessorFacade.cleanup();
 		stopStartupParticipants();
 
 		bndActivator.stop(context);

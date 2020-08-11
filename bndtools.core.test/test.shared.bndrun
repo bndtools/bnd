@@ -67,9 +67,9 @@
 	osgi.console=,\
     osgi.console.enable.builtin=false,\
     tester.separatethread=true,\
+    tester.trace=true,\
     osgi.instance.area=${.}/generated/workspace,\
 	bndtools.core.test.dir=${.}
-#	tester.names=org.bndtools.core.editors.quickfix.BuildpathQuickFixProcessorTest:withAnnotatedFQType_suggestsBundles(org.assertj.core.api.SoftAssertions)
 
 # It is possible that this set of -runbundles could be trimmed, but until the resolver issues
 # are fixed (see https://github.com/bndtools/bnd/issues/4172) it is difficult to produce a
@@ -81,6 +81,7 @@
 	bndtools.api;version=snapshot,\
 	bndtools.builder;version=snapshot,\
 	bndtools.core;version=snapshot,\
+	bndtools.core.services;version=snapshot,\
 	bndtools.core.test.tests;version=snapshot,\
 	junit-jupiter-api;version='[5.6.2,5.6.3)',\
 	junit-jupiter-engine;version='[5.6.2,5.6.3)',\

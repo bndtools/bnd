@@ -32,8 +32,11 @@ public class TaskUtils {
 			log("Synchronously executing" + suffix);
 			task.run(countDownMonitor(flag));
 			log("Waiting for flag" + suffix);
-			flag.await(10000, TimeUnit.MILLISECONDS);
-			log("Finished waiting for flag" + suffix);
+			if (!flag.await(10000, TimeUnit.MILLISECONDS)) {
+				log("WARN: timed out waiting for operation to finish" + suffix);
+			} else {
+				log("Finished waiting for flag" + suffix);
+			}
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}

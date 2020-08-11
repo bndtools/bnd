@@ -6,3 +6,7 @@ Bundle-ActivationPolicy: lazy
 
 Import-Package: org.eclipse.ui.dialogs;bundle-symbolic-name="org.eclipse.ui.workbench";ui.workbench="split",\
 	${eclipse.importpackage},*
+
+# This is a hack to make the test bundle restart whenever the services bundle restarts
+# so that the tests will re-run automatically
+Require-Bundle: bndtools.core.services

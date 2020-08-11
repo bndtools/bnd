@@ -1,17 +1,26 @@
 package bndtools.core.test.editors.quickfix;
 
+import static bndtools.core.test.utils.TaskUtils.log;
 import static bndtools.core.test.utils.TaskUtils.synchronously;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.eclipse.jdt.core.compiler.IProblem.HierarchyHasProblems;
 import static org.eclipse.jdt.core.compiler.IProblem.ImportNotFound;
 import static org.eclipse.jdt.core.compiler.IProblem.IsClassPathCorrect;
+import static org.eclipse.jdt.core.compiler.IProblem.ParameterMismatch;
+import static org.eclipse.jdt.core.compiler.IProblem.TypeMismatch;
 import static org.eclipse.jdt.core.compiler.IProblem.UndefinedType;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -26,7 +35,11 @@ import org.assertj.core.presentation.StandardRepresentation;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IElementChangedListener;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaElementDelta;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -49,26 +62,55 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 
+import aQute.bnd.build.Project;
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.deployer.repository.LocalIndexedRepo;
+import aQute.bnd.osgi.Constants;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.core.test.utils.WorkbenchTest;
+import bndtools.core.test.utils.WorkspaceImporter;
 
 @Disabled("Currently disabled due to startup flakiness, see https://github.com/bndtools/bnd/issues/4253")
 @ExtendWith(SoftAssertionsExtension.class)
 @WorkbenchTest
-class BuildpathQuickFixProcessorTest {
+public class BuildpathQuickFixProcessorTest {
 	static IPackageFragment						pack;
 	static Class<? extends IQuickFixProcessor>	sutClass;
+
+	// Will be injected by WorkbenchExtension
+	static WorkspaceImporter					importer;
 
 	SoftAssertions								softly;
 	IQuickFixProcessor							sut;
 
+	IProject									eclipseProject;
+	IJavaProject								javaProject;
+	Project										bndProject;
+
+	// TODO: Here are some problem types we could potentially quick-fix that
+	// aren't covered:
+	// Discouraged access (can be fixed by adding a bundle that actually exports
+	// the packages)
+	// Missing method (sometimes caused when the hierarchy is incomplete,
+	// similar to HierarchyHasProblems)
+
 	@SuppressWarnings("unchecked")
 	static void initSUTClass() throws Exception {
-		sutClass = (Class<? extends IQuickFixProcessor>) Central.class.getClassLoader()
+		BundleContext bc = FrameworkUtil.getBundle(BuildpathQuickFixProcessorTest.class)
+			.getBundleContext();
+		Bundle but = Stream.of(bc.getBundles())
+			.filter(bundle -> bundle.getSymbolicName()
+				.equals("bndtools.core.services"))
+			.findAny()
+			.orElseThrow(() -> new IllegalArgumentException("Couldn't find bndtools.core.services"));
+		sutClass = (Class<? extends IQuickFixProcessor>) but
 			.loadClass("org.bndtools.core.editors.quickfix.BuildpathQuickFixProcessor");
 		assertThat(IQuickFixProcessor.class).as("sutClass")
 			.isAssignableFrom(sutClass);
@@ -77,8 +119,7 @@ class BuildpathQuickFixProcessorTest {
 	@BeforeAll
 	static void beforeAll() throws Exception {
 		// Get a handle on the repo. I have seen this come back null on occasion
-		// so spin
-		// until we get it.
+		// so spin until we get it.
 		LocalIndexedRepo localRepo = (LocalIndexedRepo) Central.getWorkspace()
 			.getRepository("Local Index");
 		int count = 0;
@@ -98,7 +139,7 @@ class BuildpathQuickFixProcessorTest {
 		Files.walk(bundleRoot, 1)
 			.filter(x -> x.getFileName()
 				.toString()
-				.endsWith("simple.jar"))
+				.contains(".fodder."))
 			.forEach(bundle -> {
 				try {
 					theRepo.put(IO.stream(bundle), null);
@@ -106,25 +147,138 @@ class BuildpathQuickFixProcessorTest {
 					throw Exceptions.duck(e);
 				}
 			});
+		initSUTClass();
+	}
 
-		IProject project = ResourcesPlugin.getWorkspace()
+	@BeforeEach
+	void beforeEach() throws Exception {
+		eclipseProject = ResourcesPlugin.getWorkspace()
 			.getRoot()
 			.getProject("test");
-		if (!project.exists()) {
-			synchronously("create project", project::create);
-		}
-		synchronously("open project", project::open);
-		IJavaProject javaProject = JavaCore.create(project);
+		bndProject = Central.getProject(eclipseProject);
+		synchronously("open project", eclipseProject::open);
+		IJavaProject javaProject = JavaCore.create(eclipseProject);
 
-		IFolder sourceFolder = project.getFolder("src");
+		IFolder sourceFolder = eclipseProject.getFolder("src");
 		if (!sourceFolder.exists()) {
 			synchronously("create src", monitor -> sourceFolder.create(true, true, monitor));
 		}
 
+		// This folder is not strictly needed for the tests but it prevents a
+		// build
+		// error from BndtoolsBuilder
+		IFolder testFolder = eclipseProject.getFolder("test");
+		if (!testFolder.exists()) {
+			synchronously("create test", monitor -> testFolder.create(true, true, monitor));
+		}
+
 		IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(sourceFolder);
 		synchronously("createPackageFragment", monitor -> pack = root.createPackageFragment("test", false, monitor));
+		clearBuildpath();
+	}
 
-		initSUTClass();
+	// Listener used for synchronizing on classpath changes
+	class ClasspathChangedListener implements IElementChangedListener {
+
+		final CountDownLatch flag;
+
+		ClasspathChangedListener(CountDownLatch flag) {
+			this.flag = flag;
+		}
+
+		@Override
+		public void elementChanged(ElementChangedEvent event) {
+			visit(event.getDelta());
+		}
+
+		private void visit(IJavaElementDelta delta) {
+			IJavaElement el = delta.getElement();
+			switch (el.getElementType()) {
+				case IJavaElement.JAVA_MODEL :
+					visitChildren(delta);
+					break;
+				case IJavaElement.JAVA_PROJECT :
+					if (isClasspathChanged(delta.getFlags())) {
+						flag.countDown();
+					}
+					break;
+				default :
+					break;
+			}
+		}
+
+		private boolean isClasspathChanged(int flags) {
+			return 0 != (flags
+				& (IJavaElementDelta.F_CLASSPATH_CHANGED | IJavaElementDelta.F_RESOLVED_CLASSPATH_CHANGED));
+		}
+
+		public void visitChildren(IJavaElementDelta delta) {
+			for (IJavaElementDelta c : delta.getAffectedChildren()) {
+				visit(c);
+			}
+		}
+	}
+
+	void waitForClasspathUpdate() throws Exception {
+		waitForClasspathUpdate(null);
+	}
+
+	void waitForClasspathUpdate(String context) throws Exception {
+		String prefix = context == null ? "" : context + ": ";
+		CountDownLatch flag = new CountDownLatch(1);
+		IElementChangedListener listener = new ClasspathChangedListener(flag);
+		JavaCore.addElementChangedListener(listener, ElementChangedEvent.POST_CHANGE);
+		try {
+			// This call to forceRefresh() here is unnecessary if you are adding
+			// to
+			// the buildpath, but it seems to be necessary when clearing the
+			// build
+			// path. Without it, the Project object seems to hang around without
+			// updating and doesn't update its buildpath setting.
+			bndProject.forceRefresh();
+			Central.refreshFile(bndProject.getPropertiesFile());
+			log(prefix + "waiting for classpath to update");
+			if (flag.await(10000, TimeUnit.MILLISECONDS)) {
+				log(prefix + "done waiting for classpath to update");
+			} else {
+				log(prefix + "WARNING: timed out waiting for classpath to update");
+			}
+		} finally {
+			JavaCore.removeElementChangedListener(listener);
+		}
+	}
+
+	void clearBuildpath() {
+		log("clearing buildpath");
+		try {
+			BndEditModel model = new BndEditModel(bndProject);
+			model.load();
+			List<VersionedClause> buildPath = model.getBuildPath();
+			if (buildPath != null && !buildPath.isEmpty()) {
+				model.setBuildPath(Collections.emptyList());
+				model.saveChanges();
+				waitForClasspathUpdate("clearBuildpath()");
+			} else {
+				log("buildpath was not set; not trying to clear it");
+			}
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	void addBundlesToBuildpath(String... bundleNames) {
+		try {
+			BndEditModel model = new BndEditModel(bndProject);
+			model.load();
+
+			for (String bundleName : bundleNames) {
+				model.addPath(new VersionedClause(bundleName, null), Constants.BUILDPATH);
+			}
+			model.saveChanges();
+			waitForClasspathUpdate("addBundleToBuildpath");
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 	}
 
 	@BeforeEach
@@ -133,26 +287,40 @@ class BuildpathQuickFixProcessorTest {
 	}
 
 	private static final String	DEFAULT_CLASS_NAME	= "Test";
-	private static final String	CLASS_HEADER		= "import java.util.List;\n" + "" + "class " + DEFAULT_CLASS_NAME
-		+ " {";
+	private static final String	CLASS_HEADER		= "package test; import java.util.List;\n" + "" + "class "
+		+ DEFAULT_CLASS_NAME + " {";
 	private static final String	CLASS_FOOTER		= " var};";
 
+	private IJavaCompletionProposal[] proposalsForStaticImport(String imp) {
+		return proposalsFor(29, 0, "package test; import static " + imp + ";");
+	}
+
 	private IJavaCompletionProposal[] proposalsForImport(String imp) {
-		return proposalsFor(8, 0, "import " + imp + ";");
+		return proposalsFor(22, 0, "package test; import " + imp + ";");
 	}
 
 	private IJavaCompletionProposal[] proposalsForLiteral(String type) {
-		return proposalsFor(CLASS_HEADER.length(), 0,
-			CLASS_HEADER + "Class<?> clazz = " + type + ".class;" + CLASS_FOOTER);
+		String header = CLASS_HEADER + "Class<?> clazz = ";
+		return proposalsFor(header.length(), 0, header + type + ".class;" + CLASS_FOOTER);
 	}
 
 	private IJavaCompletionProposal[] proposalsForUndefType(String type) {
-		return proposalsFor(CLASS_HEADER.length(), 0, CLASS_HEADER + type + CLASS_FOOTER);
+		return proposalsForUndefType(0, type);
+	}
+
+	private IJavaCompletionProposal[] proposalsForUndefType(int offset, String type) {
+		return proposalsFor(CLASS_HEADER.length() + offset, 0, CLASS_HEADER + type + CLASS_FOOTER);
 	}
 
 	private IJavaCompletionProposal[] proposalsFor(int offset, int length, String source) {
 		return proposalsFor(offset, length, DEFAULT_CLASS_NAME, source);
 	}
+
+	// void dumpProblems(Stream<? extends IProblem> problems) {
+	// problems.map(problem -> problem + "[" + problem.getSourceStart() + "," +
+	// problem.getSourceEnd() + "]")
+	// .forEach(System.err::println);
+	// }
 
 	/**
 	 * Workhorse method for driving the quick fix processor and getting the
@@ -170,6 +338,7 @@ class BuildpathQuickFixProcessorTest {
 	private IJavaCompletionProposal[] proposalsFor(int offset, int length, String className, String source) {
 
 		try {
+			// First create our AST
 			ICompilationUnit icu = pack.createCompilationUnit(className + ".java", source, true, null);
 
 			ASTParser parser = ASTParser.newParser(AST.JLS11);
@@ -188,12 +357,28 @@ class BuildpathQuickFixProcessorTest {
 
 			// System.err.println("cu: " + cu);
 
-			IProblemLocation[] locs = Stream.of(cu.getProblems())
+			// Note: IProblem instances seem to give more useful diagnostics
+			// than the IProblemLocation instances
+			// System.err.println("Unfiltered problems: ");
+			// dumpProblems(Stream.of(cu.getProblems()));
+			// Filter out the problems that don't fall within the current editor
+			// context.
+			// This is to properly emulate what the GUI will do when hovering
+			// over a particular point or selecting a particular point.
+			List<IProblem> filtered = Stream.of(cu.getProblems())
+				.filter(problem -> {
+					return problem.getSourceEnd() >= offset && problem.getSourceStart() <= (offset + length);
+				})
+				.collect(Collectors.toList());
+			// System.err.println("Filtered problems:");
+			// dumpProblems(filtered.stream());
+			IProblemLocation[] locs = filtered.stream()
 				.map(ProblemLocation::new)
 				.toArray(IProblemLocation[]::new);
-			// System.err.println(
-			// "Problems: " +
-			// Stream.of(locs).map(IProblemLocation::toString).collect(Collectors.joining(",")));
+
+			// System.err.println("Problems: " + Stream.of(locs)
+			// .map(IProblemLocation::toString)
+			// .collect(Collectors.joining(",")));
 
 			IInvocationContext context = new AssistContext(icu, offset, length);
 			IJavaCompletionProposal[] proposals = sut.getCorrections(context, locs);
@@ -221,7 +406,8 @@ class BuildpathQuickFixProcessorTest {
 			.isTrue();
 	}
 
-	static final Set<Integer> SUPPORTED = Stream.of(ImportNotFound, UndefinedType, IsClassPathCorrect)
+	static final Set<Integer> SUPPORTED = Stream
+		.of(ImportNotFound, UndefinedType, IsClassPathCorrect, HierarchyHasProblems, ParameterMismatch, TypeMismatch)
 		.collect(Collectors.toSet());
 
 	// This is just to give nice error feedback
@@ -276,7 +462,7 @@ class BuildpathQuickFixProcessorTest {
 	@Test
 	void withAnnotatedUnqualifiedType_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
-		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType("@NonNull BundleActivator"));
+		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType(10, "@NonNull BundleActivator"));
 	}
 
 	@Disabled("Not yet implemented")
@@ -326,7 +512,7 @@ class BuildpathQuickFixProcessorTest {
 	@Test
 	void withAnnotatedSimpleType_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
-		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType("@NotNull BundleActivator"));
+		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType(10, "@NotNull BundleActivator"));
 	}
 
 	@Test
@@ -383,19 +569,20 @@ class BuildpathQuickFixProcessorTest {
 	@Test
 	void withSimpleUnannotatedParameter_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
-		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType("List<BundleActivator>"));
+		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType(7, "List<BundleActivator>"));
 	}
 
 	@Test
 	void withSimpleAnnotatedParameter_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
-		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType("List<@NotNull BundleActivator>"));
+		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType(15, "List<@NotNull BundleActivator>"));
 	}
 
 	@Test
 	void withFQUnannotatedParameter_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
-		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType("List<org.osgi.framework.BundleActivator>"));
+		assertThatContainsBundleActivatorSuggestions(
+			proposalsForUndefType(6, "List<org.osgi.framework.BundleActivator>"));
 	}
 
 	@Disabled("Not yet implemented")
@@ -403,14 +590,14 @@ class BuildpathQuickFixProcessorTest {
 	void withFQAnnotatedParameter_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
 		assertThatContainsBundleActivatorSuggestions(
-			proposalsForUndefType("List<org.osgi.framework.@NotNull BundleActivator>"));
+			proposalsForUndefType(6, "List<org.osgi.framework.@NotNull BundleActivator>"));
 	}
 
 	@Test
 	void withFQWildcardBound_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
 		assertThatContainsBundleActivatorSuggestions(
-			proposalsForUndefType("List<? extends org.osgi.framework.BundleActivator>"));
+			proposalsForUndefType(16, "List<? extends org.osgi.framework.BundleActivator>"));
 	}
 
 	@Disabled("Not yet implemented")
@@ -418,17 +605,16 @@ class BuildpathQuickFixProcessorTest {
 	void withFQAnnotatedWildcardBound_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
 		assertThatContainsBundleActivatorSuggestions(
-			proposalsForUndefType("List<? extends org.osgi.framework.@NotNull BundleActivator>"));
+			proposalsForUndefType(16, "List<? extends org.osgi.framework.@NotNull BundleActivator>"));
 	}
 
 	@Disabled("Not yet implemented")
 	@Test
 	void withUnqualifiedNameType_returnsNull(SoftAssertions softly) {
 		// If the type is a simple (non-qualified) name, it must refer to a type
-		// and not a
-		// package; therefore don't provide package import suggestions even if
-		// we have a
-		// package with the matching name.
+		// and not
+		// a package; therefore don't provide package import suggestions even if
+		// we have a package with the matching name.
 		softly.assertThat(proposalsForUndefType("Simple"))
 			.as("capitalized")
 			.isNull();
@@ -453,10 +639,10 @@ class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withOnDemandImport_altPackage_suggestsBundles(SoftAssertions softly) {
+	void withOnDemandImport_altPackage_suggestsBundles(SoftAssertions softly) throws IOException {
 		this.softly = softly;
 		assertThatProposals(proposalsForImport("simple.*")).hasSize(1)
-			.haveExactly(1, suggestsBundle("bndtools.core.test.simple", "1.0.0", "simple"));
+			.haveExactly(1, suggestsBundle("bndtools.core.test.fodder.simple", "1.0.0", "simple"));
 	}
 
 	@Test
@@ -482,24 +668,23 @@ class BuildpathQuickFixProcessorTest {
 	@Test
 	void withOnDemandStaticImport_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
-		assertThatContainsBundleSuggestions(proposalsForImport("static org.osgi.framework.Bundle.*"));
+		assertThatContainsBundleSuggestions(proposalsForStaticImport("org.osgi.framework.Bundle.*"));
 	}
 
-	@Disabled("Not yet implemented")
 	@Test
 	void withStaticImport_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
-		assertThatContainsBundleSuggestions(proposalsForImport("static org.osgi.framework.Bundle.INSTALLED"));
+		assertThatContainsBundleSuggestions(proposalsForStaticImport("org.osgi.framework.Bundle.INSTALLED"));
 	}
 
 	@Test
-	public void withSimplePackageName_suggestsBundles(SoftAssertions softly) {
+	void withSimplePackageName_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
 		assertThatContainsSimpleSuggestions(proposalsForImport("simple.MyClass"), "simple.MyClass");
 	}
 
 	@Test
-	public void withOnDemandSimplePackageName_suggestsBundles(SoftAssertions softly) {
+	void withOnDemandSimplePackageName_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
 		assertThatContainsSimpleSuggestions(proposalsForImport("simple.*"), "simple");
 	}
@@ -508,6 +693,166 @@ class BuildpathQuickFixProcessorTest {
 	void withClassLiteral_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
 		assertThatContainsBundleSuggestions(proposalsForLiteral("Bundle"));
+	}
+
+	@Test
+	void withInconsistentHierarchy_forClassDefinition_thatImplementsAnInterfaceFromAnotherBundle_suggestsBundles(
+		SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; class ";
+		String source = header + DEFAULT_CLASS_NAME + " extends simple.pkg.ClassWithInterfaceFromAnotherBundle {}";
+
+		// IsClassPathCorrect occurs at [0, 1]
+		assertThatProposals(proposalsFor(0, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+		// HierarchyHasProblems is on the type name
+		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+	}
+
+	@Test
+	void withInconsistentHierarchy_forClassDefinition_thatExtendsClassFromAnotherBundle_suggestsBundles(
+		SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; class ";
+		String source = header + DEFAULT_CLASS_NAME + " extends simple.pkg.ClassExtendingClassFromAnotherBundle {}";
+
+		// IsClassPathCorrect occurs at [0, 1]
+		assertThatProposals(proposalsFor(0, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
+		// HierarchyHasProblems is on the type name
+		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
+	}
+
+	@Test
+	void withInconsistentHierarchy_forInterfaceDefinition_thatExtendsAnInterfaceFromAnotherBundle_suggestsBundles(
+		SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; interface ";
+		String source = header + DEFAULT_CLASS_NAME
+			+ " extends simple.pkg.InterfaceExtendingInterfaceFromAnotherBundle {}";
+
+		// IsClassPathCorrect occurs at [0, 1]
+		assertThatProposals(proposalsFor(0, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+		// HierarchyHasProblems is on the type name
+		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+	}
+
+	@Test
+	void withInconsistentHierarchy_forClassUse_thatExtendsAnInterfaceFromAnotherBundle_suggestsBundles(
+		SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; class ";
+		String source = header + DEFAULT_CLASS_NAME + "{\n"
+			+ "  simple.pkg.InterfaceExtendingInterfaceFromAnotherBundle var;\n" + "  void myMethod() {"
+			+ "    var.myInterfaceMethod();" + "  }" + "}";
+
+		// IsClassPathCorrect occurs at [112, 134]
+		assertThatProposals(proposalsFor(112, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+		// UnknownMethod is on the method at [116,132], which means that it's
+		// redundant as the
+		// IsClassPathCorrect problem covers it completely.
+		assertThatProposals(proposalsFor(117, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+	}
+
+	@Test
+	void withInconsistentHierarchy_forClassUse_thatExtendsAClassFromAnotherBundle_suggestsBundles(
+		SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; class ";
+		String source = header + DEFAULT_CLASS_NAME + "{\n" + "  simple.pkg.ClassExtendingClassFromAnotherBundle var;\n"
+			+ "  void myMethod() {" + "    var.bMethod();" + "  }" + "}";
+
+		// IsClassPathCorrect occurs at [104, 116]
+		assertThatProposals(proposalsFor(104, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
+		// UnknownMethod is on the method at [108,114], which means that it's
+		// redundant as the IsClassPathCorrect problem covers it completely.
+		assertThatProposals(proposalsFor(108, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
+	}
+
+	// This is based on a real-world scenario I encountered while using CXF and
+	// SOAP.
+	@Test
+	void withInconsistentHierarchy_forComplicatedGenericHierarchy_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; import java.util.List;" + "import simple.pkg.MyParameterizedClass;"
+			+ "import simple.MyClass;" + "import simple.pkg.ClassExtendingAbstractExtendingMyParameterizedClass;"
+			+ "class ";
+		String source = header + DEFAULT_CLASS_NAME + "{\n" + "  List<MyParameterizedClass<? extends MyClass>> var;\n"
+			+ "  void myMethod() {" + "    var.add(new ClassExtendingAbstractExtendingMyParameterizedClass());" + "  }"
+			+ "}";
+
+		// ParameterMismatch [259, 261]
+		assertThatProposals(proposalsFor(259, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0",
+				"iface.bundle.ClassExtendingMyParameterizedClass"));
+	}
+
+	@Test
+	void withFQClassLiteral_asAnnotationParameter_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; " + "import simple.annotation.MyTag;" + "@MyTag(";
+		String source = header + "iface.bundle.MyInterface.class)" + "class " + DEFAULT_CLASS_NAME + "{" + "}";
+
+		assertThatProposals(proposalsFor(header.length() + 2, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+	}
+
+	@Test
+	void withUnqualifiedClassLiteral_asAnnotationParameter_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		// This scenario causes a "TypeMismatch" because it doesn't know the
+		// superinterface of InterfaceExtendingInterfaceFromAnotherBundle
+		String header = "package test; "
+			+ "import simple.annotation.MyTag; import simple.pkg.InterfaceExtendingInterfaceFromAnotherBundle;"
+			+ "@MyTag(";
+		String source = header + "InterfaceExtendingInterfaceFromAnotherBundle.class)" + "class " + DEFAULT_CLASS_NAME
+			+ "{" + "}";
+
+		assertThatProposals(proposalsFor(header.length() + 2, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+	}
+
+	@Test
+	void withUnqualifiedClassLiteral_forUnimportedType_asAnnotationParameter_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+
+		String header = "package test; " + "import simple.annotation.MyTag; " + "@MyTag(";
+		String source = header + "MyInterface.class)" + "class " + DEFAULT_CLASS_NAME + "{" + "}";
+
+		assertThatProposals(proposalsFor(header.length() + 2, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
 	}
 
 	private void assertThatContainsPromiseSuggestions(IJavaCompletionProposal[] proposals) {
@@ -521,10 +866,12 @@ class BuildpathQuickFixProcessorTest {
 		}
 	}
 
+	final static IJavaCompletionProposal[] EMPTY_LIST = new IJavaCompletionProposal[0];
+
 	private ProxyableObjectArrayAssert<IJavaCompletionProposal> assertThatProposals(
 		IJavaCompletionProposal[] proposals) {
 		if (proposals == null) {
-			throw new AssertionError("no proposals returned");
+			return softly.assertThat(EMPTY_LIST);
 		}
 		return softly.assertThat(proposals)
 			.withRepresentation(PROPOSAL);
@@ -532,7 +879,7 @@ class BuildpathQuickFixProcessorTest {
 
 	private void assertThatContainsSimpleSuggestions(IJavaCompletionProposal[] proposals, String fqn) {
 		assertThatProposals(proposals).hasSize(1)
-			.haveExactly(1, suggestsBundle("bndtools.core.test.simple", "1.0.0", fqn));
+			.haveExactly(1, suggestsBundle("bndtools.core.test.fodder.simple", "1.0.0", fqn));
 	}
 
 	private void assertThatContainsMyClassSuggestions(IJavaCompletionProposal[] proposals) {
@@ -551,8 +898,8 @@ class BuildpathQuickFixProcessorTest {
 		assertThatContainsFrameworkBundles(proposals, "org.osgi.framework.hooks.service.ListenerHook.ListenerInfo");
 	}
 
-	// This gives us a more useful output in test failures.
-	static Representation PROPOSAL = new StandardRepresentation() {
+	// This gives us a more complete display when tests fail
+	static final Representation PROPOSAL = new StandardRepresentation() {
 		@Override
 		public String toStringOf(Object object) {
 			if (object instanceof IJavaCompletionProposal) {
