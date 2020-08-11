@@ -156,10 +156,14 @@ public class TemplateParamsWizardPage extends WizardPage implements ISkippableWi
 	}
 
 	private Control createFieldControl(Composite parent, final AttributeDefinition ad) {
+		int textType = SWT.BORDER;
 		switch (ad.getType()) {
+			case AttributeDefinition.PASSWORD :
+				textType |= SWT.PASSWORD;
+				// Note: fall-through to next case statement is intentional here
 			case AttributeDefinition.STRING :
 			case AttributeDefinition.INTEGER :
-				final Text text = new Text(parent, SWT.BORDER);
+				final Text text = new Text(parent, textType);
 				if (ad.getName() != null)
 					text.setMessage(ad.getName());
 
