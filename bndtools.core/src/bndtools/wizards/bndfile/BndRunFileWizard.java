@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.bndtools.core.ui.wizards.shared.BuiltInTemplate;
-import org.bndtools.core.ui.wizards.shared.ISkippableWizardPage;
+import org.bndtools.core.ui.wizards.shared.ISkippingWizard;
 import org.bndtools.core.ui.wizards.shared.TemplateParamsWizardPage;
 import org.bndtools.core.ui.wizards.shared.TemplateSelectionWizardPage;
 import org.bndtools.templating.Resource;
@@ -35,7 +35,7 @@ import org.eclipse.ui.ide.IDE;
 
 import bndtools.Plugin;
 
-public class BndRunFileWizard extends Wizard implements INewWizard {
+public class BndRunFileWizard extends Wizard implements INewWizard, ISkippingWizard {
 
 	private static final String			PROP_PROJECT_NAME		= "projectName";
 	private static final String			PROP_FILE_BASE_NAME		= "fileBaseName";
@@ -183,24 +183,22 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
 	}
 
 	@Override
+	public IWizardPage getUnfilteredPreviousPage(IWizardPage page) {
+		return super.getPreviousPage(page);
+	}
+
+	@Override
+	public IWizardPage getUnfilteredNextPage(IWizardPage page) {
+		return super.getNextPage(page);
+	}
+
+	@Override
 	public IWizardPage getPreviousPage(IWizardPage page) {
-		IWizardPage prev = super.getPreviousPage(page);
-		if (prev instanceof ISkippableWizardPage) {
-			if (((ISkippableWizardPage) prev).shouldSkip()) {
-				return getPreviousPage(prev);
-			}
-		}
-		return prev;
+		return ISkippingWizard.super.getPreviousPage(page);
 	}
 
 	@Override
 	public IWizardPage getNextPage(IWizardPage page) {
-		IWizardPage next = super.getNextPage(page);
-		if (next instanceof ISkippableWizardPage) {
-			if (((ISkippableWizardPage) next).shouldSkip()) {
-				return getNextPage(next);
-			}
-		}
-		return next;
+		return ISkippingWizard.super.getNextPage(page);
 	}
 }

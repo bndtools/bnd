@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.bndtools.core.ui.wizards.shared.ISkippingWizard;
+import org.bndtools.core.ui.wizards.shared.TemplateParamsWizardPage;
 import org.bndtools.core.ui.wizards.shared.TemplateSelectionWizardPage;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
@@ -31,6 +33,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IPerspectiveDescriptor;
@@ -43,13 +46,16 @@ import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;
 
-public class WorkspaceSetupWizard extends Wizard implements INewWizard {
+public class WorkspaceSetupWizard extends Wizard implements INewWizard, ISkippingWizard {
 
 	private IWorkbench					workbench;
 
 	private WorkspaceSetupWizardPage	setupPage;
 	private TemplateSelectionWizardPage	templatePage;
+	private TemplateParamsWizardPage	paramsPage;
 	private WorkspacePreviewPage		previewPage;
+
+	static private final String[]		EMPTY_PARAMS	= new String[0];
 
 	public WorkspaceSetupWizard() {
 		setNeedsProgressMonitor(true);
@@ -63,7 +69,8 @@ public class WorkspaceSetupWizard extends Wizard implements INewWizard {
 		updateSetupPageForExistingProjects();
 		templatePage = new TemplateSelectionWizardPage("workspaceTemplateSelection", "workspace", null);
 		templatePage.setTitle("Select Workspace Template");
-		previewPage = new WorkspacePreviewPage();
+		paramsPage = new TemplateParamsWizardPage(EMPTY_PARAMS);
+		previewPage = new WorkspacePreviewPage(paramsPage);
 		previewPage.setTargetDir(setupPage.getLocation()
 			.toFile());
 
@@ -72,6 +79,7 @@ public class WorkspaceSetupWizard extends Wizard implements INewWizard {
 				.toFile()));
 		templatePage.addPropertyChangeListener(TemplateSelectionWizardPage.PROP_TEMPLATE, evt -> {
 			Template template = templatePage.getTemplate();
+			paramsPage.setTemplate(template);
 			previewPage.setTemplate(template);
 		});
 	}
@@ -80,6 +88,7 @@ public class WorkspaceSetupWizard extends Wizard implements INewWizard {
 	public void addPages() {
 		addPage(setupPage);
 		addPage(templatePage);
+		addPage(paramsPage);
 		addPage(previewPage);
 	}
 
@@ -229,6 +238,26 @@ public class WorkspaceSetupWizard extends Wizard implements INewWizard {
 			return false;
 		}
 
+	}
+
+	@Override
+	public IWizardPage getUnfilteredPreviousPage(IWizardPage page) {
+		return super.getPreviousPage(page);
+	}
+
+	@Override
+	public IWizardPage getUnfilteredNextPage(IWizardPage page) {
+		return super.getNextPage(page);
+	}
+
+	@Override
+	public IWizardPage getPreviousPage(IWizardPage page) {
+		return ISkippingWizard.super.getPreviousPage(page);
+	}
+
+	@Override
+	public IWizardPage getNextPage(IWizardPage page) {
+		return ISkippingWizard.super.getNextPage(page);
 	}
 
 	private void updateSetupPageForExistingProjects() {

@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.bndtools.core.ui.wizards.shared.TemplateParamsWizardPage;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
@@ -73,6 +74,8 @@ public class WorkspacePreviewPage extends WizardPage {
 	private Image						imgOverwrite;
 	private Image						imgError;
 
+	private TemplateParamsWizardPage	paramsPage;
+
 	private final Runnable				updateDisplayTask		= () -> {
 																	synchronized (lock) {
 																		if (errorMessage != null) {
@@ -127,9 +130,19 @@ public class WorkspacePreviewPage extends WizardPage {
 																				existingFiles.clear();
 																				resourceErrors.clear();
 
+																				Map<String, List<Object>> templateMultiParams = new HashMap<>();
+																				for (Entry<String, String> param : paramsPage
+																					.getValues()
+																					.entrySet()) {
+																					templateMultiParams.put(
+																						param.getKey(),
+																						Collections
+																							.<Object> singletonList(
+																								param.getValue()));
+																				}
 																				templateOutputs = template
-																					.generateOutputs(Collections
-																						.<String, List<Object>> emptyMap(),
+																					.generateOutputs(
+																						templateMultiParams,
 																						monitor);
 
 																				IWorkspaceRoot workspaceRoot = ResourcesPlugin
@@ -245,8 +258,9 @@ public class WorkspacePreviewPage extends WizardPage {
 																		updateDisplayTask);
 																};
 
-	public WorkspacePreviewPage() {
+	public WorkspacePreviewPage(TemplateParamsWizardPage paramsPage) {
 		super("preview");
+		this.paramsPage = paramsPage;
 	}
 
 	@Override
