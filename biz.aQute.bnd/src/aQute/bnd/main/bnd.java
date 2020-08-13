@@ -2003,6 +2003,9 @@ public class bnd extends Processor {
 
 		@Description("Path to work directory")
 		String dir();
+
+		@Description("Test names to execute")
+		String[] tests();
 	}
 
 	/**
@@ -2070,6 +2073,12 @@ public class bnd extends Processor {
 				for (File string : matchedFiles) {
 					out.println("- " + string);
 				}
+				if (opts.tests() != null && opts.tests().length > 0) {
+					out.println("tests: ");
+					for (String test : opts.tests()) {
+						out.println("- " + test);
+					}
+				}
 			}
 
 			// TODO check all the arguments
@@ -2081,7 +2090,7 @@ public class bnd extends Processor {
 						out.println("try to run file: " + f);
 						out.println("results:");
 					}
-					int error = runtTest(f, testws, reportDir, summary);
+					int error = runTest(f, opts.tests(), testws, reportDir, summary);
 					if (verbose) {
 						out.println("Error: " + error);
 					}
@@ -2124,7 +2133,7 @@ public class bnd extends Processor {
 	/**
 	 * Help function to run the tests
 	 */
-	private int runtTest(File testFile, Workspace testws, File reportDir, Tag summary) throws Exception {
+	private int runTest(File testFile, String[] tests, Workspace testws, File reportDir, Tag summary) throws Exception {
 		File tmpDir = new File(reportDir, "tmp");
 		IO.mkdirs(tmpDir);
 		tmpDir.deleteOnExit();
@@ -2153,6 +2162,11 @@ public class bnd extends Processor {
 		tester.setContinuous(false);
 		tester.setReportDir(tmpDir);
 		test.addAttribute("title", project.toString());
+		if (tests != null) {
+			for (String testname : tests) {
+				tester.addTest(testname);
+			}
+		}
 		long start = System.currentTimeMillis();
 		try {
 			int errors = tester.test();
