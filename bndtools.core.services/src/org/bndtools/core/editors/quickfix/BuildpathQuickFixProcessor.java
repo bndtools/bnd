@@ -2,14 +2,15 @@ package org.bndtools.core.editors.quickfix;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -32,6 +33,7 @@ import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.QualifiedType;
 import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.TypeLiteral;
 import org.eclipse.jdt.ui.text.java.IInvocationContext;
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
 import org.eclipse.jdt.ui.text.java.IProblemLocation;
@@ -42,6 +44,7 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.BundleId;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.service.result.Result;
 import aQute.lib.exceptions.Exceptions;
@@ -126,6 +129,9 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			for (ITypeBinding iface : binding.getInterfaces()) {
 				visitBindingHierarchy(iface);
 			}
+			for (ITypeBinding typeParam : binding.getTypeArguments()) {
+				visitBindingHierarchy(typeParam);
+			}
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -157,25 +163,26 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 		return null;
 	}
 
-	Project							project;
-	IInvocationContext				context;
-	private boolean					test;
-	private Workspace				workspace;
-	List<IJavaCompletionProposal>	proposals;
-	IProblemLocation				location;
-	final ASTVisitor				TYPE_VISITOR	= new ASTVisitor() {
-														@Override
-														public void preVisit(ASTNode node) {
-															if (node instanceof Type) {
-																ITypeBinding binding = ((Type) node).resolveBinding();
-																try {
-																	visitBindingHierarchy(binding);
-																} catch (Exception e) {
-																	throw Exceptions.duck(e);
+	Project								project;
+	IInvocationContext					context;
+	private boolean						test;
+	private Workspace					workspace;
+	Map<BundleId, Map<String, Boolean>>	proposals;
+	IProblemLocation					location;
+	final ASTVisitor					TYPE_VISITOR	= new ASTVisitor() {
+															@Override
+															public void preVisit(ASTNode node) {
+																if (node instanceof Type) {
+																	ITypeBinding binding = ((Type) node)
+																		.resolveBinding();
+																	try {
+																		visitBindingHierarchy(binding);
+																	} catch (Exception e) {
+																		throw Exceptions.duck(e);
+																	}
 																}
 															}
-														}
-													};
+														};
 
 	// This implementation is not thread safe. I'm fairly sure that Eclipse will
 	// not call this from multiple threads at the same time so that should be
@@ -185,7 +192,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 		throws CoreException {
 		try {
 			this.context = context;
-			proposals = new ArrayList<>();
+			proposals = new HashMap<>();
 
 			ICompilationUnit compUnit = context.getCompilationUnit();
 			IJavaProject java = compUnit.getJavaProject();
@@ -260,11 +267,18 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 					}
 					case IProblem.UndefinedType : {
 						ASTNode node = location.getCoveredNode(context.getASTRoot());
-						if (!(node instanceof Name)) {
-							continue;
+						if (node instanceof Name) {
+							Type type = findFirstParentOfType(node, Type.class);
+							addProposalsForType(type);
+						} else if (node instanceof TypeLiteral) {
+							TypeLiteral tl = (TypeLiteral) node;
+							addProposalsForType(tl.getType());
+//						} else {
+//							String[] arguments = location.getProblemArguments();
+//							if (arguments != null && arguments.length > 0) {
+//								addProposals(arguments[0]);
+//							}
 						}
-						Type type = findFirstParentOfType(node, Type.class);
-						addProposalsForType(type);
 						continue;
 					}
 					case IProblem.IsClassPathCorrect : {
@@ -280,7 +294,34 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 					}
 				}
 			}
-			return proposals.isEmpty() ? null : proposals.toArray(new IJavaCompletionProposal[0]);
+
+			if (proposals.isEmpty()) {
+				return null;
+			}
+
+			Set<BundleId> buildpath = getBundleIds(project.getBuildpath());
+			Set<BundleId> testpath = test ? getBundleIds(project.getTestpath()) : Collections.emptySet();
+
+			Stream<AddBundleCompletionProposal> results;
+
+			if (test) {
+				results = proposals.entrySet()
+					.stream()
+					.filter(entry -> !testpath.contains(entry.getKey()))
+					.map(
+						entry -> new AddBundleCompletionProposal(entry.getKey(), entry.getValue(), 15 + entry.getValue()
+							.size(), context, project, Constants.TESTPATH));
+			} else {
+				results = Stream.empty();
+			}
+			IJavaCompletionProposal[] retval = Stream.concat(results, proposals.entrySet()
+				.stream()
+				.filter(entry -> !buildpath.contains(entry.getKey()))
+				.map(entry -> new AddBundleCompletionProposal(entry.getKey(), entry.getValue(), 14 + entry.getValue()
+					.size(), context, project, Constants.BUILDPATH)))
+				.toArray(IJavaCompletionProposal[]::new);
+
+			return retval.length == 0 ? null : retval;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -350,7 +391,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	}
 
 	private void addProposals(String packageName, String className) throws CoreException, Exception {
-		doAddProposals(workspace.search(packageName, className), false);
+		doAddProposals(workspace.search(packageName, className), packageName == null || packageName.length() == 0);
 	}
 
 	private void doAddProposals(Result<Map<String, List<BundleId>>, String> wrappedResult, boolean doImport)
@@ -358,19 +399,11 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 		Map<String, List<BundleId>> result = wrappedResult
 			.orElseThrow(s -> new CoreException(new Status(IStatus.ERROR, "bndtools.core.services", s)));
 
-		Set<BundleId> buildpath = getBundleIds(project.getBuildpath());
-		Set<BundleId> testpath = test ? getBundleIds(project.getTestpath()) : Collections.emptySet();
-
 		result.entrySet()
 			.forEach(e -> {
 				for (BundleId id : e.getValue()) {
-
-					if (test && !testpath.contains(id) && !buildpath.contains(id))
-						proposals.add(propose(e.getKey(), id, context, location, project, "-testpath", doImport));
-
-					if (!buildpath.contains(id))
-						proposals.add(propose(e.getKey(), id, context, location, project, "-buildpath", doImport));
-
+					proposals.computeIfAbsent(id, newBundleId -> new HashMap<>())
+						.merge(e.getKey(), doImport, (oldVal, newVal) -> oldVal || newVal);
 				}
 			});
 	}
@@ -399,12 +432,6 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			.map(Container::getBundleId)
 			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
-	}
-
-	private IJavaCompletionProposal propose(String proposalString, BundleId bundle, IInvocationContext context,
-		IProblemLocation location, Project project, String type, boolean doImport) {
-
-		return new AddBundleCompletionProposal(proposalString, bundle, 15, context, project, type, doImport);
 	}
 
 	/**

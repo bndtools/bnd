@@ -2,6 +2,7 @@ package org.bndtools.core.editors.quickfix.facade;
 
 import static aQute.lib.exceptions.FunctionWithException.asFunction;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.CoreException;
@@ -44,7 +45,10 @@ public class QuickFixProcessorFacade implements IQuickFixProcessor {
 	@Override
 	public IJavaCompletionProposal[] getCorrections(IInvocationContext context, IProblemLocation[] locations)
 		throws CoreException {
-		return streamOf().flatMap(asFunction(processor -> Stream.of(processor.getCorrections(context, locations))))
+		IJavaCompletionProposal[] retval = streamOf().map(asFunction(processor -> processor.getCorrections(context, locations)))
+			.filter(Objects::nonNull)
+			.flatMap(Stream::of)
 			.toArray(IJavaCompletionProposal[]::new);
+		return retval.length == 0 ? null : retval;
 	}
 }
