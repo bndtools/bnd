@@ -56,6 +56,9 @@ public enum EE {
 	JavaSE_15("JavaSE-15", "JavaSE", "15", JavaSE_14_0),
 	JavaSE_16("JavaSE-16", "JavaSE", "16", JavaSE_15),
 	JavaSE_17("JavaSE-17", "JavaSE", "17", JavaSE_16),
+	JavaSE_18("JavaSE-18", "JavaSE", "18", JavaSE_17),
+	JavaSE_19("JavaSE-19", "JavaSE", "19", JavaSE_18),
+	JavaSE_20("JavaSE-20", "JavaSE", "20", JavaSE_19),
 
 	UNKNOWN("<UNKNOWN>", "UNKNOWN", "0");
 
