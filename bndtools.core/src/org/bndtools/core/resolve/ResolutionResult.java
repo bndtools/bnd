@@ -1,5 +1,8 @@
 package org.bndtools.core.resolve;
 
+import static java.util.Objects.requireNonNull;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -26,10 +29,10 @@ public class ResolutionResult {
 	}
 
 	public ResolutionResult(Outcome outcome, RunResolution resolution, IStatus status, ResolverLogger logger) {
-		this.outcome = outcome;
+		this.outcome = requireNonNull(outcome);
 		this.resolution = resolution;
-		this.status = status;
-		this.logger = logger;
+		this.status = requireNonNull(status);
+		this.logger = requireNonNull(logger);
 	}
 
 	public Outcome getOutcome() {
@@ -37,16 +40,23 @@ public class ResolutionResult {
 	}
 
 	public Map<Resource, List<Wire>> getResourceWirings() {
-		return resolution.required;
+		if (resolution != null) {
+			return resolution.required;
+		}
+		return Collections.emptyMap();
 	}
 
 	public Map<Resource, List<Wire>> getOptionalResources() {
-		return resolution.optional;
+		if (resolution != null) {
+			return resolution.optional;
+		}
+		return Collections.emptyMap();
 	}
 
 	public ResolutionException getResolutionException() {
-		if (resolution.exception instanceof ResolutionException)
+		if ((resolution != null) && (resolution.exception instanceof ResolutionException)) {
 			return (ResolutionException) resolution.exception;
+		}
 		return null;
 	}
 
@@ -55,7 +65,10 @@ public class ResolutionResult {
 	}
 
 	public String getLog() {
-		return resolution.log;
+		if (resolution != null) {
+			return resolution.log;
+		}
+		return "";
 	}
 
 	public RunResolution getResolution() {

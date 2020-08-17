@@ -95,13 +95,15 @@ public class ResolveOperation implements IRunnableWithProgress {
 		if (coordinator == null)
 			inCoordination.run();
 		else {
-			Coordination coordination = coordinator.begin(ResolveOperation.class.getName(), 0);
 			try {
-				inCoordination.run();
-				coordination.end();
-			} catch (Exception e1) {
-				coordination.fail(e1);
-				throw e1;
+				Coordination coordination = coordinator.begin(ResolveOperation.class.getName(), 0);
+				try {
+					inCoordination.run();
+				} catch (Exception e) {
+					coordination.fail(e);
+				} finally {
+					coordination.end();
+				}
 			} finally {
 				bc.ungetService(coordSvcRef);
 			}
