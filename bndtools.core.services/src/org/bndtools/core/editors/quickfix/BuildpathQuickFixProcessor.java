@@ -2,14 +2,15 @@ package org.bndtools.core.editors.quickfix;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -27,8 +28,12 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.NameQualifiedType;
 import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.QualifiedType;
+import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.TypeLiteral;
 import org.eclipse.jdt.ui.text.java.IInvocationContext;
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
 import org.eclipse.jdt.ui.text.java.IProblemLocation;
@@ -39,7 +44,9 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.BundleId;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.service.result.Result;
 import aQute.lib.exceptions.Exceptions;
 import bndtools.central.Central;
 
@@ -105,18 +112,25 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	 */
 	void visitBindingHierarchy(ITypeBinding binding) {
 		try {
-			if (binding == null || binding.getQualifiedName()
-				.startsWith("java.")) {
+			if (binding == null) {
+				return;
+			}
+			String qualifiedName = binding.getQualifiedName();
+
+			if (qualifiedName.startsWith("java.")) {
 				return;
 			}
 			// A "recovered" type binding indicates the type has not been
 			// fully resolved - usually because it's not on the classpath.
 			if (binding.isRecovered()) {
-				addProposals(binding.getQualifiedName());
+				addProposals(binding);
 			}
 			visitBindingHierarchy(binding.getSuperclass());
 			for (ITypeBinding iface : binding.getInterfaces()) {
 				visitBindingHierarchy(iface);
+			}
+			for (ITypeBinding typeParam : binding.getTypeArguments()) {
+				visitBindingHierarchy(typeParam);
 			}
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
@@ -137,36 +151,38 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	<N extends ASTNode> N findFirstParentOfType(ASTNode node, Class<N> type) {
 		while (node != null) {
 			if (type.isAssignableFrom(node.getClass())) {
-				return (N) node;
+				@SuppressWarnings("unchecked")
+				N retval = (N) node;
+				return retval;
 			}
 			node = node.getParent();
 		}
 		return null;
 	}
 
-	Project							project;
-	IInvocationContext				context;
-	private boolean					test;
-	private Workspace				workspace;
-	List<IJavaCompletionProposal>	proposals;
-	IProblemLocation				location;
-	final ASTVisitor				TYPE_VISITOR	= new ASTVisitor() {
-														@Override
-														public void preVisit(ASTNode node) {
-															if (node instanceof Type) {
-																ITypeBinding binding = ((Type) node).resolveBinding();
-																try {
-																	visitBindingHierarchy(binding);
-																} catch (Exception e) {
-																	throw Exceptions.duck(e);
+	Project								project;
+	IInvocationContext					context;
+	private boolean						test;
+	private Workspace					workspace;
+	Map<BundleId, Map<String, Boolean>>	proposals;
+	IProblemLocation					location;
+	final ASTVisitor					TYPE_VISITOR	= new ASTVisitor() {
+															@Override
+															public void preVisit(ASTNode node) {
+																if (node instanceof Type) {
+																	ITypeBinding binding = ((Type) node)
+																		.resolveBinding();
+																	try {
+																		visitBindingHierarchy(binding);
+																	} catch (Exception e) {
+																		throw Exceptions.duck(e);
+																	}
 																}
 															}
-														}
-													};
+														};
 
 	// This implementation is not thread safe. I'm fairly sure that Eclipse will
 	// not call this from multiple threads at the same time so that should be
@@ -176,7 +192,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 		throws CoreException {
 		try {
 			this.context = context;
-			proposals = new ArrayList<>();
+			proposals = new HashMap<>();
 
 			ICompilationUnit compUnit = context.getCompilationUnit();
 			IJavaProject java = compUnit.getJavaProject();
@@ -231,20 +247,41 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 								// It should be a QualifiedName unless there is
 								// an error in Eclipse...
 								if (name instanceof QualifiedName) {
-									partialClassName = ((QualifiedName) name).getQualifier()
-										.getFullyQualifiedName();
+									addProposals(((QualifiedName) name).getQualifier()
+										.getFullyQualifiedName());
 								}
-							} else {
-								partialClassName = name.getFullyQualifiedName();
+							} else if (importDec.isOnDemand()) {
+								addProposals(name.getFullyQualifiedName());
+							} else if (name instanceof QualifiedName) {
+								QualifiedName qn = (QualifiedName) name;
+								addProposals(qn.getQualifier()
+									.getFullyQualifiedName(),
+									qn.getName()
+										.toString());
 							}
-							if (partialClassName != null) {
-								addProposals(partialClassName);
-							}
+							// Don't make any suggestions for a SimpleName as it
+							// is in the default package, which can't be
+							// exported by any bundle.
 						}
 						continue;
 					}
-					case IProblem.IsClassPathCorrect :
 					case IProblem.UndefinedType : {
+						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						if (node instanceof Name) {
+							Type type = findFirstParentOfType(node, Type.class);
+							addProposalsForType(type);
+						} else if (node instanceof TypeLiteral) {
+							TypeLiteral tl = (TypeLiteral) node;
+							addProposalsForType(tl.getType());
+//						} else {
+//							String[] arguments = location.getProblemArguments();
+//							if (arguments != null && arguments.length > 0) {
+//								addProposals(arguments[0]);
+//							}
+						}
+						continue;
+					}
+					case IProblem.IsClassPathCorrect : {
 						String partialClassName = getPartialClassName(location.getCoveringNode(context.getASTRoot()));
 						if (partialClassName == null && location.getProblemArguments().length > 0)
 							partialClassName = location.getProblemArguments()[0];
@@ -257,33 +294,116 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 					}
 				}
 			}
-			return proposals.isEmpty() ? null : proposals.toArray(new IJavaCompletionProposal[0]);
+
+			if (proposals.isEmpty()) {
+				return null;
+			}
+
+			Set<BundleId> buildpath = getBundleIds(project.getBuildpath());
+			Set<BundleId> testpath = test ? getBundleIds(project.getTestpath()) : Collections.emptySet();
+
+			Stream<AddBundleCompletionProposal> results;
+
+			if (test) {
+				results = proposals.entrySet()
+					.stream()
+					.filter(entry -> !testpath.contains(entry.getKey()))
+					.map(
+						entry -> new AddBundleCompletionProposal(entry.getKey(), entry.getValue(), 15 + entry.getValue()
+							.size(), context, project, Constants.TESTPATH));
+			} else {
+				results = Stream.empty();
+			}
+			IJavaCompletionProposal[] retval = Stream.concat(results, proposals.entrySet()
+				.stream()
+				.filter(entry -> !buildpath.contains(entry.getKey()))
+				.map(entry -> new AddBundleCompletionProposal(entry.getKey(), entry.getValue(), 14 + entry.getValue()
+					.size(), context, project, Constants.BUILDPATH)))
+				.toArray(IJavaCompletionProposal[]::new);
+
+			return retval.length == 0 ? null : retval;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	private void addProposalsForType(Type type) throws CoreException, Exception {
+		switch (type.getNodeType()) {
+			case ASTNode.NAME_QUALIFIED_TYPE :
+				NameQualifiedType nqt = (NameQualifiedType) type;
+				addProposals(nqt.getQualifier()
+					.getFullyQualifiedName()
+					.toString(),
+					nqt.getName()
+						.toString());
+				return;
+			case ASTNode.QUALIFIED_TYPE :
+				QualifiedType qt = (QualifiedType) type;
+				addProposalsForType(qt.getQualifier());
+				return;
+			case ASTNode.SIMPLE_TYPE :
+				SimpleType st = (SimpleType) type;
+				Name name = st.getName();
+				switch (name.getNodeType()) {
+					case ASTNode.QUALIFIED_NAME :
+						QualifiedName qn = (QualifiedName) name;
+						addProposals(qn.getQualifier()
+							.getFullyQualifiedName(),
+							qn.getName()
+								.toString());
+						return;
+					default :
+						addProposals(null, name.getFullyQualifiedName());
+						return;
+				}
+		}
+	}
+
+	private void addProposals(ITypeBinding typeBinding) throws CoreException, Exception {
+		if (typeBinding == null) {
+			throw new NullPointerException();
+		}
+		final StringBuilder className = new StringBuilder(128);
+		getClassName(typeBinding, className);
+		if (typeBinding.getPackage() != null) {
+			final String packageName = typeBinding.getPackage()
+				.getName();
+			doAddProposals(workspace.search(packageName, className.toString()), true);
+		} else {
+			addProposals(className.toString());
+		}
+	}
+
+	private void getClassName(ITypeBinding typeBinding, StringBuilder buffer) {
+		ITypeBinding parent = typeBinding.getDeclaringClass();
+		if (parent != null) {
+			getClassName(parent, buffer);
+			buffer.append('.');
+		}
+		buffer.append(typeBinding.getName());
 	}
 
 	private void addProposals(String partialClassName) throws CoreException, Exception {
 		boolean doImport = Descriptors.determine(partialClassName)
 			.map(sa -> sa[0] == null)
 			.orElse(false);
+		doAddProposals(workspace.search(partialClassName), doImport);
+	}
 
-		Map<String, List<BundleId>> result = workspace.search(partialClassName)
+	private void addProposals(String packageName, String className) throws CoreException, Exception {
+		doAddProposals(workspace.search(packageName, className), packageName == null || packageName.length() == 0);
+	}
+
+	private void doAddProposals(Result<Map<String, List<BundleId>>, String> wrappedResult, boolean doImport)
+		throws CoreException, Exception {
+		Map<String, List<BundleId>> result = wrappedResult
 			.orElseThrow(s -> new CoreException(new Status(IStatus.ERROR, "bndtools.core.services", s)));
-
-		Set<BundleId> buildpath = getBundleIds(project.getBuildpath());
-		Set<BundleId> testpath = test ? getBundleIds(project.getTestpath()) : Collections.emptySet();
 
 		result.entrySet()
 			.forEach(e -> {
 				for (BundleId id : e.getValue()) {
-
-					if (test && !testpath.contains(id) && !buildpath.contains(id))
-						proposals.add(propose(e.getKey(), id, context, location, project, "-testpath", doImport));
-
-					if (!buildpath.contains(id))
-						proposals.add(propose(e.getKey(), id, context, location, project, "-buildpath", doImport));
-
+					proposals.computeIfAbsent(id, newBundleId -> new HashMap<>())
+						.merge(e.getKey(), doImport, (oldVal, newVal) -> oldVal || newVal);
 				}
 			});
 	}
@@ -312,12 +432,6 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			.map(Container::getBundleId)
 			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
-	}
-
-	private IJavaCompletionProposal propose(String proposalString, BundleId bundle, IInvocationContext context,
-		IProblemLocation location, Project project, String type, boolean doImport) {
-
-		return new AddBundleCompletionProposal(proposalString, bundle, 15, context, project, type, doImport);
 	}
 
 	/**

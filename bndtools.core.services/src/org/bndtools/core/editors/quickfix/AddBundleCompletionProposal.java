@@ -1,11 +1,17 @@
 package org.bndtools.core.editors.quickfix;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.text.java.IInvocationContext;
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -22,27 +28,30 @@ import bndtools.central.Central;
 
 class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletionProposal {
 
-	final BundleId				bundle;
-	final String				displayString;
-	final int					relevance;
-	final IInvocationContext	context;
-	final Project				project;
-	final String				pathtype;
-	final String				fqn;
-	final boolean				doImport;
+	private static final ILogger	logger	= Logger.getLogger(AddBundleCompletionProposal.class);
 
-	public AddBundleCompletionProposal(String fqn, BundleId bundle, int relevance, IInvocationContext context,
-		Project project, String pathtype, boolean doImport) {
+	final BundleId					bundle;
+	final String					displayString;
+	final int						relevance;
+	final IInvocationContext		context;
+	final Project					project;
+	final String					pathtype;
+	final Map<String, Boolean>		classes;
+
+	public AddBundleCompletionProposal(BundleId bundle, Map<String, Boolean> classes, int relevance,
+		IInvocationContext context, Project project, String pathtype) {
 		super("Adding '" + bundle + "' to " + project + " " + pathtype);
-		this.fqn = fqn;
+		this.classes = classes;
 		this.bundle = bundle;
 		this.relevance = relevance;
 		this.context = context;
 		this.project = project;
 		this.pathtype = pathtype;
-		this.doImport = doImport;
 		this.displayString = Strings.format("Add %s %s to %s (found %s)", bundle.getBsn(), bundle.getShortVersion(),
-			pathtype, fqn);
+			pathtype, classes.keySet()
+				.stream()
+				.sorted()
+				.collect(Collectors.joining(", ")));
 	}
 
 	@Override
@@ -108,19 +117,27 @@ class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletio
 
 			}, monitor);
 
-			String[] determine = Descriptors.determine(fqn)
-				.unwrap();
+			classes.entrySet()
+				.stream()
+				.filter(entry -> entry.getValue())
+				.forEach(pair -> {
+					String fqn = pair.getKey();
+					String[] determine = Descriptors.determine(fqn)
+						.unwrap();
 
-			assert determine[0] != null : "We must have found a package";
-			if (doImport) {
-				if (determine[1] == null) {
-					context.getCompilationUnit()
-						.createImport(fqn + ".*", null, monitor);
-				} else {
-					context.getCompilationUnit()
-						.createImport(fqn, null, monitor);
-				}
-			}
+					assert determine[0] != null : "We must have found a package";
+					try {
+						if (determine[1] == null) {
+							context.getCompilationUnit()
+								.createImport(fqn + ".*", null, monitor);
+						} else {
+							context.getCompilationUnit()
+								.createImport(fqn, null, monitor);
+						}
+					} catch (JavaModelException jme) {
+						logger.logError("Couldn't add import for " + fqn, jme);
+					}
+				});
 			return status;
 		} catch (Exception e) {
 			return new Status(IStatus.ERROR, "bndtools.core.services",

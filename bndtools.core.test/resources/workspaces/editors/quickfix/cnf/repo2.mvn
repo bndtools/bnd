@@ -3,3 +3,6 @@ org.osgi:osgi.annotation:6.0.0
 org.osgi:org.osgi.framework:1.9.0
 org.osgi:org.osgi.jmx:1.1.0
 org.osgi:org.osgi.util.promise:1.1.1
+
+org.assertj:assertj-core:3.16.1
+org.junit.jupiter:junit-jupiter-api:5.6.2

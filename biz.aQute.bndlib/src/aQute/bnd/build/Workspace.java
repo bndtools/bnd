@@ -1450,17 +1450,38 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Search for a partial class name. The partialClass name may be a simple
+	 * Search for a partial class name. The partialFqn name may be a simple
 	 * class name (Foo) or a fully qualified class name line (foo.bar.Foo),
 	 * including nested classes, or only a package name prefix (foo.bar).
 	 *
 	 * @param partialFqn a packagename ( '.' classname )*
-	 * @return a map with suggestion what to add to the -buildpath/-testpath
+	 * @return a multi-map containing the search matches with the matching
+	 *         fully-qualified class name as each entry's key, and a list of
+	 *         matching bundles as the value.
 	 * @throws Exception
+	 * @see #search(String, String)
 	 */
 	public Result<Map<String, List<BundleId>>, String> search(String partialFqn) throws Exception {
 		return data.classIndex.get()
 			.search(partialFqn);
+	}
+
+	/**
+	 * Search for a class name inside particular package. Use this in preference
+	 * to {@link #search(String)} when you know that the qualifier resolves to a
+	 * package and not to a class.
+	 *
+	 * @param packageName the package to search
+	 * @param className a classname ( '.' classname )*
+	 * @return a multi-map containing the search matches with the matching
+	 *         fully-qualified class name as each entry's key, and a list of
+	 *         matching bundles as the value.
+	 * @throws Exception
+	 * @see #search(String)
+	 */
+	public Result<Map<String, List<BundleId>>, String> search(String packageName, String className) throws Exception {
+		return data.classIndex.get()
+			.search(packageName, className);
 	}
 
 	/**
@@ -1572,5 +1593,4 @@ public class Workspace extends Processor {
 		}
 
 	}
-
 }
