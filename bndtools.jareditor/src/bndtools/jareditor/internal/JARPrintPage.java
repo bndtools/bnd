@@ -1,5 +1,6 @@
 package bndtools.jareditor.internal;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -8,6 +9,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -357,13 +360,13 @@ public class JARPrintPage extends FormPage {
 	}
 
 	private static String print(URI uri) throws Exception {
-		try (JarPrinter printer = new JarPrinter()) {
-			int options = -1;
-			try (Jar jar = new Jar(uri.toString(), uri.toURL()
-				.openStream())) {
-				printer.doPrint(jar, options, false, false);
-				return printer.toString();
-			}
+		int options = -1;
+		IFileStore fileStore = EFS.getStore(uri);
+		try (InputStream in = fileStore.openInputStream(EFS.NONE, null);
+			Jar jar = new Jar(fileStore.getName(), in);
+			JarPrinter printer = new JarPrinter()) {
+			printer.doPrint(jar, options, false, false);
+			return printer.toString();
 		}
 	}
 
