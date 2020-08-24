@@ -71,4 +71,5 @@
 	org.eclipse.e4.ui.workbench.swt,\
 	org.osgi.service.component.annotations,\
 	org.osgi.service.event,\
-	osgi.annotation
+	osgi.annotation,\
+	org.eclipse.jdt.core.manipulation

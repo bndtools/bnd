@@ -8,6 +8,8 @@ import static org.eclipse.jdt.core.compiler.IProblem.ImportNotFound;
 import static org.eclipse.jdt.core.compiler.IProblem.IsClassPathCorrect;
 import static org.eclipse.jdt.core.compiler.IProblem.ParameterMismatch;
 import static org.eclipse.jdt.core.compiler.IProblem.TypeMismatch;
+import static org.eclipse.jdt.core.compiler.IProblem.UndefinedField;
+import static org.eclipse.jdt.core.compiler.IProblem.UndefinedMethod;
 import static org.eclipse.jdt.core.compiler.IProblem.UndefinedType;
 
 import java.io.IOException;
@@ -35,7 +37,11 @@ import org.assertj.core.presentation.Representation;
 import org.assertj.core.presentation.StandardRepresentation;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IElementChangedListener;
@@ -52,7 +58,6 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblem;
 import org.eclipse.jdt.internal.ui.text.correction.AssistContext;
 import org.eclipse.jdt.internal.ui.text.correction.ProblemLocation;
-import org.eclipse.jdt.ui.text.java.IInvocationContext;
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
 import org.eclipse.jdt.ui.text.java.IProblemLocation;
 import org.eclipse.jdt.ui.text.java.IQuickFixProcessor;
@@ -74,7 +79,6 @@ import aQute.bnd.deployer.repository.LocalIndexedRepo;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
-import aQute.libg.tuple.Pair;
 import bndtools.central.Central;
 import bndtools.core.test.utils.WorkbenchTest;
 import bndtools.core.test.utils.WorkspaceImporter;
@@ -92,16 +96,20 @@ public class BuildpathQuickFixProcessorTest {
 	SoftAssertions								softly;
 	IQuickFixProcessor							sut;
 
+	IProblemLocation[]							locs;
+	List<IProblem>								problems;
+	IProblem									problem;
+
 	IProject									eclipseProject;
 	IJavaProject								javaProject;
 	Project										bndProject;
+	AssistContext								assistContext;
+	String										source;
 
 	// TODO: Here are some problem types we could potentially quick-fix that
 	// aren't covered:
 	// Discouraged access (can be fixed by adding a bundle that actually exports
 	// the packages)
-	// Missing method (sometimes caused when the hierarchy is incomplete,
-	// similar to HierarchyHasProblems)
 
 	@SuppressWarnings("unchecked")
 	static void initSUTClass() throws Exception {
@@ -118,6 +126,21 @@ public class BuildpathQuickFixProcessorTest {
 			.isAssignableFrom(sutClass);
 	}
 
+	static IResourceVisitor VISITOR = new IResourceVisitor() {
+
+		@Override
+		public boolean visit(IResource resource) throws CoreException {
+			System.err.println(resource.getFullPath());
+			return true;
+		}
+	};
+
+	static void dumpWorkspace() throws CoreException {
+		IWorkspace ws = ResourcesPlugin.getWorkspace();
+		ws.getRoot()
+			.accept(VISITOR);
+	}
+
 	@BeforeAll
 	static void beforeAll() throws Exception {
 		// Get a handle on the repo. I have seen this come back null on occasion
@@ -130,6 +153,9 @@ public class BuildpathQuickFixProcessorTest {
 			localRepo = (LocalIndexedRepo) Central.getWorkspace()
 				.getRepository("Local Index");
 			if (count++ > 100) {
+				dumpWorkspace();
+				System.err.println("Repositories: " + Central.getWorkspace()
+					.getRepositories());
 				throw new IllegalStateException("Timed out waiting for Local Index");
 			}
 		}
@@ -154,14 +180,20 @@ public class BuildpathQuickFixProcessorTest {
 
 	@BeforeEach
 	void beforeEach() throws Exception {
+		locs = null;
+		problems = null;
+		problem = null;
 		eclipseProject = ResourcesPlugin.getWorkspace()
 			.getRoot()
 			.getProject("test");
 		if (eclipseProject == null) {
+			dumpWorkspace();
 			throw new IllegalStateException("Could not get project \"test\" from the current workspace");
 		}
 		bndProject = Central.getProject(eclipseProject);
 		if (bndProject == null) {
+			System.err.println("eclipseProject: " + eclipseProject.getName());
+			dumpWorkspace();
 			throw new IllegalStateException("Could not get bndProject from the current workspace");
 		}
 		synchronously("open project", eclipseProject::open);
@@ -303,7 +335,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	private IJavaCompletionProposal[] proposalsForImport(String imp) {
-		return proposalsFor(22, 0, "package test; import " + imp + ";");
+		return proposalsFor(23, 0, "package test; import " + imp + ";");
 	}
 
 	private IJavaCompletionProposal[] proposalsForLiteral(String type) {
@@ -329,8 +361,40 @@ public class BuildpathQuickFixProcessorTest {
 	// .forEach(System.err::println);
 	// }
 	//
-	Pair<IProblemLocation[], AssistContext> problemsFor(int offset, int length, String className, String source) {
+
+	String toString(IProblem p) {
+		final int originalStart = p.getSourceStart();
+		int startIndex = originalStart;
+		while (startIndex > 0) {
+			if (source.charAt(startIndex) == '\n') {
+				startIndex++;
+				break;
+			}
+			startIndex--;
+		}
+		StringBuilder retval = new StringBuilder();
+		int endIndex = p.getSourceEnd() + 1;
+		retval.append(source.substring(startIndex, originalStart))
+			.append(">>>")
+			.append(source.substring(originalStart, endIndex))
+			.append("<<<");
+		char c;
+		while (endIndex < source.length() && (c = source.charAt(endIndex++)) != '\n') {
+			retval.append(c);
+		}
+		retval.append('\n')
+			.append(p)
+			.append('\n')
+			.append(new ProblemLocation(p));
+		return retval.toString();
+	}
+
+	void problemsFor(int offset, int length, String className, String source) {
 		try {
+			problems = null;
+			problem = null;
+			locs = null;
+			this.source = source;
 			// First create our AST
 			ICompilationUnit icu = pack.createCompilationUnit(className + ".java", source, true, null);
 
@@ -348,31 +412,41 @@ public class BuildpathQuickFixProcessorTest {
 			parser.setEnvironment(new String[] {}, new String[] {}, new String[] {}, true);
 			CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
-			// System.err.println("cu: " + cu);
+			assistContext = new AssistContext(icu, offset, length);
+
+			problems = Arrays.asList(cu.getProblems());
 
 			// Note: IProblem instances seem to give more useful diagnostics
 			// than the IProblemLocation instances
 			// System.err.println("Unfiltered problems: ");
 			// dumpProblems(Stream.of(cu.getProblems()));
-			// Filter out the problems that don't fall within the current editor
-			// context.
-			// This is to properly emulate what the GUI will do when hovering
-			// over a particular point or selecting a particular point.
-			List<IProblem> filtered = Stream.of(cu.getProblems())
+			// When you hover in the GUI, if there are multiple overlapping
+			// problems
+			// at the point where you are hovering, only one of them is fetched
+			// and
+			// passed in to the quick fix processors to calculate proposals.
+			// To emulate this, we filter the problems that contain the hover
+			// region,
+			// and then we find the smallest such problem. This seems to be what
+			// Eclipse does, but also finding the smallest means that we can
+			// directly
+			// test the other problems if we want by specifying a hover point
+			// somewhere else in the bigger region.
+			problem = Stream.of(cu.getProblems())
+				// Find problems that contain the "hover point"
 				.filter(problem -> {
 					return problem.getSourceEnd() >= offset && problem.getSourceStart() <= (offset + length);
 				})
-				.collect(Collectors.toList());
-			// System.err.println("Filtered problems:");
-			// dumpProblems(filtered.stream());
-			IProblemLocation[] locs = filtered.stream()
-				.map(ProblemLocation::new)
-				.toArray(IProblemLocation[]::new);
-
-			// System.err.println("Problems: " + Stream.of(locs)
-			// .map(IProblemLocation::toString)
-			// .collect(Collectors.joining(",")));
-			return Pair.newInstance(locs, new AssistContext(icu, offset, length));
+				// Find the smallest
+				.min((a, b) -> Integer.compare(a.getSourceEnd() - a.getSourceStart(),
+					b.getSourceEnd() - b.getSourceStart()))
+				.orElseThrow(() -> new IllegalArgumentException(
+					"No problems found after filtering: " + Stream.of(cu.getProblems())
+						.map(this::toString)
+						.collect(Collectors.joining(","))));
+			locs = new IProblemLocation[] {
+				new ProblemLocation(problem)
+			};
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -401,14 +475,13 @@ public class BuildpathQuickFixProcessorTest {
 	 *         processor.
 	 */
 	private IJavaCompletionProposal[] proposalsFor(int offset, int length, String className, String source) {
-		return proposalsFor(problemsFor(offset, length, className, source));
+		problemsFor(offset, length, className, source);
+		return proposals();
 	}
 
-	IJavaCompletionProposal[] proposalsFor(Pair<IProblemLocation[], AssistContext> problems) {
-		IProblemLocation[] locs = problems.getFirst();
-		IInvocationContext context = problems.getSecond();
+	IJavaCompletionProposal[] proposals() {
 		try {
-			IJavaCompletionProposal[] proposals = sut.getCorrections(context, locs);
+			IJavaCompletionProposal[] proposals = sut.getCorrections(assistContext, locs);
 
 			// if (proposals != null) {
 			// System.err.println("Proposals: " + Stream.of(proposals).map(x ->
@@ -434,7 +507,8 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	static final Set<Integer> SUPPORTED = Stream
-		.of(ImportNotFound, UndefinedType, IsClassPathCorrect, HierarchyHasProblems, ParameterMismatch, TypeMismatch)
+		.of(ImportNotFound, UndefinedType, IsClassPathCorrect, HierarchyHasProblems, ParameterMismatch, TypeMismatch,
+			UndefinedField, UndefinedMethod)
 		.collect(Collectors.toSet());
 
 	// This is just to give nice error feedback
@@ -649,7 +723,7 @@ public class BuildpathQuickFixProcessorTest {
 
 	@Test
 	void withNoMatches_returnsNull() {
-		assertThat(proposalsForImport("my.unknown.package.*")).isNull();
+		assertThat(proposalsFor(0, 0, "asdfasdfsadf;")).isNull();
 	}
 
 	@Test
@@ -779,7 +853,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withInconsistentHierarchy_forClassUse_thatExtendsAnInterfaceFromAnotherBundle_suggestsBundles(
+	void withMissingMethod_fromInterfaceFromAnotherBundle_suggestsBundles(
 		SoftAssertions softly) {
 		this.softly = softly;
 
@@ -793,15 +867,13 @@ public class BuildpathQuickFixProcessorTest {
 		// IsClassPathCorrect occurs at [112, 134]
 		assertThatProposals(proposalsFor(112, 0, source)).haveExactly(1,
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
-		// UnknownMethod is on the method at [116,132], which means that it's
-		// redundant as the
-		// IsClassPathCorrect problem covers it completely.
+		// UnknownMethod is on the method at [116,132]
 		assertThatProposals(proposalsFor(117, 0, source)).haveExactly(1,
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
 	}
 
 	@Test
-	void withInconsistentHierarchy_forClassUse_thatExtendsAClassFromAnotherBundle_suggestsBundles(
+	void withMissingMethod_fromClassFromAnotherBundle_suggestsBundles(
 		SoftAssertions softly) {
 		this.softly = softly;
 
@@ -814,9 +886,100 @@ public class BuildpathQuickFixProcessorTest {
 		// IsClassPathCorrect occurs at [104, 116]
 		assertThatProposals(proposalsFor(104, 0, source)).haveExactly(1,
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
-		// UnknownMethod is on the method at [108,114], which means that it's
-		// redundant as the IsClassPathCorrect problem covers it completely.
+		// UnknownMethod is on the method at [108,114]
 		assertThatProposals(proposalsFor(108, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
+	}
+
+	@Test
+	void withMissingSuperMethod_fromClassFromAnotherBundle_suggestsBundles(
+		SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; class ";
+		// set up various triggers for UnknownMethod that are caused
+		// by an incomplete type hierarchy
+		// @formatter:off
+		String source = header + DEFAULT_CLASS_NAME + " extends simple.pkg.ClassExtendingClassFromAnotherBundle\n"
+			+ "  implements simple.pkg.InterfaceExtendingInterfaceFromAnotherBundle {\n"
+			+ "  void myMethod() {\n"
+			+ "    bMethod();\n"
+			+ "    super.bMethod();\n"
+			+ "    this.bMethod();\n"
+			+ "    simple.pkg.InterfaceExtendingInterfaceFromAnotherBundle.super.myInterfaceMethod();\n"
+			+ "  }\n"
+			+ "  public void cMethod() {}\n"
+			+ "}";
+		// @formatter:on
+
+		// bMethod() at [176,183]
+		assertThatProposals(proposalsFor(176, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0",
+				"iface.bundle.MyForeignClass, iface.bundle.MyInterface"));
+		// super.bMethod() at [197,204]
+		assertThatProposals(proposalsFor(197, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
+		// this.bMethod() at [217,224]
+		assertThatProposals(proposalsFor(217, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0",
+				"iface.bundle.MyForeignClass, iface.bundle.MyInterface"));
+		// simple.pkg.InterfaceExtendingInterfaceFromAnotherBundle.super.myInterfaceMethod()
+		// at [294,311]
+		assertThatProposals(proposalsFor(294, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+	}
+
+	@Test
+	void withMissingField_fromClassFromAnotherBundle_forQualifiedNameAccess_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; class ";
+		String source = header + DEFAULT_CLASS_NAME + "{\n" + "  simple.pkg.ClassExtendingClassFromAnotherBundle var;\n"
+			+ "  void myMethod() {" + "    String s = var.bField;" + "  }" + "}";
+
+		// IsClassPathCorrect occurs at [115, 125]
+		assertThatProposals(proposalsFor(116, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
+		// UnknownField is on the method at [119,125]
+		assertThatProposals(proposalsFor(120, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
+	}
+
+	@Test
+	void withMissingField_fromClassFromAnotherBundle_forExpressionAccess_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; class ";
+		String source = header + DEFAULT_CLASS_NAME + "{\n"
+			+ "  simple.pkg.ClassExtendingClassFromAnotherBundle var() { return null; };\n" + "  void myMethod() {"
+			+ "    String s = var().bField;" + "  }" + "}";
+
+		// IsClassPathCorrect occurs at [134, 146]
+		assertThatProposals(proposalsFor(134, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
+		// UnknownField is on the method at [140,146]
+		assertThatProposals(proposalsFor(140, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
+	}
+
+	@Test
+	void withMissingField_fromSuperClassFromAnotherBundle_forExpressionAccess_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; class ";
+		String source = header + DEFAULT_CLASS_NAME + " extends simple.pkg.ClassExtendingClassFromAnotherBundle {\n"
+			+ "  void myMethod() {" + "    String s = super.bField;" + "  }" + "}";
+
+		// UnknownField is on the method at [123,129]
+		assertThatProposals(proposalsFor(123, 0, source)).haveExactly(1,
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
 	}
 
@@ -950,14 +1113,16 @@ public class BuildpathQuickFixProcessorTest {
 		int middleOfClass = source.length();
 		source += "ass)\n" + "class " + DEFAULT_CLASS_NAME + "{" + "}";
 
-		Pair<IProblemLocation[], AssistContext> problems = problemsFor(start, 0, DEFAULT_CLASS_NAME, source);
-		IProblemLocation[] locs = problems.getFirst();
-		if (problems.getFirst().length < 2) {
+		problemsFor(start, 0, DEFAULT_CLASS_NAME, source);
+		if (problems.size() < 2) {
 			throw new IllegalStateException(
 				"This test requires that multiple problems be generated in order to work, but only got: "
 					+ Arrays.toString(locs));
 		}
-		assertThatProposals(proposalsFor(problems)).haveExactly(1,
+		locs = problems.stream()
+			.map(ProblemLocation::new)
+			.toArray(IProblemLocation[]::new);
+		assertThatProposals(proposals()).haveExactly(1,
 			suggestsBundle("assertj-core", "3.16.1", "org.assertj.core.api.junit.jupiter.SoftAssertionsExtension"));
 	}
 
@@ -976,10 +1141,13 @@ public class BuildpathQuickFixProcessorTest {
 
 	private ProxyableObjectArrayAssert<IJavaCompletionProposal> assertThatProposals(
 		IJavaCompletionProposal[] proposals) {
+		String desc = toString(problem);
 		if (proposals == null) {
-			return softly.assertThat(EMPTY_LIST);
+			return softly.assertThat(EMPTY_LIST)
+				.as(desc);
 		}
 		return softly.assertThat(proposals)
+			.as(desc)
 			.withRepresentation(PROPOSAL);
 	}
 
