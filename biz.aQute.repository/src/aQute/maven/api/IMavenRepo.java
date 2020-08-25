@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.util.promise.Promise;
 
 import aQute.maven.provider.MavenBackingRepository;
@@ -26,6 +27,7 @@ import aQute.maven.provider.MavenBackingRepository;
  * SNAPSHOT is replaced with a date stamp + build number). This repository can
  * resolve the latest archive and provide a list of date stamped archives.
  */
+@ProviderType
 public interface IMavenRepo extends Closeable {
 	/**
 	 * The format for an archive is:
@@ -140,8 +142,7 @@ public interface IMavenRepo extends Closeable {
 	URI toRemoteURI(Archive archive) throws Exception;
 
 	/**
-	 * Refresh the repository against the file system and remote repositories.
-	 * Return true if there was a change
+	 * Refresh snapshot metadata so snapshots are retrieved again
 	 */
 	boolean refresh() throws Exception;
 

@@ -21,7 +21,7 @@ public class SnapshotReleaser extends Releaser {
 		Properties context) throws Exception {
 		super(home, revision, snapshot, context);
 		revisionMetadata = localOnly || repo == null ? new RevisionMetadata()
-			: repo.getMetadata(revision)
+			: repo.getMetadata(revision, true)
 				.orElse(new RevisionMetadata());
 		force();
 		assert revision.isSnapshot();

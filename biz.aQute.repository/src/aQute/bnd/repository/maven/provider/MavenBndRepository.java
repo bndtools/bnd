@@ -726,7 +726,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		switch (target.length) {
 			case 0 :
-				return null;
+				return actions.getRepoActions();
 			case 1 :
 				return actions.getProgramActions((String) target[0]);
 			case 2 :

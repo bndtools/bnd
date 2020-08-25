@@ -158,4 +158,16 @@ class RepoActions {
 				.archive("jar", null));
 		}
 	}
+
+	public Map<String, Runnable> getRepoActions() {
+		Map<String, Runnable> map = new LinkedHashMap<>();
+		map.put("Force Refresh", () -> {
+			try {
+				repo.storage.refresh();
+			} catch (Exception e) {
+				Exceptions.duck(e);
+			}
+		});
+		return map;
+	}
 }
