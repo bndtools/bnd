@@ -30,6 +30,7 @@ import org.osgi.service.coordinator.Coordinator;
 import org.osgi.service.coordinator.Participant;
 import org.osgi.service.log.LogService;
 
+import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Verifier;
@@ -46,6 +47,7 @@ import aQute.lib.strings.Strings;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.cryptography.SHA256;
 
+@BndPlugin(name = "LocalIndexedRepo", parameters = LocalIndexedRepo.Config.class)
 public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable, Participant, Actionable {
 
 	private final String			UPWARDS_ARROW			= " \u2191";
@@ -58,6 +60,19 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	public static final String		PROP_PRETTY				= "pretty";
 	public static final String		PROP_OVERWRITE			= "overwrite";
 	public static final String		PROP_ONLYDIRS			= "onlydirs";
+
+	// not actually used (yet). Just to get some parameters
+	interface Config {
+		String local();
+
+		boolean readonly();
+
+		boolean pretty();
+
+		boolean overwrite();
+
+		boolean onlydirs();
+	}
 
 	@SuppressWarnings("deprecation")
 	private boolean					readOnly;

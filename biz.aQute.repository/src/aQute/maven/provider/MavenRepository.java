@@ -286,7 +286,8 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public boolean refresh() throws IOException {
-		// TODO
+		snapshot.forEach(MavenBackingRepository::refreshSnapshots);
+		release.forEach(MavenBackingRepository::refreshSnapshots);
 		return false;
 	}
 

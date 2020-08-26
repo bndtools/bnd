@@ -703,6 +703,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		if (!init())
 			return false;
 
+		storage.refresh();
 		return index.refresh(() -> {
 			workspace.ifPresent(ws -> ws.refresh(this));
 		});

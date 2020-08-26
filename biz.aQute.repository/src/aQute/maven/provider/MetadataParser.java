@@ -33,6 +33,7 @@ public class MetadataParser {
 		.withZone(Dates.UTC_ZONE_ID);
 
 	public static class Metadata extends DTO {
+		public boolean	invalid;
 		public String	modelVersion	= "1.1.0";
 		public String	group;
 		public String	artifact;
