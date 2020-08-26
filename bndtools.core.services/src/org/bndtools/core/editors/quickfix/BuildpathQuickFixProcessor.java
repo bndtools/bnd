@@ -42,10 +42,12 @@ import org.osgi.service.component.annotations.Component;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.result.Result;
 import aQute.lib.exceptions.Exceptions;
 import bndtools.central.Central;
@@ -273,11 +275,12 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 						} else if (node instanceof TypeLiteral) {
 							TypeLiteral tl = (TypeLiteral) node;
 							addProposalsForType(tl.getType());
-//						} else {
-//							String[] arguments = location.getProblemArguments();
-//							if (arguments != null && arguments.length > 0) {
-//								addProposals(arguments[0]);
-//							}
+							// } else {
+							// String[] arguments =
+							// location.getProblemArguments();
+							// if (arguments != null && arguments.length > 0) {
+							// addProposals(arguments[0]);
+							// }
 						}
 						continue;
 					}
@@ -396,16 +399,35 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 
 	private void doAddProposals(Result<Map<String, List<BundleId>>, String> wrappedResult, boolean doImport)
 		throws CoreException, Exception {
-		Map<String, List<BundleId>> result = wrappedResult
-			.orElseThrow(s -> new CoreException(new Status(IStatus.ERROR, "bndtools.core.services", s)));
+		try (ProjectBuilder pb = new ProjectBuilder(project)) {
 
-		result.entrySet()
-			.forEach(e -> {
-				for (BundleId id : e.getValue()) {
-					proposals.computeIfAbsent(id, newBundleId -> new HashMap<>())
-						.merge(e.getKey(), doImport, (oldVal, newVal) -> oldVal || newVal);
-				}
-			});
+			if (test)
+				pb.includeTestpath();
+
+			Map<String, List<BundleId>> result = wrappedResult
+				.orElseThrow(s -> new CoreException(new Status(IStatus.ERROR, "bndtools.core.services", s)));
+
+			result.entrySet()
+				.stream()
+				.filter(e -> !isOnBuildOrTestPath(pb, e.getKey()))
+				.forEach(e -> {
+					for (BundleId id : e.getValue()) {
+						proposals.computeIfAbsent(id, newBundleId -> new HashMap<>())
+							.merge(e.getKey(), doImport, (oldVal, newVal) -> oldVal || newVal);
+					}
+				});
+		}
+	}
+
+	private boolean isOnBuildOrTestPath(ProjectBuilder pb, String fqn) {
+		try {
+			TypeRef type = pb.getTypeRefFromFQN(fqn);
+			if (type == null)
+				return false;
+			return pb.findResource(type.getPath()) != null;
+		} catch (Exception e1) {
+			return false;
+		}
 	}
 
 	private boolean isInDir(File dir, IResource resource) {

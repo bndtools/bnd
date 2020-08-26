@@ -907,6 +907,27 @@ public class BuildpathQuickFixProcessorTest {
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
 	}
 
+	/*
+	 * Check that if a suggestion's fqn can be found on the buildpath it is not
+	 * proposed.
+	 */
+	@Test
+	void testWithShortClassNameInRepoAndBuildpath(SoftAssertions softly) {
+		this.softly = softly;
+		String source = "package test; public class " + DEFAULT_CLASS_NAME + "{ ";
+		int start = source.length();
+		source += "Tag unqualifiedTagType; }";
+
+		assertThatProposals(proposalsFor(start, 3, source)).haveExactly(1,
+			suggestsBundle("junit-jupiter-api", "5.6.2", "org.junit.jupiter.api.Tag"));
+
+		// Now put it on the buildpath
+
+		addBundlesToBuildpath("junit-jupiter-api");
+
+		assertThatProposals(proposalsFor(start, 3, source)).isEmpty();
+	}
+
 	@Test
 	void withUnqualifiedClassLiteral_forUnimportedType_asAnnotationParameterBoundedByTypeOnClassPath_suggestsBundles(
 		SoftAssertions softly) {
