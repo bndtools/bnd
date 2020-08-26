@@ -89,21 +89,22 @@ import aQute.service.reporter.Reporter.SetLocation;
  * pattern. ${parameter##word} Remove largest prefix pattern.
  */
 public class Macro {
-	private final static String		NULLVALUE		= "c29e43048791e250dfd5723e7b8aa048df802c9262cfa8fbc4475b2e392a8ad2";
-	private final static String		LITERALVALUE	= "017a3ddbfc0fcd27bcdb2590cdb713a379ae59ef";
-	private final static Pattern	NUMERIC_P		= Pattern.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
+	private final static String														NULLVALUE		= "c29e43048791e250dfd5723e7b8aa048df802c9262cfa8fbc4475b2e392a8ad2";
+	private final static String														LITERALVALUE	= "017a3ddbfc0fcd27bcdb2590cdb713a379ae59ef";
+	private final static Pattern													NUMERIC_P		= Pattern
+		.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
 
-	Processor						domain;
-	Reporter						reporter;
-	Object							targets[];
-	boolean							flattening;
-	private boolean					nosystem;
-	ScriptEngine					engine			= null;
-	ScriptContext					context			= null;
-	Bindings						bindings		= null;
-	StringWriter					stdout			= new StringWriter();
-	StringWriter					stderr			= new StringWriter();
-	public boolean					inTest;
+	Processor																		domain;
+	Reporter																		reporter;
+	Object																			targets[];
+	boolean																			flattening;
+	private boolean																	nosystem;
+	ScriptEngine																	engine			= null;
+	ScriptContext																	context			= null;
+	Bindings																		bindings		= null;
+	StringWriter																	stdout			= new StringWriter();
+	StringWriter																	stderr			= new StringWriter();
+	public boolean																	inTest;
 	private final Map<Class<?>, Map<String, BiFunction<Object, String[], Object>>>	macrosByClass	= new ConcurrentHashMap<>();
 
 	public Macro(Processor domain, Object... targets) {
@@ -123,40 +124,44 @@ public class Macro {
 
 	String process(CharSequence line, Link link) {
 		StringBuilder sb = new StringBuilder();
-		process(line, 0, '\u0000', '\u0000', sb, link);
+		process(line, 0, '\u0000', '\u0000', sb, link, false);
 		return sb.toString();
 	}
 
-	int process(CharSequence org, int index, char begin, char end, StringBuilder result, Link link) {
+	int process(CharSequence org, int index, char begin, char end, StringBuilder result, Link link, boolean inMacro) {
 		if (org == null) { // treat null like empty string
 			return index;
 		}
 		StringBuilder line = new StringBuilder(org);
 		int nesting = 1;
+		boolean first;
 
+		List<String> args = inMacro ? new ArrayList<>() : Collections.emptyList();
 		StringBuilder variable = new StringBuilder();
+		int pStart = 0;
 
 		outer: while (index < line.length()) {
 			char c1 = line.charAt(index++);
 			if (c1 == end) {
 				if (--nesting == 0) {
-					result.append(replace(variable.toString(), link, begin, end));
+					args.add(variable.substring(pStart));
+					result.append(replace(variable.toString(), args, link, begin, end));
 					return index;
 				}
 			} else if (c1 == begin)
 				nesting++;
-			else if (c1 == '\\' && index < line.length() - 1 && line.charAt(index) == '$') {
-				// remove the escape backslash and interpret the dollar
-				// as a
-				// literal
+			else if (c1 == '\\' && index < line.length() - 1
+				&& (line.charAt(index) == '$' || line.charAt(index) == ';')) {
+				// remove the escape backslash and interpret the dollar or ;
+				// as a literal
+				variable.append(line.charAt(index));
 				index++;
-				variable.append('$');
 				continue outer;
-			} else if (c1 == '$' && index < line.length() - 2) {
+			} else if (c1 == '$' && index < line.length() - 2 && !inMacro) {
 				char c2 = line.charAt(index);
 				char terminator = getTerminator(c2);
 				if (terminator != 0) {
-					index = process(line, index + 1, c2, terminator, variable, link);
+					index = process(line, index + 1, c2, terminator, variable, link, true);
 					continue outer;
 				}
 			} else if (c1 == '.' && index < line.length() && line.charAt(index) == '/') {
@@ -168,6 +173,9 @@ public class Macro {
 					variable.append('/');
 					continue outer;
 				}
+			} else if (inMacro && c1 == ';' && nesting == 1) {
+				args.add(variable.substring(pStart));
+				pStart = variable.length() + 1;
 			}
 			variable.append(c1);
 		}
@@ -194,16 +202,24 @@ public class Macro {
 	}
 
 	protected String getMacro(String key, Link link) {
-		return getMacro(key, link, '{', '}');
+		return getMacro(key, null, link, '{', '}');
 	}
 
-	private String getMacro(String key, Link link, char begin, char end) {
+	private String getMacro(String key, List<String> args2, Link link, char begin, char end) {
 		if (link != null && link.contains(key))
 			return "${infinite:" + link.toString() + "}";
 
 		if (key != null) {
 			key = key.trim();
-			String[] args = SEMICOLON_P.split(key, 0);
+			String[] args;
+			if (args2 == null) {
+				args = SEMICOLON_P.split(key, 0);
+			} else {
+				args = args2.toArray(new String[args2.size()]);
+				for (int i = 0; i < args.length; i++) {
+					args[i] = process(args[i], link);
+				}
+			}
 			if (!args[0].isEmpty()) {
 
 				//
@@ -223,7 +239,7 @@ public class Macro {
 						return domain.stream()
 							.filter(ins::matches)
 							.sorted()
-							.map(k -> replace(k, new Link(domain, link, keyname), begin, end))
+							.map(k -> replace(k, null, new Link(domain, link, keyname), begin, end))
 							.filter(Objects::nonNull)
 							.collect(Strings.joining());
 					}
@@ -332,11 +348,11 @@ public class Macro {
 	}
 
 	public String replace(String key, Link link) {
-		return replace(key, link, '{', '}');
+		return replace(key, null, link, '{', '}');
 	}
 
-	private String replace(String key, Link link, char begin, char end) {
-		String value = getMacro(key, link, begin, end);
+	private String replace(String key, List<String> args, Link link, char begin, char end) {
+		String value = getMacro(key, args, link, begin, end);
 		if (value != LITERALVALUE) {
 			if (value != null)
 				return value;
@@ -642,9 +658,8 @@ public class Macro {
 			&& condition.length() != 0;
 	}
 
-	private static final DateTimeFormatter	DATE_TOSTRING	= Dates.DATE_TOSTRING
-		.withZone(Dates.UTC_ZONE_ID);
-	public final static String _nowHelp = "${now;pattern|'long'}, returns current time";
+	private static final DateTimeFormatter	DATE_TOSTRING	= Dates.DATE_TOSTRING.withZone(Dates.UTC_ZONE_ID);
+	public final static String				_nowHelp		= "${now;pattern|'long'}, returns current time";
 
 	public Object _now(String[] args) {
 		verifyCommand(args, _nowHelp, null, 1, 2);
@@ -1584,7 +1599,7 @@ public class Macro {
 
 	public String _basenameext(String[] args) throws Exception {
 		verifyCommand(args, _basenameextHelp, null, 2, 3);
-		String extension = Optional.ofNullable((args.length > 2) ? args[2] : null)
+		String extension = Optional.ofNullable((args.length > 2 && !args[2].isEmpty()) ? args[2] : null)
 			.map(ext -> ext.startsWith(".") ? ext.substring(1) : ext)
 			.orElse(".");
 		String result = Optional.of(args[1])
