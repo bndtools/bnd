@@ -703,6 +703,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		if (!init())
 			return false;
 
+		storage.refresh();
 		return index.refresh(() -> {
 			workspace.ifPresent(ws -> ws.refresh(this));
 		});
@@ -726,7 +727,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		switch (target.length) {
 			case 0 :
-				return actions.getRepoActions();
+				return null;
 			case 1 :
 				return actions.getProgramActions((String) target[0]);
 			case 2 :
