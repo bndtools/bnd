@@ -36,6 +36,18 @@ import aQute.lib.strings.Strings;
 public class MacroTest {
 
 	@Test
+	public void testExtendedMacroParameters() throws IOException {
+		try (Processor p = new Processor()) {
+			p.setProperty("a", "aaa ${1} ${2}");
+			p.setProperty("b", "b;bb");
+			p.setProperty("c", "cc;c");
+			p.setProperty("x", "${a;${b};${c}}");
+
+			assertThat(p.getProperty("x")).isEqualTo("aaa b;bb cc;c");
+		}
+	}
+
+	@Test
 	public void testForEmptyMacroKey() throws IOException {
 		try (Processor p = new Processor()) {
 			p.setProperty("a", "${;foo}");
@@ -144,7 +156,7 @@ public class MacroTest {
 			proc.setProperty("bottom", "${top}");
 
 			String property = proc.getProperty("top");
-			assertThat(property).isEqualTo("${infinite:[top,bottom;A,middle;A,${middle;A}]}");
+			assertThat(property).isEqualTo("${infinite:[top,bottom;${1},middle;A,${middle;A}]}");
 			assertTrue(proc.check());
 		}
 	}
@@ -693,6 +705,8 @@ public class MacroTest {
 	public void testMacroStrings() throws Exception {
 		Processor processor = new Processor();
 		processor.setProperty("empty", "");
+		assertEquals("abcdef.", processor.getReplacer()
+			.process("${basenameext;abcdef.;}"));
 
 		assertEquals("6", processor.getReplacer()
 			.process("${length;abcdef}"));

@@ -57,6 +57,7 @@ public class ProjectBuilder extends Builder {
 	private final DiffPluginImpl			differ				= new DiffPluginImpl();
 	Project									project;
 	boolean									initialized;
+	boolean									includeTestpath		= false;
 
 	public ProjectBuilder(Project project) {
 		super(project);
@@ -106,6 +107,12 @@ public class ProjectBuilder extends Builder {
 				File output = project.getOutput();
 				if (output.exists()) {
 					addClasspath(output);
+				}
+
+				if (includeTestpath) {
+					for (Container file : project.getTestpath()) {
+						addClasspath(dependencies, file);
+					}
 				}
 
 				for (Container file : project.getBuildpath()) {
@@ -846,4 +853,8 @@ public class ProjectBuilder extends Builder {
 		return getProject().isInteractive();
 	}
 
+	public ProjectBuilder includeTestpath() {
+		this.includeTestpath = true;
+		return this;
+	}
 }
