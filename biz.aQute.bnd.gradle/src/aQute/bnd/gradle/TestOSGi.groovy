@@ -90,6 +90,7 @@ public class TestOSGi extends Bndrun {
   @Override
   protected void worker(def run) {
     logger.info 'Running tests for {} in {}', run.getPropertiesFile(), run.getBase()
+    logger.debug 'Run properties: {}', run.getProperties()
     try {
       run.test(resultsDir, tests);
     } finally {

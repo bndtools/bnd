@@ -183,6 +183,7 @@ public class Bndrun extends DefaultTask {
    */
   protected void worker(def run) {
     logger.info 'Running {} in {}', run.getPropertiesFile(), run.getBase()
+    logger.debug 'Run properties: {}', run.getProperties()
     ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor()
     try {
       run.getProjectLauncher().withCloseable() { pl ->

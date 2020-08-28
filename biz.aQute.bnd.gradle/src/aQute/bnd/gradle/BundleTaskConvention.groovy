@@ -255,6 +255,7 @@ class BundleTaskConvention {
         File archiveFile = unwrap(task.getArchiveFile())
         String archiveFileName = unwrap(task.getArchiveFileName())
         String archiveBaseName = unwrap(task.getArchiveBaseName())
+        String archiveClassifier = unwrap(task.getArchiveClassifier())
         String archiveVersion = unwrap(task.getArchiveVersion(), true)
 
         // Include entire contents of Jar task generated jar (except the manifest)
@@ -298,7 +299,8 @@ class BundleTaskConvention {
         // set bundle symbolic name from tasks's archiveBaseName property if necessary
         String bundleSymbolicName = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME)
         if (isEmpty(bundleSymbolicName)) {
-          builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, archiveBaseName)
+          bundleSymbolicName = archiveClassifier.empty ? archiveBaseName : "${archiveBaseName}-${archiveClassifier}"
+          builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, bundleSymbolicName)
         }
 
         // set bundle version from task's archiveVersion if necessary
