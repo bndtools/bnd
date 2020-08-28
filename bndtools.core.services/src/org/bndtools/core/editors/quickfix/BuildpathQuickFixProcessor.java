@@ -24,7 +24,10 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.FieldAccess;
+import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
@@ -32,7 +35,9 @@ import org.eclipse.jdt.core.dom.NameQualifiedType;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.QualifiedType;
 import org.eclipse.jdt.core.dom.SimpleType;
+import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.TypeLiteral;
 import org.eclipse.jdt.ui.text.java.IInvocationContext;
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
@@ -73,6 +78,12 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			case IProblem.TypeMismatch :
 				// System.out.println("TypeMismatch");
 				return true;
+			case IProblem.UndefinedField :
+				// System.out.println("UndefinedField");
+				return true;
+			case IProblem.UndefinedMethod :
+				// System.out.println("UndefinedMethod");
+				return true;
 			case IProblem.UndefinedType :
 				// System.out.println("UndefinedType");
 				return true;
@@ -104,6 +115,13 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	// dumpBindingHierarchy(indent + " ", iface);
 	// }
 	// }
+
+	void visitExpressionHierarchy(Expression expression) {
+		if (expression == null) {
+			return;
+		}
+		visitBindingHierarchy(expression.resolveTypeBinding());
+	}
 
 	/**
 	 * Traverses the hierarchy of the given type binding looking for incomplete
@@ -231,12 +249,81 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 						node.accept(TYPE_VISITOR);
 						continue;
 					}
+					case IProblem.UndefinedField : {
+						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						ASTNode parent = node.getParent();
+						if (parent != null) {
+							switch (parent.getNodeType()) {
+								case ASTNode.QUALIFIED_NAME : {
+									QualifiedName n = (QualifiedName) parent;
+									IBinding binding = n.getQualifier()
+										.resolveBinding();
+									if (binding instanceof IVariableBinding) {
+										visitBindingHierarchy(((IVariableBinding) binding).getType());
+									}
+									break;
+								}
+								case ASTNode.FIELD_ACCESS : {
+									FieldAccess access = (FieldAccess) parent;
+									visitExpressionHierarchy(access.getExpression());
+									break;
+								}
+								case ASTNode.SUPER_FIELD_ACCESS : {
+									// SuperFieldAccess access =
+									// (SuperFieldAccess) parent;
+									AbstractTypeDeclaration type = findFirstParentOfType(parent,
+										AbstractTypeDeclaration.class);
+									visitBindingHierarchy(type.resolveBinding());
+									break;
+								}
+							}
+						}
+						continue;
+					}
+					case IProblem.UndefinedMethod : {
+						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						ASTNode parent = node.getParent();
+						UNDEFINED_METHOD:
+						while (parent != null) {
+							switch (parent.getNodeType()) {
+								case ASTNode.METHOD_INVOCATION : {
+									// This is the bit to the left of the "."
+									Expression leftOfTheDot = ((MethodInvocation) parent).getExpression();
+									if (leftOfTheDot == null) {
+										// this. is implied if there's nothing there
+										AbstractTypeDeclaration type = findFirstParentOfType(parent,
+											AbstractTypeDeclaration.class);
+										visitBindingHierarchy(type.resolveBinding());
+									} else {
+										visitExpressionHierarchy(leftOfTheDot);
+									}
+									break UNDEFINED_METHOD;
+								}
+								case ASTNode.SUPER_METHOD_INVOCATION : {
+									SuperMethodInvocation invocation = (SuperMethodInvocation) parent;
+									// Qualifier is if the super class invocation is qualified, eg
+									// to disambiguate in the case of multiple inheritance.
+									Name qualifier = invocation.getQualifier();
+									if (qualifier == null) {
+										TypeDeclaration type = findFirstParentOfType(parent, TypeDeclaration.class);
+										visitBindingHierarchy(type.getSuperclassType()
+											.resolveBinding());
+									} else {
+										visitBindingHierarchy(qualifier.resolveTypeBinding());
+									}
+									break UNDEFINED_METHOD;
+								}
+							}
+							parent = parent.getParent();
+						}
+						continue;
+					}
 					case IProblem.ParameterMismatch : {
 						ASTNode node = location.getCoveredNode(context.getASTRoot());
 						MethodInvocation invocation = findFirstParentOfType(node, MethodInvocation.class);
 						@SuppressWarnings("unchecked")
 						List<Expression> args = invocation.arguments();
-						args.forEach(arg -> visitBindingHierarchy(arg.resolveTypeBinding()));
+						args.forEach(this::visitExpressionHierarchy);
 						continue;
 					}
 					case IProblem.ImportNotFound : {
@@ -285,14 +372,24 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 						continue;
 					}
 					case IProblem.IsClassPathCorrect : {
-						String partialClassName = getPartialClassName(location.getCoveringNode(context.getASTRoot()));
-						if (partialClassName == null && location.getProblemArguments().length > 0)
+						String partialClassName = null;
+						// The original implementation used to query the AST
+						// first for the FQN. However, I found that the error
+						// can occur on a Name which is a field reference, not
+						// only on a Name that is a type reference. Trying to
+						// treat such a name as a type name will give the wrong
+						// results. On the other hand, the problem argument
+						// seems consistently to be the type name, so we try to
+						// use that first.
+						if (location.getProblemArguments().length > 0) {
 							partialClassName = location.getProblemArguments()[0];
-
-						if (partialClassName == null)
-							continue;
-
-						addProposals(partialClassName);
+						}
+						if (partialClassName == null) {
+							partialClassName = getPartialClassName(location.getCoveringNode(context.getASTRoot()));
+						}
+						if (partialClassName != null) {
+							addProposals(partialClassName);
+						}
 						continue;
 					}
 				}
@@ -331,6 +428,9 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	}
 
 	private void addProposalsForType(Type type) throws CoreException, Exception {
+		if (type == null) {
+			return;
+		}
 		switch (type.getNodeType()) {
 			case ASTNode.NAME_QUALIFIED_TYPE :
 				NameQualifiedType nqt = (NameQualifiedType) type;
