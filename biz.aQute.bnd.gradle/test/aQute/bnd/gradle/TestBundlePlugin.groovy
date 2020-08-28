@@ -36,7 +36,7 @@ class TestBundlePlugin extends Specification {
           jartask_bundle.isFile()
           JarFile jartask_jar = new JarFile(jartask_bundle)
           Attributes jartask_manifest = jartask_jar.getManifest().getMainAttributes()
-          File bundletask_bundle = new File(testProjectBuildDir, "libs/${testProject}_bundle-1.1.0.jar")
+          File bundletask_bundle = new File(testProjectBuildDir, "libs/${testProject}-1.1.0-bundle.jar")
           bundletask_bundle.isFile()
           JarFile bundletask_jar = new JarFile(bundletask_bundle)
           Attributes bundletask_manifest = bundletask_jar.getManifest().getMainAttributes()
@@ -81,12 +81,12 @@ class TestBundlePlugin extends Specification {
           jartask_jar.getEntry('commons-lang-2.6.jar')
           jartask_jar.close()
 
-          bundletask_manifest.getValue('Bundle-SymbolicName') == "${testProject}_bundle"
+          bundletask_manifest.getValue('Bundle-SymbolicName') == "${testProject}-bundle"
           bundletask_manifest.getValue('Bundle-Version') == '1.1.0'
           bundletask_manifest.getValue('My-Header') == 'my-value'
           bundletask_manifest.getValue('Export-Package') =~ /doubler\.impl/
           !bundletask_manifest.getValue('X-SomeProperty')
-          bundletask_manifest.getValue('Bundle-Name') == "test.bnd.gradle:${testProject}_bundle"
+          bundletask_manifest.getValue('Bundle-Name') == "test.bnd.gradle:${testProject}-bundle"
           bundletask_manifest.getValue('Project-Name') == "${testProject}"
           new File(bundletask_manifest.getValue('Project-Dir')).canonicalFile == testProjectDir
           new File(bundletask_manifest.getValue('Project-Output')).canonicalFile == testProjectBuildDir

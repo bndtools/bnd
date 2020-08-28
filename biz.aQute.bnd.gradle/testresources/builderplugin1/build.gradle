@@ -39,13 +39,13 @@ task bundle(type: Bundle) {
    description 'Bundle'
    group 'build'
    from sourceSets.test.output
-   archiveBaseName = "${project.archivesBaseName}_bundle"
+   archiveClassifier = 'bundle'
    bnd = '''
 -exportcontents: doubler.impl
 -sources: true
 My-Header: my-value
 text: TEXT
-Bundle-Name: ${project.group}:${task.archiveBaseName}
+Bundle-Name: ${project.group}:${task.archiveBaseName}-${task.archiveClassifier}
 Project-Name: ${project.name}
 Project-Dir: ${project.dir}
 Project-Output: ${project.output}
