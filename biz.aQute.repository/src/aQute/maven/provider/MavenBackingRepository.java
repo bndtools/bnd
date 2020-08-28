@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -110,37 +109,21 @@ public abstract class MavenBackingRepository implements Closeable {
 		}
 	}
 
-	Optional<RevisionMetadata> getMetadata(Revision revision, boolean force) throws Exception {
-		RevisionMetadata metadata;
-		if (force) {
-			revisions.remove(revision);
-			metadata = null;
-		} else {
-			metadata = revisions.get(revision);
-		}
-		if (metadata != null && metadata.lastUpdated + TimeUnit.HOURS.toMillis(24) > System.currentTimeMillis())
-			return Optional.of(metadata);
-
+	Optional<RevisionMetadata> getMetadata(Revision revision) throws Exception {
 		File metafile = IO.getFile(local, revision.metadata(id));
-		if (revision.version.isSnapshot()) {
-			metafile.delete();
-		}
+		RevisionMetadata metadata = revisions.get(revision);
 
 		TaggedData tag = fetch(revision.metadata(), metafile);
 		if (tag.getState() == State.NOT_FOUND || tag.getState() == State.OTHER) {
-			metadata = new RevisionMetadata();
-			metadata.invalid = true;
-			revisions.put(revision, metadata);
 			return Optional.empty();
 		}
 
-		if (tag.getState() == State.UPDATED) {
+		if (metadata == null || tag.getState() == State.UPDATED) {
 			metadata = MetadataParser.parseRevisionMetadata(metafile);
 			revisions.put(revision, metadata);
-			return Optional.of(metadata);
 		}
 
-		return Optional.empty();
+		return Optional.of(metadata);
 	}
 
 	ProgramMetadata getMetadata(Program program) throws Exception {
@@ -169,7 +152,7 @@ public abstract class MavenBackingRepository implements Closeable {
 	}
 
 	public List<Archive> getSnapshotArchives(Revision revision) throws Exception {
-		Optional<RevisionMetadata> metadata = getMetadata(revision, false);
+		Optional<RevisionMetadata> metadata = getMetadata(revision);
 		if (!metadata.isPresent()) {
 			return Collections.emptyList();
 		}
@@ -180,7 +163,7 @@ public abstract class MavenBackingRepository implements Closeable {
 	}
 
 	public MavenVersion getVersion(Revision revision) throws Exception {
-		Optional<RevisionMetadata> metadata = getMetadata(revision, false);
+		Optional<RevisionMetadata> metadata = getMetadata(revision);
 		if (!metadata.isPresent()) {
 			return null;
 		}
@@ -246,9 +229,5 @@ public abstract class MavenBackingRepository implements Closeable {
 	public abstract boolean isFile();
 
 	public abstract boolean isRemote();
-
-	void refreshSnapshots() {
-		revisions.clear();
-	}
 
 }
