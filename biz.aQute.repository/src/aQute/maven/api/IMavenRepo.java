@@ -4,10 +4,12 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Formatter;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.util.promise.Promise;
 
 import aQute.maven.provider.MavenBackingRepository;
@@ -26,6 +28,7 @@ import aQute.maven.provider.MavenBackingRepository;
  * SNAPSHOT is replaced with a date stamp + build number). This repository can
  * resolve the latest archive and provide a list of date stamped archives.
  */
+@ProviderType
 public interface IMavenRepo extends Closeable {
 	/**
 	 * The format for an archive is:
@@ -152,16 +155,76 @@ public interface IMavenRepo extends Closeable {
 	 */
 	String getName();
 
+	/**
+	 * Get a POM from an input stream
+	 *
+	 * @param pomFile the stream to the pom
+	 * @return an IPom
+	 * @throws Exception
+	 */
 	IPom getPom(InputStream pomFile) throws Exception;
 
+	/**
+	 * Get the pom of a revision
+	 *
+	 * @param revision the revision
+	 * @return an IPom
+	 * @throws Exception
+	 */
 	IPom getPom(Revision revision) throws Exception;
 
+	/**
+	 * Get the list of snapshot repositories. Do not modify this list
+	 *
+	 * @return list of snapshot repositories
+	 */
 	List<MavenBackingRepository> getSnapshotRepositories();
 
+	/**
+	 * Get the list of release repositories. Do not modify this list
+	 *
+	 * @return list of release repositories
+	 */
 	List<MavenBackingRepository> getReleaseRepositories();
 
+	/**
+	 * This repo represents a local only (normally .m2/repository)
+	 *
+	 * @return true if local only
+	 */
 	boolean isLocalOnly();
 
+	/**
+	 * Verify that the revision associated with the archive has a pom file
+	 */
 	boolean exists(Archive binaryArchive) throws Exception;
 
+	/**
+	 * Ensure that any local metadata is ignored.
+	 *
+	 * @param archive an archive
+	 */
+	void refresh(Archive archive);
+
+	/**
+	 * Answer if this repo has remote (http(s)) remote backing repos.
+	 *
+	 * @return true if there is at least one remote repo
+	 */
+	boolean isRemote();
+
+	/**
+	 * Validate all uris in the repos and report any errors
+	 *
+	 * @param f
+	 */
+	void validateUris(Formatter f);
+
+	/**
+	 * Check if the archive has a local file and is not stale.
+	 *
+	 * @param archive the archive to check
+	 * @return true if there is no local file or it has timed out
+	 */
+	boolean isStale(Archive archive);
 }

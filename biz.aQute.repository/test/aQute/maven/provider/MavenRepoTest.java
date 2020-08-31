@@ -1,5 +1,7 @@
 package aQute.maven.provider;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.List;
@@ -44,14 +46,40 @@ public class MavenRepoTest extends TestCase {
 		local.mkdirs();
 		HttpClient client = new HttpClient();
 		repo = MavenBackingRepository.create(fnx.getBaseURI() + "/repo/", reporter, local, client);
-		storage = new MavenRepository(local, "fnexus", this.repo, this.repo, client.promiseFactory()
-			.executor(), null);
+		storage = new MavenRepository(local, "fnexus", this.repo, this.repo, client, null);
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		fnx.close();
 		super.tearDown();
+	}
+
+	public void testCaching() throws Exception {
+		Program program = Program.valueOf("commons-cli", "commons-cli");
+		Revision revision = program.version(new MavenVersion("1.4-SNAPSHOT"));
+		List<Archive> before = storage.getSnapshotArchives(revision);
+		assertThat(before).hasSize(10);
+		Archive archive = before.get(0);
+		assertThat(archive.isResolved()).isTrue();
+		assertThat(archive.remotePath)
+			.isEqualTo("commons-cli/commons-cli/1.4-SNAPSHOT/commons-cli-1.4-20160119.062305-9.jar");
+
+		IO.copy(IO.getFile("testresources/cachetest"), remote);
+
+		List<Archive> after = storage.getSnapshotArchives(revision);
+		assertThat(before).isEqualTo(after);
+
+		storage.refresh();
+
+		after = storage.getSnapshotArchives(revision);
+		assertThat(before).isNotEqualTo(after);
+
+		archive = after.get(0);
+		assertThat(archive.isResolved()).isTrue();
+		assertThat(archive.remotePath)
+			.isEqualTo("commons-cli/commons-cli/1.4-SNAPSHOT/commons-cli-1.4-20160120.062305-10.jar");
+
 	}
 
 	public void testBasic() throws Exception {

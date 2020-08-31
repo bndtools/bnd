@@ -1,5 +1,7 @@
 package aQute.bnd.repository.maven.provider;
 
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -21,6 +23,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.zip.ZipException;
 
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Deferred;
@@ -54,7 +58,7 @@ import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.Program;
 import aQute.service.reporter.Reporter;
 
-/**
+/*
  * Represents the index list that contains Maven GAVs. It maps the entries in
  * this file to an internal map and uses a BridgeRepository to do the OSGi and
  * bnd repo stuff.
@@ -64,7 +68,11 @@ import aQute.service.reporter.Reporter;
  * results without having to wait for the operation to be done.
  */
 class IndexFile {
-	private final static Logger					logger		= LoggerFactory.getLogger(IndexFile.class);
+	private static final String[]				ZIP_EXTENSIONS	= new String[] {
+		"jar", "zip", "par", "war", "ear", "esa"
+	};
+
+	private final static Logger					logger			= LoggerFactory.getLogger(IndexFile.class);
 
 	final File									indexFile;
 	final IMavenRepo							repo;
@@ -73,12 +81,12 @@ class IndexFile {
 
 	final Reporter								reporter;
 	final PromiseFactory						promiseFactory;
-	final Map<Archive, Resource>				archives	= new ConcurrentHashMap<>();
+	final Map<Archive, Resource>				archives		= new ConcurrentHashMap<>();
 	final Set<String>							multi;
 	final String								source;
 
 	private volatile long						lastModified;
-	private long								last		= 0L;
+	private long								last			= 0L;
 	private volatile Memoize<BridgeRepository>	bridge;
 	private volatile Promise<Boolean>			updateSerializer;
 
@@ -163,7 +171,7 @@ class IndexFile {
 			}
 			logger.debug("remove {}", archive);
 			Set<Archive> toRemove = Collections.singleton(archive);
-			return update(null).thenAccept(b -> save(Collections.emptySet(), toRemove));
+			return update(emptySet()).thenAccept(b -> save(Collections.emptySet(), toRemove));
 		});
 		sync(serializer);
 	}
@@ -190,7 +198,7 @@ class IndexFile {
 			if (!changed) {
 				return promiseFactory.resolved(Boolean.TRUE);
 			}
-			return update(null).thenAccept(b -> save(Collections.emptySet(), toRemove));
+			return update(emptySet()).thenAccept(b -> save(emptySet(), toRemove));
 		});
 		sync(serializer);
 	}
@@ -253,13 +261,6 @@ class IndexFile {
 		} else {
 			promises = toAdd.stream()
 				.map(archive -> {
-					if (!archive.isSnapshot()) {
-						File localFile = repo.toLocalFile(archive);
-						if (localFile.isFile() && localFile.length() > 0) {
-							return promiseFactory.submit(() -> parseSingleOrMultiFile(archive, localFile))
-								.recover(p -> failed(archive, p.getFailure()));
-						}
-					}
 					try {
 						return repo.get(archive)
 							.map(file -> (file == null) ? failed(archive, "Not found")
@@ -280,6 +281,10 @@ class IndexFile {
 				bridge = Memoize.supplier(() -> new BridgeRepository(resourcesRepository));
 				return Boolean.TRUE;
 			});
+	}
+
+	Promise<Boolean> update(Archive archive) {
+		return serialize(() -> update(singleton(archive)));
 	}
 
 	private Map<Archive, Resource> failed(Archive archive, Throwable t) {
@@ -308,8 +313,12 @@ class IndexFile {
 			} else {
 				return parseSingle(archive, file);
 			}
+		} catch (ZipException ze) {
+			String extension = archive.extension.toString();
+			if (!Strings.in(ZIP_EXTENSIONS, extension.toLowerCase()))
+				return failed(archive, "not a zip file");
+			return failed(archive, ze);
 		} catch (Exception e) {
-			IO.delete(file);
 			return failed(archive, e);
 		}
 	}
@@ -366,14 +375,31 @@ class IndexFile {
 		return result;
 	}
 
+	/**
+	 * This method actually runs NOT in the background, it syncs
+	 *
+	 * @param refreshAction to call after it has finished
+	 * @return
+	 * @throws Exception
+	 */
 	boolean refresh(Runnable refreshAction) throws Exception {
+		Promise<Boolean> result;
 		if (indexFile.lastModified() != lastModified && last + 10000 < System.currentTimeMillis()) {
 			last = System.currentTimeMillis();
-			Promise<Boolean> serializer = serialize(this::load).onResolve(refreshAction);
-			sync(serializer);
-			return true;
+			result = serialize(this::load);
+		} else {
+			Set<Archive> snapshots = archives.keySet()
+				.stream()
+				.filter(Archive::isSnapshot)
+				.collect(Collectors.toSet());
+			if (!snapshots.isEmpty()) {
+				result = serialize(() -> update(snapshots));
+			} else
+				return false;
 		}
-		return false;
+		Promise<Boolean> serializer = result.onResolve(refreshAction);
+		sync(serializer);
+		return true;
 	}
 
 	private Set<Archive> read(File file) throws IOException {
@@ -602,4 +628,5 @@ class IndexFile {
 		}
 		return null;
 	}
+
 }

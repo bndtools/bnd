@@ -9,16 +9,19 @@ import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.osgi.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequestException;
-import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.lib.exceptions.Exceptions;
+import aQute.lib.exceptions.SupplierWithException;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.Digest;
 import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.uri.URIUtil;
@@ -29,7 +32,16 @@ import aQute.maven.provider.MetadataParser.RevisionMetadata;
 import aQute.service.reporter.Reporter;
 
 public class MavenRemoteRepository extends MavenBackingRepository {
+	private static final String				NO_DIGEST			= "No digest";
+
 	private final static Logger				logger				= LoggerFactory.getLogger(MavenRemoteRepository.class);
+
+	// MD5(xercesImpl-2.9.0.jar)= 33ec8d237cbaceeffb2c2a7f52afd79a
+	// SHA1(xercesImpl-2.9.0.jar)= 868c0792233fc78d8c9bac29ac79ade988301318
+
+	final static Pattern					DIGEST_POLLUTED		= Pattern.compile("([0-9A-F][0-9A-F]){16,100}",
+		Pattern.CASE_INSENSITIVE);
+
 	final HttpClient						client;
 	final Map<Revision, RevisionMetadata>	revisions			= new ConcurrentHashMap<>();
 	final Map<Program, ProgramMetadata>		programs			= new ConcurrentHashMap<>();
@@ -48,63 +60,93 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 
 	@Override
 	public TaggedData fetch(String path, File file) throws Exception {
-		Promise<TaggedData> promise = fetch(path, file, 3, 1000L);
-		Throwable failure = promise.getFailure(); // wait for completion
-		if (failure != null) {
-			throw Exceptions.duck(failure);
-		}
-		return promise.getValue();
+		return fetch(path, file, 3, 1000L);
 	}
 
-	private Promise<TaggedData> fetch(String path, File file, int retries, long delay) throws Exception {
+	private TaggedData fetch(String path, File file, int retries, long delay) throws Exception {
 		logger.debug("Fetching {}", path);
-		return client.build()
-			.headers("User-Agent", "Bnd")
-			.useCache(file, DEFAULT_MAX_STALE)
-			.asTag()
-			.async(new URL(base + path))
-			.then(success -> success.flatMap(tag -> {
-				logger.debug("Fetched {}", tag);
-				if ((tag.getState() != State.UPDATED) || path.endsWith("/maven-metadata.xml")) {
-					return success;
+		String cause;
+
+		if (client.isOffline()) {
+			if (file == null || !file.isFile())
+				throw new IllegalStateException("We're offline and we do not have a file for: " + path);
+
+			return new TaggedData(new URI(base + path), 304, file);
+		}
+
+		while (true) {
+			TaggedData tag = null;
+			try {
+				tag = client.build()
+					.headers("User-Agent", "Bnd")
+					.useCache(file, 0)
+					.retries(retries)
+					.asTag()
+					.go(new URI(base + path));
+
+				switch (tag.getState()) {
+					case UNMODIFIED :
+					case NOT_FOUND :
+						return tag;
+
+					case UPDATED :
+						cause = digest(path + ".sha1", () -> SHA1.digest(file));
+						if (cause == null)
+							return tag;
+
+						String cause2 = digest(path + ".md5", () -> MD5.digest(file));
+						if (cause2 == null)
+							return tag;
+
+						if (cause.equals(NO_DIGEST) && cause2.equals(NO_DIGEST))
+							return tag;
+
+						cause = "sh1 " + cause + "\n" + "md5 " + cause2;
+						IO.delete(file);
+						break;
+
+					default :
+					case OTHER :
+						cause = tag.toString();
+						break;
+
 				}
-				// https://issues.sonatype.org/browse/NEXUS-4900
-				return client.build()
-					.asString()
-					.timeout(15000)
-					.async(new URL(base + path + ".sha1"))
-					.flatMap(sha -> {
-						if (sha != null) {
-							String fileSha = SHA1.digest(file)
-								.asHex();
-							checkDigest(fileSha, sha, file);
-							return success;
-						}
-						return client.build()
-							.asString()
-							.timeout(15000)
-							.async(new URL(base + path + ".md5"))
-							.flatMap(md5 -> {
-								if (md5 != null) {
-									String fileMD5 = MD5.digest(file)
-										.asHex();
-									checkDigest(fileMD5, md5, file);
-								}
-								return success;
-							});
-					});
-			})
-				.recoverWith(failed -> {
-					if (retries < 1) {
-						return null; // no recovery
-					}
-					logger.info("Retrying invalid download: {}. delay={}, retries={}", failed.getFailure()
-						.getMessage(), delay, retries);
-					@SuppressWarnings("unchecked")
-					Promise<TaggedData> delayed = (Promise<TaggedData>) failed.delay(delay);
-					return delayed.recoverWith(
-						f -> fetch(path, file, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
-				}));
+			} catch (Exception e) {
+				cause = Exceptions.causes(e);
+				logger.info("Something failed in downloading {}: {}", path, cause);
+			}
+
+			if (retries-- <= 0)
+				throw new IllegalStateException(String
+					.format("Cannot download %s into %s after %s tries, last cause %s", path, file, retries, cause));
+
+			long minDelay = Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10));
+			logger.info("Retrying failed download: {}. delay={}, retries={}, cause={}", path, minDelay, retries, cause);
+			Thread.sleep(minDelay);
+		}
+	}
+
+	private String digest(String path, SupplierWithException<Digest> digest) throws MalformedURLException, Exception {
+		// https://issues.sonatype.org/browse/NEXUS-4900
+		String remoteDigest = client.build()
+			.headers("User-Agent", "Bnd")
+			.asString()
+			.retries(3)
+			.go(new URI(base + path));
+
+		if (remoteDigest == null)
+			return NO_DIGEST;
+
+		Matcher matcher = DIGEST_POLLUTED.matcher(remoteDigest);
+		if (!matcher.find()) {
+			return "Invalid digest " + remoteDigest + " expected " + digest.get();
+		}
+		remoteDigest = matcher.group(0);
+		if (!remoteDigest.equalsIgnoreCase(digest.get()
+			.asHex())) {
+			return "Digest values not equal file=" + digest.get() + " remote cleaned up=" + remoteDigest;
+		}
+		return null;
 	}
 
 	@Override
@@ -172,16 +214,6 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 	}
 
 	@Override
-	public void close() {
-
-	}
-
-	@Override
-	public String toString() {
-		return "RemoteRepo [base=" + base + ", id=" + id + ", user=" + getUser() + "]";
-	}
-
-	@Override
 	public String getUser() {
 		try {
 			return client.getUserFor(base);
@@ -206,4 +238,11 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 	public boolean isRemote() {
 		return remote;
 	}
+
+	@Override
+	public String toString() {
+		return "RemoteRepo [base=" + base + ", id=" + id + ", user=" + getUser() + "]";
+	}
+
 }
+
