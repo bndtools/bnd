@@ -101,7 +101,9 @@ The plugin will by default set some OSGi bundle headers derived from [pom elemen
 
 ### Reproducible Builds
 
-To support reproducible builds, you will need to configure the following Bnd instructions:
+If the Maven project property `project.build.outputTimestamp` is set, indicating [reproducible builds](https://maven.apache.org/guides/mini/guide-reproducible-builds.html), this plugin will automatically use the following Bnd instructions, if not otherwise configured.
+
+To support reproducible builds, the following Bnd instructions need to be configured:
 
 ```properties
 -noextraheaders: true

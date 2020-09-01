@@ -78,6 +78,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	static final String						PACKAGING_JAR			= "jar";
 	static final String						PACKAGING_WAR			= "war";
 	static final String						TSTAMP					= "${tstamp}";
+	static final String		SNAPSHOT				= "SNAPSHOT";
+	static final String		OUTPUT_TIMESTAMP		= "project.build.outputTimestamp";
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	File									targetDir;
@@ -294,6 +296,9 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 			processBuilder(builder);
 
+			// https://maven.apache.org/guides/mini/guide-reproducible-builds.html
+			boolean isReproducible = projectProperties.getProperty(OUTPUT_TIMESTAMP) != null;
+
 			// Set Bundle-SymbolicName
 			if (builder.getProperty(Constants.BUNDLE_SYMBOLICNAME) == null) {
 				builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, project.getArtifactId());
@@ -303,11 +308,17 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 				builder.setProperty(Constants.BUNDLE_NAME, project.getName());
 			}
 			// Set Bundle-Version
+			String snapshot = isReproducible ? SNAPSHOT : null;
 			if (builder.getProperty(Constants.BUNDLE_VERSION) == null) {
 				Version version = new MavenVersion(project.getVersion()).getOSGiVersion();
 				builder.setProperty(Constants.BUNDLE_VERSION, version.toString());
+				if (snapshot == null) {
+					snapshot = TSTAMP;
+				}
+			}
+			if (snapshot != null) {
 				if (builder.getProperty(Constants.SNAPSHOT) == null) {
-					builder.setProperty(Constants.SNAPSHOT, TSTAMP);
+					builder.setProperty(Constants.SNAPSHOT, snapshot);
 				}
 			}
 
@@ -426,6 +437,12 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			if (builder.getProperty(Constants.BUNDLE_DOCURL) == null) {
 				if (StringUtils.isNotBlank(project.getUrl())) {
 					builder.setProperty(Constants.BUNDLE_DOCURL, project.getUrl());
+				}
+			}
+
+			if (isReproducible) {
+				if (builder.getProperty(Constants.NOEXTRAHEADERS) == null) {
+					builder.setProperty(Constants.NOEXTRAHEADERS, "true");
 				}
 			}
 
