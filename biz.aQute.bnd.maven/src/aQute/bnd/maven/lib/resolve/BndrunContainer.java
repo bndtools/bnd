@@ -2,6 +2,7 @@ package aQute.bnd.maven.lib.resolve;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -306,7 +307,11 @@ public class BndrunContainer {
 		beanProperties.put("project", project);
 		beanProperties.put("settings", session.getSettings());
 		Properties mavenProperties = new Properties(beanProperties);
-		mavenProperties.putAll(project.getProperties());
+		Properties projectProperties = project.getProperties();
+		for (Enumeration<?> propertyNames = projectProperties.propertyNames(); propertyNames.hasMoreElements();) {
+			Object key = propertyNames.nextElement();
+			mavenProperties.put(key, projectProperties.get(key));
+		}
 		return new Processor(workspace, mavenProperties, false);
 	}
 

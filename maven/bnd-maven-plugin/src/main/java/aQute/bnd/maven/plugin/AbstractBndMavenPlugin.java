@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -161,7 +162,11 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		beanProperties.put("project", project);
 		beanProperties.put("settings", settings);
 		Properties mavenProperties = new Properties(beanProperties);
-		mavenProperties.putAll(project.getProperties());
+		Properties projectProperties = project.getProperties();
+		for (Enumeration<?> propertyNames = projectProperties.propertyNames(); propertyNames.hasMoreElements();) {
+			Object key = propertyNames.nextElement();
+			mavenProperties.put(key, projectProperties.get(key));
+		}
 
 		try (Builder builder = new Builder(new Processor(mavenProperties, false))) {
 			builder.setTrace(logger.isDebugEnabled());
