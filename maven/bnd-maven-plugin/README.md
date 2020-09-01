@@ -165,7 +165,7 @@ The plugin has 3 distinct usage scenarios:
        <configuration>
            <includeClassesDir>false</includeClassesDir>
            <bnd><![CDATA[
-               Private-Package: foo.*
+               -includepackage: foo.*
            ]]></bnd>
        </configuration>
    </plugin>
