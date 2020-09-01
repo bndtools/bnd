@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +78,8 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	static final String						PACKAGING_JAR			= "jar";
 	static final String						PACKAGING_WAR			= "war";
 	static final String						TSTAMP					= "${tstamp}";
+	static final String		SNAPSHOT				= "SNAPSHOT";
+	static final String		OUTPUT_TIMESTAMP		= "project.build.outputTimestamp";
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	File									targetDir;
@@ -161,7 +164,11 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 		beanProperties.put("project", project);
 		beanProperties.put("settings", settings);
 		Properties mavenProperties = new Properties(beanProperties);
-		mavenProperties.putAll(project.getProperties());
+		Properties projectProperties = project.getProperties();
+		for (Enumeration<?> propertyNames = projectProperties.propertyNames(); propertyNames.hasMoreElements();) {
+			Object key = propertyNames.nextElement();
+			mavenProperties.put(key, projectProperties.get(key));
+		}
 
 		try (Builder builder = new Builder(new Processor(mavenProperties, false))) {
 			builder.setTrace(logger.isDebugEnabled());
@@ -289,6 +296,9 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 			processBuilder(builder);
 
+			// https://maven.apache.org/guides/mini/guide-reproducible-builds.html
+			boolean isReproducible = projectProperties.getProperty(OUTPUT_TIMESTAMP) != null;
+
 			// Set Bundle-SymbolicName
 			if (builder.getProperty(Constants.BUNDLE_SYMBOLICNAME) == null) {
 				builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, project.getArtifactId());
@@ -298,11 +308,17 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 				builder.setProperty(Constants.BUNDLE_NAME, project.getName());
 			}
 			// Set Bundle-Version
+			String snapshot = isReproducible ? SNAPSHOT : null;
 			if (builder.getProperty(Constants.BUNDLE_VERSION) == null) {
 				Version version = new MavenVersion(project.getVersion()).getOSGiVersion();
 				builder.setProperty(Constants.BUNDLE_VERSION, version.toString());
+				if (snapshot == null) {
+					snapshot = TSTAMP;
+				}
+			}
+			if (snapshot != null) {
 				if (builder.getProperty(Constants.SNAPSHOT) == null) {
-					builder.setProperty(Constants.SNAPSHOT, TSTAMP);
+					builder.setProperty(Constants.SNAPSHOT, snapshot);
 				}
 			}
 
@@ -421,6 +437,12 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			if (builder.getProperty(Constants.BUNDLE_DOCURL) == null) {
 				if (StringUtils.isNotBlank(project.getUrl())) {
 					builder.setProperty(Constants.BUNDLE_DOCURL, project.getUrl());
+				}
+			}
+
+			if (isReproducible) {
+				if (builder.getProperty(Constants.NOEXTRAHEADERS) == null) {
+					builder.setProperty(Constants.NOEXTRAHEADERS, "true");
 				}
 			}
 

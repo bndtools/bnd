@@ -47,14 +47,17 @@ assert impl_manifest.getValue('Bundle-Name') == 'Test Impl Bundle'
 assert wrapper_manifest.getValue('Bundle-Name') == 'test-wrapper-bundle'
 assert api_manifest.getValue('Bundle-Version') == '0.0.1.bndqual'
 assert impl_manifest.getValue('Bundle-Version') == '0.0.1.SNAPSHOT'
-assert wrapper_manifest.getValue('Bundle-Version') != '0.0.1.BUILD-SNAPSHOT'
-assert wrapper_manifest.getValue('Bundle-Version') =~ /^0\.0\.1\.BUILD-/
+assert wrapper_manifest.getValue('Bundle-Version') == '0.0.1.BUILD-SNAPSHOT'
 assert in_build_pluginManagement_api_manifest.getValue('Bundle-Version') == '0.0.1'
 assert wrapper_manifest.getValue('Bundle-ClassPath') == '.,lib/osgi.annotation.jar'
 assert tests_main_manifest.getValue('Bundle-SymbolicName') == 'test-bnd-process-tests-goal'
 assert tests_test_manifest.getValue('Bundle-SymbolicName') == 'test-bnd-process-tests-goal-tests'
 assert tests_test_bundle_fragment_manifest.getValue('Bundle-SymbolicName') == 'test-bnd-process-tests-goal-fragment-tests'
 assert tests_test_bundle_fragment_manifest.getValue('Fragment-Host') == 'test-bnd-process-tests-goal-fragment'
+assert api_manifest.getValue('Bnd-LastModified') == null
+assert impl_manifest.getValue('Bnd-LastModified') == null
+assert wrapper_manifest.getValue('Bnd-LastModified') == null
+assert in_build_pluginManagement_api_manifest.getValue('Bnd-LastModified') != null
 
 // Check inheritance of properties in bnd.bnd from the parent project
 assert api_manifest.getValue('X-ParentProjectProperty') == 'it worked'
