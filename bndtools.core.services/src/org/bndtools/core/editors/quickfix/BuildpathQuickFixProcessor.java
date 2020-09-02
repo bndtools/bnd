@@ -34,6 +34,7 @@ import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.NameQualifiedType;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.QualifiedType;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 import org.eclipse.jdt.core.dom.Type;
@@ -60,8 +61,40 @@ import bndtools.central.Central;
 @Component
 public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 
+	// Useful for giving pretty debug output for problems; if you come across
+	// a new problem you can uncomment this and uncomment the println in
+	// the default case of hasProblems() to get a human-readable problem
+	// type description.
+	// static IProblem getProblem(Field f) {
+	// try {
+	// int problemId = f.getInt(null);
+	// return new DummyProblem(problemId, f.getName());
+	// } catch (Exception e) {
+	// throw Exceptions.duck(e);
+	// }
+	// }
+	//
+	// static Map<Integer, IProblem> PROBLEM_TYPES;
+	//
+	// {
+	// PROBLEM_TYPES = new HashMap<>();
+	// Stream.of(IProblem.class.getFields())
+	// .map(BuildpathQuickFixProcessor::getProblem)
+	// .forEach(problem -> {
+	// PROBLEM_TYPES.put(problem.getID(), problem);
+	// });
+	// }
+	//
+	// // This is just to give nice error feedback
+	// static class DummyProblem extends DefaultProblem {
+	// public DummyProblem(int id, String message) {
+	// super(null, message, id, null, 0, 0, 0, 0, 0);
+	// }
+	// }
+	//
 	@Override
 	public boolean hasCorrections(ICompilationUnit unit, int problemId) {
+		// System.err.println(PROBLEM_TYPES.get(problemId));
 		switch (problemId) {
 			case IProblem.HierarchyHasProblems :
 				// System.out.println("HierarchyHasProblems");
@@ -87,7 +120,14 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			case IProblem.UndefinedType :
 				// System.out.println("UndefinedType");
 				return true;
+			case IProblem.UndefinedName :
+				// System.out.println("UndefinedName");
+				return true;
+			case IProblem.UnresolvedVariable :
+				// System.out.println("UnresolvedVariable");
+				return true;
 			default :
+				// System.err.println("Unhandled problem type: " +
 				return false;
 		}
 	}
@@ -283,14 +323,14 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 					case IProblem.UndefinedMethod : {
 						ASTNode node = location.getCoveredNode(context.getASTRoot());
 						ASTNode parent = node.getParent();
-						UNDEFINED_METHOD:
-						while (parent != null) {
+						UNDEFINED_METHOD: while (parent != null) {
 							switch (parent.getNodeType()) {
 								case ASTNode.METHOD_INVOCATION : {
 									// This is the bit to the left of the "."
 									Expression leftOfTheDot = ((MethodInvocation) parent).getExpression();
 									if (leftOfTheDot == null) {
-										// this. is implied if there's nothing there
+										// this. is implied if there's nothing
+										// there
 										AbstractTypeDeclaration type = findFirstParentOfType(parent,
 											AbstractTypeDeclaration.class);
 										visitBindingHierarchy(type.resolveBinding());
@@ -301,8 +341,10 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 								}
 								case ASTNode.SUPER_METHOD_INVOCATION : {
 									SuperMethodInvocation invocation = (SuperMethodInvocation) parent;
-									// Qualifier is if the super class invocation is qualified, eg
-									// to disambiguate in the case of multiple inheritance.
+									// Qualifier is if the super class
+									// invocation is qualified, eg
+									// to disambiguate in the case of multiple
+									// inheritance.
 									Name qualifier = invocation.getQualifier();
 									if (qualifier == null) {
 										TypeDeclaration type = findFirstParentOfType(parent, TypeDeclaration.class);
@@ -331,7 +373,6 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 						ImportDeclaration importDec = findFirstParentOfType(node, ImportDeclaration.class);
 						if (importDec != null) {
 							Name name = importDec.getName();
-							String partialClassName = null;
 							if (importDec.isStatic() && !importDec.isOnDemand()) {
 								// It should be a QualifiedName unless there is
 								// an error in Eclipse...
@@ -339,19 +380,31 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 									addProposals(((QualifiedName) name).getQualifier()
 										.getFullyQualifiedName());
 								}
-							} else if (importDec.isOnDemand()) {
+							} else if (importDec.isOnDemand() || name instanceof QualifiedName) {
 								addProposals(name.getFullyQualifiedName());
-							} else if (name instanceof QualifiedName) {
-								QualifiedName qn = (QualifiedName) name;
-								addProposals(qn.getQualifier()
-									.getFullyQualifiedName(),
-									qn.getName()
-										.toString());
 							}
 							// Don't make any suggestions for a SimpleName as it
 							// is in the default package, which can't be
 							// exported by any bundle.
 						}
+						continue;
+					}
+					// An undefined name can be a static reference to a method
+					// of a missing type, eg FrameworkUtil.getBundleContext()
+					// if FrameworkUtil is not on the classpath.
+					case IProblem.UndefinedName : {
+						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						String partialClassName = getPartialClassName(node);
+						if (partialClassName != null) {
+							addProposals(partialClassName);
+						}
+						continue;
+					}
+					// An unresolved variable can be a static reference to a
+					// field of a missing type.
+					case IProblem.UnresolvedVariable : {
+						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						addProposals(getCoveringName(node));
 						continue;
 					}
 					case IProblem.UndefinedType : {
@@ -422,7 +475,9 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 				.toArray(IJavaCompletionProposal[]::new);
 
 			return retval.length == 0 ? null : retval;
-		} catch (Exception e) {
+		} catch (
+
+		Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
@@ -439,6 +494,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 					.toString(),
 					nqt.getName()
 						.toString());
+				addProposals(nqt.getQualifier());
 				return;
 			case ASTNode.QUALIFIED_TYPE :
 				QualifiedType qt = (QualifiedType) type;
@@ -446,19 +502,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 				return;
 			case ASTNode.SIMPLE_TYPE :
 				SimpleType st = (SimpleType) type;
-				Name name = st.getName();
-				switch (name.getNodeType()) {
-					case ASTNode.QUALIFIED_NAME :
-						QualifiedName qn = (QualifiedName) name;
-						addProposals(qn.getQualifier()
-							.getFullyQualifiedName(),
-							qn.getName()
-								.toString());
-						return;
-					default :
-						addProposals(null, name.getFullyQualifiedName());
-						return;
-				}
+				addProposals(st.getName());
 		}
 	}
 
@@ -484,6 +528,21 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			buffer.append('.');
 		}
 		buffer.append(typeBinding.getName());
+	}
+
+	private void addProposals(Name name) throws CoreException, Exception {
+		if (name == null) {
+			return;
+		}
+		if (name instanceof SimpleName) {
+			addProposals(null, name.toString());
+		} else if (name instanceof QualifiedName) {
+			QualifiedName qualified = (QualifiedName) name;
+			Name qualifier = qualified.getQualifier();
+			addProposals(qualifier.toString(), qualified.getName()
+				.toString());
+			addProposals(qualifier);
+		}
 	}
 
 	private void addProposals(String partialClassName) throws CoreException, Exception {
@@ -556,6 +615,16 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			.collect(Collectors.toSet());
 	}
 
+	private Name getCoveringName(ASTNode node) {
+		Name name = null;
+		while (node instanceof Name) {
+			name = (Name) node;
+			node = node.getParent();
+		}
+
+		return name;
+	}
+
 	/**
 	 * Find out the fully qualified name of either a package or a type or an
 	 * import declaration
@@ -565,14 +634,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	 *         established
 	 */
 	private String getPartialClassName(ASTNode node) {
-		Name name = null;
-		while (node instanceof Name) {
-			name = (Name) node;
-			node = node.getParent();
-		}
-
-		if (name == null)
-			return null;
-		return name.toString();
+		Name name = getCoveringName(node);
+		return name == null ? null : name.toString();
 	}
 }
