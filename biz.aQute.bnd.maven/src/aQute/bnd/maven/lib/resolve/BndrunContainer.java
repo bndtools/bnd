@@ -225,7 +225,7 @@ public class BndrunContainer {
 	 */
 	public DependencyResolver getDependencyResolver(MavenProject project) {
 		return new DependencyResolver(project, repositorySession, resolver, system, artifactFactory, scopes, transitive,
-			postProcessor);
+			postProcessor, useMavenDependencies, includeDependencyManagement);
 	}
 
 	/**
