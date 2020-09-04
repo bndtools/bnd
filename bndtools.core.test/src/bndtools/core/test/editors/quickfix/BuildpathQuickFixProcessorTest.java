@@ -10,9 +10,10 @@ import static org.eclipse.jdt.core.compiler.IProblem.ParameterMismatch;
 import static org.eclipse.jdt.core.compiler.IProblem.TypeMismatch;
 import static org.eclipse.jdt.core.compiler.IProblem.UndefinedField;
 import static org.eclipse.jdt.core.compiler.IProblem.UndefinedMethod;
+import static org.eclipse.jdt.core.compiler.IProblem.UndefinedName;
 import static org.eclipse.jdt.core.compiler.IProblem.UndefinedType;
+import static org.eclipse.jdt.core.compiler.IProblem.UnresolvedVariable;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -508,7 +509,7 @@ public class BuildpathQuickFixProcessorTest {
 
 	static final Set<Integer> SUPPORTED = Stream
 		.of(ImportNotFound, UndefinedType, IsClassPathCorrect, HierarchyHasProblems, ParameterMismatch, TypeMismatch,
-			UndefinedField, UndefinedMethod)
+			UndefinedField, UndefinedMethod, UndefinedName, UnresolvedVariable)
 		.collect(Collectors.toSet());
 
 	// This is just to give nice error feedback
@@ -573,11 +574,10 @@ public class BuildpathQuickFixProcessorTest {
 		assertThatContainsListenerInfoSuggestions(proposalsForUndefType("ListenerInfo"));
 	}
 
-	@Disabled("Not yet implemented")
 	@Test
 	void withPartlyQualifiedInnerType_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
-		assertThatContainsListenerInfoSuggestions(proposalsForUndefType("ListenerHook.ListenerInfo"));
+		assertThatContainsListenerHookSuggestions(proposalsForUndefType("ListenerHook.ListenerInfo"));
 	}
 
 	@Test
@@ -586,19 +586,17 @@ public class BuildpathQuickFixProcessorTest {
 		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType("org.osgi.framework.BundleActivator"));
 	}
 
-	@Disabled("Not yet implemented")
 	@Test
 	void withFQNestedType_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
-		assertThatContainsListenerInfoSuggestions(
+		assertThatContainsListenerHookSuggestions(
 			proposalsForUndefType("org.osgi.framework.hooks.service.ListenerHook.ListenerInfo"));
 	}
 
-	@Disabled("Not yet implemented")
 	@Test
 	void withAnnotatedFQNestedType_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
-		assertThatContainsListenerInfoSuggestions(
+		assertThatContainsListenerHookSuggestions(
 			proposalsForUndefType("org.osgi.framework.hooks.service.ListenerHook.@NotNull ListenerInfo"));
 	}
 
@@ -727,13 +725,6 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withOnDemandImport_altPackage_suggestsBundles(SoftAssertions softly) throws IOException {
-		this.softly = softly;
-		assertThatProposals(proposalsForImport("simple.*")).hasSize(1)
-			.haveExactly(1, suggestsBundle("bndtools.core.test.fodder.simple", "1.0.0", "simple"));
-	}
-
-	@Test
 	void withUnqualifiedNameImport_returnsNull(SoftAssertions softly) {
 		// If the import statement is a simple (non-qualified) name and it's not
 		// an on-demand import, it must refer to a type in the default package.
@@ -753,7 +744,6 @@ public class BuildpathQuickFixProcessorTest {
 		assertThatContainsBundleActivatorSuggestions(proposalsForImport("org.osgi.framework.BundleActivator"));
 	}
 
-	@Disabled("Not yet implemented")
 	@Test
 	void withInnerClassImport_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
@@ -765,6 +755,13 @@ public class BuildpathQuickFixProcessorTest {
 	void withOnDemandImport_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
 		assertThatContainsFrameworkBundles(proposalsForImport("org.osgi.framework.*"), "org.osgi.framework");
+	}
+
+	@Test
+	void withOnDemandImport_ofNestedClasses_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+		assertThatContainsListenerInfoSuggestions(
+			proposalsForImport("org.osgi.framework.hooks.service.ListenerHook.ListenerInfo.*"));
 	}
 
 	@Test
@@ -795,6 +792,74 @@ public class BuildpathQuickFixProcessorTest {
 	void withClassLiteral_suggestsBundles(SoftAssertions softly) {
 		this.softly = softly;
 		assertThatContainsBundleSuggestions(proposalsForLiteral("Bundle"));
+	}
+
+	@Test
+	void withReference_toStaticMethodOfMissingType_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+
+		String header = "package test; class ";
+		String source = header + DEFAULT_CLASS_NAME + " {\n" + "Object o = ";
+		int begin = source.length();
+		source += "FrameworkUtil";
+		String prefixSource = source;
+		int end = source.length();
+		// For our purposes it doesn't matter that this static method doesn't
+		// actually exist
+		source += ".staticMethod();}";
+
+		assertThatContainsFrameworkBundles(proposalsFor(begin, 1, source), "org.osgi.framework.FrameworkUtil");
+	}
+
+	@Test
+	void withReference_toStaticFieldOfMissingType_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+
+		String header = "package test; class ";
+		String source = header + DEFAULT_CLASS_NAME + " {\n" + "Object o = ";
+		int begin = source.length();
+		source += "FrameworkUtil";
+		String prefixSource = source;
+		int end = source.length();
+		// For our purposes it doesn't matter that this static field doesn't
+		// actually exist
+		source += ".staticField;}";
+
+		assertThatContainsFrameworkBundles(proposalsFor(begin, 1, source), "org.osgi.framework.FrameworkUtil");
+	}
+
+	@Test
+	void withReference_toStaticFieldOfMissingNestedType_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+
+		String header = "package test; class ";
+		String source = header + DEFAULT_CLASS_NAME + " {\n" + "Object o = ";
+		int begin = source.length();
+		source += "ListenerHook.ListenerInfo";
+		String prefixSource = source;
+		int end = source.length();
+		// For our purposes it doesn't matter that this static field doesn't
+		// actually exist
+		source += ".staticField;}";
+
+		assertThatContainsListenerHookSuggestions(proposalsFor(begin, 1, source));
+	}
+
+	@Test
+	void withReference_toStaticFieldOfFQMissingType_suggestsBundles(SoftAssertions softly) {
+		this.softly = softly;
+
+		String header = "package test; class ";
+		String source = header + DEFAULT_CLASS_NAME + " {\n" + "Object o = ";
+		int begin = source.length();
+		source += "org.osgi.framework.FrameworkUtil";
+		String prefixSource = source;
+		int end = source.length();
+		// For our purposes it doesn't matter that this static field doesn't
+		// actually exist
+		source += ".staticField;}";
+
+		assertThatContainsFrameworkBundles(proposalsFor(begin, 1, source), "org.osgi.framework.FrameworkUtil");
 	}
 
 	@Test
@@ -1191,6 +1256,10 @@ public class BuildpathQuickFixProcessorTest {
 
 	private void assertThatContainsListenerInfoSuggestions(IJavaCompletionProposal[] proposals) {
 		assertThatContainsFrameworkBundles(proposals, "org.osgi.framework.hooks.service.ListenerHook.ListenerInfo");
+	}
+
+	private void assertThatContainsListenerHookSuggestions(IJavaCompletionProposal[] proposals) {
+		assertThatContainsFrameworkBundles(proposals, "org.osgi.framework.hooks.service.ListenerHook");
 	}
 
 	// This gives us a more complete display when tests fail
