@@ -12,30 +12,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.core.IClasspathEntry;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.launching.JavaRuntime;
 
 public class TemporaryProject {
 
 	public TemporaryProject() {}
-
-	private void addNaturesToProject(IProject proj, String... natureIds)
-		throws CoreException {
-		IProjectDescription description = proj.getDescription();
-		String[] prevNatures = description.getNatureIds();
-		String[] newNatures = new String[prevNatures.length + natureIds.length];
-		System.arraycopy(prevNatures, 0, newNatures, 0, prevNatures.length);
-
-		for (int i = prevNatures.length; i < newNatures.length; i++) {
-			newNatures[i] = natureIds[i - prevNatures.length];
-		}
-
-		description.setNatureIds(newNatures);
-		proj.setDescription(description, new NullProgressMonitor());
-	}
 
 	private void checkForSupportProject() throws CoreException {
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
@@ -57,20 +37,6 @@ public class TemporaryProject {
 		}
 
 		makeFolders(project.getFolder("temp"));
-
-		computeClasspath(JavaCore.create(project), new NullProgressMonitor());
-	}
-
-	private void computeClasspath(IJavaProject project, IProgressMonitor monitor) {
-		IClasspathEntry[] classpath = new IClasspathEntry[2];
-		classpath[0] = JavaCore.newContainerEntry(JavaRuntime.newDefaultJREContainerPath());
-		IProject javaProject = project.getProject();
-		IFolder folder = javaProject.getFolder("src");
-		classpath[1] = JavaCore.newSourceEntry(folder.getFullPath());
-
-		try {
-			project.setRawClasspath(classpath, monitor);
-		} catch (JavaModelException jme) {}
 	}
 
 	private IProject createProject() throws CoreException {
@@ -98,27 +64,17 @@ public class TemporaryProject {
 		project.create(description, monitor);
 		project.open(monitor);
 
-		makeFolders(project.getFolder("src"));
-
-		addNaturesToProject(project, JavaCore.NATURE_ID);
-
-		IJavaProject jProject = JavaCore.create(project);
-		IPath fullPath = project.getFullPath();
-		jProject.setOutputLocation(fullPath.append("bin"), monitor);
-
-		computeClasspath(jProject, monitor);
-
 		return project;
 	}
 
-	public IJavaProject getJavaProject() throws CoreException {
+	public IProject getProject() throws CoreException {
 		checkForSupportProject();
 		IProject project = ResourcesPlugin.getWorkspace()
 			.getRoot()
 			.getProject(BndtoolsConstants.BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME);
 
-		if (project.exists() && project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
-			return JavaCore.create(project);
+		if (project.exists() && project.isOpen()) {
+			return project;
 		}
 		return null;
 	}
