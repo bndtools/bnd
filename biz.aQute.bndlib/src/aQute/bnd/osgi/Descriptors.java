@@ -620,15 +620,59 @@ public class Descriptors {
 	}
 
 	public static String binaryClassToFQN(String path) {
-		return binaryToFQN(path.substring(0, path.length() - 6));
+		return binaryToFQN(path.substring(0, path.length() - 6)).replace('$',
+		 '.');
 	}
 
-	public static String fqnToBinary(String binary) {
-		return binary.replace('.', '/');
+	public static String fqnToBinary(String fqn) {
+		return fqn.replace('.', '/');
 	}
 
-	public static String fqnClassToBinary(String binary) {
-		return binary.replace('.', '/') + ".class";
+	/**
+	 * Converts the given fully-qualified top-level class name into the binary
+	 * class path. For example:
+	 * <p>
+	 * {@code my.pkg.And.Clazz} becomes:
+	 * <p>
+	 * {@code my/pkg/And$Clazz.class}
+	 * <p>
+	 * This method uses {@link Descriptors#determine(String)} to split the class
+	 * and package names, which is imperfect.
+	 *
+	 * @param fqn the fully-qualified name to be converted.
+	 * @return The binary name corresponding to the fully-qualified name.
+	 */
+	public static String fqnClassToBinary(String fqn) {
+		Result<String[], String> result = determine(fqn);
+		if (result.isErr()) {
+			throw new IllegalArgumentException(result.error()
+				.orElse("Error in fqn: " + fqn));
+		}
+		String[] parts = result.unwrap();
+		if (parts[0] == null) {
+			return classToPath(parts[1]);
+		}
+		if (parts[1] == null) {
+			return fqnToBinary(parts[0]) + ".class";
+		}
+		return fqnToBinary(parts[0]) + "/" + classToPath(parts[1]);
+	}
+
+	/**
+	 * Converts the class name (without the package qualifier) into the
+	 * corresponding binary name. For example:
+	 * <p>
+	 * {@code my.pkg.and.Clazz} becomes:
+	 * <p>
+	 * {@code my$pkg$and$Clazz.class} As you can see, this method is not smart
+	 * about distinguishing between package and class nesting - it always
+	 * converts the . into a $.
+	 *
+	 * @param className the name of the class to be converted.
+	 * @return The binary name corresponding to the class name.
+	 */
+	public static String classToPath(String className) {
+		return className.replace('.', '$') + ".class";
 	}
 
 	public static String getPackage(String binaryNameOrFqn) {
@@ -740,6 +784,12 @@ public class Descriptors {
 	 * Return a 2 element array based on the fqn. The first element is the
 	 * package name, the second is the class name. Each can be absent, but not
 	 * both. The class name can be a nested class (will contain a '.' then)
+	 * <p>
+	 * Because there is an inherent ambiguity between packages and nested
+	 * classes, this method uses a heuristic that works most of the time: the
+	 * start of the class name is considered to be the first element that begins
+	 * with a capital letter. Hence "simple.Sample.Sumple" => ["simple",
+	 * "Sample.Sumple" ] and not [ "simple.Sample", "Sumple" ].
 	 *
 	 * @param fqn a Java identifier name, either a simple class name, a
 	 *            qualified class name, or a package name

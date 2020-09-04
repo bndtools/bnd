@@ -43,6 +43,15 @@ class WorkspaceClassIndex implements AutoCloseable {
 	 * <p>
 	 * The result is a map that has the full class name (FQN) as the key and a
 	 * list of bundle ids as value.
+	 * <p>
+	 * This method uses a heuristic to split the FQN into its package and class
+	 * portion - the first element that starts with a capital letter is taken to
+	 * be the top-level class - everything after that is nested classes,
+	 * everything before that is the package hierarchy. This method is pretty
+	 * good for most cases, but not perfect. If your calling context has a more
+	 * reliable way to split the FQN into the package and class name portions,
+	 * you will get more accurate results by using the
+	 * {@link #search(String, String)} method.
 	 *
 	 * @param partialFqn package and/or class name
 	 * @return a multimap of fqn|pack->bundleid
@@ -95,9 +104,9 @@ class WorkspaceClassIndex implements AutoCloseable {
 
 			assert className != null : "we handle pack !class, class || package class left";
 
-			String binaryClassName = Descriptors.fqnClassToBinary(className);
+			String binaryClassPath = Descriptors.classToPath(className);
 
-			String error = matchClassNameAgainstResource(binaryClassName, e.getValue(), bundle, result);
+			String error = matchClassNameAgainstResource(binaryClassPath, e.getValue(), bundle, result);
 			if (error != null) {
 				return Result.err(error);
 			}

@@ -65,6 +65,7 @@ import aQute.bnd.maven.support.Maven;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
@@ -1452,7 +1453,16 @@ public class Workspace extends Processor {
 	/**
 	 * Search for a partial class name. The partialFqn name may be a simple
 	 * class name (Foo) or a fully qualified class name line (foo.bar.Foo),
-	 * including nested classes, or only a package name prefix (foo.bar).
+	 * including nested classes, or only a package name prefix (foo.bar or even
+	 * foo.ba).
+	 * <p>
+	 * This method uses the heuristic in {@link Descriptors#determine
+	 * determine()} to split the package name from the (possibly nested) class
+	 * name - the start of the class name is taken as the first element that
+	 * starts with a capital letter. This heuristic works fine in most cases,
+	 * but it is not foolproof. In contexts where you have a better idea of how
+	 * to separate the package name from the class name, you can use
+	 * {@link #search(String, String)} for this purpose.
 	 *
 	 * @param partialFqn a packagename ( '.' classname )*
 	 * @return a multi-map containing the search matches with the matching
