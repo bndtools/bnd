@@ -1243,7 +1243,9 @@ public class Launcher implements ServiceListener, FrameworkListener {
 					ConnectFrameworkFactory.class);
 				if (connectFrameworkFactory != null) {
 					connect = true;
-					return connectFrameworkFactory.newFramework(configuration, moduleConnector);
+					Framework connectFramework = connectFrameworkFactory.newFramework(configuration, moduleConnector);
+					trace("connect framework instance %s", connectFramework);
+					return connectFramework;
 				}
 			}
 		} catch (Throwable e) {
@@ -1257,13 +1259,12 @@ public class Launcher implements ServiceListener, FrameworkListener {
 			.iterator();
 
 		if (!iterator.hasNext()) {
-			error("Found no fw implementation");
 			return null;
 		}
 		T implementation = iterator.next();
 
 		if (iterator.hasNext())
-			error("Found more than one framework implementations: %s", iterator.next());
+			error("Found more than one %s implementation: %s", service, iterator.next());
 
 		return implementation;
 	}
