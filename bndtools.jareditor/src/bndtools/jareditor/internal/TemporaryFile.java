@@ -10,7 +10,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.core.IJavaProject;
 
 import aQute.bnd.service.result.Result;
 import aQute.lib.exceptions.Exceptions;
@@ -57,11 +56,10 @@ public class TemporaryFile {
 	}
 
 	private static Result<IFolder, String> selectTempProject() throws CoreException, IOException {
-		IJavaProject javaProject = tempProject.getJavaProject();
-		if (javaProject == null) {
+		IProject project = tempProject.getProject();
+		if (project == null) {
 			return Result.err("Unable to get temp project %s", BndtoolsConstants.BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME);
 		}
-		IProject project = javaProject.getProject();
 		return Result.ok(project.getFolder("temp"));
 	}
 
