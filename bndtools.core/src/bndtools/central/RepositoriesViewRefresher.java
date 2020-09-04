@@ -27,6 +27,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
@@ -72,75 +73,77 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 		// Since this can delay, we move this to the background
 		//
 
-		new WorkspaceJob("Updating repositories content") {
+		Central.onAnyWorkspaceAsync(ws -> {
+			new WorkspaceJob("Updating repositories content") {
 
-			@Override
-			public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-				try {
-					if (monitor == null)
-						monitor = new NullProgressMonitor();
+				@Override
+				public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+					try {
+						if (monitor == null)
+							monitor = new NullProgressMonitor();
 
-					Set<RepositoryPlugin> repos = new HashSet<>();
-					if (target != null)
-						repos.add(target);
-					else {
-						for (RefreshModel m : viewers.values()) {
-							repos.addAll(m.getRepositories());
-						}
-					}
-
-					ensureLoaded(monitor, repos);
-
-					// get repositories first, then do UI thread work
-
-					final Map<Entry<TreeViewer, RefreshModel>, List<RepositoryPlugin>> entryRepos = new HashMap<>();
-
-					for (Map.Entry<TreeViewer, RefreshModel> entry : viewers.entrySet()) {
-						entryRepos.put(entry, entry.getValue()
-							.getRepositories());
-					}
-
-					//
-					// And now back to the UI thread
-					//
-
-					getDisplay().asyncExec(() -> {
-
-						synchronized (RepositoriesViewRefresher.this) {
-							redo = false;
-						}
-
-						for (Map.Entry<TreeViewer, RefreshModel> entry : viewers.entrySet()) {
-
-							TreePath[] expandedTreePaths = entry.getKey()
-								.getExpandedTreePaths();
-
-							entry.getKey()
-								.setInput(entryRepos.get(entry));
-							if (expandedTreePaths != null && expandedTreePaths.length > 0)
-								entry.getKey()
-									.setExpandedTreePaths(expandedTreePaths);
-						}
-						synchronized (RepositoriesViewRefresher.this) {
-							busy = false;
-							if (redo) {
-								refreshRepositories(null);
+						Set<RepositoryPlugin> repos = new HashSet<>();
+						if (target != null)
+							repos.add(target);
+						else {
+							for (RefreshModel m : viewers.values()) {
+								repos.addAll(m.getRepositories());
 							}
 						}
-					});
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				return Status.OK_STATUS;
-			}
 
-		}.schedule(1000);
+						ensureLoaded(monitor, repos, ws);
+
+						// get repositories first, then do UI thread work
+
+						final Map<Entry<TreeViewer, RefreshModel>, List<RepositoryPlugin>> entryRepos = new HashMap<>();
+
+						for (Map.Entry<TreeViewer, RefreshModel> entry : viewers.entrySet()) {
+							entryRepos.put(entry, entry.getValue()
+								.getRepositories());
+						}
+
+						//
+						// And now back to the UI thread
+						//
+
+						getDisplay().asyncExec(() -> {
+
+							synchronized (RepositoriesViewRefresher.this) {
+								redo = false;
+							}
+
+							for (Map.Entry<TreeViewer, RefreshModel> entry : viewers.entrySet()) {
+
+								TreePath[] expandedTreePaths = entry.getKey()
+									.getExpandedTreePaths();
+
+								entry.getKey()
+									.setInput(entryRepos.get(entry));
+								if (expandedTreePaths != null && expandedTreePaths.length > 0)
+									entry.getKey()
+										.setExpandedTreePaths(expandedTreePaths);
+							}
+							synchronized (RepositoriesViewRefresher.this) {
+								busy = false;
+								if (redo) {
+									refreshRepositories(null);
+								}
+							}
+						});
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					return Status.OK_STATUS;
+				}
+
+			}.schedule(1000);
+		});
 	}
 
-	private IStatus ensureLoaded(IProgressMonitor monitor, Collection<RepositoryPlugin> repos) {
+	private IStatus ensureLoaded(IProgressMonitor monitor, Collection<RepositoryPlugin> repos, Workspace ws) {
 		int n = 0;
 		try {
-			final RepositoryPlugin workspaceRepo = Central.getWorkspaceRepository();
+			final RepositoryPlugin workspaceRepo = ws.getWorkspaceRepository();
 			for (RepositoryPlugin repo : repos) {
 				if (monitor.isCanceled()) {
 					return Status.CANCEL_STATUS;
@@ -223,24 +226,26 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 			}
 			busy = true;
 		}
-		new WorkspaceJob("Setting repositories") {
+		Central.onAnyWorkspaceAsync(ws -> {
+			new WorkspaceJob("Setting repositories") {
 
-			@Override
-			public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+				@Override
+				public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 
-				ensureLoaded(monitor, refresh.getRepositories());
+					ensureLoaded(monitor, refresh.getRepositories(), ws);
 
-				SWTConcurrencyUtil.execForControl(viewer.getControl(), true, () -> {
-					viewer.setInput(refresh.getRepositories());
+					SWTConcurrencyUtil.execForControl(viewer.getControl(), true, () -> {
+						viewer.setInput(refresh.getRepositories());
 
-					synchronized (RepositoriesViewRefresher.this) {
-						busy = false;
-						if (redo)
-							refreshRepositories(null);
-					}
-				});
-				return Status.OK_STATUS;
-			}
-		}.schedule();
+						synchronized (RepositoriesViewRefresher.this) {
+							busy = false;
+							if (redo)
+								refreshRepositories(null);
+						}
+					});
+					return Status.OK_STATUS;
+				}
+			}.schedule();
+		});
 	}
 }
