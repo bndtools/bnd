@@ -74,15 +74,22 @@
 # It is possible that this set of -runbundles could be trimmed, but until the resolver issues
 # are fixed (see https://github.com/bndtools/bnd/issues/4172) it is difficult to produce a
 # neatly-resolved set of runbundles.
+
+# Any references to local bundles (e.g. version=snapshot) must include a reference to the 
+# project building the bundles in the bnd.bnd -dependon instruction to ensure the necessary
+# dependencies have already been built.
 -runbundles: \
+	biz.aQute.bnd.annotation;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
 	biz.aQute.resolve;version=snapshot,\
+	biz.aQute.tester.junit-platform;version=snapshot,\
 	bndtools.api;version=snapshot,\
 	bndtools.builder;version=snapshot,\
 	bndtools.core;version=snapshot,\
 	bndtools.core.services;version=snapshot,\
 	bndtools.core.test.tests;version=snapshot,\
+	bndtools.core.test.launch;version=snapshot,\
 	junit-jupiter-api;version='[5.6.2,5.6.3)',\
 	junit-jupiter-engine;version='[5.6.2,5.6.3)',\
 	junit-jupiter-params;version='[5.6.2,5.6.3)',\
@@ -315,13 +322,10 @@
 	org.w3c.dom.events;version='[3.0.0,3.0.1)',\
 	org.w3c.dom.smil;version='[1.0.1,1.0.2)',\
 	org.w3c.dom.svg;version='[1.1.0,1.1.1)',\
-	biz.aQute.tester.junit-platform;version=snapshot,\
 	assertj-core;version='[3.16.1,3.16.2)',\
-	biz.aQute.bnd.annotation;version=snapshot,\
 	org.eclipse.core.net;version='[1.3.400,1.3.401)',\
 	org.eclipse.ui.ide.application;version='[1.3.100,1.3.101)',\
-	org.eclipse.urischeme;version='[1.0.100,1.0.101)',\
-	bndtools.core.test.launch
+	org.eclipse.urischeme;version='[1.0.100,1.0.101)'
 	
 -runstartlevel: \
 	order=sortbynameversion

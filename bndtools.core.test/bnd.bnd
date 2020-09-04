@@ -5,14 +5,19 @@
 -buildrepo:
 -releaserepo:
 
-# Bundles used in the test cases
+# Bundles used in the test cases. Any references to local bundles (e.g. version=snapshot)
+# in the bndrun's -runbundles instruction must include a reference to the project building
+# the bundles to ensure the necessary dependencies have already been built.
 -dependson: \
+    biz.aQute.bnd.annotation,\
     biz.aQute.bndlib,\
     biz.aQute.repository,\
     biz.aQute.resolve,\
+    biz.aQute.tester.junit-platform,\
     bndtools.api,\
     bndtools.builder,\
     bndtools.core,\
+    bndtools.core.services,\
     org.bndtools.headless.build.manager,\
     org.bndtools.headless.build.plugin.ant,\
     org.bndtools.headless.build.plugin.gradle,\
