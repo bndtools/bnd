@@ -40,11 +40,13 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.repository.ExpressionCombiner;
 import org.osgi.service.repository.RequirementExpression;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.maven.MavenCapability;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.AbstractIndexingRepository;
 import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.BridgeRepository.InfoCapability;
@@ -91,6 +93,7 @@ public class MavenWorkspaceRepository extends
 
 	private final static Logger											logger						= LoggerFactory
 		.getLogger(MavenWorkspaceRepository.class);
+	private final static PromiseFactory									promiseFactory	= Processor.getPromiseFactory();
 
 	private final static String											BND_INFO	= "bnd.info";
 	private volatile Supplier<Set<String>>								list;
@@ -130,8 +133,15 @@ public class MavenWorkspaceRepository extends
 
 	@Activate
 	void activate() {
-		process();
 		list = memoize(this::list0);
+		promiseFactory.submit(this::process)
+			.thenAccept(changed -> {
+				if (changed) {
+					list = memoize(this::list0);
+					Central.refreshPlugins();
+				}
+			}
+		);
 	}
 
 	@Override

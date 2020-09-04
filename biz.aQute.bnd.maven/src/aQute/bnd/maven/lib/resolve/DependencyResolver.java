@@ -1,9 +1,10 @@
 package aQute.bnd.maven.lib.resolve;
 
+import static java.util.stream.Collectors.toSet;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,8 @@ public class DependencyResolver {
 	private final PostProcessor					postProcessor;
 	@SuppressWarnings("deprecation")
 	private final org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
+	private final boolean															useMavenDependencies;
+	private final boolean															includeDependencyManagement;
 
 	/**
 	 * Shortcut with {@code scopes = ['compile', 'runtime']},
@@ -129,13 +132,35 @@ public class DependencyResolver {
 		this(project, session, resolver, system, artifactFactory, scopes
 			.stream()
 			.map(Scope::name)
-			.collect(Collectors.toList()), includeTransitive, postProcessor);
+			.collect(Collectors.toList()), includeTransitive, postProcessor, true, false);
+	}
+
+	public DependencyResolver(MavenProject project, RepositorySystemSession session,
+		ProjectDependenciesResolver resolver, RepositorySystem system,
+		@SuppressWarnings("deprecation") org.apache.maven.artifact.factory.ArtifactFactory artifactFactory,
+		Set<Scope> scopes, boolean includeTransitive, PostProcessor postProcessor, boolean useMavenDependencies,
+		boolean includeDependencyManagement) {
+
+		this(project, session, resolver, system, artifactFactory, scopes.stream()
+			.map(Scope::name)
+			.collect(Collectors.toList()), includeTransitive, postProcessor, useMavenDependencies,
+			includeDependencyManagement);
 	}
 
 	public DependencyResolver(MavenProject project, RepositorySystemSession session,
 		ProjectDependenciesResolver resolver, RepositorySystem system,
 		@SuppressWarnings("deprecation") org.apache.maven.artifact.factory.ArtifactFactory artifactFactory,
 		List<String> scopes, boolean includeTransitive, PostProcessor postProcessor) {
+
+		this(project, session, resolver, system, artifactFactory, scopes, includeTransitive, postProcessor, true,
+			false);
+	}
+
+	public DependencyResolver(MavenProject project, RepositorySystemSession session,
+		ProjectDependenciesResolver resolver, RepositorySystem system,
+		@SuppressWarnings("deprecation") org.apache.maven.artifact.factory.ArtifactFactory artifactFactory,
+		List<String> scopes, boolean includeTransitive, PostProcessor postProcessor, boolean useMavenDependencies,
+		boolean includeDependencyManagement) {
 
 		this.project = project;
 		this.session = session;
@@ -145,15 +170,12 @@ public class DependencyResolver {
 		this.scopes = scopes;
 		this.includeTransitive = includeTransitive;
 		this.postProcessor = postProcessor;
+		this.useMavenDependencies = useMavenDependencies;
+		this.includeDependencyManagement = includeDependencyManagement;
 	}
 
 	public Map<File, ArtifactResult> resolve() throws MojoExecutionException {
-		List<RemoteRepository> remoteRepositories = new ArrayList<>(project.getRemoteProjectRepositories());
-		ArtifactRepository deployRepo = project.getDistributionManagementArtifactRepository();
-		if (deployRepo != null) {
-			remoteRepositories.add(RepositoryUtils.toRepo(deployRepo));
-		}
-		return resolve(remoteRepositories);
+		return resolve(getProjectRemoteRepositories(), useMavenDependencies, includeDependencyManagement);
 	}
 
 	public Map<File, ArtifactResult> resolveAgainstRepos(Collection<ArtifactRepository> repositories)
@@ -163,62 +185,31 @@ public class DependencyResolver {
 			remoteRepositories.add(RepositoryUtils.toRepo(ar));
 		}
 
-		return resolve(remoteRepositories);
+		return resolve(remoteRepositories, useMavenDependencies, includeDependencyManagement);
 	}
 
-	private Map<File, ArtifactResult> resolve(List<RemoteRepository> remoteRepositories) throws MojoExecutionException {
-		DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session);
-
-		DependencyResolutionResult result;
-		try {
-			result = resolver.resolve(request);
-		} catch (DependencyResolutionException e) {
-			result = e.getResult();
-		}
+	private Map<File, ArtifactResult> resolve(List<RemoteRepository> remoteRepositories, boolean useMavenDependencies,
+		boolean includeDependencyManagement) throws MojoExecutionException {
 
 		Map<File, ArtifactResult> dependencies = new LinkedHashMap<>();
 
-		DependencyNode dependencyGraph = result.getDependencyGraph();
-
-		if (dependencyGraph != null && !dependencyGraph.getChildren()
-			.isEmpty()) {
-			discoverArtifacts(dependencies, dependencyGraph.getChildren(), project.getArtifact()
-				.getId(), remoteRepositories);
-		}
-
-		return dependencies;
-	}
-
-	public FileSetRepository getFileSetRepository(String name, Collection<File> bundlesInputParameter,
-		boolean useMavenDependencies) throws Exception {
-
-		return getFileSetRepository(name, bundlesInputParameter, useMavenDependencies, false);
-	}
-
-	public FileSetRepository getFileSetRepository(String name, Collection<File> bundlesInputParameter,
-		boolean useMavenDependencies, boolean includeDependencyManagement) throws Exception {
-
-		Collection<File> bundles = new ArrayList<>();
-		Map<File, ArtifactResult> dependencies = new HashMap<>();
-
 		if (useMavenDependencies) {
-			Map<File, ArtifactResult> resolved = resolve();
+			DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session);
 
-			dependencies.putAll(resolved);
+			DependencyResolutionResult result;
+			try {
+				result = resolver.resolve(request);
+			} catch (DependencyResolutionException e) {
+				result = e.getResult();
+			}
 
-			bundles.addAll(dependencies.keySet());
+			DependencyNode dependencyGraph = result.getDependencyGraph();
 
-			String finalName = project.getBuild()
-				.getFinalName();
-
-			Optional.ofNullable(project.getPlugin("org.apache.maven.plugins:maven-jar-plugin"))
-				.map(Plugin::getExecutions)
-				.orElseGet(ArrayList<PluginExecution>::new)
-				.stream()
-				.map(PluginExecution::getConfiguration)
-				.filter(Objects::nonNull)
-				.map(Xpp3Dom.class::cast)
-				.forEach(c -> readConfiguration(c, finalName, bundles));
+			if (dependencyGraph != null && !dependencyGraph.getChildren()
+				.isEmpty()) {
+				discoverArtifacts(dependencies, dependencyGraph.getChildren(), project.getArtifact()
+					.getId(), remoteRepositories);
+			}
 		}
 
 		if (includeDependencyManagement && (project.getDependencyManagement() != null) && (artifactFactory != null)) {
@@ -227,26 +218,82 @@ public class DependencyResolver {
 			try {
 				setDependencyManagementDependencies();
 
-				Map<File, ArtifactResult> resolved = resolve();
+				DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session);
 
-				MapStream.of(
-					resolved)
-					.filterValue(v -> containsAnotherVersion
-						.negate()
-						.test(v, dependencies
-							.values()))
-					.keys()
-					.forEach(bundles::add);
+				DependencyResolutionResult result;
+				try {
+					result = resolver.resolve(request);
+				} catch (DependencyResolutionException e) {
+					result = e.getResult();
+				}
+
+				Map<File, ArtifactResult> resolved = new LinkedHashMap<>();
+				DependencyNode dependencyGraph = result.getDependencyGraph();
+
+				if (dependencyGraph != null && !dependencyGraph.getChildren()
+					.isEmpty()) {
+					discoverArtifacts(resolved, dependencyGraph.getChildren(), project.getArtifact()
+						.getId(), remoteRepositories);
+				}
+
+				MapStream.of(resolved)
+					.filterValue(v -> containsAnotherVersion.negate()
+						.test(v, dependencies.values()))
+					.forEach(dependencies::put);
 			} finally {
 				resetOriginalDependencies(originalDependencies);
 			}
 		}
+
+		return dependencies;
+	}
+
+	public FileSetRepository getFileSetRepository(String name, Collection<File> bundlesInputParameter)
+		throws Exception {
+
+		return getFileSetRepository(name, bundlesInputParameter, useMavenDependencies, includeDependencyManagement);
+	}
+
+	public FileSetRepository getFileSetRepository(String name, Collection<File> bundlesInputParameter,
+		boolean useMavenDependencies) throws Exception {
+
+		return getFileSetRepository(name, bundlesInputParameter, useMavenDependencies, includeDependencyManagement);
+	}
+
+	public FileSetRepository getFileSetRepository(String name, Collection<File> bundlesInputParameter,
+		boolean useMavenDependencies, boolean includeDependencyManagement) throws Exception {
+
+		Collection<File> bundles = MapStream
+			.of(resolve(getProjectRemoteRepositories(), useMavenDependencies, includeDependencyManagement))
+			.keys()
+			.collect(toSet());
+
+		String finalName = project.getBuild()
+			.getFinalName();
+
+		Optional.ofNullable(project.getPlugin("org.apache.maven.plugins:maven-jar-plugin"))
+			.map(Plugin::getExecutions)
+			.orElseGet(ArrayList<PluginExecution>::new)
+			.stream()
+			.map(PluginExecution::getConfiguration)
+			.filter(Objects::nonNull)
+			.map(Xpp3Dom.class::cast)
+			.forEach(c -> readConfiguration(c, finalName, bundles));
 
 		if (bundlesInputParameter != null) {
 			bundles.addAll(bundlesInputParameter);
 		}
 
 		return new ImplicitFileSetRepository(name, bundles);
+	}
+
+	private List<RemoteRepository> getProjectRemoteRepositories() {
+		List<RemoteRepository> remoteRepositories = new ArrayList<>(project.getRemoteProjectRepositories());
+		ArtifactRepository deployRepo = project.getDistributionManagementArtifactRepository();
+		if (deployRepo != null) {
+			remoteRepositories.add(RepositoryUtils.toRepo(deployRepo));
+		}
+		return remoteRepositories;
 	}
 
 	private void readConfiguration(Xpp3Dom xpp3Dom, String finalName, Collection<File> bundles) {
