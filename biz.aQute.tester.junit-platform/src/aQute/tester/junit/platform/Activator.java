@@ -17,8 +17,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -27,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.junit.platform.engine.DiscoverySelector;
@@ -165,7 +168,7 @@ public class Activator implements BundleActivator, Runnable {
 		trace("run unresolved %s", unresolved);
 
 		if (!reportDir.exists() && !reportDir.mkdirs()) {
-			System.err.printf("Could not create directory %s%n", reportDir);
+			error("Could not create directory %s", reportDir);
 		} else {
 			trace("using %s, path: %s", reportDir, reportDir.toPath());
 			try {
@@ -175,13 +178,7 @@ public class Activator implements BundleActivator, Runnable {
 			}
 		}
 
-		listeners.add(LoggingListener.forBiConsumer((t, msg) -> {
-			if (t == null) {
-				trace(msg.get());
-			} else {
-				trace(msg.get(), t);
-			}
-		}));
+		listeners.add(LoggingListener.forBiConsumer(this::trace));
 		summary = new SummaryGeneratingListener();
 		listeners.add(summary);
 		listeners.add(new TestExecutionListener() {
@@ -313,7 +310,7 @@ public class Activator implements BundleActivator, Runnable {
 				result += test(testRequest);
 				trace("test ran");
 				if (queue.isEmpty() && !continuous) {
-					trace("queue " + queue);
+					trace("queue %s", queue);
 					System.exit((int) result);
 				}
 			} catch (InterruptedException e) {
@@ -349,18 +346,19 @@ public class Activator implements BundleActivator, Runnable {
 			track.open();
 			try {
 				TestExecutionListener[] listenerArray = Stream
-					.concat(listeners.stream(), Optional.ofNullable(track.getServices())
-						.map(Stream::of)
-						.orElseGet(Stream::empty)
-						.map(TestExecutionListener.class::cast))
+					.concat(listeners.stream(), Arrays.stream(track.getServices(new TestExecutionListener[0])))
 					.toArray(TestExecutionListener[]::new);
 				launcher.execute(testRequest, listenerArray);
 			} catch (Throwable t) {
 				trace("%s", t);
 			} finally {
 				track.close();
-				summary.getSummary()
-					.printTo(new PrintWriter(out));
+				trace(null, () -> {
+					StringWriter sw = new StringWriter();
+					summary.getSummary()
+						.printTo(new PrintWriter(sw));
+					return sw.toString();
+				});
 			}
 
 			return summary.getSummary()
@@ -381,12 +379,17 @@ public class Activator implements BundleActivator, Runnable {
 		}
 	}
 
+	private void trace(Throwable t, Supplier<String> string) {
+		if (isTrace()) {
+			message("# ", t, string.get());
+		}
+	}
+
 	void message(String prefix, String string, Object... objects) {
 		Throwable e = null;
 
 		StringBuilder sb = new StringBuilder();
 		int n = 0;
-		sb.append(prefix);
 		for (int i = 0; i < string.length(); i++) {
 			char c = string.charAt(i);
 			if (c == '%') {
@@ -408,17 +411,36 @@ public class Activator implements BundleActivator, Runnable {
 						} else
 							sb.append("<no more arguments>");
 						break;
-
+					case 'n' :
+						sb.append(System.lineSeparator());
+						break;
 					default :
 						sb.append(c);
+						break;
 				}
 			} else {
 				sb.append(c);
 			}
 		}
-		out.println(sb);
-		if (e != null)
-			e.printStackTrace(out);
+		while (n < objects.length) { // check excess objects for a throwable
+			Object o = objects[n++];
+			if (o instanceof Throwable) {
+				e = (Throwable) o;
+			}
+		}
+		message(prefix, e, sb.toString());
+	}
+
+	private void message(String prefix, Throwable t, String string) {
+		synchronized (out) { // avoid interleaving output
+			out.print(prefix);
+			out.print(string);
+			out.print(System.lineSeparator());
+			if (t != null) {
+				t.printStackTrace(out);
+			}
+			out.flush();
+		}
 	}
 
 	public void error(String msg, Object... objects) {

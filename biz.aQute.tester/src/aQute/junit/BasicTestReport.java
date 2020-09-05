@@ -125,11 +125,9 @@ public class BasicTestReport implements TestListener, TestReporter {
 		fails = result.failureCount();
 		errors = result.errorCount();
 		systemOut.clear()
-			.capture(true)
-			.echo(true);
+			.capture(true);
 		systemErr.clear()
-			.capture(true)
-			.echo(true);
+			.capture(true);
 	}
 
 	@Override
@@ -138,12 +136,17 @@ public class BasicTestReport implements TestListener, TestReporter {
 		systemOut.capture(false);
 		systemErr.capture(false);
 		if ((result.failureCount() > fails) || (result.errorCount() > errors)) {
-			String sysout = systemOut.getContent();
-			String syserr = systemErr.getContent();
-			if (sysout != null)
-				activator.trace("out: %s", sysout);
-			if (syserr != null) {
-				activator.trace("err: %s", syserr);
+			if (!systemErr.echo()) {
+				String content = systemErr.getContent();
+				if (content != null) {
+					activator.message("", "%s STANDARD_ERROR%n%s", test, content);
+				}
+			}
+			if (!systemOut.echo()) {
+				String content = systemOut.getContent();
+				if (content != null) {
+					activator.message("", "%s STANDARD_OUT%n%s", test, content);
+				}
 			}
 		}
 		check();

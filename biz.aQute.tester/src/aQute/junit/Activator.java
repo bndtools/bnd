@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -63,7 +64,7 @@ public class Activator implements BundleActivator, Runnable {
 	int					port		= -1;
 	boolean				continuous	= false;
 	boolean				trace		= false;
-	PrintStream			out			= System.err;
+	PrintStream			out			= System.out;
 	JUnitEclipseReport	jUnitEclipseReport;
 	volatile Thread		thread;
 
@@ -177,7 +178,7 @@ public class Activator implements BundleActivator, Runnable {
 		}
 
 		if (!reportDir.exists() && !reportDir.mkdirs()) {
-			System.err.printf("Could not create directory %s%n", reportDir);
+			error("Could not create directory %s", reportDir);
 		}
 		trace("using %s", reportDir);
 
@@ -267,7 +268,7 @@ public class Activator implements BundleActivator, Runnable {
 					trace("test ran");
 				}
 				if (queue.isEmpty() && !continuous) {
-					trace("queue " + queue);
+					trace("queue %s", queue);
 					System.exit(result);
 				}
 			} catch (InterruptedException e) {
@@ -314,16 +315,14 @@ public class Activator implements BundleActivator, Runnable {
 			List<TestReporter> reporters = new ArrayList<>();
 			final TestResult result = new TestResult();
 
-			Tee systemOut = new Tee(System.err);
-			Tee systemErr = new Tee(System.err);
-			systemOut.capture(isTrace())
-				.echo(true);
-			systemErr.capture(isTrace())
-				.echo(true);
+			Tee systemOut = new Tee(System.out).capture(true)
+				.echo(isTrace());
+			Tee systemErr = new Tee(System.err).capture(true)
+				.echo(isTrace());
 			final PrintStream originalOut = System.out;
 			final PrintStream originalErr = System.err;
-			System.setOut(systemOut.getStream());
-			System.setErr(systemErr.getStream());
+			System.setOut(systemOut);
+			System.setErr(systemErr);
 			trace("changed streams");
 			try {
 
@@ -371,10 +370,10 @@ public class Activator implements BundleActivator, Runnable {
 				System.setErr(originalErr);
 				trace("unset streams");
 			}
-			System.err.println("Tests run  : " + result.runCount());
-			System.err.println("Passed     : " + (result.runCount() - result.errorCount() - result.failureCount()));
-			System.err.println("Errors     : " + result.errorCount());
-			System.err.println("Failures   : " + result.failureCount());
+			trace(null, () -> String.format("%nTests run  : %s%nPassed     : %s%nErrors     : %s%nFailures   : %s%n",
+					result.runCount(),
+					result.runCount() - result.errorCount() - result.failureCount(), result.errorCount(),
+					result.failureCount()));
 
 			return result.errorCount() + result.failureCount();
 		} catch (Exception e) {
@@ -468,7 +467,7 @@ public class Activator implements BundleActivator, Runnable {
 				}
 			}
 		} catch (Throwable e) {
-			System.err.println("Can not create test case for: " + fqn + " : " + e);
+			error("Can not create test case for: %s : %s", fqn, e);
 			testResult.addError(suite, e);
 		}
 	}
@@ -675,12 +674,17 @@ public class Activator implements BundleActivator, Runnable {
 		}
 	}
 
+	private void trace(Throwable t, Supplier<String> string) {
+		if (isTrace()) {
+			message("# ", t, string.get());
+		}
+	}
+
 	void message(String prefix, String string, Object... objects) {
 		Throwable e = null;
 
 		StringBuilder sb = new StringBuilder();
 		int n = 0;
-		sb.append(prefix);
 		for (int i = 0; i < string.length(); i++) {
 			char c = string.charAt(i);
 			if (c == '%') {
@@ -702,17 +706,36 @@ public class Activator implements BundleActivator, Runnable {
 						} else
 							sb.append("<no more arguments>");
 						break;
-
+					case 'n' :
+						sb.append(System.lineSeparator());
+						break;
 					default :
 						sb.append(c);
+						break;
 				}
 			} else {
 				sb.append(c);
 			}
 		}
-		out.println(sb);
-		if (e != null)
-			e.printStackTrace(out);
+		while (n < objects.length) { // check excess objects for a throwable
+			Object o = objects[n++];
+			if (o instanceof Throwable) {
+				e = (Throwable) o;
+			}
+		}
+		message(prefix, e, sb.toString());
+	}
+
+	private void message(String prefix, Throwable t, String string) {
+		synchronized (out) { // avoid interleaving output
+			out.print(prefix);
+			out.print(string);
+			out.print(System.lineSeparator());
+			if (t != null) {
+				t.printStackTrace(out);
+			}
+			out.flush();
+		}
 	}
 
 	public void error(String msg, Object... objects) {
