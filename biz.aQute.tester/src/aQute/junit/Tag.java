@@ -16,6 +16,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.ObjIntConsumer;
+import java.util.regex.Pattern;
 
 /**
  * The Tag class represents a minimal XML tree. It consist of a named element
@@ -38,6 +40,7 @@ public class Tag {
 																								// elements
 	boolean							cdata;
 
+	private static final Pattern	CDATA_SPLIT_PATTERN	= Pattern.compile("(?<=]])(?=>)");
 	static final DateTimeFormatter	DATE_TIME_FORMATTER	= DateTimeFormatter.ofPattern("yyyyMMddHHmmss.SSS", Locale.ROOT)
 		.withZone(ZoneId.systemDefault());
 
@@ -217,7 +220,7 @@ public class Tag {
 		pw.print(name);
 
 		for (String key : attributes.keySet()) {
-			String value = escape(attributes.get(key));
+			String value = escape(attributes.get(key), Tag::appendCodePoint);
 			pw.print(' ');
 			pw.print(key);
 			pw.print("=\"");
@@ -233,14 +236,11 @@ public class Tag {
 				if (content instanceof String) {
 					String s = (String) content;
 					if (cdata) {
-						pw.write("<![CDATA[");
-						int begin = 0;
-						for (int end; (end = s.indexOf("]]>", begin)) >= 0; begin = end + 3) {
-							pw.write(s, begin, end - begin);
-							pw.print("]]]]><![CDATA[>");
+						for (String chunk : CDATA_SPLIT_PATTERN.split(s)) {
+							pw.write("<![CDATA[");
+							pw.write(escape(chunk, StringBuilder::appendCodePoint));
+							pw.write("]]>");
 						}
-						pw.write(s, begin, s.length() - begin);
-						pw.write("]]>");
 					} else {
 						formatted(pw, indent + 2, 60, s);
 					}
@@ -320,29 +320,49 @@ public class Tag {
 	/**
 	 * Escape a string, do entity conversion.
 	 */
-	String escape(String s) {
+	static String escape(String s, ObjIntConsumer<StringBuilder> appendCodePoint) {
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < s.length(); i++) {
-			char c = s.charAt(i);
-			switch (c) {
-				case '<' :
-					sb.append("&lt;");
-					break;
-				case '>' :
-					sb.append("&gt;");
-					break;
-				case '"' :
-					sb.append("&quot;");
-					break;
-				case '&' :
-					sb.append("&amp;");
-					break;
-				default :
-					sb.append(c);
-					break;
-			}
+		s.codePoints()
+			.forEachOrdered(codePoint -> {
+				if (validXMLChar(codePoint)) {
+					appendCodePoint.accept(sb, codePoint);
+				} else {
+					sb.append('&')
+						.append('#')
+						.append(codePoint)
+						.append(';');
+				}
+			});
+		return (sb.length() == s.length()) ? s : sb.toString();
+	}
+
+	private static boolean validXMLChar(int codePoint) {
+		return (codePoint == 0x09) || //
+			(codePoint == 0x0A) || //
+			(codePoint == 0x0D) || //
+			(codePoint >= 0x20 && codePoint <= 0xD7FF) || //
+			(codePoint >= 0xE000 && codePoint <= 0xFFFD) || //
+			(codePoint >= 0x10000 && codePoint <= 0x10FFFF);
+	}
+
+	private static void appendCodePoint(StringBuilder sb, int codePoint) {
+		switch (codePoint) {
+			case '"' :
+				sb.append("&quot;");
+				break;
+			case '&' :
+				sb.append("&amp;");
+				break;
+			case '<' :
+				sb.append("&lt;");
+				break;
+			case '>' :
+				sb.append("&gt;");
+				break;
+			default :
+				sb.appendCodePoint(codePoint);
+				break;
 		}
-		return sb.toString();
 	}
 
 	/**
