@@ -11,7 +11,6 @@
 package aQute.tester.junit.platform.reporting.legacy;
 
 import org.junit.platform.commons.util.Preconditions;
-import org.junit.platform.engine.reporting.ReportEntry;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
@@ -25,10 +24,7 @@ import org.junit.platform.launcher.TestPlan;
  * package to suit the OSGi environment of
  * <tt>biz.aQute.tester.junit-platform</tt>.
  * <p>
- * Copied {@link #STDOUT_REPORT_ENTRY_KEY} and {@link #STDERR_REPORT_ENTRY_KEY}
- * from <tt>org.junit.platform.launcher.LauncherConstants</tt> to avoid creating
- * dependency on <tt>org.junit.platform.launcher</tt> > 1.0.0, and dropped the
- * API guardian usage to avoid the additional dependency.
+ * Dropped the API guardian usage to avoid the additional dependency.
  *
  * @since 1.0.3
  */
@@ -37,22 +33,6 @@ public class LegacyReportingUtils {
 	private LegacyReportingUtils() {
 		/* no-op */
 	}
-
-	/**
-	 * Key used to publish captured output to {@link System#out} as part of a
-	 * {@link ReportEntry}: {@value}
-	 * <p>
-	 * Copied from org.junit.platform.launcher.LauncherConstants
-	 */
-	public static final String	STDOUT_REPORT_ENTRY_KEY	= "stdout";
-
-	/**
-	 * Key used to publish captured output to {@link System#err} as part of a
-	 * {@link ReportEntry}: {@value}
-	 * <p>
-	 * Copied from org.junit.platform.launcher.LauncherConstants
-	 */
-	public static final String	STDERR_REPORT_ENTRY_KEY	= "stderr";
 
 	/**
 	 * Get the class name for the supplied {@link TestIdentifier} using the

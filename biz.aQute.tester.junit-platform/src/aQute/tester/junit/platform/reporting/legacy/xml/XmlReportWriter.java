@@ -10,20 +10,21 @@
 
 package aQute.tester.junit.platform.reporting.legacy.xml;
 
-import static aQute.tester.junit.platform.reporting.legacy.LegacyReportingUtils.STDERR_REPORT_ENTRY_KEY;
-import static aQute.tester.junit.platform.reporting.legacy.LegacyReportingUtils.STDOUT_REPORT_ENTRY_KEY;
 import static java.text.MessageFormat.format;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 import static java.util.stream.Collectors.toList;
 import static org.junit.platform.commons.util.ExceptionUtils.readStackTrace;
 import static org.junit.platform.commons.util.StringUtils.isNotBlank;
 import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
+import static org.junit.platform.launcher.LauncherConstants.STDERR_REPORT_ENTRY_KEY;
+import static org.junit.platform.launcher.LauncherConstants.STDOUT_REPORT_ENTRY_KEY;
 
 import java.io.Writer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -55,9 +57,11 @@ import aQute.tester.junit.platform.reporting.legacy.LegacyReportingUtils;
  * @since 1.4
  */
 class XmlReportWriter {
+	private static final DateTimeFormatter	DATE_TIME_FORMATTER	= DateTimeFormatter.ISO_LOCAL_DATE_TIME
+		.withLocale(Locale.ROOT)
+		.withZone(ZoneId.systemDefault());
 
-	private static final String	CDATA_START	= "<![CDATA[";
-	private static final String	CDATA_END	= "]]>";
+	private static final Pattern			CDATA_SPLIT_PATTERN	= Pattern.compile("(?<=]])(?=>)");
 
 	private final XmlReportData	reportData;
 
@@ -94,7 +98,7 @@ class XmlReportWriter {
 		// NumberFormat is not thread-safe. Thus, we instantiate it here and
 		// pass it to
 		// writeTestcase instead of using a constant
-		NumberFormat numberFormat = NumberFormat.getInstance(Locale.US);
+		NumberFormat numberFormat = NumberFormat.getInstance(Locale.ROOT);
 
 		writer.writeStartElement("testsuite");
 
@@ -107,8 +111,6 @@ class XmlReportWriter {
 			writeTestcase(test, numberFormat, writer);
 		}
 
-		writeOutputElement("system-out", formatNonStandardAttributesAsString(testIdentifier), writer);
-
 		writer.writeEndElement();
 		newLine(writer);
 	}
@@ -116,19 +118,19 @@ class XmlReportWriter {
 	private void writeSuiteAttributes(TestIdentifier testIdentifier, List<TestIdentifier> tests,
 		NumberFormat numberFormat, XMLStreamWriter writer) throws XMLStreamException {
 
-		writer.writeAttribute("name", testIdentifier.getDisplayName());
+		writeAttributeSafely(writer, "name", testIdentifier.getDisplayName());
 		writeTestCounts(tests, writer);
-		writer.writeAttribute("time", getTime(testIdentifier, numberFormat));
-		writer.writeAttribute("hostname", getHostname().orElse("<unknown host>"));
-		writer.writeAttribute("timestamp", ISO_LOCAL_DATE_TIME.format(getCurrentDateTime()));
+		writeAttributeSafely(writer, "time", getTime(testIdentifier, numberFormat));
+		writeAttributeSafely(writer, "hostname", getHostname().orElse("<unknown host>"));
+		writeAttributeSafely(writer, "timestamp", DATE_TIME_FORMATTER.format(getCurrentDateTime()));
 	}
 
 	private void writeTestCounts(List<TestIdentifier> tests, XMLStreamWriter writer) throws XMLStreamException {
 		TestCounts testCounts = TestCounts.from(this.reportData, tests);
-		writer.writeAttribute("tests", String.valueOf(testCounts.getTotal()));
-		writer.writeAttribute("skipped", String.valueOf(testCounts.getSkipped()));
-		writer.writeAttribute("failures", String.valueOf(testCounts.getFailures()));
-		writer.writeAttribute("errors", String.valueOf(testCounts.getErrors()));
+		writeAttributeSafely(writer, "tests", String.valueOf(testCounts.getTotal()));
+		writeAttributeSafely(writer, "skipped", String.valueOf(testCounts.getSkipped()));
+		writeAttributeSafely(writer, "failures", String.valueOf(testCounts.getFailures()));
+		writeAttributeSafely(writer, "errors", String.valueOf(testCounts.getErrors()));
 	}
 
 	private void writeSystemProperties(XMLStreamWriter writer) throws XMLStreamException {
@@ -136,9 +138,13 @@ class XmlReportWriter {
 		newLine(writer);
 		Properties systemProperties = System.getProperties();
 		for (String propertyName : new TreeSet<>(systemProperties.stringPropertyNames())) {
+			String value = systemProperties.getProperty(propertyName);
+			if (value == null) {
+				continue;
+			}
 			writer.writeEmptyElement("property");
-			writer.writeAttribute("name", propertyName);
-			writer.writeAttribute("value", systemProperties.getProperty(propertyName));
+			writeAttributeSafely(writer, "name", propertyName);
+			writeAttributeSafely(writer, "value", value);
 			newLine(writer);
 		}
 		writer.writeEndElement();
@@ -150,16 +156,15 @@ class XmlReportWriter {
 
 		writer.writeStartElement("testcase");
 
-		writer.writeAttribute("name", getName(testIdentifier));
-		writer.writeAttribute("classname", getClassName(testIdentifier));
-		writer.writeAttribute("time", getTime(testIdentifier, numberFormat));
+		writeAttributeSafely(writer, "name", getName(testIdentifier));
+		writeAttributeSafely(writer, "classname", getClassName(testIdentifier));
+		writeAttributeSafely(writer, "time", getTime(testIdentifier, numberFormat));
 		newLine(writer);
 
 		writeSkippedOrErrorOrFailureElement(testIdentifier, writer);
 
 		List<String> systemOutElements = new ArrayList<>();
 		List<String> systemErrElements = new ArrayList<>();
-		systemOutElements.add(formatNonStandardAttributesAsString(testIdentifier));
 		collectReportEntries(testIdentifier, systemOutElements, systemErrElements);
 		writeOutputElements("system-out", systemOutElements, writer);
 		writeOutputElements("system-err", systemErrElements, writer);
@@ -219,9 +224,9 @@ class XmlReportWriter {
 		throws XMLStreamException {
 
 		if (throwable.getMessage() != null) {
-			writer.writeAttribute("message", throwable.getMessage());
+			writeAttributeSafely(writer, "message", throwable.getMessage());
 		}
-		writer.writeAttribute("type", throwable.getClass()
+		writeAttributeSafely(writer, "type", throwable.getClass()
 			.getName());
 		writeCDataSafely(writer, readStackTrace(throwable));
 	}
@@ -243,8 +248,10 @@ class XmlReportWriter {
 						formattedReportEntries);
 				}
 			}
-			systemOutElements.add(formattedReportEntries.toString()
-				.trim());
+			if (formattedReportEntries.length() > 0) {
+				systemOutElements.add(formattedReportEntries.toString()
+					.trim());
+			}
 			systemOutElements.addAll(systemOutElementsForCapturedOutput);
 		}
 	}
@@ -260,7 +267,7 @@ class XmlReportWriter {
 	private void buildReportEntryDescription(LocalDateTime timestamp, Map<String, String> keyValuePairs,
 		int entryNumber, StringBuilder result) {
 		result
-			.append(format("Report Entry #{0} (timestamp: {1})\n", entryNumber, ISO_LOCAL_DATE_TIME.format(timestamp)));
+			.append(format("Report Entry #{0} (timestamp: {1})\n", entryNumber, DATE_TIME_FORMATTER.format(timestamp)));
 		keyValuePairs.forEach((key, value) -> result.append(format("\t- {0}: {1}\n", key, value)));
 	}
 
@@ -282,11 +289,6 @@ class XmlReportWriter {
 			.withNano(0);
 	}
 
-	private String formatNonStandardAttributesAsString(TestIdentifier testIdentifier) {
-		return "unique-id: " + testIdentifier.getUniqueId() //
-			+ "\ndisplay-name: " + testIdentifier.getDisplayName();
-	}
-
 	private void writeOutputElements(String elementName, List<String> elements, XMLStreamWriter writer)
 		throws XMLStreamException {
 		for (String content : elements) {
@@ -297,13 +299,44 @@ class XmlReportWriter {
 	private void writeOutputElement(String elementName, String content, XMLStreamWriter writer)
 		throws XMLStreamException {
 		writer.writeStartElement(elementName);
-		writeCDataSafely(writer, "\n" + content + "\n");
+		writeCDataSafely(writer, content);
 		writer.writeEndElement();
 		newLine(writer);
 	}
 
+	private void writeAttributeSafely(XMLStreamWriter writer, String name, String value) throws XMLStreamException {
+		writer.writeAttribute(name, escape(value));
+	}
+
 	private void writeCDataSafely(XMLStreamWriter writer, String data) throws XMLStreamException {
-		writer.writeCData(data.replace(CDATA_END, "]]" + CDATA_END + CDATA_START + ">"));
+		for (String safeDataPart : CDATA_SPLIT_PATTERN.split(data)) {
+			writer.writeCData(escape(safeDataPart));
+		}
+	}
+
+	private static String escape(String data) {
+		StringBuilder sb = new StringBuilder();
+		data.codePoints()
+			.forEachOrdered(codePoint -> {
+				if (validXMLChar(codePoint)) {
+					sb.appendCodePoint(codePoint);
+				} else {
+					sb.append('&')
+						.append('#')
+						.append(codePoint)
+						.append(';');
+				}
+			});
+		return (sb.length() == data.length()) ? data : sb.toString();
+	}
+
+	private static boolean validXMLChar(int codePoint) {
+		return (codePoint == 0x09) || //
+			(codePoint == 0x0A) || //
+			(codePoint == 0x0D) || //
+			(codePoint >= 0x20 && codePoint <= 0xD7FF) || //
+			(codePoint >= 0xE000 && codePoint <= 0xFFFD) || //
+			(codePoint >= 0x10000 && codePoint <= 0x10FFFF);
 	}
 
 	private void newLine(XMLStreamWriter xmlWriter) throws XMLStreamException {
