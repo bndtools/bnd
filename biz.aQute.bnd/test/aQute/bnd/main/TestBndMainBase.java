@@ -1,10 +1,8 @@
 package aQute.bnd.main;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -115,7 +113,8 @@ public class TestBndMainBase {
 	}
 
 	protected void expectOutputContains(String expected) {
-		assertThat("missing output", capturedStdIO.getSystemOutContent(), containsString(expected));
+		assertThat(capturedStdIO.getSystemOutContent()).as("missing output")
+			.contains(expected);
 	}
 
 	protected void expectOutputContainsPattern(String regex) {
@@ -124,7 +123,8 @@ public class TestBndMainBase {
 	}
 
 	protected void expectErrorContains(String expected) {
-		assertThat("missing error", capturedStdIO.getSystemErrContent(), containsString(expected));
+		assertThat(capturedStdIO.getSystemErrContent()).as("missing error")
+			.contains(expected);
 	}
 
 	protected void expectErrorContainsPattern(String regex) {
@@ -141,7 +141,8 @@ public class TestBndMainBase {
 		}
 		if (expects != null) {
 			for (String expect : expects) {
-				assertThat("missing error", capturedStdIO.getSystemErrContent(), containsString(expect));
+				assertThat(capturedStdIO.getSystemErrContent()).as("missing error")
+					.contains(expect);
 				errors = errors.replaceAll(expect, "")
 					.trim();
 			}

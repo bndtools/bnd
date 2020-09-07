@@ -520,7 +520,7 @@ public abstract class AbstractActivatorTest extends SoftAssertions {
 
 	@Test
 	public void exitCode_countsContainerErrorsAndFailures() {
-		runTests(8, JUnit4ContainerFailure.class, JUnit4ContainerError.class);
+		runTests(2, JUnit4ContainerFailure.class, JUnit4ContainerError.class);
 	}
 
 	protected TestRunData runTestsEclipse(Callback postCreateCallback, Class<?>... tests) {

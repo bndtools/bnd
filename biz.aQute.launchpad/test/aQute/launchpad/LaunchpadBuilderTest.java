@@ -68,7 +68,8 @@ public class LaunchpadBuilderTest {
 	@Test
 	public void newInstance_copiesProjectTestSetup() {
 		softly.assertThat(builder.local)
-			.isEqualToComparingFieldByField(projectTestSetup);
+			.usingRecursiveComparison()
+			.isEqualTo(projectTestSetup);
 	}
 
 	@Test

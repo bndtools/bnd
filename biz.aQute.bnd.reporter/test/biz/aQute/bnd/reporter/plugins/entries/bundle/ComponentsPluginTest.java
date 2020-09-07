@@ -2,7 +2,7 @@ package biz.aQute.bnd.reporter.plugins.entries.bundle;
 
 import static biz.aQute.bnd.reporter.matcher.IsDTODeepEquals.deepEqualsTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.nio.file.Paths;
 import java.util.HashMap;
