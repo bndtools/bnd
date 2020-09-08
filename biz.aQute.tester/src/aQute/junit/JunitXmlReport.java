@@ -10,7 +10,9 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,9 +70,9 @@ public class JunitXmlReport implements TestReporter {
 		Tag properties = new Tag("properties");
 		testsuite.addContent(properties);
 
-		for (String prop : System.getProperties()
-			.stringPropertyNames()) {
-			String value = System.getProperty(prop);
+		Properties systemProperties = System.getProperties();
+		for (String prop : new TreeSet<>(systemProperties.stringPropertyNames())) {
+			String value = systemProperties.getProperty(prop);
 			if (value != null) {
 				Tag property = new Tag(properties, "property");
 				property.addAttribute("name", prop);

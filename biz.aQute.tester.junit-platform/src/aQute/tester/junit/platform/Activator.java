@@ -37,6 +37,7 @@ import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.Launcher;
+import org.junit.platform.launcher.LauncherConstants;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
@@ -327,6 +328,8 @@ public class Activator implements BundleActivator, Runnable {
 	LauncherDiscoveryRequest buildRequest(List<? extends DiscoverySelector> selectors) {
 		return LauncherDiscoveryRequestBuilder.request()
 			.configurationParameter(BundleEngine.CHECK_UNRESOLVED, unresolved)
+			.configurationParameter(LauncherConstants.CAPTURE_STDOUT_PROPERTY_NAME, "true")
+			.configurationParameter(LauncherConstants.CAPTURE_STDERR_PROPERTY_NAME, "true")
 			.selectors(selectors)
 			.build();
 	}
