@@ -4,8 +4,11 @@ import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.zip.ZipEntry;
+
+import aQute.lib.unmodifiable.Sets;
 
 /**
  * This class provides utilities to work with zip files.
@@ -13,6 +16,8 @@ import java.util.zip.ZipEntry;
  * fld
  */
 public class ZipUtil {
+	private static final Set<String>	ZIP_EXTENSIONS	= Sets.of("jar", "zip", "par", "war", "ear", "esa");
+
 	private static final TimeZone tz = TimeZone.getDefault();
 
 	public static long getModifiedTime(ZipEntry entry) {
@@ -149,5 +154,15 @@ public class ZipUtil {
 		} catch (UncheckedIOException e) {
 			return true;
 		}
+	}
+
+	/**
+	 * Test if this is part of the ZIP extensions in common use
+	 *
+	 * @param extension the extension, lower or upper case
+	 * @return true if this is a common extension used for zip files
+	 */
+	public static boolean isZipExtension(String extension) {
+		return ZIP_EXTENSIONS.contains(extension.toLowerCase());
 	}
 }

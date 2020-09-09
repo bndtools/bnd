@@ -53,6 +53,7 @@ import aQute.lib.exceptions.SupplierWithException;
 import aQute.lib.io.IO;
 import aQute.lib.memoize.Memoize;
 import aQute.lib.strings.Strings;
+import aQute.lib.zip.ZipUtil;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.Program;
@@ -68,9 +69,6 @@ import aQute.service.reporter.Reporter;
  * results without having to wait for the operation to be done.
  */
 class IndexFile {
-	private static final String[]				ZIP_EXTENSIONS	= new String[] {
-		"jar", "zip", "par", "war", "ear", "esa"
-	};
 
 	private final static Logger					logger			= LoggerFactory.getLogger(IndexFile.class);
 
@@ -315,7 +313,7 @@ class IndexFile {
 			}
 		} catch (ZipException ze) {
 			String extension = archive.extension.toString();
-			if (!Strings.in(ZIP_EXTENSIONS, extension.toLowerCase()))
+			if (!ZipUtil.isZipExtension(extension))
 				return failed(archive, "not a zip file");
 			return failed(archive, ze);
 		} catch (Exception e) {
@@ -397,8 +395,8 @@ class IndexFile {
 			} else
 				return false;
 		}
-		Promise<Boolean> serializer = result.onResolve(refreshAction);
-		sync(serializer);
+		result.onResolve(refreshAction);
+		sync(result);
 		return true;
 	}
 

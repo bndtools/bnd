@@ -81,7 +81,6 @@ public class MavenBndRepoTest {
 
 	@BeforeEach
 	public void setUp(TestInfo testInfo) throws Exception {
-		System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "DEBUG");
 		String name = testInfo.getTestMethod()
 			.get()
 			.getName();
