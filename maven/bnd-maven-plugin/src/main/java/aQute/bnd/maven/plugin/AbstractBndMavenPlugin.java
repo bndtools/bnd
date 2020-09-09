@@ -35,6 +35,7 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Developer;
 import org.apache.maven.model.License;
 import org.apache.maven.model.Plugin;
@@ -226,6 +227,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			Set<Artifact> artifacts = project.getArtifacts();
 			List<Object> buildpath = new ArrayList<>(artifacts.size());
 			List<String> wablibs = new ArrayList<>(artifacts.size());
+			final ScopeArtifactFilter scopeFilter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
 			for (Artifact artifact : artifacts) {
 				File cpe = artifact.getFile()
 					.getCanonicalFile();
@@ -256,9 +258,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 					builder.updateModified(cpe.lastModified(), cpe.getPath());
 					buildpath.add(cpe);
 
-					if (isWab && !hasWablibs && !Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
-						&& !Artifact.SCOPE_TEST.equals(artifact.getScope()) && !artifact.isOptional()) {
-
+					if (isWab && !hasWablibs && !artifact.isOptional() && scopeFilter.include(artifact)) {
 						String fileNameMapping = MappingUtils
 							.evaluateFileNameMapping(MappingUtils.DEFAULT_FILE_NAME_MAPPING, artifact);
 						wablibs.add("WEB-INF/lib/" + fileNameMapping + "=" + cpe.getName() + ";lib:=true");
