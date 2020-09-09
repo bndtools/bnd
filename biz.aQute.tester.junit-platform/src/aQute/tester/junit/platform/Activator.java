@@ -326,10 +326,14 @@ public class Activator implements BundleActivator, Runnable {
 	}
 
 	LauncherDiscoveryRequest buildRequest(List<? extends DiscoverySelector> selectors) {
+		Optional<String> captureStdout = Optional
+			.ofNullable(context.getProperty(LauncherConstants.CAPTURE_STDOUT_PROPERTY_NAME));
+		Optional<String> captureStderr = Optional
+			.ofNullable(context.getProperty(LauncherConstants.CAPTURE_STDERR_PROPERTY_NAME));
 		return LauncherDiscoveryRequestBuilder.request()
 			.configurationParameter(BundleEngine.CHECK_UNRESOLVED, unresolved)
-			.configurationParameter(LauncherConstants.CAPTURE_STDOUT_PROPERTY_NAME, "true")
-			.configurationParameter(LauncherConstants.CAPTURE_STDERR_PROPERTY_NAME, "true")
+			.configurationParameter(LauncherConstants.CAPTURE_STDOUT_PROPERTY_NAME, captureStdout.orElse("true"))
+			.configurationParameter(LauncherConstants.CAPTURE_STDERR_PROPERTY_NAME, captureStderr.orElse("true"))
 			.selectors(selectors)
 			.build();
 	}
