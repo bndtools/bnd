@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
@@ -14,10 +17,12 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.build.api.IProjectDecorator;
 import org.bndtools.build.api.IProjectDecorator.BndProjectInfo;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -145,20 +150,15 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 					return build;
 				}
 
-				// There might be more than one bnd-maven-plugin execution on
-				// any single project. An example of this would be bundling test
-				// classes. However, each such execution would be pointing at a
-				// particular output directory, for example:
-				//
-				// ${project.build.outputDirectory}
-				// vs.
-				// ${project.build.testOutputDirectory}
-				//
-				// With that in mind the scope of detectable changes needs to be
-				// limited to the actual output directory associated with the
-				// plugin by reading the classesDir property.
-				final File classesDir = maven.getMojoParameterValue(projectFacade.getMavenProject(), execution,
-					"classesDir", File.class, monitor);
+
+				Set<IPath> deltaFilePaths = collectResourceDeltas(getDelta(project)).map(IResourceDelta::getResource)
+					.filter(IFile.class::isInstance)
+					.map(IResource::getFullPath)
+					.collect(Collectors.toSet());
+
+				final String targetDirectory = projectFacade.getMavenProject()
+					.getBuild()
+					.getDirectory();
 
 				// now we make sure jar is built in separate job, doing this
 				// during maven builder will throw lifecycle
@@ -170,13 +170,20 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 						SubMonitor progress = SubMonitor.convert(monitor, 3);
 						execJarMojo(projectFacade, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
-						// Find the maven output directory (usually "target")
-						IPath buildDirPath = Path.fromOSString(classesDir.getAbsolutePath());
+						IPath targetDirPath = Path.fromOSString(targetDirectory);
 						IPath projectPath = project.getLocation();
-						IPath relativeBuildDirPath = buildDirPath.makeRelativeTo(projectPath);
-						IFolder buildDir = project.getFolder(relativeBuildDirPath);
+						IPath relativeTargetDirPath = targetDirPath.makeRelativeTo(projectPath);
+						IFolder targetDir = project.getFolder(relativeTargetDirPath);
 
-						if (buildDir != null) {
+						boolean needsRefresh = deltaFilePaths.stream()
+							.filter(deltaPath -> {
+								return !targetDir.getFullPath()
+									.isPrefixOf(deltaPath);
+							})
+							.findFirst()
+							.isPresent();
+
+						if (needsRefresh) {
 							// TODO: there *may* be a remaining issue here if a
 							// source-generation plugin gets triggered
 							// by the above invocation of the jar:jar goal.
@@ -189,13 +196,7 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 							// are worried about so we are deferring any extra
 							// work on this until it's shown to be a
 							// real problem.
-							buildDir.refreshLocal(IResource.DEPTH_INFINITE, progress.newChild(1));
-						} else {
-							Logger.getLogger(BndConfigurator.class)
-								.logError(String.format(
-									"Project build folder '%s' does not exist, or is not a child of the project path '%s'",
-									buildDirPath, projectPath), null);
-							progress.worked(1);
+							targetDir.refreshLocal(IResource.DEPTH_INFINITE, progress.newChild(1));
 						}
 
 						return Status.OK_STATUS;
@@ -207,6 +208,16 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 				return build;
 			}
 		};
+	}
+
+	private Stream<IResourceDelta> collectResourceDeltas(IResourceDelta delta) {
+		if (delta == null)
+			return Stream.empty();
+		IResourceDelta[] children = delta.getAffectedChildren();
+		Stream<IResourceDelta> descendants = Arrays.stream(children)
+			.filter(Objects::nonNull)
+			.flatMap(this::collectResourceDeltas);
+		return Stream.concat(descendants, Arrays.stream(children));
 	}
 
 	private MavenProject getMavenProject(final IMavenProjectFacade projectFacade, IProgressMonitor monitor)
