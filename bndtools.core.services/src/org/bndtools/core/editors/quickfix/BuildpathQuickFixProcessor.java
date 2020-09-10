@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
+import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.IBinding;
@@ -65,7 +66,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	// a new problem you can uncomment this and uncomment the println in
 	// the default case of hasProblems() to get a human-readable problem
 	// type description.
-	// static IProblem getProblem(Field f) {
+	// static IProblem getProblem(java.lang.reflect.Field f) {
 	// try {
 	// int problemId = f.getInt(null);
 	// return new DummyProblem(problemId, f.getName());
@@ -91,7 +92,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	// super(null, message, id, null, 0, 0, 0, 0, 0);
 	// }
 	// }
-	//
+
 	@Override
 	public boolean hasCorrections(ICompilationUnit unit, int problemId) {
 		// System.err.println(PROBLEM_TYPES.get(problemId));
@@ -127,7 +128,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 				// System.out.println("UnresolvedVariable");
 				return true;
 			default :
-				// System.err.println("Unhandled problem type: " +
+				// System.err.println("Unhandled problem type: " + problemId);
 				return false;
 		}
 	}
@@ -250,6 +251,11 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	@Override
 	public IJavaCompletionProposal[] getCorrections(IInvocationContext context, IProblemLocation[] locations)
 		throws CoreException {
+		// System.err.println("getCorrections: " + Stream.of(locations)
+		// .map(IProblemLocation::getProblemId)
+		// .map(PROBLEM_TYPES::get)
+		// .map(Object::toString)
+		// .collect(Collectors.joining("\n")));
 		try {
 			this.context = context;
 			proposals = new HashMap<>();
@@ -309,8 +315,6 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 									break;
 								}
 								case ASTNode.SUPER_FIELD_ACCESS : {
-									// SuperFieldAccess access =
-									// (SuperFieldAccess) parent;
 									AbstractTypeDeclaration type = findFirstParentOfType(parent,
 										AbstractTypeDeclaration.class);
 									visitBindingHierarchy(type.resolveBinding());
@@ -410,8 +414,16 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 					case IProblem.UndefinedType : {
 						ASTNode node = location.getCoveredNode(context.getASTRoot());
 						if (node instanceof Name) {
-							Type type = findFirstParentOfType(node, Type.class);
-							addProposalsForType(type);
+							while (node != null && node instanceof Name) {
+								node = node.getParent();
+							}
+							if (node != null) {
+								if (node instanceof Type) {
+									addProposalsForType((Type) node);
+								} else if (node instanceof Annotation) {
+									addProposals(((Annotation) node).getTypeName());
+								}
+							}
 						} else if (node instanceof TypeLiteral) {
 							TypeLiteral tl = (TypeLiteral) node;
 							addProposalsForType(tl.getType());

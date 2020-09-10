@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 import org.assertj.core.api.Condition;
 import org.assertj.core.api.ProxyableObjectArrayAssert;
 import org.assertj.core.api.SoftAssertions;
-import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
+import org.assertj.core.api.junit.jupiter.SoftlyExtension;
 import org.assertj.core.presentation.Representation;
 import org.assertj.core.presentation.StandardRepresentation;
 import org.eclipse.core.resources.IFolder;
@@ -85,7 +85,7 @@ import bndtools.core.test.utils.WorkbenchTest;
 import bndtools.core.test.utils.WorkspaceImporter;
 
 //@Disabled("Currently disabled due to startup flakiness, see https://github.com/bndtools/bnd/issues/4253")
-@ExtendWith(SoftAssertionsExtension.class)
+@ExtendWith(SoftlyExtension.class)
 @WorkbenchTest
 public class BuildpathQuickFixProcessorTest {
 	static IPackageFragment						pack;
@@ -94,6 +94,7 @@ public class BuildpathQuickFixProcessorTest {
 	// Will be injected by WorkbenchExtension
 	static WorkspaceImporter					importer;
 
+	// Will be injected by SoftlyExtension
 	SoftAssertions								softly;
 	IQuickFixProcessor							sut;
 
@@ -344,6 +345,11 @@ public class BuildpathQuickFixProcessorTest {
 		return proposalsFor(header.length(), 0, header + type + ".class;" + CLASS_FOOTER);
 	}
 
+	private IJavaCompletionProposal[] proposalsForAnnotation(String annotation) {
+		String header = "package test; @";
+		return proposalsFor(header.length(), 0, header + annotation + " public class Test {}");
+	}
+
 	private IJavaCompletionProposal[] proposalsForUndefType(String type) {
 		return proposalsForUndefType(0, type);
 	}
@@ -501,7 +507,7 @@ public class BuildpathQuickFixProcessorTest {
 
 	@ParameterizedTest
 	@MethodSource("supportedProblemTypes")
-	void hasCorrections_forSupportedProblemTypes_returnsTrue(IProblem problem, SoftAssertions softly) {
+	void hasCorrections_forSupportedProblemTypes_returnsTrue(IProblem problem) {
 		softly.assertThat(sut.hasCorrections(null, problem.getID()))
 			.as(problem.getMessage())
 			.isTrue();
@@ -525,7 +531,7 @@ public class BuildpathQuickFixProcessorTest {
 
 	@ParameterizedTest
 	@MethodSource("unsupportedProblemTypes")
-	void hasCorrections_forUnsupportedProblemTypes_returnsFalse(IProblem problem, SoftAssertions softly) {
+	void hasCorrections_forUnsupportedProblemTypes_returnsFalse(IProblem problem) {
 		softly.assertThat(sut.hasCorrections(null, problem.getID()))
 			.as(problem.getMessage())
 			.isFalse();
@@ -556,151 +562,129 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withUnqualifiedType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withUnqualifiedType_suggestsBundles() {
 		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType("BundleActivator"));
 	}
 
 	@Test
-	void withAnnotatedUnqualifiedType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withAnnotatedUnqualifiedType_suggestsBundles() {
 		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType(10, "@NonNull BundleActivator"));
 	}
 
 	@Disabled("Not yet implemented")
 	@Test
-	void withSimpleInnerType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withSimpleInnerType_suggestsBundles() {
 		assertThatContainsListenerInfoSuggestions(proposalsForUndefType("ListenerInfo"));
 	}
 
 	@Test
-	void withPartlyQualifiedInnerType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withPartlyQualifiedInnerType_suggestsBundles() {
 		assertThatContainsListenerHookSuggestions(proposalsForUndefType("ListenerHook.ListenerInfo"));
 	}
 
 	@Test
-	void withFQType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withFQType_suggestsBundles() {
 		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType("org.osgi.framework.BundleActivator"));
 	}
 
 	@Test
-	void withFQNestedType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withFQNestedType_suggestsBundles() {
 		assertThatContainsListenerHookSuggestions(
 			proposalsForUndefType("org.osgi.framework.hooks.service.ListenerHook.ListenerInfo"));
 	}
 
 	@Test
-	void withAnnotatedFQNestedType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withAnnotatedFQNestedType_suggestsBundles() {
 		assertThatContainsListenerHookSuggestions(
 			proposalsForUndefType("org.osgi.framework.hooks.service.ListenerHook.@NotNull ListenerInfo"));
 	}
 
 	@Test
-	void withAnnotatedFQType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withAnnotatedFQType_suggestsBundles() {
 		assertThatContainsBundleActivatorSuggestions(
 			proposalsForUndefType("org.osgi.framework.@NotNull BundleActivator"));
 	}
 
 	@Test
-	void withAnnotatedSimpleType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withAnnotatedSimpleType_suggestsBundles() {
 		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType(10, "@NotNull BundleActivator"));
 	}
 
 	@Test
-	void withFQType_andOneLevelPackage_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withFQType_andOneLevelPackage_suggestsBundles() {
 		assertThatContainsMyClassSuggestions(proposalsForUndefType("simple.MyClass"));
 	}
 
 	@Test
-	void withAnnotatedFQType_andOneLevelPackage_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withAnnotatedFQType_andOneLevelPackage_suggestsBundles() {
 		assertThatContainsMyClassSuggestions(proposalsForUndefType("simple.@NotNull MyClass"));
 	}
 
 	@Test
-	void withGenericType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withGenericType_suggestsBundles() {
 		assertThatContainsPromiseSuggestions(proposalsForUndefType("org.osgi.util.promise.Promise<String>"));
 	}
 
 	@Test
-	void withParameterisedOuter_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withParameterisedOuter_suggestsBundles() {
 		assertThatContainsSimpleSuggestions(
 			proposalsForUndefType("simple.pkg.MyParameterizedClass<String>.@NotNull MyInner"),
 			"simple.pkg.MyParameterizedClass");
 	}
 
 	@Test
-	void withUnannotatedFQArrayType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withUnannotatedFQArrayType_suggestsBundles() {
 		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType("org.osgi.framework.BundleActivator[]"));
 	}
 
 	@Test
-	void withAnnotatedFQArrayType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withAnnotatedFQArrayType_suggestsBundles() {
 		assertThatContainsBundleActivatorSuggestions(
 			proposalsForUndefType("org.osgi.framework.@NotNull BundleActivator[]"));
 	}
 
 	@Test
-	void withAnnotatedFQDoubleArrayType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withAnnotatedFQDoubleArrayType_suggestsBundles() {
 		assertThatContainsBundleActivatorSuggestions(
 			proposalsForUndefType("org.osgi.framework.@NotNull BundleActivator[][]"));
 	}
 
 	@Test
-	void withSimpleUnannotatedParameter_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withSimpleUnannotatedParameter_suggestsBundles() {
 		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType(7, "List<BundleActivator>"));
 	}
 
 	@Test
-	void withSimpleAnnotatedParameter_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withSimpleAnnotatedParameter_suggestsBundles() {
 		assertThatContainsBundleActivatorSuggestions(proposalsForUndefType(15, "List<@NotNull BundleActivator>"));
 	}
 
 	@Test
-	void withFQUnannotatedParameter_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withFQUnannotatedParameter_suggestsBundles() {
 		assertThatContainsBundleActivatorSuggestions(
 			proposalsForUndefType(6, "List<org.osgi.framework.BundleActivator>"));
 	}
 
 	@Test
-	void withFQAnnotatedParameter_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withFQAnnotatedParameter_suggestsBundles() {
 		assertThatContainsBundleActivatorSuggestions(
 			proposalsForUndefType(6, "List<org.osgi.framework.@NotNull BundleActivator>"));
 	}
 
 	@Test
-	void withFQWildcardBound_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withFQWildcardBound_suggestsBundles() {
 		assertThatContainsBundleActivatorSuggestions(
 			proposalsForUndefType(16, "List<? extends org.osgi.framework.BundleActivator>"));
 	}
 
 	@Test
-	void withFQAnnotatedWildcardBound_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withFQAnnotatedWildcardBound_suggestsBundles() {
 		assertThatContainsBundleActivatorSuggestions(
 			proposalsForUndefType(16, "List<? extends org.osgi.framework.@NotNull BundleActivator>"));
 	}
 
 	@Test
-	void withUnqualifiedNameType_returnsNull(SoftAssertions softly) {
+	void withUnqualifiedNameType_returnsNull() {
 		// If the type is a simple (non-qualified) name, it must refer to a type
 		// and not a package; therefore we shouldn't provide package import
 		// suggestions even if we have a package with the matching name. So
@@ -725,7 +709,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withUnqualifiedNameImport_returnsNull(SoftAssertions softly) {
+	void withUnqualifiedNameImport_returnsNull() {
 		// If the import statement is a simple (non-qualified) name and it's not
 		// an on-demand import, it must refer to a type in the default package.
 		// Therefore we shouldn't generate matches for packages of the same
@@ -739,65 +723,64 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withClassImport_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withClassImport_suggestsBundles() {
 		assertThatContainsBundleActivatorSuggestions(proposalsForImport("org.osgi.framework.BundleActivator"));
 	}
 
 	@Test
-	void withInnerClassImport_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withInnerClassImport_suggestsBundles() {
 		assertThatContainsListenerInfoSuggestions(
 			proposalsForImport("org.osgi.framework.hooks.service.ListenerHook.ListenerInfo"));
 	}
 
 	@Test
-	void withOnDemandImport_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withOnDemandImport_suggestsBundles() {
 		assertThatContainsFrameworkBundles(proposalsForImport("org.osgi.framework.*"), "org.osgi.framework");
 	}
 
 	@Test
-	void withOnDemandImport_ofNestedClasses_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withOnDemandImport_ofNestedClasses_suggestsBundles() {
 		assertThatContainsListenerInfoSuggestions(
 			proposalsForImport("org.osgi.framework.hooks.service.ListenerHook.ListenerInfo.*"));
 	}
 
 	@Test
-	void withOnDemandStaticImport_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withOnDemandStaticImport_suggestsBundles() {
 		assertThatContainsBundleSuggestions(proposalsForStaticImport("org.osgi.framework.Bundle.*"));
 	}
 
 	@Test
-	void withStaticImport_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withStaticImport_suggestsBundles() {
 		assertThatContainsBundleSuggestions(proposalsForStaticImport("org.osgi.framework.Bundle.INSTALLED"));
 	}
 
 	@Test
-	void withSimplePackageName_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withSimplePackageName_suggestsBundles() {
 		assertThatContainsSimpleSuggestions(proposalsForImport("simple.MyClass"), "simple.MyClass");
 	}
 
 	@Test
-	void withOnDemandSimplePackageName_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withOnDemandSimplePackageName_suggestsBundles() {
 		assertThatContainsSimpleSuggestions(proposalsForImport("simple.*"), "simple");
 	}
 
 	@Test
-	void withClassLiteral_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withClassLiteral_suggestsBundles() {
 		assertThatContainsBundleSuggestions(proposalsForLiteral("Bundle"));
 	}
 
 	@Test
-	void withReference_toStaticMethodOfMissingType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
+	void withMissingAnnotations_suggestsBundles() {
+		assertThatContainsSimpleSuggestions(proposalsForAnnotation("SimpleAnnotation"),
+			"simple.annotation.SimpleAnnotation");
+		assertThatContainsSimpleSuggestions(proposalsForAnnotation("simple.annotation.SimpleAnnotation"),
+			"simple.annotation.SimpleAnnotation");
+		assertThatContainsSimpleSuggestions(proposalsForAnnotation("SimpleAnnotation(String.class)"),
+			"simple.annotation.SimpleAnnotation");
+	}
 
+	@Test
+	void withReference_toStaticMethodOfMissingType_suggestsBundles() {
 		String header = "package test; class ";
 		String source = header + DEFAULT_CLASS_NAME + " {\n" + "Object o = ";
 		int begin = source.length();
@@ -812,9 +795,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withReference_toStaticFieldOfMissingType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
-
+	void withReference_toStaticFieldOfMissingType_suggestsBundles() {
 		String header = "package test; class ";
 		String source = header + DEFAULT_CLASS_NAME + " {\n" + "Object o = ";
 		int begin = source.length();
@@ -829,9 +810,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withReference_toStaticFieldOfMissingNestedType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
-
+	void withReference_toStaticFieldOfMissingNestedType_suggestsBundles() {
 		String header = "package test; class ";
 		String source = header + DEFAULT_CLASS_NAME + " {\n" + "Object o = ";
 		int begin = source.length();
@@ -846,9 +825,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withReference_toStaticFieldOfFQMissingType_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
-
+	void withReference_toStaticFieldOfFQMissingType_suggestsBundles() {
 		String header = "package test; class ";
 		String source = header + DEFAULT_CLASS_NAME + " {\n" + "Object o = ";
 		int begin = source.length();
@@ -863,10 +840,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withInconsistentHierarchy_forClassDefinition_thatImplementsAnInterfaceFromAnotherBundle_suggestsBundles(
-		SoftAssertions softly) {
-		this.softly = softly;
-
+	void withInconsistentHierarchy_forClassDefinition_thatImplementsAnInterfaceFromAnotherBundle_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
 		String header = "package test; class ";
@@ -881,10 +855,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withInconsistentHierarchy_forClassDefinition_thatExtendsClassFromAnotherBundle_suggestsBundles(
-		SoftAssertions softly) {
-		this.softly = softly;
-
+	void withInconsistentHierarchy_forClassDefinition_thatExtendsClassFromAnotherBundle_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
 		String header = "package test; class ";
@@ -899,10 +870,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withInconsistentHierarchy_forInterfaceDefinition_thatExtendsAnInterfaceFromAnotherBundle_suggestsBundles(
-		SoftAssertions softly) {
-		this.softly = softly;
-
+	void withInconsistentHierarchy_forInterfaceDefinition_thatExtendsAnInterfaceFromAnotherBundle_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
 		String header = "package test; interface ";
@@ -918,10 +886,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withMissingMethod_fromInterfaceFromAnotherBundle_suggestsBundles(
-		SoftAssertions softly) {
-		this.softly = softly;
-
+	void withMissingMethod_fromInterfaceFromAnotherBundle_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
 		String header = "package test; class ";
@@ -938,10 +903,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withMissingMethod_fromClassFromAnotherBundle_suggestsBundles(
-		SoftAssertions softly) {
-		this.softly = softly;
-
+	void withMissingMethod_fromClassFromAnotherBundle_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
 		String header = "package test; class ";
@@ -957,10 +919,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withMissingSuperMethod_fromClassFromAnotherBundle_suggestsBundles(
-		SoftAssertions softly) {
-		this.softly = softly;
-
+	void withMissingSuperMethod_fromClassFromAnotherBundle_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
 		String header = "package test; class ";
@@ -997,9 +956,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withMissingField_fromClassFromAnotherBundle_forQualifiedNameAccess_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
-
+	void withMissingField_fromClassFromAnotherBundle_forQualifiedNameAccess_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
 		String header = "package test; class ";
@@ -1015,9 +972,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withMissingField_fromClassFromAnotherBundle_forExpressionAccess_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
-
+	void withMissingField_fromClassFromAnotherBundle_forExpressionAccess_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
 		String header = "package test; class ";
@@ -1034,9 +989,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withMissingField_fromSuperClassFromAnotherBundle_forExpressionAccess_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
-
+	void withMissingField_fromSuperClassFromAnotherBundle_forExpressionAccess_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
 		String header = "package test; class ";
@@ -1051,9 +1004,7 @@ public class BuildpathQuickFixProcessorTest {
 	// This is based on a real-world scenario I encountered while using CXF and
 	// SOAP.
 	@Test
-	void withInconsistentHierarchy_forComplicatedGenericHierarchy_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
-
+	void withInconsistentHierarchy_forComplicatedGenericHierarchy_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
 		String header = "package test; import java.util.List;" + "import simple.pkg.MyParameterizedClass;"
@@ -1069,9 +1020,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withFQClassLiteral_asAnnotationParameter_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
-
+	void withFQClassLiteral_asAnnotationParameter_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
 		String header = "package test; " + "import simple.annotation.MyTag;" + "@MyTag(";
@@ -1091,10 +1040,7 @@ public class BuildpathQuickFixProcessorTest {
 	// not fully resolved.
 	@Disabled("Disabled due to Eclipse bug")
 	@Test
-	void withFQClassLiteral_inheritingFromInterfaceFromAnotherBundle_asAnnotationParameter_suggestsBundles(
-		SoftAssertions softly) {
-		this.softly = softly;
-
+	void withFQClassLiteral_inheritingFromInterfaceFromAnotherBundle_asAnnotationParameter_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
 		String header = "package test; " + "import simple.annotation.MyTag;" + "@MyTag(";
@@ -1106,10 +1052,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withUnqualifiedClassLiteral_extendingInterfaceFromAnotherBundle_asAnnotationParameter_suggestsBundles(
-		SoftAssertions softly) {
-		this.softly = softly;
-
+	void withUnqualifiedClassLiteral_extendingInterfaceFromAnotherBundle_asAnnotationParameter_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
 		// This scenario causes a "TypeMismatch" because it doesn't know the
@@ -1125,9 +1068,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withUnqualifiedClassLiteral_forUnimportedType_asAnnotationParameter_suggestsBundles(SoftAssertions softly) {
-		this.softly = softly;
-
+	void withUnqualifiedClassLiteral_forUnimportedType_asAnnotationParameter_suggestsBundles() {
 		String header = "package test; " + "import simple.annotation.MyTag; " + "@MyTag(";
 		String source = header + "MyInterface.class)" + "class " + DEFAULT_CLASS_NAME + "{" + "}";
 
@@ -1140,8 +1081,7 @@ public class BuildpathQuickFixProcessorTest {
 	 * proposed.
 	 */
 	@Test
-	void testWithShortClassNameInRepoAndBuildpath(SoftAssertions softly) {
-		this.softly = softly;
+	void testWithShortClassNameInRepoAndBuildpath() {
 		String source = "package test; public class " + DEFAULT_CLASS_NAME + "{ ";
 		int start = source.length();
 		source += "Tag unqualifiedTagType; }";
@@ -1157,10 +1097,7 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
-	void withUnqualifiedClassLiteral_forUnimportedType_asAnnotationParameterBoundedByTypeOnClassPath_suggestsBundles(
-		SoftAssertions softly) {
-		this.softly = softly;
-
+	void withUnqualifiedClassLiteral_forUnimportedType_asAnnotationParameterBoundedByTypeOnClassPath_suggestsBundles() {
 		// This one has come up frequently in my own development. However, it
 		// seems that this test case produces slightly different results to the
 		// real-world scenario. In this test, two problems are generated - one
@@ -1188,9 +1125,7 @@ public class BuildpathQuickFixProcessorTest {
 	// of the literal where the two problems overlap to make sure it's not
 	// generating duplicate suggestions.
 	@Test
-	void removesDuplicateProposals(SoftAssertions softly) {
-		this.softly = softly;
-
+	void removesDuplicateProposals() {
 		addBundlesToBuildpath("junit-jupiter-api");
 
 		String source = "package test; " + "import org.junit.jupiter.api.extension.ExtendWith; " + "@ExtendWith(";
