@@ -15,6 +15,7 @@
 		<module>resolve-from-scopes</module>
 		<module>resolve-from-inputbundles</module>
 		<module>enroute</module>
+		<module>resolve-infer-with-custom-bsn</module>
 	</modules>
 
 	<build>

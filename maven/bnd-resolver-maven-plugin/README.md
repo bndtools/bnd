@@ -55,7 +55,7 @@ mvn bnd-resolver:resolve
 The `-runee` and `-runrequires` values can be inferred from the maven project as follows:
 
   * `-runee`, if omitted from the bndrun file, will be inferred from the `<target>` configuration of `maven-compiler-plugin`
-  * `-runrequires`, if omitted from the bndrun file, will be inferred from the project's `artifactId` and applied as `osgi.identity;filter:='(osgi.identity=<artifactId>)'`, if the project packaging is `jar` or `war` and the project has the `bnd-maven-plugin`
+  * `-runrequires`, if omitted from the bndrun file, will be inferred by attempting to get the `Bundle-SymbolicName` (bsn) from the project's main artifact and if not found will use `artifactId`. The value will be applied as `osgi.identity;filter:='(osgi.identity=<bsn|artifactId>)'`, if the project packaging is `jar` or `war` and the project has the `bnd-maven-plugin`
 
 ## Implicit Repository
 

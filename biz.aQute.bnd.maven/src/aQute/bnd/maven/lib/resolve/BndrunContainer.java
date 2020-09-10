@@ -1,9 +1,12 @@
 package aQute.bnd.maven.lib.resolve;
 
+import static aQute.lib.exceptions.FunctionWithException.asFunction;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -26,6 +29,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
@@ -263,8 +267,22 @@ public class BndrunContainer {
 
 			Artifact artifact = project.getArtifact();
 
+			String bsn = artifact.getArtifactId();
+
+			try {
+				bsn = Optional.ofNullable(artifact.getFile())
+					.map(asFunction(Domain::domain))
+					.map(Domain::getBundleSymbolicName)
+					.map(Map.Entry::getKey)
+					.orElseGet(artifact::getArtifactId);
+			} catch (Exception e) {
+				logger.warn(
+					"Could not get the Bundle-SymbolicName from the project artifact {}, falling back to artifactId {}",
+					artifact, bsn, e);
+			}
+
 			run.setProperty(Constants.RUNREQUIRES,
-				String.format("osgi.identity;filter:='(osgi.identity=%s)'", artifact.getArtifactId()));
+				String.format("osgi.identity;filter:='(osgi.identity=%s)'", bsn));
 
 			logger.info("Bnd inferred {}: {}", Constants.RUNREQUIRES, run.getProperty(Constants.RUNREQUIRES));
 		}
