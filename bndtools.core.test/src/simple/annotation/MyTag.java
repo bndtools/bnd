@@ -11,4 +11,6 @@ import iface.bundle.MyInterface;
 @Target(ElementType.TYPE)
 public @interface MyTag {
 	Class<? extends MyInterface> value();
+
+	String property();
 }
