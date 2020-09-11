@@ -6,4 +6,6 @@ public class MyParameterizedClass<T> {
 
 	public class MyInner {}
 
+	// This is overloaded in a subclass to test a particular error
+	protected void myOverloadedMethod(String param) {}
 }
