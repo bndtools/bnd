@@ -68,16 +68,18 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		// Reporting them all as assumption failures triggers the GUI to display
 		// the skip reason in the failure trace, which the Eclipse
 		// implementation doesn't do.
-		if (!testIdentifier.isContainer()) {
-			message("%TESTS  ", testIdentifier);
-		}
-		message("%FAILED ", testIdentifier, "@AssumptionFailure: ");
-		message("%TRACES ");
-		info("JUnitEclipseListener: Skipped: %s", reason);
-		client.out.println("Skipped: " + reason);
-		message("%TRACEE ");
-		if (!testIdentifier.isContainer()) {
-			message("%TESTE  ", testIdentifier);
+		synchronized (client.out) {
+			if (!testIdentifier.isContainer()) {
+				message("%TESTS  ", testIdentifier);
+			}
+			message("%FAILED ", testIdentifier, "@AssumptionFailure: ");
+			message("%TRACES ");
+			info("JUnitEclipseListener: Skipped: %s", reason);
+			client.out.println("Skipped: " + reason);
+			message("%TRACEE ");
+			if (!testIdentifier.isContainer()) {
+				message("%TESTE  ", testIdentifier);
+			}
 		}
 	}
 
@@ -194,13 +196,15 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		}
 
 		final long realCount = testPlan.countTestIdentifiers(TestIdentifier::isTest);
-		info("JUnitEclipseListener: testPlanExecutionStarted: %s, realCount: %s", testPlan, realCount);
-		message("%TESTC  ", Long.toString(realCount)
-			.concat(" v2"));
-		this.testPlan = testPlan;
-		for (TestIdentifier root : testPlan.getRoots()) {
-			for (TestIdentifier child : testPlan.getChildren(root)) {
-				visitEntry(child, false);
+		synchronized (client.out) {
+			info("JUnitEclipseListener: testPlanExecutionStarted: %s, realCount: %s", testPlan, realCount);
+			message("%TESTC  ", Long.toString(realCount)
+				.concat(" v2"));
+			this.testPlan = testPlan;
+			for (TestIdentifier root : testPlan.getRoots()) {
+				for (TestIdentifier child : testPlan.getChildren(root)) {
+					visitEntry(child, false);
+				}
 			}
 		}
 		startTime = System.currentTimeMillis();
@@ -255,32 +259,34 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 
 	@Override
 	public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
-		info("JUnitEclipseListener: Execution finished: %s", testIdentifier);
-		Status result = testExecutionResult.getStatus();
-		if (testIdentifier.isTest()) {
-			if (result != Status.SUCCESSFUL) {
-				final boolean assumptionFailed = result == Status.ABORTED;
-				info("JUnitEclipseListener: assumption failed: %s", assumptionFailed);
-				Optional<Throwable> throwableOp = testExecutionResult.getThrowable();
-				throwableOp.ifPresent(exception -> {
-					info("JUnitEclipseListener: throwable: %s", exception);
-					if (assumptionFailed || exception instanceof AssertionError) {
-						info("JUnitEclipseListener: failed: %s assumptionFailed: %s", exception, assumptionFailed);
-						message("%FAILED ", testIdentifier, (assumptionFailed ? "@AssumptionFailure: " : ""));
-						sendExpectedAndActual(exception);
-					} else {
-						info("JUnitEclipseListener: error");
-						message("%ERROR  ", testIdentifier);
-					}
-					sendTrace(exception);
-				});
-			}
-			message("%TESTE  ", testIdentifier);
-		} else { // container
-			if (result != Status.SUCCESSFUL) {
-				message("%ERROR  ", testIdentifier);
-				Optional<Throwable> throwableOp = testExecutionResult.getThrowable();
-				throwableOp.ifPresent(this::sendTrace);
+		synchronized (client.out) {
+			info("JUnitEclipseListener: Execution finished: %s", testIdentifier);
+			Status result = testExecutionResult.getStatus();
+			if (testIdentifier.isTest()) {
+				if (result != Status.SUCCESSFUL) {
+					final boolean assumptionFailed = result == Status.ABORTED;
+					info("JUnitEclipseListener: assumption failed: %s", assumptionFailed);
+					Optional<Throwable> throwableOp = testExecutionResult.getThrowable();
+					throwableOp.ifPresent(exception -> {
+						info("JUnitEclipseListener: throwable: %s", exception);
+						if (assumptionFailed || exception instanceof AssertionError) {
+							info("JUnitEclipseListener: failed: %s assumptionFailed: %s", exception, assumptionFailed);
+							message("%FAILED ", testIdentifier, (assumptionFailed ? "@AssumptionFailure: " : ""));
+							sendExpectedAndActual(exception);
+						} else {
+							info("JUnitEclipseListener: error");
+							message("%ERROR  ", testIdentifier);
+						}
+						sendTrace(exception);
+					});
+				}
+				message("%TESTE  ", testIdentifier);
+			} else { // container
+				if (result != Status.SUCCESSFUL) {
+					message("%ERROR  ", testIdentifier);
+					Optional<Throwable> throwableOp = testExecutionResult.getThrowable();
+					throwableOp.ifPresent(this::sendTrace);
+				}
 			}
 		}
 	}
@@ -366,9 +372,11 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 			throw new IllegalArgumentException(key + " is not 8 characters");
 
 		String message = key.concat(payload.toString());
-		client.out.println(message);
-		client.out.flush();
-		info("JUnitEclipseListener: %s", message);
+		synchronized (client.out) {
+			client.out.println(message);
+			client.out.flush();
+			info("JUnitEclipseListener: %s", message);
+		}
 	}
 
 	private final AtomicInteger					counter	= new AtomicInteger();
@@ -492,9 +500,11 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		appendEscaped(getTestParameterTypes(testIdentifier), treeEntry);
 		treeEntry.append(',');
 		appendEscaped(testIdentifier.getUniqueId(), treeEntry);
-		message("%TSTTREE", treeEntry);
-		for (TestIdentifier child : children) {
-			visitEntry(child, isDynamic);
+		synchronized (client.out) {
+			message("%TSTTREE", treeEntry);
+			for (TestIdentifier child : children) {
+				visitEntry(child, isDynamic);
+			}
 		}
 	}
 
