@@ -1020,6 +1020,22 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
+	void withOverloadedMethod_onInconsistentHierarchy_forComplicatedGenericHierarchy_suggestsBundles() {
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; import java.util.List;" + "import simple.pkg.MyParameterizedClass;"
+			+ "import simple.MyClass;" + "import simple.pkg.ClassExtendingAbstractExtendingMyParameterizedClass;"
+			+ "class ";
+		String source = header + DEFAULT_CLASS_NAME + "{\n"
+			+ "  ClassExtendingAbstractExtendingMyParameterizedClass var;\n" + "  void myMethod() {"
+			+ "    var.myOverloadedMethod(\"something\");" + "  }" + "}";
+
+		// ParameterMismatch [265, 283]
+		assertThatProposals(proposalsFor(266, 0, source)).haveExactly(1, suggestsBundle(
+			"bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.ClassExtendingMyParameterizedClass"));
+	}
+
+	@Test
 	void withFQClassLiteral_asAnnotationParameter_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 

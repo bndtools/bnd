@@ -92,7 +92,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	// super(null, message, id, null, 0, 0, 0, 0, 0);
 	// }
 	// }
-
+	//
 	@Override
 	public boolean hasCorrections(ICompilationUnit unit, int problemId) {
 		// System.err.println(PROBLEM_TYPES.get(problemId));
@@ -370,6 +370,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 						@SuppressWarnings("unchecked")
 						List<Expression> args = invocation.arguments();
 						args.forEach(this::visitExpressionHierarchy);
+						visitExpressionHierarchy(invocation.getExpression());
 						continue;
 					}
 					case IProblem.ImportNotFound : {
