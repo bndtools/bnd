@@ -245,4 +245,9 @@ public class PathSet {
 			&& excludes.stream()
 				.noneMatch(exclude -> predicate.test(exclude.matcher(path)));
 	}
+
+	@Override
+	public String toString() {
+		return String.format("[includes: %s, excludes: %s]", includes, excludes);
+	}
 }
