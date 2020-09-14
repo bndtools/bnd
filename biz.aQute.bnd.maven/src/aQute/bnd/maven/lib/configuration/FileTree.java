@@ -106,4 +106,8 @@ public class FileTree {
 		fileTree.addExcludes(exclude);
 	}
 
+	@Override
+	public String toString() {
+		return fileTree.toString();
+	}
 }
