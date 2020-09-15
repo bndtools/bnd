@@ -299,14 +299,37 @@ public class BndrunContainer {
 					// following always returns null
 				.map(Plugin::getConfiguration)
 				.map(Xpp3Dom.class::cast)
-				.map(dom -> dom.getChild("target"))
-				.map(Xpp3Dom::getValue)
+				.map(dom -> {
+					Xpp3Dom child = dom.getChild("release");
+					if (child != null) {
+						return child.getValue();
+					}
+					String property = project.getProperties()
+						.getProperty("maven.compiler.release");
+					if (property != null) {
+						return property;
+					}
+					child = dom.getChild("target");
+					if (child != null) {
+						return child.getValue();
+					}
+					property = project.getProperties()
+						.getProperty("maven.compiler.target");
+					if (property != null) {
+						return property;
+					}
+					property = project.getProperties()
+						.getProperty("java.version");
+					if (property != null) {
+						return property;
+					}
 					// so fallback to the currently running Java version
+					return System.getProperty("java.version");
+				})
 				.flatMap(EE::highestFromTargetVersion)
-					.orElseGet(() -> EE.highestFromTargetVersion(System.getProperty("java.version"))
-						// if that all fails at least we know bnd needs at least
-						// Java 8 at this point
-						.orElse(EE.JavaSE_1_8));
+				// if that all fails at least we know bnd needs at least
+				// Java 8 at this point
+				.orElse(EE.JavaSE_1_8);
 
 			run.setProperty(Constants.RUNEE, ee.getEEName());
 
