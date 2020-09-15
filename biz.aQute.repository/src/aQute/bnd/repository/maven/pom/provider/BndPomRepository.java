@@ -162,8 +162,7 @@ public class BndPomRepository extends BaseRepository
 			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(snapshotUrl, reporter, localRepo,
 				client);
 
-			MavenRepository repository = new MavenRepository(localRepo, name, release, snapshot, client.promiseFactory()
-				.executor(), reporter);
+			MavenRepository repository = new MavenRepository(localRepo, name, release, snapshot, client, reporter);
 
 			boolean transitive = configuration.transitive(true);
 

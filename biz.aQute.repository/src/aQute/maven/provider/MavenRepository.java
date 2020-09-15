@@ -1,5 +1,7 @@
 package aQute.maven.provider;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -8,14 +10,17 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.WeakHashMap;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
@@ -23,9 +28,11 @@ import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.MavenVersion;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.maven.api.Archive;
@@ -33,46 +40,94 @@ import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.Program;
 import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
+import aQute.maven.provider.MetadataParser.ProgramMetadata;
+import aQute.maven.provider.MetadataParser.RevisionMetadata;
+import aQute.maven.provider.MetadataParser.Snapshot;
 import aQute.service.reporter.Reporter;
 
 public class MavenRepository implements IMavenRepo, Closeable {
-	final static Logger							logger		= LoggerFactory.getLogger(MavenRepository.class);
-	private final File							base;
-	private final String						id;
-	private final List<MavenBackingRepository>	release		= new ArrayList<>();
-	private final List<MavenBackingRepository>	snapshot	= new ArrayList<>();
-	private final PromiseFactory				promiseFactory;
-	private final boolean						localOnly;
-	private final Map<Revision, Promise<POM>>	poms		= new WeakHashMap<>();
-	private final Reporter						reporter;
+	final static Logger								logger			= LoggerFactory.getLogger(MavenRepository.class);
+	private static final long						LEASE_RELEASE	= TimeUnit.DAYS.toMillis(7);
+	private static final long						LEASE_SNAPSHOT	= TimeUnit.HOURS.toMillis(1);
+	private final File								base;
+	private final String							id;
+	private final List<MavenBackingRepository>		release			= new ArrayList<>();
+	private final List<MavenBackingRepository>		snapshot		= new ArrayList<>();
+	private final List<MavenBackingRepository>		combined		= new ArrayList<>();
+	private final PromiseFactory					promiseFactory;
+	private final boolean							localOnly;
+	private final Map<Revision, Promise<POM>>		poms			= new WeakHashMap<>();
+	private final Reporter							reporter;
+	private final Map<Revision, RevisionMetadata>	revisions		= new ConcurrentHashMap<>();
+	private final Map<Program, ProgramMetadata>		programs		= new ConcurrentHashMap<>();
+	private final HttpClient						client;
 
 	public MavenRepository(File base, String id, List<MavenBackingRepository> release,
-		List<MavenBackingRepository> snapshot, Executor executor, Reporter reporter) throws Exception {
+		List<MavenBackingRepository> snapshot, HttpClient client, Reporter reporter)
+		throws Exception {
 		this.base = base;
 		this.id = id;
+		this.client = client;
 		if (release != null)
 			this.release.addAll(release);
 		if (snapshot != null)
 			this.snapshot.addAll(snapshot);
 
-		this.promiseFactory = new PromiseFactory(Objects.requireNonNull(executor));
+		this.promiseFactory = new PromiseFactory(Objects.requireNonNull(client.promiseFactory()
+			.executor()));
 		this.localOnly = this.release.isEmpty() && this.snapshot.isEmpty();
 		IO.mkdirs(base);
 		this.reporter = reporter;
+		this.combined.addAll(this.release);
+		this.combined.addAll(this.snapshot);
 	}
 
 	@Override
 	public List<Revision> getRevisions(Program program) throws Exception {
-		List<Revision> revisions = new ArrayList<>();
+		Optional<ProgramMetadata> meta = getMetadata(program);
+		if (meta.isPresent())
+			return meta.get().versions.stream()
+				.map(v -> program.version(v))
+				.collect(Collectors.toList());
+		return Collections.emptyList();
+	}
 
-		for (MavenBackingRepository mbr : release)
-			mbr.getRevisions(program, revisions);
+	private Optional<ProgramMetadata> getMetadata(Program program) throws Exception {
+		ProgramMetadata metadata = programs.get(program);
+		if (metadata != null) {
+			if (!isStale(metadata.lastModified, LEASE_RELEASE)) {
+				if (metadata.notfound)
+					return Optional.empty();
+				return Optional.of(metadata);
+			}
+		}
 
-		for (MavenBackingRepository mbr : snapshot)
-			if (!release.contains(mbr))
-				mbr.getRevisions(program, revisions);
+		File metafile = IO.getFile(base, program.metadata(id));
 
-		return revisions;
+		State state = fetch(combined, program.metadata(), metafile);
+
+		switch (state) {
+			case NOT_FOUND :
+				metadata = new ProgramMetadata();
+				metadata.notfound = true;
+				programs.put(program, metadata);
+				return null;
+
+			case OTHER :
+				throw new IOException(); // never gets here
+
+			case UNMODIFIED :
+				if (metadata != null)
+					return Optional.of(metadata);
+
+				// fall thru
+
+			case UPDATED :
+			default :
+				metadata = MetadataParser.parseProgramMetadata(metafile);
+				programs.put(program, metadata);
+				return Optional.of(metadata);
+		}
 	}
 
 	@Override
@@ -81,31 +136,45 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		if (!revision.isSnapshot())
 			return null;
 
-		List<Archive> archives = new ArrayList<>();
-		for (MavenBackingRepository mbr : snapshot) {
-			List<Archive> snapshotArchives = mbr.getSnapshotArchives(revision);
-			archives.addAll(snapshotArchives);
-		}
-		if (archives.isEmpty()) {
-			reporter.error("No metadata for revision %s", revision);
+		Optional<RevisionMetadata> metadata = getMetadata(revision);
+		if (!metadata.isPresent()) {
+			return Collections.emptyList();
 		}
 
-		return archives;
+		return metadata.get().snapshotVersions.stream()
+			.map(snapshotVersion -> revision.archive(snapshotVersion.value, snapshotVersion.extension,
+				snapshotVersion.classifier))
+			.collect(toList());
 	}
 
 	@Override
 	public Archive getResolvedArchive(Revision revision, String extension, String classifier) throws Exception {
-		if (revision.isSnapshot()) {
-			for (MavenBackingRepository mbr : snapshot) {
-				MavenVersion v = mbr.getVersion(revision);
-				if (v != null)
-					return revision.archive(v, extension, classifier);
-			}
+		if (!revision.isSnapshot())
+			return revision.archive(extension, classifier);
+
+		Optional<RevisionMetadata> metadata = getMetadata(revision);
+		if (!metadata.isPresent()) {
 			reporter.error("No metadata for revision %s", revision);
 			return null;
-		} else {
-			return revision.archive(extension, classifier);
 		}
+
+		Snapshot snapshot = metadata.get().snapshot;
+		if (snapshot.timestamp == null || snapshot.buildNumber == null) {
+			reporter.warning("Snapshot and/or buildnumber not set %s in %s", snapshot, revision);
+			return null;
+		}
+
+		MavenVersion version = revision.version.toSnapshot(snapshot.timestamp, snapshot.buildNumber);
+		return revision.archive(extension, classifier)
+			.resolveSnapshot(version);
+	}
+
+	@Override
+	public Archive resolveSnapshot(Archive archive) throws Exception {
+		if (archive.isResolved())
+			return archive;
+
+		return getResolvedArchive(archive.revision, archive.extension, archive.classifier);
 	}
 
 	@Override
@@ -125,11 +194,11 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	private Promise<File> get(Archive archive, boolean thrw) throws Exception {
 		final File file = toLocalFile(archive);
 
-		if (file.isFile() && !archive.isSnapshot()) {
+		if (file.isFile() && !archive.isSnapshot() && !isStale(file.lastModified(), LEASE_RELEASE)) {
 			return promiseFactory.resolved(file);
 		}
 
-		if (localOnly || isFresh(file)) {
+		if (localOnly) {
 			return promiseFactory.resolved(file.isFile() ? file : null);
 		}
 		return promiseFactory.submit(() -> {
@@ -142,16 +211,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		});
 	}
 
-	private boolean isFresh(File file) {
-		if (!file.isFile())
-			return false;
-
-		long now = System.currentTimeMillis();
-		long diff = now - file.lastModified();
-		return diff < TimeUnit.DAYS.toMillis(1);
-	}
-
-	File getFile(Archive archive, File file) throws Exception {
+	private File getFile(Archive archive, File file) throws Exception {
 		State result = null;
 
 		if (archive.isSnapshot()) {
@@ -182,8 +242,8 @@ public class MavenRepository implements IMavenRepo, Closeable {
 			default :
 				return file;
 		}
-	}
 
+	}
 	private State fetch(List<MavenBackingRepository> mbrs, String remotePath, File file) throws Exception {
 		State error = State.NOT_FOUND;
 
@@ -204,20 +264,6 @@ public class MavenRepository implements IMavenRepo, Closeable {
 			}
 		}
 		return error;
-	}
-
-	@Override
-	public Archive resolveSnapshot(Archive archive) throws Exception {
-		if (archive.isResolved())
-			return archive;
-
-		for (MavenBackingRepository mbr : snapshot) {
-			MavenVersion version = mbr.getVersion(archive.revision);
-			if (version != null)
-				return archive.resolveSnapshot(version);
-		}
-		reporter.error("No metadata for revision %s", archive.revision);
-		return null;
 	}
 
 	public File toLocalFile(String path) {
@@ -286,8 +332,8 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public boolean refresh() throws IOException {
-		snapshot.forEach(MavenBackingRepository::refreshSnapshots);
-		release.forEach(MavenBackingRepository::refreshSnapshots);
+		programs.clear();
+		revisions.clear();
 		return false;
 	}
 
@@ -374,7 +420,109 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	public void clear(Revision revision) {
 		synchronized (poms) {
+			revisions.remove(revision);
 			poms.remove(revision);
 		}
 	}
+
+	@Override
+	public void refresh(Archive archive) {
+		revisions.remove(archive.revision);
+	}
+
+	Optional<RevisionMetadata> getMetadata(Revision revision) throws Exception {
+
+		long lease = revision.isSnapshot() ? LEASE_SNAPSHOT : LEASE_RELEASE;
+
+		RevisionMetadata metadata = revisions.get(revision);
+
+		if (metadata != null) {
+			if (!isStale(metadata.lastModified, lease)) {
+				if (metadata.notfound)
+					return Optional.empty();
+				else
+					return Optional.of(metadata);
+			}
+		}
+
+		File metafile = toLocalFile(revision.metadata(id));
+
+		boolean requiresFetch = //
+			!metafile.isFile() //
+				|| revision.isSnapshot() //
+				|| isStale(metafile.lastModified(), LEASE_RELEASE);
+
+		if (requiresFetch) {
+			State tag;
+			if (revision.isSnapshot()) {
+				tag = fetch(snapshot, revision.metadata(), metafile);
+				if (tag == State.NOT_FOUND)
+					tag = fetch(release, revision.metadata(), metafile);
+			}
+			else
+				tag = fetch(combined, revision.metadata(), metafile);
+
+			if (tag == State.NOT_FOUND || tag == State.OTHER || !metafile.isFile()) {
+				metadata = new RevisionMetadata();
+				metadata.notfound = true;
+				revisions.put(revision, metadata);
+				return Optional.empty();
+			}
+		}
+
+		metadata = MetadataParser.parseRevisionMetadata(metafile);
+		revisions.put(revision, metadata);
+		return Optional.of(metadata);
+	}
+
+	private boolean isStale(long lastModified, long lease) {
+		return lastModified + lease < System.currentTimeMillis();
+	}
+
+	@Override
+	public boolean isStale(Archive archive) {
+		if (archive == null)
+			return true;
+
+		File file = toLocalFile(archive);
+		if (file == null)
+			return true;
+
+		if (!file.isFile())
+			return true;
+
+		long lease = archive.isSnapshot() ? LEASE_SNAPSHOT : LEASE_RELEASE;
+		return isStale(file.lastModified(), lease);
+	}
+
+	@Override
+	public boolean isRemote() {
+		boolean remote = false;
+		for (MavenBackingRepository mbr : combined) {
+			if (mbr.isRemote()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public void validateUris(Formatter f) {
+		combined.stream()
+			.map(mb -> {
+				try {
+					return mb.toURI("");
+				} catch (Exception e) {
+					f.format("Invalid url %s : %s\n", mb, Exceptions.causes(e));
+					return null;
+				}
+			})
+			.filter(Objects::nonNull)
+			.forEach(u -> {
+				String validateURI = client.validateURI(u);
+				if (validateURI != null)
+					f.format("%s : %s\n", u, validateURI);
+			});
+	}
+
 }
