@@ -49,12 +49,11 @@ import aQute.launchpad.LaunchpadBuilder;
 import aQute.lib.io.IO;
 import aQute.lib.xml.XML;
 import aQute.tester.test.assertions.CustomAssertionError;
-import aQute.tester.test.utils.ServiceLoaderMask;
 import aQute.tester.test.utils.TestEntry;
 import aQute.tester.test.utils.TestFailure;
 import aQute.tester.test.utils.TestRunData;
 import aQute.tester.test.utils.TestRunListener;
-import aQute.tester.testbase.AbstractActivatorTest;
+import aQute.tester.testbase.AbstractActivatorCommonTest;
 import aQute.tester.testclasses.JUnit3Test;
 import aQute.tester.testclasses.JUnit4Test;
 import aQute.tester.testclasses.With1Error1Failure;
@@ -78,14 +77,10 @@ import aQute.tester.testclasses.junit.platform.Mixed35Test;
 import aQute.tester.testclasses.junit.platform.Mixed45Test;
 import aQute.tester.testclasses.junit.platform.ParameterizedTesterNamesTest;
 
-public class ActivatorJUnitPlatformTest extends AbstractActivatorTest {
+public class ActivatorJUnitPlatformTest extends AbstractActivatorCommonTest {
 	public ActivatorJUnitPlatformTest() {
 		super("aQute.tester.junit.platform.Activator", "biz.aQute.tester.junit-platform");
 	}
-
-	// We have the Jupiter engine on the classpath so that the tests will run.
-	// This classloader will hide it from the framework-under-test.
-	static final ClassLoader SERVICELOADER_MASK = new ServiceLoaderMask();
 
 	@Override
 	protected void createLP() {
@@ -167,22 +162,6 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorTest {
 		// @formatter:on
 	}
 
-	private void readWithTimeout(InputStream inStr) throws Exception {
-		long endTime = System.currentTimeMillis() + 10000;
-		int available;
-		while ((available = inStr.available()) == 0 && System.currentTimeMillis() < endTime) {
-			Thread.sleep(10);
-		}
-		if (available == 0) {
-			Assertions.fail("Timeout waiting for data");
-		}
-		assertThat(available).as("control signal")
-			.isEqualTo(1);
-		int value = inStr.read();
-		assertThat(value).as("control value")
-			.isNotEqualTo(-1);
-	}
-
 	@Test
 	public void eclipseListener_worksInContinuousMode_withControlSocket() throws Exception {
 		try (ServerSocket controlSock = new ServerSocket(0)) {
@@ -210,9 +189,7 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorTest {
 				TestRunData result = listener.getLatestRunData();
 
 				if (result == null) {
-					fail("Result was null" + listener);
-					// To prevent NPE and allow any soft assertions to be
-					// displayed.
+					Assertions.fail("Result was null" + listener);
 					return;
 				}
 
@@ -250,7 +227,7 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorTest {
 				result = listener.getLatestRunData();
 
 				if (result == null) {
-					fail("Eclipse didn't capture output from the second run");
+					Assertions.fail("Eclipse didn't capture output from the second run");
 					return;
 				}
 				int i = 2;
@@ -324,7 +301,8 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorTest {
 		TestEntry methodTest = result.getTest(JUnit5ParameterizedTest.class, "parameterizedMethod");
 
 		if (methodTest == null) {
-			fail("Couldn't find method test entry for " + nameOf(JUnit5ParameterizedTest.class, "parameterizedMethod"));
+			Assertions.fail(
+				"Couldn't find method test entry for " + nameOf(JUnit5ParameterizedTest.class, "parameterizedMethod"));
 			return;
 		}
 
@@ -351,7 +329,7 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorTest {
 			.filter(x -> x.displayName.startsWith("4 ==>"))
 			.findFirst();
 		if (!test4.isPresent()) {
-			fail("Couldn't find test result for parameter 4");
+			check(() -> Assertions.fail("Couldn't find test result for parameter 4"));
 		} else {
 			assertThat(parameterTests.stream()
 				.filter(x -> result.getFailure(x.testId) != null)).as("failures")
@@ -366,13 +344,14 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorTest {
 		TestEntry methodTest = result.getTest(JUnit5ParameterizedTest.class, "misconfiguredMethod");
 
 		if (methodTest == null) {
-			fail("Couldn't find method test entry for " + nameOf(JUnit5ParameterizedTest.class, "misconfiguredMethod"));
+			Assertions.fail(
+				"Couldn't find method test entry for " + nameOf(JUnit5ParameterizedTest.class, "misconfiguredMethod"));
 			return;
 		}
 
 		TestFailure failure = result.getFailure(methodTest.testId);
 		if (failure == null) {
-			fail("Expecting method:\n%s\nto have failed", methodTest);
+			check(() -> Assertions.fail("Expecting method:\n%s\nto have failed", methodTest));
 		} else {
 			assertThat(failure.trace).as("trace")
 				.startsWith("org.junit.platform.commons.JUnitException: Could not find factory method [unknownMethod]");
@@ -396,7 +375,8 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorTest {
 			final String display = displayList[i];
 			TestEntry methodTest = result.getTest(JUnit5DisplayNameTest.class, method);
 			if (methodTest == null) {
-				fail("Couldn't find method test entry for " + nameOf(JUnit5ParameterizedTest.class, method));
+				check(() -> Assertions
+					.fail("Couldn't find method test entry for " + nameOf(JUnit5ParameterizedTest.class, method)));
 				continue;
 			}
 			assertThat(methodTest.displayName).as(String.format("[%d] %s", i, method))
