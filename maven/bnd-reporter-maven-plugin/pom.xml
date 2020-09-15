@@ -19,6 +19,10 @@
 		<developerConnection>scm:git:git@github.com:bndtools/bnd.git</developerConnection>
 	</scm>
 
+	<prerequisites>
+		<maven>${maven.target.version}</maven>
+	</prerequisites>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.maven</groupId>
