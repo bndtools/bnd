@@ -33,12 +33,11 @@ public class MetadataParser {
 		.withZone(Dates.UTC_ZONE_ID);
 
 	public static class Metadata extends DTO {
+		public boolean	invalid;
 		public String	modelVersion	= "1.1.0";
 		public String	group;
 		public String	artifact;
-		public long		lastModified	= System.currentTimeMillis();
-		public long		lastUpdated		= lastModified;
-		public boolean	notfound;
+		public long		lastUpdated		= System.currentTimeMillis();
 
 		public Tag toTag() {
 			Tag top = new Tag("metadata");
@@ -79,7 +78,6 @@ public class MetadataParser {
 			new Tag(versioning, "lastUpdated", Dates.formatMillis(MAVEN_DATE_TIME, lastUpdated));
 			return top;
 		}
-
 	}
 
 	public static class Snapshot extends DTO {
@@ -438,6 +436,7 @@ public class MetadataParser {
 		try (InputStream in = IO.stream(metafile)) {
 			return parseProgramMetadata(in);
 		} catch (Exception e) {
+			System.out.println("File " + metafile + " failed");
 			throw e;
 		}
 	}
