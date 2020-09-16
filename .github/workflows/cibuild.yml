@@ -25,7 +25,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        java: [ 11, 14, 15-ea ]
+        java: [ 11, 15 ]
         runner: [ 'xvfb-run --auto-servernum {0}' ]
         script: [ 'build.sh' ]
         include:
