@@ -537,10 +537,6 @@ public class HttpClient implements Closeable, URLConnector {
 
 						return tag;
 					}
-					//
-					// We haven't really checked but because it is less than
-					// request.maxStale we assume it is ok
-					//
 					return new TaggedData(uri, HTTP_NOT_MODIFIED, info.file);
 				}
 				//

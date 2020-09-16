@@ -109,20 +109,6 @@ public class MavenBndRepoTest {
 	}
 
 	@Test
-	public void testCaching() throws Exception {
-		Map<String, String> config = new HashMap<>();
-		config.put("index", null);
-		config.put("source", "commons-cli:commons-cli:1.4-SNAPSHOT");
-
-		config(config);
-
-		File f = repo.get("commons-cli:commons-cli", new Version("1.4.0.SNAPSHOT"), null);
-		System.out.println("got a file " + f + " " + f.isFile());
-		assertThat(f).isFile();
-
-	}
-
-	@Test
 	public void testAutomaticSources() throws Exception {
 		config(null);
 		assertThat(repo.getStatus()).isNull();
@@ -462,7 +448,8 @@ public class MavenBndRepoTest {
 			.get(wc);
 		Set<Resource> resources = ResourceUtils.getResources(caps);
 		int size = resources.size();
-		assertThat(resources).extracting(ResourceUtils::getIdentityCapability)
+		assertThat(resources)
+			.extracting(ResourceUtils::getIdentityCapability)
 			.filteredOn(Objects::nonNull)
 			.extracting(IdentityCapability::osgi_identity)
 			.doesNotContain("biz.aQute.bnd.maven");
@@ -477,7 +464,8 @@ public class MavenBndRepoTest {
 		caps = repo.findProviders(Collections.singleton(wc))
 			.get(wc);
 		resources = ResourceUtils.getResources(caps);
-		assertThat(resources).extracting(ResourceUtils::getIdentityCapability)
+		assertThat(resources)
+			.extracting(ResourceUtils::getIdentityCapability)
 			.filteredOn(Objects::nonNull)
 			.extracting(IdentityCapability::osgi_identity)
 			.contains("biz.aQute.bnd.maven")
@@ -932,26 +920,6 @@ public class MavenBndRepoTest {
 			assertTrue(s.contains("<value>3.2.0-19700101.000020-3</value>"));
 		}
 
-	}
-
-	@Test
-	public void testRefreshSnapshot() throws Exception {
-		Map<String, String> map = new HashMap<>();
-		map.put("releaseUrl", "https://repo.maven.apache.org/maven2");
-		map.put("snapshotUrl", "https://oss.sonatype.org/content/repositories/snapshots");
-		map.put("source", "biz.aQute:biz.aQute.protoc:1.2.0\n");
-		map.put("index", null);
-		map.put("local", null);
-		config(map);
-		File file = repo.get("biz.aQute:biz.aQute.protoc", new Version("1.2.0"), null);
-		System.out.println("Again");
-		file = repo.get("biz.aQute:biz.aQute.protoc", new Version("1.2.0"), null);
-		System.out.println("Refresh begin");
-		repo.refresh();
-		System.out.println("Refresh end");
-		file = repo.get("biz.aQute:biz.aQute.protoc", new Version("1.2.0"), null);
-
-		System.out.println(file);
 	}
 
 	private File assertIsFile(File dir, String path, int size) throws IOException {

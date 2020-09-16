@@ -24,7 +24,7 @@ import aQute.maven.api.Revision;
 
 class RepoActions {
 
-	private final MavenBndRepository	repo;
+	private MavenBndRepository repo;
 
 	RepoActions(MavenBndRepository mavenBndRepository) {
 		this.repo = mavenBndRepository;

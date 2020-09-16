@@ -86,8 +86,7 @@ import aQute.maven.provider.PomGenerator;
 import aQute.service.reporter.Reporter;
 
 /**
- * This is the Bnd repository for Maven. is driven by GAVs in a file or set on
- * the plugin
+ * This is the Bnd repository for Maven.
  */
 @BndPlugin(name = "MavenBndRepository", parameters = Configuration.class)
 public class MavenBndRepository extends BaseRepository implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable,
@@ -95,14 +94,16 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	private final static Logger	logger				= LoggerFactory.getLogger(MavenBndRepository.class);
 	private static final int	DEFAULT_POLL_TIME	= 5;
+
 	private static final String	NONE				= "NONE";
 	private static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
-
 	private Configuration		configuration;
 	private Registry			registry;
 	private File				localRepo;
 	private Reporter			reporter;
+	IMavenRepo					storage;
 	private boolean				inited;
+	IndexFile					index;
 	private ScheduledFuture<?>	indexPoller;
 	private RepoActions			actions				= new RepoActions(this);
 	private String				name;
@@ -113,8 +114,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private boolean				remote;
 	private final AtomicBoolean	open				= new AtomicBoolean(true);
 	private Optional<Workspace>	workspace;
-	IMavenRepo					storage;
-	IndexFile					index;
 
 	/**
 	 * Put result
@@ -497,12 +496,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		if (archive == null) {
 			return trySources(bsn, version, listeners);
 		}
-		
-		if ( storage.isStale(archive)) {
-			index.update(archive)
-				.onResolve(this::refreshWorkspace);
-		}
-		
+
 		File f = storage.toLocalFile(archive);
 		File withSources = new File(f.getParentFile(), "+" + f.getName());
 		if (withSources.isFile() && withSources.lastModified() > f.lastModified())
@@ -537,8 +531,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			.list(pattern);
 	}
 
-
-
 	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		if (!init())
@@ -571,8 +563,23 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
 				localRepo, client);
 
-			storage = new MavenRepository(localRepo, name, release, snapshot, client, reporter);
-			remote = storage.isRemote();
+			for (MavenBackingRepository mbr : release) {
+				if (mbr.isRemote()) {
+					remote = true;
+					break;
+				}
+			}
+			if (!remote)
+				for (MavenBackingRepository mbr : snapshot) {
+					if (mbr.isRemote()) {
+						remote = true;
+						break;
+					}
+				}
+
+			storage = new MavenRepository(localRepo, name, release, snapshot, client.promiseFactory()
+				.executor(), reporter);
+
 			File indexFile = getIndexFile();
 			Processor domain = (registry != null) ? registry.getPlugin(Processor.class) : null;
 			String source = configuration.source();
@@ -585,7 +592,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			this.index.open();
 
 			try (Formatter f = new Formatter()) {
-				storage.validateUris(f);
+				validateUris(release, f);
+				validateUris(snapshot, f);
 
 				String s = f.toString();
 				if (!s.isEmpty()) {
@@ -603,6 +611,24 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			status = Exceptions.getDisplayTypeName(e) + " " + Exceptions.causes(e);
 			return false;
 		}
+	}
+
+	private void validateUris(List<MavenBackingRepository> release, Formatter f) {
+		release.stream()
+			.map(mb -> {
+				try {
+					return mb.toURI("");
+				} catch (Exception e) {
+					f.format("Invalid url %s : %s\n", mb, Exceptions.causes(e));
+					return null;
+				}
+			})
+			.filter(Objects::nonNull)
+			.forEach(u -> {
+				String validateURI = client.validateURI(u);
+				if (validateURI != null)
+					f.format("%s : %s\n", u, validateURI);
+			});
 	}
 
 	private void startPoll() {
@@ -677,11 +703,10 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		if (!init())
 			return false;
 
-		return index.refresh(this::refreshWorkspace);
-	}
-
-	private void refreshWorkspace() {
-		workspace.ifPresent(ws -> ws.refresh(this));
+		storage.refresh();
+		return index.refresh(() -> {
+			workspace.ifPresent(ws -> ws.refresh(this));
+		});
 	}
 
 	@Override

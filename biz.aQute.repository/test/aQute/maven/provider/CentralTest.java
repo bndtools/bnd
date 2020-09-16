@@ -32,7 +32,8 @@ public class CentralTest extends TestCase {
 		local.mkdirs();
 		HttpClient client = new HttpClient();
 		repo = MavenBackingRepository.create(REPO_URL, reporter, local, client);
-		storage = new MavenRepository(local, "central", this.repo, null, client, null);
+		storage = new MavenRepository(local, "central", this.repo, null, client.promiseFactory()
+			.executor(), null);
 	}
 
 	@Override
