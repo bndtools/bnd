@@ -9,7 +9,7 @@ import static aQute.junit.constants.TesterConstants.TESTER_SEPARATETHREAD;
 import static aQute.junit.constants.TesterConstants.TESTER_TRACE;
 import static aQute.junit.constants.TesterConstants.TESTER_UNRESOLVED;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
 
@@ -24,12 +24,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.felix.service.command.Descriptor;
@@ -132,8 +134,8 @@ public class Activator implements BundleActivator, Runnable {
 
 		List<TestExecutionListener> listenerList = new ArrayList<>();
 
-		String testcases = context.getProperty(TESTER_NAMES);
-		trace("test cases %s", testcases);
+		setTesterNames(context.getProperty(TESTER_NAMES));
+
 		int port = -1;
 		boolean rerunIDE = false;
 		if (context.getProperty(TESTER_CONTROLPORT) != null) {
@@ -209,26 +211,11 @@ public class Activator implements BundleActivator, Runnable {
 				message("", "TEST %s <<< SKIPPED", testName(testIdentifier));
 			}
 		});
-		if (testcases == null) {
-			trace("automatic testing of all bundles with " + aQute.bnd.osgi.Constants.TESTCASES + " header");
-			try {
-				automatic();
-			} catch (IOException e) {
-				// ignore
-			}
-		} else {
-			trace("received names of classes to test %s", testcases);
-			try {
-				List<DiscoverySelector> testcaseSelectors = BundleUtils.testCases(testcases)
-					.map(testcase -> testcase.indexOf('#') < 0 ? selectClass(testcase) : selectMethod(testcase))
-					.collect(toList());
-				LauncherDiscoveryRequest request = buildRequest(testcaseSelectors);
-				long result = test(request);
-				System.exit((int) result);
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.exit(254);
-			}
+		trace("automatic testing of all bundles with " + aQute.bnd.osgi.Constants.TESTCASES + " header");
+		try {
+			automatic();
+		} catch (IOException e) {
+			// ignore
 		}
 	}
 
@@ -254,6 +241,38 @@ public class Activator implements BundleActivator, Runnable {
 				return source.toString();
 			})
 			.orElseGet(testIdentifier::getDisplayName);
+	}
+
+	Set<String> testCases;
+
+	void setTesterNames(String testerNames) {
+		trace("test cases filter set to %s", testerNames);
+		if (testerNames == null || testerNames.trim()
+			.isEmpty()) {
+			testCases = null;
+		} else {
+			testCases = BundleUtils.testCases(testerNames)
+				.collect(toSet());
+		}
+	}
+
+	Stream<DiscoverySelector> toSelectors(Bundle bundle) {
+		if (testCases == null) {
+			return Stream.of(BundleSelector.selectBundle(bundle));
+		}
+		Set<String> classNames = BundleUtils.testCases(bundle)
+			.collect(toSet());
+
+		return testCases.stream()
+			.map(testcase -> {
+				int index = testcase.indexOf('#');
+				if (index < 0) {
+					return classNames.contains(testcase) ? selectClass(testcase) : null;
+				}
+				String className = testcase.substring(0, index);
+				return classNames.contains(className) ? selectMethod(testcase) : null;
+			})
+			.filter(Objects::nonNull);
 	}
 
 	void automatic() throws IOException {
@@ -286,7 +305,7 @@ public class Activator implements BundleActivator, Runnable {
 			private void process(Stream<Bundle> stream) {
 				stream.filter(processed::add)
 					.filter(BundleUtils::hasTests)
-					.map(BundleSelector::selectBundle)
+					.flatMap(Activator.this::toSelectors)
 					.forEach(queue::offerLast);
 			}
 
@@ -301,7 +320,7 @@ public class Activator implements BundleActivator, Runnable {
 			GogoCommandlet cmd = new GogoCommandlet();
 			Hashtable<String, Object> properties = new Hashtable<>();
 			properties.put("osgi.command.function", new String[] {
-				"runTests"
+				"runTests", "getTesterNames", "setTesterNames"
 			});
 			properties.put("osgi.command.scope", "tester");
 
@@ -364,13 +383,38 @@ public class Activator implements BundleActivator, Runnable {
 
 	class GogoCommandlet {
 		@Descriptor("runs the specified tests")
-		public void runTests(@Descriptor("The tests to run. Three syntaxes are available:\n"
-			+ " 1. \":bundle.symbolic.name\" - run all tests in the specified bundle\n"
-			+ " 2. \"fully.qualified.ClassName\" - run all tests in the specified class\n"
-			+ " 3. \"fully.qualified.ClassName#methodName\" - run the specified test method") String... tests) {
-			Stream.of(tests)
-				.map(Activator::toSelector)
-				.forEach(queue::offerLast);
+		public void runTests(
+			@Descriptor("The tests to run. If no tests are specified, it will automatically run all tests (using the tester.names filter if specified).\n"
+				+ "Three syntaxes are available:\n"
+				+ " 1. \":bundle.symbolic.name\" - run all tests in the specified bundle\n"
+				+ " 2. \"fully.qualified.ClassName\" - run all tests in the specified class\n"
+				+ " 3. \"fully.qualified.ClassName#methodName\" - run the specified test method") String... tests) {
+			if (tests != null && tests.length > 0) {
+				Stream.of(tests)
+					.map(Activator::toSelector)
+					.forEach(queue::offerLast);
+			} else {
+				Stream.of(context.getBundles())
+					.filter(BundleUtils::hasTests)
+					.flatMap(Activator.this::toSelectors)
+					.forEach(queue::offerLast);
+			}
+		}
+
+		@Descriptor("retrieves the tester.names filter")
+		public String getTesterNames() {
+			return Activator.this.testCases == null ? null
+				: Activator.this.testCases.stream()
+					.collect(Collectors.joining(", "));
+		}
+
+		@Descriptor("sets the tester.names filter")
+		public void setTesterNames(
+			@Descriptor("The new tester.names filter to apply to automatic testing") String... tests) {
+			Activator.this.setTesterNames(tests == null ? null
+				: Stream.of(tests)
+					.collect(Collectors.joining(",")));
+			System.err.println("testCases: " + testCases);
 		}
 	}
 

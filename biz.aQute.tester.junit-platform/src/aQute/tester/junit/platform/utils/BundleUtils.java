@@ -87,4 +87,10 @@ public final class BundleUtils {
 		return Strings.splitQuotedAsStream(testCases, false)
 			.map(entry -> entry.replace(':', '#'));
 	}
+
+	// Returns the class name portion only of the test case selector.
+	public static String testCaseToClassName(String testcase) {
+		int index = testcase.indexOf('#');
+		return index < 0 ? testcase : testcase.substring(0, index);
+	}
 }
