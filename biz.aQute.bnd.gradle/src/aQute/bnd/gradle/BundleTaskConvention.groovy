@@ -30,7 +30,6 @@ import static aQute.bnd.gradle.BndUtils.unwrap
 
 import java.util.Properties
 import java.util.jar.Manifest
-import java.util.regex.Matcher
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
 
@@ -48,7 +47,6 @@ import org.gradle.api.Task
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.logging.Logger
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
@@ -137,10 +135,27 @@ class BundleTaskConvention {
   }
 
   /**
-   * Add instuctions to the bnd property from a list of multi-line strings.
+   * Set the bnd property from a multi-line string using a
+   * {@link Provider<? extends CharSequence>}.
+   */
+  public void setBnd(Provider<? extends CharSequence> lines) {
+    instructions.empty()
+    bnd(lines)
+  }
+
+  /**
+   * Add instructions to the bnd property from a list of multi-line strings.
    */
   public void bnd(CharSequence... lines) {
     instructions.addAll(lines)
+  }
+
+  /**
+   * Add a multi-line string of instructions to the bnd property
+   * using a {@link Provider<? extends CharSequence>}.
+   */
+  public void bnd(Provider<? extends CharSequence> lines) {
+    instructions.add(lines)
   }
 
   /**
@@ -152,7 +167,7 @@ class BundleTaskConvention {
   }
 
   /**
-   * Add instuctions to the bnd property from a map.
+   * Add instructions to the bnd property from a map.
    */
   public void bnd(Map<String, ?> map) {
     map.each({ key, value ->

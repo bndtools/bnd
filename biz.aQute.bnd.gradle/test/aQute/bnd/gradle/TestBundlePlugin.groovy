@@ -117,4 +117,40 @@ class TestBundlePlugin extends Specification {
           result.task(':bundle').outcome == UP_TO_DATE
           result.task(':jar').outcome == UP_TO_DATE
     }
+
+    def "Test Bnd instruction via Provider"() {
+        given:
+          String testProject = 'builderplugin2'
+          File testProjectDir = new File(testResources, testProject).canonicalFile
+          assert testProjectDir.isDirectory()
+          File testProjectBuildDir = new File(testProjectDir, 'build').canonicalFile
+
+        when:
+          def result = TestHelper.getGradleRunner()
+            .withProjectDir(testProjectDir)
+            .withArguments('--parallel', '--stacktrace', '--debug', 'build')
+            .withPluginClasspath()
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(':bundle').outcome == SUCCESS
+          result.task(':jar').outcome == SUCCESS
+
+          File jartask_result = new File(testProjectBuildDir, "libs/${testProject}-1.0.0.jar")
+          jartask_result.isFile()
+          JarFile jartask_jar = new JarFile(jartask_result)
+          Attributes jartask_manifest = jartask_jar.getManifest().getMainAttributes()
+
+          File bundletask_bundle = new File(testProjectBuildDir, "libs/${testProject}-1.0.0-bundle.jar")
+          bundletask_bundle.isFile()
+          JarFile bundletask_jar = new JarFile(bundletask_bundle)
+          Attributes bundletask_manifest = bundletask_jar.getManifest().getMainAttributes()
+
+          jartask_manifest.getValue('XX-Signed') == 'true'
+          bundletask_manifest.getValue('XX-Signed') == 'true'
+          bundletask_manifest.getValue('YY-Sealed') == 'true'
+          bundletask_manifest.getValue('ZZ-Delivered') == 'true'
+          bundletask_manifest.getValue('Bundle-Name') == "test.bnd.gradle:${testProject}-bundle"
+    }
 }
