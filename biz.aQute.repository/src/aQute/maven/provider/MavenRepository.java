@@ -97,7 +97,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	public Archive getResolvedArchive(Revision revision, String extension, String classifier) throws Exception {
 		if (revision.isSnapshot()) {
 			for (MavenBackingRepository mbr : snapshot) {
-				MavenVersion v = mbr.getVersion(revision);
+				MavenVersion v = mbr.getVersion(revision, false);
 				if (v != null)
 					return revision.archive(v, extension, classifier);
 			}
@@ -119,21 +119,27 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public Promise<File> get(final Archive archive) throws Exception {
-		return get(archive, true);
+		return get(archive, true, false);
 	}
 
-	private Promise<File> get(Archive archive, boolean thrw) throws Exception {
+	@Override
+	public Promise<File> get(Archive archive, boolean force) throws Exception {
+		return get(archive, true, force);
+	}
+
+	private Promise<File> get(Archive archive, boolean thrw, boolean force) throws Exception {
 		final File file = toLocalFile(archive);
 
 		if (file.isFile() && !archive.isSnapshot()) {
 			return promiseFactory.resolved(file);
 		}
 
-		if (localOnly || isFresh(file)) {
+		if (localOnly || (!force && isFresh(file))) {
 			return promiseFactory.resolved(file.isFile() ? file : null);
 		}
+
 		return promiseFactory.submit(() -> {
-			File f = getFile(archive, file);
+			File f = getFile(archive, file, force);
 			if (thrw && f == null) {
 				throw new FileNotFoundException(
 					"For Maven artifact " + archive + " from " + (archive.isSnapshot() ? snapshot : release));
@@ -151,11 +157,11 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		return diff < TimeUnit.DAYS.toMillis(1);
 	}
 
-	File getFile(Archive archive, File file) throws Exception {
+	File getFile(Archive archive, File file, boolean force) throws Exception {
 		State result = null;
 
 		if (archive.isSnapshot()) {
-			Archive resolved = resolveSnapshot(archive);
+			Archive resolved = resolveSnapshot(archive, force);
 			if (resolved == null) {
 				// Cannot resolved snapshot
 				if (file.isFile()) // use local copy
@@ -208,11 +214,16 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public Archive resolveSnapshot(Archive archive) throws Exception {
-		if (archive.isResolved())
+		return resolveSnapshot(archive, false);
+	}
+
+	@Override
+	public Archive resolveSnapshot(Archive archive, boolean force) throws Exception {
+		if (!force && archive.isResolved())
 			return archive;
 
 		for (MavenBackingRepository mbr : snapshot) {
-			MavenVersion version = mbr.getVersion(archive.revision);
+			MavenVersion version = mbr.getVersion(archive.revision, force);
 			if (version != null)
 				return archive.resolveSnapshot(version);
 		}
@@ -330,7 +341,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 			poms.put(revision, deferred.getPromise());
 		}
 		Archive pomArchive = revision.getPomArchive();
-		deferred.resolveWith(get(pomArchive, false).map(pomFile -> {
+		deferred.resolveWith(get(pomArchive, false, false).map(pomFile -> {
 			if (pomFile == null) {
 				return null;
 			}
@@ -363,7 +374,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	public boolean exists(Archive archive) throws Exception {
 		File file = File.createTempFile(Archive.POM_EXTENSION, ".xml");
 		try {
-			File result = getFile(archive.getPomArchive(), file);
+			File result = getFile(archive.getPomArchive(), file, false);
 			return result != null;
 		} catch (Exception e) {
 			return false;

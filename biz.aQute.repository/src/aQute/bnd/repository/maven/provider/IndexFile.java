@@ -376,6 +376,27 @@ class IndexFile {
 		return false;
 	}
 
+	Promise<Boolean> refresh(Archive archive) {
+		return serialize(() -> repo.get(archive, true)
+			.map(file -> {
+				removeWithDerived(archive);
+				if (file == null) {
+					Map<Archive, Resource> failed = failed(archive, "Not found");
+					archives.putAll(failed);
+					return Boolean.FALSE;
+				}
+				try {
+					Map<Archive, Resource> result = parseSingleOrMultiFile(archive, file);
+					archives.putAll(result);
+					return Boolean.TRUE;
+				} catch (Exception e) {
+					Map<Archive, Resource> failed = failed(archive, e);
+					archives.putAll(failed);
+					return Boolean.FALSE;
+				}
+			}));
+	}
+
 	private Set<Archive> read(File file) throws IOException {
 		if (!file.isFile()) {
 			this.status = "Not an index file: " + file;

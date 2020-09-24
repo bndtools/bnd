@@ -74,6 +74,17 @@ class RepoActions {
 			}
 		});
 
+		if (archive.isSnapshot()) {
+			map.put("Refresh snapshot", () -> {
+				try {
+					repo.index.refresh(archive)
+						.onResolve(() -> repo.workspace.ifPresent(ws -> ws.refresh(repo)));
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+			});
+		}
+
 		addUpdate(archive, map);
 
 		addSources(archive, map);

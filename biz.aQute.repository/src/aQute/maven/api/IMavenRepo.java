@@ -101,6 +101,15 @@ public interface IMavenRepo extends Closeable {
 	Promise<File> get(Archive archive) throws Exception;
 
 	/**
+	 * Get the file, refreshing snapshots when force is true.
+	 *
+	 * @param archive The archive to fetch
+	 * @param force refresh snapshots
+	 * @return the file or null if not found
+	 */
+	Promise<File> get(Archive archive, boolean force) throws Exception;
+
+	/**
 	 * Get the last updated time for a snapshot revision.
 	 *
 	 * @param revision the snapshot revision to get the time from
@@ -124,6 +133,16 @@ public interface IMavenRepo extends Closeable {
 	 * @return the archive or null if not found
 	 */
 	Archive resolveSnapshot(Archive archive) throws Exception;
+
+	/**
+	 * Take a generic snapshot archive and resolve it to the latest released
+	 * snapshot, refresh the metadata if force is true.
+	 *
+	 * @param archive the archive to resolve
+	 * @param force if true, refresh the metadata
+	 * @return the archive or null if not found
+	 */
+	Archive resolveSnapshot(Archive archive, boolean force) throws Exception;
 
 	/**
 	 * Get the file object for the archive. The file does not have to exist
