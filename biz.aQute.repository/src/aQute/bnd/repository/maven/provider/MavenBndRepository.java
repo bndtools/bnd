@@ -113,7 +113,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private String				status				= null;
 	private boolean				remote;
 	private final AtomicBoolean	open				= new AtomicBoolean(true);
-	private Optional<Workspace>	workspace;
+	Optional<Workspace>			workspace;
 
 	/**
 	 * Put result

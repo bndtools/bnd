@@ -180,7 +180,11 @@ public abstract class MavenBackingRepository implements Closeable {
 	}
 
 	public MavenVersion getVersion(Revision revision) throws Exception {
-		Optional<RevisionMetadata> metadata = getMetadata(revision, false);
+		return getVersion(revision, false);
+	}
+
+	MavenVersion getVersion(Revision revision, boolean force) throws Exception {
+		Optional<RevisionMetadata> metadata = getMetadata(revision, force);
 		if (!metadata.isPresent()) {
 			return null;
 		}
