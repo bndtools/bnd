@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -33,7 +33,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE.SharedImages;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -312,10 +311,7 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
 			if (Plugin.getDefault()
 				.getImageRegistry()
 				.get(KEY_JAVA_PROJECT) == null) {
-				// use Java-Project image from JDT (unfortunately not shared by
-				// JDT-Plugin)
-				Image image = AbstractUIPlugin
-					.imageDescriptorFromPlugin(JavaUI.ID_PLUGIN, "icons/full/eview16/projects.gif")
+				Image image = Icons.desc("projects")
 					.createImage();
 				Plugin.getDefault()
 					.getImageRegistry()
