@@ -85,3 +85,22 @@ def mvnClean = tasks.register('mvnClean', Exec.class) {
 tasks.named('clean') {
   dependsOn mvnClean
 }
+
+def mvnTestCompile = tasks.register('test-compile', Exec.class) {
+  dependsOn dist.tasks.named('releaseDependencies')
+  if (windows) {
+    executable 'cmd'
+    args '/c', mvnw
+  } else {
+    executable mvnw
+  }
+  args '--batch-mode'
+  args '--no-transfer-progress'
+  if (logger.isDebugEnabled()) {
+    args '--debug'
+  }
+  if (localrepo) {
+    args "-Dmaven.repo.local=${localrepo}"
+  }
+  args 'test-compile'
+}
