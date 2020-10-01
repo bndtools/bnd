@@ -18,10 +18,13 @@ import org.assertj.core.api.InstanceOfAssertFactories;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
@@ -37,12 +40,15 @@ import aQute.tester.testclasses.With2Failures;
 import aQute.tester.testclasses.junit.platform.JUnit5Test;
 
 @TestInstance(Lifecycle.PER_CLASS)
+@Execution(ExecutionMode.SAME_THREAD)
 public class GogoShellTests extends AbstractActivatorTest {
 
-	ServerSocket		controlSock	= null;
-	Socket				sock		= null;
-	Object				gogo		= null;
-	Method				runTests	= null;
+	ServerSocket		controlSock		= null;
+	Socket				sock			= null;
+	Object				gogo			= null;
+	Method				runTests		= null;
+	Method				setTesterNames	= null;
+	Method				getTesterNames	= null;
 	InputStream			inStr;
 	DataOutputStream	outStr;
 
@@ -98,16 +104,22 @@ public class GogoShellTests extends AbstractActivatorTest {
 
 		assertThat(gogoRef.getProperty("osgi.command.function")).as("function")
 			.asInstanceOf(InstanceOfAssertFactories.array(String[].class))
-			.containsExactly("runTests");
+			.containsExactly("runTests", "getTesterNames", "setTesterNames");
 
 		gogo = frameworkContext.getService(gogoRef);
-
-		runTests = gogo.getClass()
-			.getMethod("runTests", new Class<?>[] {
-				String[].class
-			});
+		Class<?> gogoClass = gogo.getClass();
+		runTests = gogoClass.getMethod("runTests", new Class<?>[] {
+			String[].class
+		});
 
 		runTests.setAccessible(true);
+
+		setTesterNames = gogoClass.getMethod("setTesterNames", new Class<?>[] {
+			String[].class
+		});
+		setTesterNames.setAccessible(true);
+		getTesterNames = gogoClass.getMethod("getTesterNames");
+		getTesterNames.setAccessible(true);
 
 		addTestBundle(With2Failures.class, JUnit4Test.class);
 		addTestBundle(With1Error1Failure.class, JUnit5Test.class);
@@ -141,12 +153,17 @@ public class GogoShellTests extends AbstractActivatorTest {
 		IO.close(builder);
 	}
 
+	@BeforeEach
+	public void before() throws Exception {
+		setTesterNames(null);
+	}
+
 	@Test
 	void runTests_forSingleClass_works() throws Exception {
-		TestRunData result = runTests(With2Failures.class.getName());
+		TestRunData result = gogoRunTests(With2Failures.class.getName());
 
 		if (result == null) {
-			Assertions.fail("Eclipse didn't capture output from the second run");
+			Assertions.fail("Eclipse didn't capture output");
 			// Unreachable but prevents a compiler warning about null pointer
 			// access.
 			return;
@@ -174,10 +191,10 @@ public class GogoShellTests extends AbstractActivatorTest {
 
 	@Test
 	void runTests_forSingleMethod_works() throws Exception {
-		TestRunData result = runTests(With2Failures.class.getName() + "#test1");
+		TestRunData result = gogoRunTests(With2Failures.class.getName() + "#test1");
 
 		if (result == null) {
-			Assertions.fail("Eclipse didn't capture output from the second run");
+			Assertions.fail("Eclipse didn't capture output");
 			return;
 		}
 		assertThat(result.getTestCount()).as("testCount")
@@ -200,11 +217,11 @@ public class GogoShellTests extends AbstractActivatorTest {
 
 	@Test
 	void runTests_forSingleBundle_works() throws Exception {
-		TestRunData result = runTests(":" + testBundles.get(0)
+		TestRunData result = gogoRunTests(":" + testBundles.get(0)
 			.getSymbolicName());
 
 		if (result == null) {
-			Assertions.fail("Eclipse didn't capture output from the second run");
+			Assertions.fail("Eclipse didn't capture output");
 			return;
 		}
 		assertThat(result.getTestCount()).as("testCount")
@@ -233,10 +250,10 @@ public class GogoShellTests extends AbstractActivatorTest {
 
 	@Test
 	void runTests_forMultipleArgs() throws Exception {
-		TestRunData result = runTests(JUnit5Test.class.getName(), With2Failures.class.getName());
+		TestRunData result = gogoRunTests(JUnit5Test.class.getName(), With2Failures.class.getName());
 
 		if (result == null) {
-			Assertions.fail("Eclipse didn't capture output from the second run");
+			Assertions.fail("Eclipse didn't capture output");
 			return;
 		}
 		assertThat(result.getTestCount()).as("testCount")
@@ -257,7 +274,142 @@ public class GogoShellTests extends AbstractActivatorTest {
 		// @formatter:on
 	}
 
-	TestRunData runTests(String... args) throws Exception {
+	@Test
+	void runTests_withNoArgs_runsAllTests() throws Exception {
+		TestRunData result = gogoRunTests();
+
+		if (result == null) {
+			Assertions.fail("Eclipse didn't capture output");
+			return;
+		}
+
+		assertThat(result.getTestCount()).as("testCount")
+			.isEqualTo(9);
+
+		addTestBundle(With2Failures.class, JUnit4Test.class);
+		addTestBundle(With1Error1Failure.class, JUnit5Test.class);
+
+		// @formatter:off
+		assertThat(result.getNameMap()
+			.keySet()).as("executed")
+				.contains(
+					nameOf(With2Failures.class),
+					nameOf(With2Failures.class, "test1"),
+					nameOf(With2Failures.class, "test2"),
+					nameOf(With2Failures.class, "test3"),
+					nameOf(JUnit4Test.class),
+					nameOf(JUnit4Test.class, "somethingElse"),
+					nameOf(testBundles.get(0)),
+					nameOf(With1Error1Failure.class),
+					nameOf(With1Error1Failure.class, "test1"),
+					nameOf(With1Error1Failure.class, "test2"),
+					nameOf(With1Error1Failure.class, "test3"),
+					nameOf(JUnit5Test.class),
+					nameOf(JUnit5Test.class, "somethingElseAgain"),
+					nameOf(testBundles.get(1))
+			);
+		// @formatter:on
+	}
+
+	@Test
+	void setTesterNames_withSingleClassName() throws Exception {
+		setTesterNames(With2Failures.class.getName());
+
+		TestRunData result = gogoRunTests();
+
+		if (result == null) {
+			Assertions.fail("Eclipse didn't capture output");
+			// Unreachable but prevents a compiler warning about null pointer
+			// access.
+			return;
+		}
+		assertThat(result.getTestCount()).as("testCount")
+			.isEqualTo(3);
+
+		// @formatter:off
+		assertThat(result.getNameMap()
+			.keySet()).as("executed")
+			.contains(
+				nameOf(With2Failures.class),
+				nameOf(With2Failures.class, "test1"),
+				nameOf(With2Failures.class, "test2"),
+				nameOf(With2Failures.class, "test3"),
+				nameOf(testBundles.get(0))
+			);
+		// @formatter:on
+
+		assertThat(result).as("result")
+			.hasFailedTest(With2Failures.class, "test1", AssertionError.class)
+			.hasSuccessfulTest(With2Failures.class, "test2")
+			.hasFailedTest(With2Failures.class, "test3", CustomAssertionError.class);
+	}
+
+	@Test
+	void setTesterNames_forSingleMethod() throws Exception {
+		setTesterNames(With2Failures.class.getName() + "#test1");
+
+		TestRunData result = gogoRunTests();
+
+		if (result == null) {
+			Assertions.fail("Eclipse didn't capture output");
+			return;
+		}
+		assertThat(result.getTestCount()).as("testCount")
+			.isEqualTo(1);
+
+		// @formatter:off
+		assertThat(result.getNameMap()
+			.keySet()).as("executed")
+				.contains(
+					nameOf(With2Failures.class),
+					nameOf(With2Failures.class, "test1"),
+					nameOf(testBundles.get(0))
+				);
+		// @formatter:on
+
+		assertThat(result).as("result")
+			.hasFailedTest(With2Failures.class, "test1", AssertionError.class);
+	}
+
+	@Test
+	void setTesterNames_forMultipleArgs() throws Exception {
+		setTesterNames(JUnit5Test.class.getName() + " " + With2Failures.class.getName());
+		TestRunData result = gogoRunTests();
+
+		if (result == null) {
+			Assertions.fail("Eclipse didn't capture output");
+			return;
+		}
+		assertThat(result.getTestCount()).as("testCount")
+			.isEqualTo(4);
+
+		// @formatter:off
+		assertThat(result.getNameMap()
+			.keySet()).as("executed")
+				.contains(
+					nameOf(JUnit5Test.class),
+					nameOf(JUnit5Test.class, "somethingElseAgain"),
+					nameOf(With2Failures.class),
+					nameOf(With2Failures.class, "test1"),
+					nameOf(With2Failures.class, "test2"),
+					nameOf(With2Failures.class, "test3"),
+					nameOf(testBundles.get(1))
+				);
+		// @formatter:on
+	}
+
+	@Test
+	void setGetTesterNames() throws Exception {
+		setTesterNames(With2Failures.class.getName() + "#test1 " + With2Failures.class.getName() + "#test3");
+		assertThat(getTesterNames().split("\\s*,\\s*")).containsExactlyInAnyOrder(
+			With2Failures.class.getName() + "#test1",
+			With2Failures.class.getName() + "#test3");
+
+		setTesterNames(null);
+		assertThat(getTesterNames()).isNull();
+	}
+
+	TestRunData gogoRunTests(String... args) throws Exception {
 		runTests.invoke(gogo, new Object[] {
 			args
 		});
@@ -268,5 +420,21 @@ public class GogoShellTests extends AbstractActivatorTest {
 		listener.waitForClientToFinish(10000);
 
 		return listener.getLatestRunData();
+	}
+
+	void setTesterNames(String names) throws Exception {
+		if (names == null) {
+			setTesterNames.invoke(gogo, new Object[] {
+				null
+			});
+		} else {
+			setTesterNames.invoke(gogo, new Object[] {
+				names.split("\\s+")
+			});
+		}
+	}
+
+	String getTesterNames() throws Exception {
+		return (String) getTesterNames.invoke(gogo);
 	}
 }
