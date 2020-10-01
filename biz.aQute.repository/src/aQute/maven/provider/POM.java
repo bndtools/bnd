@@ -340,6 +340,9 @@ public class POM implements IPom {
 			}
 		}
 
+		if (value == null)
+			return null;
+
 		return replaceMacros(value);
 	}
 
