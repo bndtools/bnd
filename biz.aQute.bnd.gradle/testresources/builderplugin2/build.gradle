@@ -1,0 +1,57 @@
+/*
+ *
+ */
+
+import aQute.bnd.gradle.Bundle
+
+plugins {
+    id 'biz.aQute.bnd.builder' apply false
+    id 'java-library'
+}
+
+group = 'test.bnd.gradle'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+	extraInstructions = provider {
+'''\
+YY-Sealed: true
+ZZ-Delivered: true
+'''
+	}
+}
+
+// Not a bundle.
+def jarTask = tasks.named('jar', Jar) {
+    manifest {
+        attributes('XX-Signed': true)
+    }
+}
+
+task bundle(type: Bundle) {
+   description 'Bundle'
+   group 'build'
+   from jarTask.map { zipTree(it.archiveFile) }
+   archiveClassifier = 'bundle'
+
+   bnd = jarTask.flatMap { jar ->
+       jar.archiveFile.map { file ->
+           "-include: jar:${file.asFile.toURI()}!/META-INF/MANIFEST.MF"
+       }
+   }
+
+   bnd extraInstructions
+
+   bnd '''
+Bundle-Name: ${project.group}:${task.archiveBaseName}-${task.archiveClassifier}
+'''
+}
+
+artifacts {
+  runtimeOnly bundle
+  archives bundle
+}
