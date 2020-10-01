@@ -37,8 +37,7 @@ The repo includes the gradle wrapper, `gradlew`, command.
 Bnd/Bndtools is continuously built on [GitHub Actions](https://github.com/bndtools/bnd/actions?query=workflow%3A%22CI%20Build%22).
 [![GitHub Actions CI Build Status](https://github.com/bndtools/bnd/workflows/CI%20Build/badge.svg)](https://github.com/bndtools/bnd/actions?query=workflow%3A%22CI%20Build%22)
 
-[LGTM](https://lgtm.com/projects/g/bndtools/bnd) is used for continuous security analysis.
-[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/bndtools/bnd.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bndtools/bnd/context:java)
+[CodeQL](https://github.com/bndtools/bnd/security/code-scanning?query=tool%3ACodeQL) is used for continuous security analysis.
 
 A Maven snapshot repository of the latest build is available at <https://bndtools.jfrog.io/bndtools/libs-snapshot-local>.
 
