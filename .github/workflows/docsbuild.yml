@@ -25,7 +25,7 @@ jobs:
     - name: Git Checkout
       uses: actions/checkout@v2
     - name: Set up Ruby
-      uses: actions/setup-ruby@v1.1.1
+      uses: actions/setup-ruby@v1.1.2
       with:
         ruby-version: 2.6.x
     - name: Build
