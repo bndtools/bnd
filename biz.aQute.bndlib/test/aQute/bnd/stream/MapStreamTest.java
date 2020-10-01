@@ -722,7 +722,7 @@ public class MapStreamTest {
 		assertThat(supplier.get()
 			.count()).isEqualTo(testMap.size());
 		assertThat(supplier.get()
-			.sum()).isEqualTo(testMap.size() * (4 + 6));
+			.sum()).isEqualTo((4L + 6L) * testMap.size());
 	}
 
 	@Test
@@ -740,16 +740,16 @@ public class MapStreamTest {
 		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap)
 			.flatMap((k, v) -> MapStream.of(k, v, k.concat("0"), v.concat(k)));
 		assertThat(supplier.get()
-			.count()).isEqualTo(testMap.size() * 2);
+			.count()).isEqualTo(2L * testMap.size());
 		assertThat(supplier.get()
 			.entries()
-			.count()).isEqualTo(testMap.size() * 2);
+			.count()).isEqualTo(2L * testMap.size());
 		assertThat(supplier.get()
 			.keys()
-			.count()).isEqualTo(testMap.size() * 2);
+			.count()).isEqualTo(2L * testMap.size());
 		assertThat(supplier.get()
 			.values()
-			.count()).isEqualTo(testMap.size() * 2);
+			.count()).isEqualTo(2L * testMap.size());
 		assertThat(supplier.get()
 			.keys()).containsExactlyInAnyOrder("key1", "key2", "key3", "key4", "key5", "key10", "key20", "key30",
 				"key40", "key50");
@@ -774,7 +774,7 @@ public class MapStreamTest {
 		Supplier<Stream<String>> supplier = () -> MapStream.of(testMap)
 			.flatMapToObj((k, v) -> Stream.of(k, v, k.concat(v)));
 		assertThat(supplier.get()
-			.count()).isEqualTo(testMap.size() * 3);
+			.count()).isEqualTo(3L * testMap.size());
 		assertThat(supplier.get()).containsExactlyInAnyOrder("key1", "key2", "key3", "key4", "key5", "value1", "value2",
 			"value3", "value4", "value5", "key1value1", "key2value2", "key3value3", "key4value4", "key5value5");
 	}
@@ -784,9 +784,9 @@ public class MapStreamTest {
 		Supplier<IntStream> supplier = () -> MapStream.of(testMap)
 			.flatMapToInt((k, v) -> IntStream.of(1, k.length()));
 		assertThat(supplier.get()
-			.count()).isEqualTo(testMap.size() * 2);
+			.count()).isEqualTo(2L * testMap.size());
 		assertThat(supplier.get()
-			.sum()).isEqualTo(testMap.size() * 5);
+			.sum()).isEqualTo(5L * testMap.size());
 	}
 
 	@Test
@@ -794,9 +794,9 @@ public class MapStreamTest {
 		Supplier<LongStream> supplier = () -> MapStream.of(testMap)
 			.flatMapToLong((k, v) -> LongStream.of(v.length(), k.length()));
 		assertThat(supplier.get()
-			.count()).isEqualTo(testMap.size() * 2);
+			.count()).isEqualTo(2L * testMap.size());
 		assertThat(supplier.get()
-			.sum()).isEqualTo(testMap.size() * 10);
+			.sum()).isEqualTo(10L * testMap.size());
 	}
 
 	@Test
@@ -804,7 +804,7 @@ public class MapStreamTest {
 		Supplier<DoubleStream> supplier = () -> MapStream.of(testMap)
 			.flatMapToDouble((k, v) -> DoubleStream.of(2.1d, k.length()));
 		assertThat(supplier.get()
-			.count()).isEqualTo(testMap.size() * 2);
+			.count()).isEqualTo(2L * testMap.size());
 		assertThat(supplier.get()
 			.sum()).isEqualTo(6.1d * testMap.size());
 	}
