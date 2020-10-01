@@ -1,0 +1,4 @@
+# Versions used by Bnd's maven plugins. This should match the
+# same properties in maven/pom.xml
+maven.target.version: 3.1.1
+aether.version: 0.9.0.M2
