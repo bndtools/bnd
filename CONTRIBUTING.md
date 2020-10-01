@@ -23,7 +23,7 @@ You can use your system `gradle` but we require at least version 5.0.
 
 We use [GitHub Actions](https://github.com/bndtools/bnd/actions?query=workflow%3A%22CI%20Build%22) for continuous integration and the repo includes a `.github/workflows/cibuild.yml` file to build via GitHub Actions.
 
-We use [LGTM](https://lgtm.com/projects/g/bndtools/bnd) for continuous security analysis. Pull requests are automatically code reviewed.
+We use [CodeQL](https://github.com/bndtools/bnd/security/code-scanning?query=tool%3ACodeQL) for continuous security analysis. Pull requests are automatically code scanned.
 
 ## Workflow
 
