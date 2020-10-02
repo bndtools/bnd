@@ -5,11 +5,13 @@ on:
     paths-ignore:
     - 'docs/**'
     - '.github/**/*docs*'
+    - '.github/**/*codeql*'
     - '.github/*.yml'
   pull_request:
     paths-ignore:
     - 'docs/**'
     - '.github/**/*docs*'
+    - '.github/**/*codeql*'
     - '.github/*.yml'
 
 env:
