@@ -47,8 +47,8 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 	}
 
 	@Override
-	public TaggedData fetch(String path, File file) throws Exception {
-		Promise<TaggedData> promise = fetch(path, file, 3, 1000L);
+	public TaggedData fetch(String path, File file, boolean force) throws Exception {
+		Promise<TaggedData> promise = fetch(path, file, 3, 1000L, force);
 		Throwable failure = promise.getFailure(); // wait for completion
 		if (failure != null) {
 			throw Exceptions.duck(failure);
@@ -56,11 +56,11 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 		return promise.getValue();
 	}
 
-	private Promise<TaggedData> fetch(String path, File file, int retries, long delay) throws Exception {
+	private Promise<TaggedData> fetch(String path, File file, int retries, long delay, boolean force) throws Exception {
 		logger.debug("Fetching {}", path);
 		return client.build()
 			.headers("User-Agent", "Bnd")
-			.useCache(file, DEFAULT_MAX_STALE)
+			.useCache(file, force ? -1 : DEFAULT_MAX_STALE)
 			.asTag()
 			.async(new URL(base + path))
 			.then(success -> success.flatMap(tag -> {
@@ -103,7 +103,8 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 					@SuppressWarnings("unchecked")
 					Promise<TaggedData> delayed = (Promise<TaggedData>) failed.delay(delay);
 					return delayed.recoverWith(
-						f -> fetch(path, file, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
+						f -> fetch(path, file, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10)),
+							force));
 				}));
 	}
 

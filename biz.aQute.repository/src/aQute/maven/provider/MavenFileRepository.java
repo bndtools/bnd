@@ -20,7 +20,7 @@ public class MavenFileRepository extends MavenBackingRepository {
 	}
 
 	@Override
-	public TaggedData fetch(String path, File dest) throws Exception {
+	public TaggedData fetch(String path, File dest, boolean force) throws Exception {
 		File source = getFile(path);
 		if (source.isFile()) {
 			IO.mkdirs(dest.getParentFile());

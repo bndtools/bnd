@@ -57,7 +57,11 @@ public abstract class MavenBackingRepository implements Closeable {
 		return s.substring(0, 8);
 	}
 
-	public abstract TaggedData fetch(String path, File file) throws Exception;
+	public TaggedData fetch(String path, File file) throws Exception {
+		return fetch(path, file, false);
+	}
+
+	public abstract TaggedData fetch(String path, File file, boolean force) throws Exception;
 
 	protected void checkDigest(String fileDigest, String remoteDigest, File file) {
 		if (remoteDigest == null)
@@ -122,11 +126,8 @@ public abstract class MavenBackingRepository implements Closeable {
 			return Optional.of(metadata);
 
 		File metafile = IO.getFile(local, revision.metadata(id));
-		if (revision.version.isSnapshot()) {
-			metafile.delete();
-		}
 
-		TaggedData tag = fetch(revision.metadata(), metafile);
+		TaggedData tag = fetch(revision.metadata(), metafile, force);
 		if (tag.getState() == State.NOT_FOUND || tag.getState() == State.OTHER) {
 			metadata = new RevisionMetadata();
 			metadata.invalid = true;
@@ -134,13 +135,9 @@ public abstract class MavenBackingRepository implements Closeable {
 			return Optional.empty();
 		}
 
-		if (tag.getState() == State.UPDATED) {
-			metadata = MetadataParser.parseRevisionMetadata(metafile);
-			revisions.put(revision, metadata);
-			return Optional.of(metadata);
-		}
-
-		return Optional.empty();
+		metadata = MetadataParser.parseRevisionMetadata(metafile);
+		revisions.put(revision, metadata);
+		return Optional.of(metadata);
 	}
 
 	ProgramMetadata getMetadata(Program program) throws Exception {

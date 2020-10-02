@@ -34,6 +34,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -48,6 +49,8 @@ import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -4510,5 +4513,65 @@ public class bnd extends Processor {
 				out.println(result);
 			}
 		});
+	}
+
+	@Arguments(arg = {})
+	@Description("Show the classpath with all the current -buildpath and optional -testpath dependencies")
+	interface ClasspathOptions extends projectOptions {
+		@Description("Include -testpath dependencies")
+		boolean testpath();
+
+		@Description("Exclude output folders")
+		boolean xoutput();
+
+		@Description("Define the separator, default is platform dependent path separator")
+		String separator();
+
+		@Description("As list")
+		boolean list();
+	}
+
+	@Description("Show the classpath with all the current -buildpath and optional -testpath dependencies")
+	public void _classpath(ClasspathOptions options) throws Exception {
+		Project p = getProject(options.project());
+		if (p == null) {
+			return;
+		}
+		Stream<File> path = p.getBuildpath()
+			.stream()
+			.map(this::toFile)
+			.filter(Objects::nonNull);
+
+		if (options.testpath()) {
+			path = Stream.concat(path, p.getTestpath()
+				.stream()
+				.map(this::toFile)
+				.filter(Objects::nonNull));
+		}
+		if (!options.xoutput()) {
+			path = Stream.concat(path, Stream.of(p.getOutput()));
+		}
+
+		String separator = File.pathSeparator;
+		if (options.list()) {
+			if (options.separator() != null) {
+				separator = options.separator()
+					.concat("\n");
+			} else
+				separator = "\n";
+		} else if (options.separator() != null) {
+			separator = options.separator();
+		}
+
+		String result = path.map(File::getAbsolutePath)
+			.collect(Collectors.joining(separator));
+		out.println(result);
+	}
+
+	private File toFile(Container c) {
+		if (c.getError() != null) {
+			error("path contains entry that has an error %s", c);
+		}
+		return c.getFile();
 	}
 }
