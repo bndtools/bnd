@@ -52,8 +52,10 @@ public class About {
 	public static final Version					_5_0		= new Version(5, 0, 0);
 	public static final Version					_5_1		= new Version(5, 1, 0);
 	public static final Version					_5_2		= new Version(5, 2, 0);
-	public static final Version					CURRENT		= _5_2;
+	public static final Version					_5_3		= new Version(5, 3, 0);
+	public static final Version					CURRENT		= _5_3;
 
+	public static final String[]				CHANGES_5_3	= {};
 	public static final String[]				CHANGES_5_2	= {};
 	public static final String[]				CHANGES_5_1	= {};
 	public static final String[]				CHANGES_5_0	= {};
@@ -220,6 +222,7 @@ public class About {
 
 	public static final Map<Version, String[]>	CHANGES		= Maps.ofEntries(
 		// In decreasing order
+		Maps.entry(_5_3, CHANGES_5_3),																																							//
 		Maps.entry(_5_2, CHANGES_5_2),																																							//
 		Maps.entry(_5_1, CHANGES_5_1),																																							//
 		Maps.entry(_5_0, CHANGES_5_0),																																							//
