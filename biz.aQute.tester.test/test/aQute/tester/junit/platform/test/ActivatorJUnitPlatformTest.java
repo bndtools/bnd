@@ -4,6 +4,7 @@ import static aQute.junit.constants.TesterConstants.TESTER_CONTINUOUS;
 import static aQute.junit.constants.TesterConstants.TESTER_CONTROLPORT;
 import static aQute.junit.constants.TesterConstants.TESTER_NAMES;
 import static aQute.junit.constants.TesterConstants.TESTER_PORT;
+import static aQute.junit.constants.TesterConstants.TESTER_TRACE;
 import static aQute.junit.constants.TesterConstants.TESTER_UNRESOLVED;
 import static aQute.tester.test.utils.TestRunData.nameOf;
 import static org.eclipse.jdt.internal.junit.model.ITestRunListener2.STATUS_FAILURE;
@@ -31,7 +32,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.assertj.core.api.Assertions;
 import org.junit.AssumptionViolatedException;
 import org.junit.ComparisonFailure;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.platform.commons.JUnitException;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.opentest4j.AssertionFailedError;
@@ -45,15 +49,21 @@ import org.osgi.framework.ServiceRegistration;
 import org.w3c.dom.Document;
 import org.xmlunit.assertj.XmlAssert;
 
+import aQute.launchpad.BundleBuilder;
 import aQute.launchpad.LaunchpadBuilder;
 import aQute.lib.io.IO;
 import aQute.lib.xml.XML;
 import aQute.tester.test.assertions.CustomAssertionError;
+import aQute.tester.test.assertions.internal.CustomAssertionFailedError;
+import aQute.tester.test.assertions.internal.CustomJUnit3ComparisonFailure;
+import aQute.tester.test.assertions.internal.CustomJUnit4ComparisonFailure;
+import aQute.tester.test.assertions.internal.CustomMultipleFailuresError;
 import aQute.tester.test.utils.TestEntry;
 import aQute.tester.test.utils.TestFailure;
 import aQute.tester.test.utils.TestRunData;
 import aQute.tester.test.utils.TestRunListener;
 import aQute.tester.testbase.AbstractActivatorCommonTest;
+import aQute.tester.testbase.AbstractActivatorTest;
 import aQute.tester.testclasses.JUnit3Test;
 import aQute.tester.testclasses.JUnit4Test;
 import aQute.tester.testclasses.With1Error1Failure;
@@ -72,6 +82,7 @@ import aQute.tester.testclasses.junit.platform.JUnit5ParameterizedTest;
 import aQute.tester.testclasses.junit.platform.JUnit5SimpleComparisonTest;
 import aQute.tester.testclasses.junit.platform.JUnit5Skipper;
 import aQute.tester.testclasses.junit.platform.JUnit5Test;
+import aQute.tester.testclasses.junit.platform.JUnitComparisonSubclassTest;
 import aQute.tester.testclasses.junit.platform.JUnitMixedComparisonTest;
 import aQute.tester.testclasses.junit.platform.Mixed35Test;
 import aQute.tester.testclasses.junit.platform.Mixed45Test;
@@ -291,6 +302,83 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorCommonTest {
 				.isNull();
 			assertThat(f.actual).as("emptyComparisonFailure:actual")
 				.isNull();
+		}
+	}
+
+	static class ActivatorJUnitPlatformTest_WithCustomAssertions extends AbstractActivatorTest {
+
+		public ActivatorJUnitPlatformTest_WithCustomAssertions() {
+			super("aQute.tester.junit.platform.Activator", "biz.aQute.tester.junit-platform");
+		}
+
+		// Needed to override this method so that we could create a bundle
+		// with the custom assertions in it that the test bundle could
+		// reference. If we reference them via the framework classloader,
+		// they will link to a different version of the JUnit 3/4 classes
+		// and so the code-under-test will not recognise the assertions
+		// as being subclasses of the JUnit 3/4 classes.
+		@Override
+		protected void createLP() {
+			builder.usingClassLoader(SERVICELOADER_MASK);
+			builder.excludeExport(CustomMultipleFailuresError.class.getPackage()
+				.getName());
+			super.createLP();
+
+			BundleBuilder bb = lp.bundle();
+			Stream
+				.of(CustomAssertionFailedError.class, CustomJUnit4ComparisonFailure.class,
+					CustomJUnit3ComparisonFailure.class, CustomMultipleFailuresError.class)
+				.forEach(clazz -> {
+					bb.addResourceWithCopy(clazz);
+					bb.exportPackage(clazz.getPackage()
+						.getName());
+				});
+			bb.start();
+		}
+
+		@Test
+		public void eclipseListener_reportsComparisonFailures_forSubclasses() throws InterruptedException {
+			Class<?>[] tests = {
+				JUnitComparisonSubclassTest.class
+			};
+			TestRunData result = runTestsEclipse(tests);
+
+			final String[] order = {
+				"1", "2", "3.1", "3.2", "3.4", "4"
+			};
+
+			// @formatter:off
+			assertThat(result).as("result")
+				.hasFailedTest(JUnitComparisonSubclassTest.class, "multipleComparisonFailure", CustomMultipleFailuresError.class,
+					Stream.of(order).map(x -> "expected" + x).collect(Collectors.joining("\n\n")),
+					Stream.of(order).map(x -> "actual" + x).collect(Collectors.joining("\n\n"))
+					)
+				;
+			// @formatter:on
+		}
+
+		@BeforeEach
+		public void setUp(TestInfo info) {
+			this.info = info;
+			builder = new LaunchpadBuilder();
+			builder.bndrun(tester + ".bndrun")
+				.excludeExport("aQute.tester.bundle.*")
+				.excludeExport("org.junit*")
+				.excludeExport("junit.*");
+			if (DEBUG) {
+				builder.debug()
+					.set(TESTER_TRACE, "true");
+			}
+			lp = null;
+			oldManager = System.getSecurityManager();
+			System.setSecurityManager(new ExitCheck());
+		}
+
+		@AfterEach
+		public void tearDown() {
+			System.setSecurityManager(oldManager);
+			IO.close(lp);
+			IO.close(builder);
 		}
 	}
 
