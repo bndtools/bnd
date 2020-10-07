@@ -40,6 +40,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.Hashtable;
@@ -74,6 +75,7 @@ import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.connect.ConnectFrameworkFactory;
 import org.osgi.framework.connect.ModuleConnector;
 import org.osgi.framework.launch.Framework;
@@ -120,6 +122,8 @@ public class Launcher implements ServiceListener, FrameworkListener {
 	private BundleActivator					externalActivator;
 	private boolean							restart					= false;
 	private boolean							frameworkInited			= false;
+
+	private ServiceRegistration<?>			launcherServiceRegistraion;
 
 	enum EmbeddedActivatorPhase {
 
@@ -397,7 +401,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 			trace("inited runbundles=%s activators=%s timeout=%s", parms.runbundles, parms.activators, parms.timeout);
 			trace("version %s", getVersion());
 
-			int status = activate();
+			int status = activate(args);
 			if (status != 0) {
 				report(out);
 				System.exit(status);
@@ -421,18 +425,14 @@ public class Launcher implements ServiceListener, FrameworkListener {
 					// Must be running on a profile which does not support
 					// java.lang.instrument
 				}
-
-				Hashtable<String, Object> argprops = new Hashtable<>();
-				argprops.put(LauncherConstants.LAUNCHER_ARGUMENTS, args);
-				argprops.put(LauncherConstants.LAUNCHER_READY, "true");
-				argprops.put(Constants.SERVICE_RANKING, -1000);
-				systemBundle.getBundleContext()
-					.registerService(new String[] {
-						Object.class.getName(), Launcher.class.getName()
-					}, this, argprops);
-				trace("registered launcher with arguments for syncing");
-			} else {
-				trace("requested to register no services");
+				if (launcherServiceRegistraion != null) {
+					Dictionary<String, Object> launcherServiceProperties = new Hashtable<>();
+					launcherServiceProperties.put(LauncherConstants.LAUNCHER_ARGUMENTS, args);
+					launcherServiceProperties.put(Constants.SERVICE_RANKING, -1000);
+					launcherServiceProperties.put(LauncherConstants.LAUNCHER_READY, "true");
+					launcherServiceRegistraion.setProperties(launcherServiceProperties);
+					trace("setting launcher service registration to %s=true", LauncherConstants.LAUNCHER_READY);
+				}
 			}
 
 			// Wait until a Runnable is registered with main.thread=true.
@@ -478,7 +478,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 		return list;
 	}
 
-	private int activate() throws Exception {
+	private int activate(String[] args) throws Exception {
 		Policy.setPolicy(new AllPolicy());
 
 		systemBundle = createFramework();
@@ -488,6 +488,20 @@ public class Launcher implements ServiceListener, FrameworkListener {
 		BundleContext systemContext = systemBundle.getBundleContext();
 
 		systemContext.addFrameworkListener(this);
+
+		if (parms.services) { // Does not work for our dummy framework
+
+			Dictionary<String, Object> launcherServiceProperties = new Hashtable<>();
+			launcherServiceProperties.put(LauncherConstants.LAUNCHER_ARGUMENTS, args);
+			launcherServiceProperties.put(Constants.SERVICE_RANKING, -1000);
+			launcherServiceRegistraion = systemBundle.getBundleContext()
+				.registerService(new String[] {
+					Object.class.getName(), Launcher.class.getName()
+				}, this, launcherServiceProperties);
+			trace("registered launcher with arguments for syncing");
+		} else {
+			trace("requested to register no services");
+		}
 
 		startLevelhandler.beforeStart(systemBundle);
 
