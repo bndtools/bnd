@@ -20,11 +20,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -41,6 +40,106 @@ import org.opentest4j.AssertionFailedError;
 import org.opentest4j.MultipleFailuresError;
 
 public class JUnitEclipseListener implements TestExecutionListener, Closeable {
+
+	static final Predicate<Throwable>	JUNIT3_COMPARISON_FAILURE;
+	static final Predicate<Throwable>	JUNIT4_COMPARISON_FAILURE;
+	static final Predicate<Throwable>	ASSERTION_FAILED_ERROR;
+	static final Predicate<Throwable>	MULTIPLE_FAILURES_ERROR;
+
+	@SuppressWarnings("unchecked")
+	static Predicate<Throwable> tryLoad(String name) {
+		try {
+			return Class.forName(name)::isInstance;
+		} catch (ClassNotFoundException cnfe) {
+			return x -> false;
+		}
+	}
+
+	static {
+		JUNIT3_COMPARISON_FAILURE = tryLoad("junit.framework.ComparisonFailure");
+		JUNIT4_COMPARISON_FAILURE = tryLoad("org.junit.ComparisonFailure");
+		ASSERTION_FAILED_ERROR = tryLoad("org.opentest4j.AssertionFailedError");
+		MULTIPLE_FAILURES_ERROR = tryLoad("org.opentest4j.MultipleFailuresError");
+	}
+
+	static class ExpectedActualBuilder implements Predicate<Throwable> {
+
+		StringBuilder	expectedBuilder	= new StringBuilder();
+		StringBuilder	actualBuilder	= new StringBuilder();
+		boolean			first			= true;
+
+		void addExpectedActual(String expected, String actual) {
+			if (first) {
+				first = false;
+			} else {
+				expectedBuilder.append("\n\n");
+				actualBuilder.append("\n\n");
+			}
+			expectedBuilder.append(expected);
+			actualBuilder.append(actual);
+		}
+
+		@Override
+		public boolean test(Throwable exception) {
+			// NOTE:
+			// The code in this method is carefully structured to avoid
+			// NoClassDefFoundError. The null test for each if first
+			// confirms that the class is available before proceeding into
+			// the block, so that by that stage it knows that the class
+			// is available and that NCDFE will not be thrown. On the other
+			// hand, if the class is not on the classpath then the code
+			// will never be executed and the thread context classloader
+			// will not attempt to load the class, so again no NCDFE.
+			//
+			// This is particularly important for the JUnit 3/4 comparison
+			// failure assertions, because the OpenTest4J ones will be on the
+			// classpath courtesy of junit-platform-launcher's dependencies.
+			if (ASSERTION_FAILED_ERROR.test(exception)) {
+				AssertionFailedError assertionFailedError = (AssertionFailedError) exception;
+				if (assertionFailedError.isExpectedDefined() && assertionFailedError.isActualDefined()) {
+					addExpectedActual(assertionFailedError.getExpected()
+						.getStringRepresentation(),
+						assertionFailedError.getActual()
+						.getStringRepresentation());
+					return true;
+				}
+				return false;
+			} else if (JUNIT4_COMPARISON_FAILURE.test(exception)) {
+				ComparisonFailure comparisonFailure = (ComparisonFailure) exception;
+				String expected = comparisonFailure.getExpected();
+				String actual = comparisonFailure.getActual();
+				if ((expected != null) && (actual != null)) {
+					addExpectedActual(expected, actual);
+					return true;
+				}
+				return false;
+			} else if (JUNIT3_COMPARISON_FAILURE.test(exception)) {
+				junit.framework.ComparisonFailure comparisonFailure = (junit.framework.ComparisonFailure) exception;
+				String expected = comparisonFailure.getExpected();
+				String actual = comparisonFailure.getActual();
+				if ((expected != null) && (actual != null)) {
+					addExpectedActual(expected, actual);
+					return true;
+				}
+				return false;
+			} else if (MULTIPLE_FAILURES_ERROR.test(exception)) {
+				List<Throwable> failures = ((MultipleFailuresError) exception).getFailures();
+				return failures.stream()
+					.filter(this)
+					.count() > 0;
+			}
+			return false;
+		}
+
+		public CharSequence getExpected() {
+			return expectedBuilder;
+		}
+
+		public CharSequence getActual() {
+			return actualBuilder;
+		}
+	}
+
 	@Override
 	public void dynamicTestRegistered(TestIdentifier testIdentifier) {
 		info("JUnitEclipseListener: dynamicTestRegistered: %s", testIdentifier);
@@ -237,7 +336,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		message("%TRACEE ");
 	}
 
-	private void sendExpectedAndActual(String expected, String actual) {
+	private void sendExpectedAndActual(CharSequence expected, CharSequence actual) {
 		message("%EXPECTS");
 		client.out.println(expected);
 		info(expected);
@@ -291,75 +390,10 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 		}
 	}
 
-	private boolean sendExpectedAndActual(Throwable exception, StringJoiner expectedJoiner, StringJoiner actualJoiner) {
-		BooleanSupplier action;
-		// NOTE:
-		// 1. switch is based on the class name rather than using instanceof
-		// or class literals, to avoid hard dependency on the assertion types.
-		// 2. the individual case blocks are lambdas rather than inlined code -
-		// this too is done on purpose to make sure that JUnitEclipseListener
-		// doesn't have a hard dependency on any of the assertion classes (the
-		// JUnit 3/4 comparison failure assertions in particular).
-		switch (exception.getClass()
-			.getName()) {
-			case "org.opentest4j.AssertionFailedError" :
-				action = () -> {
-					AssertionFailedError assertionFailedError = (AssertionFailedError) exception;
-					if (assertionFailedError.isExpectedDefined() && assertionFailedError.isActualDefined()) {
-						expectedJoiner.add(assertionFailedError.getExpected()
-							.getStringRepresentation());
-						actualJoiner.add(assertionFailedError.getActual()
-							.getStringRepresentation());
-						return true;
-					}
-					return false;
-				};
-				break;
-			case "org.junit.ComparisonFailure" :
-				action = () -> {
-					ComparisonFailure comparisonFailure = (ComparisonFailure) exception;
-					String expected = comparisonFailure.getExpected();
-					String actual = comparisonFailure.getActual();
-					if ((expected != null) && (actual != null)) {
-						expectedJoiner.add(expected);
-						actualJoiner.add(actual);
-						return true;
-					}
-					return false;
-				};
-				break;
-			case "junit.framework.ComparisonFailure" :
-				action = () -> {
-					junit.framework.ComparisonFailure comparisonFailure = (junit.framework.ComparisonFailure) exception;
-					String expected = comparisonFailure.getExpected();
-					String actual = comparisonFailure.getActual();
-					if ((expected != null) && (actual != null)) {
-						expectedJoiner.add(expected);
-						actualJoiner.add(actual);
-						return true;
-					}
-					return false;
-				};
-				break;
-			case "org.opentest4j.MultipleFailuresError" :
-				action = () -> {
-					List<Throwable> failures = ((MultipleFailuresError) exception).getFailures();
-					return failures.stream()
-						.filter(failure -> sendExpectedAndActual(failure, expectedJoiner, actualJoiner))
-						.count() > 0;
-				};
-				break;
-			default :
-				return false;
-		}
-		return action.getAsBoolean();
-	}
-
 	private void sendExpectedAndActual(Throwable exception) {
-		StringJoiner expected = new StringJoiner("\n\n");
-		StringJoiner actual = new StringJoiner("\n\n");
-		if (sendExpectedAndActual(exception, expected, actual)) {
-			sendExpectedAndActual(expected.toString(), actual.toString());
+		ExpectedActualBuilder eab = new ExpectedActualBuilder();
+		if (eab.test(exception)) {
+			sendExpectedAndActual(eab.getExpected(), eab.getActual());
 		}
 	}
 
