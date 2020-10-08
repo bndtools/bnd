@@ -749,12 +749,6 @@ public class BndrunResolveContextTest extends TestCase {
 			.findProviders(CapReqBuilder.createPackageRequirement("org.osgi.framework", null)
 				.buildSyntheticRequirement());
 		assertEquals(0, providers1.size());
-
-		context = new BndrunResolveContext(runModel, registry, log);
-		List<Capability> providers2 = context
-			.findProviders(CapReqBuilder.createPackageRequirement("java.security", null)
-				.buildSyntheticRequirement());
-		assertEquals(0, providers2.size());
 	}
 
 	public void testResolveSystemBundleAlias() throws Exception {
