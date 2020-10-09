@@ -33,6 +33,7 @@ import aQute.lib.io.IO;
 import aQute.lib.io.NonClosingInputStream;
 import aQute.lib.strings.Strings;
 import aQute.lib.zip.ZipUtil;
+import aQute.libg.uri.URIUtil;
 
 /**
  * Implements the URI
@@ -283,7 +284,7 @@ public class JarFileSystem extends FileSystem {
 				path = "/";
 			else if (!path.startsWith("/"))
 				path = "/".concat(path);
-			return Result.ok(new URI("jarf:///" + jarfileuri.toString() + "!" + path));
+			return Result.ok(new URI("jarf:///" + jarfileuri.toString() + "!" + URIUtil.encodePath(path)));
 		} catch (Exception e) {
 			return Result.err("failed to construct uri from jar uri=%sm path = %s: %s", jarfileuri, path, e);
 		}

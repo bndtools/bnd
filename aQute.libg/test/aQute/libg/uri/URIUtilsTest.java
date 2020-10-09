@@ -176,4 +176,35 @@ public class URIUtilsTest {
 			.isEqualTo(Optional.ofNullable(ePath));
 	}
 
+	@Test
+	public void encodePath(SoftAssertions softly) {
+		softly.assertThat(URIUtil.encodePath("/"))
+			.isEqualTo("/");
+		softly.assertThat(URIUtil.encodePath("/%"))
+			.isEqualTo("/%25");
+		softly.assertThat(URIUtil.encodePath(""))
+			.isEqualTo("");
+		softly.assertThat(URIUtil.encodePath("/frontend/bower_components/vaadin-lumo-styles/icons/Lumo Icons.sketch"))
+			.isEqualTo("/frontend/bower_components/vaadin-lumo-styles/icons/Lumo%20Icons.sketch");
+		softly.assertThat(URIUtil.encodePath(
+			"/var/home/stbischof/dev/git/base-starter-flow-osgi/target/project-base-osgi-1.0-SNAPSHOT.jar!/frontend/bower_components/vaadin-lumo-styles/icons/Lumo Icons.sketch"))
+			.isEqualTo(
+				"/var/home/stbischof/dev/git/base-starter-flow-osgi/target/project-base-osgi-1.0-SNAPSHOT.jar!/frontend/bower_components/vaadin-lumo-styles/icons/Lumo%20Icons.sketch");
+	}
+
+	@Test
+	public void decode(SoftAssertions softly) {
+		softly.assertThat(URIUtil.decode("/"))
+			.isEqualTo("/");
+		softly.assertThat(URIUtil.decode("/%25"))
+			.isEqualTo("/%");
+		softly.assertThat(URIUtil.decode(""))
+			.isEqualTo("");
+		softly.assertThat(URIUtil.decode("/frontend/bower_components/vaadin-lumo-styles/icons/Lumo%20Icons.sketch"))
+			.isEqualTo("/frontend/bower_components/vaadin-lumo-styles/icons/Lumo Icons.sketch");
+		softly.assertThat(URIUtil.decode(
+			"/var/home/stbischof/dev/git/base-starter-flow-osgi/target/project-base-osgi-1.0-SNAPSHOT.jar!/frontend/bower_components/vaadin-lumo-styles/icons/Lumo%20Icons.sketch"))
+			.isEqualTo(
+				"/var/home/stbischof/dev/git/base-starter-flow-osgi/target/project-base-osgi-1.0-SNAPSHOT.jar!/frontend/bower_components/vaadin-lumo-styles/icons/Lumo Icons.sketch");
+	}
 }
