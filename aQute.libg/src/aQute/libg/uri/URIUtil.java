@@ -1,5 +1,7 @@
 package aQute.libg.uri;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -179,4 +181,80 @@ public final class URIUtil {
 		}
 		return -1;
 	}
+
+	public static String encodePath(String path) {
+		if ((path == null) || path.isEmpty()) {
+			return path;
+		}
+		byte[] bytes = path.getBytes(UTF_8);
+		final int length = bytes.length;
+		byte[] encoded = new byte[length * 3];
+		int i = 0;
+		for (byte b : bytes) {
+			if (isPathAllowed(b)) {
+				encoded[i++] = b;
+			} else {
+				encoded[i++] = '%';
+				encoded[i++] = (byte) Character.forDigit((b >> 4) & 0xF, 16);
+				encoded[i++] = (byte) Character.forDigit(b & 0xF, 16);
+			}
+		}
+		if (i > length) {
+			return new String(encoded, 0, i, UTF_8);
+		}
+		return path;
+	}
+
+	static boolean isPathAllowed(int b) {
+		switch (b) {
+			case '/' : // path_segments
+			case ';' : // segment
+			case ':' : // pchar
+			case '@' :
+			case '&' :
+			case '=' :
+			case '+' :
+			case '$' :
+			case ',' :
+			case '-' : // mark
+			case '_' :
+			case '.' :
+			case '!' :
+			case '~' :
+			case '*' :
+			case '\'' :
+			case '(' :
+			case ')' :
+				return true;
+			default :
+				return isAlphanum(b);
+		}
+	}
+
+	static boolean isAlphanum(int b) {
+		return (b >= '0' && b <= '9') || (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z');
+	}
+
+	public static String decode(String source) {
+		if ((source == null) || source.isEmpty()) {
+			return source;
+		}
+		final int length = source.length();
+		byte[] decoded = new byte[length];
+		int i = 0;
+		for (int j = 0; j < length; j++) {
+			int c = source.charAt(j);
+			if (c == '%') {
+				decoded[i++] = (byte) ((Character.digit(source.charAt(++j), 16) << 4)
+					| Character.digit(source.charAt(++j), 16));
+			} else {
+				decoded[i++] = (byte) c;
+			}
+		}
+		if (i < length) {
+			return new String(decoded, 0, i, UTF_8);
+		}
+		return source;
+	}
+
 }
