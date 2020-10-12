@@ -60,6 +60,14 @@ Bundle-Developers: \
         organization="IBM"; \
         organizationUrl="https://developer.ibm.com"; \
         roles="developer"; \
+        timezone="America/New_York", \
+    rotty3000; \
+        name="Ray Augé"; \
+        email="raymond.auge@liferay.com"; \
+        url="https://rotty3000.github.io"; \
+        organization="Liferay Inc."; \
+        organizationUrl="https://www.liferay.com"; \
+        roles="developer"; \
         timezone="America/New_York"
 
 -make:                  (*).(jar);type=bnd; recipe="bnd/$1.bnd"
