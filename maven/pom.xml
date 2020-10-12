@@ -15,8 +15,10 @@
 		<revision>5.3.0-SNAPSHOT</revision>
 		<project.build.outputTimestamp>1980-02-01T00:00:00Z</project.build.outputTimestamp>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven.compiler.source>1.8</maven.compiler.source>
+		<java.version>1.8</java.version>
+		<java.release>8</java.release>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<!-- The following versions must match those in cnf/ext/maven-plugin.bnd -->
 		<maven.target.version>3.1.1</maven.target.version>
 		<aether.version>0.9.0.M2</aether.version>
@@ -209,8 +211,11 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.8.1</version>
 					<configuration>
-						<source>${maven.compiler.source}</source>
-						<target>${maven.compiler.target}</target>
+						<showWarnings>true</showWarnings>
+						<showDeprecation>true</showDeprecation>
+						<compilerArgs>
+							<arg>-Xlint:unchecked</arg>
+						</compilerArgs>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -292,9 +297,8 @@
 						</execution>
 					</executions>
 					<configuration>
-						<detectJavaApiLink>
-							false
-						</detectJavaApiLink>
+						<detectJavaApiLink>false</detectJavaApiLink>
+						<doclint>none</doclint>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -488,6 +492,15 @@
 	</build>
 
 	<profiles>
+		<profile>
+			<id>java-release</id>
+			<activation>
+				<jdk>[9,)</jdk>
+			</activation>
+			<properties>
+				<maven.compiler.release>${java.release}</maven.compiler.release>
+			</properties>
+		</profile>
 		<profile>
 			<id>dist</id>
 			<distributionManagement>
