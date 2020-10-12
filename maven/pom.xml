@@ -60,6 +60,30 @@
 			<id>timothyjward</id>
 			<email>timothyjward@apache.org</email>
 		</developer>
+		<developer>
+			<id>rotty3000</id>
+			<name>Ray Augé</name>
+			<email>raymond.auge@liferay.com</email>
+			<url>https://rotty3000.github.io</url>
+			<organization>Liferay Inc.</organization>
+			<organizationUrl>https://www.liferay.com</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>America/New_York</timezone>
+		</developer>
+		<developer>
+			<id>bjhargrave</id>
+			<name>BJ Hargrave</name>
+			<email>hargrave@us.ibm.com</email>
+			<url>https://github.com/bjhargrave</url>
+			<organization>IBM</organization>
+			<organizationUrl>https://developer.ibm.com</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>America/New_York</timezone>
+		</developer>
 	</developers>
 
 	<dependencyManagement>
