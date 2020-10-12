@@ -78,3 +78,6 @@
 	org.osgi.service.event,\
 	osgi.annotation,\
 	org.eclipse.jdt.core.manipulation
+
+# Don't run testOSGi in parallel with other tasks claiming launchpad
+-noparallel: launchpad;task="testOSGi"
