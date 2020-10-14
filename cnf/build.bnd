@@ -23,7 +23,7 @@ baseline.version:       5.1.2
 # biz.aQute.bndlib:aQute.bnd.osgi.About.CURRENT needs to be kept in sync with the base.version.
 base.version:           5.2.0
 # Uncomment the following line to build the non-snapshot version.
-#-snapshot:
+-snapshot:
 Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
 # Don't baseline Bundle-Version
 -diffignore:            Bundle-Version
