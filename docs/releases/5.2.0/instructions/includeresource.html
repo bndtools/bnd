@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/5.2.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>-includeresource iclause</title>
+<meta name="generator" content="Jekyll v3.9.0" />
+<meta property="og:title" content="-includeresource iclause" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="The purpose of -includeresource is to fill the JAR with non-class resources. In general these come from the file system. For example, today it is very common to have these type of resources in src/main/resources. This pattern can easily be simulated by bnd with the -includeresource instruction. However, since in OSGi the packaging is so important the -includeresource contains a number of options to minimize files on disk and speed up things." />
+<meta property="og:description" content="The purpose of -includeresource is to fill the JAR with non-class resources. In general these come from the file system. For example, today it is very common to have these type of resources in src/main/resources. This pattern can easily be simulated by bnd with the -includeresource instruction. However, since in OSGi the packaging is so important the -includeresource contains a number of options to minimize files on disk and speed up things." />
+<script type="application/ld+json">
+{"url":"/releases/5.2.0/instructions/includeresource.html","headline":"-includeresource iclause","description":"The purpose of -includeresource is to fill the JAR with non-class resources. In general these come from the file system. For example, today it is very common to have these type of resources in src/main/resources. This pattern can easily be simulated by bnd with the -includeresource instruction. However, since in OSGi the packaging is so important the -includeresource contains a number of options to minimize files on disk and speed up things.","@type":"WebPage","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/5.2.0/"><img
+			class=menu-logo src="/releases/5.2.0/img/bnd-80x40-white.png"></a>
+			<a href="/releases/5.2.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/5.2.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/5.2.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/5.2.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/5.2.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">5.2.0</button><div class="dropdown-content"></div></div>
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/releases/5.2.0/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/875-external-plugins.html">External Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+				<h1> -includeresource iclause</h1>
+				<p>The purpose of <code class="language-plaintext highlighter-rouge">-includeresource</code> is to fill the JAR with non-class resources. In general these come from the file system. For example, today it is very common to have these type of resources in <code class="language-plaintext highlighter-rouge">src/main/resources</code>. This pattern can easily be simulated by bnd with the <code class="language-plaintext highlighter-rouge">-includeresource</code> instruction. However, since in OSGi the packaging is so important the <code class="language-plaintext highlighter-rouge">-includeresource</code> contains a number of options to minimize files on disk and speed up things.</p>
+
+<p>The syntax of the <code class="language-plaintext highlighter-rouge">-includeresource</code> has become quite complex over time:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-includeresource ::= iclause ( ',' iclause ) *
+iclause          ::= (unroll | copy) parameter*
+copy             ::= '{' process '}' | process
+process          ::= assignment | source
+assignment       ::= PATH '=' source
+source           ::= ('-')? PATH parameter*
+unroll           ::= '@' (PATH | URL) ( '!/' SELECTOR )?
+parameters       ::= 'flatten:' | 'recursive:' | 'filter:' | `-preprocessmatchers`
+</code></pre></div></div>
+
+<p>In the case of <code class="language-plaintext highlighter-rouge">assignment</code> or <code class="language-plaintext highlighter-rouge">source</code>, the PATH parameter can point to a file or directory. It is also possible to use the name.ext path of a JAR file on the classpath, that is, ignoring the directory. The <code class="language-plaintext highlighter-rouge">source</code> form will place the resource in the target JAR with only the file name, therefore without any path components. That is, including <code class="language-plaintext highlighter-rouge">src/a/b.c</code> will result in a resource <code class="language-plaintext highlighter-rouge">b.c</code> in the root of the target JAR.</p>
+
+<p>If the PATH points to a directory, the directory name itself is not used in the target JAR path. If the resource must be placed in a sub directory of the target jar, use the <code class="language-plaintext highlighter-rouge">assignment</code> form. If the file is not found, bnd will traverse the classpath to see of any entry on the classpath matches the given file name (without the directory) and use that when it matches. The <code class="language-plaintext highlighter-rouge">inline</code> requires a ZIP or JAR file, which will be completely expanded in the target JAR (except the manifest), unless followed with a file specification. The file specification can be a specific file in the jar or a directory followed by ** or *. The ** indicates recursively and the * indicates one level. If just a directory name is given, it will mean **.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">filter:</code> directive is an optional filter on the resources. This uses the same format as the instructions. Only the file name is verified against this instruction.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Include-Resource: @osgi.jar,[=\ =]
+    {LICENSE.txt},[=\ =]
+    acme/Merge.class=src/acme/Merge.class
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">-includeresources</code> instruction will be merged with all properties that starts with <code class="language-plaintext highlighter-rouge">-includeresources*</code>.</p>
+
+<h2 id="preprocessing">Preprocessing</h2>
+
+<p>A clause contained in curly braces (<code class="language-plaintext highlighter-rouge">{</code> <code class="language-plaintext highlighter-rouge">}</code>) are <em>preprocessed</em>. While copying the files are run through the macro processor with the builder providing the properties. In the workspace model, all macros of the project are then available. Well known binary resources (as decided by their extension) are ignored. You can override the extension list with the <code class="language-plaintext highlighter-rouge">-preprocessmatchers</code> instruction. This must be a a selector that takes the source file name as the input. The clause can also specify a local  <code class="language-plaintext highlighter-rouge">-preprocessmatchers</code>. This selector is <em>prepended</em> to the either the default pre process matchers or the set pre process matchers. This allows for the selection or rejection of specific files and/or extensions.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-includeresource: {src/main/resources}, {legal=contracts}
+</code></pre></div></div>
+
+<h2 id="ignoring-missing-sources">Ignoring Missing Sources</h2>
+
+<p>A <em>source</em> in the clause starting with a <code class="language-plaintext highlighter-rouge">-</code> sign will not generare an error when the source in the clause cannot be located. This is very convenient if you specify an global <code class="language-plaintext highlighter-rouge">-includeresource</code> instruction in <code class="language-plaintext highlighter-rouge">build.bnd</code>. For example, <code class="language-plaintext highlighter-rouge">-includeresource.all = -src/main/resources</code> will not complain when a project does not have a <code class="language-plaintext highlighter-rouge">src/main/resources</code> directory. Note that the minus sign must be on the <em>source</em>. E.g.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>`-includeresource.all = {foo=-bar}`, -foo.txt
+</code></pre></div></div>
+
+<h2 id="unrolling">Unrolling</h2>
+
+<p><em>Unrolling</em> is getting the content from another JAR. It is activated by starting the source with an at sign (<code class="language-plaintext highlighter-rouge">@</code>). The at sign signals that it is not the actual file that should be copied, but the contents of that file should be placed in the destination.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-includeresource    tmp=@jar/foo.jar
+</code></pre></div></div>
+
+<p>The part that follows the at sign (<code class="language-plaintext highlighter-rouge">@</code>) is either a file path or a URL. Without any extra parameters it will copy all resources except the ones in the <code class="language-plaintext highlighter-rouge">-donotcopy</code> list and the <code class="language-plaintext highlighter-rouge">META-INF/MANIFEST</code>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-includeresource    @jar/foo.jar
+</code></pre></div></div>
+
+<p>This is an ideal way to wrap a bundle since it is a full copy. After that one can add additional resources or use <code class="language-plaintext highlighter-rouge">-exportcontents</code> to export the contained packages in the normal way. In this way, bnd will calculate all imports.</p>
+
+<p>The unrolling can also be restricted with a single <em>selector</em>. The syntax for the selector must start with a <code class="language-plaintext highlighter-rouge">!/</code> marker, which is commonly used for this purpose. After the <code class="language-plaintext highlighter-rouge">!/</code> the normal selector operators and patterns can be used. For example, if we want to get just the <code class="language-plaintext highlighter-rouge">LICENSE</code> from a bundle then we can do:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-includeresource    @jar/foo.jar!/LICENSE
+</code></pre></div></div>
+
+<p>However, since selectors can also negate, it is also possible to do the reverse:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-includeresource    "@jar/foo.jar!/!LICENSE"
+</code></pre></div></div>
+
+<p>This is a single selector, it is therefore not possible to specify a chain with rejections and selections. However, also a single selector can match multiple file paths:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-includeresource    @jar/osgi.jar!/!(LICENSE|about.html|org/*)
+</code></pre></div></div>
+
+<p>Wrapping often requires access to a JAR from the repository. It is therefore common to see the unrolling feature being combined with the <code class="language-plaintext highlighter-rouge">${repo}</code> macro. The <code class="language-plaintext highlighter-rouge">${repo}</code> macro is given the Bundle Symbolic Name and an optional version range returns the path to a file from the repository.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-includeresource    @${repo;biz.aQute.bndlib}!/about.html
+</code></pre></div></div>
+
+<h2 id="literals">Literals</h2>
+
+<p>For testing purposes it is often necessary to have tiny resources in the bundle. These could of course be placed on the file system but bnd can also generate these on the fly. Since these are defined in the bnd files, the content has full access to the macros. This is done by specifying a <code class="language-plaintext highlighter-rouge">literal</code> attribute on the clause.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-includeresource    foo.txt;literal='This is some content with a macro ${sum;1,2,3}'
+</code></pre></div></div>
+
+<p>The previous example will create a resource with the given content.</p>
+
+<h2 id="flattening--recurse">Flattening &amp; Recurse</h2>
+
+<p>When a directory is specified bnd will by default recurse the source and create a similar hierarchy on the destination.</p>
+
+<p>The recursion and the hierarchy can be controlled with directives.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-includeresource    target/=hierarchy/
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">recursive:</code> directive can be used ot indicate that the source should not be recursively traversed by specifying <code class="language-plaintext highlighter-rouge">false</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-includeresource    target/=hierarchy/;recursive:=false
+</code></pre></div></div>
+
+<p>In this case, only the <code class="language-plaintext highlighter-rouge">hierarchy</code> directory itself will be copied to the <code class="language-plaintext highlighter-rouge">target</code> directory.  The <code class="language-plaintext highlighter-rouge">flatten:</code> directive indicates that if the directories are recursively searched, the output must not create any directories. That is all resources are flattened in the output directory.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-includeresource    target/=hierarchy/;flatten:=true
+</code></pre></div></div>
+
+<h2 id="sample-usages">Sample usages:</h2>
+
+<h3 id="simple-form">Simple form:</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Instruction</th>
+      <th>Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-includeresource: lib/fancylibrary-3.12.0.jar</code></td>
+      <td>Copy lib/fancylibrary-3.12.0.jar file into the root of the target JAR</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-includeresource.resources: -src/main/resources</code></td>
+      <td>Copy folder src/main/resources contents (including subdfolders) into root of the target JAR <br />The arbitrarily named suffix .resources prevents this includeresource directive to be overwritten <br />The preceding minus sign instructs to supress an error for non-existing folder src/main/resources</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-includeresource: ${workspace}/LICENSE, {readme.md}</code></td>
+      <td>Copy the LICENSE file residing in the bnd workspace folder (above the project directory) as well as the pre-processed readme.md file (allowing for e.g. variable substitution) in the project folder into the target JAR</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-includeresource: ${repo;com.acme:foo;latest}</code></td>
+      <td>Copy the com.acme.foo bundle JAR in highest version number found in the bnd workspace repository into the root of the target JAR</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="assignment-form">Assignment form:</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Instruction</th>
+      <th>Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-includeresource: images/=img/</code> or <br /><code class="language-plaintext highlighter-rouge">-includeresource: images=img</code></td>
+      <td>Copy contents of img/ folder (including subdfolders) into an images folder of the target JAR</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-includeresource: x=a/c/c.txt</code></td>
+      <td>Copy a/c/c.txt into file x in the root folder of the target JAR</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-includeresource: x/=a/c/c.txt</code></td>
+      <td>Copy a/c/c.txt into file x/c.txt in the root folder of the target JAR</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-includeresource: libraries/fancylibrary.jar=lib/fancylibrary-3.12.jar; lib:=true</code></td>
+      <td>Copy lib/fancylibrary-3.1.2.jar from project into libraries folder of the target JAR, and place it on the Bundle-Classpath (BCP). It will make sure the BCP starts with ‘.’ and then each include resource that is included will be added to the BCP</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-includeresource: lib/; lib:=true</code></td>
+      <td>Copy every JAR file underneath lib in a relative position under the root folder of the target JAR, and add each library to the bundle classpath</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-includeresource: acme-foo-snap.jar=${repo;com.acme:foo;snapshot}</code></td>
+      <td>Copy the highest snapshot version of com.acme.foo found in the bnd workspace repository as acme-foo-snap.jar into the root of the target JAR</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-includeresource: foo.txt;literal='foo bar'</code></td>
+      <td>Create a file named foo.txt containing the string literal “foo bar” in the root folder of the target JAR</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-includeresource: bsn.txt;literal='${bsn}'</code></td>
+      <td>Create a file named bsn.txt containing the bundle symbolic name (bsn) of this project in the root folder of the target JAR</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-includeresource: libraries/=lib/;filter:=fancylibrary-*.jar;recursive:=false;lib:=true</code> or <br /><code class="language-plaintext highlighter-rouge">-includeresource: libraries/=lib/fancylibrary-*.jar;lib:=true</code> (as of bndtools 4.2)</td>
+      <td>Copy a wildcarded library from lib/ into libraries and add it to the bundle classpath</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="inline-form">Inline form:</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Instruction</th>
+      <th>Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-includeresource: @lib/fancylibrary-3.12.jar!/*</code></td>
+      <td>Extract the contents of lib/fancylibrary-3.12.jar into the root folder of the target JAR, preserving relative paths</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-includeresource: @${repo;com.acme.foo;latest}!/!META-INF/*</code></td>
+      <td>Extract the contents of the highest found com.acme.foo version in the bnd workspace repository into the root folder of the target JAR, preserving relative paths, excluding the META-INF/ folder</td>
+    </tr>
+  </tbody>
+</table>
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/releases/5.2.0/instructions/includepackage.html'></a> <a href='/releases/5.2.0/instructions/invalidfilenames.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/5.2.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>
