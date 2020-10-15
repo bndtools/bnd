@@ -4,7 +4,7 @@
 // ../gradlew --no-daemon --settings-file publishsettings.gradle displayArtifacts publishPlugins
 
 plugins {
-  id 'com.gradle.plugin-publish' version '0.11.0'
+  id 'com.gradle.plugin-publish' version '0.12.0'
   id 'java'
   id 'java-gradle-plugin'
   id 'maven-publish'
@@ -12,7 +12,7 @@ plugins {
 
 ext.groupId = 'biz.aQute.bnd'
 ext.artifactId = 'biz.aQute.bnd.gradle'
-ext.artifactVersion = '5.1.2'
+ext.artifactVersion = '5.2.0'
 
 repositories {
   mavenCentral()
