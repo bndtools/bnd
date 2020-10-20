@@ -185,8 +185,7 @@ public class ResourceUtils {
 			.stream();
 	}
 
-	public static <T extends Capability> Stream<T> capabilityStream(Resource resource,
-		String namespace,
+	public static <T extends Capability> Stream<T> capabilityStream(Resource resource, String namespace,
 		Class<T> type) {
 		return capabilityStream(resource, namespace).map(c -> as(c, type));
 	}

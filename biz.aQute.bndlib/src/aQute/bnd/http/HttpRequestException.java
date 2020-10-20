@@ -42,7 +42,7 @@ public class HttpRequestException extends RuntimeException {
 				if (in != null) {
 					String error = IO.collect(in);
 					message.append(':')
-					.append(error);
+						.append(error);
 				}
 			} catch (Exception e) {
 				// Ignore

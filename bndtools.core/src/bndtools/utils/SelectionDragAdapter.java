@@ -19,7 +19,7 @@ public class SelectionDragAdapter implements DragSourceListener {
 	private final LocalSelectionTransfer	selectionTransfer	= LocalSelectionTransfer.getTransfer();
 	private final TextTransfer				textTransfer		= TextTransfer.getInstance();
 
-	private final Viewer viewer;
+	private final Viewer					viewer;
 
 	public SelectionDragAdapter(Viewer viewer) {
 		this.viewer = viewer;

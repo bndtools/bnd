@@ -17,7 +17,7 @@ import org.osgi.resource.Wire;
 
 class BundleWiringImpl implements BundleWiring {
 	private final Bundle		bundle;
-	private final ClassLoader		classLoader;
+	private final ClassLoader	classLoader;
 
 	BundleWiringImpl(Bundle bundle, ClassLoader classLoader) {
 		this.bundle = bundle;

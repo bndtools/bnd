@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
@@ -60,11 +61,9 @@ public class JSONTest extends TestCase {
 			if (getClass() != obj.getClass())
 				return false;
 			Version other = (Version) obj;
-			if (string == null) {
-				if (other.string != null)
-					return false;
-			} else if (!string.equals(other.string))
+			if (!Objects.equals(string, other.string)) {
 				return false;
+			}
 			return true;
 		}
 
@@ -791,7 +790,7 @@ public class JSONTest extends TestCase {
 		data1.d = 3.0d;
 		data1.f = 3.0f;
 		data1.i = 1;
-		data1.l = 2l;
+		data1.l = 2L;
 		data1.s = "abc";
 		data1.sh = -10;
 
@@ -810,7 +809,7 @@ public class JSONTest extends TestCase {
 		data1.d = 3.0d;
 		data1.f = 3.0f;
 		data1.i = 1;
-		data1.l = 2l;
+		data1.l = 2L;
 		data1.s = "abc";
 		data1.sh = -10;
 		data1.map = new HashMap<>();
@@ -834,7 +833,7 @@ public class JSONTest extends TestCase {
 		assertEquals(3.0d, d.d);
 		assertEquals(3.0f, d.f);
 		assertEquals(1, d.i);
-		assertEquals(2l, d.l);
+		assertEquals(2L, d.l);
 		assertEquals("abc", d.s);
 		assertEquals(-10, d.sh);
 	}
@@ -850,7 +849,7 @@ public class JSONTest extends TestCase {
 		assertEquals(3.0d, d.d);
 		assertEquals(3.0f, d.f);
 		assertEquals((Integer) 1, d.i);
-		assertEquals((Long) 2l, d.l);
+		assertEquals((Long) 2L, d.l);
 		assertEquals("abc", d.s);
 		assertEquals((Short) (short) -10, d.sh);
 

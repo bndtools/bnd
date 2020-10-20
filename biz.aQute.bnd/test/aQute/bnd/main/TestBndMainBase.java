@@ -62,14 +62,14 @@ public class TestBndMainBase {
 	/* Folder based helper */
 	protected void initTestData(final String subdir) throws IOException {
 		folder.copyDataFrom(Paths.get(TESTDATA_BASE_DIR, subdir))
-			.snapshot(DEFAULT_SNAPSHOT_FUNC, 1000l);
+			.snapshot(DEFAULT_SNAPSHOT_FUNC, 1000L);
 		// delay after snapshot to correctly reflect file-modifications based on
 		// timestampchanges
 	}
 
 	protected void initTestDataAll() throws IOException {
 		folder.copyDataFrom(Paths.get("", TESTDATA_BASE_DIR))
-			.snapshot(DEFAULT_SNAPSHOT_FUNC, 1000l);
+			.snapshot(DEFAULT_SNAPSHOT_FUNC, 1000L);
 		// delay after snapshot to correctly reflect file-modifications based on
 		// timestampchanges
 	}

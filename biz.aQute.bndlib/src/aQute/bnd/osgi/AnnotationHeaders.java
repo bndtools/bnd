@@ -98,9 +98,10 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		});
 	}
 
-	private static final Instruction	ANNOTATION_INSTRUCTION	= new Instruction("java.lang.annotation.Annotation");
+	private static final Instruction	ANNOTATION_INSTRUCTION		= new Instruction(
+		"java.lang.annotation.Annotation");
 
-	static final Pattern				SIMPLE_PARAM_PATTERN	= Pattern
+	static final Pattern				SIMPLE_PARAM_PATTERN		= Pattern
 		.compile("\\$\\{(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\}");
 
 	// Annotations to ignore scanning further because they are known to be
@@ -114,48 +115,48 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		"org.osgi.annotation.versioning.ProviderType", "org.osgi.annotation.versioning.ConsumerType",
 		"org.osgi.annotation.versioning.Version");
 
-	final Analyzer					analyzer;
-	final MultiMap<String, String>	headers						= new MultiMap<>();
+	final Analyzer						analyzer;
+	final MultiMap<String, String>		headers						= new MultiMap<>();
 
 	//
 	// Constant Strings for a fast switch statement
 	//
 
-	static final String				CARDINALITY					= "aQute.bnd.annotation.Cardinality";
-	static final String				RESOLUTION					= "aQute.bnd.annotation.Resolution";
-	static final String				BUNDLE_LICENSE				= "aQute.bnd.annotation.headers.BundleLicense";
-	static final String				REQUIRE_CAPABILITY			= "aQute.bnd.annotation.headers.RequireCapability";
-	static final String				PROVIDE_CAPABILITY			= "aQute.bnd.annotation.headers.ProvideCapability";
-	static final String				BUNDLE_CATEGORY				= "aQute.bnd.annotation.headers.BundleCategory";
-	static final String				BUNDLE_DOC_URL				= "aQute.bnd.annotation.headers.BundleDocURL";
-	static final String				BUNDLE_DEVELOPERS			= "aQute.bnd.annotation.headers.BundleDevelopers";
-	static final String				BUNDLE_CONTRIBUTORS			= "aQute.bnd.annotation.headers.BundleContributors";
-	static final String				BUNDLE_COPYRIGHT			= "aQute.bnd.annotation.headers.BundleCopyright";
-	static final String				STD_REQUIREMENT				= "org.osgi.annotation.bundle.Requirement";
-	static final String				STD_REQUIREMENT_CARDINALITY	= "org.osgi.annotation.bundle.Requirement$Cardinality";
-	static final String				STD_REQUIREMENT_RESOLUTION	= "org.osgi.annotation.bundle.Requirement$Resolution";
-	static final String				STD_REQUIREMENTS			= "org.osgi.annotation.bundle.Requirements";
-	static final String				STD_CAPABILITY				= "org.osgi.annotation.bundle.Capability";
-	static final String				STD_CAPABILITIES			= "org.osgi.annotation.bundle.Capabilities";
-	static final String				STD_HEADER					= "org.osgi.annotation.bundle.Header";
-	static final String				STD_HEADERS					= "org.osgi.annotation.bundle.Headers";
+	static final String					CARDINALITY					= "aQute.bnd.annotation.Cardinality";
+	static final String					RESOLUTION					= "aQute.bnd.annotation.Resolution";
+	static final String					BUNDLE_LICENSE				= "aQute.bnd.annotation.headers.BundleLicense";
+	static final String					REQUIRE_CAPABILITY			= "aQute.bnd.annotation.headers.RequireCapability";
+	static final String					PROVIDE_CAPABILITY			= "aQute.bnd.annotation.headers.ProvideCapability";
+	static final String					BUNDLE_CATEGORY				= "aQute.bnd.annotation.headers.BundleCategory";
+	static final String					BUNDLE_DOC_URL				= "aQute.bnd.annotation.headers.BundleDocURL";
+	static final String					BUNDLE_DEVELOPERS			= "aQute.bnd.annotation.headers.BundleDevelopers";
+	static final String					BUNDLE_CONTRIBUTORS			= "aQute.bnd.annotation.headers.BundleContributors";
+	static final String					BUNDLE_COPYRIGHT			= "aQute.bnd.annotation.headers.BundleCopyright";
+	static final String					STD_REQUIREMENT				= "org.osgi.annotation.bundle.Requirement";
+	static final String					STD_REQUIREMENT_CARDINALITY	= "org.osgi.annotation.bundle.Requirement$Cardinality";
+	static final String					STD_REQUIREMENT_RESOLUTION	= "org.osgi.annotation.bundle.Requirement$Resolution";
+	static final String					STD_REQUIREMENTS			= "org.osgi.annotation.bundle.Requirements";
+	static final String					STD_CAPABILITY				= "org.osgi.annotation.bundle.Capability";
+	static final String					STD_CAPABILITIES			= "org.osgi.annotation.bundle.Capabilities";
+	static final String					STD_HEADER					= "org.osgi.annotation.bundle.Header";
+	static final String					STD_HEADERS					= "org.osgi.annotation.bundle.Headers";
 
 	// Used to detect attributes and directives on Require-Capability and
 	// Provide-Capability
-	static final String				STD_ATTRIBUTE				= "org.osgi.annotation.bundle.Attribute";
-	static final String				STD_DIRECTIVE				= "org.osgi.annotation.bundle.Directive";
+	static final String					STD_ATTRIBUTE				= "org.osgi.annotation.bundle.Attribute";
+	static final String					STD_DIRECTIVE				= "org.osgi.annotation.bundle.Directive";
 
 	// Class we're currently processing
-	Clazz							current;
+	Clazz								current;
 
 	// The annotations we could not load. used to avoid repeatedly logging the
 	// same missing annotation for the same project. Note that this should not
 	// be reset for each #classStart(Clazz).
-	final Set<String>				loggedMissing				= new HashSet<>();
-	final Instructions				instructions;
+	final Set<String>					loggedMissing				= new HashSet<>();
+	final Instructions					instructions;
 
 	// we parse the annotations separately at the end
-	boolean							finalizing;
+	boolean								finalizing;
 
 	static String convert(Object value) {
 		try {
@@ -408,8 +409,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				case STD_CAPABILITIES :
 				case STD_REQUIREMENTS :
 					Object[] annotations = a.get("value");
-					for (int i = 0; i < annotations.length; i++) {
-						mergeAttributesAndDirectives((Annotation) annotations[i]);
+					for (Object anno : annotations) {
+						mergeAttributesAndDirectives((Annotation) anno);
 					}
 					break;
 				default :

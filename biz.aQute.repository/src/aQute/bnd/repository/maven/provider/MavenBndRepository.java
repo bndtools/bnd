@@ -754,19 +754,17 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 							.size());
 						f.format("Storage                      : %s\n", localRepo);
 						f.format("Index                        : %s\n", index.indexFile);
-						f.format("Release repos                : \n    %s\n",
-							storage.getReleaseRepositories()
-								.stream()
-								.filter(Objects::nonNull)
-								.map(Object::toString)
-								.collect(Collectors.joining("\n    ")));
+						f.format("Release repos                : \n    %s\n", storage.getReleaseRepositories()
+							.stream()
+							.filter(Objects::nonNull)
+							.map(Object::toString)
+							.collect(Collectors.joining("\n    ")));
 
-						f.format("Snapshot repos               : \n    %s\n",
-							storage.getSnapshotRepositories()
-								.stream()
-								.filter(Objects::nonNull)
-								.map(Object::toString)
-								.collect(Collectors.joining("\n    ")));
+						f.format("Snapshot repos               : \n    %s\n", storage.getSnapshotRepositories()
+							.stream()
+							.filter(Objects::nonNull)
+							.map(Object::toString)
+							.collect(Collectors.joining("\n    ")));
 					}
 					return f.toString();
 				}

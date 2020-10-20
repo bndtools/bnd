@@ -78,8 +78,8 @@ public class BndScanner extends RuleBasedScanner {
 		}
 
 		private void addWords(String[] words, IToken token) {
-			for (int i = 0; i < words.length; ++i) {
-				keyWords.put(words[i], token);
+			for (String word : words) {
+				keyWords.put(word, token);
 			}
 		}
 	}

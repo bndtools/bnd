@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -62,10 +61,10 @@ public class SpringComponent implements AnalyzerPlugin {
 				line = line.trim();
 				if (line.length() > 0) {
 					String parts[] = line.split("\\s*,\\s*");
-					for (int i = 0; i < parts.length; i++) {
-						int n = parts[i].lastIndexOf('.');
+					for (String part : parts) {
+						int n = part.lastIndexOf('.');
 						if (n > 0) {
-							refers.add(parts[i].subSequence(0, n));
+							refers.add(part.subSequence(0, n));
 						}
 					}
 				}
@@ -83,20 +82,18 @@ public class SpringComponent implements AnalyzerPlugin {
 		if (dir == null || dir.isEmpty())
 			return false;
 
-		for (Iterator<Entry<String, Resource>> i = dir.entrySet()
-			.iterator(); i.hasNext();) {
-			Entry<String, Resource> entry = i.next();
+		for (Entry<String, Resource> entry : dir.entrySet()) {
 			String path = entry.getKey();
 			Resource resource = entry.getValue();
 			if (SPRING_SOURCE.matcher(path)
 				.matches()) {
 				try {
-					Set<CharSequence> set;
+					Set<CharSequence> refers;
 					try (InputStream in = resource.openInputStream()) {
-						set = analyze(in);
+						refers = analyze(in);
 					}
-					for (Iterator<CharSequence> r = set.iterator(); r.hasNext();) {
-						PackageRef pack = analyzer.getPackageRef((String) r.next());
+					for (CharSequence refer : refers) {
+						PackageRef pack = analyzer.getPackageRef(refer.toString());
 						if (!QN.matcher(pack.getFQN())
 							.matches())
 							analyzer.warning("Package does not seem a package in spring resource (%s): %s", path, pack);

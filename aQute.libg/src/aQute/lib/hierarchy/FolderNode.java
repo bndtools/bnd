@@ -13,6 +13,7 @@ public interface FolderNode extends NamedNode, Iterable<NamedNode> {
 	default Stream<NamedNode> stream() {
 		return Stream.of(children());
 	}
+
 	int size();
 
 	Optional<NamedNode> get(String name);

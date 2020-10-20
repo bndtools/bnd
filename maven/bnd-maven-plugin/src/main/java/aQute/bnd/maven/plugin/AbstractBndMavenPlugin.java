@@ -74,34 +74,34 @@ import aQute.service.reporter.Report.Location;
 
 public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	protected final Logger	logger					= LoggerFactory.getLogger(getClass());
-	static final String						MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
-	static final String						MARKED_FILES			= "aQute.bnd.maven.plugin.BndMavenPlugin.markedFiles";
-	static final String						PACKAGING_JAR			= "jar";
-	static final String						PACKAGING_WAR			= "war";
-	static final String						TSTAMP					= "${tstamp}";
+	static final String		MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
+	static final String		MARKED_FILES			= "aQute.bnd.maven.plugin.BndMavenPlugin.markedFiles";
+	static final String		PACKAGING_JAR			= "jar";
+	static final String		PACKAGING_WAR			= "war";
+	static final String		TSTAMP					= "${tstamp}";
 	static final String		SNAPSHOT				= "SNAPSHOT";
 	static final String		OUTPUT_TIMESTAMP		= "project.build.outputTimestamp";
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
-	File									targetDir;
+	File					targetDir;
 
 	@Parameter(defaultValue = "true")
-	boolean									includeClassesDir;
+	boolean					includeClassesDir;
 
 	@Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}")
-	File									warOutputDir;
+	File					warOutputDir;
 
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
-	MavenProject							project;
+	MavenProject			project;
 
 	@Parameter(defaultValue = "${settings}", readonly = true)
-	Settings								settings;
+	Settings				settings;
 
 	@Parameter(defaultValue = "${mojoExecution}", readonly = true)
-	MojoExecution							mojoExecution;
+	MojoExecution			mojoExecution;
 
 	@Parameter(property = "bnd.packagingTypes", defaultValue = PACKAGING_JAR + "," + PACKAGING_WAR)
-	List<String>							packagingTypes;
+	List<String>			packagingTypes;
 
 	/**
 	 * File path to a bnd file containing bnd instructions for this project.
@@ -114,7 +114,7 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	@Parameter(defaultValue = Project.BNDFILE)
 	// This is not used and is for doc only; see loadProjectProperties
 	@SuppressWarnings("unused")
-	String									bndfile;
+	String					bndfile;
 
 	/**
 	 * Bnd instructions for this project specified directly in the pom file.
@@ -128,12 +128,12 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	@Parameter
 	// This is not used and is for doc only; see loadProjectProperties
 	@SuppressWarnings("unused")
-	String									bnd;
+	String					bnd;
 
 	@Component
-	BuildContext							buildContext;
+	BuildContext			buildContext;
 
-	File									propertiesFile;
+	File					propertiesFile;
 
 	public abstract File getSourceDir();
 

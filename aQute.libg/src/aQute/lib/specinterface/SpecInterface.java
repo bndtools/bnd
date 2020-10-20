@@ -169,9 +169,9 @@ public class SpecInterface<T> {
 			Converter c = new Converter();
 			if (base != null)
 				c.setBase(base);
-			return new SpecInterface<T>(c.convert(specification, values));
+			return new SpecInterface<>(c.convert(specification, values));
 		} catch (IllegalArgumentException e) {
-			return new SpecInterface<T>(e);
+			return new SpecInterface<>(e);
 		}
 	}
 

@@ -140,8 +140,7 @@ public interface Attribute {
 	static int attributes_length(Attribute[] attributes) {
 		int attribute_length = 1 * Short.BYTES;
 		for (Attribute attribute : attributes) {
-			attribute_length += 1 * Short.BYTES + 1 * Integer.BYTES
-				+ attribute.attribute_length();
+			attribute_length += 1 * Short.BYTES + 1 * Integer.BYTES + attribute.attribute_length();
 		}
 		return attribute_length;
 	}

@@ -5,6 +5,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -350,12 +351,7 @@ public class PackageInfoDialog extends TitleAreaDialog {
 			if (getClass() != obj.getClass())
 				return false;
 			FileVersionTuple other = (FileVersionTuple) obj;
-			if (name == null) {
-				if (other.name != null)
-					return false;
-			} else if (!name.equals(other.name))
-				return false;
-			return true;
+			return Objects.equals(name, other.name);
 		}
 
 		@Override

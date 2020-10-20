@@ -41,13 +41,13 @@ import java.lang.annotation.Target;
  * In the generated Component Description for a component, the references must
  * be ordered in ascending lexicographical order (using {@code String.compareTo}
  * ) of the reference {@link #name() name}s.
- * 
+ *
  * @see "The reference element of a Component Description."
  * @author $Id$
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({
-		ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER
+	ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER
 })
 public @interface Reference {
 	/**
@@ -66,7 +66,7 @@ public @interface Reference {
 	 * <li>Annotated constructor parameter - The name of the reference is the
 	 * parameter name.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @see "The name attribute of the reference element of a Component Description."
 	 */
 	String name() default "";
@@ -102,7 +102,7 @@ public @interface Reference {
 	 * generic type of the collection. Otherwise, the type of the service is the
 	 * type of the parameter.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @see "The interface attribute of the reference element of a Component Description."
 	 */
 	Class<?> service() default Object.class;
@@ -131,7 +131,7 @@ public @interface Reference {
 	 * <li>{@link Component#reference()} element - The cardinality is
 	 * {@link ReferenceCardinality#MANDATORY 1..1}.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @see "The cardinality attribute of the reference element of a Component Description."
 	 */
 	ReferenceCardinality cardinality() default ReferenceCardinality.MANDATORY;
@@ -154,28 +154,26 @@ public @interface Reference {
 	 * <li>{@link Component#reference()} element - The policy is
 	 * {@link ReferencePolicy#STATIC STATIC}.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @see "The policy attribute of the reference element of a Component Description."
 	 */
 	ReferencePolicy policy() default ReferencePolicy.STATIC;
 
 	/**
 	 * The target property for this reference.
-	 * 
 	 * <p>
 	 * If not specified, no target property is set.
-	 * 
+	 *
 	 * @see "The target attribute of the reference element of a Component Description."
 	 */
 	String target() default "";
 
 	/**
 	 * The policy option for this reference.
-	 * 
 	 * <p>
 	 * If not specified, the {@link ReferencePolicyOption#RELUCTANT RELUCTANT}
 	 * reference policy option is used.
-	 * 
+	 *
 	 * @see "The policy-option attribute of the reference element of a Component Description."
 	 * @since 1.2
 	 */
@@ -183,11 +181,10 @@ public @interface Reference {
 
 	/**
 	 * The reference scope for this reference.
-	 * 
 	 * <p>
 	 * If not specified, the {@link ReferenceScope#BUNDLE bundle} reference
 	 * scope is used.
-	 * 
+	 *
 	 * @see "The scope attribute of the reference element of a Component Description."
 	 * @since 1.3
 	 */
@@ -214,7 +211,7 @@ public @interface Reference {
 	 * <p>
 	 * If there is a bind method name, the component must contain a method with
 	 * that name.
-	 * 
+	 *
 	 * @see "The bind attribute of the reference element of a Component Description."
 	 * @since 1.3
 	 */
@@ -245,7 +242,7 @@ public @interface Reference {
 	 * <p>
 	 * If there is an updated method name, the component must contain a method
 	 * with that name.
-	 * 
+	 *
 	 * @see "The updated attribute of the reference element of a Component Description."
 	 * @since 1.2
 	 */
@@ -276,7 +273,7 @@ public @interface Reference {
 	 * <p>
 	 * If there is an unbind method name, the component must contain a method
 	 * with that name.
-	 * 
+	 *
 	 * @see "The unbind attribute of the reference element of a Component Description."
 	 */
 	String unbind() default "";
@@ -301,7 +298,7 @@ public @interface Reference {
 	 * <p>
 	 * If there is a field name, the component must contain a field with that
 	 * name.
-	 * 
+	 *
 	 * @see "The field attribute of the reference element of a Component Description."
 	 * @since 1.3
 	 */
@@ -325,7 +322,7 @@ public @interface Reference {
 	 * <li>{@link Component#reference()} element - There is no field
 	 * option.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @see "The field-option attribute of the reference element of a Component Description."
 	 * @since 1.3
 	 */
@@ -354,7 +351,7 @@ public @interface Reference {
 	 * <p>
 	 * If there is a parameter number, the component must declare a constructor
 	 * that has a parameter having the zero-based parameter number.
-	 * 
+	 *
 	 * @see "The parameter attribute of the reference element of a Component Description."
 	 * @see "The init attribute of the component element of a Component Description."
 	 * @since 1.4
@@ -385,7 +382,7 @@ public @interface Reference {
 	 * <li>{@link Component#reference()} element - There is no collection
 	 * type.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @see "The field-collection-type attribute of the reference element of a Component Description."
 	 * @since 1.4
 	 */

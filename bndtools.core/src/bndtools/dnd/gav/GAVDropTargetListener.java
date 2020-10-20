@@ -16,8 +16,6 @@ import org.eclipse.swt.dnd.DropTargetListener;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.service.RepositoryPlugin;
@@ -103,19 +101,16 @@ public abstract class GAVDropTargetListener implements DropTargetListener {
 				Object item = iterator.next();
 				if (item instanceof RepositoryBundle) {
 					RepositoryBundle rb = (RepositoryBundle) item;
-					format(
-						new FormatEvent(rb.getResource(), rb.getRepo(), true, isAlternateSyntaxEnabled()));
+					format(new FormatEvent(rb.getResource(), rb.getRepo(), true, isAlternateSyntaxEnabled()));
 					break;
 				} else if (item instanceof RepositoryBundleVersion) {
 					RepositoryBundleVersion rbv = (RepositoryBundleVersion) item;
-					format(new FormatEvent(rbv.getResource(), rbv.getRepo(), false,
-						isAlternateSyntaxEnabled()));
+					format(new FormatEvent(rbv.getResource(), rbv.getRepo(), false, isAlternateSyntaxEnabled()));
 					break;
 				} else if (item instanceof RepositoryResourceElement) {
 					RepositoryResourceElement rbe = (RepositoryResourceElement) item;
 					RepositoryBundleVersion rbv = rbe.getRepositoryBundleVersion();
-					format(new FormatEvent(rbv.getResource(), rbv.getRepo(), true,
-						isAlternateSyntaxEnabled()));
+					format(new FormatEvent(rbv.getResource(), rbv.getRepo(), true, isAlternateSyntaxEnabled()));
 					break;
 				}
 			}
@@ -154,20 +149,14 @@ public abstract class GAVDropTargetListener implements DropTargetListener {
 			return;
 		}
 		Display display = control.getDisplay();
-		display.addFilter(SWT.KeyDown, new Listener() {
-			@Override
-			public void handleEvent(Event event) {
-				if (event.keyCode == SWT.ALT) {
-					alternateSyntaxEnabled = true;
-				}
+		display.addFilter(SWT.KeyDown, event -> {
+			if (event.keyCode == SWT.ALT) {
+				alternateSyntaxEnabled = true;
 			}
 		});
-		display.addFilter(SWT.KeyUp, new Listener() {
-			@Override
-			public void handleEvent(Event event) {
-				if (event.keyCode == SWT.ALT) {
-					alternateSyntaxEnabled = false;
-				}
+		display.addFilter(SWT.KeyUp, event -> {
+			if (event.keyCode == SWT.ALT) {
+				alternateSyntaxEnabled = false;
 			}
 		});
 	}

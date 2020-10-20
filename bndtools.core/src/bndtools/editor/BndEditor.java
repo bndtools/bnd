@@ -543,7 +543,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 			}
 
 			if (this.inputFile == null) {
-				throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID,
+				throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
 					"The bnd editor can only edit files inside the workspace"));
 			}
 
@@ -802,8 +802,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	public <T> T getAdapter(Class<T> adapter) {
 		if (IContentOutlinePage.class == adapter) {
 			return (T) new BndEditorContentOutlinePage(this, model);
-		}
-		else if (Control.class == adapter) {
+		} else if (Control.class == adapter) {
 			return getSourcePage().getAdapter(adapter);
 		}
 		return super.getAdapter(adapter);

@@ -240,8 +240,7 @@ public class Activator implements BundleActivator, Runnable {
 						}
 						if (isTrace()) {
 							trace("found active bundle with test cases %s : %s", bundle,
-								testCases(bundle)
-									.collect(toList()));
+								testCases(bundle).collect(toList()));
 						}
 						return bundle;
 					})
@@ -370,10 +369,10 @@ public class Activator implements BundleActivator, Runnable {
 				System.setErr(originalErr);
 				trace("unset streams");
 			}
-			trace(null, () -> String.format("%nTests run  : %s%nPassed     : %s%nErrors     : %s%nFailures   : %s%n",
-					result.runCount(),
-					result.runCount() - result.errorCount() - result.failureCount(), result.errorCount(),
-					result.failureCount()));
+			trace(null,
+				() -> String.format("%nTests run  : %s%nPassed     : %s%nErrors     : %s%nFailures   : %s%n",
+					result.runCount(), result.runCount() - result.errorCount() - result.failureCount(),
+					result.errorCount(), result.failureCount()));
 
 			return result.errorCount() + result.failureCount();
 		} catch (Exception e) {
@@ -524,7 +523,6 @@ public class Activator implements BundleActivator, Runnable {
 			suite.addTestSuite((Class<? extends TestCase>) clazz);
 			return;
 		}
-
 
 		JUnit4TestAdapter adapter = new JUnit4TestAdapter(clazz);
 		if (method != null) {

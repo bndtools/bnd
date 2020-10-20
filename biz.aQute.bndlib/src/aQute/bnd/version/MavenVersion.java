@@ -10,28 +10,29 @@ import aQute.lib.date.Dates;
 
 public class MavenVersion implements Comparable<MavenVersion> {
 
-	private static final Pattern			fuzzyVersion		= Pattern
+	private static final Pattern			fuzzyVersion				= Pattern
 		.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([-.]?(.*))?");
-	private static final Pattern			fuzzyVersionRange	= Pattern
+	private static final Pattern			fuzzyVersionRange			= Pattern
 		.compile("(\\(|\\[)\\s*([-.\\w]+)\\s*,\\s*([-.\\w]+)\\s*(\\]|\\))");
-	private static final String				VERSION_STRING		= "(\\d{1,10})(\\.(\\d{1,10})(\\.(\\d{1,10})(\\.([-\\w]+))?)?)?";
-	private static final Pattern			VERSION				= Pattern.compile(VERSION_STRING);
-	private static final Pattern			VERSIONRANGE		= Pattern
+	private static final String				VERSION_STRING				= "(\\d{1,10})(\\.(\\d{1,10})(\\.(\\d{1,10})(\\.([-\\w]+))?)?)?";
+	private static final Pattern			VERSION						= Pattern.compile(VERSION_STRING);
+	private static final Pattern			VERSIONRANGE				= Pattern
 		.compile("((\\(|\\[)" + VERSION_STRING + "," + VERSION_STRING + "(\\]|\\)))|" + VERSION_STRING);
 
 	private static final DateTimeFormatter	MAVEN_SNAPSHOT_DATE_TIME	= DateTimeFormatter
 		.ofPattern("yyyyMMdd.HHmmss", Locale.ROOT)
 		.withZone(Dates.UTC_ZONE_ID);
 
-	public static final MavenVersion	UNRESOLVED	= new MavenVersion("0-UNRESOLVED");
+	public static final MavenVersion		UNRESOLVED					= new MavenVersion("0-UNRESOLVED");
 
-	private static final String			SNAPSHOT	= "SNAPSHOT";
-	public static final MavenVersion	HIGHEST		= new MavenVersion("2147483647.2147483647.2147483647.2147483647");
-	public static final MavenVersion	LOWEST		= new MavenVersion("alpha");
+	private static final String				SNAPSHOT					= "SNAPSHOT";
+	public static final MavenVersion		HIGHEST						= new MavenVersion(
+		"2147483647.2147483647.2147483647.2147483647");
+	public static final MavenVersion		LOWEST						= new MavenVersion("alpha");
 	private static final MavenVersion		ZERO						= new MavenVersion("0");
 
-	private final Version				version;
-	private final ComparableVersion		comparable;
+	private final Version					version;
+	private final ComparableVersion			comparable;
 
 	public MavenVersion(Version osgiVersion) {
 		this.version = osgiVersion;

@@ -60,19 +60,19 @@ import aQute.libg.glob.Glob;
 
 @Header(name = Constants.LAUNCHER_PLUGIN, value = "${@class}")
 public class ProjectLauncherImpl extends ProjectLauncher {
-	private final static Logger		logger				= LoggerFactory.getLogger(ProjectLauncherImpl.class);
-	private static final String		EMBEDDED_RUNPATH	= "Embedded-Runpath";
-	private static final String		LAUNCHER_PATH		= "launcher.runpath";
-	private static final String		EMBEDDED_LAUNCHER	= "aQute.launcher.pre.EmbeddedLauncher";
-	static final String				PRE_JAR				= "biz.aQute.launcher.pre.jar";
-	private final Container			container;
-	private final List<String>		launcherpath		= new ArrayList<>();
+	private final static Logger	logger				= LoggerFactory.getLogger(ProjectLauncherImpl.class);
+	private static final String	EMBEDDED_RUNPATH	= "Embedded-Runpath";
+	private static final String	LAUNCHER_PATH		= "launcher.runpath";
+	private static final String	EMBEDDED_LAUNCHER	= "aQute.launcher.pre.EmbeddedLauncher";
+	static final String			PRE_JAR				= "biz.aQute.launcher.pre.jar";
+	private final Container		container;
+	private final List<String>	launcherpath		= new ArrayList<>();
 
-	private File					preTemp;
+	private File				preTemp;
 
-	final private File				launchPropertiesFile;
-	boolean							prepared;
-	DatagramSocket					listenerComms;
+	final private File			launchPropertiesFile;
+	boolean						prepared;
+	DatagramSocket				listenerComms;
 
 	public ProjectLauncherImpl(Project project, Container container) throws Exception {
 		super(project);
@@ -248,8 +248,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 					while (!socket.isClosed()) {
 						try {
 							socket.receive(packet);
-							ByteBuffer bb = ByteBuffer.wrap(packet.getData(), packet.getOffset(),
-								packet.getLength());
+							ByteBuffer bb = ByteBuffer.wrap(packet.getData(), packet.getOffset(), packet.getLength());
 							DataInput dai = ByteBufferDataInput.wrap(bb);
 							NotificationType type = NotificationType.values()[dai.readInt()];
 							String message = dai.readUTF();
@@ -304,11 +303,9 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	public Jar executable() throws Exception {
 
 		Executable instrs = launcherInstrs.executable();
-		Optional<Compression> rejar = instrs
-			.rejar();
+		Optional<Compression> rejar = instrs.rejar();
 		logger.debug("rejar {}", rejar);
-		Map<Glob, List<Glob>> strip = extractStripMapping(instrs
-			.strip());
+		Map<Glob, List<Glob>> strip = extractStripMapping(instrs.strip());
 		logger.debug("strip {}", strip);
 
 		Jar jar = new Jar(getProject().getName());
@@ -528,7 +525,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		try {
 			Domain domain = Domain.domain(file);
 			Entry<String, Attrs> bundleSymbolicName = domain.getBundleSymbolicName();
-			if ( bundleSymbolicName == null ) {
+			if (bundleSymbolicName == null) {
 				warning("Cannot find bsn in %s, required because it is on the -runbundles", file);
 				return nonCollidingPath(file, jar, null);
 			}
@@ -536,7 +533,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			if (bundleVersion == null)
 				bundleVersion = "0";
 			else {
-				if ( !Verifier.isVersion(bundleVersion)) {
+				if (!Verifier.isVersion(bundleVersion)) {
 					error("Invalid bundle version in %s", file);
 					return nonCollidingPath(file, jar, null);
 				}

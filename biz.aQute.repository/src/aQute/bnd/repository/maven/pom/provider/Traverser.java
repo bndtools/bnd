@@ -138,8 +138,8 @@ class Traverser {
 						Version version = toFrameworkVersion(archive.revision.version.getOSGiVersion());
 						addReserveIdentity(rb, bsn, version);
 						addInformationCapability(rb, archive.toString(), parent, throwable);
-							MavenCapability.addMavenCapability(rb, archive.revision.group, archive.revision.artifact,
-								archive.revision.version, archive.classifier, parent);
+						MavenCapability.addMavenCapability(rb, archive.revision.group, archive.revision.artifact,
+							archive.revision.version, archive.classifier, parent);
 						resources.put(archive, rb.build());
 					} finally {
 						finish();

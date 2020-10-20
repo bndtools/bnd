@@ -100,7 +100,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 					addExpectedActual(assertionFailedError.getExpected()
 						.getStringRepresentation(),
 						assertionFailedError.getActual()
-						.getStringRepresentation());
+							.getStringRepresentation());
 					return true;
 				}
 				return false;

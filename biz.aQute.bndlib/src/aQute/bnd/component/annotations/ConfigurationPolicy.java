@@ -18,13 +18,12 @@ package aQute.bnd.component.annotations;
 
 /**
  * Configuration Policy for the {@link Component} annotation.
- * 
  * <p>
  * Controls whether component configurations must be satisfied depending on the
  * presence of a corresponding Configuration object in the OSGi Configuration
  * Admin service. A corresponding configuration is a Configuration object where
  * the PID is the name of the component.
- * 
+ *
  * @author $Id$
  * @since 1.1
  */
@@ -48,7 +47,7 @@ public enum ConfigurationPolicy {
 	 */
 	IGNORE("ignore");
 
-	private final String	value;
+	private final String value;
 
 	ConfigurationPolicy(String value) {
 		this.value = value;

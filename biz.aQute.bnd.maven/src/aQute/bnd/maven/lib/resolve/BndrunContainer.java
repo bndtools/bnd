@@ -281,8 +281,7 @@ public class BndrunContainer {
 					artifact, bsn, e);
 			}
 
-			run.setProperty(Constants.RUNREQUIRES,
-				String.format("osgi.identity;filter:='(osgi.identity=%s)'", bsn));
+			run.setProperty(Constants.RUNREQUIRES, String.format("osgi.identity;filter:='(osgi.identity=%s)'", bsn));
 
 			logger.info("Bnd inferred {}: {}", Constants.RUNREQUIRES, run.getProperty(Constants.RUNREQUIRES));
 		}
@@ -295,8 +294,8 @@ public class BndrunContainer {
 			EE ee = Optional.ofNullable(project.getBuild()
 				.getPluginsAsMap()
 				.get("org.apache.maven.plugins:maven-compiler-plugin"))
-					// when executed in a project with POM packaging the
-					// following always returns null
+				// when executed in a project with POM packaging the
+				// following always returns null
 				.map(Plugin::getConfiguration)
 				.map(Xpp3Dom.class::cast)
 				.map(dom -> {

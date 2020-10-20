@@ -53,7 +53,8 @@ public class CallOnOtherThread {
 	}
 
 	private boolean check(CountDownLatch condition) {
-		for (long end = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeout), delay; (delay = end - System.nanoTime()) >= 0L;) {
+		for (long end = System.nanoTime()
+			+ TimeUnit.MILLISECONDS.toNanos(timeout), delay; (delay = end - System.nanoTime()) >= 0L;) {
 			try {
 				if (condition.await(delay, TimeUnit.NANOSECONDS)) {
 					return true;

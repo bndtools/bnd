@@ -80,8 +80,7 @@ public class LauncherTest {
 
 		String result = runFramework(file);
 
-		assertThat(result)
-			.containsPattern("Startlevel\\s+22")
+		assertThat(result).containsPattern("Startlevel\\s+22")
 			.containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle")
 			.containsPattern("21\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log")
 			.containsPattern("10\\s+ACTIV\\s+<>\\s+jar/.?demo.jar")

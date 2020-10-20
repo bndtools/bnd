@@ -63,9 +63,9 @@ public class JARPrintPage extends FormPage {
 		.getImageRegistry()
 		.get(Plugin.IMG_PREVIOUS_DISABLED);
 
-	private StyledText	styledText;
-	private URI			uri;
-	private boolean		loading;
+	private StyledText			styledText;
+	private URI					uri;
+	private boolean				loading;
 	private int					highlightIndex			= -1;
 	private IAction				findAction;
 	private IAction				nextAction;
@@ -295,10 +295,8 @@ public class JARPrintPage extends FormPage {
 
 		Color highlightColor = styledText.getSelectionBackground();
 
-		StyleRange[] highlights = hits
-			.stream()
-			.map(hit -> new StyleRange(hit, findText.length(), null,
-				highlightColor))
+		StyleRange[] highlights = hits.stream()
+			.map(hit -> new StyleRange(hit, findText.length(), null, highlightColor))
 			.toArray(StyleRange[]::new);
 
 		styledText.setStyleRanges(highlights);
@@ -308,7 +306,8 @@ public class JARPrintPage extends FormPage {
 			revealRange(highlights, 0);
 			fireChangeEvent(new HighlightEvent(findText, highlights, 0));
 		} else {
-			Arrays.stream(currentHighlights).forEach(range-> styledText.redrawRange(range.start, range.length, true));
+			Arrays.stream(currentHighlights)
+				.forEach(range -> styledText.redrawRange(range.start, range.length, true));
 			fireChangeEvent(new HighlightEvent(findText, highlights, -1));
 		}
 	}
@@ -317,8 +316,8 @@ public class JARPrintPage extends FormPage {
 		Arrays.stream(highlights)
 			.forEach(range -> {
 				range.background = styledText.getSelectionBackground();
-					range.foreground = null;
-					styledText.redrawRange(range.start, range.length, true);
+				range.foreground = null;
+				styledText.redrawRange(range.start, range.length, true);
 			});
 
 		StyleRange currentRange = highlights[index];
@@ -345,7 +344,7 @@ public class JARPrintPage extends FormPage {
 
 		content = content.toLowerCase();
 		findText = findText.toLowerCase();
-		List<Integer> indexes = new ArrayList<Integer>();
+		List<Integer> indexes = new ArrayList<>();
 		int index = 0;
 		int wordLength = 0;
 
@@ -418,7 +417,7 @@ public class JARPrintPage extends FormPage {
 
 	static class HighlightEvent extends Event {
 		String			findText;
-		StyleRange[] highlights;
+		StyleRange[]	highlights;
 
 		HighlightEvent(String text, StyleRange[] ranges, int i) {
 			findText = text;

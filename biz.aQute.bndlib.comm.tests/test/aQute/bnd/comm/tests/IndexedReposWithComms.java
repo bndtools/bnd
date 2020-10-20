@@ -29,7 +29,7 @@ import sockslib.server.msg.CommandMessage;
 
 public class IndexedReposWithComms extends TestCase {
 
-	private static SocksProxyServer	socks5Proxy;
+	private static SocksProxyServer socks5Proxy;
 
 	public void testBasicWorkspace() throws Exception {
 		HttpTestServer ht = http();

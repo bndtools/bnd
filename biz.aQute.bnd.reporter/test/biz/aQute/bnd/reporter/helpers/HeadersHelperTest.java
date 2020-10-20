@@ -944,42 +944,42 @@ public class HeadersHelperTest extends TestCase {
 
 	public void perform(final String headerName, final String header, final Object expected) throws Exception {
 		try (final Jar jar = new Jar("jar");) {
-		final Map<String, Resource> dir = new HashMap<>();
-		dir.put("com/test", new FileResource(new File("")));
-		jar.addDirectory(dir, true);
-		final Manifest manifest = new Manifest();
-		jar.setManifest(manifest);
-		manifest.getMainAttributes()
-			.putValue(headerName, header);
-		final ManifestHelper manifestHelper = ManifestHelper.createIfPresent(jar, Locale.forLanguageTag("und"));
-		Function<Parameters, Object> f = headerToFunc.get(headerName);
-		if (f == null) {
-			f = pa -> HeadersHelper.convertBundleActivationPolicy(pa, jar.getPackages());
+			final Map<String, Resource> dir = new HashMap<>();
+			dir.put("com/test", new FileResource(new File("")));
+			jar.addDirectory(dir, true);
+			final Manifest manifest = new Manifest();
+			jar.setManifest(manifest);
+			manifest.getMainAttributes()
+				.putValue(headerName, header);
+			final ManifestHelper manifestHelper = ManifestHelper.createIfPresent(jar, Locale.forLanguageTag("und"));
+			Function<Parameters, Object> f = headerToFunc.get(headerName);
+			if (f == null) {
+				f = pa -> HeadersHelper.convertBundleActivationPolicy(pa, jar.getPackages());
+			}
+
+			Object actual = null;
+			if (Constants.BUNDLE_NATIVECODE.equals(headerName)) {
+				actual = f.apply(manifestHelper.getHeader(headerName, true));
+			} else {
+				actual = f.apply(manifestHelper.getHeader(headerName, false));
+			}
+
+			final JSONCodec c = new JSONCodec();
+			final StringWriter es = new StringWriter();
+			final StringWriter as = new StringWriter();
+
+			c.enc()
+				.to(es)
+				.put(expected);
+			c.enc()
+				.to(as)
+				.put(actual);
+			assertEquals(c.dec()
+				.from(es.toString())
+				.get(),
+				c.dec()
+					.from(as.toString())
+					.get());
 		}
-
-		Object actual = null;
-		if (Constants.BUNDLE_NATIVECODE.equals(headerName)) {
-			actual = f.apply(manifestHelper.getHeader(headerName, true));
-		} else {
-			actual = f.apply(manifestHelper.getHeader(headerName, false));
-		}
-
-		final JSONCodec c = new JSONCodec();
-		final StringWriter es = new StringWriter();
-		final StringWriter as = new StringWriter();
-
-		c.enc()
-			.to(es)
-			.put(expected);
-		c.enc()
-			.to(as)
-			.put(actual);
-		assertEquals(c.dec()
-			.from(es.toString())
-			.get(),
-			c.dec()
-				.from(as.toString())
-				.get());
 	}
-}
 }

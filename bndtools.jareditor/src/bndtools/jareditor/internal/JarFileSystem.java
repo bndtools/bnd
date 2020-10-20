@@ -26,6 +26,7 @@ import org.eclipse.core.filesystem.provider.FileSystem;
 import org.eclipse.core.internal.filesystem.NullFileStore;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
 import aQute.bnd.service.result.Result;
@@ -196,7 +197,7 @@ public class JarFileSystem extends FileSystem {
 		public InputStream openInputStream(int options, IProgressMonitor monitor) throws CoreException {
 			return JarFileSystem.openInputStream(jar(), getPath(), monitor)
 				.orElseThrow(s -> {
-					Status status = new Status(Status.ERROR, Plugin.PLUGIN_ID, s);
+					Status status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, s);
 					return new CoreException(status);
 				});
 		}

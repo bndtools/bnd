@@ -115,13 +115,10 @@ public class JtwigReadmeTest extends TestCase {
 			.expect("        /*")
 			.expect("         * Required = ")
 			.expect("         * Type = ")
-			.expect(
-				"         */")
-			.expect(
-				"         // \"\": null")
+			.expect("         */")
+			.expect("         // \"\": null")
 			.expect("}")
-			.expect(
-				"```")
+			.expect("```")
 			.expectBlankLine()
 			.expect("## Developers")
 			.expectBlankLine()

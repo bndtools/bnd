@@ -2,7 +2,6 @@ package aQute.bnd.ant;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -203,8 +202,7 @@ public class BndTask extends BaseTask {
 			if (output == null)
 				output = getProject().getBaseDir();
 
-			for (Iterator<File> f = files.iterator(); f.hasNext();) {
-				File file = f.next();
+			for (File file : files) {
 				Builder builder = new Builder();
 
 				builder.setPedantic(isPedantic());
@@ -237,8 +235,7 @@ public class BndTask extends BaseTask {
 					throw new BuildException("bnd failed", new org.apache.tools.ant.Location(file.getAbsolutePath()));
 				}
 
-				for (int i = 0; i < jars.length; i++) {
-					Jar jar = jars[i];
+				for (Jar jar : jars) {
 					String bsn = jar.getName();
 
 					File base = file.getParentFile();
@@ -293,8 +290,8 @@ public class BndTask extends BaseTask {
 		QuotedTokenizer qt = new QuotedTokenizer(files, separator);
 		String entries[] = qt.getTokens();
 		File project = getProject().getBaseDir();
-		for (int i = 0; i < entries.length; i++) {
-			File f = getFile(project, entries[i]);
+		for (String entry : entries) {
+			File f = getFile(project, entry);
 			if (f.exists())
 				list.add(f);
 			else
@@ -308,8 +305,8 @@ public class BndTask extends BaseTask {
 			addAll(classpath, value, File.pathSeparator + ",");
 		else {
 			String[] path = p.list();
-			for (int i = 0; i < path.length; i++) {
-				File f = new File(path[i]);
+			for (String element : path) {
+				File f = new File(element);
 				if (f.exists())
 					classpath.add(f);
 				else

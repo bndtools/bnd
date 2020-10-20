@@ -8,12 +8,12 @@ import aQute.libg.tuple.Pair;
 
 public abstract class AbstractNewEntryDialog extends TitleAreaDialog {
 
-    public AbstractNewEntryDialog(Shell parentShell) {
-        super(parentShell);
-    }
+	public AbstractNewEntryDialog(Shell parentShell) {
+		super(parentShell);
+	}
 
-    public abstract void setEntry(Pair<String, Attrs> entry);
+	public abstract void setEntry(Pair<String, Attrs> entry);
 
-    public abstract Pair<String, Attrs> getEntry();
+	public abstract Pair<String, Attrs> getEntry();
 
 }

@@ -302,7 +302,7 @@ public class NanoHTTPD {
 				String method = pre.getProperty("method");
 				String uri = pre.getProperty("uri");
 
-				long size = 0x7FFFFFFFFFFFFFFFl;
+				long size = 0x7FFFFFFFFFFFFFFFL;
 				String contentLength = header.getProperty("content-length");
 				if (contentLength != null) {
 					try {
@@ -339,7 +339,7 @@ public class NanoHTTPD {
 				// expect the first byte of the body at the next read.
 				if (splitbyte < rlen)
 					size -= rlen - splitbyte + 1;
-				else if (!sbfound || size == 0x7FFFFFFFFFFFFFFFl)
+				else if (!sbfound || size == 0x7FFFFFFFFFFFFFFFL)
 					size = 0;
 
 				// Now read all the body and write it to f

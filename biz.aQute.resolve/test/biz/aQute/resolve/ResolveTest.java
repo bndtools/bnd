@@ -237,8 +237,7 @@ public class ResolveTest extends TestCase {
 				.toURI()
 				.toString());
 			map.put("name", getTestName());
-			map.put("cache",
-				new File("generated/tmp/test/cache/" + getTestName()).getAbsolutePath());
+			map.put("cache", new File("generated/tmp/test/cache/" + getTestName()).getAbsolutePath());
 			repo.setProperties(map);
 			Processor model = new Processor();
 			model.addBasicPlugin(httpClient);
@@ -583,8 +582,7 @@ public class ResolveTest extends TestCase {
 				.toURI()
 				.toString());
 			map.put("name", getTestName());
-			map.put("cache",
-				new File("generated/tmp/test/cache/" + getTestName()).getAbsolutePath());
+			map.put("cache", new File("generated/tmp/test/cache/" + getTestName()).getAbsolutePath());
 			repo.setProperties(map);
 			Processor model = new Processor();
 			model.addBasicPlugin(httpClient);

@@ -12,13 +12,13 @@ import bndtools.PartConstants;
 
 public class BndPerspective implements IPerspectiveFactory {
 
-	private static final String BNDTOOLS_PACKAGE_EXPLORER = "bndtools.PackageExplorer";
+	private static final String	BNDTOOLS_PACKAGE_EXPLORER	= "bndtools.PackageExplorer";
 
-	public static final String	ID_PROJECT_EXPLORER		= "org.eclipse.ui.navigator.ProjectExplorer";	//$NON-NLS-1$
+	public static final String	ID_PROJECT_EXPLORER			= "org.eclipse.ui.navigator.ProjectExplorer";	//$NON-NLS-1$
 
-	public static final String	VIEW_ID_JUNIT_RESULTS	= "org.eclipse.jdt.junit.ResultView";
-	private static final String	VIEW_ID_CONSOLE			= "org.eclipse.ui.console.ConsoleView";
-	private static final String	VIEW_ID_SEARCH			= "org.eclipse.search.ui.views.SearchView";
+	public static final String	VIEW_ID_JUNIT_RESULTS		= "org.eclipse.jdt.junit.ResultView";
+	private static final String	VIEW_ID_CONSOLE				= "org.eclipse.ui.console.ConsoleView";
+	private static final String	VIEW_ID_SEARCH				= "org.eclipse.search.ui.views.SearchView";
 
 	@Override
 	public void createInitialLayout(IPageLayout layout) {

@@ -7,8 +7,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 public interface TemplateEngine {
 
-    Map<String, String> getTemplateParameters(ResourceMap inputs, IProgressMonitor monitor) throws Exception;
+	Map<String, String> getTemplateParameters(ResourceMap inputs, IProgressMonitor monitor) throws Exception;
 
-    ResourceMap generateOutputs(ResourceMap inputs, Map<String, List<Object>> parameters, IProgressMonitor monitor) throws Exception;
+	ResourceMap generateOutputs(ResourceMap inputs, Map<String, List<Object>> parameters, IProgressMonitor monitor)
+		throws Exception;
 
 }

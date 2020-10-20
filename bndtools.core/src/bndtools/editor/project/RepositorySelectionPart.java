@@ -297,9 +297,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
 				String tooltip = null;
 				if (element instanceof Actionable) {
 					try {
-						tooltip = ((Actionable) element).tooltip(new Object[] {
-							element
-						});
+						tooltip = ((Actionable) element).tooltip(element);
 					} catch (Exception e) {
 						// ignore
 					}
@@ -378,8 +376,8 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
 
 			// Load the repos and clear the error message if the Workspace is
 			// initialised later.
-			Central
-				.onAnyWorkspace(workspace -> SWTConcurrencyUtil.execForControl(runReposViewer.getControl(), true, () -> {
+			Central.onAnyWorkspace(
+				workspace -> SWTConcurrencyUtil.execForControl(runReposViewer.getControl(), true, () -> {
 					allRepos.clear();
 					allRepos.addAll(workspace.getPlugins(Repository.class));
 					runReposViewer.setInput(allRepos);

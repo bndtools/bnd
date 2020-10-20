@@ -1,6 +1,7 @@
 package bndtools.editor.project;
 
 import java.net.URL;
+import java.util.Objects;
 
 import aQute.bnd.version.Version;
 
@@ -55,17 +56,7 @@ class OSGiFramework {
 		if (getClass() != obj.getClass())
 			return false;
 		OSGiFramework other = (OSGiFramework) obj;
-		if (bsn == null) {
-			if (other.bsn != null)
-				return false;
-		} else if (!bsn.equals(other.bsn))
-			return false;
-		if (version == null) {
-			if (other.version != null)
-				return false;
-		} else if (!version.equals(other.version))
-			return false;
-		return true;
+		return Objects.equals(bsn, other.bsn) && Objects.equals(version, other.version);
 	}
 
 	@Override

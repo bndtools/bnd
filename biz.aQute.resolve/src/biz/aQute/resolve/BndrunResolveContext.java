@@ -52,23 +52,25 @@ import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.lib.converter.Converter;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
+
 /**
  * This class does the resolving for bundles. It loads the details from a
  * BndEditModel & Project
  */
 public class BndrunResolveContext extends AbstractResolveContext {
-	private final static Logger	logger						= LoggerFactory.getLogger(BndrunResolveContext.class);
+	private final static Logger			logger						= LoggerFactory
+		.getLogger(BndrunResolveContext.class);
 
-	private static final String	BND_AUGMENT					= "bnd.augment";
-	public static final String	RUN_EFFECTIVE_INSTRUCTION	= "-resolve.effective";
-	public static final String	PROP_RESOLVE_PREFERENCES	= "-resolve.preferences";
-	private static final String	NAMESPACE_WHITELIST			= "x-whitelist";
+	private static final String			BND_AUGMENT					= "bnd.augment";
+	public static final String			RUN_EFFECTIVE_INSTRUCTION	= "-resolve.effective";
+	public static final String			PROP_RESOLVE_PREFERENCES	= "-resolve.preferences";
+	private static final String			NAMESPACE_WHITELIST			= "x-whitelist";
 
-	private Registry			registry;
-	private Parameters			resolvePrefs;
-	private final Processor		properties;
-	private Project				project;
-	private boolean				initialized;
+	private Registry					registry;
+	private Parameters					resolvePrefs;
+	private final Processor				properties;
+	private Project						project;
+	private boolean						initialized;
 	private volatile List<ResolverHook>	resolverHooks;
 
 	/**

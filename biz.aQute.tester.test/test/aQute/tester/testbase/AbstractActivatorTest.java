@@ -45,12 +45,12 @@ import aQute.tester.test.utils.TestRunListener;
 
 public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 
-	static final String BND_TEST_THREAD = "bnd Runtime Test Bundle";
-	protected final String activatorClass;
-	protected final String tester;
-	protected TestBundler testBundler;
-	protected boolean DEBUG = true;
-	protected LaunchpadBuilder builder;
+	static final String					BND_TEST_THREAD		= "bnd Runtime Test Bundle";
+	protected final String				activatorClass;
+	protected final String				tester;
+	protected TestBundler				testBundler;
+	protected boolean					DEBUG				= true;
+	protected LaunchpadBuilder			builder;
 
 	// We have the Jupiter engine on the classpath so that the tests will run.
 	// This classloader will hide it from the framework-under-test if necessary.
@@ -61,11 +61,11 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 		assertAll();
 	}
 
-	protected Launchpad lp;
-	protected SecurityManager oldManager;
-	protected Path tmpDir;
-	protected int eclipseJUnitPort;
-	protected TestInfo info;
+	protected Launchpad			lp;
+	protected SecurityManager	oldManager;
+	protected Path				tmpDir;
+	protected int				eclipseJUnitPort;
+	protected TestInfo			info;
 
 	protected TestRunDataAssert assertThat(TestRunData a) {
 		return proxy(TestRunDataAssert.class, TestRunData.class, a);
@@ -78,8 +78,8 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 		softly = new SoftAssertions();
 	}
 
-	protected String name;
-	protected Bundle testBundle;
+	protected String	name;
+	protected Bundle	testBundle;
 
 	protected File getTmpDir() {
 		return tmpDir.toFile();
@@ -118,8 +118,8 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 		return exitCode;
 	}
 
-	protected List<Bundle> testBundles = new ArrayList<>(10);
-	protected Bundle testerBundle;
+	protected List<Bundle>	testBundles	= new ArrayList<>(10);
+	protected Bundle		testerBundle;
 
 	protected interface Callback {
 		void run() throws Exception;
@@ -255,22 +255,22 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 	}
 
 	protected static final class NodeListWrapper extends AbstractList<Node> implements RandomAccess {
-			private final NodeList list;
+		private final NodeList list;
 
-			NodeListWrapper(NodeList l) {
-				list = l;
-			}
-
-			@Override
-			public Node get(int index) {
-				return list.item(index);
-			}
-
-			@Override
-			public int size() {
-				return list.getLength();
-			}
+		NodeListWrapper(NodeList l) {
+			list = l;
 		}
+
+		@Override
+		public Node get(int index) {
+			return list.item(index);
+		}
+
+		@Override
+		public int size() {
+			return list.getLength();
+		}
+	}
 
 	RemoteTestRunnerClient client;
 

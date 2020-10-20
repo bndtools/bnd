@@ -16,7 +16,6 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 @ExtendWith(SoftAssertionsExtension.class)
 public class DescriptorsTest {
 
-
 	@Test
 	public void testReferences(SoftAssertions softly) {
 		Descriptors d = new Descriptors();
@@ -39,46 +38,58 @@ public class DescriptorsTest {
 	@Test
 	public void testDetermine(SoftAssertions softly) {
 		softly.assertThat(Descriptors.determine("simple")
-			.unwrap()).isEqualTo(new String[] {
+			.unwrap())
+			.isEqualTo(new String[] {
 				"simple", null
-		});
+			});
 		softly.assertThat(Descriptors.determine("Simple")
-			.unwrap()).isEqualTo(new String[] {
+			.unwrap())
+			.isEqualTo(new String[] {
 				null, "Simple"
-		});
+			});
 		softly.assertThat(Descriptors.determine("simple.Simple")
-			.unwrap()).isEqualTo(new String[] {
+			.unwrap())
+			.isEqualTo(new String[] {
 				"simple", "Simple"
-		});
+			});
 		softly.assertThat(Descriptors.determine("simple.sample")
-			.unwrap()).isEqualTo(new String[] {
+			.unwrap())
+			.isEqualTo(new String[] {
 				"simple.sample", null
-		});
+			});
 		softly.assertThat(Descriptors.determine("simple.sample.Simple")
-			.unwrap()).isEqualTo(new String[] {
+			.unwrap())
+			.isEqualTo(new String[] {
 				"simple.sample", "Simple"
-		});
+			});
 		softly.assertThat(Descriptors.determine("Simple.Sample")
-			.unwrap()).isEqualTo(new String[] {
+			.unwrap())
+			.isEqualTo(new String[] {
 				null, "Simple.Sample"
-		});
+			});
 		softly.assertThat(Descriptors.determine("foo.bar.Simple.Sample")
-			.unwrap()).isEqualTo(new String[] {
+			.unwrap())
+			.isEqualTo(new String[] {
 				"foo.bar", "Simple.Sample"
-		});
+			});
 		softly.assertThat(Descriptors.determine("foo.bar.Simple$Sample")
-			.unwrap()).isEqualTo(new String[] {
+			.unwrap())
+			.isEqualTo(new String[] {
 				"foo.bar", "Simple$Sample"
-		});
+			});
 
 		softly.assertThat(Descriptors.determine("")
-			.isErr()).isTrue();
+			.isErr())
+			.isTrue();
 		softly.assertThat(Descriptors.determine("123")
-			.isErr()).isTrue();
+			.isErr())
+			.isTrue();
 		softly.assertThat(Descriptors.determine(".123")
-			.isErr()).isTrue();
+			.isErr())
+			.isTrue();
 		softly.assertThat(Descriptors.determine("@foo.bar.Soo")
-			.isErr()).isTrue();
+			.isErr())
+			.isTrue();
 	}
 
 	@Test

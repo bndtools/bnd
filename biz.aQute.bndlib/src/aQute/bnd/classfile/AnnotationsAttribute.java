@@ -22,8 +22,8 @@ public abstract class AnnotationsAttribute implements Attribute {
 		A init(AnnotationInfo[] annotations);
 	}
 
-	static <A extends AnnotationsAttribute> A read(DataInput in, ConstantPool constant_pool,
-		Constructor<A> constructor) throws IOException {
+	static <A extends AnnotationsAttribute> A read(DataInput in, ConstantPool constant_pool, Constructor<A> constructor)
+		throws IOException {
 		AnnotationInfo[] annotations = AnnotationInfo.readInfos(in, constant_pool);
 		return constructor.init(annotations);
 	}

@@ -29,4 +29,3 @@ package aQute.bnd.metatype.annotations;
 import static aQute.bnd.metatype.annotations.MetaTypeConstants.METATYPE_SPECIFICATION_VERSION;
 
 import org.osgi.annotation.versioning.Version;
-

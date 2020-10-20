@@ -1,6 +1,5 @@
 package bndtools.command;
 
-
 import org.bndtools.api.RunMode;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;

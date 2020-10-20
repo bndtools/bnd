@@ -120,9 +120,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
 				return true;
 			}
 		};
-		viewer.setFilters(new ViewerFilter[] {
-			nonPkgFilter, hideSelfImportsFilter
-		});
+		viewer.setFilters(nonPkgFilter, hideSelfImportsFilter);
 
 		viewer.addSelectionChangedListener(
 			event -> getManagedForm().fireSelectionChanged(BundleCalculatedImportsPart.this, event.getSelection()));

@@ -442,7 +442,6 @@ public class Converter {
 			}
 		}
 
-
 		Collection input = toCollection(o);
 
 		for (Object i : input)

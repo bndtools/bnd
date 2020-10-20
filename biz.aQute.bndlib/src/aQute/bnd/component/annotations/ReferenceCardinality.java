@@ -18,11 +18,10 @@ package aQute.bnd.component.annotations;
 
 /**
  * Cardinality for the {@link Reference} annotation.
- * 
  * <p>
  * Specifies if the reference is optional and if the component implementation
  * support a single bound service or multiple bound services.
- * 
+ *
  * @author $Id$
  */
 public enum ReferenceCardinality {
@@ -50,7 +49,7 @@ public enum ReferenceCardinality {
 	 */
 	AT_LEAST_ONE("1..n");
 
-	private final String	value;
+	private final String value;
 
 	ReferenceCardinality(String value) {
 		this.value = value;

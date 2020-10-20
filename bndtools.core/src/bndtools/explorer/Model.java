@@ -40,7 +40,7 @@ class Model {
 		if (Objects.equals(this.filterText, value))
 			return;
 		this.filterText = value;
-		if ( value == null)
+		if (value == null)
 			glob = null;
 		else
 			glob = new Glob(value);
@@ -96,7 +96,7 @@ class Model {
 	void update() {
 		dirty.set(true);
 		if (Display.getCurrent() == null) {
-		Display.getDefault()
+			Display.getDefault()
 				.asyncExec(this::update0);
 		} else {
 			update0();

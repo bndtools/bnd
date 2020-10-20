@@ -217,9 +217,7 @@ public class Link<L, R> extends Thread implements Closeable {
 				args = EMPTY;
 
 			out.writeShort(args.length);
-			for (int i = 0; i < args.length; i++) {
-				Object arg = args[i];
-
+			for (Object arg : args) {
 				if (arg instanceof byte[]) {
 					byte[] data = (byte[]) arg;
 					out.writeInt(data.length);

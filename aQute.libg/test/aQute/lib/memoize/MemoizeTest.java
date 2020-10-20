@@ -333,7 +333,8 @@ public class MemoizeTest {
 	public void closeable_null() {
 		assertThatNullPointerException()
 			.isThrownBy(() -> CloseableMemoize.closeableSupplier((Supplier<AutoCloseable>) null));
-		CloseableMemoize<AutoCloseable> memoized = CloseableMemoize.closeableSupplier((Supplier<AutoCloseable>) () -> null);
+		CloseableMemoize<AutoCloseable> memoized = CloseableMemoize
+			.closeableSupplier((Supplier<AutoCloseable>) () -> null);
 		assertThatIllegalStateException().isThrownBy(memoized::get);
 		assertThat(memoized.isClosed()).isTrue();
 		assertThat(memoized.peek()).isNull();

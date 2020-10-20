@@ -24,15 +24,13 @@ import java.lang.annotation.Target;
 /**
  * Identify the annotated method as the {@code modified} method of a Service
  * Component.
- * 
  * <p>
  * The annotated method is the modified method of the Component.
- * 
  * <p>
  * This annotation is not processed at runtime by Service Component Runtime. It
  * must be processed by tools and used to add a Component Description to the
  * bundle.
- * 
+ *
  * @see "The modified attribute of the component element of a Component Description."
  * @author $Id$
  * @since 1.1

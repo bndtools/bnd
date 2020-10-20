@@ -1,6 +1,7 @@
 package aQute.libg.tuple;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Pair<A, B> implements Serializable, Cloneable {
 
@@ -51,17 +52,7 @@ public class Pair<A, B> implements Serializable, Cloneable {
 			return false;
 		@SuppressWarnings("unchecked")
 		Pair<A, B> other = (Pair<A, B>) obj;
-		if (first == null) {
-			if (other.first != null)
-				return false;
-		} else if (!first.equals(other.first))
-			return false;
-		if (second == null) {
-			if (other.second != null)
-				return false;
-		} else if (!second.equals(other.second))
-			return false;
-		return true;
+		return Objects.equals(first, other.first) && Objects.equals(second, other.second);
 	}
 
 	@Override

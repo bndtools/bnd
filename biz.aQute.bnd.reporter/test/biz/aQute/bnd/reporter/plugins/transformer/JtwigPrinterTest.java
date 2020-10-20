@@ -64,15 +64,11 @@ public class JtwigPrinterTest extends TestCase {
 	public void testDescription() throws Exception {
 		TwigChecker checker = checker("_printComponentServiceDescription");
 
-		checker.with(map().set("properties", map().set("service.description", map().set("type",
-			"String")
-			.set("values",
-				list(
-					"my.description")))))
+		checker.with(map().set("properties", map().set("service.description", map().set("type", "String")
+			.set("values", list("my.description")))))
 			.expect("#### Description")
 			.expectBlankLine()
-			.expect(
-				"my.description")
+			.expect("my.description")
 			.check();
 
 	}
@@ -151,6 +147,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 
 	}
+
 	public void testOSGiCoordinate() throws Exception {
 		TwigChecker checker = checker("printOsgiCoordinate");
 
@@ -346,25 +343,19 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("```")
 			.expect("/*")
 			.expect(" * Component: name")
-			.expect(
-				" * policy:    ignore")
-			.expect(
-				" */")
+			.expect(" * policy:    ignore")
+			.expect(" */")
 			.expect("\"\":{")
 			.expect("        //# Component properties")
-			.expect(
-				"        // none")
+			.expect("        // none")
 			.expectBlankLine()
 			.expect("        //# Reference bindings")
-			.expect(
-				"        // none")
+			.expect("        // none")
 			.expectBlankLine()
 			.expect("        //# ObjectClassDefinition - Attributes")
-			.expect(
-				"        // (No PidOcd available.)")
+			.expect("        // (No PidOcd available.)")
 			.expect("}")
-			.expect(
-				"```")
+			.expect("```")
 			.check();
 
 		checker.with(list(map().set("name", "name")
@@ -410,8 +401,7 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("        //# ObjectClassDefinition - Attributes")
 			.expect("        // (No PidOcd available.)")
 			.expect("}")
-			.expect(
-				"```")
+			.expect("```")
 			.expectBlankLine()
 
 			.expect("---")
@@ -454,8 +444,7 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("        //# ObjectClassDefinition - Attributes")
 			.expect("        // (No PidOcd available.)")
 			.expect("}")
-			.expect(
-				"```")
+			.expect("```")
 
 			.check();
 	}
@@ -790,21 +779,17 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("* `-o VALUE`  ")
 			.check();
 
-		// two scopes, description, two methods, two functions, two arguments full,
+		// two scopes, description, two methods, two functions, two arguments
+		// full,
 		// two options full
 		checker.with(list(map().set("name", "scope1")
 			.set("functions", list(map().set("name", "func1")
 				.set("methods", list(map())))),
-			map().set("name",
-				"scope2")
-				.set("functions", list(map().set("name",
-					"func2")
-					.set("methods", list(
-						map())),
-					map().set("name",
-						"func3")
-						.set("methods", list(map(), map().set("description",
-							"My description")
+			map().set("name", "scope2")
+				.set("functions", list(map().set("name", "func2")
+					.set("methods", list(map())),
+					map().set("name", "func3")
+						.set("methods", list(map(), map().set("description", "My description")
 							.set("options", list(map().set("isFlag", true)
 								.set("names", list("-a", "--acc"))
 								.set("description", "This option can..."),
@@ -815,23 +800,20 @@ public class JtwigPrinterTest extends TestCase {
 								.set("multiValue", true)
 								.set("name", "input_file"),
 								map().set("description", "This argument is...")
-									.set("name",
-										"output_file")))))))))
+									.set("name", "output_file")))))))))
 			.expect("### scope1:func1")
 			.expectBlankLine()
 			.expect("**Synopsis**")
 			.expectBlankLine()
 			.expect("`scope1:func1`")
 			.expectBlankLine()
-			.expect(
-				"### scope2:func2")
+			.expect("### scope2:func2")
 			.expectBlankLine()
 			.expect("**Synopsis**")
 			.expectBlankLine()
 			.expect("`scope2:func2`")
 			.expectBlankLine()
-			.expect(
-				"### scope2:func3")
+			.expect("### scope2:func3")
 			.expectBlankLine()
 			.expect("**Synopsis**")
 			.expectBlankLine()
@@ -841,8 +823,7 @@ public class JtwigPrinterTest extends TestCase {
 			.expectBlankLine()
 			.expect("**Synopsis**")
 			.expectBlankLine()
-			.expect(
-				"`scope2:func3 [OPTIONS] INPUT_FILE... OUTPUT_FILE`")
+			.expect("`scope2:func3 [OPTIONS] INPUT_FILE... OUTPUT_FILE`")
 			.expectBlankLine()
 			.expect("**Description**")
 			.expectBlankLine()
@@ -851,14 +832,12 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("**Arguments**")
 			.expectBlankLine()
 			.expect("* `INPUT_FILE`  This argument is...")
-			.expect(
-				"* `OUTPUT_FILE`  This argument is...")
+			.expect("* `OUTPUT_FILE`  This argument is...")
 			.expectBlankLine()
 			.expect("**Options**")
 			.expectBlankLine()
 			.expect("* `-a, --acc`  This option can...")
-			.expect(
-				"* `-o VALUE, --opt VALUE`  This option can...")
+			.expect("* `-o VALUE, --opt VALUE`  This option can...")
 			.check();
 	}
 

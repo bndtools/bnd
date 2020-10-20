@@ -20,26 +20,25 @@ import bndtools.Plugin;
 
 public class ResolutionCanceledPanel {
 
-	private final Image				clipboardImg	= AbstractUIPlugin
+	private final Image			clipboardImg	= AbstractUIPlugin
 		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/page_copy.png")
 		.createImage();
-	private final Image				treeViewImg		= AbstractUIPlugin
+	private final Image			treeViewImg		= AbstractUIPlugin
 		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/tree_mode.gif")
 		.createImage();
-	private final Image				flatViewImg		= AbstractUIPlugin
+	private final Image			flatViewImg		= AbstractUIPlugin
 		.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/flat_mode.gif")
 		.createImage();
 
-	private Composite				composite;
+	private Composite			composite;
 
-	private Text		processingLog;
-	private Section		sectProcessingLog;
-	private Section			sectProcessingLogFile;
-	private Button			button;
+	private Text				processingLog;
+	private Section				sectProcessingLog;
+	private Section				sectProcessingLogFile;
+	private Button				button;
 	private ResolutionResult	resolutionResult;
 
-	public ResolutionCanceledPanel() {
-	}
+	public ResolutionCanceledPanel() {}
 
 	public void createControl(final Composite parent) {
 		FormToolkit toolkit = new FormToolkit(parent.getDisplay());

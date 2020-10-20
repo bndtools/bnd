@@ -36,9 +36,8 @@ public class ResolverTest {
 			ClassSignature classSig = a.getClassSignature(c.getClassSignature());
 			System.out.printf("ClassSignature[%s]: %s\n", c, classSig);
 			Map<String, FieldSignature> fieldSigs = fields.stream()
-				.collect(toMap(FieldDef::getName,
-					defined -> a.getFieldSignature((defined.getSignature() != null) ? defined.getSignature()
-						: defined.descriptor())));
+				.collect(toMap(FieldDef::getName, defined -> a.getFieldSignature(
+					(defined.getSignature() != null) ? defined.getSignature() : defined.descriptor())));
 			System.out.printf("FieldSignature[%s]: %s\n", c, fieldSigs);
 
 			FieldSignature fieldSig;
@@ -141,9 +140,8 @@ public class ResolverTest {
 			System.out.printf("ClassSignature[%s]: %s\n", c, classSig);
 
 			Map<String, MethodSignature> methodSigs = methods.stream()
-				.collect(toMap(MethodDef::getName,
-					defined -> a.getMethodSignature((defined.getSignature() != null) ? defined.getSignature()
-						: defined.descriptor())));
+				.collect(toMap(MethodDef::getName, defined -> a.getMethodSignature(
+					(defined.getSignature() != null) ? defined.getSignature() : defined.descriptor())));
 			System.out.printf("MethodSignature[%s]: %s\n", c, methodSigs);
 
 			MethodSignature methodSig;
@@ -169,8 +167,7 @@ public class ResolverTest {
 			methodSig = methodSigs.get("bindSO");
 			resolver = new MethodResolver(classSig, methodSig);
 			resolved = resolver.resolveParameter(0);
-			assertThat(resolved)
-				.isEqualTo(JavaTypeSignature.of("Lorg/osgi/framework/ServiceObjects<+TLR;>;"));
+			assertThat(resolved).isEqualTo(JavaTypeSignature.of("Lorg/osgi/framework/ServiceObjects<+TLR;>;"));
 			type = (ClassTypeSignature) resolved;
 			resolved = resolver.resolveType(type.classType.typeArguments[0]);
 			assertThat(resolved).isEqualTo(JavaTypeSignature.of("Lorg/osgi/service/log/LogReaderService;"));

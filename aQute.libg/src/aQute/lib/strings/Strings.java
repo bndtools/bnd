@@ -94,9 +94,9 @@ public class Strings {
 		if (o != null)
 			return o.toString();
 
-		for (int i = 0; i < ifNull.length; i++) {
-			if (ifNull[i] != null)
-				return ifNull[i].toString();
+		for (Object element : ifNull) {
+			if (element != null)
+				return element.toString();
 		}
 		return "";
 	}

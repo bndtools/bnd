@@ -33,7 +33,8 @@ public class JavaSearchStartupParticipant implements IStartupParticipant, IQuery
 			.getWorkingSetManager();
 		IWorkingSet workingSet = workingSetManager.getWorkingSet(BndtoolsJavaWorkingSetUpdater.WORKING_SET_NAME);
 		if (workingSet == null) {
-			workingSet = workingSetManager.createWorkingSet(BndtoolsJavaWorkingSetUpdater.WORKING_SET_NAME, new IAdaptable[0]);
+			workingSet = workingSetManager.createWorkingSet(BndtoolsJavaWorkingSetUpdater.WORKING_SET_NAME,
+				new IAdaptable[0]);
 			workingSet.setLabel(BndtoolsJavaWorkingSetUpdater.WORKING_SET_NAME);
 			workingSet.setId(BndtoolsJavaWorkingSetUpdater.ID);
 			workingSetManager.addWorkingSet(workingSet);
@@ -46,16 +47,13 @@ public class JavaSearchStartupParticipant implements IStartupParticipant, IQuery
 	}
 
 	@Override
-	public void queryAdded(ISearchQuery query) {
-	}
+	public void queryAdded(ISearchQuery query) {}
 
 	@Override
-	public void queryRemoved(ISearchQuery query) {
-	}
+	public void queryRemoved(ISearchQuery query) {}
 
 	@Override
-	public void queryStarting(ISearchQuery query) {
-	}
+	public void queryStarting(ISearchQuery query) {}
 
 	@Override
 	public void queryFinished(ISearchQuery query) {
@@ -80,11 +78,9 @@ public class JavaSearchStartupParticipant implements IStartupParticipant, IQuery
 					.filter(member -> Optional.ofNullable(member.getPath())
 						.filter(this::isDerived)
 						.map(IPath::lastSegment)
-						.filter(file -> file.endsWith(
-							".jar"))
+						.filter(file -> file.endsWith(".jar"))
 						.isPresent())
-					.flatMap(member -> Arrays.stream(result.getMatches(
-						member)))
+					.flatMap(member -> Arrays.stream(result.getMatches(member)))
 					.forEach(result::removeMatch);
 			}
 		}

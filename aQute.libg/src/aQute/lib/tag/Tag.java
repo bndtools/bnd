@@ -43,8 +43,7 @@ public class Tag {
 	String							name;																																												// Name
 	final Map<String, String>		attributes			= new LinkedHashMap<>();
 	final List<Object>				content				= new ArrayList<>();																																			// Content
-	static final DateTimeFormatter	DATE_TIME_FORMATTER	= DateTimeFormatter
-		.ofPattern("yyyyMMddHHmmss.SSS", Locale.ROOT)
+	static final DateTimeFormatter	DATE_TIME_FORMATTER	= DateTimeFormatter.ofPattern("yyyyMMddHHmmss.SSS", Locale.ROOT)
 		.withZone(ZoneId.systemDefault());
 	boolean							cdata;
 

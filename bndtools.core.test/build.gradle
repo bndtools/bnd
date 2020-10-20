@@ -17,4 +17,7 @@ tasks.named('testOSGi') {
     enabled false
     println 'Tests will not run unless on Windows, Mac or Unix'
   }
+  // These tests are currently flaky and often fail.
+  // https://github.com/bndtools/bnd/issues/4253
+  ignoreFailures = true
 }

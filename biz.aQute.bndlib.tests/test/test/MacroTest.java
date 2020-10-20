@@ -1913,7 +1913,6 @@ public class MacroTest {
 			assertEquals("\\u00FF", processor.getReplacer()
 				.process("${format;\\u%04X;255}"));
 
-
 			assertEquals("foo", processor.getReplacer()
 				.process("${format;%s;foo}"));
 

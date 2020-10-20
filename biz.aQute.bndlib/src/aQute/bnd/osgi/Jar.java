@@ -366,8 +366,7 @@ public class Jar implements Closeable {
 	}
 
 	public Stream<Resource> getResources(Predicate<String> matches) {
-		return getResourceNames(matches)
-			.map(resources::get);
+		return getResourceNames(matches).map(resources::get);
 	}
 
 	private String getParent(String path) {
@@ -814,13 +813,13 @@ public class Jar implements Closeable {
 	 */
 	private static int write(OutputStream out, int width, byte[] bytes) throws IOException {
 		int w = width;
-		for (int i = 0; i < bytes.length; i++) {
+		for (byte b : bytes) {
 			if (w >= 72 - EOL.length) { // we need to add the EOL!
 				out.write(EOL);
 				out.write(' ');
 				w = 1;
 			}
-			out.write(bytes[i]);
+			out.write(b);
 			w++;
 		}
 		return w;

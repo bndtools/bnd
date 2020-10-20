@@ -167,6 +167,7 @@ public class Analyzer extends Processor {
 		super.setTypeSpecificPlugins(list);
 		list.add(new ClassIndexerAnalyzer());
 	}
+
 	/**
 	 * Specifically for Maven
 	 */
@@ -535,7 +536,7 @@ public class Analyzer extends Processor {
 		return jar;
 	}
 
-	private final static String	STATUS_PROPERTY	= "status";
+	private final static String STATUS_PROPERTY = "status";
 
 	private Parameters getExportedByAnnotation() {
 		TypeRef exportAnnotation = descriptors.getTypeRef("org/osgi/annotation/bundle/Export");
@@ -1255,8 +1256,7 @@ public class Analyzer extends Processor {
 			profiles = OSGiHeader.parseProperties(ee)
 				.stream()
 				.mapValue(v -> Strings.splitAsStream(v)
-					.collect(Collectors.collectingAndThen(toList(),
-						SortedList<String>::new)))
+					.collect(Collectors.collectingAndThen(toList(), SortedList<String>::new)))
 				.collect(MapStream.toMap());
 		}
 		SortedSet<String> found = new TreeSet<>();
@@ -1341,8 +1341,7 @@ public class Analyzer extends Processor {
 		MapStream.of(dot.getDirectories())
 			.filterValue(mdir -> Objects.nonNull(mdir) && !mdir.isEmpty())
 			.keys()
-			.map(d -> d.concat(
-				"/"))
+			.map(d -> d.concat("/"))
 			.forEach(resources::add);
 
 		//
@@ -1681,12 +1680,12 @@ public class Analyzer extends Processor {
 
 	public void setClasspath(File[] classpath) throws IOException {
 		List<Jar> list = new ArrayList<>();
-		for (int i = 0; i < classpath.length; i++) {
-			if (classpath[i].exists()) {
-				Jar current = new Jar(classpath[i]);
+		for (File element : classpath) {
+			if (element.exists()) {
+				Jar current = new Jar(element);
 				list.add(current);
 			} else {
-				error("Missing file on classpath: %s", IO.absolutePath(classpath[i]));
+				error("Missing file on classpath: %s", IO.absolutePath(element));
 			}
 		}
 		for (Jar jar : list) {
@@ -1695,14 +1694,14 @@ public class Analyzer extends Processor {
 	}
 
 	public void setClasspath(Jar[] classpath) {
-		for (int i = 0; i < classpath.length; i++) {
-			addClasspath(classpath[i]);
+		for (Jar element : classpath) {
+			addClasspath(element);
 		}
 	}
 
 	public void setClasspath(String[] classpath) {
-		for (int i = 0; i < classpath.length; i++) {
-			Jar jar = getJarFromName(classpath[i], " setting classpath");
+		for (String element : classpath) {
+			Jar jar = getJarFromName(element, " setting classpath");
 			if (jar != null)
 				addClasspath(jar);
 		}
@@ -1833,11 +1832,11 @@ public class Analyzer extends Processor {
 	void verifyManifestHeadersCase(Properties properties) {
 		for (Object key : properties.keySet()) {
 			String header = (String) key;
-			for (int j = 0; j < headers.length; j++) {
-				if (!headers[j].equals(header) && headers[j].equalsIgnoreCase(header)) {
+			for (String canonical : headers) {
+				if (!canonical.equals(header) && canonical.equalsIgnoreCase(header)) {
 					warning(
 						"Using a standard OSGi header with the wrong case (bnd is case sensitive!), using: %s and expecting: %s",
-						header, headers[j]);
+						header, canonical);
 					break;
 				}
 			}

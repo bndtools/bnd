@@ -21,13 +21,11 @@ import aQute.lib.io.IO;
 
 public class ExternalPluginHandlerTest {
 
-
 	@Rule
 	public TemporaryFolder	tf	= new TemporaryFolder();
 	File					tmp;
 
 	public ExternalPluginHandlerTest() throws Exception {}
-
 
 	@Test
 	public void testSimple() throws Exception {
@@ -36,12 +34,12 @@ public class ExternalPluginHandlerTest {
 
 			Result<Object, String> call = ws.getExternalPlugins()
 				.call("hellocallable", Callable.class, callable -> {
-				Object o = callable.call();
-				if (o == null)
-					return Result.err("null return");
+					Object o = callable.call();
+					if (o == null)
+						return Result.err("null return");
 
-				return Result.ok(o);
-			});
+					return Result.ok(o);
+				});
 			System.out.println(call);
 			assertThat(call.isOk()).isTrue();
 			assertThat(call.unwrap()).isEqualTo("hello");
@@ -69,16 +67,14 @@ public class ExternalPluginHandlerTest {
 
 			Result<Object, String> call = ws.getExternalPlugins()
 				.call("doesnotexist", Callable.class, callable -> {
-				return Result.ok(callable.call());
-			});
+					return Result.ok(callable.call());
+				});
 			System.out.println(call);
 			assertThat(call.isOk()).isFalse();
 			assertThat(call.error()
 				.get()).contains("no such plugin doesnotexist for type");
 		}
 	}
-
-
 
 	private void getRepo(Workspace ws) throws IOException, Exception {
 		FileTree tree = new FileTree();

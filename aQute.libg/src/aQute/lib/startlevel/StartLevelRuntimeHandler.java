@@ -10,7 +10,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkListener;
-import org.osgi.framework.SynchronousBundleListener;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.startlevel.BundleStartLevel;
 import org.osgi.framework.startlevel.FrameworkStartLevel;
@@ -190,27 +189,22 @@ public class StartLevelRuntimeHandler implements Closeable {
 				setDefaultStartlevel(this.systemBundle, defaultStartlevel);
 
 				systemBundle.getBundleContext()
-					.addBundleListener(new SynchronousBundleListener() {
+					.addBundleListener(event -> {
+						Bundle bundle = event.getBundle();
+						if (bundle.getBundleId() == 0)
+							return;
 
-						@Override
-						public void bundleChanged(BundleEvent event) {
-							Bundle bundle = event.getBundle();
-							if (bundle.getBundleId() == 0)
-								return;
-
-							if (bundle.getSymbolicName() == null) {
-								logger.trace("Found bundle without a bsn %s, ignoring", bundle);
-								return;
-							}
-
-							BundleIdentity id = installed.computeIfAbsent(bundle, BundleIdentity::new);
-							if (event.getType() == BundleEvent.INSTALLED || event.getType() == BundleEvent.UPDATED) {
-								setStartlevel(bundle, id);
-							} else if (event.getType() == BundleEvent.UNINSTALLED) {
-								installed.remove(bundle);
-							}
+						if (bundle.getSymbolicName() == null) {
+							logger.trace("Found bundle without a bsn %s, ignoring", bundle);
+							return;
 						}
 
+						BundleIdentity id = installed.computeIfAbsent(bundle, BundleIdentity::new);
+						if (event.getType() == BundleEvent.INSTALLED || event.getType() == BundleEvent.UPDATED) {
+							setStartlevel(bundle, id);
+						} else if (event.getType() == BundleEvent.UNINSTALLED) {
+							installed.remove(bundle);
+						}
 					});
 				logger.trace("startlevel: default=%s, beginning=%s", defaultStartlevel, beginningStartlevel);
 

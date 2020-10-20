@@ -21,10 +21,10 @@ import aQute.libg.map.MAP.MAPX;
 
 @ExtendWith(SoftAssertionsExtension.class)
 public class ClassIndexTest {
-	public static final String			TMPDIR		= "generated/tmp/test";
-	private static final File			home		= IO.getFile("testresources/classindex");
-	private File						testDir;
-	private Workspace					ws;
+	public static final String	TMPDIR	= "generated/tmp/test";
+	private static final File	home	= IO.getFile("testresources/classindex");
+	private File				testDir;
+	private Workspace			ws;
 
 	@BeforeEach
 	public void setUp(TestInfo testInfo) throws Exception {

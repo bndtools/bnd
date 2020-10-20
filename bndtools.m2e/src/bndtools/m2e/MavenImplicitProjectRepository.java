@@ -35,10 +35,10 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 
 	private static final org.slf4j.Logger	logger	= LoggerFactory.getLogger(MavenImplicitProjectRepository.class);
 
-	private volatile FileSetRepository	fileSetRepository;
-	private final IMavenProjectFacade	projectFacade;
-	private final Run					run;
-	private final IPath					bndrunFilePath;
+	private volatile FileSetRepository		fileSetRepository;
+	private final IMavenProjectFacade		projectFacade;
+	private final Run						run;
+	private final IPath						bndrunFilePath;
 
 	public MavenImplicitProjectRepository(IMavenProjectFacade projectFacade, Run run) {
 		this.projectFacade = projectFacade;
@@ -118,7 +118,7 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository
 	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		if (fileSetRepository == null) {
-			return new TreeSet<Version>();
+			return new TreeSet<>();
 		}
 		return fileSetRepository.versions(bsn);
 	}

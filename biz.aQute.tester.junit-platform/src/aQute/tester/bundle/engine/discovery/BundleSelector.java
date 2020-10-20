@@ -36,9 +36,8 @@ public class BundleSelector implements DiscoverySelector {
 	}
 
 	public static BundleSelector selectBundle(Bundle bundle) {
-		return new BundleSelector(bundle.getSymbolicName(),
-			new VersionRange(VersionRange.LEFT_CLOSED, bundle.getVersion(), bundle.getVersion(),
-				VersionRange.RIGHT_CLOSED));
+		return new BundleSelector(bundle.getSymbolicName(), new VersionRange(VersionRange.LEFT_CLOSED,
+			bundle.getVersion(), bundle.getVersion(), VersionRange.RIGHT_CLOSED));
 	}
 
 	public boolean selects(Bundle bundle) {

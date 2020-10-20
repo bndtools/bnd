@@ -94,8 +94,7 @@ public class ContractTest extends TestCase {
 		Domain domain = Domain.domain(ajar.getManifest());
 		Parameters p = domain.getRequireCapability();
 
-		assertThat(p
-			.stream()
+		assertThat(p.stream()
 			.filterValue(a -> "JavaJAXRS".equals(a.get("osgi.contract")))
 			.values()
 			.findFirst()
@@ -103,14 +102,12 @@ public class ContractTest extends TestCase {
 		assertThat(domain.getImportPackage()).containsKey("javax.ws.rs.ext")
 			.hasValueSatisfying(new Condition<>(a -> a.get("version") == null, "no version"));
 
-		assertThat(p
-			.stream()
+		assertThat(p.stream()
 			.filterValue(a -> "JavaEL".equals(a.get("osgi.contract")))
 			.values()
 			.findFirst()
 			.orElse(null)).containsEntry("filter:", "(&(osgi.contract=JavaEL)(version=2.1.0))");
-		assertThat(domain.getImportPackage()).containsKey(
-			"javax.el")
+		assertThat(domain.getImportPackage()).containsKey("javax.el")
 			.hasValueSatisfying(new Condition<>(a -> a.get("version") == null, "no version"));
 	}
 
@@ -130,8 +127,7 @@ public class ContractTest extends TestCase {
 		Parameters p = domain.getRequireCapability();
 		p.remove("osgi.ee");
 		assertTrue(p.isEmpty());
-		assertThat(domain.getImportPackage())
-			.containsKey("javax.ws.rs.ext")
+		assertThat(domain.getImportPackage()).containsKey("javax.ws.rs.ext")
 			.hasValueSatisfying(new Condition<>(a -> a.get("version") != null, "has version"));
 	}
 

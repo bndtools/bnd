@@ -134,9 +134,7 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
 		contentProvider.setShowRepos(false);
 		viewer.setContentProvider(contentProvider);
 		viewer.setLabelProvider(new RepositoryTreeLabelProvider(true));
-		viewer.setFilters(new ViewerFilter[] {
-			includedRepoFilter
-		});
+		viewer.setFilters(includedRepoFilter);
 
 		txtSearch.addModifyListener(e -> {
 			if (scheduledFilterUpdate != null)

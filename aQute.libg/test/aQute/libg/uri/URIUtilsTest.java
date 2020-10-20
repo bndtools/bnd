@@ -80,19 +80,15 @@ public class URIUtilsTest {
 		fromURIString_returnsPath("reference:file:/some/path", "/some/path", softly);
 		fromURIString_returnsPath("reference:/some/path", "/some/path", softly);
 		fromURIString_returnsPath("file:/some/path", "/some/path", softly);
-		fromURIString_returnsPath(
-			"jar:file:/workspace/bnd/cache/mybundle.jar!/some/contained/element",
+		fromURIString_returnsPath("jar:file:/workspace/bnd/cache/mybundle.jar!/some/contained/element",
 			"/workspace/bnd/cache/mybundle.jar", softly);
-		fromURIString_returnsPath("jar:file:/workspace/bnd/cache/mybundle.jar!/",
-			"/workspace/bnd/cache/mybundle.jar",
+		fromURIString_returnsPath("jar:file:/workspace/bnd/cache/mybundle.jar!/", "/workspace/bnd/cache/mybundle.jar",
 			softly);
 		fromURIString_returnsPath("jar:file:/workspace/bnd/cache/mybundle.jar", "/workspace/bnd/cache/mybundle.jar",
 			softly);
-		fromURIString_returnsPath(
-			"bundle:file:/workspace/bnd/cache/mybundle.jar!/some/contained/element",
+		fromURIString_returnsPath("bundle:file:/workspace/bnd/cache/mybundle.jar!/some/contained/element",
 			"/workspace/bnd/cache/mybundle.jar", softly);
-		fromURIString_returnsPath(
-			"bundle:/workspace/bnd/cache/mybundle.jar!/some/contained/element",
+		fromURIString_returnsPath("bundle:/workspace/bnd/cache/mybundle.jar!/some/contained/element",
 			"/workspace/bnd/cache/mybundle.jar", softly);
 		fromURIString_returnsPath("zip:file:/workspace/bnd/cache/mybundle.jar", "/workspace/bnd/cache/mybundle.jar",
 			softly);
@@ -117,22 +113,16 @@ public class URIUtilsTest {
 		fromURIString_returnsPath("reference:X:\\some\\path", "X:\\some\\path", softly);
 		fromURIString_returnsPath("file://myserver/myshare/some/path", "\\\\myserver\\myshare\\some\\path", softly);
 		fromURIString_returnsPath("unknownscheme:file://someserver/somepath", "\\\\someserver\\somepath", softly);
-		fromURIString_returnsPath(
-			"jar:file:/C:/workspace/bnd/cache/mybundle.jar!/some/contained/element",
+		fromURIString_returnsPath("jar:file:/C:/workspace/bnd/cache/mybundle.jar!/some/contained/element",
 			"C:\\workspace\\bnd\\cache\\mybundle.jar", softly);
-		fromURIString_returnsPath(
-			"jar:file:/C:/workspace/bnd/cache/mybundle.jar!/",
-			"C:\\workspace\\bnd\\cache\\mybundle.jar",
-			softly);
+		fromURIString_returnsPath("jar:file:/C:/workspace/bnd/cache/mybundle.jar!/",
+			"C:\\workspace\\bnd\\cache\\mybundle.jar", softly);
 		fromURIString_returnsPath("jar:file:/C:/workspace/bnd/cache/mybundle.jar",
-			"C:\\workspace\\bnd\\cache\\mybundle.jar",
-			softly);
-		fromURIString_returnsPath(
-			"bundle:file:/C:/workspace/bnd/cache/mybundle.jar!/some/contained/element",
+			"C:\\workspace\\bnd\\cache\\mybundle.jar", softly);
+		fromURIString_returnsPath("bundle:file:/C:/workspace/bnd/cache/mybundle.jar!/some/contained/element",
 			"C:\\workspace\\bnd\\cache\\mybundle.jar", softly);
 		fromURIString_returnsPath("zip:file:/C:/workspace/bnd/cache/mybundle.jar",
-			"C:\\workspace\\bnd\\cache\\mybundle.jar",
-			softly);
+			"C:\\workspace\\bnd\\cache\\mybundle.jar", softly);
 	}
 
 	@Test
@@ -145,27 +135,17 @@ public class URIUtilsTest {
 		fromURI_returnsPath(new URI("reference:file:/some/path"), "/some/path", softly);
 		fromURI_returnsPath(new URI("reference:/some/path"), "/some/path", softly);
 		fromURI_returnsPath(new URI("file:/some/path"), "/some/path", softly);
-		fromURI_returnsPath(
-			new URI(
-			"jar:file:/workspace/bnd/cache/mybundle.jar!/some/contained/element"),
+		fromURI_returnsPath(new URI("jar:file:/workspace/bnd/cache/mybundle.jar!/some/contained/element"),
 			"/workspace/bnd/cache/mybundle.jar", softly);
-		fromURI_returnsPath(new URI(
-			"jar:file:/workspace/bnd/cache/mybundle.jar!/"),
-			"/workspace/bnd/cache/mybundle.jar",
+		fromURI_returnsPath(new URI("jar:file:/workspace/bnd/cache/mybundle.jar!/"),
+			"/workspace/bnd/cache/mybundle.jar", softly);
+		fromURI_returnsPath(new URI("jar:file:/workspace/bnd/cache/mybundle.jar"), "/workspace/bnd/cache/mybundle.jar",
 			softly);
-		fromURI_returnsPath(new URI("jar:file:/workspace/bnd/cache/mybundle.jar"),
-			"/workspace/bnd/cache/mybundle.jar",
-			softly);
-		fromURI_returnsPath(
-			new URI(
-			"bundle:file:/workspace/bnd/cache/mybundle.jar!/some/contained/element"),
+		fromURI_returnsPath(new URI("bundle:file:/workspace/bnd/cache/mybundle.jar!/some/contained/element"),
 			"/workspace/bnd/cache/mybundle.jar", softly);
-		fromURI_returnsPath(
-			new URI(
-			"bundle:/workspace/bnd/cache/mybundle.jar!/some/contained/element"),
+		fromURI_returnsPath(new URI("bundle:/workspace/bnd/cache/mybundle.jar!/some/contained/element"),
 			"/workspace/bnd/cache/mybundle.jar", softly);
-		fromURI_returnsPath(new URI("zip:file:/workspace/bnd/cache/mybundle.jar"),
-			"/workspace/bnd/cache/mybundle.jar",
+		fromURI_returnsPath(new URI("zip:file:/workspace/bnd/cache/mybundle.jar"), "/workspace/bnd/cache/mybundle.jar",
 			softly);
 	}
 

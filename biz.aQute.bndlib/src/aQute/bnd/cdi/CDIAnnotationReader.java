@@ -196,8 +196,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 
 		this.member = method;
 
-		String signature = (member.getSignature() != null) ? member.getSignature()
-			: member.descriptor();
+		String signature = (member.getSignature() != null) ? member.getSignature() : member.descriptor();
 		MethodSignature methodSig = analyzer.getMethodSignature(signature);
 		MethodResolver resolver = new MethodResolver(classSig, methodSig);
 		if (methodSig.parameterTypes.length != 1)
@@ -267,8 +266,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 		ClassResolver resolver;
 		switch (reference.elementType()) {
 			case PARAMETER : {
-				String signature = (member.getSignature() != null) ? member.getSignature()
-					: member.descriptor();
+				String signature = (member.getSignature() != null) ? member.getSignature() : member.descriptor();
 				MethodSignature methodSig = analyzer.getMethodSignature(signature);
 				resolver = new MethodResolver(classSig, methodSig);
 				JavaTypeSignature parameterType = ((MethodResolver) resolver).resolveParameter(parameter);
@@ -418,8 +416,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 			}
 			case METHOD : {
 				Clazz.MethodDef methodDef = (Clazz.MethodDef) member;
-				String signature = (member.getSignature() != null) ? member.getSignature()
-					: member.descriptor();
+				String signature = (member.getSignature() != null) ? member.getSignature() : member.descriptor();
 				MethodSignature methodSig = analyzer.getMethodSignature(signature);
 				MethodResolver resolver = new MethodResolver(classSig, methodSig);
 				Result result = resolver.resolveResult();

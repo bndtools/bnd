@@ -21,7 +21,6 @@ import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.MavenVersionRange;
 import aQute.bnd.version.Version;
 
-
 public class MavenVersionTest {
 
 	@Test
@@ -344,9 +343,9 @@ public class MavenVersionTest {
 
 	@Test
 	public void testComparableSorting() throws Exception {
-		List<MavenVersion> ordered = Stream.of("1.2.7-ALPHA", "1.2.7-a2", "1.2.7-beta", "1.2.7-B50", "1.2.7-Milestone",
-			"1.2.7-MILESTONE-2", "1.2.7-M3", "1.2.7-RC", "1.2.7-CR2", "1.2.7-rc5", "1.2.7-SNAPSHOT", "1.2.7",
-			"1.2.7-SP", "1.2.7-random")
+		List<MavenVersion> ordered = Stream
+			.of("1.2.7-ALPHA", "1.2.7-a2", "1.2.7-beta", "1.2.7-B50", "1.2.7-Milestone", "1.2.7-MILESTONE-2",
+				"1.2.7-M3", "1.2.7-RC", "1.2.7-CR2", "1.2.7-rc5", "1.2.7-SNAPSHOT", "1.2.7", "1.2.7-SP", "1.2.7-random")
 			.map(MavenVersion::parseMavenString)
 			.collect(Collectors.toList());
 		List<MavenVersion> shuffled = new ArrayList<>(ordered);

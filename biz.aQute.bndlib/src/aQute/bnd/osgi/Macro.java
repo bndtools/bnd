@@ -1222,11 +1222,13 @@ public class Macro {
 	}
 
 	static final String _systemHelp = "${system;<command>[;<in>]}, execute a system command";
+
 	public String _system(String[] args) throws Exception {
 		return system_internal(false, args);
 	}
 
 	static final String _system_allow_failHelp = "${system-allow-fail;<command>[;<in>]}, execute a system command allowing command failure";
+
 	public String _system_allow_fail(String[] args) throws Exception {
 		String result = "";
 		try {
@@ -2112,8 +2114,8 @@ public class Macro {
 	 */
 	public String _bytes(String[] args) {
 		try (Formatter sb = new Formatter()) {
-			for (int i = 0; i < args.length; i++) {
-				long l = Long.parseLong(args[1]);
+			for (String arg : args) {
+				long l = Long.parseLong(arg);
 				bytes(sb, l, 0, new String[] {
 					"b", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb", "Yb", "Bb", "Geopbyte"
 				});

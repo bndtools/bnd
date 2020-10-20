@@ -22,8 +22,7 @@ public class SAXUtil {
 				filter.setParent(last);
 				last = filter;
 			}
-		XMLReader reader = XML
-			.newSAXParserFactory()
+		XMLReader reader = XML.newSAXParserFactory()
 			.newSAXParser()
 			.getXMLReader();
 		reader.setContentHandler(last);

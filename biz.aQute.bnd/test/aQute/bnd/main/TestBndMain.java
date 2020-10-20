@@ -60,8 +60,7 @@ public class TestBndMain extends TestBndMainBase {
 		 * See
 		 * https://github.com/Homebrew/homebrew-core/blob/master/Formula/bnd.rb
 		 */
-		expectOutputContainsPattern(
-			"BUNDLES\\s+org.apache.felix.gogo.runtime;version='\\[1.0.0,1.0.1\\)'");
+		expectOutputContainsPattern("BUNDLES\\s+org.apache.felix.gogo.runtime;version='\\[1.0.0,1.0.1\\)'");
 		expectNoError();
 	}
 

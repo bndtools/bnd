@@ -27,8 +27,7 @@ public abstract class BndTargetLocationFactory implements ITargetLocationFactory
 		if (this.type.equals(type)) {
 			Element locationElement;
 			try {
-				DocumentBuilder docBuilder = XML
-					.newDocumentBuilderFactory()
+				DocumentBuilder docBuilder = XML.newDocumentBuilderFactory()
 					.newDocumentBuilder();
 				Document document = docBuilder.parse(new ByteArrayInputStream(serializedXML.getBytes("UTF-8")));
 				locationElement = document.getDocumentElement();

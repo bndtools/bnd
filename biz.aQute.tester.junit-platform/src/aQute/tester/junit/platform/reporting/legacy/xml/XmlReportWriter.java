@@ -63,7 +63,7 @@ class XmlReportWriter {
 
 	private static final Pattern			CDATA_SPLIT_PATTERN	= Pattern.compile("(?<=]])(?=>)");
 
-	private final XmlReportData	reportData;
+	private final XmlReportData				reportData;
 
 	XmlReportWriter(XmlReportData reportData) {
 		this.reportData = reportData;

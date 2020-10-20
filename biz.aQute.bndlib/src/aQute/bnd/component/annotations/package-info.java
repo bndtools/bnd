@@ -29,4 +29,3 @@ package aQute.bnd.component.annotations;
 import static aQute.bnd.component.ComponentConstants.COMPONENT_SPECIFICATION_VERSION;
 
 import org.osgi.annotation.versioning.Version;
-

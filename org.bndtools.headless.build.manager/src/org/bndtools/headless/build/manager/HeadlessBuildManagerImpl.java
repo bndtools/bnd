@@ -21,75 +21,78 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 
 @Component
 public class HeadlessBuildManagerImpl implements HeadlessBuildManager {
-    private final ILogger logger = Logger.getLogger(this.getClass());
+	private final ILogger							logger				= Logger.getLogger(this.getClass());
 
-    private final Map<String, HeadlessBuildPlugin> plugins = new TreeMap<String, HeadlessBuildPlugin>();
-    private final Map<String, NamedPlugin> pluginsInformation = new TreeMap<String, NamedPlugin>();
+	private final Map<String, HeadlessBuildPlugin>	plugins				= new TreeMap<>();
+	private final Map<String, NamedPlugin>			pluginsInformation	= new TreeMap<>();
 
-    @Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC)
-    void addPlugin(HeadlessBuildPlugin plugin) {
-        if (plugin == null) {
-            return;
-        }
+	@Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC)
+	void addPlugin(HeadlessBuildPlugin plugin) {
+		if (plugin == null) {
+			return;
+		}
 
-        NamedPlugin pluginInformation = plugin.getInformation();
-        String name = pluginInformation.getName();
-        synchronized (plugins) {
-            plugins.put(name, plugin);
-            pluginsInformation.put(name, pluginInformation);
-        }
-    }
+		NamedPlugin pluginInformation = plugin.getInformation();
+		String name = pluginInformation.getName();
+		synchronized (plugins) {
+			plugins.put(name, plugin);
+			pluginsInformation.put(name, pluginInformation);
+		}
+	}
 
-    void removePlugin(HeadlessBuildPlugin plugin) {
-        if (plugin == null) {
-            return;
-        }
+	void removePlugin(HeadlessBuildPlugin plugin) {
+		if (plugin == null) {
+			return;
+		}
 
-        String name = plugin.getInformation()
-            .getName();
-        synchronized (plugins) {
-            pluginsInformation.remove(name);
-            plugins.remove(name);
-        }
-    }
+		String name = plugin.getInformation()
+			.getName();
+		synchronized (plugins) {
+			pluginsInformation.remove(name);
+			plugins.remove(name);
+		}
+	}
 
-    /*
-     * HeadlessBuildManager
-     */
+	/*
+	 * HeadlessBuildManager
+	 */
 
-    @Override
-    public Collection<NamedPlugin> getAllPluginsInformation() {
-        synchronized (plugins) {
-            return Collections.unmodifiableCollection(pluginsInformation.values());
-        }
-    }
+	@Override
+	public Collection<NamedPlugin> getAllPluginsInformation() {
+		synchronized (plugins) {
+			return Collections.unmodifiableCollection(pluginsInformation.values());
+		}
+	}
 
-    @Override
-    @Deprecated
-    public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) {
-        setup(plugins, cnf, projectDir, add, enabledIgnorePlugins, new LinkedList<String>());
-    }
+	@Override
+	@Deprecated
+	public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add,
+		Set<String> enabledIgnorePlugins) {
+		setup(plugins, cnf, projectDir, add, enabledIgnorePlugins, new LinkedList<String>());
+	}
 
-    @Override
-    public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins, List<String> warnings) {
-        if (plugins == null || plugins.isEmpty()) {
-            return;
-        }
+	@Override
+	public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins,
+		List<String> warnings) {
+		if (plugins == null || plugins.isEmpty()) {
+			return;
+		}
 
-        for (String pluginName : plugins) {
-            HeadlessBuildPlugin plugin = null;
-            synchronized (this.plugins) {
-                plugin = this.plugins.get(pluginName);
-            }
-            if (plugin == null) {
-                continue;
-            }
+		for (String pluginName : plugins) {
+			HeadlessBuildPlugin plugin = null;
+			synchronized (this.plugins) {
+				plugin = this.plugins.get(pluginName);
+			}
+			if (plugin == null) {
+				continue;
+			}
 
-            try {
-                plugin.setup(cnf, projectDir, add, enabledIgnorePlugins, warnings);
-            } catch (Throwable e) {
-                logger.logError(String.format("Unable to %s headless build file(s) for the %sproject in %s", add ? "add" : "remove", cnf ? "cnf " : "", projectDir.getAbsolutePath()), e);
-            }
-        }
-    }
+			try {
+				plugin.setup(cnf, projectDir, add, enabledIgnorePlugins, warnings);
+			} catch (Throwable e) {
+				logger.logError(String.format("Unable to %s headless build file(s) for the %sproject in %s",
+					add ? "add" : "remove", cnf ? "cnf " : "", projectDir.getAbsolutePath()), e);
+			}
+		}
+	}
 }

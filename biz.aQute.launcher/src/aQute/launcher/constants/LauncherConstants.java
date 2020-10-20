@@ -13,45 +13,45 @@ import aQute.bnd.osgi.Constants;
 
 public class LauncherConstants {
 
-	public final static String		LAUNCHER_PROPERTIES			= "launcher.properties";
-	public final static String		DEFAULT_LAUNCHER_PROPERTIES	= "launcher.properties";
-	public final static String		LAUNCHER_ARGUMENTS			= "launcher.arguments";
-	public final static String		LAUNCHER_READY				= "launcher.ready";
+	public final static String		LAUNCHER_PROPERTIES				= "launcher.properties";
+	public final static String		DEFAULT_LAUNCHER_PROPERTIES		= "launcher.properties";
+	public final static String		LAUNCHER_ARGUMENTS				= "launcher.arguments";
+	public final static String		LAUNCHER_READY					= "launcher.ready";
 
 	// MUST BE ALIGNED WITH ProjectLauncher! Do not want to create coupling
 	// so cannot refer.
-	public final static int			OK							= 0;
-	public final static int			WARNING						= 126 - 1;
-	public final static int			ERROR						= 126 - 2;
-	public final static int			TIMEDOUT					= 126 - 3;
-	public final static int			UPDATE_NEEDED				= 126 - 4;
-	public final static int			CANCELED					= 126 - 5;
-	public final static int			DUPLICATE_BUNDLE			= 126 - 6;
-	public final static int			RESOLVE_ERROR				= 126 - 7;
-	public final static int			ACTIVATOR_ERROR				= 126 - 8;
-	public static final int			STOPPED						= 126 - 9;
-	public static final int			RETURN_INSTEAD_OF_EXIT		= 197;
+	public final static int			OK								= 0;
+	public final static int			WARNING							= 126 - 1;
+	public final static int			ERROR							= 126 - 2;
+	public final static int			TIMEDOUT						= 126 - 3;
+	public final static int			UPDATE_NEEDED					= 126 - 4;
+	public final static int			CANCELED						= 126 - 5;
+	public final static int			DUPLICATE_BUNDLE				= 126 - 6;
+	public final static int			RESOLVE_ERROR					= 126 - 7;
+	public final static int			ACTIVATOR_ERROR					= 126 - 8;
+	public static final int			STOPPED							= 126 - 9;
+	public static final int			RETURN_INSTEAD_OF_EXIT			= 197;
 	public final static String		LAUNCH_FRAMEWORK_RESTART_REASON	= "launch.framework.restart.reason";
 
 	// Local names
-	final static String				LAUNCH_SERVICES				= "launch.services";
-	final static String				LAUNCH_STORAGE_DIR			= "launch.storage.dir";
-	final static String				LAUNCH_KEEP					= "launch.keep";
-	final static String				LAUNCH_RUNBUNDLES			= "launch.bundles";
-	final static String				LAUNCH_SYSTEMPACKAGES		= "launch.system.packages";
-	final static String				LAUNCH_SYSTEMCAPABILITIES	= "launch.system.capabilities";
-	final static String				LAUNCH_TIMEOUT				= "launch.timeout";
-	final static String				LAUNCH_EMBEDDED				= "launch.embedded";
-	final static String				LAUNCH_NAME					= "launch.name";
-	final static String				LAUNCH_NOREFERENCES			= "launch.noreferences";
-	final static String				LAUNCH_NOTIFICATION_PORT	= "launch.notificationPort";
+	final static String				LAUNCH_SERVICES					= "launch.services";
+	final static String				LAUNCH_STORAGE_DIR				= "launch.storage.dir";
+	final static String				LAUNCH_KEEP						= "launch.keep";
+	final static String				LAUNCH_RUNBUNDLES				= "launch.bundles";
+	final static String				LAUNCH_SYSTEMPACKAGES			= "launch.system.packages";
+	final static String				LAUNCH_SYSTEMCAPABILITIES		= "launch.system.capabilities";
+	final static String				LAUNCH_TIMEOUT					= "launch.timeout";
+	final static String				LAUNCH_EMBEDDED					= "launch.embedded";
+	final static String				LAUNCH_NAME						= "launch.name";
+	final static String				LAUNCH_NOREFERENCES				= "launch.noreferences";
+	final static String				LAUNCH_NOTIFICATION_PORT		= "launch.notificationPort";
 	public final static String		LAUNCH_FRAMEWORK_RESTART		= "launch.framework.restart";
 
-	public final static String[]	LAUNCHER_PROPERTY_KEYS		= {
+	public final static String[]	LAUNCHER_PROPERTY_KEYS			= {
 		LAUNCH_SERVICES, LAUNCH_STORAGE_DIR, LAUNCH_KEEP, LAUNCH_NOREFERENCES, LAUNCH_RUNBUNDLES, LAUNCH_SYSTEMPACKAGES,
 		LAUNCH_SYSTEMCAPABILITIES, LAUNCH_SYSTEMPACKAGES, Constants.LAUNCH_TRACE, LAUNCH_TIMEOUT,
-		Constants.LAUNCH_ACTIVATORS, LAUNCH_FRAMEWORK_RESTART,
-		LAUNCH_EMBEDDED, LAUNCH_NAME, LAUNCH_NOREFERENCES, LAUNCH_NOTIFICATION_PORT, Constants.LAUNCH_ACTIVATION_EAGER
+		Constants.LAUNCH_ACTIVATORS, LAUNCH_FRAMEWORK_RESTART, LAUNCH_EMBEDDED, LAUNCH_NAME, LAUNCH_NOREFERENCES,
+		LAUNCH_NOTIFICATION_PORT, Constants.LAUNCH_ACTIVATION_EAGER
 	};
 	/**
 	 * The command line arguments of the launcher. Launcher are not supposed to
@@ -64,18 +64,18 @@ public class LauncherConstants {
 	public boolean					noreferences;
 	public File						storageDir;
 	public boolean					keep;
-	public final List<String>		runbundles					= new ArrayList<>();
+	public final List<String>		runbundles						= new ArrayList<>();
 	public String					systemPackages;
 	public String					systemCapabilities;
 	public boolean					trace;
 	public long						timeout;
-	public final List<String>		activators					= new ArrayList<>();
-	public Map<String, String>		runProperties				= new HashMap<>();
-	public boolean					embedded					= false;
+	public final List<String>		activators						= new ArrayList<>();
+	public Map<String, String>		runProperties					= new HashMap<>();
+	public boolean					embedded						= false;
 	public String					name;
-	public int						notificationPort			= -1;
-	public boolean					activationEager				= false;
-	public boolean					frameworkRestart			= false;
+	public int						notificationPort				= -1;
+	public boolean					activationEager					= false;
+	public boolean					frameworkRestart				= false;
 
 	/**
 	 * Translate a constants to properties.

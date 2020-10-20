@@ -26,14 +26,14 @@ public class TaggedFunctions extends SimpleJtwigFunction {
 			.parallelStream()
 			.map(tag -> {
 				try {
-						if (tag.equals("*")) {
-							tag = ".*";
-						}
-						return Pattern.compile(tag);
+					if (tag.equals("*")) {
+						tag = ".*";
+					}
+					return Pattern.compile(tag);
 				} catch (Exception e) {
-						throw new RuntimeException("Tag is not a compileable pattern", e);
+					throw new RuntimeException("Tag is not a compileable pattern", e);
 				}
-				})
+			})
 			.collect(Collectors.toList());
 	}
 
@@ -50,8 +50,8 @@ public class TaggedFunctions extends SimpleJtwigFunction {
 			.flatMap(o -> {
 				if (o instanceof Collection) {
 					return ((Collection<?>) o).stream();
-					} else if (o instanceof Object[]) {
-						return Stream.of(((Object[]) o));
+				} else if (o instanceof Object[]) {
+					return Stream.of(((Object[]) o));
 				} else {
 					return Stream.of(o);
 				}

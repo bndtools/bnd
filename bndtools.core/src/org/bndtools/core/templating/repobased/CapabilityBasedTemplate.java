@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
@@ -349,12 +350,7 @@ public class CapabilityBasedTemplate implements Template {
 		if (getClass() != obj.getClass())
 			return false;
 		CapabilityBasedTemplate other = (CapabilityBasedTemplate) obj;
-		if (capability == null) {
-			if (other.capability != null)
-				return false;
-		} else if (!capability.equals(other.capability))
-			return false;
-		return true;
+		return Objects.equals(capability, other.capability);
 	}
 
 	@Override

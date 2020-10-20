@@ -53,10 +53,8 @@ public class MavenBndrunContainer implements MavenRunListenerHelper {
 	private final IMavenExecutionContext				context;
 	private final IProgressMonitor						monitor;
 
-	public static MavenBndrunContainer getBndrunContainer(
-		IMavenProjectFacade projectFacade,
-		MojoExecution mojoExecution,
-		IProgressMonitor monitor) {
+	public static MavenBndrunContainer getBndrunContainer(IMavenProjectFacade projectFacade,
+		MojoExecution mojoExecution, IProgressMonitor monitor) {
 
 		MavenProject mavenProject = helper.getMavenProject(projectFacade);
 
@@ -97,12 +95,11 @@ public class MavenBndrunContainer implements MavenRunListenerHelper {
 			}
 		}
 
-		return getBndrunContainer(projectFacade, bundles, useMavenDependencies, includeDependencyManagement, scopeValues, monitor);
+		return getBndrunContainer(projectFacade, bundles, useMavenDependencies, includeDependencyManagement,
+			scopeValues, monitor);
 	}
 
-	public static MavenBndrunContainer getBndrunContainer(
-		IMavenProjectFacade projectFacade,
-		Bundles bundles,
+	public static MavenBndrunContainer getBndrunContainer(IMavenProjectFacade projectFacade, Bundles bundles,
 		boolean useMavenDependencies, boolean includeDependencyManagement, Set<String> scopeValues,
 		IProgressMonitor monitor) {
 		MavenProject mavenProject = helper.getMavenProject(projectFacade);
@@ -112,35 +109,32 @@ public class MavenBndrunContainer implements MavenRunListenerHelper {
 			IMavenExecutionContext context = projectManager.createExecutionContext(projectFacade.getPom(),
 				resolverConfiguration);
 
-			BndrunContainer bndrunContainer = context.execute(mavenProject,
-				(c, m) -> {
-					MavenSession mavenSession = c.getSession();
-					mavenSession.setCurrentProject(mavenProject);
+			BndrunContainer bndrunContainer = context.execute(mavenProject, (c, m) -> {
+				MavenSession mavenSession = c.getSession();
+				mavenSession.setCurrentProject(mavenProject);
 
-					@SuppressWarnings("deprecation")
-					Builder builder = new BndrunContainer.Builder(mavenProject, mavenSession, c.getRepositorySession(),
-						helper.lookupComponent(ProjectDependenciesResolver.class),
-						helper.lookupComponent(org.apache.maven.artifact.factory.ArtifactFactory.class),
-						helper.lookupComponent(RepositorySystem.class));
+				@SuppressWarnings("deprecation")
+				Builder builder = new BndrunContainer.Builder(mavenProject, mavenSession, c.getRepositorySession(),
+					helper.lookupComponent(ProjectDependenciesResolver.class),
+					helper.lookupComponent(org.apache.maven.artifact.factory.ArtifactFactory.class),
+					helper.lookupComponent(RepositorySystem.class));
 
-					Optional.ofNullable(bundles)
-						.map(asFunction(b -> b.getFiles(mavenProject
-							.getBasedir())))
-						.ifPresent(builder::setBundles);
+				Optional.ofNullable(bundles)
+					.map(asFunction(b -> b.getFiles(mavenProject.getBasedir())))
+					.ifPresent(builder::setBundles);
 
-					builder.setIncludeDependencyManagement(includeDependencyManagement);
+				builder.setIncludeDependencyManagement(includeDependencyManagement);
 
-					if ((scopeValues != null) && !scopeValues.isEmpty()) {
-						builder.setScopes(scopeValues.stream()
-							.map(Scope::valueOf)
-							.collect(Collectors.toSet()));
-					}
+				if ((scopeValues != null) && !scopeValues.isEmpty()) {
+					builder.setScopes(scopeValues.stream()
+						.map(Scope::valueOf)
+						.collect(Collectors.toSet()));
+				}
 
-					builder.setPostProcessor(new WorkspaceProjectPostProcessor(m));
+				builder.setPostProcessor(new WorkspaceProjectPostProcessor(m));
 
-					return builder.build();
-				},
-				monitor);
+				return builder.build();
+			}, monitor);
 
 			return new MavenBndrunContainer(bndrunContainer, mavenProject, context, monitor);
 		} catch (Exception e) {
@@ -151,8 +145,7 @@ public class MavenBndrunContainer implements MavenRunListenerHelper {
 	}
 
 	public MavenBndrunContainer(BndrunContainer bndrunContainer, MavenProject mavenProject,
-		IMavenExecutionContext context,
-		IProgressMonitor monitor) {
+		IMavenExecutionContext context, IProgressMonitor monitor) {
 		this.bndrunContainer = bndrunContainer;
 		this.mavenProject = mavenProject;
 		this.context = context;

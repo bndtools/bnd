@@ -3,7 +3,6 @@ package aQute.bnd.ant;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -60,8 +59,7 @@ public class EclipseTask extends BaseTask {
 	}
 
 	private void addCareful(List<File> result, Collection<File> projects) {
-		for (Iterator<File> i = projects.iterator(); i.hasNext();) {
-			File d = i.next();
+		for (File d : projects) {
 			if (!result.contains(d))
 				result.add(d);
 		}

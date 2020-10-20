@@ -1,5 +1,7 @@
 package bndtools.model.repo;
 
+import java.util.Objects;
+
 import org.bndtools.utils.resources.ResourceUtils;
 import org.osgi.framework.Version;
 import org.osgi.resource.Resource;
@@ -56,12 +58,7 @@ public class RepositoryResourceElement implements ResourceProvider {
 		if (getClass() != obj.getClass())
 			return false;
 		RepositoryResourceElement other = (RepositoryResourceElement) obj;
-		if (resource == null) {
-			if (other.resource != null)
-				return false;
-		} else if (!resource.equals(other.resource))
-			return false;
-		return true;
+		return Objects.equals(resource, other.resource);
 	}
 
 }

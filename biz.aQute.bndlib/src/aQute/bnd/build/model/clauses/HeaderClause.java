@@ -171,12 +171,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 				return false;
 		} else if (!attribs.isEqual(other.attribs))
 			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		return true;
+		return Objects.equals(name, other.name);
 	}
 
 	@Override

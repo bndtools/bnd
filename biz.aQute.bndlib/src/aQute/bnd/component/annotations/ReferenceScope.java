@@ -18,7 +18,7 @@ package aQute.bnd.component.annotations;
 
 /**
  * Reference scope for the {@link Reference} annotation.
- * 
+ *
  * @author $Id$
  * @since 1.3
  */
@@ -44,7 +44,7 @@ public enum ReferenceScope {
 	 */
 	PROTOTYPE_REQUIRED("prototype_required");
 
-	private final String	value;
+	private final String value;
 
 	ReferenceScope(String value) {
 		this.value = value;

@@ -27,11 +27,8 @@ public class MavenDropTargetListener extends GAVDropTargetListener {
 	void format(FormatEvent formatEvent) {
 		if (formatEvent.isNoVersion()) {
 			format(formatEvent.getResource(), MAVEN_NO_VERSION, formatEvent.getLineAtInsertionPoint(),
-				formatEvent
-					.getIndentPrefix(),
-				indent(isTabs(), getSize()));
-		}
-		else {
+				formatEvent.getIndentPrefix(), indent(isTabs(), getSize()));
+		} else {
 			format(formatEvent.getResource(), MAVEN, formatEvent.getLineAtInsertionPoint(),
 				formatEvent.getIndentPrefix(), indent(isTabs(), getSize()));
 		}
@@ -69,8 +66,7 @@ public class MavenDropTargetListener extends GAVDropTargetListener {
 
 		String group = mc.maven_groupId();
 		String identity = mc.maven_artifactId();
-		String version = mc
-			.maven_version()
+		String version = mc.maven_version()
 			.toString();
 		String classifier = mc.maven_classifier();
 
@@ -91,8 +87,7 @@ public class MavenDropTargetListener extends GAVDropTargetListener {
 
 		switch (syntax) {
 			case MAVEN :
-				sb.append(
-					indentPrefix)
+				sb.append(indentPrefix)
 					.append(indent)
 					.append("<version>")
 					.append(version)

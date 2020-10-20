@@ -74,8 +74,7 @@ public class EETest {
 	@ArgumentsSource(EEsArgumentsProvider.class)
 	@DisplayName("Validate a JAVA exists for each EE")
 	public void checkJAVAFor(EE ee) throws Exception {
-		assertThat(Clazz.JAVA.values()).anyMatch(j -> j
-			.getEE()
+		assertThat(Clazz.JAVA.values()).anyMatch(j -> j.getEE()
 			.equals(ee.getEEName()));
 	}
 

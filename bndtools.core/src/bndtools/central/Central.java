@@ -76,33 +76,34 @@ import bndtools.preferences.BndPreferences;
 
 public class Central implements IStartupParticipant {
 
-	private static final ILogger						logger						= Logger.getLogger(Central.class);
-	private static volatile Central						instance					= null;
-	private static final Deferred<Workspace>					anyWorkspaceDeferred			= promiseFactory()
+	private static final ILogger								logger						= Logger
+		.getLogger(Central.class);
+	private static volatile Central								instance					= null;
+	private static final Deferred<Workspace>					anyWorkspaceDeferred		= promiseFactory()
 		.deferred();
 	private static volatile Deferred<Workspace>					cnfWorkspaceDeferred		= promiseFactory()
 		.deferred();
 	private static final Memoize<Workspace>						workspace					= Memoize
 		.supplier(Central::createWorkspace);
 
-	private static final Supplier<EclipseWorkspaceRepository>	eclipseWorkspaceRepository				= Memoize
+	private static final Supplier<EclipseWorkspaceRepository>	eclipseWorkspaceRepository	= Memoize
 		.supplier(EclipseWorkspaceRepository::new);
 
-	private static Auxiliary							auxiliary;
+	private static Auxiliary									auxiliary;
 
-	static final AtomicBoolean							indexValid					= new AtomicBoolean(false);
+	static final AtomicBoolean									indexValid					= new AtomicBoolean(false);
 
-	private final BundleContext							bundleContext;
-	private final Map<IJavaProject, Project>			javaProjectToModel			= new HashMap<>();
-	private final List<ModelListener>					listeners					= new CopyOnWriteArrayList<>();
+	private final BundleContext									bundleContext;
+	private final Map<IJavaProject, Project>					javaProjectToModel			= new HashMap<>();
+	private final List<ModelListener>							listeners					= new CopyOnWriteArrayList<>();
 
-	private RepositoryListenerPluginTracker				repoListenerTracker;
+	private RepositoryListenerPluginTracker						repoListenerTracker;
 	private final InternalPluginTracker							internalPlugins;
 
 	@SuppressWarnings("unused")
-	private static WorkspaceRepositoryChangeDetector	workspaceRepositoryChangeDetector;
+	private static WorkspaceRepositoryChangeDetector			workspaceRepositoryChangeDetector;
 
-	private static RepositoriesViewRefresher			repositoriesViewRefresher	= new RepositoriesViewRefresher();
+	private static RepositoriesViewRefresher					repositoriesViewRefresher	= new RepositoriesViewRefresher();
 
 	static {
 		try {
@@ -250,8 +251,7 @@ public class Central implements IStartupParticipant {
 				} else if (workspaceDirectory == null && !ws.isDefaultWorkspace()) {
 					// There is no "cnf" project and the current workspace is
 					// not the default, so switch the workspace to the default
-					cnfWorkspaceDeferred = promiseFactory()
-						.deferred();
+					cnfWorkspaceDeferred = promiseFactory().deferred();
 					ws.setFileSystem(Workspace.BND_DEFAULT_WS, Workspace.CNFDIR);
 					ws.forceRefresh();
 					ws.refresh();
@@ -515,8 +515,7 @@ public class Central implements IStartupParticipant {
 	}
 
 	public static Optional<IPath> toBestPath(IResource resource) {
-		return Optional.ofNullable(resource
-			.getLocationURI())
+		return Optional.ofNullable(resource.getLocationURI())
 			.map(File::new)
 			.flatMap(Central::toFullPath);
 	}

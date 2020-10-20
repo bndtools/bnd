@@ -1,5 +1,7 @@
 package org.bndtools.utils.eclipse;
 
+import java.util.Objects;
+
 public class ConfigurationElementCategory implements Comparable<ConfigurationElementCategory> {
 
 	private static final String							DEFAULT_SORT	= "zzz";
@@ -58,17 +60,7 @@ public class ConfigurationElementCategory implements Comparable<ConfigurationEle
 		if (getClass() != obj.getClass())
 			return false;
 		ConfigurationElementCategory other = (ConfigurationElementCategory) obj;
-		if (label == null) {
-			if (other.label != null)
-				return false;
-		} else if (!label.equals(other.label))
-			return false;
-		if (sort == null) {
-			if (other.sort != null)
-				return false;
-		} else if (!sort.equals(other.sort))
-			return false;
-		return true;
+		return Objects.equals(label, other.label) && Objects.equals(sort, other.sort);
 	}
 
 }

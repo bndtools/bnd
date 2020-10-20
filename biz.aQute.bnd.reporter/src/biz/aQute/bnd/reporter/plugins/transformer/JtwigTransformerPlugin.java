@@ -48,15 +48,13 @@ public class JtwigTransformerPlugin implements ReportTransformerPlugin {
 		String sTags = parameters.getOrDefault(BND_REPORTER_MD_TAGS, "default");
 		List<String> tags = Stream.of(sTags.split(","))
 			.filter(Objects::nonNull)
-			.map(
-				String::trim)
+			.map(String::trim)
 			.collect(Collectors.toList());
 		TaggedFunctions showWhenTaggedFunction = new TaggedFunctions(tags);
 
 		final EnvironmentConfigurationBuilder eb = EnvironmentConfigurationBuilder.configuration()
 			.functions()
-			.add(
-				showWhenTaggedFunction)
+			.add(showWhenTaggedFunction)
 			.and();
 
 		eb.resources()

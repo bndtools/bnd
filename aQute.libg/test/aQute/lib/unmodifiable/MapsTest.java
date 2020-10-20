@@ -115,8 +115,8 @@ public class MapsTest {
 
 	@Test
 	public void seven() {
-		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6",
-			"k7", "v7");
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6", "k7",
+			"v7");
 		assertThat(map).hasSize(7)
 			.containsEntry("k1", "v1")
 			.containsEntry("k2", "v2")
@@ -133,8 +133,8 @@ public class MapsTest {
 
 	@Test
 	public void eight() {
-		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6",
-			"k7", "v7", "k8", "v8");
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6", "k7",
+			"v7", "k8", "v8");
 		assertThat(map).hasSize(8)
 			.containsEntry("k1", "v1")
 			.containsEntry("k2", "v2")
@@ -152,8 +152,8 @@ public class MapsTest {
 
 	@Test
 	public void nine() {
-		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6",
-			"k7", "v7", "k8", "v8", "k9", "v9");
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6", "k7",
+			"v7", "k8", "v8", "k9", "v9");
 		assertThat(map).hasSize(9)
 			.containsEntry("k1", "v1")
 			.containsEntry("k2", "v2")
@@ -172,8 +172,8 @@ public class MapsTest {
 
 	@Test
 	public void ten() {
-		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6",
-			"k7", "v7", "k8", "v8", "k9", "v9", "k10", "v10");
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5", "k6", "v6", "k7",
+			"v7", "k8", "v8", "k9", "v9", "k10", "v10");
 		assertThat(map).hasSize(10)
 			.containsEntry("k1", "v1")
 			.containsEntry("k2", "v2")
@@ -195,8 +195,7 @@ public class MapsTest {
 	public void duplicate_key() {
 		assertThatIllegalArgumentException().isThrownBy(() -> Maps.of("k1", "v1", "k1", "v2"));
 		assertThatIllegalArgumentException().isThrownBy(() -> Maps.of("k1", "v1", "k2", "v2", "k2", "v3"));
-		assertThatIllegalArgumentException()
-			.isThrownBy(() -> Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k3", "v4"));
+		assertThatIllegalArgumentException().isThrownBy(() -> Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k3", "v4"));
 	}
 
 	@Test
@@ -227,11 +226,11 @@ public class MapsTest {
 	public void entries() {
 		@SuppressWarnings("unchecked")
 		Entry<String, String>[] entries = new Entry[2];
-		entries[0] = new SimpleEntry<String, String>("k1", "v1");
-		entries[1] = new SimpleEntry<String, String>("k2", "v2");
+		entries[0] = new SimpleEntry<>("k1", "v1");
+		entries[1] = new SimpleEntry<>("k2", "v2");
 		Map<String, String> map = Maps.ofEntries(entries);
 		entries[0].setValue("changed");
-		entries[1] = new SimpleEntry<String, String>("changed", "v2");
+		entries[1] = new SimpleEntry<>("changed", "v2");
 		assertThat(map).hasSize(2)
 			.containsEntry("k1", "v1")
 			.containsEntry("k2", "v2");

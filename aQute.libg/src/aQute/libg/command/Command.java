@@ -75,6 +75,7 @@ public class Command {
 
 	private static final Pattern	escapedDoubleQuote	= Pattern.compile("([\\\\]*)\"");
 	private static final Pattern	trailingBackslash	= Pattern.compile("([\\\\]*)\\z");
+
 	public static String windowsQuote(String s) {
 		if (!needsWindowsQuoting(s))
 			return s;
@@ -282,8 +283,7 @@ public class Command {
 	public Command full(String full) {
 		arguments.clear();
 		new QuotedTokenizer(full, " \t", false, true).stream()
-			.filter(token -> !token
-				.isEmpty())
+			.filter(token -> !token.isEmpty())
 			.forEachOrdered(this::add);
 		return this;
 	}

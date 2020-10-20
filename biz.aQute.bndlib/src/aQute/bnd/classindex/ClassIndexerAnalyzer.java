@@ -17,7 +17,6 @@ public class ClassIndexerAnalyzer implements AnalyzerPlugin {
 	public static final String	X_CLASSINDEX	= "-x-classindex";
 	public static final String	BND_HASHES		= "bnd.hashes";
 
-
 	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		if (analyzer.getProperty(X_CLASSINDEX) == null)

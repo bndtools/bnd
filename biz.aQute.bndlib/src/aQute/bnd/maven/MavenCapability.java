@@ -25,8 +25,7 @@ public interface MavenCapability extends Capability {
 
 	String maven_repository();
 
-	static void addMavenCapability(ResourceBuilder rb, String groupId, String artifactId,
-		MavenVersion version,
+	static void addMavenCapability(ResourceBuilder rb, String groupId, String artifactId, MavenVersion version,
 		String classifier, String repository) {
 		try {
 			CapabilityBuilder c = new CapabilityBuilder(MAVEN_NAMESPACE);

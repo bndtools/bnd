@@ -11,7 +11,7 @@ import aQute.service.reporter.Reporter;
 
 public class MavenFileRepository extends MavenBackingRepository {
 
-	private final File				remote;
+	private final File remote;
 
 	public MavenFileRepository(File local, File remote, Reporter reporter) throws Exception {
 		super(local, remote.toURI()

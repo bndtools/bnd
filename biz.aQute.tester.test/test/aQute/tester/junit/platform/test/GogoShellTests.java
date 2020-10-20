@@ -402,8 +402,7 @@ public class GogoShellTests extends AbstractActivatorTest {
 	void setGetTesterNames() throws Exception {
 		setTesterNames(With2Failures.class.getName() + "#test1 " + With2Failures.class.getName() + "#test3");
 		assertThat(getTesterNames().split("\\s*,\\s*")).containsExactlyInAnyOrder(
-			With2Failures.class.getName() + "#test1",
-			With2Failures.class.getName() + "#test3");
+			With2Failures.class.getName() + "#test1", With2Failures.class.getName() + "#test3");
 
 		setTesterNames(null);
 		assertThat(getTesterNames()).isNull();

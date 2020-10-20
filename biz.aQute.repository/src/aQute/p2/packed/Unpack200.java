@@ -13,12 +13,12 @@ import aQute.libg.command.Command;
 
 public class Unpack200 extends Processor {
 
-	public static final String	PACKED_SUFFIX		= ".pack.gz";
+	public static final String	PACKED_SUFFIX	= ".pack.gz";
 
-	private boolean						canUnpack		= false;
-	private String						unpackCommand	= null;
+	private boolean				canUnpack		= false;
+	private String				unpackCommand	= null;
 
-	private static final Logger			logger			= LoggerFactory.getLogger(Unpack200.class);
+	private static final Logger	logger			= LoggerFactory.getLogger(Unpack200.class);
 
 	public Unpack200(Processor parent) {
 		super(parent);

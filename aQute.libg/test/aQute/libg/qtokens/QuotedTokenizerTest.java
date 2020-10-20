@@ -104,21 +104,16 @@ public class QuotedTokenizerTest {
 	// http://msdn.microsoft.com/en-us/library/17w5ykft.aspx
 	@Test
 	public void testSplitCommandLine() {
-		assertThat(new QuotedTokenizer("a\\\\\\\"b c\td", " \t", false,
-			true)
-			.stream()
+		assertThat(new QuotedTokenizer("a\\\\\\\"b c\td", " \t", false, true).stream()
 			.filter(Strings::notEmpty)).containsExactly("a\\\\\\\"b", "c", "d");
 
-		assertThat(new QuotedTokenizer("a\\\\b d\"e f\"g   h", " \t", false, true)
-			.stream()
+		assertThat(new QuotedTokenizer("a\\\\b d\"e f\"g   h", " \t", false, true).stream()
 			.filter(Strings::notEmpty)).containsExactly("a\\\\b", "d\"e f\"g", "h");
 
-		assertThat(new QuotedTokenizer("a\\\\\\\\\"b c\" d e", " \t", false, true)
-			.stream()
+		assertThat(new QuotedTokenizer("a\\\\\\\\\"b c\" d e", " \t", false, true).stream()
 			.filter(Strings::notEmpty)).containsExactly("a\\\\\\\\\"b c\"", "d", "e");
 
-		assertThat(new QuotedTokenizer("\"abc\"  \t  d e", " \t", false, true)
-			.stream()
+		assertThat(new QuotedTokenizer("\"abc\"  \t  d e", " \t", false, true).stream()
 			.filter(Strings::notEmpty)).containsExactly("\"abc\"", "d", "e");
 	}
 

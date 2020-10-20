@@ -5,7 +5,7 @@ import java.util.NoSuchElementException;
 
 class ImmutableIterator<E> implements Iterator<E> {
 	final E[]	elements;
-	int index;
+	int			index;
 
 	ImmutableIterator(E[] elements) {
 		this.elements = elements;

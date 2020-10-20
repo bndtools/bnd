@@ -12,8 +12,7 @@ import aQute.bnd.build.Workspace;
 public class MavenImplicitProjectRunListener implements MavenRunListenerHelper, RunListener {
 
 	@Override
-	public void create(Run run) throws Exception {
-	}
+	public void create(Run run) throws Exception {}
 
 	@Override
 	public void end(Run run) throws Exception {

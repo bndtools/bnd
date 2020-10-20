@@ -16,9 +16,9 @@ import biz.aQute.resolve.RunResolution;
 
 public class ResolutionResult {
 
-	private final Outcome		outcome;
-	private final IStatus		status;
-	private final RunResolution	resolution;
+	private final Outcome			outcome;
+	private final IStatus			status;
+	private final RunResolution		resolution;
 	private final ResolverLogger	logger;
 
 	public enum Outcome {

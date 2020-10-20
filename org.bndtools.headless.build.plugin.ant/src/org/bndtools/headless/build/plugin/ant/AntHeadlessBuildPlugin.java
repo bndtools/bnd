@@ -18,45 +18,47 @@ import org.osgi.service.component.annotations.Deactivate;
 
 @Component
 public class AntHeadlessBuildPlugin implements HeadlessBuildPlugin {
-    private BundleResourceCopier copier = null;
+	private BundleResourceCopier copier = null;
 
-    @Activate
-    public void activate(BundleContext bundleContext) {
-        copier = new BundleResourceCopier(bundleContext.getBundle());
-    }
+	@Activate
+	public void activate(BundleContext bundleContext) {
+		copier = new BundleResourceCopier(bundleContext.getBundle());
+	}
 
-    @Deactivate
-    public void deactivate() {
-        copier = null;
-    }
+	@Deactivate
+	public void deactivate() {
+		copier = null;
+	}
 
-    /*
-     * HeadlessBuildPlugin
-     */
+	/*
+	 * HeadlessBuildPlugin
+	 */
 
-    @Override
-    public NamedPlugin getInformation() {
-        return new AntHeadlessBuildPluginInformation();
-    }
+	@Override
+	public NamedPlugin getInformation() {
+		return new AntHeadlessBuildPluginInformation();
+	}
 
-    @Override
-    @Deprecated
-    public void setup(boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) throws IOException {
-        setup(cnf, projectDir, add, enabledIgnorePlugins, new LinkedList<String>());
-    }
+	@Override
+	@Deprecated
+	public void setup(boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) throws IOException {
+		setup(cnf, projectDir, add, enabledIgnorePlugins, new LinkedList<String>());
+	}
 
-    @Override
-    public void setup(boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins, List<String> warnings) throws IOException {
-        String baseDir = cnf ? "templates/cnf/" : "templates/project/";
+	@Override
+	public void setup(boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins,
+		List<String> warnings) throws IOException {
+		String baseDir = cnf ? "templates/cnf/" : "templates/project/";
 
-        Collection<File> files = copier.addOrRemoveDirectory(projectDir, baseDir, "/", add ? CopyMode.ADD : CopyMode.CHECK);
-        for (File file : files) {
-            String warning;
-            if (add)
-                warning = String.format("Not overwriting existing Ant build file: %s", file);
-            else
-                warning = String.format("Ant build file may need to be removed: %s", file);
-            warnings.add(warning);
-        }
-    }
+		Collection<File> files = copier.addOrRemoveDirectory(projectDir, baseDir, "/",
+			add ? CopyMode.ADD : CopyMode.CHECK);
+		for (File file : files) {
+			String warning;
+			if (add)
+				warning = String.format("Not overwriting existing Ant build file: %s", file);
+			else
+				warning = String.format("Ant build file may need to be removed: %s", file);
+			warnings.add(warning);
+		}
+	}
 }

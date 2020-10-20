@@ -160,8 +160,7 @@ public class TargetImpl implements ArtifactProvider {
 			logger.debug("Expanding artifact {}", artifact);
 
 			try {
-				TaggedData tag = client
-					.build()
+				TaggedData tag = client.build()
 					.get()
 					.useCache()
 					.asTag()

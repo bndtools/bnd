@@ -28,8 +28,8 @@ public class AnnotationInfo {
 		A init(String type, ElementValueInfo[] values);
 	}
 
-	static <A extends AnnotationInfo> A read(DataInput in, ConstantPool constant_pool,
-		Constructor<A> constructor) throws IOException {
+	static <A extends AnnotationInfo> A read(DataInput in, ConstantPool constant_pool, Constructor<A> constructor)
+		throws IOException {
 		int type_index = in.readUnsignedShort();
 		int num_element_value_pairs = in.readUnsignedShort();
 		ElementValueInfo[] element_value_pairs = new ElementValueInfo[num_element_value_pairs];

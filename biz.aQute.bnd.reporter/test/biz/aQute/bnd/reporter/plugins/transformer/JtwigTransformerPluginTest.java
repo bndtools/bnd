@@ -64,8 +64,7 @@ public class JtwigTransformerPluginTest extends TestCase {
 		final ByteArrayOutputStream output = new ByteArrayOutputStream();
 
 		t.transform(IO.stream(model.toByteArray()),
-			JtwigTransformerPlugin.class.getResourceAsStream("templates/readme.twig"),
-			output,
+			JtwigTransformerPlugin.class.getResourceAsStream("templates/readme.twig"), output,
 			new HashMap<String, String>());
 
 		assertTrue(new String(output.toByteArray()).contains("# test"));

@@ -77,8 +77,7 @@ class P2Indexer implements Closeable {
 		.filter("(" + MD5_ATTRIBUTE + "=*)")
 		.buildSyntheticRequirement();
 
-	P2Indexer(Unpack200 processor, Reporter reporter, File location, HttpClient client, URI url,
-		String name)
+	P2Indexer(Unpack200 processor, Reporter reporter, File location, HttpClient client, URI url, String name)
 		throws Exception {
 		this.processor = processor;
 		this.reporter = reporter;
@@ -186,18 +185,16 @@ class P2Indexer implements Closeable {
 						return promiseFactory.resolved(knownResources.get(id));
 					}
 				}
-					return fetch(a, 2, 1000L)
-							.map(tag -> processor.unpackAndLinkIfNeeded(tag,
-								null))
-						.map(file -> {
-					ResourceBuilder rb = new ResourceBuilder();
-					rb.addFile(file, a.uri);
-					if (a.md5 != null) {
-						rb.addCapability(
-							new CapabilityBuilder(P2_CAPABILITY_NAMESPACE).addAttribute(MD5_ATTRIBUTE, a.md5));
-					}
-					return rb.build();
-				})
+				return fetch(a, 2, 1000L).map(tag -> processor.unpackAndLinkIfNeeded(tag, null))
+					.map(file -> {
+						ResourceBuilder rb = new ResourceBuilder();
+						rb.addFile(file, a.uri);
+						if (a.md5 != null) {
+							rb.addCapability(
+								new CapabilityBuilder(P2_CAPABILITY_NAMESPACE).addAttribute(MD5_ATTRIBUTE, a.md5));
+						}
+						return rb.build();
+					})
 					.recover(failed -> {
 						logger.info("{}: Failed to create resource for {}", name, a.uri, failed.getFailure());
 						return RECOVERY;

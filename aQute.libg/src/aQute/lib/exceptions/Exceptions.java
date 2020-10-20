@@ -69,7 +69,6 @@ public class Exceptions {
 		return sj.toString();
 	}
 
-
 	/**
 	 * Return a display name of an exception type. This is basically removing
 	 * the package and the Exception or Error suffix.

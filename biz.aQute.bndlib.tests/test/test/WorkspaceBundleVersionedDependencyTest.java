@@ -30,7 +30,6 @@ public class WorkspaceBundleVersionedDependencyTest {
 		IO.mkdirs(testDir);
 	}
 
-
 	@Test
 	public void testWorkspaceVersionedDependency() throws Exception {
 		try (Workspace ws = new Workspace(IO.copy(new File("testresources/ws-versioneddependencies"),

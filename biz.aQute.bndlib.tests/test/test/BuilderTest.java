@@ -1129,8 +1129,7 @@ public class BuilderTest {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
-			b.setProperty(Constants.NAMESECTION,
-				"org/osgi/service/event/;Foo=bar");
+			b.setProperty(Constants.NAMESECTION, "org/osgi/service/event/;Foo=bar");
 			b.setProperty(Constants.PRIVATEPACKAGE, "org.osgi.service.event");
 			Jar build = b.build();
 			assertOk(b);
@@ -1138,8 +1137,7 @@ public class BuilderTest {
 			Manifest m = build.getManifest();
 			m.write(System.err);
 
-			assertNotNull(m.getAttributes(
-				"org/osgi/service/event/")
+			assertNotNull(m.getAttributes("org/osgi/service/event/")
 				.getValue("Foo"));
 		} finally {
 			b.close();

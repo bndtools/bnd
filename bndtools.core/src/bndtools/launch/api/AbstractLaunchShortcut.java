@@ -217,9 +217,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 		ILaunchConfigurationType configType = manager.getLaunchConfigurationType(launchId);
 		ILaunchConfiguration[] configs = manager.getLaunchConfigurations(configType);
 
-		for (int i = 0; i < configs.length; i++) {
-			ILaunchConfiguration config = configs[i];
-
+		for (ILaunchConfiguration config : configs) {
 			String configTargetProject = config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME,
 				(String) null);
 			if (configTargetProject != null && configTargetProject.equals(targetProject.getName())) {

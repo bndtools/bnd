@@ -67,8 +67,7 @@ import bndtools.central.Central;
 @Component(service = {
 	IMavenProjectChangedListener.class, MavenWorkspaceRepository.class, RepositoryPlugin.class
 })
-public class MavenWorkspaceRepository extends
-	AbstractIndexingRepository<IProject, Artifact>
+public class MavenWorkspaceRepository extends AbstractIndexingRepository<IProject, Artifact>
 	implements IMavenProjectChangedListener, MavenRunListenerHelper, PopulatedRepository, RepositoryPlugin, Actionable {
 
 	enum Kind {
@@ -91,11 +90,11 @@ public class MavenWorkspaceRepository extends
 		private final int kind;
 	}
 
-	private final static Logger											logger						= LoggerFactory
+	private final static Logger											logger			= LoggerFactory
 		.getLogger(MavenWorkspaceRepository.class);
 	private final static PromiseFactory									promiseFactory	= Processor.getPromiseFactory();
 
-	private final static String											BND_INFO	= "bnd.info";
+	private final static String											BND_INFO		= "bnd.info";
 	private volatile Supplier<Set<String>>								list;
 	private final Function<String, RequirementExpression>				identificationExpressionFunction;
 	private final BiFunction<String, Version, RequirementExpression>	identificationAndVersionExpressionFunction;
@@ -140,8 +139,7 @@ public class MavenWorkspaceRepository extends
 					list = memoize(this::list0);
 					Central.refreshPlugins();
 				}
-			}
-		);
+			});
 	}
 
 	@Override
@@ -278,8 +276,7 @@ public class MavenWorkspaceRepository extends
 			throw Exceptions.duck(failure);
 		}
 
-		SortedSet<Version> versions = promise
-			.getValue()
+		SortedSet<Version> versions = promise.getValue()
 			.stream()
 			.map(r -> {
 				InfoCapability info = getInfo(r);
@@ -321,8 +318,8 @@ public class MavenWorkspaceRepository extends
 				String from = artifact.getProperty("from", "");
 
 				if (!identityCapability.isPresent()) {
-					BridgeRepository.addInformationCapability(rb, identifier, mavenVersion.getOSGiVersion(),
-						from, Constants.NOT_A_BUNDLE_S);
+					BridgeRepository.addInformationCapability(rb, identifier, mavenVersion.getOSGiVersion(), from,
+						Constants.NOT_A_BUNDLE_S);
 				}
 
 				MavenCapability.addMavenCapability(rb, artifact.getGroupId(), artifact.getArtifactId(), mavenVersion,
@@ -332,8 +329,7 @@ public class MavenWorkspaceRepository extends
 					logger.debug("{}: Project {} indexing artifact {} as {}", getName(), project.getName(), artifact,
 						identifier);
 				}
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				logger.error("{}: Error in {} indexing artifact {}", getName(), project.getName(), artifact, t);
 			}
 
@@ -396,8 +392,7 @@ public class MavenWorkspaceRepository extends
 			throw Exceptions.duck(failure);
 		}
 
-		return promise
-			.getValue()
+		return promise.getValue()
 			.stream()
 			.findFirst()
 			.orElse(null);
@@ -498,8 +493,8 @@ public class MavenWorkspaceRepository extends
 					logger.debug("{}: Collected file {} for project {}", getName(), bundleFile,
 						projectFacade.getProject());
 					Artifact artifact = new DefaultArtifact(mavenProject.getGroupId(), mavenProject.getArtifactId(),
-						classifier, "jar", mavenProject.getVersion(), Collections.singletonMap("from", projectFacade
-							.getProject()
+						classifier, "jar", mavenProject.getVersion(),
+						Collections.singletonMap("from", projectFacade.getProject()
 							.toString()),
 						bundleFile);
 					files.add(artifact);

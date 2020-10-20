@@ -38,7 +38,6 @@ import org.assertj.core.presentation.Representation;
 import org.assertj.core.presentation.StandardRepresentation;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -128,13 +127,9 @@ public class BuildpathQuickFixProcessorTest {
 			.isAssignableFrom(sutClass);
 	}
 
-	static IResourceVisitor VISITOR = new IResourceVisitor() {
-
-		@Override
-		public boolean visit(IResource resource) throws CoreException {
-			System.err.println(resource.getFullPath());
-			return true;
-		}
+	static IResourceVisitor VISITOR = resource -> {
+		System.err.println(resource.getFullPath());
+		return true;
 	};
 
 	static void dumpWorkspace() throws CoreException {
@@ -939,16 +934,14 @@ public class BuildpathQuickFixProcessorTest {
 		// @formatter:on
 
 		// bMethod() at [176,183]
-		assertThatProposals(proposalsFor(176, 0, source)).haveExactly(1,
-			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0",
-				"iface.bundle.MyForeignClass, iface.bundle.MyInterface"));
+		assertThatProposals(proposalsFor(176, 0, source)).haveExactly(1, suggestsBundle(
+			"bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass, iface.bundle.MyInterface"));
 		// super.bMethod() at [197,204]
 		assertThatProposals(proposalsFor(197, 0, source)).haveExactly(1,
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
 		// this.bMethod() at [217,224]
-		assertThatProposals(proposalsFor(217, 0, source)).haveExactly(1,
-			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0",
-				"iface.bundle.MyForeignClass, iface.bundle.MyInterface"));
+		assertThatProposals(proposalsFor(217, 0, source)).haveExactly(1, suggestsBundle(
+			"bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass, iface.bundle.MyInterface"));
 		// simple.pkg.InterfaceExtendingInterfaceFromAnotherBundle.super.myInterfaceMethod()
 		// at [294,311]
 		assertThatProposals(proposalsFor(294, 0, source)).haveExactly(1,

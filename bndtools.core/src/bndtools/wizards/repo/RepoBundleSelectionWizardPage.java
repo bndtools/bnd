@@ -124,9 +124,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 		availableViewer.setContentProvider(new RepositoryTreeContentProvider());
 		availableViewer.setAutoExpandLevel(2);
 
-		availableViewer.setFilters(new ViewerFilter[] {
-			alreadySelectedFilter
-		});
+		availableViewer.setFilters(alreadySelectedFilter);
 
 		// Load data
 		try {
@@ -144,9 +142,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 					availableTree.setFocus();
 			}
 		});
-		selectionSearchTxt.addModifyListener(e -> availableViewer.setFilters(new ViewerFilter[] {
-			alreadySelectedFilter
-		}));
+		selectionSearchTxt.addModifyListener(e -> availableViewer.setFilters(alreadySelectedFilter));
 		availableViewer.addSelectionChangedListener(event -> {
 			IStructuredSelection sel = (IStructuredSelection) availableViewer.getSelection();
 			for (Iterator<?> iter = sel.iterator(); iter.hasNext();) {

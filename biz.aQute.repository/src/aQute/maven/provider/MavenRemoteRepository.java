@@ -102,9 +102,8 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 						.getMessage(), delay, retries);
 					@SuppressWarnings("unchecked")
 					Promise<TaggedData> delayed = (Promise<TaggedData>) failed.delay(delay);
-					return delayed.recoverWith(
-						f -> fetch(path, file, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10)),
-							force));
+					return delayed.recoverWith(f -> fetch(path, file, retries - 1,
+						Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10)), force));
 				}));
 	}
 

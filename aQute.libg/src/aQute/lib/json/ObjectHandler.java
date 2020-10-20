@@ -162,10 +162,10 @@ public class ObjectHandler extends Handler {
 	}
 
 	private Field getField(String key) {
-		for (int i = 0; i < fields.length; i++) {
-			int n = key.compareTo(fields[i].getName());
+		for (Field field : fields) {
+			int n = key.compareTo(field.getName());
 			if (n == 0)
-				return fields[i];
+				return field;
 			if (n < 0)
 				return null;
 		}

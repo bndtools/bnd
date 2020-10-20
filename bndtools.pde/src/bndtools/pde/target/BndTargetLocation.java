@@ -121,8 +121,7 @@ public abstract class BndTargetLocation extends AbstractBundleContainer
 	public String serialize() {
 		Document document;
 		try {
-			DocumentBuilder docBuilder = XML
-				.newDocumentBuilderFactory()
+			DocumentBuilder docBuilder = XML.newDocumentBuilderFactory()
 				.newDocumentBuilder();
 			document = docBuilder.newDocument();
 
@@ -133,8 +132,7 @@ public abstract class BndTargetLocation extends AbstractBundleContainer
 			serialize(document, locationElement);
 
 			StreamResult result = new StreamResult(new StringWriter());
-			Transformer transformer = XML
-				.newTransformerFactory()
+			Transformer transformer = XML.newTransformerFactory()
 				.newTransformer();
 			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			transformer.transform(new DOMSource(document), result);

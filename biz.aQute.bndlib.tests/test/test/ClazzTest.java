@@ -462,7 +462,7 @@ public class ClazzTest extends TestCase {
 	public static class AnnotationsOnTypeUseImplements1 implements Serializable, @TypeUse Foo<String> {
 
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 1L;
 	}

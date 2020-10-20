@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -187,8 +186,7 @@ public class PomFromManifest extends WriteResource {
 			Tag ls = new Tag(project, "licenses");
 
 			Parameters map = Processor.parseHeader(licenses, null);
-			for (Iterator<Entry<String, Attrs>> e = map.entrySet()
-				.iterator(); e.hasNext();) {
+			for (Entry<String, Attrs> entry : map.entrySet()) {
 
 				// Bundle-License:
 				// http://www.opensource.org/licenses/apache2.0.php; \
@@ -202,7 +200,6 @@ public class PomFromManifest extends WriteResource {
 				//    <distribution>repo</distribution>
 				//    </license>
 
-				Entry<String, Attrs> entry = e.next();
 				Tag l = new Tag(ls, "license");
 				Map<String, String> values = entry.getValue();
 				String url = entry.getKey();

@@ -133,8 +133,8 @@ public class WrapTask extends BaseTask {
 		QuotedTokenizer qt = new QuotedTokenizer(files, separator);
 		String entries[] = qt.getTokens();
 		File project = getProject().getBaseDir();
-		for (int i = 0; i < entries.length; i++) {
-			File f = getFile(project, entries[i]);
+		for (String entry : entries) {
+			File f = getFile(project, entry);
 			if (f.exists())
 				list.add(f);
 			else
@@ -174,8 +174,8 @@ public class WrapTask extends BaseTask {
 	public void addConfiguredFileSet(FileSet list) {
 		DirectoryScanner scanner = list.getDirectoryScanner(getProject());
 		String files[] = scanner.getIncludedFiles();
-		for (int i = 0; i < files.length; i++) {
-			File f = getFile(scanner.getBasedir(), files[i]);
+		for (String file : files) {
+			File f = getFile(scanner.getBasedir(), file);
 			this.jars.add(f);
 		}
 	}

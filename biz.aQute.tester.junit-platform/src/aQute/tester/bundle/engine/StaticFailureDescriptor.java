@@ -47,6 +47,7 @@ public class StaticFailureDescriptor extends AbstractTestDescriptor {
 		getChildren().stream()
 			.map(StaticFailureDescriptor.class::cast)
 			.forEach(descriptor -> descriptor.execute(listener));
-		listener.executionFinished(this, error == null ? TestExecutionResult.successful() : TestExecutionResult.failed(error));
+		listener.executionFinished(this,
+			error == null ? TestExecutionResult.successful() : TestExecutionResult.failed(error));
 	}
 }

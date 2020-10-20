@@ -66,44 +66,44 @@ import aQute.lib.unmodifiable.Maps;
  * Processes spec DS annotations into xml.
  */
 public class DSAnnotationReader extends ClassDataCollector {
-	private static final Logger					logger						= LoggerFactory
+	private static final Logger								logger						= LoggerFactory
 		.getLogger(DSAnnotationReader.class);
 
-	public static final Version					V1_0						= new Version("1.0.0");
-	public static final Version					V1_1						= new Version("1.1.0");
-	public static final Version					V1_2						= new Version("1.2.0");
-	public static final Version					V1_3						= new Version("1.3.0");
-	public static final Version					V1_4						= new Version("1.4.0");
-	public static final Version					VMAX						= new Version("2.0.0");
+	public static final Version								V1_0						= new Version("1.0.0");
+	public static final Version								V1_1						= new Version("1.1.0");
+	public static final Version								V1_2						= new Version("1.2.0");
+	public static final Version								V1_3						= new Version("1.3.0");
+	public static final Version								V1_4						= new Version("1.4.0");
+	public static final Version								VMAX						= new Version("2.0.0");
 
-	private static final Pattern				BINDNAME					= Pattern
+	private static final Pattern							BINDNAME					= Pattern
 		.compile("(?:set|add|bind)?(?<name>.*)");
 
-	static final Pattern						IDENTIFIERTOPROPERTY		= Pattern
+	static final Pattern									IDENTIFIERTOPROPERTY		= Pattern
 		.compile("(__)|(_)|(\\$_\\$)|(\\$\\$)|(\\$)");
 
 	// We avoid using the XXX.class.getName() because it breaks the launcher
 	// tests when run in gradle. This is because gradle uses the bin/
 	// folder, not the bndlib jar which packages the ds annotations
-	private static final Instruction			COMPONENT_INSTR				= new Instruction(
+	private static final Instruction						COMPONENT_INSTR				= new Instruction(
 		"org.osgi.service.component.annotations.Component");
-	private static final Instruction			COMPONENT_PROPERTY_INSTR	= new Instruction(
+	private static final Instruction						COMPONENT_PROPERTY_INSTR	= new Instruction(
 		"org.osgi.service.component.annotations.ComponentPropertyType");
 
-	final static Map<String, Class<?>>			wrappers					= Maps.of("boolean", Boolean.class, "byte",
-		Byte.class, "short", Short.class, "char", Character.class, "int", Integer.class, "long", Long.class, "float",
-		Float.class, "double", Double.class);
+	final static Map<String, Class<?>>						wrappers					= Maps.of("boolean",
+		Boolean.class, "byte", Byte.class, "short", Short.class, "char", Character.class, "int", Integer.class, "long",
+		Long.class, "float", Float.class, "double", Double.class);
 
-	private static final Entry<Pattern, String>	unbind1						= new SimpleImmutableEntry<>(
+	private static final Entry<Pattern, String>				unbind1						= new SimpleImmutableEntry<>(
 		Pattern.compile("add(.*)"), "remove$1");
-	private static final Entry<Pattern, String>	unbind2						= new SimpleImmutableEntry<>(
+	private static final Entry<Pattern, String>				unbind2						= new SimpleImmutableEntry<>(
 		Pattern.compile("(.*)"), "un$1");
-	private static final Entry<Pattern, String>	updated1					= new SimpleImmutableEntry<>(
+	private static final Entry<Pattern, String>				updated1					= new SimpleImmutableEntry<>(
 		Pattern.compile("(?:add|set|bind)(.*)"), "updated$1");
-	private static final Entry<Pattern, String>	updated2					= new SimpleImmutableEntry<>(
+	private static final Entry<Pattern, String>				updated2					= new SimpleImmutableEntry<>(
 		Pattern.compile("(.*)"), "updated$1");
 
-	private static final String					constructorArgFormat		= "$%03d";
+	private static final String								constructorArgFormat		= "$%03d";
 
 	ComponentDef											component;
 
@@ -182,8 +182,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 				if (ec == null) {
 					DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(
 						className.getFQN(), null, null, ErrorType.UNABLE_TO_LOCATE_SUPER_CLASS);
-					analyzer
-						.error("[%s] Missing super class for DS annotations %s", details.location(), extendsClass)
+					analyzer.error("[%s] Missing super class for DS annotations %s", details.location(), extendsClass)
 						.details(details);
 					break;
 				} else {
@@ -298,8 +297,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 		switch (annotation.elementType()) {
 			case METHOD :
 				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
-					member.descriptor(),
-					ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
+					member.descriptor(), ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
 				break;
 			case FIELD :
 				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
@@ -419,8 +417,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 						break;
 					}
 				}
-				analyzer
-					.error("[%s] Invalid activation object type %s", details.location(), member.descriptor())
+				analyzer.error("[%s] Invalid activation object type %s", details.location(), member.descriptor())
 					.details(details);
 
 				break;
@@ -583,10 +580,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 							.details(details);
 					}
 				} catch (Exception e) {
-					analyzer
-						.exception(e,
-							"[%s] Exception looking at annotation type for activation object with descriptor %s, type %s",
-							details.location(), memberDescriptor, param.binary)
+					analyzer.exception(e,
+						"[%s] Exception looking at annotation type for activation object with descriptor %s, type %s",
+						details.location(), memberDescriptor, param.binary)
 						.details(details);
 				}
 				break;
@@ -884,7 +880,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 			}
 			return (start == 0) ? name
 				: sb.append(name, start, name.length())
-				.toString();
+					.toString();
 		}
 	}
 
@@ -1375,10 +1371,11 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 	private void checkMapReturnType(DeclarativeServicesAnnotationError details) {
 		if (!options.contains(Options.felixExtensions)) {
-			analyzer.error(
-				"[%s] To use a return type of Map you must specify the -dsannotations-options felixExtensions flag "
-					+ " and use a felix extension attribute or explicitly specify the appropriate xmlns.",
-				details.location())
+			analyzer
+				.error(
+					"[%s] To use a return type of Map you must specify the -dsannotations-options felixExtensions flag "
+						+ " and use a felix extension attribute or explicitly specify the appropriate xmlns.",
+					details.location())
 				.details(details);
 		}
 	}
@@ -1475,15 +1472,13 @@ public class DSAnnotationReader extends ClassDataCollector {
 						if (!analyzer.assignable(clazz, service)) {
 							analyzer
 								.error("[%s] The component is not assignable to specified service %s",
-									details.location(),
-									typeRef.getFQN())
+									details.location(), typeRef.getFQN())
 								.details(details);
 						}
 					} catch (Exception e) {
 						analyzer
-							.exception(e,
-								"[%s] An error occurred when attempting to process service %s", details.location(),
-								typeRef.getFQN())
+							.exception(e, "[%s] An error occurred when attempting to process service %s",
+								details.location(), typeRef.getFQN())
 							.details(details);
 					}
 				})
@@ -1568,8 +1563,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 	private MethodSignature getMethodSignature(MethodDef method) {
 		String signature = method.getSignature();
-		return analyzer.getMethodSignature((signature != null) ? signature
-			: method.descriptor());
+		return analyzer.getMethodSignature((signature != null) ? signature : method.descriptor());
 	}
 
 	@Override

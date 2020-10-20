@@ -15,9 +15,7 @@ public class ProjectNamesParameterValues implements IParameterValues {
 
 	@Override
 	public Map getParameterValues() {
-		return Arrays.stream(
-			ResourcesPlugin
-			.getWorkspace()
+		return Arrays.stream(ResourcesPlugin.getWorkspace()
 			.getRoot()
 			.getProjects())
 			.collect(toMap(IProject::getName, IProject::getName));

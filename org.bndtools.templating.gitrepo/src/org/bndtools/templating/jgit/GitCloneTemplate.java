@@ -32,199 +32,195 @@ import aQute.lib.regex.PatternConstants;
 
 public class GitCloneTemplate implements Template {
 
-    private static final Pattern SHA1_PATTERN = Pattern.compile(PatternConstants.SHA1);
-    private final GitCloneTemplateParams params;
+	private static final Pattern			SHA1_PATTERN	= Pattern.compile(PatternConstants.SHA1);
+	private final GitCloneTemplateParams	params;
 
-    private Repository checkedOut = null;
+	private Repository						checkedOut		= null;
 
-    public GitCloneTemplate(GitCloneTemplateParams params) {
-        this.params = params;
-    }
+	public GitCloneTemplate(GitCloneTemplateParams params) {
+		this.params = params;
+	}
 
-    @Override
-    public String getName() {
-        return params.name != null ? params.name : params.cloneUrl;
-    }
+	@Override
+	public String getName() {
+		return params.name != null ? params.name : params.cloneUrl;
+	}
 
-    @Override
-    public String getShortDescription() {
-        String desc;
-        String branch = params.branch != null ? params.branch : GitCloneTemplateParams.DEFAULT_BRANCH;
-        if (params.name == null) {
-            desc = branch;
-        } else {
-            desc = params.cloneUrl + " " + branch;
-        }
-        return desc;
-    }
+	@Override
+	public String getShortDescription() {
+		String desc;
+		String branch = params.branch != null ? params.branch : GitCloneTemplateParams.DEFAULT_BRANCH;
+		if (params.name == null) {
+			desc = branch;
+		} else {
+			desc = params.cloneUrl + " " + branch;
+		}
+		return desc;
+	}
 
-    @Override
-    public String getCategory() {
-        return params.category;
-    }
+	@Override
+	public String getCategory() {
+		return params.category;
+	}
 
-    @Override
-    public int getRanking() {
-        return 0;
-    }
+	@Override
+	public int getRanking() {
+		return 0;
+	}
 
-    @Override
-    public Version getVersion() {
-        return null;
-    }
+	@Override
+	public Version getVersion() {
+		return null;
+	}
 
-    @Override
-    public ObjectClassDefinition getMetadata() throws Exception {
-        return getMetadata(new NullProgressMonitor());
-    }
+	@Override
+	public ObjectClassDefinition getMetadata() throws Exception {
+		return getMetadata(new NullProgressMonitor());
+	}
 
-    @Override
-    public ObjectClassDefinition getMetadata(IProgressMonitor monitor) throws Exception {
-        return new ObjectClassDefinitionImpl(getName(), getShortDescription(), null);
-    }
+	@Override
+	public ObjectClassDefinition getMetadata(IProgressMonitor monitor) throws Exception {
+		return new ObjectClassDefinitionImpl(getName(), getShortDescription(), null);
+	}
 
-    @Override
-    public ResourceMap generateOutputs(Map<String, List<Object>> parameters) throws Exception {
-        return generateOutputs(parameters, new NullProgressMonitor());
-    }
+	@Override
+	public ResourceMap generateOutputs(Map<String, List<Object>> parameters) throws Exception {
+		return generateOutputs(parameters, new NullProgressMonitor());
+	}
 
-    @Override
-    public ResourceMap generateOutputs(Map<String, List<Object>> parameters, IProgressMonitor monitor) throws Exception {
-        File workingDir = null;
-        File gitDir = null;
+	@Override
+	public ResourceMap generateOutputs(Map<String, List<Object>> parameters, IProgressMonitor monitor)
+		throws Exception {
+		File workingDir = null;
+		File gitDir = null;
 
-        // Get existing checkout if available
-        synchronized (this) {
-            if (checkedOut != null) {
-                workingDir = checkedOut.getWorkTree();
-                gitDir = new File(workingDir, ".git");
-            }
-        }
+		// Get existing checkout if available
+		synchronized (this) {
+			if (checkedOut != null) {
+				workingDir = checkedOut.getWorkTree();
+				gitDir = new File(workingDir, ".git");
+			}
+		}
 
-        if (workingDir == null) {
-            // Need to do a new checkout
-            workingDir = Files.createTempDirectory("checkout")
-                .toFile();
-            gitDir = new File(workingDir, ".git");
+		if (workingDir == null) {
+			// Need to do a new checkout
+			workingDir = Files.createTempDirectory("checkout")
+				.toFile();
+			gitDir = new File(workingDir, ".git");
 
-            try {
-                CloneCommand cloneCmd = Git.cloneRepository()
-                    .setURI(params.cloneUrl)
-                    .setDirectory(workingDir)
-                    .setNoCheckout(true);
-                cloneCmd.setProgressMonitor(new EclipseGitProgressTransformer(monitor));
-                Git git = cloneCmd.call();
+			try {
+				CloneCommand cloneCmd = Git.cloneRepository()
+					.setURI(params.cloneUrl)
+					.setDirectory(workingDir)
+					.setNoCheckout(true);
+				cloneCmd.setProgressMonitor(new EclipseGitProgressTransformer(monitor));
+				Git git = cloneCmd.call();
 
-                CheckoutCommand checkout = git.checkout()
-                    .setCreateBranch(true)
-                    .setName("_tmp");
+				CheckoutCommand checkout = git.checkout()
+					.setCreateBranch(true)
+					.setName("_tmp");
 
-                if (params.branch == null) {
-                    checkout.setStartPoint(GitCloneTemplateParams.DEFAULT_BRANCH);
-                } else {
-                    String startPoint = null;
+				if (params.branch == null) {
+					checkout.setStartPoint(GitCloneTemplateParams.DEFAULT_BRANCH);
+				} else {
+					String startPoint = null;
 
-                    if (params.branch.startsWith(Constants.DEFAULT_REMOTE_NAME + "/")) {
-                        startPoint = params.branch;
-                    } else {
-                        // Check for a matching tag
-                        for (Ref ref : git.tagList()
-                            .call()) {
-                            if (ref.getName()
-                                .endsWith("/" + params.branch)) {
-                                startPoint = params.branch;
-                                break;
-                            }
-                        }
+					if (params.branch.startsWith(Constants.DEFAULT_REMOTE_NAME + "/")) {
+						startPoint = params.branch;
+					} else {
+						// Check for a matching tag
+						for (Ref ref : git.tagList()
+							.call()) {
+							if (ref.getName()
+								.endsWith("/" + params.branch)) {
+								startPoint = params.branch;
+								break;
+							}
+						}
 
-                        if (startPoint == null) {
-                            // Check remote branches
-                            for (Ref ref : git.branchList()
-                                .setListMode(ListMode.REMOTE)
-                                .call()) {
-                                if (ref.getName()
-                                    .endsWith("/" + params.branch)) {
-                                    startPoint = Constants.DEFAULT_REMOTE_NAME + "/" + params.branch;
-                                    break;
-                                }
-                            }
+						if (startPoint == null) {
+							// Check remote branches
+							for (Ref ref : git.branchList()
+								.setListMode(ListMode.REMOTE)
+								.call()) {
+								if (ref.getName()
+									.endsWith("/" + params.branch)) {
+									startPoint = Constants.DEFAULT_REMOTE_NAME + "/" + params.branch;
+									break;
+								}
+							}
 
-                            if (startPoint == null) {
-                                if (SHA1_PATTERN.matcher(params.branch)
-                                    .matches()) {
-                                    startPoint = params.branch;
-                                }
-                            }
-                        }
-                    }
+							if (startPoint == null) {
+								if (SHA1_PATTERN.matcher(params.branch)
+									.matches()) {
+									startPoint = params.branch;
+								}
+							}
+						}
+					}
 
-                    checkout.setStartPoint(startPoint);
-                }
+					checkout.setStartPoint(startPoint);
+				}
 
-                checkout.call();
-                checkedOut = git.getRepository();
-            } catch (JGitInternalException e) {
-                Throwable cause = e.getCause();
-                if (cause instanceof Exception)
-                    throw (Exception) cause;
-                throw e;
-            }
-        }
+				checkout.call();
+				checkedOut = git.getRepository();
+			} catch (JGitInternalException e) {
+				Throwable cause = e.getCause();
+				if (cause instanceof Exception)
+					throw (Exception) cause;
+				throw e;
+			}
+		}
 
-        final File exclude = gitDir;
-        FileFilter filter = new FileFilter() {
-            @Override
-            public boolean accept(File path) {
-                return !path.equals(exclude);
-            }
-        };
-        return toResourceMap(workingDir, filter);
-    }
+		final File exclude = gitDir;
+		FileFilter filter = path -> !path.equals(exclude);
+		return toResourceMap(workingDir, filter);
+	}
 
-    @Override
-    public void close() throws IOException {
-        File tempDir = null;
-        synchronized (this) {
-            if (checkedOut != null)
-                tempDir = checkedOut.getWorkTree();
-        }
-        if (tempDir != null)
-            IO.delete(tempDir);
-    }
+	@Override
+	public void close() throws IOException {
+		File tempDir = null;
+		synchronized (this) {
+			if (checkedOut != null)
+				tempDir = checkedOut.getWorkTree();
+		}
+		if (tempDir != null)
+			IO.delete(tempDir);
+	}
 
-    @Override
-    public URI getIcon() {
-        return params.iconUri;
-    }
+	@Override
+	public URI getIcon() {
+		return params.iconUri;
+	}
 
-    @Override
-    public URI getHelpContent() {
-        return params.helpUri;
-    }
+	@Override
+	public URI getHelpContent() {
+		return params.helpUri;
+	}
 
-    private static ResourceMap toResourceMap(File baseDir, FileFilter filter) {
-        ResourceMap result = new ResourceMap();
-        File[] files = baseDir.listFiles(filter);
-        if (files != null)
-            for (File file : files) {
-                recurse("", file, filter, result);
-            }
-        return result;
-    }
+	private static ResourceMap toResourceMap(File baseDir, FileFilter filter) {
+		ResourceMap result = new ResourceMap();
+		File[] files = baseDir.listFiles(filter);
+		if (files != null)
+			for (File file : files) {
+				recurse("", file, filter, result);
+			}
+		return result;
+	}
 
-    private static void recurse(String prefix, File file, FileFilter filter, ResourceMap resourceMap) {
-        if (file.isDirectory()) {
-            String path = prefix + file.getName() + "/";
-            resourceMap.put(path, new FolderResource());
+	private static void recurse(String prefix, File file, FileFilter filter, ResourceMap resourceMap) {
+		if (file.isDirectory()) {
+			String path = prefix + file.getName() + "/";
+			resourceMap.put(path, new FolderResource());
 
-            File[] children = file.listFiles(filter);
-            for (File child : children) {
-                recurse(path, child, filter, resourceMap);
-            }
-        } else {
-            String path = prefix + file.getName();
-            // TODO: WTF is the encoding?
-            resourceMap.put(path, new FileResource(file, "UTF-8"));
-        }
-    }
+			File[] children = file.listFiles(filter);
+			for (File child : children) {
+				recurse(path, child, filter, resourceMap);
+			}
+		} else {
+			String path = prefix + file.getName();
+			// TODO: WTF is the encoding?
+			resourceMap.put(path, new FileResource(file, "UTF-8"));
+		}
+	}
 }

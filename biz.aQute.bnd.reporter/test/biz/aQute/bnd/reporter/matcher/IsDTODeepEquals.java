@@ -5,7 +5,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,8 +42,7 @@ public class IsDTODeepEquals extends BaseMatcher<Object> {
 
 	@Override
 	public void describeMismatch(Object item, Description description) {
-		description.appendText(
-			"found ")
+		description.appendText("found ")
 			.appendValue(failureActualValue);
 	}
 
@@ -78,8 +76,7 @@ public class IsDTODeepEquals extends BaseMatcher<Object> {
 	}
 
 	private void arraySameAs(Object[] expected, Object actual, String path) {
-		fail(() -> actual
-			.getClass()
+		fail(() -> actual.getClass()
 			.isArray(), expected, actual, path);
 
 		Object[] actualArray = (Object[]) actual;
@@ -167,14 +164,8 @@ public class IsDTODeepEquals extends BaseMatcher<Object> {
 				continue;
 			publicFields.add(field);
 		}
-		Collections.sort(publicFields, new Comparator<Field>() {
-
-			@Override
-			public int compare(Field o1, Field o2) {
-				return o1.getName()
-					.compareTo(o2.getName());
-			}
-		});
+		Collections.sort(publicFields, (o1, o2) -> o1.getName()
+			.compareTo(o2.getName()));
 
 		return publicFields.toArray(new Field[publicFields.size()]);
 	}

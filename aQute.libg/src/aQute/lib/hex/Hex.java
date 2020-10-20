@@ -65,9 +65,9 @@ public class Hex {
 	}
 
 	public final static void append(Appendable sb, byte[] data) throws IOException {
-		for (int i = 0; i < data.length; i++) {
-			sb.append(nibble(data[i] >> 4));
-			sb.append(nibble(data[i]));
+		for (byte b : data) {
+			sb.append(nibble(b >> 4));
+			sb.append(nibble(b));
 		}
 	}
 
@@ -210,8 +210,8 @@ public class Hex {
 	 * @return true of classified as binary
 	 */
 	public static boolean isBinary(byte[] data) {
-		for (int i = 0; i < data.length; i++) {
-			if (data[i] == 0)
+		for (byte b : data) {
+			if (b == 0)
 				return true;
 		}
 		return false;

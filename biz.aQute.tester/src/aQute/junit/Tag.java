@@ -26,18 +26,18 @@ import java.util.regex.Pattern;
  * or other Tag objects.
  */
 public class Tag {
-	Tag								parent;														// Parent
-																								// element
-	String							name;														// Name
-																								// of
-																								// the
-																								// tag
-	Map<String, String>				attributes	= new LinkedHashMap<>();						// Attributes
-																								// name
-																								// ->
-																								// value
-	List<Object>					content		= new ArrayList<>();							// Content
-																								// elements
+	Tag								parent;																				// Parent
+																														// element
+	String							name;																				// Name
+																														// of
+																														// the
+																														// tag
+	Map<String, String>				attributes			= new LinkedHashMap<>();										// Attributes
+																														// name
+																														// ->
+																														// value
+	List<Object>					content				= new ArrayList<>();											// Content
+																														// elements
 	boolean							cdata;
 
 	private static final Pattern	CDATA_SPLIT_PATTERN	= Pattern.compile("(?<=]])(?=>)");
@@ -471,11 +471,11 @@ public class Tag {
 		}
 		Tag tags[] = select(path);
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < tags.length; i++) {
+		for (Tag tag : tags) {
 			if (attribute == null)
-				tags[i].getContentsAsString(sb);
+				tag.getContentsAsString(sb);
 			else
-				sb.append(tags[i].getAttribute(attribute));
+				sb.append(tag.getAttribute(attribute));
 		}
 		return sb.toString();
 	}

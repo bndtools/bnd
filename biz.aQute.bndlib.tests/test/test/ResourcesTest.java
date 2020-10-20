@@ -36,7 +36,7 @@ import aQute.lib.io.IOConstants;
 
 @SuppressWarnings("resource")
 public class ResourcesTest {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+	static final int	BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
 	private Path		tmp;
 
 	@BeforeEach
@@ -558,14 +558,10 @@ public class ResourcesTest {
 
 	static void report(Processor processor) {
 		System.err.println();
-		for (int i = 0; i < processor.getErrors()
-			.size(); i++)
-			System.err.println(processor.getErrors()
-				.get(i));
-		for (int i = 0; i < processor.getWarnings()
-			.size(); i++)
-			System.err.println(processor.getWarnings()
-				.get(i));
+		for (String element : processor.getErrors())
+			System.err.println(element);
+		for (String element : processor.getWarnings())
+			System.err.println(element);
 		assertEquals(0, processor.getErrors()
 			.size());
 		assertEquals(0, processor.getWarnings()
