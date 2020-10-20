@@ -175,9 +175,9 @@ public class Signer extends Processor {
 			byte[] data = new byte[BUFFER_SIZE];
 			int size = in.read(data);
 			while (size > 0) {
-				for (int a = 0; a < algorithms.length; a++) {
-					if (algorithms[a] != null) {
-						algorithms[a].update(data, 0, size);
+				for (MessageDigest algorithm : algorithms) {
+					if (algorithm != null) {
+						algorithm.update(data, 0, size);
 					}
 				}
 				size = in.read(data);

@@ -18,7 +18,7 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 
 public class ImportJavaTest {
-	private Builder	builder;
+	private Builder builder;
 
 	@BeforeEach
 	public void setUp(TestInfo testInfo) throws Exception {

@@ -41,7 +41,6 @@ public class DatesTest {
 		assertThat(localMillis).isEqualTo(milli);
 	}
 
-
 	@Test
 	public void testBackAndForth() {
 		check(Instant.ofEpochMilli(0)
@@ -50,7 +49,6 @@ public class DatesTest {
 			.toString());
 	}
 
-
 	@Test
 	public void testISO_LOCAL_DATE_TIME() {
 		check("1970-01-01T00:00:00Z");
@@ -58,7 +56,6 @@ public class DatesTest {
 		check("1970-01-01T00:00:00");
 		check("1970-01-01T00:00");
 	}
-
 
 	@Test
 	public void testISO_LOCAL_DATE() {
@@ -204,8 +201,7 @@ public class DatesTest {
 		ZonedDateTime parse = Dates.parse(string);
 		assertThat(parse).isNotNull();
 
-		assertThat(parse
-			.toInstant()
+		assertThat(parse.toInstant()
 			.toEpochMilli()).isEqualTo(0L);
 	}
 }

@@ -115,7 +115,6 @@ public class FakeNexus extends Httpbin {
 		return Dates.formatMillis(Dates.RFC_7231_DATE_TIME, lastModified);
 	}
 
-
 	private long fromHttpDate(String string) {
 		return Dates.parseMillis(Dates.RFC_7231_DATE_TIME, string);
 	}

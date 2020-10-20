@@ -18,7 +18,7 @@ public class MavenCoordinatesDTO extends DTO {
 	 * <p>
 	 * </p>
 	 */
-	public String artifactId;
+	public String	artifactId;
 
 	/**
 	 * The version of the maven artifact.(optional)
@@ -40,6 +40,5 @@ public class MavenCoordinatesDTO extends DTO {
 	 * </p>
 	 */
 	public String	classifier;
-
 
 }

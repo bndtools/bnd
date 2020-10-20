@@ -27,7 +27,7 @@ public class ReleaseDTO extends DTO {
 	}
 
 	public static class SourceDTO extends DTO {
-		public String path;
+		public String				path;
 		public Map<String, String>	options	= new HashMap<>();
 	}
 

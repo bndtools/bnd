@@ -4,5 +4,4 @@ import org.apiguardian.api.API;
 import org.apiguardian.api.API.Status;
 
 @API(status = Status.EXPERIMENTAL)
-public class Biz {
-}
+public class Biz {}

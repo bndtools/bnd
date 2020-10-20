@@ -30,8 +30,8 @@ public class DeployTask extends BaseTask {
 				if (files.length == 0)
 					logger.debug("No files included");
 
-				for (int i = 0; i < files.length; i++) {
-					File file = new File(ds.getBasedir(), files[i]);
+				for (String file2 : files) {
+					File file = new File(ds.getBasedir(), file2);
 					try {
 						if (file.isFile() && file.getName()
 							.endsWith(".jar")) {

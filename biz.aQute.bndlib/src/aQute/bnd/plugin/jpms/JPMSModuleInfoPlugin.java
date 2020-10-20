@@ -80,8 +80,7 @@ import aQute.lib.strings.Strings;
 public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
 	enum Access {
-		CLOSED(
-			0),
+		CLOSED(0),
 		OPEN(ACC_OPEN),
 		SYNTHETIC(ACC_SYNTHETIC),
 		MANDATED(ACC_MANDATED);
@@ -367,10 +366,9 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 			.get(MODULES_ATTRIBUTE);
 
 		if (manuallyRequiredModules != null) {
-			splitAsStream(manuallyRequiredModules)
-				.forEach(moduleToAdd -> {
-					requiresMap.computeIfAbsent(moduleToAdd, key -> emptyList());
-				});
+			splitAsStream(manuallyRequiredModules).forEach(moduleToAdd -> {
+				requiresMap.computeIfAbsent(moduleToAdd, key -> emptyList());
+			});
 		}
 
 		MapStream.of(requiresMap)

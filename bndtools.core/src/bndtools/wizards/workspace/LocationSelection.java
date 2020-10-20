@@ -1,6 +1,7 @@
 package bndtools.wizards.workspace;
 
 import java.io.File;
+import java.util.Objects;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
@@ -55,12 +56,7 @@ class LocationSelection {
 		LocationSelection other = (LocationSelection) obj;
 		if (eclipseWorkspace != other.eclipseWorkspace)
 			return false;
-		if (externalPath == null) {
-			if (other.externalPath != null)
-				return false;
-		} else if (!externalPath.equals(other.externalPath))
-			return false;
-		return true;
+		return Objects.equals(externalPath, other.externalPath);
 	}
 
 	public File toFile() {

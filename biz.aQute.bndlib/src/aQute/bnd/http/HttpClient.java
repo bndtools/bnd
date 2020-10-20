@@ -74,14 +74,14 @@ import aQute.service.reporter.Reporter;
  * parties that are in the bnd registry for proxies and authentication models.
  */
 public class HttpClient implements Closeable, URLConnector {
-	final static Logger								logger				= LoggerFactory.getLogger(HttpClient.class);
+	final static Logger						logger			= LoggerFactory.getLogger(HttpClient.class);
 	@Deprecated
-	public static final SimpleDateFormat			sdf					= new SimpleDateFormat(
-		"EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+	public static final SimpleDateFormat	sdf				= new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z",
+		Locale.ENGLISH);
 
-	static final long								INITIAL_TIMEOUT		= TimeUnit.MINUTES.toMillis(3);
-	static final long								FINAL_TIMEOUT		= TimeUnit.MINUTES.toMillis(5);
-	static final long								MAX_RETRY_DELAY		= TimeUnit.MINUTES.toMillis(10);
+	static final long						INITIAL_TIMEOUT	= TimeUnit.MINUTES.toMillis(3);
+	static final long						FINAL_TIMEOUT	= TimeUnit.MINUTES.toMillis(5);
+	static final long						MAX_RETRY_DELAY	= TimeUnit.MINUTES.toMillis(10);
 
 	static {
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));

@@ -78,10 +78,10 @@ import aQute.lib.utf8properties.UTF8Properties;
 @SuppressWarnings("deprecation")
 public class BndEditModel {
 
-	public static final String										NEWLINE_LINE_SEPARATOR		= "\\n\\\n\t";
-	public static final String										LIST_SEPARATOR				= ",\\\n\t";
+	public static final String													NEWLINE_LINE_SEPARATOR				= "\\n\\\n\t";
+	public static final String													LIST_SEPARATOR						= ",\\\n\t";
 
-	private static String[]											KNOWN_PROPERTIES			= new String[] {
+	private static String[]														KNOWN_PROPERTIES					= new String[] {
 		Constants.BUNDLE_LICENSE, Constants.BUNDLE_CATEGORY, Constants.BUNDLE_NAME, Constants.BUNDLE_DESCRIPTION,
 		Constants.BUNDLE_COPYRIGHT, Constants.BUNDLE_UPDATELOCATION, Constants.BUNDLE_VENDOR,
 		Constants.BUNDLE_CONTACTADDRESS, Constants.BUNDLE_DOCURL, Constants.BUNDLE_SYMBOLICNAME,
@@ -99,203 +99,202 @@ public class BndEditModel {
 		Constants.STANDALONE
 	};
 
-	public static final String										PROP_WORKSPACE				= "_workspace";
+	public static final String													PROP_WORKSPACE						= "_workspace";
 
-	public static final String										BUNDLE_VERSION_MACRO		= "${"
+	public static final String													BUNDLE_VERSION_MACRO				= "${"
 		+ Constants.BUNDLE_VERSION + "}";
 
-	private static final Map<String, Converter<? extends Object, String>>	converters					= new HashMap<>();
-	private static final Map<String, Converter<String, ? extends Object>>	formatters					= new HashMap<>();
+	private static final Map<String, Converter<? extends Object, String>>		converters							= new HashMap<>();
+	private static final Map<String, Converter<String, ? extends Object>>		formatters							= new HashMap<>();
 	// private final DataModelHelper obrModelHelper = new DataModelHelperImpl();
 
-	private File													bndResource;
-	private String													bndResourceName;
+	private File																bndResource;
+	private String																bndResourceName;
 
-	private final PropertyChangeSupport								propChangeSupport			= new PropertyChangeSupport(
+	private final PropertyChangeSupport											propChangeSupport					= new PropertyChangeSupport(
 		this);
-	private Properties												properties					= new UTF8Properties();
-	private final Map<String, Object>								objectProperties			= new HashMap<>();
-	private final Map<String, String>								changesToSave				= new TreeMap<>();
-	private Project													project;
+	private Properties															properties							= new UTF8Properties();
+	private final Map<String, Object>											objectProperties					= new HashMap<>();
+	private final Map<String, String>											changesToSave						= new TreeMap<>();
+	private Project																project;
 
-	private volatile boolean										dirty;
+	private volatile boolean													dirty;
 
 	// CONVERTERS
-	private final static Converter<List<VersionedClause>, String>				buildPathConverter			= new HeaderClauseListConverter<>(
+	private final static Converter<List<VersionedClause>, String>				buildPathConverter					= new HeaderClauseListConverter<>(
 		new Converter<VersionedClause, HeaderClause>() {
-																										@Override
-																										public VersionedClause convert(
-																											HeaderClause input)
-																											throws IllegalArgumentException {
-																											if (input == null)
-																												return null;
-																											return new VersionedClause(
-																												input
-																													.getName(),
-																												input
-																													.getAttribs());
-																										}
+																															@Override
+																															public VersionedClause convert(
+																																HeaderClause input)
+																																throws IllegalArgumentException {
+																																if (input == null)
+																																	return null;
+																																return new VersionedClause(
+																																	input
+																																		.getName(),
+																																	input
+																																		.getAttribs());
+																															}
 
-																										@Override
-																										public VersionedClause error(
-																											String msg) {
-																											return null;
-																										}
-																									});
+																															@Override
+																															public VersionedClause error(
+																																String msg) {
+																																return null;
+																															}
+																														});
 
-	private final static Converter<List<VersionedClause>, String>				buildPackagesConverter		= new HeaderClauseListConverter<>(
+	private final static Converter<List<VersionedClause>, String>				buildPackagesConverter				= new HeaderClauseListConverter<>(
 		new Converter<VersionedClause, HeaderClause>() {
-																										@Override
-																										public VersionedClause convert(
-																											HeaderClause input)
-																											throws IllegalArgumentException {
-																											if (input == null)
-																												return null;
-																											return new VersionedClause(
-																												input
-																													.getName(),
-																												input
-																													.getAttribs());
-																										}
+																															@Override
+																															public VersionedClause convert(
+																																HeaderClause input)
+																																throws IllegalArgumentException {
+																																if (input == null)
+																																	return null;
+																																return new VersionedClause(
+																																	input
+																																		.getName(),
+																																	input
+																																		.getAttribs());
+																															}
 
-																										@Override
-																										public VersionedClause error(
-																											String msg) {
-																											return VersionedClause
-																												.error(
-																													msg);
-																										}
-																									});
-	private final static Converter<List<VersionedClause>, String>				clauseListConverter			= new HeaderClauseListConverter<>(
+																															@Override
+																															public VersionedClause error(
+																																String msg) {
+																																return VersionedClause
+																																	.error(
+																																		msg);
+																															}
+																														});
+	private final static Converter<List<VersionedClause>, String>				clauseListConverter					= new HeaderClauseListConverter<>(
 		new VersionedClauseConverter());
-	private final static Converter<String, String>								stringConverter				= new NoopConverter<>();
-	private final static Converter<Boolean, String>								includedSourcesConverter	= new Converter<Boolean, String>() {
-																									@Override
-																									public Boolean convert(
-																										String string)
-																										throws IllegalArgumentException {
-																										return Boolean
-																											.valueOf(
-																												string);
-																									}
+	private final static Converter<String, String>								stringConverter						= new NoopConverter<>();
+	private final static Converter<Boolean, String>								includedSourcesConverter			= new Converter<Boolean, String>() {
+																														@Override
+																														public Boolean convert(
+																															String string)
+																															throws IllegalArgumentException {
+																															return Boolean
+																																.valueOf(
+																																	string);
+																														}
 
-																									@Override
-																									public Boolean error(
-																										String msg) {
-																										return Boolean.FALSE;
-																									}
-																								};
-	private final static Converter<List<String>, String>						listConverter				= SimpleListConverter
+																														@Override
+																														public Boolean error(
+																															String msg) {
+																															return Boolean.FALSE;
+																														}
+																													};
+	private final static Converter<List<String>, String>						listConverter						= SimpleListConverter
 		.create();
 
-
-	private final static Converter<List<ExportedPackage>, String>				exportPackageConverter		= new HeaderClauseListConverter<>(
+	private final static Converter<List<ExportedPackage>, String>				exportPackageConverter				= new HeaderClauseListConverter<>(
 		new Converter<ExportedPackage, HeaderClause>() {
-																										@Override
-																										public ExportedPackage convert(
-																											HeaderClause input) {
-																											if (input == null)
-																												return null;
-																											return new ExportedPackage(
-																												input
-																													.getName(),
-																												input
-																													.getAttribs());
-																										}
+																															@Override
+																															public ExportedPackage convert(
+																																HeaderClause input) {
+																																if (input == null)
+																																	return null;
+																																return new ExportedPackage(
+																																	input
+																																		.getName(),
+																																	input
+																																		.getAttribs());
+																															}
 
-																										@Override
-																										public ExportedPackage error(
-																											String msg) {
-																											return ExportedPackage
-																												.error(
-																													msg);
-																										}
-																									});
+																															@Override
+																															public ExportedPackage error(
+																																String msg) {
+																																return ExportedPackage
+																																	.error(
+																																		msg);
+																															}
+																														});
 
-	private final static Converter<List<ServiceComponent>, String>				serviceComponentConverter	= new HeaderClauseListConverter<>(
+	private final static Converter<List<ServiceComponent>, String>				serviceComponentConverter			= new HeaderClauseListConverter<>(
 		new Converter<ServiceComponent, HeaderClause>() {
-																										@Override
-																										public ServiceComponent convert(
-																											HeaderClause input)
-																											throws IllegalArgumentException {
-																											if (input == null)
-																												return null;
-																											return new ServiceComponent(
-																												input
-																													.getName(),
-																												input
-																													.getAttribs());
-																										}
+																															@Override
+																															public ServiceComponent convert(
+																																HeaderClause input)
+																																throws IllegalArgumentException {
+																																if (input == null)
+																																	return null;
+																																return new ServiceComponent(
+																																	input
+																																		.getName(),
+																																	input
+																																		.getAttribs());
+																															}
 
-																										@Override
-																										public ServiceComponent error(
-																											String msg) {
-																											return ServiceComponent
-																												.error(
-																													msg);
-																										}
-																									});
-	private final static Converter<List<ImportPattern>, String>					importPatternConverter		= new HeaderClauseListConverter<>(
+																															@Override
+																															public ServiceComponent error(
+																																String msg) {
+																																return ServiceComponent
+																																	.error(
+																																		msg);
+																															}
+																														});
+	private final static Converter<List<ImportPattern>, String>					importPatternConverter				= new HeaderClauseListConverter<>(
 		new Converter<ImportPattern, HeaderClause>() {
-																										@Override
-																										public ImportPattern convert(
-																											HeaderClause input)
-																											throws IllegalArgumentException {
-																											if (input == null)
-																												return null;
-																											return new ImportPattern(
-																												input
-																													.getName(),
-																												input
-																													.getAttribs());
-																										}
+																															@Override
+																															public ImportPattern convert(
+																																HeaderClause input)
+																																throws IllegalArgumentException {
+																																if (input == null)
+																																	return null;
+																																return new ImportPattern(
+																																	input
+																																		.getName(),
+																																	input
+																																		.getAttribs());
+																															}
 
-																										@Override
-																										public ImportPattern error(
-																											String msg) {
-																											return ImportPattern
-																												.error(
-																													msg);
-																										}
-																									});
+																															@Override
+																															public ImportPattern error(
+																																String msg) {
+																																return ImportPattern
+																																	.error(
+																																		msg);
+																															}
+																														});
 
-	private final static Converter<Map<String, String>, String>					propertiesConverter			= new PropertiesConverter();
+	private final static Converter<Map<String, String>, String>					propertiesConverter					= new PropertiesConverter();
 
-	private final static Converter<List<Requirement>, String>					requirementListConverter	= new RequirementListConverter();
-	private final static Converter<EE, String>									eeConverter					= new EEConverter();
+	private final static Converter<List<Requirement>, String>					requirementListConverter			= new RequirementListConverter();
+	private final static Converter<EE, String>									eeConverter							= new EEConverter();
 
 	// Converter<ResolveMode, String> resolveModeConverter =
 	// EnumConverter.create(ResolveMode.class, ResolveMode.manual);
 
 	// FORMATTERS
-	private final static Converter<String, String>								newlineEscapeFormatter		= new NewlineEscapedStringFormatter();
-	private final static Converter<String, Boolean>								defaultFalseBoolFormatter	= new DefaultBooleanFormatter(
+	private final static Converter<String, String>								newlineEscapeFormatter				= new NewlineEscapedStringFormatter();
+	private final static Converter<String, Boolean>								defaultFalseBoolFormatter			= new DefaultBooleanFormatter(
 		false);
-	private final static Converter<String, Collection<?>>						stringListFormatter			= new CollectionFormatter<>(
+	private final static Converter<String, Collection<?>>						stringListFormatter					= new CollectionFormatter<>(
 		LIST_SEPARATOR, (String) null);
 
 	private final static Converter<List<HeaderClause>, String>					headerClauseListConverter			= new HeaderClauseListConverter<>(
 		new NoopConverter<>());
-	private final static Converter<String, Collection<? extends HeaderClause>>	headerClauseListFormatter	= new CollectionFormatter<>(
+	private final static Converter<String, Collection<? extends HeaderClause>>	headerClauseListFormatter			= new CollectionFormatter<>(
 		LIST_SEPARATOR, new HeaderClauseFormatter(), null);
 
 	private final static Converter<String, Collection<? extends HeaderClause>>	complexHeaderClauseListFormatter	= new CollectionFormatter<>(
 		LIST_SEPARATOR, new HeaderClauseFormatter(true), null);
 
-	private final static Converter<String, Map<String, String>>					propertiesFormatter			= new MapFormatter(
+	private final static Converter<String, Map<String, String>>					propertiesFormatter					= new MapFormatter(
 		LIST_SEPARATOR, new PropertiesEntryFormatter(), null);
 
-	private final static Converter<String, Collection<? extends Requirement>>	requirementListFormatter	= new CollectionFormatter<>(
+	private final static Converter<String, Collection<? extends Requirement>>	requirementListFormatter			= new CollectionFormatter<>(
 		LIST_SEPARATOR, new RequirementFormatter(), null);
 
-	private final static Converter<String, Collection<? extends HeaderClause>>	standaloneLinkListFormatter	= new CollectionFormatter<>(
+	private final static Converter<String, Collection<? extends HeaderClause>>	standaloneLinkListFormatter			= new CollectionFormatter<>(
 		LIST_SEPARATOR, new HeaderClauseFormatter(), "");
 
-	private final static Converter<String, EE>									eeFormatter					= new EEFormatter();
-	private final static Converter<String, Collection<? extends String>>		runReposFormatter			= new CollectionFormatter<>(
+	private final static Converter<String, EE>									eeFormatter							= new EEFormatter();
+	private final static Converter<String, Collection<? extends String>>		runReposFormatter					= new CollectionFormatter<>(
 		LIST_SEPARATOR, aQute.bnd.osgi.Constants.EMPTY_HEADER);
-	private Workspace												workspace;
-	private IDocument												document;
+	private Workspace															workspace;
+	private IDocument															document;
 
 	// Converter<String, ResolveMode> resolveModeFormatter =
 	// EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
@@ -390,8 +389,7 @@ public class BndEditModel {
 
 	}
 
-	public BndEditModel() {
-	}
+	public BndEditModel() {}
 
 	public BndEditModel(BndEditModel model) {
 		this();

@@ -476,7 +476,6 @@ public abstract class Domain implements Iterable<String> {
 		return null;
 	}
 
-
 	public static Domain domain(File file) throws IOException {
 		if (file.getName()
 			.endsWith(".mf")) {

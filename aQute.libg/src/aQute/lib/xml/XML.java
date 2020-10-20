@@ -37,8 +37,7 @@ public final class XML {
 			try { // Xerces 2 only fallback
 				instance.setFeature("http://xerces.apache.org/xerces2-j/features.html#disallow-doctype-decl", true);
 			} catch (ParserConfigurationException e2) {
-				logger.info(
-					"Unable to set feature to disallow DTD (doctypes): XML External Entity (XXE) attack risk",
+				logger.info("Unable to set feature to disallow DTD (doctypes): XML External Entity (XXE) attack risk",
 					e);
 			}
 		}

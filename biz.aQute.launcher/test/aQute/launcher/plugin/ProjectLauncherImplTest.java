@@ -54,8 +54,7 @@ public class ProjectLauncherImplTest extends TestCase {
 	}
 
 	public void testCwdIsProjectBase() throws Exception {
-		try (ProjectLauncherImpl launcher = new ProjectLauncherImpl(project,
-			new Container(project, launcherJar))) {
+		try (ProjectLauncherImpl launcher = new ProjectLauncherImpl(project, new Container(project, launcherJar))) {
 			launcher.updateFromProject();
 			assertEquals(project.getBase(), launcher.getCwd());
 		}

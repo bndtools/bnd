@@ -231,8 +231,7 @@ public class ReportExporterTest extends TestCase {
 				"anyEntry;key=test;value=valueTest");
 			processor.setProperty(ReportExporterConstants.EXPORT_REPORT_INSTRUCTION, "readme.json;configName=api");
 
-			final Map<String, Resource> result = ReportExporterBuilder
-				.create()
+			final Map<String, Resource> result = ReportExporterBuilder.create()
 				.setProcessor(processor)
 				.setGenerator(ReportGeneratorBuilder.create()
 					.setProcessor(processor)

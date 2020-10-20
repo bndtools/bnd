@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -510,12 +511,7 @@ public class POM implements IPom {
 		if (getClass() != obj.getClass())
 			return false;
 		POM other = (POM) obj;
-		if (revision == null) {
-			if (other.revision != null)
-				return false;
-		} else if (!revision.equals(other.revision))
-			return false;
-		return true;
+		return Objects.equals(revision, other.revision);
 	}
 
 	public boolean isPomOnly() {

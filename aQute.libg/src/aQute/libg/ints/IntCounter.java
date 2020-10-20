@@ -70,7 +70,6 @@ public class IntCounter extends Number {
 		return old;
 	}
 
-
 	/**
 	 * Reset the counter to zero
 	 *

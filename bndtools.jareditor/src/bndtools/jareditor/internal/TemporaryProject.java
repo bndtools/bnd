@@ -25,8 +25,7 @@ public class TemporaryProject {
 
 		if (!project.exists()) {
 			createProject();
-		}
-		else if (!project.isOpen()) {
+		} else if (!project.isOpen()) {
 			try {
 				project.open(monitor);
 			} catch (Exception e) {

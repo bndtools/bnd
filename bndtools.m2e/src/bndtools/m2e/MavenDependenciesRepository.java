@@ -25,8 +25,7 @@ import aQute.lib.unmodifiable.Sets;
 })
 public class MavenDependenciesRepository extends MavenWorkspaceRepository {
 
-	private final static Logger					logger		= LoggerFactory
-		.getLogger(MavenDependenciesRepository.class);
+	private final static Logger	logger		= LoggerFactory.getLogger(MavenDependenciesRepository.class);
 
 	private final Set<String>	allScopes	= Sets.of("compile", "provided", "runtime", "system", "test");
 
@@ -54,8 +53,7 @@ public class MavenDependenciesRepository extends MavenWorkspaceRepository {
 			mavenBndrunContainer.resolve()
 				.values()
 				.stream()
-				.map(
-					this::fromArtifactResult)
+				.map(this::fromArtifactResult)
 				.forEach(files::add);
 
 			logger.debug("{}: Collected artifacts {} for project {}", getName(), files, projectFacade.getProject());
@@ -73,8 +71,7 @@ public class MavenDependenciesRepository extends MavenWorkspaceRepository {
 		if (repository instanceof LocalRepository) {
 			LocalRepository localRepository = (LocalRepository) repository;
 
-			from = localRepository
-				.getBasedir()
+			from = localRepository.getBasedir()
 				.getAbsolutePath();
 		} else if (repository instanceof RemoteRepository) {
 			RemoteRepository remoteRepository = (RemoteRepository) repository;

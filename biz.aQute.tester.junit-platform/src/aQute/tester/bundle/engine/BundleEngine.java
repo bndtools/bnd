@@ -56,8 +56,8 @@ public class BundleEngine implements TestEngine {
 		BundleEngineDescriptor descriptor = new BundleEngineDescriptor(uniqueId);
 
 		if (!context.isPresent()) {
-			descriptor.addChild(new StaticFailureDescriptor(uniqueId.append("test", "noFramework"), "Initialization Error",
-				new JUnitException("BundleEngine must run inside an OSGi framework")));
+			descriptor.addChild(new StaticFailureDescriptor(uniqueId.append("test", "noFramework"),
+				"Initialization Error", new JUnitException("BundleEngine must run inside an OSGi framework")));
 			return descriptor;
 		}
 		BundleSelectorResolver.resolve(context.get(), request, descriptor);
@@ -74,7 +74,8 @@ public class BundleEngine implements TestEngine {
 			"Root descriptor should be an instance of BundleEngineDescriptor, was " + root.getClass());
 		Preconditions.condition(root.getChildren()
 			.stream()
-			.allMatch(descriptor -> descriptor instanceof BundleDescriptor || descriptor instanceof StaticFailureDescriptor),
+			.allMatch(
+				descriptor -> descriptor instanceof BundleDescriptor || descriptor instanceof StaticFailureDescriptor),
 			"Child descriptors should all be BundleDescriptors or StaticFailureDescriptors");
 		listener.executionStarted(root);
 		try {
@@ -96,8 +97,7 @@ public class BundleEngine implements TestEngine {
 						.getDisplayName());
 				childDescriptors.forEach(childDescriptor -> listener.executionSkipped(childDescriptor, reason));
 			} else {
-				childDescriptors
-					.forEach(childDescriptor -> executeBundle(childDescriptor, listener, params));
+				childDescriptors.forEach(childDescriptor -> executeBundle(childDescriptor, listener, params));
 			}
 			listener.executionFinished(root, TestExecutionResult.successful());
 		} catch (Throwable t) {

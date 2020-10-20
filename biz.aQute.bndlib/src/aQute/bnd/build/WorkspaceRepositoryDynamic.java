@@ -32,7 +32,7 @@ class WorkspaceRepositoryDynamic extends BaseRepository implements Repository, W
 			.flatMap(Collection::stream)
 			.collect(toList());
 
-		Map<Requirement, Collection<Capability>> result =  requirements.stream()
+		Map<Requirement, Collection<Capability>> result = requirements.stream()
 			.collect(toMap(identity(), requirement -> findProvider(resources, requirement),
 				ResourceUtils::capabilitiesCombiner));
 		return result;

@@ -15,9 +15,9 @@ import aQute.lib.strings.Strings;
  * unclear what the character set and syntax is :-(
  */
 public class Program implements Comparable<Program> {
-	public final String							group;
-	public final String							artifact;
-	public final String							path;
+	public final String	group;
+	public final String	artifact;
+	public final String	path;
 
 	Program(String group, String artifact) {
 		this.group = group;

@@ -117,17 +117,16 @@ public class GogoPlugin implements ReportEntryPlugin<Jar>, Plugin {
 					.stream()
 					.map(path -> {
 						Resource resource = jar.getResource(path);
-							if (resource != null) {
-								return new AbstractMap.SimpleEntry<>(path, resource);
-							} else {
-								if (!path.contains("*")) {
+						if (resource != null) {
+							return new AbstractMap.SimpleEntry<>(path, resource);
+						} else {
+							if (!path.contains("*")) {
 								_reporter.warning("Xml component file not found at path %s", path);
 							}
-								return null;
-							}
+							return null;
+						}
 					})
-					.filter(
-						resource -> resource != null)
+					.filter(resource -> resource != null)
 					.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 			} else {
 				return new HashMap<>();
@@ -150,14 +149,12 @@ public class GogoPlugin implements ReportEntryPlugin<Jar>, Plugin {
 		String implementationClassPath = extractImplementationClassPath(root);
 		Map<String, String> properties = extractScopeAndFunctionProperties(root, jar);
 		String scope = properties.get(SCOPE);
-		List<String> functions = Arrays.asList(properties.getOrDefault(FUNCTION,
-			"\n")
+		List<String> functions = Arrays.asList(properties.getOrDefault(FUNCTION, "\n")
 			.split("\n"));
 
 		if (!functions.isEmpty()) {
 			GogoScopeDTO gogoScopeDTO = gogoCommands.stream()
-				.filter(dto -> scope != null ? scope.equals(dto.name)
-					: dto.name == null)
+				.filter(dto -> scope != null ? scope.equals(dto.name) : dto.name == null)
 				.findAny()
 				.orElse(null);
 
@@ -169,8 +166,7 @@ public class GogoPlugin implements ReportEntryPlugin<Jar>, Plugin {
 			}
 
 			for (final String function : functions) {
-				GogoFunctionDTO gogoFunctionDTO = gogoScopeDTO.functions
-					.stream()
+				GogoFunctionDTO gogoFunctionDTO = gogoScopeDTO.functions.stream()
 					.filter(dto -> function.equals(dto.name))
 					.findAny()
 					.orElse(null);
@@ -255,8 +251,7 @@ public class GogoPlugin implements ReportEntryPlugin<Jar>, Plugin {
 	private Collection<GogoMethodDTO> extractMethods(final Clazz clazz, final String function) {
 		return clazz.methods()
 			.filter(method -> function.equals(method.getName()))
-			.map(
-				this::methodToDto)
+			.map(this::methodToDto)
 			.collect(Collectors.toList());
 	}
 
@@ -269,16 +264,13 @@ public class GogoPlugin implements ReportEntryPlugin<Jar>, Plugin {
 			.orElse(null);
 
 		MethodParameter[] parameterNames = method.getParameters();
-		TypeRef[] parameterTypes = method
-			.getDescriptor()
+		TypeRef[] parameterTypes = method.getDescriptor()
 			.getPrototype();
-		List<ParameterAnnotation> parameterAnnotations = method.parameterAnnotations(
-			"*")
+		List<ParameterAnnotation> parameterAnnotations = method.parameterAnnotations("*")
 			.collect(Collectors.toList());
 
 		for (int i = 0; i < parameterTypes.length; i++) {
-			boolean multiValue = parameterTypes[i].getShortName() != null && parameterTypes[i]
-				.getShortName()
+			boolean multiValue = parameterTypes[i].getShortName() != null && parameterTypes[i].getShortName()
 				.matches(".*]") ? true : false;
 
 			String name = null;
@@ -289,18 +281,16 @@ public class GogoPlugin implements ReportEntryPlugin<Jar>, Plugin {
 			int paramIndice = i;
 
 			String description = parameterAnnotations.stream()
-				.filter(a -> a.parameter() == paramIndice && ANNOTATION_NAME_DESCRIPTOR.equals(a
-					.getName()
-				.toString()))
+				.filter(a -> a.parameter() == paramIndice && ANNOTATION_NAME_DESCRIPTOR.equals(a.getName()
+					.toString()))
 				.findAny()
 				.map(a -> a.get("value")
 					.toString())
 				.orElse(null);
 
 			ParameterAnnotation paramAnnotation = parameterAnnotations.stream()
-				.filter(a -> a.parameter() == paramIndice && ANNOTATION_NAME_PARAMETER.equals(a
-					.getName()
-				.toString()))
+				.filter(a -> a.parameter() == paramIndice && ANNOTATION_NAME_PARAMETER.equals(a.getName()
+					.toString()))
 				.findAny()
 				.orElse(null);
 
@@ -313,8 +303,7 @@ public class GogoPlugin implements ReportEntryPlugin<Jar>, Plugin {
 				gogoMethodDTO.arguments.add(gogoArgumentDTO);
 			} else {
 				GogoOptionDTO gogoOptionDTO = new GogoOptionDTO();
-				gogoOptionDTO.names = Stream.of((Object[]) paramAnnotation.get(
-					"names"))
+				gogoOptionDTO.names = Stream.of((Object[]) paramAnnotation.get("names"))
 					.map(o -> o.toString())
 					.collect(Collectors.toList());
 				gogoOptionDTO.description = description;

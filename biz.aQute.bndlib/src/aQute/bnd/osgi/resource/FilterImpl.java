@@ -169,8 +169,7 @@ abstract class FilterImpl implements Filter {
 	 * @throws InvalidSyntaxException If the filter parameter contains an
 	 *             invalid filter string that cannot be parsed.
 	 */
-	static FilterImpl createFilter(String filterString)
-			throws InvalidSyntaxException {
+	static FilterImpl createFilter(String filterString) throws InvalidSyntaxException {
 		return new Parser(filterString).parse();
 	}
 
@@ -191,9 +190,8 @@ abstract class FilterImpl implements Filter {
 	 *         {@code Filter}; {@code false} otherwise.
 	 */
 	@Override
-	public boolean match(ServiceReference< ? > reference) {
-		return matches0((reference != null) ? new ServiceReferenceMap(reference)
-				: Collections.emptyMap());
+	public boolean match(ServiceReference<?> reference) {
+		return matches0((reference != null) ? new ServiceReferenceMap(reference) : Collections.emptyMap());
 	}
 
 	/**
@@ -209,10 +207,8 @@ abstract class FilterImpl implements Filter {
 	 *             variants of the same key name.
 	 */
 	@Override
-	public boolean match(Dictionary<String, ? > dictionary) {
-		return matches0(
-				(dictionary != null) ? new CaseInsensitiveMap(dictionary)
-						: Collections.emptyMap());
+	public boolean match(Dictionary<String, ?> dictionary) {
+		return matches0((dictionary != null) ? new CaseInsensitiveMap(dictionary) : Collections.emptyMap());
 	}
 
 	/**
@@ -244,11 +240,11 @@ abstract class FilterImpl implements Filter {
 	 * @since 1.6
 	 */
 	@Override
-	public boolean matches(Map<String, ? > map) {
+	public boolean matches(Map<String, ?> map) {
 		return matches0((map != null) ? map : Collections.emptyMap());
 	}
 
-	abstract boolean matches0(Map<String, ? > map);
+	abstract boolean matches0(Map<String, ?> map);
 
 	/**
 	 * Returns this {@code Filter}'s filter string.
@@ -298,7 +294,8 @@ abstract class FilterImpl implements Filter {
 			return false;
 		}
 
-		return this.toString().equals(obj.toString());
+		return this.toString()
+			.equals(obj.toString());
 	}
 
 	/**
@@ -311,7 +308,8 @@ abstract class FilterImpl implements Filter {
 	 */
 	@Override
 	public int hashCode() {
-		return this.toString().hashCode();
+		return this.toString()
+			.hashCode();
 	}
 
 	static final class And extends FilterImpl {
@@ -322,7 +320,7 @@ abstract class FilterImpl implements Filter {
 		}
 
 		@Override
-		boolean matches0(Map<String, ? > map) {
+		boolean matches0(Map<String, ?> map) {
 			for (FilterImpl operand : operands) {
 				if (!operand.matches0(map)) {
 					return false;
@@ -333,7 +331,8 @@ abstract class FilterImpl implements Filter {
 
 		@Override
 		StringBuilder normalize(StringBuilder sb) {
-			sb.append('(').append('&');
+			sb.append('(')
+				.append('&');
 			for (FilterImpl operand : operands) {
 				operand.normalize(sb);
 			}
@@ -349,7 +348,7 @@ abstract class FilterImpl implements Filter {
 		}
 
 		@Override
-		boolean matches0(Map<String, ? > map) {
+		boolean matches0(Map<String, ?> map) {
 			for (FilterImpl operand : operands) {
 				if (operand.matches0(map)) {
 					return true;
@@ -360,7 +359,8 @@ abstract class FilterImpl implements Filter {
 
 		@Override
 		StringBuilder normalize(StringBuilder sb) {
-			sb.append('(').append('|');
+			sb.append('(')
+				.append('|');
 			for (FilterImpl operand : operands) {
 				operand.normalize(sb);
 			}
@@ -376,13 +376,14 @@ abstract class FilterImpl implements Filter {
 		}
 
 		@Override
-		boolean matches0(Map<String, ? > map) {
+		boolean matches0(Map<String, ?> map) {
 			return !operand.matches0(map);
 		}
 
 		@Override
 		StringBuilder normalize(StringBuilder sb) {
-			sb.append('(').append('!');
+			sb.append('(')
+				.append('!');
 			operand.normalize(sb);
 			return sb.append(')');
 		}
@@ -396,7 +397,7 @@ abstract class FilterImpl implements Filter {
 		}
 
 		@Override
-		boolean matches0(Map<String, ? > map) {
+		boolean matches0(Map<String, ?> map) {
 			return compare(map.get(attr));
 		}
 
@@ -411,16 +412,16 @@ abstract class FilterImpl implements Filter {
 				return compare_Version((Version) value1);
 			}
 
-			Class< ? > clazz = value1.getClass();
+			Class<?> clazz = value1.getClass();
 			if (clazz.isArray()) {
-				Class< ? > type = clazz.getComponentType();
+				Class<?> type = clazz.getComponentType();
 				if (type.isPrimitive()) {
 					return compare_PrimitiveArray(type, value1);
 				}
 				return compare_ObjectArray((Object[]) value1);
 			}
-			if (value1 instanceof Collection< ? >) {
-				return compare_Collection((Collection< ? >) value1);
+			if (value1 instanceof Collection<?>) {
+				return compare_Collection((Collection<?>) value1);
 			}
 			if (value1 instanceof Integer || value1 instanceof Long || value1 instanceof Byte
 				|| value1 instanceof Short) {
@@ -438,7 +439,7 @@ abstract class FilterImpl implements Filter {
 			if (value1 instanceof Boolean) {
 				return compare_Boolean(((Boolean) value1).booleanValue());
 			}
-			if (value1 instanceof Comparable< ? >) {
+			if (value1 instanceof Comparable<?>) {
 				@SuppressWarnings("unchecked")
 				Comparable<Object> comparable = (Comparable<Object>) value1;
 				return compare_Comparable(comparable);
@@ -446,7 +447,7 @@ abstract class FilterImpl implements Filter {
 			return compare_Unknown(value1);
 		}
 
-		private boolean compare_Collection(Collection< ? > collection) {
+		private boolean compare_Collection(Collection<?> collection) {
 			for (Object value1 : collection) {
 				if (compare(value1)) {
 					return true;
@@ -464,8 +465,7 @@ abstract class FilterImpl implements Filter {
 			return false;
 		}
 
-		private boolean compare_PrimitiveArray(Class< ? > type,
-				Object primarray) {
+		private boolean compare_PrimitiveArray(Class<?> type, Object primarray) {
 			if (Integer.TYPE.isAssignableFrom(type)) {
 				int[] array = (int[]) primarray;
 				for (int value1 : array) {
@@ -607,17 +607,17 @@ abstract class FilterImpl implements Filter {
 		}
 
 		@Override
-		boolean matches0(Map<String, ? > map) {
+		boolean matches0(Map<String, ?> map) {
 			return map.get(attr) != null;
 		}
 
 		@Override
 		StringBuilder normalize(StringBuilder sb) {
 			return sb.append('(')
-					.append(attr)
-					.append('=')
-					.append('*')
-					.append(')');
+				.append(attr)
+				.append('=')
+				.append('*')
+				.append(')');
 		}
 	}
 
@@ -673,7 +673,9 @@ abstract class FilterImpl implements Filter {
 
 		@Override
 		StringBuilder normalize(StringBuilder sb) {
-			sb.append('(').append(attr).append('=');
+			sb.append('(')
+				.append(attr)
+				.append('=');
 			for (String substr : substrings) {
 				if (substr == null) /* * */ {
 					sb.append('*');
@@ -686,7 +688,7 @@ abstract class FilterImpl implements Filter {
 	}
 
 	static class Equal extends Item {
-		final String value;
+		final String	value;
 		private Object	cached;
 
 		Equal(String attr, String value) {
@@ -804,11 +806,13 @@ abstract class FilterImpl implements Filter {
 
 		@Override
 		StringBuilder normalize(StringBuilder sb) {
-			sb.append('(').append(attr).append('=');
+			sb.append('(')
+				.append(attr)
+				.append('=');
 			return encodeValue(sb, value).append(')');
 		}
 
-		Object valueOf(Class< ? > target) {
+		Object valueOf(Class<?> target) {
 			do {
 				Method method;
 				try {
@@ -816,8 +820,7 @@ abstract class FilterImpl implements Filter {
 				} catch (NoSuchMethodException e) {
 					break;
 				}
-				if (Modifier.isStatic(method.getModifiers())
-						&& target.isAssignableFrom(method.getReturnType())) {
+				if (Modifier.isStatic(method.getModifiers()) && target.isAssignableFrom(method.getReturnType())) {
 					setAccessible(method);
 					try {
 						return method.invoke(null, value.trim());
@@ -830,7 +833,7 @@ abstract class FilterImpl implements Filter {
 			} while (false);
 
 			do {
-				Constructor< ? > constructor;
+				Constructor<?> constructor;
 				try {
 					constructor = target.getConstructor(String.class);
 				} catch (NoSuchMethodException e) {
@@ -871,7 +874,10 @@ abstract class FilterImpl implements Filter {
 
 		@Override
 		StringBuilder normalize(StringBuilder sb) {
-			sb.append('(').append(attr).append('<').append('=');
+			sb.append('(')
+				.append(attr)
+				.append('<')
+				.append('=');
 			return encodeValue(sb, value).append(')');
 		}
 	}
@@ -888,7 +894,10 @@ abstract class FilterImpl implements Filter {
 
 		@Override
 		StringBuilder normalize(StringBuilder sb) {
-			sb.append('(').append(attr).append('>').append('=');
+			sb.append('(')
+				.append(attr)
+				.append('>')
+				.append('=');
 			return encodeValue(sb, value).append(')');
 		}
 	}
@@ -915,16 +924,16 @@ abstract class FilterImpl implements Filter {
 			} catch (IndexOutOfBoundsException e) {
 				return false;
 			}
-			return (charval == charval2)
-					|| (Character.toUpperCase(charval) == Character
-							.toUpperCase(charval2))
-					|| (Character.toLowerCase(charval) == Character
-							.toLowerCase(charval2));
+			return (charval == charval2) || (Character.toUpperCase(charval) == Character.toUpperCase(charval2))
+				|| (Character.toLowerCase(charval) == Character.toLowerCase(charval2));
 		}
 
 		@Override
 		StringBuilder normalize(StringBuilder sb) {
-			sb.append('(').append(attr).append('~').append('=');
+			sb.append('(')
+				.append(attr)
+				.append('~')
+				.append('=');
 			return encodeValue(sb, approx).append(')');
 		}
 
@@ -975,15 +984,12 @@ abstract class FilterImpl implements Filter {
 			try {
 				filter = parse_filter();
 			} catch (ArrayIndexOutOfBoundsException e) {
-				throw new InvalidSyntaxException("Filter ended abruptly",
-						filterstring, e);
+				throw new InvalidSyntaxException("Filter ended abruptly", filterstring, e);
 			}
 
 			if (pos != filterChars.length) {
-				throw new InvalidSyntaxException(
-						"Extraneous trailing characters: "
-								+ filterstring.substring(pos),
-						filterstring);
+				throw new InvalidSyntaxException("Extraneous trailing characters: " + filterstring.substring(pos),
+					filterstring);
 			}
 			return filter;
 		}
@@ -993,9 +999,7 @@ abstract class FilterImpl implements Filter {
 			skipWhiteSpace();
 
 			if (filterChars[pos] != '(') {
-				throw new InvalidSyntaxException(
-						"Missing '(': " + filterstring.substring(pos),
-						filterstring);
+				throw new InvalidSyntaxException("Missing '(': " + filterstring.substring(pos), filterstring);
 			}
 
 			pos++;
@@ -1005,9 +1009,7 @@ abstract class FilterImpl implements Filter {
 			skipWhiteSpace();
 
 			if (filterChars[pos] != ')') {
-				throw new InvalidSyntaxException(
-						"Missing ')': " + filterstring.substring(pos),
-						filterstring);
+				throw new InvalidSyntaxException("Missing ')': " + filterstring.substring(pos), filterstring);
 			}
 
 			pos++;
@@ -1146,9 +1148,7 @@ abstract class FilterImpl implements Filter {
 				}
 			}
 
-			throw new InvalidSyntaxException(
-					"Invalid operator: " + filterstring.substring(pos),
-					filterstring);
+			throw new InvalidSyntaxException("Invalid operator: " + filterstring.substring(pos), filterstring);
 		}
 
 		private String parse_attr() throws InvalidSyntaxException {
@@ -1159,8 +1159,7 @@ abstract class FilterImpl implements Filter {
 
 			char c = filterChars[pos];
 
-			while (c != '~' && c != '<' && c != '>' && c != '=' && c != '('
-					&& c != ')') {
+			while (c != '~' && c != '<' && c != '>' && c != '=' && c != '(' && c != ')') {
 				pos++;
 
 				if (!Character.isWhitespace(c)) {
@@ -1173,9 +1172,7 @@ abstract class FilterImpl implements Filter {
 			int length = end - begin;
 
 			if (length == 0) {
-				throw new InvalidSyntaxException(
-						"Missing attr: " + filterstring.substring(pos),
-						filterstring);
+				throw new InvalidSyntaxException("Missing attr: " + filterstring.substring(pos), filterstring);
 			}
 
 			return new String(filterChars, begin, length);
@@ -1193,9 +1190,7 @@ abstract class FilterImpl implements Filter {
 					}
 
 					case '(' : {
-						throw new InvalidSyntaxException(
-								"Invalid value: " + filterstring.substring(pos),
-								filterstring);
+						throw new InvalidSyntaxException("Invalid value: " + filterstring.substring(pos), filterstring);
 					}
 
 					case '\\' : {
@@ -1213,9 +1208,7 @@ abstract class FilterImpl implements Filter {
 			}
 
 			if (sb.length() == 0) {
-				throw new InvalidSyntaxException(
-						"Missing value: " + filterstring.substring(pos),
-						filterstring);
+				throw new InvalidSyntaxException("Missing value: " + filterstring.substring(pos), filterstring);
 			}
 
 			return sb.toString();
@@ -1239,9 +1232,7 @@ abstract class FilterImpl implements Filter {
 					}
 
 					case '(' : {
-						throw new InvalidSyntaxException(
-								"Invalid value: " + filterstring.substring(pos),
-								filterstring);
+						throw new InvalidSyntaxException("Invalid value: " + filterstring.substring(pos), filterstring);
 					}
 
 					case '*' : {
@@ -1275,8 +1266,7 @@ abstract class FilterImpl implements Filter {
 		}
 
 		private void skipWhiteSpace() {
-			for (int length = filterChars.length; (pos < length)
-					&& Character.isWhitespace(filterChars[pos]);) {
+			for (int length = filterChars.length; (pos < length) && Character.isWhitespace(filterChars[pos]);) {
 				pos++;
 			}
 		}
@@ -1320,9 +1310,8 @@ abstract class FilterImpl implements Filter {
 	 * a String key as no other operations are used by the Filter
 	 * implementation.
 	 */
-	private static final class CaseInsensitiveMap
-		extends DictionaryMap implements Map<String, Object> {
-		private final String[]					keys;
+	private static final class CaseInsensitiveMap extends DictionaryMap implements Map<String, Object> {
+		private final String[] keys;
 
 		/**
 		 * Create a case insensitive map from the specified dictionary.
@@ -1331,10 +1320,10 @@ abstract class FilterImpl implements Filter {
 		 * @throws IllegalArgumentException If {@code dictionary} contains case
 		 *             variants of the same key name.
 		 */
-		CaseInsensitiveMap(Dictionary<String, ? > dictionary) {
+		CaseInsensitiveMap(Dictionary<String, ?> dictionary) {
 			super(dictionary);
 			List<String> keyList = new ArrayList<>(dictionary.size());
-			for (Enumeration< ? > e = dictionary.keys(); e.hasMoreElements();) {
+			for (Enumeration<?> e = dictionary.keys(); e.hasMoreElements();) {
 				Object k = e.nextElement();
 				if (k instanceof String) {
 					String key = (String) k;
@@ -1367,11 +1356,10 @@ abstract class FilterImpl implements Filter {
 	 * a String key as no other operations are used by the Filter
 	 * implementation.
 	 */
-	private static final class ServiceReferenceMap
-			extends AbstractMap<String,Object> implements Map<String,Object> {
-		private final ServiceReference< ? > reference;
+	private static final class ServiceReferenceMap extends AbstractMap<String, Object> implements Map<String, Object> {
+		private final ServiceReference<?> reference;
 
-		ServiceReferenceMap(ServiceReference< ? > reference) {
+		ServiceReferenceMap(ServiceReference<?> reference) {
 			this.reference = requireNonNull(reference);
 		}
 
@@ -1381,7 +1369,7 @@ abstract class FilterImpl implements Filter {
 		}
 
 		@Override
-		public Set<Entry<String,Object>> entrySet() {
+		public Set<Entry<String, Object>> entrySet() {
 			throw new UnsupportedOperationException();
 		}
 	}

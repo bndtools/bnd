@@ -41,14 +41,14 @@ import java.lang.annotation.Target;
  * This annotation is not processed at runtime by Service Component Runtime. It
  * must be processed by tools and used to add a Component Description to the
  * bundle.
- * 
+ *
  * @see "The init, activate, and activation-fields attributes of the component element of a Component Description."
  * @author $Id$
  * @since 1.1
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({
-		ElementType.METHOD, ElementType.FIELD, ElementType.CONSTRUCTOR
+	ElementType.METHOD, ElementType.FIELD, ElementType.CONSTRUCTOR
 })
 public @interface Activate {
 	// marker annotation

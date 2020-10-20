@@ -8,9 +8,8 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MavenProjectChangedListenersTracker
-	extends ServiceTracker<IMavenProjectChangedListener, IMavenProjectChangedListener>
-	implements IMavenProjectChangedListener {
+public class MavenProjectChangedListenersTracker extends
+	ServiceTracker<IMavenProjectChangedListener, IMavenProjectChangedListener> implements IMavenProjectChangedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(MavenProjectChangedListenersTracker.class);
 
@@ -28,7 +27,7 @@ public class MavenProjectChangedListenersTracker
 				try {
 					listener.mavenProjectChanged(events, monitor);
 				} catch (Throwable t) {
-						logger.error(t.getMessage(), t);
+					logger.error(t.getMessage(), t);
 				}
 			});
 	}

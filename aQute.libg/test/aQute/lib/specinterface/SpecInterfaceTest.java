@@ -18,6 +18,7 @@ public class SpecInterfaceTest {
 
 	interface Foo {
 		List<String> _arguments();
+
 		boolean foo();
 
 		File bar();
@@ -32,8 +33,8 @@ public class SpecInterfaceTest {
 	@Test
 	public void testSimple() throws Exception {
 		Foo options = getOptions(Foo.class,
-			Arrays.asList("foo", "-fb", "bar", "arg", "--yfiles", "testresources/fileset/**", "foo=bar"),
-			IO.work).instance();
+			Arrays.asList("foo", "-fb", "bar", "arg", "--yfiles", "testresources/fileset/**", "foo=bar"), IO.work)
+				.instance();
 		assertThat(options.foo()).isTrue();
 		assertThat(options.bar()
 			.getName()).isEqualTo("bar");

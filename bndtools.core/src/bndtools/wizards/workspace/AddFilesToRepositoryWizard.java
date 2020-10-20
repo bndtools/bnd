@@ -79,8 +79,7 @@ public class AddFilesToRepositoryWizard extends Wizard {
 					}
 
 					try (InputStream in = new BufferedInputStream(IO.stream(file))) {
-						RepositoryPlugin.PutResult result = repository.put(in,
-							new RepositoryPlugin.PutOptions());
+						RepositoryPlugin.PutResult result = repository.put(in, new RepositoryPlugin.PutOptions());
 						URI artifact = result.artifact;
 						if ((artifact != null) && artifact.getScheme()
 							.equalsIgnoreCase("file")) {

@@ -40,7 +40,7 @@ import bndtools.Plugin;
 
 public class R5LabelFormatter {
 
-	private final static Pattern				EE_PATTERN	= Pattern.compile("osgi.ee=([^)]*).*version=([^)]*)");
+	private final static Pattern				EE_PATTERN		= Pattern.compile("osgi.ee=([^)]*).*version=([^)]*)");
 
 	private static final Map<String, Pattern>	FILTER_PATTERNS	= Maps.of(
 		ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, EE_PATTERN, PackageNamespace.PACKAGE_NAMESPACE,

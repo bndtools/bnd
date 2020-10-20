@@ -448,8 +448,7 @@ public class MavenBndRepoTest {
 			.get(wc);
 		Set<Resource> resources = ResourceUtils.getResources(caps);
 		int size = resources.size();
-		assertThat(resources)
-			.extracting(ResourceUtils::getIdentityCapability)
+		assertThat(resources).extracting(ResourceUtils::getIdentityCapability)
 			.filteredOn(Objects::nonNull)
 			.extracting(IdentityCapability::osgi_identity)
 			.doesNotContain("biz.aQute.bnd.maven");
@@ -464,8 +463,7 @@ public class MavenBndRepoTest {
 		caps = repo.findProviders(Collections.singleton(wc))
 			.get(wc);
 		resources = ResourceUtils.getResources(caps);
-		assertThat(resources)
-			.extracting(ResourceUtils::getIdentityCapability)
+		assertThat(resources).extracting(ResourceUtils::getIdentityCapability)
 			.filteredOn(Objects::nonNull)
 			.extracting(IdentityCapability::osgi_identity)
 			.contains("biz.aQute.bnd.maven")

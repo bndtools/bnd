@@ -98,7 +98,7 @@ public class PersistentMap<V> extends AbstractMap<String, V> implements Closeabl
 				for (File file : data.listFiles()) {
 					String name = Strings.unescape(file.getName(), ESCAPE)
 						.orElse(null);
-					if ( name != null)
+					if (name != null)
 						cache.put(name, null);
 
 				}

@@ -52,7 +52,7 @@ import aQute.libg.glob.PathSet;
  */
 public class CDIAnnotations implements AnalyzerPlugin {
 	static final DocumentBuilderFactory		dbf					= XML.newDocumentBuilderFactory();
-	static final XPathFactory			xpf	= XPathFactory.newInstance();
+	static final XPathFactory				xpf					= XPathFactory.newInstance();
 	private static final Predicate<String>	beansResourceFilter	= new PathSet("META-INF/beans.xml").matches();
 
 	@Override

@@ -18,7 +18,7 @@ public class GRreport implements Generator<GRreport.Options> {
 
 	@Override
 	public Optional<String> generate(BuildContext context, Options options) throws Exception {
-		if ( options.file() == null)
+		if (options.file() == null)
 			throw new IllegalArgumentException("no file");
 
 		options.file()
@@ -27,12 +27,12 @@ public class GRreport implements Generator<GRreport.Options> {
 		StringBuilder sb = new StringBuilder();
 
 		String s = context.getFlattenedProperties()
-		.entrySet()
-		.stream()
-		.map( e -> {
+			.entrySet()
+			.stream()
+			.map(e -> {
 				return e.getKey() + ": " + e.getValue();
-		})
-		.collect(Collectors.joining("\n"));
+			})
+			.collect(Collectors.joining("\n"));
 		sb.append(1);
 
 		IO.store(sb.toString(), options.file());

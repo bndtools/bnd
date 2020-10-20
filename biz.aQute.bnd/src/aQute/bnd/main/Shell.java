@@ -75,30 +75,30 @@ public class Shell implements AutoCloseable {
 					case "macros" : {
 						Glob glob = new Glob(args.length == 1 ? "*" : args[1]);
 						domain.getReplacer()
-						.getCommands()
-						.entrySet()
-						.stream()
-						.filter(e -> glob.matches(e.getKey()))
-						.forEach(e -> {
-							out.printf("%-20s %s%n", e.getKey(), e.getValue());
-						});
+							.getCommands()
+							.entrySet()
+							.stream()
+							.filter(e -> glob.matches(e.getKey()))
+							.forEach(e -> {
+								out.printf("%-20s %s%n", e.getKey(), e.getValue());
+							});
 					}
-					break;
+						break;
 
 					case "commands" : {
 						Glob glob = new Glob(args.length == 1 ? "*" : args[1]);
 						cmdline.getCommands(bnd)
-						.entrySet()
-						.stream()
-						.filter(e -> glob.matches(e.getKey()))
-						.forEach(e -> {
-							Method method = e.getValue();
-							Description d = method.getAnnotation(Description.class);
-							String help = d == null ? "" : d.value();
-							out.printf("%-20s %s%n", e.getKey(), help);
-						});
+							.entrySet()
+							.stream()
+							.filter(e -> glob.matches(e.getKey()))
+							.forEach(e -> {
+								Method method = e.getValue();
+								Description d = method.getAnnotation(Description.class);
+								String help = d == null ? "" : d.value();
+								out.printf("%-20s %s%n", e.getKey(), help);
+							});
 					}
-					break;
+						break;
 
 					case "-help" :
 					case "--help" :

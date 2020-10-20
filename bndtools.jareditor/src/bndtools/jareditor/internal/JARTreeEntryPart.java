@@ -86,7 +86,6 @@ public class JARTreeEntryPart extends AbstractFormPart implements IPartSelection
 		text.setFont(JFaceResources.getTextFont());
 		textSection.setClient(textComposite);
 
-
 		Section encodingSection = toolkit.createSection(parent,
 			ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
 		encodingSection.setText("Display Options");
@@ -111,7 +110,6 @@ public class JARTreeEntryPart extends AbstractFormPart implements IPartSelection
 		toolkit.createLabel(encodingPanel, "Text Encoding:");
 		final Combo encodingCombo = new Combo(encodingPanel, SWT.READ_ONLY);
 		encodingCombo.setEnabled(showAs == Show.Text);
-
 
 		// INITIALISE
 		encodingCombo.setItems(charsets);
@@ -179,7 +177,6 @@ public class JARTreeEntryPart extends AbstractFormPart implements IPartSelection
 		size.setLayoutData(gd);
 		lastModified.setLayoutData(gd);
 
-
 		gd = new GridData(SWT.FILL, SWT.FILL, true, false);
 		encodingSection.setLayoutData(gd);
 		encodingSection.setLayout(new FillLayout());
@@ -230,7 +227,6 @@ public class JARTreeEntryPart extends AbstractFormPart implements IPartSelection
 		if (text != null && !text.isDisposed())
 			text.setText(content);
 	}
-
 
 	private void setContent(ByteBuffer data) throws CoreException {
 		if (resource instanceof IFile) {

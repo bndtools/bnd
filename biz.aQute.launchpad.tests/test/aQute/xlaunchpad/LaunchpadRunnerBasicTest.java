@@ -68,7 +68,7 @@ public class LaunchpadRunnerBasicTest {
 	@Test
 	public void testRunsystemPackages() throws Exception {
 		Set<String> p = new ParameterMap(lp.getBundleContext()
-				.getProperty("org.osgi.framework.system.packages.extra")).keySet();
-			assertThat(p).contains("sun.misc");
+			.getProperty("org.osgi.framework.system.packages.extra")).keySet();
+		assertThat(p).contains("sun.misc");
 	}
 }

@@ -11,9 +11,9 @@ import aQute.libg.command.Command;
 
 public class Signer {
 	private static final Logger	logger	= LoggerFactory.getLogger(Signer.class);
-	private final String	key;
-	private final String	passphrase;
-	private final String	cmd;
+	private final String		key;
+	private final String		passphrase;
+	private final String		cmd;
 
 	public Signer(String key, String passphrase, String cmd) {
 		this.key = key;

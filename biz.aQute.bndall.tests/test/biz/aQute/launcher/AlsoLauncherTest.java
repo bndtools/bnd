@@ -98,7 +98,6 @@ public class AlsoLauncherTest {
 
 	/**
 	 * Test that the Bndrun file is loaded when we create a run
-	 *
 	 */
 	@Test
 	public void testCreateBndrun() throws Exception {
@@ -146,7 +145,6 @@ public class AlsoLauncherTest {
 		project.setProperty(Constants.FIXUPMESSAGES, "Duplicate file in -export;is:=warning");
 
 		File[] build = project.build();
-
 
 		assertThat(project.check("Duplicate file in -export")).isTrue();
 		assertThat(build).hasSize(8);
@@ -253,7 +251,7 @@ public class AlsoLauncherTest {
 					"jar/org.apache.felix.scr", //
 					"jar/org.apache.servicemix.bundles.junit", //
 					"jar/org.opentest4j" //
-					);
+			);
 
 			File tmp = File.createTempFile("foo", ".jar");
 			try {
@@ -267,7 +265,8 @@ public class AlsoLauncherTest {
 				StringBuilder stdout = new StringBuilder();
 				StringBuilder stderr = new StringBuilder();
 				int execute = cmd.execute(stdout, stderr);
-				String output = stdout.append(stderr).toString();
+				String output = stdout.append(stderr)
+					.toString();
 				System.out.println(output);
 
 				// These must be bsns ow

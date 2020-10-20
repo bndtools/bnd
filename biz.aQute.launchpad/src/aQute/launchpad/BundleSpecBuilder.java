@@ -1000,8 +1000,7 @@ public interface BundleSpecBuilder {
 		}
 
 		ByteArrayInputStream bin = new ByteArrayInputStream(build);
-		return x.ws
-			.getBundleContext()
+		return x.ws.getBundleContext()
 			.installBundle(location, bin);
 	}
 

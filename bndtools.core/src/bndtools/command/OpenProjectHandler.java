@@ -35,8 +35,7 @@ public class OpenProjectHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		IProject project = ResourcesPlugin
-			.getWorkspace()
+		IProject project = ResourcesPlugin.getWorkspace()
 			.getRoot()
 			.getProject(event.getParameter(ProjectNamesParameterValues.PROJECT_NAME));
 
@@ -55,8 +54,7 @@ public class OpenProjectHandler extends AbstractHandler {
 		} catch (Exception e) {
 			IEvaluationContext context = (IEvaluationContext) event.getApplicationContext();
 			ErrorDialog.openError((Shell) context.getVariable("activeShell"), "Open Project",
-				"Unable to select project",
-				new Status(IStatus.ERROR, Plugin.PLUGIN_ID, e.getMessage(), e));
+				"Unable to select project", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, e.getMessage(), e));
 		}
 
 		return null;
@@ -84,8 +82,7 @@ public class OpenProjectHandler extends AbstractHandler {
 
 		assert select != null;
 
-		viewPartId.map(asFunction(partId -> activePage.showView(
-			partId)))
+		viewPartId.map(asFunction(partId -> activePage.showView(partId)))
 			.map(ISetSelectionTarget.class::cast)
 			.ifPresent(target -> target.selectReveal(new StructuredSelection(select)));
 	}
@@ -102,8 +99,7 @@ public class OpenProjectHandler extends AbstractHandler {
 
 	private static Optional<String> restoreViewPartId(IWorkbenchPage page, String viewId) {
 		return Arrays.stream(page.getViewReferences())
-			.filter(ref -> Objects.equals(ref.getId(),
-				viewId))
+			.filter(ref -> Objects.equals(ref.getId(), viewId))
 			.map(ref -> ref.getPart(true))
 			.map(part -> part.getSite()
 				.getId())

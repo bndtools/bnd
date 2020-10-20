@@ -1,6 +1,7 @@
 package aQute.maven.api;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -80,13 +81,7 @@ public class Archive implements Comparable<Archive> {
 		if (!revision.equals(other.revision))
 			return false;
 
-		if (snapshot == null) {
-			if (other.snapshot != null)
-				return false;
-		} else if (!snapshot.equals(other.snapshot))
-			return false;
-
-		return true;
+		return Objects.equals(snapshot, other.snapshot);
 	}
 
 	public Revision getRevision() {

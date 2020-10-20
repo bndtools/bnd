@@ -47,7 +47,7 @@ import bndtools.central.Central;
 
 public class BndtoolsJavaWorkingSetUpdater implements IWorkingSetUpdater {
 
-	public static final String ID = "bndtools.core.BndtoolsJavaWorkingSet";
+	public static final String	ID					= "bndtools.core.BndtoolsJavaWorkingSet";
 	public static final String	WORKING_SET_NAME	= "Bndtools Java Model";
 
 	private static final String	TASK_NAME			= WORKING_SET_NAME + "Updating Bndtools Java Working Set";
@@ -105,16 +105,16 @@ public class BndtoolsJavaWorkingSetUpdater implements IWorkingSetUpdater {
 		@Override
 		public IStatus runInUIThread(IProgressMonitor monitor) {
 			Runnable r = task;
-			if(r != null && !monitor.isCanceled() && !isDisposed.get()) {
+			if (r != null && !monitor.isCanceled() && !isDisposed.get()) {
 				r.run();
 			}
 			return Status.OK_STATUS;
 		}
 
-		void setTask(Runnable r){
+		void setTask(Runnable r) {
 			cancel();
 			task = r;
-			if(r != null){
+			if (r != null) {
 				schedule();
 			}
 		}
@@ -200,7 +200,7 @@ public class BndtoolsJavaWorkingSetUpdater implements IWorkingSetUpdater {
 				return Status.CANCEL_STATUS;
 			IAdaptable[] data = collectData(monitor);
 			Runnable update = () -> updateWorkingSet(workingSet, data);
-			if(Display.getCurrent() != null) {
+			if (Display.getCurrent() != null) {
 				update.run();
 			} else {
 				updateInUIJob.setTask(new Runnable() {
@@ -226,8 +226,9 @@ public class BndtoolsJavaWorkingSetUpdater implements IWorkingSetUpdater {
 
 	private IAdaptable[] collectData(IProgressMonitor monitor) throws CoreException {
 		IAdaptable[] data = new IAdaptable[0];
-		IWorkspaceRoot root= ResourcesPlugin.getWorkspace().getRoot();
-		IJavaModel model= JavaCore.create(root);
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
+			.getRoot();
+		IJavaModel model = JavaCore.create(root);
 		List<IAdaptable> result = new ArrayList<>();
 		for (IJavaProject javaProject : model.getJavaProjects()) {
 			if (monitor.isCanceled() || isDisposed.get())

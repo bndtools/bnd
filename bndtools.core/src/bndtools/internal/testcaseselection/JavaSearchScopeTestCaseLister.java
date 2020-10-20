@@ -2,7 +2,6 @@ package bndtools.internal.testcaseselection;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,9 +44,8 @@ public class JavaSearchScopeTestCaseLister implements ITestCaseLister {
 
 		// Remove non-source and excludes
 		Set<String> testCaseNames = new LinkedHashSet<>();
-		for (Iterator<IJavaElement> iter = testCaseList.iterator(); iter.hasNext();) {
+		for (IJavaElement element : testCaseList) {
 			boolean omit = false;
-			IJavaElement element = iter.next();
 			try {
 
 				IType type = (IType) element.getAncestor(IJavaElement.TYPE);

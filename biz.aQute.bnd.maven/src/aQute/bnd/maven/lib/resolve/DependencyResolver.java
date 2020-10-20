@@ -45,10 +45,10 @@ import aQute.lib.unmodifiable.Lists;
 @ProviderType
 public class DependencyResolver {
 
-	private static final Logger					logger	= LoggerFactory.getLogger(DependencyResolver.class);
+	private static final Logger														logger					= LoggerFactory
+		.getLogger(DependencyResolver.class);
 
-	private static final BiPredicate<ArtifactResult, ArtifactResult>				sameExceptVersion	= (
-		a,
+	private static final BiPredicate<ArtifactResult, ArtifactResult>				sameExceptVersion		= (a,
 		b) -> Objects.equals(a.getArtifact()
 			.getArtifactId(),
 			b.getArtifact()
@@ -65,15 +65,15 @@ public class DependencyResolver {
 		resolvedArtifact, collection) -> collection.stream()
 			.anyMatch(ra -> sameExceptVersion.test(ra, resolvedArtifact));
 
-	private final boolean						includeTransitive;
-	private final MavenProject					project;
-	final Collection<String>					scopes;
-	private final RepositorySystemSession		session;
-	private final RepositorySystem				system;
-	private final ProjectDependenciesResolver	resolver;
-	private final PostProcessor					postProcessor;
+	private final boolean															includeTransitive;
+	private final MavenProject														project;
+	final Collection<String>														scopes;
+	private final RepositorySystemSession											session;
+	private final RepositorySystem													system;
+	private final ProjectDependenciesResolver										resolver;
+	private final PostProcessor														postProcessor;
 	@SuppressWarnings("deprecation")
-	private final org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
+	private final org.apache.maven.artifact.factory.ArtifactFactory					artifactFactory;
 	private final boolean															useMavenDependencies;
 	private final boolean															includeDependencyManagement;
 
@@ -95,8 +95,7 @@ public class DependencyResolver {
 	public DependencyResolver(MavenProject project, RepositorySystemSession session,
 		ProjectDependenciesResolver resolver, RepositorySystem system, Set<Scope> scopes) {
 
-		this(project, session, resolver, system, null, scopes
-			.stream()
+		this(project, session, resolver, system, null, scopes.stream()
 			.map(Scope::name)
 			.collect(Collectors.toList()), true, new LocalPostProcessor());
 	}
@@ -111,8 +110,7 @@ public class DependencyResolver {
 		ProjectDependenciesResolver resolver, RepositorySystem system, Set<Scope> scopes, boolean includeTransitive,
 		PostProcessor postProcessor) {
 
-		this(project, session, resolver, system, null, scopes
-			.stream()
+		this(project, session, resolver, system, null, scopes.stream()
 			.map(Scope::name)
 			.collect(Collectors.toList()), includeTransitive, postProcessor);
 	}
@@ -129,8 +127,7 @@ public class DependencyResolver {
 		@SuppressWarnings("deprecation") org.apache.maven.artifact.factory.ArtifactFactory artifactFactory,
 		Set<Scope> scopes, boolean includeTransitive, PostProcessor postProcessor) {
 
-		this(project, session, resolver, system, artifactFactory, scopes
-			.stream()
+		this(project, session, resolver, system, artifactFactory, scopes.stream()
 			.map(Scope::name)
 			.collect(Collectors.toList()), includeTransitive, postProcessor, true, false);
 	}
@@ -327,12 +324,12 @@ public class DependencyResolver {
 				logger.debug("Located file: {} for artifact {}", resolvedArtifact.getArtifact()
 					.getFile(), resolvedArtifact);
 
-				// Add artifact only if the scope of this artifact matches and if
+				// Add artifact only if the scope of this artifact matches and
+				// if
 				// we don't already have another version (earlier means higher
 				// precedence regardless of version)
 				if (scopes.contains(node.getDependency()
-					.getScope()) && containsAnotherVersion
-						.negate()
+					.getScope()) && containsAnotherVersion.negate()
 						.test(resolvedArtifact, files.values())) {
 					files.put(resolvedArtifact.getArtifact()
 						.getFile(), resolvedArtifact);
@@ -356,8 +353,7 @@ public class DependencyResolver {
 		// We already have a copy
 		dependencies.clear();
 
-		project
-			.getDependencyManagement()
+		project.getDependencyManagement()
 			.getDependencies()
 			.stream()
 			.forEach(dependencies::add);
@@ -371,11 +367,9 @@ public class DependencyResolver {
 
 	@SuppressWarnings("deprecation")
 	private void resetOriginalDependencies(List<Dependency> originalDependencies) {
-		project
-			.getDependencies()
+		project.getDependencies()
 			.clear();
-		project
-			.getDependencies()
+		project.getDependencies()
 			.addAll(originalDependencies);
 
 		try {

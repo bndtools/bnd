@@ -225,7 +225,8 @@ public class ConnectionSettings {
 			return id;
 		}
 
-		String scheme = m.group(1).toLowerCase();
+		String scheme = m.group(1)
+			.toLowerCase();
 		String host = m.group(2);
 		String port = m.group(3);
 

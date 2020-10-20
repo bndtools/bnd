@@ -186,6 +186,7 @@ public class OSGiHeader {
 	public static boolean quote(Appendable sb, String value) throws IOException {
 		return quote(sb, value, '"');
 	}
+
 	/**
 	 */
 	public static boolean quote(Appendable sb, String value, char quoteChar) throws IOException {

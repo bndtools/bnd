@@ -55,8 +55,7 @@ public class BndExportJarHandler extends AbstractHandler {
 						exportDir.mkdirs();
 					}
 
-					Entry<String, Resource> export = bndrun.export(EXECUTABLE_JAR,
-						Collections.emptyMap());
+					Entry<String, Resource> export = bndrun.export(EXECUTABLE_JAR, Collections.emptyMap());
 
 					if (export != null) {
 						try (Resource resource = export.getValue()) {

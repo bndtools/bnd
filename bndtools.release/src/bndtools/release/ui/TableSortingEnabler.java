@@ -36,8 +36,8 @@ public class TableSortingEnabler {
 	private void addColumnSelectionListeners(TableViewer tableViewer) {
 		TableColumn[] columns = tableViewer.getTable()
 			.getColumns();
-		for (int i = 0; i < columns.length; i++) {
-			addColumnSelectionListener(columns[i]);
+		for (TableColumn column : columns) {
+			addColumnSelectionListener(column);
 		}
 	}
 

@@ -92,15 +92,14 @@ public interface MavenRunListenerHelper {
 		return getBndMavenPluginById(projectFacade, "biz.aQute.bnd:bnd-resolver-maven-plugin");
 	}
 
-	default MojoExecution getBndResolverMojoExecution(IMavenProjectFacade projectFacade,
-		IProgressMonitor monitor) throws CoreException {
+	default MojoExecution getBndResolverMojoExecution(IMavenProjectFacade projectFacade, IProgressMonitor monitor)
+		throws CoreException {
 		return getMojoExecution(projectFacade, "biz.aQute.bnd:bnd-resolver-maven-plugin", "bnd-resolver:resolve@",
 			exe -> true, monitor);
 	}
 
 	default MojoExecution getBndResolverMojoExecution(IMavenProjectFacade projectFacade,
-		Predicate<MojoExecution> predicate,
-		IProgressMonitor monitor) throws CoreException {
+		Predicate<MojoExecution> predicate, IProgressMonitor monitor) throws CoreException {
 		return getMojoExecution(projectFacade, "biz.aQute.bnd:bnd-resolver-maven-plugin", "bnd-resolver:resolve@",
 			predicate, monitor);
 	}
@@ -115,25 +114,22 @@ public interface MavenRunListenerHelper {
 
 	default Optional<PluginExecution> getBndMavenPluginById(IMavenProjectFacade projectFacade, String id)
 		throws CoreException {
-		return Optional.ofNullable(getMavenProject(projectFacade).getPlugin(
-			id))
+		return Optional.ofNullable(getMavenProject(projectFacade).getPlugin(id))
 			.map(Plugin::getExecutionsAsMap)
 			.map(Map<String, PluginExecution>::values)
-			.orElseGet(
-				ArrayList::new)
+			.orElseGet(ArrayList::new)
 			.stream()
 			.findFirst();
 	}
 
-	default MojoExecution getBndTestingMojoExecution(IMavenProjectFacade projectFacade,
-		IProgressMonitor monitor) throws CoreException {
+	default MojoExecution getBndTestingMojoExecution(IMavenProjectFacade projectFacade, IProgressMonitor monitor)
+		throws CoreException {
 		return getMojoExecution(projectFacade, "biz.aQute.bnd:bnd-testing-maven-plugin", "bnd-testing:testing@",
 			exe -> true, monitor);
 	}
 
 	default MojoExecution getBndTestingMojoExecution(IMavenProjectFacade projectFacade,
-		Predicate<MojoExecution> predicate,
-		IProgressMonitor monitor) throws CoreException {
+		Predicate<MojoExecution> predicate, IProgressMonitor monitor) throws CoreException {
 		return getMojoExecution(projectFacade, "biz.aQute.bnd:bnd-testing-maven-plugin", "bnd-testing:testing@",
 			predicate, monitor);
 	}

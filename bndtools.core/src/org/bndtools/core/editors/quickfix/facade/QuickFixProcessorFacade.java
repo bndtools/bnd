@@ -17,7 +17,7 @@ import org.osgi.util.tracker.ServiceTracker;
 
 public class QuickFixProcessorFacade implements IQuickFixProcessor {
 
-	static ServiceTracker<IQuickFixProcessor, IQuickFixProcessor>	processors;
+	static ServiceTracker<IQuickFixProcessor, IQuickFixProcessor> processors;
 
 	static public void setup(BundleContext bc) {
 		processors = new ServiceTracker<>(bc, IQuickFixProcessor.class, null);
@@ -45,7 +45,8 @@ public class QuickFixProcessorFacade implements IQuickFixProcessor {
 	@Override
 	public IJavaCompletionProposal[] getCorrections(IInvocationContext context, IProblemLocation[] locations)
 		throws CoreException {
-		IJavaCompletionProposal[] retval = streamOf().map(asFunction(processor -> processor.getCorrections(context, locations)))
+		IJavaCompletionProposal[] retval = streamOf()
+			.map(asFunction(processor -> processor.getCorrections(context, locations)))
 			.filter(Objects::nonNull)
 			.flatMap(Stream::of)
 			.toArray(IJavaCompletionProposal[]::new);

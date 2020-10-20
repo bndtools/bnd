@@ -1675,10 +1675,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public static Properties getManifestAsProperties(InputStream in) throws IOException {
 		Properties p = new UTF8Properties();
 		Manifest manifest = new Manifest(in);
-		for (Iterator<Object> it = manifest.getMainAttributes()
-			.keySet()
-			.iterator(); it.hasNext();) {
-			Attributes.Name key = (Attributes.Name) it.next();
+		for (Object object : manifest.getMainAttributes()
+			.keySet()) {
+			Attributes.Name key = (Attributes.Name) object;
 			String value = manifest.getMainAttributes()
 				.getValue(key);
 			p.put(key.toString(), value);

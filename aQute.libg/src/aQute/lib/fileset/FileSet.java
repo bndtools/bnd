@@ -66,10 +66,8 @@ public class FileSet {
 
 		for (String part : parts) {
 
-
 			if (part.startsWith("/"))
 				throw new IllegalArgumentException("FileSet must not start with a /");
-
 
 			// if we end in allfile (**), turn it in to any/all
 

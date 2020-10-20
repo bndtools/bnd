@@ -36,7 +36,7 @@ public interface P2Config {
 	 * If not set or false, this assumes a P2 repository, i.e. the url points to
 	 * a P2 repository directory. If set to true, the url is assumed to point to
 	 * an Eclipse Target platform.
-	 * 
+	 *
 	 * @deprecated
 	 */
 	@Deprecated

@@ -80,7 +80,6 @@ public class ManifestHelperTest {
 				.iterator()
 				.next());
 			assertEquals(0, hen.getHeader("Notfound", false)
-				.keySet()
 				.size());
 			assertEquals("", hen.getHeaderAsString("Notfound"));
 			assertEquals("test", hen.getHeaderAsString("Bundle-Test"));

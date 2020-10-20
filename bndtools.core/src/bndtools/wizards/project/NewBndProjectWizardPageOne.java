@@ -145,7 +145,8 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 		return result.toArray(new IClasspathEntry[0]);
 	}
 
-	private static final IClasspathAttribute TEST = JavaCore.newClasspathAttribute("test", Boolean.TRUE.toString());
+	private static final IClasspathAttribute	TEST	= JavaCore.newClasspathAttribute("test",
+		Boolean.TRUE.toString());
 	private Control								nameControl;
 
 	public ProjectPaths getProjectsPaths() {

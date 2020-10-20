@@ -132,13 +132,13 @@ public class Artifact extends DTO {
 	public static final String	FORMAT_PACKED	= "packed";
 
 	@Deprecated
-	public String		type;
-	public Classifier	classifier;
-	public URI			uri;
-	public String		id;
-	public Version		version;
-	public String		md5;
-	public long			download_size;
-	public String		format;
+	public String				type;
+	public Classifier			classifier;
+	public URI					uri;
+	public String				id;
+	public Version				version;
+	public String				md5;
+	public long					download_size;
+	public String				format;
 
 }

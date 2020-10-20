@@ -18,7 +18,7 @@ import aQute.lib.io.IO;
 
 public class WorkspaceResourcesRepository extends AbstractIndexingRepository<Project, File>
 	implements WorkspaceRepositoryMarker {
-	private final Workspace		workspace;
+	private final Workspace workspace;
 
 	public WorkspaceResourcesRepository(Workspace workspace) {
 		super();

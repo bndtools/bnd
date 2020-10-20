@@ -16,7 +16,8 @@ import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 
 public class RepositoryUtils {
-	private static final ILogger logger = Logger.getLogger(RepositoryUtils.class);
+	private static final ILogger												logger	= Logger
+		.getLogger(RepositoryUtils.class);
 	private static volatile ServiceTracker<RepositoryPlugin, RepositoryPlugin>	pluginTracker;
 
 	public static List<RepositoryPlugin> listRepositories(boolean hideCache) {
@@ -69,10 +70,8 @@ public class RepositoryUtils {
 
 	private static Collection<RepositoryPlugin> getAdditionalPlugins() {
 		if (pluginTracker == null) {
-			pluginTracker = new ServiceTracker<>(
-				FrameworkUtil.getBundle(RepositoryUtils.class)
-					.getBundleContext(),
-				RepositoryPlugin.class, null);
+			pluginTracker = new ServiceTracker<>(FrameworkUtil.getBundle(RepositoryUtils.class)
+				.getBundleContext(), RepositoryPlugin.class, null);
 			pluginTracker.open();
 		}
 		return pluginTracker.getTracked()

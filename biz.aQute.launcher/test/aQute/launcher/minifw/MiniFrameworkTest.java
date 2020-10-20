@@ -73,7 +73,7 @@ public class MiniFrameworkTest {
 			assertThat(b).isGreaterThan(framework.getBundle());
 
 			assertThat(context.getProperty(Constants.FRAMEWORK_UUID)).isNotNull()
-			.isEqualTo(framework.getProperty(Constants.FRAMEWORK_UUID));
+				.isEqualTo(framework.getProperty(Constants.FRAMEWORK_UUID));
 
 			Class<?> c = b.loadClass("test.TestActivator");
 			assertThat(c).isNotNull();

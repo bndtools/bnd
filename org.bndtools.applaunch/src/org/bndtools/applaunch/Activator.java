@@ -26,13 +26,12 @@ public class Activator implements BundleActivator {
 	}
 
 	@Override
-	public void stop(BundleContext context) throws Exception {
-	}
+	public void stop(BundleContext context) throws Exception {}
 }
 
 class LauncherTracker extends ServiceTracker<Object, ServiceRegistration<ApplicationLauncher>> {
 
-	private final Logger log = Logger.getLogger(Activator.class.getPackage()
+	private final Logger						log	= Logger.getLogger(Activator.class.getPackage()
 		.getName());
 	private ServiceReference<EnvironmentInfo>	envInfo;
 

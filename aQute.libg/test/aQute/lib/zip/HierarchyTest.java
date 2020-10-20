@@ -166,8 +166,7 @@ public class HierarchyTest {
 					.get()
 					.find(node.name())
 					.get());
-			}
-			else {
+			} else {
 				try {
 					node.find("..");
 					fail("expected and exception");

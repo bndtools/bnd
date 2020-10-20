@@ -23,14 +23,12 @@ public class LaunchTest {
 		File file = new File("bndtools.cocoa.macosx.x86_64.bndrun");
 		try (Processor p = new Processor()) {
 			p.setProperties(file);
-			p.setProperty(
-				"-runvm.test1", "-Dfoo=\"xyz abc\"");
+			p.setProperty("-runvm.test1", "-Dfoo=\"xyz abc\"");
 			p.setProperty("-runvm.test2",
 				"-Dbar=xyz abc, -Dlauncher.properties=C:\\Users\\bj hargrave\\git\\bnd\\bndtools.core\\generated\\launch7354374140259840283.properties");
 			Parameters hdr = p.getMergedParameters(Constants.RUNVM);
 			Collection<String> arguments = hdr.keyList();
-			String[] argumentsArray = arguments
-				.stream()
+			String[] argumentsArray = arguments.stream()
 				// .flatMap(argument -> new QuotedTokenizer(argument, " \t",
 				// false, true).stream()
 				// .filter(
@@ -39,8 +37,7 @@ public class LaunchTest {
 			String rendered = AbstractOSGiLaunchDelegate.renderArguments(argumentsArray);
 			String[] roundTrip = parseArguments(rendered);
 			System.out.printf("input:\n%s\nrendered:\n  «%s»\nroundTrip:\n%s\n\n", arguments.stream()
-				.collect(joining("»,\n  «", "  «",
-					"»")), //
+				.collect(joining("»,\n  «", "  «", "»")), //
 				rendered, //
 				Arrays.stream(roundTrip)
 					.collect(joining("»,\n  «", "  «", "»")));

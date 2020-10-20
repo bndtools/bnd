@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -1310,8 +1309,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 	public List<String> getSuperInterfaces() {
 		List<InterfaceWrapper> interfaces = fSuperInterfacesDialogField.getElements();
 		ArrayList<String> result = new ArrayList<>(interfaces.size());
-		for (Iterator<InterfaceWrapper> iter = interfaces.iterator(); iter.hasNext();) {
-			InterfaceWrapper wrapper = iter.next();
+		for (InterfaceWrapper wrapper : interfaces) {
 			result.add(wrapper.interfaceName);
 		}
 		return result;
@@ -1327,8 +1325,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 	 */
 	public void setSuperInterfaces(List<String> interfacesNames, boolean canBeModified) {
 		ArrayList<InterfaceWrapper> interfaces = new ArrayList<>(interfacesNames.size());
-		for (Iterator<String> iter = interfacesNames.iterator(); iter.hasNext();) {
-			interfaces.add(new InterfaceWrapper(iter.next()));
+		for (String interfacesName : interfacesNames) {
+			interfaces.add(new InterfaceWrapper(interfacesName));
 		}
 		fSuperInterfacesDialogField.setElements(interfaces);
 		fSuperInterfacesDialogField.setEnabled(canBeModified);
@@ -1903,9 +1901,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 
 		IPackageFragment pack = getPackageFragment();
 		if (pack != null) {
-			dialog.setInitialSelections(new Object[] {
-				pack
-			});
+			dialog.setInitialSelections(pack);
 		}
 
 		if (dialog.open() == Window.OK) {
@@ -2129,8 +2125,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 				// add imports that will be removed again. Having the imports
 				// solves 14661
 				IType[] topLevelTypes = parentCU.getTypes();
-				for (int i = 0; i < topLevelTypes.length; i++) {
-					imports.addImport(topLevelTypes[i].getFullyQualifiedName('.'));
+				for (IType topLevelType : topLevelTypes) {
+					imports.addImport(topLevelType.getFullyQualifiedName('.'));
 				}
 
 				lineDelimiter = StubUtility.getLineDelimiterUsed(enclosingType);
@@ -2147,9 +2143,9 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 				if (enclosingType.isEnum()) {
 					IField[] fields = enclosingType.getFields();
 					if (fields.length > 0) {
-						for (int i = 0, max = fields.length; i < max; i++) {
-							if (!fields[i].isEnumConstant()) {
-								sibling = fields[i];
+						for (IField field : fields) {
+							if (!field.isEnumConstant()) {
+								sibling = field;
 								break;
 							}
 						}
@@ -2237,8 +2233,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 		@SuppressWarnings("unchecked")
 		List<ImportDeclaration> imports = root.imports();
 		Set<String> res = new HashSet<>(imports.size());
-		for (int i = 0; i < imports.size(); i++) {
-			res.add(ASTNodes.asString(imports.get(i)));
+		for (ImportDeclaration import1 : imports) {
+			res.add(ASTNodes.asString(import1));
 		}
 		return res;
 	}
@@ -2263,8 +2259,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 
 		int importsEnd = ASTNodes.getExclusiveEnd(importsDecls.get(importsDecls.size() - 1));
 		IProblem[] problems = root.getProblems();
-		for (int i = 0; i < problems.length; i++) {
-			IProblem curr = problems[i];
+		for (IProblem curr : problems) {
 			if (curr.getSourceEnd() < importsEnd) {
 				int id = curr.getID();
 				if (id == IProblem.UnusedImport || id == IProblem.NotVisibleType) { // not
@@ -2276,8 +2271,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 																					// remove
 																					// both
 					int pos = curr.getSourceStart();
-					for (int k = 0; k < importsDecls.size(); k++) {
-						ImportDeclaration decl = importsDecls.get(k);
+					for (ImportDeclaration decl : importsDecls) {
 						if (decl.getStartPosition() <= pos && pos < decl.getStartPosition() + decl.getLength()) {
 							if (existingImports.isEmpty() || !existingImports.contains(ASTNodes.asString(decl))) {
 								String name = decl.getName()
@@ -2664,8 +2658,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 		JavaModelUtil.reconcile(cu);
 		IMethod[] typeMethods = type.getMethods();
 		Set<String> handleIds = new HashSet<>(typeMethods.length);
-		for (int index = 0; index < typeMethods.length; index++)
-			handleIds.add(typeMethods[index].getHandleIdentifier());
+		for (IMethod typeMethod : typeMethods)
+			handleIds.add(typeMethod.getHandleIdentifier());
 		ArrayList<IMethod> newMethods = new ArrayList<>();
 		CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(type.getJavaProject());
 		settings.createComments = isAddComments();
@@ -2693,16 +2687,16 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 		}
 		JavaModelUtil.reconcile(cu);
 		typeMethods = type.getMethods();
-		for (int index = 0; index < typeMethods.length; index++)
-			if (!handleIds.contains(typeMethods[index].getHandleIdentifier()))
-				newMethods.add(typeMethods[index]);
+		for (IMethod typeMethod : typeMethods)
+			if (!handleIds.contains(typeMethod.getHandleIdentifier()))
+				newMethods.add(typeMethod);
 		IMethod[] methods = newMethods.toArray(new IMethod[0]);
 		return methods;
 	}
 
 	private void createImports(ImportsManager imports, String[] createdImports) {
-		for (int index = 0; index < createdImports.length; index++)
-			imports.addImport(createdImports[index]);
+		for (String createdImport : createdImports)
+			imports.addImport(createdImport);
 	}
 
 	// ---- creation ----------------

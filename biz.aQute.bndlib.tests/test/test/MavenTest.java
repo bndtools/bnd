@@ -100,7 +100,6 @@ public class MavenTest extends TestCase {
 		return project;
 	}
 
-
 	/**
 	 * Test parsing a project pom
 	 *
@@ -342,11 +341,9 @@ public class MavenTest extends TestCase {
 		b.setBundleSymbolicName(bsn);
 		b.setBundleVersion(version);
 		b.setProperty("-resourceonly", "true");
-		b.setProperty(
-			"-maven-dependencies",
+		b.setProperty("-maven-dependencies",
 			"group1:artifact1:1.0.0-SNAPSHOT;groupId=group1;artifactId=artifact1;version=1.0.0-SNAPSHOT,group2:artifact2:2.0.0;groupId=group2;artifactId=artifact2;version=2.0.0");
-		b.setProperty(
-			"-maven-dependencies.fix",
+		b.setProperty("-maven-dependencies.fix",
 			"group1:artifact1:1.0.0-SNAPSHOT;groupId=group1;artifactId=artifact1;version=1.0.0");
 		if (developers != null)
 			b.setProperty(Constants.BUNDLE_DEVELOPERS, developers);
@@ -361,8 +358,7 @@ public class MavenTest extends TestCase {
 		assertTrue(b.check());
 		Resource r = jar.getResource(where);
 		IO.copy(r.openInputStream(), System.out);
-		Document d = XML
-			.newDocumentBuilderFactory()
+		Document d = XML.newDocumentBuilderFactory()
 			.newDocumentBuilder()
 			.parse(r.openInputStream());
 		XPath xpath = XPathFactory.newInstance()

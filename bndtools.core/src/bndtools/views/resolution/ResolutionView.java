@@ -88,18 +88,18 @@ import bndtools.utils.SelectionUtils;
 
 public class ResolutionView extends ViewPart implements ISelectionListener, IResourceChangeListener {
 
-	private Display				display							= null;
+	private Display				display		= null;
 
-	private Tree				reqsTree						= null;
-	private Table				capsTable						= null;
+	private Tree				reqsTree	= null;
+	private Table				capsTable	= null;
 
 	private TreeViewer			reqsViewer;
 	private TableViewer			capsViewer;
 
 	private ViewerFilter		hideSelfImportsFilter;
 
-	private boolean				inputLocked						= false;
-	private boolean				outOfDate						= false;
+	private boolean				inputLocked	= false;
+	private boolean				outOfDate	= false;
 	Set<CapReqLoader>			loaders;
 	private Job					analysisJob;
 
@@ -209,12 +209,10 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		ColumnViewerToolTipSupport.enableFor(capsViewer);
 		capsViewer.setLabelProvider(new CapabilityLabelProvider(true));
 		capsViewer.setContentProvider(new CapReqMapContentProvider());
-		capsViewer.setFilters(new ViewerFilter[] {
-			new ViewerFilter() {
-				@Override
-				public boolean select(Viewer viewer, Object parent, Object element) {
-					return !filteredCapabilityNamespaces.contains(((Capability) element).getNamespace());
-				}
+		capsViewer.setFilters(new ViewerFilter() {
+			@Override
+			public boolean select(Viewer viewer, Object parent, Object element) {
+				return !filteredCapabilityNamespaces.contains(((Capability) element).getNamespace());
 			}
 		});
 
@@ -229,9 +227,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 				return true;
 			}
 		};
-		reqsViewer.setFilters(new ViewerFilter[] {
-			hideSelfImportsFilter
-		});
+		reqsViewer.setFilters(hideSelfImportsFilter);
 
 		reqsViewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
 			LocalSelectionTransfer.getTransfer()

@@ -47,19 +47,19 @@ public class Verifier extends Processor {
 	private boolean				r3;
 	private boolean				usesRequire;
 
-	final static Pattern		EENAME							= Pattern.compile(																			//
-		"CDC-1\\.0/Foundation-1\\.0"																														//
-			+ "|CDC-1\\.1/Foundation-1\\.1"																													//
-			+ "|OSGi/Minimum-1\\.[0-2]"																														//
-			+ "|JRE-1\\.1"																																	//
-			+ "|J2SE-1\\.[2-5]"																																//
-			+ "|JavaSE-1\\.[6-8]"																															//
-			+ "|JavaSE-9"																																	//
-			+ "|JavaSE-[1-9][0-9]"																															//
-			+ "|PersonalJava-1\\.[12]"																														//
-			+ "|CDC-1\\.0/PersonalBasis-1\\.0"																												//
-			+ "|CDC-1\\.0/PersonalJava-1\\.0"																												//
-			+ "|CDC-1\\.1/PersonalBasis-1\\.1"																												//
+	final static Pattern		EENAME	= Pattern.compile(		//
+		"CDC-1\\.0/Foundation-1\\.0"							//
+			+ "|CDC-1\\.1/Foundation-1\\.1"						//
+			+ "|OSGi/Minimum-1\\.[0-2]"							//
+			+ "|JRE-1\\.1"										//
+			+ "|J2SE-1\\.[2-5]"									//
+			+ "|JavaSE-1\\.[6-8]"								//
+			+ "|JavaSE-9"										//
+			+ "|JavaSE-[1-9][0-9]"								//
+			+ "|PersonalJava-1\\.[12]"							//
+			+ "|CDC-1\\.0/PersonalBasis-1\\.0"					//
+			+ "|CDC-1\\.0/PersonalJava-1\\.0"					//
+			+ "|CDC-1\\.1/PersonalBasis-1\\.1"					//
 			+ "|CDC-1\\.1/PersonalJava-1\\.1");
 	public final static String	EES[];
 	static {
@@ -134,114 +134,114 @@ public class Verifier extends Processor {
 	public final static Pattern	BUNDLE_ACTIVATIONPOLICYPATTERN	= Pattern.compile("lazy");
 
 	public final static String	OSNAMES[]						= {
-		"AIX",																																				// IBM
-		"DigitalUnix",																																		// Compaq
-		"Embos",																																			// Segger
-																																							// Embedded
-																																							// Software
-																																							// Solutions
-		"Epoc32",																																			// SymbianOS
-																																							// Symbian
-																																							// OS
-		"FreeBSD",																																			// Free
-																																							// BSD
-		"HPUX",																																				// hp-ux
-																																							// Hewlett
-																																							// Packard
-		"IRIX",																																				// Silicon
-																																							// Graphics
-		"Linux",																																			// Open
-																																							// source
-		"MacOS",																																			// Apple
-		"NetBSD",																																			// Open
-																																							// source
-		"Netware",																																			// Novell
-		"OpenBSD",																																			// Open
-																																							// source
-		"OS2",																																				// OS/2
-																																							// IBM
-		"QNX",																																				// procnto
-																																							// QNX
-		"Solaris",																																			// Sun
-																																							// (almost
-																																							// an
-																																							// alias
-																																							// of
-																																							// SunOS)
-		"SunOS",																																			// Sun
-																																							// Microsystems
-		"VxWorks",																																			// WindRiver
-																																							// Systems
-		"Windows95", "Win32", "Windows98", "WindowsNT", "WindowsCE", "Windows2000",																			// Win2000
-		"Windows2003",																																		// Win2003
+		"AIX",																																								// IBM
+		"DigitalUnix",																																						// Compaq
+		"Embos",																																							// Segger
+																																											// Embedded
+																																											// Software
+																																											// Solutions
+		"Epoc32",																																							// SymbianOS
+																																											// Symbian
+																																											// OS
+		"FreeBSD",																																							// Free
+																																											// BSD
+		"HPUX",																																								// hp-ux
+																																											// Hewlett
+																																											// Packard
+		"IRIX",																																								// Silicon
+																																											// Graphics
+		"Linux",																																							// Open
+																																											// source
+		"MacOS",																																							// Apple
+		"NetBSD",																																							// Open
+																																											// source
+		"Netware",																																							// Novell
+		"OpenBSD",																																							// Open
+																																											// source
+		"OS2",																																								// OS/2
+																																											// IBM
+		"QNX",																																								// procnto
+																																											// QNX
+		"Solaris",																																							// Sun
+																																											// (almost
+																																											// an
+																																											// alias
+																																											// of
+																																											// SunOS)
+		"SunOS",																																							// Sun
+																																											// Microsystems
+		"VxWorks",																																							// WindRiver
+																																											// Systems
+		"Windows95", "Win32", "Windows98", "WindowsNT", "WindowsCE", "Windows2000",																							// Win2000
+		"Windows2003",																																						// Win2003
 		"WindowsXP", "WindowsVista",
 	};
 
-	public final static String	PROCESSORNAMES[]				= {																							//
+	public final static String	PROCESSORNAMES[]				= {																											//
 		//
-		"68k",																																				// Motorola
-																																							// 68000
-		"ARM_LE",																																			// Intel
-																																							// Strong
-																																							// ARM.
-																																							// Deprecated
-																																							// because
-																																							// it
-																																							// does
-																																							// not
+		"68k",																																								// Motorola
+																																											// 68000
+		"ARM_LE",																																							// Intel
+																																											// Strong
+																																											// ARM.
+																																											// Deprecated
+																																											// because
+																																											// it
+																																											// does
+																																											// not
 		// specify the endianness. See the following two rows.
-		"arm_le",																																			// Intel
-																																							// Strong
-																																							// ARM
-																																							// Little
-																																							// Endian
-																																							// mode
-		"arm_be",																																			// Intel
-																																							// String
-																																							// ARM
-																																							// Big
-																																							// Endian
-																																							// mode
-		"Alpha",																																			//
-		"ia64n",																																			// Hewlett
-																																							// Packard
-																																							// 32
-																																							// bit
-		"ia64w",																																			// Hewlett
-																																							// Packard
-																																							// 64
-																																							// bit
-																																							// mode
-		"Ignite",																																			// psc1k
-																																							// PTSC
-		"Mips",																																				// SGI
-		"PArisc",																																			// Hewlett
-																																							// Packard
-		"PowerPC",																																			// power
-																																							// ppc
-																																							// Motorola/IBM
-																																							// Power
-																																							// PC
-		"Sh4",																																				// Hitachi
-		"Sparc",																																			// SUN
-		"Sparcv9",																																			// SUN
-		"S390",																																				// IBM
-																																							// Mainframe
-																																							// 31
-																																							// bit
-		"S390x",																																			// IBM
-																																							// Mainframe
-																																							// 64-bit
-		"V850E",																																			// NEC
-																																							// V850E
-		"x86",																																				// pentium
-																																							// i386
-		"i486",																																				// i586
-																																							// i686
-																																							// Intel&
-																																							// AMD
-																																							// 32
-																																							// bit
+		"arm_le",																																							// Intel
+																																											// Strong
+																																											// ARM
+																																											// Little
+																																											// Endian
+																																											// mode
+		"arm_be",																																							// Intel
+																																											// String
+																																											// ARM
+																																											// Big
+																																											// Endian
+																																											// mode
+		"Alpha",																																							//
+		"ia64n",																																							// Hewlett
+																																											// Packard
+																																											// 32
+																																											// bit
+		"ia64w",																																							// Hewlett
+																																											// Packard
+																																											// 64
+																																											// bit
+																																											// mode
+		"Ignite",																																							// psc1k
+																																											// PTSC
+		"Mips",																																								// SGI
+		"PArisc",																																							// Hewlett
+																																											// Packard
+		"PowerPC",																																							// power
+																																											// ppc
+																																											// Motorola/IBM
+																																											// Power
+																																											// PC
+		"Sh4",																																								// Hitachi
+		"Sparc",																																							// SUN
+		"Sparcv9",																																							// SUN
+		"S390",																																								// IBM
+																																											// Mainframe
+																																											// 31
+																																											// bit
+		"S390x",																																							// IBM
+																																											// Mainframe
+																																											// 64-bit
+		"V850E",																																							// NEC
+																																											// V850E
+		"x86",																																								// pentium
+																																											// i386
+		"i486",																																								// i586
+																																											// i686
+																																											// Intel&
+																																											// AMD
+																																											// 32
+																																											// bit
 		"x86-64",
 	};
 
@@ -598,8 +598,8 @@ public class Verifier extends Processor {
 	}
 
 	private boolean hasOverlap(Set<?> a, Set<?> b) {
-		for (Iterator<?> i = a.iterator(); i.hasNext();) {
-			if (b.contains(i.next()))
+		for (Object element : a) {
+			if (b.contains(element))
 				return true;
 		}
 		return false;
@@ -1331,9 +1331,8 @@ public class Verifier extends Processor {
 			return false;
 
 		QuotedTokenizer st = new QuotedTokenizer(value.trim(), ",");
-		for (Iterator<String> i = st.getTokenSet()
-			.iterator(); i.hasNext();) {
-			if (!verify(i.next(), regex)) {
+		for (String token : st.getTokenSet()) {
+			if (!verify(token, regex)) {
 				if (error)
 					error("Invalid value for %s, %s does not match %s", name, value, regex.pattern());
 				else

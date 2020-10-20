@@ -1,7 +1,6 @@
 package aQute.libg.clauses;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,8 +48,7 @@ public class Clauses extends LinkedHashMap<String, Map<String, String>> {
 					hadAttribute = true;
 				}
 			}
-			for (Iterator<String> i = aliases.iterator(); i.hasNext();) {
-				String packageName = i.next();
+			for (String packageName : aliases) {
 				if (result.containsKey(packageName)) {
 					if (logger != null)
 						logger.warning("Duplicate package name in header: " + packageName

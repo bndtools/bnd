@@ -49,7 +49,6 @@ class ProcessorHandler implements InvocationHandler {
 		return converter.convertNeverNull(method.getGenericReturnType(), value);
 	}
 
-
 	@SuppressWarnings("unchecked")
 	public static <T> T getInstructions(Processor processor, Class<T> type) {
 		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {

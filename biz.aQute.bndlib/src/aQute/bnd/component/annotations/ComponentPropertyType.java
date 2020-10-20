@@ -38,7 +38,7 @@ import java.lang.annotation.Target;
  * This annotation is not processed at runtime by Service Component Runtime. It
  * must be processed by tools and used to add a Component Description to the
  * bundle.
- * 
+ *
  * @see "Component Property Types."
  * @author $Id$
  * @since 1.4

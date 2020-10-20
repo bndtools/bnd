@@ -1311,9 +1311,9 @@ public class Launcher implements ServiceListener, FrameworkListener {
 					out.println();
 					out.println("Id    Levl State Modified      Location");
 
-					for (int i = 0; i < bundles.length; i++) {
+					for (Bundle bundle : bundles) {
 						String lastModified = "<>";
-						String loc = bundles[i].getLocation();
+						String loc = bundle.getLocation();
 						Optional<Path> p = URIUtil.pathFromURI(loc);
 						if (p.isPresent() && Files.exists(p.get())) {
 							lastModified = FORMAT.format(Files.getLastModifiedTime(p.get())
@@ -1321,12 +1321,12 @@ public class Launcher implements ServiceListener, FrameworkListener {
 							loc = p.get()
 								.toString();
 						}
-						out.print(fill(Long.toString(bundles[i].getBundleId()), 6));
-						out.print(fill(startLevelhandler.getBundleStartLevel(bundles[i]) + "", 4));
-						out.print(fill(toState(bundles[i].getState()), 6));
+						out.print(fill(Long.toString(bundle.getBundleId()), 6));
+						out.print(fill(startLevelhandler.getBundleStartLevel(bundle) + "", 4));
+						out.print(fill(toState(bundle.getState()), 6));
 						out.print(fill(lastModified, 14));
 
-						out.print(bundles[i].getLocation());
+						out.print(bundle.getLocation());
 
 						out.println();
 					}

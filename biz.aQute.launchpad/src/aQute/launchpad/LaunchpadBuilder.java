@@ -285,8 +285,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 
 			@SuppressWarnings("resource")
 			Launchpad launchpad = new Launchpad(workspace, framework, name, className, runspec, closeTimeout, debug,
-				testbundle,
-				byReference);
+				testbundle, byReference);
 
 			launchpad.report("ALL extra system packages\n     %s", toLines(local.extraSystemPackages.keySet()));
 			launchpad.report("Filtered extra system packages\n     %s", toLines(restrictedExports.keySet()));

@@ -60,10 +60,10 @@ public class BndAuthentication extends DefaultURLConnectionHandler {
 		String email();
 	}
 
-	private static final String		MACHINE		= "machine";
-	private static final String		PRIVATE_KEY	= "privateKey";
-	private static final String		PUBLIC_KEY	= "publicKey";
-	private static final String		EMAIL		= "email";
+	private static final String	MACHINE					= "machine";
+	private static final String	PRIVATE_KEY				= "privateKey";
+	private static final String	PUBLIC_KEY				= "publicKey";
+	private static final String	EMAIL					= "email";
 	private static final String	X_A_QUTE_AUTHORIZATION	= "X-aQute-Authorization";
 	private String				identity;
 	private String				email;

@@ -154,8 +154,7 @@ public abstract class RepositoryEntry implements IAdaptable, ResourceProvider {
 				infoBuilder.addFilter("name", bsn, versionFinder.findVersion()
 					.toString(), null);
 				OrExpression expression = combiner.or( //
-					combiner.identity(identBuilder
-						.buildSyntheticRequirement()),
+					combiner.identity(identBuilder.buildSyntheticRequirement()),
 					combiner.identity(infoBuilder.buildSyntheticRequirement()));
 
 				Promise<Collection<Resource>> promise = repository.findProviders(expression);

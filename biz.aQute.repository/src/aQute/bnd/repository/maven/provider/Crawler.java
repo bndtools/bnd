@@ -1,4 +1,5 @@
 package aQute.bnd.repository.maven.provider;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;

@@ -26,7 +26,6 @@ public class ProjectGenerateTest {
 	public TemporaryFolder	tf	= new TemporaryFolder();
 	File					tmp;
 
-
 	@Before
 	public void setUp() throws Exception {
 		tmp = tf.newFolder();
@@ -48,8 +47,7 @@ public class ProjectGenerateTest {
 		File f = testStaleCheck(project, "\"foo.bar,bnd.bnd\";newer=\"older\";error=FOO", "FOO");
 		assertThat(f).isNull();
 
-		f = testStaleCheck(project, "'foo.bar,bnd.bnd';newer=\"older/,younger/\"",
-			"detected stale files ");
+		f = testStaleCheck(project, "'foo.bar,bnd.bnd';newer=\"older/,younger/\"", "detected stale files ");
 		assertThat(f).isNotNull();
 
 		f = testStaleCheck(project, "foo.bar;newer=older/;warning=FOO", "FOO");
@@ -91,8 +89,7 @@ public class ProjectGenerateTest {
 		try (Workspace ws = getWorkspace("resources/ws-stalecheck")) {
 			getRepo(ws);
 			Project project = ws.getProject("p2");
-			project.setProperty("-generate",
-				"gen/**.java;output=src-gen/;generate='javagen -o src-gen/ gen/**.java'");
+			project.setProperty("-generate", "gen/**.java;output=src-gen/;generate='javagen -o src-gen/ gen/**.java'");
 
 			File outputdir = project.getFile("src-gen");
 
@@ -144,11 +141,10 @@ public class ProjectGenerateTest {
 		try (Workspace ws = getWorkspace("resources/ws-stalecheck")) {
 			getRepo(ws);
 			Project project = ws.getProject("p4");
-			project.setProperty("-generate",
-				"in/;output=out/;generate='" //
-					+ "javagen -o out in/In1.java" //
-					+ ";" //
-					+ "javagen -o out in/In2.java'");
+			project.setProperty("-generate", "in/;output=out/;generate='" //
+				+ "javagen -o out in/In1.java" //
+				+ ";" //
+				+ "javagen -o out in/In2.java'");
 
 			File out1 = project.getFile("out/In1.java");
 			File out2 = project.getFile("out/In2.java");

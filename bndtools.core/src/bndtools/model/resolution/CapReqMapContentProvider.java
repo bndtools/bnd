@@ -20,12 +20,12 @@ import aQute.lib.unmodifiable.Sets;
 
 public class CapReqMapContentProvider implements ITreeContentProvider {
 
-	private static final Object[]		EMPTY			= new Object[0];
+	private static final Object[]		EMPTY		= new Object[0];
 
 	private static final Set<String>	NAMESPACES	= Sets.of(BundleNamespace.BUNDLE_NAMESPACE,
 		IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE, PackageNamespace.PACKAGE_NAMESPACE);
 
-	private final Comparator<Object>	comparator		= new CapReqComparator();
+	private final Comparator<Object>	comparator	= new CapReqComparator();
 
 	@Override
 	public void dispose() {}

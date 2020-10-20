@@ -12,7 +12,7 @@ public class Plugin extends AbstractUIPlugin {
 	public static final String	IMG_NEXT				= "NEXT";
 	public static final String	IMG_NEXT_DISABLED		= "NEXT_DISABLED";
 
-	public static final String	PLUGIN_ID	= "bndtools.jareditor";
+	public static final String	PLUGIN_ID				= "bndtools.jareditor";
 
 	private static Plugin		instance;
 

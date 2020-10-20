@@ -37,11 +37,11 @@ public class Canvas {
 		}
 	}
 
-	final static Style	PLAIN		= new Style(east, south, west, north);
-	final static Style	BOLD		= new Style(beast, bsouth, bwest, bnorth);
+	final static Style		PLAIN		= new Style(east, south, west, north);
+	final static Style		BOLD		= new Style(beast, bsouth, bwest, bnorth);
 
 	final static boolean[]	extraline	= new boolean[256];
-	final static char[]	boxchars	= new char[256];
+	final static char[]		boxchars	= new char[256];
 	static {
 		box('─', west | east);
 		box('━', bwest | beast);

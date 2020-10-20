@@ -33,8 +33,7 @@ public class BndDropTargetListener extends GAVDropTargetListener {
 			if (formatEvent.getRepositoryPlugin() instanceof WorkspaceRepository) {
 				syntax = Syntax.BND_VERSION_SNAPSHOT;
 			}
-			format(formatEvent.getResource(), formatEvent.useAlternateSyntax() ? Syntax.BND_NO_VERSION
-				: syntax,
+			format(formatEvent.getResource(), formatEvent.useAlternateSyntax() ? Syntax.BND_NO_VERSION : syntax,
 				formatEvent.getLineAtInsertionPoint(), formatEvent.getIndentPrefix(), indent(isTabs(), getSize()));
 		} else {
 			format(formatEvent.getResource(), Syntax.BND, formatEvent.getLineAtInsertionPoint(),
@@ -58,8 +57,7 @@ public class BndDropTargetListener extends GAVDropTargetListener {
 		return !prefsService.getBoolean("org.eclipse.ui.editors.prefs", "spacesForTabs", false, null);
 	}
 
-	private void format(Resource resource, Syntax syntax, String lineAtInsertionPoint,
-		String indentPrefix,
+	private void format(Resource resource, Syntax syntax, String lineAtInsertionPoint, String indentPrefix,
 		String indent) {
 		IdentityCapability ic = ResourceUtils.getIdentityCapability(resource);
 		InfoCapability info = BridgeRepository.getInfo(resource);
@@ -96,14 +94,12 @@ public class BndDropTargetListener extends GAVDropTargetListener {
 		}
 
 		sb.append("\n")
-			.append(indentPrefix.isEmpty() ? indent
-				: indentPrefix)
+			.append(indentPrefix.isEmpty() ? indent : indentPrefix)
 			.append(identity);
 
 		switch (syntax) {
 			case BND :
-				sb.append(
-					";version='")
+				sb.append(";version='")
 					.append(version)
 					.append("'");
 				break;

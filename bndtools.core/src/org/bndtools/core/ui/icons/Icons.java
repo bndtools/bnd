@@ -71,6 +71,7 @@ public final class Icons {
 	public static ImageDescriptor desc(String name) {
 		return desc(name, false);
 	}
+
 	public static ImageDescriptor desc(String name, boolean nullIfAbsent) {
 		String path = path(name);
 		if (nullIfAbsent && path == ICONS_MISSING_GIF)

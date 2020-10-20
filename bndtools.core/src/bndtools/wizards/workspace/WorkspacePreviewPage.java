@@ -142,8 +142,7 @@ public class WorkspacePreviewPage extends WizardPage {
 																				}
 																				templateOutputs = template
 																					.generateOutputs(
-																						templateMultiParams,
-																						monitor);
+																						templateMultiParams, monitor);
 
 																				IWorkspaceRoot workspaceRoot = ResourcesPlugin
 																					.getWorkspace()

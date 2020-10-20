@@ -1149,7 +1149,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	public String _bytes(String[] args) {
 		Formatter sb = new Formatter();
-		for (int i = 0; i < args.length; i++) {
+		for (String arg : args) {
 			long l = Long.parseLong(args[1]);
 			bytes(sb, l, 0, new String[] {
 				"b", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb", "Yb", "Bb", "Geopbyte"

@@ -3777,8 +3777,8 @@ public class bnd extends Processor {
 	}
 
 	private boolean isIn(String[] bundleSpecificHeaders, String key) {
-		for (int i = 0; i < bundleSpecificHeaders.length; i++) {
-			if (key.equalsIgnoreCase(bundleSpecificHeaders[i]))
+		for (String bundleSpecificHeader : bundleSpecificHeaders) {
+			if (key.equalsIgnoreCase(bundleSpecificHeader))
 				return true;
 		}
 		return false;

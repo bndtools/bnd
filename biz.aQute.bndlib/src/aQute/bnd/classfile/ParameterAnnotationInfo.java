@@ -19,8 +19,7 @@ public class ParameterAnnotationInfo {
 		return parameter + ":" + Arrays.toString(annotations);
 	}
 
-	static ParameterAnnotationInfo read(DataInput in, ConstantPool constant_pool, int parameter)
-		throws IOException {
+	static ParameterAnnotationInfo read(DataInput in, ConstantPool constant_pool, int parameter) throws IOException {
 		AnnotationInfo[] annotations = AnnotationInfo.readInfos(in, constant_pool);
 		return new ParameterAnnotationInfo(parameter, annotations);
 	}

@@ -40,15 +40,15 @@ public enum PackageInfoStyle {
 	SpecAnnotation("package-info.java", "@org.osgi.annotation.versioning.Version(\"%s\")%npackage %s;%n",
 		"org.osgi.annotation.versioning.Version");
 
-	private static final ILogger		logger	= Logger.getLogger(PackageInfoStyle.class);
+	private static final ILogger		logger				= Logger.getLogger(PackageInfoStyle.class);
 
 	private static final Set<String>	PRE_JAVA5_VERSIONS	= Sets.of(JavaCore.VERSION_CLDC_1_1, JavaCore.VERSION_1_1,
 		JavaCore.VERSION_1_2, JavaCore.VERSION_1_3, JavaCore.VERSION_1_4);
 
-	private final String	fileName;
-	private final String	contentPattern;
-	private final String	annotationTypeName;
-	private final Pattern	searchRegex;
+	private final String				fileName;
+	private final String				contentPattern;
+	private final String				annotationTypeName;
+	private final Pattern				searchRegex;
 
 	PackageInfoStyle(String fileName, String contentPattern, String annotationTypeName) {
 		this.fileName = fileName;

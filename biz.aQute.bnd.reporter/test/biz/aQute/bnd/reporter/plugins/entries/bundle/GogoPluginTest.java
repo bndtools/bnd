@@ -31,8 +31,7 @@ public class GogoPluginTest extends TestCase {
 
 			assertTrue(p.isOk());
 
-			assertThat(result, is(deepEqualsTo(new JSONCodec()
-				.dec()
+			assertThat(result, is(deepEqualsTo(new JSONCodec().dec()
 				.from(Paths.get("testresources/gogoEntry/result.json")
 					.toFile())
 				.get())));

@@ -48,22 +48,22 @@ public class MavenCoordinatePlugin implements ReportEntryPlugin<Jar>, Plugin {
 				try {
 					p.load(e.getValue()
 						.openInputStream());
-						dto.groupId = p.getProperty("groupId");
-						dto.artifactId = p.getProperty("artifactId");
-						dto.version = p.getProperty("version");
-						// dto.type = p.getProperty("type");//may interrest on
-						// .eas
-						dto.classifier = p.getProperty("classifier");
+					dto.groupId = p.getProperty("groupId");
+					dto.artifactId = p.getProperty("artifactId");
+					dto.version = p.getProperty("version");
+					// dto.type = p.getProperty("type");//may interrest on
+					// .eas
+					dto.classifier = p.getProperty("classifier");
 
 				} catch (final Exception exception) {
 					_reporter.exception(exception, "Failed to read pom.properties file at %s", e.getKey());
 				}
 			});
 
-			if (dto.groupId == null && dto.artifactId == null) {
-				return null;
-			}
-			return dto;
+		if (dto.groupId == null && dto.artifactId == null) {
+			return null;
+		}
+		return dto;
 	}
 
 	@Override

@@ -18,29 +18,28 @@ package aQute.bnd.component.annotations;
 
 /**
  * Field options for the {@link Reference} annotation.
- * 
+ *
  * @since 1.3
  * @author $Id$
  */
 public enum FieldOption {
-	
+
 	/**
 	 * The update field option is used to update the collection referenced by
 	 * the field when there are changes to the bound services.
-	 * 
 	 * <p>
 	 * This field option can only be used when the field reference has dynamic
 	 * policy and multiple cardinality.
 	 */
 	UPDATE("update"),
-	
+
 	/**
 	 * The replace field option is used to replace the field value with a new
 	 * value when there are changes to the bound services.
 	 */
 	REPLACE("replace");
 
-	private final String	value;
+	private final String value;
 
 	FieldOption(String value) {
 		this.value = value;

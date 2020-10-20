@@ -35,23 +35,23 @@ import aQute.lib.unmodifiable.Sets;
 import aQute.libg.generics.Create;
 
 public class JarPrinter extends Processor {
-	final Formatter			out				= new Formatter();
+	final Formatter						out				= new Formatter();
 
-	final public static int	VERIFY			= 1;
+	final public static int				VERIFY			= 1;
 
-	final public static int	MANIFEST		= 2;
+	final public static int				MANIFEST		= 2;
 
-	final public static int	LIST			= 4;
+	final public static int				LIST			= 4;
 
-	final public static int	IMPEXP			= 16;
-	final public static int	USES			= 32;
-	final public static int	USEDBY			= 64;
-	final public static int	COMPONENT		= 128;
-	final public static int	METATYPE		= 256;
-	final public static int	API				= 512;
-	final public static int	CAPABILITIES	= 1024;
-	static public final int	HEX				= 0;
-	private static final Set<String> syntax_headers = Sets.of(OSGI_SYNTAX_HEADERS);
+	final public static int				IMPEXP			= 16;
+	final public static int				USES			= 32;
+	final public static int				USEDBY			= 64;
+	final public static int				COMPONENT		= 128;
+	final public static int				METATYPE		= 256;
+	final public static int				API				= 512;
+	final public static int				CAPABILITIES	= 1024;
+	static public final int				HEX				= 0;
+	private static final Set<String>	syntax_headers	= Sets.of(OSGI_SYNTAX_HEADERS);
 
 	public JarPrinter(Processor bnd) {
 		super(bnd);

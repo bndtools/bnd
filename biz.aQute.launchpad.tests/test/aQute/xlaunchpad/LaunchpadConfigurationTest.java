@@ -33,8 +33,7 @@ public class LaunchpadConfigurationTest {
 	public static class X {}
 
 	@Service
-	Launchpad				lp;
-
+	Launchpad lp;
 
 	@Test
 	public void testConfiguration() throws Exception {

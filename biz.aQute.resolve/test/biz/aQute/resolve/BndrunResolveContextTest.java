@@ -102,12 +102,10 @@ public class BndrunResolveContextTest extends TestCase {
 	public void testBlacklistFramework() throws Exception {
 
 		MockRegistry registry = new MockRegistry();
-		registry
-			.addPlugin(
-				createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.0.index.xml"), getTestName() + "1"));
-		registry
-			.addPlugin(
-				createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
+		registry.addPlugin(
+			createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.0.index.xml"), getTestName() + "1"));
+		registry.addPlugin(
+			createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
 
 		BndEditModel model = new BndEditModel();
 		model.setRunFw("org.apache.felix.framework;version='[4,4.1)'");
@@ -324,9 +322,8 @@ public class BndrunResolveContextTest extends TestCase {
 		Resource fwkResource;
 
 		registry = new MockRegistry();
-		registry
-			.addPlugin(
-				createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.0.index.xml"), getTestName() + "1"));
+		registry.addPlugin(
+			createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.0.index.xml"), getTestName() + "1"));
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName() + "2"));
 
 		runModel = new BndEditModel();
@@ -341,9 +338,8 @@ public class BndrunResolveContextTest extends TestCase {
 		// Try it the other way round
 		registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName() + "3"));
-		registry
-			.addPlugin(
-				createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.0.index.xml"), getTestName() + "4"));
+		registry.addPlugin(
+			createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.0.index.xml"), getTestName() + "4"));
 
 		runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework;version='[4,4.1)'");
@@ -358,9 +354,8 @@ public class BndrunResolveContextTest extends TestCase {
 	public void testFrameworkCapabilitiesPreferredOverRepository() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
-		registry
-			.addPlugin(
-				createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
+		registry.addPlugin(
+			createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
 
 		BndEditModel runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework");
@@ -386,9 +381,8 @@ public class BndrunResolveContextTest extends TestCase {
 	public void testResolverHookFiltersResult() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
-		registry
-			.addPlugin(
-				createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
+		registry.addPlugin(
+			createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
 
 		// Add a hook that removes all capabilities from resource with id
 		// "osgi.cmpn"
@@ -426,9 +420,8 @@ public class BndrunResolveContextTest extends TestCase {
 	public void testResolverHookFiltersResultWithBlacklist() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
-		registry
-			.addPlugin(
-				createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
+		registry.addPlugin(
+			createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
 
 		// Add a hook that removes all capabilities from resource with id
 		// "osgi.cmpn"
@@ -457,9 +450,8 @@ public class BndrunResolveContextTest extends TestCase {
 	public void testResolverHookFiltersResultWithBlacklistAndVersionRange1() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
-		registry
-			.addPlugin(
-				createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
+		registry.addPlugin(
+			createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
 
 		// Add a hook that removes all capabilities from resource with id
 		// "osgi.cmpn"
@@ -489,9 +481,8 @@ public class BndrunResolveContextTest extends TestCase {
 	public void testResolverHookFiltersResultWithBlacklistAndVersionRange2() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
-		registry
-			.addPlugin(
-				createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
+		registry.addPlugin(
+			createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
 
 		// Add a hook that removes all capabilities from resource with id
 		// "osgi.cmpn"
@@ -519,16 +510,14 @@ public class BndrunResolveContextTest extends TestCase {
 	public void testResolverHookCannotFilterFrameworkCapabilities() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
-		registry
-			.addPlugin(
-				createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
+		registry.addPlugin(
+			createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
 
 		// Add a hook that tries to remove all capabilities from resource with
 		// id "org.apache.felix.framework"
 		registry.addPlugin((ResolverHook) (requirement, candidates) -> {
-			for (Iterator<Capability> iter = candidates.iterator(); iter.hasNext();) {
-				Object id = iter.next()
-					.getResource()
+			for (Capability candidate : candidates) {
+				Object id = candidate.getResource()
 					.getCapabilities("osgi.identity")
 					.get(0)
 					.getAttributes()

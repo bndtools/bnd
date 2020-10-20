@@ -72,21 +72,21 @@ import aQute.libg.generics.Create;
  * Import-Package: package-decl ( ',' package-decl )* @version $Revision: 1.27 $
  */
 public class Builder extends Analyzer {
-	private final static Logger		logger						= LoggerFactory.getLogger(Builder.class);
-	private final static Pattern	IR_PATTERN					= Pattern.compile("[{]?-?@?(?:[^=]+=)?\\s*([^}!]+).*");
-	private final DiffPluginImpl	differ						= new DiffPluginImpl();
-	private Pattern					xdoNotCopy					= null;
-	private static final int		SPLIT_MERGE_LAST			= 1;
-	private static final int		SPLIT_MERGE_FIRST			= 2;
-	private static final int		SPLIT_ERROR					= 3;
-	private static final int		SPLIT_FIRST					= 4;
-	private static final int		SPLIT_DEFAULT				= 0;
-	private final List<File>		sourcePath					= new ArrayList<>();
-	private final Make				make						= new Make(this);
-	private Instructions			defaultPreProcessMatcher	= null;
-	private BuilderInstructions		buildInstrs					= getInstructions(BuilderInstructions.class);
+	private final static Logger			logger						= LoggerFactory.getLogger(Builder.class);
+	private final static Pattern		IR_PATTERN					= Pattern
+		.compile("[{]?-?@?(?:[^=]+=)?\\s*([^}!]+).*");
+	private final DiffPluginImpl		differ						= new DiffPluginImpl();
+	private Pattern						xdoNotCopy					= null;
+	private static final int			SPLIT_MERGE_LAST			= 1;
+	private static final int			SPLIT_MERGE_FIRST			= 2;
+	private static final int			SPLIT_ERROR					= 3;
+	private static final int			SPLIT_FIRST					= 4;
+	private static final int			SPLIT_DEFAULT				= 0;
+	private final List<File>			sourcePath					= new ArrayList<>();
+	private final Make					make						= new Make(this);
+	private Instructions				defaultPreProcessMatcher	= null;
+	private BuilderInstructions			buildInstrs					= getInstructions(BuilderInstructions.class);
 	private final Map<Integer, String>	cachedSystemCalls;
-
 
 	public Builder(Processor parent) {
 		super(parent);
@@ -549,12 +549,12 @@ public class Builder extends Analyzer {
 				if (f.exists()) {
 					if (!packages.contains(packageRef)) {
 						packages.add(packageRef);
-						for (int j = 0; j < fixed.length; j++) {
+						for (String element : fixed) {
 							for (File sp : getSourcePath()) {
 								File bdir = getFile(sp, packagePath);
-								File ff = getFile(bdir, fixed[j]);
+								File ff = getFile(bdir, element);
 								if (ff.isFile()) {
-									String name = "OSGI-OPT/src/" + packagePath + "/" + fixed[j];
+									String name = "OSGI-OPT/src/" + packagePath + "/" + element;
 									dot.putResource(name, new FileResource(ff));
 									break;
 								}
@@ -581,9 +581,7 @@ public class Builder extends Analyzer {
 			String sp = mergeProperties(SOURCEPATH);
 			if (sp != null) {
 				Parameters map = parseHeader(sp);
-				for (Iterator<String> i = map.keySet()
-					.iterator(); i.hasNext();) {
-					String file = i.next();
+				for (String file : map.keySet()) {
 					if (!isDuplicate(file)) {
 						File f = getFile(file);
 						if (!f.isDirectory()) {
@@ -734,8 +732,7 @@ public class Builder extends Analyzer {
 			return providers;
 
 		List<Jar> np = new ArrayList<>();
-		for (Iterator<Jar> i = providers.iterator(); i.hasNext();) {
-			Jar j = i.next();
+		for (Jar j : providers) {
 			if (from.matches(j.getName())) {
 				np.add(j);
 			}
@@ -808,7 +805,6 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Analyze the classpath for a split package
-	 *
 	 */
 	private String diagnostic(String pack, List<Jar> culprits) {
 		// Default is like merge-first, but with a warning
@@ -1323,8 +1319,8 @@ public class Builder extends Analyzer {
 		if (from.isDirectory()) {
 
 			File files[] = from.listFiles();
-			for (int i = 0; i < files.length; i++) {
-				copy(jar, appendPath(path, files[i].getName()), files[i], preprocess, extra);
+			for (File file : files) {
+				copy(jar, appendPath(path, file.getName()), file, preprocess, extra);
 			}
 		} else {
 			if (from.exists()) {
@@ -1355,8 +1351,8 @@ public class Builder extends Analyzer {
 	}
 
 	public void setSourcepath(File[] files) {
-		for (int i = 0; i < files.length; i++)
-			addSourcepath(files[i]);
+		for (File file : files)
+			addSourcepath(file);
 	}
 
 	public void addSourcepath(File cp) {
@@ -1480,10 +1476,7 @@ public class Builder extends Analyzer {
 				p = p.getParent();
 			}
 
-			for (Iterator<Instruction> i = instructions.keySet()
-				.iterator(); i.hasNext();) {
-
-				Instruction instruction = i.next();
+			for (Instruction instruction : instructions.keySet()) {
 				if (instruction.matches(file.getName())) {
 
 					if (!instruction.isNegated()) {

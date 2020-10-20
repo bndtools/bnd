@@ -20,8 +20,7 @@ public class BundleDescriptor extends AbstractTestDescriptor {
 	final private Map<TestDescriptor, TestEngine>	engineMap	= new HashMap<>();
 
 	public static String displayNameOf(Bundle bundle) {
-		return "[" + bundle.getBundleId() + "] " + bundle.getSymbolicName() + ';'
-			+ bundle.getVersion();
+		return "[" + bundle.getBundleId() + "] " + bundle.getSymbolicName() + ';' + bundle.getVersion();
 	}
 
 	public BundleDescriptor(Bundle bundle, UniqueId uniqueId) {
@@ -43,12 +42,14 @@ public class BundleDescriptor extends AbstractTestDescriptor {
 		addChild(descriptor);
 	}
 
-	public void executeChild(TestDescriptor descriptor, EngineExecutionListener listener, ConfigurationParameters params) {
+	public void executeChild(TestDescriptor descriptor, EngineExecutionListener listener,
+		ConfigurationParameters params) {
 		TestEngine engine = engineMap.get(descriptor);
 		ExecutionRequest er = new ExecutionRequest(descriptor, listener, params);
 		engine.execute(er);
 
 	}
+
 	@Override
 	public Type getType() {
 		return bundleException == null ? Type.CONTAINER : Type.TEST;

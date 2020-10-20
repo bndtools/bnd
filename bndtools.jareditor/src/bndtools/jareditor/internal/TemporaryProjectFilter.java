@@ -19,8 +19,7 @@ public class TemporaryProjectFilter extends ViewerFilter {
 		return !Optional.ofNullable(element)
 			.filter(IProject.class::isInstance)
 			.map(IProject.class::cast)
-			.filter(p -> BndtoolsConstants.BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME.equals(p
-				.getName()))
+			.filter(p -> BndtoolsConstants.BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME.equals(p.getName()))
 			.isPresent();
 	}
 

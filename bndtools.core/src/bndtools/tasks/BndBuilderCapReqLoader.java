@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.jar.Manifest;
 
 import org.osgi.framework.namespace.PackageNamespace;
@@ -153,12 +154,7 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
 		if (getClass() != obj.getClass())
 			return false;
 		BndBuilderCapReqLoader other = (BndBuilderCapReqLoader) obj;
-		if (file == null) {
-			if (other.file != null)
-				return false;
-		} else if (!file.equals(other.file))
-			return false;
-		return true;
+		return Objects.equals(file, other.file);
 	}
 
 }

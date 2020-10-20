@@ -54,8 +54,7 @@ public class XMLResourceParser extends Processor {
 		inputFactory.setProperty(XMLInputFactory.IS_VALIDATING, false);
 	}
 
-
-	final private List<Resource>	resources					= new ArrayList<>();
+	final private List<Resource>	resources	= new ArrayList<>();
 	final private XMLStreamReader	reader;
 	final private Set<URI>			traversed;
 	final private String			what;

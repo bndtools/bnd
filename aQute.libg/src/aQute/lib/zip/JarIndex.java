@@ -57,7 +57,6 @@ public class JarIndex extends Hierarchy {
 		super(build(in, doNotCopy, null));
 	}
 
-
 	private static Map<String, Object> build(File file, Pattern doNotCopy, Function<NodeInfo, ?> f) throws IOException {
 		if (file.isDirectory())
 			return buildFromDirectory(file.toPath(), doNotCopy, f);
@@ -144,7 +143,6 @@ public class JarIndex extends Hierarchy {
 		}
 		return map;
 	}
-
 
 	private static Object getPayload(Function<NodeInfo, ?> f, NodeInfo nodeInfo) {
 		Object o = f.apply(nodeInfo);

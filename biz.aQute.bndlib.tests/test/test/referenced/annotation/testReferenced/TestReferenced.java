@@ -10,7 +10,6 @@ import test.export.annotation.testProvider.ProviderInterface;
 })
 public class TestReferenced {
 
-	public TestReferenced() {
-	}
+	public TestReferenced() {}
 
 }

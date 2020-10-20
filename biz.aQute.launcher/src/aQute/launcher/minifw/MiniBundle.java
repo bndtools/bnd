@@ -47,16 +47,16 @@ import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.BundleWiring;
 
 public class MiniBundle implements Bundle, BundleContext, Closeable {
-	private final long						id;
-	private final long						lastModified;
-	private final MiniFramework				fw;
-	private final String					location;
-	private volatile int					state;
-	private final JarFile					jar;
-	private final Headers					headers;
+	private final long					id;
+	private final long					lastModified;
+	private final MiniFramework			fw;
+	private final String				location;
+	private volatile int				state;
+	private final JarFile				jar;
+	private final Headers				headers;
 	private final Map<String, JarEntry>	entries;
-	private final File						jarFile;
-	private final URLClassLoader			loader;
+	private final File					jarFile;
+	private final URLClassLoader		loader;
 
 	public MiniBundle(MiniFramework fw, ClassLoader parent, long id, String location) throws BundleException {
 		super();

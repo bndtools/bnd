@@ -51,7 +51,7 @@ public class BridgeRepository {
 	}
 
 	private final Repository								repository;
-	private final Map<String, Map<Version, ResourceInfo>>	index			= new HashMap<>();
+	private final Map<String, Map<Version, ResourceInfo>>	index	= new HashMap<>();
 
 	@ProviderType
 	public interface InfoCapability extends Capability {
@@ -366,8 +366,7 @@ public class BridgeRepository {
 	}
 
 	public static InfoCapability getInfo(Resource resource) {
-		return ResourceUtils.capabilityStream(resource, BND_INFO,
-			InfoCapability.class)
+		return ResourceUtils.capabilityStream(resource, BND_INFO, InfoCapability.class)
 			.findFirst()
 			.orElse(null);
 	}

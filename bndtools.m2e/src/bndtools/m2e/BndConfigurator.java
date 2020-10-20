@@ -150,7 +150,6 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 					return build;
 				}
 
-
 				Set<IPath> deltaFilePaths = collectResourceDeltas(getDelta(project)).map(IResourceDelta::getResource)
 					.filter(IFile.class::isInstance)
 					.map(IResource::getFullPath)

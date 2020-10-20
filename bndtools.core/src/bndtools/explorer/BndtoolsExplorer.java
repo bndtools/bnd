@@ -294,13 +294,11 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 	}
 
 	private int getMaxSeverity() {
-		return Arrays.stream(ResourcesPlugin
-			.getWorkspace()
+		return Arrays.stream(ResourcesPlugin.getWorkspace()
 			.getRoot()
 			.getProjects())
 			.filter(IProject::isOpen)
-			.filter(p -> !Objects.equals(p.getName(),
-				BndtoolsConstants.BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME))
+			.filter(p -> !Objects.equals(p.getName(), BndtoolsConstants.BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME))
 			.map(FunctionWithException.asFunction(p -> p.findMaxProblemSeverity(null, false, IResource.DEPTH_INFINITE)))
 			.reduce(IMarker.SEVERITY_INFO, Integer::max);
 	}
@@ -371,7 +369,8 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 						setImageDescriptor(Icons.desc("refresh.disable"));
 						setEnabled(false);
 						Job.create("Reload", (monitor) -> {
-							IContainer parent = workspaceBuildFile.getParent().getParent();
+							IContainer parent = workspaceBuildFile.getParent()
+								.getParent();
 							parent.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 							workspaceBuildFile.touch(monitor);
 							Display.getDefault()

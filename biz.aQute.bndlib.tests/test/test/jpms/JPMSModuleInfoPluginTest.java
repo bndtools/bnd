@@ -241,8 +241,7 @@ public class JPMSModuleInfoPluginTest {
 	public void moduleWithOptionsMapModuleName() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.JPMS_MODULE_INFO, "foo.module;version='1.2.7-module'");
-			b.setProperty(Constants.JPMS_MODULE_INFO_OPTIONS,
-				"java.enterprise;substitute=geronimo-jcdi_2.0_spec");
+			b.setProperty(Constants.JPMS_MODULE_INFO_OPTIONS, "java.enterprise;substitute=geronimo-jcdi_2.0_spec");
 			b.setProperty(Constants.BUNDLE_SYMBOLICNAME, "foo");
 			b.setProperty(Constants.BUNDLE_VERSION, "1.2.7");
 			b.setProperty(Constants.PRIVATEPACKAGE, "test.jpms.j.*");

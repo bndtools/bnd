@@ -35,14 +35,14 @@ public interface InternalPluginDefinition {
 	/**
 	 * A template string for this plugin including all attributes the plugin
 	 * supports
-	 * 
+	 *
 	 * @return a template definition for this plugin
 	 */
 	String getTemplate();
 
 	/**
 	 * If this plugin should be hidden
-	 * 
+	 *
 	 * @return true if this plugin should be hidden
 	 */
 	boolean isHidden();

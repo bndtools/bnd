@@ -620,8 +620,7 @@ public class Descriptors {
 	}
 
 	public static String binaryClassToFQN(String path) {
-		return binaryToFQN(path.substring(0, path.length() - 6)).replace('$',
-		 '.');
+		return binaryToFQN(path.substring(0, path.length() - 6)).replace('$', '.');
 	}
 
 	public static String fqnToBinary(String fqn) {

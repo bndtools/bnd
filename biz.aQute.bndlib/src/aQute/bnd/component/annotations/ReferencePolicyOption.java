@@ -18,7 +18,7 @@ package aQute.bnd.component.annotations;
 
 /**
  * Policy option for the {@link Reference} annotation.
- * 
+ *
  * @author $Id$
  * @since 1.2
  */
@@ -43,7 +43,7 @@ public enum ReferencePolicyOption {
 	 */
 	GREEDY("greedy");
 
-	private final String	value;
+	private final String value;
 
 	ReferencePolicyOption(String value) {
 		this.value = value;

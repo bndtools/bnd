@@ -730,9 +730,7 @@ public class RepoCommand {
 		if (dest instanceof ResourceRepository)
 			resources = (ResourceRepository) dest;
 
-		nextFile: for (Iterator<Spec> i = sources.iterator(); i.hasNext();) {
-			Spec spec = i.next();
-
+		nextFile: for (Spec spec : sources) {
 			if (resources != null) {
 				ResourceDescriptor rd = resources.getResourceDescriptor(spec.digest);
 				if (rd != null)

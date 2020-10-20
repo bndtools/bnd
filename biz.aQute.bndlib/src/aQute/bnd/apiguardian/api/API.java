@@ -31,16 +31,18 @@ import java.lang.annotation.Target;
  * fields within a framework or application in order to publish their
  * {@link #status} and level of stability and to indicate how they are intended
  * to be used by {@link #consumers} of the API.
- *
- * <p>If {@code @API} is present on a type, it is considered to hold for all
- * public members of the type as well. However, a member of such an annotated
- * type is allowed to declare a {@link Status} of lower stability. For example,
- * a class annotated with {@code @API(status = STABLE)} may declare a constructor
- * for internal usage that is annotated with {@code @API(status = INTERNAL)}.
+ * <p>
+ * If {@code @API} is present on a type, it is considered to hold for all public
+ * members of the type as well. However, a member of such an annotated type is
+ * allowed to declare a {@link Status} of lower stability. For example, a class
+ * annotated with {@code @API(status = STABLE)} may declare a constructor for
+ * internal usage that is annotated with {@code @API(status = INTERNAL)}.
  *
  * @since 1.0
  */
-@Target({ TYPE, METHOD, CONSTRUCTOR, FIELD })
+@Target({
+	TYPE, METHOD, CONSTRUCTOR, FIELD
+})
 @Retention(RUNTIME)
 @Documented
 public @interface API {
@@ -52,19 +54,19 @@ public @interface API {
 
 	/**
 	 * The version of the API when the {@link #status} was last changed.
-	 *
-	 * <p>Defaults to an empty string, signifying that the <em>since</em>
-	 * version is unknown.
+	 * <p>
+	 * Defaults to an empty string, signifying that the <em>since</em> version
+	 * is unknown.
 	 */
 	String since() default "";
 
 	/**
 	 * List of packages belonging to intended consumers.
-	 *
-	 * <p>The supplied packages can be fully qualified package names or
-	 * patterns containing asterisks that will be used as wildcards.
-	 *
-	 * <p>Defaults to {@code "*"}, signifying that the API is intended to be
+	 * <p>
+	 * The supplied packages can be fully qualified package names or patterns
+	 * containing asterisks that will be used as wildcards.
+	 * <p>
+	 * Defaults to {@code "*"}, signifying that the API is intended to be
 	 * consumed by any package.
 	 */
 	String[] consumers() default "*";
@@ -89,24 +91,24 @@ public @interface API {
 		/**
 		 * Intended for new, experimental features where the publisher of the
 		 * API is looking for feedback.
-		 *
-		 * <p>Use with caution. Might be promoted to {@link #MAINTAINED} or
+		 * <p>
+		 * Use with caution. Might be promoted to {@link #MAINTAINED} or
 		 * {@link #STABLE} in the future, but might also be removed without
 		 * prior notice.
 		 */
 		EXPERIMENTAL,
 
 		/**
-		 * Intended for features that will not be changed in a backwards-incompatible
-		 * way for at least the next minor release of the current major version.
-		 * If scheduled for removal, such a feature will be demoted to
-		 * {@link #DEPRECATED} first.
+		 * Intended for features that will not be changed in a
+		 * backwards-incompatible way for at least the next minor release of the
+		 * current major version. If scheduled for removal, such a feature will
+		 * be demoted to {@link #DEPRECATED} first.
 		 */
 		MAINTAINED,
 
 		/**
-		 * Intended for features that will not be changed in a backwards-incompatible
-		 * way in the current major version.
+		 * Intended for features that will not be changed in a
+		 * backwards-incompatible way in the current major version.
 		 */
 		STABLE;
 

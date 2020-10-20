@@ -43,9 +43,7 @@ public class P2IndexerTest extends TestCase {
 		try (HttpClient client = new HttpClient()) {
 			client.setCache(IO.getFile(tmp, "cache"));
 
-			try (P2Indexer p2 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class),
-				tmp,
-				client,
+			try (P2Indexer p2 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class), tmp, client,
 				new URI("https://download.eclipse.org/egit/updates-4.7.1/"), getName())) {
 				List<String> bsns = p2.list(null);
 				System.out.println(bsns);
@@ -67,9 +65,7 @@ public class P2IndexerTest extends TestCase {
 		try (HttpClient client = new HttpClient()) {
 			client.setCache(IO.getFile(tmp, "cache"));
 
-			try (P2Indexer p2 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class),
-				tmp,
-				client,
+			try (P2Indexer p2 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class), tmp, client,
 				new URI("https://dl.bintray.com/bndtools/bndtools/3.5.0/"), getName())) {
 				List<String> bsns = p2.list(null);
 				System.out.println(bsns);
@@ -93,11 +89,8 @@ public class P2IndexerTest extends TestCase {
 			assertThat(input).as("%s must be dir", input)
 				.isDirectory();
 
-			try (
-				P2Indexer p2 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class), tmp, client,
-					input
-					.toURI(),
-				getName())) {
+			try (P2Indexer p2 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class), tmp, client,
+				input.toURI(), getName())) {
 				List<String> bsns = p2.list(null);
 				assertThat(bsns).containsExactly("name.njbartlett.eclipse.macbadge");
 
@@ -169,11 +162,8 @@ public class P2IndexerTest extends TestCase {
 				throw t;
 			}
 
-			try (
-				P2Indexer p3 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class), tmp, client,
-					input
-					.toURI(),
-				"test")) {
+			try (P2Indexer p3 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class), tmp, client,
+				input.toURI(), "test")) {
 				File f = p3.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null);
 				assertThat(f).isNotNull()
 					.hasName("name.njbartlett.eclipse.macbadge-1.0.0.201110100042.jar");
@@ -186,9 +176,7 @@ public class P2IndexerTest extends TestCase {
 		try (HttpClient client = new HttpClient()) {
 			client.setCache(IO.getFile(tmp, "cache"));
 
-			try (P2Indexer p2 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class),
-				tmp,
-				client,
+			try (P2Indexer p2 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class), tmp, client,
 				new URI("https://dl.bintray.com/bndtools/bndtools/3.5.0/"), getName())) {
 
 				assertThat(p2.versions("bndtools.core")).hasSize(1);
@@ -212,9 +200,7 @@ public class P2IndexerTest extends TestCase {
 			targetFile = new File(tmp, "macbadge.target");
 			IO.store(content, targetFile);
 
-			try (P2Indexer p2 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class),
-				tmp,
-				client,
+			try (P2Indexer p2 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class), tmp, client,
 				targetFile.getAbsoluteFile()
 					.toURI(),
 				getName())) {
@@ -289,10 +275,8 @@ public class P2IndexerTest extends TestCase {
 				throw t;
 			}
 
-			try (P2Indexer p3 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class), tmp,
-				client,
-				input.toURI(),
-				getName())) {
+			try (P2Indexer p3 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class), tmp, client,
+				input.toURI(), getName())) {
 				File f = p3.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null);
 				assertThat(f).isNotNull()
 					.hasName("name.njbartlett.eclipse.macbadge-1.0.0.201110100042.jar");

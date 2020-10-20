@@ -45,13 +45,11 @@ public class BndExportRunbundlesHandler extends AbstractHandler {
 					Project bndProject = Central.getProject(project);
 					bndrun.setBase(bndProject.getBase());
 
-					Entry<String, Resource> export = bndrun.export(RUNBUNDLES,
-						Collections.emptyMap());
+					Entry<String, Resource> export = bndrun.export(RUNBUNDLES, Collections.emptyMap());
 
 					if (export != null) {
 						try (JarResource jarResource = (JarResource) export.getValue()) {
-							File runbundlesDir = bndProject
-								.getTargetDir()
+							File runbundlesDir = bndProject.getTargetDir()
 								.toPath()
 								.resolve("export")
 								.resolve(bndrunFile.getName())

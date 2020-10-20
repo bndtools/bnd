@@ -34,11 +34,11 @@ import aQute.maven.api.Program;
 @Description("Maintain Maven Bnd Repository GAV files")
 @SuppressWarnings("deprecation")
 public class MbrCommand extends Processor {
-	final static Pattern					SNAPSHOTLIKE_P			= Pattern.compile("-[^.]+$");
+	final static Pattern					SNAPSHOTLIKE_P				= Pattern.compile("-[^.]+$");
 	final static Predicate<MavenVersion>	notSnapshotlikePredicate	= v -> {
 																			return !SNAPSHOTLIKE_P.matcher(v.toString())
-																			.find();
-																	};
+																				.find();
+																		};
 
 	@Description("Maintain Maven Bnd Repository GAV files")
 	public interface MrOptions extends Options {
@@ -234,7 +234,7 @@ public class MbrCommand extends Processor {
 		if (repo == null)
 			return repositories;
 
-		List<MavenBndRepository> repositories = new ArrayList<MavenBndRepository>();
+		List<MavenBndRepository> repositories = new ArrayList<>();
 		for (int n : repo) {
 			System.out.println("repo # =" + n);
 			repositories.add(this.repositories.get(n));

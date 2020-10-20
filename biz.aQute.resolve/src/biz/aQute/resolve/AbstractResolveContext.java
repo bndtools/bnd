@@ -83,28 +83,28 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 * which is no longer in use.
 	 */
 	@Deprecated
-	protected static final String					CONTRACT_OSGI_FRAMEWORK		= "OSGiFramework";
-	protected static final String					IDENTITY_INITIAL_RESOURCE	= Constants.IDENTITY_INITIAL_RESOURCE;
-	protected static final String					IDENTITY_SYSTEM_RESOURCE	= Constants.IDENTITY_SYSTEM_RESOURCE;
+	protected static final String					CONTRACT_OSGI_FRAMEWORK					= "OSGiFramework";
+	protected static final String					IDENTITY_INITIAL_RESOURCE				= Constants.IDENTITY_INITIAL_RESOURCE;
+	protected static final String					IDENTITY_SYSTEM_RESOURCE				= Constants.IDENTITY_SYSTEM_RESOURCE;
 
 	protected final LogService						log;
-	private final CapabilityIndex					systemCapabilityIndex		= new CapabilityIndex();
-	private final List<Repository>					repositories				= new ArrayList<>();
-	private final List<Requirement>					failed						= new ArrayList<>();
-	private final Map<CacheKey, List<Capability>>	providerCache				= new HashMap<>();
-	private final Set<Resource>						optionalRoots				= new HashSet<>();
-	private final ConcurrentMap<Resource, Integer>	resourcePriorities			= new ConcurrentHashMap<>();
+	private final CapabilityIndex					systemCapabilityIndex					= new CapabilityIndex();
+	private final List<Repository>					repositories							= new ArrayList<>();
+	private final List<Requirement>					failed									= new ArrayList<>();
+	private final Map<CacheKey, List<Capability>>	providerCache							= new HashMap<>();
+	private final Set<Resource>						optionalRoots							= new HashSet<>();
+	private final ConcurrentMap<Resource, Integer>	resourcePriorities						= new ConcurrentHashMap<>();
 	private final Comparator<Capability>			capabilityComparator;
-	private Map<String, Set<String>>				effectiveSet				= new HashMap<>();
-	private final List<ResolverHook>				resolverHooks				= new ArrayList<>();
-	private final List<ResolutionCallback>			callbacks					= new LinkedList<>();
-	private boolean									initialized					= false;
+	private Map<String, Set<String>>				effectiveSet							= new HashMap<>();
+	private final List<ResolverHook>				resolverHooks							= new ArrayList<>();
+	private final List<ResolutionCallback>			callbacks								= new LinkedList<>();
+	private boolean									initialized								= false;
 	private Resource								systemResource;
 	private Resource								inputResource;
-	private Set<Resource>							blacklistedResources		= new HashSet<>();
-	private int										level						= 0;
+	private Set<Resource>							blacklistedResources					= new HashSet<>();
+	private int										level									= 0;
 	private Resource								framework;
-	private final AtomicBoolean						reported					= new AtomicBoolean();
+	private final AtomicBoolean						reported								= new AtomicBoolean();
 
 	public AbstractResolveContext(LogService log) {
 		this.log = log;
@@ -426,21 +426,15 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			if (getClass() != obj.getClass())
 				return false;
 			CacheKey other = (CacheKey) obj;
-			if (attributes == null) {
-				if (other.attributes != null)
-					return false;
-			} else if (!attributes.equals(other.attributes))
+			if (!Objects.equals(attributes, other.attributes)) {
 				return false;
-			if (directives == null) {
-				if (other.directives != null)
-					return false;
-			} else if (!directives.equals(other.directives))
+			}
+			if (!Objects.equals(directives, other.directives)) {
 				return false;
-			if (namespace == null) {
-				if (other.namespace != null)
-					return false;
-			} else if (!namespace.equals(other.namespace))
+			}
+			if (!Objects.equals(namespace, other.namespace)) {
 				return false;
+			}
 			if (resource == null) {
 				if (other.resource != null)
 					return false;

@@ -74,9 +74,9 @@ public class MDSashForm extends SashForm {
 	private void hookSashListeners() {
 		purgeSashes();
 		Control[] children = getChildren();
-		for (int i = 0; i < children.length; i++) {
-			if (children[i] instanceof Sash) {
-				Sash sash = (Sash) children[i];
+		for (Control child : children) {
+			if (child instanceof Sash) {
+				Sash sash = (Sash) child;
 				if (sashes.contains(sash))
 					continue;
 				sash.addListener(SWT.Paint, listener);
@@ -118,10 +118,10 @@ public class MDSashForm extends SashForm {
 
 	public void hookResizeListener() {
 		Control[] children = getChildren();
-		for (int i = 0; i < children.length; i++) {
-			if (children[i] instanceof Sash)
+		for (Control child : children) {
+			if (child instanceof Sash)
 				continue;
-			children[i].addListener(SWT.Resize, listener);
+			child.addListener(SWT.Resize, listener);
 		}
 	}
 }

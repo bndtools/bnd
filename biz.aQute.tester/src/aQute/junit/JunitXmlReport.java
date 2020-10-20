@@ -27,7 +27,7 @@ public class JunitXmlReport implements TestReporter {
 	private static final DateTimeFormatter	DATE_TIME_FORMATTER	= DateTimeFormatter.ISO_LOCAL_DATE_TIME
 		.withLocale(Locale.ROOT)
 		.withZone(ZoneId.systemDefault());
-	private final Tag						testsuite	= new Tag("testsuite");
+	private final Tag						testsuite			= new Tag("testsuite");
 	private Tag								testcase;
 	private static String					hostname;
 	private long							startTime;

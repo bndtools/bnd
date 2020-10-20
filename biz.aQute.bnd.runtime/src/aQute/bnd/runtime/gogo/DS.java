@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -305,17 +306,7 @@ public class DS implements Closeable {
 			if (getClass() != obj.getClass())
 				return false;
 			ComponentDescriptionId other = (ComponentDescriptionId) obj;
-			if (bundle == null) {
-				if (other.bundle != null)
-					return false;
-			} else if (!bundle.equals(other.bundle))
-				return false;
-			if (name == null) {
-				if (other.name != null)
-					return false;
-			} else if (!name.equals(other.name))
-				return false;
-			return true;
+			return Objects.equals(bundle, other.bundle) && Objects.equals(name, other.name);
 		}
 
 	}

@@ -29,9 +29,9 @@ import aQute.lib.strings.Strings;
 
 public class JAREditor extends FormEditor implements IResourceChangeListener {
 	private static final ILogger	logger		= Logger.getLogger(JAREditor.class);
-	private JARTreePage		treePage	= new JARTreePage(this, "treePage", "Tree");
-	private JARPrintPage	printPage	= new JARPrintPage(this, "printPage", "Print");
-	private URI				uri;
+	private JARTreePage				treePage	= new JARTreePage(this, "treePage", "Tree");
+	private JARPrintPage			printPage	= new JARPrintPage(this, "printPage", "Print");
+	private URI						uri;
 
 	@Override
 	protected void addPages() {

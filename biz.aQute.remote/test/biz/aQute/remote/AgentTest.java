@@ -376,6 +376,7 @@ public class AgentTest extends TestCase {
 		assertThat(supervisor.getAgent()
 			.ping()).isTrue();
 	}
+
 	/**
 	 * Launches against main
 	 */

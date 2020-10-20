@@ -278,8 +278,8 @@ public class AnalyzerTest extends TestCase {
 			Parameters notVersioned = Domain.domain(m)
 				.getParameters("X-Not-Versioned");
 			assertThat(notVersioned) //
-				.containsKeys("test.packageinfo", "test.packageinfo.both_no_version",
-				"test.packageinfo.nopackageinfo", "test.packageinfo.ref")
+				.containsKeys("test.packageinfo", "test.packageinfo.both_no_version", "test.packageinfo.nopackageinfo",
+					"test.packageinfo.ref")
 				.doesNotContainKeys("test.packageinfo.annotated", "test.packageinfo.notannotated");
 		} finally {
 			b.close();

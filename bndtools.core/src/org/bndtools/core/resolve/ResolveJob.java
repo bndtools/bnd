@@ -94,7 +94,8 @@ public class ResolveJob extends Job {
 
 	@Override
 	protected void canceling() {
-		this.getThread().interrupt();
+		this.getThread()
+			.interrupt();
 	}
 
 	public ResolutionResult getResolutionResult() {

@@ -292,7 +292,8 @@ public class HttpClientTest extends TestCase {
 		try (Processor p = new Processor()) {
 
 			//
-			// This should fail as the CN of the service cert does not equal the hostname ("localhost")
+			// This should fail as the CN of the service cert does not equal the
+			// hostname ("localhost")
 			//
 
 			Config configs = new Config();
@@ -300,12 +301,12 @@ public class HttpClientTest extends TestCase {
 			try (Httpbin extraServer = new Httpbin(configs, "somehost")) {
 				extraServer.start();
 
-                                p.setProperty("-connection-settings", "server;id=\"" + extraServer.getBaseURI() + "\";verify=" + true
-				        + ";trust=\"" + Strings.join(extraServer.getTrustedCertificateFiles(tmp)) + "\"");
-			        HttpClient client = new HttpClient();
-			        client.setReporter(p);
-			        ConnectionSettings cs = new ConnectionSettings(p, client);
-			        cs.readSettings();
+				p.setProperty("-connection-settings", "server;id=\"" + extraServer.getBaseURI() + "\";verify=" + true
+					+ ";trust=\"" + Strings.join(extraServer.getTrustedCertificateFiles(tmp)) + "\"");
+				HttpClient client = new HttpClient();
+				client.setReporter(p);
+				ConnectionSettings cs = new ConnectionSettings(p, client);
+				cs.readSettings();
 
 				TaggedData go3 = client.build()
 					.retries(0)
@@ -321,7 +322,8 @@ public class HttpClientTest extends TestCase {
 		try (Processor p = new Processor()) {
 
 			//
-			// This should pass even though the CN of the service cert does not equal the hostname ("localhost"),
+			// This should pass even though the CN of the service cert does not
+			// equal the hostname ("localhost"),
 			// because verification is disabled
 			//
 
@@ -330,12 +332,12 @@ public class HttpClientTest extends TestCase {
 			try (Httpbin extraServer = new Httpbin(configs, "somehost")) {
 				extraServer.start();
 
-                                p.setProperty("-connection-settings", "server;id=\"" + extraServer.getBaseURI() + "\";verify=" + false
-				        + ";trust=\"" + Strings.join(extraServer.getTrustedCertificateFiles(tmp)) + "\"");
-			        HttpClient client = new HttpClient();
-			        client.setReporter(p);
-			        ConnectionSettings cs = new ConnectionSettings(p, client);
-			        cs.readSettings();
+				p.setProperty("-connection-settings", "server;id=\"" + extraServer.getBaseURI() + "\";verify=" + false
+					+ ";trust=\"" + Strings.join(extraServer.getTrustedCertificateFiles(tmp)) + "\"");
+				HttpClient client = new HttpClient();
+				client.setReporter(p);
+				ConnectionSettings cs = new ConnectionSettings(p, client);
+				cs.readSettings();
 
 				TaggedData go3 = client.build()
 					.retries(0)

@@ -195,7 +195,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 					} else {
 						SubMonitor buildMonitor = SubMonitor.convert(monitor,
 							"Rebuilding indexes for project " + facade.getProject()
-							.getName(),
+								.getName(),
 							list.size());
 						list.forEach(me -> {
 							try {

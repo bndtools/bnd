@@ -620,9 +620,7 @@ public class Project extends Processor {
 		decorator.decorate(bundles);
 
 		try {
-			for (Iterator<Entry<String, Attrs>> i = bundles.entrySet()
-				.iterator(); i.hasNext();) {
-				Entry<String, Attrs> entry = i.next();
+			for (Entry<String, Attrs> entry : bundles.entrySet()) {
 				String bsn = removeDuplicateMarker(entry.getKey());
 				Map<String, String> attrs = entry.getValue();
 

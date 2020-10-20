@@ -32,8 +32,7 @@ public class DownloadListenerPromise {
 	 * @param attrs
 	 * @param downloadListeners
 	 */
-	public DownloadListenerPromise(Reporter r, String task, Promise<File> promise,
-		Map<String, String> attrs,
+	public DownloadListenerPromise(Reporter r, String task, Promise<File> promise, Map<String, String> attrs,
 		DownloadListener... downloadListeners) {
 		Reporter reporter = Slf4jReporter.getAlternative(DownloadListenerPromise.class, r);
 		this.task = task;

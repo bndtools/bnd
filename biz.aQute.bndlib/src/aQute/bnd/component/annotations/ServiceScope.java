@@ -18,7 +18,7 @@ package aQute.bnd.component.annotations;
 
 /**
  * Service scope for the {@link Component} annotation.
- * 
+ *
  * @author $Id$
  * @since 1.3
  */
@@ -50,7 +50,7 @@ public enum ServiceScope {
 	 */
 	DEFAULT("<<default>>");
 
-	private final String	value;
+	private final String value;
 
 	ServiceScope(String value) {
 		this.value = value;

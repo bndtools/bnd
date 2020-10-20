@@ -171,7 +171,7 @@ public final class URIUtil {
 	}
 
 	public static int getDefaultPort(String scheme) {
-		switch(scheme) {
+		switch (scheme) {
 			case "http" :
 				return 80;
 			case "https" :

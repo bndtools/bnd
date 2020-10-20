@@ -21,7 +21,7 @@ public class GradleDropTargetListener extends GAVDropTargetListener {
 		GRADLE_STRING_NO_VERSION
 	}
 
-	private final static IPreferencesService	prefsService	= Platform.getPreferencesService();
+	private final static IPreferencesService prefsService = Platform.getPreferencesService();
 
 	public GradleDropTargetListener(StyledText styledText) {
 		super(styledText);
@@ -30,15 +30,10 @@ public class GradleDropTargetListener extends GAVDropTargetListener {
 	@Override
 	void format(FormatEvent formatEvent) {
 		if (formatEvent.isNoVersion()) {
-			format(formatEvent
-				.getResource(),
+			format(formatEvent.getResource(),
 				formatEvent.useAlternateSyntax() ? GRADLE_MAP_NO_VERSION : GRADLE_STRING_NO_VERSION,
-				formatEvent.getLineAtInsertionPoint(),
-				formatEvent
-					.getIndentPrefix(),
-				indent(isTabs(), getSize()));
-		}
-		else {
+				formatEvent.getLineAtInsertionPoint(), formatEvent.getIndentPrefix(), indent(isTabs(), getSize()));
+		} else {
 			format(formatEvent.getResource(), formatEvent.useAlternateSyntax() ? GRADLE_MAP : GRADLE_STRING,
 				formatEvent.getLineAtInsertionPoint(), formatEvent.getIndentPrefix(), indent(isTabs(), getSize()));
 		}
@@ -60,8 +55,7 @@ public class GradleDropTargetListener extends GAVDropTargetListener {
 		return !prefsService.getBoolean("org.eclipse.ui.editors.prefs", "spacesForTabs", false, null);
 	}
 
-	private void format(Resource resource, Syntax syntax, String lineAtInsertionPoint,
-		String indentPrefix,
+	private void format(Resource resource, Syntax syntax, String lineAtInsertionPoint, String indentPrefix,
 		String indent) {
 		MavenCapability mc = MavenCapability.getMavenCapability(resource);
 
@@ -87,8 +81,7 @@ public class GradleDropTargetListener extends GAVDropTargetListener {
 
 		switch (syntax) {
 			case GRADLE_MAP :
-				sb.append(
-					"group: \"")
+				sb.append("group: \"")
 					.append(group)
 					.append("\", name: \"")
 					.append(identity)
@@ -102,8 +95,7 @@ public class GradleDropTargetListener extends GAVDropTargetListener {
 				}
 				break;
 			case GRADLE_MAP_NO_VERSION :
-				sb.append(
-					"group: \"")
+				sb.append("group: \"")
 					.append(group)
 					.append("\", name: \"")
 					.append(identity)
@@ -115,8 +107,7 @@ public class GradleDropTargetListener extends GAVDropTargetListener {
 				}
 				break;
 			case GRADLE_STRING :
-				sb.append(
-					"'")
+				sb.append("'")
 					.append(group)
 					.append(":")
 					.append(identity)
@@ -129,8 +120,7 @@ public class GradleDropTargetListener extends GAVDropTargetListener {
 				sb.append("'");
 				break;
 			case GRADLE_STRING_NO_VERSION :
-				sb.append(
-					"'")
+				sb.append("'")
 					.append(group)
 					.append(":")
 					.append(identity)

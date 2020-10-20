@@ -55,8 +55,7 @@ public class RunResolutionTest {
 
 	@Test
 	public void testSimple() throws Exception {
-		Bndrun bndrun = Bndrun.createBndrun(workspace,
-			IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
 		String resolve = bndrun.resolve(false, false);
 		assertThat(bndrun.check()).isTrue();
 	}
@@ -153,8 +152,7 @@ public class RunResolutionTest {
 
 	@Test
 	public void testUpdateBundles() throws Exception {
-		Bndrun bndrun = Bndrun.createBndrun(workspace,
-			IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
 		RunResolution resolution = bndrun.resolve();
 		assertThat(bndrun.check()).isTrue();
 
@@ -167,8 +165,7 @@ public class RunResolutionTest {
 
 	@Test
 	public void testStartLevelsLeastDependenciesFirst() throws Exception {
-		Bndrun bndrun = Bndrun.createBndrun(workspace,
-			IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
 
 		bndrun.setProperty("-runstartlevel", "order=leastdependenciesfirst,begin=100,step=10");
 
@@ -190,8 +187,7 @@ public class RunResolutionTest {
 
 	@Test
 	public void testStartLevelsLeastDependenciesLast() throws Exception {
-		Bndrun bndrun = Bndrun.createBndrun(workspace,
-			IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
 
 		bndrun.setProperty("-runstartlevel", "order=leastdependencieslast,begin=100,step=10");
 
@@ -213,8 +209,7 @@ public class RunResolutionTest {
 
 	@Test
 	public void testStartLevelsStep() throws Exception {
-		Bndrun bndrun = Bndrun.createBndrun(workspace,
-			IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
 		bndrun.setProperty("-runstartlevel", "order=random,begin=10,step=1");
 
 		RunResolution resolution = bndrun.resolve();
@@ -231,8 +226,7 @@ public class RunResolutionTest {
 
 	@Test
 	public void testNoStartLevels() throws Exception {
-		Bndrun bndrun = Bndrun.createBndrun(workspace,
-			IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
 
 		RunResolution resolution = bndrun.resolve();
 		assertThat(bndrun.check()).isTrue();
@@ -248,8 +242,7 @@ public class RunResolutionTest {
 
 	@Test
 	public void testFailOnChanges() throws Exception {
-		Bndrun bndrun = Bndrun.createBndrun(workspace,
-			IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
 
 		// First do not fail on changes
 		bndrun.getModel()

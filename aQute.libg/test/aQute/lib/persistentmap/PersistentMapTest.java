@@ -94,6 +94,7 @@ public class PersistentMapTest extends TestCase {
 			IO.delete(tmp);
 		}
 	}
+
 	public static class X {
 		public String		abc;
 		public int			def;

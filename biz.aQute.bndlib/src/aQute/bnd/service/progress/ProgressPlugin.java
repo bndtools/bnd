@@ -52,8 +52,7 @@ public interface ProgressPlugin {
 		/**
 		 * Cancel this task. This might not be implemented
 		 */
-		default void abort() {
-		}
+		default void abort() {}
 	}
 
 }

@@ -18,7 +18,7 @@ package aQute.bnd.component.annotations;
 
 /**
  * Policy for the {@link Reference} annotation.
- * 
+ *
  * @author $Id$
  */
 public enum ReferencePolicy {
@@ -44,7 +44,7 @@ public enum ReferencePolicy {
 	 */
 	DYNAMIC("dynamic");
 
-	private final String	value;
+	private final String value;
 
 	ReferencePolicy(String value) {
 		this.value = value;

@@ -5,19 +5,19 @@ import java.io.InputStream;
 
 public class FolderResource implements Resource {
 
-    @Override
-    public ResourceType getType() {
-        return ResourceType.Folder;
-    }
+	@Override
+	public ResourceType getType() {
+		return ResourceType.Folder;
+	}
 
-    @Override
-    public InputStream getContent() throws IOException {
-        return null;
-    }
+	@Override
+	public InputStream getContent() throws IOException {
+		return null;
+	}
 
-    @Override
-    public String getTextEncoding() {
-        return null;
-    }
+	@Override
+	public String getTextEncoding() {
+		return null;
+	}
 
 }

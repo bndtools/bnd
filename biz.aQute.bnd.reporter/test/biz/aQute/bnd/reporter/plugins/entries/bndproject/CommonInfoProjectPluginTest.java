@@ -93,13 +93,14 @@ public class CommonInfoProjectPluginTest extends TestCase {
 	public void testMixPropHeader() throws Exception {
 		final CommonInfoProjectPlugin plugin = new CommonInfoProjectPlugin();
 
-		final CommonInfoDTO infoDto = plugin.extract(
-			getProject(Constants.BUNDLE_COPYRIGHT, "not", "p-copyright", "test1", Constants.BUNDLE_DESCRIPTION,
-				"test2", Constants.BUNDLE_DOCURL, "test3", Constants.BUNDLE_UPDATELOCATION, "test5",
-				Constants.BUNDLE_VENDOR, "test6", "p-vendor", "", Constants.BUNDLE_CONTACTADDRESS, "test7",
-				Constants.BUNDLE_DEVELOPERS, "test8", Constants.BUNDLE_ICON, "test9", Constants.BUNDLE_LICENSE,
-				"test10", Constants.BUNDLE_SCM, "url=test11", Constants.BUNDLE_VERSION, "1.0.0"),
-			Locale.forLanguageTag("und"));
+		final CommonInfoDTO infoDto = plugin
+			.extract(
+				getProject(Constants.BUNDLE_COPYRIGHT, "not", "p-copyright", "test1", Constants.BUNDLE_DESCRIPTION,
+					"test2", Constants.BUNDLE_DOCURL, "test3", Constants.BUNDLE_UPDATELOCATION, "test5",
+					Constants.BUNDLE_VENDOR, "test6", "p-vendor", "", Constants.BUNDLE_CONTACTADDRESS, "test7",
+					Constants.BUNDLE_DEVELOPERS, "test8", Constants.BUNDLE_ICON, "test9", Constants.BUNDLE_LICENSE,
+					"test10", Constants.BUNDLE_SCM, "url=test11", Constants.BUNDLE_VERSION, "1.0.0"),
+				Locale.forLanguageTag("und"));
 
 		assertEquals("test1", infoDto.copyright);
 		assertEquals("test2", infoDto.description);

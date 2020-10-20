@@ -50,8 +50,7 @@ public class APIGuardianAnnotationsTest {
 			softly.assertThat(parameters.get("test.apiguardian.api_a.sub"))
 				.containsEntry("status", Status.INTERNAL.name());
 			softly.assertThat(parameters.get("test.apiguardian.api_a.sub.sub"))
-				.containsEntry("status",
-				Status.EXPERIMENTAL.name());
+				.containsEntry("status", Status.EXPERIMENTAL.name());
 
 			softly.assertAll();
 		}

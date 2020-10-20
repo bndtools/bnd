@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.bndtools.utils.resources.ResourceUtils;
 import org.osgi.resource.Capability;
@@ -96,12 +97,7 @@ public class ResourceCapReqLoader implements CapReqLoader {
 		if (getClass() != obj.getClass())
 			return false;
 		ResourceCapReqLoader other = (ResourceCapReqLoader) obj;
-		if (resource == null) {
-			if (other.resource != null)
-				return false;
-		} else if (!resource.equals(other.resource))
-			return false;
-		return true;
+		return Objects.equals(resource, other.resource);
 	}
 
 }

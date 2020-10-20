@@ -89,7 +89,6 @@ public abstract class ProjectLauncher extends Processor {
 	protected Appendable				err					= System.err;
 	protected InputStream				in					= System.in;
 
-
 	public final static int				SERVICES			= 10111;
 	public final static int				NONE				= 20123;
 
@@ -121,18 +120,18 @@ public abstract class ProjectLauncher extends Processor {
 		Collection<String> runvm = getRunVM();
 		if (runvm.size() == 1)
 			try {
-			for (String r : runvm) {
-				if (Verifier.isSpaceSeparated(r)) {
-					SetLocation location = project.warning(
-						"%s is a comma (,) separated instruction, it looks like you separate its values with spaces? If you need spaces, please quote them: %s",
-						Constants.RUNVM, runvm);
-					project.getHeader(Constants.RUNVM)
-						.set(location);
+				for (String r : runvm) {
+					if (Verifier.isSpaceSeparated(r)) {
+						SetLocation location = project.warning(
+							"%s is a comma (,) separated instruction, it looks like you separate its values with spaces? If you need spaces, please quote them: %s",
+							Constants.RUNVM, runvm);
+						project.getHeader(Constants.RUNVM)
+							.set(location);
+					}
 				}
+			} catch (Exception e) {
+				// ignore
 			}
-		} catch (Exception e) {
-			// ignore
-		}
 	}
 
 	/**

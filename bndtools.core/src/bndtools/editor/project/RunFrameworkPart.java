@@ -167,7 +167,7 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
 			committing = true;
 			model.setRunFw(selectedFramework == null ? null
 				: selectedFramework.trim()
-				.length() > 0 ? selectedFramework.trim() : null);
+					.length() > 0 ? selectedFramework.trim() : null);
 			model.setEE(selectedEE);
 		} finally {
 			committing = false;

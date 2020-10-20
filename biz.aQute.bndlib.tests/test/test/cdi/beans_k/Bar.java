@@ -1,4 +1,3 @@
 package test.cdi.beans_k;
 
-public interface Bar {
-}
+public interface Bar {}

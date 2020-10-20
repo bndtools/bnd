@@ -52,6 +52,7 @@ public interface NamedNode extends Comparable<NamedNode> {
 	 * @return an optional node if found
 	 */
 	Optional<NamedNode> find(String path);
+
 	/**
 	 * @return true if this is a FolderNode
 	 */

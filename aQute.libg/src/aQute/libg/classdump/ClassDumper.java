@@ -590,12 +590,12 @@ public class ClassDumper {
 		if (args.length == 0) {
 			System.err.println("clsd <class file>+");
 		}
-		for (int i = 0; i < args.length; i++) {
-			File f = new File(args[i]);
+		for (String arg : args) {
+			File f = new File(arg);
 			if (!f.isFile())
 				System.err.println("File does not exist or is directory " + f);
 			else {
-				ClassDumper cd = new ClassDumper(args[i]);
+				ClassDumper cd = new ClassDumper(arg);
 				cd.dump(null);
 			}
 		}

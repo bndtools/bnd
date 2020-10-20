@@ -54,7 +54,7 @@ public class FileWatcher implements AutoCloseable {
 		private BiConsumer<File, String>	changed;
 
 		public Builder() {
-			watching = new ArrayList<File>();
+			watching = new ArrayList<>();
 		}
 
 		public Builder executor(Executor executor) {
@@ -132,7 +132,7 @@ public class FileWatcher implements AutoCloseable {
 
 		FileSystemWatcher(FileSystem fs) throws IOException {
 			watchService = fs.newWatchService();
-			watching = new HashSet<Path>();
+			watching = new HashSet<>();
 		}
 
 		void addPath(Path path) throws IOException {
