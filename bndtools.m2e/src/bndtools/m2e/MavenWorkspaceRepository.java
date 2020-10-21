@@ -257,7 +257,7 @@ public class MavenWorkspaceRepository extends AbstractIndexingRepository<IProjec
 		if (changed) {
 			logger.debug("{}: mavenProjectChanged resulting in a refresh", getName());
 			list = memoize(this::list0);
-			unchecked(() -> Central.refreshPlugins());
+			unchecked(Central::refreshPlugins);
 		}
 	}
 

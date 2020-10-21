@@ -66,9 +66,7 @@ public class ExternalPluginHandlerTest {
 			getRepo(ws);
 
 			Result<Object, String> call = ws.getExternalPlugins()
-				.call("doesnotexist", Callable.class, callable -> {
-					return Result.ok(callable.call());
-				});
+				.call("doesnotexist", Callable.class, callable -> Result.ok(callable.call()));
 			System.out.println(call);
 			assertThat(call.isOk()).isFalse();
 			assertThat(call.error()

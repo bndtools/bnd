@@ -408,7 +408,7 @@ public class Container {
 
 				return false;
 			})
-			.map(container -> container.getFile())
+			.map(Container::getFile)
 			.map(File::getAbsolutePath)
 			.collect(Collectors.toList());
 	}

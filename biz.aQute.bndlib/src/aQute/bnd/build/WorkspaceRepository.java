@@ -207,10 +207,8 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 					.toArray()));
 				f.format("Repositories        : \n    %s\n", Strings.join("\n    ", workspace.getRepositories()
 					.stream()
-					.map(r -> {
-						return String.format("%-40s %s %s", r.getName(), r.canWrite(),
-							r.getStatus() == null ? "" : r.getStatus());
-					})
+					.map(r -> String.format("%-40s %s %s", r.getName(), r.canWrite(),
+						r.getStatus() == null ? "" : r.getStatus()))
 					.toArray()));
 				return f.toString();
 			}

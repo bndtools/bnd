@@ -57,11 +57,9 @@ public class TaggedFunctions extends SimpleJtwigFunction {
 				}
 			})
 			.map(Object::toString)
-			.anyMatch(argument -> {
-				return tags.stream()
-					.map(p -> p.matcher(argument))
-					.anyMatch(Matcher::find);
-			});
+			.anyMatch(argument -> tags.stream()
+				.map(p -> p.matcher(argument))
+				.anyMatch(Matcher::find));
 	}
 
 }

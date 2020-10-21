@@ -304,7 +304,7 @@ public class GogoPlugin implements ReportEntryPlugin<Jar>, Plugin {
 			} else {
 				GogoOptionDTO gogoOptionDTO = new GogoOptionDTO();
 				gogoOptionDTO.names = Stream.of((Object[]) paramAnnotation.get("names"))
-					.map(o -> o.toString())
+					.map(Object::toString)
 					.collect(Collectors.toList());
 				gogoOptionDTO.description = description;
 				gogoOptionDTO.multiValue = multiValue;

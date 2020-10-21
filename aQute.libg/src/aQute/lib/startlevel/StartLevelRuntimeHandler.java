@@ -212,7 +212,7 @@ public class StartLevelRuntimeHandler implements Closeable {
 
 			@Override
 			public void afterStart() {
-				setFrameworkStartLevel(systemBundle, beginningStartlevel, (event) -> {
+				setFrameworkStartLevel(systemBundle, beginningStartlevel, event -> {
 					logger.trace("startlevel: notified reached final level %s : %s", beginningStartlevel, event);
 					latch.countDown();
 				});

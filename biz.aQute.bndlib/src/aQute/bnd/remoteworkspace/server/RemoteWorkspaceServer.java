@@ -76,18 +76,16 @@ public class RemoteWorkspaceServer implements Closeable {
 		ServerSocket server = new ServerSocket(0, 10, InetAddress.getLoopbackAddress());
 
 		RemoteWorkspace workspaceLocker = Aspects.intercept(RemoteWorkspace.class, new Instance())
-			.around((inv, c) -> {
-				return workspace.readLocked(() -> {
-					try {
-						return c.call();
-					} catch (Throwable e) {
-						throw Exceptions.duck(e);
-					}
-				});
-			})
+			.around((inv, c) -> workspace.readLocked(() -> {
+				try {
+					return c.call();
+				} catch (Throwable e) {
+					throw Exceptions.duck(e);
+				}
+			}))
 			.build();
 
-		this.server = Link.server("remotews", RemoteWorkspaceClient.class, server, (l) -> workspaceLocker, true,
+		this.server = Link.server("remotews", RemoteWorkspaceClient.class, server, l -> workspaceLocker, true,
 			Processor.getExecutor());
 
 		File remotews = RemoteWorkspaceClientFactory.getPortDirectory(workspace.getBase(), workspace.getBase());
@@ -385,7 +383,7 @@ public class RemoteWorkspaceServer implements Closeable {
 			try {
 				return workspace.getAllProjects()
 					.stream()
-					.map(p -> p.toString())
+					.map(Project::toString)
 					.collect(Collectors.toList());
 			} catch (Exception e) {
 				throw Exceptions.duck(e);

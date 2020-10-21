@@ -368,7 +368,7 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 					if (workspaceBuildFile != null) {
 						setImageDescriptor(Icons.desc("refresh.disable"));
 						setEnabled(false);
-						Job.create("Reload", (monitor) -> {
+						Job.create("Reload", monitor -> {
 							IContainer parent = workspaceBuildFile.getParent()
 								.getParent();
 							parent.refreshLocal(IResource.DEPTH_INFINITE, monitor);

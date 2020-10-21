@@ -177,7 +177,7 @@ public class Bndrun extends Run {
 			case beforelaunch :
 				return RunResolution.getRunBundles(this, true)
 					.map(this::parseRunbundles)
-					.orElseThrow(s -> new IllegalArgumentException(s));
+					.orElseThrow(IllegalArgumentException::new);
 		}
 		return super.getRunbundles();
 	}

@@ -31,10 +31,8 @@ public class TestBndMainBase {
 	@Rule
 	public CapturedSystemOutput						capturedStdIO			= new CapturedSystemOutput();
 
-	protected static final Function<Path, String>	DEFAULT_SNAPSHOT_FUNC	= p -> {
-																				return p.toFile()
-																					.lastModified() + "";
-																			};
+	protected static final Function<Path, String>	DEFAULT_SNAPSHOT_FUNC	= p -> (p.toFile()
+		.lastModified() + "");
 
 	private static final String						TESTDATA_BASE_DIR		= "testdata";
 

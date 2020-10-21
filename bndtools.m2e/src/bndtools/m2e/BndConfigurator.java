@@ -175,10 +175,8 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 						IFolder targetDir = project.getFolder(relativeTargetDirPath);
 
 						boolean needsRefresh = deltaFilePaths.stream()
-							.filter(deltaPath -> {
-								return !targetDir.getFullPath()
-									.isPrefixOf(deltaPath);
-							})
+							.filter(deltaPath -> !targetDir.getFullPath()
+								.isPrefixOf(deltaPath))
 							.findFirst()
 							.isPresent();
 

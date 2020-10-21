@@ -1437,7 +1437,7 @@ public class BundleEngineTest {
 			List<Class<?>> actualClasses = selectors.stream()
 				.filter(ClassSelector.class::isInstance)
 				.map(ClassSelector.class::cast)
-				.map(classSelector -> classSelector.getJavaClass())
+				.map(ClassSelector::getJavaClass)
 				.collect(Collectors.toList());
 			softly.assertThat(actualClasses)
 				.as("classes")

@@ -509,7 +509,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	@Override
 	public Map<String, Runnable> actions(Object... target) throws Exception {
 		Map<String, Runnable> map = new HashMap<>();
-		map.put("Refresh", () -> regenerateAllIndexes());
+		map.put("Refresh", this::regenerateAllIndexes);
 		if (target.length == 3) {
 			String bsn = (String) target[1];
 			String version = (String) target[2];

@@ -29,9 +29,7 @@ public class GRreport implements Generator<GRreport.Options> {
 		String s = context.getFlattenedProperties()
 			.entrySet()
 			.stream()
-			.map(e -> {
-				return e.getKey() + ": " + e.getValue();
-			})
+			.map(e -> (e.getKey() + ": " + e.getValue()))
 			.collect(Collectors.joining("\n"));
 		sb.append(1);
 

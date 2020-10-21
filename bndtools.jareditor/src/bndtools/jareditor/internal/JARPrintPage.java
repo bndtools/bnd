@@ -392,9 +392,7 @@ public class JARPrintPage extends FormPage {
 			return;
 		}
 		loading = true;
-		JAREditor.background("Printing ZIP file", monitor -> {
-			return print(uri);
-		}, (text) -> {
+		JAREditor.background("Printing ZIP file", monitor -> print(uri), text -> {
 			styledText.setText(text);
 			styledText.setFocus();
 		});

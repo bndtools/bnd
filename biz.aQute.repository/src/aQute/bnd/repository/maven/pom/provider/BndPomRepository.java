@@ -370,10 +370,7 @@ public class BndPomRepository extends BaseRepository
 		menu.put("Copy GAVs", () -> {
 			String gavs = bridge.getResourceInfos()
 				.stream()
-				.map(ri -> {
-
-					return ri.getName();
-				})
+				.map(ri -> ri.getName())
 				.collect(joining("\n"));
 			cb.copy(gavs);
 		});

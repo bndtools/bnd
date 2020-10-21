@@ -57,7 +57,7 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
 		super.initialize(form);
 
 		fwkContentProvider.onContentReady(list -> Display.getDefault()
-			.asyncExec(() -> refreshFromModel()));
+			.asyncExec(this::refreshFromModel));
 
 		frameworkViewer.setInput(model.getWorkspace());
 	}
