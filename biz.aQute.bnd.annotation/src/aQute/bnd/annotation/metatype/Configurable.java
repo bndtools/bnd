@@ -226,11 +226,6 @@ public class Configurable<T> {
 														 * Deque.class
 														 */)
 						resultType = LinkedList.class;
-					else if (resultType == Queue.class /*
-														 * || resultType ==
-														 * Deque.class
-														 */)
-						resultType = LinkedList.class;
 					else
 						throw new IllegalArgumentException(
 							"Unknown interface for a collection, no concrete class found: " + resultType);
