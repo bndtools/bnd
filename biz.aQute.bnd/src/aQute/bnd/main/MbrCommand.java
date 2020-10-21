@@ -35,10 +35,8 @@ import aQute.maven.api.Program;
 @SuppressWarnings("deprecation")
 public class MbrCommand extends Processor {
 	final static Pattern					SNAPSHOTLIKE_P				= Pattern.compile("-[^.]+$");
-	final static Predicate<MavenVersion>	notSnapshotlikePredicate	= v -> {
-																			return !SNAPSHOTLIKE_P.matcher(v.toString())
-																				.find();
-																		};
+	final static Predicate<MavenVersion>	notSnapshotlikePredicate	= v -> !SNAPSHOTLIKE_P.matcher(v.toString())
+		.find();
 
 	@Description("Maintain Maven Bnd Repository GAV files")
 	public interface MrOptions extends Options {

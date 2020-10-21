@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.Map.Entry;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -41,7 +42,7 @@ public class APIGuardianAnnotationsTest {
 				.containsKey("test.apiguardian.api_a")
 				.containsKey("test.apiguardian.api_a.sub")
 				.containsKey("test.apiguardian.api_a.sub.sub")
-				.extractingFromEntries(e -> e.getValue())
+				.extractingFromEntries(Entry::getValue)
 				.allMatch(it -> ((Attrs) it).get("version")
 					.equals("0.0.0"));
 
@@ -79,7 +80,7 @@ public class APIGuardianAnnotationsTest {
 				.containsKey("test.apiguardian.api_a")
 				.containsKey("test.apiguardian.api_a.sub")
 				.containsKey("test.apiguardian.api_a.sub.sub")
-				.extractingFromEntries(e -> e.getValue())
+				.extractingFromEntries(Entry::getValue)
 				.allMatch(it -> ((Attrs) it).get("version")
 					.equals("1.1.2"));
 
@@ -117,7 +118,7 @@ public class APIGuardianAnnotationsTest {
 				.doesNotContainKey("test.apiguardian.api_a")
 				.containsKey("test.apiguardian.api_a.sub")
 				.containsKey("test.apiguardian.api_a.sub.sub")
-				.extractingFromEntries(e -> e.getValue())
+				.extractingFromEntries(Entry::getValue)
 				.allMatch(it -> ((Attrs) it).get("version")
 					.equals("1.3.2"));
 

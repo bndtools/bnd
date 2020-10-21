@@ -225,13 +225,13 @@ public class ExceptionsTest {
 		assertThat(called).isTrue();
 		assertThat(result).hasValue("value");
 
-		assertThatExceptionOfType(Exception.class).isThrownBy(() -> Exceptions.unchecked(() -> runnableThrows()))
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> Exceptions.unchecked(this::runnableThrows))
 			.withMessage("hi");
 		assertThatExceptionOfType(Exception.class).isThrownBy(() -> Exceptions.unchecked(this::runnableThrows))
 			.withMessage("hi");
 
 		assertThatExceptionOfType(Exception.class).isThrownBy(() -> {
-			String v = Exceptions.unchecked(() -> callableThrows());
+			String v = Exceptions.unchecked(this::callableThrows);
 		})
 			.withMessage("hiho");
 		assertThatExceptionOfType(Exception.class).isThrownBy(() -> {

@@ -683,7 +683,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 	private void refresh() throws InterruptedException {
 		Semaphore semaphore = new Semaphore(0);
 
-		frameworkWiring.refreshBundles(null, (e) -> {
+		frameworkWiring.refreshBundles(null, e -> {
 			if (e.getType() == FrameworkEvent.PACKAGES_REFRESHED)
 				semaphore.release();
 		});

@@ -228,7 +228,7 @@ public class Nexus {
 				Promise<List<URI>> result = Promises.all(promises)
 					.map(ll -> {
 						List<URI> collect = ll.stream()
-							.flatMap(l -> l.stream())
+							.flatMap(List::stream)
 							.collect(Collectors.toList());
 						jars.addAll(collect);
 						return jars;

@@ -436,9 +436,7 @@ public class BuildpathQuickFixProcessorTest {
 			// somewhere else in the bigger region.
 			problem = Stream.of(cu.getProblems())
 				// Find problems that contain the "hover point"
-				.filter(problem -> {
-					return problem.getSourceEnd() >= offset && problem.getSourceStart() <= (offset + length);
-				})
+				.filter(problem -> (problem.getSourceEnd() >= offset && problem.getSourceStart() <= (offset + length)))
 				// Find the smallest
 				.min((a, b) -> Integer.compare(a.getSourceEnd() - a.getSourceStart(),
 					b.getSourceEnd() - b.getSourceStart()))

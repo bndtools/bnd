@@ -1986,11 +1986,9 @@ public class Project extends Processor {
 				}
 			}
 
-			this.resources = Memoize.supplier(() -> {
-				return resourceBuilders.stream()
-					.map(Supplier::get)
-					.collect(Collectors.toList());
-			});
+			this.resources = Memoize.supplier(() -> resourceBuilders.stream()
+				.map(Supplier::get)
+				.collect(Collectors.toList()));
 
 			// Write out the filenames in the buildfiles file
 			// so we can get them later even in another process

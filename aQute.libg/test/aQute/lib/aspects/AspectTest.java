@@ -37,8 +37,8 @@ public class AspectTest {
 				return n;
 			}
 		})
-			.before((inv) -> System.out.println("before 1 " + inv.method.getName()))
-			.before((inv) -> System.out.println("before 2 " + inv.method.getName()))
+			.before(inv -> System.out.println("before 1 " + inv.method.getName()))
+			.before(inv -> System.out.println("before 2 " + inv.method.getName()))
 			.after((inv, r) -> {
 				System.out.println("after 1 " + inv.method.getName() + " " + r);
 				return r;

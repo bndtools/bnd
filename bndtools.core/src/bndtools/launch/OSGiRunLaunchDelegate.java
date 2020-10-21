@@ -48,7 +48,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 				"Failed to get projectlauncher");
 
 			bndLauncher = resolvingProjectLauncher.orElseThrow(
-				(e) -> new IllegalStateException(String.format("Failed to obtain launcher for project %s (%s): %s",
+				e -> new IllegalStateException(String.format("Failed to obtain launcher for project %s (%s): %s",
 					model.getName(), model.getPropertiesFile(), e)));
 		}
 		configureLauncher(configuration);

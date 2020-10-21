@@ -146,7 +146,7 @@ public class Log implements Closeable {
 			.methods("*")
 			.remove("location")
 			.part()
-			.as(e -> e.getMessage());
+			.as(LogEntry::getMessage);
 	}
 
 	private Level level(int n) {

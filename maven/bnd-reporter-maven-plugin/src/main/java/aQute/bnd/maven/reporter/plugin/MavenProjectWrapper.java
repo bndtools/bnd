@@ -30,13 +30,11 @@ public class MavenProjectWrapper {
 		// Here we get the MavenProject objects of the modules' current project
 		this.subProjects = projectBase.getModules()
 			.stream()
-			.map(module -> {
-				return projects.stream()
-					.filter(p -> p.getBasedir()
-						.getName()
-						.equals(module))
-					.findAny();
-			})
+			.map(module -> projects.stream()
+				.filter(p -> p.getBasedir()
+					.getName()
+					.equals(module))
+				.findAny())
 			.filter(Optional::isPresent)
 			.map(Optional::get)
 			.collect(Collectors.toList());

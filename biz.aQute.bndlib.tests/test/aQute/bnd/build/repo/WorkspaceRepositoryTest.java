@@ -35,7 +35,7 @@ public class WorkspaceRepositoryTest {
 	@Test
 	public void findprovidersMacroTest() throws Exception {
 
-		test((ws) -> {
+		test(ws -> {
 			String services = ws._findproviders(new String[] {
 				"findproviders", "osgi.service", "(objectClass=*)"
 			});
@@ -49,7 +49,7 @@ public class WorkspaceRepositoryTest {
 	@Test
 	public void findprovidersWithRunRequiresTest() throws Exception {
 
-		test((ws) -> {
+		test(ws -> {
 			Run run = Run.createRun(ws, null);
 			run.setProperty("my.plugins", "${findproviders;osgi.service}");
 			run.setProperty("-runrequires.extra",

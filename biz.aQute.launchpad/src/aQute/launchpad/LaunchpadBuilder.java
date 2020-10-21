@@ -225,7 +225,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 	 */
 	public LaunchpadBuilder excludeExport(String... globs) {
 		Stream.of(globs)
-			.flatMap((x) -> Strings.splitAsStream(x))
+			.flatMap(x -> Strings.splitAsStream(x))
 			.map(this::toPredicate)
 			.forEach(excludeExports::add);
 		return this;
@@ -432,7 +432,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 
 	Predicate<String> toPredicate(String specification) {
 		Glob g = new Glob(specification);
-		return (test) -> g.matches(test);
+		return test -> g.matches(test);
 	}
 
 	public LaunchpadBuilder copyInstall() {

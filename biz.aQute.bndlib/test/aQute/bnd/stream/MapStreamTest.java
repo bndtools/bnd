@@ -419,7 +419,7 @@ public class MapStreamTest {
 
 	@Test
 	public void empty() {
-		Supplier<MapStream<String, String>> supplier = () -> MapStream.empty();
+		Supplier<MapStream<String, String>> supplier = MapStream::empty;
 		assertThat(supplier.get()).isNotNull();
 		assertThat(supplier.get()
 			.count()).isEqualTo(0);
@@ -499,7 +499,7 @@ public class MapStreamTest {
 		Supplier<MapStream<String, String>> supplier = () -> MapStream.concat(MapStream.of(testMap),
 			MapStream.of(testMap));
 		LinkedHashMap<String, String> result = supplier.get()
-			.collect(MapStream.toMap((v1, v2) -> v1.concat(v2), LinkedHashMap<String, String>::new));
+			.collect(MapStream.toMap(String::concat, LinkedHashMap<String, String>::new));
 		assertThat(result).isInstanceOf(LinkedHashMap.class)
 			.containsOnly(entry("key1", "value1value1"), entry("key2", "value2value2"), entry("key3", "value3value3"),
 				entry("key4", "value4value4"), entry("key5", "value5value5"));
@@ -671,7 +671,7 @@ public class MapStreamTest {
 	@Test
 	public void mapValue() {
 		Supplier<MapStream<String, String>> supplier = () -> MapStream.of(testMap)
-			.mapValue(v -> "0".concat(v));
+			.mapValue("0"::concat);
 		assertThat(supplier.get()
 			.count()).isEqualTo(testMap.size());
 		assertThat(supplier.get()
@@ -698,7 +698,7 @@ public class MapStreamTest {
 	@Test
 	public void mapToObj() {
 		Supplier<Stream<String>> supplier = () -> MapStream.of(testMap)
-			.mapToObj((k, v) -> k.concat(v));
+			.mapToObj(String::concat);
 		assertThat(supplier.get()
 			.count()).isEqualTo(testMap.size());
 		assertThat(supplier.get()).containsExactlyInAnyOrder("key1value1", "key2value2", "key3value3", "key4value4",

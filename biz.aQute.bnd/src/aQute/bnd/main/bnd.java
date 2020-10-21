@@ -1054,7 +1054,7 @@ public class bnd extends Processor {
 	@Description("Test a project with plain JUnit")
 	public void _junit(testOptions opts) throws Exception {
 
-		perProject(opts, p -> p.junit());
+		perProject(opts, Project::junit);
 	}
 
 	private boolean verifyDependencies(Project project, boolean implies, boolean test) throws Exception {
@@ -1130,7 +1130,7 @@ public class bnd extends Processor {
 
 	@Description("Clean a project or workspace")
 	public void _clean(cleanOptions opts) throws Exception {
-		perProject(opts, p -> p.clean());
+		perProject(opts, Project::clean);
 	}
 
 	@Description("Access the internal bnd database of keywords and options")

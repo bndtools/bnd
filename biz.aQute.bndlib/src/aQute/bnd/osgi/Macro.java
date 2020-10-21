@@ -1833,7 +1833,7 @@ public class Macro {
 
 		Deque<String> reversed = Arrays.stream(args, 1, args.length)
 			.flatMap(Strings::splitQuotedAsStream)
-			.collect(Collector.of(ArrayDeque<String>::new, (deq, t) -> deq.addFirst(t), (d1, d2) -> {
+			.collect(Collector.of(ArrayDeque<String>::new, ArrayDeque::addFirst, (d1, d2) -> {
 				d2.addAll(d1);
 				return d2;
 			}));

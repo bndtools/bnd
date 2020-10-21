@@ -36,7 +36,7 @@ public class BndScanner extends RuleBasedScanner {
 		public BndWordRule() {
 			String[] instructions = Syntax.HELP.values()
 				.stream()
-				.map(s -> s.getHeader())
+				.map(Syntax::getHeader)
 				.toArray(String[]::new);
 			addWords(instructions, bsvc.T_INSTRUCTION);
 			addWords(Constants.options, bsvc.T_OPTION);

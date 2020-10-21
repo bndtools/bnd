@@ -62,7 +62,7 @@ public class FileHelper {
 		if (file != null && availableExtensions != null && availableExtensions.length > 0) {
 			final File parent = file.getParentFile();
 			if (parent != null) {
-				files = parent.listFiles((other) -> {
+				files = parent.listFiles(other -> {
 					if (other.isFile()) {
 						final String fileName = getName(file);
 						final String otherName = getName(other);

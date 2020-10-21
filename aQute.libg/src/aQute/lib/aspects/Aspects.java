@@ -169,7 +169,7 @@ public class Aspects {
 				try {
 
 					for (Method m : type.getMethods()) {
-						methods.putIfAbsent(m, (inv) -> m.invoke(delegate, inv.args));
+						methods.putIfAbsent(m, inv -> m.invoke(delegate, inv.args));
 					}
 
 				} catch (Exception e) {
@@ -199,7 +199,7 @@ public class Aspects {
 
 			@Override
 			public <R> InterceptBuilder<T> intercept(RunnableWithException intercept, String name) {
-				return intercept((inv) -> {
+				return intercept(inv -> {
 					intercept.run();
 					return null;
 				}, name);
@@ -240,7 +240,7 @@ public class Aspects {
 					this.before = before;
 				else {
 					ConsumerWithException<Invocation> previous = this.before;
-					this.before = (args) -> {
+					this.before = args -> {
 						previous.accept(args);
 						before.accept(args);
 
@@ -285,7 +285,7 @@ public class Aspects {
 				try {
 
 					if (before == null)
-						this.before = (inv) -> {};
+						this.before = inv -> {};
 
 					if (after == null)
 						this.after = (inv, x) -> x;

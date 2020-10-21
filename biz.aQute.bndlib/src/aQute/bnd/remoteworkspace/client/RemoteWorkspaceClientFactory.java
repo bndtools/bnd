@@ -42,9 +42,7 @@ public class RemoteWorkspaceClientFactory {
 	 * @return a RemoteWorkspace
 	 */
 	public static RemoteWorkspace create(File dir, RemoteWorkspaceClient client) {
-		return findRemoteWorkspace(dir, p -> {
-			return create(p, client);
-		});
+		return findRemoteWorkspace(dir, p -> create(p, client));
 	}
 
 	/**
@@ -66,9 +64,7 @@ public class RemoteWorkspaceClientFactory {
 				logger.debug("Closing remote worksapace link on port {}", port);
 				IO.close(link::close);
 			}, "close")
-			.intercept(() -> {
-				return "RemoteWorkspace[port=" + port + "]";
-			}, "toString")
+			.intercept(() -> ("RemoteWorkspace[port=" + port + "]"), "toString")
 			.build();
 
 	}

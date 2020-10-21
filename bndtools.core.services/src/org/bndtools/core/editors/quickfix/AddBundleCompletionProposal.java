@@ -1,6 +1,7 @@
 package org.bndtools.core.editors.quickfix;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.bndtools.api.ILogger;
@@ -119,7 +120,7 @@ class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletio
 
 			classes.entrySet()
 				.stream()
-				.filter(entry -> entry.getValue())
+				.filter(Entry::getValue)
 				.forEach(pair -> {
 					String fqn = pair.getKey();
 					String[] determine = Descriptors.determine(fqn)

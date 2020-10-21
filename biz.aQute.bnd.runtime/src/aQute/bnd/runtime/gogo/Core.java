@@ -131,7 +131,7 @@ public class Core {
 				if (level >= 0) {
 					if (wait) {
 						Semaphore s = new Semaphore(0);
-						fsl.setStartLevel(level, (e) -> {
+						fsl.setStartLevel(level, e -> {
 							s.release();
 						});
 						s.acquire();
@@ -227,7 +227,7 @@ public class Core {
 			try {
 				Bundle older[] = context.getBundles();
 				Semaphore s = new Semaphore(0);
-				fw.refreshBundles(bs, (e) -> {
+				fw.refreshBundles(bs, e -> {
 					if (e.getType() == FrameworkEvent.PACKAGES_REFRESHED) {
 						s.release();
 					}

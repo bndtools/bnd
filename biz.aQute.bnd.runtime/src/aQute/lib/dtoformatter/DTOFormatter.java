@@ -34,7 +34,7 @@ public class DTOFormatter implements ObjectFormatter {
 				System.out.println("?");
 				return null;
 			}
-			zitem().member = (o) -> {
+			zitem().member = o -> {
 				try {
 					return readMethod.invoke(o);
 				} catch (Exception e) {
@@ -45,7 +45,7 @@ public class DTOFormatter implements ObjectFormatter {
 		}
 
 		default ItemBuilder<T> field(Field field) {
-			zitem().member = (o) -> {
+			zitem().member = o -> {
 				try {
 					return field.get(o);
 				} catch (Exception e) {
@@ -77,7 +77,7 @@ public class DTOFormatter implements ObjectFormatter {
 		}
 
 		default DTOFormatterBuilder<T> count() {
-			zitem().format = (base) -> {
+			zitem().format = base -> {
 
 				Object o = zitem().member.apply(base);
 
@@ -135,7 +135,7 @@ public class DTOFormatter implements ObjectFormatter {
 				ItemBuilder<T> b = item(field);
 				Field f = zdto().clazz.getField(field);
 
-				b.zitem().member = (o) -> {
+				b.zitem().member = o -> {
 					try {
 						return f.get(o);
 					} catch (Exception e) {

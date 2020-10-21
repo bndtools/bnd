@@ -96,9 +96,7 @@ public class JARTreePage extends FormPage {
 			return;
 
 		loading = true;
-		JAREditor.background("Reading zip file", monitor -> {
-			return getFolder(uri, monitor);
-		}, (folder) -> {
+		JAREditor.background("Reading zip file", monitor -> getFolder(uri, monitor), folder -> {
 			setFolder(folder);
 			tree.setFormInput(folder);
 		});

@@ -1096,7 +1096,7 @@ public class Launchpad implements AutoCloseable {
 
 			String className = serviceClass.getName();
 
-			ServiceTracker<?, ?> tracker = injectedDoNotClose.computeIfAbsent(serviceClass, (c) -> {
+			ServiceTracker<?, ?> tracker = injectedDoNotClose.computeIfAbsent(serviceClass, c -> {
 				ServiceTracker<?, ?> t = new ServiceTracker<>(framework.getBundleContext(), className, null);
 				t.open(true);
 				return t;

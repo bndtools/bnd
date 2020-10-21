@@ -93,7 +93,7 @@ public class TargetImpl implements ArtifactProvider {
 		return promiseFactory.all(promises)
 			.getValue()
 			.stream()
-			.flatMap(l -> l.stream())
+			.flatMap(List::stream)
 			.collect(Collectors.toList());
 	}
 

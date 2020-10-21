@@ -140,8 +140,8 @@ public class ConfiguredReportGeneratorTest extends TestCase {
 			.setProcessor(processor)
 			.useCustomConfig();
 
-		toRegister.forEach((p) -> b.registerPlugin(p));
-		defaultPlugins.forEach((p) -> b.addPlugin(p));
+		toRegister.forEach(p -> b.registerPlugin(p));
+		defaultPlugins.forEach(p -> b.addPlugin(p));
 
 		return b.build();
 	}
