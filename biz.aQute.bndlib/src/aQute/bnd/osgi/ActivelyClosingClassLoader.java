@@ -213,9 +213,13 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 				if (bundle == null) {
 					throw nfe;
 				}
-				Bundle system = bundle.getBundleContext()
-					.getBundle(0);
-				return system.loadClass(name);
+				try {
+					return bundle.loadClass(name);
+				} catch (ClassNotFoundException anotherNfe) {
+					Bundle system = bundle.getBundleContext()
+						.getBundle(0);
+					return system.loadClass(name);
+				}
 			}
 		} catch (Throwable t) {
 
