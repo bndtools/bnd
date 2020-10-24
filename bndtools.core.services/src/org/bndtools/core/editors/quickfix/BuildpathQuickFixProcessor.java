@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -181,6 +182,10 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			if (qualifiedName.startsWith("java.")) {
 				return;
 			}
+			// Prevent infinite recursion
+			if (!visited.add(binding)) {
+				return;
+			}
 			// A "recovered" type binding indicates the type has not been
 			// fully resolved - usually because it's not on the classpath.
 			if (binding.isRecovered()) {
@@ -229,6 +234,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	private boolean						test;
 	private Workspace					workspace;
 	Map<BundleId, Map<String, Boolean>>	proposals;
+	Set<ITypeBinding>					visited;
 	IProblemLocation					location;
 	final ASTVisitor					TYPE_VISITOR	= new ASTVisitor() {
 															@Override
@@ -259,6 +265,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 		try {
 			this.context = context;
 			proposals = new HashMap<>();
+			visited = new HashSet<>();
 
 			ICompilationUnit compUnit = context.getCompilationUnit();
 			IJavaProject java = compUnit.getJavaProject();
