@@ -10,7 +10,7 @@ aQute.agent.server.port = 29998
 	osgi.core;version=latest;maven-scope=provided,\
     aQute.libg;version=project,\
     biz.aQute.bndlib;version=latest,\
-    org.apache.felix.gogo.runtime;version=latest
+    org.apache.felix.gogo.runtime
 
 -testpath: \
     ${junit},\
