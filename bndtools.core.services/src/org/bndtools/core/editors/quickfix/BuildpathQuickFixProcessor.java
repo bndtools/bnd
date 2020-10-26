@@ -333,7 +333,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 									// This is the bit to the left of the "."
 									Expression leftOfTheDot = ((MethodInvocation) parent).getExpression();
 									if (leftOfTheDot == null) {
-										// this. is implied if there's nothing
+										// "this." is implied if there's nothing
 										// there
 										AbstractTypeDeclaration type = findFirstParentOfType(parent,
 											AbstractTypeDeclaration.class);
@@ -528,10 +528,25 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 		if (typeBinding.getPackage() != null) {
 			final String packageName = typeBinding.getPackage()
 				.getName();
-			doAddProposals(workspace.search(packageName, className.toString()), true);
-		} else {
-			addProposals(className.toString());
+			// If it is a reference to an undefined type that belongs to the
+			// current package, then chances are it is *actually* an unqualified
+			// reference to a class that has not been imported or is not on the
+			// classpath. In this case, we skip the package filter and fall
+			// through to the search based on class name only.
+			//
+			// This implementation is not perfect. It is possible that the
+			// source may include a fully-qualified reference to the class in
+			// the same package, in which case we should include the package in
+			// the search (or maybe even skip the search altogether, as it
+			// should already be on the build path). An optimisation for another
+			// day.
+			if (context.getCompilationUnit()
+				.getPackageDeclaration(packageName) == null) {
+				doAddProposals(workspace.search(packageName, className.toString()), true);
+				return;
+			}
 		}
+		addProposals(className.toString());
 	}
 
 	private void getClassName(ITypeBinding typeBinding, StringBuilder buffer) {

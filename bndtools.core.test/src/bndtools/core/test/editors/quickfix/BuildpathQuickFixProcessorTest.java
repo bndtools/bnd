@@ -912,6 +912,17 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
+	void withMissingMethod_fromUnknownSimpleSuperclass_suggestsBundles() {
+		String header = "package test; class ";
+		String source = header + DEFAULT_CLASS_NAME + " extends MyForeignClass {\n" + "  void myMethod() {"
+			+ "    bMethod();" + "  }" + "}";
+
+		// UnknownMethod is on the method at [73,80]
+		assertThatProposals(proposalsFor(74, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
+	}
+
+	@Test
 	void withMissingSuperMethod_fromClassFromAnotherBundle_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
