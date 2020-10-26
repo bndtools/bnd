@@ -1038,6 +1038,18 @@ public class BuildpathQuickFixProcessorTest {
 	}
 
 	@Test
+	void withUnknownMethod_forRecursiveGenericHierarchy_avoidsStackOverflow() {
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		String header = "package test; import simple.pkg.RecursiveClass; class " + DEFAULT_CLASS_NAME + " {\n"
+			+ "void myMethod() { new RecursiveClass().";
+		source = header + "unknownMethod(); } " + "}";
+
+		// unknownMethod
+		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).isEmpty();
+	}
+
+	@Test
 	void withFQClassLiteral_asAnnotationParameter_suggestsBundles() {
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 
