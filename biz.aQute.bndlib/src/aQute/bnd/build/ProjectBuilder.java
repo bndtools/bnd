@@ -678,9 +678,7 @@ public class ProjectBuilder extends Builder {
 			for (Attrs attrs : e.getValue()) {
 
 				File file = e.getKey();
-				try {
-
-					Run run = Run.createRun(getProject().getWorkspace(), file);
+				try (Run run = Run.createRun(getProject().getWorkspace(), file)) {
 
 					//
 					// History made it that we had an -export instruction and
@@ -736,7 +734,6 @@ public class ProjectBuilder extends Builder {
 								outputFile.getName(), file.getName(), attrs, put);
 						}
 					}
-
 				} catch (Exception ee) {
 					exception(ee, "Failed to export %s, %s", file, ee.getMessage());
 				}
