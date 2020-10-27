@@ -20,10 +20,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageDeclaration;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldAccess;
@@ -112,6 +112,9 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 				return true;
 			case IProblem.TypeMismatch :
 				// System.out.println("TypeMismatch");
+				return true;
+			case IProblem.UndefinedConstructor :
+				// System.out.println("UndefinedConstructor");
 				return true;
 			case IProblem.UndefinedField :
 				// System.out.println("UndefinedField");
@@ -203,14 +206,39 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 		}
 	}
 
+	void visitType(Type node) {
+		if (node == null) {
+			return;
+		}
+		visitBindingHierarchy(node.resolveBinding());
+	}
+
+	void visitTypeDeclaration(TypeDeclaration node) {
+		visitType(node.getSuperclassType());
+		for (Type iface : (List<Type>) node.superInterfaceTypes()) {
+			visitType(iface);
+		}
+	}
+
+	void visitEnclosingTypeDeclaration(ASTNode node) {
+		if (node == null) {
+			return;
+		}
+		TypeDeclaration td = findFirstParentOfType(node, TypeDeclaration.class);
+		if (td != null) {
+			visitTypeDeclaration(td);
+			visitEnclosingTypeDeclaration(td.getParent());
+		}
+	}
+
 	void visitNodeAncestry(ASTNode node) throws Exception {
 		while (node != null) {
 			if (node instanceof Type) {
-				visitBindingHierarchy(((Type) node).resolveBinding());
+				visitType((Type) node);
 				break;
 			}
-			if (node instanceof AbstractTypeDeclaration) {
-				visitBindingHierarchy(((AbstractTypeDeclaration) node).resolveBinding());
+			if (node instanceof TypeDeclaration) {
+				visitTypeDeclaration((TypeDeclaration) node);
 				break;
 			}
 			node = node.getParent();
@@ -302,6 +330,15 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 						node.accept(TYPE_VISITOR);
 						continue;
 					}
+					case IProblem.UndefinedConstructor : {
+						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						// FIXME: This one probably shouldn't traverse down the
+						// inheritance hierarchy - it should only check the
+						// immediate superclass, as constructors are not
+						// virtual.
+						visitEnclosingTypeDeclaration(node);
+						continue;
+					}
 					case IProblem.UndefinedField : {
 						ASTNode node = location.getCoveredNode(context.getASTRoot());
 						ASTNode parent = node.getParent();
@@ -322,9 +359,11 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 									break;
 								}
 								case ASTNode.SUPER_FIELD_ACCESS : {
-									AbstractTypeDeclaration type = findFirstParentOfType(parent,
-										AbstractTypeDeclaration.class);
-									visitBindingHierarchy(type.resolveBinding());
+									visitEnclosingTypeDeclaration(parent);
+									// AbstractTypeDeclaration type =
+									// findFirstParentOfType(parent,
+									// AbstractTypeDeclaration.class);
+									// visitBindingHierarchy(type.resolveBinding());
 									break;
 								}
 							}
@@ -342,9 +381,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 									if (leftOfTheDot == null) {
 										// "this." is implied if there's nothing
 										// there
-										AbstractTypeDeclaration type = findFirstParentOfType(parent,
-											AbstractTypeDeclaration.class);
-										visitBindingHierarchy(type.resolveBinding());
+										visitEnclosingTypeDeclaration(parent);
 									} else {
 										visitExpressionHierarchy(leftOfTheDot);
 									}
@@ -401,21 +438,26 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 						}
 						continue;
 					}
-					// An undefined name can be a static reference to a method
-					// of a missing type, eg FrameworkUtil.getBundleContext()
+					// An undefined name can be:
+					// 1. a static reference to a method of a missing type, eg
+					// FrameworkUtil.getBundleContext()
 					// if FrameworkUtil is not on the classpath.
+					// 2. a reference to the field of a missing superclass
 					case IProblem.UndefinedName : {
 						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						visitEnclosingTypeDeclaration(node);
 						String partialClassName = getPartialClassName(node);
 						if (partialClassName != null) {
 							addProposals(partialClassName);
 						}
 						continue;
 					}
-					// An unresolved variable can be a static reference to a
-					// field of a missing type.
+					// An unresolved variable can be:
+					// 1. a static reference to a field of a missing type;
+					// 2. a reference to a field of a missing supertype
 					case IProblem.UnresolvedVariable : {
 						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						visitEnclosingTypeDeclaration(node);
 						addProposals(getCoveringName(node));
 						continue;
 					}
@@ -530,10 +572,11 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 		if (typeBinding == null) {
 			throw new NullPointerException();
 		}
+		final ITypeBinding erasure = typeBinding.getErasure();
 		final StringBuilder className = new StringBuilder(128);
-		getClassName(typeBinding, className);
-		if (typeBinding.getPackage() != null) {
-			final String packageName = typeBinding.getPackage()
+		getClassName(erasure, className);
+		if (erasure.getPackage() != null) {
+			final String packageName = erasure.getPackage()
 				.getName();
 			// If it is a reference to an undefined type that belongs to the
 			// current package, then chances are it is *actually* an unqualified
@@ -547,8 +590,16 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			// the search (or maybe even skip the search altogether, as it
 			// should already be on the build path). An optimisation for another
 			// day.
-			if (context.getCompilationUnit()
-				.getPackageDeclaration(packageName) == null) {
+			//
+			// Note that ICompilationUnit.getPackageDeclaration(String) doesn't
+			// quite seem to behave as advertised - it can actually create a
+			// package definitition. Hence this alternative that streams over
+			// the available package declarations instead.
+			if (!Stream.of(context.getCompilationUnit()
+				.getPackageDeclarations())
+				.filter(Objects::nonNull)
+				.map(IPackageDeclaration::getElementName)
+				.anyMatch(packageName::equals)) {
 				doAddProposals(workspace.search(packageName, className.toString()), true);
 				return;
 			}

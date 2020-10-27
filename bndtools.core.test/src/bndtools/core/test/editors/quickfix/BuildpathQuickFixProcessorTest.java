@@ -8,6 +8,7 @@ import static org.eclipse.jdt.core.compiler.IProblem.ImportNotFound;
 import static org.eclipse.jdt.core.compiler.IProblem.IsClassPathCorrect;
 import static org.eclipse.jdt.core.compiler.IProblem.ParameterMismatch;
 import static org.eclipse.jdt.core.compiler.IProblem.TypeMismatch;
+import static org.eclipse.jdt.core.compiler.IProblem.UndefinedConstructor;
 import static org.eclipse.jdt.core.compiler.IProblem.UndefinedField;
 import static org.eclipse.jdt.core.compiler.IProblem.UndefinedMethod;
 import static org.eclipse.jdt.core.compiler.IProblem.UndefinedName;
@@ -508,7 +509,7 @@ public class BuildpathQuickFixProcessorTest {
 
 	static final Set<Integer> SUPPORTED = Stream
 		.of(ImportNotFound, UndefinedType, IsClassPathCorrect, HierarchyHasProblems, ParameterMismatch, TypeMismatch,
-			UndefinedField, UndefinedMethod, UndefinedName, UnresolvedVariable)
+			UndefinedConstructor, UndefinedField, UndefinedMethod, UndefinedName, UnresolvedVariable)
 		.collect(Collectors.toSet());
 
 	// This is just to give nice error feedback
@@ -1045,8 +1046,52 @@ public class BuildpathQuickFixProcessorTest {
 			+ "void myMethod() { new RecursiveClass().";
 		source = header + "unknownMethod(); } " + "}";
 
-		// unknownMethod
 		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).isEmpty();
+	}
+
+	// Due to the recursion Eclipse doesn't resolve the superclass binding
+	// properly and instead returns
+	// the type binding for java.lang.Object. These test for that case.
+	@Test
+	void withInconsistentHierarchy_forRecursive_suggestsBundles() {
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		source = "package test; class Test extends simple.pkg.ClassExtendingForeignRecursiveClass<Test> {\n"
+			+ "String myMethod() { \n" + "  field.length();" + "  method();" + "  return field;" + "}" + "}";
+
+		// HierarchyHasProblems on "Test"
+		assertThatProposals(proposalsFor(20 + 1, 0, source)).haveExactly(1, suggestsBundle(
+			"bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
+		// UnknownName on "field.length()"
+		assertThatProposals(proposalsFor(111 + 1, 0, source)).haveExactly(1, suggestsBundle(
+			"bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
+		// UnknownMethod on "method()"
+		assertThatProposals(proposalsFor(128 + 1, 0, source)).haveExactly(1, suggestsBundle(
+			"bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
+		// UnknownField on "return field"
+		assertThatProposals(proposalsFor(146 + 1, 0, source)).haveExactly(1, suggestsBundle(
+			"bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
+	}
+
+	@Test
+	void withInconsistentSuperclassHierarchy_forRecursive_suggestsBundles() {
+		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
+
+		source = "package test; class Test extends simple.pkg.GrandchildOfForeignRecursiveClass<Test> {\n"
+			+ "String myMethod() { \n" + "  field.length();" + "  method();" + "  return field;" + "}" + "}";
+
+		// HierarchyHasProblems on "Test"
+		assertThatProposals(proposalsFor(20 + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
+		// UnknownName on "field.length()"
+		assertThatProposals(proposalsFor(109 + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
+		// UnknownMethod on "method()"
+		assertThatProposals(proposalsFor(126 + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
+		// UnknownField on "return field"
+		assertThatProposals(proposalsFor(144 + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
 	}
 
 	@Test
