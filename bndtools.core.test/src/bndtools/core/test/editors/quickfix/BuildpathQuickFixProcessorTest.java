@@ -34,7 +34,8 @@ import java.util.stream.Stream;
 import org.assertj.core.api.Condition;
 import org.assertj.core.api.ProxyableObjectArrayAssert;
 import org.assertj.core.api.SoftAssertions;
-import org.assertj.core.api.junit.jupiter.SoftlyExtension;
+import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.assertj.core.presentation.Representation;
 import org.assertj.core.presentation.StandardRepresentation;
 import org.eclipse.core.resources.IFolder;
@@ -85,7 +86,7 @@ import bndtools.core.test.utils.WorkbenchTest;
 import bndtools.core.test.utils.WorkspaceImporter;
 
 //@Disabled("Currently disabled due to startup flakiness, see https://github.com/bndtools/bnd/issues/4253")
-@ExtendWith(SoftlyExtension.class)
+@ExtendWith(SoftAssertionsExtension.class)
 @WorkbenchTest
 public class BuildpathQuickFixProcessorTest {
 	static IPackageFragment						pack;
@@ -95,6 +96,7 @@ public class BuildpathQuickFixProcessorTest {
 	static WorkspaceImporter					importer;
 
 	// Will be injected by SoftlyExtension
+	@InjectSoftAssertions
 	SoftAssertions								softly;
 	IQuickFixProcessor							sut;
 

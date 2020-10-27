@@ -461,4 +461,9 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 		Class<ACTUAL> actualClass, ACTUAL actual) {
 		return softly.proxy(assertClass, actualClass, actual);
 	}
+
+	@Override
+	public void succeeded() {
+		softly.succeeded();
+	}
 }
