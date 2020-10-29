@@ -18,7 +18,6 @@
  *       }
  *       transitive false
  *     }
- *   }
  * }
  * tasks.register('baseline', Baseline) {
  *   bundle jar
