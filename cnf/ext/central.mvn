@@ -148,3 +148,4 @@ org.apache.maven:maven-plugin-api:${maven.target.version}
 org.apache.maven:maven-repository-metadata:${maven.target.version}
 org.apache.maven:maven-settings:${maven.target.version}
 org.eclipse.aether:aether-api:${aether.version}
+com.github.curious-odd-man:rgxgen:1.2

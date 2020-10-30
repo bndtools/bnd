@@ -77,7 +77,9 @@ Import-Package: \
 	org.osgi.util.promise;version=latest,\
 	aQute.libg;version=project, \
 	biz.aQute.bnd.annotation;version=project,\
-	slf4j.api;version=latest;maven-scope=compile
+	slf4j.api;version=latest;maven-scope=compile,\
+	com.github.curious-odd-man:rgxgen
+	
 
 -testpath: \
     ${junit},\

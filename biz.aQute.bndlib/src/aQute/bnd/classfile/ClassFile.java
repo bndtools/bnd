@@ -1,11 +1,20 @@
 package aQute.bnd.classfile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.function.Function;
 
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferDataOutput;
@@ -108,6 +117,10 @@ public class ClassFile extends ElementInfo {
 		return class_file;
 	}
 
+	public static ClassFile parseInputStream(InputStream in) throws IOException {
+		return parseClassFile(new DataInputStream(in));
+	}
+
 	public void write(DataOutput out) throws IOException {
 		ByteBufferDataOutput bbout = new ByteBufferDataOutput();
 
@@ -153,4 +166,28 @@ public class ClassFile extends ElementInfo {
 		in.readFully(array, 0, length);
 		return ByteBuffer.wrap(array, 0, length);
 	}
+
+	public byte[] toBytes() throws IOException {
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		DataOutputStream dout = new DataOutputStream(bout);
+		write(dout);
+		return bout.toByteArray();
+	}
+
+	public static ClassFile parseFile(File file) throws FileNotFoundException, IOException {
+		return parseInputStream(new FileInputStream(file));
+	}
+
+	/**
+	 * Rename classes referenced in this class file by their binary name. This
+	 * will change all attributes, and references that refer to class names. The
+	 * mapper must also be useful for the optional `.class` suffix used for
+	 * class paths.
+	 *
+	 * @param mapper maps a binary class name to either null or a different name
+	 */
+	public Optional<ClassFile> rename(Function<String, String> mapper) {
+		return ClassFileRenamer.rename(this,mapper);
+	}
+
 }

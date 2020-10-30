@@ -153,6 +153,10 @@ public class Builder extends Analyzer {
 
 		doPom(dot);
 
+		Parameters shade = new Parameters(mergeProperties(Constants.SHADE));
+		if (!shade.isEmpty())
+			Shader.shade(dot, shade, new BundleId(getBsn(), getVersion()));
+
 		if (!isNoBundle())
 			doVerify(dot);
 
