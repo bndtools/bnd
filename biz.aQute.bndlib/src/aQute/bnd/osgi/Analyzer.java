@@ -1759,7 +1759,7 @@ public class Analyzer extends Processor {
 	@Override
 	public Jar getJarFromName(String name, String from) {
 		Jar j = super.getJarFromName(name, from);
-		Glob g = new Glob(name);
+		Glob g = new Glob(name.replaceAll("\\\\", "\\\\"));
 		if (j == null) {
 			for (Jar entry : getClasspath()) {
 				if (entry.getSource() == null)
@@ -1780,7 +1780,7 @@ public class Analyzer extends Processor {
 		if (j != null)
 			return Collections.singletonList(j);
 
-		Glob g = new Glob(name);
+		Glob g = new Glob(name.replaceAll("\\\\", "\\\\"));
 		List<Jar> result = new ArrayList<>();
 		for (Jar entry : getClasspath()) {
 			if (entry.getSource() == null)
