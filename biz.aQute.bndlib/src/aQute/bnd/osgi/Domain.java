@@ -545,7 +545,7 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public String getBundleDocURL() {
-		return get(Constants.BUNDLE_COPYRIGHT);
+		return get(Constants.BUNDLE_DOCURL);
 	}
 
 	public String getBundleVendor() {
