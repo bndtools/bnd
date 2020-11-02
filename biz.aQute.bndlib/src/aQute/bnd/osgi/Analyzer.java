@@ -1758,41 +1758,28 @@ public class Analyzer extends Processor {
 	 */
 	@Override
 	public Jar getJarFromName(String name, String from) {
-		Jar j = super.getJarFromName(name, from);
-		Glob g = new Glob(name);
-		if (j == null) {
-			for (Jar entry : getClasspath()) {
-				if (entry.getSource() == null)
-					continue;
-
-				if (g.matcher(entry.getSource()
-					.getName())
-					.matches()) {
-					return entry;
-				}
-			}
-		}
-		return j;
+		return jarsFromName(name, from).findFirst()
+			.orElse(null);
 	}
 
 	public List<Jar> getJarsFromName(String name, String from) {
+		return jarsFromName(name, from).collect(toList());
+	}
+
+	private Stream<Jar> jarsFromName(String name, String from) {
 		Jar j = super.getJarFromName(name, from);
-		if (j != null)
-			return Collections.singletonList(j);
-
-		Glob g = new Glob(name);
-		List<Jar> result = new ArrayList<>();
-		for (Jar entry : getClasspath()) {
-			if (entry.getSource() == null)
-				continue;
-
-			if (g.matcher(entry.getSource()
-				.getName())
-				.matches()) {
-				result.add(entry);
-			}
+		if (j != null) {
+			return Stream.of(j);
 		}
-		return result;
+		// This may be a -classpath entry on Windows,
+		// so we normalize to avoid regex failure with backslash.
+		// Since we only match against a file name, the change
+		// from backslash to slash won't matter.
+		Glob g = new Glob(IO.normalizePath(name));
+
+		return getClasspath().stream()
+			.filter(entry -> (entry.getSource() != null) && g.matches(entry.getSource()
+				.getName()));
 	}
 
 	private void merge(Manifest result, Manifest old) {

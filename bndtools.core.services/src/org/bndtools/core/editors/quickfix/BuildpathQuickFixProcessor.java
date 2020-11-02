@@ -215,7 +215,9 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 
 	void visitTypeDeclaration(TypeDeclaration node) {
 		visitType(node.getSuperclassType());
-		for (Type iface : (List<Type>) node.superInterfaceTypes()) {
+		@SuppressWarnings("unchecked")
+		List<Type> superInterfaceTypes = node.superInterfaceTypes();
+		for (Type iface : superInterfaceTypes) {
 			visitType(iface);
 		}
 	}
