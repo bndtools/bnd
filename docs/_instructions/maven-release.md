@@ -12,7 +12,7 @@ Though this instruction is not specific for a plugin, it was developed in conjun
 
     -maven-release ::= ( 'local'|'remote' ( ';' snapshot )? ) ( ',' option )*
     snapshot       ::= <value to be used for timestamp>
-    option         ::= sources | javadoc | pom
+    option         ::= sources | javadoc | pom | sign
     sources        ::= 'sources' 
                        ( ';path=' ( 'NONE' | PATH ) )?
                        ( ';-sourcepath=' PATH ( ',' PATH )* )?
@@ -23,8 +23,10 @@ Though this instruction is not specific for a plugin, it was developed in conjun
     javadoc-option ::= '-' NAME '=' VALUE
     pom            ::= 'pom'
                        ( ';path=' ( 'JAR' | PATH ) )?
+    sign            ::= 'sign'
+                       ( ';passphrase=' VALUE )?
 
-The `aQute.maven.bnd.MavenBndRepository` is a bnd plugin that represent the local and a remote Maven repository.The locations of both repositories can be configured. The local repository is always used as a cache for the remote repository.
+The `aQute.maven.bnd.MavenBndRepository` is a bnd plugin that represent the local and a remote Maven repository. The locations of both repositories can be configured. The local repository is always used as a cache for the remote repository.
 
 The repository has the following parameters:
 
@@ -35,5 +37,21 @@ The repository has the following parameters:
 * `name` – The name of the repository
 
 If the Maven Bnd Repository is asked to put a file, it will look up the `-maven-release` instruction using merged properties. The property is looked up from the bnd file that built the artifact. However, it should in general be possible to define this header in the workspace using macros like `${project}` to specify relative paths.
+
+# Signing
+
+If the instruction contains the sign attribute  and release build is detected the repository tries to apply [gnupg](https://gnupg.org/) via a command process to create `.asc` files for all deployed artifacts. This requires a Version of [gnupg](https://gnupg.org/) installed on your build system. By default it uses the `gpg` command. If the `passphrase` is configured, it will hand it over to the command as standard input. The command will be constructed as follows: `gpg --batch --passphrase-fd 0 --output <filetosign>.asc --detach-sign --armor <filetosign>`. Some newer gnupg versions will ignore the passphrase via standard input for the first try and ask again with password screen. This will crash the process. Have a look [here](https://stackoverflow.com/questions/19895122/how-to-use-gnupgs-passphrase-fd-argument) to teach gnupg otherwise. The command can be exchanged or amended with additional options by defining a property named `gpg` in your workspace (e.g. `build.bnd` or somewhere in the ext directory).
+
+Example config could look like:
+
+```
+# use the env macro to avoid to set the passphrase somehwere in your project
+-maven-release: pom,sign;passphrase=${env;GNUPG_PASSPHRASE}
+gpg: gpg --homedir /mnt/n/tmp/gpg/.gnupg --pinentry-mode loopback
+```
+
+
+
+ 
 
 [1]: /plugins/maven
