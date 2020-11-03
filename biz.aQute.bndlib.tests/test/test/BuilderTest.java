@@ -364,7 +364,8 @@ public class BuilderTest {
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.setPrivatePackage("!org.osgi.service.event,org.osgi.service.*");
 		b.build();
-		assertTrue(b.check());
+		assertTrue(b.check(
+			"Import Package clauses without version range: \\[javax.servlet, javax.microedition.io, javax.servlet.http\\]"));
 	}
 
 	/*
