@@ -163,13 +163,12 @@ class Releaser implements Release {
 				sign(archive, f);
 			uploadAll(iterator);
 		} catch (Exception e) {
+			MavenRepository.logger.error("something went wrong during upload", e);
 			try {
 				repo.delete(archive.remotePath);
 			} catch (Exception ee) {
-				// We ignore this one, best effort, but need to throw the
-				// original
-				throw e;
 			}
+			throw e;
 		}
 	}
 
@@ -177,7 +176,8 @@ class Releaser implements Release {
 		if (passphrase == null)
 			return;
 
-		File sign = new File(archive.localPath + ".asc");
+		File sign = new File(home.toLocalFile(archive.localPath)
+			.getAbsolutePath() + ".asc");
 		int result = Signer.sign(f, context.getProperty("gpg", "gpg"), passphrase.equals("DEFAULT") ? null : passphrase,
 			sign);
 		if (result == 0) {

@@ -70,9 +70,8 @@ public class Signer {
 	 */
 	public static int sign(File f, String cmdName, String key, String passphrase, File output) throws Exception {
 
-		Command cmd = new Command();
+		Command cmd = new Command(cmdName);
 
-		cmd.add(cmdName);
 		cmd.add("--batch");
 
 		if (key != null) {
