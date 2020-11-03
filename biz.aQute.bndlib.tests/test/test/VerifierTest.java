@@ -203,7 +203,7 @@ public class VerifierTest extends TestCase {
 				"\\QImport Package org.osgi.framework has an invalid version range syntax ${range;[==,+)}\\E",
 				"\\QNo translation found for macro: range;[==,+)\\E",
 				"\\QExport-Package or -exportcontents refers to missing package 'org.osgi.service.eventadmin'\\E",
-				"Import Package clauses without version range \\(excluding javax\\.\\*\\):",
+				"Import Package clauses without version range:",
 				"Import Package bar has an invalid version range syntax \\[1,x2\\)",
 				"Import Package baz2 has an empty version range syntax \\(1,1\\), likely want to use \\[1.0.0,1.0.0\\]",
 				"Import Package baz has an invalid version range syntax \\[2,1\\): Low Range is higher than High Range: 2.0.0-1.0.0",

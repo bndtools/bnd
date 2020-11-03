@@ -773,7 +773,7 @@ public class BndrunResolveContextTest extends TestCase {
 		BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
 
 		Requirement req = new CapReqBuilder("osgi.wiring.package")
-			.addDirective("filter", "(osgi.wiring.package=sun.reflect)")
+			.addDirective("filter", "(osgi.wiring.package=sun.nio)")
 			.buildSyntheticRequirement();
 		List<Capability> providers = context.findProviders(req);
 
@@ -787,12 +787,12 @@ public class BndrunResolveContextTest extends TestCase {
 		BndEditModel runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework");
 		runModel.setEE(EE.JavaSE_1_6);
-		runModel.setSystemPackages(Collections.singletonList(new ExportedPackage("sun.reflect", new Attrs())));
+		runModel.setSystemPackages(Collections.singletonList(new ExportedPackage("sun.nio", new Attrs())));
 
 		BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
 
 		Requirement req = new CapReqBuilder("osgi.wiring.package")
-			.addDirective("filter", "(osgi.wiring.package=sun.reflect)")
+			.addDirective("filter", "(osgi.wiring.package=sun.nio)")
 			.buildSyntheticRequirement();
 		List<Capability> providers = context.findProviders(req);
 

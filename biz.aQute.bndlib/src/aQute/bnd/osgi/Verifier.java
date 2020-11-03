@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
@@ -720,6 +721,10 @@ public class Verifier extends Processor {
 			Set<String> noimports = new HashSet<>();
 			Set<String> toobroadimports = new HashSet<>();
 
+			Parameters eePackages = Optional.ofNullable(analyzer.getHighestEE())
+				.map(ee -> EE.parse(ee.getEE()))
+				.map(EE::getPackages)
+				.orElseGet(Parameters::new);
 			for (Entry<String, Attrs> e : map.entrySet()) {
 
 				String key = Processor.removeDuplicateMarker(e.getKey());
@@ -734,7 +739,7 @@ public class Verifier extends Processor {
 				String version = e.getValue()
 					.get(Constants.VERSION_ATTRIBUTE);
 				if (version == null) {
-					if (!key.startsWith("javax.")) {
+					if (!eePackages.containsKey(key)) {
 						noimports.add(key);
 					}
 				} else {
@@ -771,7 +776,7 @@ public class Verifier extends Processor {
 			}
 
 			if (!noimports.isEmpty()) {
-				Location location = error("Import Package clauses without version range (excluding javax.*): %s",
+				Location location = error("Import Package clauses without version range: %s",
 					noimports).location();
 				location.header = Constants.IMPORT_PACKAGE;
 			}
