@@ -98,4 +98,9 @@ public class LocalVariableTypeTableAttribute implements Attribute {
 			return 5 * Short.BYTES;
 		}
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.LocalVariableTypeTable;
+	}
 }

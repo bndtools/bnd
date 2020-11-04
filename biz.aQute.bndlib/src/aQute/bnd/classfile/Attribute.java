@@ -12,6 +12,54 @@ import aQute.lib.io.LimitedDataInput;
 
 @ProviderType
 public interface Attribute {
+
+	@ProviderType
+	enum AttributeTag {
+		Unrecognized(UnrecognizedAttribute.class), //
+		Preview(Attribute.class), //
+		AnnotationDefault(AnnotationDefaultAttribute.class), //
+		BootstraMethods(BootstrapMethodsAttribute.class), //
+		Code(CodeAttribute.class), //
+		ConstantValue(ConstantValueAttribute.class),
+		Deprecated(DeprecatedAttribute.class),
+		EnclosingMethod(EnclosingMethodAttribute.class),
+		Exceptions(ExceptionsAttribute.class),
+		InnerClasses(InnerClassesAttribute.class), //
+		LineNumberTable(LineNumberTableAttribute.class),
+		LocalVariableTable(LocalVariableTableAttribute.class), //
+		LocalVariableTypeTable(LocalVariableTypeTableAttribute.class), //
+		MethodParameters(MethodParametersAttribute.class), //
+		Module(ModuleAttribute.class), //
+		ModuleMainClass(ModuleMainClassAttribute.class),
+		ModulePackages(ModulePackagesAttribute.class), //
+		NestHost(NestHostAttribute.class), //
+		NestMembers(NestMembersAttribute.class), //
+		RuntimeInvisibleAnnotations(RuntimeInvisibleAnnotationsAttribute.class), //
+		RuntimeInvisibleParameterAnnotations(RuntimeInvisibleParameterAnnotationsAttribute.class), //
+		RuntimeInvisibleTypeAnnotations(RuntimeInvisibleTypeAnnotationsAttribute.class), //
+		RuntimeVisibleAnnotations(RuntimeVisibleAnnotationsAttribute.class), //
+		RuntimeVisibleParameterAnnotations(RuntimeVisibleParameterAnnotationsAttribute.class), //
+		RuntimeVisibleTypeAnnotations(RuntimeVisibleTypeAnnotationsAttribute.class), //
+		Signature(SignatureAttribute.class), //
+		SourceDebugExtension(SourceDebugExtensionAttribute.class), //
+		SourceFile(SourceFileAttribute.class), //
+		StackMapTable(StackMapTableAttribute.class), //
+		Synthetic(SyntheticAttribute.class);
+
+		public Class<? extends Attribute> clazz;
+
+		AttributeTag(Class<? extends Attribute> clazz) {
+			this.clazz = clazz;
+		}
+
+		@SuppressWarnings("unchecked")
+		public <T extends Attribute> T cast(Attribute attr) {
+			return (T) clazz.cast(attr);
+		}
+	}
+
+	AttributeTag tag();
+
 	String name();
 
 	void write(DataOutput out, ConstantPool constant_pool) throws IOException;

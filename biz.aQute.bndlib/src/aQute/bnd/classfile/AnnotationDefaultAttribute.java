@@ -41,4 +41,9 @@ public class AnnotationDefaultAttribute implements Attribute {
 		int attribute_length = ElementValueInfo.value_length(value);
 		return attribute_length;
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.AnnotationDefault;
+	}
 }

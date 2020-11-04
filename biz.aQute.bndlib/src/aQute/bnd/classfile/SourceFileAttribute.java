@@ -42,4 +42,10 @@ public class SourceFileAttribute implements Attribute {
 		int attribute_length = 1 * Short.BYTES;
 		return attribute_length;
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.SourceFile;
+	}
+
 }

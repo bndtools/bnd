@@ -19,4 +19,10 @@ public class RuntimeVisibleTypeAnnotationsAttribute extends TypeAnnotationsAttri
 		throws IOException {
 		return read(in, constant_pool, RuntimeVisibleTypeAnnotationsAttribute::new);
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.RuntimeVisibleTypeAnnotations;
+	}
+
 }

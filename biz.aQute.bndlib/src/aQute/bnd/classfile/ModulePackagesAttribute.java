@@ -51,4 +51,9 @@ public class ModulePackagesAttribute implements Attribute {
 		int attribute_length = (1 + packages.length) * Short.BYTES;
 		return attribute_length;
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.ModulePackages;
+	}
 }

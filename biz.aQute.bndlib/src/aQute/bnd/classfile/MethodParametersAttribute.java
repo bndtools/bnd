@@ -84,4 +84,9 @@ public class MethodParametersAttribute implements Attribute {
 			return 2 * Short.BYTES;
 		}
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.MethodParameters;
+	}
 }

@@ -98,4 +98,9 @@ public class InnerClassesAttribute implements Attribute {
 			return 4 * Short.BYTES;
 		}
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.InnerClasses;
+	}
 }

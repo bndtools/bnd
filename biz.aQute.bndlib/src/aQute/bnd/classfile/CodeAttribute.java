@@ -118,4 +118,9 @@ public class CodeAttribute implements Attribute {
 			return 4 * Short.BYTES;
 		}
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.Code;
+	}
 }

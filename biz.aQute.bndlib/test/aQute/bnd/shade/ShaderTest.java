@@ -1,4 +1,4 @@
-package aQute.bnd.classfile;
+package aQute.bnd.shade;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,7 +14,8 @@ import java.util.Optional;
 
 import org.junit.Test;
 
-import aQute.bnd.classfile.ConstantPool.EntryVisitor;
+import aQute.bnd.classfile.ClassFile;
+import aQute.bnd.classfile.renamer.ClassFileRenamer;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Clazz;
@@ -98,7 +99,7 @@ public class ShaderTest {
 		System.out.println(input.toString()
 			.replace(',', '\n'));
 
-		Optional<ClassFile> rename = input.rename(name -> {
+		Optional<ClassFile> rename = ClassFileRenamer.rename(input, name -> {
 			if (name.startsWith("aQute/bnd/shade/")) {
 				name = "foo" + name.substring(15);
 				System.out.println(name);
@@ -114,8 +115,8 @@ public class ShaderTest {
 	@Test
 	public void testRecordAttribute() throws Exception {
 		try (InputStream stream = IO.stream(new File("testresources/record/MinMax.class"))) {
-			ClassFile clazz = ClassFile.parseClassFile(new DataInputStream(stream))
-				.rename(s -> {
+			ClassFile cf = ClassFile.parseClassFile(new DataInputStream(stream));
+			ClassFile clazz = ClassFileRenamer.rename(cf, s -> {
 					if (s.startsWith("java/lang/"))
 						return "foo" + s.substring(9);
 					return s;
@@ -123,12 +124,8 @@ public class ShaderTest {
 				.get();
 			assertThat(clazz.major_version).isGreaterThanOrEqualTo(Clazz.JAVA.OpenJDK15.getMajor());
 
-			clazz.constant_pool.accept(new EntryVisitor() {
-				@Override
-				public void visit(int index, String string) {
-					assertThat(string).doesNotContain("java/lang/Object");
-				}
-			});
+			assertThat(clazz.constant_pool.stream()
+				.anyMatch("java/lang/Object"::equals)).isFalse();
 		}
 	}
 

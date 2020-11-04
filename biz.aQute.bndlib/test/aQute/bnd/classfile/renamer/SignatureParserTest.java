@@ -1,4 +1,4 @@
-package aQute.bnd.classfile;
+package aQute.bnd.classfile.renamer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,8 +14,8 @@ import org.junit.Test;
 
 import com.github.curiousoddman.rgxgen.RgxGen;
 
-import aQute.bnd.classfile.ClassFileRenamer.SignatureParser;
-import aQute.bnd.classfile.ClassFileRenamer.SignatureRenamer;
+import aQute.bnd.classfile.renamer.ClassFileRenamer.SignatureParser;
+import aQute.bnd.classfile.renamer.ClassFileRenamer.SignatureRenamer;
 import aQute.lib.io.IO;
 
 public class SignatureParserTest {

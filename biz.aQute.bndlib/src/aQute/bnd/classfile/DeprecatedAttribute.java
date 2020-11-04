@@ -36,4 +36,9 @@ public class DeprecatedAttribute implements Attribute {
 		int attribute_length = 0;
 		return attribute_length;
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.Deprecated;
+	}
 }

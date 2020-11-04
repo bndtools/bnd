@@ -90,4 +90,9 @@ public class BootstrapMethodsAttribute implements Attribute {
 			return (2 + bootstrap_arguments.length) * Short.BYTES;
 		}
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.BootstraMethods;
+	}
 }

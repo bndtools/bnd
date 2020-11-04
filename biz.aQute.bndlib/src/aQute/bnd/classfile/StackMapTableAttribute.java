@@ -462,4 +462,10 @@ public class StackMapTableAttribute implements Attribute {
 			return 1 * Byte.BYTES + 1 * Short.BYTES;
 		}
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.StackMapTable;
+	}
+
 }

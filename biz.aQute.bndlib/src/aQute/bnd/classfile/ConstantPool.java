@@ -5,42 +5,130 @@ import static java.util.Objects.requireNonNull;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.osgi.annotation.versioning.ProviderType;
 
-import aQute.bnd.classfile.preview.PermittedSubclassesAttribute;
-import aQute.bnd.classfile.preview.RecordAttribute;
-
 public class ConstantPool implements Iterable<Object> {
-	public static final int				CONSTANT_Utf8				= 1;
-	public static final int				CONSTANT_Integer			= 3;
-	public static final int				CONSTANT_Float				= 4;
-	public static final int				CONSTANT_Long				= 5;
-	public static final int				CONSTANT_Double				= 6;
-	public static final int				CONSTANT_Class				= 7;
-	public static final int				CONSTANT_String				= 8;
-	public static final int				CONSTANT_Fieldref			= 9;
-	public static final int				CONSTANT_Methodref			= 10;
-	public static final int				CONSTANT_InterfaceMethodref	= 11;
-	public static final int				CONSTANT_NameAndType		= 12;
-	public static final int				CONSTANT_MethodHandle		= 15;
-	public static final int				CONSTANT_MethodType			= 16;
-	public static final int				CONSTANT_Dynamic			= 17;
-	public static final int				CONSTANT_InvokeDynamic		= 18;
-	public static final int				CONSTANT_Module				= 19;
-	public static final int				CONSTANT_Package			= 20;
 
-	private static final Attribute[]	EMMPTY_ATTRIBUTES			= new Attribute[0];
+	public static final int	CONSTANT_Utf8				= 1;
+	public static final int	CONSTANT_Integer			= 3;
+	public static final int	CONSTANT_Float				= 4;
+	public static final int	CONSTANT_Long				= 5;
+	public static final int	CONSTANT_Double				= 6;
+	public static final int	CONSTANT_Class				= 7;
+	public static final int	CONSTANT_String				= 8;
+	public static final int	CONSTANT_Fieldref			= 9;
+	public static final int	CONSTANT_Methodref			= 10;
+	public static final int	CONSTANT_InterfaceMethodref	= 11;
+	public static final int	CONSTANT_NameAndType		= 12;
+	public static final int	CONSTANT_MethodHandle		= 15;
+	public static final int	CONSTANT_MethodType			= 16;
+	public static final int	CONSTANT_Dynamic			= 17;
+	public static final int	CONSTANT_InvokeDynamic		= 18;
+	public static final int	CONSTANT_Module				= 19;
+	public static final int	CONSTANT_Package			= 20;
 
-	final Object[]						pool;
+	public enum InfoTag {
+
+		Utf8(CONSTANT_Utf8, String.class), //
+		Integer(CONSTANT_Integer, Integer.class), // ;
+		Float(CONSTANT_Float, Float.class), //
+		Long(CONSTANT_Long, Long.class), //
+		Double(CONSTANT_Double, Double.class), //
+		Class(CONSTANT_Class, ClassInfo.class),
+		String(CONSTANT_String, StringInfo.class), //
+		Fieldref(CONSTANT_Fieldref, FieldrefInfo.class), //
+		Methodref(CONSTANT_Methodref, MethodrefInfo.class), //
+		InterfaceMethodRef(CONSTANT_InterfaceMethodref, InterfaceMethodrefInfo.class), //
+		NameAndType(CONSTANT_NameAndType, NameAndTypeInfo.class), //
+		MethodHandle(CONSTANT_MethodHandle, MethodHandleInfo.class), //
+		MethodType(CONSTANT_MethodType, MethodTypeInfo.class),
+		Dynamic(CONSTANT_Dynamic, DynamicInfo.class), //
+		InvokeDynamic(CONSTANT_InvokeDynamic, InvokeDynamicInfo.class), //
+		Module(CONSTANT_Module, ModuleInfo.class), //
+		Package(CONSTANT_Package, PackageInfo.class);
+
+		public int					tag;
+		public java.lang.Class<?>	clazz;
+
+		InfoTag(int tag, Class<?> clazz) {
+			this.tag = tag;
+			this.clazz = clazz;
+		}
+
+		public static InfoTag tag(int tag) {
+			switch (tag) {
+				case CONSTANT_Utf8 :
+					return Utf8;
+				case CONSTANT_Integer :
+					return Integer;
+				case CONSTANT_Float :
+					return Float;
+				case CONSTANT_Long :
+					return Long;
+				case CONSTANT_Double :
+					return Double;
+				case CONSTANT_Class :
+					return Class;
+				case CONSTANT_String :
+					return String;
+				case CONSTANT_Fieldref :
+					return Fieldref;
+				case CONSTANT_Methodref :
+					return Methodref;
+				case CONSTANT_InterfaceMethodref :
+					return InterfaceMethodRef;
+				case CONSTANT_NameAndType :
+					return NameAndType;
+				case CONSTANT_MethodHandle :
+					return MethodHandle;
+				case CONSTANT_MethodType :
+					return MethodType;
+				case CONSTANT_Dynamic :
+					return Dynamic;
+				case CONSTANT_InvokeDynamic :
+					return InvokeDynamic;
+				case CONSTANT_Module :
+					return Module;
+				case CONSTANT_Package :
+					return Package;
+
+				// no default to get warning when tag gets expanded
+			}
+			return null;
+		}
+
+		public static InfoTag tag(Object entry) {
+			if (entry instanceof Info) {
+				int tag = ((Info) entry).tag();
+				return tag(tag);
+			} else if (entry instanceof String) {
+				return Utf8;
+			} else if (entry instanceof Integer) {
+				return Integer;
+			} else if (entry instanceof Long) {
+				return Long;
+			} else if (entry instanceof Float) {
+				return Float;
+			} else if (entry instanceof Double) {
+				return Double;
+			} else {
+				return null;
+			}
+		}
+
+		@SuppressWarnings("unchecked")
+		public <T> T cast(Object entry) {
+			return (T) clazz.cast(entry);
+		}
+	}
+
+	final Object[] pool;
 
 	public ConstantPool(Object[] pool) {
 		this.pool = pool;
@@ -897,308 +985,6 @@ public class ConstantPool implements Iterable<Object> {
 				throw new IOException("Unrecognized constant pool entry " + entry + " at index " + index);
 			}
 		}
-	}
-
-	/**
-	 * A visitor of each entry with the proper types. Saves a lot of
-	 * 'instanceof' checking. See #
-	 */
-
-	@ProviderType
-	public interface EntryVisitor {
-		default void visit(int index, MethodInfo info) {}
-
-		default void visit(int index, FieldInfo info) {}
-
-		default void visit(int index, DynamicInfo info) {}
-
-		default void visit(int index, InvokeDynamicInfo info) {}
-
-		default void visit(int index, FieldrefInfo info) {}
-
-		default void visit(int index, InterfaceMethodrefInfo info) {}
-
-		default void visit(int index, MethodrefInfo info) {}
-
-		default void visit(int index, ClassInfo info) {}
-
-		default void visit(int index, MethodHandleInfo info) {}
-
-		default void visit(int index, MethodTypeInfo info) {}
-
-		default void visit(int index, ModuleInfo info) {}
-
-		default void visit(int index, NameAndTypeInfo info) {}
-
-		default void visit(int index, PackageInfo info) {}
-
-		default void visit(int index, StringInfo info) {}
-
-		default void visit(int index, String string) {}
-
-		default void visit(int index, Number aNumber) {}
-
-		default void unknown(int i, Object entry) {}
-	}
-
-	public void accept(EntryVisitor visitor) {
-
-		for (int i = 0; i < size(); i++) {
-			Object entry = entry(i);
-			if (entry instanceof DynamicInfo)
-				visitor.visit(i, (DynamicInfo) entry);
-			else if (entry instanceof InvokeDynamicInfo)
-				visitor.visit(i, (InvokeDynamicInfo) entry);
-			else if (entry instanceof FieldrefInfo)
-				visitor.visit(i, (FieldrefInfo) entry);
-			else if (entry instanceof InterfaceMethodrefInfo)
-				visitor.visit(i, (InterfaceMethodrefInfo) entry);
-			else if (entry instanceof MethodrefInfo)
-				visitor.visit(i, (MethodrefInfo) entry);
-			else if (entry instanceof ClassInfo)
-				visitor.visit(i, (ClassInfo) entry);
-			else if (entry instanceof MethodHandleInfo)
-				visitor.visit(i, (MethodHandleInfo) entry);
-			else if (entry instanceof MethodTypeInfo)
-				visitor.visit(i, (MethodTypeInfo) entry);
-			else if (entry instanceof ModuleInfo)
-				visitor.visit(i, (ModuleInfo) entry);
-			else if (entry instanceof NameAndTypeInfo)
-				visitor.visit(i, (NameAndTypeInfo) entry);
-			else if (entry instanceof PackageInfo)
-				visitor.visit(i, (PackageInfo) entry);
-			else if (entry instanceof StringInfo)
-				visitor.visit(i, (StringInfo) entry);
-			else if (entry instanceof String)
-				visitor.visit(i, (String) entry);
-			else if (entry instanceof Number)
-				visitor.visit(i, (Number) entry);
-			else
-				visitor.unknown(i, entry);
-		}
-	}
-
-	/**
-	 * An attribute visitor to safe 'instanceof' avalanches. Each method can
-	 * return a replacement attribute or null. If not null, the attribute is
-	 * replaced. If the {@link AttributeVisitor#REMOVE} is returned, the
-	 * attribute is removed from the list.
-	 */
-
-	@ProviderType
-	public interface AttributeVisitor {
-		/**
-		 * Return if you want this attribute to be removed.
-		 */
-		Attribute REMOVE = new UnrecognizedAttribute("remove", null);
-
-		default Attribute visit(AnnotationDefaultAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(AnnotationsAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(BootstrapMethodsAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(CodeAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(ConstantValueAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(DeprecatedAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(EnclosingMethodAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(ExceptionsAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(InnerClassesAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(LineNumberTableAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(LocalVariableTableAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(LocalVariableTypeTableAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(MethodParametersAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(ModuleAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(ModuleMainClassAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(ModulePackagesAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(NestHostAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(NestMembersAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(RuntimeInvisibleParameterAnnotationsAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(RuntimeVisibleParameterAnnotationsAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(PermittedSubclassesAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(RecordAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(SignatureAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(SourceDebugExtensionAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(SourceFileAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(StackMapTableAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(SyntheticAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(TypeAnnotationsAttribute attr) {
-			return null;
-		}
-
-		default Attribute visit(UnrecognizedAttribute attr) {
-			return null;
-		}
-	}
-
-	/**
-	 * Visit an array of attributes. If the visitor returns an instance of the
-	 * attribute, create a replacement array. If no attributes are changed
-	 * (visits return all null) then an empty Optional is returned. Otherwise a
-	 * new array with all the old and new attributes is returned.
-	 *
-	 * @param attributes the arrays to visit, will never be changed
-	 * @param visitor the visitor
-	 * @return optional replacement array if the visitor changed elements.
-	 */
-
-	public static Optional<Attribute[]> accept(Attribute[] attributes, AttributeVisitor visitor) {
-		List<Attribute> value = new ArrayList<>();
-		boolean changed = false;
-
-		for (int i = 0; i < attributes.length; i++) {
-			Attribute attr = attributes[i];
-			Attribute result;
-
-			if (attr instanceof AnnotationDefaultAttribute) {
-				result = visitor.visit((AnnotationDefaultAttribute) attr);
-			} else if (attr instanceof AnnotationsAttribute) {
-				result = visitor.visit((AnnotationsAttribute) attr);
-			} else if (attr instanceof BootstrapMethodsAttribute) {
-				result = visitor.visit((BootstrapMethodsAttribute) attr);
-			} else if (attr instanceof CodeAttribute) {
-				result = visitor.visit((CodeAttribute) attr);
-			} else if (attr instanceof ConstantValueAttribute) {
-				result = visitor.visit((ConstantValueAttribute) attr);
-			} else if (attr instanceof DeprecatedAttribute) {
-				result = visitor.visit((DeprecatedAttribute) attr);
-			} else if (attr instanceof EnclosingMethodAttribute) {
-				result = visitor.visit((EnclosingMethodAttribute) attr);
-			} else if (attr instanceof ExceptionsAttribute) {
-				result = visitor.visit((ExceptionsAttribute) attr);
-			} else if (attr instanceof InnerClassesAttribute) {
-				result = visitor.visit((InnerClassesAttribute) attr);
-			} else if (attr instanceof LineNumberTableAttribute) {
-				result = visitor.visit((LineNumberTableAttribute) attr);
-			} else if (attr instanceof LocalVariableTableAttribute) {
-				result = visitor.visit((LocalVariableTableAttribute) attr);
-			} else if (attr instanceof LocalVariableTypeTableAttribute) {
-				result = visitor.visit((LocalVariableTypeTableAttribute) attr);
-			} else if (attr instanceof MethodParametersAttribute) {
-				result = visitor.visit((MethodParametersAttribute) attr);
-			} else if (attr instanceof ModuleAttribute) {
-				result = visitor.visit((ModuleAttribute) attr);
-			} else if (attr instanceof ModuleMainClassAttribute) {
-				result = visitor.visit((ModuleMainClassAttribute) attr);
-			} else if (attr instanceof ModulePackagesAttribute) {
-				result = visitor.visit((ModulePackagesAttribute) attr);
-			} else if (attr instanceof NestHostAttribute) {
-				result = visitor.visit((NestHostAttribute) attr);
-			} else if (attr instanceof NestMembersAttribute) {
-				result = visitor.visit((NestMembersAttribute) attr);
-			} else if (attr instanceof RuntimeInvisibleParameterAnnotationsAttribute) {
-				result = visitor.visit((RuntimeInvisibleParameterAnnotationsAttribute) attr);
-			} else if (attr instanceof RuntimeVisibleParameterAnnotationsAttribute) {
-				result = visitor.visit((RuntimeVisibleParameterAnnotationsAttribute) attr);
-			} else if (attr instanceof PermittedSubclassesAttribute) {
-				result = visitor.visit((PermittedSubclassesAttribute) attr);
-			} else if (attr instanceof RecordAttribute) {
-				result = visitor.visit((RecordAttribute) attr);
-			} else if (attr instanceof SignatureAttribute) {
-				result = visitor.visit((SignatureAttribute) attr);
-			} else if (attr instanceof SourceDebugExtensionAttribute) {
-				result = visitor.visit((SourceDebugExtensionAttribute) attr);
-			} else if (attr instanceof SourceFileAttribute) {
-				result = visitor.visit((SourceFileAttribute) attr);
-			} else if (attr instanceof StackMapTableAttribute) {
-				result = visitor.visit((StackMapTableAttribute) attr);
-			} else if (attr instanceof SyntheticAttribute) {
-				result = visitor.visit((SyntheticAttribute) attr);
-			} else if (attr instanceof TypeAnnotationsAttribute) {
-				result = visitor.visit((TypeAnnotationsAttribute) attr);
-			} else if (attr instanceof UnrecognizedAttribute) {
-				result = visitor.visit((UnrecognizedAttribute) attr);
-			} else
-				throw new IllegalArgumentException();
-
-			if (result != null && result != attr) {
-				changed = true;
-				if (result != AttributeVisitor.REMOVE) {
-					value.add(result);
-				}
-			} else {
-				value.add(attr);
-			}
-		}
-		return changed ? Optional.of(value.toArray(EMMPTY_ATTRIBUTES)) : Optional.empty();
 	}
 
 	@Override

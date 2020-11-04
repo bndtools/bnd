@@ -19,4 +19,10 @@ public class RuntimeInvisibleTypeAnnotationsAttribute extends TypeAnnotationsAtt
 		throws IOException {
 		return read(in, constant_pool, RuntimeInvisibleTypeAnnotationsAttribute::new);
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.RuntimeInvisibleTypeAnnotations;
+	}
+
 }

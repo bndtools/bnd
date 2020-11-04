@@ -11,6 +11,7 @@ import java.util.Random;
 import java.util.function.Function;
 
 import aQute.bnd.classfile.ClassFile;
+import aQute.bnd.classfile.renamer.ClassFileRenamer;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.lib.exceptions.Exceptions;
@@ -164,7 +165,7 @@ public class Shader {
 	private static void doClass(Jar jar, Function<String, String> mapper, String path, Resource resource)
 		throws IOException, Exception {
 		ClassFile cf = ClassFile.parseInputStream(resource.openInputStream());
-		Optional<ClassFile> renamed = cf.rename(mapper);
+		Optional<ClassFile> renamed = ClassFileRenamer.rename(cf, mapper);
 		if (renamed.isPresent()) {
 			resource = new EmbeddedResource(renamed.get()
 				.toBytes(), resource.lastModified());

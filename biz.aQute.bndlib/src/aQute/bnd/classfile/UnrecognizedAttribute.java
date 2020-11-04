@@ -50,4 +50,10 @@ public class UnrecognizedAttribute implements Attribute {
 		int attribute_length = value.limit();
 		return attribute_length;
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.Unrecognized;
+	}
+
 }

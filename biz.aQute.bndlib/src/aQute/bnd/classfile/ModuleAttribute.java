@@ -304,4 +304,9 @@ public class ModuleAttribute implements Attribute {
 			return (2 + provides_with.length) * Short.BYTES;
 		}
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.Module;
+	}
 }

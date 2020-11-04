@@ -1,26 +1,34 @@
-package aQute.bnd.classfile;
+package aQute.bnd.classfile.renamer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-import aQute.bnd.classfile.ConstantPool.AttributeVisitor;
+import aQute.bnd.classfile.Attribute;
+import aQute.bnd.classfile.ClassFile;
 import aQute.bnd.classfile.ConstantPool.ClassInfo;
-import aQute.bnd.classfile.ConstantPool.EntryVisitor;
+import aQute.bnd.classfile.ConstantPool.InfoTag;
 import aQute.bnd.classfile.ConstantPool.MethodTypeInfo;
 import aQute.bnd.classfile.ConstantPool.NameAndTypeInfo;
+import aQute.bnd.classfile.EnclosingMethodAttribute;
+import aQute.bnd.classfile.FieldInfo;
+import aQute.bnd.classfile.InnerClassesAttribute;
 import aQute.bnd.classfile.InnerClassesAttribute.InnerClass;
+import aQute.bnd.classfile.LocalVariableTableAttribute;
 import aQute.bnd.classfile.LocalVariableTableAttribute.LocalVariable;
+import aQute.bnd.classfile.LocalVariableTypeTableAttribute;
 import aQute.bnd.classfile.LocalVariableTypeTableAttribute.LocalVariableType;
+import aQute.bnd.classfile.MethodInfo;
+import aQute.bnd.classfile.SignatureAttribute;
 import aQute.bnd.classfile.builder.ClassFileBuilder;
 import aQute.bnd.classfile.builder.MutableConstantPool;
 import aQute.bnd.classfile.preview.RecordAttribute;
 import aQute.bnd.classfile.preview.RecordAttribute.RecordComponent;
 import aQute.lib.strings.Strings;
 
-class ClassFileRenamer {
+public class ClassFileRenamer {
 	final Function<String, String>	mapper;
 	final Map<Integer, String>		renamed	= new HashMap<>();
 	final ClassFile					classFile;
@@ -28,7 +36,16 @@ class ClassFileRenamer {
 	final SignatureRenamer			sp;
 	boolean							changed	= false;
 
-	static Optional<ClassFile> rename(ClassFile cf, Function<String, String> mapper) {
+	/**
+	 * Rename all types in in a class file with another type. The mapper
+	 * function takes a type found in the class file and should return null for
+	 * no mapping or a new type name.
+	 *
+	 * @param cf the class file
+	 * @param mapper the mapping functions
+	 * @return If there were any renames, it return a new Class File
+	 */
+	public static Optional<ClassFile> rename(ClassFile cf, Function<String, String> mapper) {
 		ClassFileRenamer classFileRenamer = new ClassFileRenamer(cf, mapper);
 		return classFileRenamer.rename();
 	}
@@ -377,88 +394,107 @@ class ClassFileRenamer {
 
 		builder.super_class(renameBinary(classFile.super_class));
 
-		pool.accept(new EntryVisitor() {
-			@Override
-			public void visit(int index, NameAndTypeInfo info) {
-				rename(info.descriptor_index);
-			}
+		for (int index = 0; index < builder.constant_pool()
+			.size(); index++) {
+			switch (builder.constant_pool()
+				.tag(index)) {
 
-			@Override
-			public void visit(int index, MethodTypeInfo info) {
-				rename(info.descriptor_index);
 			}
+		}
+		for (Object entry : builder.constant_pool()) {
+			InfoTag tag = InfoTag.tag(entry);
+			if (tag == null)
+				continue;
 
-			@Override
-			public void visit(int index, ClassInfo info) {
-				String original = classFile.constant_pool.utf8(info.class_index);
-				renameBinary(original);
-			}
-
-			void rename(int descriptor_index) {
-				String original = classFile.constant_pool.utf8(descriptor_index);
-				String rename = sp.rename(original);
-				if (rename != null) {
-					renamed.put(descriptor_index, rename);
+			switch (tag) {
+				case NameAndType : {
+					NameAndTypeInfo info = tag.cast(entry);
+					rename(info.descriptor_index);
 				}
-			}
-		});
+					break;
 
-		pool.accept(new EntryVisitor() {
-			@Override
-			public void visit(int index, String string) {
-				String rename = renamed.get(index);
-				if (rename != null) {
-					pool.entry(index, rename);
+				case MethodType : {
+					MethodTypeInfo info = tag.cast(entry);
+					rename(info.descriptor_index);
 				}
-			}
 
-		});
+				case Class : {
+					ClassInfo info = tag.cast(entry);
+					String original = classFile.constant_pool.utf8(info.class_index);
+					renameBinary(original);
+					break;
+				}
+				case Double :
+				case Dynamic :
+				case Fieldref :
+				case Float :
+				case Integer :
+				case InterfaceMethodRef :
+				case InvokeDynamic :
+				case Long :
+				case MethodHandle :
+				case Methodref :
+				case Module :
+				case Package :
+				case String :
+				case Utf8 :
+					break;
+			}
+		}
+
+		//
+		// The actual pool rename is delayed to not interfere with the 'find'
+		// that many
+		// infos and attributes do. If we rename eagerly, they will add new
+		// entries
+		//
+
+		for (Entry<Integer, String> entry : renamed.entrySet()) {
+			builder.constant_pool()
+				.entry(entry.getKey(), entry.getValue());
+		}
+
 		builder.constant_pool(pool);
 		return Optional.of(builder.build());
 
 	}
 
+	private void rename(int descriptor_index) {
+		String original = classFile.constant_pool.utf8(descriptor_index);
+		String rename = sp.rename(original);
+		if (rename != null) {
+			renamed.put(descriptor_index, rename);
+		}
+	}
+
 	private Attribute[] rename(Attribute[] attributes) {
-		Optional<Attribute[]> results = ConstantPool.accept(attributes, new AttributeVisitor() {
-			@Override
-			public Attribute visit(SignatureAttribute attr) {
-				String renamed = renameSignatureOrDescriptor(attr.signature);
-				return new SignatureAttribute(renamed);
-			}
+		Attribute[] result = null;
 
-			@Override
-			public Attribute visit(InnerClassesAttribute ica) {
-				InnerClass[] innerClasses = new InnerClass[ica.classes.length];
-				for (int i = 0; i < ica.classes.length; i++) {
-					InnerClass ic = ica.classes[i];
-					String inner_class = renameBinary(ic.inner_class);
-					String outer_class = renameBinary(ic.outer_class);
-					innerClasses[i] = new InnerClass(inner_class, outer_class, ic.inner_name, ic.inner_access);
+		for (int index = 0; index < attributes.length; index++) {
+			Attribute attr = rename(attributes[index]);
+			if (attr != null) {
+				if (result != null) {
+					result = attributes.clone();
+					result[index] = attr;
 				}
-				return new InnerClassesAttribute(innerClasses);
 			}
+		}
 
-			@Override
-			public Attribute visit(RecordAttribute ra) {
-				RecordComponent[] components = null;
-				for (int i = 0; i < ra.components.length; i++) {
-					RecordComponent rc = ra.components[i];
-					String descriptor = renameSignatureOrDescriptor(rc.descriptor);
-					if (descriptor != null) {
-						if (components == null) {
-							components = ra.components.clone();
-						}
-						components[i] = new RecordComponent(rc.name, descriptor, rc.attributes);
-					}
-				}
-				if (components != null)
-					return new RecordAttribute(components);
-				else
-					return ra;
-			}
+		return result == null ? attributes : result;
+	}
 
-			@Override
-			public Attribute visit(EnclosingMethodAttribute ema) {
+	private Attribute rename(Attribute attribute) {
+		Attribute.AttributeTag tag = attribute.tag();
+		switch (tag) {
+			case AnnotationDefault :
+			case BootstraMethods :
+			case Code :
+			case ConstantValue :
+			case Deprecated :
+				break;
+
+			case EnclosingMethod : {
+				EnclosingMethodAttribute ema = tag.cast(attribute);
 				String class_name = renameBinary(ema.class_name);
 				String method_descriptor = renameSignatureOrDescriptor(ema.method_descriptor);
 				boolean changed = false;
@@ -476,31 +512,29 @@ class ClassFileRenamer {
 					return new EnclosingMethodAttribute(class_name, ema.method_name, method_descriptor);
 				else
 					return ema;
+
 			}
 
-			@Override
-			public Attribute visit(LocalVariableTypeTableAttribute lvtta) {
-				LocalVariableType[] lvts = null;
+			case Exceptions :
+				break;
 
-				for (int i = 0; i < lvtta.local_variable_type_table.length; i++) {
-					LocalVariableType lvt = lvtta.local_variable_type_table[i];
-					String signature = renameSignatureOrDescriptor(lvt.signature);
-					if (signature != null) {
-						lvt = new LocalVariableType(lvt.start_pc, lvt.length, lvt.name, signature, lvt.index);
-						if (lvts == null) {
-							lvts = lvtta.local_variable_type_table.clone();
-						}
-						lvts[i] = lvt;
-					}
+			case InnerClasses : {
+				InnerClassesAttribute ica = tag.cast(attribute);
+				InnerClass[] innerClasses = new InnerClass[ica.classes.length];
+				for (int i = 0; i < ica.classes.length; i++) {
+					InnerClass ic = ica.classes[i];
+					String inner_class = renameBinary(ic.inner_class);
+					String outer_class = renameBinary(ic.outer_class);
+					innerClasses[i] = new InnerClass(inner_class, outer_class, ic.inner_name, ic.inner_access);
 				}
-				if (lvts != null) {
-					return new LocalVariableTypeTableAttribute(lvts);
-				} else
-					return null;
+				return new InnerClassesAttribute(innerClasses);
 			}
 
-			@Override
-			public Attribute visit(LocalVariableTableAttribute lvtta) {
+			case LineNumberTable :
+				break;
+
+			case LocalVariableTable : {
+				LocalVariableTableAttribute lvtta = tag.cast(attribute);
 				LocalVariable[] lvts = null;
 
 				for (int i = 0; i < lvtta.local_variable_table.length; i++) {
@@ -519,8 +553,81 @@ class ClassFileRenamer {
 				} else
 					return null;
 			}
-		});
-		return results.isPresent() ? results.get() : attributes;
+
+			case LocalVariableTypeTable : {
+				LocalVariableTypeTableAttribute lvtta = tag.cast(attribute);
+				LocalVariableType[] lvts = null;
+
+				for (int i = 0; i < lvtta.local_variable_type_table.length; i++) {
+					LocalVariableType lvt = lvtta.local_variable_type_table[i];
+					String signature = renameSignatureOrDescriptor(lvt.signature);
+					if (signature != null) {
+						lvt = new LocalVariableType(lvt.start_pc, lvt.length, lvt.name, signature, lvt.index);
+						if (lvts == null) {
+							lvts = lvtta.local_variable_type_table.clone();
+						}
+						lvts[i] = lvt;
+					}
+				}
+				if (lvts != null) {
+					return new LocalVariableTypeTableAttribute(lvts);
+				} else
+					return null;
+
+			}
+
+			case MethodParameters :
+			case Module :
+			case ModuleMainClass :
+			case ModulePackages :
+			case NestHost :
+			case NestMembers :
+				break;
+
+			case Preview : {
+				if (attribute instanceof RecordAttribute) {
+					RecordAttribute ra = (RecordAttribute) attribute;
+					RecordComponent[] components = null;
+					for (int i = 0; i < ra.components.length; i++) {
+						RecordComponent rc = ra.components[i];
+						String descriptor = renameSignatureOrDescriptor(rc.descriptor);
+						if (descriptor != null) {
+							if (components == null) {
+								components = ra.components.clone();
+							}
+							components[i] = new RecordComponent(rc.name, descriptor, rc.attributes);
+						}
+					}
+					if (components != null)
+						return new RecordAttribute(components);
+					else
+						return ra;
+				}
+				break;
+			}
+			case RuntimeInvisibleAnnotations :
+			case RuntimeInvisibleParameterAnnotations :
+			case RuntimeInvisibleTypeAnnotations :
+			case RuntimeVisibleAnnotations :
+			case RuntimeVisibleParameterAnnotations :
+			case RuntimeVisibleTypeAnnotations :
+				break;
+
+			case Signature : {
+				SignatureAttribute a = tag.cast(attribute);
+				String renamed = renameSignatureOrDescriptor(a.signature);
+				return new SignatureAttribute(renamed);
+			}
+
+			case SourceDebugExtension :
+			case SourceFile :
+			case StackMapTable :
+			case Synthetic :
+			case Unrecognized :
+				break;
+
+		}
+		return null;
 	}
 
 	private String renameSignatureOrDescriptor(String signature) {
@@ -569,20 +676,11 @@ class ClassFileRenamer {
 	}
 
 	private int find(String string) {
-		AtomicInteger result = new AtomicInteger();
-
-		classFile.constant_pool.accept(new EntryVisitor() {
-			@Override
-			public void visit(int index, String entry) {
-				if (string.equals(entry)) {
-					int old = result.getAndSet(index);
-					if (old != 0) {
-						System.err.println("ouch");
-					}
-				}
-			}
-		});
-		return result.get();
+		for (int i = 0; i < classFile.constant_pool.size(); i++) {
+			if (string.equals(classFile.constant_pool.entry(i)))
+				return i;
+		}
+		return -1;
 	}
 
 }

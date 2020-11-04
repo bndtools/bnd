@@ -18,4 +18,10 @@ public class RuntimeVisibleAnnotationsAttribute extends AnnotationsAttribute {
 	public static RuntimeVisibleAnnotationsAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		return read(in, constant_pool, RuntimeVisibleAnnotationsAttribute::new);
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.RuntimeVisibleAnnotations;
+	}
+
 }

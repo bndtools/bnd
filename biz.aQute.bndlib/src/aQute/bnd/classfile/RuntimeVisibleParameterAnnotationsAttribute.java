@@ -19,4 +19,10 @@ public class RuntimeVisibleParameterAnnotationsAttribute extends ParameterAnnota
 		throws IOException {
 		return read(in, constant_pool, RuntimeVisibleParameterAnnotationsAttribute::new);
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.RuntimeVisibleParameterAnnotations;
+	}
+
 }

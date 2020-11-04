@@ -49,4 +49,10 @@ public class SourceDebugExtensionAttribute implements Attribute {
 		int attribute_length = debug_extension.limit();
 		return attribute_length;
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.SourceDebugExtension;
+	}
+
 }

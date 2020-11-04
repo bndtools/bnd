@@ -101,4 +101,9 @@ public class RecordAttribute implements Attribute {
 			return attribute_length;
 		}
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.Preview;
+	}
 }

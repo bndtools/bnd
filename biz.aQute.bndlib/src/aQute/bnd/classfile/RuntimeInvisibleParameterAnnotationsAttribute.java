@@ -19,4 +19,10 @@ public class RuntimeInvisibleParameterAnnotationsAttribute extends ParameterAnno
 		throws IOException {
 		return read(in, constant_pool, RuntimeInvisibleParameterAnnotationsAttribute::new);
 	}
+
+	@Override
+	public AttributeTag tag() {
+		return AttributeTag.RuntimeInvisibleParameterAnnotations;
+	}
+
 }
