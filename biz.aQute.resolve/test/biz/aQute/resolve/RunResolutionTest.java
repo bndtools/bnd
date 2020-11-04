@@ -254,7 +254,8 @@ public class RunResolutionTest {
 		bndrun.getModel()
 			.setRunBundles(Collections.emptyList());
 		resolution = bndrun.resolve(true, false);
-		assertThat(bndrun.check("Fail on changes set to ", "Existing runbundles", "Calculated runbundles")).isTrue();
+		assertThat(bndrun.check("Fail on changes set to ", "Existing runbundles   \\[\\]", "Calculated runbundles"))
+			.isTrue();
 
 		// Now succeed because there are no changes
 		resolution = bndrun.resolve(false, false);

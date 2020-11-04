@@ -3,6 +3,7 @@ package biz.aQute.resolve;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.osgi.resource.Requirement;
 import org.osgi.service.resolver.ResolutionException;
@@ -14,6 +15,7 @@ import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
+import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.build.model.conversions.CollectionFormatter;
 import aQute.bnd.build.model.conversions.Converter;
 import aQute.bnd.build.model.conversions.HeaderClauseFormatter;
@@ -127,10 +129,11 @@ public class Bndrun extends Run {
 	}
 
 	public boolean update(RunResolution resolution, boolean failOnChanges, boolean writeOnChanges) throws Exception {
+		List<VersionedClause> runBundlesBeforeUpdate = model.getRunBundles();
 		if (resolution.updateBundles(model)) {
 			if (failOnChanges) {
 				error("Fail on changes set to true (--xchange,-x) and there are changes");
-				error("   Existing runbundles   %s", model.getRunBundles());
+				error("   Existing runbundles   %s", runBundlesBeforeUpdate);
 				error("   Calculated runbundles %s", resolution.getRunBundles());
 			} else {
 				if (writeOnChanges) {
