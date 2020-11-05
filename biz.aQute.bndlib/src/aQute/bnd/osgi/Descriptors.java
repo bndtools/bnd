@@ -176,6 +176,31 @@ public class Descriptors {
 					&& ((binaryName.length() == meta.length()) || (binaryName.charAt(meta.length()) == '/')));
 		}
 
+		/**
+		 * Check if the package name is a valid Java package name.
+		 *
+		 * @return true if the package name is valid; false otherwise.
+		 */
+		public boolean isValidPackageName() {
+			final int len = fqn.length();
+			boolean start = true;
+			for (int i = 0; i < len; i++) {
+				char c = fqn.charAt(i);
+				if (start) {
+					if (!Character.isJavaIdentifierStart(c)) {
+						return false;
+					}
+					start = false;
+				} else {
+					if (c == '.') {
+						start = true;
+					} else if (!Character.isJavaIdentifierPart(c)) {
+						return false;
+					}
+				}
+			}
+			return !start;
+		}
 	}
 
 	// We "intern" the

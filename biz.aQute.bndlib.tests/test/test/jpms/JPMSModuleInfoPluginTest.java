@@ -17,6 +17,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import aQute.bnd.classfile.ClassFile;
 import aQute.bnd.classfile.ModuleAttribute;
 import aQute.bnd.classfile.ModuleMainClassAttribute;
+import aQute.bnd.classfile.ModulePackagesAttribute;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -84,6 +85,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/a");
 		}
 	}
 
@@ -130,6 +140,15 @@ public class JPMSModuleInfoPluginTest {
 				.anyMatch(e -> e.requires.equals("java.base"))
 				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
 				.anyMatch(e -> e.requires.equals("java.json"));
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/j");
 		}
 	}
 
@@ -181,6 +200,15 @@ public class JPMSModuleInfoPluginTest {
 			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("java.json.bind"))
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_STATIC_PHASE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/j");
 		}
 	}
 
@@ -234,6 +262,15 @@ public class JPMSModuleInfoPluginTest {
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(
 					ModuleAttribute.Require.ACC_TRANSITIVE | ModuleAttribute.Require.ACC_STATIC_PHASE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/j");
 		}
 	}
 
@@ -285,6 +322,15 @@ public class JPMSModuleInfoPluginTest {
 			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("java.enterprise"))
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/j");
 		}
 	}
 
@@ -341,6 +387,15 @@ public class JPMSModuleInfoPluginTest {
 			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/j");
 		}
 	}
 
@@ -396,6 +451,15 @@ public class JPMSModuleInfoPluginTest {
 			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/i");
 		}
 	}
 
@@ -452,6 +516,15 @@ public class JPMSModuleInfoPluginTest {
 			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/i");
 		}
 	}
 
@@ -507,6 +580,15 @@ public class JPMSModuleInfoPluginTest {
 			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/i");
 		}
 	}
 
@@ -562,6 +644,15 @@ public class JPMSModuleInfoPluginTest {
 			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
 				.flatExtracting(e -> Arrays.asList(e.requires_flags))
 				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/i");
 		}
 	}
 
@@ -631,6 +722,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/i");
 		}
 	}
 
@@ -699,6 +799,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/i");
 		}
 	}
 
@@ -753,6 +862,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/i");
 		}
 	}
 
@@ -809,6 +927,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/h");
 		}
 	}
 
@@ -859,6 +986,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/g");
 		}
 	}
 
@@ -907,6 +1043,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/f");
 		}
 	}
 
@@ -966,6 +1111,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/e", "test/jpms/e/other");
 		}
 	}
 
@@ -1012,6 +1166,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/d");
 		}
 	}
 
@@ -1059,6 +1222,15 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleMainClassAttribute).isNotNull();
 			assertThat(moduleMainClassAttribute.main_class).isEqualTo("test/jpms/c/Foo");
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/c");
 		}
 	}
 
@@ -1118,6 +1290,16 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/b", "test/jpms/b/internal",
+				"test/jpms/b/other");
 		}
 	}
 
@@ -1164,6 +1346,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/a");
 		}
 	}
 

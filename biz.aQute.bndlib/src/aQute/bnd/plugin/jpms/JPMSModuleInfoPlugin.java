@@ -128,7 +128,6 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
 	private static final EE			DEFAULT_MODULE_EE			= EE.JavaSE_11_0;
 	private static final String		INTERNAL_MODULE_DIRECTIVE	= "-internal-module:";
-	private static final String		WEB_INF						= "WEB-INF";
 
 	@Override
 	public void verify(final Analyzer analyzer) throws Exception {
@@ -180,16 +179,16 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 				attrs.put(INTERNAL_MODULE_VERSION_DIRECTIVE, moduleVersion);
 			}
 			MapStream.of(jar.getDirectories())
-				.filter((k, v) -> (v != null) && !v.isEmpty() && !k.isEmpty())
+				.filter((path, resources) -> (resources != null) && !resources.isEmpty() && !path.isEmpty())
 				.keys()
 				.map(analyzer::getPackageRef)
-				.filter(ref -> !ref.isMetaData() && !ref.getPath()
-					.startsWith(WEB_INF))
-				.forEach(ref -> index.put(ref, new Attrs(attrs)));
+				.filter(PackageRef::isValidPackageName)
+				.forEach(packageRef -> index.put(packageRef, new Attrs(attrs)));
 		}
 
 		ModuleInfoBuilder builder = nameAccessAndVersion(moduleInstructions, requireCapabilities, analyzer);
 
+		packages(analyzer, builder);
 		requires(moduleInstructions, analyzer, index, moduleInfoOptions, builder);
 		exportPackages(analyzer, builder);
 		openPackages(analyzer, builder);
@@ -244,6 +243,16 @@ public class JPMSModuleInfoPlugin implements VerifierPlugin {
 
 	private String name(Analyzer analyzer) {
 		return analyzer.getProperty(AUTOMATIC_MODULE_NAME, analyzer.getBsn());
+	}
+
+	private void packages(Analyzer analyzer, ModuleInfoBuilder builder) {
+		analyzer.getContained()
+			.keySet()
+			.stream()
+			.filter(PackageRef::isValidPackageName)
+			.map(PackageRef::getBinary)
+			.sorted()
+			.forEachOrdered(builder::packages);
 	}
 
 	private void exportPackages(Analyzer analyzer, ModuleInfoBuilder builder) {
