@@ -247,4 +247,20 @@ public class SetsTest {
 		assertThat(set).isNotEqualTo(new HashSet<>(Arrays.asList("e1", "e2", "e3", "e4", "e5", "e6")));
 	}
 
+	// Strings can have a hashCode of Integer.MIN_VALUE. For example:
+	// "polygenelubricants", "GydZG_", "DESIGNING WORKHOUSES"
+	@Test
+	public void hash_min_value() {
+		assertThat("polygenelubricants".hashCode()).as("polygenelubricants")
+			.isEqualTo(Integer.MIN_VALUE);
+		assertThat("GydZG_".hashCode()).as("GydZG_")
+			.isEqualTo(Integer.MIN_VALUE);
+		assertThat("DESIGNING WORKHOUSES".hashCode()).as("DESIGNING WORKHOUSES")
+			.isEqualTo(Integer.MIN_VALUE);
+
+		Set<String> set = Sets.of("e1", "polygenelubricants", "GydZG_", "DESIGNING WORKHOUSES", "e5");
+
+		assertThat(set).containsExactlyInAnyOrder("e5", "polygenelubricants", "GydZG_", "DESIGNING WORKHOUSES", "e1");
+	}
+
 }
