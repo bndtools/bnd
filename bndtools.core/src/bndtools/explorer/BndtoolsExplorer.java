@@ -33,6 +33,7 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -151,8 +152,15 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 
 		closeables.add(preferences.onPrompt(model::setPrompt));
 
-		model.onUpdate(this::updateTreeViewer);
+		ISelectionChangedListener evListener = (event) -> {
+			selected(event.getSelection());
+		};
+		getSite().getSelectionProvider()
+			.addSelectionChangedListener(evListener);
+		closeables.add(() -> getSite().getSelectionProvider()
+			.removeSelectionChangedListener(evListener));
 
+		model.onUpdate(this::updateTreeViewer);
 		model.update();
 	}
 
@@ -219,6 +227,11 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 		Action reloadAction = reloadAction();
 		toolBarManager.add(reloadAction);
 		toolBarManager.update(true);
+
+		Action pin = pinAction();
+		toolBarManager.add(pin);
+		toolBarManager.update(true);
+
 		return header;
 	}
 
@@ -231,9 +244,12 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 	@Override
 	public int tryToReveal(Object element) {
 		if (element instanceof IResource) {
+			model.setActualSelection(element);
 			model.setSelectedProject(getProject((IResource) element));
-		} else
+		} else {
+			model.setActualSelection(null);
 			model.setSelectedProject(null);
+		}
 		return super.tryToReveal(element);
 	}
 
@@ -245,16 +261,25 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 
 	@Override
 	public void selectReveal(ISelection selection) {
+		selected(selection);
+		super.selectReveal(selection);
+	}
+
+	private void selected(ISelection selection) {
+
 		if (selection instanceof IStructuredSelection) {
 			Object firstElement = ((IStructuredSelection) selection).getFirstElement();
 			if (firstElement instanceof IResource) {
+				model.setActualSelection(firstElement);
 				IProject project = getProject((IResource) firstElement);
 				if (project != null) {
 					model.setSelectedProject(project);
 				}
-			}
+			} else if (firstElement instanceof JavaProject) {
+				model.setActualSelection(((JavaProject) firstElement).getProject());
+			} else
+				model.setActualSelection(null);
 		}
-		super.selectReveal(selection);
 	}
 
 	private IProject getProject(IEditorInput iEditorInput) {
@@ -339,6 +364,9 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 				if (model.glob.finds(name) >= 0)
 					return true;
 
+				if (model.isPinned(project))
+					return true;
+
 				try {
 					int maxSeverity = project.findMaxProblemSeverity(null, false, IResource.DEPTH_INFINITE);
 
@@ -387,6 +415,34 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 			}
 		};
 		return rebuild;
+	}
+
+	private Action pinAction() {
+		Action pin = new Action("Pin project", Icons.desc("pin")) {
+
+			@Override
+			public void run() {
+				model.doPin();
+			}
+		};
+		Runnable runnable = () -> {
+
+			if (!(model.selection instanceof IProject)) {
+				pin.setImageDescriptor(Icons.desc("pin.disabled"));
+				pin.setEnabled(false);
+				return;
+			}
+
+			pin.setEnabled(true);
+			if (model.isPinned((IProject) model.selection)) {
+				pin.setImageDescriptor(Icons.desc("pin.minus"));
+			} else {
+				pin.setImageDescriptor(Icons.desc("pin.plus"));
+			}
+		};
+		runnable.run();
+		model.onUpdate(runnable);
+		return pin;
 	}
 
 	private void fixupRefactoringPasteAction(FilterPanelPart filterPart) {

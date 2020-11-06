@@ -1,8 +1,10 @@
 package bndtools.explorer;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.resources.IProject;
@@ -17,12 +19,14 @@ import bndtools.central.Central;
 class Model {
 	Glob					glob;
 	IProject				selectedProject;
+	Object					selection;
 	String					prompt;
 	String					message	= "initializing workspace";
 	int						severity;
 	String					filterText;
 	final List<Runnable>	updates	= new ArrayList<>();
 	final AtomicBoolean		dirty	= new AtomicBoolean(false);
+	final Set<IProject>		pinned	= new HashSet<>();
 
 	void setSelectedProject(IProject project) {
 		if (project != selectedProject) {
@@ -60,6 +64,10 @@ class Model {
 			return;
 		this.message = message;
 		update();
+	}
+
+	boolean isPinned(IProject project) {
+		return pinned.contains(project);
 	}
 
 	void updateMessage() {
@@ -107,6 +115,24 @@ class Model {
 		if (dirty.getAndSet(false)) {
 			updates.forEach(Runnable::run);
 		}
+	}
+
+	void doPin() {
+		if (!(selection instanceof IProject))
+			return;
+
+		IProject p = (IProject) selection;
+		if (pinned.contains(p)) {
+			pinned.remove(p);
+		} else {
+			pinned.add(p);
+		}
+		update();
+	}
+
+	void setActualSelection(Object selection) {
+		this.selection = selection;
+		update();
 	}
 
 }
