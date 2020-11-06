@@ -18,7 +18,7 @@ public interface Attribute {
 		Unrecognized(UnrecognizedAttribute.class), //
 		Preview(Attribute.class), //
 		AnnotationDefault(AnnotationDefaultAttribute.class), //
-		BootstraMethods(BootstrapMethodsAttribute.class), //
+		BootstrapMethods(BootstrapMethodsAttribute.class), //
 		Code(CodeAttribute.class), //
 		ConstantValue(ConstantValueAttribute.class),
 		Deprecated(DeprecatedAttribute.class),
@@ -46,7 +46,7 @@ public interface Attribute {
 		StackMapTable(StackMapTableAttribute.class), //
 		Synthetic(SyntheticAttribute.class);
 
-		public Class<? extends Attribute> clazz;
+		public final Class<? extends Attribute> clazz;
 
 		AttributeTag(Class<? extends Attribute> clazz) {
 			this.clazz = clazz;

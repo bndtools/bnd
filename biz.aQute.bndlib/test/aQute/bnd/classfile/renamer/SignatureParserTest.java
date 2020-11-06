@@ -2,13 +2,13 @@ package aQute.bnd.classfile.renamer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
@@ -24,24 +24,17 @@ public class SignatureParserTest {
 		"[[]{0,2}((I|B|C|L[abcd文efz$][ab\u0000\u0016cd0234文ef$]{2,8}(/[ab文_cde3434f$]{2,8}){0,3};)");
 	final ClassFileRenamer.SignatureParser	sp				= new ClassFileRenamer.SignatureParser();
 
+	/*
+	 * Parse all signatures and make sure none throws an exception
+	 */
 	@Test
-	public void testSignatures() throws Exception {
-		AtomicInteger i = new AtomicInteger(0);
+	public void testSignatures() throws IOException {
 
 		Files.lines(IO.getFile("testresources/shade/signatures.txt")
 			.toPath())
 			.forEach(l -> {
 				sp.parse(l);
-				i.incrementAndGet();
 			});
-
-		System.out.println(i);
-	}
-
-	@Test
-	public void testSpecial() {
-		sp.parse(
-			"(I)Lorg/springframework/security/config/annotation/web/configurers/openid/OpenIDLoginConfigurer<TH;>.AttributeExchangeConfigurer.AttributeConfigurer;");
 	}
 
 	@Test
@@ -51,7 +44,7 @@ public class SignatureParserTest {
 		map.put("org/springframework/security/config/annotation/web/configurers/openid/OpenIDLoginConfigurer", "foo");
 		SignatureRenamer sr = new SignatureRenamer(map::get);
 		String rename = sr.rename(s);
-		System.out.println(rename);
+		assertThat(sr.rename(s)).isEqualTo("(I)Lfoo<TH;>.AttributeExchangeConfigurer.AttributeConfigurer;");
 	}
 
 	@Test

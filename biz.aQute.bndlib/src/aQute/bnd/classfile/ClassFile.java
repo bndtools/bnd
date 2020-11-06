@@ -4,7 +4,6 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Modifier;
@@ -168,7 +167,7 @@ public class ClassFile extends ElementInfo {
 		return dout.toByteArray();
 	}
 
-	public static ClassFile parseFile(File file) throws FileNotFoundException, IOException {
+	public static ClassFile parseFile(File file) throws IOException {
 		return parseInputStream(IO.stream(file));
 	}
 

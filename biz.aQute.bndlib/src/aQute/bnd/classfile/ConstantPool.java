@@ -993,7 +993,12 @@ public class ConstantPool implements Iterable<Object> {
 			.iterator();
 	}
 
+	/**
+	 * A stream over the pool. The first hidden index is skipped.
+	 *
+	 * @return a stream over the objects in the pool
+	 */
 	public Stream<Object> stream() {
-		return Stream.of(pool);
+		return Arrays.stream(pool, 1, pool.length);
 	}
 }

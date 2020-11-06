@@ -487,7 +487,7 @@ public class ClassFileRenamer {
 		Attribute.AttributeTag tag = attribute.tag();
 		switch (tag) {
 			case AnnotationDefault :
-			case BootstraMethods :
+			case BootstrapMethods :
 			case Code :
 			case ConstantValue :
 			case Deprecated :

@@ -93,6 +93,6 @@ public class BootstrapMethodsAttribute implements Attribute {
 
 	@Override
 	public AttributeTag tag() {
-		return AttributeTag.BootstraMethods;
+		return AttributeTag.BootstrapMethods;
 	}
 }
