@@ -69,8 +69,8 @@ public class XMLType {
 		if (n < 0 || n + 1 >= fqn.length())
 			return null;
 
-		char c = fqn.charAt(n + 1);
-		if (Character.isJavaIdentifierStart(c) && Character.isUpperCase(c)) {
+		int cp = Character.codePointAt(fqn, n + 1);
+		if (Character.isJavaIdentifierStart(cp) && Character.isUpperCase(cp)) {
 			String other = fqn.substring(0, n);
 			return toPackage(other);
 		}

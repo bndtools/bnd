@@ -359,4 +359,23 @@ public class MapsTest {
 		assertThat(entrySet.contains(null)).isFalse();
 	}
 
+	// Strings can have a hashCode of Integer.MIN_VALUE. For example:
+	// "polygenelubricants", "GydZG_", "DESIGNING WORKHOUSES"
+	@Test
+	public void hash_min_value() {
+		assertThat("polygenelubricants".hashCode()).as("polygenelubricants")
+			.isEqualTo(Integer.MIN_VALUE);
+		assertThat("GydZG_".hashCode()).as("GydZG_")
+			.isEqualTo(Integer.MIN_VALUE);
+		assertThat("DESIGNING WORKHOUSES".hashCode()).as("DESIGNING WORKHOUSES")
+			.isEqualTo(Integer.MIN_VALUE);
+
+		Map<String, String> map = Maps.of("polygenelubricants", "v1", "GydZG_", "v2", "DESIGNING WORKHOUSES", "v3");
+
+		assertThat(map).hasSize(3)
+			.containsEntry("polygenelubricants", "v1")
+			.containsEntry("GydZG_", "v2")
+			.containsEntry("DESIGNING WORKHOUSES", "v3");
+	}
+
 }

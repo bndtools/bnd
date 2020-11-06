@@ -1384,14 +1384,17 @@ public class Verifier extends Processor {
 	}
 
 	public static boolean isIdentifier(String value) {
-		if (value.length() < 1)
+		final int len = value.length();
+		if (len < 1)
 			return false;
 
-		if (!Character.isJavaIdentifierStart(value.charAt(0)))
+		int cp = Character.codePointAt(value, 0);
+		if (!Character.isJavaIdentifierStart(cp))
 			return false;
 
-		for (int i = 1; i < value.length(); i++) {
-			if (!Character.isJavaIdentifierPart(value.charAt(i)))
+		for (int i = 0; (i += Character.charCount(cp)) < len;) {
+			cp = Character.codePointAt(value, i);
+			if (!Character.isJavaIdentifierPart(cp))
 				return false;
 		}
 		return true;

@@ -125,18 +125,23 @@ public class ProjectNameGroup {
 			if (part.isEmpty())
 				return "Package name part may not be empty";
 
-			char firstChar = part.charAt(0);
-			if (!Character.isJavaIdentifierStart(firstChar))
-				return "Illegal character at start of package name part: " + firstChar;
-
-			for (int i = 1; i < part.length(); i++) {
-				char ch = part.charAt(i);
-				if (!Character.isJavaIdentifierPart(ch))
-					return "Illegal character in package name part: " + ch;
-			}
-
 			if (JavaLangUtils.isKeyword(part) || JavaLangUtils.isReserved(part))
 				return "Invalid package name. '" + part + "' is not a valid Java identifier";
+
+			int cp = Character.codePointAt(part, 0);
+			if (!Character.isJavaIdentifierStart(cp))
+				return "Illegal character at start of package name part: " + new String(new int[] {
+					cp
+				}, 0, 1);
+
+			final int len = part.length();
+			for (int i = 0; (i += Character.charCount(cp)) < len;) {
+				cp = Character.codePointAt(part, i);
+				if (!Character.isJavaIdentifierPart(cp))
+					return "Illegal character in package name part: " + new String(new int[] {
+						cp
+					}, 0, 1);
+			}
 		}
 
 		// Orl Korrect
@@ -157,20 +162,21 @@ public class ProjectNameGroup {
 			StringBuilder builder = new StringBuilder();
 
 			if (!part.isEmpty()) {
-				char firstChar = part.charAt(0);
-				if (Character.isJavaIdentifierStart(firstChar))
-					builder.append(firstChar);
-				else if (Character.isJavaIdentifierPart(firstChar))
+				int cp = Character.codePointAt(part, 0);
+				if (Character.isJavaIdentifierStart(cp))
+					builder.appendCodePoint(cp);
+				else if (Character.isJavaIdentifierPart(cp))
 					builder.append('_')
-						.append(firstChar);
-				else if ('-' == firstChar)
-					builder.append('-');
+						.appendCodePoint(cp);
+				else if ('-' == cp)
+					builder.append('_');
 
-				for (int i = 1; i < part.length(); i++) {
-					char ch = part.charAt(i);
-					if (Character.isJavaIdentifierPart(ch)) {
-						builder.append(ch);
-					} else if ('-' == ch) {
+				final int len = part.length();
+				for (int i = 0; (i += Character.charCount(cp)) < len;) {
+					cp = Character.codePointAt(part, i);
+					if (Character.isJavaIdentifierPart(cp)) {
+						builder.appendCodePoint(cp);
+					} else if ('-' == cp) {
 						builder.append('_');
 					}
 				}

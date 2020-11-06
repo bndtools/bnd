@@ -184,20 +184,21 @@ public class Descriptors {
 		public boolean isValidPackageName() {
 			final int len = fqn.length();
 			boolean start = true;
-			for (int i = 0; i < len; i++) {
-				char c = fqn.charAt(i);
+			for (int i = 0; i < len;) {
+				int cp = Character.codePointAt(fqn, i);
 				if (start) {
-					if (!Character.isJavaIdentifierStart(c)) {
+					if (!Character.isJavaIdentifierStart(cp)) {
 						return false;
 					}
 					start = false;
 				} else {
-					if (c == '.') {
+					if (cp == '.') {
 						start = true;
-					} else if (!Character.isJavaIdentifierPart(c)) {
+					} else if (!Character.isJavaIdentifierPart(cp)) {
 						return false;
 					}
 				}
+				i += Character.charCount(cp);
 			}
 			return !start;
 		}
@@ -823,27 +824,29 @@ public class Descriptors {
 		if (fqn == null || fqn.isEmpty())
 			return Result.err("No qualified name given (either null or empty) %s", fqn);
 
+		final int len = fqn.length();
 		int cstart = -1;
 		boolean start = true;
-		for (int i = 0; i < fqn.length(); i++) {
-			char ch = fqn.charAt(i);
+		for (int i = 0; i < len;) {
+			int cp = Character.codePointAt(fqn, i);
 			if (start) {
-				if (!Character.isJavaIdentifierStart(ch)) {
+				if (!Character.isJavaIdentifierStart(cp)) {
 					return Result.err("Could not match %s to a qualified Java Identifier :: package? classname", fqn);
 				}
-				if (Character.isUpperCase(ch)) {
+				if (Character.isUpperCase(cp)) {
 					cstart = i;
 					break;
 				}
 				start = false;
 			} else {
-				if (ch == '.') {
+				if (cp == '.') {
 					start = true;
-				} else if (!Character.isJavaIdentifierPart(ch)) {
+				} else if (!Character.isJavaIdentifierPart(cp)) {
 					return Result.err(
 						"Could not match %s to a qualified Java Identifier :: package? classname, char %s", fqn, i);
 				}
 			}
+			i += Character.charCount(cp);
 		}
 		String[] result = new String[2];
 		if (cstart == 0) {
