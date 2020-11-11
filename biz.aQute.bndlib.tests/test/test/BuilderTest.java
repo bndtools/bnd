@@ -66,6 +66,20 @@ import aQute.service.reporter.Report.Location;
 public class BuilderTest {
 
 	/**
+	 * -includepackage: *;from:=classes will generate an error if there are no
+	 * classes.
+	 */
+
+	@Test
+	public void testIncludePackageZeroMatchesForWildcard() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty("-includepackage", "*;foo:=notexistent");
+			Jar build = b.build();
+			assertTrue(b.check("The JAR is empty: "));
+		}
+	}
+
+	/**
 	 * There shouldn't be "Duplicate name..." warnings with pedantic flag set to
 	 * true #2803 https://github.com/bndtools/bnd/issues/2803
 	 *
@@ -1084,7 +1098,7 @@ public class BuilderTest {
 			b.addClasspath(new File("bin_test"));
 			b.setPrivatePackage("does.not.exist");
 			b.build();
-			assertTrue(b.check("The JAR is empty", "Unused Private-Package instruction"));
+			assertTrue(b.check("The JAR is empty", "Unused -privatepackage instruction"));
 		} finally {
 			b.close();
 		}
