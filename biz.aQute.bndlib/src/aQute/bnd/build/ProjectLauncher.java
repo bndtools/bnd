@@ -146,6 +146,7 @@ public abstract class ProjectLauncher extends Processor {
 		// pkr: could not use this because this is killing the runtests.
 		// getProject().refresh();
 		runbundles.clear();
+		classpath.clear();
 
 		Collection<Container> run = getProject().getRunbundles();
 
