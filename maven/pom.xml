@@ -22,6 +22,9 @@
 		<!-- The following versions must match those in cnf/ext/maven-plugin.bnd -->
 		<maven.target.version>3.1.1</maven.target.version>
 		<aether.version>0.9.0.M2</aether.version>
+		<!-- The following versions should match those in cnf/ext/junit.bnd -->
+		<junit4.version>4.13.1</junit4.version>
+		<assertj.version>3.18.1</assertj.version>
 	</properties>
 
 	<modules>
@@ -180,13 +183,13 @@
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
-				<version>4.13.1</version>
+				<version>${junit4.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.assertj</groupId>
 				<artifactId>assertj-core</artifactId>
-				<version>3.18.0</version>
+				<version>${assertj.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
