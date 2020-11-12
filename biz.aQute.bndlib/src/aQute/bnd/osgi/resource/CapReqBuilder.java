@@ -100,7 +100,8 @@ public class CapReqBuilder {
 			}
 		}
 
-		if (name.equals(ResourceUtils.getVersionAttributeForNamespace(getNamespace()))) {
+		if ((value instanceof aQute.bnd.version.Version)
+			|| name.equals(ResourceUtils.getVersionAttributeForNamespace(getNamespace()))) {
 			value = toVersions(value);
 		}
 

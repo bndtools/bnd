@@ -622,8 +622,8 @@ public class ResolveTest extends TestCase {
 			System.out.println(runbundles);
 			assertThat(bndrun.check()).isTrue();
 			Parameters p = new Parameters(runbundles);
-			assertThat(p.keySet()).hasSize(5)
-				.contains("org.apache.felix.scr", "test.log", "org.apache.felix.log.extension",
+			assertThat(p.keySet()).contains("org.apache.felix.scr", "test.log",
+				"org.apache.felix.log.extension",
 					"org.apache.felix.gogo.command", "org.apache.felix.gogo.runtime");
 		}
 	}

@@ -22,8 +22,8 @@ bnd_version: ${replace;${bnd_plugin};.*:(.*);$1}
 # Use groovydoc task generated doc for -javadoc.jar
 -sources: false
 -maven-release: pom;path=JAR,\
- sources;path=${src},\
- javadoc;path=${target}/docs/groovydoc
+ sources;path="${src}",\
+ javadoc;path="${target}/docs/groovydoc"
 
 # Stop Eclipse whining about the bnd files using specific Bundle-SymbolicNames
 -fixupmessages.bndtools: "Eclipse: The Bundle Symbolic * name"

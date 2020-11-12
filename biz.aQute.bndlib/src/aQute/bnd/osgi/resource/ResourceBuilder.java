@@ -757,13 +757,13 @@ public class ResourceBuilder {
 			return;
 		}
 
-		List<Integer> hashes = resources.stream()
+		List<Long> hashes = resources.stream()
 			.map(NamedNode::name)
 			.filter(Descriptors::isBinaryClass)
 			.map(Descriptors::binaryToSimple)
 			.distinct()
 			.filter(simple -> !Verifier.isNumber(simple))
-			.map(ClassIndexerAnalyzer::hash)
+			.map(simple -> Long.valueOf(ClassIndexerAnalyzer.hash(simple)))
 			.collect(toList());
 		if (hashes.isEmpty()) {
 			return;
