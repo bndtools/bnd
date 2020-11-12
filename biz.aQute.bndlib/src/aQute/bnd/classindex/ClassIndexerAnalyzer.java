@@ -31,13 +31,13 @@ public class ClassIndexerAnalyzer implements AnalyzerPlugin {
 			if (classspace.isEmpty())
 				continue;
 
-			List<Integer> hashes = new ArrayList<>();
+			List<Long> hashes = new ArrayList<>();
 			for (Clazz c : classspace) {
 				TypeRef tr = c.getClassName();
 				if (tr.isArray() || tr.isNested())
 					continue;
 
-				int hash = tr.getShorterName()
+				long hash = tr.getShorterName()
 					.hashCode();
 				hashes.add(hash);
 			}
