@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -98,33 +99,21 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		if (this == other)
 			return true;
 
-		if (other == null || !(other instanceof Resource))
+		if (!(other instanceof Resource))
 			return false;
 
 		Map<URI, String> thisLocations = getLocations();
-		Map<URI, String> otherLocations;
-
-		if (other instanceof ResourceImpl) {
-			otherLocations = ((ResourceImpl) other).getLocations();
-		} else {
-			otherLocations = ResourceUtils.getLocations((Resource) other);
-		}
+		Map<URI, String> otherLocations = (other instanceof ResourceImpl) ? ((ResourceImpl) other).getLocations()
+			: ResourceUtils.getLocations((Resource) other);
 
 		Collection<URI> overlap = retain(thisLocations.keySet(), otherLocations.keySet());
 
-		for (URI uri : overlap) {
-			String thisSha = thisLocations.get(uri);
-			String otherSha = otherLocations.get(uri);
-			if (thisSha == otherSha)
-				return true;
-
-			if (thisSha != null && otherSha != null) {
-				if (thisSha.equals(otherSha))
-					return true;
-			}
-		}
-
-		return false;
+		return overlap.stream()
+			.anyMatch(uri -> {
+				String thisSha = thisLocations.get(uri);
+				String otherSha = otherLocations.get(uri);
+				return Objects.equals(thisSha, otherSha);
+			});
 	}
 
 	private Map<URI, String> getLocations() {
