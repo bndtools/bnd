@@ -1,6 +1,8 @@
 package biz.aQute.resolve;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
 import static org.osgi.framework.Constants.SYSTEM_BUNDLE_SYMBOLICNAME;
 import static org.osgi.framework.namespace.BundleNamespace.BUNDLE_NAMESPACE;
 import static org.osgi.framework.namespace.HostNamespace.HOST_NAMESPACE;
@@ -221,22 +223,20 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			// repos.
 			boolean optional = Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives()
 				.get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
-			if (optional && !optionalRoots.contains(requirement.getResource())) {
-				List<Capability> value = new ArrayList<>(firstStageResult);
-				Collections.sort(value, capabilityComparator);
-				return value;
-			} else {
-				List<Capability> secondStageList = findProvidersFromRepositories(requirement, firstStageResult);
-
+			if (!optional || optionalRoots.contains(requirement.getResource())) {
+				List<Capability> secondStageResult = findProvidersFromRepositories(requirement, firstStageResult);
 				// Concatenate both stages, eliminating duplicates between the
 				// two
-				firstStageResult.addAll(secondStageList);
-				return new ArrayList<>(firstStageResult);
+				firstStageResult.addAll(secondStageResult);
 			}
+			List<Capability> result = firstStageResult.stream()
+				.sorted(capabilityComparator)
+				.collect(toList());
+			return result;
 		});
-		List<Capability> result = new ArrayList<>(cached);
-		log.log(LogService.LOG_DEBUG, "for " + requirement + " found " + result);
-		return result;
+		List<Capability> capabilities = new ArrayList<>(cached);
+		log.log(LogService.LOG_DEBUG, "for " + requirement + " found " + capabilities);
+		return capabilities;
 	}
 
 	protected void processMandatoryResource(Requirement requirement, LinkedHashSet<Capability> firstStageResult,
@@ -250,35 +250,30 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	protected ArrayList<Capability> findProvidersFromRepositories(Requirement requirement,
 		LinkedHashSet<Capability> existingWiredCapabilities) {
-		// Second stage results: repository contents; may be reordered.
-		ArrayList<Capability> secondStageResult = new ArrayList<>();
+		// Second stage results: repository contents.
+		Set<Capability> set = new LinkedHashSet<>();
 
 		// Iterate over the repos
 		int order = 0;
-		ArrayList<Capability> repoCapabilities = new ArrayList<>();
 		for (Repository repo : repositories) {
-			repoCapabilities.clear();
-			Collection<Capability> capabilities = findProviders(repo, requirement);
-			if (capabilities != null && !capabilities.isEmpty()) {
-				repoCapabilities.ensureCapacity(capabilities.size());
-				for (Capability capability : capabilities) {
-					if (isPermitted(capability.getResource()) && ResourceUtils.isEffective(requirement, capability)) {
-						repoCapabilities.add(capability);
+			for (Capability capability : findProviders(repo, requirement)) {
+				if (isPermitted(capability.getResource()) && ResourceUtils.isEffective(requirement, capability)) {
+					if (set.add(capability)) {
 						setResourcePriority(order, capability.getResource());
 					}
 				}
-				secondStageResult.addAll(repoCapabilities);
 			}
 			order++;
 		}
-		Collections.sort(secondStageResult, capabilityComparator);
 
 		// Convert second-stage results to a list and post-process
-		ArrayList<Capability> secondStageList = new ArrayList<>(secondStageResult);
+		ArrayList<Capability> capabilities = set.stream()
+			.sorted(capabilityComparator)
+			.collect(toCollection(ArrayList::new));
 
 		// Post-processing second stage results
-		postProcessProviders(requirement, existingWiredCapabilities, secondStageList);
-		return secondStageList;
+		postProcessProviders(requirement, existingWiredCapabilities, capabilities);
+		return capabilities;
 	}
 
 	/**
@@ -292,12 +287,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 */
 	protected Collection<Capability> findProviders(Repository repo, Requirement requirement) {
 		Map<Requirement, Collection<Capability>> map = repo.findProviders(Collections.singleton(requirement));
-
-		if (map.isEmpty())
-			return Collections.emptySet();
-
 		Collection<Capability> caps = map.get(requirement);
-
 		caps.removeIf(capability -> blacklistedResources.contains(capability.getResource()));
 		return caps;
 	}

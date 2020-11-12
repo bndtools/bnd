@@ -591,15 +591,15 @@ public class BndrunResolveContextTest extends TestCase {
 		List<Capability> providers = context.findProviders(requirement);
 
 		assertEquals(3, providers.size());
-		assertEquals(IO.getFile("testdata/repo4/x.1.jar")
+		assertEquals(IO.getFile("testdata/repo4/x.3.jar")
 			.toURI(),
 			findContentURI(providers.get(0)
 				.getResource()));
-		assertEquals(IO.getFile("testdata/repo4/x.3.jar")
+		assertEquals(IO.getFile("testdata/repo4/x.2.jar")
 			.toURI(),
 			findContentURI(providers.get(1)
 				.getResource()));
-		assertEquals(IO.getFile("testdata/repo4/x.2.jar")
+		assertEquals(IO.getFile("testdata/repo4/x.1.jar")
 			.toURI(),
 			findContentURI(providers.get(2)
 				.getResource()));
