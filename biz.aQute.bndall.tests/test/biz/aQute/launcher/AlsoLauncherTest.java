@@ -759,11 +759,15 @@ public class AlsoLauncherTest {
 
 			// High-level test; cuts down our search space for subsequent tests
 			// which makes the output more readable in the event of a subsequent
-			// assertion failure.
-			Matcher match = Pattern.compile("^Id\\s+\\s+Levl\\s+State.*?(?=^#)", Pattern.DOTALL | Pattern.MULTILINE)
-				.matcher(err);
-			assertThat(match.find()).as("report block")
-				.isTrue();
+			// assertion failure. Don't try and find the end; there is not much
+			// text after the bundle dump anyway, and attempts to find it can
+			// end up truncating the matched block and hiding the useful
+			// information.
+			Pattern pattern = Pattern.compile("^Id\\s+\\s+Levl\\s+State.*", Pattern.DOTALL | Pattern.MULTILINE);
+			Matcher match = pattern.matcher(err);
+			if (!match.find()) {
+				throw new AssertionError("Couldn't find report block in stderr output:\n" + err);
+			}
 			final String report = match.group();
 
 			softly.assertThat(report)
