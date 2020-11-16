@@ -1,17 +1,18 @@
 import org.apache.tools.ant.taskdefs.condition.Os
+import aQute.bnd.osgi.Constants
 
 tasks.named('testOSGi') {
   description 'Bndtools Core Integration tests'
   if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-    enabled true
+    enabled !bndis(Constants.NOJUNITOSGI)
     bndrun 'test.win32.x86_64.bndrun'
   } else if (Os.isFamily(Os.FAMILY_MAC)) {
     // This has to come before the check for Unix as MacOS also
     // returns true for Unix
-    enabled true
+    enabled !bndis(Constants.NOJUNITOSGI)
     bndrun 'test.cocoa.macosx.x86_64.bndrun'
   } else if (Os.isFamily(Os.FAMILY_UNIX)) {
-    enabled true
+    enabled !bndis(Constants.NOJUNITOSGI)
     bndrun 'test.gtk.linux.x86_64.bndrun'
   } else {
     enabled false

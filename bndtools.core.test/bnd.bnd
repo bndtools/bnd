@@ -2,6 +2,8 @@
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 -sub: *.bnd
 
+-nojunitosgi: ${env;BNDTOOLS_CORE_TEST_NOJUNITOSGI;false}
+
 -buildrepo:
 -releaserepo:
 
