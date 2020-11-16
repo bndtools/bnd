@@ -69,7 +69,7 @@ org.apache.ant:ant-testutil:1.10.8
 junit:junit:${junit4.tester.version}
 junit:junit:${junit4.version}
 org.hamcrest:hamcrest-core:${hamcrest.version}
-org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.13_1
+org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.13.1_1
 org.junit.platform:junit-platform-commons:${junit.platform.tester.version}
 org.junit.platform:junit-platform-engine:${junit.platform.tester.version}
 org.junit.platform:junit-platform-launcher:${junit.platform.tester.version}
