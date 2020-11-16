@@ -1,14 +1,17 @@
 package aQute.bnd.repository.maven.pom.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
+import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -247,7 +250,8 @@ public class BndPomRepository extends BaseRepository
 	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
 		if (!init()) {
-			return Collections.emptyMap();
+			return requirements.stream()
+				.collect(toMap(identity(), requirement -> new ArrayList<>()));
 		}
 		return repoImpl.findProviders(requirements);
 	}
