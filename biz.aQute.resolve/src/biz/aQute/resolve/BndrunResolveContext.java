@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.jar.Manifest;
 
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -487,7 +488,8 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		ResourceBuilder resBuilder = new ResourceBuilder();
 
 		CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-			.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, IDENTITY_INITIAL_RESOURCE);
+			.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, IDENTITY_INITIAL_RESOURCE)
+			.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_BUNDLE);
 		resBuilder.addCapability(identity);
 
 		Parameters inputRequirements = new Parameters(properties.mergeProperties(Constants.RUNREQUIRES), project);
@@ -513,11 +515,27 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		resolvePrefs = new Parameters(properties.getProperty(PROP_RESOLVE_PREFERENCES), project);
 	}
 
+	// Remove any capabilities that come from resources whose osgi.identity
+	// capability is not type=osgi.bundle or type=osgi.fragment
+	private static final ResolverHook bundleTypeResolverHook;
+	static {
+		Predicate<Map<String, Object>> filterPredicate = ResourceUtils
+			.filterPredicate("(|(" + IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE + "=" + IdentityNamespace.TYPE_BUNDLE
+				+ ")(" + IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE + "=" + IdentityNamespace.TYPE_FRAGMENT + "))");
+		Predicate<Capability> capabilityPredicate = capability -> ResourceUtils
+			.capabilityStream(capability.getResource(), IdentityNamespace.IDENTITY_NAMESPACE)
+			.map(Capability::getAttributes)
+			.noneMatch(filterPredicate);
+		bundleTypeResolverHook = (requirement, capabilities) -> capabilities.removeIf(capabilityPredicate);
+	}
+
 	private List<ResolverHook> getResolverHooks() {
 		if (resolverHooks != null) {
 			return resolverHooks;
 		}
-		return resolverHooks = registry.getPlugins(ResolverHook.class);
+		List<ResolverHook> hooks = registry.getPlugins(ResolverHook.class);
+		hooks.add(bundleTypeResolverHook);
+		return resolverHooks = hooks;
 	}
 
 	@Override
