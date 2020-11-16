@@ -17,6 +17,7 @@ on:
 env:
   LC_ALL: en_US.UTF-8
   GRADLE_OPTS: -Dorg.gradle.parallel=true
+  BNDTOOLS_CORE_TEST_NOJUNITOSGI: true
 
 defaults:
   run:
