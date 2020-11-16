@@ -21,7 +21,7 @@ junit: \
 	junit-jupiter-api;version=latest,\
 	junit-jupiter-engine;version=latest,\
 	junit-jupiter-params;version=latest,\
-	org.apache.servicemix.bundles.junit;version="[4.12,5)",\
+	org.apache.servicemix.bundles.junit;version=latest,\
 	junit-vintage-engine;version=latest
 
 mockito: org.mockito.mockito-core;version="[2,3)",\

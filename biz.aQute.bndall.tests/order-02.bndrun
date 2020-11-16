@@ -2,7 +2,7 @@
 -runfw: org.apache.felix.framework;version='[5.6.10,6)'
 -runee: JavaSE-1.8
 -runbundles: \
-	org.apache.servicemix.bundles.junit;version='[4.13.0,4.13.1)';startlevel=100,\
+	org.apache.servicemix.bundles.junit;version='[4.13.0,5)';startlevel=100,\
 	org.apache.felix.log, \
 	demo;version='[1.0.0,1.0.1)';startlevel=110
 
