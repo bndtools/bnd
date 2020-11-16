@@ -1,7 +1,9 @@
 package aQute.bnd.repository.maven.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
+import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.Closeable;
@@ -13,6 +15,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -882,8 +885,10 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
-		if (!init())
-			return Collections.emptyMap();
+		if (!init()) {
+			return requirements.stream()
+				.collect(toMap(identity(), requirement -> new ArrayList<>()));
+		}
 
 		return index.getBridge()
 			.getRepository()
