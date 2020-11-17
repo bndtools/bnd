@@ -227,7 +227,7 @@ class Traverser {
 			CapabilityBuilder c = new CapabilityBuilder(IDENTITY_NAMESPACE);
 			c.addAttribute(IDENTITY_NAMESPACE, bsn);
 			c.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
-			c.addAttribute(CAPABILITY_TYPE_ATTRIBUTE, "application/java-archive");
+			c.addAttribute(CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_UNKNOWN);
 			rb.addCapability(c);
 		} catch (Exception ee) {
 			ee.printStackTrace();

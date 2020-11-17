@@ -20,6 +20,7 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.RepositoryContent;
 
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 
 class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent {
@@ -63,29 +64,38 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 
 	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder();
 		List<Capability> identities = getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (identities.size() == 1) {
-			Capability idCap = identities.get(0);
-			Object id = idCap.getAttributes()
-				.get(IdentityNamespace.IDENTITY_NAMESPACE);
-			builder.append(id);
+			Map<String, Object> attributes = identities.get(0)
+				.getAttributes();
+			String id = String.valueOf(attributes.get(IdentityNamespace.IDENTITY_NAMESPACE));
 
-			Object version = idCap.getAttributes()
-				.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-			if (version != null) {
-				builder.append(" version=")
-					.append(version);
+			switch (id) {
+				case Constants.IDENTITY_INITIAL_RESOURCE :
+				case Constants.IDENTITY_SYSTEM_RESOURCE :
+					return id;
+				default :
+					StringBuilder builder = new StringBuilder(id);
+					Object version = attributes.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+					if (version != null) {
+						builder.append(" version=")
+							.append(version);
+					}
+					Object type = attributes.getOrDefault(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE,
+						IdentityNamespace.TYPE_UNKNOWN);
+					if (!IdentityNamespace.TYPE_BUNDLE.equals(type)) {
+						builder.append(" type=")
+							.append(type);
+					}
+					return builder.toString();
 			}
-		} else {
-			// Generic toString
-			builder.append("ResourceImpl [caps=");
-			builder.append(allCapabilities);
-			builder.append(", reqs=");
-			builder.append(allRequirements);
-			builder.append(']');
 		}
-		return builder.toString();
+		// Generic toString
+		return new StringBuilder("ResourceImpl [caps=").append(allCapabilities)
+			.append(", reqs=")
+			.append(allRequirements)
+			.append(']')
+			.toString();
 	}
 
 	@Override
