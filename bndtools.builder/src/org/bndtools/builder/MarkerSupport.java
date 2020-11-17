@@ -98,7 +98,7 @@ class MarkerSupport {
 		IProject cnf = ResourcesPlugin.getWorkspace()
 			.getRoot()
 			.getProject("cnf");
-		if (cnf != null) {
+		if (cnf != null && cnf.isOpen()) {
 			IMarker[] markers = cnf.findMarkers(markerType, true, IResource.DEPTH_INFINITE);
 			if (markers != null) {
 				for (IMarker marker : markers) {

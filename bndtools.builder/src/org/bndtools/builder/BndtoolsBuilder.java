@@ -1,6 +1,8 @@
 package org.bndtools.builder;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +27,7 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -33,6 +36,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
@@ -71,7 +75,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 		CnfWatcher.install();
 	}
 
-	private Project		model;
 	private BuildLogger	buildLog;
 	private IProject[]	dependsOn;
 	private boolean		postponed;
@@ -113,15 +116,46 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 					.getDynamicReferences();
 			}
 
-			if (model == null) {
-				try {
-					model = Central.getProject(myProject);
-				} catch (Exception e) {
-					markers.deleteMarkers("*");
-				}
-				if (model == null)
-					return noreport();
+			Project ourModel = null;
+			try {
+				ourModel = Central.getProject(myProject);
+			} catch (Exception e) {
+				markers.deleteMarkers("*");
+				logger.logError("Exception while trying to fetch bnd project for " + myProject.getName(), e);
+				markers.createMarker(null, IMarker.SEVERITY_ERROR, "Exception while trying to fetch bnd project: " + e,
+					BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
+				return noreport();
 			}
+			if (ourModel == null) {
+				markers.deleteMarkers("*");
+				// Do a bit of digging to see if we can find the reason
+				Workspace ws = Central.getWorkspaceIfPresent();
+				String msg = "Cannot find bnd project: check that it is actually a bnd project and is part of the bnd workspace";
+				if (ws == null) {
+					msg = "No Bnd workspace is available";
+				} else if (ws.isDefaultWorkspace()) {
+					msg = "The Bnd cnf directory is not part of the Eclipse workspace";
+				} else {
+					IPath projPath = myProject.getLocation();
+
+					if (projPath == null) {
+						msg = "The project does not exist on the local file system";
+					} else {
+						Path javaPath = projPath.toFile()
+							.toPath();
+						Path wsPath = ws.getBase()
+							.toPath();
+						if (!Files.isSameFile(javaPath.getParent(), wsPath)) {
+							msg = "The project directory: " + javaPath + " is not a subdirectory of the bnd workspace "
+								+ wsPath;
+						}
+					}
+				}
+				markers.createMarker(null, IMarker.SEVERITY_ERROR, msg, BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
+				return noreport();
+			}
+
+			final Project model = ourModel;
 
 			try {
 				return Central.bndCall(() -> {
@@ -222,7 +256,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 					if (model.isNoBundles()) {
 						buildLog.basic("-nobundles was set, so no build");
 						buildLog.setFiles(0);
-						return report(markers);
+						return report(model, markers);
 					}
 
 					if (markers.hasBlockingErrors(delta)) {
@@ -240,7 +274,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 									"Will not build project %s until the compilation and/or path problems are fixed, output files are kept.",
 									myProject.getName());
 							}
-							return report(markers);
+							return report(model, markers);
 						}
 						buildLog.basic("Blocking errors, continuing anyway");
 						model.warning("Project %s has blocking errors but requested to continue anyway",
@@ -268,7 +302,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 							.refresh(); // this is for bnd plugins built in cnf
 					}
 
-					return report(markers);
+					return report(model, markers);
 				}, monitor);
 			} catch (TimeoutException | InterruptedException e) {
 				logger.logWarning("Unable to build project " + myProject.getName(), e);
@@ -287,7 +321,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 		return dependsOn;
 	}
 
-	private IProject[] report(MarkerSupport markers) throws Exception {
+	private IProject[] report(Project model, MarkerSupport markers) throws Exception {
 		markers.setMarkers(model, BndtoolsConstants.MARKER_BND_PROBLEM);
 		return dependsOn;
 	}
