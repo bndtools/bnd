@@ -57,6 +57,11 @@ class ProjectTracker implements AutoCloseable {
 	 */
 	synchronized Optional<Project> getProject(String name) {
 		update();
+		if (!models.containsKey(name) && workspace.getFile(name + "/" + Project.BNDFILE)
+			.isFile()) {
+			changed = true;
+			update();
+		}
 		return Optional.ofNullable(models.get(name));
 	}
 
