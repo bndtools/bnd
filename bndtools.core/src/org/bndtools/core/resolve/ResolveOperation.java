@@ -1,8 +1,10 @@
 package org.bndtools.core.resolve;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import org.bndtools.core.resolve.ResolutionResult.Outcome;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -16,9 +18,12 @@ import org.osgi.service.coordinator.Coordination;
 import org.osgi.service.coordinator.Coordinator;
 import org.osgi.service.resolver.ResolutionException;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.osgi.Processor;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.exceptions.RunnableWithException;
+import aQute.lib.utf8properties.UTF8Properties;
 import biz.aQute.resolve.ResolutionCallback;
 import biz.aQute.resolve.ResolverLogger;
 import biz.aQute.resolve.RunResolution;
@@ -52,8 +57,20 @@ public class ResolveOperation implements IRunnableWithProgress {
 				List<ResolutionCallback> operationCallbacks = new ArrayList<>(callbacks.size() + 1);
 				operationCallbacks.addAll(callbacks);
 				operationCallbacks.add(new CancelOperationCallback(monitor));
-				RunResolution resolution = RunResolution.resolve(model.getProject(), model.getProject(),
-					operationCallbacks, logger);
+				Project project = model.getProject();
+				Processor actualProperties = model.getProperties();
+				File source = model.getBndResource();
+				if (source == null) {
+					source = project.getPropertiesFile();
+				}
+				if (source != null) {
+					Properties properties = actualProperties.getProperties();
+					UTF8Properties copy = new UTF8Properties(properties);
+					copy.putAll(properties);
+					UTF8Properties here = copy.replaceHere(source.getParentFile());
+					actualProperties = new Processor(actualProperties, here, false);
+				}
+				RunResolution resolution = RunResolution.resolve(project, actualProperties, operationCallbacks, logger);
 				if (resolution.isOK()) {
 					result = new ResolutionResult(Outcome.Resolved, resolution, status, logger);
 				} else if (resolution.exception != null) {
@@ -72,7 +89,6 @@ public class ResolveOperation implements IRunnableWithProgress {
 						}
 					}
 				}
-
 			});
 
 		} catch (Exception e) {
