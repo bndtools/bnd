@@ -52,7 +52,7 @@ public class ResolveOperation implements IRunnableWithProgress {
 				List<ResolutionCallback> operationCallbacks = new ArrayList<>(callbacks.size() + 1);
 				operationCallbacks.addAll(callbacks);
 				operationCallbacks.add(new CancelOperationCallback(monitor));
-				RunResolution resolution = RunResolution.resolve(model.getProject(), model.getProperties(),
+				RunResolution resolution = RunResolution.resolve(model.getProject(), model.getProject(),
 					operationCallbacks, logger);
 				if (resolution.isOK()) {
 					result = new ResolutionResult(Outcome.Resolved, resolution, status, logger);
