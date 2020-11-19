@@ -1306,39 +1306,40 @@ public class BndEditModel {
 	 * @throws Exception
 	 */
 	public Processor getProperties() throws Exception {
+		File source = getBndResource();
 		Processor parent = null;
-
-		if ((isProjectFile() && project != null) || (project instanceof Run))
+		if ((isProjectFile() && project != null) || (project instanceof Run)) {
 			parent = project;
-		else if (getBndResource() != null) {
-			parent = Workspace.getRun(getBndResource());
+			if (source == null) {
+				source = project.getPropertiesFile();
+			}
+		} else if (source != null) {
+			parent = Workspace.getRun(source);
 			if (parent == null) {
 				parent = new Processor();
-				parent.setProperties(getBndResource(), getBndResource().getParentFile());
+				parent.setProperties(source);
 			}
 		}
 
-		Processor result;
-		if (parent == null)
-			result = new Processor();
-		else
-			result = new Processor(parent);
+		UTF8Properties p = (parent == null) ? new UTF8Properties() : new UTF8Properties(parent.getProperties());
+		p.putAll(properties);
 
-		StringBuilder sb = new StringBuilder();
-
-		for (Entry<String, String> e : changesToSave.entrySet()) {
-			sb.append(e.getKey())
-				.append(": ")
-				.append(e.getValue())
-				.append("\n\n");
+		if (!changesToSave.isEmpty()) {
+			StringBuilder sb = new StringBuilder();
+			changesToSave.forEach((key, value) -> sb.append(key)
+				.append(':')
+				.append(' ')
+				.append(value)
+				.append('\n')
+				.append('\n'));
+			p.load(sb.toString(), null, null);
 		}
-		UTF8Properties p = new UTF8Properties();
-		p.load(new StringReader(sb.toString()));
 
-		result.getProperties()
-			.putAll(properties);
-		result.getProperties()
-			.putAll(p);
+		if (source != null) {
+			p = p.replaceHere(source.getParentFile());
+		}
+
+		Processor result = (parent == null) ? new Processor(p, false) : new Processor(parent, p, false);
 		return result;
 	}
 
