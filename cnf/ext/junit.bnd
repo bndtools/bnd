@@ -28,3 +28,7 @@ mockito: org.mockito.mockito-core;version="[2,3)",\
 	net.bytebuddy.byte-buddy;version="[1,2)",\
 	org.objenesis;version="[2,3)"
 -runsystempackages.objenesis: sun.misc,sun.reflect
+
+# Enable use of environment variables to disable testing
+-nojunit: ${env;${replace;${toupper;${project.name}};\\.;_}_NOJUNIT;false}
+-nojunitosgi: ${env;${replace;${toupper;${project.name}};\\.;_}_NOJUNITOSGI;false}
