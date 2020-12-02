@@ -1,7 +1,6 @@
 package aQute.bnd.test;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -68,46 +67,50 @@ public class XmlTester {
 	public void assertExactAttribute(String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
-		assertNotNull(o);
-		assertEquals(value, o);
+		assertThat(o).isEqualTo(value);
 	}
 
 	public void assertAttribute(String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
-		assertNotNull(o);
-		assertEquals(value, o.trim());
+		assertThat(o).usingComparator((s1, s2) -> s1.trim()
+			.compareTo(s2))
+			.isEqualTo(value);
 	}
 
 	public void assertTrimmedAttribute(String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
-		assertNotNull(o);
-		assertEquals(value, o.trim()
-			.replaceAll("\n", "\\\\n"));
+		assertThat(o).usingComparator((s1, s2) -> s1.trim()
+			.replaceAll("\n", "\\\\n")
+			.compareTo(s2))
+			.isEqualTo(value);
 	}
 
 	public void assertNoAttribute(String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
-		assertEquals("", o);
+		assertThat(o).isEmpty();
 	}
 
 	public void assertNamespace(String namespace) {
 		Element element = document.getDocumentElement();
 		String xmlns = element.getNamespaceURI();
-		assertEquals(namespace, xmlns);
+		assertThat(xmlns).isEqualTo(namespace);
 	}
 
 	public void assertNumber(Double value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		Double o = (Double) xpath.evaluate(expr, document, XPathConstants.NUMBER);
-		assertNotNull(o);
-		assertEquals(value, o);
+		assertThat(o).isEqualTo(value);
 	}
 
 	public void assertCount(int value, String expr) throws XPathExpressionException {
-		assertNumber(Double.valueOf(value), "count(" + expr + ")");
+		expr = "count(" + expr + ")";
+		System.err.println(expr);
+		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
+		assertThat(o).containsOnlyDigits();
+		assertThat(Integer.parseInt(o)).isEqualTo(value);
 	}
 
 }
