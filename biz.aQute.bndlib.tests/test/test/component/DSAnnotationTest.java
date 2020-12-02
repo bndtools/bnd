@@ -83,6 +83,9 @@ public class DSAnnotationTest extends TestCase {
 	private static String[]		FACTORY					= {
 		ComponentFactory.class.getName()
 	};
+	private static String[]		OBJECT					= {
+		Object.class.getName()
+	};
 
 	/**
 	 * Property test
@@ -860,7 +863,7 @@ public class DSAnnotationTest extends TestCase {
 			xt.assertAttribute("greedy", "scr:component/reference[1]/@policy-option");
 		}
 		Attributes a = getAttr(jar);
-		checkProvides(a, SERIALIZABLE_RUNNABLE, FACTORY);
+		checkProvides(a, SERIALIZABLE_RUNNABLE, OBJECT, FACTORY);
 		// n.b. we should merge the 2 logService requires, so when we fix that
 		// we'll need to update this test.
 		// one is plain, other has cardinality multiple.
@@ -2321,7 +2324,7 @@ public class DSAnnotationTest extends TestCase {
 	}
 
 	@Component(factory = "factory")
-	public static class FactoryComponent implements Runnable {
+	public static class FactoryComponent implements Serializable, Runnable {
 
 		@Override
 		public void run() {
@@ -2339,17 +2342,51 @@ public class DSAnnotationTest extends TestCase {
 			if (!b.check())
 				fail();
 			Attributes a = getAttr(jar);
-			checkProvides(a, FACTORY);
+			checkProvides(a, FACTORY, SERIALIZABLE_RUNNABLE);
 			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
-			assertThat(a.getValue(Constants.PROVIDE_CAPABILITY)).contains("component.factory=factory")
-				.doesNotContain("java.lang.Runnable");
+			assertThat(a.getValue(Constants.PROVIDE_CAPABILITY)).contains("component.factory=factory",
+				"java.lang.Runnable", "java.io.Serializable");
 
 			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FactoryComponent.xml");
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 			xt.assertAttribute("factory", "scr:component/@factory");
-			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[1]/@interface");
+			xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
+			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
+		}
+	}
+
+	@Component(factory = "factory", service = {})
+	public static class FactoryComponentNoService implements Serializable, Runnable {
+
+		@Override
+		public void run() {
+			// empty
+		}
+	}
+
+	public void testFactoryComponentNoService() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryComponentNoService");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a, FACTORY);
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
+			assertThat(a.getValue(Constants.PROVIDE_CAPABILITY)).contains("component.factory=factory")
+				.doesNotContain("java.lang.Runnable", "java.io.Serializable");
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FactoryComponentNoService.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+			xt.assertAttribute("factory", "scr:component/@factory");
+			xt.assertCount(0, "scr:component/service");
 		}
 	}
 
