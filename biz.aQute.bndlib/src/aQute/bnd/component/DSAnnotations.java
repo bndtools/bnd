@@ -280,7 +280,6 @@ public class DSAnnotations implements AnalyzerPlugin {
 			p.put(ServiceNamespace.SERVICE_NAMESPACE, a);
 			String s = p.toString();
 			provides.add(s);
-			return;
 		}
 
 		TypeRef[] services = definition.service;

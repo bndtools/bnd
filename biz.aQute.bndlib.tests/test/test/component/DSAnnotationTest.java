@@ -83,6 +83,9 @@ public class DSAnnotationTest extends TestCase {
 	private static String[]		FACTORY					= {
 		ComponentFactory.class.getName()
 	};
+	private static String[]		OBJECT					= {
+		Object.class.getName()
+	};
 
 	/**
 	 * Property test
@@ -612,8 +615,8 @@ public class DSAnnotationTest extends TestCase {
 			xt.assertAttribute("java.io.Serializable", "component/service/provide[1]/@interface");
 			xt.assertAttribute("java.lang.Runnable", "component/service/provide[2]/@interface");
 
-			xt.assertAttribute("0", "count(component/properties)");
-			xt.assertAttribute("0", "count(component/property)");
+			xt.assertCount(0, "component/properties");
+			xt.assertCount(0, "component/property");
 
 			xt.assertAttribute("xsetLogService", "component/reference[1]/@name");
 			xt.assertAttribute("", "component/reference[1]/@target");
@@ -669,8 +672,8 @@ public class DSAnnotationTest extends TestCase {
 			xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-			xt.assertAttribute("0", "count(scr:component/properties)");
-			xt.assertAttribute("0", "count(scr:component/property)");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
 
 			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
 			xt.assertAttribute("", "scr:component/reference[1]/@target");
@@ -714,8 +717,8 @@ public class DSAnnotationTest extends TestCase {
 			xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-			xt.assertAttribute("0", "count(scr:component/properties)");
-			xt.assertAttribute("0", "count(scr:component/property)");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
 
 			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
 			xt.assertAttribute("", "scr:component/reference[1]/@target");
@@ -759,8 +762,8 @@ public class DSAnnotationTest extends TestCase {
 			xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-			xt.assertAttribute("0", "count(scr:component/properties)");
-			xt.assertAttribute("0", "count(scr:component/property)");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
 
 			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
 			xt.assertAttribute("", "scr:component/reference[1]/@target");
@@ -803,8 +806,8 @@ public class DSAnnotationTest extends TestCase {
 			xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-			xt.assertAttribute("0", "count(scr:component/properties)");
-			xt.assertAttribute("0", "count(scr:component/property)");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
 
 			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
 			xt.assertAttribute("", "scr:component/reference[1]/@target");
@@ -841,10 +844,10 @@ public class DSAnnotationTest extends TestCase {
 			xt.assertAttribute("close", "scr:component/@deactivate");
 			xt.assertAttribute("changed", "scr:component/@modified");
 			xt.assertAttribute("java.lang.Object", "scr:component/service/provide[1]/@interface");
-			xt.assertAttribute("1", "count(scr:component/service/provide)");
+			xt.assertCount(1, "scr:component/service/provide");
 
-			xt.assertAttribute("1", "count(scr:component/properties)");
-			xt.assertAttribute("2", "count(scr:component/property)");
+			xt.assertCount(1, "scr:component/properties");
+			xt.assertCount(2, "scr:component/property");
 
 			xt.assertAttribute("(objectclass=*)", "scr:component/reference[1]/@target");
 			xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
@@ -854,13 +857,13 @@ public class DSAnnotationTest extends TestCase {
 			xt.assertAttribute("dynamic", "scr:component/reference[1]/@policy");
 			xt.assertAttribute("(objectclass=*)", "scr:component/reference[1]/@target");
 
-			xt.assertAttribute("2", "count(scr:component/property)");
-			xt.assertAttribute("1", "count(scr:component/properties)");
+			xt.assertCount(2, "scr:component/property");
+			xt.assertCount(1, "scr:component/properties");
 			xt.assertAttribute("resource.props", "scr:component/properties[1]/@entry");
 			xt.assertAttribute("greedy", "scr:component/reference[1]/@policy-option");
 		}
 		Attributes a = getAttr(jar);
-		checkProvides(a, SERIALIZABLE_RUNNABLE, FACTORY);
+		checkProvides(a, SERIALIZABLE_RUNNABLE, OBJECT, FACTORY);
 		// n.b. we should merge the 2 logService requires, so when we fix that
 		// we'll need to update this test.
 		// one is plain, other has cardinality multiple.
@@ -896,8 +899,8 @@ public class DSAnnotationTest extends TestCase {
 		xt.assertAttribute("deactivate", "scr:component/@deactivate");
 		xt.assertAttribute("", "scr:component/@modified");
 
-		xt.assertAttribute("0", "count(scr:component/properties)");
-		xt.assertAttribute("0", "count(scr:component/property)");
+		xt.assertCount(0, "scr:component/properties");
+		xt.assertCount(0, "scr:component/property");
 
 		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("", "scr:component/reference[1]/@target");
@@ -1141,8 +1144,8 @@ public class DSAnnotationTest extends TestCase {
 		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("0", "count(scr:component/properties)");
-		xt.assertAttribute("0", "count(scr:component/property)");
+		xt.assertCount(0, "scr:component/properties");
+		xt.assertCount(0, "scr:component/property");
 
 		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("", "scr:component/reference[1]/@target");
@@ -2187,8 +2190,8 @@ public class DSAnnotationTest extends TestCase {
 		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("0", "count(scr:component/properties)");
-		xt.assertAttribute("0", "count(scr:component/property)");
+		xt.assertCount(0, "scr:component/properties");
+		xt.assertCount(0, "scr:component/property");
 
 		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("", "scr:component/reference[1]/@target");
@@ -2234,10 +2237,10 @@ public class DSAnnotationTest extends TestCase {
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
 			xt.assertAttribute("ds14", "scr:component/@factory");
-			xt.assertAttribute("0", "count(scr:component/properties)");
-			xt.assertAttribute("0", "count(scr:component/property)");
-			xt.assertAttribute("14", "count(scr:component/factory-property)");
-			xt.assertAttribute("1", "count(scr:component/factory-properties)");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
+			xt.assertCount(14, "scr:component/factory-property");
+			xt.assertCount(1, "scr:component/factory-properties");
 
 			xt.assertAttribute("", "scr:component/factory-property[@name='a']/@value");
 			xt.assertAttribute("1\n2", "scr:component/factory-property[@name='a']/text()");
@@ -2321,7 +2324,7 @@ public class DSAnnotationTest extends TestCase {
 	}
 
 	@Component(factory = "factory")
-	public static class FactoryComponent implements Runnable {
+	public static class FactoryComponent implements Serializable, Runnable {
 
 		@Override
 		public void run() {
@@ -2339,17 +2342,51 @@ public class DSAnnotationTest extends TestCase {
 			if (!b.check())
 				fail();
 			Attributes a = getAttr(jar);
-			checkProvides(a, FACTORY);
+			checkProvides(a, FACTORY, SERIALIZABLE_RUNNABLE);
 			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
-			assertThat(a.getValue(Constants.PROVIDE_CAPABILITY)).contains("component.factory=factory")
-				.doesNotContain("java.lang.Runnable");
+			assertThat(a.getValue(Constants.PROVIDE_CAPABILITY)).contains("component.factory=factory",
+				"java.lang.Runnable", "java.io.Serializable");
 
 			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FactoryComponent.xml");
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 			xt.assertAttribute("factory", "scr:component/@factory");
-			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[1]/@interface");
+			xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
+			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
+		}
+	}
+
+	@Component(factory = "factory", service = {})
+	public static class FactoryComponentNoService implements Serializable, Runnable {
+
+		@Override
+		public void run() {
+			// empty
+		}
+	}
+
+	public void testFactoryComponentNoService() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryComponentNoService");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a, FACTORY);
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
+			assertThat(a.getValue(Constants.PROVIDE_CAPABILITY)).contains("component.factory=factory")
+				.doesNotContain("java.lang.Runnable", "java.io.Serializable");
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FactoryComponentNoService.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+			xt.assertAttribute("factory", "scr:component/@factory");
+			xt.assertCount(0, "scr:component/service");
 		}
 	}
 
@@ -2527,8 +2564,8 @@ public class DSAnnotationTest extends TestCase {
 		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("0", "count(scr:component/properties)");
-		xt.assertAttribute("18", "count(scr:component/property)");
+		xt.assertCount(0, "scr:component/properties");
+		xt.assertCount(18, "scr:component/property");
 
 		xt.assertAttribute("foo", "scr:component/property[@name='myString']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='myString']/@type");
@@ -2662,7 +2699,7 @@ public class DSAnnotationTest extends TestCase {
 		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("6", "count(scr:component/property)");
+		xt.assertCount(6, "scr:component/property");
 
 		xt.assertAttribute("foo", "scr:component/property[@name='myString1']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='myString1']/@type");
@@ -2749,7 +2786,7 @@ public class DSAnnotationTest extends TestCase {
 		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("2", "count(scr:component/property)");
+		xt.assertCount(2, "scr:component/property");
 
 		xt.assertAttribute("foo", "scr:component/property[@name='test.my-String7']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='test.my-String7']/@type");
@@ -2818,7 +2855,7 @@ public class DSAnnotationTest extends TestCase {
 		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("2", "count(scr:component/property)");
+		xt.assertCount(2, "scr:component/property");
 
 		xt.assertAttribute("foo", "scr:component/property[@name='test.my-String7']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='test.my-String7']/@type");
@@ -2962,7 +2999,7 @@ public class DSAnnotationTest extends TestCase {
 		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("4", "count(scr:component/property)");
+		xt.assertCount(4, "scr:component/property");
 
 		xt.assertAttribute("a", "scr:component/property[@name='a']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='a']/@type");
@@ -4227,8 +4264,8 @@ public class DSAnnotationTest extends TestCase {
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
-			xt.assertAttribute("0", "count(scr:component/properties)");
-			xt.assertAttribute("0", "count(scr:component/property)");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
 
 			// This test method depends upon the compiler generating
 			// MethodParameters attributes so that the DS annotations code will
@@ -4295,8 +4332,8 @@ public class DSAnnotationTest extends TestCase {
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
-			xt.assertAttribute("0", "count(scr:component/properties)");
-			xt.assertAttribute("0", "count(scr:component/property)");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
 
 			xt.assertAttribute("3", "scr:component/@init");
 			xt.assertAttribute("activator", "scr:component/@activate");

@@ -923,8 +923,7 @@ public class SpecMetatypeTest extends TestCase {
 			assertEquals(optionLabels.length, optionValues.length);
 
 			// option count is correct
-			xt.assertNumber(Double.valueOf(optionLabels.length),
-				"count(metatype:MetaData/OCD/AD[@id='" + id + "']/Option)");
+			xt.assertCount(optionLabels.length, "metatype:MetaData/OCD/AD[@id='" + id + "']/Option");
 			for (int i = 0; i < optionLabels.length; i++) {
 				String expr = "metatype:MetaData/OCD/AD[@id='" + id + "']/Option[@label='" + optionLabels[i]
 					+ "']/@value";
