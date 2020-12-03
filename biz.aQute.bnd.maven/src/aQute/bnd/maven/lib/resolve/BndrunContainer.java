@@ -323,12 +323,14 @@ public class BndrunContainer {
 						return property;
 					}
 					// so fallback to the currently running Java version
-					return System.getProperty("java.version");
+					return System.getProperty("java.specification.version");
 				})
 				.flatMap(EE::highestFromTargetVersion)
-				// if that all fails at least we know bnd needs at least
-				// Java 8 at this point
-				.orElse(EE.JavaSE_1_8);
+				.orElseGet(() -> Optional.ofNullable(System.getProperty("java.specification.version"))
+					.flatMap(EE::highestFromTargetVersion)
+					// if that all fails at least we know bnd needs at least
+					// Java 8 at this point
+					.orElse(EE.JavaSE_1_8));
 
 			run.setProperty(Constants.RUNEE, ee.getEEName());
 
