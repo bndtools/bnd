@@ -58,6 +58,7 @@ import aQute.bnd.service.diff.Type;
 import aQute.bnd.service.specifications.BuilderSpecification;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
+import aQute.lib.collections.Logic;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
@@ -623,23 +624,40 @@ public class Builder extends Analyzer {
 				.forEachOrdered(path -> packages.add(path, srce));
 		}
 
-		Parameters includedPackages = getPrivatePackage();
+		Parameters private_package = getParameters(PRIVATE_PACKAGE);
+		Parameters privatepackage = getParameters(PRIVATEPACKAGE);
+		Parameters testpackage = new Parameters();
+		Parameters includepackage = buildInstrs.includepackage();
+
 		if (buildInstrs.undertest()) {
 			String h = mergeProperties(Constants.TESTPACKAGES, "test;presence:=optional");
-			includedPackages.putAll(parseHeader(h));
+			testpackage = parseHeader(h);
 		}
 
-		Parameters limboPackages = buildInstrs.includepackage();
-		includedPackages.putAll(limboPackages);
+		Parameters includedPackages = new Parameters();
+		includedPackages.putAll(private_package);
+		includedPackages.putAll(privatepackage);
+		includedPackages.putAll(testpackage);
+		includedPackages.putAll(includepackage);
 
 		if (!includedPackages.isEmpty()) {
 			Instructions privateFilter = new Instructions(includedPackages);
 			Set<Instruction> unused = doExpand(dot, packages, privateFilter);
 
+			unused.removeIf(Instruction::isAny); // allow 0 matches
+
 			if (!unused.isEmpty()) {
+
+				String header = Constants.PRIVATEPACKAGE;
+				if (Logic.hasOverlap(private_package.keySet(), unused))
+					header = Constants.PRIVATE_PACKAGE;
+				else if (Logic.hasOverlap(testpackage.keySet(), unused))
+					header = Constants.TESTPACKAGES;
+				else if (Logic.hasOverlap(includepackage.keySet(), unused))
+					header = Constants.INCLUDEPACKAGE;
+
 				warning(
-					"Unused " + Constants.PRIVATE_PACKAGE + " instructions, no such package(s) on the class path: %s",
-					unused).header(Constants.PRIVATE_PACKAGE)
+					"Unused %s instructions , no such package(s) on the class path: %s", header, unused).header(header)
 						.context(unused.iterator()
 							.next()
 							.getInput());
