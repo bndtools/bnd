@@ -84,7 +84,7 @@ public class Main extends ReporterAdapter {
 		File cache = IO.getFile(options.cache(Home.getUserHomeBnd() + "/remote/cache"));
 		File storage = IO.getFile(options.storage("storage"));
 
-		dispatcher = new EnvoyDispatcher(this, cache, storage, network, port);
+		dispatcher = new EnvoyDispatcher(this, cache, storage, network, port, options._properties());
 		dispatcher.run();
 	}
 
