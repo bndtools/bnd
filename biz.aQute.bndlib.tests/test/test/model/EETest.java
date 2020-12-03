@@ -49,7 +49,7 @@ public class EETest {
 
 	@Test
 	public void getEEFromJvm() throws Exception {
-		String java_version = System.getProperty("java.version");
+		String java_version = System.getProperty("java.specification.version");
 		Version version = MavenVersion.parseMavenString(java_version)
 			.getOSGiVersion();
 		assertThat(EE.highestFromTargetVersion(java_version)).hasValueSatisfying( //
