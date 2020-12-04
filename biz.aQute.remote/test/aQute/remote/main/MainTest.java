@@ -38,7 +38,7 @@ public class MainTest extends TestCase {
 				try {
 					Main.main(new String[] {
 						"-p", Agent.DEFAULT_PORT + 1 + "", "-s", "generated/storage", "-c", "generated/cache", "-n",
-						"*", "-et"
+						"*", "-et", "-Dfoo=bar", "-Dbar=foo"
 					});
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -48,9 +48,14 @@ public class MainTest extends TestCase {
 		thread.setDaemon(true);
 		thread.start();
 
-		while (Main.main == null) {
-			Thread.sleep(100);
+		long deadline = System.currentTimeMillis() + 5000;
+		while (deadline > System.currentTimeMillis()) {
+			if (Main.main != null && Main.getDispatcher() != null)
+				return;
+
+			Thread.sleep(10);
 		}
+		throw new IllegalStateException("Cannot initialize agent");
 	}
 
 	@Override

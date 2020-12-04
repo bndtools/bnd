@@ -23,6 +23,7 @@ import aQute.configurable.Config;
 import aQute.configurable.Configurable;
 import aQute.lib.justif.Justif;
 import aQute.lib.markdown.MarkdownFormatter;
+import aQute.lib.strings.Strings;
 import aQute.libg.generics.Create;
 import aQute.libg.reporter.ReporterMessages;
 import aQute.service.reporter.Reporter;
@@ -38,7 +39,7 @@ import aQute.service.reporter.Reporter;
 @SuppressWarnings("unchecked")
 public class CommandLine {
 	final static int				LINELENGTH	= 60;
-	private final static Pattern	ASSIGNMENT	= Pattern.compile("(\\w++)\\s*=\\s*(\\S+)\\s*");
+	private final static Pattern	ASSIGNMENT	= Pattern.compile("-D([^=]+)=(.*)");
 	Reporter						reporter;
 	Justif							justif		= new Justif(80, 30, 32, 70);
 	CommandLineMessages				msg;
@@ -162,7 +163,17 @@ public class CommandLine {
 			}
 			return null;
 		}
-		return help(target, cmd, optionClass);
+
+		StringBuilder sb = new StringBuilder();
+		sb.append(Strings.join("\n", reporter.getErrors()));
+		if (!reporter.getWarnings()
+			.isEmpty()) {
+			sb.append("\nWarning(s)\n")
+				.append(Strings.join("\n", reporter.getWarnings()));
+		}
+		sb.append("\n")
+			.append(help(target, cmd, optionClass));
+		return sb.toString();
 	}
 
 	public void generateDocumentation(Object target, Appendable out) {
@@ -260,30 +271,31 @@ public class CommandLine {
 
 				} else {
 
-					// Set of single character named options like -a
+					Matcher m = ASSIGNMENT.matcher(option);
+					if (m.matches()) {
+						properties.put(m.group(1), m.group(2));
+					} else {
 
-					charloop: for (int j = 1; j < option.length(); j++) {
+						// Set of single character named options like -a
 
-						char optionChar = option.charAt(j);
+						charloop: for (int j = 1; j < option.length(); j++) {
 
-						for (Entry<String, Method> entry : options.entrySet()) {
-							if (entry.getKey()
-								.charAt(0) == optionChar) {
-								boolean last = (j + 1) >= option.length();
-								assignOptionValue(values, entry.getValue(), arguments, last);
-								continue charloop;
+							char optionChar = option.charAt(j);
+
+							for (Entry<String, Method> entry : options.entrySet()) {
+								if (entry.getKey()
+									.charAt(0) == optionChar) {
+									boolean last = (j + 1) >= option.length();
+									assignOptionValue(values, entry.getValue(), arguments, last);
+									continue charloop;
+								}
 							}
+							msg.UnrecognizedOption_(optionChar + "");
 						}
-						msg.UnrecognizedOption_(optionChar + "");
 					}
 				}
-			} else {
-				Matcher m = ASSIGNMENT.matcher(option);
-				if (m.matches()) {
-					properties.put(m.group(1), m.group(2));
-				}
+			} else
 				break;
-			}
 		}
 
 		// check if all required elements are set
@@ -391,7 +403,8 @@ public class CommandLine {
 
 			String parameter = args.remove(0);
 
-			if (Collection.class.isAssignableFrom(m.getReturnType())) {
+			if (Collection.class.isAssignableFrom(m.getReturnType()) || m.getReturnType()
+				.isArray()) {
 
 				Collection<Object> optionValues = (Collection<Object>) options.get(m.getName());
 
@@ -402,12 +415,10 @@ public class CommandLine {
 
 				optionValues.add(parameter);
 			} else {
-
 				if (options.containsKey(name)) {
 					msg.OptionCanOnlyOccurOnce_(name);
 					return;
 				}
-
 				options.put(name, parameter);
 			}
 		}
