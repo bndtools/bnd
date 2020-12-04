@@ -28,7 +28,6 @@ import java.util.stream.StreamSupport;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceLayout;
 import aQute.bnd.build.model.clauses.ExportedPackage;
@@ -1307,11 +1306,17 @@ public class BndEditModel {
 	 */
 	public Processor getProperties() throws Exception {
 		File source = getBndResource();
-		Processor parent = null;
-		if ((isProjectFile() && project != null) || (project instanceof Run)) {
+		Processor parent;
+
+		if (project != null) {
 			parent = project;
 			if (source == null) {
 				source = project.getPropertiesFile();
+			}
+		} else if (workspace != null && isCnf()) {
+			parent = workspace;
+			if (source == null) {
+				source = workspace.getPropertiesFile();
 			}
 		} else if (source != null) {
 			parent = Workspace.getRun(source);
@@ -1319,10 +1324,11 @@ public class BndEditModel {
 				parent = new Processor();
 				parent.setProperties(source);
 			}
+		} else {
+			parent = new Processor(properties, false);
 		}
 
-		UTF8Properties p = (parent == null) ? new UTF8Properties() : new UTF8Properties(parent.getProperties());
-		p.putAll(properties);
+		UTF8Properties p = new UTF8Properties(parent.getProperties());
 
 		if (!changesToSave.isEmpty()) {
 			StringBuilder sb = new StringBuilder();
@@ -1335,11 +1341,12 @@ public class BndEditModel {
 			p.load(sb.toString(), null, null);
 		}
 
-		if (source != null) {
-			p = p.replaceHere(source.getParentFile());
-		}
-
-		Processor result = (parent == null) ? new Processor(p, false) : new Processor(parent, p, false);
+		Processor result;
+		p = p.replaceHere(parent.getBase());
+		result = new Processor(parent, p, false);
+		result.setBase(parent.getBase());
+		if (source != null)
+			result.setPropertiesFile(source);
 		return result;
 	}
 

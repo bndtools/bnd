@@ -1,5 +1,7 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.LinkedList;
@@ -9,6 +11,7 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
@@ -17,6 +20,8 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.properties.Document;
+import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import junit.framework.TestCase;
 
 public class BndEditModelTest extends TestCase {
@@ -90,12 +95,13 @@ public class BndEditModelTest extends TestCase {
 		Document d = new Document("");
 		model.saveChangesTo(d);
 
-		processor = model.getProperties();
+		model.loadFrom(d); // reset the properties
+
 		runrequirements = processor.mergeProperties(Constants.RUNREQUIRES);
 		rrr = runrequirements.split(",");
 		assertEquals(2, rrr.length);
-		assertEquals("	osgi.identity;filter:='(osgi.identity=b)'", rrr[0]);
-		assertEquals("	osgi.identity;filter:='(osgi.identity=c)'", rrr[1]);
+		assertEquals("osgi.identity;filter:='(osgi.identity=b)'", Strings.trim(rrr[0]));
+		assertEquals("osgi.identity;filter:='(osgi.identity=c)'", Strings.trim(rrr[1]));
 
 		assertEquals(getReq("(osgi.identity=b)"), r.get(0));
 		assertEquals(getReq("(osgi.identity=c)"), r.get(1));
@@ -156,7 +162,7 @@ public class BndEditModelTest extends TestCase {
 	}
 
 	public static void testRemovePropertyFromStandalone() throws Exception {
-		File runFile = new File("testresources/standalone.bndrun");
+		File runFile = IO.getFile("testresources/standalone.bndrun");
 		Run run = Run.createRun(null, runFile);
 
 		BndEditModel model = new BndEditModel();
@@ -180,4 +186,77 @@ public class BndEditModelTest extends TestCase {
 		assertEquals("C", model.getProperties()
 			.get("c"));
 	}
+
+	public void testGetProperties() throws Exception {
+		File runFile = IO.getFile("testresources/standalone.bndrun");
+		Run run = Run.createRun(null, runFile);
+		BndEditModel model = new BndEditModel(run);
+
+		assertThat(model.getWorkspace()).isNotNull();
+		assertThat(model.getProject()).isNotNull();
+
+		model.setGenericString("a", "AA");
+
+		Processor properties = model.getProperties();
+
+		assertThat(properties.getProperty("a")).isEqualTo("AA");
+		assertThat(run.getProperty("a")).isEqualTo("A");
+
+		assertThat(properties.getPropertiesFile()).isEqualTo(run.getPropertiesFile());
+		assertThat(properties.getBase()).isEqualTo(run.getBase());
+
+	}
+
+	public void testGetPropertiesWithFileReplace() throws Exception {
+		File runFile = IO.getFile("testresources/standalone.bndrun");
+		Run run = Run.createRun(null, runFile);
+		BndEditModel model = new BndEditModel(run);
+
+		model.setGenericString("here.also", "${.}");
+
+		Processor properties = model.getProperties();
+
+		assertThat(properties.getProperty("here")).isEqualTo(getPortablePath(runFile.getParentFile()));
+
+		assertThat(properties.getProperty("here.also")).isEqualTo(getPortablePath(runFile.getParentFile()));
+	}
+
+	public void testGetPropertiesWithWorkspaceMacros() throws Exception {
+		Workspace ws = new Workspace(new File("testresources/ws"));
+		Project project = ws.getProject("p1");
+		BndEditModel model = new BndEditModel(project);
+		model.setGenericString("ws", "${workspace}");
+		model.setGenericString("pro", "${project}");
+		Processor p = model.getProperties();
+
+		assertThat(p.getProperty("ws")).isEqualTo(getPortablePath(ws.getBase()));
+
+		assertThat(p.getProperty("pro")).isEqualTo(getPortablePath(project.getBase()));
+	}
+
+	public void testGetPropertiesWithoutParent() throws Exception {
+		BndEditModel model = new BndEditModel();
+		model.setGenericString("foo", "FOO");
+		Processor p = model.getProperties();
+
+		assertThat(p.getProperty("foo")).isEqualTo("FOO");
+	}
+
+	public void testGetPropertiesWithOnlyWorkspace() throws Exception {
+		Workspace ws = new Workspace(new File("testresources/ws"));
+		BndEditModel model = new BndEditModel(ws);
+		model.setGenericString("foo", "FOO");
+		Processor p = model.getProperties();
+
+		assertThat(p.getProperty("foo")).isEqualTo("FOO");
+	}
+
+	private String getPortablePath(File base) {
+		String path = base.getAbsolutePath();
+		if (File.separatorChar != '/') {
+			path = path.replace(File.separatorChar, '/');
+		}
+		return path;
+	}
+
 }

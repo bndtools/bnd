@@ -98,7 +98,7 @@ import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
-	private static final Logger	logger	= LoggerFactory.getLogger(Processor.class);
+	private static final Logger	logger			= LoggerFactory.getLogger(Processor.class);
 	public static Reporter		log;
 
 	static {
@@ -2991,5 +2991,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (f != null)
 			l.add(f);
 		return l;
+	}
+
+	/**
+	 * Set the properties file but do **not** load the properties.
+	 *
+	 * @param source the properties file
+	 */
+	public void setPropertiesFile(File source) {
+		this.propertiesFile = source;
 	}
 }
