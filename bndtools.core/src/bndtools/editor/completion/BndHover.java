@@ -36,6 +36,10 @@ public class BndHover extends DefaultTextHover {
 				if (key.indexOf('$') >= 0) {
 					Processor properties = bndEditor.getModel()
 						.getProperties();
+
+					properties.setProperty(".", properties.getBase()
+						.getAbsolutePath());
+
 					String replaced = properties.getReplacer()
 						.process(key);
 					if (properties.isOk())
