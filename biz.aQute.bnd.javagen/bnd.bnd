@@ -1,5 +1,5 @@
 -buildpath: \
-	osgi.annotation; version=6.0.1,\
+	osgi.annotation;version=latest,\
 	aQute.libg,\
 	biz.aQute.bndlib;version=latest
 
