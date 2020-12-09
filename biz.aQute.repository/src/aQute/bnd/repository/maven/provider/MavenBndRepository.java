@@ -197,7 +197,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				}
 
 				logger.debug("Put release {}", pom.getRevision());
-				try (Release releaser = storage.release(pom.getRevision(), options.context.getProperties())) {
+				try (Release releaser = storage.release(pom.getRevision(), options.context.getFlattenedProperties())) {
 					if (releaser == null) {
 						logger.debug("Already released {}", pom.getRevision());
 						return result;
