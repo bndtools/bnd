@@ -331,8 +331,8 @@ public class Workspace extends Processor {
 
 	/*
 	 * This constructor will create an intermediate parent processor to hold the
-	 * version defaults but will fix them up. This must be done by the caller
-	 * after the user properties are set.
+	 * version defaults but will _not_ fix them up. This must be done by the
+	 * caller after the user properties are set.
 	 * @param layout the layout to use
 	 */
 	private Workspace(WorkspaceLayout layout) throws Exception {
@@ -482,7 +482,8 @@ public class Workspace extends Processor {
 		super.propertiesChanged();
 	}
 
-	public String _workspace(@SuppressWarnings("unused") String args[]) {
+	public String _workspace(@SuppressWarnings("unused")
+	String args[]) {
 		return IO.absolutePath(getBase());
 	}
 
@@ -1268,46 +1269,44 @@ public class Workspace extends Processor {
 
 		AtomicBoolean copyAll = new AtomicBoolean(false);
 		AtomicInteger counter = new AtomicInteger();
-		try {
-			Parameters standalone = new Parameters(run.getProperty(STANDALONE), ws);
-			standalone.stream()
-				.filterKey(locationStr -> {
-					if ("true".equalsIgnoreCase(locationStr)) {
-						copyAll.set(true);
-						return false;
-					}
-					return true;
-				})
-				.map(asBiFunction((locationStr, attrs) -> {
-					String index = String.format("%02d", counter.incrementAndGet());
-					String name = attrs.get("name");
-					if (name == null) {
-						name = "repo".concat(index);
-					}
-					URI resolvedLocation = URIUtil.resolve(base, locationStr);
-					try (Formatter f = new Formatter(Locale.US)) {
-						f.format(STANDALONE_REPO_CLASS + "; name='%s'; locations='%s'", name, resolvedLocation);
-						attrs.stream()
-							.filterKey(k -> !k.equals("name"))
-							.forEachOrdered((k, v) -> f.format("; %s='%s'", k, v));
-						return MapStream.entry(PLUGIN_STANDALONE.concat(index), f.toString());
-					}
-				}))
-				.forEachOrdered(ws::setProperty);
-			MapStream<String, Object> runProperties = MapStream.of(run.getProperties())
-				.mapKey(String.class::cast);
-			if (!copyAll.get()) {
-				runProperties = runProperties
-					.filterKey(k -> k.equals(Constants.PLUGIN) || k.startsWith(Constants.PLUGIN + "."));
-			}
-			Properties wsProperties = ws.getProperties();
-			runProperties.filterKey(k -> !k.startsWith(PLUGIN_STANDALONE))
-				.forEachOrdered(wsProperties::put);
 
-			return ws;
-		} finally {
-			ws.fixupVersionDefaults();
+		Parameters standalone = new Parameters(run.getProperty(STANDALONE), ws);
+		standalone.stream()
+			.filterKey(locationStr -> {
+				if ("true".equalsIgnoreCase(locationStr)) {
+					copyAll.set(true);
+					return false;
+				}
+				return true;
+			})
+			.map(asBiFunction((locationStr, attrs) -> {
+				String index = String.format("%02d", counter.incrementAndGet());
+				String name = attrs.get("name");
+				if (name == null) {
+					name = "repo".concat(index);
+				}
+				URI resolvedLocation = URIUtil.resolve(base, locationStr);
+				try (Formatter f = new Formatter(Locale.US)) {
+					f.format(STANDALONE_REPO_CLASS + "; name='%s'; locations='%s'", name, resolvedLocation);
+					attrs.stream()
+						.filterKey(k -> !k.equals("name"))
+						.forEachOrdered((k, v) -> f.format("; %s='%s'", k, v));
+					return MapStream.entry(PLUGIN_STANDALONE.concat(index), f.toString());
+				}
+			}))
+			.forEachOrdered(ws::setProperty);
+		MapStream<String, Object> runProperties = MapStream.of(run.getProperties())
+			.mapKey(String.class::cast);
+		if (!copyAll.get()) {
+			runProperties = runProperties
+				.filterKey(k -> k.equals(Constants.PLUGIN) || k.startsWith(Constants.PLUGIN + "."));
 		}
+		Properties wsProperties = ws.getProperties();
+		runProperties.filterKey(k -> !k.startsWith(PLUGIN_STANDALONE))
+			.forEachOrdered(wsProperties::put);
+
+		ws.fixupVersionDefaults();
+		return ws;
 	}
 
 	public boolean isDefaultWorkspace() {
