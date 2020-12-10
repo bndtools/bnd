@@ -57,12 +57,10 @@ Release versions of Bndtools are available from the Bndtools p2 update site: <ht
 
 ## Feedback
 
-Feedback is always welcome, for general discussions use the [bndtools-users@googlegroups.com](https://groups.google.com/d/forum/bndtools-users) mail list.
-We also have the [bndtools-dev@googlegroups.com](https://groups.google.com/d/forum/bndtools-dev) mail list for discussions on the development of bnd.
+Feedback is always welcome, for general discussions use the [bnd discourse site](https://bnd.discourse.group) mail list. This site can be used to discuss many different aspects of bnd and the many projects it supports. Including feedback and proposals for new functionality.
 
 Bugs and issues should go to <https://github.com/bndtools/bnd/issues>.
 
-Other feedback or specific functionality send to <Peter.Kriens@aQute.biz>.
 
 ## Contributing
 
