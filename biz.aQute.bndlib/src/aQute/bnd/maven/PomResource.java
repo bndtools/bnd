@@ -344,7 +344,11 @@ public class PomResource extends WriteResource {
 				.mapKey(Processor::removeDuplicateMarker)
 				.collect(MapStream.toMap((oldValue, value) -> value, LinkedHashMap<String, Attrs>::new))
 				.values()
-				.forEach(attrs -> tdependencies.addContent(new Tag("dependency").addContent(attrs)));
+				.forEach(attrs -> {
+					if (!attrs.isEmpty()) {
+						tdependencies.addContent(new Tag("dependency").addContent(attrs));
+					}
+				});
 			if (!tdependencies.getContents()
 				.isEmpty()) {
 				project.addContent(tdependencies);
