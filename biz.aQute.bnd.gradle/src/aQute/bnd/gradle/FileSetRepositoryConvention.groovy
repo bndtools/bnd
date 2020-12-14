@@ -25,7 +25,6 @@ import org.gradle.api.tasks.InputFiles
 
 
 class FileSetRepositoryConvention {
-  private final Project project
   private final ConfigurableFileCollection bundleCollection
 
   /**
@@ -33,8 +32,8 @@ class FileSetRepositoryConvention {
    *
    */
   FileSetRepositoryConvention(Task task) {
-    this.project = task.project
-    bundleCollection = project.files()
+    Project project = task.project
+    bundleCollection = project.objects.fileCollection()
     bundles(project.sourceSets.main.runtimeClasspath, project.configurations.archives.artifacts.files)
     // need to programmatically add to inputs since @InputFiles in a convention is not processed
     task.inputs.files(bundleCollection).withPropertyName('bundles')

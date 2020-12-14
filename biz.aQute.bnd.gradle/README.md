@@ -8,7 +8,7 @@ specified in the Bnd Workspace's `cnf/build.bnd` file and each project's
 `bnd.bnd` file to configure the Gradle projects and tasks.
 
 The [`biz.aQute.bnd.gradle`][2] jar contains the Bnd Gradle Plugins.
-These plugins requires at least Gradle 5.1 for Java 8 to Java 12,
+These plugins requires at least Gradle 5.3 for Java 8 to Java 12,
 at least Gradle 6.0 for Java 13,
 and at least Gradle 6.3 for Java 14.
 
