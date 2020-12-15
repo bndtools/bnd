@@ -1,6 +1,6 @@
 # Maven Plugins
 
-The Maven Plugins require at least Maven 3.1.0. This is because bndlib uses SLF4J and Maven 3.1.0 or later [provides the SLF4J API][6].
+The Maven Plugins require at least Maven 3.1.1. This is because bndlib uses SLF4J and Maven 3.1 or later [provides the SLF4J API][6].
 
 This README, and the READMEs in the individual Bnd Maven Plugin folders,
 represent the capabilities and features of the Bnd Maven Plugins in
