@@ -425,7 +425,7 @@ class TestBndPlugin extends Specification {
           new File(testReports, 'testOSGi/TEST-testOSGi.xml').isFile()
 
         when:
-          result = TestHelper.getGradleRunner('4.6')
+          result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments("-Pbnd_plugin=${pluginClasspath}", '--parallel', '--stacktrace', '--debug', 'testrun.testOSGi2')
             .forwardOutput()
@@ -435,7 +435,7 @@ class TestBndPlugin extends Specification {
           result.task(':test.simple:testrun.testOSGi2').outcome == FAILED
 
         when:
-          result = TestHelper.getGradleRunner('4.6')
+          result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments("-Pbnd_plugin=${pluginClasspath}", '--parallel', '--stacktrace', '--debug', 'testrun.testOSGi2', '--tests=test.simple.Test')
             .forwardOutput()
