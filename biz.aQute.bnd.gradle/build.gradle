@@ -39,6 +39,7 @@ def testresources = tasks.register('testresources', Sync.class) {
 tasks.named('test') {
   inputs.files tasks.named('jar'), pluginUnderTestMetadata, testresources
   systemProperty 'bnd_version', bnd('bnd_version')
+  systemProperty 'org.gradle.warning.mode', gradle.startParameter.warningMode.name().toLowerCase()
 }
 
 tasks.named('release') {

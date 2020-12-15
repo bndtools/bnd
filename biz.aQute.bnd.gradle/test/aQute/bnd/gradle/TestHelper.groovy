@@ -10,17 +10,23 @@ class TestHelper {
   private TestHelper() { }
 
   public static GradleRunner getGradleRunner() {
-    return GradleRunner.create()
-            .withGradleVersion(gradleVersion())
+    return runner(gradleVersion())
   }
 
   public static GradleRunner getGradleRunner(String version) {
     String defaultversion = gradleVersion()
     if (MavenVersion.parseMavenString(defaultversion).compareTo(MavenVersion.parseMavenString(version)) > 0) {
-      version = defaultversion
+      return runner(defaultversion)
     }
-    return GradleRunner.create()
-            .withGradleVersion(version)
+    return runner(version)
+  }
+
+  private static GradleRunner runner(String version) {
+    GradleRunner runner = GradleRunner.create()
+    if (System.getProperty('org.gradle.warning.mode') == 'fail') { // if 'fail' we use the build gradle version
+      return runner
+    }
+    return runner.withGradleVersion(version)
   }
 
   private static String gradleVersion() {
