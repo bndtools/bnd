@@ -57,7 +57,7 @@ Project-Buildpath: ${project.buildpath}
    sourceSet = sourceSets.test
    classpath = configurations.compileClasspath
    classpath jar
-   version = '1.1.0'
+   archiveVersion = '1.1.0'
 }
 
 artifacts {

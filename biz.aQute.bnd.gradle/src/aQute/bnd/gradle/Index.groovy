@@ -61,7 +61,6 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
@@ -83,7 +82,6 @@ public class Index extends DefaultTask {
    * <code>false</code>.
    */
   @Input
-  @Optional
   boolean gzip = false
 
   /**
@@ -94,7 +92,7 @@ public class Index extends DefaultTask {
     super()
     indexName = 'index.xml'
     repositoryName = name
-    bundleCollection = project.files()
+    bundleCollection = project.objects.fileCollection()
     destinationDirectory = project.objects.directoryProperty().convention(project.layout.buildDirectory)
     baseProperty = project.objects.property(URI.class).convention(destinationDirectory.map({ directory ->
       return unwrap(directory).toURI()

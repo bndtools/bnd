@@ -47,6 +47,7 @@ import org.gradle.api.Task
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
@@ -59,6 +60,7 @@ class BundleTaskConvention {
   private final Task task
   private final Project project
   private final ProjectLayout layout
+  private final ObjectFactory objects
   private final File buildFile
   private final RegularFileProperty bndfile
   private final ListProperty<CharSequence> instructions
@@ -78,13 +80,14 @@ class BundleTaskConvention {
     this.task = task
     this.project = task.getProject()
     layout = project.getLayout()
+    objects = project.getObjects()
     buildFile = project.getBuildFile()
-    bndfile = project.getObjects().fileProperty()
-    instructions = project.getObjects().listProperty(CharSequence.class).empty()
+    bndfile = objects.fileProperty()
+    instructions = objects.listProperty(CharSequence.class).empty()
     bndbnd = instructions.map({ list ->
       return list.join('\n')
     })
-    classpathCollection = project.files()
+    classpathCollection = objects.fileCollection()
     setSourceSet(project.sourceSets.main)
     classpathModified = false
     // need to programmatically add to inputs since @InputFiles in a convention is not processed
@@ -284,7 +287,7 @@ class BundleTaskConvention {
         builder.setJar(bundleJar)
 
         // set builder classpath
-        ConfigurableFileCollection buildpath = layout.configurableFiles(getClasspath().files.findAll { File file ->
+        ConfigurableFileCollection buildpath = objects.fileCollection().from(getClasspath().files.findAll { File file ->
           if (!file.exists()) {
             return false
           }
@@ -305,7 +308,7 @@ class BundleTaskConvention {
         logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
 
         // set builder sourcepath
-        ConfigurableFileCollection sourcepath = layout.configurableFiles(getSourceSet().allSource.srcDirs.findAll{it.exists()})
+        ConfigurableFileCollection sourcepath = objects.fileCollection().from(getSourceSet().allSource.srcDirs.findAll{it.exists()})
         builder.setProperty('project.sourcepath', sourcepath.getAsPath())
         builder.setSourcepath(sourcepath.files as File[])
         logger.debug 'builder sourcepath: {}', builder.getSourcePath()

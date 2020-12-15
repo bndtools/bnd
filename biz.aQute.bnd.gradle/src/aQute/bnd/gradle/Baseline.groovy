@@ -82,8 +82,8 @@ import org.gradle.api.tasks.TaskProvider
 
 public class Baseline extends DefaultTask {
   private final ProjectLayout layout
-  private final ProviderFactory providers
   private final ObjectFactory objects
+  private final ProviderFactory providers
   private ConfigurableFileCollection bundleCollection
   private ConfigurableFileCollection baselineCollection
   private final ListProperty<String> diffignore
@@ -121,8 +121,8 @@ public class Baseline extends DefaultTask {
     }))
     diffignore = objects.listProperty(String.class).empty()
     diffpackages = objects.listProperty(String.class).empty()
-    bundleCollection = project.files()
-    baselineCollection = project.files()
+    bundleCollection = objects.fileCollection()
+    baselineCollection = objects.fileCollection()
     dependsOn {
       [bundleCollection, baselineCollection]
     }
@@ -150,7 +150,7 @@ public class Baseline extends DefaultTask {
    * Project.files().
    */
   public void setBundle(Object file) {
-    bundleCollection = layout.configurableFiles(file)
+    bundleCollection = objects.fileCollection().from(file)
     builtBy(bundleCollection, file)
   }
 
@@ -175,7 +175,7 @@ public class Baseline extends DefaultTask {
    * Project.files().
    */
   public void setBaseline(Object file) {
-    baselineCollection = layout.configurableFiles(file)
+    baselineCollection = objects.fileCollection().from(file)
     builtBy(baselineCollection, file)
   }
 
