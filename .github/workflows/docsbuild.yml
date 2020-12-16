@@ -2,6 +2,8 @@ name: Docs Build
 
 on:
   push:
+    branches-ignore:
+    - 'dependabot/**'
     paths:
     - 'docs/**'
     - '.github/**/*docs*'
