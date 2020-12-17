@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
@@ -262,6 +263,41 @@ public class MavenBndRepoTest {
 		assertNull(file2);
 		file3 = repo.get("group:artifact:jar:1003", Version.parseVersion(multi_version), null);
 		assertNull(file3);
+	}
+
+	@Test
+	public void testLocalUriIndexFile() throws Exception {
+		Map<String, String> config = new HashMap<>();
+		config.put("index", index.toURI()
+			.toString());
+		config(config);
+		File file = repo.get("commons-cli:commons-cli", new Version("1.0.0"), null);
+		assertNotNull(file);
+		assertTrue(file.isFile());
+	}
+
+	@Test
+	public void testLocalUriRelativeIndexFile() throws Exception {
+		URI uri = index.toURI();
+		Map<String, String> config = new HashMap<>();
+		config.put("index", IO.work.toURI()
+			.relativize(uri)
+			.toString());
+		config(config);
+		File file = repo.get("commons-cli:commons-cli", new Version("1.0.0"), null);
+		assertNotNull(file);
+		assertTrue(file.isFile());
+	}
+
+	@Test
+	public void testRemoteUriIndexFile() throws Exception {
+		Map<String, String> config = new HashMap<>();
+		config.put("index",
+			"https://raw.githubusercontent.com/bndtools/bnd/master/biz.aQute.repository/testresources/mavenrepo/index.maven");
+		config(config);
+		File file = repo.get("commons-cli:commons-cli", new Version("1.0.0"), null);
+		assertNotNull(file);
+		assertTrue(file.isFile());
 	}
 
 	@Test

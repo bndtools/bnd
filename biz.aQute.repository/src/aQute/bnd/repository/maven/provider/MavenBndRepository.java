@@ -946,7 +946,22 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	public File getIndexFile() {
-		return IO.getFile(base, configuration.index(name.toLowerCase() + ".mvn"));
+		String configIndex = configuration.index(name.toLowerCase() + ".mvn");
+		File indexFile = IO.getFile(base, configIndex);
+		if (indexFile != null && indexFile.exists()) {
+			return indexFile;
+		} else {
+			try {
+				URI uri = URI.create(configIndex);
+				uri = base.toURI()
+					.resolve(uri);
+				return client.build()
+					.get(File.class)
+					.go(uri);
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+		}
 	}
 
 	public Set<Archive> getArchives() {
