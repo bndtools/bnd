@@ -13,6 +13,7 @@ import java.net.SocketAddress;
 import java.nio.channels.Channels;
 import java.nio.channels.SocketChannel;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.osgi.framework.Bundle;
 
@@ -22,7 +23,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 public class JUnitEclipseReport implements TestReporter {
-	private long							startTime;
+	private long							startNanos;
 	private List<Test>						tests;
 	private final boolean					verbose	= false;
 	private Connection<Reader, PrintWriter>	client;
@@ -97,12 +98,12 @@ public class JUnitEclipseReport implements TestReporter {
 		message("%TESTC  ", Integer.toString(realcount)
 			.concat(" v2"));
 		report(tests);
-		startTime = System.currentTimeMillis();
+		startNanos = System.nanoTime();
 	}
 
 	@Override
 	public void end() {
-		message("%RUNTIME", Long.toString(System.currentTimeMillis() - startTime));
+		message("%RUNTIME", Long.toString(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos)));
 		if (verbose) {
 			System.err.println("Test run ended; waiting .25 seconds");
 		}

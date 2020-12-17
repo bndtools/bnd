@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -1102,7 +1103,8 @@ public class Launchpad implements AutoCloseable {
 				return t;
 			});
 
-			long deadline = System.currentTimeMillis() + timeout;
+			final long startNanos = System.nanoTime();
+			timeout = TimeUnit.MILLISECONDS.toNanos(timeout);
 
 			while (true) {
 
@@ -1145,7 +1147,8 @@ public class Launchpad implements AutoCloseable {
 					return matchedReferences;
 				}
 
-				if (deadline < System.currentTimeMillis()) {
+				long elapsed = System.nanoTime() - startNanos;
+				if (elapsed > timeout) {
 					String error = "Injection of service " + className;
 					if (target != null)
 						error += " with target " + target;
@@ -1186,7 +1189,7 @@ public class Launchpad implements AutoCloseable {
 						}
 					}
 
-					if (exception && timeout > 1)
+					if (exception && timeout > 1L)
 						throw new TimeoutException(error);
 
 					return Collections.emptyList();

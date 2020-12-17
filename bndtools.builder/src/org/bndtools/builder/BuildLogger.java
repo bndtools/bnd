@@ -1,6 +1,7 @@
 package org.bndtools.builder;
 
 import java.util.Formatter;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 
@@ -11,7 +12,7 @@ public class BuildLogger {
 	private final int			level;
 	private final String		name;
 	private final int			kind;
-	private final long			start		= System.currentTimeMillis();
+	private final long			startNanos	= System.nanoTime();
 	private final StringBuilder	sb			= new StringBuilder();
 	private final Formatter		formatter	= new Formatter(sb);
 	private boolean				used		= false;
@@ -65,8 +66,10 @@ public class BuildLogger {
 	}
 
 	public String format() {
-		long end = System.currentTimeMillis();
-		full("Duration %.2f sec", (end - start) / 1000f);
+		long millis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
+		long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
+		long decimal = millis % TimeUnit.SECONDS.toMillis(1L);
+		full("Duration %d.%03d sec", seconds, decimal);
 		String kindString;
 		switch (kind) {
 			case IncrementalProjectBuilder.FULL_BUILD :

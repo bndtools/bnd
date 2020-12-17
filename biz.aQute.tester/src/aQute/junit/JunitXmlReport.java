@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,8 +31,8 @@ public class JunitXmlReport implements TestReporter {
 	private final Tag						testsuite			= new Tag("testsuite");
 	private Tag								testcase;
 	private static String					hostname;
-	private long							startTime;
-	private long							testStartTime;
+	private long							startNanos;
+	private long							testStartNanos;
 	private final PrintWriter				out;
 	private boolean							finished;
 	private final BasicTestReport			basic;
@@ -52,7 +53,7 @@ public class JunitXmlReport implements TestReporter {
 
 	@Override
 	public void setup(Bundle fw, Bundle targetBundle) {
-		startTime = System.currentTimeMillis();
+		startNanos = System.nanoTime();
 
 		testsuite.addAttribute("hostname", hostname);
 		if (targetBundle != null) {
@@ -114,7 +115,7 @@ public class JunitXmlReport implements TestReporter {
 				.failureCount());
 			testsuite.addAttribute("errors", basic.getTestResult()
 				.errorCount());
-			testsuite.addAttribute("time", getFraction(System.currentTimeMillis() - startTime, 1000));
+			testsuite.addAttribute("time", getSeconds(System.nanoTime() - startNanos));
 			String timestamp = DATE_TIME_FORMATTER.format(Instant.now());
 			testsuite.addAttribute("timestamp", timestamp);
 			testsuite.print(0, out);
@@ -122,8 +123,11 @@ public class JunitXmlReport implements TestReporter {
 		}
 	}
 
-	private String getFraction(long l, @SuppressWarnings("unused") int i) {
-		return (l / 1000) + "." + (l % 1000);
+	private String getSeconds(long nanos) {
+		long millis = TimeUnit.NANOSECONDS.toMillis(nanos);
+		long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
+		long decimal = millis % TimeUnit.SECONDS.toMillis(1L);
+		return String.format("%d.%03d", seconds, decimal);
 	}
 
 	// <testcase classname="test.AnnotationsTest" name="testComponentReader"
@@ -160,7 +164,7 @@ public class JunitXmlReport implements TestReporter {
 		}
 
 		testcase.addAttribute("name", name);
-		testStartTime = System.currentTimeMillis();
+		testStartNanos = System.nanoTime();
 		progress(name);
 	}
 
@@ -240,7 +244,7 @@ public class JunitXmlReport implements TestReporter {
 			syserr.addContent(outs[1]);
 		}
 
-		testcase.addAttribute("time", getFraction(System.currentTimeMillis() - testStartTime, 1000));
+		testcase.addAttribute("time", getSeconds(System.nanoTime() - testStartNanos));
 	}
 
 	public void close() {

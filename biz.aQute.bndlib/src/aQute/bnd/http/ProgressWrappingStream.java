@@ -4,6 +4,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import aQute.bnd.service.progress.ProgressPlugin.Task;
@@ -15,18 +16,18 @@ public class ProgressWrappingStream extends InputStream {
 	private int					size;
 	private int					reported;
 	private int					read;
-	private long				timeout;
-	private long				deadline;
+	private final long			timeout;
 	private final AtomicBoolean	closed	= new AtomicBoolean();
+	private long				startNanos;
 
 	public ProgressWrappingStream(InputStream delegate, String name, int size, Task task, long timeout) {
 		this.delegate = delegate;
 		this.task = task;
 		this.size = size;
-		this.timeout = timeout == 0 ? Long.MAX_VALUE : timeout;
 		this.read = 0;
 		this.reported = 0;
-		this.deadline = System.currentTimeMillis() + timeout;
+		this.timeout = timeout <= 0L ? timeout : TimeUnit.MILLISECONDS.toNanos(timeout);
+		this.startNanos = System.nanoTime();
 	}
 
 	@Override
@@ -51,8 +52,8 @@ public class ProgressWrappingStream extends InputStream {
 		if (timeout <= 0)
 			return false;
 
-		long now = System.currentTimeMillis();
-		if (this.deadline < now) {
+		long elapsed = System.nanoTime() - startNanos;
+		if (elapsed >= timeout) {
 			close();
 			return true;
 		}
@@ -100,7 +101,7 @@ public class ProgressWrappingStream extends InputStream {
 			throw new EOFException("Canceled");
 		}
 
-		this.deadline = System.currentTimeMillis() + timeout;
+		startNanos = System.nanoTime();
 
 		if (count != -1) {
 			read += count;

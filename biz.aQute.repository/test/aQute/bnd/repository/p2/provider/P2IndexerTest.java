@@ -44,7 +44,7 @@ public class P2IndexerTest extends TestCase {
 			client.setCache(IO.getFile(tmp, "cache"));
 
 			try (P2Indexer p2 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class), tmp, client,
-				new URI("https://download.eclipse.org/egit/updates-4.7.1/"), getName())) {
+				new URI("https://archive.eclipse.org/egit/updates-4.7.1/"), getName())) {
 				List<String> bsns = p2.list(null);
 				System.out.println(bsns);
 				assertThat(bsns).contains("org.kohsuke.args4j", "org.slf4j.api", "org.apache.httpcomponents.httpclient",

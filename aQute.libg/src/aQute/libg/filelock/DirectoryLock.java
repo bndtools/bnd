@@ -1,6 +1,7 @@
 package aQute.libg.filelock;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 public class DirectoryLock {
 	final File					lock;
@@ -10,7 +11,7 @@ public class DirectoryLock {
 	public DirectoryLock(File directory, long timeout) {
 		this.lock = new File(directory, LOCKNAME);
 		this.lock.deleteOnExit();
-		this.timeout = timeout;
+		this.timeout = TimeUnit.MILLISECONDS.toNanos(timeout);
 	}
 
 	public void release() {
@@ -21,11 +22,11 @@ public class DirectoryLock {
 		if (lock.mkdir())
 			return;
 
-		long deadline = System.currentTimeMillis() + timeout;
-		while (System.currentTimeMillis() < deadline) {
+		final long startNanos = System.nanoTime();
+		while ((System.nanoTime() - startNanos) < timeout) {
 			if (lock.mkdir())
 				return;
-			Thread.sleep(50);
+			Thread.sleep(50L);
 		}
 	}
 }
