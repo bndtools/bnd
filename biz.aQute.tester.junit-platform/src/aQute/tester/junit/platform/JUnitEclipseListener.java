@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -184,7 +185,7 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 
 	private final Connection<DataInputStream, OutputStream>	control;
 	private Connection<Reader, PrintWriter>					client;
-	private long											startTime;
+	private long											startNanos;
 	private TestPlan										testPlan;
 	private final boolean									verbose	= false;
 
@@ -306,12 +307,12 @@ public class JUnitEclipseListener implements TestExecutionListener, Closeable {
 				}
 			}
 		}
-		startTime = System.currentTimeMillis();
+		startNanos = System.nanoTime();
 	}
 
 	@Override
 	public void testPlanExecutionFinished(TestPlan testPlan) {
-		message("%RUNTIME", Long.toString(System.currentTimeMillis() - startTime));
+		message("%RUNTIME", Long.toString(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos)));
 		info("JUnitEclipseListener: testPlanExecutionFinished: Waiting .25 seconds");
 		try {
 			Thread.sleep(250L);

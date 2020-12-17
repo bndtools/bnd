@@ -42,6 +42,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.jar.Attributes;
@@ -2170,7 +2171,7 @@ public class bnd extends Processor {
 				tester.addTest(testname);
 			}
 		}
-		long start = System.currentTimeMillis();
+		long startNanos = System.nanoTime();
 		try {
 			int errors = tester.test();
 
@@ -2227,8 +2228,9 @@ public class bnd extends Processor {
 			exception(e, "Exception in run %s", e);
 			return 1;
 		} finally {
-			long duration = System.currentTimeMillis() - start;
-			test.addAttribute("duration", (duration + 500) / 1000);
+			long duration = System.nanoTime() - startNanos;
+			test.addAttribute("duration",
+				TimeUnit.NANOSECONDS.toMillis(duration + TimeUnit.MILLISECONDS.toNanos(500L)));
 			getInfo(project, project.toString() + ": ");
 		}
 	}
@@ -3047,7 +3049,7 @@ public class bnd extends Processor {
 	 */
 	@Description("Digests a number of files")
 	public void _digest(hashOptions o) throws NoSuchAlgorithmException, Exception {
-		long start = System.currentTimeMillis();
+		long startNanos = System.nanoTime();
 		long total = 0;
 		List<Alg> algs = o.algorithm();
 		if (algs == null)
@@ -3058,7 +3060,7 @@ public class bnd extends Processor {
 			if (f.isFile()) {
 
 				outer: for (Alg alg : algs) {
-					long now = System.currentTimeMillis();
+					long algNanos = System.nanoTime();
 					byte[] digest;
 
 					switch (alg) {
@@ -3109,7 +3111,7 @@ public class bnd extends Processor {
 					}
 					if (o.process()) {
 						sb.append(del)
-							.append(System.currentTimeMillis() - now)
+							.append(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - algNanos))
 							.append(" ms ")
 							.append(f.length() / 1000)
 							.append(" Kb");
@@ -3121,8 +3123,8 @@ public class bnd extends Processor {
 				error("file does not exist %s", f);
 		}
 		if (o.process()) {
-			long time = (System.currentTimeMillis() - start);
-			float mb = total / 1000000;
+			long time = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
+			float mb = total / 1000000L;
 			out.format("Total %s Mb, %s ms, %s Mb/sec %s files\n", mb, time, (total / time) / 1024, o._arguments()
 				.size());
 		}

@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -221,11 +222,11 @@ class RemoteCommand extends Processor {
 	interface PingOptions extends Options {}
 
 	public void _ping(PingOptions opts) throws Exception {
-		long start = System.currentTimeMillis();
+		long startNanos = System.nanoTime();
 		if (agent.ping())
-			bnd.out.println("Ok " + (System.currentTimeMillis() - start) + "ms");
+			bnd.out.printf("Ok %s ms%n", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos));
 		else
-			bnd.out.println("Could not reach " + host + ":" + port);
+			bnd.out.printf("Could not reach %s:%s%n", host, port);
 	}
 
 	/**

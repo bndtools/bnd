@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -465,7 +466,8 @@ public class Link<L, R> extends Thread implements Closeable {
 
 	@SuppressWarnings("unchecked")
 	<T> T waitForResult(int id, Type type) throws Exception {
-		long deadline = System.currentTimeMillis() + 300000;
+		final long deadline = 300000L;
+		final long startNanos = System.nanoTime();
 		Result result = promises.get(id);
 
 		try {
@@ -493,13 +495,16 @@ public class Link<L, R> extends Thread implements Closeable {
 						return value;
 					}
 
-					long delay = deadline - System.currentTimeMillis();
-					if (delay <= 0) {
+					long elapsed = System.nanoTime() - startNanos;
+					long delay = deadline - TimeUnit.NANOSECONDS.toMillis(elapsed);
+					if (delay <= 0L) {
 						return null;
 					}
 					trace("start delay " + delay);
 					result.wait(delay);
-					trace("end delay " + (delay - (deadline - System.currentTimeMillis())));
+					elapsed = System.nanoTime() - startNanos;
+					delay = deadline - TimeUnit.NANOSECONDS.toMillis(elapsed);
+					trace("end delay " + delay);
 				}
 			} while (true);
 		} finally {
