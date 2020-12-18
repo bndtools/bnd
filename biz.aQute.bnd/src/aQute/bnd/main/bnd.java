@@ -4,7 +4,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -4335,7 +4334,7 @@ public class bnd extends Processor {
 				error("No such file %s", f);
 				return;
 			}
-			in = new FileInputStream(f);
+			in = IO.stream(f);
 		}
 
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {

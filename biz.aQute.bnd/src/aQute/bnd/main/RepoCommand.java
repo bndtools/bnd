@@ -4,7 +4,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -1020,7 +1019,7 @@ public class RepoCommand {
 			return;
 
 		} else {
-			try (FileInputStream in = new FileInputStream(f)) {
+			try (InputStream in = IO.stream(f)) {
 				destRepo.put(in, null);
 			} catch (Exception e) {
 				bnd.exception(e, "While copying %s to %s: %s", f, destRepo, e.getMessage());

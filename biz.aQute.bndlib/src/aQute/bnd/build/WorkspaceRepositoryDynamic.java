@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -40,16 +41,17 @@ class WorkspaceRepositoryDynamic extends BaseRepository implements Repository, W
 	}
 
 	private List<Capability> findProvider(Collection<? extends Resource> resources, Requirement requirement) {
-		List<Capability> l = new ArrayList<>();
+		List<Capability> capabilities = new ArrayList<>();
 		String namespace = requirement.getNamespace();
-		for (Resource r : resources) {
-			for (Capability c : r.getCapabilities(namespace)) {
-				if (ResourceUtils.matches(requirement, c)) {
-					l.add(c);
+		Predicate<Capability> matcher = ResourceUtils.matcher(requirement);
+		for (Resource resource : resources) {
+			for (Capability capability : resource.getCapabilities(namespace)) {
+				if (matcher.test(capability)) {
+					capabilities.add(capability);
 				}
 			}
 		}
-		return l;
+		return capabilities;
 	}
 
 	@Override

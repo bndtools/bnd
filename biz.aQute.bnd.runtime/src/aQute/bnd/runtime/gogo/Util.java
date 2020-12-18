@@ -20,8 +20,6 @@ package aQute.bnd.runtime.gogo;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,6 +39,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 
+import aQute.lib.io.IO;
 import aQute.lib.zip.ZipUtil;
 
 public class Util {
@@ -138,7 +137,7 @@ public class Util {
 			}
 			File file = new File(localDir, fileName);
 
-			OutputStream os = new FileOutputStream(file);
+			OutputStream os = IO.outputStream(file);
 			URLConnection conn = srcURL.openConnection();
 			Util.setProxyAuth(conn);
 			int total = conn.getContentLength();
@@ -158,7 +157,7 @@ public class Util {
 			is.close();
 
 			if (extract) {
-				is = new FileInputStream(file);
+				is = IO.stream(file);
 				JarInputStream jis = new JarInputStream(is);
 				out.println("Extracting...");
 				unjar(jis, localDir);
@@ -217,7 +216,7 @@ public class Util {
 			throw new IOException("Target is not a directory: " + targetDir);
 		}
 
-		BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(targetDir, destName)));
+		BufferedOutputStream bos = new BufferedOutputStream(IO.outputStream(new File(targetDir, destName)));
 		int count = 0;
 		while ((count = is.read(buffer)) > 0) {
 			bos.write(buffer, 0, count);

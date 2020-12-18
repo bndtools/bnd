@@ -1,7 +1,6 @@
 package aQute.lib.zip;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -178,7 +177,7 @@ public class JarIndex extends Hierarchy {
 		return new NodeInfo() {
 			@Override
 			public InputStream open() throws IOException {
-				return new FileInputStream(in);
+				return IO.stream(in);
 			}
 
 			@Override
