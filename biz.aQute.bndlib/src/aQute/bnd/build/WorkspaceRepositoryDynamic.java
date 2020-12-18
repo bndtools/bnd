@@ -4,6 +4,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -39,11 +40,16 @@ class WorkspaceRepositoryDynamic extends BaseRepository implements Repository, W
 	}
 
 	private List<Capability> findProvider(Collection<? extends Resource> resources, Requirement requirement) {
+		List<Capability> l = new ArrayList<>();
 		String namespace = requirement.getNamespace();
-		return resources.stream()
-			.flatMap(resource -> ResourceUtils.capabilityStream(resource, namespace))
-			.filter(ResourceUtils.matcher(requirement))
-			.collect(ResourceUtils.toCapabilities());
+		for (Resource r : resources) {
+			for (Capability c : r.getCapabilities(namespace)) {
+				if (ResourceUtils.matches(requirement, c)) {
+					l.add(c);
+				}
+			}
+		}
+		return l;
 	}
 
 	@Override

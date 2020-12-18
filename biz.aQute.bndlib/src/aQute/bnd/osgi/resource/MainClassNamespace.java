@@ -4,6 +4,7 @@ import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 
 import aQute.bnd.osgi.Domain;
+import aQute.lib.strings.Strings;
 
 /**
  * Represents the Manifest Main-Class header.
@@ -27,10 +28,11 @@ public class MainClassNamespace {
 		if (mainClass == null)
 			return;
 
-		mainClass = mainClass.replace('/', '.'); // yeah, it happens!
+		mainClass = Strings.trim(mainClass.replace('/', '.')); // yeah, it
+																// happens!
 
 		mc.addAttribute(MainClassNamespace.MAINCLASS_NAMESPACE, mainClass);
-		String versionString = manifest.getBundleVersion();
+		String versionString = Strings.trim(manifest.getBundleVersion());
 		if ((versionString != null) && aQute.bnd.version.Version.isVersion(versionString)) {
 			Version version = Version.parseVersion(versionString);
 			mc.addAttribute(VERSION_ATTRIBUTE, version);
