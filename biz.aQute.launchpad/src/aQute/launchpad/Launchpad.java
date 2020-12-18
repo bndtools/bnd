@@ -4,9 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -473,7 +473,7 @@ public class Launchpad implements AutoCloseable {
 				return framework.getBundleContext()
 					.installBundle(installURI);
 			}
-			try (FileInputStream fin = new FileInputStream(file)) {
+			try (InputStream fin = IO.stream(file)) {
 				return framework.getBundleContext()
 					.installBundle("-> " + file, fin);
 			} catch (FileNotFoundException e) {

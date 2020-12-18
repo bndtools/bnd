@@ -2,7 +2,6 @@ package biz.aQute.bnd.reporter.plugins.entries.any;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -66,7 +65,7 @@ public class ImportResourcePlugin implements ReportEntryPlugin<Object>, Plugin, 
 			final File file = IO.getFile(getUrl());
 			if (file.isFile()) {
 				try {
-					return new FileInputStream(file);
+					return IO.stream(file);
 				} catch (final IOException e) {
 					_reporter.exception(e, "Failed to import the file at %s", getUrl());
 				}

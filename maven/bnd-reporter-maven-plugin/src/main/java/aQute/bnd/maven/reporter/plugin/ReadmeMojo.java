@@ -1,6 +1,7 @@
 package aQute.bnd.maven.reporter.plugin;
 
-import java.io.FileOutputStream;
+import java.io.File;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,6 +20,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.reporter.ReportExporterService;
 import aQute.bnd.service.reporter.ReportGeneratorService;
+import aQute.lib.io.IO;
 import biz.aQute.bnd.reporter.exporter.ReportExporterBuilder;
 
 /**
@@ -97,12 +99,13 @@ public class ReadmeMojo extends AbstractMojo {
 			}
 
 			for (Entry<String, Resource> result : reportResults.entrySet()) {
-				try {
+				File file = new File(result.getKey());
+				try (OutputStream out = IO.outputStream(file)) {
 					result.getValue()
-						.write(new FileOutputStream(result.getKey()));
-					logger.info("The report at {} has been successfully created.", result.getKey());
+						.write(out);
+					logger.info("The report at {} has been successfully created.", file);
 				} catch (Exception exception) {
-					throw new MojoExecutionException("Failed to write the report at " + result.getKey(), exception);
+					throw new MojoExecutionException("Failed to write the report at " + file, exception);
 				}
 			}
 		} catch (MojoExecutionException e) {
