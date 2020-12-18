@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -53,6 +54,7 @@ import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.lib.xml.XML;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;
@@ -298,6 +300,45 @@ public class MavenBndRepoTest {
 		File file = repo.get("commons-cli:commons-cli", new Version("1.0.0"), null);
 		assertNotNull(file);
 		assertTrue(file.isFile());
+	}
+
+	@Test
+	public void testPutReleaseAndThenIndexRemoteWithRemoteIndex() throws Exception {
+		Workspace ws = new Workspace(IO.getFile("testdata/releasews"));
+
+		Project p1 = ws.getProject("p1");
+		Project indexProject = ws.getProject("index");
+
+		Map<String, String> map = new HashMap<>();
+		URI uri = index.toURI();
+		map.put("index", uri.toString());
+		map.put("releaseUrl", remote.toURI()
+			.toString());
+		config(ws, map);
+
+		repo.begin(indexProject);
+		File jar = IO.getFile("testresources/release.jar");
+		PutOptions po = new PutOptions();
+		po.context = p1;
+		PutResult put = repo.put(new FileInputStream(jar), po);
+
+		File demoJar = IO.getFile("testresources/demo.jar");
+		PutOptions indexPo = new PutOptions();
+		indexPo.context = indexProject;
+		put = repo.put(new FileInputStream(demoJar), indexPo);
+
+		repo.end(indexProject);
+
+		assertTrue(indexProject.check());
+		assertTrue(IO.getFile(remote, "biz/aQute/bnd/demo/1.0.0/demo-1.0.0-index.xml")
+			.isFile());
+
+		File indexFile = repo.getIndexFile();
+		String fileContent = IO.collect(indexFile);
+		Optional<String> findFirst = Strings.splitLinesAsStream(fileContent)
+			.filter(s -> "biz.aQute.bnd:demo:1.0.0".equals(s))
+			.findFirst();
+		assertTrue(findFirst.isPresent());
 	}
 
 	@Test

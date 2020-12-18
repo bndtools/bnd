@@ -583,7 +583,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			storage = new MavenRepository(localRepo, name, release, snapshot, client.promiseFactory()
 				.executor(), reporter);
 
-			File indexFile = getIndexFile();
 			Processor domain = (registry != null) ? registry.getPlugin(Processor.class) : null;
 			String source = configuration.source();
 			if (source != null) {
@@ -591,7 +590,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			}
 			Set<String> multi = Strings.splitAsStream(configuration.multi())
 				.collect(collectingAndThen(toSet(), Sets::copyOf));
-			this.index = new IndexFile(domain, reporter, indexFile, source, storage, client.promiseFactory(), multi);
+			this.index = new IndexFile(domain, reporter, this::getIndexFileWrapper, source, storage,
+				client.promiseFactory(), multi, client);
 			this.index.open();
 
 			try (Formatter f = new Formatter()) {
@@ -945,23 +945,28 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			return promise.getValue();
 	}
 
-	public File getIndexFile() {
+	IndexFile.IndexFileWrapper getIndexFileWrapper() {
 		String configIndex = configuration.index(name.toLowerCase() + ".mvn");
 		File indexFile = IO.getFile(base, configIndex);
 		if (indexFile != null && indexFile.exists()) {
-			return indexFile;
+			return new IndexFile.IndexFileWrapper(indexFile, null);
 		} else {
 			try {
 				URI uri = URI.create(configIndex);
 				uri = base.toURI()
 					.resolve(uri);
-				return client.build()
+				indexFile = client.build()
 					.get(File.class)
 					.go(uri);
+				return new IndexFile.IndexFileWrapper(indexFile, uri);
 			} catch (Exception e) {
 				throw Exceptions.duck(e);
 			}
 		}
+	}
+
+	public File getIndexFile() {
+		return getIndexFileWrapper().getIndexFile();
 	}
 
 	public Set<Archive> getArchives() {

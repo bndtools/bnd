@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Deferred;
@@ -29,6 +31,7 @@ import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.maven.MavenCapability;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -41,6 +44,7 @@ import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.BundleCap;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
@@ -66,10 +70,11 @@ import aQute.service.reporter.Reporter;
 class IndexFile {
 	private final static Logger					logger		= LoggerFactory.getLogger(IndexFile.class);
 
-	final File									indexFile;
+	IndexFileWrapper							indexFile;
 	final IMavenRepo							repo;
 	private final Processor						domain;
 	private final Macro							replacer;
+	private final HttpClient					client;
 
 	final Reporter								reporter;
 	final PromiseFactory						promiseFactory;
@@ -84,19 +89,41 @@ class IndexFile {
 
 	private String								status;
 
+	private final Supplier<IndexFileWrapper>	indexFileSupplier;
+
+	static class IndexFileWrapper {
+		private final File	indexFile;
+		private final URI	remoteIndexFileUri;
+
+		public IndexFileWrapper(File indexFile, URI remoteIndexFileUri) {
+			this.indexFile = indexFile;
+			this.remoteIndexFileUri = remoteIndexFileUri;
+		}
+
+		public File getIndexFile() {
+			return indexFile;
+		}
+
+		public URI getRemoteIndexFileUri() {
+			return remoteIndexFileUri;
+		}
+	}
+
 	/*
 	 * Constructor
 	 */
-	IndexFile(Processor domain, Reporter reporter, File file, String source, IMavenRepo repo,
-		PromiseFactory promiseFactory, Set<String> multi) throws Exception {
+	IndexFile(Processor domain, Reporter reporter, Supplier<IndexFileWrapper> indexFileSupplier, String source,
+		IMavenRepo repo,
+		PromiseFactory promiseFactory, Set<String> multi, HttpClient client) throws Exception {
+		this.indexFileSupplier = indexFileSupplier;
 		this.source = source;
 		this.domain = (domain != null) ? domain : new Processor();
 		this.replacer = this.domain.getReplacer();
 		this.reporter = reporter;
-		this.indexFile = file;
 		this.repo = repo;
 		this.promiseFactory = promiseFactory;
 		this.multi = multi;
+		this.client = client;
 		this.updateSerializer = promiseFactory.resolved(Boolean.TRUE);
 		this.bridge = Memoize.supplier(BridgeRepository::new);
 	}
@@ -221,11 +248,14 @@ class IndexFile {
 	 * Load the index file file.
 	 */
 	private Promise<Boolean> load() throws Exception {
-		lastModified = indexFile.lastModified();
+		indexFile = indexFileSupplier.get();
+		lastModified = indexFile.getIndexFile()
+			.lastModified();
 		Set<Archive> toBeAdded = new HashSet<>();
 
-		if (indexFile.isFile()) {
-			toBeAdded.addAll(read(indexFile));
+		if (indexFile.getIndexFile()
+			.isFile()) {
+			toBeAdded.addAll(read(indexFile.getIndexFile()));
 		}
 		if (source != null) {
 			toBeAdded.addAll(read(source, false));
@@ -367,7 +397,9 @@ class IndexFile {
 	}
 
 	boolean refresh(Runnable refreshAction) throws Exception {
-		if (indexFile.lastModified() != lastModified && last + 10000 < System.currentTimeMillis()) {
+		indexFile = indexFileSupplier.get();
+		if (indexFile.getIndexFile()
+			.lastModified() != lastModified && last + 10000 < System.currentTimeMillis()) {
 			last = System.currentTimeMillis();
 			Promise<Boolean> serializer = serialize(this::load).onResolve(refreshAction);
 			sync(serializer);
@@ -425,8 +457,9 @@ class IndexFile {
 
 	private void save(Set<Archive> add, Set<Archive> remove) throws Exception {
 		try (Formatter f = new Formatter()) {
-			if (indexFile.isFile()) {
-				String content = IO.collect(indexFile);
+			if (indexFile.getIndexFile()
+				.isFile()) {
+				String content = IO.collect(indexFile.getIndexFile());
 				Strings.splitLinesAsStream(content)
 					.filter(s -> {
 						Archive archive = toArchive(s, true);
@@ -439,13 +472,48 @@ class IndexFile {
 			}
 
 			add.forEach(archive -> f.format("%s\n", archive));
-			if (!indexFile.getParentFile()
-				.isDirectory())
-				IO.mkdirs(indexFile.getParentFile());
-			IO.store(f.toString(), indexFile);
+			if (indexFile.getRemoteIndexFileUri() != null && !"file".equals(indexFile.getRemoteIndexFileUri()
+				.getScheme())) {
+				try (TaggedData go = client.build()
+					.put()
+					.upload(f.toString())
+					.updateTag()
+					.asTag()
+					.go(indexFile.getRemoteIndexFileUri());) {
+
+					switch (go.getState()) {
+						case NOT_FOUND :
+						case OTHER :
+							throw new IOException(
+								"Could not store " + indexFile.getRemoteIndexFileUri() + " from "
+									+ indexFile.getIndexFile() + " with " + go);
+						case UNMODIFIED :
+						case UPDATED :
+						default :
+							break;
+					}
+					// update the index file, to make sure, we have the current
+					// version handy
+					indexFile = indexFileSupplier.get();
+				}
+			} else {
+				// if it has a remote URI and arrives here, it must be of type
+				// file
+				File theIndexFile = indexFile.getRemoteIndexFileUri() != null
+					? new File(indexFile.getRemoteIndexFileUri())
+					: indexFile.getIndexFile();
+
+				if (!theIndexFile
+					.getParentFile()
+					.isDirectory())
+					IO.mkdirs(indexFile.getIndexFile()
+						.getParentFile());
+				IO.store(f.toString(), theIndexFile);
+			}
 		}
 
-		lastModified = indexFile.lastModified();
+		lastModified = indexFile.getIndexFile()
+			.lastModified();
 	}
 
 	private Archive toArchive(String s, boolean macro) {
