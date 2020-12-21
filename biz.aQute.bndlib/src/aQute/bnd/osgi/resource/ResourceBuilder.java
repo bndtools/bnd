@@ -11,6 +11,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -747,6 +748,30 @@ public class ResourceBuilder {
 		}
 	}
 
+	private void addHashes(Map<String, List<Long>> hashes) throws IOException {
+		Set<Capability> packageCapabilities = capabilities.remove(PackageNamespace.PACKAGE_NAMESPACE);
+		if ((packageCapabilities == null) || packageCapabilities.isEmpty()) {
+			return;
+		}
+		if (packageCapabilities.stream()
+			.anyMatch(cap -> cap.getAttributes()
+				.containsKey(ClassIndexerAnalyzer.BND_HASHES))) {
+			capabilities.put(PackageNamespace.PACKAGE_NAMESPACE, packageCapabilities);
+			return;
+		}
+
+		for (Capability cap : packageCapabilities) {
+			CapReqBuilder builder = CapReqBuilder.clone(cap);
+			final String pkg = (String) cap.getAttributes()
+				.get(cap.getNamespace());
+			List<Long> ourHashes = hashes.get(pkg);
+			if (ourHashes != null) {
+				builder.addAttribute(ClassIndexerAnalyzer.BND_HASHES, ourHashes);
+			}
+			addCapability(builder);
+		}
+	}
+
 	private void addHashes(Hierarchy index, Capability cap, CapReqBuilder builder) {
 		FolderNode resources = Optional.ofNullable((String) cap.getAttributes()
 			.get(PackageNamespace.PACKAGE_NAMESPACE))
@@ -1058,20 +1083,48 @@ public class ResourceBuilder {
 		if (m == null)
 			return null;
 
+		Domain d = Domain.domain(m);
+
 		byte[] digest = jar.getSHA256()
 			.get();
 		int length = jar.getLength();
+
+		Map<String, List<Long>> hashes = new HashMap<>();
+		Parameters exports = d.getExportPackage();
+
+		for (String pkg : exports.keyList()) {
+			Map<String, ?> dirEntries = jar.getDirectory(Descriptors.fqnToBinary(pkg));
+			// It's possible to export a package that you don't contain
+			// locally so this
+			// can return null.
+			if (dirEntries == null) {
+				continue;
+			}
+			List<Long> theseHashes = dirEntries.keySet()
+				.stream()
+				.filter(Descriptors::isBinaryClass)
+				.map(Descriptors::binaryToSimple)
+				.distinct()
+				.filter(simple -> !Verifier.isNumber(simple))
+				.map(simple -> Long.valueOf(ClassIndexerAnalyzer.hash(simple)))
+				.collect(toList());
+			if (theseHashes.isEmpty()) {
+				continue;
+			}
+			hashes.put(pkg, theseHashes);
+		}
 
 		jar = null; // ensure jar not referenced from lambda
 
 		return () -> {
 			try {
 				ResourceBuilder rb = new ResourceBuilder();
-				boolean hasIdentity = rb.addManifest(Domain.domain(m));
+				boolean hasIdentity = rb.addManifest(d);
 				if (hasIdentity) {
 					String mime = hasIdentity ? MIME_TYPE_BUNDLE : MIME_TYPE_JAR;
 					String sha256 = Hex.toHexString(digest);
 					rb.addContentCapability(uri, sha256, length, mime);
+					rb.addHashes(hashes);
 				}
 				if (projectName != null) {
 					rb.addWorkspaceNamespace(projectName);
@@ -1082,5 +1135,4 @@ public class ResourceBuilder {
 			}
 		};
 	}
-
 }

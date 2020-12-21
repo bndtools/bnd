@@ -8,7 +8,6 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 
 	@BeforeAll
 	static void beforeAll() throws Exception {
-		AbstractBuildpathQuickFixProcessorTest.beforeAll();
 		addBundlesToBuildpath("bndtools.core.test.fodder.simple");
 	}
 

@@ -19,7 +19,6 @@ public class BuildpathQuickFixProcessor_WithEmptyBuildpath_Test extends Abstract
 
 	@BeforeAll
 	static void beforeAll() throws Exception {
-		AbstractBuildpathQuickFixProcessorTest.beforeAll();
 		clearBuildpath();
 	}
 
@@ -376,5 +375,14 @@ public class BuildpathQuickFixProcessor_WithEmptyBuildpath_Test extends Abstract
 		} finally {
 			clearBuildpath();
 		}
+	}
+
+	@Test
+	void simpleReference_toWorkspaceClass_suggestsBundles() {
+		String header = "package test; class " + DEFAULT_CLASS_NAME + "{";
+		String source = header + "WSClass wsClass; }";
+
+		assertThatProposals(proposalsFor(header.length() + 2, 0, source)).haveExactly(1,
+			suggestsBundle("local-proj", "0.0.0", "my.local.ws.pkg.WSClass"));
 	}
 }
