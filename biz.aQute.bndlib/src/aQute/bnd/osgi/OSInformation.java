@@ -34,6 +34,8 @@ public class OSInformation {
 		}, new String[] {
 			"68k"
 		}, new String[] {
+			"aarch64", "arm64"
+		}, new String[] {
 			"ARM"
 		}, new String[] {
 			"ARM_be"
