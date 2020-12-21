@@ -125,9 +125,9 @@ public class Instruction {
 					.replaceAll("");
 			matchFlags = flags | Pattern.LITERAL;
 		} else {
+			pattern = Glob.toPattern(s, flags);
 			match = s;
 			matchFlags = flags;
-			pattern = Glob.toPattern(match, matchFlags);
 		}
 	}
 
@@ -242,7 +242,8 @@ public class Instruction {
 	}
 
 	public String getPattern() {
-		return pattern == null ? null : pattern.pattern();
+		Pattern pattern = this.pattern;
+		return (pattern == null) ? null : pattern.pattern();
 	}
 
 	public String getInput() {
@@ -255,14 +256,14 @@ public class Instruction {
 	}
 
 	private Pattern pattern() {
-		if (pattern == null) {
-			if (match == null) {
-				pattern = ANY;
-			} else {
-				pattern = Pattern.compile(match, matchFlags);
-			}
+		Pattern pattern = this.pattern;
+		if (pattern != null) {
+			return pattern;
 		}
-		return pattern;
+		if (match != null) {
+			return this.pattern = Pattern.compile(match, matchFlags);
+		}
+		return this.pattern = ANY;
 	}
 
 	public Matcher getMatcher(String value) {
