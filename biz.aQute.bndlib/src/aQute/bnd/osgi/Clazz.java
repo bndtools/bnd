@@ -478,6 +478,11 @@ public class Clazz {
 				.anyMatch(inner -> inner.inner_class.equals(binary) && !Modifier.isStatic(inner.inner_access));
 		}
 
+		boolean isPackageInfo() {
+			return type.getBinary()
+				.endsWith("/package-info");
+		}
+
 		@Override
 		public String getName() {
 			return type.getFQN();
@@ -496,8 +501,7 @@ public class Clazz {
 			if (super.isModule()) {
 				return ElementType.MODULE;
 			}
-			return type.getBinary()
-				.endsWith("/package-info") ? ElementType.PACKAGE : ElementType.TYPE;
+			return isPackageInfo() ? ElementType.PACKAGE : ElementType.TYPE;
 		}
 	}
 
@@ -1867,6 +1871,10 @@ public class Clazz {
 
 	public boolean isModule() {
 		return classDef.isModule();
+	}
+
+	public boolean isPackageInfo() {
+		return classDef.isPackageInfo();
 	}
 
 	static boolean isModule(int access) {

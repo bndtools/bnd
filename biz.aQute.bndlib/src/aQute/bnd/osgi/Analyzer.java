@@ -564,8 +564,9 @@ public class Analyzer extends Processor {
 
 		MapStream.of(getClassspace().values()
 			.stream()
-			.filter(c -> !c.isModule() && !c.isInnerClass() && !c.isSynthetic() && c.annotations()
-				.contains(apiAnnotation))
+			.filter(c -> !c.isModule() && !c.isInnerClass() && (!c.isSynthetic() || c.isPackageInfo())
+				&& c.annotations()
+					.contains(apiAnnotation))
 			.flatMap(c -> instructions.matchesStream(c.getFQN())
 				.mapKey(instruction -> c)
 				.entries()))
