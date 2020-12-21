@@ -11,7 +11,6 @@ public class BuildpathQuickFixProcessor_WithJupiterOnBuildpath_Test extends Abst
 
 	@BeforeAll
 	static void beforeAll() throws Exception {
-		AbstractBuildpathQuickFixProcessorTest.beforeAll();
 		addBundlesToBuildpath("junit-jupiter-api");
 	}
 

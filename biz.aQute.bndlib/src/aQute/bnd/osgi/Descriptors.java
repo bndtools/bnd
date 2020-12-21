@@ -779,11 +779,13 @@ public class Descriptors {
 		int end = resource.length() - 6;
 		int rover = end;
 		while (rover >= 0) {
-			char ch = resource.charAt(rover--);
-			if (ch == '$' || ch == '/')
-				break;
+			char ch = resource.charAt(rover);
+			if (ch == '$' || ch == '/') {
+				return resource.substring(rover + 1, end);
+			}
+			rover--;
 		}
-		return resource.substring(rover + 1, end);
+		return resource.substring(0, end);
 	}
 
 	/**

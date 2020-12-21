@@ -78,7 +78,6 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.core.test.utils.WorkbenchTest;
-import bndtools.core.test.utils.WorkspaceImporter;
 
 @ExtendWith(SoftAssertionsExtension.class)
 @WorkbenchTest
@@ -87,7 +86,7 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 	static IPackageFragment pack;
 	static Class<? extends IQuickFixProcessor> sutClass;
 	// Injected by WorkbenchExtension
-	static WorkspaceImporter importer;
+	// static WorkspaceImporter importer;
 	static IProject								eclipseProject;
 	static Project								bndProject;
 	// Injected by SoftAssertionsExtension
@@ -102,7 +101,7 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 
 	@SuppressWarnings("unchecked")
 	static void initSUTClass() throws Exception {
-		BundleContext bc = FrameworkUtil.getBundle(BuildpathQuickFixProcessor_WithEmptyBuildpath_Test.class)
+		BundleContext bc = FrameworkUtil.getBundle(AbstractBuildpathQuickFixProcessorTest.class)
 			.getBundleContext();
 		Bundle but = Stream.of(bc.getBundles())
 			.filter(bundle -> bundle.getSymbolicName()
@@ -127,7 +126,7 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 	}
 
 	@BeforeAll
-	static void beforeAll() throws Exception {
+	static void beforeAllBase() throws Exception {
 		// Get a handle on the repo. I have seen this come back null on occasion
 		// so spin until we get it.
 		LocalIndexedRepo localRepo = (LocalIndexedRepo) Central.getWorkspace()
@@ -181,13 +180,6 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 		IFolder sourceFolder = eclipseProject.getFolder("src");
 		if (!sourceFolder.exists()) {
 			synchronously("create src", monitor -> sourceFolder.create(true, true, monitor));
-		}
-
-		// This folder is not strictly needed for the tests but it prevents a
-		// build error from BndtoolsBuilder
-		IFolder testFolder = eclipseProject.getFolder("test");
-		if (!testFolder.exists()) {
-			synchronously("create test", monitor -> testFolder.create(true, true, monitor));
 		}
 
 		IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(sourceFolder);
