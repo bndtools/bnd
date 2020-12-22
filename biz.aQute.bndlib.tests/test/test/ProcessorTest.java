@@ -49,7 +49,7 @@ public class ProcessorTest extends TestCase {
 		assertNative("osname=Windows;osversion=10.0;processor=x86-64", "(osgi.native.processor~=amd64)");
 		assertNative("osname=Linux;osversion=5.1.0;processor=arm", "(osgi.native.processor~=arm)",
 			"The 'arm' processor is deprecated");
-
+		assertNative("osname=Mac OS X;osversion=11.1;processor=aarch64", "(osgi.native.processor~=aarch64)");
 	}
 
 	public void testNativeDefaults() throws Exception {
@@ -71,6 +71,7 @@ public class ProcessorTest extends TestCase {
 			assertNativeDefault("Mac OS X", "10.8.2", "x86_64", "(osgi.native.osversion=0010.8.2)");
 			assertNativeDefault("Mac OS X", "10.8.2", "x86_64",
 				"(&(osgi.native.processor=x86-64)(osgi.native.processor=amd64)(osgi.native.processor=em64t)(osgi.native.processor=x86_64))");
+			assertNativeDefault("Mac OS X", "11.1", "aarch64", "(&(osgi.native.processor=aarch64)(osgi.native.processor=arm64))");
 
 			//
 			// Linux
