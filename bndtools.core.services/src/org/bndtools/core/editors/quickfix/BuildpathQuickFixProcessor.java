@@ -516,24 +516,37 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 				return null;
 			}
 
-			Set<BundleId> buildpath = getBundleIds(project.getBuildpath());
-			Set<BundleId> testpath = test ? getBundleIds(project.getTestpath()) : Collections.emptySet();
+			Set<String> buildpath = getBundleIds(project.getBuildpath()).stream()
+				.map(BundleId::getBsn)
+				.collect(Collectors.toSet());
+			Set<String> testpath = test ? getBundleIds(project.getTestpath()).stream()
+				.map(BundleId::getBsn)
+				.collect(Collectors.toSet()) : Collections.emptySet();
 
 			Stream<AddBundleCompletionProposal> results;
 
 			if (test) {
+				Set<String> testBundlesAdded = new HashSet<>();
 				results = proposals.entrySet()
 					.stream()
-					.filter(entry -> !testpath.contains(entry.getKey()))
+					.filter(entry -> !testpath.contains(entry.getKey()
+						.getBsn()))
+					.filter(entry -> testBundlesAdded.add(entry.getKey()
+						.getBsn()))
 					.map(
 						entry -> new AddBundleCompletionProposal(entry.getKey(), entry.getValue(), 15 + entry.getValue()
 							.size(), context, project, Constants.TESTPATH));
 			} else {
 				results = Stream.empty();
 			}
+
+			Set<String> bundlesAdded = new HashSet<>();
 			IJavaCompletionProposal[] retval = Stream.concat(results, proposals.entrySet()
 				.stream()
-				.filter(entry -> !buildpath.contains(entry.getKey()))
+				.filter(entry -> !buildpath.contains(entry.getKey()
+					.getBsn()))
+				.filter(entry -> bundlesAdded.add(entry.getKey()
+					.getBsn()))
 				.map(entry -> new AddBundleCompletionProposal(entry.getKey(), entry.getValue(), 14 + entry.getValue()
 					.size(), context, project, Constants.BUILDPATH)))
 				.toArray(IJavaCompletionProposal[]::new);

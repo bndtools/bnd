@@ -21,11 +21,12 @@ import org.eclipse.swt.graphics.Point;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.BundleId;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
 import aQute.lib.strings.Strings;
 import bndtools.central.Central;
+import bndtools.preferences.BndPreferences;
 
 class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletionProposal {
 
@@ -41,18 +42,17 @@ class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletio
 
 	public AddBundleCompletionProposal(BundleId bundle, Map<String, Boolean> classes, int relevance,
 		IInvocationContext context, Project project, String pathtype) {
-		super("Adding '" + bundle + "' to " + project + " " + pathtype);
+		super("Adding '" + bundle.getBsn() + "' to " + project + " " + pathtype);
 		this.classes = classes;
 		this.bundle = bundle;
 		this.relevance = relevance;
 		this.context = context;
 		this.project = project;
 		this.pathtype = pathtype;
-		this.displayString = Strings.format("Add %s %s to %s (found %s)", bundle.getBsn(), bundle.getShortVersion(),
-			pathtype, classes.keySet()
-				.stream()
-				.sorted()
-				.collect(Collectors.joining(", ")));
+		this.displayString = Strings.format("Add %s to %s (found %s)", bundle.getBsn(), pathtype, classes.keySet()
+			.stream()
+			.sorted()
+			.collect(Collectors.joining(", ")));
 	}
 
 	@Override
@@ -70,6 +70,8 @@ class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletio
 
 	@Override
 	public String getAdditionalProposalInfo() {
+		// As far as I can tell, this method is not called for quick fixes -
+		// only for content assists.
 		return displayString;
 	}
 
@@ -85,6 +87,7 @@ class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletio
 
 	@Override
 	public IContextInformation getContextInformation() {
+		// Not called for quick fixes.
 		return null;
 	}
 
@@ -101,17 +104,18 @@ class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletio
 				BndEditModel model = new BndEditModel(project);
 				model.load();
 
-				switch (pathtype) {
-					case Constants.TESTPATH :
-						model.addPath(bundle, Constants.TESTPATH);
+				BndPreferences prefs = new BndPreferences();
+				VersionedClause vc;
+				switch (prefs.getQuickFixVersioning()) {
+					case latest:
+						vc = new VersionedClause(bundle.getBsn() + ";version=latest");
 						break;
-
-					case Constants.BUILDPATH :
+					case noversion :
 					default :
-						model.addPath(bundle, Constants.BUILDPATH);
+						vc = new VersionedClause(bundle.getBsn());
 						break;
 				}
-
+				model.addPath(vc, pathtype);
 				model.saveChanges();
 				Central.refreshFile(project.getPropertiesFile());
 				return Status.OK_STATUS;

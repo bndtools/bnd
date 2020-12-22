@@ -553,9 +553,9 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 			private final Pattern p;
 
 			public MatchDisplayString(String bundle, String version, String fqName, boolean test) {
-				super(String.format("Suggestion to add '%s %s' to -%spath for class %s", bundle, version,
+				super(String.format("Suggestion to add '%s' to -%spath for class %s", bundle,
 					test ? "test" : "build", fqName));
-				String re = String.format("^Add \\Q%s\\E \\Q%s\\E to -\\Q%s\\Epath [(]found \\Q%s\\E[)]", bundle, version,
+				String re = String.format("^Add \\Q%s\\E to -\\Q%s\\Epath [(]found \\Q%s\\E[)]", bundle,
 					test ? "test" : "build", fqName);
 				p = Pattern.compile(re);
 			}
@@ -572,9 +572,8 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 
 	protected void assertThatContainsFrameworkBundles(IJavaCompletionProposal[] proposals, String fqName) {
 		assertThatProposals(proposals).withRepresentation(PROPOSAL)
-			.hasSize(2)
-			.haveExactly(1, suggestsBundle("org.osgi.framework", "1.8.0", fqName))
-			.haveExactly(1, suggestsBundle("org.osgi.framework", "1.9.0", fqName));
+			.hasSize(1)
+			.haveExactly(1, suggestsBundle("org.osgi.framework", "1.8.0", fqName));
 	}
 
 	protected static Condition<IJavaCompletionProposal> suggestsBundle(String bundle, String version, String fqName) {
