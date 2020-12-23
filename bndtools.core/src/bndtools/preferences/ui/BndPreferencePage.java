@@ -18,6 +18,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import bndtools.preferences.BndPreferences;
+import bndtools.preferences.QuickFixVersioning;
 
 public class BndPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
 	public BndPreferencePage() {}
@@ -29,6 +30,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 	private boolean					buildBeforeLaunch	= true;
 	private boolean					editorOpenSourceTab	= false;
 	private boolean					workspaceIsOffline	= false;
+	private QuickFixVersioning		quickfixVersioning	= QuickFixVersioning.DEFAULT;
 	private final BndPreferences	prefs				= new BndPreferences();
 
 	private Text					prompt;
@@ -118,6 +120,41 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		// headless already done
 		// versionControlIgnores already done
 
+		Group quickfixVersioningGroup = new Group(composite, SWT.NONE);
+		quickfixVersioningGroup.setLayout(new GridLayout(1, false));
+		quickfixVersioningGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		quickfixVersioningGroup.setText(Messages.BndPreferencePage_quickfixVersioningGroup);
+
+		final Button btnNoVersion = new Button(quickfixVersioningGroup, SWT.RADIO);
+		btnNoVersion.setText(Messages.BndPreferencePage_quickfixVersioning_btnNoVersion);
+		btnNoVersion.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				quickfixVersioning = QuickFixVersioning.noversion;
+			}
+		});
+		btnNoVersion.setToolTipText(Messages.BndPreferencePage_quickfixVersioning_btnNoVersion_tt);
+
+		final Button btnLatest = new Button(quickfixVersioningGroup, SWT.RADIO);
+		btnLatest.setText(Messages.BndPreferencePage_quickfixVersioning_btnLatest);
+		btnLatest.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				quickfixVersioning = QuickFixVersioning.latest;
+			}
+		});
+		btnLatest.setToolTipText(Messages.BndPreferencePage_quickfixVersioning_btnLatest_tt);
+
+		// Set initial values
+		switch (quickfixVersioning) {
+			case noversion :
+				btnNoVersion.setSelection(true);
+				break;
+			case latest :
+				btnLatest.setSelection(true);
+				break;
+		}
+
 		layout = new GridLayout(1, false);
 		composite.setLayout(layout);
 
@@ -129,6 +166,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		layout = new GridLayout(1, false);
 		layout.verticalSpacing = 10;
 		editorGroup.setLayout(layout);
+		layout = new GridLayout(1, false);
 
 		return composite;
 	}
@@ -140,6 +178,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		prefs.setBuildBeforeLaunch(buildBeforeLaunch);
 		prefs.setEditorOpenSourceTab(editorOpenSourceTab);
 		prefs.setWorkspaceOffline(workspaceIsOffline);
+		prefs.setQuickFixVersioning(quickfixVersioning);
 		prefs.setPrompt(prompt.getText());
 		return true;
 	}
@@ -151,6 +190,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		buildBeforeLaunch = prefs.getBuildBeforeLaunch();
 		editorOpenSourceTab = prefs.getEditorOpenSourceTab();
 		workspaceIsOffline = prefs.isWorkspaceOffline();
+		quickfixVersioning = prefs.getQuickFixVersioning();
 	}
 
 }

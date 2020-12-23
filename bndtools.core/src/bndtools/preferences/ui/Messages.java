@@ -31,6 +31,11 @@ public class Messages extends NLS {
 	public static String		BndPreferencePage_namedPluginDeprecated_text;
 	public static String		BndPreferencePage_btnOfflineWorkspace;
 	public static String		BndPreferencePage_decorOfflineWorkspace;
+	public static String		BndPreferencePage_quickfixVersioningGroup;
+	public static String		BndPreferencePage_quickfixVersioning_btnNoVersion;
+	public static String		BndPreferencePage_quickfixVersioning_btnNoVersion_tt;
+	public static String		BndPreferencePage_quickfixVersioning_btnLatest;
+	public static String		BndPreferencePage_quickfixVersioning_btnLatest_tt;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

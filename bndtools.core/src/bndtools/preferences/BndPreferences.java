@@ -64,6 +64,7 @@ public class BndPreferences {
 			"https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz");
 		store.setDefault(PREF_WORKSPACE_OFFLINE, false);
 		store.setDefault(PREF_USE_ALIAS_REQUIREMENTS, true);
+		store.setDefault(QuickFixVersioning.PREFERENCE_KEY, QuickFixVersioning.DEFAULT.toString());
 		store.setDefault(PREF_EXPLORER_PROMPT, "");
 	}
 
@@ -349,6 +350,17 @@ public class BndPreferences {
 
 	public void setBuildBeforeLaunch(boolean b) {
 		store.setValue(PREF_BUILDBEFORELAUNCH, b);
+	}
+
+	public QuickFixVersioning getQuickFixVersioning() {
+		return QuickFixVersioning.parse(store.getString(QuickFixVersioning.PREFERENCE_KEY));
+	}
+
+	public void setQuickFixVersioning(QuickFixVersioning qfv) {
+		if (qfv == null) {
+			qfv = QuickFixVersioning.DEFAULT;
+		}
+		store.setValue(QuickFixVersioning.PREFERENCE_KEY, qfv.toString());
 	}
 
 	public boolean isWorkspaceOffline() {
