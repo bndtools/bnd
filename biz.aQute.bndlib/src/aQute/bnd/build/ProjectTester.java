@@ -25,6 +25,7 @@ public abstract class ProjectTester {
 	public ProjectTester(Project project) throws Exception {
 		this.project = project;
 		launcher = project.getProjectLauncher();
+		launcher.onPrepare(asRunnable(this::prepare));
 		launcher.onUpdate(asRunnable(this::updateFromProject));
 		launcher.addRunVM("-ea");
 		continuous = project.is(Constants.TESTCONTINUOUS);
@@ -101,8 +102,6 @@ public abstract class ProjectTester {
 
 	public boolean prepare() throws Exception {
 		IO.mkdirs(reportDir);
-		updateFromProject();
-		getProjectLauncher().prepare();
 		return true;
 	}
 
