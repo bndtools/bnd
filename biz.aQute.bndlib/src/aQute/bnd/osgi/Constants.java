@@ -284,6 +284,7 @@ public interface Constants {
 	String				TESTPACKAGES								= "-testpackages";
 	String				TESTPATH									= "-testpath";
 	String				TESTCONTINUOUS								= "-testcontinuous";
+	String				TESTTERMINATE								= "-testterminate";
 	String				TESTSOURCES									= "-testsources";
 	String				TESTUNRESOLVED								= "-testunresolved";
 	String				TESTER										= "-tester";
