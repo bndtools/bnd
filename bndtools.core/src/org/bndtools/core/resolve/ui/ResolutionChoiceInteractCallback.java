@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.bndtools.core.resolve.ResolveCancelledException;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -43,7 +43,7 @@ public class ResolutionChoiceInteractCallback implements ResolutionCallback {
 		int result = resultRef.get();
 
 		if (result == IDialogConstants.CANCEL_ID)
-			throw new ResolveCancelledException();
+			throw new OperationCanceledException();
 	}
 
 }
