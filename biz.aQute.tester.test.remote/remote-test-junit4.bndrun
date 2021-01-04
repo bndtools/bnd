@@ -1,0 +1,17 @@
+-testterminate: false
+
+-runpath: biz.aQute.remote.launcher;version=latest
+
+-runremote: \
+	test;\
+		shell=-1;\
+		jdb=8000;\
+		host=localhost;\
+		agent=29998;\
+		timeout=30000
+
+-runtrace: true
+
+-runbundles: \
+	biz.aQute.tester.test.remote.junit4,\
+	org.apache.servicemix.bundles.junit

@@ -1,0 +1,3 @@
+-includepackage: aQute.tester.test2.junit4
+
+Test-Cases: ${classes;HIERARCHY_ANNOTATED;org.junit.Test;CONCRETE}
