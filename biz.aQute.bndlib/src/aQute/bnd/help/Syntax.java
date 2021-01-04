@@ -705,6 +705,8 @@ public class Syntax implements Constants {
 		new Syntax(TESTCONTINUOUS,
 			"Do not exit after running the test suites but keep watching the bundles and rerun the test cases if the bundle is updated.",
 			TESTCONTINUOUS + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(TESTTERMINATE, "Terminate the remote framework after running the test suites.",
+			TESTTERMINATE + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(TESTSOURCES,
 			"Specification to find JUnit test cases by traversing the test src directory and looking for java classes.",
 			TESTSOURCES + "=*.java", "REGEX ( ',' REGEX )*", null),

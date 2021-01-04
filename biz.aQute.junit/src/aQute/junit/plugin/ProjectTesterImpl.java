@@ -5,6 +5,7 @@ import static aQute.junit.constants.TesterConstants.TESTER_DIR;
 import static aQute.junit.constants.TesterConstants.TESTER_HOST;
 import static aQute.junit.constants.TesterConstants.TESTER_NAMES;
 import static aQute.junit.constants.TesterConstants.TESTER_PORT;
+import static aQute.junit.constants.TesterConstants.TESTER_TERMINATE;
 import static aQute.junit.constants.TesterConstants.TESTER_TRACE;
 import static aQute.junit.constants.TesterConstants.TESTER_UNRESOLVED;
 
@@ -61,6 +62,8 @@ public class ProjectTesterImpl extends ProjectTester implements EclipseJUnitTest
 			.put(TESTER_DIR, getReportDir().getAbsolutePath());
 		launcher.getRunProperties()
 			.put(TESTER_CONTINUOUS, "" + getContinuous());
+		launcher.getRunProperties()
+			.put(TESTER_TERMINATE, "" + getTerminate());
 		if (getProject().isRunTrace())
 			launcher.getRunProperties()
 				.put(TESTER_TRACE, "true");
