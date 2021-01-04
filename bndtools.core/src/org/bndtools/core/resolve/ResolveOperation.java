@@ -8,6 +8,7 @@ import org.bndtools.core.resolve.ResolutionResult.Outcome;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.osgi.framework.BundleContext;
@@ -51,14 +52,15 @@ public class ResolveOperation implements IRunnableWithProgress {
 				logger = new ResolverLogger();
 				List<ResolutionCallback> operationCallbacks = new ArrayList<>(callbacks.size() + 1);
 				operationCallbacks.addAll(callbacks);
-				operationCallbacks.add(new CancelOperationCallback(monitor));
+				operationCallbacks.add(new ResolutionProgressCallback(monitor));
+
 				RunResolution resolution = RunResolution.resolve(model.getProject(), model.getProperties(),
 					operationCallbacks, logger);
 				if (resolution.isOK()) {
 					result = new ResolutionResult(Outcome.Resolved, resolution, status, logger);
 				} else if (resolution.exception != null) {
 					Throwable t = Exceptions.unrollCause(resolution.exception);
-					if (resolution.exception instanceof ResolveCancelledException
+					if (resolution.exception instanceof OperationCanceledException
 						|| t instanceof InterruptedException) {
 						result = new ResolutionResult(Outcome.Cancelled, resolution, status, logger);
 					} else {
