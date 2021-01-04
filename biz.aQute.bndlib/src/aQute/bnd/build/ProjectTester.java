@@ -6,9 +6,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import aQute.bnd.build.ProjectLauncher.NotificationListener;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
 import aQute.libg.qtokens.QuotedTokenizer;
 
@@ -18,6 +20,7 @@ public abstract class ProjectTester {
 	private final List<String>		tests		= new ArrayList<>();
 	private File					reportDir;
 	private boolean					continuous	= true;
+	private boolean					terminate	= true;
 
 	public ProjectTester(Project project) throws Exception {
 		this.project = project;
@@ -25,6 +28,9 @@ public abstract class ProjectTester {
 		launcher.onUpdate(asRunnable(this::updateFromProject));
 		launcher.addRunVM("-ea");
 		continuous = project.is(Constants.TESTCONTINUOUS);
+		terminate = Optional.ofNullable(project.getProperty(Constants.TESTTERMINATE))
+			.map(Processor::isTrue)
+			.orElse(true);
 
 		reportDir = new File(project.getTarget(), project.getProperty("test-reports", "test-reports"));
 	}
@@ -83,6 +89,14 @@ public abstract class ProjectTester {
 
 	public void setCwd(File dir) {
 		launcher.setCwd(dir);
+	}
+
+	public boolean getTerminate() {
+		return terminate;
+	}
+
+	public void setTerminate(boolean terminate) {
+		this.terminate = terminate;
 	}
 
 	public boolean prepare() throws Exception {
