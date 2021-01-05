@@ -41,6 +41,7 @@ import org.gradle.api.tasks.compile.JavaCompile
 public class BndPlugin implements Plugin<Project> {
   public static final String PLUGINID = 'biz.aQute.bnd'
   private Project project
+  private Project workspace
   private aQute.bnd.build.Project bndProject
 
   /**
@@ -50,18 +51,19 @@ public class BndPlugin implements Plugin<Project> {
   public void apply(Project p) {
     p.configure(p) { Project project ->
       this.project = project
+      this.workspace = project.parent
       if (plugins.hasPlugin(BndBuilderPlugin.PLUGINID)) {
           throw new GradleException("Project already has '${BndBuilderPlugin.PLUGINID}' plugin applied.")
       }
-      if (parent == null) {
+      if (workspace == null) {
         throw new GradleException("The '${PLUGINID}' plugin cannot be applied to the root project. Perhaps you meant to use the '${BndBuilderPlugin.PLUGINID}' plugin?")
       }
-      if (!parent.hasProperty('bndWorkspace')) {
-        parent.ext.bndWorkspace = new Workspace(parent.projectDir).setOffline(gradle.startParameter.offline)
+      if (!workspace.hasProperty('bndWorkspace')) {
+        workspace.ext.bndWorkspace = new Workspace(workspace.projectDir).setOffline(gradle.startParameter.offline)
       }
       this.bndProject = bndWorkspace.getProject(name)
       if (bndProject == null) {
-        throw new GradleException("Unable to load bnd project ${name} from workspace ${parent.projectDir}")
+        throw new GradleException("Unable to load bnd project ${name} from workspace ${workspace.projectDir}")
       }
       bndProject.prepare()
       if (!bndProject.isValid()) {
@@ -369,6 +371,8 @@ public class BndPlugin implements Plugin<Project> {
 
       def test = tasks.named('test') { t ->
         t.enabled !bndis(Constants.NOJUNIT) && !bndis('no.junit')
+        /* tests can depend upon jars from -dependson */
+        t.inputs.files(getBuildDependencies('jar')).withPropertyName('buildDependencies')
         t.doFirst {
           checkErrors(t.logger, t.ignoreFailures)
         }
@@ -504,7 +508,7 @@ public class BndPlugin implements Plugin<Project> {
 Project ${project.name} // Bnd version ${About.CURRENT}
 ------------------------------------------------------------
 
-project.workspace:      ${project.parent.projectDir}
+project.workspace:      ${workspace.projectDir}
 project.name:           ${project.name}
 project.dir:            ${project.projectDir}
 target:                 ${project.buildDir}
@@ -553,7 +557,7 @@ Project ${project.name}
         def taskNames = attrs?.'task'
         if (taskNames) {
           def category = removeDuplicateMarker(key)
-          def resource = parent.project('cnf').layout.buildDirectory.dir("noparallel/${category}")
+          def resource = workspace.project('cnf').layout.buildDirectory.dir("noparallel/${category}")
           taskNames.trim().tokenize(',').each { taskName ->
             tasks.named(taskName.trim()) { t ->
               t.outputs.dir resource
@@ -569,7 +573,7 @@ Project ${project.name}
       builtBy path.findAll { Container c ->
         c.getType() == TYPE.PROJECT
       }.collect { Container c ->
-        project.parent.absoluteProjectPath("${c.getProject().getName()}:jar")
+        workspace.absoluteProjectPath("${c.getProject().getName()}:jar")
       }
     }
   }
@@ -577,7 +581,7 @@ Project ${project.name}
   private Closure getBuildDependencies(String taskName) {
     return {
       bndProject.getBuildDependencies().collect { dependency ->
-        project.parent.project(dependency.getName()).tasks.named(taskName)
+        workspace.project(dependency.getName()).tasks.named(taskName)
       }
     }
   }
@@ -585,7 +589,7 @@ Project ${project.name}
   private Closure getTestDependencies(String taskName) {
     return {
       bndProject.getTestDependencies().collect { dependency ->
-        project.parent.project(dependency.getName()).tasks.named(taskName)
+        workspace.project(dependency.getName()).tasks.named(taskName)
       }
     }
   }
@@ -593,7 +597,7 @@ Project ${project.name}
   private Closure getDependents(String taskName) {
     return {
       bndProject.getDependents().collect { dependent ->
-        project.parent.project(dependent.getName()).tasks.named(taskName)
+        workspace.project(dependent.getName()).tasks.named(taskName)
       }
     }
   }
