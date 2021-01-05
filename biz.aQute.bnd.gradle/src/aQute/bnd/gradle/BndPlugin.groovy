@@ -371,6 +371,8 @@ public class BndPlugin implements Plugin<Project> {
 
       def test = tasks.named('test') { t ->
         t.enabled !bndis(Constants.NOJUNIT) && !bndis('no.junit')
+        /* tests can depend upon jars from -dependson */
+        t.inputs.files(getBuildDependencies('jar')).withPropertyName('buildDependencies')
         t.doFirst {
           checkErrors(t.logger, t.ignoreFailures)
         }
