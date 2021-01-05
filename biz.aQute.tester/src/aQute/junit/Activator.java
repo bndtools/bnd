@@ -397,7 +397,9 @@ public class Activator implements BundleActivator, Runnable {
 			return null;
 		}
 		List<BundleWire> wires = wiring.getRequiredWires(HostNamespace.HOST_NAMESPACE);
-		trace("required wires for %s %s", bundle, wires);
+		if (!wires.isEmpty()) {
+			trace("required wires for %s %s", bundle, wires);
+		}
 
 		for (BundleWire wire : wires) {
 			hosts.add(wire.getProviderWiring()
@@ -424,7 +426,9 @@ public class Activator implements BundleActivator, Runnable {
 			return Stream.empty();
 		}
 		List<BundleWire> wires = wiring.getProvidedWires(HostNamespace.HOST_NAMESPACE);
-		trace("provided wires for %s %s", host, wires);
+		if (!wires.isEmpty()) {
+			trace("provided wires for %s %s", host, wires);
+		}
 
 		return wires.stream()
 			.map(BundleWire::getRequirerWiring)
