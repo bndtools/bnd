@@ -1146,11 +1146,12 @@ public class Project extends Processor {
 		}
 	}
 
-	private List<RepositoryPlugin> getReleaseRepos(String names) {
+	List<RepositoryPlugin> getReleaseRepos(String names) {
 		Parameters repoNames = parseReleaseRepos(names);
 		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
 		List<RepositoryPlugin> result = new ArrayList<>();
 		if (repoNames == null) { // -releaserepo unspecified
+			warning("No %s instruction was set. We will look for writable Repositores instead.", RELEASEREPO);
 			for (RepositoryPlugin plugin : plugins) {
 				if (plugin.canWrite()) {
 					result.add(plugin);
@@ -1158,7 +1159,7 @@ public class Project extends Processor {
 				}
 			}
 			if (result.isEmpty()) {
-				msgs.NoNameForReleaseRepository();
+				error("No Writable Repository could be found");
 			}
 			return result;
 		}

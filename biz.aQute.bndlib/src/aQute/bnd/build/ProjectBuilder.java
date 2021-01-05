@@ -594,29 +594,29 @@ public class ProjectBuilder extends Builder {
 	}
 
 	private RepositoryPlugin getReleaseRepo() {
-		String repoName = getProperty(Constants.RELEASEREPO);
 
-		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
-		for (RepositoryPlugin r : repos) {
-			if (r.canWrite()) {
-				if (repoName == null || r.getName()
-					.equals(repoName)) {
-					return r;
-				}
+		String repoNames = getProperty(Constants.RELEASEREPO);
+
+		List<RepositoryPlugin> releaseRepos = project.getReleaseRepos(repoNames);
+
+		if (!releaseRepos.isEmpty()) {
+			if (releaseRepos.size() > 1) {
+				warning("Found multiple release repositories [%s], so we will use the first one", repoNames);
 			}
+			return releaseRepos.get(0);
 		}
-		if (repoName == null)
-			error("Could not find a writable repo for the release repo (-releaserepo is not set)");
-		else
-			error("No such -releaserepo %s found", repoName);
 
+		error("No releaserepo(s) found for %s", repoNames);
 		return null;
 	}
 
 	private RepositoryPlugin getBaselineRepo() {
 		String repoName = getProperty(Constants.BASELINEREPO);
-		if (repoName == null)
+		if (repoName == null) {
+			warning("Baselining is active, but no %s is set. Will fall back to release repositories",
+				Constants.BASELINEREPO);
 			return getReleaseRepo();
+		}
 
 		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
 		for (RepositoryPlugin r : repos) {
