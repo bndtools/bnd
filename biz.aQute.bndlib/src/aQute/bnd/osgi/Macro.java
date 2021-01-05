@@ -1617,6 +1617,13 @@ public class Macro {
 		return result;
 	}
 
+	static final String _bndversionHelp = "${bndversion}, returns the currently running bnd version";
+
+	public String _bndversion(String[] args) throws Exception {
+		verifyCommand(args, _bndversionHelp, null, 1, 1);
+		return About.CURRENT.toStringWithoutQualifier();
+	}
+
 	static final String _stemHelp = "${stem;<string>}";
 
 	public String _stem(String[] args) throws Exception {
