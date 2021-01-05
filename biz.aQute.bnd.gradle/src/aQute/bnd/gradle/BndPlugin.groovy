@@ -280,7 +280,7 @@ public class BndPlugin implements Plugin<Project> {
         t.ext.projectDirInputsExcludes = Strings.split(bndMerge(Constants.BUILDERIGNORE)).collect { it.concat('/') }
         /* all other files in the project like bnd and resources */
         t.inputs.files({
-          project.fileTree(projectDir) { tree ->
+          project.fileTree(project.projectDir) { tree ->
             project.sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
               tree.exclude sourceSet.allSource.sourceDirectories.collect {
                 project.relativePath(it)
@@ -422,61 +422,55 @@ public class BndPlugin implements Plugin<Project> {
         t.group 'build'
       }
 
-      def bndruns = fileTree(projectDir) {
+      def bndruns = project.fileTree(project.projectDir) {
           include '*.bndrun'
       }
 
-      def export = tasks.register('export') { t ->
-        t.description 'Export all the bndrun files.'
-        t.group 'export'
-      }
-
-      bndruns.forEach { runFile ->
-        def subtask = tasks.register("export.${runFile.name - '.bndrun'}", Export.class) { t ->
+      def exportTasks = bndruns.collect { runFile ->
+        tasks.register("export.${runFile.name - '.bndrun'}", Export.class) { t ->
           t.description "Export the ${runFile.name} file."
           t.dependsOn 'assemble'
           t.group 'export'
           t.bndrun = runFile
           t.exporter = EXECUTABLE_JAR
         }
-        tasks.named('export') { t ->
-          t.dependsOn subtask
-        }
       }
 
-      def runbundles = tasks.register('runbundles') { t ->
-        t.description 'Create a distribution of the runbundles in each of the bndrun files.'
+      def export = tasks.register('export') { t ->
+        t.description 'Export all the bndrun files.'
         t.group 'export'
+        t.dependsOn exportTasks
       }
 
-      bndruns.forEach { runFile ->
-        def subtask = tasks.register("runbundles.${runFile.name - '.bndrun'}", Export.class) { t ->
+      def runbundlesTasks = bndruns.collect { runFile ->
+        tasks.register("runbundles.${runFile.name - '.bndrun'}", Export.class) { t ->
           t.description "Create a distribution of the runbundles in the ${runFile.name} file."
           t.dependsOn 'assemble'
           t.group 'export'
           t.bndrun = runFile
           t.exporter = RUNBUNDLES
         }
-        tasks.named('runbundles') { t ->
-          t.dependsOn subtask
+      }
+
+      def runbundles = tasks.register('runbundles') { t ->
+        t.description 'Create a distribution of the runbundles in each of the bndrun files.'
+        t.group 'export'
+        t.dependsOn runbundlesTasks
+      }
+
+      def resolveTasks = bndruns.collect { runFile ->
+        tasks.register("resolve.${runFile.name - '.bndrun'}", Resolve.class) { t ->
+          t.description "Resolve the runbundles required for ${runFile.name} file."
+          t.dependsOn 'assemble'
+          t.group 'export'
+          t.bndrun = runFile
         }
       }
 
       def resolve = tasks.register('resolve') { t ->
         t.description 'Resolve the runbundles required for each of the bndrun files.'
         t.group 'export'
-      }
-
-      bndruns.forEach { runFile ->
-        def subtask = tasks.register("resolve.${runFile.name - '.bndrun'}", Resolve.class) { t ->
-          t.description "Resolve the runbundles required for ${runFile.name} file."
-          t.dependsOn 'assemble'
-          t.group 'export'
-          t.bndrun = runFile
-        }
-        tasks.named('resolve') { t ->
-          t.dependsOn subtask
-        }
+        t.dependsOn resolveTasks
       }
 
       bndruns.forEach { runFile ->
