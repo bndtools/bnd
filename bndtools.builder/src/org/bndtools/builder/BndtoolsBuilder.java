@@ -148,13 +148,28 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 						if (!Files.isSameFile(javaPath.getParent(), wsPath)) {
 							msg = "The project directory: " + javaPath + " is not a subdirectory of the bnd workspace "
 								+ wsPath;
+						} else {
+							Path bndPath = javaPath.resolve(Project.BNDFILE);
+
+							if (!Files.exists(bndPath)) {
+								msg = "The project does not have a " + Project.BNDFILE + " file";
+							} else if (!Files.isReadable(bndPath)) {
+								msg = Project.BNDFILE + " is not readable";
+							} else if (Files.isDirectory(bndPath)) {
+								msg = Project.BNDFILE + " is a directory";
+							} else if (!Files.isRegularFile(bndPath)) {
+								// If it exists but it's not a directory, it
+								// still might not be a file - eg, could be a
+								// pipe or a device if the user has done
+								// something silly.
+								msg = Project.BNDFILE + " is not a regular file";
+							}
 						}
 					}
 				}
 				markers.createMarker(null, IMarker.SEVERITY_ERROR, msg, BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
 				return noreport();
 			}
-
 			final Project model = ourModel;
 
 			try {
