@@ -2,7 +2,6 @@ package biz.aQute.resolve;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toList;
 import static org.osgi.framework.Constants.SYSTEM_BUNDLE_SYMBOLICNAME;
 import static org.osgi.framework.namespace.BundleNamespace.BUNDLE_NAMESPACE;
 import static org.osgi.framework.namespace.HostNamespace.HOST_NAMESPACE;
@@ -223,15 +222,17 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			// repos.
 			boolean optional = Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives()
 				.get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
+			List<Capability> result = new ArrayList<>(firstStageResult);
+			Collections.sort(result, capabilityComparator);
 			if (!optional || optionalRoots.contains(requirement.getResource())) {
-				List<Capability> secondStageResult = findProvidersFromRepositories(requirement, firstStageResult);
-				// Concatenate both stages, eliminating duplicates between the
-				// two
-				firstStageResult.addAll(secondStageResult);
+				// We sort capabilities from the same resource and mandatory
+				// resources (first stage) BEFORE capabilities from repo
+				// resources (second stage) removing any duplicate capabilities.
+				findProvidersFromRepositories(requirement, firstStageResult).stream()
+					.filter(provider -> !result.contains(provider))
+					.sorted(capabilityComparator)
+					.forEach(result::add);
 			}
-			List<Capability> result = firstStageResult.stream()
-				.sorted(capabilityComparator)
-				.collect(toList());
 			return result;
 		});
 		List<Capability> capabilities = new ArrayList<>(cached);
