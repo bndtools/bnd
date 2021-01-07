@@ -1044,6 +1044,11 @@ public class DSAnnotationReader extends ClassDataCollector {
 			}
 			case PARAMETER : {
 				if (!"<init>".equals(member.getName())) {
+					if (member.isPrivate() && member.isSynthetic()) {
+						analyzer.warning(
+							"see https://github.com/bndtools/bnd/issues/4491");
+						return;
+					}
 					analyzer.error("In component %s, @Reference cannot be used for method parameters", className)
 						.details(getDetails(def, ErrorType.REFERENCE));
 					return;
