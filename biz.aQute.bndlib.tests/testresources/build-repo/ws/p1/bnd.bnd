@@ -1,0 +1,1 @@
+Provide-Capability: osgi.service;objectClass:List<String>="test"

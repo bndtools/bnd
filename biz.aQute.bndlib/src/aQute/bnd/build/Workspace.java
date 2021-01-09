@@ -1500,22 +1500,56 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Return an aggregate repository of all the workspace's repository and the
-	 * projects repository. This workspace must be gotten for each operation, it
-	 * might become stale over time.
-	 * <p>
-	 * TODO make this public in 5.2.0 & use everywhere
-	 * <p>
+	 * Strategy to use when creating a workspace ResourceRepository.
+	 */
+	enum ResourceRepositoryStrategy {
+		/**
+		 * All Repository plugins and the Workspace repository.
+		 * <p>
+		 * This is the default strategy.
+		 */
+		ALL,
+		/**
+		 * All Repository plugins but not the Workspace repository.
+		 */
+		REPOS,
+		/**
+		 * The Workspace repository but no Repository plugins.
+		 */
+		WORKSPACE
+	}
+
+	/**
+	 * Return an aggregate repository of all the repositories to search. This
+	 * resource repository must be obtained for each operation, it might become
+	 * stale over time.
 	 *
+	 * @param strategy Strategy to use for which repositories to search.
 	 * @return an aggregate repository
 	 * @throws Exception
 	 */
-	Repository getResourceRepository() throws Exception {
-		List<Repository> plugins = getPlugins(Repository.class);
-		// replace any WorkspaceRepositoryMarker plugin
-		plugins.removeIf(WorkspaceRepositoryMarker.class::isInstance);
-		plugins.add(new WorkspaceRepositoryDynamic(this));
+	Repository getResourceRepository(ResourceRepositoryStrategy strategy) throws Exception {
+		List<Repository> plugins;
 
+		switch (strategy) {
+			case WORKSPACE :
+				plugins = Collections.singletonList(new WorkspaceRepositoryDynamic(this));
+				break;
+			case REPOS :
+				plugins = getPlugins(Repository.class);
+				// replace any WorkspaceRepositoryMarker plugin
+				plugins.removeIf(WorkspaceRepositoryMarker.class::isInstance);
+				break;
+			case ALL :
+				plugins = getPlugins(Repository.class);
+				// replace any WorkspaceRepositoryMarker plugin
+				plugins.removeIf(WorkspaceRepositoryMarker.class::isInstance);
+				plugins.add(new WorkspaceRepositoryDynamic(this));
+				break;
+			default :
+				plugins = Collections.emptyList();
+				break;
+		}
 		AggregateRepository repository = new AggregateRepository(plugins);
 		Parameters augments = getMergedParameters(Constants.AUGMENT);
 		if (augments.isEmpty())
@@ -1524,40 +1558,65 @@ public class Workspace extends Processor {
 		return new AugmentRepository(augments, repository);
 	}
 
+	static final String _findprovidersHelp = "${findproviders;<namespace>[;<filter>[;('ALL'|'REPOS'|'WORKSPACE')]]}";
+
 	/**
 	 * A macro that returns a set of resources in bundle selection format from
-	 * the repository. For example:
+	 * the repositories. For example:
 	 *
 	 * <pre>
-	 * ${findproviders;osgi.wiring.package;(osgi.wiring.package=aQute.bnd.build)}
+	 * ${findproviders;osgi.wiring.package;(osgi.wiring.package=aQute.bnd.build);ALL}
 	 * </pre>
 	 */
 
 	public String _findproviders(String[] args) throws Exception {
-		Macro.verifyCommand(args, _findprovidersHelp, null, 2, 3);
-		return findProviders(args[1], args.length > 2 ? args[2] : null).map(Capability::getResource)
+		Macro.verifyCommand(args, _findprovidersHelp, null, 2, 4);
+		String namespace = args[1];
+		String filter = args.length > 2 ? args[2] : null;
+		ResourceRepositoryStrategy strategy = ResourceRepositoryStrategy.ALL;
+		if (args.length > 3) {
+			if (args[3].equalsIgnoreCase(ResourceRepositoryStrategy.ALL.name())) {
+				strategy = ResourceRepositoryStrategy.ALL;
+			} else if (args[3].equalsIgnoreCase(ResourceRepositoryStrategy.REPOS.name())) {
+				strategy = ResourceRepositoryStrategy.REPOS;
+			} else if (args[3].equalsIgnoreCase(ResourceRepositoryStrategy.WORKSPACE.name())) {
+				strategy = ResourceRepositoryStrategy.WORKSPACE;
+			} else {
+				error("Invalid resource repository strategy: %s. Must be one of the following: %s", args[3],
+					Arrays.toString(ResourceRepositoryStrategy.values()));
+			}
+		}
+		return findProviders(namespace, filter, strategy).map(Capability::getResource)
 			.map(ResourceUtils::getBundleId)
-			.distinct()
 			.filter(Objects::nonNull)
 			.sorted()
+			.distinct()
 			.map(BundleId::toString)
 			.collect(Collectors.joining(","));
 	}
 
-	static final String _findprovidersHelp = "${findproviders;<namespace>;<filter>}";
-
 	/**
-	 * Convenient findProviders
+	 * Find capability providers in the resources in the workspace's
+	 * repositories.
 	 *
+	 * @param namespace Capability namespace.
+	 * @param filter Filter expression to limit the capabilities. Optional, may
+	 *            be {@code null} or an empty string.
+	 * @return A stream of capabilities found. May be an empty stream.
 	 * @throws Exception
 	 */
-
 	public Stream<Capability> findProviders(String namespace, String filter) throws Exception {
+		return findProviders(namespace, filter, ResourceRepositoryStrategy.ALL);
+	}
+
+	Stream<Capability> findProviders(String namespace, String filter, ResourceRepositoryStrategy strategy)
+		throws Exception {
 		RequirementBuilder rb = new RequirementBuilder(namespace);
-		if (filter != null)
+		if (Strings.nonNullOrTrimmedEmpty(filter)) {
 			rb.filter(filter);
+		}
 		Requirement requirement = rb.buildSyntheticRequirement();
-		return getResourceRepository().findProviders(Collections.singleton(requirement))
+		return getResourceRepository(strategy).findProviders(Collections.singleton(requirement))
 			.get(requirement)
 			.stream();
 	}
