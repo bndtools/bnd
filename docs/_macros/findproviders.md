@@ -1,18 +1,28 @@
 ---
 layout: default
 class: Workspace
-title: findproviders  ';' namespace ( ';' FILTER )?
-summary: find resources in the workspace repository matching the given namespace and optional filter. EXPERIMENTAL
+title: findproviders  ';' namespace ( ';' FILTER ( ';' STRATEGY)? )?
+summary: find resources in the workspace repository matching the given namespace and optional filter. Intended for use in bndrun files. STRATEGY can aither be ALL, REPOS or WORKSPACE. EXPERIMENTAL
 ---
 
 The `findproviders` macro gives access to the resources in the Workspace repositories, including the projects itself. Its semantics match the OSGi `Repository.findProviders()` method.
 
-It was added to support the use case of including a set of plugins in a resolve to create an executable. Since it is impossible to add a requirement that will add all matching resources, the `findproviders` macro can be used to find these resources and then turn them into initial requirements. However, this macro will likely find many other use cases since it is quite versatile.
+It was added to support the use case of including a set of plugins in a resolve to create an executable. Since it is impossible to add a requirement that will add all matching resources, the `findproviders` macro can be used to find these resources and then turn them into initial requirements. However, this macro will likely find many other use cases since it is quite versatile. If used outside of `bndrun` files, it can cause circular builds because it might want to search the project that is used in. Use the REPOS Strategy in this case.
 
-    findproviders ::= namespace ( ';' FILTER )?
+    findproviders ::= namespace ( ';' FILTER ( ';' STRATEGY)? )?
     namespace     ::= ... OSGi namespace
+    FILTER        ::= Any LDAP Styled Filter
+    STRATEGY      ::= 'ALL' | 'WORKSPACE' | 'REPOS'
 
-If no filter is given then all resources that have a capability in the given namespace are returned.
+If no filter is given or the filter attribute is empty, then all resources that have a capability in the given namespace are returned.
+
+The following strategies are available:
+
+| Strategy  | Description                                               |
+| --------- | --------------------------------------------------------- |
+| ALL       | Searches in the Workspace and all configured Repositories |
+| REPOS     | Searches only in configured Repositories                  |
+| WORKSPACE | Searches in Workspaceprojects only                        |
 
 The result is in `PARAMETERS` format, to common format in bnd and OSGi. In this case the _key_ will be the Bundle Symbolic Name and the attributes will _at least_ contain the Bundle version. For example:
 

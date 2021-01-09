@@ -106,7 +106,9 @@ import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.lib.zip.ZipUtil;
 import aQute.libg.glob.Glob;
+import aQute.libg.reporter.ReporterMessages;
 import aQute.libg.uri.URIUtil;
+import aQute.service.reporter.Messages.ERROR;
 import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
@@ -180,6 +182,9 @@ public class Workspace extends Processor {
 	private final ReadWriteLock									lock				= new ReentrantReadWriteLock(true);
 
 	public static boolean										remoteWorkspaces	= false;
+
+	final WorkspaceMessages										msgs				= ReporterMessages.base(this,
+		WorkspaceMessages.class);
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -1506,11 +1511,37 @@ public class Workspace extends Processor {
 	 * @throws Exception
 	 */
 	Repository getResourceRepository() throws Exception {
-		List<Repository> plugins = getPlugins(Repository.class);
-		// replace any WorkspaceRepositoryMarker plugin
-		plugins.removeIf(WorkspaceRepositoryMarker.class::isInstance);
-		plugins.add(new WorkspaceRepositoryDynamic(this));
+		return getResourceRepository(ResourceRepositoryStrategy.ALL);
+	}
 
+	/**
+	 * Return an aggregate repository of all the workspace's repository and the
+	 * projects repository. This workspace must be gotten for each operation, it
+	 * might become stale over time.
+	 *
+	 * @param includeWorkspace will ignore the workspace to prevent build loops
+	 * @return an aggregate repository
+	 * @throws Exception
+	 */
+	Repository getResourceRepository(ResourceRepositoryStrategy strategy) throws Exception {
+		List<Repository> plugins = new ArrayList<>();
+
+		switch (strategy) {
+			case WORKSPACE :
+				plugins.add(new WorkspaceRepositoryDynamic(this));
+				break;
+			case REPOS :
+				plugins.addAll(getPlugins(Repository.class));
+				// replace any WorkspaceRepositoryMarker plugin
+				plugins.removeIf(WorkspaceRepositoryMarker.class::isInstance);
+				break;
+			case ALL :
+				plugins.addAll(getPlugins(Repository.class));
+				// replace any WorkspaceRepositoryMarker plugin
+				plugins.removeIf(WorkspaceRepositoryMarker.class::isInstance);
+				plugins.add(new WorkspaceRepositoryDynamic(this));
+				break;
+		}
 		AggregateRepository repository = new AggregateRepository(plugins);
 		Parameters augments = getMergedParameters(Constants.AUGMENT);
 		if (augments.isEmpty())
@@ -1521,16 +1552,32 @@ public class Workspace extends Processor {
 
 	/**
 	 * A macro that returns a set of resources in bundle selection format from
-	 * the repository. For example:
+	 * the repositories. For example:
 	 *
 	 * <pre>
-	 * ${findproviders;osgi.wiring.package;(osgi.wiring.package=aQute.bnd.build)}
+	 * ${findproviders;osgi.wiring.package;(osgi.wiring.package=aQute.bnd.build);ALL}
 	 * </pre>
 	 */
 
 	public String _findproviders(String[] args) throws Exception {
-		Macro.verifyCommand(args, _findprovidersHelp, null, 2, 3);
-		return findProviders(args[1], args.length > 2 ? args[2] : null).map(Capability::getResource)
+		Macro.verifyCommand(args, _findprovidersHelp, null, 2, 4);
+		return findProvidersMacro(args);
+	}
+
+	private enum ResourceRepositoryStrategy {
+		ALL,
+		REPOS,
+		WORKSPACE
+	}
+
+	private String findProvidersMacro(String[] args) throws Exception {
+		String namespace = args[1];
+		String filter = args.length > 2 ? args[2] : null;
+		ResourceRepositoryStrategy strategy = convertStrategy(args, 3);
+		if (strategy == null) {
+			return null;
+		}
+		return findProviders(namespace, filter, strategy).map(Capability::getResource)
 			.map(ResourceUtils::getBundleId)
 			.distinct()
 			.filter(Objects::nonNull)
@@ -1539,20 +1586,38 @@ public class Workspace extends Processor {
 			.collect(Collectors.joining(","));
 	}
 
-	static final String _findprovidersHelp = "${findproviders;<namespace>;<filter>}";
+	private ResourceRepositoryStrategy convertStrategy(String[] args, int strategyIndex) {
+		if (args.length <= strategyIndex) {
+			return ResourceRepositoryStrategy.ALL;
+		}
+		if (args[strategyIndex].equalsIgnoreCase(ResourceRepositoryStrategy.ALL.toString()))
+			return ResourceRepositoryStrategy.ALL;
+		else if (args[strategyIndex].equalsIgnoreCase(ResourceRepositoryStrategy.REPOS.toString()))
+			return ResourceRepositoryStrategy.REPOS;
+		else if (args[strategyIndex].equalsIgnoreCase(ResourceRepositoryStrategy.WORKSPACE.toString()))
+			return ResourceRepositoryStrategy.WORKSPACE;
+		else {
+			ERROR invalidStrategy = msgs.InvalidStrategy(args[strategyIndex], new String[] {
+				"ALL, REPOS, WORKSPACE"
+			});
+		}
+		return null;
+	}
 
-	/**
-	 * Convenient findProviders
-	 *
-	 * @throws Exception
-	 */
+	static final String _findprovidersHelp = "${findproviders;<namespace>;<filter>(;ResourceRepositoryStrategy)?}, available strategies are REPOS, WORKSPACE and ALL. ALL is default and searches in all Repos and the Workspace.";
 
 	public Stream<Capability> findProviders(String namespace, String filter) throws Exception {
+		return findProviders(namespace, filter, ResourceRepositoryStrategy.ALL);
+	}
+
+	public Stream<Capability> findProviders(String namespace, String filter, ResourceRepositoryStrategy strategy)
+		throws Exception {
 		RequirementBuilder rb = new RequirementBuilder(namespace);
-		if (filter != null)
+		if (filter != null && !filter.trim()
+			.isEmpty())
 			rb.filter(filter);
 		Requirement requirement = rb.buildSyntheticRequirement();
-		return getResourceRepository().findProviders(Collections.singleton(requirement))
+		return getResourceRepository(strategy).findProviders(Collections.singleton(requirement))
 			.get(requirement)
 			.stream();
 	}
