@@ -250,6 +250,10 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 	@Override
 	public void annotation(Annotation annotation) {
+		if ((member != null) && ignoreMember()) {
+			return; // ignore annotations on ignored members
+		}
+
 		try {
 			switch (annotation.getName()
 				.getFQN()) {
@@ -1485,8 +1489,6 @@ public class DSAnnotationReader extends ClassDataCollector {
 				.toArray(TypeRef[]::new);
 		}
 
-		// make sure reference processing knows this is a Reference in Component
-		member = null;
 		Object[] refAnnotations = annotation.get("reference");
 		if (refAnnotations != null) {
 			for (Object o : refAnnotations) {
@@ -1516,12 +1518,36 @@ public class DSAnnotationReader extends ClassDataCollector {
 		this.interfaces = interfaces;
 	}
 
+	/**
+	 * Check whether the current member should be ignored.
+	 *
+	 * @return {@code true} if the current member should be ignored.
+	 *         {@code false} otherwise.
+	 */
+	private boolean ignoreMember() {
+		if (member.isStatic()) {
+			return true; // ignore static members
+		}
+		if (member instanceof MethodDef) {
+			MethodDef method = (MethodDef) member;
+			if (method.isAbstract() // ignore abstract methods
+				|| method.isBridge() // ignore bridge methods
+				|| method.isSynthetic() // ignore synthetic methods
+				|| (!baseclass && method.isPrivate())) {
+				// ignore private methods on subclasses
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public void field(FieldDef field) {
-		if (field.isStatic()) {
+		member = field;
+		if (ignoreMember()) {
 			return;
 		}
-		member = field;
+
 		fieldSig = getFieldSignature(field);
 	}
 
@@ -1543,20 +1569,17 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 	@Override
 	public void method(MethodDef method) {
-		if (method.isAbstract() || method.isStatic() || method.isBridge() || method.isSynthetic()) {
-			return;
-		}
-
-		if (!baseclass && method.isPrivate()) {
-			return;
-		}
-
+		// handle before setting member field
 		if (constructorSig != null) {
 			processConstructorActivationArgs(constructorSig.parameterTypes.length);
 			constructorSig = null;
 		}
 
 		member = method;
+		if (ignoreMember()) {
+			return;
+		}
+
 		methods.add(method.getName(), method);
 		methodSig = getMethodSignature(method);
 	}
@@ -1568,15 +1591,25 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 	@Override
 	public void memberEnd() {
+		// handle before setting member field
 		if (constructorSig != null) {
 			processConstructorActivationArgs(constructorSig.parameterTypes.length);
 			constructorSig = null;
 		}
+
 		member = null;
 	}
 
 	@Override
 	public void parameter(int p) {
 		parameter = p;
+	}
+
+	@Override
+	public String toString() {
+		if (member == null) {
+			return clazz.toString();
+		}
+		return clazz + "#" + member;
 	}
 }
