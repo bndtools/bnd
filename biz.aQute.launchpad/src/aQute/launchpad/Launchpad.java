@@ -1124,7 +1124,7 @@ public class Launchpad implements AutoCloseable {
 
 				for (FindHook hook : this.hooks.getServices(new FindHook[0])) {
 					List<ServiceReference<T>> original = new ArrayList<>(unhiddenReferences);
-					hook.find(testbundle.getBundleContext(), className, target, true, (Collection) unhiddenReferences);
+					hook.find(getBundleContext(), className, target, true, (Collection) unhiddenReferences);
 					original.removeAll(unhiddenReferences);
 					for (ServiceReference<T> ref : original) {
 						hookMap.put(ref, hook);
