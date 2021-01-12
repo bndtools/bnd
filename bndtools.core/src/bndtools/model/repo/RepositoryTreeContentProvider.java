@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.stream.Stream;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -234,8 +235,6 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 	}
 
 	Object[] getRepositoryBundleVersions(RepositoryBundle bundle) {
-		RepositoryBundleVersion[] result = null;
-
 		SortedSet<Version> versions = null;
 		try {
 			versions = bundle.getRepo()
@@ -247,13 +246,19 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 				e);
 		}
 		if (versions != null) {
-			result = new RepositoryBundleVersion[versions.size()];
-			int i = 0;
-			for (Version version : versions) {
-				result[i++] = new RepositoryBundleVersion(bundle, version);
+			Stream<RepositoryBundleVersion> resultStream = versions.stream()
+				.map(version -> new RepositoryBundleVersion(bundle, version));
+			// If the RepositoryBundle represents a pseudo-BSN of the form
+			// group:artifact, then we don't want to display the true bundles
+			// under this node.
+			if (bundle.getBsn()
+				.indexOf(":") != -1) {
+				resultStream = resultStream.filter(rbv -> rbv.getText()
+					.contains("Not a bundle"));
 			}
+			return resultStream.toArray(RepositoryBundleVersion[]::new);
 		}
-		return result;
+		return null;
 	}
 
 	Object[] getRepositoryBundles(final RepositoryPlugin repoPlugin) {
