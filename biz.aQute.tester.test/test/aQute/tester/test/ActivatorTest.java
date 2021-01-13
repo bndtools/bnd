@@ -128,7 +128,8 @@ public class ActivatorTest extends AbstractActivatorCommonTest {
 		final ExitCode exitCode = runTests(JUnit3Test.class, With1Error1Failure.class, With2Failures.class);
 
 		final String fileName = "TEST-" + testBundle.getSymbolicName() + "-" + testBundle.getVersion() + ".xml";
-		File xmlFile = new File(getTmpDir(), fileName);
+		File xmlFile = getResultsDir().resolve(fileName)
+			.toFile();
 		Assertions.assertThat(xmlFile)
 			.as("xmlFile")
 			.exists();

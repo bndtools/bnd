@@ -6,7 +6,6 @@ import static aQute.junit.constants.TesterConstants.TESTER_SEPARATETHREAD;
 import static aQute.junit.constants.TesterConstants.TESTER_TRACE;
 
 import java.lang.reflect.Method;
-import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -191,17 +190,13 @@ public abstract class AbstractActivatorCommonTest extends AbstractActivatorTest 
 		Method testMethod = info.getTestMethod()
 			.get();
 		name = getClass().getName() + "/" + testMethod.getName();
-		tmpDir = Paths.get("generated/tmp/test", name)
-			.toAbsolutePath();
-		IO.delete(tmpDir);
-		IO.mkdirs(tmpDir);
 
 		builder = new LaunchpadBuilder();
 		builder.bndrun(tester + ".bndrun")
 			.excludeExport("aQute.tester.bundle.*")
 			.excludeExport("org.junit*")
 			.excludeExport("junit.*");
-		setTmpDir();
+		setResultsDir();
 		if (DEBUG) {
 			builder.debug()
 				.set(TESTER_TRACE, "true");

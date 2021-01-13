@@ -67,6 +67,7 @@ public class GogoShellTests extends AbstractActivatorTest {
 			.excludeExport("aQute.tester.bundle.*")
 			.excludeExport("org.junit*")
 			.excludeExport("junit.*");
+		setResultsDir();
 		if (DEBUG) {
 			builder.debug()
 				.set(TESTER_TRACE, "true");

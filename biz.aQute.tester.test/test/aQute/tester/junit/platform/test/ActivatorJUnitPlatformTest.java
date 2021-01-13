@@ -358,13 +358,14 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorCommonTest {
 		}
 
 		@BeforeEach
-		public void setUp(TestInfo info) {
+		public void setUp(TestInfo info) throws Exception {
 			this.info = info;
 			builder = new LaunchpadBuilder();
 			builder.bndrun(tester + ".bndrun")
 				.excludeExport("aQute.tester.bundle.*")
 				.excludeExport("org.junit*")
 				.excludeExport("junit.*");
+			setResultsDir();
 			if (DEBUG) {
 				builder.debug()
 					.set(TESTER_TRACE, "true");
@@ -511,7 +512,7 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorCommonTest {
 				.excludeExport("org.junit*")
 				.excludeExport("junit*");
 			this.builder = builder;
-			setTmpDir();
+			setResultsDir();
 			TestRunData result = runTestsEclipse(JUnit5AbortTest.class, JUnit4AbortTest.class);
 			assertThat(result).hasErroredTest("Initialization Error",
 				new JUnitException("Couldn't find any registered TestEngines"));
@@ -553,7 +554,7 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorCommonTest {
 				.excludeExport("org.junit*")
 				.excludeExport("junit*");
 			this.builder = builder;
-			setTmpDir();
+			setResultsDir();
 			Class<?>[] tests = {
 				JUnit3ComparisonTest.class, JUnit5Test.class, JUnit5SimpleComparisonTest.class
 			};
@@ -622,7 +623,8 @@ public class ActivatorJUnitPlatformTest extends AbstractActivatorCommonTest {
 		final ExitCode exitCode = runTests(JUnit3Test.class, With1Error1Failure.class, With2Failures.class);
 
 		final String fileName = "TEST-" + testBundle.getSymbolicName() + "-" + testBundle.getVersion() + ".xml";
-		File xmlFile = new File(getTmpDir(), fileName);
+		File xmlFile = getResultsDir().resolve(fileName)
+			.toFile();
 		Assertions.assertThat(xmlFile)
 			.as("xmlFile")
 			.exists();
