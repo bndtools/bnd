@@ -4,11 +4,11 @@ import static aQute.junit.constants.TesterConstants.TESTER_DIR;
 import static aQute.junit.constants.TesterConstants.TESTER_PORT;
 import static aQute.junit.constants.TesterConstants.TESTER_TRACE;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Permission;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -63,7 +63,8 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 
 	protected Launchpad			lp;
 	protected SecurityManager	oldManager;
-	protected Path				tmpDir;
+	private final Path			resultsDir	= Paths.get("generated", "test-reports", "test")
+		.toAbsolutePath();
 	protected int				eclipseJUnitPort;
 	protected TestInfo			info;
 
@@ -81,14 +82,14 @@ public class AbstractActivatorTest implements StandardSoftAssertionsProvider {
 	protected String	name;
 	protected Bundle	testBundle;
 
-	protected File getTmpDir() {
-		return tmpDir.toFile();
+	protected Path getResultsDir() {
+		return resultsDir;
 	}
 
-	protected LaunchpadBuilder setTmpDir() throws IOException {
-		// Create tmp dir for test reports to go into as the default is in the
+	protected LaunchpadBuilder setResultsDir() throws IOException {
+		// Sets report dir for test reports to go into as the default is in the
 		// project root, which can mess up build dependencies.
-		return builder.set(TESTER_DIR, getTmpDir().getAbsolutePath());
+		return builder.set(TESTER_DIR, getResultsDir().toString());
 	}
 
 	protected BundleSpecBuilder bundle() {

@@ -32,7 +32,7 @@ public interface TesterConstants {
 
 	/**
 	 * A directory to put the test reports. If the directory does not exist, no
-	 * reports are generated. The default is tester-dir.
+	 * reports are generated. The default is {@code testdir}.
 	 */
 	String	TESTER_DIR				= "tester.dir";
 
