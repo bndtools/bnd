@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Formatter;
@@ -404,6 +405,7 @@ public class Workspace extends Processor {
 		File extDir = new File(getBuildDir(), EXT);
 		File[] extensions = extDir.listFiles();
 		if (extensions != null) {
+			Arrays.sort(extensions); // alphabetical order
 			for (File extension : extensions) {
 				String extensionName = extension.getName();
 				if (extensionName.endsWith(".bnd")) {
