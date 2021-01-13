@@ -48,6 +48,12 @@ subprojects {
     }
     tasks.named('test') {
       useJUnitPlatform()
+      reports {
+        junitXml {
+          outputPerTestCase = true
+          mergeReruns = true
+        }
+      }
       testLogging {
         exceptionFormat 'full'
       }
