@@ -1094,15 +1094,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void setProperties(Properties properties) {
-		doIncludes(getBase(), properties);
-		getProperties0().putAll(properties);
-		mergeProperties(Constants.INIT); // execute macros in -init
-		getProperties0().remove(Constants.INIT);
+		setProperties(getBase(), properties);
 	}
 
 	public void setProperties(File base, Properties properties) {
 		doIncludes(base, properties);
 		getProperties0().putAll(properties);
+		mergeProperties(Constants.INIT); // execute macros in -init
+		getProperties0().remove(Constants.INIT);
+		propertiesChanged();
 	}
 
 	public void addProperties(File file) throws Exception {
@@ -1291,7 +1291,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		properties = (p != null) ? new UTF8Properties(p.getProperties0()) : new UTF8Properties();
 
 		setProperties(propertiesFile, base);
-		propertiesChanged();
 	}
 
 	public void propertiesChanged() {
@@ -1299,6 +1298,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (p != null) {
 			updateModified(p.lastModified(), "propertiesChanged");
 		}
+
+		clearPlugins(); // force plugins to reload since properties have changed
 	}
 
 	/**

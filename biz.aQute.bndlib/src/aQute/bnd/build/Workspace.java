@@ -335,7 +335,6 @@ public class Workspace extends Processor {
 			IO.store("", buildFile);
 		}
 		setProperties(buildFile, workspaceDir);
-		propertiesChanged();
 
 		//
 		// There is a nasty bug/feature in Java that gives errors on our
