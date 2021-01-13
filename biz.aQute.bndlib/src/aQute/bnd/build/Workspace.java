@@ -417,7 +417,10 @@ public class Workspace extends Processor {
 				}
 			}
 		}
-
+		// getPlugins may have been called during the load of the properties.
+		// E.g. there is an include of a http url. So we have to clear the
+		// plugins to be sure
+		clearPlugins();
 		super.propertiesChanged();
 	}
 

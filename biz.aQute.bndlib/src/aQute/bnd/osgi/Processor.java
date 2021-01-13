@@ -966,13 +966,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		for (Closeable c : toBeClosed) {
 			IO.close(c);
 		}
-		synchronized (this) {
-			plugins = null;
-		}
-		if (pluginLoader != null) {
-			IO.close(pluginLoader);
-			pluginLoader = null;
-		}
+		clearPlugins();
 
 		toBeClosed.clear();
 	}
@@ -1249,13 +1243,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public boolean refresh() {
-		synchronized (this) {
-			plugins = null; // We always refresh our plugins
-		}
-		if (pluginLoader != null) {
-			IO.close(pluginLoader);
-			pluginLoader = null;
-		}
+		clearPlugins();
 
 		if (propertiesFile == null)
 			return false;
@@ -1272,6 +1260,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return true;
 		}
 		return false;
+	}
+
+	protected void clearPlugins() {
+		synchronized (this) {
+			plugins = null; // We always refresh our plugins
+		}
+		if (pluginLoader != null) {
+			IO.close(pluginLoader);
+			pluginLoader = null;
+		}
 	}
 
 	/**
