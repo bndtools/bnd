@@ -191,7 +191,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 			SHA1 rsha1 = new SHA1(readSha1);
 
 			if (!sha1.equals(rsha1))
-				throw new IOException("SHA1 read and asked mismatch: " + sha1 + " " + rsha1);
+				throw new IOException("SHA-1 read and asked mismatch: " + sha1 + " " + rsha1);
 
 			short crc = store.readShort(); // Read CRC
 			if (crc != checksum(flags, compressedLength, uncompressedLength, readSha1))
@@ -321,7 +321,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 				SHA1 calculatedSha1 = new SHA1(digestx.digest());
 				if (!sha1.equals(calculatedSha1))
 					throw (new IOException(
-						"SHA1 caclulated and asked mismatch, asked: " + sha1 + ", \nfound: " + calculatedSha1));
+						"SHA-1 caclulated and asked mismatch, asked: " + sha1 + ", \nfound: " + calculatedSha1));
 			}
 
 			@Override

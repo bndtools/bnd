@@ -71,7 +71,7 @@ public class JarSignerTest extends TestCase {
 		properties.put("keypass", "testtest");
 		properties.put("storepass", "testtest");
 		properties.put("sigFile", "test");
-		properties.put("digestalg", "SHA1");
+		properties.put("digestalg", "SHA-1");
 		signer.setProperties(properties);
 
 		Jar jar = new Jar(IO.getFile("testresources/test.jar"));
@@ -97,7 +97,7 @@ public class JarSignerTest extends TestCase {
 
 			Attributes a = m.getAttributes("aQute/rendezvous/DNS.class");
 			assertNotNull(a);
-			assertEquals("G0/1CIZlB4eIVyY8tU/ZfMCqZm4=", a.getValue("SHA1-Digest"));
+			assertEquals("G0/1CIZlB4eIVyY8tU/ZfMCqZm4=", a.getValue("SHA-1-Digest"));
 
 			// Check if all resources are named
 			for (String name : names) {
