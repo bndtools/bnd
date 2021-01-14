@@ -971,6 +971,8 @@ public class AlsoLauncherTest {
 	public void testOlderLauncherOnRunpath() throws Exception {
 		try (Run run = new Run(project.getWorkspace(), project.getFile("old-launcher.bndrun"))) {
 			run.setProperty(Constants.RUNTRACE, "true");
+			// old launcher has a bug which tries to use invalid "MD-5" digest
+			run.setProperty(Constants.DIGESTS, "SHA-1");
 
 			File file = new File(testDir, "packaged.jar");
 			try (Jar pack = run.pack(null)) {

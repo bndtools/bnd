@@ -637,7 +637,7 @@ public class Jar implements Closeable {
 			write(f);
 			try (Jar tmp = new Jar(f)) {
 				tmp.setCompression(compression);
-				tmp.calcChecksums(algorithms);
+				tmp.calcChecksums(algs);
 				tmp.write(out);
 			} finally {
 				IO.delete(f);
