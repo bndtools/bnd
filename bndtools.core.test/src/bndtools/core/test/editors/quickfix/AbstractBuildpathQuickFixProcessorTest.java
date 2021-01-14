@@ -43,6 +43,7 @@ import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IElementChangedListener;
@@ -382,6 +383,12 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 			problem = null;
 			locs = null;
 			this.source = source;
+			// Wait for build to finish
+			Job.getJobManager()
+				.join(ResourcesPlugin.FAMILY_MANUAL_BUILD, null);
+			Job.getJobManager()
+				.join(ResourcesPlugin.FAMILY_AUTO_BUILD, null);
+
 			// First create our AST
 			ICompilationUnit icu = pack.createCompilationUnit(className + ".java", source, true, null);
 
@@ -408,17 +415,13 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 			// System.err.println("Unfiltered problems: ");
 			// dumpProblems(Stream.of(cu.getProblems()));
 			// When you hover in the GUI, if there are multiple overlapping
-			// problems
-			// at the point where you are hovering, only one of them is fetched
-			// and
-			// passed in to the quick fix processors to calculate proposals.
-			// To emulate this, we filter the problems that contain the hover
-			// region,
-			// and then we find the smallest such problem. This seems to be what
-			// Eclipse does, but also finding the smallest means that we can
-			// directly
-			// test the other problems if we want by specifying a hover point
-			// somewhere else in the bigger region.
+			// problems at the point where you are hovering, only one of them is
+			// fetched and passed in to the quick fix processors to calculate
+			// proposals. To emulate this, we filter the problems that contain
+			// the hover region, and then we find the smallest such problem.
+			// This seems to be what Eclipse does, but also finding the smallest
+			// means that we can directly test the other problems if we want by
+			// specifying a hover point somewhere else in the bigger region.
 			problem = Stream.of(cu.getProblems())
 				// Find problems that contain the "hover point"
 				.filter(problem -> (problem.getSourceEnd() >= offset && problem.getSourceStart() <= (offset + length)))

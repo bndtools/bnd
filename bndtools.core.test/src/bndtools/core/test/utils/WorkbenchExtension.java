@@ -47,17 +47,12 @@ public class WorkbenchExtension implements BeforeAllCallback {
 			.getBundleContext();
 
 		// The bndtools.core plugin must be initialized on the UI thread or else
-		// it will
-		// cause an NPE. Because BundleEngine/Jupiter will probably not be
-		// running on
-		// the main thread, we cannot rely on the automatic OSGi class loading
-		// to
-		// load the bundle the first time that the class is accessed, as then
-		// the bundle
-		// will be started by the tester thread and we'll get the NPE. So we
-		// check if
-		// it's already running, and if not then we manually start it on the UI
-		// thread.
+		// it will cause an NPE. Because BundleEngine/Jupiter will probably not
+		// be running on the main thread, we cannot rely on the automatic OSGi
+		// class loading to load the bundle the first time that the class is
+		// accessed, as then the bundle will be started by the tester thread and
+		// we'll get the NPE. So we check if it's already running, and if not
+		// then we manually start it on the UI thread.
 
 		// Make sure bndtools.core is started, if not we start it on the UI
 		// thread
@@ -129,8 +124,7 @@ public class WorkbenchExtension implements BeforeAllCallback {
 		log("done waiting for import to complete");
 
 		// Wait for Central to be initialized before continuing; hopefully by
-		// now it's
-		// ready anyway
+		// now it's ready anyway
 		Central central = Central.getInstance();
 		while (central == null) {
 			Thread.sleep(100);
