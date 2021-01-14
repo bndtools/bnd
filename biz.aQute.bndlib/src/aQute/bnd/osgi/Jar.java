@@ -1072,7 +1072,7 @@ public class Jar implements Closeable {
 		check();
 		if (algorithms == null)
 			algorithms = new String[] {
-				"SHA", "MD5"
+				"SHA1", "MD5"
 			};
 
 		Manifest m = getManifest();
