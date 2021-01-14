@@ -926,7 +926,7 @@ public class BuilderTest {
 			Attributes attrs = manifest.getAttributes("org/osgi/framework/BundleActivator.class");
 			assertNotNull(attrs);
 			assertEquals("RTRhr3kadnulINegRhpmog==", attrs.getValue("MD5-Digest"));
-			assertEquals("BfVfpnE3Srx/0UWwtzNecrAGf8A=", attrs.getValue("SHA-Digest"));
+			assertEquals("BfVfpnE3Srx/0UWwtzNecrAGf8A=", attrs.getValue("SHA1-Digest"));
 			other.close();
 		} finally {
 			b.close();

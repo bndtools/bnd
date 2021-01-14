@@ -48,7 +48,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 
 	public Encoder mark() throws NoSuchAlgorithmException {
 		if (digest == null)
-			digest = MessageDigest.getInstance("SHA1");
+			digest = MessageDigest.getInstance("SHA-1");
 		digest.reset();
 		return this;
 	}
