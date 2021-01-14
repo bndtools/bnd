@@ -33,6 +33,7 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.help.instructions.LauncherInstructions.Executable;
 import aQute.bnd.help.instructions.LauncherInstructions.RunOption;
@@ -400,14 +401,11 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		String embeddedLauncherName = main.getValue(MAIN_CLASS);
 		logger.debug("Use '{}' launcher class", embeddedLauncherName);
 		doStart(jar, embeddedLauncherName);
-		if (getProject().getProperty(Constants.DIGESTS) != null)
-			jar.setDigestAlgorithms(getProject().getProperty(Constants.DIGESTS)
-				.trim()
-				.split("\\s*,\\s*"));
-		else
-			jar.setDigestAlgorithms(new String[] {
-				"SHA-1", "MD-5"
-			});
+		Parameters digests = OSGiHeader.parseHeader(getProject().getProperty(DIGESTS));
+		if (!digests.isEmpty()) {
+			jar.setDigestAlgorithms(digests.keySet()
+				.toArray(new String[0]));
+		}
 		jar.setManifest(m);
 
 		String moduleInstruction = getProject().getProperty(Constants.JPMS_MODULE_INFO);
