@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Flushable;
@@ -177,10 +178,34 @@ public class IO {
 		return copy(reader(in, charset), w);
 	}
 
+	/**
+	 * If InputStream throws EOFException, map it to returning -1. Other
+	 * IOExceptions are propagated.
+	 */
+	private static int read(InputStream in, byte[] b, int off, int len) throws IOException {
+		try {
+			return in.read(b, off, len);
+		} catch (EOFException e) {
+			return -1;
+		}
+	}
+
+	/**
+	 * If ReadableByteChannel throws EOFException, map it to returning -1. Other
+	 * IOExceptions are propagated.
+	 */
+	private static int read(ReadableByteChannel in, ByteBuffer bb) throws IOException {
+		try {
+			return in.read(bb);
+		} catch (EOFException e) {
+			return -1;
+		}
+	}
+
 	public static OutputStream copy(InputStream in, OutputStream out) throws IOException {
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
-			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
+			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
 				out.write(buffer, 0, size);
 			}
 			return out;
@@ -205,7 +230,7 @@ public class IO {
 	public static DataOutput copy(InputStream in, DataOutput out) throws IOException {
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
-			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
+			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
 				out.write(buffer, 0, size);
 			}
 			return out;
@@ -217,7 +242,7 @@ public class IO {
 	public static WritableByteChannel copy(ReadableByteChannel in, WritableByteChannel out) throws IOException {
 		try {
 			ByteBuffer bb = ByteBuffer.allocateDirect(BUFFER_SIZE);
-			while (in.read(bb) > 0) {
+			while (read(in, bb) > 0) {
 				bb.flip();
 				out.write(bb);
 				bb.compact();
@@ -237,13 +262,13 @@ public class IO {
 				byte[] buffer = bb.array();
 				int offset = bb.arrayOffset();
 				for (int size, position; bb.hasRemaining()
-					&& (size = in.read(buffer, offset + (position = bb.position()), bb.remaining())) > 0;) {
+					&& (size = read(in, buffer, offset + (position = bb.position()), bb.remaining())) > 0;) {
 					bb.position(position + size);
 				}
 			} else {
 				int length = Math.min(bb.remaining(), BUFFER_SIZE);
 				byte[] buffer = new byte[length];
-				for (int size; length > 0 && (size = in.read(buffer, 0, length)) > 0;) {
+				for (int size; length > 0 && (size = read(in, buffer, 0, length)) > 0;) {
 					bb.put(buffer, 0, size);
 					length = Math.min(bb.remaining(), buffer.length);
 				}
@@ -260,7 +285,7 @@ public class IO {
 
 	public static byte[] copy(InputStream in, byte[] data, int off, int len) throws IOException {
 		try {
-			for (int remaining, size; (remaining = len - off) > 0 && (size = in.read(data, off, remaining)) > 0;) {
+			for (int remaining, size; (remaining = len - off) > 0 && (size = read(in, data, off, remaining)) > 0;) {
 				off += size;
 			}
 			return data;
@@ -326,7 +351,7 @@ public class IO {
 	public static MessageDigest copy(InputStream in, MessageDigest md) throws IOException {
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
-			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
+			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
 				md.update(buffer, 0, size);
 			}
 			return md;
@@ -338,7 +363,7 @@ public class IO {
 	public static MessageDigest copy(ReadableByteChannel in, MessageDigest md) throws IOException {
 		try {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
-			while (in.read(bb) > 0) {
+			while (read(in, bb) > 0) {
 				bb.flip();
 				md.update(bb);
 				bb.compact();
@@ -471,7 +496,7 @@ public class IO {
 		try {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			byte[] buffer = bb.array();
-			for (int size, position; (size = in.read(buffer, position = bb.position(), bb.remaining())) > 0;) {
+			for (int size, position; (size = read(in, buffer, position = bb.position(), bb.remaining())) > 0;) {
 				bb.position(position + size);
 				bb.flip();
 				out.write(bb);
@@ -490,7 +515,7 @@ public class IO {
 		try {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			byte[] buffer = bb.array();
-			for (; in.read(bb) > 0; bb.clear()) {
+			for (; read(in, bb) > 0; bb.clear()) {
 				out.write(buffer, 0, bb.position());
 			}
 			return out;
@@ -502,7 +527,7 @@ public class IO {
 	public static byte[] read(File file) throws IOException {
 		try (FileChannel in = readChannel(file.toPath())) {
 			ByteBuffer bb = ByteBuffer.allocate((int) in.size());
-			while (in.read(bb) > 0) {}
+			while (read(in, bb) > 0) {}
 			return bb.array();
 		}
 	}
@@ -514,7 +539,7 @@ public class IO {
 				return in.map(MapMode.READ_ONLY, 0, size);
 			}
 			ByteBuffer bb = ByteBuffer.allocate((int) size);
-			while (in.read(bb) > 0) {}
+			while (read(in, bb) > 0) {}
 			bb.flip();
 			return bb;
 		}
@@ -924,7 +949,7 @@ public class IO {
 		try {
 			long result = 0L;
 			byte[] buffer = new byte[BUFFER_SIZE];
-			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
+			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
 				result += size;
 			}
 			return result;
