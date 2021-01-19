@@ -26,4 +26,4 @@ bnd_version: ${replace;${bnd_plugin};.*:(.*);$1}
  javadoc;path="${target}/docs/groovydoc"
 
 # Stop Eclipse whining about the bnd files using specific Bundle-SymbolicNames
--fixupmessages.bndtools: "Eclipse: The Bundle Symbolic * name"
+-fixupmessages.bndtools: "Eclipse: The Bundle Symbolic * name", "Unused"

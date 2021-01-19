@@ -20,6 +20,7 @@ public final class BndtoolsConstants {
 	public static final String	MARKER_BND_MISSING_WORKSPACE			= "bndtools.builder.missingworkspace";
 	public static final String	MARKER_JAVA_BASELINE					= "bndtools.builder.packageInfoBaseline";
 	public static final String	MARKER_BND_GENERATE						= "bndtools.builder.generate";
+	public static final String	MARKER_BND_BLOCKER						= "bndtools.builder.blocker";
 
 	/**
 	 * Marker attribute name for the bnd {@link Location#context}

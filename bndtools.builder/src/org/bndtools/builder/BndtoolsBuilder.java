@@ -176,7 +176,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 				return Central.bndCall(() -> {
 					boolean force = kind == FULL_BUILD;
 					model.clear();
-
 					DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);
 
 					boolean setupChanged = false;
@@ -271,8 +270,10 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 					if (model.isNoBundles()) {
 						buildLog.basic("-nobundles was set, so no build");
 						buildLog.setFiles(0);
-						return report(model, markers);
+						return dependsOn;
 					}
+
+					markers.deleteMarkers(BndtoolsConstants.MARKER_BND_BLOCKER);
 
 					if (markers.hasBlockingErrors(delta)) {
 						CompileErrorAction actionOnCompileError = getActionOnCompileError();
@@ -280,20 +281,19 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 							if (actionOnCompileError == CompileErrorAction.delete) {
 								buildLog.basic("Blocking errors, delete build files, quit");
 								deleteBuildFiles(model);
-								model.error(
-									"Will not build project %s until the compilation and/or path problems are fixed, output files are deleted.",
-									myProject.getName());
+								markers.createMarker(model, IMarker.SEVERITY_ERROR, "Build errors, deleted files",
+									BndtoolsConstants.MARKER_BND_BLOCKER);
 							} else {
 								buildLog.basic("Blocking errors, leave old build files, quit");
-								model.error(
-									"Will not build project %s until the compilation and/or path problems are fixed, output files are kept.",
-									myProject.getName());
+								markers.createMarker(model, IMarker.SEVERITY_ERROR, "Build errors, leaving files",
+									BndtoolsConstants.MARKER_BND_BLOCKER);
 							}
-							return report(model, markers);
+							return dependsOn;
 						}
 						buildLog.basic("Blocking errors, continuing anyway");
-						model.warning("Project %s has blocking errors but requested to continue anyway",
-							myProject.getName());
+						markers.createMarker(model, IMarker.SEVERITY_WARNING,
+							"Project " + myProject + " has blocking errors but requested to continue anyway",
+							BndtoolsConstants.MARKER_BND_BLOCKER);
 					}
 
 					Central.invalidateIndex();

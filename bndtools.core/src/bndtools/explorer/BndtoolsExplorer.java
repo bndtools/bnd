@@ -15,7 +15,6 @@ import org.bndtools.build.api.AbstractBuildListener;
 import org.bndtools.build.api.BuildListener;
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.swt.FilterPanelPart;
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -64,6 +63,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 
+import aQute.bnd.build.Workspace;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.exceptions.FunctionWithException;
 import aQute.lib.io.IO;
@@ -392,22 +392,23 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 			@Override
 			public void run() {
 				try {
+					Workspace workspace = Central.getWorkspace();
 					IFile workspaceBuildFile = Central.getWorkspaceBuildFile();
 					if (workspaceBuildFile != null) {
 						setImageDescriptor(Icons.desc("refresh.disable"));
 						setEnabled(false);
-						Job.create("Reload", monitor -> {
-							IContainer parent = workspaceBuildFile.getParent()
-								.getParent();
-							parent.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-							workspaceBuildFile.touch(monitor);
+
+						Job job = Job.create("Reload", monitor -> {
+							Synchronizer.sync(workspace, monitor);
 							Display.getDefault()
 								.asyncExec(() -> {
 									setEnabled(true);
 									setImageDescriptor(Icons.desc("refresh"));
 								});
-						})
-							.schedule();
+						});
+						job.setRule(ResourcesPlugin.getWorkspace()
+							.getRoot());
+						job.schedule();
 					}
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
