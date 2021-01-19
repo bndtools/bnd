@@ -87,6 +87,8 @@ public class Command {
 	}
 
 	public int execute(final InputStream in, Appendable stdout, Appendable stderr) throws Exception {
+		// Test System.in once since other threads can change during execution
+		final boolean systemIn = in == System.in;
 		logger.debug("executing cmd: {}", getArguments());
 
 		ProcessBuilder p = new ProcessBuilder(getArguments());
@@ -105,16 +107,15 @@ public class Command {
 			.putAll(variables);
 
 		p.directory(cwd);
-		if (in == System.in)
+		if (systemIn) {
 			p.redirectInput(ProcessBuilder.Redirect.INHERIT);
+		}
 		Process process = this.process = p.start();
 
 		// Make sure the command will not linger when we go
 		Thread hook = new Thread(process::destroy, getArguments().toString());
 		Runtime.getRuntime()
 			.addShutdownHook(hook);
-		final OutputStream stdin = process.getOutputStream();
-		Thread rdInThread = null;
 
 		ScheduledExecutorService scheduler = null;
 		if (timeout != 0) {
@@ -125,54 +126,58 @@ public class Command {
 			}, timeout, TimeUnit.MILLISECONDS);
 		}
 
+		final OutputStream stdin = process.getOutputStream();
+		Thread inThread = null;
 		final AtomicBoolean finished = new AtomicBoolean(false);
 		try (InputStream out = process.getInputStream(); InputStream err = process.getErrorStream()) {
-			Collector cout = new Collector(out, stdout);
-			cout.start();
-			Collector cerr = new Collector(err, stderr);
-			cerr.start();
+			Thread outThread = new Thread(collector(out, stdout), "Write Output Thread");
+			outThread.setDaemon(true);
+			Thread errThread = new Thread(collector(err, stderr), "Write Error Thread");
+			errThread.setDaemon(true);
+			outThread.start();
+			errThread.start();
 
 			if (in != null) {
-				if (in == System.in || useThreadForInput) {
-					rdInThread = new Thread("Read Input Thread") {
-						@Override
-						public void run() {
-							try {
-								while (!finished.get()) {
-									int n = in.available();
-									if (n == 0) {
-										sleep(100);
-									} else {
-										int c = in.read();
-										if (c < 0) {
-											stdin.close();
-											return;
-										}
-										stdin.write(c);
-										if (c == '\n')
-											stdin.flush();
+				if (systemIn || useThreadForInput) {
+					inThread = new Thread(() -> {
+						try {
+							while (!finished.get()) {
+								int n = in.available();
+								if (n == 0) {
+									Thread.sleep(100);
+								} else {
+									int c = in.read();
+									if (c < 0) {
+										break; // finally will close stdin
+									}
+									stdin.write(c);
+									if (c == '\n') {
+										stdin.flush();
 									}
 								}
-							} catch (InterruptedIOException e) {
-								// Ignore here
-							} catch (Exception e) {
-								// Who cares?
-							} finally {
-								IO.close(stdin);
 							}
+						} catch (InterruptedIOException e) {
+							// Ignore here
+						} catch (Exception e) {
+							// Who cares?
+						} finally {
+							IO.close(stdin);
 						}
-					};
-					rdInThread.setDaemon(true);
-					rdInThread.start();
+					}, "Read Input Thread");
+					inThread.setDaemon(true);
+					inThread.start();
 				} else {
-					IO.copy(in, stdin);
-					stdin.close();
+					try {
+						IO.copy(in, stdin);
+					} finally {
+						IO.close(stdin);
+					}
 				}
 			}
 			logger.debug("exited process");
 
-			cerr.join();
-			cout.join();
+			errThread.join();
+			outThread.join();
 			logger.debug("stdout/stderr streams have finished");
 		} finally {
 			if (scheduler != null) {
@@ -184,10 +189,11 @@ public class Command {
 
 		int exitValue = process.waitFor();
 		finished.set(true);
-		if (rdInThread != null) {
-			if (in != System.in)
+		if (inThread != null) {
+			if (!systemIn) {
 				IO.close(in);
-			rdInThread.interrupt();
+			}
+			inThread.interrupt();
 		}
 
 		logger.debug("cmd {} executed with result={}, result: {}/{}, timedout={}", getArguments(), exitValue, stdout,
@@ -234,23 +240,11 @@ public class Command {
 		process.destroy();
 	}
 
-	class Collector extends Thread {
-		final InputStream	in;
-		final Appendable	sb;
-
-		Collector(InputStream inputStream, Appendable sb) {
-			this.in = inputStream;
-			this.sb = sb;
-			setDaemon(true);
-		}
-
-		@Override
-		public void run() {
+	private Runnable collector(InputStream in, Appendable sb) {
+		return () -> {
 			try {
-				int c = in.read();
-				while (c >= 0) {
+				for (int c; (c = in.read()) >= 0;) {
 					sb.append((char) c);
-					c = in.read();
 				}
 			} catch (IOException e) {
 				// We assume the socket is closed
@@ -262,7 +256,7 @@ public class Command {
 				} catch (IOException e1) {}
 				logger.debug("cmd exec", e);
 			}
-		}
+		};
 	}
 
 	public Command var(String name, String value) {
