@@ -204,7 +204,7 @@ class TestTestOSGiTask extends Specification {
 
         when:
           String taskname = 'testosgiIgnoreFail'
-          File testxml = new File(testProjectBuildDir, "test-results/${taskname}/TEST-${testProject}-1.0.0.xml")
+          File testxml = new File(testProjectBuildDir, "testing-results/${taskname}/TEST-${testProject}-1.0.0.xml")
           assert testxml.isFile()
           def testsuite = new XmlSlurper().parse(testxml)
         then:
@@ -218,7 +218,7 @@ class TestTestOSGiTask extends Specification {
 
         when:
           taskname = 'testosgiFail'
-          testxml = new File(testProjectBuildDir, "test-results/${taskname}/TEST-${testProject}-1.0.0.xml")
+          testxml = new File(testProjectBuildDir, "${taskname}-results/TEST-${testProject}-1.0.0.xml")
           assert testxml.isFile()
           testsuite = new XmlSlurper().parse(testxml)
         then:

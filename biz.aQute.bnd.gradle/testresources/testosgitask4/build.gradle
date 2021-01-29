@@ -9,6 +9,7 @@ plugins {
 }
 
 version = '1.0.0'
+testResultsDirName = 'testing-results'
 
 repositories {
     mavenLocal().metadataSources { mavenPom(); artifact() }
@@ -34,6 +35,7 @@ task testosgiFail(type: TestOSGi) {
    inputs.files jar
    bndrun "${name}.bndrun"
    ignoreFailures = false
+   resultsDirectory = file("${buildDir}/${name}-results")
 }
 
 check {

@@ -27,9 +27,9 @@
  * bundles during the test case execution. The default is
  * 'sourceSets.main.runtimeClasspath' plus
  * 'configurations.archives.artifacts.files'.</li>
- * <li>resultsDir (read only) - This is the directory
+ * <li>resultsDirectory - This is the directory
  * where the test case results are placed.
- * The value is project.testResultsDir/name.</li>
+ * The default is project.testResultsDir/name.</li>
  * <li>tests - The test class names to be run.
  * If not set, all test classes are run.
  * Use a colon (:) to specify a test method to run on the specified test class.</li>
@@ -39,8 +39,11 @@
 package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.logReport
+import static aQute.bnd.gradle.BndUtils.unwrap
 
 import org.gradle.api.GradleException
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.model.ReplacedBy
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.Optional
@@ -48,6 +51,7 @@ import org.gradle.api.tasks.options.Option
 
 public class TestOSGi extends Bndrun {
   private List<String> tests
+  private final DirectoryProperty resultsDirectory
 
   /**
    * Create a TestOSGi task.
@@ -55,16 +59,28 @@ public class TestOSGi extends Bndrun {
    */
   public TestOSGi() {
     super()
+    resultsDirectory = project.objects.directoryProperty().convention(project.layout.buildDirectory.dir(project.provider({ ->
+        return "${project.testResultsDirName}/${name}"
+      })))
   }
 
   /**
    * Return the directory where the test case results are placed.
+   *
+   * <p>
+   * The default for resultsDirectory is
+   * project.buildDirectory.dir("${project.testResultsDirName}/${task.name}")
    */
   @OutputDirectory
-  public File getResultsDir() {
-    return new File(project.testResultsDir, name)
+  public DirectoryProperty getResultsDirectory() {
+    return resultsDirectory
   }
 
+  @Deprecated
+  @ReplacedBy('resultsDirectory')
+  public File getResultsDir() {
+    return unwrap(getResultsDirectory())
+  }
 
   /**
    * Configures the test class names to be run.
@@ -91,6 +107,7 @@ public class TestOSGi extends Bndrun {
   protected void worker(def run) {
     logger.info 'Running tests for {} in {}', run.getPropertiesFile(), run.getBase()
     logger.debug 'Run properties: {}', run.getProperties()
+    File resultsDir = unwrap(getResultsDirectory())
     try {
       run.test(resultsDir, tests);
     } finally {
