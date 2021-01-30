@@ -447,6 +447,10 @@ multiple times to specify multiple test classes to run.
 
 Use a colon (`:`) to specify a test method to run on the specified test class.
 
+### resultsDirectory
+
+The directory for the test results. The default is _${project.buildDir}/${project.testResultsDirName}/${task.name}_.
+
 ## Create a task of the `Index` type
 
 The `Index` task type
