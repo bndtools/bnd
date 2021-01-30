@@ -638,6 +638,126 @@ public class MavenBndRepoTest {
 	}
 
 	@Test
+	public void testPutLocalSnapshotSourceRelease() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", null);
+		map.put("snapshotUrl", null);
+		config(map);
+
+		try (Processor context = new Processor();) {
+			context.setProperty("-maven-release", "sources;force=true");
+			PutOptions put = new PutOptions();
+			put.context = context;
+
+			File jar = IO.getFile("testresources/snapshot.jar");
+			PutResult r = repo.put(new FileInputStream(jar), put);
+
+			assertIsFile(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.jar", 0);
+			assertIsFile(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.pom", 0);
+			assertIsFile(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT-sources.jar", 0);
+			assertFileNotExists(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT-javadoc.jar");
+			assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata-local.xml", 0);
+
+			String s = IO.collect(index);
+			// snapshots added to index
+			assertThat(s).contains("biz.aQute.bnd.maven");
+		}
+
+	}
+
+	@Test
+	public void testPutLocalSnapshotJavadocRelease() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", null);
+		map.put("snapshotUrl", null);
+		config(map);
+
+		try (Processor context = new Processor();) {
+			context.setProperty("-maven-release", "javadoc;force=true");
+			PutOptions put = new PutOptions();
+			put.context = context;
+
+			File jar = IO.getFile("testresources/snapshot.jar");
+			PutResult r = repo.put(new FileInputStream(jar), put);
+
+			assertIsFile(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.jar", 0);
+			assertIsFile(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.pom", 0);
+			assertFileNotExists(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT-sources.jar");
+			assertIsFile(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT-javadoc.jar", 0);
+			assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata-local.xml", 0);
+
+			String s = IO.collect(index);
+			// snapshots added to index
+			assertThat(s).contains("biz.aQute.bnd.maven");
+		}
+	}
+
+	@Test
+	public void testPutLocalSnapshotJavadocAndSourceRelease() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", null);
+		map.put("snapshotUrl", null);
+		config(map);
+
+		try (Processor context = new Processor();) {
+			context.setProperty("-maven-release", "javadoc;force=true,sources;force=true");
+			PutOptions put = new PutOptions();
+			put.context = context;
+
+			File jar = IO.getFile("testresources/snapshot.jar");
+			PutResult r = repo.put(new FileInputStream(jar), put);
+
+			assertIsFile(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.jar", 0);
+			assertIsFile(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.pom", 0);
+			assertIsFile(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT-sources.jar", 0);
+			assertIsFile(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT-javadoc.jar", 0);
+			assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata-local.xml", 0);
+
+			String s = IO.collect(index);
+			// snapshots added to index
+			assertThat(s).contains("biz.aQute.bnd.maven");
+		}
+	}
+
+	@Test
+	public void testPutLocalSnapshotForceFullReleaseDefault() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", null);
+		map.put("snapshotUrl", null);
+		config(map);
+
+		File jar = IO.getFile("testresources/snapshot.jar");
+
+		PutResult put = repo.put(new FileInputStream(jar), null);
+
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.jar",
+			0);
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.pom",
+			0);
+		assertFileNotExists(local,
+			"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT-sources.jar");
+		assertFileNotExists(local,
+			"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT-javadoc.jar");
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata-local.xml", 0);
+
+		String s = IO.collect(index);
+		// snapshots added to index
+		assertThat(s).contains("biz.aQute.bnd.maven");
+	}
+
+	@Test
 	public void testPutDefaultLocalSnapshotNoUpdate() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("releaseUrl", null);
@@ -928,6 +1048,12 @@ public class MavenBndRepoTest {
 			assertThat(file).as("Unexpected file size")
 				.hasSize(size);
 		}
+		return file;
+	}
+
+	private File assertFileNotExists(File dir, String path) throws IOException {
+		File file = IO.getFile(dir, path);
+		assertThat(file).as("%s does exist", path).doesNotExist();
 		return file;
 	}
 

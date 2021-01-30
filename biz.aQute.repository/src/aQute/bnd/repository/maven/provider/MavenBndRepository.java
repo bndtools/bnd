@@ -220,9 +220,13 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					result.artifact = storage.toRemoteURI(binaryArchive);
 					releaser.add(binaryArchive, binaryFile);
 
-					if (!isLocal(instructions)) {
+					boolean forceLocalSources = instructions.sources != null ? instructions.sources.force : false;
+					boolean forceLocalJavadoc = instructions.javadoc != null ? instructions.javadoc.force : false;
+
+					if (!isLocal(instructions) || forceLocalSources || forceLocalJavadoc) {
 						try (Tool tool = new Tool(options.context, binary)) {
-							if (instructions.sources != null) {
+							if ((!isLocal(instructions) && instructions.sources != null)
+								|| forceLocalSources) {
 								if (!NONE.equals(instructions.sources.path)) {
 									try (Jar jar = getSources(tool, options.context, instructions.sources.path,
 										instructions.sources.options)) {
@@ -231,7 +235,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 								}
 							}
 
-							if (instructions.javadoc != null) {
+							if ((!isLocal(instructions) && instructions.javadoc != null)
+								|| forceLocalJavadoc) {
 								if (!NONE.equals(instructions.javadoc.path)) {
 									try (Jar jar = getJavadoc(tool, options.context, instructions.javadoc.path,
 										instructions.javadoc.options,
@@ -403,6 +408,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		Attrs javadoc = p.remove("javadoc");
 		if (javadoc != null) {
 			release.javadoc.path = javadoc.remove("path");
+			release.javadoc.force = Boolean.parseBoolean(javadoc.remove("force"));
 			if (NONE.equals(release.javadoc.path)) {
 				release.javadoc = null;
 			} else {
@@ -423,6 +429,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		Attrs sources = p.remove("sources");
 		if (sources != null) {
 			release.sources.path = sources.remove("path");
+			release.sources.force = Boolean.parseBoolean(sources.remove("force"));
 			if (NONE.equals(release.sources.path)) {
 				release.sources = null;
 			} else {

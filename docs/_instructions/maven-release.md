@@ -15,16 +15,20 @@ Though this instruction is not specific for a plugin, it was developed in conjun
     option         ::= sources | javadoc | pom | sign
     sources        ::= 'sources' 
                        ( ';path=' ( 'NONE' | PATH ) )?
+                       ( ';force=' ( 'true' | 'false' ) )?
                        ( ';-sourcepath=' PATH ( ',' PATH )* )?
     javadoc        ::= 'javadoc'
                        ( ';path=' ( 'NONE' | PATH ) )?
                        ( ';packages=' ( 'EXPORTS' | 'ALL' ) )?
+                       ( ';force=' ( 'true' | 'false' ) )?
                        ( ';' javadoc-option )*
     javadoc-option ::= '-' NAME '=' VALUE
     pom            ::= 'pom'
                        ( ';path=' ( 'JAR' | PATH ) )?
     sign            ::= 'sign'
                        ( ';passphrase=' VALUE )?
+
+If `sources` or `javadoc` has the attribute `force=true`, either one will be release to the maven repository even if no `releaseUrl` or `snapshotUrl` is set or `maven-release=local`. 
 
 The `aQute.maven.bnd.MavenBndRepository` is a bnd plugin that represent the local and a remote Maven repository. The locations of both repositories can be configured. The local repository is always used as a cache for the remote repository.
 
