@@ -20,6 +20,7 @@ public class ReleaseDTO extends DTO {
 		public String				path;
 		public JavadocPackages		packages	= JavadocPackages.EXPORT;
 		public Map<String, String>	options		= new HashMap<>();
+		public boolean				force;
 	}
 
 	public static class PomDTO extends DTO {
@@ -29,6 +30,7 @@ public class ReleaseDTO extends DTO {
 	public static class SourceDTO extends DTO {
 		public String				path;
 		public Map<String, String>	options	= new HashMap<>();
+		public boolean				force;
 	}
 
 	public ReleaseType	type		= ReleaseType.LOCAL;
