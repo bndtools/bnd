@@ -1,5 +1,6 @@
 package aQute.lib.zip;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
@@ -149,5 +150,85 @@ public class ZipUtil {
 		} catch (UncheckedIOException e) {
 			return true;
 		}
+	}
+
+	public static final int EXTID_BND = 0xBDEA;
+
+	/**
+	 * Create a ZIP extra field from a String.
+	 * <p>
+	 * The String is UTF-8 encoded and the extra field uses the Header ID
+	 * {@link #EXTID_BND}.
+	 *
+	 * @param value The String value to be contained in the ZIP extra field.
+	 * @return A ZIP extra field with the UTF-8 encoded String.
+	 * @see <a href=
+	 *      "https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT">Section
+	 *      4.5 - Extensible data fields</a>
+	 */
+	public static byte[] extraFieldFromString(String value) {
+		byte[] utf8 = value.getBytes(UTF_8);
+		final int length = utf8.length;
+		if (length > 0xFFFF) {
+			throw new IllegalArgumentException("extra string too long");
+		}
+		byte[] extra = new byte[Short.BYTES * 2 + length];
+		putUnsignedShort(extra, 0, EXTID_BND);
+		putUnsignedShort(extra, Short.BYTES, length);
+		System.arraycopy(utf8, 0, extra, Short.BYTES * 2, length);
+		return extra;
+	}
+
+	/**
+	 * Extract a String from a ZIP extra field.
+	 * <p>
+	 * The Header ID {@link #EXTID_BND} is searched for in the specified extra
+	 * field. If found, the UTF-8 encoded value is converted to a String and
+	 * returned.
+	 * <p>
+	 * If the specified extra field is not valid, the extra field is considered
+	 * to be a UTF-8 encoded value and is converted to a String and returned.
+	 *
+	 * @return The String value contained in the ZIP extra field or {@code null}
+	 *         is there is no {@link #EXTID_BND} Header ID and the ZIP extra
+	 *         field data is not invalid.
+	 * @see <a href=
+	 *      "https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT">Section
+	 *      4.5 - Extensible data fields</a>
+	 */
+	public static String stringFromExtraField(byte[] extra) {
+		final int length = extra.length;
+		if (length > 0xFFFF) {
+			throw new IllegalArgumentException("extra data too long");
+		}
+		int offset = 0;
+		while ((offset + Short.BYTES * 2) < length) {
+			int id = getUnsignedShort(extra, offset);
+			int size = getUnsignedShort(extra, offset + Short.BYTES);
+			if ((size < 0) || ((offset + Short.BYTES * 2 + size) > length)) {
+				break; // invalid extra field
+			}
+			offset += Short.BYTES * 2;
+			switch (id) {
+				case EXTID_BND :
+					return new String(extra, offset, size, UTF_8);
+				default :
+					break;
+			}
+			offset += size;
+		}
+		if (offset < length) {
+			return new String(extra, offset, length - offset, UTF_8);
+		}
+		return null;
+	}
+
+	private static void putUnsignedShort(byte[] bytes, int offset, int value) {
+		bytes[offset] = (byte) value;
+		bytes[offset + 1] = (byte) (value >> 8);
+	}
+
+	private static int getUnsignedShort(byte[] bytes, int offset) {
+		return Byte.toUnsignedInt(bytes[offset]) | (Byte.toUnsignedInt(bytes[offset + 1]) << 8);
 	}
 }
