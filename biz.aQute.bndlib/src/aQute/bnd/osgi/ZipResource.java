@@ -1,7 +1,5 @@
 package aQute.bnd.osgi;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,11 +41,11 @@ public class ZipResource implements Resource {
 		this.zip = zip;
 		this.entry = entry;
 		this.closeZipFile = closeZipFile;
-		lastModified = -11L;
-		size = entry.getSize();
-		byte[] data = entry.getExtra();
-		if (data != null) {
-			extra = new String(data, UTF_8);
+		this.lastModified = -11L;
+		this.size = entry.getSize();
+		byte[] extra = entry.getExtra();
+		if (extra != null) {
+			this.extra = Resource.encodeExtra(extra);
 		}
 	}
 

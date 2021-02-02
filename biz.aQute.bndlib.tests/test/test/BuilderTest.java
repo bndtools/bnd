@@ -60,6 +60,7 @@ import aQute.lib.hex.Hex;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.lib.zip.ZipUtil;
 import aQute.service.reporter.Report.Location;
 
 @SuppressWarnings("resource")
@@ -1944,10 +1945,10 @@ public class BuilderTest {
 
 			Resource r = jar.getResource("osgi.jar");
 			assertNotNull(r);
-			assertEquals("itworks", r.getExtra());
+			assertEquals("itworks", ZipUtil.stringFromExtraField(Resource.decodeExtra(r.getExtra())));
 			Resource r2 = jar.getResource("www/xyz.jar");
 			assertNotNull(r2);
-			assertEquals("italsoworks", r2.getExtra());
+			assertEquals("italsoworks", ZipUtil.stringFromExtraField(Resource.decodeExtra(r2.getExtra())));
 		} finally {
 			b.close();
 		}

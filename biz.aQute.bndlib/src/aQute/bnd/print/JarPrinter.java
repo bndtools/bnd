@@ -29,6 +29,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.stream.MapStream;
 import aQute.lib.collections.MultiMap;
+import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.unmodifiable.Sets;
@@ -197,8 +198,7 @@ public class JarPrinter extends Processor {
 					if (r != null) {
 						String extra = r.getExtra();
 						if (extra != null) {
-
-							out.format(" extra='%s'", escapeUnicode(extra));
+							out.format(" extra='%s'", Hex.toHexString(Resource.decodeExtra(extra)));
 						}
 					}
 					println();
@@ -290,29 +290,6 @@ public class JarPrinter extends Processor {
 			});
 		println(MultiMap.format(table));
 		return this;
-	}
-
-	private static char nibble(int i) {
-		return "0123456789ABCDEF".charAt(i & 0xF);
-	}
-
-	private static String escapeUnicode(String value) {
-		final int len = value.length();
-		StringBuilder sb = new StringBuilder(len);
-		for (int i = 0; i < len; i++) {
-			char c = value.charAt(i);
-			if (c >= ' ' && c <= '~' && c != '\\')
-				sb.append(c);
-			else {
-				sb.append('\\')
-					.append('u')
-					.append(nibble(c >> 12))
-					.append(nibble(c >> 8))
-					.append(nibble(c >> 4))
-					.append(nibble(c));
-			}
-		}
-		return (len == sb.length()) ? value : sb.toString();
 	}
 
 	/**
