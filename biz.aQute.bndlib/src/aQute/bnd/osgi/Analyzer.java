@@ -1969,10 +1969,14 @@ public class Analyzer extends Processor {
 				Attrs importAttributes = imports.get(packageRef);
 				//
 				// Check if we have a java.* package. If so, we should remove
-				// all attributes to have a plain import.
+				// all attributes (except resolution:) to have a plain import.
 				//
 				if (packageRef.isJava()) {
+					String resolution = importAttributes.get(Constants.RESOLUTION_DIRECTIVE);
 					importAttributes.clear();
+					if (resolution != null) {
+						importAttributes.put(Constants.RESOLUTION_DIRECTIVE, resolution);
+					}
 					continue;
 				}
 				Attrs defaultAttrs = new Attrs();
