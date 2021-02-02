@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,6 +66,7 @@ import aQute.lib.io.IO;
 import aQute.lib.regex.PatternConstants;
 import aQute.lib.strings.Strings;
 import aQute.lib.unmodifiable.Sets;
+import aQute.lib.zip.ZipUtil;
 import aQute.libg.generics.Create;
 
 /**
@@ -952,9 +954,7 @@ public class Builder extends Analyzer {
 		} else if (extra.containsKey(LITERAL_ATTRIBUTE)) {
 			String literal = extra.get(LITERAL_ATTRIBUTE);
 			Resource r = new EmbeddedResource(literal, 0L);
-			String x = extra.get("extra");
-			if (x != null)
-				r.setExtra(x);
+			addExtra(r, extra.get("extra"));
 			copy(jar, name, r, extra);
 			if (preprocess != null) {
 				warning("Preprocessing does not work for literals: %s", name);
@@ -1013,15 +1013,30 @@ public class Builder extends Analyzer {
 				}
 			} else {
 				Resource r = clazz.getResource();
-				String x = extra.get("extra");
-				if (x != null)
-					r.setExtra(x);
+				addExtra(r, extra.get("extra"));
 				copy(jar, name, r, extra);
 				if (preprocess != null) {
 					warning("Preprocessing does not work for class references: %s", name);
 				}
 			}
 		}
+	}
+
+	private void addExtra(Resource resource, String extra) {
+		if (extra == null) {
+			return;
+		}
+		byte[] extraFieldFromString = ZipUtil.extraFieldFromString(extra);
+		String encoded = resource.getExtra();
+		if (encoded == null) {
+			resource.setExtra(Resource.encodeExtra(extraFieldFromString));
+			return;
+		}
+		byte[] originalExtra = Resource.decodeExtra(encoded);
+		resource.setExtra(Resource.encodeExtra(ByteBuffer.allocate(extraFieldFromString.length + originalExtra.length)
+			.put(extraFieldFromString)
+			.put(originalExtra)
+			.array()));
 	}
 
 	private Instructions getPreProcessMatcher(Map<String, String> extra) {
@@ -1259,9 +1274,7 @@ public class Builder extends Analyzer {
 		} else {
 			Resource lastChance = make.process(source);
 			if (lastChance != null) {
-				String x = extra.get("extra");
-				if (x != null)
-					lastChance.setExtra(x);
+				addExtra(lastChance, extra.get("extra"));
 				copy(jar, destinationPath, lastChance, extra);
 			} else
 				error("Input file does not exist: %s", source).header(source)
@@ -1346,9 +1359,7 @@ public class Builder extends Analyzer {
 				if (preprocess != null && preprocess.matches(path)) {
 					resource = new PreprocessResource(this, resource);
 				}
-				String x = extra.get("extra");
-				if (x != null)
-					resource.setExtra(x);
+				addExtra(resource, extra.get("extra"));
 				if (path.endsWith("/"))
 					path = path + from.getName();
 				copy(jar, path, resource, extra);

@@ -31,15 +31,20 @@ def pluginUnderTestMetadata = tasks.register('pluginUnderTestMetadata', WritePro
   }
 }
 
-def testresources = tasks.register('testresources', Sync.class) {
-  from project.file('testresources')
-  into project.layout.buildDirectory.dir('testresources')
-}
-
 tasks.named('test') {
-  inputs.files tasks.named('jar'), pluginUnderTestMetadata, testresources
+  def testresources = project.file('testresources')
+  def target = project.layout.buildDirectory.dir('testresources')
+  inputs.files tasks.named('jar'), pluginUnderTestMetadata
+  inputs.dir testresources
   systemProperty 'bnd_version', bnd('bnd_version')
   systemProperty 'org.gradle.warning.mode', gradle.startParameter.warningMode.name().toLowerCase()
+  doFirst { // copy test resources into build dir
+    project.delete(target)
+    copy {
+      from testresources
+      into target
+    }
+  }
 }
 
 tasks.named('release') {

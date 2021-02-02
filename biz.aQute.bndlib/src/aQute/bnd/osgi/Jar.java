@@ -299,8 +299,12 @@ public class Jar implements Closeable {
 				int size = (entry.getSize() < 0) ? BUFFER_SIZE : (1 + (int) entry.getSize());
 				try (ByteBufferOutputStream bbos = new ByteBufferOutputStream(size)) {
 					bbos.write(jin);
-					putResource(entry.getName(),
-						new EmbeddedResource(bbos.toByteBuffer(), ZipUtil.getModifiedTime(entry)), true);
+					Resource resource = new EmbeddedResource(bbos.toByteBuffer(), ZipUtil.getModifiedTime(entry));
+					byte[] extra = entry.getExtra();
+					if (extra != null) {
+						resource.setExtra(Resource.encodeExtra(extra));
+					}
+					putResource(entry.getName(), resource, true);
 				}
 			}
 		}
@@ -914,9 +918,10 @@ public class Jar implements Closeable {
 				}
 				ZipUtil.setModifiedTime(ze, lastModified);
 			}
-			if (resource.getExtra() != null)
-				ze.setExtra(resource.getExtra()
-					.getBytes(UTF_8));
+			String extra = resource.getExtra();
+			if (extra != null) {
+				ze.setExtra(Resource.decodeExtra(extra));
+			}
 			putEntry(jout, ze, resource);
 		} catch (Exception e) {
 			throw new Exception("Problem writing resource " + path, e);

@@ -1,6 +1,7 @@
 package test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -33,6 +34,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
+import aQute.lib.zip.ZipUtil;
 
 @SuppressWarnings("resource")
 public class ResourcesTest {
@@ -421,25 +423,30 @@ public class ResourcesTest {
 
 	@Test
 	public void testLiteral() throws Exception {
-		Builder bmaker = new Builder();
-		Properties p = new Properties();
-		p.setProperty("-resourceonly", "true");
-		p.setProperty("Include-Resource", "text;literal=TEXT;extra='hello/world;charset=UTF-8'");
-		bmaker.setProperties(p);
-		bmaker.setClasspath(new String[] {
-			"test"
-		});
-		Jar jar = bmaker.build();
-		Resource resource = jar.getResource("text");
-		assertNotNull(resource);
-		byte buffer[] = new byte[BUFFER_SIZE];
-		int size = resource.openInputStream()
-			.read(buffer);
-		String s = new String(buffer, 0, size);
-		assertEquals("TEXT", s);
-		assertEquals("hello/world;charset=UTF-8", resource.getExtra());
-		report(bmaker);
-
+		try (Builder bmaker = new Builder()) {
+			Properties p = new Properties();
+			p.setProperty("-resourceonly", "true");
+			p.setProperty("Include-Resource", "text;literal=TEXT;extra='hello/world;charset=UTF-8'");
+			bmaker.setProperties(p);
+			bmaker.setClasspath(new String[] {
+				"test"
+			});
+			Jar jar = bmaker.build();
+			Path output = tmp.resolve("output.jar");
+			jar.write(output.toFile());
+			Jar input = new Jar(output.getFileName()
+				.toString(), IO.stream(output));
+			Resource resource = input.getResource("text");
+			assertThat(resource).as("text resource")
+				.isNotNull();
+			String s = IO.collect(resource.openInputStream());
+			assertThat(s).as("text resource content")
+				.isEqualTo("TEXT");
+			assertThat(ZipUtil.stringFromExtraField(Resource.decodeExtra(resource.getExtra())))
+				.as("text resource extra field")
+				.isEqualTo("hello/world;charset=UTF-8");
+			report(bmaker);
+		}
 	}
 
 	/**
