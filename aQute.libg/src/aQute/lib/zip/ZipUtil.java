@@ -5,6 +5,8 @@ import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 
@@ -155,28 +157,79 @@ public class ZipUtil {
 	public static final int EXTID_BND = 0xBDEA;
 
 	/**
-	 * Create a ZIP extra field from a String.
+	 * Add a ZIP extra field from a String.
 	 * <p>
 	 * The String is UTF-8 encoded and the extra field uses the Header ID
 	 * {@link #EXTID_BND}.
 	 *
+	 * @param extra The extra field to modify by adding or replacing the
+	 *            {@link #EXTID_BND} header. May be {@code null}.
 	 * @param value The String value to be contained in the ZIP extra field.
-	 * @return A ZIP extra field with the UTF-8 encoded String.
+	 * @return A ZIP extra field including the {@link #EXTID_BND} header with
+	 *         the UTF-8 encoded String.
 	 * @see <a href=
 	 *      "https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT">Section
 	 *      4.5 - Extensible data fields</a>
 	 */
-	public static byte[] extraFieldFromString(String value) {
+	public static byte[] extraFieldFromString(byte[] extra, String value) {
 		byte[] utf8 = value.getBytes(UTF_8);
-		final int length = utf8.length;
-		if (length > 0xFFFF) {
-			throw new IllegalArgumentException("extra string too long");
+		int length = Short.BYTES * 2 + utf8.length;
+		if (extra == null) {
+			if (length > 0xFFFF) {
+				throw new IllegalArgumentException("extra data too long");
+			}
+
+			return ByteBuffer.allocate(length)
+				.order(ByteOrder.LITTLE_ENDIAN)
+				.putShort((short) EXTID_BND)
+				.putShort((short) utf8.length)
+				.put(utf8)
+				.array();
 		}
-		byte[] extra = new byte[Short.BYTES * 2 + length];
-		putUnsignedShort(extra, 0, EXTID_BND);
-		putUnsignedShort(extra, Short.BYTES, length);
-		System.arraycopy(utf8, 0, extra, Short.BYTES * 2, length);
-		return extra;
+
+		ByteBuffer original = ByteBuffer.wrap(extra)
+			.order(ByteOrder.LITTLE_ENDIAN);
+		final int limit = original.limit();
+		length += limit;
+
+		int extPosition = 0;
+		int extSize = 0;
+		while (original.remaining() > (Short.BYTES * 2)) {
+			int id = Short.toUnsignedInt(original.getShort());
+			int size = Short.toUnsignedInt(original.getShort());
+			if ((size < 0) || (size > original.remaining())) {
+				break; // invalid extra field
+			}
+			if (id == EXTID_BND) {
+				// we are replacing an existing EXTID_BND record
+				extPosition = original.position() - Short.BYTES * 2;
+				extSize = Short.BYTES * 2 + size;
+				length -= extSize;
+				break;
+			}
+			original.position(original.position() + size);
+		}
+
+		if (length > 0xFFFF) {
+			throw new IllegalArgumentException("extra data too long");
+		}
+
+		ByteBuffer bb = ByteBuffer.allocate(length)
+			.order(ByteOrder.LITTLE_ENDIAN)
+			.putShort((short) EXTID_BND)
+			.putShort((short) utf8.length)
+			.put(utf8);
+		original.rewind();
+		if (extSize > 0) { // we are replacing an existing EXTID_BND record
+			// copy from before existing EXTID_BND record
+			original.limit(extPosition);
+			bb.put(original);
+			// move to after existing EXTID_BND record
+			original.limit(limit)
+				.position(extPosition + extSize);
+		}
+		return bb.put(original)
+			.array();
 	}
 
 	/**
@@ -201,34 +254,25 @@ public class ZipUtil {
 		if (length > 0xFFFF) {
 			throw new IllegalArgumentException("extra data too long");
 		}
-		int offset = 0;
-		while ((offset + Short.BYTES * 2) < length) {
-			int id = getUnsignedShort(extra, offset);
-			int size = getUnsignedShort(extra, offset + Short.BYTES);
-			if ((size < 0) || ((offset + Short.BYTES * 2 + size) > length)) {
+		ByteBuffer original = ByteBuffer.wrap(extra)
+			.order(ByteOrder.LITTLE_ENDIAN);
+		while (original.remaining() > (Short.BYTES * 2)) {
+			int id = Short.toUnsignedInt(original.getShort());
+			int size = Short.toUnsignedInt(original.getShort());
+			if ((size < 0) || (size > original.remaining())) {
+				original.position(original.position() - Short.BYTES * 2);
 				break; // invalid extra field
 			}
-			offset += Short.BYTES * 2;
-			switch (id) {
-				case EXTID_BND :
-					return new String(extra, offset, size, UTF_8);
-				default :
-					break;
+			if (id == EXTID_BND) {
+				original.limit(original.position() + size);
+				break; // UTF-8 encoded string
 			}
-			offset += size;
+			original.position(original.position() + size);
 		}
-		if (offset < length) {
-			return new String(extra, offset, length - offset, UTF_8);
+		if (original.hasRemaining()) {
+			return UTF_8.decode(original)
+				.toString();
 		}
 		return null;
-	}
-
-	private static void putUnsignedShort(byte[] bytes, int offset, int value) {
-		bytes[offset] = (byte) value;
-		bytes[offset + 1] = (byte) (value >> 8);
-	}
-
-	private static int getUnsignedShort(byte[] bytes, int offset) {
-		return Byte.toUnsignedInt(bytes[offset]) | (Byte.toUnsignedInt(bytes[offset + 1]) << 8);
 	}
 }

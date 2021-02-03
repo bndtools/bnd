@@ -1,10 +1,13 @@
 package aQute.lib.zip;
 
 import static aQute.lib.zip.ZipUtil.cleanPath;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import org.junit.Test;
 
@@ -93,5 +96,213 @@ public class ZipUtilTest {
 		assertThatExceptionOfType(UncheckedIOException.class).isThrownBy(() -> cleanPath("./x/../../z/y"));
 
 		assertThatExceptionOfType(UncheckedIOException.class).isThrownBy(() -> cleanPath("./x/./././././././../.."));
+	}
+
+	@Test
+	public void extraFieldFromString_one_value() {
+		byte[] testfield = ZipUtil.extraFieldFromString(null, "test value");
+		assertThat(testfield).containsExactly(0xEA, 0xBD, "test value".length(), 0, 't', 'e', 's', 't', ' ', 'v', 'a',
+			'l', 'u', 'e');
+	}
+
+	@Test
+	public void extraFieldFromString_replace_value_first() {
+		byte[] testvalue = ZipUtil.extraFieldFromString(null, "test value");
+		byte[] testfield = ByteBuffer.allocate(testvalue.length + Short.BYTES * 2)
+			.order(ByteOrder.LITTLE_ENDIAN)
+			.put(testvalue)
+			.putShort((short) 0xCAFE)
+			.putShort((short) 0)
+			.array();
+
+		assertThat(testfield).containsExactly(0xEA, 0xBD, "test value".length(), 0, 't', 'e', 's', 't', ' ', 'v', 'a',
+			'l', 'u', 'e', 0xFE, 0xCA, 0, 0);
+		testfield = ZipUtil.extraFieldFromString(testfield, "newer value");
+		assertThat(testfield).containsExactly(0xEA, 0xBD, "newer value".length(), 0, 'n', 'e', 'w', 'e', 'r', ' ', 'v',
+			'a', 'l', 'u', 'e', 0xFE, 0xCA, 0, 0);
+	}
+
+	@Test
+	public void extraFieldFromString_replace_value_last() {
+		byte[] testvalue = ZipUtil.extraFieldFromString(null, "test value");
+		byte[] testfield = ByteBuffer.allocate(testvalue.length + Short.BYTES * 2)
+			.order(ByteOrder.LITTLE_ENDIAN)
+			.putShort((short) 0xCAFE)
+			.putShort((short) 0)
+			.put(testvalue)
+			.array();
+
+		assertThat(testfield).containsExactly(0xFE, 0xCA, 0, 0, 0xEA, 0xBD, "test value".length(), 0, 't', 'e', 's',
+			't', ' ', 'v', 'a', 'l', 'u', 'e');
+		testfield = ZipUtil.extraFieldFromString(testfield, "newer value");
+		assertThat(testfield).containsExactly(0xEA, 0xBD, "newer value".length(), 0, 'n', 'e', 'w', 'e', 'r', ' ', 'v',
+			'a', 'l', 'u', 'e', 0xFE, 0xCA, 0, 0);
+	}
+
+	@Test
+	public void extraFieldFromString_replace_value_middle() {
+		byte[] testvalue = ZipUtil.extraFieldFromString(null, "test value");
+		byte[] testfield = ByteBuffer.allocate(testvalue.length + Short.BYTES * 5)
+			.order(ByteOrder.LITTLE_ENDIAN)
+			.putShort((short) 0xB1FF)
+			.putShort((short) 2)
+			.put((byte) 1)
+			.put((byte) 2)
+			.put(testvalue)
+			.putShort((short) 0xCAFE)
+			.putShort((short) 0)
+			.array();
+
+		assertThat(testfield).containsExactly(0xFF, 0xB1, 2, 0, 1, 2, 0xEA, 0xBD, "test value".length(), 0, 't', 'e',
+			's', 't', ' ', 'v', 'a', 'l', 'u', 'e', 0xFE, 0xCA, 0, 0);
+		testfield = ZipUtil.extraFieldFromString(testfield, "newer value");
+		assertThat(testfield).containsExactly(0xEA, 0xBD, "newer value".length(), 0, 'n', 'e', 'w', 'e', 'r', ' ', 'v',
+			'a', 'l', 'u', 'e', 0xFF, 0xB1, 2, 0, 1, 2, 0xFE, 0xCA, 0, 0);
+	}
+
+	@Test
+	public void extraFieldFromString_replace_value_first_invalid() {
+		byte[] testvalue = ZipUtil.extraFieldFromString(null, "test value");
+		byte[] testfield = ByteBuffer.allocate(testvalue.length + Short.BYTES * 5)
+			.order(ByteOrder.LITTLE_ENDIAN)
+			.put(testvalue)
+			.putShort((short) 0xCAFE)
+			.putShort((short) 0)
+			.putShort((short) 0xB1FF)
+			.putShort((short) 20)
+			.put((byte) 1)
+			.put((byte) 2)
+			.array();
+
+		assertThat(testfield).containsExactly(0xEA, 0xBD, "test value".length(), 0, 't', 'e', 's', 't', ' ', 'v', 'a',
+			'l', 'u', 'e', 0xFE, 0xCA, 0, 0, 0xFF, 0xB1, 20, 0, 1, 2);
+		testfield = ZipUtil.extraFieldFromString(testfield, "newer value");
+		assertThat(testfield).containsExactly(0xEA, 0xBD, "newer value".length(), 0, 'n', 'e', 'w', 'e', 'r', ' ', 'v',
+			'a', 'l', 'u', 'e', 0xFE, 0xCA, 0, 0, 0xFF, 0xB1, 20, 0, 1, 2);
+	}
+
+	@Test
+	public void extraFieldFromString_replace_value_middle_invalid() {
+		byte[] testvalue = ZipUtil.extraFieldFromString(null, "test value");
+		byte[] testfield = ByteBuffer.allocate(testvalue.length + Short.BYTES * 5)
+			.order(ByteOrder.LITTLE_ENDIAN)
+			.putShort((short) 0xCAFE)
+			.putShort((short) 0)
+			.put(testvalue)
+			.putShort((short) 0xB1FF)
+			.putShort((short) 20)
+			.put((byte) 1)
+			.put((byte) 2)
+			.array();
+
+		assertThat(testfield).containsExactly(0xFE, 0xCA, 0, 0, 0xEA, 0xBD, "test value".length(), 0, 't', 'e', 's',
+			't', ' ', 'v', 'a', 'l', 'u', 'e', 0xFF, 0xB1, 20, 0, 1, 2);
+		testfield = ZipUtil.extraFieldFromString(testfield, "newer value");
+		assertThat(testfield).containsExactly(0xEA, 0xBD, "newer value".length(), 0, 'n', 'e', 'w', 'e', 'r', ' ', 'v',
+			'a', 'l', 'u', 'e', 0xFE, 0xCA, 0, 0, 0xFF, 0xB1, 20, 0, 1, 2);
+	}
+
+	@Test
+	public void extraFieldFromString_add_value() {
+		byte[] testfield = ByteBuffer.allocate(Short.BYTES * 2)
+			.order(ByteOrder.LITTLE_ENDIAN)
+			.putShort((short) 0xCAFE)
+			.putShort((short) 0)
+			.array();
+
+		assertThat(testfield).containsExactly(0xFE, 0xCA, 0, 0);
+		testfield = ZipUtil.extraFieldFromString(testfield, "newer value");
+		assertThat(testfield).containsExactly(0xEA, 0xBD, "newer value".length(), 0, 'n', 'e', 'w', 'e', 'r', ' ', 'v',
+			'a', 'l', 'u', 'e', 0xFE, 0xCA, 0, 0);
+	}
+
+	@Test
+	public void extraFieldFromString_add_value_invalid() {
+		byte[] testfield = ByteBuffer.allocate(Short.BYTES * 5)
+			.order(ByteOrder.LITTLE_ENDIAN)
+			.putShort((short) 0xCAFE)
+			.putShort((short) 0)
+			.putShort((short) 0xB1FF)
+			.putShort((short) 20)
+			.put((byte) 1)
+			.put((byte) 2)
+			.array();
+
+		assertThat(testfield).containsExactly(0xFE, 0xCA, 0, 0, 0xFF, 0xB1, 20, 0, 1, 2);
+		testfield = ZipUtil.extraFieldFromString(testfield, "newer value");
+		assertThat(testfield).containsExactly(0xEA, 0xBD, "newer value".length(), 0, 'n', 'e', 'w', 'e', 'r', ' ', 'v',
+			'a', 'l', 'u', 'e', 0xFE, 0xCA, 0, 0, 0xFF, 0xB1, 20, 0, 1, 2);
+	}
+
+	@Test
+	public void stringFromExtraField_plainUTF8() {
+		byte[] testfield = "test value".getBytes(UTF_8);
+		assertThat(ZipUtil.stringFromExtraField(testfield)).isEqualTo("test value");
+	}
+
+	@Test
+	public void stringFromExtraField_one() {
+		byte[] testfield = ZipUtil.extraFieldFromString(new byte[0], "test value");
+		assertThat(testfield).containsExactly(0xEA, 0xBD, "test value".length(), 0, 't', 'e', 's', 't', ' ', 'v', 'a',
+			'l', 'u', 'e');
+		assertThat(ZipUtil.stringFromExtraField(testfield)).isEqualTo("test value");
+	}
+
+	@Test
+	public void stringFromExtraField_first() {
+		byte[] testvalue = ZipUtil.extraFieldFromString(null, "test value");
+		byte[] testfield = ByteBuffer.allocate(testvalue.length + Short.BYTES * 2)
+			.order(ByteOrder.LITTLE_ENDIAN)
+			.put(testvalue)
+			.putShort((short) 0xCAFE)
+			.putShort((short) 0)
+			.array();
+		assertThat(ZipUtil.stringFromExtraField(testfield)).isEqualTo("test value");
+	}
+
+	@Test
+	public void stringFromExtraField_middle() {
+		byte[] testvalue = ZipUtil.extraFieldFromString(null, "test value");
+		byte[] testfield = ByteBuffer.allocate(testvalue.length + Short.BYTES * 5)
+			.order(ByteOrder.LITTLE_ENDIAN)
+			.putShort((short) 0xB1FF)
+			.putShort((short) 2)
+			.put((byte) 1)
+			.put((byte) 2)
+			.put(testvalue)
+			.putShort((short) 0xCAFE)
+			.putShort((short) 0)
+			.array();
+		assertThat(ZipUtil.stringFromExtraField(testfield)).isEqualTo("test value");
+	}
+
+	@Test
+	public void stringFromExtraField_last() {
+		byte[] testvalue = ZipUtil.extraFieldFromString(null, "test value");
+		byte[] testfield = ByteBuffer.allocate(testvalue.length + Short.BYTES * 2)
+			.order(ByteOrder.LITTLE_ENDIAN)
+			.putShort((short) 0xCAFE)
+			.putShort((short) 0)
+			.put(testvalue)
+			.array();
+		assertThat(ZipUtil.stringFromExtraField(testfield)).isEqualTo("test value");
+	}
+
+	@Test
+	public void stringFromExtraField_invalid() {
+		byte[] testfield = "test value".getBytes(UTF_8);
+		assertThat(ZipUtil.stringFromExtraField(testfield)).isEqualTo("test value");
+	}
+
+	@Test
+	public void stringFromExtraField_invalid_last() {
+		byte[] testvalue = "test value".getBytes(UTF_8);
+		byte[] testfield = ByteBuffer.allocate(testvalue.length + Short.BYTES * 2)
+			.order(ByteOrder.LITTLE_ENDIAN)
+			.putShort((short) 0xCAFE)
+			.putShort((short) 0)
+			.put(testvalue)
+			.array();
+		assertThat(ZipUtil.stringFromExtraField(testfield)).isEqualTo("test value");
 	}
 }
