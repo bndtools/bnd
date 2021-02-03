@@ -228,16 +228,19 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
 		for (IMethod m : z.getMethods()) {
 			if (Flags.isPublic(m.getFlags())) {
 				for (IAnnotation annotation : m.getAnnotations()) {
-					String[][] names = m.getDeclaringType()
-						.resolveType(annotation.getElementName());
-					for (String[] pair : names) {
-						if (pair[0].contains("org.junit"))
-							return true;
+					IType declaringType = m.getDeclaringType();
+					if (declaringType != null) {
+						String[][] names = declaringType.resolveType(annotation.getElementName());
+						if (names != null) {
+							for (String[] pair : names) {
+								if (pair[0].contains("org.junit"))
+									return true;
+							}
+						}
 					}
 				}
 			}
 		}
-
 		return false;
 	}
 
