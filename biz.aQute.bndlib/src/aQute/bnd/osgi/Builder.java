@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1022,21 +1021,13 @@ public class Builder extends Analyzer {
 		}
 	}
 
-	private void addExtra(Resource resource, String extra) {
-		if (extra == null) {
+	private void addExtra(Resource resource, String value) {
+		if (value == null) {
 			return;
 		}
-		byte[] extraFieldFromString = ZipUtil.extraFieldFromString(extra);
 		String encoded = resource.getExtra();
-		if (encoded == null) {
-			resource.setExtra(Resource.encodeExtra(extraFieldFromString));
-			return;
-		}
-		byte[] originalExtra = Resource.decodeExtra(encoded);
-		resource.setExtra(Resource.encodeExtra(ByteBuffer.allocate(extraFieldFromString.length + originalExtra.length)
-			.put(extraFieldFromString)
-			.put(originalExtra)
-			.array()));
+		byte[] extra = (encoded != null) ? Resource.decodeExtra(encoded) : null;
+		resource.setExtra(Resource.encodeExtra(ZipUtil.extraFieldFromString(extra, value)));
 	}
 
 	private Instructions getPreProcessMatcher(Map<String, String> extra) {
