@@ -5,7 +5,7 @@
       version="@master-version@"
       provider-name="Bndtools">
 
-   <description url="https://dl.bintray.com/bndtools/bndtools/@base-version@/">
+   <description url="https://bndtools.jfrog.io/bndtools/update-latest">
       PDE integration for Bndtools
    </description>
 
@@ -504,7 +504,7 @@ version(s), and exceptions or additional permissions here}.&quot;
    </license>
 
    <url>
-      <update label="Bndtools Update Site" url="https://dl.bintray.com/bndtools/bndtools/@base-version@/"/>
+      <update label="Bndtools Update Site" url="https://bndtools.jfrog.io/bndtools/update-latest"/>
    </url>
 
    <requires>

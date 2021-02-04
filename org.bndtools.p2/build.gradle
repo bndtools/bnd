@@ -30,7 +30,6 @@ def p2FeatureProperties = tasks.register('p2FeatureProperties', WriteProperties.
   def injected = project.objects.newInstance(Injected) 
   def p2PluginsDir = p2Plugins.map { it.destinationDir }
   doFirst {
-    property('base-version', bnd('base.version'))
     injected.objects.fileTree().from(p2PluginsDir).each {
       new Jar(it).withCloseable { jar ->
         property("${jar.getBsn()}-version", jar.getVersion())
