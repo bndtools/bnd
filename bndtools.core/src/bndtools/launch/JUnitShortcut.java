@@ -257,24 +257,27 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
 		// Must be a class, not abstract, and public
 		//
 
-		if (!type.isClass() || Flags.isAbstract(flags) || !Flags.isPublic(flags))
+		if (!type.isClass() || Flags.isAbstract(flags) || Flags.isPrivate(flags))
 			return false;
 
 		//
 		// One of the super classes/interfaces must be a Junit class/interface
 		//
 		ITypeHierarchy hierarchy = type.newSupertypeHierarchy(null);
-		for (IType z : hierarchy.getAllSupertypes(type)) {
-			if (z.getFullyQualifiedName()
-				.startsWith("junit."))
-				return true;
+		// JUnit 3 test - class must be public
+		if (Flags.isPublic(flags)) {
+			for (IType z : hierarchy.getAllSupertypes(type)) {
+				if (z.getFullyQualifiedName()
+					.startsWith("junit."))
+					return true;
+			}
 		}
 
-		if (isJUnit4(type))
+		if (isJUnit(type))
 			return true;
 
-		for (IType z : hierarchy.getAllSuperclasses(type)) {
-			if (isJUnit4(z))
+		for (IType z : hierarchy.getAllSupertypes(type)) {
+			if (isJUnit(z, flags))
 				return true;
 		}
 
@@ -284,18 +287,27 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
 	/*
 	 * Check if any of the methods has an annotation from the org.junit package
 	 */
+	private static boolean isJUnit(IType z) throws JavaModelException {
+		return isJUnit(z, z.getFlags());
+	}
 
-	private static boolean isJUnit4(IType z) throws JavaModelException {
+	private static boolean isJUnit(IType z, int typeFlags) throws JavaModelException {
 		for (IMethod m : z.getMethods()) {
-			if (Flags.isPublic(m.getFlags())) {
-				for (IAnnotation annotation : m.getAnnotations()) {
-					IType declaringType = m.getDeclaringType();
-					if (declaringType != null) {
-						String[][] names = declaringType.resolveType(annotation.getElementName());
-						if (names != null) {
-							for (String[] pair : names) {
-								if (pair[0].contains("org.junit"))
+			for (IAnnotation annotation : m.getAnnotations()) {
+				IType declaringType = m.getDeclaringType();
+				if (declaringType != null) {
+					String[][] names = declaringType.resolveType(annotation.getElementName());
+					if (names != null) {
+						for (String[] pair : names) {
+							if (pair[0].startsWith("org.junit.")) {
+								final int flags = m.getFlags();
+								// Jupiter allows public, protected &
+								// package-protected methods & classes,
+								// JUnit 4 only public
+								if ((pair[0].startsWith("org.junit.jupiter.") && !Flags.isPrivate(flags))
+									|| (Flags.isPublic(flags) && Flags.isPublic(typeFlags))) {
 									return true;
+								}
 							}
 						}
 					}
