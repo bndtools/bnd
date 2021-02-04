@@ -405,7 +405,7 @@ public class OSGiRepositoryTest extends TestCase {
 			Processor p = new Processor();
 			HttpClient httpClient = new HttpClient()) {
 			Map<String, String> map = new HashMap<>();
-			map.put("locations", "https://dl.bintray.com/bnd/dist/4.1.0/index.xml.gz");
+			map.put("locations", "https://bndtools.jfrog.io/bndtools/bnd-build/eclipse/4.10/index.xml.gz");
 			map.put("cache", cache.getPath());
 			map.put("max.stale", "10000");
 			r.setProperties(map);
@@ -444,19 +444,20 @@ public class OSGiRepositoryTest extends TestCase {
 			List<String> list = r.list(null);
 			assertThat(list).isNotEmpty();
 
-			SortedSet<Version> versions = r.versions("aQute.libg");
+			String bsn = "javax.inject";
+			SortedSet<Version> versions = r.versions(bsn);
 			assertThat(versions).isNotEmpty();
-			File f1 = r.get("aQute.libg", versions.first(), null);
+			File f1 = r.get(bsn, versions.first(), null);
 			assertThat(f1).isNotNull();
 			assertThat(tasks).hasValueGreaterThanOrEqualTo(2); // index + bundle
 																// + redirects
 			int t = tasks.get();
 
-			File f2 = r.get("aQute.libg", versions.first(), null);
+			File f2 = r.get(bsn, versions.first(), null);
 			assertThat(tasks).hasValue(t); // should use cache
 
 			r.getIndex(true);
-			File f3 = r.get("aQute.libg", versions.first(), null);
+			File f3 = r.get(bsn, versions.first(), null);
 			assertThat(tasks).hasValue(t * 2); // should fetch again
 
 		}

@@ -52,7 +52,7 @@ public class P2RepositoryTest {
 			p2r.setRegistry(w);
 
 			Map<String, String> config = new HashMap<>();
-			config.put("url", "https://dl.bintray.com/bndtools/bndtools/latest/");
+			config.put("url", "https://bndtools.jfrog.io/bndtools/update-snapshot");
 			config.put("name", "test");
 			p2r.setProperties(config);
 
