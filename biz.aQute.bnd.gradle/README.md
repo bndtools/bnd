@@ -45,7 +45,7 @@ pluginManagement {
 }
 ```
 
-The Gradle marker plugins for the Bnd Gradle plugins are also in Maven Central and JCenter. So you may use either of them as a `pluginManagement` repository.
+The Gradle marker plugins for the Bnd Gradle plugins are also in Maven Central. So you may use Maven Central as a `pluginManagement` repository.
 
 ## Apply the `biz.aQute.bnd.builder` plugin to your project
 
@@ -587,7 +587,7 @@ plugins {
   id 'biz.aQute.bnd.workspace' version '5.3.0'
 }
 ```
-The Gradle marker plugins for the Bnd Gradle plugins are also in Maven Central and JCenter. So you may use either of them as a `pluginManagement` repository.
+The Gradle marker plugins for the Bnd Gradle plugins are also in Maven Central. So you may use Maven Central as a `pluginManagement` repository.
 
 When you apply the `biz.aQute.bnd.workspace` Gradle plugin in the
 `settings.gradle` file, the plugin will determine the Bnd project folders

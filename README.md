@@ -51,7 +51,7 @@ A Maven snapshot repository of the latest build is available at <https://bndtool
 
 ## Release
 
-Release versions of Bnd artifacts including Maven and Gradle plugins are available from Maven Central and JCenter.
+Release versions of Bnd artifacts including Maven and Gradle plugins are available from Maven Central. Release versions of the Bnd Gradle plugins are also available from the Gradle Plugin repository.
 
 Release versions of Bndtools are available from the Bndtools p2 update site: <https://bndtools.jfrog.io/bndtools/update-latest>.
 
