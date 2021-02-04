@@ -136,12 +136,12 @@ Note that if you're only using JUnit 3/4, you can omit the `-runrequires` line f
 As noted above, `biz.aQute.tester.junit-platform` requires JUnit Platform (and its dependencies) on the classpath, and if it is to do much that is useful it will also require at least one `TestEngine`. Bundled versions of these are part of Eclipse since Oxygen. You can include them in your workspace from:
 
 * Eclipse's Orbit repository
-* Bnd project's Eclipse mirror: https://dl.bintray.com/bndtools/eclipse-repo/4.10:
+* Bnd project's Eclipse mirror: https://bndtools.jfrog.io/bndtools/bnd-build/eclipse/4.10/:
 ```
     -plugin.repository: \
         aQute.bnd.repository.osgi.OSGiRepository;\
             name="Eclipse 2018-12";\
-            locations="https://dl.bintray.com/bndtools/eclipse-repo/4.10/index.xml.gz";\
+            locations="https://bndtools.jfrog.io/bndtools/bnd-build/eclipse/4.10/index.xml.gz";\
             poll.time=-1;\
             cache="${workspace}/cnf/cache/stable/Eclipse-2018-12"
 ```

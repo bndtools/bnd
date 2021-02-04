@@ -6,7 +6,7 @@
       provider-name="Bndtools"
       plugin="bndtools.core">
 
-   <description url="https://dl.bintray.com/bndtools/bndtools/@base-version@/">
+   <description url="https://bndtools.jfrog.io/bndtools/update-latest">
       OSGi Development Tools for Eclipse based on bnd.
    </description>
 
@@ -507,7 +507,7 @@ version(s), and exceptions or additional permissions here}.&quot;
    </license>
 
    <url>
-      <update label="Bndtools Update Site" url="https://dl.bintray.com/bndtools/bndtools/@base-version@/"/>
+      <update label="Bndtools Update Site" url="https://bndtools.jfrog.io/bndtools/update-latest"/>
    </url>
 
    <requires>
