@@ -42,15 +42,14 @@ public class P2IndexerTest extends TestCase {
 		client.setCache(IO.getFile(tmp, "cache"));
 
 		try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client,
-			new URI("https://dl.bintray.com/bndtools/bndtools/3.5.0/"), "test")) {
+			new URI("https://bndtools.jfrog.io/bndtools/bnd-test-p2"), "test")) {
 			List<String> bsns = p2.list(null);
-			assertThat(bsns).contains("javax.xml", "org.bndtools.templating.gitrepo",
-				"org.bndtools.headless.build.manager", "javax.xml.stream", "org.bndtools.templating", "org.slf4j.api",
-				"bndtools.api", "bndtools.jareditor", "org.bndtools.versioncontrol.ignores.plugin.git", "bndtools.m2e",
-				"org.bndtools.embeddedrepo", "biz.aQute.resolve", "org.bndtools.versioncontrol.ignores.manager",
-				"bndtools.builder", "bndtools.core", "biz.aQute.repository",
-				"org.bndtools.headless.build.plugin.gradle", "bndtools.release",
-				"org.bndtools.headless.build.plugin.ant", "org.osgi.impl.bundle.repoindex.lib", "biz.aQute.bndlib");
+			assertThat(bsns).contains("org.bndtools.templating.gitrepo", "org.bndtools.headless.build.manager",
+				"org.bndtools.templating", "org.slf4j.api", "bndtools.api", "bndtools.jareditor",
+				"org.bndtools.versioncontrol.ignores.plugin.git", "bndtools.m2e", "biz.aQute.bnd.embedded-repo",
+				"biz.aQute.resolve", "org.bndtools.versioncontrol.ignores.manager", "bndtools.builder",
+				"bndtools.core", "biz.aQute.repository", "org.bndtools.headless.build.plugin.gradle",
+				"bndtools.release", "org.bndtools.headless.build.plugin.ant", "biz.aQute.bndlib");
 			System.out.println(bsns);
 		}
 	}
@@ -151,7 +150,7 @@ public class P2IndexerTest extends TestCase {
 		client.setCache(IO.getFile(tmp, "cache"));
 
 		try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client,
-			new URI("https://dl.bintray.com/bndtools/bndtools/3.5.0/"), "test")) {
+			new URI("https://bndtools.jfrog.io/bndtools/bnd-test-p2"), "test")) {
 
 			assertThat(p2.versions("bndtools.core")).hasSize(1);
 
