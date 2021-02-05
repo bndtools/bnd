@@ -23,7 +23,7 @@ public class ResolutionProgressCallback implements ResolutionCallback {
 		subMonitor.setTaskName("Resolving requirement: " + requirement);
 		// split() also does the cancel check for us and throws
 		// OperationCanceledException
-		subMonitor.setWorkRemaining(100)
+		subMonitor.setWorkRemaining(1000)
 			.split(1);
 	}
 
