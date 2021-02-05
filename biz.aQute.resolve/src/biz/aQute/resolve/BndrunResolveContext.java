@@ -498,6 +498,26 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			resBuilder.addRequirements(requires);
 		}
 
+		String tester = properties.mergeProperties(Constants.TESTER);
+		if (tester != null) {
+			tester = tester.trim();
+			if (!tester.isEmpty()) {
+				List<Container> containers = project.getBundles(Strategy.HIGHEST, tester, null);
+
+				if (containers == null || containers.isEmpty()) {
+					CapReqBuilder testerReq = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
+						.addDirective("filter", "(osgi.identity=" + tester.trim() + ")");
+					resBuilder.addRequirement(testerReq);
+				} else {
+					Manifest m = containers.get(0)
+						.getManifest();
+					ResourceBuilder testerRes = new ResourceBuilder();
+					testerRes.addManifest(Domain.domain(m));
+					resBuilder.addRequirements(testerRes.getRequirements());
+				}
+			}
+		}
+
 		return resBuilder.build();
 	}
 
