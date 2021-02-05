@@ -772,7 +772,7 @@ public class AlsoLauncherTest {
 
 			softly.assertThat(report)
 				.as("System Bundle")
-				.containsPattern("\\n0\\s+\\d+\\s*ACTIV\\s+[<][>]\\s+System Bundle");
+				.containsPattern("\\n0\\s+\\d*\\s*ACTIV\\s+[<][>]\\s+System Bundle");
 
 			final DateTimeFormatter f = DateTimeFormatter.ofPattern("YYYYMMddHHmm")
 				.withZone(ZoneOffset.UTC);
