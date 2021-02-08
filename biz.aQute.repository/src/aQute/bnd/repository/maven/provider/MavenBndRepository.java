@@ -220,24 +220,25 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					result.artifact = storage.toRemoteURI(binaryArchive);
 					releaser.add(binaryArchive, binaryFile);
 
-					if (!isLocal(instructions)) {
+					boolean releaseSources = (instructions.sources != null)
+						&& (!isLocal(instructions) || instructions.sources.force);
+					boolean releaseJavadoc = (instructions.javadoc != null)
+						&& (!isLocal(instructions) || instructions.javadoc.force);
+
+					if (releaseSources || releaseJavadoc) {
 						try (Tool tool = new Tool(options.context, binary)) {
-							if (instructions.sources != null) {
-								if (!NONE.equals(instructions.sources.path)) {
-									try (Jar jar = getSources(tool, options.context, instructions.sources.path,
-										instructions.sources.options)) {
-										save(releaser, pom.getRevision(), jar);
-									}
+							if (releaseSources) {
+								try (Jar jar = getSources(tool, options.context, instructions.sources.path,
+									instructions.sources.options)) {
+									save(releaser, pom.getRevision(), jar);
 								}
 							}
 
-							if (instructions.javadoc != null) {
-								if (!NONE.equals(instructions.javadoc.path)) {
-									try (Jar jar = getJavadoc(tool, options.context, instructions.javadoc.path,
-										instructions.javadoc.options,
-										instructions.javadoc.packages == JavadocPackages.EXPORT)) {
-										save(releaser, pom.getRevision(), jar);
-									}
+							if (releaseJavadoc) {
+								try (Jar jar = getJavadoc(tool, options.context, instructions.javadoc.path,
+									instructions.javadoc.options,
+									instructions.javadoc.packages == JavadocPackages.EXPORT)) {
+									save(releaser, pom.getRevision(), jar);
 								}
 							}
 						}
@@ -403,6 +404,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		Attrs javadoc = p.remove("javadoc");
 		if (javadoc != null) {
 			release.javadoc.path = javadoc.remove("path");
+			release.javadoc.force = Boolean.parseBoolean(javadoc.remove("force"));
 			if (NONE.equals(release.javadoc.path)) {
 				release.javadoc = null;
 			} else {
@@ -423,6 +425,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		Attrs sources = p.remove("sources");
 		if (sources != null) {
 			release.sources.path = sources.remove("path");
+			release.sources.force = Boolean.parseBoolean(sources.remove("force"));
 			if (NONE.equals(release.sources.path)) {
 				release.sources = null;
 			} else {
