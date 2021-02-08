@@ -18,7 +18,7 @@ The following options are supported:
 
 |option||
 |-|-|
-|inherit|use DS annotations found in the class hierarchy of the component class|
+|inherit|use DS annotations found in the class hierarchy of the component class. *WARNING:* Annotations are not inherited from the component's super classes by default. The problem is that super classes from imported packages may be different at runtime than they were at build time. So it is always best to declare your annotations on the actual component class. |
 |felixExtensions|enable features proprietary to Apache Felix SCR|
 |extender|add the `osgi.extender=osgi.component` requirement to the manifest|
 |nocapabilities|do not add `osgi.service` capabilities to the manifest|
