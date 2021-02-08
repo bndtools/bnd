@@ -17,6 +17,7 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
+import aQute.bnd.build.Workspace.ResourceRepositoryStrategy;
 import aQute.bnd.classindex.ClassIndexerAnalyzer;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Descriptors;
@@ -187,7 +188,7 @@ class WorkspaceClassIndex implements AutoCloseable {
 		rb.filter(filter);
 		Requirement requirement = rb.buildSyntheticRequirement();
 
-		Repository repository = workspace.getResourceRepository();
+		Repository repository = workspace.getResourceRepository(ResourceRepositoryStrategy.ALL);
 		Collection<Capability> caps = repository.findProviders(Collections.singleton(requirement))
 			.get(requirement);
 		Map<Resource, List<Capability>> index = ResourceUtils.getIndexedByResource(caps);

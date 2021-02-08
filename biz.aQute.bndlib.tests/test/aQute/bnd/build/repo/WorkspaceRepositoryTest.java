@@ -10,8 +10,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.repository.maven.provider.MavenBndRepository;
 import aQute.lib.exceptions.ConsumerWithException;
 import aQute.lib.io.IO;
@@ -40,8 +43,121 @@ public class WorkspaceRepositoryTest {
 				"findproviders", "osgi.service", "(objectClass=*)"
 			});
 			System.out.println(services);
-			assertThat(services).contains("org.apache.felix.scr;version=");
-			assertThat(services).contains("org.apache.felix.http.jetty;version=");
+			Parameters parsed = OSGiHeader.parseHeader(services);
+			assertThat(parsed).containsKeys("org.apache.felix.scr", "org.apache.felix.http.jetty");
+			assertThat(parsed.get("org.apache.felix.scr")).containsKey("version");
+			assertThat(parsed.get("org.apache.felix.http.jetty")).containsKey("version");
+
+		});
+	}
+
+	@Test
+	public void findprovidersMacroTestWithStrategy() throws Exception {
+
+		test(ws -> {
+			Project project = ws.getProject("p1");
+			assertThat(project).isNotNull();
+			File[] build = project.build();
+			assertThat(build).isNotNull()
+				.isNotEmpty();
+			assertThat(build[0]).hasName("p1.jar");
+			String services = ws._findproviders(new String[] {
+				"findproviders", "osgi.service", "(objectClass=*)", "ALL"
+			});
+			System.out.println(services);
+			Parameters parsed = OSGiHeader.parseHeader(services);
+			assertThat(parsed).containsKeys("org.apache.felix.scr", "org.apache.felix.http.jetty", "p1");
+			assertThat(parsed.get("org.apache.felix.scr")).containsKey("version");
+			assertThat(parsed.get("org.apache.felix.http.jetty")).containsKey("version");
+			assertThat(parsed.get("p1")).containsKey("version");
+
+			services = ws._findproviders(new String[] {
+				"findproviders", "osgi.service", "(objectClass=*)", "REPOS"
+			});
+			System.out.println(services);
+			parsed = OSGiHeader.parseHeader(services);
+			assertThat(parsed).containsKeys("org.apache.felix.scr", "org.apache.felix.http.jetty")
+				.doesNotContainKey("p1");
+			assertThat(parsed.get("org.apache.felix.scr")).containsKey("version");
+			assertThat(parsed.get("org.apache.felix.http.jetty")).containsKey("version");
+
+			services = ws._findproviders(new String[] {
+				"findproviders", "osgi.service", "(objectClass=*)", "WORKSPACE"
+			});
+			System.out.println(services);
+			parsed = OSGiHeader.parseHeader(services);
+			assertThat(parsed).doesNotContainKeys("org.apache.felix.scr", "org.apache.felix.http.jetty")
+				.containsKey("p1");
+			assertThat(parsed.get("p1")).containsKey("version");
+
+			services = ws._findproviders(new String[] {
+				"findproviders", "osgi.service", "(objectClass=*)", "all"
+			});
+			System.out.println(services);
+			parsed = OSGiHeader.parseHeader(services);
+			assertThat(parsed).containsKeys("org.apache.felix.scr", "org.apache.felix.http.jetty", "p1");
+			assertThat(parsed.get("org.apache.felix.scr")).containsKey("version");
+			assertThat(parsed.get("org.apache.felix.http.jetty")).containsKey("version");
+			assertThat(parsed.get("p1")).containsKey("version");
+
+			services = ws._findproviders(new String[] {
+				"findproviders", "osgi.service", "(objectClass=*)", "repos"
+			});
+			System.out.println(services);
+			parsed = OSGiHeader.parseHeader(services);
+			assertThat(parsed).containsKeys("org.apache.felix.scr", "org.apache.felix.http.jetty")
+				.doesNotContainKey("p1");
+			assertThat(parsed.get("org.apache.felix.scr")).containsKey("version");
+			assertThat(parsed.get("org.apache.felix.http.jetty")).containsKey("version");
+
+			services = ws._findproviders(new String[] {
+				"findproviders", "osgi.service", "(objectClass=*)", "workspace"
+			});
+			System.out.println(services);
+			parsed = OSGiHeader.parseHeader(services);
+			assertThat(parsed).doesNotContainKeys("org.apache.felix.scr", "org.apache.felix.http.jetty")
+				.containsKey("p1");
+			assertThat(parsed.get("p1")).containsKey("version");
+		});
+	}
+
+	@Test
+	public void findprovidersMacroTestWithWrongStrategy() throws Exception {
+
+		test(ws -> {
+			String services = ws._findproviders(new String[] {
+				"findproviders", "osgi.service", "(objectClass=*)", "WRONG"
+			});
+			System.out.println(services);
+			Parameters parsed = OSGiHeader.parseHeader(services);
+			assertThat(parsed).containsKeys("org.apache.felix.scr", "org.apache.felix.http.jetty");
+			assertThat(parsed.get("org.apache.felix.scr")).containsKey("version");
+			assertThat(parsed.get("org.apache.felix.http.jetty")).containsKey("version");
+			assertThat(ws.getErrors()).anyMatch(error -> error.contains("WRONG"));
+		});
+	}
+
+	@Test
+	public void findprovidersWithStrategyAndNoFilterWithRunRequiresTest() throws Exception {
+
+		test(ws -> {
+
+			Project project = ws.getProject("p1");
+			assertThat(project).isNotNull();
+			File[] build = project.build();
+			assertThat(build).isNotNull()
+				.isNotEmpty();
+			assertThat(build[0]).hasName("p1.jar");
+
+			Run run = Run.createRun(ws, null);
+			run.setProperty("my.plugins", "${findproviders;osgi.service;;WORKSPACE}");
+			run.setProperty("-runrequires.extra",
+				"${template; my.plugins;osgi.identity;filter:='(osgi.identity=${@})'}");
+
+			String runrequires = run.mergeProperties("-runrequires");
+			assertThat(run.check()).isTrue();
+
+			assertThat(runrequires).contains("osgi.identity;filter:='(osgi.identity=p1)'");
 
 		});
 	}
