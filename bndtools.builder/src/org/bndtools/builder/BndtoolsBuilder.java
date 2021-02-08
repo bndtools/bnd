@@ -69,6 +69,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 	public static final String		BUILDER_ID	= BndtoolsConstants.BUILDER_ID;
 	private static final ILogger	logger		= Logger.getLogger(BndtoolsBuilder.class);
 	static final Set<Project>		dirty		= Collections.newSetFromMap(new ConcurrentHashMap<Project, Boolean>());
+	static BndPreferences			prefs		= new BndPreferences();
 
 	static {
 		CnfWatcher.install();
@@ -95,7 +96,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
 
 		IProject myProject = getProject();
-		BndPreferences prefs = new BndPreferences();
 		buildLog = new BuildLogger(prefs.getBuildLogging(), myProject.getName(), kind);
 
 		BuildListeners listeners = new BuildListeners();
@@ -454,4 +454,13 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 		return CompileErrorAction.parse(store.getString(CompileErrorAction.PREFERENCE_KEY));
 	}
 
+	/**
+	 * Override the scheduling rule, should make the UI more responsive
+	 */
+	@Override
+	public ISchedulingRule getRule(int kind, Map<String, String> args) {
+		if (prefs.isParallel())
+			return getProject();
+		return super.getRule(kind, args);
+	}
 }

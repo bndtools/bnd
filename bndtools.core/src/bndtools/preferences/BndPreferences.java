@@ -43,6 +43,7 @@ public class BndPreferences {
 	private static final String		PREF_ENABLE_TEMPLATE_REPO		= "enableTemplateRepo";
 	private static final String		PREF_TEMPLATE_REPO_URI_LIST		= "templateRepoUriList";
 	private static final String		PREF_EXPLORER_PROMPT			= "prompt";
+	private static final String		PREF_PARALLEL					= "parallel";
 
 	static final String				PREF_WORKSPACE_OFFLINE			= "workspaceIsOffline";
 
@@ -63,6 +64,7 @@ public class BndPreferences {
 		store.setDefault(PREF_TEMPLATE_REPO_URI_LIST,
 			"https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz");
 		store.setDefault(PREF_WORKSPACE_OFFLINE, false);
+		store.setDefault(PREF_PARALLEL, false);
 		store.setDefault(PREF_USE_ALIAS_REQUIREMENTS, true);
 		store.setDefault(QuickFixVersioning.PREFERENCE_KEY, QuickFixVersioning.DEFAULT.toString());
 		store.setDefault(PREF_EXPLORER_PROMPT, "");
@@ -294,6 +296,15 @@ public class BndPreferences {
 	public Closeable onPrompt(Consumer<String> listener) {
 		return onString(PREF_EXPLORER_PROMPT, listener);
 	}
+
+	public void setParallel(boolean parallel) {
+		store.setValue(PREF_PARALLEL, parallel);
+	}
+
+	public boolean isParallel() {
+		return store.getBoolean(PREF_PARALLEL);
+	}
+
 
 	public Closeable onString(String key, Consumer<String> listener) {
 		IPropertyChangeListener l = e -> {
