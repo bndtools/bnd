@@ -77,7 +77,7 @@ public class EclipseUtil {
 		attribute.addAttribute("value", "true");
 		IO.mkdirs(model.getTestSrc());
 
-		return classpath.toString();
+		return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + classpath.toString();
 	}
 
 	/**
@@ -88,8 +88,8 @@ public class EclipseUtil {
 	public static void createClasspath(Project model) throws Exception {
 		String classpath = getClasspath(model);
 		File classpathFile = model.getFile(".classpath");
-		String a = IO.collect(classpathFile);
-		String b = classpath.toString();
+		String a = classpath.toString();
+		String b = classpathFile.isFile() ? IO.collect(classpathFile) : "<>";
 		if (!a.equals(b)) {
 			IO.store(classpath.toString(), classpathFile);
 		}
@@ -101,5 +101,52 @@ public class EclipseUtil {
 			.toURI();
 		return base.relativize(target)
 			.toString();
+	}
+
+	/**
+	 * Fix the source & test directories if they are empty
+	 *
+	 * @param model the project
+	 */
+	public static void fixDirectories(Project model) throws Exception {
+		for (File s : model.getSourcePath()) {
+			IO.mkdirs(s);
+		}
+		IO.mkdirs(model.getTestSrc());
+	}
+
+	/**
+	 * Create a classpath for the project, overwriting an existing classpath
+	 *
+	 * @param model the project
+	 */
+	public static void createProject(Project model) throws Exception {
+		String project = getProjectDescription(model);
+		File projectFile = model.getFile(".project");
+		String a = project.toString();
+		String b = projectFile.isFile() ? IO.collect(projectFile) : "<>";
+		if (!a.equals(b)) {
+			IO.store(project, projectFile);
+		}
+	}
+	public static String getProjectDescription(Project model) {
+		Tag projectDescription = new Tag("projectDescription");
+		new Tag(projectDescription, "name", model.getName());
+		new Tag(projectDescription, "comment", "automatically created on import");
+		new Tag(projectDescription, "projects");
+		Tag buildSpec = new Tag(projectDescription, "buildSpec");
+		buildCommand(buildSpec, "org.eclipse.jdt.core.javabuilder");
+		buildCommand(buildSpec, "bndtools.core.bndbuilder");
+		Tag natures = new Tag(projectDescription, "natures");
+		new Tag(natures, "nature", "org.eclipse.jdt.core.javanature");
+		new Tag(natures, "nature", "bndtools.core.bndnature");
+		return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + projectDescription.toString();
+
+	}
+
+	private static void buildCommand(Tag buildSpec, String string) {
+		Tag buildCommand = new Tag(buildSpec, "buildCommand");
+		new Tag(buildCommand, "name", string);
+		new Tag(buildCommand, "arguments");
 	}
 }
