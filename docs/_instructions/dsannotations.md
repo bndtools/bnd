@@ -11,6 +11,6 @@ The value of this instruction is a comma delimited list of fully qualified class
 
 The default value of this instruction is `*`, which means that by default **bnd** will process all bundle classes looking for DS annotations.
 
-The behavior of DS annotation processing can be further configured using the [-dsannotations-options](./dsannotations-options.md) instruction.
+The behavior of DS annotation processing can be further configured using the [-dsannotations-options](dsannotations-options.html) instruction.
 
 [source](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/component/DSAnnotations.java)
