@@ -40,7 +40,7 @@ To make the Bnd Builder Gradle Plugin available to your build, use the following
 ```groovy
 pluginManagement {
   plugins {
-    id 'biz.aQute.bnd.builder' version '5.3.0'
+    id 'biz.aQute.bnd.builder' version '5.4.0'
   }
 }
 ```
@@ -584,7 +584,7 @@ approach is to edit `settings.gradle` as follows:
 
 ```groovy
 plugins {
-  id 'biz.aQute.bnd.workspace' version '5.3.0'
+  id 'biz.aQute.bnd.workspace' version '5.4.0'
 }
 ```
 The Gradle marker plugins for the Bnd Gradle plugins are also in Maven Central. So you may use Maven Central as a `pluginManagement` repository.
@@ -612,7 +612,7 @@ include to be computed, is to put the `plugins` block in the root project's `bui
 
 ```groovy
 plugins {
-  id 'biz.aQute.bnd.workspace' version '5.3.0'
+  id 'biz.aQute.bnd.workspace' version '5.4.0'
 }
 ```
 
