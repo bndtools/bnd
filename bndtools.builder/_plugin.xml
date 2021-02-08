@@ -26,8 +26,9 @@
 		id="bndtools.core.bndbuilder"
 		name="Bndtools Builder"
 		>
-		<builder callOnEmptyDelta="true" hasNature="true">
+		<builder callOnEmptyDelta="false" hasNature="true">
 			<run class="org.bndtools.builder.BndtoolsBuilder" />
+            <dynamicReference class="org.bndtools.builder.BndtoolsDynamicReferenceProvider"  />
 		</builder>
 	</extension>
 
