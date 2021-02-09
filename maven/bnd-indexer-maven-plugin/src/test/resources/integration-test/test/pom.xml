@@ -7,6 +7,11 @@
 	<version>0.0.1</version>
 	<packaging>pom</packaging>
 
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+
 	<modules>
 		<module>non-transitive</module>
 		<module>transitive</module>
