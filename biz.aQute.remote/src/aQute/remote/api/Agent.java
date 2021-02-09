@@ -217,6 +217,25 @@ public interface Agent {
 	Map<String, String> getSystemProperties() throws Exception;
 
 	/**
+	 * Set a remote System property
+	 *
+	 * @param key the name of the system property.
+	 * @param value the value of the system property.
+	 * @return the previous value of the system property, or <code>null</code>
+	 *         if it did not have one.
+	 */
+	String setSystemProperty(String key, String value);
+
+	/**
+	 * Removes the system property indicated by the specified key.
+	 *
+	 * @param key the name of the system property to be removed.
+	 * @return the previous string value of the system property, or
+	 *         <code>null</code> if there was no property with that key.
+	 */
+	String clearProperty(String key);
+
+	/**
 	 * This method is only implemented in the Envoy (the pre-Agent). It is meant
 	 * to install a -runpath before the framework runs. An Envoy can actally
 	 * created multiple independent frameworks. If this framework already

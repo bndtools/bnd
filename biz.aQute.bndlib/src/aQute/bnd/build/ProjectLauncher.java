@@ -16,6 +16,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -61,6 +62,7 @@ public abstract class ProjectLauncher extends Processor {
 
 	final static Logger					logger				= LoggerFactory.getLogger(ProjectLauncher.class);
 	private final Project				project;
+	private final List<Runnable>		onPrepare			= new ArrayList<>();
 	private final List<Runnable>		onUpdate			= new ArrayList<>();
 	private long						timeout				= 0;
 	private final List<String>			classpath			= new ArrayList<>();
@@ -172,8 +174,8 @@ public abstract class ProjectLauncher extends Processor {
 			getProject());
 		framework = getRunframework(getProject().getProperty(Constants.RUNFRAMEWORK));
 
-		timeout = Processor.getDuration(getProject().getProperty(Constants.RUNTIMEOUT), 0);
-		trace = getProject().isRunTrace();
+		timeout = Processor.getDuration(getProject().getProperty(Constants.RUNTIMEOUT), timeout);
+		trace = trace ? trace : getProject().isRunTrace();
 
 		runpath.addAll(getProject().getRunFw());
 
@@ -183,12 +185,22 @@ public abstract class ProjectLauncher extends Processor {
 
 		runvm.addAll(getProject().getRunVM());
 		runprogramargs.addAll(getProject().getRunProgramArgs());
-		runproperties = getProject().getRunProperties();
-		runframeworkrestart = isTrue(getProject().getProperty(Constants.RUNFRAMEWORKRESTART));
-		storageDir = getProject().getRunStorage();
+		if (runproperties == null) {
+			runproperties = getProject().getRunProperties();
+		} else {
+			runproperties.putAll(getProject().getRunProperties());
+		}
+		runframeworkrestart = runframeworkrestart ? runframeworkrestart
+			: isTrue(getProject().getProperty(Constants.RUNFRAMEWORKRESTART));
+		storageDir = Optional.ofNullable(getProject().getRunStorage())
+			.orElse(storageDir);
 
-		setKeep(getProject().getRunKeep());
+		setKeep(keep ? keep : getProject().getRunKeep());
 		calculatedProperties(runproperties);
+
+		for (Runnable update : onUpdate) {
+			update.run();
+		}
 	}
 
 	private int getRunframework(String property) {
@@ -205,7 +217,7 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	protected void addClasspath(Container container, List<String> pathlist) throws Exception {
-		if (container.getError() != null) {
+		if (!container.isOk()) {
 			getProject().error("Cannot launch because %s has reported %s", container.getProject(),
 				container.getError());
 		} else {
@@ -253,6 +265,49 @@ public abstract class ProjectLauncher extends Processor {
 	protected void addClasspath(Collection<Container> path) throws Exception {
 		for (Container c : Container.flatten(path)) {
 			addClasspath(c);
+		}
+	}
+
+	protected void removeClasspath(Container container, List<String> pathlist) throws Exception {
+		if (container.isOk()) {
+			Collection<Container> members = container.getMembers();
+			for (Container m : members) {
+				String path = IO.absolutePath(m.getFile());
+				if (pathlist.contains(path)) {
+					pathlist.remove(path);
+				}
+				Manifest manifest = m.getManifest();
+				if (manifest != null) {
+					// We are looking for any agents, used if
+					// -javaagent=true is set
+					String agentClassName = manifest.getMainAttributes()
+						.getValue("Premain-Class");
+					if (agentClassName != null) {
+						String agent = path;
+						if (container.getAttributes()
+							.get("agent") != null) {
+							agent += "=" + container.getAttributes()
+								.get("agent");
+						}
+						agents.remove(agent);
+					}
+
+					Parameters exports = getProject().parseHeader(manifest.getMainAttributes()
+						.getValue(Constants.EXPORT_PACKAGE));
+					for (Entry<String, Attrs> e : exports.entrySet()) {
+						if (!runsystempackages.containsKey(e.getKey()))
+							runsystempackages.remove(e.getKey(), e.getValue());
+					}
+
+					// Allow activators on the runpath. They are called
+					// after the framework is completely initialized
+					// with the system context.
+					String activator = manifest.getMainAttributes()
+						.getValue(EMBEDDED_ACTIVATOR);
+					if (activator != null)
+						activators.remove(activator);
+				}
+			}
 		}
 	}
 
@@ -309,9 +364,11 @@ public abstract class ProjectLauncher extends Processor {
 	public void update() throws Exception {
 		getProject().refresh();
 		updateFromProject();
-		for (Runnable update : onUpdate) {
-			update.run();
-		}
+		prepare();
+	}
+
+	public void onPrepare(Runnable prepare) {
+		onPrepare.add(prepare);
 	}
 
 	public void onUpdate(Runnable update) {
@@ -324,6 +381,7 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	public int launch() throws Exception {
+		updateFromProject();
 		prepare();
 		java = new Command();
 
@@ -518,7 +576,9 @@ public abstract class ProjectLauncher extends Processor {
 	 * @throws Exception
 	 */
 	public void prepare() throws Exception {
-		// noop
+		for (Runnable prepare : onPrepare) {
+			prepare.run();
+		}
 	}
 
 	public Project getProject() {

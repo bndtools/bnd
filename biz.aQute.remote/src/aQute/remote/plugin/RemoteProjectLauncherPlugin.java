@@ -93,8 +93,6 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 		prepared = true;
 		super.prepare();
 
-		updateFromProject();
-
 		Map<String, String> properties = new HashMap<>(getRunProperties());
 
 		calculatedProperties(properties);
@@ -129,6 +127,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	 */
 	@Override
 	public int launch() throws Exception {
+		updateFromProject();
 		prepare();
 
 		final int[] results = new int[sessions.size()];
@@ -143,6 +142,9 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 				public void run() {
 					try {
 						results[j] = session.launch();
+						if (results[j] > 0) {
+							getProject().error("Errors have occured, see log for details");
+						}
 					} catch (Exception e) {
 						//
 					}

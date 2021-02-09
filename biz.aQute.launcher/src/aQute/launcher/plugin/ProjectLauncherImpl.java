@@ -103,6 +103,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		if (!pre.isFile()) {
 			if (preTemp != null) {
+				removeClasspath(new Container(getProject(), preTemp), launcherpath);
 				IO.delete(preTemp);
 			}
 			preTemp = pre = File.createTempFile("pre", ".jar");
@@ -194,7 +195,6 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	@Override
 	public int launch() throws Exception {
-		prepare();
 		return super.launch();
 	}
 

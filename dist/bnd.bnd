@@ -30,6 +30,7 @@
             biz.aQute.tester, \
             biz.aQute.tester.junit-platform, \
             biz.aQute.tester.test, \
+            biz.aQute.tester.test.remote,\
             bndtools.api, \
             bndtools.builder, \
             bndtools.core, \
