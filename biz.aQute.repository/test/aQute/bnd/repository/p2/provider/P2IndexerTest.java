@@ -66,7 +66,7 @@ public class P2IndexerTest extends TestCase {
 			client.setCache(IO.getFile(tmp, "cache"));
 
 			try (P2Indexer p2 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class), tmp, client,
-				new URI("https://bndtools.jfrog.io/bndtools/update-snapshot"), getName())) {
+				new URI("https://bndtools.jfrog.io/bndtools/bnd-test-p2"), getName())) {
 				List<String> bsns = p2.list(null);
 				System.out.println(bsns);
 				assertThat(bsns).contains("org.bndtools.templating.gitrepo", "org.bndtools.headless.build.manager",
@@ -175,7 +175,7 @@ public class P2IndexerTest extends TestCase {
 			client.setCache(IO.getFile(tmp, "cache"));
 
 			try (P2Indexer p2 = new P2Indexer(new Unpack200(), new Slf4jReporter(P2IndexerTest.class), tmp, client,
-				new URI("https://bndtools.jfrog.io/bndtools/update-snapshot"), getName())) {
+				new URI("https://bndtools.jfrog.io/bndtools/bnd-test-p2"), getName())) {
 
 				assertThat(p2.versions("bndtools.core")).hasSize(1);
 
