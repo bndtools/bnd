@@ -18,7 +18,12 @@ on:
 
 env:
   LC_ALL: en_US.UTF-8
-  GRADLE_OPTS: -Dorg.gradle.parallel=true
+  GRADLE_OPTS: >-
+    -Dorg.gradle.parallel=true
+  MAVEN_OPTS: >-
+    -Dhttp.keepAlive=false
+    -Dmaven.wagon.http.pool=false
+    -Dmaven.wagon.http.retryHandler.count=3
   BNDTOOLS_CORE_TEST_NOJUNITOSGI: true
 
 defaults:
