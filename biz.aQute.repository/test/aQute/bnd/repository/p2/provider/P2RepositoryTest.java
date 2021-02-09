@@ -52,7 +52,7 @@ public class P2RepositoryTest {
 			p2r.setRegistry(w);
 
 			Map<String, String> config = new HashMap<>();
-			config.put("url", "https://bndtools.jfrog.io/bndtools/update-snapshot");
+			config.put("url", "https://bndtools.jfrog.io/bndtools/bnd-test-p2");
 			config.put("name", "test");
 			p2r.setProperties(config);
 
