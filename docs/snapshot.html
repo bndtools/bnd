@@ -4,7 +4,7 @@
 <head>
     <title>OSGi bnd Snapshot Viewer</title>
     <script src="https://unpkg.com/vue"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.1/css/bulma.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP"
         crossorigin="anonymous">
 
@@ -28,11 +28,82 @@
 </head>
 
 <body>
+
+    <section class="hero">
+        <div class="hero-body">
+            <p class="title">
+            bnd Snapshot Viewer
+            </p>
+            <p class="subtitle">
+            Diagnose potential issues in your OSGI framework (bundle,packages,services), the SCR info, configuration, log, and custom extensions.
+            </p>
+        </div>
+    </section>
+
+
     <section class="section" id="app" style="max-width: 1200px;font-size:smaller">
+        
+        <div class="container content">
 
-        <div class="container">
+           
 
-            <input class="box" type="file" @change="handleFileSelect">
+            <div class="columns">
+                <div class="column is-half">
+                    <h2 class="subtitle">About</h2>    
+
+                    <p>The Snapshot Viewer can take a JSON-File which was created using the <a href="https://search.maven.org/artifact/biz.aQute.bnd/biz.aQute.bnd.runtime.snapshot">bnd Snapshot Bundle</a> (<a href="https://github.com/bndtools/bnd/tree/master/biz.aQute.bnd.runtime/src/aQute/bnd/runtime/snapshot">Github</a>). 
+                    It will create a snapshot of the framework when
+                    the framework stops (<code>stop 0</code>) or with a gogo command <code>bnd:snapshot</code> to make an arbitrary snapshot. 
+                    <p>The snapshot can be used to get an extensive overview of the state of the framework. It captures the framework (bundle,packages,services), the SCR info, configuration, log, and custom extensions.
+                    An html file is provided to view the snapshot, which is this page you are looking at.</p>
+                    
+                </div>
+                <div class="column is-half">
+                  
+                    <h2>Example</h2>
+                <p>
+                    Run <code>bnd:snapshot</code> in your OSGI console to create the Snapshot JSON file.
+                </p>
+                
+
+                
+
+<pre><code>osgi&gt; bnd:snapshot
+Name                 snapshot-<span class="hljs-number">20210210213618</span><span class="hljs-selector-class">.json</span>
+Parent               null
+CanonicalPath        /mybndworkspace/plugins/com.myappbundle/snapshot-<span class="hljs-number">20210210213618</span><span class="hljs-selector-class">.json</span>
+ParentFile           null
+Path                 snapshot-<span class="hljs-number">20210210213618</span><span class="hljs-selector-class">.json</span>
+AbsolutePath         /mybndworkspace/plugins/plugins/com.myappbundle/snapshot-<span class="hljs-number">20210210213618</span><span class="hljs-selector-class">.json</span>
+AbsoluteFile         /mybndworkspace/plugins/plugins/com.myappbundle/snapshot-<span class="hljs-number">20210210213618</span><span class="hljs-selector-class">.json</span>
+CanonicalFile        /mybndworkspace/plugins/plugins/com.myappbundle/snapshot-<span class="hljs-number">20210210213618</span><span class="hljs-selector-class">.json</span>
+TotalSpace           <span class="hljs-number">1000240963584</span>
+FreeSpace            <span class="hljs-number">726219440128</span>
+UsableSpace          <span class="hljs-number">705586077696</span>
+</code></pre>
+                
+                <p>
+                    Take this .json file, open <a href="https://bnd.bndtools.org/snapshot.html">this page</a> in your browser and upload the file.
+                </p>
+
+                </div>
+                
+              </div>
+            
+            
+
+            
+                
+        <h2 class="subtitle">Upload the JSON file</h2>    
+        <input class="box" type="file" @change="handleFileSelect">
+        
+        <div class="notification is-info is-light">
+            <b>Privacy hint:</b> Don&#39;t worry. The Snapshot Viewer does <em>NOT</em> upload anything to our server. 
+            It fully works in your browser. The data is processed only locally on your computer.
+        </div>
+
+        
+            
 
             <div class="tabs">
                 <ul>
@@ -926,7 +997,8 @@
                 instances: null,
                 tref: null,
                 active: 'bundles',
-                hideNoImporters: true
+                hideNoImporters: true,
+                showExample: false
             },
             methods: {
                 handleFileSelect: function (evt) {
