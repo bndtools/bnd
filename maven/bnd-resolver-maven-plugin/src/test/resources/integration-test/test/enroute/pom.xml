@@ -19,90 +19,90 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
-				    <execution>
-                        <id>get-enroute-sources</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.osgi.enroute.examples.quickstart</groupId>
-                                    <artifactId>app</artifactId>
-                                    <version>0.0.1</version>
-                                    <type>jar</type>
-                                    <classifier>sources</classifier>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-				    <execution>
-                        <id>get-enroute-pom</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.osgi.enroute.examples.quickstart</groupId>
-                                    <artifactId>app</artifactId>
-                                    <version>0.0.1</version>
-                                    <type>pom</type>
-                                    <destFileName>pom.xml</destFileName>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
+					<execution>
+						<id>get-enroute-sources</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.osgi.enroute.examples.quickstart</groupId>
+									<artifactId>app</artifactId>
+									<version>0.0.1</version>
+									<type>jar</type>
+									<classifier>sources</classifier>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+					<execution>
+						<id>get-enroute-pom</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.osgi.enroute.examples.quickstart</groupId>
+									<artifactId>app</artifactId>
+									<version>0.0.1</version>
+									<type>pom</type>
+									<destFileName>pom.xml</destFileName>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<!-- The sources are missing the bndrun files... -->
 			<plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
-				    <execution>
-                        <id>copy-bndruns</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/dependency/</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.basedir}</directory>
-                                    <includes>
-                                        <include>app.bndrun</include>
-                                        <include>debug.bndrun</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
+					<execution>
+						<id>copy-bndruns</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dependency/</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.basedir}</directory>
+									<includes>
+										<include>app.bndrun</include>
+										<include>debug.bndrun</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-invoker-plugin</artifactId>
 				<executions>
-				    <execution>
-                        <id>build-and-resolve</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <pom>${project.build.directory}/dependency/pom.xml</pom>
-                            <goals>
-                                <goal>bnd-indexer:index@index</goal>
-                                <goal>bnd-indexer:index@test-index</goal>
-                                <goal>biz.aQute.bnd:bnd-resolver-maven-plugin:@project.version@:resolve</goal>
-                            </goals>
-                            
-                        </configuration>
-                    </execution>
+					<execution>
+						<id>build-and-resolve</id>
+						<phase>package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<pom>${project.build.directory}/dependency/pom.xml</pom>
+							<goals>
+								<goal>bnd-indexer:index@index</goal>
+								<goal>bnd-indexer:index@test-index</goal>
+								<goal>biz.aQute.bnd:bnd-resolver-maven-plugin:@project.version@:resolve</goal>
+							</goals>
+
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>
