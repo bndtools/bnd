@@ -670,6 +670,38 @@ public class MavenBndRepoTest {
 	}
 
 	@Test
+	public void testPutLocalSnapshotJavadocReleaseMergedProps() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", null);
+		map.put("snapshotUrl", null);
+		config(map);
+
+		try (Processor context = new Processor();) {
+			context.setProperty("-maven-release", "local");
+			context.setProperty("-maven-release.javadoc", "javadoc;force=true");
+			PutOptions put = new PutOptions();
+			put.context = context;
+
+			File jar = IO.getFile("testresources/snapshot.jar");
+			PutResult r = repo.put(new FileInputStream(jar), put);
+
+			assertIsFile(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.jar", 0);
+			assertIsFile(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.pom", 0);
+			assertFileNotExists(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT-sources.jar");
+			assertIsFile(local,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT-javadoc.jar", 0);
+			assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata-local.xml", 0);
+
+			String s = IO.collect(index);
+			// snapshots added to index
+			assertThat(s).contains("biz.aQute.bnd.maven");
+		}
+	}
+
+	@Test
 	public void testPutLocalSnapshotJavadocRelease() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("releaseUrl", null);

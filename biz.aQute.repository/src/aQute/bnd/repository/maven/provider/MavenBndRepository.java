@@ -383,7 +383,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		if (context == null)
 			return release;
 
-		Parameters p = new Parameters(context.getProperty(Constants.MAVEN_RELEASE), reporter);
+		Parameters p = new Parameters(context.mergeProperties(Constants.MAVEN_RELEASE), reporter);
 
 		release.type = storage.isLocalOnly() ? ReleaseType.LOCAL : ReleaseType.REMOTE;
 
