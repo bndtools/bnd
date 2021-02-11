@@ -286,9 +286,9 @@ However, often you find that even on its own it does not resolve. In most case t
 
 It is still a mystery, try checking the `Run Blacklist` list. If it is not there, it might be time to raise a bug.
 
-## Snapshot Viewer
+## OSGi bnd Snapshot Viewer
 
-Another tool for diagnosing potential issues in your OSGI framework (bundle, packages, services), the SCR info, configuration, log, and custom extensions is the [bnd Snapshot Viewer](https://bnd.bndtools.org/snapshot.html).
+Another tool for diagnosing potential issues in your OSGI framework (bundle, packages, services), the SCR info, configuration, log, and custom extensions is the [OSGi bnd Snapshot Viewer](https://bnd.bndtools.org/snapshot.html).
 
 
 ## The Source View
