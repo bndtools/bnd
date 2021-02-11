@@ -286,6 +286,11 @@ However, often you find that even on its own it does not resolve. In most case t
 
 It is still a mystery, try checking the `Run Blacklist` list. If it is not there, it might be time to raise a bug.
 
+## Snapshot Viewer
+
+Another tool for diagnosing potential issues in your OSGI framework (bundle, packages, services), the SCR info, configuration, log, and custom extensions is the [bnd Snapshot Viewer](https://bnd.bndtools.org/snapshot.html).
+
+
 ## The Source View
 
 So far this App Note only visited the _graphic user interface_ (GUI). However, bnd always keeps all information in simple properties files that can also edited as text. In the Run editor (that edits `bndrun` files) you can also select the `Source` view. Not all features of a `bndrun` file can be manipulated through the GUI. This section therefore shows what is in the source and it can be manipulated.
