@@ -19,11 +19,11 @@ collections:
   instructions:
     output: true
 
-## The release name. Must be equal to the version or `master`.
-releasename: master
+## The release name. Must be equal to the version or `main`.
+releasename: main
 
 ## Uncomment and set this property when generating release docs.
-## Make sure to leave this unset in the `master` branch.
+## Make sure to leave this unset in the `main` branch.
 #baseurl: /releases/<releasename>
 
 defaults:

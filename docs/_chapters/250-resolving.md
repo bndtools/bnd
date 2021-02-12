@@ -317,7 +317,7 @@ Therefore, another method is to use the _augments_ that the bnd repositories sup
 There are two different ways to add the augments. 
 
 * **Bndrun file** – Provide the augments in the `bndrun` file. This is an ad-hoc mechanism that is normally a last resort. For non-standalone bndrun files you can also add augments in the `cnf/ext` directory since any bnd file in there will add its properties to the bndrun file. It is of course also possible to include file in any `bnd`/`bndrun` file.
-* **Resource** – Provide a resource in a repository that contains an `bnd.augment` capability. Such a resource has a file with properties that describe the augment for that repository. This is a good way when you have to curate a repository and need to fixup some legacy bundles. This resource can also add to the blacklist. See the [OSGi enRout distro](https://github.com/osgi/osgi.enroute/tree/master/osgi.enroute.pom.distro) for an example.
+* **Resource** – Provide a resource in a repository that contains an `bnd.augment` capability. Such a resource has a file with properties that describe the augment for that repository. This is a good way when you have to curate a repository and need to fixup some legacy bundles. This resource can also add to the blacklist. See the [OSGi enRoute distro](https://github.com/osgi/v2archive.osgi.enroute/tree/master/osgi.enroute.pom.distro) for an example.
 
 In both cases the augments are described using the standard OSGi/bnd syntax. The syntax is not a beauty since it stretches what you can do with the OSGi header format. However, augmenting should really be a last resort so maybe it is not really bad that the syntax is cumbersome.
 
@@ -351,7 +351,7 @@ The `capability:` and `requirement:` directives follow all the rules of the Prov
 
 A workspace setup with bnd will generally provide a good start. However, when you need to grandfather in a lot of bundles from Maven Central then it is likely that you will need to spend some time to augment these bundles. This can be a depressing task since you'll find out how messy the world is. However, experience shows that once the repository is resolvable, maintaining it has very little overhead. Better, it tends to signal probems very early in the development process.
 
-A good example of a curated repository is the [OSGi enRoute Distro](https://github.com/osgi/osgi.enroute/blob/master/osgi.enroute.pom.distro/augments.bndrun). If you're responsible for a repository it might help to take a good look at the `augments.bndrun` file.
+A good example of a curated repository is the [OSGi enRoute Distro](https://github.com/osgi/v2archive.osgi.enroute/blob/master/osgi.enroute.pom.distro/augments.bndrun). If you're responsible for a repository it might help to take a good look at the `augments.bndrun` file.
 
 There are a number of (rudimentary) functions in the command line version of bnd that might be useful. Unfortunately, the commands currently assume an OSGi repository.
 

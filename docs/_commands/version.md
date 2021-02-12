@@ -16,7 +16,7 @@ summary: Show version information about bnd
 
 ## Examples
 
-	biz.aQute.bnd (master)$ bnd version -x
+	biz.aQute.bnd (main)$ bnd version -x
 	Version                                  2.4.0.201407091507
 	From                                     Wed Jul 09 17:07:14 CEST 2014
 	License                                  Apache License, Version 2.0
@@ -24,5 +24,5 @@ summary: Show version information about bnd
 	Git-SHA                                  c1ad07dfeb4704ce590bd93c1405d7bfe8bef131
 	Git-Descriptor                           2.4.0.M1-66-gc1ad07d-dirty
 	Sources                                  git://github.com/bndtools/bnd.git
-	biz.aQute.bnd (master)$ 
+	biz.aQute.bnd (main)$ 
    

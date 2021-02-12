@@ -21,7 +21,7 @@ pulls:
   closeComment: >
     This pull request has been automatically closed due to inactivity.
     If you are still interested in contributing this, please ensure that
-    it is rebased against the latest `master` branch, all review
+    it is rebased against the latest `main` branch, all review
     comments have been addressed and the build is passing.
 
 issues:
@@ -38,7 +38,7 @@ issues:
     Given the limited bandwidth of the team, it will be automatically closed if no further
     activity occurs.
     If you feel this is something you could contribute, please have a look
-    at our [Contributor Guide](https://github.com/bndtools/bnd/blob/master/CONTRIBUTING.md).
+    at our [Contributor Guide](https://github.com/bndtools/bnd/blob/main/CONTRIBUTING.md).
     Thank you for your contribution.
 
   # Comment to post when closing a stale Issue.

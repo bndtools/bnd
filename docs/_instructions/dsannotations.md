@@ -13,4 +13,4 @@ The default value of this instruction is `*`, which means that by default **bnd*
 
 The behavior of DS annotation processing can be further configured using the [-dsannotations-options](dsannotations-options.html) instruction.
 
-[source](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/component/DSAnnotations.java)
+[source](https://github.com/bndtools/bnd/blob/main/biz.aQute.bndlib/src/aQute/bnd/component/DSAnnotations.java)

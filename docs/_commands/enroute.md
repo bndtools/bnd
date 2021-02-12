@@ -26,7 +26,7 @@ summary:  enRoute commands
 
 ## Examples
 
-    biz.aQute.bnd (master)$ bnd enroute help
+    biz.aQute.bnd (main)$ bnd enroute help
 
     OSGi enRoute Commands
 
@@ -34,7 +34,7 @@ summary:  enRoute commands
 
       workspace                   -  
 
-    biz.aQute.bnd (master)$ bnd enroute help workspace
+    biz.aQute.bnd (main)$ bnd enroute help workspace
 
     NAME
       workspace                   - Create a workspace in the base directory

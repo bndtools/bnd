@@ -27,7 +27,7 @@ summary: Helps finding information in a set of JARs by filtering on manifest dat
 
 ## Examples
 
-    biz.aQute.bnd (master)$ bnd select -h name generated/*.jar
+    biz.aQute.bnd (main)$ bnd select -h name generated/*.jar
     biz.aQute.bnd.jar
-    biz.aQute.bnd (master)$ bnd select -h size generated/*.jar
+    biz.aQute.bnd (main)$ bnd select -h size generated/*.jar
     2604654

@@ -34,7 +34,7 @@ summary: Provides detailed view of the bundle. It will analyze the bundle and th
 
 ## Examples
 
-    biz.aQute.bnd (master)$ bnd print generated/biz.aQute.bnd.jar 
+    biz.aQute.bnd (main)$ bnd print generated/biz.aQute.bnd.jar 
     [MANIFEST biz.aQute.bnd]
     Bnd-LastModified                         1404918434023                           
     Bundle-Copyright                         Copyright (c) aQute (2000, 2014). All Rights Reserved.

@@ -16,7 +16,7 @@ summary: Execute a Project action, or if no parms given, show information about 
 
 ## Examples
 
-	biz.aQute.bnd (master)$ bnd project
+	biz.aQute.bnd (main)$ bnd project
 	Name         biz.aQute.bnd
 	Actions      [build, test, run, clean, release, refresh, deploy]
 	Directory    /Ws/bnd/biz.aQute.bnd

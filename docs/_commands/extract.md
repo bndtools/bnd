@@ -18,4 +18,4 @@ summary:  Extract files from a JAR file, equivalent jar command x[vf] (syntax su
 
 ## Examples
 
-    biz.aQute.bnd (master)$ bnd extract -c generated/tmp generated/biz.aQute.bnd.jar 
+    biz.aQute.bnd (main)$ bnd extract -c generated/tmp generated/biz.aQute.bnd.jar 

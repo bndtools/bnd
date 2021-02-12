@@ -11,4 +11,4 @@ The value of this instruction is a comma delimited list of fully qualified class
 
 The default value of this instruction is `*`, which means that by default **bnd** will process all bundle classes looking for Bundle annotations.
 
-[source](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/osgi/AnnotationHeaders.java)
+[source](https://github.com/bndtools/bnd/blob/main/biz.aQute.bndlib/src/aQute/bnd/osgi/AnnotationHeaders.java)

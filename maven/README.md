@@ -4,7 +4,7 @@ The Maven Plugins require at least Maven 3.1.1. This is because bndlib uses SLF4
 
 This README, and the READMEs in the individual Bnd Maven Plugin folders,
 represent the capabilities and features of the Bnd Maven Plugins in
-the branch containing the READMEs. So for the `master` branch, this will be
+the branch containing the READMEs. So for the `main` branch, this will be
 the [latest development SNAPSHOT build](#using-the-latest-development-snapshot-build-of-the-bnd-maven-plugins).
 See the appropriate Git tag for the README for the
 Bnd Maven Plugin version you are using.

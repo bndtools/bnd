@@ -17,7 +17,7 @@ summary:  Go through the exports and/or imports and match the given exports/impo
 
 ## Examples
 
-    biz.aQute.bnd (master)$ bnd find -e *service* generated/*.jar
+    biz.aQute.bnd (main)$ bnd find -e *service* generated/*.jar
     >/Ws/bnd/biz.aQute.bnd/generated/biz.aQute.bnd.jar: aQute.bnd.service-4.1.0
     >/Ws/bnd/biz.aQute.bnd/generated/biz.aQute.bnd.jar: aQute.bnd.service.action-2.0.0
     >/Ws/bnd/biz.aQute.bnd/generated/biz.aQute.bnd.jar: aQute.bnd.service.classparser-1.0

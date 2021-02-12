@@ -51,7 +51,7 @@ public class ImportResourcePluginTest {
 
 		final Map<String, String> prop = new HashMap<>();
 		prop.put(ImportResourcePlugin.URL_PROPERTY,
-			"https://raw.githubusercontent.com/bndtools/bnd/master/cnf/build.bnd");
+			"https://raw.githubusercontent.com/bndtools/bnd/main/cnf/build.bnd");
 		prop.put(ImportResourcePlugin.TYPE_PROPERTY, "properties");
 		plugin.setProperties(prop);
 

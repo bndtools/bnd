@@ -14,7 +14,7 @@ at least Gradle 6.3 for Java 14,
 and at least Gradle 6.7 for Java 15.
 
 This README represents the capabilities and features of the Bnd Gradle Plugins in
-the branch containing this README. So for the `master` branch, this will be
+the branch containing this README. So for the `main` branch, this will be
 the [latest development SNAPSHOT build](#using-the-latest-development-snapshot-build-of-the-bnd-gradle-plugins). See the appropriate Git tag for the README for the
 Bnd Gradle Plugin version you are using.
 
@@ -801,7 +801,7 @@ For full details on what the Bnd Gradle Plugins do, check out the
 [source code][10].
 
 [1]: https://gradle.org/
-[2]: https://github.com/bndtools/bnd/tree/master/biz.aQute.bnd.gradle
+[2]: https://github.com/bndtools/bnd/tree/main/biz.aQute.bnd.gradle
 [3]: https://gradle.org/docs/current/userguide/java_plugin.html
 [4]: https://bnd.bndtools.org/instructions/buildpath.html
 [5]: https://bnd.bndtools.org/instructions/testpath.html
@@ -810,9 +810,9 @@ For full details on what the Bnd Gradle Plugins do, check out the
 [8]: ../biz.aQute.bndlib/src/aQute/bnd/build/Workspace.java
 [9]: ../biz.aQute.bndlib/src/aQute/bnd/build/Project.java
 [10]: src/aQute/bnd/gradle
-[11]: https://github.com/bndtools/bnd/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/filter/root/gradle.properties
-[12]: https://github.com/bndtools/bnd/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/unprocessed/root/settings.gradle
-[13]: https://github.com/bndtools/bnd/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/unprocessed/root/build.gradle
+[11]: https://github.com/bndtools/bnd/blob/main/org.bndtools.headless.build.plugin.gradle/resources/templates/filter/root/gradle.properties
+[12]: https://github.com/bndtools/bnd/blob/main/org.bndtools.headless.build.plugin.gradle/resources/templates/unprocessed/root/settings.gradle
+[13]: https://github.com/bndtools/bnd/blob/main/org.bndtools.headless.build.plugin.gradle/resources/templates/unprocessed/root/build.gradle
 [15]: src/aQute/bnd/gradle/BndPluginConvention.groovy
 [16]: src/aQute/bnd/gradle/BndProperties.groovy
 [18]: https://docs.gradle.org/current/dsl/org.gradle.api.tasks.bundling.Jar.html

@@ -44,4 +44,4 @@ Each glob may specify the `noservicerequirements` attribute which indicates that
 -cdiannotations: *;noservicerequirements=true
 ```
 
-[source](https://github.com/bndtools/bnd/blob/master/biz.aQute.bndlib/src/aQute/bnd/cdi/CDIAnnotations.java)
+[source](https://github.com/bndtools/bnd/blob/main/biz.aQute.bndlib/src/aQute/bnd/cdi/CDIAnnotations.java)

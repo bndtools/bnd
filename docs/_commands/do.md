@@ -18,7 +18,7 @@ summary: Execute a file based on its extension. Supported extensions are bnd (bu
 
 ## Examples
 
-	biz.aQute.bnd (master)$ bnd do generated/biz.aQute.bnd.jar 
+	biz.aQute.bnd (main)$ bnd do generated/biz.aQute.bnd.jar 
 	[MANIFEST biz.aQute.bnd]
 	Bnd-LastModified                         1404915822703                           
 	Bundle-Copyright                         Copyright (c) aQute (2000, 2014). All Rights Reserved.

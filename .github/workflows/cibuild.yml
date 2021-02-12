@@ -43,7 +43,7 @@ jobs:
           java: 8
           runner: 'xvfb-run --auto-servernum {0}'
           script: 'build.sh'
-          canonical: ${{ (github.repository == 'bndtools/bnd') && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) && (github.event_name != 'pull_request') }}
+          canonical: ${{ (github.repository == 'bndtools/bnd') && ((github.ref == 'refs/heads/main') || (github.ref == 'refs/heads/next')) && (github.event_name != 'pull_request') }}
           fetch-depth: '0'
         - os: ubuntu-latest
           java: 8

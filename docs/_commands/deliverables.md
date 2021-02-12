@@ -17,7 +17,7 @@ summary:  Show all deliverables from this workspace. with their current version 
 
 ## Example 
 
-	biz.aQute.bnd (master)$ bnd deliverables 
+	biz.aQute.bnd (main)$ bnd deliverables 
 	found password 
 	aQute.libg                                  2.9.0  /Ws/bnd/aQute.libg/generated/aQute.libg.jar
 	biz.aQute.bnd                               2.4.0  /Ws/bnd/biz.aQute.bnd/generated/biz.aQute.bnd.jar
@@ -35,7 +35,7 @@ summary:  Show all deliverables from this workspace. with their current version 
 	demo                                        1.1.0  /Ws/bnd/demo/generated/demo.jar
 	dist                                        0.0.0  /Ws/bnd/dist/generated/dist.jar
 	osgi.r5                                     1.0.1  /Ws/bnd/osgi.r5/generated/osgi.r5.jar
-	biz.aQute.bnd (master)$ bnd deliverables -l
+	biz.aQute.bnd (main)$ bnd deliverables -l
 	found password 
 	biz.aQute.bnd                               2.4.0  /Ws/bnd/biz.aQute.bnd/generated/biz.aQute.bnd.jar
-	biz.aQute.bnd (master)$ 
+	biz.aQute.bnd (main)$ 

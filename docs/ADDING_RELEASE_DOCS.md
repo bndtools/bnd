@@ -9,8 +9,8 @@
   replacing `<version>` for the actual version
 * run `./build.sh`
 * copy the generated contents of `docs/_site` into a temporary location
-* checkout the master branch
+* checkout the main branch
 * copy previously saved content into `docs/release/<version>`
 * commit & push
 
-**Note:** Make sure to leave `baseurl` unset in the `master` branch.
+**Note:** Make sure to leave `baseurl` unset in the `main` branch.

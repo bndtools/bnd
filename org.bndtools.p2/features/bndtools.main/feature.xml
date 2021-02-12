@@ -2,7 +2,7 @@
 <feature
       id="bndtools.main.feature"
       label="Bndtools"
-      version="@master-version@"
+      version="@main-version@"
       provider-name="Bndtools"
       plugin="bndtools.core">
 

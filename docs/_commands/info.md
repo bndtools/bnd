@@ -22,7 +22,7 @@ summary: Show key project variables
 
 ## Examples
 
-	biz.aQute.bnd (master)$ bnd info -b
+	biz.aQute.bnd (main)$ bnd info -b
 	found password 
 	Build                                    [/Ws/bnd/biz.aQute.bnd/bin, /Ws/bnd/aQute.libg/generated/aQute.libg.jar, /Ws/bnd/biz.aQute.bndlib/bin, /Ws/bnd/cnf/repo/org.apache.tools.ant/org.apache.tools.ant-1.6.5.jar, /Ws/bnd/cnf/repo/org.osgi.service.component.annotations/org.osgi.service.component.annotations-6.0.0.jar, /Ws/bnd/cnf/repo/osgi.cmpn/osgi.cmpn-4.3.1.jar, /Ws/bnd/cnf/repo/osgi.core/osgi.core-4.3.1.jar, /Ws/bnd/cnf/repo/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar, /Ws/bnd/cnf/repo/osgi.r5/osgi.r5-1.0.1.jar]
 
@@ -36,7 +36,7 @@ summary: Show key project variables
 
 	Source                                   [/Ws/bnd/biz.aQute.bnd/src]
 
-	biz.aQute.bnd (master)$ bnd info -bcdrsv
+	biz.aQute.bnd (main)$ bnd info -bcdrsv
 	found password 
 	Build                                    [/Ws/bnd/biz.aQute.bnd/bin, /Ws/bnd/aQute.libg/generated/aQute.libg.jar, /Ws/bnd/biz.aQute.bndlib/bin, /Ws/bnd/cnf/repo/org.apache.tools.ant/org.apache.tools.ant-1.6.5.jar, /Ws/bnd/cnf/repo/org.osgi.service.component.annotations/org.osgi.service.component.annotations-6.0.0.jar, /Ws/bnd/cnf/repo/osgi.cmpn/osgi.cmpn-4.3.1.jar, /Ws/bnd/cnf/repo/osgi.core/osgi.core-4.3.1.jar, /Ws/bnd/cnf/repo/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar, /Ws/bnd/cnf/repo/osgi.r5/osgi.r5-1.0.1.jar]
 

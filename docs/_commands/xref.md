@@ -19,7 +19,7 @@ summary: Show a cross references for all classes in a set of jars.
 
 ## Examples
    
-	   biz.aQute.bnd (master)$ bnd xref generated/*.jar
+	   biz.aQute.bnd (main)$ bnd xref generated/*.jar
 	                              aQute.bnd.annotation > 
 	                    aQute.bnd.annotation.component > 
 	                      aQute.bnd.annotation.headers > 

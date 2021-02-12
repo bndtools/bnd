@@ -15,6 +15,6 @@ summary:  Show macro value. Macro can contain the  { and } parentheses but it is
 
 ## Examples
 
-    biz.aQute.bnd (master)$ bnd macro p
+    biz.aQute.bnd (main)$ bnd macro p
     biz.aQute.bnd
-    biz.aQute.bnd (master)$ 
+    biz.aQute.bnd (main)$ 

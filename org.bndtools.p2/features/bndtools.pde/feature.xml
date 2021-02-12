@@ -2,7 +2,7 @@
 <feature
       id="bndtools.pde.feature"
       label="Bndtools PDE"
-      version="@master-version@"
+      version="@main-version@"
       provider-name="Bndtools">
 
    <description url="https://bndtools.jfrog.io/bndtools/update-latest">
@@ -509,7 +509,7 @@ version(s), and exceptions or additional permissions here}.&quot;
 
    <requires>
       <import feature="org.eclipse.pde" version="3.13.4" match="greaterOrEqual"/>
-      <import feature="bndtools.main.feature" version="@master-version@" match="equivalent"/>
+      <import feature="bndtools.main.feature" version="@main-version@" match="equivalent"/>
    </requires>
 
    <plugin

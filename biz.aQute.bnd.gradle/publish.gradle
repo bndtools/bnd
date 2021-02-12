@@ -98,7 +98,7 @@ pluginBundle {
   website = 'https://github.com/bndtools/bnd'
   vcsUrl = 'https://github.com/bndtools/bnd.git'
 
-  description = "Gradle Plugin for developing OSGi bundles with Bnd. Bnd is the premiere tool for creating OSGi bundles. This gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/master/biz.aQute.bnd.gradle/README.md for information on using in a Bnd Workspace and a typical Gradle build."
+  description = "Gradle Plugin for developing OSGi bundles with Bnd. Bnd is the premiere tool for creating OSGi bundles. This gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/main/biz.aQute.bnd.gradle/README.md for information on using in a Bnd Workspace and a typical Gradle build."
   tags = ['osgi', 'bnd']
 
   plugins {

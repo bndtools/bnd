@@ -16,7 +16,7 @@ summary: Access the internal bnd database of keywords and options
 
 ## Examples
 
-	biz.aQute.bnd (master)$ bnd syntax Bundle-Version
+	biz.aQute.bnd (main)$ bnd syntax Bundle-Version
 		
 	[Bundle-Version]
 		The Bundle-Version header specifies the version of this bundle.

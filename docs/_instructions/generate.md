@@ -126,6 +126,6 @@ The code is expected to return an `Optional.empty()` when everything is ok. If s
 
 If you the plugin source code is in the same workspace as the project using this plugin, you must make sure that the external plugin project is build before the project that uses it. You can achieve this with [-dependson](dependson.html). 
 
-You can take a look at the [JavaGen](https://github.com/bndtools/bnd/tree/master/biz.aQute.bnd.javagen) project in the bnd build to see how an actual external plugin is made.
+You can take a look at the [JavaGen](https://github.com/bndtools/bnd/tree/main/biz.aQute.bnd.javagen) project in the bnd build to see how an actual external plugin is made.
 
 

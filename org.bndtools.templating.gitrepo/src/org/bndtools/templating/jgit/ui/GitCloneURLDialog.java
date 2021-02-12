@@ -71,8 +71,9 @@ public class GitCloneURLDialog extends AbstractNewEntryDialog {
 			txtBranch.setText(branch);
 
 		ControlDecoration branchDecor = new ControlDecoration(txtBranch, SWT.LEFT, container);
-		branchDecor.setDescriptionText(
-			"Specify the branch, tag or commit ID you would like to clone from the\nrepository. The default is 'origin/master'.");
+		branchDecor.setDescriptionText(String.format(
+			"Specify the branch, tag or commit ID you would like to clone from the\nrepository. The default is '%s'.",
+			GitCloneTemplateParams.DEFAULT_BRANCH));
 		branchDecor.setImage(FieldDecorationRegistry.getDefault()
 			.getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
 			.getImage());

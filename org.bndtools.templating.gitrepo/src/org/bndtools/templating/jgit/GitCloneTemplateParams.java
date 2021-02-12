@@ -4,7 +4,7 @@ import java.net.URI;
 
 public class GitCloneTemplateParams {
 
-	public static final String	DEFAULT_BRANCH	= "origin/master";	//$NON-NLS-1$
+	public static final String	DEFAULT_BRANCH	= "origin/main";	//$NON-NLS-1$
 
 	String						cloneUrl;
 	String						branch			= DEFAULT_BRANCH;

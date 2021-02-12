@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="master" default="none">
+<project name="main" default="none">
 
     <import file="build-template.xml" />
 

@@ -16,7 +16,7 @@ summary: Execute a Project action, or if no parms given, show information about 
 
 ## Examples
 
-	biz.aQute.bnd (master)$ bnd plugins
+	biz.aQute.bnd (main)$ bnd plugins
 	found password 
 	000 aQute.bnd.build.Workspace
 	001 java.util.concurrent.ThreadPoolExecutor@2685c106[Running, pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0]

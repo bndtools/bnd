@@ -24,7 +24,7 @@ tool (such as *Jekyll* to generate a static site for example).
 the documentation is done by executing a simple command.
 
 This feature is available for the Bnd Workspace Model and Maven projects respectivly using Bnd CLI and `bnd-reporter-maven-plugin`. We will use
-Bnd CLI as an example in the next sections, you can directly look at the documentation in the [Github repository](https://github.com/bndtools/bnd/blob/master/maven/bnd-reporter-maven-plugin/README.md) for the corresponding feature with Maven.
+Bnd CLI as an example in the next sections, you can directly look at the documentation in the [Github repository](https://github.com/bndtools/bnd/blob/main/maven/bnd-reporter-maven-plugin/README.md) for the corresponding feature with Maven.
 
 > Note: It is necessary that the workspace is completely built before generating the documentation files to take into account the latest changes.
 
@@ -64,7 +64,7 @@ Write your own markdown text here.
 {% raw %}{% endembed %}{% endraw %}
 ```
 Inside an `embed` tag one can only specify block tags which will override the parent template included. 
-Here, the parent template is the readme template file built-in into Bnd available at the `default:readme.twig` URL (see the file [here](https://raw.githubusercontent.com/bndtools/bnd/master/biz.aQute.bnd.reporter/src/biz/aQute/bnd/reporter/plugins/transformer/templates/readme.twig)). This file defines a set of blocks that you can override with your own text. 
+Here, the parent template is the readme template file built-in into Bnd available at the `default:readme.twig` URL (see the file [here](https://raw.githubusercontent.com/bndtools/bnd/main/biz.aQute.bnd.reporter/src/biz/aQute/bnd/reporter/plugins/transformer/templates/readme.twig)). This file defines a set of blocks that you can override with your own text. 
 In the above snippet, we override the `beforeTitle` block. You can add multiple blocks depending on where you want to insert your text, here is a list of available blocks:
 
 * `beforeTitle`, `afterTitle`

@@ -25,9 +25,9 @@ summary:  Compares two jars. Without specifying the JARs (and when there is a cu
 
 ## Examples
 
-    biz.aQute.bnd (master)$ bnd diff generated/
+    biz.aQute.bnd (main)$ bnd diff generated/
     generated/.index             generated/biz.aQute.bnd.jar  generated/buildfiles         
-    biz.aQute.bnd (master)$ bnd diff generated/biz.aQute.bnd.jar /Ws/archive/aQute.archive/aQute.bnd/archive/tmp/biz.aQute.bnd.jar 
+    biz.aQute.bnd (main)$ bnd diff generated/biz.aQute.bnd.jar /Ws/archive/aQute.archive/aQute.bnd/archive/tmp/biz.aQute.bnd.jar 
     ADDED      PACKAGE    aQute.bnd.build
     ADDED      PACKAGE    aQute.bnd.header
     ADDED      PACKAGE    aQute.bnd.maven.support

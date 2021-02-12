@@ -13,7 +13,7 @@ interface Injected {
 }
 
 /* Configure this project */
-String masterVersion = String.format('%s-%s-g%.7s',
+String mainVersion = String.format('%s-%s-g%.7s',
                           bnd('gittag'),
                           bnd('timestamp'),
                           bnd('Git-SHA'))
@@ -49,7 +49,7 @@ def p2FeatureMain = tasks.register('p2FeatureMain', Zip.class) {
     Properties properties = new Properties()
     propertiesFile.get().withInputStream {
         properties.load(it)
-        properties['master-version'] = masterVersion
+        properties['main-version'] = mainVersion
     }
     filter(ReplaceTokens, tokens: properties)
   }
@@ -66,7 +66,7 @@ def p2FeatureM2e = tasks.register('p2FeatureM2e', Zip.class) {
     Properties properties = new Properties()
     propertiesFile.get().withInputStream {
         properties.load(it)
-        properties['master-version'] = masterVersion
+        properties['main-version'] = mainVersion
     }
     filter(ReplaceTokens, tokens: properties)
   }
@@ -83,7 +83,7 @@ def p2FeaturePde = tasks.register('p2FeaturePde', Zip.class) {
     Properties properties = new Properties()
     propertiesFile.get().withInputStream {
         properties.load(it)
-        properties['master-version'] = masterVersion
+        properties['main-version'] = mainVersion
     }
     filter(ReplaceTokens, tokens: properties)
   }
