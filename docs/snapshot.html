@@ -4,7 +4,7 @@
 <head>
     <title>OSGi bnd Snapshot Viewer</title>
     <script src="https://unpkg.com/vue"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.1/css/bulma.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP"
         crossorigin="anonymous">
 
@@ -28,14 +28,52 @@
 </head>
 
 <body>
+    
+    <section class="hero">
+        <div class="hero-body">
+            <h1 class="title">
+                OSGi bnd Snapshot Viewer
+            </h1>
+            <h2 class="subtitle">
+                Diagnose potential issues in your OSGi framework (bundle, packages, services), the SCR info, configuration,
+                log, and custom extensions.
+            </h2>
+        </div>
+    </section>
+
+
     <section class="section" id="app" style="max-width: 1200px;font-size:smaller">
+        
+        <div class="container content">
+            
+            <div class="columns is-mobile">
+                <div class="column is-half">
+                    
+                    <h2 class="subtitle">Upload Snapshot JSON file</h2>    
 
-        <div class="container">
+                    <p>Choose or drag your <i>snapshot.json</i> file here.</p>
+                    <input class="box" type="file" @change="handleFileSelect">
+                    
+                    
+                    
+                </div>
 
-            <input class="box" type="file" @change="handleFileSelect">
+                <div class="column">
+                    <div class="notification is-info is-light">
+                        <b>Privacy hint:</b> Don&#39;t worry. The Snapshot Viewer does <em>NOT</em> upload anything to our server. 
+                        It fully works in your browser. The data is processed only locally on your computer.
+                    </div>
+
+                </div>
+            </div>
+
+            
 
             <div class="tabs">
                 <ul>
+                    <li :class="{ 'is-active': active==='about'}">
+                        <a @click="active='about'">About</a>
+                    </li>
                     <li :class="{ 'is-active': active==='errors'}">
                         <a @click="active='errors'">Errors{{ getErrors().length != 0 ? "!" : ""}}</a>
                     </li>
@@ -62,6 +100,81 @@
                             ? "!" : ""}}</a>
                     </li>
                 </ul>
+            </div>
+
+            <div v-if="active=='about'">
+                
+                <div class="columns">
+                    <div class="column is-half">
+                        <h2 class="subtitle">About</h2>
+                
+                        <p>The Snapshot Viewer can take a JSON-File which was created using the <a
+                                href="https://search.maven.org/artifact/biz.aQute.bnd/biz.aQute.bnd.runtime.snapshot">bnd Snapshot
+                                Bundle</a> (<a
+                                href="https://github.com/bndtools/bnd/tree/master/biz.aQute.bnd.runtime/src/aQute/bnd/runtime/snapshot">Github</a>).
+                            It will create a snapshot of the framework when
+                            the framework stops (<code>stop 0</code>) or with a gogo command <code>bnd:snapshot</code> to make an
+                            arbitrary snapshot.
+                        <p>The snapshot can be used to get an extensive overview of the state of the framework. It captures the
+                            framework (bundle,packages,services), the SCR info, configuration, log, and custom extensions.
+                            An html file is provided to view the snapshot, which is this page you are looking at.</p>
+                    
+                        <p class="buttons">
+                        
+                            <a class="button" href="https://bndtools.org/" target="_blank">
+                                <span class="icon">
+                                    <i class="fas fa-home"></i>
+                                </span>
+                                <span>bndtools website</span>
+                            </button>
+
+                            <a class="button" href="https://bnd.bndtools.org/" target="_blank">
+                                <span class="icon">
+                                    <i class="fas fa-book"></i>
+                                </span>
+                                <span>bnd manual</span>
+                            </button>
+
+                            <a class="button" href="https://github.com/bndtools/bnd" target="_blank">
+                                <span class="icon">
+                                    <i class="fab fa-github"></i>
+                                </span>
+                                <span>GitHub</span>
+                            </a>
+                        
+                        </p>
+                                
+                    </div>
+                    <div class="column is-half">
+                
+                        <h2>Example</h2>
+                        <p>
+                            Run <code>bnd:snapshot</code> in your OSGi console to create the Snapshot JSON file.
+                        </p>
+                
+                
+<pre><code>osgi&gt; bnd:snapshot
+Name                 snapshot-20210210213618.json
+Parent               null
+CanonicalPath        /mybndworkspace/plugins/com.myappbundle/snapshot-20210210213618.json
+ParentFile           null
+Path                 snapshot-20210210213618.json
+AbsolutePath         /mybndworkspace/plugins/com.myappbundle/snapshot-20210210213618.json
+AbsoluteFile         /mybndworkspace/plugins/com.myappbundle/snapshot-20210210213618.json
+CanonicalFile        /mybndworkspace/plugins/com.myappbundle/snapshot-20210210213618.json
+</code>
+                </pre>
+                
+                        <p>
+                            Take this .json file, open <a href="https://bnd.bndtools.org/snapshot.html">this page</a> in your browser
+                            and upload the file.
+                        </p>
+                
+                    </div>
+                
+                </div>
+                
+
             </div>
 
             <div v-if="snapshot.framework && active=='errors'">
@@ -925,7 +1038,7 @@
                 selectedPackage: null,
                 instances: null,
                 tref: null,
-                active: 'bundles',
+                active: 'about',
                 hideNoImporters: true
             },
             methods: {
@@ -934,10 +1047,14 @@
                     var reader = new FileReader();
                     reader.onload = function (e) {
                         app.snapshot = JSON.parse(e.target.result)
-                        window.location.hash = ""
+                        window.location.hash = ""                        
                     }
-                    if (file)
+                    
+                    if (file){
                         reader.readAsText(file)
+                        app.active = 'bundles'
+                    }
+                        
                 },
                 scaleTime: function(t) {
                     return Math.round(t/100000)/10;
