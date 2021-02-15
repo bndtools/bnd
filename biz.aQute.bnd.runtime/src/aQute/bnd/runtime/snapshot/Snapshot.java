@@ -110,12 +110,16 @@ public class Snapshot implements BundleActivator {
 		tracker.close();
 	}
 
-	@Descriptor("Create a snapshot of the framework state")
+	@Descriptor("Create a snapshot of the framework state. The snapshot will be placed in a "
+		+ "json file in your local directory. You can drop this file on https://bnd.bndtools.org/snapshot.html "
+		+ "to get an analysis")
 	public File snapshot() {
 		return snapshot(null);
 	}
 
-	@Descriptor("Create a snapshot of the framework state")
+	@Descriptor("Create a snapshot of the framework state. The snapshot will be placed in a "
+		+ "json file in your local directory. You can drop this file on https://bnd.bndtools.org/snapshot.html "
+		+ "to get an analysis")
 	public File snapshot(@Descriptor("Path to the snapshot file") String name) {
 		try {
 

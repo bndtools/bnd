@@ -9,6 +9,9 @@ DynamicImport-Package: \
 	aQute.bnd.runtime.facade,\
 	aQute.bnd.runtime.snapshot,\
 	aQute.bnd.runtime.util
+
+-includeresource ../docs/snapshot.html
+
 Import-Package: \
 	org.osgi.service.cm;resolution:=optional,\
 	org.apache.felix.service.command;version='[0,2)';resolution:=optional,\
