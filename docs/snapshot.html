@@ -36,7 +36,8 @@
             </h1>
             <h2 class="subtitle">
                 Diagnose potential issues in your OSGi framework (bundle, packages, services), the SCR info, configuration,
-                log, and custom extensions.
+                log, and custom extensions by installing <a href="https://search.maven.org/search?q=a:biz.aQute.bnd.runtime.snapshot"><code>biz.aQute.bnd:biz.aQute.bnd.runtime.snapshot:5.1.0
+                </code></a>.
             </h2>
         </div>
     </section>
@@ -111,13 +112,17 @@
                         <p>The Snapshot Viewer can take a JSON-File which was created using the <a
                                 href="https://search.maven.org/artifact/biz.aQute.bnd/biz.aQute.bnd.runtime.snapshot">bnd Snapshot
                                 Bundle</a> (<a
-                                href="https://github.com/bndtools/bnd/tree/master/biz.aQute.bnd.runtime/src/aQute/bnd/runtime/snapshot">Github</a>).
+                                href="https://github.com/bndtools/bnd/tree/master/biz.aQute.bnd.runtime/src/aQute/bnd/runtime/snapshot"><code>biz.aQute.bnd:biz.aQute.bnd.runtime.snapshot:5.2.0</code></a>).
                             It will create a snapshot of the framework when
                             the framework stops (<code>stop 0</code>) or with a gogo command <code>bnd:snapshot</code> to make an
                             arbitrary snapshot.
                         <p>The snapshot can be used to get an extensive overview of the state of the framework. It captures the
                             framework (bundle,packages,services), the SCR info, configuration, log, and custom extensions.
                             An html file is provided to view the snapshot, which is this page you are looking at.</p>
+                        <p>If you're running snapshot inside the a Launchpad test case, the snapshot file will be named after the
+                            actual test case</p>
+                        <p>You can add additional information providers by registering any services that can turned into JSON
+                            as a service with the `snapshot` property.</p>
                     
                         <p class="buttons">
                         
@@ -890,8 +895,8 @@ CanonicalFile        /mybndworkspace/plugins/com.myappbundle/snapshot-2021021021
                 }
             },
             template: `<i 
-			   v-on:click="value == target ? $emit('input', null) : $emit('input', target)" 
-			   :class="{ fas: true, 'fa-caret-down': (value==target), 'fa-caret-right': (value!=target)}"></i>`
+               v-on:click="value == target ? $emit('input', null) : $emit('input', target)" 
+               :class="{ fas: true, 'fa-caret-down': (value==target), 'fa-caret-right': (value!=target)}"></i>`
         })
 
         /**
@@ -905,12 +910,12 @@ CanonicalFile        /mybndworkspace/plugins/com.myappbundle/snapshot-2021021021
                 <colgroup width="25%"/>
                 <colgroup width="75%"/>
                <tbody>
-	                   <tr v-for=" (v,k) in properties" :key="k">
-	                       <th>{{k}}</th>
-	                       <td v-if="Array.isArray(v)"><div v-for="s in v">{{s}}</div></td>
-	                       <td v-else>{{$parent.cleanup(v)}}</td>
-	                   </tr>
-	               </tbody>
+                       <tr v-for=" (v,k) in properties" :key="k">
+                           <th>{{k}}</th>
+                           <td v-if="Array.isArray(v)"><div v-for="s in v">{{s}}</div></td>
+                           <td v-else>{{$parent.cleanup(v)}}</td>
+                       </tr>
+                   </tbody>
                </table> `
 
         })
@@ -922,10 +927,10 @@ CanonicalFile        /mybndworkspace/plugins/com.myappbundle/snapshot-2021021021
         Vue.component("bundle-ref", {
             props: ["bundleid"],
             template: `
-	    		  <div>
-	    		     <a @click="$parent.selectedBundle=(bundleid||0)" :href="'#b-' + (bundleid||0)">[{{ (bundleid||0) }}]-{{$parent.getBundle(bundleid).symbolicName}}</a>
-	    		  </div>
-	    	`
+                  <div>
+                     <a @click="$parent.selectedBundle=(bundleid||0)" :href="'#b-' + (bundleid||0)">[{{ (bundleid||0) }}]-{{$parent.getBundle(bundleid).symbolicName}}</a>
+                  </div>
+            `
 
         })
 
