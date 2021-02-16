@@ -6,12 +6,9 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -94,49 +91,25 @@ public class RunSessionImpl implements RunSession {
 	@Override
 	public int launch() throws Exception {
 		try {
-			Map<String, Optional<String>> systemProperties = new HashMap<>();
-
 			supervisor = new LauncherSupervisor();
 			supervisor.connect(dto.host, dto.agent);
 
 			Agent agent = supervisor.getAgent();
 
-			try {
-				if (agent.isEnvoy()) {
-					installFramework(agent, dto, properties);
-				} else {
-					for (Entry<String, String> entry : properties.entrySet()) {
-						String key = entry.getKey();
+			if (agent.isEnvoy())
+				installFramework(agent, dto, properties);
 
-						String originalValue = agent.setSystemProperty(key, entry.getValue());
+			if (stdout != null)
+				supervisor.setStdout(stdout);
 
-						systemProperties.put(key, Optional.ofNullable(originalValue));
-					}
-				}
+			if (stderr != null)
+				supervisor.setStderr(stderr);
 
-				if (stdout != null)
-					supervisor.setStdout(stdout);
+			started.countDown();
 
-				if (stderr != null)
-					supervisor.setStderr(stderr);
-
-				started.countDown();
-
-				update(dto);
-				int exitCode = supervisor.join();
-				return exitCode;
-			} finally {
-				// Reset the original system property values
-				for (Entry<String, Optional<String>> entry : systemProperties.entrySet()) {
-					String key = entry.getKey();
-					Optional<String> value = entry.getValue();
-					if (value.isPresent()) {
-						agent.setSystemProperty(key, value.get());
-					} else {
-						agent.clearProperty(key);
-					}
-				}
-			}
+			update(dto);
+			int exitCode = supervisor.join();
+			return exitCode;
 		} catch (Exception e) {
 			started.countDown();
 			throw e;

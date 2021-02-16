@@ -635,16 +635,6 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	}
 
 	@Override
-	public String setSystemProperty(String key, String value) {
-		return System.setProperty(key, value);
-	}
-
-	@Override
-	public String clearProperty(String key) {
-		return System.clearProperty(key);
-	}
-
-	@Override
 	public boolean createFramework(String name, Collection<String> runpath, Map<String, Object> properties)
 		throws Exception {
 		throw new UnsupportedOperationException("This is an agent, we can't create new frameworks (for now)");
