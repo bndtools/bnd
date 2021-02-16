@@ -20,7 +20,6 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.toolchain.ToolchainManager;
-import org.apache.maven.toolchain.java.DefaultJavaToolChain;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.osgi.service.resolver.ResolutionException;
@@ -216,12 +215,13 @@ public class TestingMojo extends AbstractMojo {
 		};
 	}
 
+	@SuppressWarnings("deprecation")
 	private Optional<String> getToolchainJavaHome() {
 		return Optional.ofNullable(toolchainManager)
 			.map(tm -> tm.getToolchainFromBuildContext("jdk", session))
-			.filter(DefaultJavaToolChain.class::isInstance)
-			.map(DefaultJavaToolChain.class::cast)
-			.map(DefaultJavaToolChain::getJavaHome);
+			.filter(org.apache.maven.toolchain.java.DefaultJavaToolChain.class::isInstance)
+			.map(org.apache.maven.toolchain.java.DefaultJavaToolChain.class::cast)
+			.map(org.apache.maven.toolchain.java.DefaultJavaToolChain::getJavaHome);
 	}
 
 }
