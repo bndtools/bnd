@@ -23,7 +23,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.IntSupplier;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -36,10 +35,8 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
-import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 import org.osgi.framework.dto.BundleDTO;
@@ -52,11 +49,9 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.dto.CapabilityDTO;
 import org.osgi.resource.dto.RequirementDTO;
-import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferInputStream;
 import aQute.lib.startlevel.StartLevelRuntimeHandler;
 import aQute.libg.shacache.ShaCache;
@@ -112,7 +107,6 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	private CountDownLatch									refresh				= new CountDownLatch(0);
 	private final StartLevelRuntimeHandler					startlevels;
 	private final int										startOptions;
-	private final ServiceTracker<IntSupplier, IntSupplier>	eventTracker;
 
 	/**
 	 * An agent server is based on a context and takes a name and cache
@@ -137,37 +131,6 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		this.startlevels = startlevels;
 		if (this.context != null)
 			this.context.addFrameworkListener(this);
-
-		try {
-			Filter filter = context
-				.createFilter(
-					String.format("(&(objectClass=%s)(aQute.remote.agent.event.type=*))", IntSupplier.class.getName()));
-			eventTracker = new ServiceTracker<IntSupplier, IntSupplier>(context, filter, null) {
-				@Override
-				public IntSupplier addingService(ServiceReference<IntSupplier> reference) {
-					if (remote != null) {
-						IntSupplier intSupplier = context.getService(reference);
-						Event e = new Event();
-						e.type = Event.Type.valueOf((String) reference.getProperty("aQute.remote.agent.event.type"));
-						e.code = intSupplier.getAsInt();
-						try {
-							remote.event(e);
-						} catch (Exception e1) {
-							printStack(e1);
-						} finally {
-							context.ungetService(reference);
-						}
-					}
-					return null;
-				}
-
-				@Override
-				public void removedService(ServiceReference<IntSupplier> reference, IntSupplier service) {}
-			};
-			eventTracker.open();
-		} catch (InvalidSyntaxException e) {
-			throw Exceptions.duck(e);
-		}
 	}
 
 	AgentServer(Descriptor d) {
@@ -599,7 +562,6 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		try {
 			cleanup(-2);
 			startlevels.close();
-			eventTracker.close();
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
@@ -670,16 +632,6 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	@Override
 	public Map<String, String> getSystemProperties() throws Exception {
 		return Converter.cnv(MAP_STRING_STRING_T, System.getProperties());
-	}
-
-	@Override
-	public String setSystemProperty(String key, String value) {
-		return System.setProperty(key, value);
-	}
-
-	@Override
-	public String clearProperty(String key) {
-		return System.clearProperty(key);
 	}
 
 	@Override
