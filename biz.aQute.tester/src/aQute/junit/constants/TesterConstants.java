@@ -66,10 +66,4 @@ public interface TesterConstants {
 	 * well to use this special thread to run all tests on.
 	 */
 	String	TESTER_SEPARATETHREAD	= "tester.separatethread";
-
-	/**
-	 * When all testing is completed terminate the framework.
-	 */
-	String	TESTER_TERMINATE		= "tester.terminate";
-
 }

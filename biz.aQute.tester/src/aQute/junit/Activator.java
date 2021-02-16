@@ -8,7 +8,6 @@ import static aQute.junit.constants.TesterConstants.TESTER_DIR;
 import static aQute.junit.constants.TesterConstants.TESTER_NAMES;
 import static aQute.junit.constants.TesterConstants.TESTER_PORT;
 import static aQute.junit.constants.TesterConstants.TESTER_SEPARATETHREAD;
-import static aQute.junit.constants.TesterConstants.TESTER_TERMINATE;
 import static aQute.junit.constants.TesterConstants.TESTER_TRACE;
 import static aQute.junit.constants.TesterConstants.TESTER_UNRESOLVED;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -25,7 +24,6 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -35,7 +33,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -66,7 +63,6 @@ public class Activator implements BundleActivator, Runnable {
 	volatile boolean	active;
 	int					port		= -1;
 	boolean				continuous	= false;
-	boolean				terminate	= true;
 	boolean				trace		= false;
 	PrintStream			out			= System.out;
 	JUnitEclipseReport	jUnitEclipseReport;
@@ -112,9 +108,6 @@ public class Activator implements BundleActivator, Runnable {
 	public void run() {
 
 		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
-		terminate = Optional.ofNullable(context.getProperty(TESTER_TERMINATE))
-			.map(Boolean::valueOf)
-			.orElse(true);
 		trace = context.getProperty(TESTER_TRACE) != null;
 
 		if (thread == null)
@@ -132,7 +125,7 @@ public class Activator implements BundleActivator, Runnable {
 				jUnitEclipseReport = new JUnitEclipseReport(port);
 			} catch (Exception e) {
 				System.err.println("Cannot create link Eclipse JUnit on port " + port);
-				terminate(254);
+				System.exit(254);
 			}
 		}
 
@@ -179,7 +172,7 @@ public class Activator implements BundleActivator, Runnable {
 					// ignore
 				}
 				if (err != 0) {
-					terminate(err);
+					System.exit(err);
 				}
 			}
 		}
@@ -203,10 +196,10 @@ public class Activator implements BundleActivator, Runnable {
 				try (Writer report = getReportWriter(reportDir, reportDir.getName())) {
 					errors = test(null, testCases(testcases), report);
 				}
-				terminate(errors);
+				System.exit(errors);
 			} catch (Exception e) {
 				e.printStackTrace();
-				terminate(254);
+				System.exit(254);
 			}
 		}
 	}
@@ -275,7 +268,7 @@ public class Activator implements BundleActivator, Runnable {
 				}
 				if (queue.isEmpty() && !continuous) {
 					trace("queue %s", queue);
-					terminate(result);
+					System.exit(result);
 				}
 			} catch (InterruptedException e) {
 				trace("tests bundle queue interrupted");
@@ -283,7 +276,7 @@ public class Activator implements BundleActivator, Runnable {
 				break;
 			} catch (Exception e) {
 				error("Not sure what happened anymore %s", e);
-				terminate(254);
+				System.exit(254);
 			}
 		}
 	}
@@ -744,20 +737,6 @@ public class Activator implements BundleActivator, Runnable {
 				t.printStackTrace(out);
 			}
 			out.flush();
-		}
-	}
-
-	@SuppressWarnings("serial")
-	private void terminate(int exitcode) {
-		if (terminate) {
-			System.exit(exitcode);
-		}
-		else {
-			Dictionary<String, Object> properties = new Hashtable<>();
-			properties.put("aQute.remote.agent.event.type", "exit");
-
-			context.registerService(IntSupplier.class, () -> exitcode, properties);
-			active = false;
 		}
 	}
 
