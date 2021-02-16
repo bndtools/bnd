@@ -183,11 +183,7 @@ public abstract class ProjectLauncher extends Processor {
 
 		runvm.addAll(getProject().getRunVM());
 		runprogramargs.addAll(getProject().getRunProgramArgs());
-		if (runproperties == null) {
-			runproperties = getProject().getRunProperties();
-		} else {
-			runproperties.putAll(getProject().getRunProperties());
-		}
+		runproperties = getProject().getRunProperties();
 		runframeworkrestart = isTrue(getProject().getProperty(Constants.RUNFRAMEWORKRESTART));
 		storageDir = getProject().getRunStorage();
 
