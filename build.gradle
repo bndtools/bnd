@@ -20,7 +20,6 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
     '--add-opens=java.base/java.util.jar=ALL-UNNAMED',
     '--add-opens=java.base/java.util.regex=ALL-UNNAMED',
     '--add-opens=java.base/java.util.zip=ALL-UNNAMED',
-    '--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED',
     '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
     '--add-opens=java.base/sun.net.www.protocol.file=ALL-UNNAMED',
     '--add-opens=java.base/sun.net.www.protocol.ftp=ALL-UNNAMED',

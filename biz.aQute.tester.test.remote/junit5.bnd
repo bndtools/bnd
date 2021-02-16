@@ -1,3 +1,0 @@
--includepackage: aQute.tester.test2.junit5
-
-Test-Cases: ${classes;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.platform.commons.annotation.Testable;CONCRETE}
