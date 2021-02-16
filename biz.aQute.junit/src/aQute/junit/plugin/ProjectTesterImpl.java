@@ -79,6 +79,7 @@ public class ProjectTesterImpl extends ProjectTester implements EclipseJUnitTest
 
 	@Override
 	public int test() throws Exception {
+		prepare();
 		return getProjectLauncher().launch();
 	}
 
