@@ -414,7 +414,8 @@ public class Descriptors {
 
 		@Override
 		public String getDottedOnly() {
-			return component.getDottedOnly();
+			return component.getDottedOnly()
+				.concat("[]");
 		}
 
 		@Override
