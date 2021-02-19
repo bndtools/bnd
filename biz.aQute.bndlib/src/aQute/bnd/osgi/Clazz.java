@@ -240,8 +240,9 @@ public class Clazz {
 		HIERARCHY_INDIRECTLY_ANNOTATED,
 		RUNTIMEANNOTATIONS,
 		CLASSANNOTATIONS,
-		DEFAULT_CONSTRUCTOR;
-
+		DEFAULT_CONSTRUCTOR,
+		STATIC,
+		INNER;
 	}
 
 	public final static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS, QUERY.IMPORTS,
@@ -1834,6 +1835,13 @@ public class Clazz {
 
 			case DEFAULT_CONSTRUCTOR :
 				return hasPublicNoArgsConstructor();
+
+			case STATIC :
+				return !isInnerClass();
+
+			case INNER :
+				return isInnerClass();
+
 			default :
 				return instr == null ? false : instr.isNegated();
 		}
