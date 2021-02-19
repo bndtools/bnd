@@ -1,6 +1,10 @@
 package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,7 +15,9 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import aQute.bnd.component.DSAnnotationReader;
@@ -29,12 +35,11 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Macro;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
-@SuppressWarnings("restriction")
-public class ClazzTest extends TestCase {
+public class ClazzTest {
 
 	/**
 	 * <pre>
@@ -48,6 +53,7 @@ public class ClazzTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@Test
 	public void testJiniPlatformClasses() throws Exception {
 		try (Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("jar/jsk-platform.jar"));
@@ -77,6 +83,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCaughtExceptions() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
@@ -92,11 +99,12 @@ public class ClazzTest extends TestCase {
 	 * There is an unused class constant in the This actually looks wrong since
 	 */
 
+	@Test
 	public void testUnusedClassConstant() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
 			c.parseClassFile(new FileInputStream("testresources/TestWeavingHook.jclass"), new ClassDataCollector() {});
-			// TODO test someething here
+			// TODO test something here
 			System.out.println(c.getReferred());
 		}
 	}
@@ -106,6 +114,7 @@ public class ClazzTest extends TestCase {
 	 * <S:Z>()V;} This actually looks wrong since
 	 */
 
+	@Test
 	public void test375() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			a.getMethodSignature("<S:[LFoo;>()V");
@@ -115,6 +124,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNoClassBound() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			// From aQute.lib.collections.SortedList.fromIterator()
@@ -141,6 +151,7 @@ public class ClazzTest extends TestCase {
 	 * 15
 	 * </pre>
 	 */
+	@Test
 	public void testDynamicInstr() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
@@ -152,6 +163,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testModuleInfo() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
@@ -173,6 +185,7 @@ public class ClazzTest extends TestCase {
 	 * actually resemble a class name.
 	 */
 
+	@Test
 	public void testClassForNameFalsePickup() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
@@ -189,6 +202,7 @@ public class ClazzTest extends TestCase {
 	 * Test the uncamel
 	 */
 
+	@Test
 	public void testUncamel() throws Exception {
 		assertEquals("New", Clazz.unCamel("_new"));
 		assertEquals("An XMLMessage", Clazz.unCamel("anXMLMessage"));
@@ -197,6 +211,7 @@ public class ClazzTest extends TestCase {
 		assertEquals("A nice party", Clazz.unCamel("aNiceParty"));
 	}
 
+	@Test
 	public void testAnalyzerCrawlInvokeInterfaceAIOOBException() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
@@ -212,6 +227,7 @@ public class ClazzTest extends TestCase {
 		String value() default "";
 	}
 
+	@Test
 	public void testRecursiveAnnotation() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$RecursiveAnno.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -227,6 +243,7 @@ public class ClazzTest extends TestCase {
 	@RecursiveAnno
 	public @interface MetaAnnotated {}
 
+	@Test
 	public void testIndirectlyAnnotated() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$MetaAnnotated.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -238,6 +255,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAnnotated() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$MetaAnnotated.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -248,6 +266,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testHierarchyAnnotated() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$MetaAnnotated.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -259,6 +278,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testHierarchyIndirectlyAnnotated() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$MetaAnnotated.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -274,6 +294,7 @@ public class ClazzTest extends TestCase {
 	@MetaAnnotated
 	public static class MetaAnnotated_b {}
 
+	@Test
 	public void testIndirectlyAnnotated_b() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$MetaAnnotated_b.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -285,6 +306,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAnnotated_b() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$MetaAnnotated_b.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -295,6 +317,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testHierarchyAnnotated_b() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$MetaAnnotated_b.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -305,6 +328,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testHierarchyIndirectlyAnnotated_b() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$MetaAnnotated_b.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -319,6 +343,7 @@ public class ClazzTest extends TestCase {
 
 	public static class MetaAnnotated_c extends MetaAnnotated_b {}
 
+	@Test
 	public void testIndirectlyAnnotated_c() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$MetaAnnotated_c.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -331,6 +356,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAnnotated_c() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$MetaAnnotated_c.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -341,6 +367,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testHierarchyAnnotated_c() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$MetaAnnotated_c.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -354,6 +381,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testHierarchyIndirectlyAnnotated_c() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$MetaAnnotated_c.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -370,6 +398,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNamed() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -379,12 +408,13 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testMultipleInstructions() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest.class");
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFile();
-			assertTrue(clazz.is(QUERY.EXTENDS, new Instruction("junit.framework.TestCase"), analyzer));
+			assertTrue(clazz.is(QUERY.EXTENDS, new Instruction("java.lang.Object"), analyzer));
 			assertTrue(clazz.is(QUERY.NAMED, new Instruction("!junit.framework.*"), analyzer));
 		}
 	}
@@ -398,6 +428,7 @@ public class ClazzTest extends TestCase {
 
 	public static class AnnotationsOnTypeUseExtends extends @TypeUse Bar {}
 
+	@Test
 	public void testAnnotationsOnTypeUseExtends() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$AnnotationsOnTypeUseExtends.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -429,6 +460,7 @@ public class ClazzTest extends TestCase {
 
 	public static class AnnotationsOnTypeUseImplements0 implements @TypeUse Foo<String> {}
 
+	@Test
 	public void testAnnotationsOnTypeUseImplements0() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$AnnotationsOnTypeUseImplements0.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -467,6 +499,7 @@ public class ClazzTest extends TestCase {
 		private static final long serialVersionUID = 1L;
 	}
 
+	@Test
 	public void testAnnotationsOnTypeUseImplements1() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$AnnotationsOnTypeUseImplements1.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -503,6 +536,7 @@ public class ClazzTest extends TestCase {
 		void bindChars(@TypeParameter Foo<Character> c) {}
 	}
 
+	@Test
 	public void testAnnotationsOnMethodParams0() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$AnnotationsOnMethodParams0.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -545,6 +579,7 @@ public class ClazzTest extends TestCase {
 		void bindChars(Foo<Character> c, @TypeParameter String s) {}
 	}
 
+	@Test
 	public void testAnnotationsOnMethodParams1() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$AnnotationsOnMethodParams1.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -587,6 +622,7 @@ public class ClazzTest extends TestCase {
 		public AnnotationsOnCtorParams0(@TypeParameter String s) {}
 	}
 
+	@Test
 	public void testAnnotationsOnCtorParams0() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$AnnotationsOnCtorParams0.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -629,6 +665,7 @@ public class ClazzTest extends TestCase {
 		public AnnotationsOnCtorParams1(String r, @TypeParameter String s) {}
 	}
 
+	@Test
 	public void testAnnotationsOnCtorParams1() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$AnnotationsOnCtorParams1.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -670,6 +707,7 @@ public class ClazzTest extends TestCase {
 	/**
 	 * See 4.7.20.2 in JVMS spec.
 	 */
+	@Test
 	public void testTypeUseTypePath() throws Exception {
 		File file = IO.getFile("bin_test/test/typeuse/TypePath.class");
 		try (Analyzer analyzer = new Analyzer()) {
@@ -834,38 +872,130 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+
+	@Test
+	public void testTopLevelClass() throws Exception {
+		File file = IO.getFile("bin_test/test/ClazzTest.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertThat(clazz.isInnerClass()).isFalse();
+			assertThat(clazz.is(QUERY.STATIC, null, analyzer)).isTrue();
+			assertThat(clazz.is(QUERY.INNER, null, analyzer)).isFalse();
+			analyzer.getClassspace()
+				.put(clazz.getClassName(), clazz);
+			Macro replacer = analyzer.getReplacer();
+			assertThat(replacer.process("${classes;STATIC}")).isEqualTo("test.ClazzTest");
+			assertThat(replacer.process("${classes;INNER}")).isEmpty();
+			assertThat(replacer.process("${classes;STATIC;INNER}")).isEmpty();
+		}
+	}
+
 	public static class Nested {}
 
-	public class Inner {}
-
+	@Test
 	public void testNestedClass() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$Nested.class");
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFile();
 			assertThat(clazz.isInnerClass()).isFalse();
+			assertThat(clazz.is(QUERY.STATIC, null, analyzer)).isTrue();
+			assertThat(clazz.is(QUERY.INNER, null, analyzer)).isFalse();
+			analyzer.getClassspace()
+				.put(clazz.getClassName(), clazz);
+			Macro replacer = analyzer.getReplacer();
+			assertThat(replacer.process("${classes;STATIC}")).isEqualTo("test.ClazzTest$Nested");
+			assertThat(replacer.process("${classes;INNER}")).isEmpty();
+			assertThat(replacer.process("${classes;STATIC;INNER}")).isEmpty();
 		}
 	}
 
+	public class Inner {}
+
+	@Test
 	public void testInnerClass() throws Exception {
 		File file = IO.getFile("bin_test/test/ClazzTest$Inner.class");
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFile();
 			assertThat(clazz.isInnerClass()).isTrue();
+			assertThat(clazz.is(QUERY.STATIC, null, analyzer)).isFalse();
+			assertThat(clazz.is(QUERY.INNER, null, analyzer)).isTrue();
+			analyzer.getClassspace()
+				.put(clazz.getClassName(), clazz);
+			Macro replacer = analyzer.getReplacer();
+			assertThat(replacer.process("${classes;STATIC}")).isEmpty();
+			assertThat(replacer.process("${classes;INNER}")).isEqualTo("test.ClazzTest$Inner");
+			assertThat(replacer.process("${classes;STATIC;INNER}")).isEmpty();
 		}
 	}
 
-	public static class AnonymousClassHolder {
+	@Test
+	public void testAnonymousClass() throws Exception {
 		Object anon = new Object() {};
-	}
-
-	public void testInnerAnonymousClass() throws Exception {
-		File file = IO.getFile("bin_test/test/ClazzTest$AnonymousClassHolder$1.class");
+		String name = anon.getClass()
+			.getName();
+		File file = IO.getFile("bin_test/" + name.replace('.', '/') + ".class");
+		assertThat(file).exists();
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFile();
 			assertThat(clazz.isInnerClass()).isTrue();
+			assertThat(clazz.is(QUERY.STATIC, null, analyzer)).isFalse();
+			assertThat(clazz.is(QUERY.INNER, null, analyzer)).isTrue();
+			analyzer.getClassspace()
+				.put(clazz.getClassName(), clazz);
+			Macro replacer = analyzer.getReplacer();
+			assertThat(replacer.process("${classes;STATIC}")).isEmpty();
+			assertThat(replacer.process("${classes;INNER}")).isEqualTo(name);
+			assertThat(replacer.process("${classes;STATIC;INNER}")).isEmpty();
+		}
+	}
+
+	@Test
+	public void testLocalClass() throws Exception {
+		class Local {}
+		Local local = new Local();
+		String name = local.getClass()
+			.getName();
+		File file = IO.getFile("bin_test/" + name.replace('.', '/') + ".class");
+		assertThat(file).exists();
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertThat(clazz.isInnerClass()).isTrue();
+			assertThat(clazz.is(QUERY.STATIC, null, analyzer)).isFalse();
+			assertThat(clazz.is(QUERY.INNER, null, analyzer)).isTrue();
+			analyzer.getClassspace()
+				.put(clazz.getClassName(), clazz);
+			Macro replacer = analyzer.getReplacer();
+			assertThat(replacer.process("${classes;STATIC}")).isEmpty();
+			assertThat(replacer.process("${classes;INNER}")).isEqualTo(name);
+			assertThat(replacer.process("${classes;STATIC;INNER}")).isEmpty();
+		}
+	}
+
+	@Test
+	public void testVersion() throws Exception {
+		File file = IO.getFile("bin_test/test/ClazzTest.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			AtomicReference<String> version = new AtomicReference<>();
+			clazz.parseClassFileWithCollector(new ClassDataCollector() {
+				@Override
+				public void version(int minor, int major) {
+					version.set(major + "." + minor);
+				}
+			});
+			assertThat(clazz.is(QUERY.VERSION, new Instruction(version.get()), analyzer)).isTrue();
+			assertThat(clazz.is(QUERY.VERSION, new Instruction("46.0"), analyzer)).isFalse();
+			analyzer.getClassspace()
+				.put(clazz.getClassName(), clazz);
+			Macro replacer = analyzer.getReplacer();
+			assertThat(replacer.process("${classes;VERSION;" + version.get() + "}"))
+				.isEqualTo("test.ClazzTest");
+			assertThat(replacer.process("${classes;VERSION;46.0}")).isEmpty();
 		}
 	}
 }
