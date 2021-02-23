@@ -476,7 +476,20 @@ public class Clazz {
 		boolean isInnerClass() {
 			String binary = type.getBinary();
 			return attributes(InnerClassesAttribute.class).flatMap(a -> Arrays.stream(a.classes))
-				.anyMatch(inner -> inner.inner_class.equals(binary) && !Modifier.isStatic(inner.inner_access));
+				.filter(inner -> binary.equals(inner.inner_class))
+				/*
+				 * We need all 3 of these checks. Normally the inner class being
+				 * non-static is enough but sometimes inner classes are marked
+				 * static. Kotlin does this for anonymous and local classes and
+				 * older Java compilers did this sometimes for anonymous
+				 * classes. So we further check for no outer class which means
+				 * local and, as of Java 7, anonymous. Since we must also handle
+				 * pre-Java 7 class files, we must finally check the name since
+				 * anonymous classes have no name in source code.
+				 */
+				.anyMatch(inner -> !Modifier.isStatic(inner.inner_access) // inner
+					|| (inner.outer_class == null) // local or anonymous
+					|| (inner.inner_name == null)); // anonymous
 		}
 
 		boolean isPackageInfo() {

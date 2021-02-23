@@ -998,4 +998,113 @@ public class ClazzTest {
 			assertThat(replacer.process("${classes;VERSION;46.0}")).isEmpty();
 		}
 	}
+
+	@Test
+	public void kotlin_TopLevelClass() throws Exception {
+		File file = IO.getFile("testresources/kotlin/innerclasses/Example.kclass");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertThat(clazz.isInnerClass()).isFalse();
+			assertThat(clazz.is(QUERY.STATIC, null, analyzer)).isTrue();
+			assertThat(clazz.is(QUERY.INNER, null, analyzer)).isFalse();
+			analyzer.getClassspace()
+				.put(clazz.getClassName(), clazz);
+			Macro replacer = analyzer.getReplacer();
+			assertThat(replacer.process("${classes;STATIC}")).isEqualTo("com.example.Example");
+			assertThat(replacer.process("${classes;INNER}")).isEmpty();
+			assertThat(replacer.process("${classes;STATIC;INNER}")).isEmpty();
+		}
+	}
+
+	@Test
+	public void kotlin_NestedClass() throws Exception {
+		File file = IO.getFile("testresources/kotlin/innerclasses/Example$Nested.kclass");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertThat(clazz.isInnerClass()).isFalse();
+			assertThat(clazz.is(QUERY.STATIC, null, analyzer)).isTrue();
+			assertThat(clazz.is(QUERY.INNER, null, analyzer)).isFalse();
+			analyzer.getClassspace()
+				.put(clazz.getClassName(), clazz);
+			Macro replacer = analyzer.getReplacer();
+			assertThat(replacer.process("${classes;STATIC}")).isEqualTo("com.example.Example$Nested");
+			assertThat(replacer.process("${classes;INNER}")).isEmpty();
+			assertThat(replacer.process("${classes;STATIC;INNER}")).isEmpty();
+		}
+	}
+
+	@Test
+	public void kotlinInnerClass() throws Exception {
+		File file = IO.getFile("testresources/kotlin/innerclasses/Example$Inner.kclass");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertThat(clazz.isInnerClass()).isTrue();
+			assertThat(clazz.is(QUERY.STATIC, null, analyzer)).isFalse();
+			assertThat(clazz.is(QUERY.INNER, null, analyzer)).isTrue();
+			analyzer.getClassspace()
+				.put(clazz.getClassName(), clazz);
+			Macro replacer = analyzer.getReplacer();
+			assertThat(replacer.process("${classes;STATIC}")).isEmpty();
+			assertThat(replacer.process("${classes;INNER}")).isEqualTo("com.example.Example$Inner");
+			assertThat(replacer.process("${classes;STATIC;INNER}")).isEmpty();
+		}
+	}
+
+	@Test
+	public void kotlin_AnonymousClass() throws Exception {
+		File file = IO.getFile("testresources/kotlin/innerclasses/Example$anonClass$anon$1.kclass");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertThat(clazz.isInnerClass()).isTrue();
+			assertThat(clazz.is(QUERY.STATIC, null, analyzer)).isFalse();
+			assertThat(clazz.is(QUERY.INNER, null, analyzer)).isTrue();
+			analyzer.getClassspace()
+				.put(clazz.getClassName(), clazz);
+			Macro replacer = analyzer.getReplacer();
+			assertThat(replacer.process("${classes;STATIC}")).isEmpty();
+			assertThat(replacer.process("${classes;INNER}")).isEqualTo("com.example.Example$anonClass$anon$1");
+			assertThat(replacer.process("${classes;STATIC;INNER}")).isEmpty();
+		}
+	}
+
+	@Test
+	public void kotlin_LocalClass() throws Exception {
+		File file = IO.getFile("testresources/kotlin/innerclasses/Example$localClass$Local.kclass");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertThat(clazz.isInnerClass()).isTrue();
+			assertThat(clazz.is(QUERY.STATIC, null, analyzer)).isFalse();
+			assertThat(clazz.is(QUERY.INNER, null, analyzer)).isTrue();
+			analyzer.getClassspace()
+				.put(clazz.getClassName(), clazz);
+			Macro replacer = analyzer.getReplacer();
+			assertThat(replacer.process("${classes;STATIC}")).isEmpty();
+			assertThat(replacer.process("${classes;INNER}")).isEqualTo("com.example.Example$localClass$Local");
+			assertThat(replacer.process("${classes;STATIC;INNER}")).isEmpty();
+		}
+	}
+
+	@Test
+	public void kotlin_LambdaClass() throws Exception {
+		File file = IO.getFile("testresources/kotlin/innerclasses/Example$lambdaClass$lambda$1.kclass");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertThat(clazz.isInnerClass()).isTrue();
+			assertThat(clazz.is(QUERY.STATIC, null, analyzer)).isFalse();
+			assertThat(clazz.is(QUERY.INNER, null, analyzer)).isTrue();
+			analyzer.getClassspace()
+				.put(clazz.getClassName(), clazz);
+			Macro replacer = analyzer.getReplacer();
+			assertThat(replacer.process("${classes;STATIC}")).isEmpty();
+			assertThat(replacer.process("${classes;INNER}")).isEqualTo("com.example.Example$lambdaClass$lambda$1");
+			assertThat(replacer.process("${classes;STATIC;INNER}")).isEmpty();
+		}
+	}
+
 }
