@@ -74,3 +74,10 @@ jobs:
         CANONICAL: ${{ matrix.canonical }}
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+    - name: Upload Test Reports
+      uses: actions/upload-artifact@v2
+      with:
+        name: JDK${{ matrix.java }}_${{ matrix.os }}_${{ matrix.script }}-test-reports
+        path: |
+          */generated/test-reports/*/TEST-*.xml
+          maven/*/target/surefire-reports/TEST-*.xml
