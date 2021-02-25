@@ -19,6 +19,6 @@
 	org.apache.commons.lang3;version=latest,\
 	org.apache.commons.codec;version=latest,\
 	biz.aQute.repository;version=latest,\
-	com.google.guava;version=latest,\
+	com.google.guava;version='[19.0,20)',\
 	bcpkix;version=latest,\
 	bcprov;version=latest
