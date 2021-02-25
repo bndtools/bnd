@@ -12,7 +12,7 @@
 	osgi.core;version=latest
 
 # Note: we don't use the ${junit} macro because we need to use the Eclipse
-# version of the JUnit 5 packages in the test where possible for maximum
+# version of the JUnit 5 bundles in the test where possible for maximum
 # compatibility. But we must use the latest version of the launcher
 # and its dependency (junit-platform-commons) as this is required when
 # tests are launched from within the IDE for later versions of
@@ -21,12 +21,12 @@
 # Eclipse version too.
 
 -testpath: \
-	org.junit.platform:junit-platform-commons;version="${junit.platform.tester.version}";strategy=lowest,\
-	org.junit.platform:junit-platform-launcher;version="${junit.platform.tester.version}";strategy=lowest,\
+	org.junit.platform.commons;version="${junit.platform.eclipse.version}";strategy=lowest,\
+	org.junit.platform.launcher;version="${junit.platform.eclipse.version}";strategy=lowest,\
 	org.junit.platform.engine;version="${junit.platform.eclipse.version}";strategy=lowest,\
 	org.junit.jupiter.engine;version="${junit.jupiter.eclipse.version}";strategy=lowest,\
 	assertj-core;version=latest,\
-	org.junit.platform:junit-platform-testkit;version="${junit.platform.tester.version}";strategy=lowest,\
+	junit-platform-testkit;version="${junit.platform.eclipse.version}";strategy=lowest,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=snapshot;packages=aQute.bnd.osgi,\
 	biz.aQute.tester;version=snapshot;packages=aQute.junit.constants,\

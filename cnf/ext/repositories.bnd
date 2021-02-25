@@ -25,15 +25,10 @@ ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
 
 -plugin.1.Eclipse:\
     aQute.bnd.repository.osgi.OSGiRepository;\
-        name="Eclipse 2018-12";\
-        locations="https://bndtools.jfrog.io/bndtools/bnd-build/eclipse/4.10/index.xml.gz";\
+        name="Eclipse 2020-06";\
+        locations="https://bndtools.jfrog.io/bndtools/bnd-build/eclipse/4.16/index.xml.gz";\
         poll.time=-1;\
-        cache="${workspace}/cnf/cache/stable/Eclipse-2018-12",\
-    aQute.bnd.repository.maven.pom.provider.BndPomRepository;\
-        name="Eclipse m2e 1.10.0 Dependencies";\
-        revision="org.apache.maven:maven-core:3.5.3,org.apache.maven:maven-aether-provider:3.3.9,org.sonatype.plexus:plexus-build-api:0.0.7";\
-        releaseUrls="${mavencentral}";\
-        location="${workspace}/cnf/cache/stable/Eclipse-m2e-1.10.0/index.xml"
+        cache="${workspace}/cnf/cache/stable/Eclipse-2020-06"
 
 -plugin.9.Baseline:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
@@ -41,17 +36,6 @@ ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
         releaseUrl="${mavencentral}";\
         index="${.}/baseline.mvn";\
         readOnly=true
-
-# m2e debug repos
-#-plugin.m2e.debug:\
-#    aQute.bnd.repository.p2.provider.P2Repository; \
-#        name="Eclipse EMF 2.13"; \
-#        url="https://download.eclipse.org/modeling/emf/emf/builds/release/2.13";\
-#        location="${workspace}/cnf/cache/stable/EclipseEMF",\
-#    aQute.bnd.repository.p2.provider.P2Repository; \
-#        name="Eclipse Webtools 3.6.3"; \
-#        url="https://download.eclipse.org/webtools/downloads/drops/R3.6.3/R-3.6.3-20150216091848/repository/";\
-#        location="${workspace}/cnf/cache/stable/EclipseWTP",\
 
 -buildrepo: Local
 -releaserepo: Release

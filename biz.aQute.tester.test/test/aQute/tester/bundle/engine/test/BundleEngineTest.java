@@ -179,7 +179,7 @@ public class BundleEngineTest {
 	public void outsideOfFramework_hasInitializationError() throws Exception {
 		EngineTestKit.engine(new BundleEngine())
 			.execute()
-			.tests()
+			.testEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(test("noFramework"), finishedWithFailure(instanceOf(JUnitException.class),
@@ -194,7 +194,7 @@ public class BundleEngineTest {
 		Bundle testBundle = testBundler.startTestBundle(JUnit4Test.class);
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -217,7 +217,7 @@ public class BundleEngineTest {
 		startTestBundle(JUnit4Test.class);
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(test("misconfiguredEngines"), unresolvedBundle(engineBundle),
@@ -236,7 +236,7 @@ public class BundleEngineTest {
 
 		engineInFramework().configurationParameter(CHECK_UNRESOLVED, "false")
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("misconfiguredEngines"), bundle(engineBundle)))
@@ -292,7 +292,7 @@ public class BundleEngineTest {
 		Bundle testBundle = startTestBundle(JUnit4Test.class);
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("misconfiguredEngines"), bundle(engineBundle), finishedSuccessfully()))
@@ -394,7 +394,7 @@ public class BundleEngineTest {
 		startTestBundle(JUnit4Test.class);
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(lastSegment("engine", BundleEngine.ENGINE_ID), started()))
@@ -415,7 +415,7 @@ public class BundleEngineTest {
 		Bundle testBundle = startTestBundle(JUnit4Test.class);
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(container("unresolvedBundles"), finishedSuccessfully()))
@@ -441,7 +441,7 @@ public class BundleEngineTest {
 
 		engineInFramework().configurationParameter(CHECK_UNRESOLVED, "false")
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("unresolvedBundles")))
@@ -458,7 +458,7 @@ public class BundleEngineTest {
 
 		engineInFramework().configurationParameter(CHECK_UNRESOLVED, "false")
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -475,7 +475,7 @@ public class BundleEngineTest {
 		Bundle resolvedTestBundle = startTestBundle(TestClass.class);
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("unresolvedBundles")))
@@ -490,7 +490,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectMethod(JUnit5Test.class.getName(), "thisIsBTest"))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -508,7 +508,7 @@ public class BundleEngineTest {
 			.selectors(
 				selectMethod(JUnit5ParameterizedTest.class.getName(), "parameterizedMethod", "java.lang.String,float"))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -545,7 +545,7 @@ public class BundleEngineTest {
 		b.selectors(selectMethod(JUnit5ParameterizedTest.class.getName(), "customParameter",
 			"aQute.tester.test.params.CustomParameter"))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -562,7 +562,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectClass(TestClass.class.getName()))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(containerClass(JUnit4Test.class)))
@@ -578,7 +578,7 @@ public class BundleEngineTest {
 		engineInFramework().configurationParameter(CHECK_UNRESOLVED, "false")
 			.selectors(selectClass("some.unknown.Clazz"), selectClass(TestClass.class.getName()))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("unresolvedClasses")))
@@ -595,7 +595,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectClass("some.unknown.Clazz"), selectClass(TestClass.class.getName()))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(container("unresolvedClasses"), finishedSuccessfully()))
@@ -611,7 +611,7 @@ public class BundleEngineTest {
 		engineInFramework().configurationParameter(CHECK_UNRESOLVED, "false")
 			.selectors(selectMethod("some.unknown.Clazz", "someMethod"), selectClass(TestClass.class.getName()))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("unresolvedClasses")))
@@ -627,7 +627,7 @@ public class BundleEngineTest {
 		engineInFramework()
 			.selectors(selectMethod("some.unknown.Clazz", "someMethod"), selectClass(TestClass.class.getName()))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(container("unresolvedClasses"), finishedSuccessfully()))
@@ -643,7 +643,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectMethod(TestClass.class.getName(), "someMethod"))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("unresolvedClasses")))
@@ -659,7 +659,7 @@ public class BundleEngineTest {
 		engineInFramework().configurationParameter(CHECK_UNRESOLVED, "false")
 			.selectors(selectMethod(TestClass.class.getName(), "someMethod"))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("unresolvedClasses")))
@@ -676,7 +676,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectClass(TestClass.class.getName()))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("unresolvedClasses")))
@@ -693,7 +693,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectClass(TestClass.class.getName()))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("unresolvedClasses")))
@@ -715,7 +715,7 @@ public class BundleEngineTest {
 
 		engineInFramework().configurationParameter(CHECK_UNRESOLVED, "false")
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("unresolvedClasses")))
@@ -739,7 +739,7 @@ public class BundleEngineTest {
 		Bundle resolvedTestBundle = startTestBundle(TestClass.class);
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("unresolvedClasses")))
@@ -765,7 +765,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectClass("some.unknown.class"))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(container("unresolvedBundles"), finishedSuccessfully()))
@@ -777,7 +777,7 @@ public class BundleEngineTest {
 			.haveExactly(1, event(container("unresolvedClasses"), finishedSuccessfully()));
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(container("unresolvedBundles"), finishedSuccessfully()))
@@ -804,7 +804,7 @@ public class BundleEngineTest {
 		testBundle.start();
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(container("unattachedFragments"), finishedSuccessfully()))
@@ -827,7 +827,7 @@ public class BundleEngineTest {
 
 		engineInFramework().configurationParameter(CHECK_UNRESOLVED, "false")
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("unattachedFragments")))
@@ -852,7 +852,7 @@ public class BundleEngineTest {
 
 		engineInFramework().configurationParameter(CHECK_UNRESOLVED, "false")
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -883,7 +883,7 @@ public class BundleEngineTest {
 
 		engineInFramework().configurationParameter(CHECK_UNRESOLVED, "false")
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -916,7 +916,7 @@ public class BundleEngineTest {
 		testHost.start();
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(container("unattachedFragments")))
@@ -970,7 +970,7 @@ public class BundleEngineTest {
 		engineInFramework()
 			.selectors(selectBundle(tb1), selectBundle(tb2.getSymbolicName()), selectBundle("test.bundle", "[1,2)"))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(containerClass(JUnit4Test.class), finishedSuccessfully()))
@@ -980,7 +980,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectBundle("test.bundle", "[2,3)"))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(containerClass(AnotherTestClass.class), finishedSuccessfully()))
@@ -995,7 +995,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectBundle(tb1))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(containerClass(JUnit4Test.class), finishedSuccessfully()))
@@ -1005,7 +1005,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectBundle(tb2))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(fragment(tb2), finishedSuccessfully()))
@@ -1028,7 +1028,7 @@ public class BundleEngineTest {
 			.start();
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(containerClass(JUnit4Test.class), finishedSuccessfully()));
@@ -1051,7 +1051,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectClass(JUnit4Test.class.getName()))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(containerClass(JUnit4Test.class), finishedSuccessfully()));
@@ -1072,7 +1072,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectClass(TestClass.class))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(uniqueIdSubstring("host.bundle"), test("thisIsATest"), finishedSuccessfully()))
@@ -1094,7 +1094,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectMethod(JUnit4Test.class, "aTest"))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(uniqueIdSubstring("host.bundle"), test("aTest"), finishedSuccessfully()))
@@ -1116,7 +1116,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectMethod(TestClass.class, "thisIsATest"))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, event(uniqueIdSubstring("dynamic.bundle"), containerClass(TestClass.class)))
@@ -1129,7 +1129,7 @@ public class BundleEngineTest {
 		Bundle test = startTestBundle(JUnit3And4Test.class);
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -1145,7 +1145,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectClass(JUnit3And4Test.class))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -1161,7 +1161,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectMethod(JUnit3And4Test.class, "testSomething"))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -1179,7 +1179,7 @@ public class BundleEngineTest {
 		Bundle test = startTestBundle(JUnit3And5Test.class, JUnit3AndVenusTest.class);
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(0, finishedWithFailure(instanceOf(JUnitException.class)));
@@ -1196,7 +1196,7 @@ public class BundleEngineTest {
 			.start();
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -1216,7 +1216,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectClass(TestWithField.class))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -1236,7 +1236,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectMethod(TestWithField.class, "thisIsATest"))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -1255,7 +1255,7 @@ public class BundleEngineTest {
 			.start();
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -1275,7 +1275,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectClass(JUnit5ParameterizedTest.class))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -1295,7 +1295,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectMethod(JUnit5ParameterizedTest.class, "thisIsATest"))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -1314,7 +1314,7 @@ public class BundleEngineTest {
 			.start();
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -1334,7 +1334,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectClass(JUnit5ParameterizedSubclassTest.class))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -1354,7 +1354,7 @@ public class BundleEngineTest {
 
 		engineInFramework().selectors(selectMethod(JUnit5ParameterizedSubclassTest.class, "thisIsATest"))
 			.execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1,
@@ -1371,7 +1371,7 @@ public class BundleEngineTest {
 			.start();
 
 		engineInFramework().execute()
-			.all()
+			.allEvents()
 			.debug(debugStr)
 			.assertThatEvents()
 			.haveExactly(1, event(test("some.other.Clazz"), withParentLastSegment("bundle", test.getSymbolicName()),
@@ -1416,7 +1416,7 @@ public class BundleEngineTest {
 
 			engineInFramework().selectors(selectBundle(testBundle))
 				.execute()
-				.all()
+				.allEvents()
 				.debug(debugStr);
 			request = SubEngine.request;
 		}

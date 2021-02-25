@@ -16,7 +16,7 @@ Import-Package: \
 	aQute.*;resolution:=optional,\
 	junit.*;version="${range;[==,5);${junit3.version}}";resolution:=optional,\
 	org.apache.felix.service.command;resolution:=optional,\
-	org.junit.platform.*,\
+	org.junit.platform.*;version="${range;[==,+);${junit.platform.tester.version}}",\
 	org.junit.*;version="${range;[==,+);${junit4.tester.version}}";resolution:=optional,\
 	*
 
@@ -37,11 +37,11 @@ Import-Package: \
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.tester;version=snapshot;packages='aQute.junit.constants',\
 	junit:junit;version='${junit4.tester.version}',\
-	org.junit.platform.launcher;version='${junit.platform.eclipse.version}',\
-	org.junit.platform.engine;version='${junit.platform.eclipse.version}',\
-	org.junit.platform.commons;version='${junit.platform.eclipse.version}',\
-	org.opentest4j,\
-	org.apiguardian,\
+	org.junit.platform:junit-platform-commons;version='${junit.platform.tester.version}',\
+	org.junit.platform:junit-platform-engine;version='${junit.platform.tester.version}',\
+	org.junit.platform:junit-platform-launcher;version='${junit.platform.tester.version}',\
+	org.opentest4j;version='${opentest4j.tester.version}',\
+	org.apiguardian:apiguardian-api,\
 	org.apache.felix.gogo.runtime
 
 -baseline: *

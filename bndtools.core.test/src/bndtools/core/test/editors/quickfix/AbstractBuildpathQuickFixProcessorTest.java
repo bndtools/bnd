@@ -392,7 +392,7 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 			// First create our AST
 			ICompilationUnit icu = pack.createCompilationUnit(className + ".java", source, true, null);
 
-			ASTParser parser = ASTParser.newParser(AST.JLS11);
+			ASTParser parser = ASTParser.newParser(AST.JLS14);
 			Map<String, String> options = JavaCore.getOptions();
 			// Need to set 1.5 or higher for the "import static" syntax to work.
 			// Need to set 1.8 or higher to test parameterized type usages.

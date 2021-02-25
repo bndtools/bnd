@@ -72,7 +72,7 @@ org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.13.1_1
 org.junit.platform:junit-platform-commons:${junit.platform.tester.version}
 org.junit.platform:junit-platform-engine:${junit.platform.tester.version}
 org.junit.platform:junit-platform-launcher:${junit.platform.tester.version}
-org.junit.platform:junit-platform-testkit:${junit.platform.tester.version}
+org.junit.platform:junit-platform-testkit:${junit.platform.eclipse.version}
 org.junit.jupiter:junit-jupiter-api:${junit.jupiter.version}
 org.junit.jupiter:junit-jupiter-engine:${junit.jupiter.version}
 org.junit.jupiter:junit-jupiter-params:${junit.jupiter.version}
@@ -80,6 +80,7 @@ org.junit.vintage:junit-vintage-engine:${junit.jupiter.version}
 org.junit.platform:junit-platform-commons:${junit.platform.version}
 org.junit.platform:junit-platform-engine:${junit.platform.version}
 org.junit.platform:junit-platform-launcher:${junit.platform.version}
+org.opentest4j:opentest4j:${opentest4j.tester.version}
 org.opentest4j:opentest4j:1.2.0
 org.apiguardian:apiguardian-api:1.1.0
 org.assertj:assertj-core:${assertj.version}
@@ -139,6 +140,7 @@ com.github.javaparser:javaparser-core:3.13.10
 javax.json:javax.json-api:1.1.2
 javax.json.bind:javax.json.bind-api:1.0
 
+# Maven dependencies
 org.apache.maven:maven-artifact:${maven.target.version}
 org.apache.maven:maven-core:${maven.target.version}
 org.apache.maven:maven-model:${maven.target.version}
@@ -146,3 +148,6 @@ org.apache.maven:maven-plugin-api:${maven.target.version}
 org.apache.maven:maven-repository-metadata:${maven.target.version}
 org.apache.maven:maven-settings:${maven.target.version}
 org.eclipse.aether:aether-api:${aether.version}
+org.sonatype.plexus:plexus-build-api:0.0.7
+org.codehaus.plexus:plexus-utils:3.0.22
+org.codehaus.plexus:plexus-classworlds:2.5.2
