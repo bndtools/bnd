@@ -20,8 +20,10 @@ import aQute.launchpad.junit.LaunchpadRunner;
 @SuppressWarnings("restriction")
 @RunWith(LaunchpadRunner.class)
 public class LaunchpadConfigurationTest {
+	static File				tmp		= new File("generated/snapshot");
 
 	static LaunchpadBuilder builder = new LaunchpadBuilder().snapshot()
+		.set("snapshot.dir", tmp.getAbsolutePath())
 		.bndrun("runsystempackages.bndrun")
 		.runfw("jar/org.apache.felix.framework-6.0.2.jar;version=file")
 		.export("*")
