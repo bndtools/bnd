@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.Closeable;
+import java.io.File;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -18,8 +19,10 @@ import aQute.launchpad.junit.LaunchpadRunner;
 
 @RunWith(LaunchpadRunner.class)
 public class FO {
+	static File				tmp		= new File("generated/snapshot");
 
 	static LaunchpadBuilder builder = new LaunchpadBuilder().snapshot()
+		.set("snapshot.dir", tmp.getAbsolutePath())
 		.runfw("jar/org.apache.felix.framework-6.0.2.jar;version=file")
 		.bundles(
 			"org.osgi.util.promise, org.osgi.util.function, jar/org.apache.felix.scr-2.1.16.jar;version=file, assertj-core, org.apache.servicemix.bundles.junit")

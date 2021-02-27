@@ -3,6 +3,7 @@ package aQute.xlaunchpad;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Closeable;
+import java.io.File;
 import java.util.Set;
 
 import org.junit.Test;
@@ -19,8 +20,10 @@ import aQute.libg.parameters.ParameterMap;
 @SuppressWarnings("restriction")
 @RunWith(LaunchpadRunner.class)
 public class LaunchpadRunnerBasicTest {
+	static File				tmp		= new File("generated/snapshot");
 
 	static LaunchpadBuilder builder = new LaunchpadBuilder().snapshot()
+		.set("snapshot.dir", tmp.getAbsolutePath())
 		.bndrun("runsystempackages.bndrun")
 		.runfw("jar/org.apache.felix.framework-6.0.2.jar;version=file")
 		.export("*")

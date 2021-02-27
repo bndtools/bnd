@@ -16,10 +16,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
@@ -774,17 +770,10 @@ public class AlsoLauncherTest {
 				.as("System Bundle")
 				.containsPattern("\\n0\\s+\\d*\\s*ACTIV\\s+[<][>]\\s+System Bundle");
 
-			final DateTimeFormatter f = DateTimeFormatter.ofPattern("YYYYMMddHHmm")
-				.withZone(ZoneOffset.UTC);
-
 			for (String bundle : expected) {
-				final Path file = Paths.get(r.process("${repo;" + bundle + ";latest}"));
-				final String lastModified = f.format(java.nio.file.Files.getLastModifiedTime(file)
-					.toInstant());
-
 				softly.assertThat(report)
 					.as(bundle)
-					.containsPattern("ACTIV\\s+" + lastModified + "\\s+.*?\\Q" + file.getFileName() + "\\E");
+					.containsPattern("ACTIV\\s+\\d{12}\\s+.*\\Q" + bundle + "\\E");
 			}
 		}
 	}

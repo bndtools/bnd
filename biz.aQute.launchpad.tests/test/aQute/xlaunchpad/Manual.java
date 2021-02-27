@@ -21,7 +21,11 @@ import aQute.launchpad.LaunchpadBuilder;
 import aQute.launchpad.Service;
 
 public class Manual {
-	LaunchpadBuilder	builder	= new LaunchpadBuilder().runfw("org.apache.felix.framework");
+	static final String	org_apache_felix_framework		= "org.apache.felix.framework;version='[5.6.10,5.6.11)'";
+	static final String	org_apache_felix_scr			= "org.apache.felix.scr;version='[2.1.12,2.1.13)'";
+	static final String	org_apache_felix_log			= "org.apache.felix.log;version='[1.2.0,1.2.1)'";
+	static final String	org_apache_felix_configadmin	= "org.apache.felix.configadmin;version='[1.9.10,1.9.11)'";
+	LaunchpadBuilder	builder						= new LaunchpadBuilder().runfw(org_apache_felix_framework);
 
 	@Service
 	BundleContext		context;
@@ -133,9 +137,9 @@ public class Manual {
 
 	@Test
 	public void component() throws Exception {
-		try (Launchpad launchpad = builder.bundles("org.apache.felix.log")
-			.bundles("org.apache.felix.scr")
-			.bundles("org.apache.felix.configadmin")
+		try (Launchpad launchpad = builder.bundles(org_apache_felix_log)
+			.bundles(org_apache_felix_scr)
+			.bundles(org_apache_felix_configadmin)
 			.create()) {
 
 			launchpad.component(C.class);
@@ -147,9 +151,9 @@ public class Manual {
 
 	@Test
 	public void debug() throws Exception {
-		try (Launchpad launchpad = builder.bundles("org.apache.felix.log")
-			.bundles("org.apache.felix.scr")
-			.bundles("org.apache.felix.configadmin")
+		try (Launchpad launchpad = builder.bundles(org_apache_felix_log)
+			.bundles(org_apache_felix_scr)
+			.bundles(org_apache_felix_configadmin)
 			.debug()
 			.create()) {
 			//
@@ -193,7 +197,7 @@ public class Manual {
 
 	@Test
 	public void testHiding() throws Exception {
-		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 			.nostart()
 			.create()
 			.inject(this)) {
@@ -232,7 +236,7 @@ public class Manual {
 
 	@Test
 	public void testHidingViaBuilder() throws Exception {
-		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 			.hide(String.class)
 			.create()) {
 
