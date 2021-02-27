@@ -101,11 +101,11 @@ public class Strings {
 		return "";
 	}
 
-	public static String join(String[] strings) {
+	public static String join(String... strings) {
 		return join(Arrays.asList(strings));
 	}
 
-	public static String join(Object[] strings) {
+	public static String join(Object... strings) {
 		return join(Arrays.asList(strings));
 	}
 
