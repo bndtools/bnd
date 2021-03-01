@@ -1,6 +1,5 @@
 package bndtools.core.test.utils;
 
-import static bndtools.core.test.utils.TaskUtils.countDownMonitor;
 import static bndtools.core.test.utils.TaskUtils.log;
 
 import java.lang.reflect.InvocationTargetException;
@@ -11,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
@@ -69,21 +69,26 @@ public class WorkspaceImporter {
 	}
 
 	public static void importProject(Path sourceProject, CountDownLatch importFlag) {
-		try {
-			IWorkspaceRoot wsr = ResourcesPlugin.getWorkspace()
-				.getRoot();
+		IWorkspaceRoot wsr = ResourcesPlugin.getWorkspace()
+			.getRoot();
 
-			String projectName = sourceProject.getFileName()
-				.toString();
-			IProject project = wsr.getProject(projectName);
-			ImportOperation importOperation = new ImportOperation(project.getFullPath(), sourceProject.toFile(),
-				FileSystemStructureProvider.INSTANCE, overwriteQuery);
-			importOperation.setCreateContainerStructure(false);
-			importOperation.run(countDownMonitor(importFlag));
-		} catch (InvocationTargetException e) {
-			throw Exceptions.duck(e.getTargetException());
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
-		}
+		String projectName = sourceProject.getFileName()
+			.toString();
+		IProject project = wsr.getProject(projectName);
+		ImportOperation importOperation = new ImportOperation(project.getFullPath(), sourceProject.toFile(),
+			FileSystemStructureProvider.INSTANCE, overwriteQuery);
+		importOperation.setCreateContainerStructure(false);
+		Job importJob = Job.create("Import workspace", monitor -> {
+			try {
+				importOperation.run(monitor);
+			} catch (InterruptedException e) {
+				throw Exceptions.duck(e);
+			} catch (InvocationTargetException e) {
+				throw Exceptions.duck(e.getTargetException());
+			} finally {
+				importFlag.countDown();
+			}
+		});
+		importJob.schedule();
 	}
 }

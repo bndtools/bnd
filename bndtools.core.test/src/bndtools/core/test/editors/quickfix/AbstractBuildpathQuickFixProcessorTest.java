@@ -129,7 +129,8 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 	@BeforeAll
 	static void beforeAllBase() throws Exception {
 		// Get a handle on the repo. I have seen this come back null on occasion
-		// so spin until we get it.
+		// but not exactly sure why and spinning doesn't seem to fix it; ref
+		// #4253
 		LocalIndexedRepo localRepo = (LocalIndexedRepo) Central.getWorkspace()
 			.getRepository("Local Index");
 		int count = 0;
@@ -185,6 +186,19 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 
 		IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(sourceFolder);
 		synchronously("createPackageFragment", monitor -> pack = root.createPackageFragment("test", false, monitor));
+
+		// Wait for build to finish - attempted fix for #4553.
+		//
+		// Note that there is a possible race condition here as I'm not sure if
+		// it's guaranteed that the build would have started yet; if we start
+		// trying to wait for it before it actually starts it might return
+		// straight away instead of waiting for the finish. Need to think of a
+		// way to make sure we don't start waiting for it to finish until we
+		// know that it's already started.
+		Job.getJobManager()
+			.join(ResourcesPlugin.FAMILY_MANUAL_BUILD, null);
+		Job.getJobManager()
+			.join(ResourcesPlugin.FAMILY_AUTO_BUILD, null);
 	}
 
 	protected static final String DEFAULT_CLASS_NAME = "Test";
@@ -383,11 +397,6 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 			problem = null;
 			locs = null;
 			this.source = source;
-			// Wait for build to finish
-			Job.getJobManager()
-				.join(ResourcesPlugin.FAMILY_MANUAL_BUILD, null);
-			Job.getJobManager()
-				.join(ResourcesPlugin.FAMILY_AUTO_BUILD, null);
 
 			// First create our AST
 			ICompilationUnit icu = pack.createCompilationUnit(className + ".java", source, true, null);

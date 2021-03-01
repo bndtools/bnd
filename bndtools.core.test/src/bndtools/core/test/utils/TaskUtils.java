@@ -1,10 +1,10 @@
 package bndtools.core.test.utils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 
 import aQute.lib.exceptions.Exceptions;
 
@@ -16,21 +16,23 @@ public class TaskUtils {
 		// System.err.println(System.currentTimeMillis() + ": " + msg);
 	}
 
-	public static IProgressMonitor countDownMonitor(CountDownLatch flag) {
-		return new NullProgressMonitor() {
-			@Override
-			public void done() {
-				flag.countDown();
-			}
-		};
-	}
-
 	public static void synchronously(String msg, MonitoredTask task) {
 		try {
 			String suffix = msg == null ? "" : ": " + msg;
 			CountDownLatch flag = new CountDownLatch(1);
 			log("Synchronously executing" + suffix);
-			task.run(countDownMonitor(flag));
+			Job job = Job.create(msg, monitor -> {
+				try {
+					task.run(monitor);
+				} catch (InvocationTargetException e) {
+					throw Exceptions.duck(e.getTargetException());
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				} finally {
+					flag.countDown();
+				}
+			});
+			job.schedule();
 			log("Waiting for flag" + suffix);
 			if (!flag.await(10000, TimeUnit.MILLISECONDS)) {
 				log("WARN: timed out waiting for operation to finish" + suffix);
