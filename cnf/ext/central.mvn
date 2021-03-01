@@ -139,8 +139,6 @@ com.github.javaparser:javaparser-core:3.13.10
 javax.json:javax.json-api:1.1.2
 javax.json.bind:javax.json.bind-api:1.0
 
-org.apiguardian:apiguardian-api:1.1.0
-
 org.apache.maven:maven-artifact:${maven.target.version}
 org.apache.maven:maven-core:${maven.target.version}
 org.apache.maven:maven-model:${maven.target.version}
