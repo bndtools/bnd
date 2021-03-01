@@ -65,7 +65,6 @@ import org.eclipse.jdt.internal.corext.dom.IASTSharedValues;
 import org.eclipse.jdt.internal.corext.dom.TokenScanner;
 import org.eclipse.jdt.internal.corext.refactoring.StubTypeContext;
 import org.eclipse.jdt.internal.corext.refactoring.TypeContextChecker;
-import org.eclipse.jdt.internal.corext.template.java.JavaContext;
 import org.eclipse.jdt.internal.corext.util.CodeFormatterUtil;
 import org.eclipse.jdt.internal.corext.util.JavaConventionsUtil;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
@@ -103,10 +102,7 @@ import org.eclipse.jdt.ui.wizards.NewContainerWizardPage;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.text.templates.Template;
-import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.ISelection;
@@ -2590,49 +2586,6 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 	protected String getTypeComment(ICompilationUnit parentCU) {
 		if (StubUtility.doAddComments(parentCU.getJavaProject()))
 			return getTypeComment(parentCU, StubUtility.getLineDelimiterUsed(parentCU));
-		return null;
-	}
-
-	/**
-	 * @param name the name of the template
-	 * @param parentCU the current compilation unit
-	 * @return returns the template or <code>null</code>
-	 * @deprecated Use getTemplate(String,ICompilationUnit,int)
-	 */
-	@Deprecated
-	protected String getTemplate(String name, ICompilationUnit parentCU) {
-		return getTemplate(name, parentCU, 0);
-	}
-
-	/**
-	 * Returns the string resulting from evaluation the given template in the
-	 * context of the given compilation unit. This accesses the normal template
-	 * page, not the code templates. To use code templates use
-	 * <code>constructCUContent</code> to construct a compilation unit stub or
-	 * getTypeComment for the comment of the type.
-	 *
-	 * @param name the template to be evaluated
-	 * @param parentCU the templates evaluation context
-	 * @param pos a source offset into the parent compilation unit. The template
-	 *            is evaluated at the given source offset
-	 * @return return the template with the given name or <code>null</code> if
-	 *         the template could not be found.
-	 */
-	protected String getTemplate(String name, ICompilationUnit parentCU, int pos) {
-		try {
-			Template template = JavaPlugin.getDefault()
-				.getTemplateStore()
-				.findTemplate(name);
-			if (template != null) {
-				return JavaContext.evaluateTemplate(template, parentCU, pos);
-			}
-		} catch (CoreException e) {
-			JavaPlugin.log(e);
-		} catch (BadLocationException e) {
-			JavaPlugin.log(e);
-		} catch (TemplateException e) {
-			JavaPlugin.log(e);
-		}
 		return null;
 	}
 

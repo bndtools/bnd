@@ -82,14 +82,6 @@
 	bnd.identity;id='org.eclipse.equinox.console',\
 	bnd.identity;id='org.eclipse.equinox.event',\
 	bnd.identity;id='org.eclipse.jdt.annotation',\
-	bnd.identity;id='org.eclipse.pde.build',\
-	bnd.identity;id='org.eclipse.pde.core',\
-	bnd.identity;id='org.eclipse.pde.genericeditor.extension',\
-	bnd.identity;id='org.eclipse.pde.launching',\
-	bnd.identity;id='org.eclipse.pde.runtime',\
-	bnd.identity;id='org.eclipse.pde.ua.core',\
-	bnd.identity;id='org.eclipse.pde.ua.ui',\
-	bnd.identity;id='org.eclipse.pde.ui',\
 	bnd.identity;id='org.eclipse.m2e.binaryproject.ui',\
 	bnd.identity;id='org.eclipse.m2e.discovery',\
 	bnd.identity;id='org.eclipse.m2e.editor',\
@@ -102,17 +94,27 @@
 	bnd.identity;id='org.eclipse.m2e.refactoring',\
 	bnd.identity;id='org.eclipse.m2e.scm',\
 	bnd.identity;id='org.eclipse.m2e.sourcelookup.ui',\
+	bnd.identity;id='org.eclipse.osgi.compatibility.state',\
+	bnd.identity;id='org.eclipse.pde.build',\
+	bnd.identity;id='org.eclipse.pde.core',\
+	bnd.identity;id='org.eclipse.pde.genericeditor.extension',\
+	bnd.identity;id='org.eclipse.pde.launching',\
+	bnd.identity;id='org.eclipse.pde.runtime',\
+	bnd.identity;id='org.eclipse.pde.ua.core',\
+	bnd.identity;id='org.eclipse.pde.ua.ui',\
+	bnd.identity;id='org.eclipse.pde.ui',\
 	bnd.identity;id='org.eclipse.sdk',\
 	bnd.identity;id='org.eclipse.ui.browser',\
 	bnd.identity;id='org.eclipse.ui.console',\
 	bnd.identity;id='org.eclipse.ui.ide',\
 	bnd.identity;id='org.eclipse.ui.ide.application',\
 	bnd.identity;id='org.junit.platform.engine',\
-	bnd.identity;id='org.junit.platform.launcher',\
-	bnd.identity;id='org.eclipse.osgi.compatibility.state'
+	bnd.identity;id='org.junit.platform.launcher'
 
 -runblacklist: \
-	bnd.identity;id='biz.aQute.bnd.annotation'
+	bnd.identity;id='biz.aQute.bnd.annotation',\
+	bnd.identity;id='biz.aQute.bnd.transform',\
+	bnd.identity;id='biz.aQute.junit'
 
 -runrepos: \
 	"Workspace",\

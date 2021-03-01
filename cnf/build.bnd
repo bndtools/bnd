@@ -55,7 +55,7 @@ Bundle-Developers: \
         timezone=1, \
     bjhargrave; \
         name="BJ Hargrave"; \
-        email="bj@bjhargrave.com"; \
+        email="bj@hargrave.dev"; \
         url="https://github.com/bjhargrave"; \
         organization="IBM"; \
         organizationUrl="https://developer.ibm.com"; \

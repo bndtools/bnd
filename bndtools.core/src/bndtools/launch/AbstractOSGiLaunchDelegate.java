@@ -262,7 +262,12 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 	 * versions of Eclipse.
 	 */
 	@Override
+	@SuppressWarnings("deprecation")
 	public String[] getClasspath(ILaunchConfiguration configuration) throws CoreException {
+		return getProjectClasspath();
+	}
+
+	private String[] getProjectClasspath() throws CoreException {
 		Collection<String> paths = getProjectLauncher().getClasspath();
 		return paths.toArray(new String[0]);
 	}
@@ -282,7 +287,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 			classpathAndModulepath = new String[2][];
 			classpathAndModulepath[1] = new String[0];
 		}
-		classpathAndModulepath[0] = getClasspath(config);
+		classpathAndModulepath[0] = getProjectClasspath();
 		return classpathAndModulepath;
 	}
 
