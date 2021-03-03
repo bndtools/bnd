@@ -1,21 +1,25 @@
 package bndtools.core.test.utils;
 
-import static bndtools.core.test.utils.TaskUtils.log;
-
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 
+import aQute.bnd.build.Workspace;
 import aQute.lib.exceptions.Exceptions;
+import bndtools.central.Central;
 
 public class WorkspaceImporter {
 	private static final IOverwriteQuery	overwriteQuery	= file -> IOverwriteQuery.ALL;
@@ -30,21 +34,6 @@ public class WorkspaceImporter {
 		this.root = root;
 	}
 
-	public static void importProject(Path sourceProject) {
-		CountDownLatch importFlag = new CountDownLatch(1);
-		importProject(sourceProject, importFlag);
-		log("Waiting for import of " + sourceProject);
-		try {
-			if (!importFlag.await(10000, TimeUnit.MILLISECONDS)) {
-				log("WARN: timed out waiting for import to finish " + sourceProject);
-			} else {
-				log("Finished waiting for import " + sourceProject);
-			}
-		} catch (InterruptedException e) {
-			throw Exceptions.duck(e);
-		}
-	}
-
 	public void reimportProject(String projectName) {
 		try {
 			IWorkspaceRoot wsr = ResourcesPlugin.getWorkspace()
@@ -54,21 +43,64 @@ public class WorkspaceImporter {
 			if (project.exists()) {
 				project.delete(true, true, null);
 			}
-			importProject(root.resolve(projectName));
+			importProject(root.resolve(projectName), null);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
 
 	public void importProject(String project) {
-		importProject(root.resolve(project));
+		importProject(root.resolve(project), null);
 	}
 
-	public void importProject(String project, CountDownLatch importFlag) {
-		importProject(root.resolve(project), importFlag);
+	// First cleans the workspace of all existing projects and then imports the
+	// specified projects.
+	// Wraps all of the operations into a single WorkspaceJob to avoid multiple
+	// resource change events.
+	public static void importAllProjects(Stream<Path> projects) {
+		IWorkspace ws = ResourcesPlugin.getWorkspace();
+		IWorkspaceRoot wsr = ResourcesPlugin.getWorkspace()
+			.getRoot();
+		Job job = new WorkspaceJob("Clean and import all") {
+			@Override
+			public IStatus runInWorkspace(IProgressMonitor monitor) {
+				try {
+					// Clean the workspace
+					IProject[] existingProjects = wsr.getProjects();
+					for (IProject project : existingProjects) {
+						project.delete(true, true, monitor);
+					}
+
+					projects.forEach(path -> importProject(path, monitor));
+
+					// Manually refresh the workspace now that cnf has been
+					// imported as the CnfWatcher may not have been installed
+					// yet; see #4253.
+					Workspace ws = Central.getWorkspace();
+					ws.clear();
+					ws.forceRefresh();
+					ws.getPlugins();
+					return Status.OK_STATUS;
+				} catch (Exception e) {
+					return new Status(IStatus.ERROR, WorkspaceImporter.class, 0,
+						"Error during import: " + e.getMessage(), e);
+				}
+			}
+		};
+		// Lock the entire workspace so that we don't run simultaneously with
+		// other jobs; see eg #4573.
+		job.setRule(wsr);
+		job.schedule();
+		try {
+			if (!job.join(10000, null)) {
+				throw new IllegalStateException("Timed out waiting for workspace import to complete");
+			}
+		} catch (InterruptedException e) {
+			throw Exceptions.duck(e);
+		}
 	}
 
-	public static void importProject(Path sourceProject, CountDownLatch importFlag) {
+	public static void importProject(Path sourceProject, IProgressMonitor monitor) {
 		IWorkspaceRoot wsr = ResourcesPlugin.getWorkspace()
 			.getRoot();
 
@@ -78,17 +110,12 @@ public class WorkspaceImporter {
 		ImportOperation importOperation = new ImportOperation(project.getFullPath(), sourceProject.toFile(),
 			FileSystemStructureProvider.INSTANCE, overwriteQuery);
 		importOperation.setCreateContainerStructure(false);
-		Job importJob = Job.create("Import workspace", monitor -> {
-			try {
-				importOperation.run(monitor);
-			} catch (InterruptedException e) {
-				throw Exceptions.duck(e);
-			} catch (InvocationTargetException e) {
-				throw Exceptions.duck(e.getTargetException());
-			} finally {
-				importFlag.countDown();
-			}
-		});
-		importJob.schedule();
+		try {
+			importOperation.run(monitor);
+		} catch (InterruptedException e) {
+			throw Exceptions.duck(e);
+		} catch (InvocationTargetException e) {
+			throw Exceptions.duck(e.getTargetException());
+		}
 	}
 }
