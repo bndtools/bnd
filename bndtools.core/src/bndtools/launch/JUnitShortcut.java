@@ -162,7 +162,7 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
 			ICompilationUnit cUnit = method.getCompilationUnit();
 			// Parse the source
 			// (the language specification version should suit your needs)
-			ASTParser parser = ASTParser.newParser(AST.JLS11);
+			ASTParser parser = ASTParser.newParser(AST.JLS14);
 			parser.setSource(cUnit);
 			// Need the bindings to get the fully-qualified names.
 			parser.setResolveBindings(true);

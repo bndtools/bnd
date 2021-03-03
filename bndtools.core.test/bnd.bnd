@@ -10,6 +10,7 @@
 # the bundles to ensure the necessary dependencies have already been built.
 -dependson: \
     biz.aQute.bnd.annotation,\
+    biz.aQute.bnd.embedded-repo,\
     biz.aQute.bndlib,\
     biz.aQute.repository,\
     biz.aQute.resolve,\

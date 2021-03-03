@@ -508,7 +508,7 @@ version(s), and exceptions or additional permissions here}.&quot;
    </url>
 
    <requires>
-      <import feature="org.eclipse.m2e.feature" version="1.10.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.m2e.feature" version="1.16.0" match="greaterOrEqual"/>
       <import feature="bndtools.main.feature" version="@master-version@" match="equivalent"/>
    </requires>
 
