@@ -32,6 +32,7 @@ defaults:
 jobs:
   Build_Matrix:
     strategy:
+      fail-fast: false
       matrix:
         os: [ ubuntu-latest ]
         java: [ 11, 15 ]
