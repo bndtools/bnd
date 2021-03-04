@@ -25,14 +25,15 @@ import org.eclipse.core.filesystem.provider.FileStore;
 import org.eclipse.core.filesystem.provider.FileSystem;
 import org.eclipse.core.internal.filesystem.NullFileStore;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 
 import aQute.bnd.service.result.Result;
 import aQute.lib.io.IO;
 import aQute.lib.io.NonClosingInputStream;
-import aQute.lib.strings.Strings;
 import aQute.lib.zip.ZipUtil;
 import aQute.libg.uri.URIUtil;
 
@@ -56,7 +57,6 @@ public class JarFileSystem extends FileSystem {
 
 	private static final Pattern									JARF_P			= Pattern
 		.compile("jarf:///(?<fileuri>.*)!(?<path>(/[^!]*)+)");
-	private final static Pattern									PATH_SPLITTER	= Pattern.compile("/");
 
 	static abstract class JarNode extends FileStore {
 		final JarNode	parent;
@@ -76,6 +76,16 @@ public class JarFileSystem extends FileSystem {
 		@Override
 		public IFileInfo fetchInfo(int options, IProgressMonitor monitor) throws CoreException {
 			return info;
+		}
+
+		@Override
+		public String[] childNames(int options, IProgressMonitor monitor) throws CoreException {
+			return EMPTY_STRING_ARRAY;
+		}
+
+		@Override
+		public IFileStore getChild(String name) {
+			return new NullFileStore(new Path(getPath()).append(name));
 		}
 
 		@Override
@@ -120,7 +130,11 @@ public class JarFileSystem extends FileSystem {
 
 		@Override
 		public IFileStore getChild(String name) {
-			return children.get(name);
+			JarNode node = children.get(name);
+			if (node != null) {
+				return node;
+			}
+			return super.getChild(name);
 		}
 
 		@Override
@@ -128,11 +142,11 @@ public class JarFileSystem extends FileSystem {
 			throw new UnsupportedOperationException();
 		}
 
-		void createdNode(String path, String[] split, int index, long size, long modified) {
-			int segment = split.length - index;
-			assert segment > 0;
-			String name = split[index];
-			if (segment == 1) {
+		void createdNode(IPath path, int segment, long size, long modified) {
+			int remainingSegments = path.segmentCount() - segment;
+			assert remainingSegments > 0;
+			String name = path.segment(segment);
+			if (remainingSegments == 1) {
 				JarFileNode node = new JarFileNode(this, name, size, modified);
 				JarNode previous = children.put(name, node);
 				assert previous == null;
@@ -142,7 +156,7 @@ public class JarFileSystem extends FileSystem {
 				assert node instanceof JarFolderNode;
 
 				JarFolderNode dir = (JarFolderNode) node;
-				dir.createdNode(path, split, index + 1, size, modified);
+				dir.createdNode(path, segment + 1, size, modified);
 			}
 		}
 
@@ -181,16 +195,6 @@ public class JarFileSystem extends FileSystem {
 
 		JarFileNode(JarNode parent, String name, long length, long lastModified) {
 			super(parent, name, true, false, length, lastModified);
-		}
-
-		@Override
-		public String[] childNames(int options, IProgressMonitor monitor) throws CoreException {
-			return EMPTY_STRING_ARRAY;
-		}
-
-		@Override
-		public IFileStore getChild(String name) {
-			return null;
 		}
 
 		@Override
@@ -238,16 +242,15 @@ public class JarFileSystem extends FileSystem {
 						if (entry.isDirectory()) {
 							continue;
 						}
-						String path = ZipUtil.cleanPath(entry.getName());
-						String[] segments = PATH_SPLITTER.split(path);
+						IPath path = new Path(null, ZipUtil.cleanPath(entry.getName()));
 						long size = entry.getSize();
 						if (size < 0) {
 							size = IO.drain(new NonClosingInputStream(jin));
 						}
 						try {
-							node.createdNode(path, segments, 0, size, ZipUtil.getModifiedTime(entry));
+							node.createdNode(path, 0, size, ZipUtil.getModifiedTime(entry));
 						} catch (Exception e) {
-							node.createdNode(path, segments, 0, -1, 0);
+							node.createdNode(path, 0, -1, 0);
 						}
 					}
 				} catch (Exception e) {
@@ -264,17 +267,12 @@ public class JarFileSystem extends FileSystem {
 				return Result.ok(root);
 			}
 
-			Iterable<String> segments = PATH_SPLITTER.splitAsStream(ss[1])
-				.filter(Strings::notEmpty)::iterator;
-			JarNode rover = root;
-			for (String segment : segments) {
-				if (!(rover instanceof JarFolderNode)) {
-					return Result.ok(new NullFileStore(null));
-				}
-				JarFolderNode jfn = (JarFolderNode) rover;
-				rover = (JarNode) rover.getChild(segment);
+			IPath path = new Path(null, ss[1]);
+			IFileStore node = root;
+			for (int segment = 0, segmentCount = path.segmentCount(); segment < segmentCount; segment++) {
+				node = node.getChild(path.segment(segment));
 			}
-			return Result.ok(rover);
+			return Result.ok(node);
 		})
 			.orElse(null);
 	}
