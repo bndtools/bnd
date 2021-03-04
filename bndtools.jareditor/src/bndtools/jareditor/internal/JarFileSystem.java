@@ -1,6 +1,9 @@
 package bndtools.jareditor.internal;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -35,6 +38,7 @@ import aQute.bnd.service.result.Result;
 import aQute.lib.io.IO;
 import aQute.lib.io.NonClosingInputStream;
 import aQute.lib.zip.ZipUtil;
+import aQute.libg.tuple.Pair;
 import aQute.libg.uri.URIUtil;
 
 /**
@@ -49,33 +53,42 @@ import aQute.libg.uri.URIUtil;
  * @author aqute
  */
 public class JarFileSystem extends FileSystem {
-	private static final ILogger									logger			= Logger
-		.getLogger(JarFileSystem.class);
+	private static final ILogger									logger		= Logger.getLogger(JarFileSystem.class);
 
-	private static final String										SCHEME_JAR		= "jarf";
-	private final ConcurrentMap<IFileStore, Reference<JarRootNode>>	roots			= new ConcurrentHashMap<>();
+	private static final String										SCHEME_JARF	= "jarf";
+	private final ConcurrentMap<IFileStore, Reference<JarRootNode>>	roots		= new ConcurrentHashMap<>();
 
-	private static final Pattern									JARF_P			= Pattern
+	private static final Pattern									JARF_P		= Pattern
 		.compile("jarf:///(?<fileuri>.*)!(?<path>(/[^!]*)+)");
 
 	static abstract class JarNode extends FileStore {
-		final JarNode	parent;
-		final String	name;
-		final FileInfo	info;
+		private final JarFolderNode	parent;
+		private final String		path;
+		private final IFileInfo		info;
 
-		JarNode(JarNode parent, String name, boolean exists, boolean dir, long length, long lastModified) {
+		JarNode(JarFolderNode parent, IPath path, boolean dir, long length, long lastModified) {
 			this.parent = parent;
-			this.name = name;
-			this.info = new FileInfo(name);
-			this.info.setDirectory(dir);
-			this.info.setExists(exists);
-			this.info.setLength(length);
-			this.info.setLastModified(lastModified);
+			this.path = requireNonNull(path).toString();
+			String name = path.lastSegment();
+			if (name == null) {
+				name = "";
+			}
+			FileInfo info = new FileInfo(name);
+			info.setDirectory(dir);
+			info.setExists(true);
+			info.setLength(length);
+			info.setLastModified(lastModified);
+			this.info = info;
+		}
+
+		@Override
+		public IFileInfo fetchInfo() {
+			return info;
 		}
 
 		@Override
 		public IFileInfo fetchInfo(int options, IProgressMonitor monitor) throws CoreException {
-			return info;
+			return fetchInfo();
 		}
 
 		@Override
@@ -89,37 +102,49 @@ public class JarFileSystem extends FileSystem {
 		}
 
 		@Override
-		public String getName() {
-			return name;
+		public InputStream openInputStream(int options, IProgressMonitor monitor) throws CoreException {
+			return new ByteArrayInputStream(new byte[0]);
 		}
 
 		@Override
-		public IFileStore getParent() {
+		public String getName() {
+			return fetchInfo().getName();
+		}
+
+		@Override
+		public JarFolderNode getParent() {
 			return parent;
 		}
 
 		URI jar() {
-			return parent.jar();
+			return getParent().jar();
 		}
 
-		abstract String getPath();
+		String getPath() {
+			return path;
+		}
 
 		@Override
 		public URI toURI() {
 			String path = getPath();
 			URI jar = jar();
-			return jarf(jar, path).orElseThrow(IllegalArgumentException::new);
+			return jarf(jar, path).orElseThrow(IllegalStateException::new);
 		}
-
 	}
 
 	static class JarFolderNode extends JarNode {
+		private final Map<String, JarNode> children = new LinkedHashMap<>();
 
-		JarFolderNode(JarNode parent, String name) {
-			super(parent, name, true, true, 0, 0);
+		JarFolderNode(JarFolderNode parent, IPath path) {
+			super(requireNonNull(parent), path, true, 0L, 0L);
 		}
 
-		final Map<String, JarNode> children = new LinkedHashMap<>();
+		JarFolderNode(IFileStore store) { // for root node
+			super(null, Path.EMPTY, true, store.fetchInfo()
+				.getLength(),
+				store.fetchInfo()
+					.getLastModified());
+		}
 
 		@Override
 		public String[] childNames(int options, IProgressMonitor monitor) throws CoreException {
@@ -137,172 +162,145 @@ public class JarFileSystem extends FileSystem {
 			return super.getChild(name);
 		}
 
-		@Override
-		public InputStream openInputStream(int options, IProgressMonitor monitor) throws CoreException {
-			throw new UnsupportedOperationException();
-		}
-
-		void createdNode(IPath path, int segment, long size, long modified) {
+		void createdNode(IPath path, int segment, long length, long lastModified) {
 			int remainingSegments = path.segmentCount() - segment;
 			assert remainingSegments > 0;
 			String name = path.segment(segment);
 			if (remainingSegments == 1) {
-				JarFileNode node = new JarFileNode(this, name, size, modified);
+				JarFileNode node = new JarFileNode(this, path, length, lastModified);
 				JarNode previous = children.put(name, node);
 				assert previous == null;
 			} else {
-				JarNode node = children.computeIfAbsent(name, s -> new JarFolderNode(this, s));
-
+				int nextSegment = segment + 1;
+				IPath folderPath = path.uptoSegment(nextSegment);
+				JarNode node = children.computeIfAbsent(name,
+					s -> new JarFolderNode(this, folderPath));
 				assert node instanceof JarFolderNode;
-
-				JarFolderNode dir = (JarFolderNode) node;
-				dir.createdNode(path, segment + 1, size, modified);
+				JarFolderNode folder = (JarFolderNode) node;
+				folder.createdNode(path, nextSegment, length, lastModified);
 			}
 		}
-
-		@Override
-		String getPath() {
-			return parent.getPath() + name + "/";
-		}
-
 	}
 
 	static class JarRootNode extends JarFolderNode {
-
-		final URI uri;
+		private final URI uri;
 
 		JarRootNode(IFileStore store) {
-			super(null, "");
+			super(store);
 			this.uri = store.toURI();
-			IFileInfo storeInfo = store.fetchInfo();
-			this.info.setLength(storeInfo.getLength());
-			this.info.setLastModified(storeInfo.getLastModified());
 		}
 
 		@Override
 		URI jar() {
 			return uri;
 		}
-
-		@Override
-		String getPath() {
-			return "";
-		}
-
 	}
 
 	static class JarFileNode extends JarNode {
-
-		JarFileNode(JarNode parent, String name, long length, long lastModified) {
-			super(parent, name, true, false, length, lastModified);
+		JarFileNode(JarFolderNode parent, IPath path, long length, long lastModified) {
+			super(requireNonNull(parent), path, false, length, lastModified);
 		}
 
 		@Override
 		public InputStream openInputStream(int options, IProgressMonitor monitor) throws CoreException {
 			return JarFileSystem.openInputStream(jar(), getPath(), monitor)
-				.orElseThrow(s -> {
-					Status status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, s);
-					return new CoreException(status);
-				});
-		}
-
-		@Override
-		String getPath() {
-			return parent.getPath() + name;
+				.mapErr(err -> new Status(IStatus.ERROR, Plugin.PLUGIN_ID, err))
+				.orElseThrow(CoreException::new);
 		}
 	}
 
 	@Override
 	public IFileStore getStore(URI uri) {
-		if (!SCHEME_JAR.equals(uri.getScheme())) {
-			throw new IllegalArgumentException("No file system for " + uri);
+		if (!SCHEME_JARF.equals(uri.getScheme())) {
+			logger.logError("No file system for : " + uri, null);
+			return new NullFileStore(Path.EMPTY);
 		}
-		return jarf(uri).flatMap(ss -> {
-			URI fileuri = new URI(ss[0]);
-			IFileStore store = EFS.getStore(fileuri);
-			if (store == null) {
-				return Result.err("Cannot locate filestore for the JAR file: %s", uri);
+		return jarf(uri).map(pair -> {
+			URI fileuri = pair.getFirst();
+			IFileStore store;
+			try {
+				store = EFS.getStore(fileuri);
+			} catch (CoreException e) {
+				logger.logError("Cannot locate filestore for the JAR file: " + fileuri, e);
+				return new NullFileStore(Path.EMPTY);
 			}
 
-			JarRootNode root = roots.compute(store, (key, ref) -> {
-				if (ref != null) {
-					JarRootNode current = ref.get();
-					if (current != null) {
-						IFileInfo currentInfo = current.fetchInfo();
-						IFileInfo keyInfo = key.fetchInfo();
-						if ((currentInfo.getLastModified() == keyInfo.getLastModified())
-							&& (currentInfo.getLength() == keyInfo.getLength())) {
-							return ref;
-						}
-					}
-				}
-				JarRootNode node = new JarRootNode(key);
-				try (ZipInputStream jin = new ZipInputStream(new BufferedInputStream(key.openInputStream(0, null)))) {
-					for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
-						if (entry.isDirectory()) {
-							continue;
-						}
-						IPath path = new Path(null, ZipUtil.cleanPath(entry.getName()));
-						long size = entry.getSize();
-						if (size < 0) {
-							size = IO.drain(new NonClosingInputStream(jin));
-						}
-						try {
-							node.createdNode(path, 0, size, ZipUtil.getModifiedTime(entry));
-						} catch (Exception e) {
-							node.createdNode(path, 0, -1, 0);
-						}
-					}
-				} catch (Exception e) {
-					logger.logError("Error processing zip file " + key.toString(), e);
-				}
-				return new WeakReference<>(node);
-			})
+			JarRootNode root = roots.compute(store, this::computeRootNode)
 				.get();
-
 			if (root == null) {
-				return Result.err("Failed to load jar for %s", fileuri);
-			}
-			if (ss[1] == null || ss[1].equals("/") || ss[1].isEmpty()) {
-				return Result.ok(root);
+				logger.logError("Failed to load jar for: " + fileuri, null);
+				return new NullFileStore(Path.EMPTY);
 			}
 
-			IPath path = new Path(null, ss[1]);
+			IPath path = pair.getSecond();
 			IFileStore node = root;
 			for (int segment = 0, segmentCount = path.segmentCount(); segment < segmentCount; segment++) {
 				node = node.getChild(path.segment(segment));
 			}
-			return Result.ok(node);
+			return node;
 		})
-			.orElse(null);
+			.recover(err -> {
+				logger.logError(err, null);
+				return new NullFileStore(Path.EMPTY);
+			})
+			.unwrap();
+	}
+
+	private Reference<JarRootNode> computeRootNode(IFileStore store, Reference<JarRootNode> ref) {
+		if (ref != null) {
+			JarRootNode current = ref.get();
+			if (current != null) {
+				IFileInfo currentInfo = current.fetchInfo();
+				IFileInfo storeInfo = store.fetchInfo();
+				if ((currentInfo.getLastModified() == storeInfo.getLastModified())
+					&& (currentInfo.getLength() == storeInfo.getLength())) {
+					return ref;
+				}
+			}
+		}
+		JarRootNode root = new JarRootNode(store);
+		try (ZipInputStream jin = new ZipInputStream(new BufferedInputStream(store.openInputStream(EFS.NONE, null)))) {
+			for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
+				if (entry.isDirectory()) {
+					continue;
+				}
+				IPath path = new Path(null, ZipUtil.cleanPath(entry.getName()));
+				long size = entry.getSize();
+				if (size < 0) {
+					size = IO.drain(new NonClosingInputStream(jin));
+				}
+				try {
+					root.createdNode(path, 0, size, ZipUtil.getModifiedTime(entry));
+				} catch (Exception e) {
+					root.createdNode(path, 0, -1L, 0L);
+				}
+			}
+		} catch (Exception e) {
+			logger.logError("Error processing zip file " + store.toString(), e);
+		}
+		return new WeakReference<>(root);
 	}
 
 	static Result<URI, String> jarf(URI jarfileuri, String path) {
 		try {
-			if (path == null)
-				path = "/";
-			else if (!path.startsWith("/"))
-				path = "/".concat(path);
-			return Result.ok(new URI("jarf:///" + jarfileuri.toString() + "!" + URIUtil.encodePath(path)));
+			String separator = path.startsWith("/") ? "!" : "!/";
+			return Result
+				.ok(new URI("jarf:///" + jarfileuri.toString() + separator + URIUtil.encodePath(path)));
 		} catch (Exception e) {
 			return Result.err("failed to construct uri from jar uri=%sm path = %s: %s", jarfileuri, path, e);
 		}
 	}
 
-	static Result<String[], String> jarf(URI uri) {
-		if (uri == null)
-			return Result.err("uri parameter is null");
-
+	static Result<Pair<URI, IPath>, String> jarf(URI uri) {
 		String s = uri.toString();
 		Matcher matcher = JARF_P.matcher(s);
 		if (!matcher.matches()) {
-			return Result.err("%s is not a proper %s URI ", uri, SCHEME_JAR);
+			return Result.err("%s is not a proper %s URI ", uri, SCHEME_JARF);
 		}
 
-		String[] result = new String[2];
-		result[0] = matcher.group("fileuri");
-		result[1] = matcher.group("path");
-		return Result.ok(result);
+		URI fileuri = URI.create(matcher.group("fileuri"));
+		IPath path = new Path(null, matcher.group("path")).makeRelative();
+		return Result.ok(new Pair<>(fileuri, path));
 	}
 
 	static Result<InputStream, String> openInputStream(URI uri, String path, IProgressMonitor monitor)
