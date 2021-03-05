@@ -240,9 +240,10 @@ public class Central implements IStartupParticipant {
 				// one
 				File workspaceDirectory = getWorkspaceDirectory();
 				// Check to see if we need to convert it...
-				if (workspaceDirectory != null && ws.isDefaultWorkspace()) {
+				if (workspaceDirectory != null && !workspaceDirectory.equals(ws.getBase())) {
 					// There is a "cnf" project and the current workspace is
-					// the default, so switch the workspace to the directory
+					// not the same as the directory the cnf project is in,
+					// so switch the workspace to the directory
 					ws.setFileSystem(workspaceDirectory, Workspace.CNFDIR);
 					ws.forceRefresh();
 					ws.refresh();
