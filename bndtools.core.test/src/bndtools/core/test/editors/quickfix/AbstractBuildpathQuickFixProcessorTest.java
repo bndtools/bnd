@@ -40,10 +40,7 @@ import org.assertj.core.presentation.Representation;
 import org.assertj.core.presentation.StandardRepresentation;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResourceVisitor;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -80,6 +77,7 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.unmodifiable.Sets;
 import bndtools.central.Central;
+import bndtools.core.test.utils.TaskUtils;
 import bndtools.core.test.utils.WorkbenchTest;
 
 @ExtendWith(SoftAssertionsExtension.class)
@@ -117,39 +115,21 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 			.isAssignableFrom(sutClass);
 	}
 
-	static IResourceVisitor VISITOR = resource -> {
-		System.err.println(resource.getFullPath());
-		return true;
-	};
-
-	static void dumpWorkspace() throws CoreException {
-		IWorkspace ws = ResourcesPlugin.getWorkspace();
-		ws.getRoot()
-			.accept(VISITOR);
-	}
-
 	@BeforeAll
 	static void beforeAllBase() throws Exception {
 		// Get a handle on the repo. I have seen this come back null on occasion
 		// but not exactly sure why and spinning doesn't seem to fix it; ref
 		// #4253
-		LocalIndexedRepo localRepo = (LocalIndexedRepo) Central.getWorkspace()
+		final LocalIndexedRepo localRepo = (LocalIndexedRepo) Central.getWorkspace()
 			.getRepository("Local Index");
-		int count = 0;
-		while (localRepo == null) {
-			Thread.sleep(100);
-			localRepo = (LocalIndexedRepo) Central.getWorkspace()
-				.getRepository("Local Index");
-			if (count++ > 100) {
-				dumpWorkspace();
-				System.err.println("Repositories: " + Central.getWorkspace()
-					.getRepositories());
-				throw new IllegalStateException("Timed out waiting for Local Index");
-			}
+
+		if (localRepo == null) {
+			log("Central.getWorkspace(): " + Central.getWorkspace()
+				.getBase());
+			TaskUtils.dumpWorkspace();
+			throw new IllegalStateException("Could not find Local Index");
 		}
-		// Copy bundles from the parent project into our test workspace
-		// LocalIndexedRepo
-		final LocalIndexedRepo theRepo = localRepo;
+
 		Path bundleRoot = Paths.get(System.getProperty("bndtools.core.test.dir"))
 			.resolve("./generated/");
 		Files.walk(bundleRoot, 1)
@@ -158,7 +138,7 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 				.contains(".fodder."))
 			.forEach(bundle -> {
 				try {
-					theRepo.put(IO.stream(bundle), null);
+					localRepo.put(IO.stream(bundle), null);
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
 				}
@@ -169,13 +149,13 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 			.getRoot()
 			.getProject("test");
 		if (eclipseProject == null) {
-			dumpWorkspace();
+			TaskUtils.dumpWorkspace();
 			throw new IllegalStateException("Could not get project \"test\" from the current workspace");
 		}
 		bndProject = Central.getProject(eclipseProject);
 		if (bndProject == null) {
 			System.err.println("eclipseProject: " + eclipseProject.getName());
-			dumpWorkspace();
+			TaskUtils.dumpWorkspace();
 			throw new IllegalStateException("Could not get bndProject from the current workspace");
 		}
 		synchronously("open project", eclipseProject::open);
