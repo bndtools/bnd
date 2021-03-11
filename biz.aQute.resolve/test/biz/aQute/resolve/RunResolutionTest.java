@@ -7,8 +7,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.junit.jupiter.api.AfterEach;
@@ -58,6 +60,22 @@ public class RunResolutionTest {
 		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
 		String resolve = bndrun.resolve(false, false);
 		assertThat(bndrun.check()).isTrue();
+	}
+
+	@Test
+	public void testExcludeSystemResource() throws Exception {
+		Bndrun bndrun = Bndrun.createBndrun(workspace, IO.getFile(ws.toFile(), "test.simple/resolve.bndrun"));
+		RunResolution resolve = RunResolution.resolve(bndrun, null);
+		Set<Resource> noFramework = resolve.getRequired()
+			.keySet();
+
+		bndrun.setProperty(Constants.RESOLVE_EXCLUDESYSTEM, "false");
+		resolve = RunResolution.resolve(bndrun, null);
+		Set<Resource> withFramework = new HashSet<>(resolve.getRequired()
+			.keySet());
+
+		withFramework.removeAll(noFramework);
+		assertThat(withFramework).hasSize(1);
 	}
 
 	@Test

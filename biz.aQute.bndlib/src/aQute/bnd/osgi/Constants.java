@@ -223,6 +223,12 @@ public interface Constants {
 
 	String				RESOLVE										= "-resolve";
 
+	/**
+	 * Exclude the system resource from the resulting wiring in resolve. The
+	 * default is true
+	 */
+	String				RESOLVE_EXCLUDESYSTEM						= "-resolve.excludesystem";
+
 	String				RUNNOREFERENCES								= "-runnoreferences";
 	String				RUNFRAMEWORKRESTART							= "-runframeworkrestart";
 	String				RUNOPTIONS									= "-runoptions";
