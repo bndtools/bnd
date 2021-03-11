@@ -193,7 +193,8 @@ public class ResolveProcess {
 		}
 
 		Map<Resource, List<Wire>> result = invertWirings(wirings, rc2);
-		removeFrameworkAndInputResources(result, rc2);
+		if (Processor.isTrue(properties.getProperty(Constants.RESOLVE_EXCLUDESYSTEM, "true")))
+			removeFrameworkAndInputResources(result, rc2);
 		required.putAll(result);
 		optional = tidyUpOptional(wirings, discoveredOptional, log);
 		return result;
