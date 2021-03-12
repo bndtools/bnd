@@ -289,27 +289,83 @@ public class Workspace extends Processor {
 		}
 	}
 
+	/**
+	 * Create a workspace on the given directory, assuming that it contains a
+	 * cnf directory. See {@link #Workspace(File, String)}
+	 *
+	 * @param workspaceDir the worksapce directory
+	 */
 	public Workspace(File workspaceDir) throws Exception {
 		this(workspaceDir, CNFDIR);
 	}
 
+	/**
+	 * Create a workspace with the given directory and the bnd directory,
+	 * normally cnf. (Though there are some use cases where this is in another
+	 * place.) This will create a {@link WorkspaceLayout#BND} layout set the
+	 * base to the workspaceDir, and read the properties in the `build.bnd` file
+	 * in the bndDir sub directory.
+	 * <p>
+	 * This will read the version specific defaults after the properties are
+	 * read from build.bnd in an _intermediate_ processor.
+	 *
+	 * @param workspaceDir the workspace directory
+	 * @param bndDir the bnd directory with build.bnd
+	 */
 	public Workspace(File workspaceDir, String bndDir) throws Exception {
-		super(getDefaults());
+		super(new Processor(getDefaults()));
 		this.maven = new Maven(Processor.getExecutor(), this);
 		this.layout = WorkspaceLayout.BND;
 		workspaceDir = workspaceDir.getAbsoluteFile();
 		setBase(workspaceDir); // setBase before call to setFileSystem
 		addBasicPlugin(new LoggingProgressPlugin());
 		setFileSystem(workspaceDir, bndDir);
+
+		// we must process version defaults after the
+		// normal properties are read
+
+		fixupVersionDefaults();
+
 		projects = new ProjectTracker(this);
 	}
 
+	/*
+	 * This constructor will create an intermediate parent processor to hold the
+	 * version defaults but will _not_ fix them up. This must be done by the
+	 * caller after the user properties are set.
+	 * @param layout the layout to use
+	 */
 	private Workspace(WorkspaceLayout layout) throws Exception {
-		super(getDefaults());
+		super(new Processor(getDefaults()));
 		this.maven = new Maven(Processor.getExecutor(), this);
 		this.layout = layout;
 		setBuildDir(IO.getFile(BND_DEFAULT_WS, CNFDIR));
 		projects = new ProjectTracker(this);
+	}
+
+	/*
+	 * All constructors create an intermediate processor to hold the version
+	 * defaults. This method will load the version default properties in that
+	 * intermediate processor.
+	 */
+	private void fixupVersionDefaults() throws IOException {
+		Properties props = getParent().getProperties();
+
+		assert props.isEmpty() : "This should only once be called";
+
+		Version actual = new Version(About.CURRENT.getMajor(), About.CURRENT.getMinor(), 0);
+
+		String version = Strings.trim(getProperty(Constants.VERSIONDEFAULTS, actual.toString()));
+		URL url = Workspace.class.getResource(version + ".bnd");
+		if (url == null) {
+			error("%s = %s, this is not a valid released bnd version. Using current version %s",
+				Constants.VERSIONDEFAULTS, version, actual);
+			url = Workspace.class.getResource(actual + ".bnd");
+			assert url != null : "We must have a specific defaults resource";
+		}
+		try (InputStream in = url.openStream()) {
+			props.load(in);
+		}
 	}
 
 	public void setFileSystem(File workspaceDir, String bndDir) throws Exception {
@@ -426,7 +482,8 @@ public class Workspace extends Processor {
 		super.propertiesChanged();
 	}
 
-	public String _workspace(@SuppressWarnings("unused") String args[]) {
+	public String _workspace(@SuppressWarnings("unused")
+	String args[]) {
 		return IO.absolutePath(getBase());
 	}
 
@@ -1212,6 +1269,7 @@ public class Workspace extends Processor {
 
 		AtomicBoolean copyAll = new AtomicBoolean(false);
 		AtomicInteger counter = new AtomicInteger();
+
 		Parameters standalone = new Parameters(run.getProperty(STANDALONE), ws);
 		standalone.stream()
 			.filterKey(locationStr -> {
@@ -1237,7 +1295,6 @@ public class Workspace extends Processor {
 				}
 			}))
 			.forEachOrdered(ws::setProperty);
-
 		MapStream<String, Object> runProperties = MapStream.of(run.getProperties())
 			.mapKey(String.class::cast);
 		if (!copyAll.get()) {
@@ -1248,6 +1305,7 @@ public class Workspace extends Processor {
 		runProperties.filterKey(k -> !k.startsWith(PLUGIN_STANDALONE))
 			.forEachOrdered(wsProperties::put);
 
+		ws.fixupVersionDefaults();
 		return ws;
 	}
 
