@@ -333,7 +333,6 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	/**
 	 * Load all the OSGi repositories from our registry
 	 * <p>
-	 * TODO Use Instruction ...
 	 *
 	 * @return
 	 * @throws Exception
@@ -344,23 +343,22 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		// Get all of the repositories from the plugin registry
 		//
 
-		ensureWorkspaceRepository();
-
-		List<Repository> allRepos = registry.getPlugins(Repository.class);
+		List<Repository> allRepos = getAllRepos();
 
 		Collection<Repository> orderedRepositories;
 
-		String rn = properties.mergeProperties(Constants.RUNREPOS);
-		if (rn == null) {
+		String runRepos = properties.mergeProperties(Constants.RUNREPOS);
+		if (runRepos == null) {
 
 			//
 			// No filter set, so we use all
 			//
+
 			orderedRepositories = allRepos;
 
 		} else {
 
-			Parameters repoNames = new Parameters(rn, project);
+			Parameters repoNames = new Parameters(runRepos, project);
 
 			// Map the repository names...
 
@@ -402,22 +400,17 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		return repositoryAugments;
 	}
 
-	/*
-	 * Ensure that the workspace has a repository that models its projects.
-	 */
-	private void ensureWorkspaceRepository() throws Exception {
-		if (project != null) {
-			if (!project.isStandalone() && project.getWorkspace()
-				.getPlugins(WorkspaceRepositoryMarker.class)
-				.isEmpty()) {
-
-				assert !project.getWorkspace()
-					.isInteractive() : "A static workspace repo cannot be used in an interactive environment";
-
-				project.getWorkspace()
-					.addBasicPlugin(new WorkspaceResourcesRepository(project.getWorkspace()));
-			}
+	private List<Repository> getAllRepos() {
+		List<Repository> allRepos;
+		if (project != null && !project.isStandalone() ) {
+			allRepos = project.getWorkspace().getPlugins(Repository.class);
+			allRepos.removeIf( WorkspaceRepositoryMarker.class::isInstance);
+			WorkspaceResourcesRepository wr = new WorkspaceResourcesRepository(project.getWorkspace());
+			allRepos.add(wr);
+		} else {
+			 allRepos = registry.getPlugins(Repository.class);
 		}
+		return allRepos;
 	}
 
 	private Processor findRepositoryAugments(Collection<Repository> orderedRepositories) {
