@@ -9,7 +9,6 @@ import aQute.lib.io.IO
 
 if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
   ext.jpmsOptions = [
-    '--illegal-access=warn',
     '--add-opens=java.base/java.lang=ALL-UNNAMED',
     '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED',
     '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED',
