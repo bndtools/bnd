@@ -13,7 +13,7 @@
 -runvm.win32:
 
 -runsystemcapabilities.win32: \
-	osgi.native;osgi.native.osname=win32;osgi.native.processor=x86-64
+	osgi.native;osgi.native.osname:List<String>="win32";osgi.native.processor:List<String>="x86-64"
 
 -runproperties.win32: \
 	osgi.ws=win32,\
