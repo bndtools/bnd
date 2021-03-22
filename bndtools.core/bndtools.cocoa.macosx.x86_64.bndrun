@@ -15,7 +15,7 @@
   -Dorg.eclipse.swt.internal.carbon.smallFonts
 
 -runsystemcapabilities.macos: \
-	osgi.native;osgi.native.osname=macosx;osgi.native.processor=x86-64
+	osgi.native;osgi.native.osname:List<String>="macosx";osgi.native.processor:List<String>="x86-64"
 
 -runproperties.macos: \
 	osgi.ws=cocoa,\

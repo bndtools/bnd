@@ -74,6 +74,7 @@ task indexer(type: Index) {
     exclude '**/*-latest.jar'
     exclude '**/*-sources.jar'
     exclude '**/*-javadoc.jar'
+    builtBy tasks.withType(Jar)
   }
 }
 
@@ -89,5 +90,6 @@ task indexer2(type: Index) {
     exclude '**/*-latest.jar'
     exclude '**/*-sources.jar'
     exclude '**/*-javadoc.jar'
+    builtBy tasks.withType(Jar)
   }
 }

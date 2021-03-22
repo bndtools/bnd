@@ -27,6 +27,8 @@
 		<!-- The following versions should match those in cnf/ext/junit.bnd -->
 		<junit4.version>4.13.2</junit4.version>
 		<assertj.version>3.19.0</assertj.version>
+		<jpmsOptions></jpmsOptions>
+		<mavenOpts>${jpmsOptions}</mavenOpts>
 	</properties>
 
 	<modules>
@@ -325,7 +327,7 @@
 						<scriptVariables>
 							<bndVersion>${project.version}</bndVersion>
 						</scriptVariables>
-						<mavenOpts>${env.MAVEN_OPTS}</mavenOpts>
+						<mavenOpts>${mavenOpts}</mavenOpts>
 						<goals>
 							<goal>--no-transfer-progress</goal>
 							<goal>package</goal>
@@ -505,6 +507,34 @@
 			</activation>
 			<properties>
 				<maven.compiler.release>${java.release}</maven.compiler.release>
+				<jpmsOptions>--add-opens=java.base/java.lang=ALL-UNNAMED
+					--add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+					--add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+					--add-opens=java.base/java.io=ALL-UNNAMED
+					--add-opens=java.base/java.net=ALL-UNNAMED
+					--add-opens=java.base/java.nio=ALL-UNNAMED
+					--add-opens=java.base/java.util=ALL-UNNAMED
+					--add-opens=java.base/java.util.jar=ALL-UNNAMED
+					--add-opens=java.base/java.util.regex=ALL-UNNAMED
+					--add-opens=java.base/java.util.zip=ALL-UNNAMED
+					--add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+					--add-opens=java.base/sun.net.www.protocol.file=ALL-UNNAMED
+					--add-opens=java.base/sun.net.www.protocol.ftp=ALL-UNNAMED
+					--add-opens=java.base/sun.net.www.protocol.http=ALL-UNNAMED
+					--add-opens=java.base/sun.net.www.protocol.https=ALL-UNNAMED
+					--add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED
+					--add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED</jpmsOptions>
+			</properties>
+		</profile>
+		<profile>
+			<id>maven-opts</id>
+			<activation>
+				<property>
+					<name>env.MAVEN_OPTS</name>
+				</property>
+			</activation>
+			<properties>
+				<mavenOpts>${env.MAVEN_OPTS} ${jpmsOptions}</mavenOpts>
 			</properties>
 		</profile>
 		<profile>

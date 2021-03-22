@@ -14,7 +14,7 @@
 	-XX:+UseStringDeduplication
 
 -runsystemcapabilities.linux: \
-	osgi.native;osgi.native.osname=linux;osgi.native.processor=x86-64
+	osgi.native;osgi.native.osname:List<String>="linux";osgi.native.processor:List<String>="x86-64"
 
 -runproperties.linux: \
 	osgi.ws=gtk,\
