@@ -166,9 +166,11 @@ public class BndPlugin implements Plugin<Project> {
               if (sourceDirSet.hasProperty('srcDirs') && sourceDirSet.hasProperty('outputDir')){
                 File destinationDir = java.outputDir
                 String compileTaskName = getCompileTaskName(lang)
+                String resourceTaskName = getProcessResourcesTaskName()
                 try {
                   tasks.named(compileTaskName) { t ->
                     t.destinationDir = destinationDir
+                    t.inputs.files(tasks.named(resourceTaskName))
                     if (generate) {
                       t.inputs.files(generate)
                     }
@@ -188,9 +190,11 @@ public class BndPlugin implements Plugin<Project> {
               if (sourceDirSet.hasProperty('srcDirs') && sourceDirSet.hasProperty('outputDir')){
                 File destinationDir = java.outputDir
                 String compileTaskName = getCompileTaskName(lang)
+                String resourceTaskName = getProcessResourcesTaskName()
                 try {
                   tasks.named(compileTaskName) { t ->
                     t.destinationDir = destinationDir
+                    t.inputs.files(tasks.named(resourceTaskName))
                   }
                   sourceDirSet.srcDirs = java.srcDirs
                   sourceDirSet.outputDir = destinationDir
