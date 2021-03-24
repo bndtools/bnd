@@ -13,7 +13,6 @@ import org.assertj.core.api.AbstractListAssert;
 import org.assertj.core.api.ObjectAssert;
 import org.junit.jupiter.api.Test;
 
-import aQute.bnd.classfile.preview.RecordAttribute;
 import aQute.bnd.osgi.Clazz;
 import aQute.lib.io.IO;
 
@@ -25,7 +24,7 @@ public class RecordAttributeTest {
 			ClassFile clazz = ClassFile.parseClassFile(new DataInputStream(stream));
 			assertThat(clazz.this_class).isEqualTo("MinMax");
 			assertThat(clazz.super_class).isEqualTo("java/lang/Record");
-			assertThat(clazz.major_version).isGreaterThanOrEqualTo(Clazz.JAVA.OpenJDK15.getMajor());
+			assertThat(clazz.major_version).isGreaterThanOrEqualTo(Clazz.JAVA.OpenJDK16.getMajor());
 
 			RecordAttribute recordAttribute = Arrays.stream(clazz.attributes)
 				.filter(RecordAttribute.class::isInstance)
