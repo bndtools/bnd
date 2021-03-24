@@ -1,12 +1,9 @@
-package aQute.bnd.classfile.preview;
+package aQute.bnd.classfile;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
-
-import aQute.bnd.classfile.Attribute;
-import aQute.bnd.classfile.ConstantPool;
 
 public class RecordAttribute implements Attribute {
 	public static final String		NAME	= "Record";

@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Arrays;
 
+import org.assertj.core.api.ObjectArrayAssert;
 import org.junit.jupiter.api.Test;
 
 import aQute.bnd.classfile.preview.PermittedSubclassesAttribute;
@@ -16,22 +17,48 @@ import aQute.lib.io.IO;
 public class PermittedSubclassesAttributeTest {
 
 	@Test
-	public void testPermittedSubclasses() throws Exception {
+	public void top_level_sealed() throws Exception {
 		try (InputStream stream = IO.stream(new File("testresources/sealed/Expr.class"))) {
 			ClassFile clazz = ClassFile.parseClassFile(new DataInputStream(stream));
 			assertThat(clazz.this_class).isEqualTo("Expr");
 			assertThat(clazz.super_class).isEqualTo("java/lang/Object");
-			assertThat(clazz.major_version).isGreaterThanOrEqualTo(Clazz.JAVA.OpenJDK15.getMajor());
+			assertThat(clazz.major_version).isGreaterThanOrEqualTo(Clazz.JAVA.OpenJDK16.getMajor());
 
-			PermittedSubclassesAttribute permittedSubclassesAttribute = Arrays.stream(clazz.attributes)
-				.filter(PermittedSubclassesAttribute.class::isInstance)
-				.map(PermittedSubclassesAttribute.class::cast)
-				.findFirst()
-				.orElse(null);
-			assertThat(permittedSubclassesAttribute).isNotNull();
-			assertThat(permittedSubclassesAttribute.classes).containsExactlyInAnyOrder("ConstantExpr", "PlusExpr",
-				"TimesExpr", "NegExpr");
+			assertPermittedSubclasses(clazz).containsExactlyInAnyOrder("ConstantExpr", "PlusExpr", "TimesExpr",
+				"NegExpr", "OtherExpr", "SubExpr");
 		}
 	}
 
+	@Test
+	public void sub_level_sealed() throws Exception {
+		try (InputStream stream = IO.stream(new File("testresources/sealed/SubExpr.class"))) {
+			ClassFile clazz = ClassFile.parseClassFile(new DataInputStream(stream));
+			assertThat(clazz.this_class).isEqualTo("SubExpr");
+			assertThat(clazz.super_class).isEqualTo("java/lang/Object");
+			assertThat(clazz.major_version).isGreaterThanOrEqualTo(Clazz.JAVA.OpenJDK16.getMajor());
+
+			assertPermittedSubclasses(clazz).containsExactlyInAnyOrder("SubExpr1", "SubExpr2");
+		}
+	}
+
+	@Test
+	public void sub_level_nonsealed() throws Exception {
+		try (InputStream stream = IO.stream(new File("testresources/sealed/OtherExpr.class"))) {
+			ClassFile clazz = ClassFile.parseClassFile(new DataInputStream(stream));
+			assertThat(clazz.this_class).isEqualTo("OtherExpr");
+			assertThat(clazz.super_class).isEqualTo("java/lang/Object");
+			assertThat(clazz.major_version).isGreaterThanOrEqualTo(Clazz.JAVA.OpenJDK16.getMajor());
+
+			assertPermittedSubclasses(clazz).isNull();
+		}
+	}
+
+	private ObjectArrayAssert<String> assertPermittedSubclasses(ClassFile clazz) {
+		return assertThat(Arrays.stream(clazz.attributes)
+			.filter(PermittedSubclassesAttribute.class::isInstance)
+			.map(PermittedSubclassesAttribute.class::cast)
+			.map(a -> a.classes)
+			.findFirst()
+			.orElse(null));
+	}
 }

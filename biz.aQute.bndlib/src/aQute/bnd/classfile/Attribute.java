@@ -7,7 +7,6 @@ import java.io.IOException;
 import org.osgi.annotation.versioning.ProviderType;
 
 import aQute.bnd.classfile.preview.PermittedSubclassesAttribute;
-import aQute.bnd.classfile.preview.RecordAttribute;
 import aQute.lib.io.LimitedDataInput;
 
 @ProviderType
