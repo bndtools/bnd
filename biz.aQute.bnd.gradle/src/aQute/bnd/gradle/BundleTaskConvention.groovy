@@ -46,6 +46,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.ProjectLayout
+import org.gradle.api.file.RegularFile
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
@@ -106,6 +107,21 @@ class BundleTaskConvention {
   public RegularFileProperty getBndfile() {
     return bndfile
   }
+
+  /**
+   * Set the bndfile property.
+   */
+  public void setBndfile(Provider<RegularFile> file) {
+    bndfile.set(file)
+  }
+
+  /**
+   * Set the bndfile property.
+   */
+  public void setBndfile(RegularFile file) {
+    bndfile.value(file)
+  }
+
   /**
    * Set the bndfile property.
    *

@@ -97,6 +97,20 @@ public class Bndrun extends DefaultTask {
 
   /**
    * Set the bndfile for the execution.
+   */
+  public void setBndrun(Provider<RegularFile> file) {
+    bndrunProperty.set(file)
+  }
+
+  /**
+   * Set the bndfile for the execution.
+   */
+  public void setBndrun(RegularFile file) {
+    bndrunProperty.value(file)
+  }
+
+  /**
+   * Set the bndfile for the execution.
    *
    * <p>
    * The argument will be handled using
