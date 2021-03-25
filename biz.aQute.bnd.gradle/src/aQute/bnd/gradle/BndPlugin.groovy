@@ -18,6 +18,7 @@ import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
 import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES
 import static aQute.bnd.gradle.BndUtils.jarLibraryElements
 import static aQute.bnd.gradle.BndUtils.logReport
+import static aQute.bnd.gradle.BndUtils.unwrap
 import static aQute.bnd.osgi.Processor.isTrue
 import static aQute.bnd.osgi.Processor.removeDuplicateMarker
 
@@ -34,14 +35,18 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
-import org.gradle.api.file.FileCollection
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.ProjectLayout
 import org.gradle.api.logging.Logger
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.compile.JavaCompile
 
 public class BndPlugin implements Plugin<Project> {
   public static final String PLUGINID = 'biz.aQute.bnd'
   private Project project
   private Project workspace
+  private ProjectLayout layout
+  private ObjectFactory objects
   private aQute.bnd.build.Project bndProject
 
   /**
@@ -51,6 +56,8 @@ public class BndPlugin implements Plugin<Project> {
   public void apply(Project p) {
     p.configure(p) { Project project ->
       this.project = project
+      this.layout = project.layout
+      this.objects = project.objects
       this.workspace = project.parent
       if (plugins.hasPlugin(BndBuilderPlugin.PLUGINID)) {
           throw new GradleException("Project already has '${BndBuilderPlugin.PLUGINID}' plugin applied.")
@@ -59,11 +66,14 @@ public class BndPlugin implements Plugin<Project> {
         throw new GradleException("The '${PLUGINID}' plugin cannot be applied to the root project. Perhaps you meant to use the '${BndBuilderPlugin.PLUGINID}' plugin?")
       }
       if (!workspace.hasProperty('bndWorkspace')) {
-        workspace.ext.bndWorkspace = new Workspace(workspace.projectDir).setOffline(gradle.startParameter.offline)
+        workspace.ext.bndWorkspace = new Workspace(unwrap(workspace.layout.projectDirectory)).setOffline(gradle.startParameter.offline)
+        if (gradle.ext.has('bndWorkspaceConfigure')) {
+          gradle.bndWorkspaceConfigure(bndWorkspace)
+        }
       }
       this.bndProject = bndWorkspace.getProject(name)
       if (bndProject == null) {
-        throw new GradleException("Unable to load bnd project ${name} from workspace ${workspace.projectDir}")
+        throw new GradleException("Unable to load bnd project ${name} from workspace ${workspace.layout.projectDirectory}")
       }
       bndProject.prepare()
       if (!bndProject.isValid()) {
@@ -73,7 +83,7 @@ public class BndPlugin implements Plugin<Project> {
       extensions.create('bnd', BndProperties, bndProject)
       convention.plugins.bnd = new BndPluginConvention(this)
 
-      buildDir = relativePath(bndProject.getTargetDir())
+      layout.buildDirectory.set(bndProject.getTargetDir())
       plugins.apply 'java'
       libsDirName = '.'
       testResultsDirName = bnd('test-reports', 'test-reports')
@@ -128,7 +138,7 @@ public class BndPlugin implements Plugin<Project> {
       sourceSets {
         /* bnd uses the same directory for java and resources. */
         main {
-          FileCollection srcDirs = files(bndProject.getSourcePath())
+          ConfigurableFileCollection srcDirs = objects.fileCollection().from(bndProject.getSourcePath())
           File destinationDir = bndProject.getSrcOutput()
           java.srcDirs = srcDirs
           resources.srcDirs = srcDirs
@@ -140,11 +150,11 @@ public class BndPlugin implements Plugin<Project> {
               t.inputs.files(generate)
             }
           }
-          output.dir(destinationDir, builtBy: compileJavaTaskName)
+          output.dir(destinationDir, 'builtBy': compileJavaTaskName)
           jarLibraryElements(project, compileClasspathConfigurationName)
         }
         test {
-          FileCollection srcDirs = files(bndProject.getTestSrc())
+          ConfigurableFileCollection srcDirs = objects.fileCollection().from(bndProject.getTestSrc())
           File destinationDir = bndProject.getTestOutput()
           java.srcDirs = srcDirs
           resources.srcDirs = srcDirs
@@ -153,7 +163,7 @@ public class BndPlugin implements Plugin<Project> {
           tasks.named(compileJavaTaskName) { t ->
             t.destinationDir = destinationDir
           }
-          output.dir(destinationDir, builtBy: compileJavaTaskName)
+          output.dir(destinationDir, 'builtBy': compileJavaTaskName)
           jarLibraryElements(project, compileClasspathConfigurationName)
         }
       }
@@ -177,7 +187,7 @@ public class BndPlugin implements Plugin<Project> {
                   }
                   sourceDirSet.srcDirs = java.srcDirs
                   sourceDirSet.outputDir = destinationDir
-                  output.dir(destinationDir, builtBy: compileTaskName)
+                  output.dir(destinationDir, 'builtBy': compileTaskName)
                 } catch (UnknownDomainObjectException e) {
                  // no such task
                 }
@@ -198,7 +208,7 @@ public class BndPlugin implements Plugin<Project> {
                   }
                   sourceDirSet.srcDirs = java.srcDirs
                   sourceDirSet.outputDir = destinationDir
-                  output.dir(destinationDir, builtBy: compileTaskName)
+                  output.dir(destinationDir, 'builtBy': compileTaskName)
                 } catch (UnknownDomainObjectException e) {
                  // no such task
                 }
@@ -208,21 +218,21 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      bnd.ext.allSrcDirs = files(bndProject.getAllsourcepath())
+      bnd.ext.allSrcDirs = objects.fileCollection().from(bndProject.getAllsourcepath())
       /* Set up dependencies */
       dependencies {
         implementation pathFiles(bndProject.getBuildpath())
-        runtimeOnly files(bndProject.getSrcOutput())
+        runtimeOnly objects.fileCollection().from(bndProject.getSrcOutput())
         testImplementation pathFiles(bndProject.getTestpath())
-        testRuntimeOnly files(bndProject.getTestOutput())
+        testRuntimeOnly objects.fileCollection().from(bndProject.getTestOutput())
       }
       /* Set up compile tasks */
       sourceCompatibility = bnd('javac.source', sourceCompatibility)
       String javacTarget = bnd('javac.target', targetCompatibility)
-      FileCollection javacBootclasspath = files(bndProject.getBootclasspath()*.getFile())
+      ConfigurableFileCollection javacBootclasspath = objects.fileCollection().from(bndProject.getBootclasspath()*.getFile())
       if (javacTarget == 'jsr14') {
         javacTarget = '1.5'
-        javacBootclasspath = files(bndProject.getBundle('ee.j2se', '1.5', null, ['strategy':'lowest']).getFile())
+        javacBootclasspath = objects.fileCollection().from(bndProject.getBundle('ee.j2se', '1.5', null, ['strategy':'lowest']).getFile())
       }
       targetCompatibility = javacTarget
       String javac = bnd('javac')
@@ -284,7 +294,7 @@ public class BndPlugin implements Plugin<Project> {
         t.ext.projectDirInputsExcludes = Strings.split(bndMerge(Constants.BUILDERIGNORE)).collect { it.concat('/') }
         /* all other files in the project like bnd and resources */
         t.inputs.files({
-          project.fileTree(project.projectDir) { tree ->
+          project.fileTree(layout.projectDirectory) { tree ->
             project.sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
               tree.exclude sourceSet.allSource.sourceDirectories.collect {
                 project.relativePath(it)
@@ -307,7 +317,7 @@ public class BndPlugin implements Plugin<Project> {
           bndProject.getPropertiesFile(),
           bndProject.getIncluded()).withPropertyName('bndFiles')
         t.outputs.files({ project.configurations.archives.artifacts.files }).withPropertyName('artifacts')
-        t.outputs.file(project.layout.buildDirectory.file(Constants.BUILDFILES)).withPropertyName('buildfiles')
+        t.outputs.file(layout.buildDirectory.file(Constants.BUILDFILES)).withPropertyName('buildfiles')
         t.doLast {
           File[] built
           try {
@@ -408,7 +418,7 @@ public class BndPlugin implements Plugin<Project> {
 
       def clean = tasks.named('clean') { t ->
         t.description 'Cleans the build and compiler output directories of this project.'
-        t.delete project.layout.buildDirectory, project.sourceSets.main.output, project.sourceSets.test.output
+        t.delete layout.buildDirectory, project.sourceSets.main.output, project.sourceSets.test.output
         if (generate) {
           t.delete generate
         }
@@ -426,7 +436,7 @@ public class BndPlugin implements Plugin<Project> {
         t.group 'build'
       }
 
-      def bndruns = project.fileTree(project.projectDir) {
+      def bndruns = project.fileTree(layout.projectDirectory) {
           include '*.bndrun'
       }
 
@@ -506,10 +516,10 @@ public class BndPlugin implements Plugin<Project> {
 Project ${project.name} // Bnd version ${About.CURRENT}
 ------------------------------------------------------------
 
-project.workspace:      ${workspace.projectDir}
+project.workspace:      ${workspace.layout.projectDirectory}
 project.name:           ${project.name}
-project.dir:            ${project.projectDir}
-target:                 ${project.buildDir}
+project.dir:            ${layout.projectDirectory}
+target:                 ${unwrap(layout.buildDirectory)}
 project.dependson:      ${bndProject.getDependson()*.getName()}
 project.sourcepath:     ${project.sourceSets.main.java.sourceDirectories.asPath}
 project.output:         ${compileJava.destinationDir}
@@ -566,14 +576,13 @@ Project ${project.name}
     }
   }
 
-  private FileCollection pathFiles(Collection<Container> path) {
-    return project.files(path*.getFile()) {
-      builtBy path.findAll { Container c ->
+  private ConfigurableFileCollection pathFiles(Collection<Container> path) {
+    return objects.fileCollection().from(path*.getFile())
+      .builtBy(path.findAll { Container c ->
         c.getType() == TYPE.PROJECT
       }.collect { Container c ->
         workspace.absoluteProjectPath("${c.getProject().getName()}:jar")
-      }
-    }
+      })
   }
 
   private Closure getBuildDependencies(String taskName) {

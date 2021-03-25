@@ -97,7 +97,7 @@ public class Export extends Bndrun {
           return 'executable'
         }
         if (exporterName == RUNBUNDLES) {
-          File bndrunFile = project.file(getBndrun())
+          File bndrunFile = unwrap(getBndrun())
           String bndrunName = bndrunFile.name - '.bndrun'
           return "runbundles/${bndrunName}"
         }
