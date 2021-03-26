@@ -19,7 +19,7 @@ public class ExtList<T> extends ArrayList<T> {
 		}
 	}
 
-	ExtList() {
+	public ExtList() {
 		super();
 	}
 
