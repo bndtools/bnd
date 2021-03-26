@@ -12,6 +12,8 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.gradle.BndUtils.unwrap
+
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
 
@@ -159,7 +161,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
   }
 
   Closure configureWorkspaceProject() {
-    return { Project p ->
+    return { Project workspace ->
       /* Initialize the Bnd workspace */
       if (!ext.has('bnd_cnf')) { // if not passed from settings
         ext.bnd_cnf = findProperty('bnd_cnf') ?: 'cnf'
@@ -167,7 +169,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
       if (!ext.has('bndWorkspace')) { // if not passed from settings
         Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
         Workspace.addGestalt(Constants.GESTALT_BATCH, null)
-        ext.bndWorkspace = new Workspace(projectDir, bnd_cnf).setOffline(gradle.startParameter.offline)
+        ext.bndWorkspace = new Workspace(unwrap(layout.projectDirectory), bnd_cnf).setOffline(gradle.startParameter.offline)
         if (gradle.ext.has('bndWorkspaceConfigure')) {
           gradle.bndWorkspaceConfigure(bndWorkspace)
         }
