@@ -27,6 +27,7 @@ import static aQute.bnd.gradle.BndUtils.builtBy
 import static aQute.bnd.gradle.BndUtils.jarLibraryElements
 import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.gradle.BndUtils.unwrap
+import static org.gradle.api.tasks.PathSensitivity.RELATIVE
 
 import java.util.Properties
 import java.util.jar.Manifest
@@ -55,6 +56,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.SourceSet
 
 class BundleTaskConvention {
@@ -93,7 +95,7 @@ class BundleTaskConvention {
     classpathModified = false
     // need to programmatically add to inputs since @InputFiles in a convention is not processed
     task.inputs.files(classpathCollection).withPropertyName('classpath')
-    task.inputs.file(getBndfile()).optional().withPropertyName('bndfile')
+    task.inputs.file(getBndfile()).optional().withPathSensitivity(RELATIVE).withPropertyName('bndfile')
     task.inputs.property('bnd', getBnd())
   }
 
@@ -103,6 +105,7 @@ class BundleTaskConvention {
    * File path to a bnd file containing bnd instructions for this project.
    */
   @InputFile
+  @PathSensitive(RELATIVE)
   @Optional
   public RegularFileProperty getBndfile() {
     return bndfile

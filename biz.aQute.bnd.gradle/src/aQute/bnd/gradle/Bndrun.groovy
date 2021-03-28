@@ -33,6 +33,7 @@ package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.gradle.BndUtils.unwrap
+import static org.gradle.api.tasks.PathSensitivity.RELATIVE
 
 import java.util.concurrent.Executors
 import java.util.concurrent.ForkJoinPool
@@ -52,6 +53,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.TaskAction
 
 public class Bndrun extends DefaultTask {
@@ -91,6 +93,7 @@ public class Bndrun extends DefaultTask {
    *
    */
   @InputFile
+  @PathSensitive(RELATIVE)
   public Provider<RegularFile> getBndrun() {
     return bndrunProperty
   }
