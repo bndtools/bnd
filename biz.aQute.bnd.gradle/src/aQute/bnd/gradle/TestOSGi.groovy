@@ -42,8 +42,10 @@ import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.gradle.BndUtils.unwrap
 
 import org.gradle.api.GradleException
+import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.model.ReplacedBy
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.Optional
@@ -51,7 +53,15 @@ import org.gradle.api.tasks.options.Option
 
 public class TestOSGi extends Bndrun {
   private List<String> tests
-  private final DirectoryProperty resultsDirectory
+  /**
+   * The directory where the test case results are placed.
+   *
+   * <p>
+   * The default for resultsDirectory is
+   * "${buildDir}/${testResultsDirName}/${task.name}"
+   */
+  @OutputDirectory
+  final DirectoryProperty resultsDirectory
 
   /**
    * Create a TestOSGi task.
@@ -59,21 +69,10 @@ public class TestOSGi extends Bndrun {
    */
   public TestOSGi() {
     super()
-    resultsDirectory = project.objects.directoryProperty().convention(project.layout.buildDirectory.dir(project.provider({ ->
-        return "${project.testResultsDirName}/${name}"
-      })))
-  }
-
-  /**
-   * Return the directory where the test case results are placed.
-   *
-   * <p>
-   * The default for resultsDirectory is
-   * project.buildDirectory.dir("${project.testResultsDirName}/${task.name}")
-   */
-  @OutputDirectory
-  public DirectoryProperty getResultsDirectory() {
-    return resultsDirectory
+    Provider<Directory> testResultsDirectory = project.layout.buildDirectory.dir(project.provider({ ->
+        return project.testResultsDirName
+    }))
+    resultsDirectory = project.objects.directoryProperty().convention(testResultsDirectory.map({ it.dir(name) }))
   }
 
   @Deprecated

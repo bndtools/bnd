@@ -9,7 +9,7 @@
  * <pre>
  * import aQute.bnd.gradle.Bndrun
  * tasks.register('run', Bndrun) {
- *   bndrun file('my.bndrun')
+ *   bndrun = file('my.bndrun')
  * }
  * </pre>
  *
@@ -20,8 +20,8 @@
  * fails. The default is false.</li>
  * <li>bndrun - This is the bndrun file to be run.
  * This property must be set.</li>
- * <li>workingDir - This is the directory for the execution.
- * The default for workingDir is temporaryDir.</li>
+ * <li>workingDirectory - This is the directory for the execution.
+ * The default for workingDirectory is temporaryDir.</li>
  * <li>bundles - This is the collection of files to use for locating
  * bundles during the bndrun execution. The default is
  * 'sourceSets.main.runtimeClasspath' plus
@@ -48,6 +48,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFile
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.model.ReplacedBy
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
@@ -68,8 +69,21 @@ public class Bndrun extends DefaultTask {
   @Input
   boolean ignoreFailures = false
 
-  private final RegularFileProperty bndrunProperty
-  private final DirectoryProperty workingDirectory
+  /**
+   * The bndrun file for the execution.
+   *
+   */
+  @InputFile
+  @PathSensitive(RELATIVE)
+  final RegularFileProperty bndrun
+
+  /**
+   * The working directory for the execution.
+   *
+   */
+  @Internal
+  final DirectoryProperty workingDirectory
+
   private final def bndWorkspace
 
   /**
@@ -78,10 +92,11 @@ public class Bndrun extends DefaultTask {
    */
   public Bndrun() {
     super()
-    bndrunProperty = project.objects.fileProperty()
-    DirectoryProperty temporaryDirProperty = project.objects.directoryProperty()
+    ObjectFactory objects = project.objects
+    bndrun = objects.fileProperty()
+    DirectoryProperty temporaryDirProperty = objects.directoryProperty()
     temporaryDirProperty.set(temporaryDir)
-    workingDirectory = project.objects.directoryProperty().convention(temporaryDirProperty)
+    workingDirectory = objects.directoryProperty().convention(temporaryDirProperty)
     bndWorkspace = project.findProperty('bndWorkspace')
     if (bndWorkspace == null) {
       convention.plugins.bundles = new FileSetRepositoryConvention(this)
@@ -89,27 +104,14 @@ public class Bndrun extends DefaultTask {
   }
 
   /**
-   * Return the bndrun file for the execution.
+   * Set the bndfile for the execution.
    *
+   * <p>
+   * The argument will be handled using
+   * Project.file().
    */
-  @InputFile
-  @PathSensitive(RELATIVE)
-  public Provider<RegularFile> getBndrun() {
-    return bndrunProperty
-  }
-
-  /**
-   * Set the bndfile for the execution.
-   */
-  public void setBndrun(Provider<RegularFile> file) {
-    bndrunProperty.set(file)
-  }
-
-  /**
-   * Set the bndfile for the execution.
-   */
-  public void setBndrun(RegularFile file) {
-    bndrunProperty.value(file)
+  public void setBndrun(String file) {
+    getBndrun().set(project.file(file))
   }
 
   /**
@@ -120,16 +122,7 @@ public class Bndrun extends DefaultTask {
    * Project.file().
    */
   public void setBndrun(Object file) {
-    bndrunProperty.set(project.file(file))
-  }
-
-  /**
-   * The working directory for the execution.
-   *
-   */
-  @Internal
-  public DirectoryProperty getWorkingDirectory() {
-    return workingDirectory
+    getBndrun().set(project.file(file))
   }
 
   @Deprecated
@@ -147,7 +140,7 @@ public class Bndrun extends DefaultTask {
    * Setup the Run object and call worker on it.
    */
   @TaskAction
-  void bndrun() {
+  void bndrunAction() {
     def workspace = bndWorkspace
     File bndrunFile = unwrap(getBndrun())
     File workingDirFile = unwrap(getWorkingDirectory())

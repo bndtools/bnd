@@ -44,7 +44,7 @@ class FileSetRepositoryConvention {
    *
    * <p>
    * The arguments will be handled using
-   * Project.files().
+   * ConfigurableFileCollection.from().
    */
   public ConfigurableFileCollection bundles(Object... paths) {
     return builtBy(bundleCollection.from(paths), paths)
@@ -63,7 +63,7 @@ class FileSetRepositoryConvention {
    *
    * <p>
    * The argument will be handled using
-   * Project.files().
+   * ConfigurableFileCollection.from().
    */
   public void setBundles(Object path) {
     bundleCollection.from = []

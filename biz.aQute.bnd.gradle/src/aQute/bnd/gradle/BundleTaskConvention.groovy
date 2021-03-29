@@ -60,15 +60,33 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.SourceSet
 
 class BundleTaskConvention {
+  /**
+   * The bndfile property.
+   *
+   * <p>
+   * A bnd file containing bnd instructions for this project.
+   */
+  @InputFile
+  @PathSensitive(RELATIVE)
+  @Optional
+  final RegularFileProperty bndfile
+
+  /**
+   * The classpath property.
+   *
+   * <p>
+   * The default value is sourceSets.main.compileClasspath.
+   */
+  @InputFiles
+  final ConfigurableFileCollection classpath
+
   private final Task task
   private final Project project
   private final ProjectLayout layout
   private final ObjectFactory objects
   private final File buildFile
-  private final RegularFileProperty bndfile
   private final ListProperty<CharSequence> instructions
   private final Provider<String> bndbnd
-  private final ConfigurableFileCollection classpathCollection
   private boolean classpathModified
   private SourceSet sourceSet
 
@@ -87,42 +105,25 @@ class BundleTaskConvention {
     buildFile = project.getBuildFile()
     bndfile = objects.fileProperty()
     instructions = objects.listProperty(CharSequence.class).empty()
-    bndbnd = instructions.map({ list ->
-      return list.join('\n')
-    })
-    classpathCollection = objects.fileCollection()
+    bndbnd = instructions.map({ it.join('\n') })
+    classpath = objects.fileCollection()
     setSourceSet(project.sourceSets.main)
     classpathModified = false
     // need to programmatically add to inputs since @InputFiles in a convention is not processed
-    task.inputs.files(classpathCollection).withPropertyName('classpath')
+    task.inputs.files(getClasspath()).withPropertyName('classpath')
     task.inputs.file(getBndfile()).optional().withPathSensitivity(RELATIVE).withPropertyName('bndfile')
     task.inputs.property('bnd', getBnd())
   }
 
   /**
-   * Get the bndfile property.
+   * Set the bndfile property.
+   *
    * <p>
-   * File path to a bnd file containing bnd instructions for this project.
+   * The argument will be handled using
+   * Project.file().
    */
-  @InputFile
-  @PathSensitive(RELATIVE)
-  @Optional
-  public RegularFileProperty getBndfile() {
-    return bndfile
-  }
-
-  /**
-   * Set the bndfile property.
-   */
-  public void setBndfile(Provider<RegularFile> file) {
-    bndfile.set(file)
-  }
-
-  /**
-   * Set the bndfile property.
-   */
-  public void setBndfile(RegularFile file) {
-    bndfile.value(file)
+  public void setBndfile(String file) {
+    getBndfile().set(project.file(file))
   }
 
   /**
@@ -133,7 +134,7 @@ class BundleTaskConvention {
    * Project.file().
    */
   public void setBndfile(Object file) {
-    bndfile.set(project.file(file))
+    getBndfile().set(project.file(file))
   }
 
   /**
@@ -202,26 +203,23 @@ class BundleTaskConvention {
    *
    * <p>
    * The arguments will be handled using
-   * Project.files().
+   * ConfigurableFileCollection.from().
    */
   public ConfigurableFileCollection classpath(Object... paths) {
     classpathModified = true
-    return builtBy(classpathCollection.from(paths), paths)
+    return builtBy(getClasspath().from(paths), paths)
   }
 
   /**
-   * Get the classpath property.
-   */
-  @InputFiles
-  public ConfigurableFileCollection getClasspath() {
-    return classpathCollection
-  }
-  /**
    * Set the classpath property.
+   *
+   * <p>
+   * The argument will be handled using
+   * ConfigurableFileCollection.from().
    */
   public void setClasspath(Object path) {
-    classpathCollection.from = []
-    classpathCollection.builtBy = []
+    getClasspath().setFrom(Collections.emptyList())
+    getClasspath().setBuiltBy(Collections.emptyList())
     classpath(path)
   }
 
@@ -231,6 +229,7 @@ class BundleTaskConvention {
   public SourceSet getSourceSet() {
     return sourceSet
   }
+
   /**
    * Set the sourceSet property.
    */

@@ -109,9 +109,9 @@ public class Baseline extends DefaultTask {
    */
   public Baseline() {
     super()
-    layout = project.layout
-    objects = project.objects
-    providers = project.providers
+    this.layout = project.layout
+    this.objects = project.objects
+    this.providers = project.providers
     baselineReportDirName = 'baseline'
     baselineReportDirectory = objects.directoryProperty().convention(project.reporting.baseDirectory.dir(baselineReportDirName))
     reportFile = baselineReportDirectory.file(providers.provider({ ->
@@ -147,7 +147,7 @@ public class Baseline extends DefaultTask {
    *
    * <p>
    * The argument will be handled using
-   * Project.files().
+   * ConfigurableFileCollection.from().
    */
   public void setBundle(Object file) {
     bundleCollection = objects.fileCollection().from(file)
@@ -172,7 +172,7 @@ public class Baseline extends DefaultTask {
    * Set the baseline bundle from a File.
    * <p>
    * The argument will be handled using
-   * Project.files().
+   * ConfigurableFileCollection.from().
    */
   public void setBaseline(Object file) {
     baselineCollection = objects.fileCollection().from(file)

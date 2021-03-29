@@ -9,8 +9,8 @@
  * Here is an example of using the Resolve task type:
  * <pre>
  * import aQute.bnd.gradle.Resolve
- * tasks.register('resolve', Resolve) {
- *   bndrun file('my.bndrun')
+ * def resolveTask = tasks.register('resolve', Resolve) {
+ *   bndrun = file('my.bndrun')
  * }
  * </pre>
  *
@@ -22,6 +22,8 @@
  * <li>failOnChanges - If true the task will fail if the resolve process
  * results in a different value for -runbundles than the current value.
  * The default is false.</li>
+ * <li>writeOnChanges - If true the task will write changes to the value
+ * of the -runbundles property. The default is true.</li>
  * <li>bndrun - This is the bndrun file to be resolved.
  * This property must be set.</li>
  * <li>workingDirectory - This is the directory for the resolve process.
