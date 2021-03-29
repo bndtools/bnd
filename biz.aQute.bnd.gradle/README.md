@@ -96,8 +96,8 @@ tasks.register('bundle',  Bundle) {
 }
 ```
 
-In either usage mode, there are four properties, in addition to the
-`Jar` task properties, which can be configured.
+In either usage mode, the following properties, in addition to the
+`Jar` task properties, can be configured.
 
 ### bndfile
 
@@ -258,7 +258,7 @@ tasks.register('baseline', Baseline) {
 }
 ```
 
-There are six properties which can be configured for a Baseline task:
+The following properties can be configured for a Baseline task:
 
 ### ignoreFailures
 
@@ -312,7 +312,7 @@ tasks.register('resolve', Resolve) {
 }
 ```
 
-There are six properties which can be configured for a Resolve task:
+The following properties can be configured for a Resolve task:
 
 ### ignoreFailures
 
@@ -363,7 +363,7 @@ tasks.register('export', Export) {
 }
 ```
 
-There are five properties which can be configured for an Export task:
+The following properties can be configured for an Export task:
 
 ### ignoreFailures
 
@@ -414,7 +414,7 @@ tasks.register('testOSGi', TestOSGi) {
 }
 ```
 
-There are five properties which can be configured for a TestOSGi task:
+The following properties can be configured for a TestOSGi task:
 
 ### ignoreFailures
 
@@ -471,7 +471,7 @@ tasks.register('index', Index) {
 }
 ```
 
-There are five properties which can be configured for an Index task:
+The following properties can be configured for an Index task:
 
 ### gzip
 
@@ -513,7 +513,7 @@ tasks.register('run', Bndrun) {
 }
 ```
 
-There are four properties which can be configured for a Bndrun task:
+The following properties can be configured for a Bndrun task:
 
 ### ignoreFailures
 
