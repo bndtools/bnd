@@ -29,6 +29,7 @@ task create(type: Resolve) {
    description "Resolve ${name}.bndrun"
    group 'export'
    bndrun "${name}.bndrun"
+   outputBndrun = file("${buildDir}/${name}.bndrun")
    bundles = configurations.bundles
 }
 

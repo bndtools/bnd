@@ -309,6 +309,7 @@ import aQute.bnd.gradle.Resolve
 
 def resolveTask = tasks.register('resolve', Resolve) {
   bndrun = file('my.bndrun')
+  outputBndrun = layout.buildDirectory.file('my.bndrun')
 }
 ```
 
@@ -334,6 +335,12 @@ property. The default is `true`.
 
 The bndrun file to be resolved.
 This property must be set.
+
+### outputBndrun
+
+This is an optional output file for the calculated `-runbundles` property.
+This output file will `-include` the input `bndrun` file and can be thus be used by other tasks, such as `TestOSGi` as a resolved input `bndrun` file.
+This property is optional, and if not set, the input `bndrun` file will be updated in place.
 
 ### workingDirectory
 
@@ -403,14 +410,14 @@ plus _${project.configurations.archives.artifacts.files}_.
 
 ## Create a task of the `TestOSGi` type
 
-The `TestOSGi` task type
-will execute tests in a standalone bndrun file. For example:
+The `TestOSGi` task type will execute tests in a standalone bndrun file. 
+This example uses the output bndrun file from the `Resolve` task example above:
 
 ```groovy
 import aQute.bnd.gradle.TestOSGi
 
 tasks.register('testOSGi', TestOSGi) {
-  bndrun 'my.bndrun'
+  bndrun = resolveTask.flatMap { it.outputBndrun }
 }
 ```
 
