@@ -21,6 +21,7 @@ import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.gradle.BndUtils.unwrap
 import static aQute.bnd.osgi.Processor.isTrue
 import static aQute.bnd.osgi.Processor.removeDuplicateMarker
+import static org.gradle.api.tasks.PathSensitivity.RELATIVE
 
 import aQute.lib.strings.Strings
 import aQute.bnd.build.Container
@@ -39,6 +40,7 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.logging.Logger
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.tasks.ClasspathNormalizer
 import org.gradle.api.tasks.compile.JavaCompile
 
 public class BndPlugin implements Plugin<Project> {
@@ -115,14 +117,14 @@ public class BndPlugin implements Plugin<Project> {
         generate = tasks.register('generate') { t ->
           t.description 'Generate source code'
           t.group 'build'
-          t.inputs.files(generateInputs.unwrap()).withPropertyName('generateInputs')
+          t.inputs.files(generateInputs.unwrap()).withPathSensitivity(RELATIVE).withPropertyName('generateInputs')
           /* bnd can include from -dependson */
           t.inputs.files(getBuildDependencies('jar')).withPropertyName('buildDependencies')
           /* Workspace and project configuration changes should trigger task */
           t.inputs.files(bndProject.getWorkspace().getPropertiesFile(),
             bndProject.getWorkspace().getIncluded(),
             bndProject.getPropertiesFile(),
-            bndProject.getIncluded()).withPropertyName('bndFiles')
+            bndProject.getIncluded()).withPathSensitivity(RELATIVE).withPropertyName('bndFiles')
           t.outputs.dirs(bndProject.getGenerate().getOutputDirs())
           t.doLast {
             try {
@@ -306,16 +308,16 @@ public class BndPlugin implements Plugin<Project> {
             tree.exclude project.relativePath(buildDir) /* exclude buildDir */
             tree.exclude t.projectDirInputsExcludes /* user specified excludes */
           }
-        }).withPropertyName('projectFolder')
+        }).withPathSensitivity(RELATIVE).withPropertyName('projectFolder')
         /* bnd can include from -buildpath */
-        t.inputs.files(project.sourceSets.main.compileClasspath).withPropertyName('buildpath')
+        t.inputs.files(project.sourceSets.main.compileClasspath).withNormalizer(ClasspathNormalizer).withPropertyName('buildpath')
         /* bnd can include from -dependson */
         t.inputs.files(getBuildDependencies('jar')).withPropertyName('buildDependencies')
         /* Workspace and project configuration changes should trigger jar task */
         t.inputs.files(bndProject.getWorkspace().getPropertiesFile(),
           bndProject.getWorkspace().getIncluded(),
           bndProject.getPropertiesFile(),
-          bndProject.getIncluded()).withPropertyName('bndFiles')
+          bndProject.getIncluded()).withPathSensitivity(RELATIVE).withPropertyName('bndFiles')
         t.outputs.files({ project.configurations.archives.artifacts.files }).withPropertyName('artifacts')
         t.outputs.file(layout.buildDirectory.file(Constants.BUILDFILES)).withPropertyName('buildfiles')
         t.doLast {

@@ -52,6 +52,8 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.ClasspathNormalizer
+import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
@@ -78,6 +80,7 @@ class BundleTaskConvention {
    * The default value is sourceSets.main.compileClasspath.
    */
   @InputFiles
+  @Classpath
   final ConfigurableFileCollection classpath
 
   private final Task task
@@ -110,7 +113,7 @@ class BundleTaskConvention {
     setSourceSet(project.sourceSets.main)
     classpathModified = false
     // need to programmatically add to inputs since @InputFiles in a convention is not processed
-    task.inputs.files(getClasspath()).withPropertyName('classpath')
+    task.inputs.files(getClasspath()).withNormalizer(ClasspathNormalizer).withPropertyName('classpath')
     task.inputs.file(getBndfile()).optional().withPathSensitivity(RELATIVE).withPropertyName('bndfile')
     task.inputs.property('bnd', getBnd())
   }

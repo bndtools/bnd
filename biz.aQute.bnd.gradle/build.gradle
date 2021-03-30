@@ -20,29 +20,26 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
   }
 }
 
-def pluginUnderTestResources = project.layout.buildDirectory.dir('plugin-under-test')
+def pluginUnderTestResources = layout.buildDirectory.dir('plugin-under-test')
 
 def pluginUnderTestMetadata = tasks.register('pluginUnderTestMetadata', WriteProperties.class) {
- def pluginClasspath = project.providers.provider({ ->
-    return project.files(configurations.runtimeClasspath.allArtifacts.files,
-     configurations.runtimeClasspath.resolvedConfiguration.files)
-  })
-  inputs.files(pluginClasspath).withPropertyName('pluginClasspath')
+  def pluginClasspath = objects.fileCollection().from(configurations.runtimeClasspath.allArtifacts.files, configurations.runtimeClasspath)
+  inputs.files(pluginClasspath).withNormalizer(ClasspathNormalizer).withPropertyName('pluginClasspath')
   outputFile = pluginUnderTestResources.map { it.file('plugin-under-test-metadata.properties') }
   doFirst {
-    property('implementation-classpath',  pluginClasspath.get().asPath)
+    property('implementation-classpath',  pluginClasspath.asPath)
   }
 }
 
 sourceSets {
    test {
-     output.dir(pluginUnderTestResources, builtBy: pluginUnderTestMetadata)
+     output.dir(pluginUnderTestResources, 'builtBy': pluginUnderTestMetadata)
    }
 }
 
 tasks.named('test') {
-  def testresources = project.file('testresources')
-  def target = project.layout.buildDirectory.dir('testresources')
+  def testresources = file('testresources')
+  def target = layout.buildDirectory.dir('testresources')
   inputs.files tasks.named('jar')
   inputs.dir testresources
   systemProperty 'bnd_version', bnd('bnd_version')
