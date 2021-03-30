@@ -2420,6 +2420,11 @@ public class Project extends Processor {
 		clean(getTestOutput(), "test output");
 		for (File output : getGenerate().getOutputDirs())
 			clean(output, "generate output " + output, false);
+
+		for (File src : getSourcePath()) {
+			IO.mkdirs(src);
+		}
+		IO.mkdirs(getTestSrc());
 	}
 
 	void clean(File dir, String type) throws IOException {

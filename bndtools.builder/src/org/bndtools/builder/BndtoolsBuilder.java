@@ -4,7 +4,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +20,6 @@ import org.bndtools.builder.decorator.ui.PackageDecorator;
 import org.bndtools.utils.workspace.WorkspaceUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
@@ -31,6 +29,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
@@ -70,6 +69,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 	public static final String		BUILDER_ID	= BndtoolsConstants.BUILDER_ID;
 	private static final ILogger	logger		= Logger.getLogger(BndtoolsBuilder.class);
 	static final Set<Project>		dirty		= Collections.newSetFromMap(new ConcurrentHashMap<Project, Boolean>());
+	static BndPreferences			prefs		= new BndPreferences();
 
 	static {
 		CnfWatcher.install();
@@ -96,7 +96,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
 
 		IProject myProject = getProject();
-		BndPreferences prefs = new BndPreferences();
 		buildLog = new BuildLogger(prefs.getBuildLogging(), myProject.getName(), kind);
 
 		BuildListeners listeners = new BuildListeners();
@@ -176,7 +175,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 				return Central.bndCall(() -> {
 					boolean force = kind == FULL_BUILD;
 					model.clear();
-
 					DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);
 
 					boolean setupChanged = false;
@@ -214,14 +212,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
 						dependsOn = calculateDependsOn(model);
 
-						// perform both actions before potentially postponing
-						boolean changedBuildOrder = setBuildOrder(monitor);
 						boolean changedClasspath = setupChanged && requestClasspathContainerUpdate(myProject);
-
-						if (changedBuildOrder) {
-							buildLog.basic("Build order changed");
-							return postpone();
-						}
 
 						if (changedClasspath) {
 							buildLog.basic("Classpath changed");
@@ -271,8 +262,10 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 					if (model.isNoBundles()) {
 						buildLog.basic("-nobundles was set, so no build");
 						buildLog.setFiles(0);
-						return report(model, markers);
+						return noreport();
 					}
+
+					markers.deleteMarkers(BndtoolsConstants.MARKER_BND_BLOCKER);
 
 					if (markers.hasBlockingErrors(delta)) {
 						CompileErrorAction actionOnCompileError = getActionOnCompileError();
@@ -280,20 +273,19 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 							if (actionOnCompileError == CompileErrorAction.delete) {
 								buildLog.basic("Blocking errors, delete build files, quit");
 								deleteBuildFiles(model);
-								model.error(
-									"Will not build project %s until the compilation and/or path problems are fixed, output files are deleted.",
-									myProject.getName());
+								markers.createMarker(model, IMarker.SEVERITY_ERROR, "Build errors, deleted files",
+									BndtoolsConstants.MARKER_BND_BLOCKER);
 							} else {
 								buildLog.basic("Blocking errors, leave old build files, quit");
-								model.error(
-									"Will not build project %s until the compilation and/or path problems are fixed, output files are kept.",
-									myProject.getName());
+								markers.createMarker(model, IMarker.SEVERITY_ERROR, "Build errors, leaving files",
+									BndtoolsConstants.MARKER_BND_BLOCKER);
 							}
-							return report(model, markers);
+							return noreport();
 						}
 						buildLog.basic("Blocking errors, continuing anyway");
-						model.warning("Project %s has blocking errors but requested to continue anyway",
-							myProject.getName());
+						markers.createMarker(model, IMarker.SEVERITY_WARNING,
+							"Project " + myProject + " has blocking errors but requested to continue anyway",
+							BndtoolsConstants.MARKER_BND_BLOCKER);
 					}
 
 					Central.invalidateIndex();
@@ -415,25 +407,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 		return false;
 	}
 
-	/*
-	 * Set the project's dependencies to influence the build order for Eclipse.
-	 */
-	@SuppressWarnings("deprecation")
-	private boolean setBuildOrder(IProgressMonitor monitor) throws Exception {
-		try {
-			IProjectDescription projectDescription = getProject().getDescription();
-			IProject[] older = projectDescription.getDynamicReferences();
-			if (Arrays.equals(dependsOn, older))
-				return false;
-			projectDescription.setDynamicReferences(dependsOn);
-			getProject().setDescription(projectDescription, monitor);
-			buildLog.full("Changed the build order to %s", Arrays.toString(dependsOn));
-		} catch (Exception e) {
-			logger.logError("Failed to set build order", e);
-		}
-		return true;
-	}
-
 	private boolean requestClasspathContainerUpdate(IProject myProject) throws CoreException {
 		IJavaProject javaProject = JavaCore.create(myProject);
 		return (javaProject == null) ? false : BndContainerInitializer.requestClasspathContainerUpdate(javaProject);
@@ -481,4 +454,13 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 		return CompileErrorAction.parse(store.getString(CompileErrorAction.PREFERENCE_KEY));
 	}
 
+	/**
+	 * Override the scheduling rule, should make the UI more responsive
+	 */
+	@Override
+	public ISchedulingRule getRule(int kind, Map<String, String> args) {
+		if (prefs.isParallel())
+			return getProject();
+		return super.getRule(kind, args);
+	}
 }

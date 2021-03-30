@@ -15,8 +15,6 @@ import org.bndtools.build.api.AbstractBuildListener;
 import org.bndtools.build.api.BuildListener;
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.swt.FilterPanelPart;
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -64,11 +62,13 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 
+import aQute.bnd.build.Workspace;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.exceptions.FunctionWithException;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;
+import bndtools.central.WorkspaceSynchronizer;
 import bndtools.preferences.BndPreferences;
 import bndtools.preferences.ui.BndPreferencePage;
 
@@ -79,7 +79,6 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 	static final ImageDescriptor		okImage		= Icons.desc("allok");
 	static final BndPreferences			preferences	= new BndPreferences();
 	static final IWorkbench				workbench	= PlatformUI.getWorkbench();
-
 	private Model						model		= new Model();
 	private boolean						installed;
 	private final List<AutoCloseable>	closeables	= new ArrayList<>();
@@ -389,29 +388,36 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 
 	private Action reloadAction() {
 		Action rebuild = new Action("Reload workspace", Icons.desc("refresh")) {
+			WorkspaceSynchronizer	s;
+
 			@Override
 			public void run() {
 				try {
-					IFile workspaceBuildFile = Central.getWorkspaceBuildFile();
-					if (workspaceBuildFile != null) {
-						setImageDescriptor(Icons.desc("refresh.disable"));
-						setEnabled(false);
-						Job.create("Reload", monitor -> {
-							IContainer parent = workspaceBuildFile.getParent()
-								.getParent();
-							parent.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-							workspaceBuildFile.touch(monitor);
-							Display.getDefault()
-								.asyncExec(() -> {
-									setEnabled(true);
-									setImageDescriptor(Icons.desc("refresh"));
-								});
-						})
-							.schedule();
-					}
+					Workspace workspace = Central.getWorkspace();
+					if (workspace.isDefaultWorkspace())
+						return;
+
+					setImageDescriptor(Icons.desc("refresh.disable"));
+					setEnabled(false);
+
+					s = new WorkspaceSynchronizer();
+
+					Job syncjob = Job.create("Sync bnd workspace", monitor -> {
+						s.synchronize(true, monitor, this::done);
+					});
+					syncjob.setRule(null);
+					syncjob.schedule();
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
 				}
+			}
+
+			private void done() {
+				Display.getDefault()
+					.asyncExec(() -> {
+						setEnabled(true);
+						setImageDescriptor(Icons.desc("refresh"));
+					});
 			}
 		};
 		return rebuild;

@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
+import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter.SetLocation;
 import bndtools.central.Central;
 
@@ -93,8 +94,11 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
 		//
 		File bin = model.getOutput();
 		File testsrc = model.getTestSrc();
+		IO.mkdirs(testsrc);
 		File testbin = model.getTestOutput();
 		Set<File> sourcePath = new HashSet<>(model.getSourcePath());
+		for (File f : sourcePath)
+			IO.mkdirs(f);
 
 		//
 		// All the things we should find when we have traversed the build path

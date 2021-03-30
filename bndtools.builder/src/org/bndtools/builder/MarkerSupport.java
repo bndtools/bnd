@@ -6,6 +6,7 @@ import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_HEADER_ATTR;
 import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_PROJECT_ATTR;
 import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_REFERENCE_ATTR;
 import static org.bndtools.api.BndtoolsConstants.CORE_PLUGIN_ID;
+import static org.bndtools.api.BndtoolsConstants.MARKER_BND_BLOCKER;
 import static org.bndtools.api.BndtoolsConstants.MARKER_BND_MISSING_WORKSPACE;
 import static org.bndtools.api.BndtoolsConstants.MARKER_BND_PATH_PROBLEM;
 import static org.bndtools.api.BndtoolsConstants.MARKER_BND_PROBLEM;
@@ -83,6 +84,7 @@ class MarkerSupport {
 
 	void deleteMarkers(String markerType) throws CoreException {
 		if (markerType.equals("*")) {
+			deleteMarkers(MARKER_BND_BLOCKER);
 			deleteMarkers(MARKER_BND_PROBLEM);
 			deleteMarkers(MARKER_BND_PATH_PROBLEM);
 			deleteMarkers(MARKER_BND_WORKSPACE_PROBLEM);
@@ -183,6 +185,8 @@ class MarkerSupport {
 
 					if (dw.isTestBin(marker.getResource()))
 						continue;
+
+					System.out.println("error marker " + marker);
 					return true;
 				}
 			}

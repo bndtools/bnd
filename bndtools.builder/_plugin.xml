@@ -26,8 +26,9 @@
 		id="bndtools.core.bndbuilder"
 		name="Bndtools Builder"
 		>
-		<builder callOnEmptyDelta="true" hasNature="true">
+		<builder callOnEmptyDelta="false" hasNature="true">
 			<run class="org.bndtools.builder.BndtoolsBuilder" />
+            <dynamicReference class="org.bndtools.builder.BndtoolsDynamicReferenceProvider"  />
 		</builder>
 	</extension>
 
@@ -107,6 +108,16 @@
 
     <extension
         point="org.eclipse.core.resources.markers"
+        id="bndblocker"
+        name="Bndtools Block build"
+        >
+        <persistent value="true"/>
+        <super type="org.eclipse.core.resources.problemmarker"/>
+        <super type="org.eclipse.core.resources.textmarker"/>
+    </extension>
+
+    <extension
+        point="org.eclipse.core.resources.markers"
         id="bndgenerate"
         name="Bndtools Generate Marker"
         >
@@ -125,6 +136,7 @@
 		<super type="org.eclipse.core.resources.textmarker"/>
 		<super type="org.eclipse.jdt.core.buildpath_problem"/>
 	</extension>
+
 
 	<extension
 		point="org.eclipse.core.resources.markers"

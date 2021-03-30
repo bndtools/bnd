@@ -6,6 +6,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -19,6 +20,7 @@ public class BndBuildPreferencePage extends PreferencePage implements IWorkbench
 
 	private BndPreferences	prefs;
 	private int				buildLogging;
+	private Button			parallel;
 
 	@Override
 	public void init(IWorkbench workbench) {
@@ -34,11 +36,17 @@ public class BndBuildPreferencePage extends PreferencePage implements IWorkbench
 		layout = new GridLayout(2, false);
 		composite.setLayout(layout);
 
-		// Create controls
+		// Build logging
 		new Label(composite, SWT.NONE).setText("Build Debug Logging:");
 		final Combo cmbBuildLogging = new Combo(composite, SWT.READ_ONLY);
 		cmbBuildLogging.setItems(Messages.BndPreferencePage_cmbBuildLogging_None,
 			Messages.BndPreferencePage_cmbBuildLogging_Basic, Messages.BndPreferencePage_cmbBuildLogging_Full);
+
+		// Allow Build parallel
+		new Label(composite, SWT.NONE).setText("Allow build in parallel (highly experimental))");
+		parallel = new Button(composite, SWT.CHECK);
+		parallel.setSelection(prefs.isParallel());
+
 		cmbBuildLogging.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
 		// Load Data
@@ -58,7 +66,7 @@ public class BndBuildPreferencePage extends PreferencePage implements IWorkbench
 	@Override
 	public boolean performOk() {
 		prefs.setBuildLogging(buildLogging);
-
+		prefs.setParallel(parallel.getSelection());
 		return true;
 	}
 

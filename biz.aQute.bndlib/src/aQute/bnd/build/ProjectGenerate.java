@@ -43,8 +43,10 @@ public class ProjectGenerate implements AutoCloseable {
 	}
 
 	public Result<Set<File>, String> generate(boolean force) {
+		project.clear();
 		if (force)
 			clean();
+
 
 		Set<File> files = new TreeSet<>();
 		for (Entry<String, GeneratorSpec> e : project.instructions.generate()

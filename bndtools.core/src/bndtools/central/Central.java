@@ -67,6 +67,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.progress.TaskManager;
 import aQute.lib.exceptions.Exceptions;
+import aQute.lib.io.IO;
 import aQute.lib.memoize.Memoize;
 import aQute.libg.ints.IntCounter;
 import aQute.service.reporter.Reporter;
@@ -191,7 +192,22 @@ public class Central implements IStartupParticipant {
 		if ((ws == null) || (ws.isDefaultWorkspace())) {
 			return null;
 		}
+
+		IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace()
+			.getRoot();
+		File eclipse = wsroot.getLocation()
+			.toFile();
+
 		File file = ws.getPropertiesFile();
+		if (file.isFile()) {
+			boolean overlappingWorkspaces = ws.getBase()
+				.equals(eclipse);
+			if (overlappingWorkspaces) {
+				WorkspaceSynchronizer workspaceSynchronizer = new WorkspaceSynchronizer();
+				workspaceSynchronizer.synchronize(false, null, () -> {});
+			}
+		}
+
 		IPath path = toPathMustBeInEclipseWorkspace(file);
 		if (path == null) {
 			logger.logError("Cannot find workspace location for bnd configuration file " + file, null);
@@ -392,7 +408,25 @@ public class Central implements IStartupParticipant {
 				.getParentFile();
 		}
 
+		File directory = eclipseWorkspace.getLocation()
+			.toFile();
+
+		if (isWorkspace(directory)) {
+			return directory;
+		}
+
 		return null;
+	}
+
+	/**
+	 * Determine if the given directory is a workspace.
+	 *
+	 * @param directory the directory that must hold cnf/build.bnd
+	 * @return true if a workspace directory
+	 */
+	public static boolean isWorkspace(File directory) {
+		File build = IO.getFile(directory, "cnf/build.bnd");
+		return build.isFile();
 	}
 
 	public static boolean hasWorkspaceDirectory() {
