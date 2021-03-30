@@ -20,6 +20,7 @@ class TestResolveTask extends Specification {
           String testProject = 'resolvetask1'
           File testProjectDir = new File(testResources, testProject).canonicalFile
           assert testProjectDir.isDirectory()
+          File testProjectBuildDir = new File(testProjectDir, 'build').canonicalFile
           def reporter = new Slf4jReporter(TestResolveTask.class)
           String taskname = 'create'
 
@@ -45,6 +46,15 @@ class TestResolveTask extends Specification {
           result.task(":${taskname}").outcome == SUCCESS
           bndrun.isFile()
           props.load(bndrun, reporter)
+          !props.getProperty('-runbundles')
+
+        when:
+          File outputBndrun = new File(testProjectBuildDir, "${taskname}.bndrun")
+          props = new UTF8Properties()
+
+        then:
+          outputBndrun.isFile()
+          props.load(outputBndrun, reporter)
           props.getProperty('-runbundles') =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
     }
 

@@ -1,7 +1,10 @@
--runfw: org.eclipse.osgi
+-include: ${.}/included.bnd
+
+-runfw: ${runfw}
 -runee: JavaSE-1.8
 
--runbundles: biz.aQute.junit,${project.osgiIdentity}
+-runrequires: osgi.identity;filter:='(osgi.identity=${junit})',\
+ osgi.identity;filter:='(osgi.identity=${project.osgiIdentity})'
 
 -runproperties:
 

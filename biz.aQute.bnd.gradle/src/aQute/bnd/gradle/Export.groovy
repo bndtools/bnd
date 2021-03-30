@@ -9,11 +9,11 @@
  * <pre>
  * import aQute.bnd.gradle.Export
  * tasks.register('exportExecutable', Export) {
- *   bndrun file('my.bndrun')
+ *   bndrun = file('my.bndrun')
  *   exporter = 'bnd.executablejar'
  * }
  * tasks.register('exportRunbundles', Export) {
- *   bndrun file('my.bndrun')
+ *   bndrun = file('my.bndrun')
  *   exporter = 'bnd.runbundles'
  * }
  * </pre>
@@ -55,6 +55,7 @@ import aQute.lib.io.IO
 import org.gradle.api.GradleException
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.model.ReplacedBy
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -69,14 +70,36 @@ public class Export extends Bndrun {
    *
    * <p>
    * If <code>true</code>, then the exporter defaults to
-   * 'bnd.runbundles'. Otherwise the expoter defaults to
+   * 'bnd.runbundles'. Otherwise the exporter defaults to
    * 'bnd.executablejar'. The default is <code>false</code>.
    */
-  @Input
+  @ReplacedBy('exporter')
+  @Deprecated
   boolean bundlesOnly = false
 
-  private final DirectoryProperty destinationDirectory
-  private final Property<String> exporterProperty
+  /**
+   * The name of the exporter for this task.
+   *
+   * <p>
+   * Bnd has two built-in exporter plugins. 'bnd.executablejar'
+   * exports an executable jar and 'bnd.runbundles' exports the
+   * -runbundles files. The default is 'bnd.executablejar' unless
+   * bundlesOnly is false when the default is 'bnd.runbundles'.
+   */
+  @Input
+  final Property<String> exporter
+
+  /**
+   * The destination directory for the export.
+   *
+   * <p>
+   * The default for destinationDirectory is project.distsDirectory.dir('executable')
+   * if the exporter is 'bnd.executablejar', project.distsDirectory.dir('runbundles'/bndrun)
+   * if the exporter is 'bnd.runbundles', and project.distsDirectory.dir(task.name)
+   * for all other exporters.
+   */
+  @OutputDirectory
+  final DirectoryProperty destinationDirectory
 
   /**
    * Create a Export task.
@@ -84,14 +107,15 @@ public class Export extends Bndrun {
    */
   public Export() {
     super()
-    exporterProperty = project.objects.property(String.class).convention(project.provider({ ->
+    ObjectFactory objects = project.objects
+    exporter = objects.property(String.class).convention(project.provider({ ->
       return bundlesOnly ? RUNBUNDLES : EXECUTABLE_JAR
     }))
     Provider<Directory> distsDirectory = project.hasProperty('distsDirectory') ? project.distsDirectory : // Gradle 6.0
       project.layout.buildDirectory.dir(project.provider({ ->
         return project.distsDirName
       }))
-    destinationDirectory = project.objects.directoryProperty().convention(distsDirectory.flatMap({ distsDir ->
+    destinationDirectory = objects.directoryProperty().convention(distsDirectory.flatMap({ distsDir ->
       return distsDir.dir(getExporter().map({ exporterName ->
         if (exporterName == EXECUTABLE_JAR) {
           return 'executable'
@@ -106,20 +130,6 @@ public class Export extends Bndrun {
     }))
   }
 
-  /**
-   * Return the destination directory for the export.
-   *
-   * <p>
-   * The default for destinationDirectory is project.distsDirectory.dir('executable')
-   * if the exporter is 'bnd.executablejar', project.distsDirectory.dir('runbundles'/bndrun)
-   * if the exporter is 'bnd.runbundles', and project.distsDirectory.dir(task.name)
-   * for all other exporters.
-   */
-  @OutputDirectory
-  public DirectoryProperty getDestinationDirectory() {
-    return destinationDirectory
-  }
-
   @Deprecated
   @ReplacedBy('destinationDirectory')
   public File getDestinationDir() {
@@ -129,35 +139,6 @@ public class Export extends Bndrun {
   @Deprecated
   public void setDestinationDir(Object dir) {
     getDestinationDirectory().set(project.file(dir))
-  }
-
-  /**
-   * Return the name of the exporter for this task.
-   *
-   * <p>
-   * Bnd has two built-in exporter plugins. 'bnd.executablejar'
-   * exports an executable jar and 'bnd.runbundles' exports the
-   * -runbundles files. The default is 'bnd.executablejar' unless
-   * bundlesOnly is false when the default is 'bnd.runbundles'.
-   */
-  @Input
-  public Property<String> getExporter() {
-    return exporterProperty
-  }
-
-  /**
-   * Set the name of the exporter for this task.
-   *
-   * <p>
-   * Bnd has two built-in exporter plugins. 'bnd.executablejar'
-   * exports an executable jar and 'bnd.runbundles' exports the
-   * -runbundles files.
-   * <p>
-   * The exporter plugin with the specified name must be an
-   * installed exporter plugin.
-   */
-  public void setExporter(String exporter) {
-    exporterProperty.convention(exporter).set(exporter)
   }
 
   /**

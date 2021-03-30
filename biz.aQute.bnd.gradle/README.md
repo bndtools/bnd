@@ -96,8 +96,8 @@ tasks.register('bundle',  Bundle) {
 }
 ```
 
-In either usage mode, there are four properties, in addition to the
-`Jar` task properties, which can be configured.
+In either usage mode, the following properties, in addition to the
+`Jar` task properties, can be configured.
 
 ### bndfile
 
@@ -258,7 +258,7 @@ tasks.register('baseline', Baseline) {
 }
 ```
 
-There are six properties which can be configured for a Baseline task:
+The following properties can be configured for a Baseline task:
 
 ### ignoreFailures
 
@@ -307,12 +307,13 @@ in the file. For example:
 ```groovy
 import aQute.bnd.gradle.Resolve
 
-tasks.register('resolve', Resolve) {
-  bndrun 'my.bndrun'
+def resolveTask = tasks.register('resolve', Resolve) {
+  bndrun = file('my.bndrun')
+  outputBndrun = layout.buildDirectory.file('my.bndrun')
 }
 ```
 
-There are six properties which can be configured for a Resolve task:
+The following properties can be configured for a Resolve task:
 
 ### ignoreFailures
 
@@ -322,18 +323,24 @@ default is `false`.
 
 ### failOnChanges
 
-If `true` the build will fail if the resolve process changes the value of the
+If `true` the task will fail if the resolve process changes the value of the
 `-runbundles` property. The default is `false`.
 
 ### writeOnChanges
 
-If `true` the build will write changes to the value of the `-runbundles`
-property back to the bndrun file. The default is `true`.
+If `true` the task will write changes to the value of the `-runbundles`
+property. The default is `true`.
 
 ### bndrun
 
-The bndrun to be resolved. It can be anything that `Project.file(Object)`
-can accept. This property must be set.
+The bndrun file to be resolved.
+This property must be set.
+
+### outputBndrun
+
+This is an optional output file for the calculated `-runbundles` property.
+This output file will `-include` the input `bndrun` file and can be thus be used by other tasks, such as `TestOSGi` as a resolved input `bndrun` file.
+This property is optional, and if not set, the input `bndrun` file will be updated in place.
 
 ### workingDirectory
 
@@ -359,11 +366,11 @@ will export a standalone bndrun file. For example:
 import aQute.bnd.gradle.Export
 
 tasks.register('export', Export) {
-  bndrun 'my.bndrun'
+  bndrun = file('my.bndrun')
 }
 ```
 
-There are five properties which can be configured for an Export task:
+The following properties can be configured for an Export task:
 
 ### ignoreFailures
 
@@ -380,8 +387,8 @@ plugin. The default is `bnd.executablejar`.
 
 ### bndrun
 
-The bndrun to be exported. It can be anything that `Project.file(Object)`
-can accept. This property must be set.
+The bndrun file to be exported.
+This property must be set.
 
 ### destinationDirectory
 
@@ -403,18 +410,18 @@ plus _${project.configurations.archives.artifacts.files}_.
 
 ## Create a task of the `TestOSGi` type
 
-The `TestOSGi` task type
-will execute tests in a standalone bndrun file. For example:
+The `TestOSGi` task type will execute tests in a standalone bndrun file. 
+This example uses the output bndrun file from the `Resolve` task example above:
 
 ```groovy
 import aQute.bnd.gradle.TestOSGi
 
 tasks.register('testOSGi', TestOSGi) {
-  bndrun 'my.bndrun'
+  bndrun = resolveTask.flatMap { it.outputBndrun }
 }
 ```
 
-There are five properties which can be configured for a TestOSGi task:
+The following properties can be configured for a TestOSGi task:
 
 ### ignoreFailures
 
@@ -424,8 +431,8 @@ default is `false`.
 
 ### bndrun
 
-The bndrun to be tested. It can be anything that `Project.file(Object)`
-can accept. This property must be set.
+The bndrun file to be tested.
+This property must be set.
 
 ### workingDirectory
 
@@ -461,17 +468,18 @@ example:
 import aQute.bnd.gradle.Index
 
 tasks.register('index', Index) {
-  destinationDirectory = file('bundles')
+  destinationDirectory = layout.buildDirectory.dir('libs')
   gzip = true
   bundles = fileTree(destinationDirectory) {
     include '**/*.jar'
     exclude '**/*-sources.jar'
     exclude '**/*-javadoc.jar'
+    builtBy tasks.withType(Jar)
   }
 }
 ```
 
-There are five properties which can be configured for an Index task:
+The following properties can be configured for an Index task:
 
 ### gzip
 
@@ -498,8 +506,18 @@ The URI base for the generated index. The default value is _${project.uri(destin
 
 ### bundles
 
-This is the bundles to be indexed. It can be anything that `Project.files(Object...)`
+The bundles to be indexed. It can be anything that `Project.files(Object...)`
 can accept. This property must be set.
+
+### indexUncompressed
+
+The output file for the uncompressed index.
+The default value is _${destinationDir}/${indexName}_.
+
+### indexCompressed
+
+The output file for the compressed index.
+The default value is _${destinationDir}/${indexName}.gz_.
 
 ## Create a task of the `Bndrun` type
 
@@ -509,11 +527,11 @@ The `Bndrun` task type will execute a bndrun file. For example:
 import aQute.bnd.gradle.Bndrun
 
 tasks.register('run', Bndrun) {
-  bndrun 'my.bndrun'
+  bndrun = file('my.bndrun')
 }
 ```
 
-There are four properties which can be configured for a Bndrun task:
+The following properties can be configured for a Bndrun task:
 
 ### ignoreFailures
 
@@ -523,8 +541,8 @@ default is `false`.
 
 ### bndrun
 
-The bndrun to be executed. It can be anything that `Project.file(Object)`
-can accept. This property must be set.
+The bndrun file to be executed.
+This property must be set.
 
 ### workingDirectory
 
