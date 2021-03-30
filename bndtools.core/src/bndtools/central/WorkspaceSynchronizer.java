@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-import org.eclipse.core.resources.IBuildConfiguration;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
@@ -27,16 +26,11 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.core.builder.JavaBuilder;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.eclipse.EclipseUtil;
 import bndtools.Plugin;
-import bndtools.preferences.BndPreferences;
 
 /**
  * A utility class to synchronize the bnd & Eclipse workspaces as well as build.
@@ -46,7 +40,6 @@ public class WorkspaceSynchronizer {
 	private static final ILogger				logger		= Logger.getLogger(WorkspaceSynchronizer.class);
 	private static IWorkspace					eclipse		= ResourcesPlugin.getWorkspace();
 	final static ThreadLocal<IProgressMonitor>	monitors	= new ThreadLocal<>();
-	final static BndPreferences					prefs		= new BndPreferences();
 	IWorkspaceDescription						description	= eclipse.getDescription();
 
 	/**
@@ -57,38 +50,12 @@ public class WorkspaceSynchronizer {
 	 */
 	boolean build(Workspace workspace, IProgressMonitor monitor) throws CoreException {
 
-		boolean parallel = prefs.isParallel();
-		IEclipsePreferences node = InstanceScope.INSTANCE.getNode(JavaCore.PLUGIN_ID);
-		boolean oldRule = node.getBoolean(JavaBuilder.PREF_NULL_SCHEDULING_RULE, false);
-		int oldMaxConcurrent = -1;
-
 		try {
-			IBuildConfiguration[] configs;
-			if (parallel) {
-				node.putBoolean(JavaBuilder.PREF_NULL_SCHEDULING_RULE, true);
-				oldMaxConcurrent = getMaxConcurrent();
-				if (oldMaxConcurrent <= 1) {
-					setMaxConcurrent(4);
-				}
-				configs = Central.bndCall(() -> getConfigs(workspace));
-			} else {
-				configs = null;
-			}
-
-			if (configs == null)
-				eclipse.build(IncrementalProjectBuilder.INCREMENTAL_BUILD, monitor);
-			else
-				eclipse.build(configs, IncrementalProjectBuilder.INCREMENTAL_BUILD, true, monitor);
-
+			eclipse.build(IncrementalProjectBuilder.INCREMENTAL_BUILD, monitor);
 		} catch (OperationCanceledException e) {
 			return true;
 		} catch (Exception e) {
 			logger.logError("build failed", e);
-		} finally {
-			if (parallel) {
-				setMaxConcurrent(oldMaxConcurrent);
-				node.putBoolean(JavaBuilder.PREF_NULL_SCHEDULING_RULE, oldRule);
-			}
 		}
 		return monitor.isCanceled();
 	}
@@ -188,7 +155,7 @@ public class WorkspaceSynchronizer {
 
 			subMonitor.checkCanceled();
 
-			Job job = Job.create("build " + (prefs.isParallel() ? " in parallel" : ""), (m) -> {
+			Job job = Job.create("build", (m) -> {
 				try {
 					int totalWork = existing.size() + missing.size() + 100;
 					SubMonitor forBuild = SubMonitor.convert(m, totalWork);
@@ -210,6 +177,8 @@ public class WorkspaceSynchronizer {
 				} catch (Exception e) {
 					Status status = new Status(Status.ERROR, "bndtools.builder", e.getMessage());
 					throw new CoreException(status);
+				} finally {
+					atend.run();
 				}
 			});
 			job.setRule(null);
@@ -241,17 +210,6 @@ public class WorkspaceSynchronizer {
 		return original;
 	}
 
-	private int setMaxConcurrent(int n) throws CoreException {
-		int maxConcurrentBuilds = description.getMaxConcurrentBuilds();
-		description.setMaxConcurrentBuilds(n);
-		eclipse.setDescription(description);
-		return maxConcurrentBuilds;
-	}
-
-	private int getMaxConcurrent() throws CoreException {
-		return description.getMaxConcurrentBuilds();
-	}
-
 	private Map<String, IProject> getAllBndEclipseProjects(File base) throws CoreException {
 		Map<String, IProject> result = new HashMap<>();
 		for (IProject project : ResourcesPlugin.getWorkspace()
@@ -259,38 +217,18 @@ public class WorkspaceSynchronizer {
 			.getProjects()) {
 
 			if (project.isHidden()) {
-				System.out.println("Hidden " + project);
+				// System.out.println("Hidden " + project);
 				continue;
 			}
 
 			if (!inWorkspace(project, base)) {
-				System.out.println("Not in workspace " + project);
+				// System.out.println("Not in workspace " + project);
 				continue;
 			}
 
 			result.put(project.getName(), project);
 		}
 		return result;
-	}
-
-	private IBuildConfiguration[] getConfigs(Workspace workspace) {
-		try {
-			List<IBuildConfiguration> l = new ArrayList<>();
-			for (Project model : workspace.getBuildOrder()) {
-				IProject p = Central.getProject(model)
-					.orElse(null);
-				if (p != null && p.isAccessible() && p.isOpen()) {
-					if (p.getNature(Plugin.BNDTOOLS_NATURE) != null) {
-						IBuildConfiguration c = p.getActiveBuildConfig();
-						l.add(c);
-					}
-				}
-			}
-			return l.toArray(new IBuildConfiguration[0]);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
 	}
 
 	private static boolean inWorkspace(IProject p, File baseDir) {
@@ -312,8 +250,7 @@ public class WorkspaceSynchronizer {
 
 	private static IProject createProject(File directory, Project model, IProgressMonitor monitor)
 		throws CoreException {
-		IPath location = new Path(directory
-			.getAbsolutePath());
+		IPath location = new Path(directory.getAbsolutePath());
 
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IProject project = workspace.getRoot()
