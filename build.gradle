@@ -92,7 +92,7 @@ subprojects {
       if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
         jvmArgs '-XX:+ShowCodeDetailsInExceptionMessages'
       }
-      inputs.files(fileTree(project.projectDir) {
+      inputs.files(fileTree(layout.projectDirectory) {
         include 'testresources/', 'testdata/'
         exclude {
           def f = it.file
@@ -105,7 +105,7 @@ subprojects {
             return false
           }
         }
-      }).withPropertyName('testFolders')
+      }).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName('testFolders')
       systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', gradle.startParameter.logLevel.name()
       if (System.properties['maven.repo.local']) {
         systemProperty 'maven.repo.local', IO.getFile(gradle.startParameter.currentDir, System.properties['maven.repo.local'])
