@@ -93,7 +93,8 @@ def p2 = tasks.register('p2') {
   description 'Publish the p2 repositories.'
   group       'release'
   enabled JavaVersion.current().isJava8()
-  inputs.files p2Plugins, p2FeatureMain, p2FeatureM2e, p2FeaturePde, 'p2.xml', 'features/category.xml'
+  inputs.files(p2Plugins, p2FeatureMain, p2FeatureM2e, p2FeaturePde)
+  inputs.files('p2.xml', 'features/category.xml').withPathSensitivity(PathSensitivity.RELATIVE)
   def injected = project.objects.newInstance(Injected) 
   def buildDirectoryProperty = project.layout.buildDirectory
   ext.destinationDirectory = buildDirectoryProperty.dir('p2')
