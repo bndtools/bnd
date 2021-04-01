@@ -52,7 +52,6 @@ import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.maven.api.Archive;
-import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
 import aQute.maven.provider.MavenRepository;
 import aQute.service.reporter.Reporter;
@@ -74,7 +73,7 @@ public class BndPomRepository extends BaseRepository
 	private Reporter			reporter			= new Slf4jReporter(BndPomRepository.class);
 	private File				localRepo;
 	private InnerRepository		repoImpl;
-	private List<Revision>		revisions;
+	private List<Archive>		archives;
 	private BridgeRepository	bridge;
 	private List<URI>			pomFiles;
 	private String				query;
@@ -122,22 +121,22 @@ public class BndPomRepository extends BaseRepository
 				})
 				.collect(toList());
 			if (pomFiles.isEmpty()) {
-				status("Pom is neither a file nor a revision " + configuration.pom());
+				status("Pom is neither a file nor a archive " + configuration.pom());
 			}
 		} else if (configuration.revision() != null) {
-			revisions = Strings.split(configuration.revision())
+			archives = Strings.split(configuration.revision())
 				.stream()
-				.map(Revision::valueOf)
+				.map(Archive::valueOf)
 				.filter(Objects::nonNull)
 				.collect(toList());
-			if (revisions.isEmpty()) {
-				status("Revision is neither a file nor a revision " + configuration.revision());
+			if (archives.isEmpty()) {
+				status("Archive is neither a file nor a revision " + configuration.revision());
 			}
 		} else if (configuration.query() != null) {
 			this.query = configuration.query();
 			this.queryUrl = configuration.queryUrl("http://search.maven.org/solrsearch/select");
 		} else {
-			status("Neither pom, revision nor query property are set");
+			status("Neither pom, archive nor query property are set");
 		}
 
 		initialized = Processor.getPromiseFactory()
@@ -172,8 +171,8 @@ public class BndPomRepository extends BaseRepository
 
 			if (pomFiles != null) {
 				repoImpl = new PomRepository(repository, client, location, transitive).uris(pomFiles);
-			} else if (revisions != null) {
-				repoImpl = new PomRepository(repository, client, location, transitive).revisions(revisions);
+			} else if (archives != null) {
+				repoImpl = new PomRepository(repository, client, location, transitive).archives(archives);
 			} else if (query != null) {
 				repoImpl = new SearchRepository(repository, location, query, queryUrl, workspace, client, transitive);
 			} else {

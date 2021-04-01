@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Deferred;
@@ -29,7 +30,7 @@ class PomRepository extends InnerRepository {
 	static final String				BND_MAVEN_EXCEPTION_ATTRIBUTE	= "exception";
 	static final String				BND_MAVEN_ARCHIVE_ATTRIBUTE		= "archive";
 	static final String				BND_MAVEN_REVISION_ATTRIBUTE	= "revision";
-	final List<Revision>			revisions;
+	final List<Archive>				archives;
 	final List<URI>					uris;
 	private final HttpClient		client;
 	private final PromiseFactory	promiseFactory;
@@ -38,7 +39,7 @@ class PomRepository extends InnerRepository {
 	PomRepository(MavenRepository repo, HttpClient client, File location, boolean transitive) {
 		super(repo, location);
 		this.transitive = transitive;
-		this.revisions = new ArrayList<>();
+		this.archives = new ArrayList<>();
 		this.uris = new ArrayList<>();
 		this.client = client;
 		this.promiseFactory = client.promiseFactory();
@@ -49,7 +50,14 @@ class PomRepository extends InnerRepository {
 	}
 
 	PomRepository revisions(Collection<Revision> revisions) throws Exception {
-		this.revisions.addAll(revisions);
+		Collection<Archive> ars = revisions.stream()
+			.map(r -> r.archive(Archive.JAR_EXTENSION, null))
+			.collect(Collectors.toList());
+		return archives(ars);
+	}
+
+	PomRepository archives(Collection<Archive> archives) throws Exception {
+		this.archives.addAll(archives);
 		read();
 		return this;
 	}
@@ -65,15 +73,15 @@ class PomRepository extends InnerRepository {
 		if (!uris.isEmpty())
 			readUris();
 		else
-			readRevisons();
+			readArchives();
 	}
 
 	void readUris() throws Exception {
 		save(new Traverser(getMavenRepository(), client, transitive).uris(uris));
 	}
 
-	void readRevisons() throws Exception {
-		save(new Traverser(getMavenRepository(), client, transitive).revisions(revisions));
+	void readArchives() throws Exception {
+		save(new Traverser(getMavenRepository(), client, transitive).archives(archives));
 	}
 
 	void save(Traverser traverser) throws Exception {
@@ -158,21 +166,21 @@ class PomRepository extends InnerRepository {
 				}
 			}
 		} else {
-			for (Revision revision : revisions) {
+			for (Archive archive : archives) {
 				if (freshness.getPromise()
 					.isDone()) {
 					break; // early exit if staleness already detected
 				}
-				Promise<File> file = getMavenRepository().get(revision.getPomArchive());
+				Promise<File> file = getMavenRepository().get(archive.getPomArchive());
 				promises.add(file.then(resolved -> {
 					File f = resolved.getValue();
 					if (f.isFile() && f.lastModified() > lastModified) {
-						logger.debug("Found {} to be stale", revision);
+						logger.debug("Found {} to be stale", archive);
 						freshness.fail(new Exception("stale"));
 					}
 					return null;
 				}, resolved -> {
-					logger.debug("Could not verify {}: {}", revision, resolved.getFailure());
+					logger.debug("Could not verify {}: {}", archive, resolved.getFailure());
 					freshness.fail(resolved.getFailure());
 				}));
 			}

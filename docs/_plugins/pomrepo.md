@@ -64,7 +64,7 @@ The query must return a JSON response.
 | `local`          | `PATH`| `~/.m2/repository` | The file path to the local Maven repository.  |
 |                  |       |                    | If specified, it should use forward slashes. If the directory does not exist, the plugin will attempt to create it.|
 |                  |       |         | The default can be overridden with the `maven.repo.local` System property.|
-| `revision`       | `GAV...` |      | A comma separated list of Maven coordinates. The GAV will be searched in the normal way.|
+| `revision`       | `GAV...` |      | A comma separated list of Maven coordinates. The GAV will be searched in the normal way. For further information about Coordinates & Terminology please see MavenBndRepositoryPlugin|
 | `pom`            | `URI...` |      | A comma separated list of URLs to POM files.|
 | `location`       | `PATH` | `cnf/cache/pom-<name>.xml` | Optional cached index of the parsed POMs. |
 | `query`          | `STRING` |      | A Solr query string. This is the part after `?` and must be properly URL encoded|

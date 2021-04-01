@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -45,7 +46,7 @@ class Traverser {
 	static final String						ROOT		= "<>";
 	final ConcurrentMap<Archive, Resource>	resources	= new ConcurrentHashMap<>();
 	private final PromiseFactory			promiseFactory;
-	final List<Revision>					revisions;
+	final List<Archive>						archives;
 	final List<URI>							uris;
 	final AtomicInteger						count		= new AtomicInteger(-1);
 	final Deferred<Map<Archive, Resource>>	deferred;
@@ -59,12 +60,19 @@ class Traverser {
 		this.promiseFactory = client.promiseFactory();
 		this.deferred = promiseFactory.deferred();
 		this.transitive = transitive;
-		this.revisions = new ArrayList<>();
+		this.archives = new ArrayList<>();
 		this.uris = new ArrayList<>();
 	}
 
 	Traverser revisions(Collection<Revision> revisions) {
-		this.revisions.addAll(revisions);
+		Collection<Archive> archives = revisions.stream()
+			.map(r -> r.archive(Archive.JAR_EXTENSION, null))
+			.collect(Collectors.toList());
+		return archives(archives);
+	}
+
+	Traverser archives(Collection<Archive> archives) {
+		this.archives.addAll(archives);
 		return this;
 	}
 
@@ -90,8 +98,8 @@ class Traverser {
 						parsePom(pom, ROOT);
 					}
 				} else {
-					for (Revision revision : revisions)
-						parse(revision.archive("jar", null), ROOT);
+					for (Archive archive : archives)
+						parse(archive, ROOT);
 				}
 			} finally {
 				finish();
@@ -235,7 +243,11 @@ class Traverser {
 	}
 
 	public Traverser revision(Revision revision) {
-		revisions.add(revision);
+		return archive(revision.archive(Archive.JAR_EXTENSION, null));
+	}
+
+	public Traverser archive(Archive archive) {
+		archives.add(archive);
 		return this;
 	}
 

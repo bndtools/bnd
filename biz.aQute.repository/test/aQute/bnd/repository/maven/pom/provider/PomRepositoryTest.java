@@ -622,7 +622,7 @@ public class PomRepositoryTest extends TestCase {
 			config.put("name", "test");
 			mcsr.setProperties(config);
 			mcsr.prepare();
-			assertEquals("Neither pom, revision nor query property are set", mcsr.getStatus());
+			assertEquals("Neither pom, archive nor query property are set", mcsr.getStatus());
 		}
 	}
 
@@ -692,7 +692,9 @@ public class PomRepositoryTest extends TestCase {
 
 			String revisions = Strings.join(new String[] {
 				"biz.aQute.bnd:biz.aQute.junit:3.3.0", "biz.aQute.bnd:biz.aQute.launcher:3.3.0",
-				"biz.aQute.bnd:biz.aQute.remote.launcher:3.3.0", "biz.aQute.bnd:biz.aQute.tester:3.3.0"
+				"biz.aQute.bnd:biz.aQute.remote.launcher:3.3.0", "biz.aQute.bnd:biz.aQute.tester:3.3.0",
+				"org.jacoco:org.jacoco.agent:jar:runtime:0.8.6",
+				"org.apache.felix:org.apache.felix.framework:bin:zip:1.4.0"
 			});
 
 			config.put("revision", revisions);
@@ -707,10 +709,16 @@ public class PomRepositoryTest extends TestCase {
 
 			RequirementBuilder builder = mcsr.newRequirementBuilder("osgi.identity");
 			builder.addAttribute("filter", "(osgi.identity=biz.aQute.tester)");
-
 			Promise<Collection<Resource>> providers = mcsr.findProviders(builder.buildExpression());
 			Collection<Resource> resources = providers.getValue();
 			assertFalse(resources.isEmpty());
+
+			assertThat(mcsr.list("*")).contains("biz.aQute.remote.launcher",
+				"biz.aQute.launcher", "biz.aQute.junit", "biz.aQute.tester", //
+				"org.jacoco:org.jacoco.agent", // with classifier
+				"org.apache.felix:org.osgi.foundation",// from zip
+				"org.apache.felix:org.apache.felix.framework" // from zip
+				);
 		}
 	}
 
