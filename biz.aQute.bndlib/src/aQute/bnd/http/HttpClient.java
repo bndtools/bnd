@@ -241,13 +241,14 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public URLConnectionHandler findMatchingHandler(URL url) {
-		for (URLConnectionHandler urlh : getURLConnectionHandlers()) {
+		Collection<? extends URLConnectionHandler> urlConnectionHandlers = getURLConnectionHandlers();
+		for (URLConnectionHandler urlh : urlConnectionHandlers) {
 			if (urlh.matches(url)) {
 				logger.debug("Decorate {} with handler {}", url, urlh);
 				return urlh;
-			} else
-				logger.debug("No match for {}, handler {}", url, urlh);
+			}
 		}
+		logger.debug("No match for {}, handlers {}", url, urlConnectionHandlers);
 		return null;
 	}
 
@@ -599,7 +600,7 @@ public class HttpClient implements Closeable, URLConnector {
 				task.worked(1);
 				doOutput(put, con);
 			} else {
-				logger.debug("{} {}", request.verb, request.url);
+				logger.debug("{} {}", request.verb, hcon == null ? request.url : hcon);
 			}
 
 			if (request.timeout > 0) {
