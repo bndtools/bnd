@@ -25,7 +25,11 @@ import org.gradle.api.tasks.InputFiles
 
 
 class FileSetRepositoryConvention {
-  private final ConfigurableFileCollection bundleCollection
+  /**
+   * The bundles for the repository.
+   */
+  @InputFiles
+  final ConfigurableFileCollection bundles
 
   /**
    * Create a FileSetRepositoryConvention.
@@ -33,10 +37,11 @@ class FileSetRepositoryConvention {
    */
   FileSetRepositoryConvention(Task task) {
     Project project = task.project
-    bundleCollection = project.objects.fileCollection()
-    bundles(project.sourceSets.main.runtimeClasspath, project.configurations.archives.artifacts.files)
+    bundles = project.objects.fileCollection()
+    bundles(project.sourceSets.main.runtimeClasspath)
+    bundles(project.configurations.archives.artifacts.files)
     // need to programmatically add to inputs since @InputFiles in a convention is not processed
-    task.inputs.files(bundleCollection).withPropertyName('bundles')
+    task.inputs.files(getBundles()).withPropertyName('bundles')
   }
 
   /**
@@ -47,15 +52,7 @@ class FileSetRepositoryConvention {
    * ConfigurableFileCollection.from().
    */
   public ConfigurableFileCollection bundles(Object... paths) {
-    return builtBy(bundleCollection.from(paths), paths)
-  }
-
-  /**
-   * Return the files to use when locating bundles.
-   */
-  @InputFiles
-  public ConfigurableFileCollection getBundles() {
-    return bundleCollection
+    return builtBy(getBundles().from(paths), paths)
   }
 
   /**
@@ -66,8 +63,8 @@ class FileSetRepositoryConvention {
    * ConfigurableFileCollection.from().
    */
   public void setBundles(Object path) {
-    bundleCollection.from = []
-    bundleCollection.builtBy = []
+    getBundles().setFrom(Collections.emptyList())
+    getBundles().setBuiltBy(Collections.emptyList())
     bundles(path)
   }
 
@@ -75,6 +72,6 @@ class FileSetRepositoryConvention {
    * Return a FileSetRepository using the bundles.
    */
   FileSetRepository getFileSetRepository(String name) {
-    return new FileSetRepository(name, bundles.files)
+    return new FileSetRepository(name, getBundles().files)
   }
 }

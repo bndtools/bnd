@@ -46,6 +46,7 @@ import aQute.lib.io.IO
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
@@ -84,21 +85,18 @@ public class Bndrun extends DefaultTask {
   @Internal
   final DirectoryProperty workingDirectory
 
-  private final def bndWorkspace
-
   /**
    * Create a Bndrun task.
    *
    */
   public Bndrun() {
     super()
-    ObjectFactory objects = project.objects
+    ObjectFactory objects = project.getObjects()
     bndrun = objects.fileProperty()
     DirectoryProperty temporaryDirProperty = objects.directoryProperty()
     temporaryDirProperty.set(temporaryDir)
     workingDirectory = objects.directoryProperty().convention(temporaryDirProperty)
-    bndWorkspace = project.findProperty('bndWorkspace')
-    if (bndWorkspace == null) {
+    if (!project.hasProperty('bndWorkspace')) {
       convention.plugins.bundles = new FileSetRepositoryConvention(this)
     }
   }
@@ -108,10 +106,10 @@ public class Bndrun extends DefaultTask {
    *
    * <p>
    * The argument will be handled using
-   * Project.file().
+   * project.layout.projectDirectory.file().
    */
   public void setBndrun(String file) {
-    getBndrun().set(project.file(file))
+    getBndrun().value(project.layout.projectDirectory.file(file))
   }
 
   /**
@@ -141,7 +139,7 @@ public class Bndrun extends DefaultTask {
    */
   @TaskAction
   void bndrunAction() {
-    def workspace = bndWorkspace
+    def workspace = project.findProperty('bndWorkspace')
     File bndrunFile = unwrap(getBndrun())
     File workingDirFile = unwrap(getWorkingDirectory())
     if ((workspace != null) && project.plugins.hasPlugin(BndPlugin.PLUGINID) && (bndrunFile == project.bnd.project.getPropertiesFile())) {

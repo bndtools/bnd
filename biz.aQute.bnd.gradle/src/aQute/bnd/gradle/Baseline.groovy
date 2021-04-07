@@ -20,8 +20,8 @@
  *     }
  * }
  * tasks.register('baseline', Baseline) {
- *   bundle jar
- *   baseline configurations.baseline
+ *   bundle = jar
+ *   baseline = configurations.baseline
  * }
  * </pre>
  *
@@ -51,6 +51,7 @@ package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.builtBy
 import static aQute.bnd.gradle.BndUtils.unwrap
+import static org.gradle.api.tasks.PathSensitivity.RELATIVE
 
 import aQute.bnd.differ.DiffPluginImpl
 import aQute.bnd.header.Parameters
@@ -66,11 +67,13 @@ import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.model.ReplacedBy
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.Input
@@ -81,17 +84,6 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 
 public class Baseline extends DefaultTask {
-  private final ProjectLayout layout
-  private final ObjectFactory objects
-  private final ProviderFactory providers
-  private ConfigurableFileCollection bundleCollection
-  private ConfigurableFileCollection baselineCollection
-  private final ListProperty<String> diffignore
-  private final ListProperty<String> diffpackages
-  private final DirectoryProperty baselineReportDirectory
-  private final Provider<RegularFile> reportFile
-  private String baselineReportDirName
-
   /**
    * Whether baseline failures should be ignored.
    *
@@ -104,28 +96,79 @@ public class Baseline extends DefaultTask {
   boolean ignoreFailures = false
 
   /**
+   * The names of the exported packages to baseline.
+   * <p>
+   * The default is all exported packages.
+   */
+  @Input
+  final ListProperty<String> diffpackages
+
+  /**
+   * The bundle headers or resource paths to ignore when
+   * baselining.
+   * <p>
+   * The default is nothing ignored.
+   */
+  @Input
+  final ListProperty<String> diffignore
+
+  /**
+   * The name of the baseline reports directory.
+   *
+   * <p>
+   * Can be a name or a path relative to <code>ReportingExtension.getBaseDirectory()</code>.
+   * The default name is 'baseline'.
+   */
+  @Internal('Represented by reportFile')
+  final Property<String> baselineReportDirName
+
+  /**
+   * The baseline reports directory.
+   *
+   * <p>
+   * The default is <code>ReportingExtension.getBaseDirectory().dir(baselineReportDirName)</code>.
+   */
+  @Internal('Represented by reportFile')
+  final DirectoryProperty baselineReportDirectory
+
+  /**
+   * The baseline reports file.
+   *
+   * <p>
+   * The default is <code>baselineReportDirectory.dir("${task.name}/${bundlename}.txt")</code>.
+   */
+  @OutputFile
+  final RegularFileProperty reportFile
+
+  private final ConfigurableFileCollection bundleCollection
+  private final ConfigurableFileCollection baselineCollection
+
+  private final ProjectLayout layout
+  private final ProviderFactory providers
+
+  /**
    * Create a Baseline task.
    *
    */
   public Baseline() {
     super()
     this.layout = project.layout
-    this.objects = project.objects
     this.providers = project.providers
-    baselineReportDirName = 'baseline'
+    ObjectFactory objects = project.objects
+    baselineReportDirName = objects.property(String.class).convention('baseline')
     baselineReportDirectory = objects.directoryProperty().convention(project.reporting.baseDirectory.dir(baselineReportDirName))
-    reportFile = baselineReportDirectory.file(providers.provider({ ->
+    String taskName = name
+    reportFile = objects.fileProperty().convention(baselineReportDirectory.file(providers.provider({ ->
       String bundlename = unwrap(getBundle()).getName()
       bundlename = bundlename[0..Math.max(-1, bundlename.lastIndexOf('.') - 1)]
-      return "${name}/${bundlename}.txt"
-    }))
+      return "${taskName}/${bundlename}.txt"
+    })))
     diffignore = objects.listProperty(String.class).empty()
     diffpackages = objects.listProperty(String.class).empty()
     bundleCollection = objects.fileCollection()
     baselineCollection = objects.fileCollection()
-    dependsOn {
-      [bundleCollection, baselineCollection]
-    }
+    inputs.files(bundleCollection).withPathSensitivity(RELATIVE).withPropertyName('bundleCollection')
+    inputs.files(baselineCollection).withPropertyName('baselineCollection')
   }
 
   /**
@@ -137,8 +180,9 @@ public class Baseline extends DefaultTask {
    */
   @InputFile
   public Provider<RegularFile> getBundle() {
+    ConfigurableFileCollection collection = bundleCollection
     return layout.file(providers.provider({ ->
-      return bundleCollection.getSingleFile()
+      return collection.getSingleFile()
     }))
   }
 
@@ -150,7 +194,7 @@ public class Baseline extends DefaultTask {
    * ConfigurableFileCollection.from().
    */
   public void setBundle(Object file) {
-    bundleCollection = objects.fileCollection().from(file)
+    bundleCollection.setFrom(file)
     builtBy(bundleCollection, file)
   }
 
@@ -163,8 +207,9 @@ public class Baseline extends DefaultTask {
    */
   @InputFile
   public Provider<RegularFile> getBaseline() {
+    ConfigurableFileCollection collection = baselineCollection
     return layout.file(providers.provider({ ->
-      return baselineCollection.getSingleFile()
+      return collection.getSingleFile()
     }))
   }
 
@@ -175,52 +220,22 @@ public class Baseline extends DefaultTask {
    * ConfigurableFileCollection.from().
    */
   public void setBaseline(Object file) {
-    baselineCollection = objects.fileCollection().from(file)
+    baselineCollection.setFrom(file)
     builtBy(baselineCollection, file)
-  }
-
-  /**
-   * Return the diffignore values.
-   */
-  @Input
-  public ListProperty<String> getDiffignore() {
-    return this.diffignore
   }
 
   /**
    * Add diffignore values.
    */
   public void diffignore(String... diffignore) {
-    this.diffignore.addAll(diffignore)
-  }
-
-  /**
-   * Set the diffignore values.
-   */
-  public void setDiffignore(Iterable<String> diffignore) {
-    this.diffignore.set(diffignore)
-  }
-
-  /**
-   * Return the diffpackages values.
-   */
-  @Input
-  public ListProperty<String> getDiffpackages() {
-    return this.diffpackages
+    getDiffignore().addAll(diffignore)
   }
 
   /**
    * Add diffpackages values.
    */
   public void diffpackages(String... diffpackages) {
-    this.diffpackages.addAll(diffpackages)
-  }
-
-  /**
-   * Set the diffpackages values.
-   */
-  public void setDiffpackages(Iterable<String> diffpackages) {
-    this.diffpackages.set(diffpackages)
+    getDiffpackages().addAll(diffpackages)
   }
 
   @Internal('Used by baseline configuration')
@@ -231,46 +246,6 @@ public class Baseline extends DefaultTask {
       }
       t instanceof Task && t.convention.findPlugin(BundleTaskConvention.class) ? t : null
     }
-  }
-
-  @Internal('Used internally')
-  ConfigurableFileCollection getBundleCollection() {
-    return bundleCollection
-  }
-
-  @Internal('Used internally')
-  ConfigurableFileCollection getBaselineCollection() {
-    return baselineCollection
-  }
-
-  /**
-   * The baseline reports directory.
-   */
-  @Internal('Represented by reportFile')
-  public DirectoryProperty getBaselineReportDirectory() {
-    return baselineReportDirectory
-  }
-
-  /**
-   * The name of the baseline reports directory.
-   *
-   * <p>
-   * Can be a name or a path relative to <code>ReportingExtension.getBaseDirectory()</code>.
-   * The default name is 'baseline'.
-   */
-  @Internal('Represented by reportFile')
-  public String getBaselineReportDirName() {
-    return baselineReportDirName
-  }
-
-  public void setBaselineReportDirName(String baselineReportDirName) {
-    this.baselineReportDirName = baselineReportDirName
-    baselineReportDirectory.set(project.reporting.baseDirectory.dir(baselineReportDirName))
-  }
-
-  @OutputFile
-  public Provider<RegularFile> getReportFile() {
-    return reportFile
   }
 
   @Deprecated
@@ -284,7 +259,7 @@ public class Baseline extends DefaultTask {
    *
    */
   @TaskAction
-  void baselineBundle() {
+  void baselineAction() {
     File bundle = unwrap(getBundle())
     File baseline = unwrap(getBaseline())
     File report = unwrap(getReportFile())

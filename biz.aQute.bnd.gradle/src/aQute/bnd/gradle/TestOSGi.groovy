@@ -9,7 +9,7 @@
  * <pre>
  * import aQute.bnd.gradle.TestOSGi
  * tasks.register('testOSGi', TestOSGi) {
- *   bndrun file('my.bndrun')
+ *   bndrun = resolveTask.flatMap { it.outputBndrun }
  * }
  * </pre>
  *
@@ -52,7 +52,6 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.options.Option
 
 public class TestOSGi extends Bndrun {
-  private List<String> tests
   /**
    * The directory where the test case results are placed.
    *
@@ -63,6 +62,8 @@ public class TestOSGi extends Bndrun {
   @OutputDirectory
   final DirectoryProperty resultsDirectory
 
+  private List<String> tests
+
   /**
    * Create a TestOSGi task.
    *
@@ -72,7 +73,8 @@ public class TestOSGi extends Bndrun {
     Provider<Directory> testResultsDirectory = project.layout.buildDirectory.dir(project.provider({ ->
         return project.testResultsDirName
     }))
-    resultsDirectory = project.objects.directoryProperty().convention(testResultsDirectory.map({ it.dir(name) }))
+    String taskName = name
+    resultsDirectory = project.objects.directoryProperty().convention(testResultsDirectory.map({ it.dir(taskName) }))
   }
 
   @Deprecated

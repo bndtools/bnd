@@ -37,9 +37,11 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.FileCollection
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.logging.Logger
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.ClasspathNormalizer
 import org.gradle.api.tasks.compile.JavaCompile
 
@@ -58,9 +60,9 @@ public class BndPlugin implements Plugin<Project> {
   public void apply(Project p) {
     p.configure(p) { Project project ->
       this.project = project
+      this.workspace = project.parent
       this.layout = project.layout
       this.objects = project.objects
-      this.workspace = project.parent
       if (plugins.hasPlugin(BndBuilderPlugin.PLUGINID)) {
           throw new GradleException("Project already has '${BndBuilderPlugin.PLUGINID}' plugin applied.")
       }
@@ -125,14 +127,14 @@ public class BndPlugin implements Plugin<Project> {
             bndProject.getWorkspace().getIncluded(),
             bndProject.getPropertiesFile(),
             bndProject.getIncluded()).withPathSensitivity(RELATIVE).withPropertyName('bndFiles')
-          t.outputs.dirs(bndProject.getGenerate().getOutputDirs())
-          t.doLast {
+          t.outputs.dirs(bndProject.getGenerate().getOutputDirs()).withPropertyName('generateOutputs')
+          t.doLast('generate') { tt ->
             try {
               bndProject.getGenerate().generate(false)
             } catch (Exception e) {
               throw new GradleException("Project ${bndProject.getName()} failed to generate", e)
             }
-            checkErrors(t.logger)
+            checkErrors(tt.logger)
           }
         }
       }
@@ -149,11 +151,11 @@ public class BndPlugin implements Plugin<Project> {
           tasks.named(compileJavaTaskName) { t ->
             t.destinationDir = destinationDir
             if (generate) {
-              t.inputs.files(generate)
+              t.inputs.files(generate).withPropertyName(generate.name)
             }
+            jarLibraryElements(t, compileClasspathConfigurationName)
           }
           output.dir(destinationDir, 'builtBy': compileJavaTaskName)
-          jarLibraryElements(project, compileClasspathConfigurationName)
         }
         test {
           ConfigurableFileCollection srcDirs = objects.fileCollection().from(bndProject.getTestSrc())
@@ -164,9 +166,9 @@ public class BndPlugin implements Plugin<Project> {
           output.resourcesDir = destinationDir
           tasks.named(compileJavaTaskName) { t ->
             t.destinationDir = destinationDir
+            jarLibraryElements(t, compileClasspathConfigurationName)
           }
           output.dir(destinationDir, 'builtBy': compileJavaTaskName)
-          jarLibraryElements(project, compileClasspathConfigurationName)
         }
       }
       /* Configure srcDirs for any additional languages */
@@ -182,9 +184,9 @@ public class BndPlugin implements Plugin<Project> {
                 try {
                   tasks.named(compileTaskName) { t ->
                     t.destinationDir = destinationDir
-                    t.inputs.files(tasks.named(resourceTaskName))
+                    t.inputs.files(tasks.named(resourceTaskName)).withPropertyName(resourceTaskName)
                     if (generate) {
-                      t.inputs.files(generate)
+                      t.inputs.files(generate).withPropertyName(generate.name)
                     }
                   }
                   sourceDirSet.srcDirs = java.srcDirs
@@ -206,7 +208,7 @@ public class BndPlugin implements Plugin<Project> {
                 try {
                   tasks.named(compileTaskName) { t ->
                     t.destinationDir = destinationDir
-                    t.inputs.files(tasks.named(resourceTaskName))
+                    t.inputs.files(tasks.named(resourceTaskName)).withPropertyName(resourceTaskName)
                   }
                   sourceDirSet.srcDirs = java.srcDirs
                   sourceDirSet.outputDir = destinationDir
@@ -229,57 +231,77 @@ public class BndPlugin implements Plugin<Project> {
         testRuntimeOnly objects.fileCollection().from(bndProject.getTestOutput())
       }
       /* Set up compile tasks */
-      sourceCompatibility = bnd('javac.source', sourceCompatibility)
-      String javacTarget = bnd('javac.target', targetCompatibility)
       ConfigurableFileCollection javacBootclasspath = objects.fileCollection().from(bndProject.getBootclasspath()*.getFile())
-      if (javacTarget == 'jsr14') {
-        javacTarget = '1.5'
-        javacBootclasspath = objects.fileCollection().from(bndProject.getBundle('ee.j2se', '1.5', null, ['strategy':'lowest']).getFile())
+      Property<String> javacSource = objects.property(String.class).convention(bnd('javac.source'))
+      if (javacSource.isPresent()) {
+        sourceCompatibility = javacSource.get()
+      } else {
+        javacSource.convention(provider({ -> sourceCompatibility.toString() }))
       }
-      targetCompatibility = javacTarget
+      Property<String> javacTarget = objects.property(String.class).convention(bnd('javac.target'))
+      if (javacTarget.isPresent()) {
+        if (javacTarget.get() == 'jsr14') {
+          javacTarget.set('1.5')
+          javacBootclasspath.setFrom(bndProject.getBundle('ee.j2se', '1.5', null, ['strategy':'lowest']).getFile())
+        }
+        targetCompatibility = javacTarget.get()
+      } else {
+        javacTarget.convention(provider({ -> targetCompatibility.toString() }))
+      }
       String javac = bnd('javac')
-      String javacProfile = bnd('javac.profile', '')
+      Property<String> javacProfile = objects.property(String.class)
+      if (!bnd('javac.profile', '').empty) {
+        javacProfile.convention(bnd('javac.profile'))
+      }
+      Property<String> javacRelease = objects.property(String.class)
+      if (JavaVersion.current().isJava9Compatible()) {
+        javacRelease.convention(provider({ -> 
+          if ((javacSource.get() == javacTarget.get()) && javacBootclasspath.empty && !javacProfile.isPresent()) {
+            return JavaVersion.toVersion(javacSource.get()).majorVersion
+          }
+          return null
+        }))
+      }
       boolean javacDebug = bndis('javac.debug')
       boolean javacDeprecation = isTrue(bnd('javac.deprecation', 'true'))
       String javacEncoding = bnd('javac.encoding', 'UTF-8')
       tasks.withType(JavaCompile.class).configureEach { t ->
-        configure(t.options) {
-          if (javacDebug) {
-            debugOptions.debugLevel = 'source,lines,vars'
-          }
-          verbose = t.logger.isDebugEnabled()
-          listFiles = t.logger.isInfoEnabled()
-          deprecation = javacDeprecation
-          encoding = javacEncoding
-          if (javac != 'javac') {
-            fork = true
-            forkOptions.executable = javac
-          }
-          if (!javacBootclasspath.empty) {
-            fork = true
-            bootstrapClasspath = javacBootclasspath
-          }
-          if (!javacProfile.empty) {
-            compilerArgs.addAll(['-profile', javacProfile])
-          }
-          if (JavaVersion.current().isJava9Compatible()) {
-            if ((project.sourceCompatibility == project.targetCompatibility) && javacBootclasspath.empty && javacProfile.empty) {
-              compilerArgs.addAll(['--release', JavaVersion.toVersion(project.sourceCompatibility).majorVersion])
-            }
-          }
+        t.sourceCompatibility = javacSource.get()
+        t.targetCompatibility = javacTarget.get()
+        def options = t.options
+        if (javacDebug) {
+          options.debugOptions.debugLevel = 'source,lines,vars'
         }
-        t.doFirst {
-          checkErrors(t.logger)
-          if (t.logger.isInfoEnabled()) {
-            t.logger.info 'Compile to {}', t.destinationDir
-            if (t.options.compilerArgs.contains('--release')) {
-              t.logger.info '{}', t.options.compilerArgs.join(' ')
+        options.verbose = t.logger.isDebugEnabled()
+        options.listFiles = t.logger.isInfoEnabled()
+        options.deprecation = javacDeprecation
+        options.encoding = javacEncoding
+        if (javac != 'javac') {
+          options.fork = true
+          options.forkOptions.executable = javac
+        }
+        if (!javacBootclasspath.empty) {
+          options.fork = true
+          options.bootstrapClasspath = javacBootclasspath
+        }
+        if (javacProfile.isPresent()) {
+          options.compilerArgs.addAll(['-profile', javacProfile.get()])
+        }
+        if (javacRelease.isPresent()) {
+          options.compilerArgs.addAll(['--release', javacRelease.get()])
+        }
+        t.doFirst('checkErrors') { tt ->
+          checkErrors(tt.logger)
+          if (tt.logger.isInfoEnabled()) {
+            tt.logger.info 'Compile to {}', tt.destinationDir
+            if (tt.options.compilerArgs.contains('--release')) {
+              tt.logger.info '{}', tt.options.compilerArgs.join(' ')
             } else {
-              t.logger.info '-source {} -target {} {}', project.sourceCompatibility, project.targetCompatibility, options.compilerArgs.join(' ')
+              tt.logger.info '-source {} -target {} {}', tt.sourceCompatibility, tt.targetCompatibility, tt.options.compilerArgs.join(' ')
             }
-            t.logger.info '-classpath {}', t.classpath.asPath
-            if (t.options.bootstrapClasspath != null) {
-              t.logger.info '-bootclasspath {}', t.options.bootstrapClasspath.asPath
+            tt.logger.info '-classpath {}', tt.classpath.asPath
+            if (tt.options.bootstrapClasspath != null) {
+              tt.logger.info '-bootclasspath {}', tt.options.bootstrapClasspath.asPath
             }
           }
         }
@@ -289,25 +311,23 @@ public class BndPlugin implements Plugin<Project> {
         t.description 'Jar this project\'s bundles.'
         t.actions.clear() /* Replace the standard task actions */
         t.enabled !bndProject.isNoBundles()
-        project.configurations.archives.artifacts.files.find {
-          t.archiveFileName = it.name /* use first artifact as archiveFileName */
-        }
+        FileCollection deliverables = project.configurations.archives.artifacts.files
+        /* use first deliverable as archiveFileName */
+        t.archiveFileName = provider({ -> deliverables.find()?.name ?: bndProject.getName() })
         /* Additional excludes for projectDir inputs */
         t.ext.projectDirInputsExcludes = Strings.split(bndMerge(Constants.BUILDERIGNORE)).collect { it.concat('/') }
         /* all other files in the project like bnd and resources */
-        t.inputs.files({
-          project.fileTree(layout.projectDirectory) { tree ->
-            project.sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
-              tree.exclude sourceSet.allSource.sourceDirectories.collect {
-                project.relativePath(it)
-              }
-              tree.exclude sourceSet.output.collect {
-                project.relativePath(it)
-              }
+        t.inputs.files(project.fileTree(layout.projectDirectory) { tree ->
+          project.sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
+            tree.exclude sourceSet.allSource.sourceDirectories.collect {
+              project.relativePath(it)
             }
-            tree.exclude project.relativePath(buildDir) /* exclude buildDir */
-            tree.exclude t.projectDirInputsExcludes /* user specified excludes */
+            tree.exclude sourceSet.output.collect {
+              project.relativePath(it)
+            }
           }
+          tree.exclude project.relativePath(buildDir) /* exclude buildDir */
+          tree.exclude t.projectDirInputsExcludes /* user specified excludes */
         }).withPathSensitivity(RELATIVE).withPropertyName('projectFolder')
         /* bnd can include from -buildpath */
         t.inputs.files(project.sourceSets.main.compileClasspath).withNormalizer(ClasspathNormalizer).withPropertyName('buildpath')
@@ -318,9 +338,9 @@ public class BndPlugin implements Plugin<Project> {
           bndProject.getWorkspace().getIncluded(),
           bndProject.getPropertiesFile(),
           bndProject.getIncluded()).withPathSensitivity(RELATIVE).withPropertyName('bndFiles')
-        t.outputs.files({ project.configurations.archives.artifacts.files }).withPropertyName('artifacts')
+        t.outputs.files(deliverables).withPropertyName('artifacts')
         t.outputs.file(layout.buildDirectory.file(Constants.BUILDFILES)).withPropertyName('buildfiles')
-        t.doLast {
+        t.doLast('build') { tt ->
           File[] built
           try {
             built = bndProject.build()
@@ -331,9 +351,9 @@ public class BndPlugin implements Plugin<Project> {
           } catch (Exception e) {
             throw new GradleException("Project ${bndProject.getName()} failed to build", e)
           }
-          checkErrors(t.logger)
+          checkErrors(tt.logger)
           if (built != null) {
-            t.logger.info 'Generated bundles: {}', built as Object
+            tt.logger.info 'Generated bundles: {}', built as Object
           }
         }
       }
@@ -362,14 +382,14 @@ public class BndPlugin implements Plugin<Project> {
         t.description 'Release this project to the release repository.'
         t.group 'release'
         t.enabled !bndProject.isNoBundles() && !bnd(Constants.RELEASEREPO, 'unset').empty
-        t.inputs.files jar
-        t.doLast {
+        t.inputs.files(jar).withPropertyName(jar.name)
+        t.doLast('release') { tt ->
           try {
             bndProject.release()
           } catch (Exception e) {
             throw new GradleException("Project ${bndProject.getName()} failed to release", e)
           }
-          checkErrors(t.logger)
+          checkErrors(tt.logger)
         }
       }
 
@@ -389,8 +409,8 @@ public class BndPlugin implements Plugin<Project> {
         t.enabled !bndis(Constants.NOJUNIT) && !bndis('no.junit')
         /* tests can depend upon jars from -dependson */
         t.inputs.files(getBuildDependencies('jar')).withPropertyName('buildDependencies')
-        t.doFirst {
-          checkErrors(t.logger, t.ignoreFailures)
+        t.doFirst('checkErrors') { tt ->
+          checkErrors(tt.logger, tt.ignoreFailures)
         }
       }
 
@@ -398,7 +418,7 @@ public class BndPlugin implements Plugin<Project> {
         t.description 'Runs the OSGi JUnit tests by launching a framework and running the tests in the launched framework.'
         t.group 'verification'
         t.enabled !bndis(Constants.NOJUNITOSGI) && !bndUnprocessed(Constants.TESTCASES, '').empty
-        t.inputs.files jar
+        t.inputs.files(jar).withPropertyName(jar.name)
         t.bndrun = bndProject.getPropertiesFile()
       }
 
@@ -512,7 +532,7 @@ public class BndPlugin implements Plugin<Project> {
         t.group 'help'
         def compileJava = tasks.getByName('compileJava')
         def compileTestJava = tasks.getByName('compileTestJava')
-        t.doLast {
+        t.doLast('echo') { tt ->
           println """
 ------------------------------------------------------------
 Project ${project.name} // Bnd version ${About.CURRENT}
@@ -533,18 +553,18 @@ project.testpath:       ${compileTestJava.classpath.asPath}
 project.bootclasspath:  ${compileJava.options.bootstrapClasspath?.asPath?:''}
 project.deliverables:   ${project.configurations.archives.artifacts.files*.path}
 javac:                  ${compileJava.options.forkOptions.executable?:'javac'}
-javac.source:           ${project.sourceCompatibility}
-javac.target:           ${project.targetCompatibility}
-javac.profile:          ${javacProfile}
+javac.source:           ${javacSource.getOrElse('')}
+javac.target:           ${javacTarget.getOrElse('')}
+javac.profile:          ${javacProfile.getOrElse('')}
 """
-          checkErrors(t.logger, true)
+          checkErrors(tt.logger, true)
         }
       }
 
       def bndproperties = tasks.register('bndproperties') { t ->
         t.description 'Displays the bnd properties.'
         t.group 'help'
-        t.doLast {
+        t.doLast('bndproperties') { tt ->
           println """
 ------------------------------------------------------------
 Project ${project.name}
@@ -554,7 +574,7 @@ Project ${project.name}
             println "${it}: ${bnd(it, '')}"
           }
           println()
-          checkErrors(t.logger, true)
+          checkErrors(tt.logger, true)
         }
       }
 
@@ -570,7 +590,7 @@ Project ${project.name}
           def resource = workspace.project('cnf').layout.buildDirectory.dir("noparallel/${category}")
           taskNames.trim().tokenize(',').each { taskName ->
             tasks.named(taskName.trim()) { t ->
-              t.outputs.dir resource
+              t.outputs.dir(resource).withPropertyName(category)
             }
           }
         }
