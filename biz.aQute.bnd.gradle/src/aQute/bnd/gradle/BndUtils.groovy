@@ -68,15 +68,16 @@ class BndUtils {
     return value
   }
 
-  public static void jarLibraryElements(Project project, String configurationName) {
+  public static void jarLibraryElements(Task task, String configurationName) {
     if (IS_GRADLE_COMPATIBLE_5_6) {
+      Project project = task.project
       def attributes = project.configurations[configurationName].attributes
       if (attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE)?.name != LibraryElements.JAR) {
         try {
           attributes.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.objects.named(LibraryElements.class, LibraryElements.JAR))
-          project.logger.info 'Set {}:{} configuration attribute {} to {}', project.path, configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE)
+          task.logger.info 'Set {}:{} configuration attribute {} to {}', project.path, configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE)
         } catch (IllegalArgumentException e) {
-          project.logger.info 'Unable to set {}:{} configuration attribute {} to {}', project.path, configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, LibraryElements.JAR, e
+          task.logger.info 'Unable to set {}:{} configuration attribute {} to {}', project.path, configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, LibraryElements.JAR, e
         }
       }
     }

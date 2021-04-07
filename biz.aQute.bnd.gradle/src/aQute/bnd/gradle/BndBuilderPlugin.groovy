@@ -51,37 +51,35 @@ public class BndBuilderPlugin implements Plugin<Project> {
       def jar = tasks.named('jar') { t ->
         t.description 'Assembles a bundle containing the main classes.'
         t.convention.plugins.bundle = new BundleTaskConvention(t)
-        RegularFile defaultBndfile = project.layout.projectDirectory.file('bnd.bnd')
+        RegularFile defaultBndfile = t.project.layout.projectDirectory.file('bnd.bnd')
         if (defaultBndfile.getAsFile().isFile()) {
           t.bndfile.convention(defaultBndfile)
         }
-        t.doLast {
+        t.doLast('buildBundle') { tt ->
           buildBundle()
         }
       }
 
-      configurations {
-        baseline
-        baseline.dependencies.all { Dependency dep ->
-          if (dep instanceof ExternalDependency) {
-            dep.version {
-              strictly dep.getVersion()
-            }
+      Configuration baseline = configurations.create('baseline')
+      baseline.dependencies.all { Dependency dep ->
+        if (dep instanceof ExternalDependency) {
+          dep.version {
+            strictly dep.getVersion()
           }
-          if (dep instanceof ModuleDependency) {
-            dep.transitive = false
-          }
+        }
+        if (dep instanceof ModuleDependency) {
+          dep.transitive = false
         }
       }
 
       tasks.register('baseline', Baseline.class) { t ->
         t.description 'Baseline the project bundle.'
         t.group 'release'
-        t.bundle jar
-        t.baseline project.configurations.baseline
+        t.bundle = jar
+        t.baseline = baseline
       }
 
-      configurations.baseline.defaultDependencies { deps ->
+      baseline.defaultDependencies { deps ->
         Task baselineTask = tasks.getByName('baseline')
         Task bundleTask = baselineTask.getBundleTask()
         if (bundleTask) {

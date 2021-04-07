@@ -68,8 +68,6 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
 public class Index extends DefaultTask {
-  private final ConfigurableFileCollection bundleCollection
-
   /**
    * Whether a gzip'd index should be made.
    *
@@ -85,7 +83,7 @@ public class Index extends DefaultTask {
    * The URI base of the generated index.
    *
    * <p>
-   * The default value is destinationDir.
+   * The default is the file: URI of the destinationDir.
    */
   @Input
   final Property<URI> base
@@ -112,7 +110,7 @@ public class Index extends DefaultTask {
    * The destination directory for the index.
    *
    * <p>
-   * The default value is buildDir.
+   * The default value is project.layout.buildDirectory.
    */
   @Internal('Represented by indexUncompressed and indexCompressed')
   final DirectoryProperty destinationDirectory
@@ -136,6 +134,12 @@ public class Index extends DefaultTask {
   final RegularFileProperty indexCompressed
 
   /**
+   * The bundles to be indexed.
+   */
+  @InputFiles
+  final ConfigurableFileCollection bundles
+
+  /**
    * Create an Index task.
    *
    */
@@ -144,12 +148,11 @@ public class Index extends DefaultTask {
     ObjectFactory objects = project.objects
     indexName = objects.property(String.class).convention('index.xml')
     repositoryName = objects.property(String.class).convention(name)
-    bundleCollection = objects.fileCollection()
+    bundles = objects.fileCollection()
     destinationDirectory = objects.directoryProperty().convention(project.layout.buildDirectory)
     base = objects.property(URI.class).convention(destinationDirectory.map({ it.asFile.toURI() }))
     indexUncompressed = objects.fileProperty().convention(destinationDirectory.file(indexName))
     indexCompressed = objects.fileProperty().convention(destinationDirectory.file(indexName.map({ it + '.gz'})))
-    dependsOn { getBundles() }
   }
 
   @Deprecated
@@ -164,28 +167,6 @@ public class Index extends DefaultTask {
   }
 
   /**
-   * Set the base URI directory for the index.
-   *
-   * <p>
-   * The argument will be handled using
-   * Project.uri().
-   */
-  public void setBase(String path) {
-    getBase().set(project.uri(path))
-  }
-
-  /**
-   * Set the base URI directory for the index.
-   *
-   * <p>
-   * The argument will be handled using
-   * Project.uri().
-   */
-  public void setBase(Object path) {
-    getBase().set(project.uri(path))
-  }
-
-  /**
    * Add files to the bundles to be indexed.
    *
    * <p>
@@ -193,23 +174,15 @@ public class Index extends DefaultTask {
    * ConfigurableFileCollection.from().
    */
   public ConfigurableFileCollection bundles(Object... paths) {
-    return builtBy(bundleCollection.from(paths), paths)
-  }
-
-  /**
-   * Get the bundles to be indexed.
-   */
-  @InputFiles
-  public ConfigurableFileCollection getBundles() {
-    return bundleCollection
+    return builtBy(getBundles().from(paths), paths)
   }
 
   /**
    * Set the bundles to be indexed.
    */
   public void setBundles(Object path) {
-    bundleCollection.from = []
-    bundleCollection.builtBy = []
+    getBundles().setFrom(Collections.emptyList())
+    getBundles().setBuiltBy(Collections.emptyList())
     bundles(path)
   }
 
@@ -221,9 +194,11 @@ public class Index extends DefaultTask {
   void indexerAction() {
     File indexUncompressedFile = unwrap(getIndexUncompressed())
     new Processor().withCloseable { Processor processor ->
+      def sortedBundles = getBundles().sort()
+      logger.info 'Generating index for {}.', sortedBundles
       new SimpleIndexer()
         .reporter(processor)
-        .files(getBundles().sort())
+        .files(sortedBundles)
         .base(unwrap(getBase()))
         .name(unwrap(getRepositoryName()))
         .index(indexUncompressedFile)

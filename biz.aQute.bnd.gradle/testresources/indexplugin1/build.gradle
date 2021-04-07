@@ -69,7 +69,7 @@ task indexer(type: Index) {
    description 'Indexer'
    group 'build'
    repositoryName = project.name
-   bundles fileTree(destinationDirectory.dir('libs')) {
+   bundles fileTree(destinationDirectory.dir(libsDirName)) {
     include '**/*.jar'
     exclude '**/*-latest.jar'
     exclude '**/*-sources.jar'
@@ -78,19 +78,19 @@ task indexer(type: Index) {
   }
 }
 
+def indexDir = objects.directoryProperty().convention(layout.buildDirectory.dir('index'))
+
+task copybundles(type: Copy) {
+  from jar
+  into indexDir.dir('bundles')
+}
+
 task indexer2(type: Index) {
    description 'Indexer'
    group 'build'
    indexName = 'index2.xml'
    gzip = true
-   destinationDirectory = layout.buildDirectory.dir('libs')
-   base = destinationDirectory.map { d -> d.asFile.toURI() }
-   bundles = fileTree(destinationDirectory) {
-    include '**/*.jar'
-    exclude '**/*_bundle*.jar'
-    exclude '**/*-latest.jar'
-    exclude '**/*-sources.jar'
-    exclude '**/*-javadoc.jar'
-    builtBy tasks.withType(Jar)
-  }
+   destinationDirectory = indexDir
+   base = indexDir.map({ it.asFile.toURI() })
+   bundles = objects.fileCollection().from(copybundles).asFileTree
 }

@@ -44,8 +44,8 @@ baseline {
 task baselineDiffpackages(type: Baseline) {
    description 'Baseline diffpackages'
    group 'build'
-   bundle jar
-   baseline configurations.baseline
+   bundle = jar
+   baseline = configurations.baseline
    diffpackages = ['!doubler']
    diffpackages '*'
    ignoreFailures = false
