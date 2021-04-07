@@ -4,10 +4,8 @@
 
 import aQute.bnd.osgi.Jar
 import org.apache.tools.ant.filters.ReplaceTokens
-import javax.inject.Inject
 
 interface Injected {
-    @Inject ObjectFactory getObjects() 
     @Inject ExecOperations getExec() 
     @Inject FileSystemOperations getFs() 
 }
@@ -21,71 +19,70 @@ String masterVersion = String.format('%s-%s-g%.7s',
 def p2Plugins = tasks.register('p2Plugins', Sync.class) {
   dependsOn 'jarDependencies'
   from    bnd('plugins').tokenize(',')
-  into    project.layout.buildDirectory.dir('plugins')
+  into    layout.buildDirectory.dir('plugins')
 }
 
 def p2FeatureProperties = tasks.register('p2FeatureProperties', WriteProperties.class) {
-  inputs.files p2Plugins
-  outputFile = project.layout.buildDirectory.file('feature.properties')
-  def injected = project.objects.newInstance(Injected) 
-  def p2PluginsDir = p2Plugins.map { it.destinationDir }
-  doFirst {
-    injected.objects.fileTree().from(p2PluginsDir).each {
+  inputs.files(p2Plugins).withPropertyName('p2Plugins')
+  outputFile = layout.buildDirectory.file('feature.properties')
+  def plugins = objects.fileTree().from(p2Plugins.map { it.destinationDir })
+  doFirst('collect') { t ->
+    plugins.each {
       new Jar(it).withCloseable { jar ->
-        property("${jar.getBsn()}-version", jar.getVersion())
+        t.property("${jar.getBsn()}-version", jar.getVersion())
       }
     }
   }
 }
 
 def p2FeatureMain = tasks.register('p2FeatureMain', Zip.class) {
-  inputs.files p2FeatureProperties
-  destinationDirectory = project.layout.buildDirectory.dir('features')
+  inputs.files(p2FeatureProperties).withPropertyName('p2FeatureProperties')
+  destinationDirectory = layout.buildDirectory.dir('features')
   archiveFileName = 'bndtools.main.feature.jar'
   from             'features/bndtools.main'
   include          'feature.xml'
   def propertiesFile = p2FeatureProperties.map { it.outputFile }
-  doFirst {
+  doFirst('filter') { t ->
     Properties properties = new Properties()
     propertiesFile.get().withInputStream {
         properties.load(it)
         properties['master-version'] = masterVersion
     }
-    filter(ReplaceTokens, tokens: properties)
+    t.filter(ReplaceTokens, 'tokens': properties)
   }
 }
 
 def p2FeatureM2e = tasks.register('p2FeatureM2e', Zip.class) {
-  inputs.files p2FeatureProperties
-  destinationDirectory = project.layout.buildDirectory.dir('features')
+  inputs.files(p2FeatureProperties).withPropertyName('p2FeatureProperties')
+  destinationDirectory = layout.buildDirectory.dir('features')
   archiveFileName    = 'bndtools.m2e.feature.jar'
   from             'features/bndtools.m2e'
   include          'feature.xml'
   def propertiesFile = p2FeatureProperties.map { it.outputFile }
-  doFirst {
+  doFirst('filter') { t ->
     Properties properties = new Properties()
     propertiesFile.get().withInputStream {
         properties.load(it)
         properties['master-version'] = masterVersion
     }
-    filter(ReplaceTokens, tokens: properties)
+    t.filter(ReplaceTokens, 'tokens': properties)
   }
 }
 
 def p2FeaturePde = tasks.register('p2FeaturePde', Zip.class) {
-  inputs.files p2FeatureProperties
-  destinationDirectory = project.layout.buildDirectory.dir('features')
+  inputs.files(p2FeatureProperties).withPropertyName('p2FeatureProperties')
+  destinationDirectory = layout.buildDirectory.dir('features')
   archiveFileName    = 'bndtools.pde.feature.jar'
   from             'features/bndtools.pde'
   include          'feature.xml'
   def propertiesFile = p2FeatureProperties.map { it.outputFile }
-  doFirst {
+  doFirst('filter') { t ->
     Properties properties = new Properties()
     propertiesFile.get().withInputStream {
         properties.load(it)
         properties['master-version'] = masterVersion
     }
-    filter(ReplaceTokens, tokens: properties)
+    t.filter(ReplaceTokens, 'tokens': properties)
   }
 }
 
@@ -93,15 +90,19 @@ def p2 = tasks.register('p2') {
   description 'Publish the p2 repositories.'
   group       'release'
   enabled JavaVersion.current().isJava8()
-  inputs.files(p2Plugins, p2FeatureMain, p2FeatureM2e, p2FeaturePde)
-  inputs.files('p2.xml', 'features/category.xml').withPathSensitivity(PathSensitivity.RELATIVE)
-  def injected = project.objects.newInstance(Injected) 
-  def buildDirectoryProperty = project.layout.buildDirectory
+  inputs.files(p2Plugins).withPropertyName('p2Plugins')
+  inputs.files(p2FeatureMain).withPropertyName('p2FeatureMain')
+  inputs.files(p2FeatureM2e).withPropertyName('p2FeatureM2e')
+  inputs.files(p2FeaturePde).withPropertyName('p2FeaturePde')
+  inputs.file('p2.xml').withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName('p2.xml')
+  inputs.file('features/category.xml').withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName('category.xml')
+  def injected = objects.newInstance(Injected) 
+  def buildDirectoryProperty = layout.buildDirectory
   ext.destinationDirectory = buildDirectoryProperty.dir('p2')
-  outputs.dir destinationDirectory
+  outputs.dir(destinationDirectory).withPropertyName('destinationDirectory')
   def eclipseDir = file('eclipse-3.5.2')
   def categoryURI = uri('features/category.xml')
-  doLast {
+  doLast('exec') { t ->
     injected.exec.javaexec {
       classpath "${eclipseDir}/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar"
       main = 'org.eclipse.equinox.launcher.Main'
@@ -150,7 +151,7 @@ def p2 = tasks.register('p2') {
 }
 
 tasks.named('jar') {
-  inputs.files p2
+  inputs.files(p2).withPropertyName('p2')
 }
 
 tasks.named('release') {
