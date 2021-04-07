@@ -50,12 +50,16 @@ public class BndPlugin implements Plugin<Project> {
   private ProjectLayout layout
   private ObjectFactory objects
   private aQute.bnd.build.Project bndProject
+  private BndPluginExtension extension
 
   /**
    * Apply the {@code biz.aQute.bnd} plugin to the specified project.
    */
   @Override
   public void apply(Project p) {
+    extension = p.getExtensions()
+      .create("bnd", BndPluginExtension.class);
+
     p.configure(p) { Project project ->
       this.project = project
       this.layout = project.layout
@@ -447,6 +451,7 @@ public class BndPlugin implements Plugin<Project> {
           t.description "Export the ${runFile.name} file."
           t.dependsOn 'assemble'
           t.group 'export'
+          t.enabled runFile.name.matches(extension.getExportFilter());
           t.bndrun = runFile
           t.exporter = EXECUTABLE_JAR
         }
@@ -479,6 +484,7 @@ public class BndPlugin implements Plugin<Project> {
           t.description "Resolve the runbundles required for ${runFile.name} file."
           t.dependsOn 'assemble'
           t.group 'export'
+          t.enabled runFile.name.matches(extension.getResolveFilter());
           t.bndrun = runFile
         }
       }
@@ -503,6 +509,7 @@ public class BndPlugin implements Plugin<Project> {
           t.description "Runs the OSGi JUnit tests in the bndrun file ${runFile.name}."
           t.dependsOn 'assemble'
           t.group 'verification'
+          t.enabled runFile.name.matches(extension.getTestrunFilter());
           t.bndrun = runFile
         }
       }
