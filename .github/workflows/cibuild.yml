@@ -34,23 +34,23 @@ jobs:
   Build_Matrix:
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
-        java: [ 11, 15 ]
+        os: [ 'ubuntu-latest' ]
+        java: [ '11', '15' ]
         runner: [ 'xvfb-run --auto-servernum {0}' ]
         script: [ 'build.sh' ]
         include:
-        - os: ubuntu-latest
-          java: 8
+        - os: 'ubuntu-latest'
+          java: '8'
           runner: 'xvfb-run --auto-servernum {0}'
           script: 'build.sh'
           canonical: ${{ (github.repository == 'bndtools/bnd') && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) && (github.event_name != 'pull_request') }}
           fetch-depth: '0'
-        - os: ubuntu-latest
-          java: 8
+        - os: 'ubuntu-latest'
+          java: '8'
           runner: 'xvfb-run --auto-servernum {0}'
           script: 'rebuild.sh'
-        - os: windows-latest
-          java: 8
+        - os: 'windows-latest'
+          java: '8'
           runner: '{0}'
           script: 'build.sh'
     name: JDK${{ matrix.java }} ${{ matrix.os }} ${{ matrix.script }}
@@ -63,8 +63,9 @@ jobs:
     - name: Gradle Wrapper Validation
       uses: gradle/wrapper-validation-action@v1
     - name: Set up Java ${{ matrix.java }}
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@v2
       with:
+        distribution: 'zulu'
         java-version: ${{ matrix.java }}
     - name: Build
       id: build
