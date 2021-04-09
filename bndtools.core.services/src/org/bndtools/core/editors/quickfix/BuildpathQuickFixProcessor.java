@@ -110,6 +110,9 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			case IProblem.ParameterMismatch :
 				// System.out.println("ParameterMismatch");
 				return true;
+			case IProblem.TypeArgumentMismatch :
+				// System.out.println("TypeArgumentMismatch");
+				return true;
 			case IProblem.TypeMismatch :
 				// System.out.println("TypeMismatch");
 				return true;
@@ -312,6 +315,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			for (IProblemLocation location : locations) {
 				this.location = location;
 				switch (location.getProblemId()) {
+					case IProblem.TypeArgumentMismatch :
 					case IProblem.HierarchyHasProblems : {
 						// This error often doesn't directly give us information
 						// as

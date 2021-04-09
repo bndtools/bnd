@@ -7,6 +7,7 @@ import static org.eclipse.jdt.core.compiler.IProblem.HierarchyHasProblems;
 import static org.eclipse.jdt.core.compiler.IProblem.ImportNotFound;
 import static org.eclipse.jdt.core.compiler.IProblem.IsClassPathCorrect;
 import static org.eclipse.jdt.core.compiler.IProblem.ParameterMismatch;
+import static org.eclipse.jdt.core.compiler.IProblem.TypeArgumentMismatch;
 import static org.eclipse.jdt.core.compiler.IProblem.TypeMismatch;
 import static org.eclipse.jdt.core.compiler.IProblem.UndefinedConstructor;
 import static org.eclipse.jdt.core.compiler.IProblem.UndefinedField;
@@ -77,6 +78,7 @@ import aQute.bnd.deployer.repository.LocalIndexedRepo;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
+import aQute.lib.unmodifiable.Sets;
 import bndtools.central.Central;
 import bndtools.core.test.utils.WorkbenchTest;
 
@@ -329,10 +331,9 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 	private static final String CLASS_HEADER = "package test; import java.util.List;\n" + "" + "class "
 			+ DEFAULT_CLASS_NAME + " {";
 	private static final String CLASS_FOOTER = " var};";
-	protected static final Set<Integer> SUPPORTED = Stream
-			.of(ImportNotFound, UndefinedType, IsClassPathCorrect, HierarchyHasProblems, ParameterMismatch, TypeMismatch,
-				UndefinedConstructor, UndefinedField, UndefinedMethod, UndefinedName, UnresolvedVariable)
-			.collect(Collectors.toSet());
+	protected static final Set<Integer> SUPPORTED = Sets.of(ImportNotFound, UndefinedType, IsClassPathCorrect, HierarchyHasProblems, ParameterMismatch, TypeMismatch,
+			UndefinedConstructor, UndefinedField, UndefinedMethod, UndefinedName, UnresolvedVariable,
+			TypeArgumentMismatch);
 
 	protected IJavaCompletionProposal[] proposalsForStaticImport(String imp) {
 		return proposalsFor(29, 0, "package test; import static " + imp + ";");

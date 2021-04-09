@@ -52,6 +52,19 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 	}
 
 	@Test
+	void withMissingBound_fromClassWithMethodReturningBoundFromAnotherBundle_suggestsBundles() {
+		String header = "package test; class ";
+		String source = header + DEFAULT_CLASS_NAME + "{\n"
+			+ "  simple.pkg.ClassWithMethodReturningBoundFromAnotherBundle<simple.pkg.ClassWithInterfaceFromAnotherBundle> var;\n"
+			+ "  void myMethod() {"
+			+ "    java.util.List<simple.pkg.ClassWithInterfaceFromAnotherBundle> ret = var.aMethod();" + "  }" + "}";
+
+		// BoundMismatch occurs at [86, 132]
+		assertThatProposals(proposalsFor(87, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
+	}
+
+	@Test
 	void withMissingMethod_fromInterfaceFromAnotherBundle_suggestsBundles() {
 		String header = "package test; class ";
 		String source = header + DEFAULT_CLASS_NAME + "{\n"
