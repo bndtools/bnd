@@ -133,13 +133,13 @@ public class Resolve extends Bndrun {
    * Resolve the Bndrun object.
    */
   protected void worker(def run) {
-    logger.info 'Resolving runbundles required for {}', run.getPropertiesFile()
-    logger.debug 'Run properties: {}', run.getProperties()
+    logger.info('Resolving runbundles required for {}', run.getPropertiesFile())
+    logger.debug('Run properties: {}', run.getProperties())
     try {
       def result = run.resolve(failOnChanges, writeOnChanges)
-      logger.info '{}: {}', Constants.RUNBUNDLES, result
+      logger.info('{}: {}', Constants.RUNBUNDLES, result)
     } catch (ResolutionException e) {
-      logger.error ResolveProcess.format(e, reportOptional)
+      logger.error(ResolveProcess.format(e, reportOptional))
       throw new GradleException("${run.getPropertiesFile()} resolution exception", e)
     } finally {
       logReport(run, logger)

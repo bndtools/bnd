@@ -195,7 +195,7 @@ public class Index extends DefaultTask {
     File indexUncompressedFile = unwrap(getIndexUncompressed())
     new Processor().withCloseable { Processor processor ->
       def sortedBundles = getBundles().sort()
-      logger.info 'Generating index for {}.', sortedBundles
+      logger.info('Generating index for {}.', sortedBundles)
       new SimpleIndexer()
         .reporter(processor)
         .files(sortedBundles)
@@ -208,13 +208,13 @@ public class Index extends DefaultTask {
         failTask("Index ${indexUncompressedFile} has errors", indexUncompressedFile)
       }
 
-      logger.info 'Generated index {}.', indexUncompressedFile
+      logger.info('Generated index {}.', indexUncompressedFile)
       if (gzip) {
         File indexCompressedFile = unwrap(getIndexCompressed())
         indexCompressedFile.withOutputStream { out ->
           IO.copy(indexUncompressedFile, new GZIPOutputStream(out)).close()
         }
-        logger.info 'Generated index {}.', indexCompressedFile
+        logger.info('Generated index {}.', indexCompressedFile)
       }
     }
   }

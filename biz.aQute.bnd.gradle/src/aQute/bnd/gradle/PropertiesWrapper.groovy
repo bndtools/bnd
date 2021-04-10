@@ -11,6 +11,7 @@ class PropertiesWrapper extends Properties {
   protected Properties defaults
 
   PropertiesWrapper(Properties defaults) {
+    super()
     this.defaults = defaults
   }
 

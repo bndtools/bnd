@@ -31,6 +31,7 @@ import org.gradle.api.artifacts.ExternalDependency
 import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.artifacts.ResolveException
 import org.gradle.api.file.RegularFile
+import org.gradle.api.tasks.TaskContainer
 
 
 
@@ -41,66 +42,67 @@ public class BndBuilderPlugin implements Plugin<Project> {
    * Apply the {@code biz.aQute.bnd.builder} plugin to the specified project.
    */
   @Override
-  public void apply(Project p) {
-    p.configure(p) { project ->
-      if (plugins.hasPlugin(BndPlugin.PLUGINID)) {
-          throw new GradleException("Project already has '${BndPlugin.PLUGINID}' plugin applied.")
-      }
-      plugins.apply 'java'
+  public void apply(Project project) {
+    if (project.plugins.hasPlugin(BndPlugin.PLUGINID)) {
+        throw new GradleException("Project already has '${BndPlugin.PLUGINID}' plugin applied.")
+    }
+    project.plugins.apply('java')
 
-      def jar = tasks.named('jar') { t ->
-        t.description 'Assembles a bundle containing the main classes.'
-        t.convention.plugins.bundle = new BundleTaskConvention(t)
-        RegularFile defaultBndfile = t.project.layout.projectDirectory.file('bnd.bnd')
-        if (defaultBndfile.getAsFile().isFile()) {
-          t.bndfile.convention(defaultBndfile)
-        }
-        t.doLast('buildBundle') { tt ->
-          buildBundle()
+    TaskContainer tasks = project.tasks
+
+    def jar = tasks.named('jar') { t ->
+      t.description = 'Assembles a bundle containing the main classes.'
+      t.convention.plugins.bundle = new BundleTaskConvention(t)
+      RegularFile defaultBndfile = t.project.layout.projectDirectory.file('bnd.bnd')
+      if (defaultBndfile.getAsFile().isFile()) {
+        t.bndfile.convention(defaultBndfile)
+      }
+      t.doLast('buildBundle') { tt ->
+        buildBundle()
+      }
+    }
+
+    Configuration baseline = project.configurations.create('baseline')
+    baseline.dependencies.all { Dependency dep ->
+      if (dep instanceof ExternalDependency) {
+        dep.version {
+          strictly(dep.getVersion())
         }
       }
+      if (dep instanceof ModuleDependency) {
+        dep.transitive = false
+      }
+    }
 
-      Configuration baseline = configurations.create('baseline')
-      baseline.dependencies.all { Dependency dep ->
-        if (dep instanceof ExternalDependency) {
-          dep.version {
-            strictly dep.getVersion()
+    tasks.register('baseline', Baseline.class) { t ->
+      t.description = 'Baseline the project bundle.'
+      t.group = 'release'
+      t.bundle = jar
+      t.baseline = baseline
+    }
+
+    baseline.defaultDependencies { deps ->
+      Task baselineTask = tasks.getByName('baseline')
+      Task bundleTask = baselineTask.getBundleTask()
+      if (bundleTask) {
+        String archiveBaseName = unwrap(bundleTask.getArchiveBaseName())
+        String archiveVersion = unwrap(bundleTask.getArchiveVersion(), true)
+        String group = project.group.toString()
+        baselineTask.logger.debug('Searching for default baseline {}:{}:(0,{}[', group, archiveBaseName, archiveVersion)
+        Dependency baselineDep = project.dependencies.create('group': group, 'name': archiveBaseName) {
+          version {
+            strictly("(0,${archiveVersion}[")
           }
+          transitive = false
         }
-        if (dep instanceof ModuleDependency) {
-          dep.transitive = false
+        try {
+          Configuration detached = project.configurations.detachedConfiguration(baselineDep)
+          detached.resolvedConfiguration.rethrowFailure()
+        } catch(ResolveException e) {
+          baselineTask.logger.debug('Baseline configuration resolve error {}, adding {} as baseline', e, baselineTask.bundle, e)
+          baselineDep = project.dependencies.create(project.files(baselineTask.bundle))
         }
-      }
-
-      tasks.register('baseline', Baseline.class) { t ->
-        t.description 'Baseline the project bundle.'
-        t.group 'release'
-        t.bundle = jar
-        t.baseline = baseline
-      }
-
-      baseline.defaultDependencies { deps ->
-        Task baselineTask = tasks.getByName('baseline')
-        Task bundleTask = baselineTask.getBundleTask()
-        if (bundleTask) {
-          String archiveBaseName = unwrap(bundleTask.getArchiveBaseName())
-          String archiveVersion = unwrap(bundleTask.getArchiveVersion(), true)
-          logger.debug 'Searching for default baseline {}:{}:(0,{}[', group, archiveBaseName, archiveVersion
-          Dependency baselineDep = dependencies.create('group': group, 'name': archiveBaseName) {
-            version {
-              strictly "(0,${archiveVersion}["
-            }
-            transitive = false
-          }
-          try {
-            Configuration detached = configurations.detachedConfiguration(baselineDep)
-            detached.resolvedConfiguration.rethrowFailure()
-          } catch(ResolveException e) {
-            logger.debug 'Baseline configuration resolve error {}, adding {} as baseline', e, baselineTask.bundle, e
-            baselineDep = dependencies.create(files(baselineTask.bundle))
-          }
-          deps.add(baselineDep)
-        }
+        deps.add(baselineDep)
       }
     }
   }

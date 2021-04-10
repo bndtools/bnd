@@ -12,8 +12,8 @@ import org.gradle.api.Project
 
 class BndPluginConvention {
   private final Project project
-  BndPluginConvention(BndPlugin plugin) {
-   this.project = plugin.project
+  BndPluginConvention(Project project) {
+   this.project = project
   }
   boolean bndis(String name) {
     return project.bnd.is(name)

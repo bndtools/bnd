@@ -148,8 +148,8 @@ public class Export extends Bndrun {
   protected void worker(def run) {
     String exporterName = unwrap(getExporter())
     File destinationDirFile = unwrap(getDestinationDirectory())
-    logger.info 'Exporting {} to {} with exporter {}', run.getPropertiesFile(), destinationDirFile, exporterName
-    logger.debug 'Run properties: {}', run.getProperties()
+    logger.info('Exporting {} to {} with exporter {}', run.getPropertiesFile(), destinationDirFile, exporterName)
+    logger.debug('Run properties: {}', run.getProperties())
     try {
       def export = run.export(exporterName, [:])
       if (exporterName == RUNBUNDLES) {
