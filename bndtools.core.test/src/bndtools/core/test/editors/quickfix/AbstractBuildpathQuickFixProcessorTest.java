@@ -86,21 +86,21 @@ import bndtools.core.test.utils.WorkbenchTest;
 @WorkbenchTest
 abstract class AbstractBuildpathQuickFixProcessorTest {
 
-	static IPackageFragment pack;
-	static Class<? extends IQuickFixProcessor> sutClass;
+	static IPackageFragment						pack;
+	static Class<? extends IQuickFixProcessor>	sutClass;
 	// Injected by WorkbenchExtension
 	// static WorkspaceImporter importer;
 	static IProject								eclipseProject;
 	static Project								bndProject;
 	// Injected by SoftAssertionsExtension
 	@InjectSoftAssertions
-	protected SoftAssertions softly;
-	protected IQuickFixProcessor sut;
-	protected IProblemLocation[] locs;
-	protected List<IProblem> problems;
-	IProblem problem;
-	AssistContext assistContext;
-	protected String source;
+	protected SoftAssertions					softly;
+	protected IQuickFixProcessor				sut;
+	protected IProblemLocation[]				locs;
+	protected List<IProblem>					problems;
+	IProblem									problem;
+	AssistContext								assistContext;
+	protected String							source;
 
 	@SuppressWarnings("unchecked")
 	static void initSUTClass() throws Exception {
@@ -118,9 +118,9 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 	}
 
 	static IResourceVisitor VISITOR = resource -> {
-			System.err.println(resource.getFullPath());
-			return true;
-		};
+		System.err.println(resource.getFullPath());
+		return true;
+	};
 
 	static void dumpWorkspace() throws CoreException {
 		IWorkspace ws = ResourcesPlugin.getWorkspace();
@@ -328,12 +328,12 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 		sut = sutClass.newInstance();
 	}
 
-	private static final String CLASS_HEADER = "package test; import java.util.List;\n" + "" + "class "
-			+ DEFAULT_CLASS_NAME + " {";
-	private static final String CLASS_FOOTER = " var};";
-	protected static final Set<Integer> SUPPORTED = Sets.of(ImportNotFound, UndefinedType, IsClassPathCorrect, HierarchyHasProblems, ParameterMismatch, TypeMismatch,
-			UndefinedConstructor, UndefinedField, UndefinedMethod, UndefinedName, UnresolvedVariable,
-			TypeArgumentMismatch);
+	private static final String			CLASS_HEADER	= "package test; import java.util.List;\n" + "" + "class "
+		+ DEFAULT_CLASS_NAME + " {";
+	private static final String			CLASS_FOOTER	= " var};";
+	protected static final Set<Integer>	SUPPORTED		= Sets.of(ImportNotFound, UndefinedType, IsClassPathCorrect,
+		HierarchyHasProblems, ParameterMismatch, TypeMismatch, UndefinedConstructor, UndefinedField, UndefinedMethod,
+		UndefinedName, UnresolvedVariable, TypeArgumentMismatch);
 
 	protected IJavaCompletionProposal[] proposalsForStaticImport(String imp) {
 		return proposalsFor(29, 0, "package test; import static " + imp + ";");
@@ -497,11 +497,11 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 	}
 
 	// This is just to give nice error feedback
-		protected static class DummyProblem extends DefaultProblem {
-			public DummyProblem(int id, String message) {
-				super(null, message, id, null, 0, 0, 0, 0, 0);
-			}
+	protected static class DummyProblem extends DefaultProblem {
+		public DummyProblem(int id, String message) {
+			super(null, message, id, null, 0, 0, 0, 0, 0);
 		}
+	}
 
 	static final IJavaCompletionProposal[] EMPTY_LIST = new IJavaCompletionProposal[0];
 
@@ -517,16 +517,17 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 	}
 
 	static final Representation PROPOSAL = new StandardRepresentation() {
-			@Override
-			public String toStringOf(Object object) {
-				if (object instanceof IJavaCompletionProposal) {
-					return ((IJavaCompletionProposal) object).getDisplayString();
-				}
-				return super.toStringOf(object);
+		@Override
+		public String toStringOf(Object object) {
+			if (object instanceof IJavaCompletionProposal) {
+				return ((IJavaCompletionProposal) object).getDisplayString();
 			}
-		};
+			return super.toStringOf(object);
+		}
+	};
 
-	protected ProxyableObjectArrayAssert<IJavaCompletionProposal> assertThatProposals(IJavaCompletionProposal[] proposals) {
+	protected ProxyableObjectArrayAssert<IJavaCompletionProposal> assertThatProposals(
+		IJavaCompletionProposal[] proposals) {
 		String desc = toString(problem);
 		if (proposals == null) {
 			return softly.assertThat(EMPTY_LIST)
@@ -563,25 +564,25 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 	}
 
 	protected static class MatchDisplayString extends Condition<IJavaCompletionProposal> {
-			private final Pattern p;
+		private final Pattern p;
 
-			public MatchDisplayString(String bundle, String version, String fqName, boolean test) {
-				super(String.format("Suggestion to add '%s' to -%spath for class %s", bundle,
-					test ? "test" : "build", fqName));
-				String re = String.format("^Add \\Q%s\\E to -\\Q%s\\Epath [(]found \\Q%s\\E[)]", bundle,
-					test ? "test" : "build", fqName);
-				p = Pattern.compile(re);
-			}
-
-			@Override
-			public boolean matches(IJavaCompletionProposal value) {
-				if (value == null || value.getDisplayString() == null) {
-					return false;
-				}
-				final Matcher m = p.matcher(value.getDisplayString());
-				return m.find();
-			}
+		public MatchDisplayString(String bundle, String version, String fqName, boolean test) {
+			super(String.format("Suggestion to add '%s' to -%spath for class %s", bundle, test ? "test" : "build",
+				fqName));
+			String re = String.format("^Add \\Q%s\\E to -\\Q%s\\Epath [(]found \\Q%s\\E[)]", bundle,
+				test ? "test" : "build", fqName);
+			p = Pattern.compile(re);
 		}
+
+		@Override
+		public boolean matches(IJavaCompletionProposal value) {
+			if (value == null || value.getDisplayString() == null) {
+				return false;
+			}
+			final Matcher m = p.matcher(value.getDisplayString());
+			return m.find();
+		}
+	}
 
 	protected void assertThatContainsFrameworkBundles(IJavaCompletionProposal[] proposals, String fqName) {
 		assertThatProposals(proposals).withRepresentation(PROPOSAL)
