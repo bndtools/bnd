@@ -27,9 +27,9 @@
  * of the -runbundles property. The default is true.</li>
  * <li>bndrun - This is the bndrun file to be resolved.
  * This property must be set.</li>
- * <li>outputBndrun - This is an optional output file for the calculated
- * -runbundles property. This property is optional, and if not set, the
- * input bndrun file will be updated in place.</li>
+ * <li>outputBndrun - This is the output file for the calculated
+ * -runbundles property. The default is the input bndrun file
+ * which means the input bndrun file will be updated in place.</li>
  * <li>workingDirectory - This is the directory for the resolve process.
  * The default for workingDirectory is temporaryDir.</li>
  * <li>bundles - This is the collection of files to use for locating
@@ -54,7 +54,6 @@ import biz.aQute.resolve.ResolveProcess
 import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 
 import org.osgi.service.resolver.ResolutionException
@@ -94,7 +93,7 @@ public class Resolve extends Bndrun {
   boolean reportOptional = true
 
   /**
-   * Return the optional output file for the calculated `-runbundles`
+   * Return the output file for the calculated `-runbundles`
    * property.
    *
    * <p>
@@ -103,7 +102,6 @@ public class Resolve extends Bndrun {
    * input bndrun file.
    */
   @OutputFile
-  @Optional
   final RegularFileProperty outputBndrun
 
   /**
@@ -111,15 +109,15 @@ public class Resolve extends Bndrun {
    */
   public Resolve() {
     super()
-    outputBndrun = project.objects.fileProperty()
+    outputBndrun = project.objects.fileProperty().convention(getBndrun())
   }
 
   /**
    * Create the Bndrun object.
    */
   protected def createRun(def workspace, File bndrunFile) {
-    File outputBndrunFile = unwrap(getOutputBndrun(), true)
-    if (outputBndrunFile != null) {
+    File outputBndrunFile = unwrap(getOutputBndrun())
+    if (outputBndrunFile != bndrunFile) {
       outputBndrunFile.withWriter('UTF-8') { writer ->
         UTF8Properties props = new UTF8Properties()
         props.setProperty(Constants.INCLUDE, String.format('"%s"', IO.absolutePath(bndrunFile)))
@@ -135,13 +133,13 @@ public class Resolve extends Bndrun {
    * Resolve the Bndrun object.
    */
   protected void worker(def run) {
-    logger.info 'Resolving runbundles required for {}', run.getPropertiesFile()
-    logger.debug 'Run properties: {}', run.getProperties()
+    logger.info('Resolving runbundles required for {}', run.getPropertiesFile())
+    logger.debug('Run properties: {}', run.getProperties())
     try {
       def result = run.resolve(failOnChanges, writeOnChanges)
-      logger.info '{}: {}', Constants.RUNBUNDLES, result
+      logger.info('{}: {}', Constants.RUNBUNDLES, result)
     } catch (ResolutionException e) {
-      logger.error ResolveProcess.format(e, reportOptional)
+      logger.error(ResolveProcess.format(e, reportOptional))
       throw new GradleException("${run.getPropertiesFile()} resolution exception", e)
     } finally {
       logReport(run, logger)

@@ -270,7 +270,7 @@ public class Baseline extends DefaultTask {
       processor.addClose(newer)
       Jar older = new Jar(baseline)
       processor.addClose(older)
-      logger.debug 'Baseline bundle {} against baseline {}', bundle, baseline
+      logger.debug('Baseline bundle {} against baseline {}', bundle, baseline)
 
       def differ = new DiffPluginImpl()
       differ.setIgnore(new Parameters(unwrap(getDiffignore()).join(','), processor))
@@ -278,29 +278,29 @@ public class Baseline extends DefaultTask {
       def infos = baseliner.baseline(newer, older, new Instructions(new Parameters(unwrap(getDiffpackages()).join(','), processor))).sort {it.packageName}
       def bundleInfo = baseliner.getBundleInfo()
       new Formatter(report, 'UTF-8', Locale.US).withCloseable { Formatter f ->
-        f.format '===============================================================%n'
-        f.format '%s %s %s-%s',
+        f.format('===============================================================%n')
+        f.format('%s %s %s-%s',
           bundleInfo.mismatch ? '*' : ' ',
           bundleInfo.bsn,
           newer.getVersion(),
-          older.getVersion()
+          older.getVersion())
 
         if (bundleInfo.mismatch) {
           failure = true
           if (bundleInfo.suggestedVersion != null) {
-            f.format ' suggests %s', bundleInfo.suggestedVersion
+            f.format(' suggests %s', bundleInfo.suggestedVersion)
           }
-          f.format '%n%#2S', baseliner.getDiff()
+          f.format('%n%#2S', baseliner.getDiff())
         }
 
-        f.format '%n===============================================================%n'
+        f.format('%n===============================================================%n')
 
         String format = '%s %-50s %-10s %-10s %-10s %-10s %-10s %s%n'
-        f.format format, ' ', 'Name', 'Type', 'Delta', 'New', 'Old', 'Suggest', 'If Prov.'
+        f.format(format, ' ', 'Name', 'Type', 'Delta', 'New', 'Old', 'Suggest', 'If Prov.')
 
         infos.each { info ->
           def packageDiff = info.packageDiff
-          f.format format,
+          f.format(format,
             info.mismatch ? '*' : ' ',
             packageDiff.getName(),
             packageDiff.getType(),
@@ -308,10 +308,10 @@ public class Baseline extends DefaultTask {
             info.newerVersion,
             info.olderVersion != null && info.olderVersion.equals(Version.LOWEST) ? '-': info.olderVersion,
             info.suggestedVersion != null && info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? 'ok' : info.suggestedVersion,
-            info.suggestedIfProviders ?: '-'
+            info.suggestedIfProviders ?: '-')
           if (info.mismatch) {
             failure = true
-            f.format '%#2S%n', packageDiff
+            f.format('%#2S%n', packageDiff)
           }
         }
       }
@@ -320,7 +320,7 @@ public class Baseline extends DefaultTask {
     if (failure) {
       String msg = "Baseline problems detected. See the report in ${report}.\n${report.text}"
       if (ignoreFailures) {
-        logger.error msg
+        logger.error(msg)
       } else {
         throw new GradleException(msg)
       }

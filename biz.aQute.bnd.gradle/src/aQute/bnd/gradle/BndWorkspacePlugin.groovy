@@ -17,11 +17,13 @@ import static aQute.bnd.gradle.BndUtils.unwrap
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
 
+import org.gradle.StartParameter
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.initialization.Settings
+import org.gradle.api.invocation.Gradle
 import org.gradle.api.tasks.Delete
 
 public class BndWorkspacePlugin implements Plugin<Object> {
@@ -30,168 +32,174 @@ public class BndWorkspacePlugin implements Plugin<Object> {
    * Apply the {@code biz.aQute.bnd.workspace} plugin.
    */
   @Override
-  public void apply(Object receiver) {
-    if (receiver instanceof Settings) {
-      Closure configure = configureSettings()
-      configure.delegate = receiver
-      configure(receiver)
-    } else if (receiver instanceof Project) {
-      receiver.configure(receiver, configureWorkspaceProject())
+  public void apply(Object target) {
+    if (target instanceof Settings) {
+      configureSettings(target)
+    } else if (target instanceof Project) {
+      configureWorkspaceProject(target)
     } else {
-      throw new GradleException("The receiver ${receiver} is not a Settings or a Project")
+      throw new GradleException("The target ${target} is not a Settings or a Project")
     }
   }
 
-  Closure configureSettings() {
-    return { Settings settings ->
-      /* Start with the declared build project name */
-      String build = ''
-      try {
-        build = bnd_build
-      } catch (MissingPropertyException mpe) {}
-      String defaultProjectName = build
+  private void configureSettings(Settings settings) {
+    /* Start with the declared build project name */
+    String build = ''
+    try {
+      build = settings.bnd_build
+    } catch (MissingPropertyException mpe) {}
+    String defaultProjectName = build
 
-      /* If in a subproject, use the subproject name */
-      for (File currentDir = startParameter.currentDir; currentDir != rootDir; currentDir = currentDir.parentFile) {
-        defaultProjectName = currentDir.name
-      }
+    /* If in a subproject, use the subproject name */
+    StartParameter startParameter = settings.startParameter
+    File rootDir = settings.rootDir
+    for (File currentDir = startParameter.currentDir; currentDir != rootDir; currentDir = currentDir.parentFile) {
+      defaultProjectName = currentDir.name
+    }
 
-      /* Build a set of project names we need to include from the specified tasks */
-      Set<String> projectNames = new LinkedHashSet<>()
-      for (Iterator<String> iter = startParameter.taskNames.iterator(); iter.hasNext();) {
-        String taskName = iter.next()
-        if (taskName == '--tests') {
-          if (iter.hasNext()) {
-            iter.next()
-          }
-          continue
+    /* Build a set of project names we need to include from the specified tasks */
+    Set<String> projectNames = new LinkedHashSet<>()
+    for (Iterator<String> iter = startParameter.taskNames.iterator(); iter.hasNext();) {
+      String taskName = iter.next()
+      if (taskName == '--tests') {
+        if (iter.hasNext()) {
+          iter.next()
         }
-        String[] elements = taskName.split(':')
-        switch (elements.length) {
-          case 1:
-            projectNames.add(defaultProjectName)
-            break
-          case 2:
-            projectNames.add(elements[0].empty ? build : elements[0])
-            break
-          default:
-            projectNames.add(elements[0].empty ? elements[1] : elements[0])
-            break
+        continue
+      }
+      String[] elements = taskName.split(':')
+      switch (elements.length) {
+        case 1:
+          projectNames.add(defaultProjectName)
+          break
+        case 2:
+          projectNames.add(elements[0].empty ? build : elements[0])
+          break
+        default:
+          projectNames.add(elements[0].empty ? elements[1] : elements[0])
+          break
+      }
+    }
+
+    /* Include the default project name if in a subproject or no tasks specified */
+    if ((startParameter.currentDir != rootDir) || projectNames.empty) {
+      projectNames.add(defaultProjectName)
+    }
+
+    /* If build used but empty, add all non-private folders of rootDir */
+    if (projectNames.remove('')) {
+      rootDir.eachDir {
+        String projectName = it.name
+        if (!projectName.startsWith('.')) {
+          projectNames.add(projectName)
         }
       }
+    }
 
-      /* Include the default project name if in a subproject or no tasks specified */
-      if ((startParameter.currentDir != rootDir) || projectNames.empty) {
-        projectNames.add(defaultProjectName)
+    /* Add cnf project to the graph */
+    String cnf = 'cnf'
+    try {
+      cnf = settings.bnd_cnf.trim()
+    } catch (MissingPropertyException mpe) {}
+    projectNames.add(cnf)
+
+    /* Add any projects which must always be included */
+    try {
+      projectNames.addAll(settings.bnd_include.trim().split(/\s*,\s*/))
+    } catch (MissingPropertyException mpe) {}
+
+    /* Initialize the Bnd workspace */
+    Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
+    Workspace.addGestalt(Constants.GESTALT_BATCH, null)
+    Workspace workspace = new Workspace(rootDir, cnf).setOffline(startParameter.offline)
+    Gradle gradle = settings.gradle
+    if (gradle.ext.has('bndWorkspaceConfigure')) {
+      gradle.bndWorkspaceConfigure(workspace)
+    }
+
+    /* Make sure all workspace plugins are loaded before preparing
+     * projects.
+     */
+    workspace.getPlugins()
+    /* Prepare each project in the workspace to establish complete 
+     * dependencies and dependents information.
+     */
+    workspace.getAllProjects().each { it.prepare() }
+
+    /* Add each project and its dependents to the graph */
+    Set<String> projectGraph = new LinkedHashSet<>()
+    while (!projectNames.empty) {
+      String projectName = projectNames.head()
+      projectGraph.add(projectName)
+      def p = workspace.getProject(projectName)
+      if (p) {
+        projectNames.addAll(p.getDependents()*.getName())
       }
+      projectNames.removeAll(projectGraph)
+    }
 
-      /* If build used but empty, add all non-private folders of rootDir */
-      if (projectNames.remove('')) {
-        rootDir.eachDir {
-          String projectName = it.name
-          if (!projectName.startsWith('.')) {
-            projectNames.add(projectName)
-          }
-        }
+    /* Add each project and its dependencies to the graph */
+    projectNames = projectGraph
+    projectGraph = new LinkedHashSet<>()
+    while (!projectNames.empty) {
+      String projectName = projectNames.head()
+      projectGraph.add(projectName)
+      def p = workspace.getProject(projectName)
+      if (p) {
+        projectNames.addAll(p.getTestDependencies()*.getName())
       }
+      projectNames.removeAll(projectGraph)
+    }
 
-      /* Add cnf project to the graph */
-      String cnf = 'cnf'
-      try {
-        cnf = bnd_cnf.trim()
-      } catch (MissingPropertyException mpe) {}
-      projectNames.add(cnf)
+    settings.include(projectGraph as String[])
 
-      /* Add any projects which must always be included */
-      try {
-        projectNames.addAll(bnd_include.trim().split(/\s*,\s*/))
-      } catch (MissingPropertyException mpe) {}
+    /* Apply workspace plugin to root project */
+    gradle.rootProject { Project project ->
+      project.ext.bnd_cnf = cnf
+      project.ext.bndWorkspace = workspace
+      project.plugins.apply(BndWorkspacePlugin.class)
+    }
+  }
 
-      /* Initialize the Bnd workspace */
+  private void configureWorkspaceProject(Project workspace) {
+    Workspace bndWorkspace = getBndWorkspace(workspace)
+
+    /* Configure the Bnd projects */
+    workspace.subprojects { Project project ->
+      if (bndWorkspace.getProject(project.name) != null) {
+        project.plugins.apply(BndPlugin.class)
+      }
+    }
+  }
+
+  static Workspace getBndWorkspace(Project workspace) {
+    /* Initialize the Bnd workspace */
+    String bnd_cnf = workspace.findProperty('bnd_cnf')
+    if (bnd_cnf == null) { // if not passed from settings
+      workspace.ext.bnd_cnf = bnd_cnf = 'cnf'
+    }
+    Workspace bndWorkspace = workspace.findProperty('bndWorkspace')
+    if (bndWorkspace == null) { // if not passed from settings
       Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
       Workspace.addGestalt(Constants.GESTALT_BATCH, null)
-      Workspace workspace = new Workspace(rootDir, cnf).setOffline(startParameter.offline)
+      Gradle gradle = workspace.gradle
+      workspace.ext.bndWorkspace = bndWorkspace = new Workspace(unwrap(workspace.layout.projectDirectory), bnd_cnf).setOffline(gradle.startParameter.offline)
       if (gradle.ext.has('bndWorkspaceConfigure')) {
-        gradle.bndWorkspaceConfigure(workspace)
-      }
-
-      /* Make sure all workspace plugins are loaded before preparing
-       * projects.
-       */
-      workspace.getPlugins()
-      /* Prepare each project in the workspace to establish complete 
-       * dependencies and dependents information.
-       */
-      workspace.getAllProjects().each { it.prepare() }
-
-      /* Add each project and its dependents to the graph */
-      Set<String> projectGraph = new LinkedHashSet<>()
-      while (!projectNames.empty) {
-        String projectName = projectNames.head()
-        projectGraph.add(projectName)
-        def p = workspace.getProject(projectName)
-        if (p) {
-          projectNames.addAll(p.getDependents()*.getName())
-        }
-        projectNames.removeAll(projectGraph)
-      }
-
-      /* Add each project and its dependencies to the graph */
-      projectNames = projectGraph
-      projectGraph = new LinkedHashSet<>()
-      while (!projectNames.empty) {
-        String projectName = projectNames.head()
-        projectGraph.add(projectName)
-        def p = workspace.getProject(projectName)
-        if (p) {
-          projectNames.addAll(p.getTestDependencies()*.getName())
-        }
-        projectNames.removeAll(projectGraph)
-      }
-
-      include projectGraph as String[]
-
-      /* Apply workspace plugin to root project */
-      gradle.rootProject {
-        ext.bnd_cnf = cnf
-        ext.bndWorkspace = workspace
-        apply plugin: BndWorkspacePlugin.class
-      }
-    }
-  }
-
-  Closure configureWorkspaceProject() {
-    return { Project workspace ->
-      /* Initialize the Bnd workspace */
-      if (!ext.has('bnd_cnf')) { // if not passed from settings
-        ext.bnd_cnf = findProperty('bnd_cnf') ?: 'cnf'
-      }
-      if (!ext.has('bndWorkspace')) { // if not passed from settings
-        Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
-        Workspace.addGestalt(Constants.GESTALT_BATCH, null)
-        ext.bndWorkspace = new Workspace(unwrap(layout.projectDirectory), bnd_cnf).setOffline(gradle.startParameter.offline)
-        if (gradle.ext.has('bndWorkspaceConfigure')) {
-          gradle.bndWorkspaceConfigure(bndWorkspace)
-        }
+        gradle.bndWorkspaceConfigure(bndWorkspace)
       }
 
       /* Configure cnf project */
-      Project cnfProject = findProject(bnd_cnf)
+      Project cnfProject = workspace.findProject(bnd_cnf)
       if (cnfProject != null) {
-        ext.cnf = cnfProject
+        workspace.ext.cnf = cnfProject
         cnfProject.tasks.register('cleanCache', Delete.class) { t ->
-          t.description 'Clean the cache folder.'
-          t.group 'build'
-          t.delete 'cache'
-        }
-      }
-
-      /* Configure the Bnd projects */
-      subprojects {
-        if (bndWorkspace.getProject(name) != null) {
-          apply plugin: BndPlugin.class
+          t.description = 'Clean the cache folder.'
+          t.group = 'build'
+          t.delete(cnfProject.layout.projectDirectory().dir('cache'))
         }
       }
     }
+
+    return bndWorkspace
   }
 }

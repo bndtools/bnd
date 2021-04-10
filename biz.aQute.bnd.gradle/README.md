@@ -321,9 +321,9 @@ This property must be set.
 
 ### outputBndrun
 
-This is an optional output file for the calculated `-runbundles` property.
-This output file will `-include` the input `bndrun` file and can be thus be used by other tasks, such as `TestOSGi` as a resolved input `bndrun` file.
-This property is optional, and if not set, the input `bndrun` file will be updated in place.
+This is the output file for the calculated `-runbundles` property.
+The default is the input `bndrun` file which means the input `bndrun` file will be updated in place.
+If the output file is set to a different file than the input `bndrun` file, the generated output file will `-include` the input `bndrun` file and can be thus be used by other tasks, such as `TestOSGi`, as a resolved input `bndrun` file.
 
 ### workingDirectory
 

@@ -199,8 +199,9 @@ class BundleTaskConvention {
    * Add instructions to the bnd property from a map.
    */
   public void bnd(Map<String, ?> map) {
+    ListProperty<CharSequence> list = instructions
     map.each({ key, value ->
-      instructions.add("${key}=${value}")
+      list.add("${key}=${value}")
     })
   }
 
@@ -242,18 +243,21 @@ class BundleTaskConvention {
   }
 
   void buildBundle() {
-    def projectDir = unwrap(layout.getProjectDirectory())
-    def buildDir = unwrap(layout.getBuildDirectory())
+    org.gradle.api.tasks.bundling.Jar jarTask = task
+    File projectDir = unwrap(layout.getProjectDirectory())
+    File buildDir = unwrap(layout.getBuildDirectory())
+    File buildFile = this.buildFile
+    FileCollection sourcepath = allSource.filter({ File file -> file.exists() })
     // create Builder
     Properties gradleProperties = new PropertiesWrapper()
-    gradleProperties.put('task', task)
-    gradleProperties.put('project', task.project)
+    gradleProperties.put('task', jarTask)
+    gradleProperties.put('project', jarTask.project)
     new Builder(new Processor(gradleProperties, false)).withCloseable { Builder builder ->
       // load bnd properties
-      File temporaryBndFile = File.createTempFile('bnd', '.bnd', task.getTemporaryDir())
+      File temporaryBndFile = File.createTempFile('bnd', '.bnd', jarTask.getTemporaryDir())
       temporaryBndFile.withWriter('UTF-8') { writer ->
         // write any task manifest entries into the tmp bnd file
-        task.manifest.effectiveManifest.attributes.inject(new UTF8Properties()) { properties, key, value ->
+        jarTask.manifest.effectiveManifest.attributes.inject(new UTF8Properties()) { properties, key, value ->
           if (key != 'Manifest-Version') {
             properties.setProperty(key, value.toString())
           }
@@ -282,18 +286,18 @@ class BundleTaskConvention {
       if (builder.getSubBuilders() != [builder]) {
         throw new GradleException('Sub-bundles are not supported by this task')
       }
-      File archiveFile = unwrap(task.getArchiveFile())
-      String archiveFileName = unwrap(task.getArchiveFileName())
-      String archiveBaseName = unwrap(task.getArchiveBaseName())
-      String archiveClassifier = unwrap(task.getArchiveClassifier())
-      String archiveVersion = unwrap(task.getArchiveVersion(), true)
+      File archiveFile = unwrap(jarTask.getArchiveFile())
+      String archiveFileName = unwrap(jarTask.getArchiveFileName())
+      String archiveBaseName = unwrap(jarTask.getArchiveBaseName())
+      String archiveClassifier = unwrap(jarTask.getArchiveClassifier())
+      String archiveVersion = unwrap(jarTask.getArchiveVersion(), true)
 
       // Include entire contents of Jar task generated jar (except the manifest)
-      File archiveCopyFile = new File(task.getTemporaryDir(), archiveFileName)
+      File archiveCopyFile = new File(jarTask.getTemporaryDir(), archiveFileName)
       IO.copy(archiveFile, archiveCopyFile)
       Jar bundleJar = new Jar(archiveFileName, archiveCopyFile)
       String reproducible = builder.getProperty(Constants.REPRODUCIBLE)
-      bundleJar.setReproducible((reproducible != null) ? Processor.isTrue(reproducible) : !task.isPreserveFileTimestamps())
+      bundleJar.setReproducible((reproducible != null) ? Processor.isTrue(reproducible) : !jarTask.isPreserveFileTimestamps())
       bundleJar.updateModified(archiveFile.lastModified(), 'time of Jar task generated jar')
       bundleJar.setManifest(new Manifest())
       builder.setJar(bundleJar)
@@ -317,12 +321,11 @@ class BundleTaskConvention {
       })
       builder.setProperty('project.buildpath', buildpath.getAsPath())
       builder.setClasspath(buildpath.files as File[])
-      task.logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
+      jarTask.logger.debug('builder classpath: {}', builder.getClasspath()*.getSource())
       // set builder sourcepath
-      FileCollection sourcepath = allSource.filter({ File file -> file.exists() })
       builder.setProperty('project.sourcepath', sourcepath.getAsPath())
       builder.setSourcepath(sourcepath.files as File[])
-      task.logger.debug 'builder sourcepath: {}', builder.getSourcePath()
+      jarTask.logger.debug('builder sourcepath: {}', builder.getSourcePath())
       // set bundle symbolic name from tasks's archiveBaseName property if necessary
       String bundleSymbolicName = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME)
       if (isEmpty(bundleSymbolicName)) {
@@ -336,13 +339,13 @@ class BundleTaskConvention {
         builder.setProperty(Constants.BUNDLE_VERSION, MavenVersion.parseMavenString(archiveVersion).getOSGiVersion().toString())
       }
 
-      task.logger.debug 'builder properties: {}', builder.getProperties()
+      jarTask.logger.debug('builder properties: {}', builder.getProperties())
 
       // Build bundle
       Jar builtJar = builder.build()
       if (!builder.isOk()) {
         // if we already have an error; fail now
-        logReport(builder, task.logger)
+        logReport(builder, jarTask.logger)
         failTask("Bundle ${archiveFileName} has errors", archiveFile)
       }
 
@@ -351,7 +354,7 @@ class BundleTaskConvention {
       long now = System.currentTimeMillis()
       archiveFile.setLastModified(now)
 
-      logReport(builder, task.logger)
+      logReport(builder, jarTask.logger)
       if (!builder.isOk()) {
         failTask("Bundle ${archiveFileName} has errors", archiveFile)
       }

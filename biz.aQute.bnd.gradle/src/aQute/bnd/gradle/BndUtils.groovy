@@ -27,9 +27,9 @@ class BndUtils {
       report.getWarnings().each { String msg ->
         def location = report.getLocation(msg)
         if (location && location.file) {
-          logger.warn '{}:{}: warning: {}', location.file, location.line, msg
+          logger.warn('{}:{}: warning: {}', location.file, location.line, msg)
         } else {
-          logger.warn 'warning: {}', msg
+          logger.warn('warning: {}', msg)
         }
       }
     }
@@ -37,9 +37,9 @@ class BndUtils {
       report.getErrors().each { String msg ->
         def location = report.getLocation(msg)
         if (location && location.file) {
-          logger.error '{}:{}: error: {}', location.file, location.line, msg
+          logger.error('{}:{}: error: {}', location.file, location.line, msg)
         } else {
-          logger.error 'error  : {}', msg
+          logger.error('error  : {}', msg)
         }
       }
     }
@@ -75,9 +75,9 @@ class BndUtils {
       if (attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE)?.name != LibraryElements.JAR) {
         try {
           attributes.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.objects.named(LibraryElements.class, LibraryElements.JAR))
-          task.logger.info 'Set {}:{} configuration attribute {} to {}', project.path, configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE)
+          task.logger.info('Set {}:{} configuration attribute {} to {}', project.path, configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE))
         } catch (IllegalArgumentException e) {
-          task.logger.info 'Unable to set {}:{} configuration attribute {} to {}', project.path, configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, LibraryElements.JAR, e
+          task.logger.info('Unable to set {}:{} configuration attribute {} to {}', project.path, configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, LibraryElements.JAR, e)
         }
       }
     }
