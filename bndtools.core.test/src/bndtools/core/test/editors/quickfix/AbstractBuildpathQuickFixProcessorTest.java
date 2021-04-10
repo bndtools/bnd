@@ -230,6 +230,7 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 			if (buildPath != null && !buildPath.isEmpty()) {
 				model.setBuildPath(Collections.emptyList());
 				model.saveChanges();
+				Central.refresh(bndProject);
 				waitForClasspathUpdate("clearBuildpath()");
 			} else {
 				log("buildpath was not set; not trying to clear it");
@@ -248,6 +249,7 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 				model.addPath(new VersionedClause(bundleName, null), Constants.BUILDPATH);
 			}
 			model.saveChanges();
+			Central.refresh(bndProject);
 			waitForClasspathUpdate("addBundleToBuildpath");
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
