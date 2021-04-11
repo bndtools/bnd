@@ -18,68 +18,68 @@ import org.gradle.api.logging.Logger
 import org.gradle.util.GradleVersion
 
 class BndUtils {
-  private BndUtils() { }
+	private BndUtils() { }
 
-  private static final boolean IS_GRADLE_COMPATIBLE_5_6 = GradleVersion.current().compareTo(GradleVersion.version('5.6')) >= 0
+	private static final boolean IS_GRADLE_COMPATIBLE_5_6 = GradleVersion.current().compareTo(GradleVersion.version('5.6')) >= 0
 
-  public static void logReport(def report, Logger logger) {
-    if (logger.isWarnEnabled()) {
-      report.getWarnings().each { String msg ->
-        def location = report.getLocation(msg)
-        if (location && location.file) {
-          logger.warn('{}:{}: warning: {}', location.file, location.line, msg)
-        } else {
-          logger.warn('warning: {}', msg)
-        }
-      }
-    }
-    if (logger.isErrorEnabled()) {
-      report.getErrors().each { String msg ->
-        def location = report.getLocation(msg)
-        if (location && location.file) {
-          logger.error('{}:{}: error: {}', location.file, location.line, msg)
-        } else {
-          logger.error('error  : {}', msg)
-        }
-      }
-    }
-  }
+	public static void logReport(var report, Logger logger) {
+		if (logger.isWarnEnabled()) {
+			report.getWarnings().forEach((String msg) -> {
+				var location = report.getLocation(msg)
+				if (location && location.file) {
+					logger.warn('{}:{}: warning: {}', location.file, location.line, msg)
+				} else {
+					logger.warn('warning: {}', msg)
+				}
+			})
+		}
+		if (logger.isErrorEnabled()) {
+			report.getErrors().forEach((String msg) -> {
+				var location = report.getLocation(msg)
+				if (location && location.file) {
+					logger.error('{}:{}: error: {}', location.file, location.line, msg)
+				} else {
+					logger.error('error  : {}', msg)
+				}
+			})
+		}
+	}
 
-  @CompileStatic
-  public static ConfigurableFileCollection builtBy(ConfigurableFileCollection collection, Object... paths) {
-    return collection.builtBy(paths.findAll { path ->
-      path instanceof Task || path instanceof TaskProvider || path instanceof Buildable
-    })
-  }
+	@CompileStatic
+	public static ConfigurableFileCollection builtBy(ConfigurableFileCollection collection, Object... paths) {
+		return collection.builtBy(paths.findAll { path ->
+			path instanceof Task || path instanceof TaskProvider || path instanceof Buildable
+		})
+	}
 
-  @CompileStatic
-  public static Object unwrap(Object value) {
-    return unwrap(value, false)
-  }
+	@CompileStatic
+	public static Object unwrap(Object value) {
+		return unwrap(value, false)
+	}
 
-  @CompileStatic
-  public static Object unwrap(Object value, boolean optional) {
-    if (value instanceof Provider) {
-      value = optional ? value.getOrNull() : value.get()
-    } 
-    if (value instanceof FileSystemLocation) {
-      value = value.getAsFile()
-    } 
-    return value
-  }
+	@CompileStatic
+	public static Object unwrap(Object value, boolean optional) {
+		if (value instanceof Provider) {
+			value = optional ? value.getOrNull() : value.get()
+		}
+		if (value instanceof FileSystemLocation) {
+			value = value.getAsFile()
+		}
+		return value
+	}
 
-  public static void jarLibraryElements(Task task, String configurationName) {
-    if (IS_GRADLE_COMPATIBLE_5_6) {
-      Project project = task.project
-      def attributes = project.configurations[configurationName].attributes
-      if (attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE)?.name != LibraryElements.JAR) {
-        try {
-          attributes.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.objects.named(LibraryElements.class, LibraryElements.JAR))
-          task.logger.info('Set {}:{} configuration attribute {} to {}', project.path, configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE))
-        } catch (IllegalArgumentException e) {
-          task.logger.info('Unable to set {}:{} configuration attribute {} to {}', project.path, configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, LibraryElements.JAR, e)
-        }
-      }
-    }
-  }
+	public static void jarLibraryElements(Task task, String configurationName) {
+		if (IS_GRADLE_COMPATIBLE_5_6) {
+			Project project = task.getProject()
+			var attributes = project.configurations[configurationName].attributes
+			if (!Objects.equals(attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE)?.getName(), LibraryElements.JAR)) {
+				try {
+					attributes.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.getObjects().named(LibraryElements.class, LibraryElements.JAR))
+					task.getLogger().info('Set {}:{} configuration attribute {} to {}', project.getPath(), configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE))
+				} catch (IllegalArgumentException e) {
+					task.getLogger().info('Unable to set {}:{} configuration attribute {} to {}', project.getPath(), configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, LibraryElements.JAR, e)
+				}
+			}
+		}
+	}
 }

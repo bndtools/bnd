@@ -84,246 +84,246 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 
 public class Baseline extends DefaultTask {
-  /**
-   * Whether baseline failures should be ignored.
-   *
-   * <p>
-   * If <code>true</code>, then baseline failures will not fail the task.
-   * Otherwise, a baseline failure will fail the task. The default is
-   * <code>false</code>.
-   */
-  @Input
-  boolean ignoreFailures = false
+	/**
+	 * Whether baseline failures should be ignored.
+	 *
+	 * <p>
+	 * If <code>true</code>, then baseline failures will not fail the task.
+	 * Otherwise, a baseline failure will fail the task. The default is
+	 * <code>false</code>.
+	 */
+	@Input
+	boolean ignoreFailures = false
 
-  /**
-   * The names of the exported packages to baseline.
-   * <p>
-   * The default is all exported packages.
-   */
-  @Input
-  final ListProperty<String> diffpackages
+	/**
+	 * The names of the exported packages to baseline.
+	 * <p>
+	 * The default is all exported packages.
+	 */
+	@Input
+	final ListProperty<String> diffpackages
 
-  /**
-   * The bundle headers or resource paths to ignore when
-   * baselining.
-   * <p>
-   * The default is nothing ignored.
-   */
-  @Input
-  final ListProperty<String> diffignore
+	/**
+	 * The bundle headers or resource paths to ignore when
+	 * baselining.
+	 * <p>
+	 * The default is nothing ignored.
+	 */
+	@Input
+	final ListProperty<String> diffignore
 
-  /**
-   * The name of the baseline reports directory.
-   *
-   * <p>
-   * Can be a name or a path relative to <code>ReportingExtension.getBaseDirectory()</code>.
-   * The default name is 'baseline'.
-   */
-  @Internal('Represented by reportFile')
-  final Property<String> baselineReportDirName
+	/**
+	 * The name of the baseline reports directory.
+	 *
+	 * <p>
+	 * Can be a name or a path relative to <code>ReportingExtension.getBaseDirectory()</code>.
+	 * The default name is 'baseline'.
+	 */
+	@Internal('Represented by reportFile')
+	final Property<String> baselineReportDirName
 
-  /**
-   * The baseline reports directory.
-   *
-   * <p>
-   * The default is <code>ReportingExtension.getBaseDirectory().dir(baselineReportDirName)</code>.
-   */
-  @Internal('Represented by reportFile')
-  final DirectoryProperty baselineReportDirectory
+	/**
+	 * The baseline reports directory.
+	 *
+	 * <p>
+	 * The default is <code>ReportingExtension.getBaseDirectory().dir(baselineReportDirName)</code>.
+	 */
+	@Internal('Represented by reportFile')
+	final DirectoryProperty baselineReportDirectory
 
-  /**
-   * The baseline reports file.
-   *
-   * <p>
-   * The default is <code>baselineReportDirectory.dir("${task.name}/${bundlename}.txt")</code>.
-   */
-  @OutputFile
-  final RegularFileProperty reportFile
+	/**
+	 * The baseline reports file.
+	 *
+	 * <p>
+	 * The default is <code>baselineReportDirectory.dir("${task.name}/${bundlename}.txt")</code>.
+	 */
+	@OutputFile
+	final RegularFileProperty reportFile
 
-  private final ConfigurableFileCollection bundleCollection
-  private final ConfigurableFileCollection baselineCollection
+	private final ConfigurableFileCollection bundleCollection
+	private final ConfigurableFileCollection baselineCollection
 
-  private final ProjectLayout layout
-  private final ProviderFactory providers
+	private final ProjectLayout layout
+	private final ProviderFactory providers
 
-  /**
-   * Create a Baseline task.
-   *
-   */
-  public Baseline() {
-    super()
-    this.layout = project.layout
-    this.providers = project.providers
-    ObjectFactory objects = project.objects
-    baselineReportDirName = objects.property(String.class).convention('baseline')
-    baselineReportDirectory = objects.directoryProperty().convention(project.reporting.baseDirectory.dir(baselineReportDirName))
-    String taskName = name
-    reportFile = objects.fileProperty().convention(baselineReportDirectory.file(providers.provider({ ->
-      String bundlename = unwrap(getBundle()).getName()
-      bundlename = bundlename[0..Math.max(-1, bundlename.lastIndexOf('.') - 1)]
-      return "${taskName}/${bundlename}.txt"
-    })))
-    diffignore = objects.listProperty(String.class).empty()
-    diffpackages = objects.listProperty(String.class).empty()
-    bundleCollection = objects.fileCollection()
-    baselineCollection = objects.fileCollection()
-    inputs.files(bundleCollection).withPathSensitivity(RELATIVE).withPropertyName('bundleCollection')
-    inputs.files(baselineCollection).withPropertyName('baselineCollection')
-  }
+	/**
+	 * Create a Baseline task.
+	 *
+	 */
+	public Baseline() {
+		super()
+		this.layout = getProject().getLayout()
+		this.providers = getProject().getProviders()
+		ObjectFactory objects = getProject().getObjects()
+		baselineReportDirName = objects.property(String.class).convention('baseline')
+		baselineReportDirectory = objects.directoryProperty().convention(getProject().reporting.getBaseDirectory().dir(baselineReportDirName))
+		String taskName = getName()
+		reportFile = objects.fileProperty().convention(baselineReportDirectory.file(providers.provider(() -> {
+			String bundlename = unwrap(getBundle()).getName()
+			bundlename = bundlename[0..Math.max(-1, bundlename.lastIndexOf('.') - 1)]
+			return "${taskName}/${bundlename}.txt"
+		})))
+		diffignore = objects.listProperty(String.class).empty()
+		diffpackages = objects.listProperty(String.class).empty()
+		bundleCollection = objects.fileCollection()
+		baselineCollection = objects.fileCollection()
+		inputs.files(bundleCollection).withPathSensitivity(RELATIVE).withPropertyName('bundleCollection')
+		inputs.files(baselineCollection).withPropertyName('baselineCollection')
+	}
 
-  /**
-   * Return the bundle File to be baselined.
-   *
-   * <p>
-   * An exception will be thrown if the set bundle does
-   * not result in exactly one file.
-   */
-  @InputFile
-  public Provider<RegularFile> getBundle() {
-    ConfigurableFileCollection collection = bundleCollection
-    return layout.file(providers.provider({ ->
-      return collection.getSingleFile()
-    }))
-  }
+	/**
+	 * Return the bundle File to be baselined.
+	 *
+	 * <p>
+	 * An exception will be thrown if the set bundle does
+	 * not result in exactly one file.
+	 */
+	@InputFile
+	public Provider<RegularFile> getBundle() {
+		ConfigurableFileCollection collection = bundleCollection
+		return layout.file(providers.provider(() -> collection.getSingleFile()))
+	}
 
-  /**
-   * Set the bundle to be baselined.
-   *
-   * <p>
-   * The argument will be handled using
-   * ConfigurableFileCollection.from().
-   */
-  public void setBundle(Object file) {
-    bundleCollection.setFrom(file)
-    builtBy(bundleCollection, file)
-  }
+	/**
+	 * Set the bundle to be baselined.
+	 *
+	 * <p>
+	 * The argument will be handled using
+	 * ConfigurableFileCollection.from().
+	 */
+	public void setBundle(Object file) {
+		bundleCollection.setFrom(file)
+		builtBy(bundleCollection, file)
+	}
 
-  /**
-   * Get the baseline bundle File.
-   *
-   * <p>
-   * An exception will be thrown if the baseline argument does
-   * not result in exactly one file.
-   */
-  @InputFile
-  public Provider<RegularFile> getBaseline() {
-    ConfigurableFileCollection collection = baselineCollection
-    return layout.file(providers.provider({ ->
-      return collection.getSingleFile()
-    }))
-  }
+	/**
+	 * Get the baseline bundle File.
+	 *
+	 * <p>
+	 * An exception will be thrown if the baseline argument does
+	 * not result in exactly one file.
+	 */
+	@InputFile
+	public Provider<RegularFile> getBaseline() {
+		ConfigurableFileCollection collection = baselineCollection
+		return layout.file(providers.provider(() -> collection.getSingleFile()))
+	}
 
-  /**
-   * Set the baseline bundle from a File.
-   * <p>
-   * The argument will be handled using
-   * ConfigurableFileCollection.from().
-   */
-  public void setBaseline(Object file) {
-    baselineCollection.setFrom(file)
-    builtBy(baselineCollection, file)
-  }
+	/**
+	 * Set the baseline bundle from a File.
+	 * <p>
+	 * The argument will be handled using
+	 * ConfigurableFileCollection.from().
+	 */
+	public void setBaseline(Object file) {
+		baselineCollection.setFrom(file)
+		builtBy(baselineCollection, file)
+	}
 
-  /**
-   * Add diffignore values.
-   */
-  public void diffignore(String... diffignore) {
-    getDiffignore().addAll(diffignore)
-  }
+	/**
+	 * Add diffignore values.
+	 */
+	public void diffignore(String... diffignore) {
+		getDiffignore().addAll(diffignore)
+	}
 
-  /**
-   * Add diffpackages values.
-   */
-  public void diffpackages(String... diffpackages) {
-    getDiffpackages().addAll(diffpackages)
-  }
+	/**
+	 * Add diffpackages values.
+	 */
+	public void diffpackages(String... diffpackages) {
+		getDiffpackages().addAll(diffpackages)
+	}
 
-  @Internal('Used by baseline configuration')
-  Task getBundleTask() {
-    return bundleCollection.getBuiltBy().flatten().findResult { t ->
-      if (t instanceof TaskProvider) {
-        t = t.get()
-      }
-      t instanceof Task && t.convention.findPlugin(BundleTaskConvention.class) ? t : null
-    }
-  }
+	@Internal('Used by baseline configuration')
+	Task getBundleTask() {
+		return bundleCollection.getBuiltBy().flatten().findResult {
+			t ->
+			if (t instanceof TaskProvider) {
+				t = t.get()
+			}
+			t instanceof Task && t.getConvention().findPlugin(BundleTaskConvention.class) ? t : null
+		}
+	}
 
-  @Deprecated
-  @ReplacedBy('reportFile')
-  public File getDestination() {
-    return unwrap(getReportFile())
-  }
+	@Deprecated
+	@ReplacedBy('reportFile')
+	public File getDestination() {
+		return unwrap(getReportFile())
+	}
 
-  /**
-   * Baseline the bundle.
-   *
-   */
-  @TaskAction
-  void baselineAction() {
-    File bundle = unwrap(getBundle())
-    File baseline = unwrap(getBaseline())
-    File report = unwrap(getReportFile())
-    IO.mkdirs(report.getParentFile())
-    boolean failure = false
-    new Processor().withCloseable { Processor processor ->
-      Jar newer = new Jar(bundle)
-      processor.addClose(newer)
-      Jar older = new Jar(baseline)
-      processor.addClose(older)
-      logger.debug('Baseline bundle {} against baseline {}', bundle, baseline)
+	/**
+	 * Baseline the bundle.
+	 *
+	 */
+	@TaskAction
+	void baselineAction() {
+		File bundle = unwrap(getBundle())
+		File baseline = unwrap(getBaseline())
+		File report = unwrap(getReportFile())
+		IO.mkdirs(report.getParentFile())
+		boolean failure = false
+		try (Processor processor = new Processor()) {
+			Jar newer = new Jar(bundle)
+			processor.addClose(newer)
+			Jar older = new Jar(baseline)
+			processor.addClose(older)
+			getLogger().debug('Baseline bundle {} against baseline {}', bundle, baseline)
 
-      def differ = new DiffPluginImpl()
-      differ.setIgnore(new Parameters(unwrap(getDiffignore()).join(','), processor))
-      def baseliner = new aQute.bnd.differ.Baseline(processor, differ)
-      def infos = baseliner.baseline(newer, older, new Instructions(new Parameters(unwrap(getDiffpackages()).join(','), processor))).sort {it.packageName}
-      def bundleInfo = baseliner.getBundleInfo()
-      new Formatter(report, 'UTF-8', Locale.US).withCloseable { Formatter f ->
-        f.format('===============================================================%n')
-        f.format('%s %s %s-%s',
-          bundleInfo.mismatch ? '*' : ' ',
-          bundleInfo.bsn,
-          newer.getVersion(),
-          older.getVersion())
+			var differ = new DiffPluginImpl()
+			differ.setIgnore(new Parameters(unwrap(getDiffignore()).join(','), processor))
+			var baseliner = new aQute.bnd.differ.Baseline(processor, differ)
+			var infos = baseliner.baseline(newer, older, new Instructions(new Parameters(unwrap(getDiffpackages()).join(','), processor))).sort {
+				it.packageName
+			}
+			var bundleInfo = baseliner.getBundleInfo()
+			try (Formatter f = new Formatter(report, 'UTF-8', Locale.US)) {
+				f.format('===============================================================%n')
+				f.format('%s %s %s-%s',
+				bundleInfo.mismatch ? '*' : ' ',
+				bundleInfo.bsn,
+				newer.getVersion(),
+				older.getVersion())
 
-        if (bundleInfo.mismatch) {
-          failure = true
-          if (bundleInfo.suggestedVersion != null) {
-            f.format(' suggests %s', bundleInfo.suggestedVersion)
-          }
-          f.format('%n%#2S', baseliner.getDiff())
-        }
+				if (bundleInfo.mismatch) {
+					failure = true
+					if (Objects.nonNull(bundleInfo.suggestedVersion)) {
+						f.format(' suggests %s', bundleInfo.suggestedVersion)
+					}
+					f.format('%n%#2S', baseliner.getDiff())
+				}
 
-        f.format('%n===============================================================%n')
+				f.format('%n===============================================================%n')
 
-        String format = '%s %-50s %-10s %-10s %-10s %-10s %-10s %s%n'
-        f.format(format, ' ', 'Name', 'Type', 'Delta', 'New', 'Old', 'Suggest', 'If Prov.')
+				String format = '%s %-50s %-10s %-10s %-10s %-10s %-10s %s%n'
+				f.format(format, ' ', 'Name', 'Type', 'Delta', 'New', 'Old', 'Suggest', 'If Prov.')
 
-        infos.each { info ->
-          def packageDiff = info.packageDiff
-          f.format(format,
-            info.mismatch ? '*' : ' ',
-            packageDiff.getName(),
-            packageDiff.getType(),
-            packageDiff.getDelta(),
-            info.newerVersion,
-            info.olderVersion != null && info.olderVersion.equals(Version.LOWEST) ? '-': info.olderVersion,
-            info.suggestedVersion != null && info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? 'ok' : info.suggestedVersion,
-            info.suggestedIfProviders ?: '-')
-          if (info.mismatch) {
-            failure = true
-            f.format('%#2S%n', packageDiff)
-          }
-        }
-      }
-    }
+				infos.each {
+					info ->
+					var packageDiff = info.packageDiff
+					f.format(format,
+					info.mismatch ? '*' : ' ',
+					packageDiff.getName(),
+					packageDiff.getType(),
+					packageDiff.getDelta(),
+					info.newerVersion,
+					Objects.nonNull(info.olderVersion) && info.olderVersion.equals(Version.LOWEST) ? '-': info.olderVersion,
+					Objects.nonNull(info.suggestedVersion) && info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? 'ok' : info.suggestedVersion,
+					info.suggestedIfProviders ?: '-')
+					if (info.mismatch) {
+						failure = true
+						f.format('%#2S%n', packageDiff)
+					}
+				}
+			}
+		}
 
-    if (failure) {
-      String msg = "Baseline problems detected. See the report in ${report}.\n${report.text}"
-      if (ignoreFailures) {
-        logger.error(msg)
-      } else {
-        throw new GradleException(msg)
-      }
-    }
-  }
+		if (failure) {
+			String msg = "Baseline problems detected. See the report in ${report}.\n${report.text}"
+			if (isIgnoreFailures()) {
+				getLogger().error(msg)
+			} else {
+				throw new GradleException(msg)
+			}
+		}
+	}
 }

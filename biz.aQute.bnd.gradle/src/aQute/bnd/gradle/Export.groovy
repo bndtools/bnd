@@ -63,113 +63,112 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 
 public class Export extends Bndrun {
-  /**
-   * This property is replaced by exporter.
-   * This property is only used when the exporter
-   * property is not specified.
-   *
-   * <p>
-   * If <code>true</code>, then the exporter defaults to
-   * 'bnd.runbundles'. Otherwise the exporter defaults to
-   * 'bnd.executablejar'. The default is <code>false</code>.
-   */
-  @ReplacedBy('exporter')
-  @Deprecated
-  boolean bundlesOnly = false
+	/**
+	 * This property is replaced by exporter.
+	 * This property is only used when the exporter
+	 * property is not specified.
+	 *
+	 * <p>
+	 * If <code>true</code>, then the exporter defaults to
+	 * 'bnd.runbundles'. Otherwise the exporter defaults to
+	 * 'bnd.executablejar'. The default is <code>false</code>.
+	 */
+	@ReplacedBy('exporter')
+	@Deprecated
+	boolean bundlesOnly = false
 
-  /**
-   * The name of the exporter for this task.
-   *
-   * <p>
-   * Bnd has two built-in exporter plugins. 'bnd.executablejar'
-   * exports an executable jar and 'bnd.runbundles' exports the
-   * -runbundles files. The default is 'bnd.executablejar' unless
-   * bundlesOnly is false when the default is 'bnd.runbundles'.
-   */
-  @Input
-  final Property<String> exporter
+	/**
+	 * The name of the exporter for this task.
+	 *
+	 * <p>
+	 * Bnd has two built-in exporter plugins. 'bnd.executablejar'
+	 * exports an executable jar and 'bnd.runbundles' exports the
+	 * -runbundles files. The default is 'bnd.executablejar' unless
+	 * bundlesOnly is false when the default is 'bnd.runbundles'.
+	 */
+	@Input
+	final Property<String> exporter
 
-  /**
-   * The destination directory for the export.
-   *
-   * <p>
-   * The default for destinationDirectory is project.distsDirectory.dir('executable')
-   * if the exporter is 'bnd.executablejar', project.distsDirectory.dir('runbundles'/bndrun)
-   * if the exporter is 'bnd.runbundles', and project.distsDirectory.dir(task.name)
-   * for all other exporters.
-   */
-  @OutputDirectory
-  final DirectoryProperty destinationDirectory
+	/**
+	 * The destination directory for the export.
+	 *
+	 * <p>
+	 * The default for destinationDirectory is project.distsDirectory.dir('executable')
+	 * if the exporter is 'bnd.executablejar', project.distsDirectory.dir('runbundles'/bndrun)
+	 * if the exporter is 'bnd.runbundles', and project.distsDirectory.dir(task.name)
+	 * for all other exporters.
+	 */
+	@OutputDirectory
+	final DirectoryProperty destinationDirectory
 
-  /**
-   * Create a Export task.
-   *
-   */
-  public Export() {
-    super()
-    ObjectFactory objects = project.objects
-    exporter = objects.property(String.class).convention(project.provider({ ->
-      return bundlesOnly ? RUNBUNDLES : EXECUTABLE_JAR
-    }))
-    Provider<Directory> distsDirectory = project.hasProperty('distsDirectory') ? project.distsDirectory : // Gradle 6.0
-      project.layout.buildDirectory.dir(project.provider({ ->
-        return project.distsDirName
-      }))
-    destinationDirectory = objects.directoryProperty().convention(distsDirectory.flatMap({ distsDir ->
-      return distsDir.dir(getExporter().map({ exporterName ->
-        if (exporterName == EXECUTABLE_JAR) {
-          return 'executable'
-        }
-        if (exporterName == RUNBUNDLES) {
-          File bndrunFile = unwrap(getBndrun())
-          String bndrunName = bndrunFile.name - '.bndrun'
-          return "runbundles/${bndrunName}"
-        }
-        return exporterName
-      }))
-    }))
-  }
+	/**
+	 * Create a Export task.
+	 *
+	 */
+	public Export() {
+		super()
+		ObjectFactory objects = getProject().getObjects()
+		exporter = objects.property(String.class).convention(getProject().provider(() -> getBundlesOnly() ? RUNBUNDLES : EXECUTABLE_JAR))
+		Provider<Directory> distsDirectory = getProject().hasProperty('distsDirectory') ? getProject().distsDirectory : // Gradle 6.0
+		getProject().getLayout().getBuildDirectory().dir(getProject().provider(() -> getProject().distsDirName))
+		destinationDirectory = objects.directoryProperty().convention(distsDirectory.flatMap(distsDir -> {
+			return distsDir.dir(getExporter().map(exporterName -> {
+				switch(exporterName) {
+					case EXECUTABLE_JAR:
+					return 'executable'
+					case RUNBUNDLES:
+					File bndrunFile = unwrap(getBndrun())
+					String bndrunName = bndrunFile.getName() - '.bndrun'
+					return "runbundles/${bndrunName}"
+					default:
+					return exporterName
+				}
+			}))
+		}))
+	}
 
-  @Deprecated
-  @ReplacedBy('destinationDirectory')
-  public File getDestinationDir() {
-    return unwrap(getDestinationDirectory())
-  }
+	@Deprecated
+	@ReplacedBy('destinationDirectory')
+	public File getDestinationDir() {
+		return unwrap(getDestinationDirectory())
+	}
 
-  @Deprecated
-  public void setDestinationDir(Object dir) {
-    getDestinationDirectory().set(project.file(dir))
-  }
+	@Deprecated
+	public void setDestinationDir(Object dir) {
+		getDestinationDirectory().set(getProject().file(dir))
+	}
 
-  /**
-   * Export the Run object.
-   */
-  @Override
-  protected void worker(def run) {
-    String exporterName = unwrap(getExporter())
-    File destinationDirFile = unwrap(getDestinationDirectory())
-    logger.info('Exporting {} to {} with exporter {}', run.getPropertiesFile(), destinationDirFile, exporterName)
-    logger.debug('Run properties: {}', run.getProperties())
-    try {
-      def export = run.export(exporterName, [:])
-      if (exporterName == RUNBUNDLES) {
-        export?.value.withCloseable { jr ->
-          jr.getJar().writeFolder(destinationDirFile)
-        }
-      } else {
-        export?.value.withCloseable { r ->
-          File exported = IO.getBasedFile(destinationDirFile, export.key)
-          exported.withOutputStream { out ->
-            r.write(out)
-          }
-          exported.setLastModified(r.lastModified())
-        }
-      }
-    } finally {
-      logReport(run, logger)
-    }
-    if (!ignoreFailures && !run.isOk()) {
-      throw new GradleException("${run.getPropertiesFile()} export failure")
-    }
-  }
+	/**
+	 * Export the Run object.
+	 */
+	@Override
+	protected void worker(var run) {
+		String exporterName = unwrap(getExporter())
+		File destinationDirFile = unwrap(getDestinationDirectory())
+		getLogger().info('Exporting {} to {} with exporter {}', run.getPropertiesFile(), destinationDirFile, exporterName)
+		getLogger().debug('Run properties: {}', run.getProperties())
+		try {
+			Map.Entry<String, ?> export = run.export(exporterName, Collections.emptyMap())
+			if (Objects.nonNull(export)) {
+				if (Objects.equals(exporterName, RUNBUNDLES)) {
+					try (var jr = export.getValue()) {
+						jr.getJar().writeFolder(destinationDirFile)
+					}
+				} else {
+					try (var r = export.getValue()) {
+						File exported = IO.getBasedFile(destinationDirFile, export.getKey())
+						try (OutputStream out = IO.outputStream(exported)) {
+							r.write(out)
+						}
+						exported.setLastModified(r.lastModified())
+					}
+				}
+			}
+		} finally {
+			logReport(run, getLogger())
+		}
+		if (!isIgnoreFailures() && !run.isOk()) {
+			throw new GradleException("${run.getPropertiesFile()} export failure")
+		}
+	}
 }
