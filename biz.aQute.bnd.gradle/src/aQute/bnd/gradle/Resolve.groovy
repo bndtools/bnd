@@ -59,93 +59,93 @@ import org.gradle.api.tasks.OutputFile
 import org.osgi.service.resolver.ResolutionException
 
 public class Resolve extends Bndrun {
-  /**
-   * Whether resolve changes should fail the task.
-   *
-   * <p>
-   * If <code>true</code>, then a change to the current -runbundles
-   * value will fail the task. The default is
-   * <code>false</code>.
-   */
-  @Input
-  boolean failOnChanges = false
+	/**
+	 * Whether resolve changes should fail the task.
+	 *
+	 * <p>
+	 * If <code>true</code>, then a change to the current -runbundles
+	 * value will fail the task. The default is
+	 * <code>false</code>.
+	 */
+	@Input
+	boolean failOnChanges = false
 
-  /**
-   * Whether resolve changes should be writen back.
-   *
-   * <p>
-   * If <code>true</code>, then a change to the current -runbundles
-   * value will be writen back into the bndrun file. The default is
-   * <code>true</code>.
-   */
-  @Input
-  boolean writeOnChanges = true
+	/**
+	 * Whether resolve changes should be writen back.
+	 *
+	 * <p>
+	 * If <code>true</code>, then a change to the current -runbundles
+	 * value will be writen back into the bndrun file. The default is
+	 * <code>true</code>.
+	 */
+	@Input
+	boolean writeOnChanges = true
 
-  /**
-   * Whether to report optional requirements.
-   *
-   * <p>
-   * If <code>true</code>, optional requirements will be reported. The
-   * default is <code>true</code>.
-   *
-   */
-  @Input
-  boolean reportOptional = true
+	/**
+	 * Whether to report optional requirements.
+	 *
+	 * <p>
+	 * If <code>true</code>, optional requirements will be reported. The
+	 * default is <code>true</code>.
+	 *
+	 */
+	@Input
+	boolean reportOptional = true
 
-  /**
-   * Return the output file for the calculated `-runbundles`
-   * property.
-   *
-   * <p>
-   * This output file will -include the input bndrun file and can be
-   * thus be used by other tasks, such as TestOSGi as a resolved
-   * input bndrun file.
-   */
-  @OutputFile
-  final RegularFileProperty outputBndrun
+	/**
+	 * Return the output file for the calculated `-runbundles`
+	 * property.
+	 *
+	 * <p>
+	 * This output file will -include the input bndrun file and can be
+	 * thus be used by other tasks, such as TestOSGi as a resolved
+	 * input bndrun file.
+	 */
+	@OutputFile
+	final RegularFileProperty outputBndrun
 
-  /**
-   * Create a Resolve task.
-   */
-  public Resolve() {
-    super()
-    outputBndrun = project.objects.fileProperty().convention(getBndrun())
-  }
+	/**
+	 * Create a Resolve task.
+	 */
+	public Resolve() {
+		super()
+		outputBndrun = getProject().getObjects().fileProperty().convention(getBndrun())
+	}
 
-  /**
-   * Create the Bndrun object.
-   */
-  protected def createRun(def workspace, File bndrunFile) {
-    File outputBndrunFile = unwrap(getOutputBndrun())
-    if (outputBndrunFile != bndrunFile) {
-      outputBndrunFile.withWriter('UTF-8') { writer ->
-        UTF8Properties props = new UTF8Properties()
-        props.setProperty(Constants.INCLUDE, String.format('"%s"', IO.absolutePath(bndrunFile)))
-        props.store(writer, null)
-      }
-      bndrunFile = outputBndrunFile
-    }
-    Class runClass = workspace ? Class.forName(biz.aQute.resolve.Bndrun.class.getName(), true, workspace.getClass().getClassLoader()) : biz.aQute.resolve.Bndrun.class
-    return runClass.createBndrun(workspace, bndrunFile)
-  }
+	/**
+	 * Create the Bndrun object.
+	 */
+	protected Object createRun(var workspace, File bndrunFile) {
+		File outputBndrunFile = unwrap(getOutputBndrun())
+		if (!Objects.equals(outputBndrunFile, bndrunFile)) {
+			try (Writer writer = IO.writer(outputBndrunFile)) {
+				UTF8Properties props = new UTF8Properties()
+				props.setProperty(Constants.INCLUDE, String.format('"%s"', IO.absolutePath(bndrunFile)))
+				props.store(writer, null)
+			}
+			bndrunFile = outputBndrunFile
+		}
+		Class runClass = workspace ? Class.forName(biz.aQute.resolve.Bndrun.class.getName(), true, workspace.getClass().getClassLoader()) : biz.aQute.resolve.Bndrun.class
+		return runClass.createBndrun(workspace, bndrunFile)
+	}
 
-  /**
-   * Resolve the Bndrun object.
-   */
-  protected void worker(def run) {
-    logger.info('Resolving runbundles required for {}', run.getPropertiesFile())
-    logger.debug('Run properties: {}', run.getProperties())
-    try {
-      def result = run.resolve(failOnChanges, writeOnChanges)
-      logger.info('{}: {}', Constants.RUNBUNDLES, result)
-    } catch (ResolutionException e) {
-      logger.error(ResolveProcess.format(e, reportOptional))
-      throw new GradleException("${run.getPropertiesFile()} resolution exception", e)
-    } finally {
-      logReport(run, logger)
-    }
-    if (!ignoreFailures && !run.isOk()) {
-      throw new GradleException("${run.getPropertiesFile()} resolution failure")
-    }
-  }
+	/**
+	 * Resolve the Bndrun object.
+	 */
+	protected void worker(var run) {
+		getLogger().info('Resolving runbundles required for {}', run.getPropertiesFile())
+		getLogger().debug('Run properties: {}', run.getProperties())
+		try {
+			var result = run.resolve(isFailOnChanges(), isWriteOnChanges())
+			getLogger().info('{}: {}', Constants.RUNBUNDLES, result)
+		} catch (ResolutionException e) {
+			getLogger().error(ResolveProcess.format(e, isReportOptional()))
+			throw new GradleException("${run.getPropertiesFile()} resolution exception", e)
+		} finally {
+			logReport(run, getLogger())
+		}
+		if (!isIgnoreFailures() && !run.isOk()) {
+			throw new GradleException("${run.getPropertiesFile()} resolution failure")
+		}
+	}
 }

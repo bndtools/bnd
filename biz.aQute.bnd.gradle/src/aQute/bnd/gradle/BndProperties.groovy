@@ -11,47 +11,47 @@ package aQute.bnd.gradle
 import aQute.bnd.build.Project
 
 class BndProperties {
-  final Project project
-  BndProperties(Project bndProject) {
-    this.project = bndProject
-  }
+	final Project project
+	BndProperties(Project bndProject) {
+		this.project = bndProject
+	}
 
-  boolean is(String name) {
-    return project.is(name)
-  }
+	boolean is(String name) {
+		return project.is(name)
+	}
 
-  def get(String name) {
-    return trimmed(project.getProperty(name))
-  }
+	Object get(String name) {
+		return trimmed(project.getProperty(name))
+	}
 
-  def get(String name, Object defaultValue) {
-    def value = get(name)
-    if (value != null) {
-      return value
-    }
-    return trimmed(defaultValue)
-  }
+	Object get(String name, Object defaultValue) {
+		var value = get(name)
+		if (Objects.nonNull(value)) {
+			return value
+		}
+		return trimmed(defaultValue)
+	}
 
-  def merge(String name) {
-    return trimmed(project.mergeProperties(name))
-  }
+	Object merge(String name) {
+		return trimmed(project.mergeProperties(name))
+	}
 
-  def process(String line) {
-    return project.getReplacer().process(line)
-  }
+	Object process(String line) {
+		return project.getReplacer().process(line)
+	}
 
-  def propertyMissing(String name) {
-    if ((name == 'ext') || extensions.extraProperties.has(name) || extensions.findByName(name)) {
-      throw new MissingPropertyException(name, String)
-    }
-    def value = get(name)
-    if (value != null) {
-      return value
-    }
-    return get(name.replace('_', '.'))
-  }
+	Object propertyMissing(String name) {
+		if (Objects.equals(name, 'ext') || extensions.extraProperties.has(name) || extensions.findByName(name)) {
+			throw new MissingPropertyException(name, String)
+		}
+		var value = get(name)
+		if (Objects.nonNull(value)) {
+			return value
+		}
+		return get(name.replace('_', '.'))
+	}
 
-  def trimmed(value) {
-    return (value instanceof String) ? value.trim() : value
-  }
+	Object trimmed(value) {
+		return (value instanceof String) ? value.trim() : value
+	}
 }

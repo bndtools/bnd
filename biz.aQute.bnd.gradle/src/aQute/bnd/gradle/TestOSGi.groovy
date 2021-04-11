@@ -52,70 +52,56 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.options.Option
 
 public class TestOSGi extends Bndrun {
-  /**
-   * The directory where the test case results are placed.
-   *
-   * <p>
-   * The default for resultsDirectory is
-   * "${buildDir}/${testResultsDirName}/${task.name}"
-   */
-  @OutputDirectory
-  final DirectoryProperty resultsDirectory
+	/**
+	 * Configures the test class names to be run.
+	 */
+	@Input
+	@Optional
+	@Option(description = "Configures the test class names to be run.")
+	List<String> tests
 
-  private List<String> tests
+	/**
+	 * The directory where the test case results are placed.
+	 *
+	 * <p>
+	 * The default for resultsDirectory is
+	 * "${buildDir}/${testResultsDirName}/${task.name}"
+	 */
+	@OutputDirectory
+	final DirectoryProperty resultsDirectory
 
-  /**
-   * Create a TestOSGi task.
-   *
-   */
-  public TestOSGi() {
-    super()
-    Provider<Directory> testResultsDirectory = project.layout.buildDirectory.dir(project.provider({ ->
-        return project.testResultsDirName
-    }))
-    String taskName = name
-    resultsDirectory = project.objects.directoryProperty().convention(testResultsDirectory.map({ it.dir(taskName) }))
-  }
+	/**
+	 * Create a TestOSGi task.
+	 *
+	 */
+	public TestOSGi() {
+		super()
+		Provider<Directory> testResultsDirectory = getProject().getLayout().getBuildDirectory().dir(getProject().provider(() -> getProject().testResultsDirName))
+		String taskName = getName()
+		resultsDirectory = getProject().getObjects().directoryProperty().convention(testResultsDirectory.map(d -> d.dir(taskName)))
+	}
 
-  @Deprecated
-  @ReplacedBy('resultsDirectory')
-  public File getResultsDir() {
-    return unwrap(getResultsDirectory())
-  }
+	@Deprecated
+	@ReplacedBy('resultsDirectory')
+	public File getResultsDir() {
+		return unwrap(getResultsDirectory())
+	}
 
-  /**
-   * Configures the test class names to be run.
-   */
-  @Option(option = "tests", description = "Configures the test class names to be run.")
-  public void setTests(List<String> tests) {
-      this.tests = tests
-  }
-
-  /**
-   * Return the test class names to be run.
-   * If not set, all test classes are run.
-   */
-  @Input
-  @Optional
-  public List<String> getTests() {
-      return tests;
-  }
-
-  /**
-   * Test the Run object.
-   */
-  @Override
-  protected void worker(def run) {
-    logger.info('Running tests for {} in {}', run.getPropertiesFile(), run.getBase())
-    logger.debug('Run properties: {}', run.getProperties())
-    File resultsDir = unwrap(getResultsDirectory())
-    try {
-      run.test(resultsDir, tests);
-    } finally {
-      logReport(run, logger)
-    }
-    if (!ignoreFailures && !run.isOk()) {
-      throw new GradleException("${run.getPropertiesFile()} test failure")
-    }
-  }
+	/**
+	 * Test the Run object.
+	 */
+	@Override
+	protected void worker(var run) {
+		getLogger().info('Running tests for {} in {}', run.getPropertiesFile(), run.getBase())
+		getLogger().debug('Run properties: {}', run.getProperties())
+		File resultsDir = unwrap(getResultsDirectory())
+		try {
+			run.test(resultsDir, getTests());
+		} finally {
+			logReport(run, getLogger())
+		}
+		if (!isIgnoreFailures() && !run.isOk()) {
+			throw new GradleException("${run.getPropertiesFile()} test failure")
+		}
+	}
 }
