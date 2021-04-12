@@ -1,5 +1,7 @@
 package aQute.maven.provider;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.List;
@@ -26,6 +28,7 @@ public class MavenRepoTest extends TestCase {
 	List<MavenBackingRepository>	repo;
 	MavenRepository					storage;
 	ReporterAdapter					reporter	= new ReporterAdapter(System.err);
+	HttpClient						client		= new HttpClient();
 
 	@Override
 	protected void setUp() throws Exception {
@@ -42,7 +45,6 @@ public class MavenRepoTest extends TestCase {
 		IO.copy(IO.getFile("testresources/mavenrepo"), remote);
 		remote.mkdirs();
 		local.mkdirs();
-		HttpClient client = new HttpClient();
 		repo = MavenBackingRepository.create(fnx.getBaseURI() + "/repo/", reporter, local, client);
 		storage = new MavenRepository(local, "fnexus", this.repo, this.repo, client.promiseFactory()
 			.executor(), null);
@@ -152,4 +154,35 @@ public class MavenRepoTest extends TestCase {
 		assertTrue(rpom.isFile());
 
 	}
+
+	/**
+	 * Nexus has a long outstanding bug that it can create multiple staging
+	 * repositories. If something has staging in the URL, we wait 5 seconds
+	 * after the first upload to mitigate this bug.
+	 */
+
+	public void testStagingRelease() throws Exception {
+		List<MavenBackingRepository> repo = MavenBackingRepository.create(fnx.getBaseURI() + "/staging/", reporter,
+			local, client);
+		try (MavenRepository storage = new MavenRepository(local, "fnexus", repo, repo, client.promiseFactory()
+			.executor(), null)) {
+			Program program = Program.valueOf("org.osgi", "org.osgi.dto");
+			Revision revision = program.version("1.0.0");
+			Archive apom = revision.archive(Archive.POM_EXTENSION, null);
+
+			File fpom = IO.getFile(local, apom.localPath);
+			File rpom = IO.getFile(remote, apom.remotePath);
+			assertFalse(fpom.exists());
+
+			long now = System.currentTimeMillis();
+			Release r = storage.release(revision, new Properties());
+			r.add(Archive.POM_EXTENSION, null, new ByteArrayInputStream(new byte[0]));
+
+			r.close();
+			assertThat(System.currentTimeMillis() - now).isGreaterThan(5000L);
+			assertTrue(fpom.isFile());
+			assertTrue(rpom.isFile());
+		}
+	}
+
 }

@@ -1,8 +1,10 @@
 package aQute.maven.nexus.provider;
 
 import java.io.File;
+import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Formatter;
@@ -14,26 +16,43 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+
 import org.osgi.dto.DTO;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Promises;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequest;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.result.Result;
 import aQute.bnd.service.url.TaggedData;
 import aQute.lib.exceptions.Exceptions;
+import aQute.lib.io.IO;
+import aQute.lib.tag.Tag;
+import aQute.lib.xml.XML;
+import aQute.libg.cryptography.MD5;
+import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.Glob;
+import aQute.maven.api.Archive;
 
 public class Nexus {
-	private final static String		MAVEN_INDEX_S	= "href\\s*=\\s*([\"'])(?<uri>[^\\./][^\"'\r\n]+)\\1";
-	private final static Pattern	MAVEN_INDEX_P	= Pattern.compile(MAVEN_INDEX_S);
-	final static Logger				logger			= LoggerFactory.getLogger(Nexus.class);
-	private URI						uri;
-	private HttpClient				client;
-	private Executor				executor;
+	private final static String			MAVEN_INDEX_S	= "href\\s*=\\s*([\"'])(?<uri>[^\\./][^\"'\r\n]+)\\1";
+	private final static Pattern		MAVEN_INDEX_P	= Pattern.compile(MAVEN_INDEX_S);
+	final static DocumentBuilderFactory	dbf				= XML.newDocumentBuilderFactory();
+	final static XPathFactory			xpf				= XPathFactory.newInstance();
+
+	final static Logger					logger			= LoggerFactory.getLogger(Nexus.class);
+	private URI							uri;
+	private HttpClient					client;
+	private Executor					executor;
 
 	public static class Asset extends DTO {
 		public URI					downloadUrl;
@@ -49,9 +68,8 @@ public class Nexus {
 		public String		continuationToken;
 	}
 
-	@Deprecated
 	public Nexus(URI uri, HttpClient client) throws URISyntaxException {
-		this(uri, client, null);
+		this(uri, client, Processor.getExecutor());
 	}
 
 	public Nexus(URI uri, HttpClient client, Executor executor) throws URISyntaxException {
@@ -243,7 +261,121 @@ public class Nexus {
 		return deferred.getPromise();
 	}
 
+	public static class PromoteResponseData extends DTO {
+		public String	stagedRepositoryId;
+		public String	description;
+	}
+
+	public static class PromoteResponse extends DTO {
+		PromoteResponseData data;
+	}
+
+	/**
+	 * Create staging repo
+	 * <p>
+	 * https://support.sonatype.com/hc/en-us/articles/213465868-Uploading-to-a-Staging-Repository-via-REST-API
+	 *
+	 * @param profileId the profile id
+	 * @param description a description
+	 * @return a Result with the repository id
+	 * @throws Exception
+	 */
+
+	public Result<String, String> createStagingRepository(String profileId, String description) throws Exception {
+		Tag promoteRequest = new Tag("promoteRequest");
+		Tag data = new Tag(promoteRequest, "data");
+		if (description != null) {
+			new Tag(data, "description", description);
+		}
+		String payload = promoteRequest.toString();
+
+		TaggedData r = client.build()
+			.upload(payload)
+			.headers("Content-Type", "application/xml")
+			.asTag()
+			.post()
+			.go(getUri().resolve("/service/local/staging/profiles/" + profileId + "/start"));
+
+		if (r.isOk()) {
+			String s = null;
+			try {
+				s = IO.collect(r.getInputStream());
+				Document doc = dbf.newDocumentBuilder()
+					.parse(new InputSource(new StringReader(s)));
+				XPath xp = xpf.newXPath();
+				String stagedRepositoryId = xp.evaluate("//stagedRepositoryId", doc);
+
+				return Result.ok(stagedRepositoryId);
+			} catch (Exception e) {
+				logger.info("response in={} out={} {}", payload, s, e);
+			}
+		}
+		return Result.err("failed the request %s", r);
+	}
+
+	public TaggedData uploadStaging(String repositoryId, File file, String remotePath) throws Exception {
+		URI upload = getUri().resolve("service/local/staging/deployByRepositoryId/" + repositoryId + "/" + remotePath);
+		TaggedData go = client.build()
+			.upload(file)
+			.headers("User-Agent", "Bnd")
+			.headers("Content-Type", "application/xml")
+			.asTag()
+			.put()
+			.go(upload);
+
+		if (!go.isOk())
+			return go;
+
+		SHA1 sha1 = SHA1.digest(file);
+		MD5 md5 = MD5.digest(file);
+
+		try (TaggedData tag = client.build()
+			.put()
+			.upload(sha1.asHex())
+			.asTag()
+			.go(new URL(upload + ".sha1"))) {}
+		try (TaggedData tag = client.build()
+			.put()
+			.upload(md5.asHex())
+			.asTag()
+			.go(new URL(upload + ".md5"))) {}
+
+		return go;
+	}
+
+	public TaggedData fetchStaging(String repositoryId, String remotePath, boolean force) throws Exception {
+		URI uri = getUri().resolve("service/local/staging/deployByRepositoryId/" + repositoryId + "/" + remotePath);
+		return client.build()
+			.headers("User-Agent", "Bnd")
+			.asTag()
+			.get()
+			.go(uri);
+	}
+
+	public TaggedData deleteStaging(String repositoryId, String remotePath) throws Exception {
+		URI uri = getUri().resolve("service/local/staging/deployByRepositoryId/" + repositoryId + "/" + remotePath);
+		return client.build()
+			.headers("User-Agent", "Bnd")
+			.asTag()
+			.delete()
+			.go(uri);
+	}
+
 	public URI getUri() {
 		return uri;
 	}
+
+	/**
+	 * Path is either a file path (slashed) or a GAV
+	 *
+	 * @param pathOrGAV
+	 * @return Remote path
+	 */
+	public String remotePath(String pathOrGAV) {
+		if (Archive.isValid(pathOrGAV)) {
+			return Archive.valueOf(pathOrGAV).remotePath;
+		}
+		return pathOrGAV;
+	}
+
 }

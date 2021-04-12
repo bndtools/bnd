@@ -33,6 +33,8 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.service.result.Result;
+import aQute.bnd.service.url.TaggedData;
 import aQute.lib.collections.Iterables;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
@@ -243,7 +245,125 @@ public class NexusCommand extends Processor {
 		}
 	}
 
+	/**
+	 * Create a staging repository
+	 */
+
+	@Arguments(arg = "profileId")
+	@Description("Create a staging repo")
+	interface StagingRepositoryOptions extends Options {
+		String description();
+	}
+
+	@Description("Create a staging repository. The profileId specifies a particular profile. If you go to "
+		+ "nexus, select the staging profiles, and then select the profile you want to use. The profile id is "
+		+ "then in the url.")
+	public void _createstaging(StagingRepositoryOptions options) throws Exception {
+
+		Result<String, String> createStagingRepository = nexus.createStagingRepository(options._arguments()
+			.get(0), options.description());
+		String id = createStagingRepository.orElseGet(createStagingRepository.error()::get);
+		System.out.println(id);
+	}
+
+	@Arguments(arg = {
+		"repositoryId", "remotepath_or_gav", "file"
+	})
+	interface UploadOptions extends Options {
+		boolean force();
+
+	}
+
+	@Description("Upload a file to staging repository by id")
+	public void _upload(UploadOptions options) throws Exception {
+		if (nexus == null) {
+			error("No nexus set, forgot -u?");
+			return;
+		}
+
+		List<String> arguments = options._arguments();
+		String repositoryId = arguments.remove(0);
+		String remotePath = nexus.remotePath(arguments.remove(0));
+		String filePath = arguments.remove(0);
+		File file = getFile(filePath);
+		if (!file.isFile()) {
+			error("No file to upload %s", file);
+			return;
+		}
+
+		TaggedData result = nexus.uploadStaging(repositoryId, file, remotePath);
+		if (result.isOk())
+			return;
+		error("Failed to upload %s", result);
+	}
+
+
+	@Arguments(arg = {
+		"repositoryId", "remotepath_or_gav"
+	})
+	interface FetchOptions extends Options {
+		boolean force();
+
+		File output();
+	}
+
+	@Description("Fetch a file to staging repository by id")
+	public void _fetch(FetchOptions options) throws Exception {
+		if (nexus == null) {
+			error("No nexus set, forgot -u?");
+			return;
+		}
+		List<String> arguments = options._arguments();
+		String repositoryId = arguments.remove(0);
+		String remotePath = nexus.remotePath(arguments.remove(0));
+
+		TaggedData result = nexus.fetchStaging(repositoryId, remotePath, options.force());
+		if (result.isOk()) {
+			if (options.output() != null) {
+				File f = options.output()
+					.getAbsoluteFile();
+				f
+					.getParentFile()
+					.mkdirs();
+				IO.copy(result.getInputStream(), f);
+			} else {
+				IO.copy(result.getInputStream(), System.out);
+			}
+			return;
+		}
+		error("Failed to fetch %s", result);
+	}
+
+	@Arguments(arg = {
+		"repositoryId", "remotepath_or_gav"
+	})
+	interface DeleteOptions extends Options {
+		boolean force();
+	}
+
+	@Description("Delete a file in a staging repository by id")
+	public void _delete(DeleteOptions options) throws Exception {
+		if (nexus == null) {
+			error("No nexus set, forgot -u?");
+			return;
+		}
+
+		List<String> arguments = options._arguments();
+		String repositoryId = arguments.remove(0);
+		String remotePath = nexus.remotePath(arguments.remove(0));
+
+		TaggedData result = nexus.deleteStaging(repositoryId, remotePath);
+		if (result.isOk())
+			return;
+		error("Failed to delete %s", result);
+	}
+
 	private void sign(SignOptions options, Signer signer, URI from, URI to, URI source) {
+		if (nexus == null) {
+			error("No nexus set, forgot -u?");
+			return;
+		}
+
 		String path = source.getPath();
 		if (path.endsWith(".sha1") || path.endsWith(".asc") || path.endsWith(".md5"))
 			return;
