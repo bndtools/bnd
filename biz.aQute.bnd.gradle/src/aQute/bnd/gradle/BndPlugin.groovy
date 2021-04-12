@@ -49,6 +49,7 @@ import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.compile.CompileOptions
 import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.process.CommandLineArgumentProvider
 
 public class BndPlugin implements Plugin<Project> {
 	public static final String PLUGINID = 'biz.aQute.bnd'
@@ -256,21 +257,25 @@ public class BndPlugin implements Plugin<Project> {
 		if (!project.bnd('javac.profile', '').isEmpty()) {
 			javacProfile.convention(project.bnd('javac.profile'))
 		}
-		Property<String> javacRelease = objects.property(String.class)
-		if (JavaVersion.current().isJava9Compatible()) {
-			javacRelease.convention(project.provider(() -> {
-				if (Objects.equals(javacSource.get(), javacTarget.get()) && javacBootclasspath.isEmpty() && !javacProfile.isPresent()) {
-					return JavaVersion.toVersion(javacSource.get()).getMajorVersion()
-				}
-				return null
-			}))
-		}
 		boolean javacDebug = project.bndis('javac.debug')
 		boolean javacDeprecation = isTrue(project.bnd('javac.deprecation', 'true'))
 		String javacEncoding = project.bnd('javac.encoding', 'UTF-8')
 		tasks.withType(JavaCompile.class).configureEach(t -> {
 			t.setSourceCompatibility(javacSource.get())
 			t.setTargetCompatibility(javacTarget.get())
+			Property<Boolean> supportsRelease = objects.property(Boolean.class)
+			if (t.hasProperty('javaCompiler')) {
+				// Gradle 6.7
+				supportsRelease.convention(t.getJavaCompiler().map(javaCompiler -> Boolean.valueOf(javaCompiler.getMetadata().getLanguageVersion().canCompileOrRun(9))))
+			}
+			Property<Integer> javacRelease = objects.property(Integer.class).convention(project.provider(() -> {
+				if (supportsRelease.getOrElse(Boolean.valueOf(JavaVersion.current().isJava9Compatible())).booleanValue()) {
+					if (Objects.equals(javacSource.get(), javacTarget.get()) && javacBootclasspath.isEmpty() && !javacProfile.isPresent()) {
+						return Integer.valueOf(JavaVersion.toVersion(javacSource.get()).getMajorVersion())
+					}
+				}
+				return null
+			}))
 			CompileOptions options = t.getOptions()
 			if (javacDebug) {
 				options.getDebugOptions().setDebugLevel('source,lines,vars')
@@ -287,27 +292,26 @@ public class BndPlugin implements Plugin<Project> {
 				options.setFork(true)
 				options.setBootstrapClasspath(javacBootclasspath)
 			}
-			if (javacProfile.isPresent()) {
-				options.getCompilerArgs().addAll([
-					'-profile',
-					javacProfile.get()
-				])
-			}
-			if (javacRelease.isPresent()) {
-				options.getCompilerArgs().addAll([
-					'--release',
-					javacRelease.get()
-				])
+			options.getCompilerArgumentProviders().add(argProvider(javacProfile.map(profile -> Arrays.asList('-profile', profile))))
+			if (options.hasProperty('release')) {
+				// Gradle 6.6
+				options.getRelease().set(javacRelease)
+			} else {
+				options.getCompilerArgumentProviders().add(argProvider(javacRelease.map(release -> Arrays.asList('--release', release.toString()))))
 			}
 			t.doFirst('checkErrors', tt -> {
 				Logger logger = tt.getLogger()
 				checkErrors(logger)
 				if (logger.isInfoEnabled()) {
 					logger.info('Compile to {}', tt.getDestinationDir())
-					if (tt.getOptions().getCompilerArgs().contains('--release')) {
-						logger.info('{}', tt.getOptions().getCompilerArgs().join(' '))
+					List<String> allCompilerArgs = tt.getOptions().getAllCompilerArgs()
+					if (tt.getOptions().hasProperty('release') && tt.getOptions().getRelease().isPresent()) {
+						// Gradle 6.6
+						logger.info('--release {} {}', tt.getOptions().getRelease().get(), allCompilerArgs.join(' '))
+					} else if (allCompilerArgs.contains('--release')) {
+						logger.info('{}', allCompilerArgs.join(' '))
 					} else {
-						logger.info('-source {} -target {} {}', tt.getSourceCompatibility(), tt.getTargetCompatibility(), tt.getOptions().getCompilerArgs().join(' '))
+						logger.info('-source {} -target {} {}', tt.getSourceCompatibility(), tt.getTargetCompatibility(), allCompilerArgs.join(' '))
 					}
 					logger.info('-classpath {}', tt.getClasspath().getAsPath())
 					if (Objects.nonNull(tt.getOptions().getBootstrapClasspath())) {
@@ -641,6 +645,10 @@ Project ${project.getName()}
 
 	private void checkErrors(Logger logger, boolean ignoreFailures = false) {
 		checkProjectErrors(bndProject, logger, ignoreFailures)
+	}
+
+	private CommandLineArgumentProvider argProvider(Provider<? extends Iterable<String>> provider) {
+		return () -> provider.getOrElse(Collections.emptyList())
 	}
 
 	private void checkProjectErrors(aQute.bnd.build.Project p, Logger logger, boolean ignoreFailures = false) {
