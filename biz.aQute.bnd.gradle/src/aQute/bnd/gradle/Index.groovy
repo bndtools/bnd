@@ -46,6 +46,7 @@ package aQute.bnd.gradle
 import static aQute.bnd.gradle.BndUtils.builtBy
 import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.gradle.BndUtils.unwrap
+import static java.util.stream.Collectors.toList
 
 import aQute.bnd.osgi.repository.SimpleIndexer
 import aQute.bnd.osgi.Processor
@@ -194,7 +195,10 @@ public class Index extends DefaultTask {
 	void indexerAction() {
 		File indexUncompressedFile = unwrap(getIndexUncompressed())
 		try (Processor processor = new Processor()) {
-			var sortedBundles = getBundles().sort()
+			var sortedBundles = getBundles().getFiles()
+			.stream()
+			.sorted()
+			.collect(toList())
 			getLogger().info('Generating index for {}.', sortedBundles)
 			new SimpleIndexer()
 			.reporter(processor)

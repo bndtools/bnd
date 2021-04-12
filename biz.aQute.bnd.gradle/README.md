@@ -8,7 +8,8 @@ The [`biz.aQute.bnd.gradle`][2] jar contains the Bnd Gradle Plugins.
 These plugins requires at least Gradle 5.3 for Java 8 to Java 12,
 at least Gradle 6.0 for Java 13,
 at least Gradle 6.3 for Java 14,
-and at least Gradle 6.7 for Java 15.
+at least Gradle 6.7 for Java 15,
+and at least Gradle 7.0 for Java 16.
 
 This README represents the capabilities and features of the Bnd Gradle Plugins in the branch containing this README.
 So for the `master` branch, this will be the [latest development SNAPSHOT build](#using-the-latest-development-snapshot-build-of-the-bnd-gradle-plugins).

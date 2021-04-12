@@ -60,6 +60,9 @@ import aQute.bnd.osgi.Jar
 import aQute.bnd.osgi.Processor
 import aQute.bnd.version.Version
 import aQute.lib.io.IO
+import aQute.lib.strings.Strings
+
+import java.util.Comparator
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -236,8 +239,7 @@ public class Baseline extends DefaultTask {
 
 	@Internal('Used by baseline configuration')
 	Task getBundleTask() {
-		return bundleCollection.getBuiltBy().flatten().findResult {
-			t ->
+		return bundleCollection.getBuiltBy().flatten().findResult { t ->
 			if (t instanceof TaskProvider) {
 				t = t.get()
 			}
@@ -262,19 +264,15 @@ public class Baseline extends DefaultTask {
 		File report = unwrap(getReportFile())
 		IO.mkdirs(report.getParentFile())
 		boolean failure = false
-		try (Processor processor = new Processor()) {
-			Jar newer = new Jar(bundle)
-			processor.addClose(newer)
-			Jar older = new Jar(baseline)
-			processor.addClose(older)
+		try (Processor processor = new Processor(); Jar newer = new Jar(bundle); Jar older = new Jar(baseline)) {
 			getLogger().debug('Baseline bundle {} against baseline {}', bundle, baseline)
 
 			var differ = new DiffPluginImpl()
-			differ.setIgnore(new Parameters(unwrap(getDiffignore()).join(','), processor))
+			differ.setIgnore(new Parameters(Strings.join(unwrap(getDiffignore())), processor))
 			var baseliner = new aQute.bnd.differ.Baseline(processor, differ)
-			var infos = baseliner.baseline(newer, older, new Instructions(new Parameters(unwrap(getDiffpackages()).join(','), processor))).sort {
-				it.packageName
-			}
+			var infos = baseliner.baseline(newer, older, new Instructions(new Parameters(Strings.join(unwrap(getDiffpackages())), processor)))
+			.stream()
+			.sorted(Comparator.comparing(info -> info.packageName))
 			var bundleInfo = baseliner.getBundleInfo()
 			try (Formatter f = new Formatter(report, 'UTF-8', Locale.US)) {
 				f.format('===============================================================%n')
@@ -297,8 +295,7 @@ public class Baseline extends DefaultTask {
 				String format = '%s %-50s %-10s %-10s %-10s %-10s %-10s %s%n'
 				f.format(format, ' ', 'Name', 'Type', 'Delta', 'New', 'Old', 'Suggest', 'If Prov.')
 
-				infos.each {
-					info ->
+				infos.forEachOrdered(info -> {
 					var packageDiff = info.packageDiff
 					f.format(format,
 					info.mismatch ? '*' : ' ',
@@ -313,7 +310,7 @@ public class Baseline extends DefaultTask {
 						failure = true
 						f.format('%#2S%n', packageDiff)
 					}
-				}
+				})
 			}
 		}
 
