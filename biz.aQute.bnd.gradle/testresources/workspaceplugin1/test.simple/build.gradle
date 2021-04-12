@@ -1,0 +1,8 @@
+tasks.withType(JavaCompile).configureEach { t ->
+	if (t.hasProperty('javaCompiler')) { // Gradle 6.7
+		println "### Task ${name} has javaCompiler property"
+		javaCompiler = javaToolchains.compilerFor {
+			languageVersion = JavaLanguageVersion.of(JavaVersion.current().getMajorVersion())
+		}
+	}
+}
