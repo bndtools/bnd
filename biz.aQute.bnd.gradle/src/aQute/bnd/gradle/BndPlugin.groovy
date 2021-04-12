@@ -24,12 +24,12 @@ import static aQute.bnd.osgi.Processor.removeDuplicateMarker
 import static java.util.stream.Collectors.toList
 import static org.gradle.api.tasks.PathSensitivity.RELATIVE
 
-import aQute.lib.strings.Strings
 import aQute.bnd.build.Container
 import aQute.bnd.build.Container.TYPE
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.About
 import aQute.bnd.osgi.Constants
+import aQute.lib.strings.Strings
 
 import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
@@ -178,8 +178,7 @@ public class BndPlugin implements Plugin<Project> {
 		project.afterEvaluate {
 			project.sourceSets {
 				main {
-					convention.getPlugins().each {
-						lang, sourceDirSets ->
+					convention.getPlugins().forEach((lang, sourceDirSets) -> {
 						var sourceDirSet = sourceDirSets[lang]
 						if (sourceDirSet.hasProperty('srcDirs') && sourceDirSet.hasProperty('outputDir')){
 							File destinationDir = getJava().getOutputDir()
@@ -200,11 +199,10 @@ public class BndPlugin implements Plugin<Project> {
 								// no such task
 							}
 						}
-					}
+					})
 				}
 				test {
-					convention.getPlugins().each {
-						lang, sourceDirSets ->
+					convention.getPlugins().forEach((lang, sourceDirSets) -> {
 						var sourceDirSet = sourceDirSets[lang]
 						if (sourceDirSet.hasProperty('srcDirs') && sourceDirSet.hasProperty('outputDir')){
 							File destinationDir = getJava().getOutputDir()
@@ -222,7 +220,7 @@ public class BndPlugin implements Plugin<Project> {
 								// no such task
 							}
 						}
-					}
+					})
 				}
 			}
 		}
@@ -331,8 +329,7 @@ public class BndPlugin implements Plugin<Project> {
 			.collect(toList())
 			/* all other files in the project like bnd and resources */
 			t.getInputs().files(layout.getProjectDirectory().getAsFileTree().matching(filterable -> {
-				project.sourceSets.each {
-					sourceSet ->
+				project.sourceSets.forEach(sourceSet -> {
 					/* exclude sourceSet dirs */
 					filterable.exclude(sourceSet.getAllSource().getSourceDirectories().collect {
 						project.relativePath(it)
@@ -340,12 +337,12 @@ public class BndPlugin implements Plugin<Project> {
 					filterable.exclude(sourceSet.getOutput().collect {
 						project.relativePath(it)
 					})
-				}
+				})
 				filterable.exclude(project.relativePath(layout.getBuildDirectory())) /* exclude buildDirectory */
 				filterable.exclude(t.projectDirInputsExcludes) /* user specified excludes */
 			})).withPathSensitivity(RELATIVE).withPropertyName('projectFolder')
 			/* bnd can include from -buildpath */
-			t.getInputs().files(project.sourceSets.main.getCompileClasspath()).withNormalizer(ClasspathNormalizer).withPropertyName('buildpath')
+			t.getInputs().files(project.sourceSets.main.getCompileClasspath()).withNormalizer(ClasspathNormalizer.class).withPropertyName('buildpath')
 			/* bnd can include from -dependson */
 			t.getInputs().files(getBuildDependencies('jar')).withPropertyName('buildDependencies')
 			/* Workspace and project configuration changes should trigger jar task */
@@ -359,9 +356,11 @@ public class BndPlugin implements Plugin<Project> {
 				File[] built
 				try {
 					built = bndProject.build()
-					long now = System.currentTimeMillis()
-					built?.each {
-						it.setLastModified(now)
+					if (Objects.nonNull(built)) {
+						long now = System.currentTimeMillis()
+						for (File f : built) {
+							f.setLastModified(now)
+						}
 					}
 				} catch (Exception e) {
 					throw new GradleException("Project ${bndProject.getName()} failed to build", e)
@@ -524,25 +523,23 @@ public class BndPlugin implements Plugin<Project> {
 			t.dependsOn(resolveTasks)
 		})
 
-		bndruns.forEach {
-			File runFile ->
+		bndruns.forEach((File runFile) -> {
 			tasks.register("run.${runFile.getName() - '.bndrun'}", Bndrun.class, t -> {
 				t.setDescription("Run the bndrun file ${runFile.getName()}.")
 				t.setGroup('export')
 				t.dependsOn(assemble)
 				t.bndrun = runFile
 			})
-		}
+		})
 
-		bndruns.forEach {
-			File runFile ->
+		bndruns.forEach((File runFile) -> {
 			tasks.register("testrun.${runFile.getName() - '.bndrun'}", TestOSGi.class, t -> {
 				t.setDescription("Runs the OSGi JUnit tests in the bndrun file ${runFile.getName()}.")
 				t.setGroup('verification')
 				t.dependsOn(assemble)
 				t.bndrun = runFile
 			})
-		}
+		})
 
 		var echo = tasks.register('echo', t -> {
 			t.setDescription('Displays the bnd project information.')
@@ -555,11 +552,11 @@ public class BndPlugin implements Plugin<Project> {
 Project ${project.getName()} // Bnd version ${About.CURRENT}
 ------------------------------------------------------------
 
-project.workspace:      ${workspace.layout.getProjectDirectory()}
+project.workspace:      ${workspace.getLayout().getProjectDirectory()}
 project.name:           ${project.getName()}
 project.dir:            ${layout.getProjectDirectory()}
 target:                 ${unwrap(layout.getBuildDirectory())}
-project.dependson:      ${bndProject.getDependson()*.getName()}
+project.dependson:      ${bndProject.getDependson()}
 project.sourcepath:     ${project.sourceSets.main.getAllSource().getSourceDirectories().getAsPath()}
 project.output:         ${compileJava.getDestinationDir()}
 project.buildpath:      ${compileJava.getClasspath().getAsPath()}
@@ -568,7 +565,7 @@ project.testsrc:        ${project.sourceSets.test.getAllSource().getSourceDirect
 project.testoutput:     ${compileTestJava.getDestinationDir()}
 project.testpath:       ${compileTestJava.getClasspath().getAsPath()}
 project.bootclasspath:  ${compileJava.getOptions().getBootstrapClasspath()?.getAsPath()?:''}
-project.deliverables:   ${deliverables*.getPath()}
+project.deliverables:   ${deliverables.getFiles()}
 javac:                  ${compileJava.getOptions().getForkOptions().getExecutable()?:'javac'}
 javac.source:           ${javacSource.getOrElse('')}
 javac.target:           ${javacTarget.getOrElse('')}
@@ -587,9 +584,10 @@ javac.profile:          ${javacProfile.getOrElse('')}
 Project ${project.getName()}
 ------------------------------------------------------------
 """)
-				bndProject.getPropertyKeys(true).sort().each {
-					println("${it}: ${tt.project.bnd(it, '')}")
-				}
+				bndProject.getPropertyKeys(true)
+				.stream()
+				.sorted()
+				.forEachOrdered(key -> println("${key}: ${project.bnd(key, '')}"))
 				println()
 				checkErrors(tt.getLogger(), true)
 			})
@@ -601,16 +599,13 @@ Project ${project.getName()}
 		// -noparallel: launchpad;task="test,echo"
 		Project noparallel = workspace.findProperty('cnf') ?: workspace
 		bndProject.getMergedParameters('-noparallel').forEach((key, attrs) -> {
-			var taskNames = attrs?.'task'
-			if (taskNames) {
-				var category = removeDuplicateMarker(key)
-				var resource = noparallel.layout.getBuildDirectory().dir("noparallel/${category}")
-				taskNames.trim().tokenize(',').each { taskName ->
-					tasks.named(taskName.trim(), t -> {
-						t.getOutputs().dir(resource).withPropertyName(category)
-					})
-				}
-			}
+			var category = removeDuplicateMarker(key)
+			var resource = noparallel.getLayout().getBuildDirectory().dir("noparallel/${category}")
+			var taskNames = attrs?.get('task')
+			Strings.splitAsStream(taskNames).forEach(taskName ->
+			tasks.named(taskName, t -> {
+				t.getOutputs().dir(resource).withPropertyName(category)
+			}))
 		})
 	}
 
@@ -649,7 +644,7 @@ Project ${project.getName()}
 	}
 
 	private void checkProjectErrors(aQute.bnd.build.Project p, Logger logger, boolean ignoreFailures = false) {
-		p.getInfo(p.getWorkspace(), "${p.getWorkspace().getBase().name} :")
+		p.getInfo(p.getWorkspace(), p.getWorkspace().getBase().getName().concat(' :'))
 		boolean failed = !ignoreFailures && !p.isOk()
 		int errorCount = p.getErrors().size()
 		logReport(p, logger)
