@@ -29,6 +29,9 @@ import aQute.maven.provider.MetadataParser.RevisionMetadata;
 import aQute.service.reporter.Reporter;
 
 public class MavenRemoteRepository extends MavenBackingRepository {
+	private static final int				STAGING_DELAY		= 60 * 60 * 1000;										// 1
+																														// hour
+
 	private final static Logger				logger				= LoggerFactory.getLogger(MavenRemoteRepository.class);
 	final HttpClient						client;
 	final Map<Revision, RevisionMetadata>	revisions			= new ConcurrentHashMap<>();
@@ -36,12 +39,13 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 	final String							base;
 	final static long						DEFAULT_MAX_STALE	= TimeUnit.HOURS.toMillis(1);
 	final boolean							remote;
+	volatile long							nexusStagingBug		= 0L;
 
 	public MavenRemoteRepository(File root, HttpClient client, String base, Reporter reporter) throws Exception {
 		super(root, base, reporter);
 		this.client = client;
 		this.base = base;
-
+		this.nexusStagingBug = base.contains("staging") ? 0L : Long.MAX_VALUE;
 		URI uri = new URI(base);
 		remote = URIUtil.isRemote(uri);
 	}
@@ -133,6 +137,21 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 					break;
 			}
 		}
+
+		//
+		// Giant hack ... Nexus can split a staging
+		// repository when the uploads are too close in time. So we
+		// delay the 'first' upload if the previous upload was
+		// longer than an hour ago. If the URL does not contain
+		// 'staging', this will not happen since the stagingHack is then set to
+		// MAX
+		//
+
+		if (System.currentTimeMillis() - nexusStagingBug > STAGING_DELAY) {
+			Thread.sleep(5000);
+			nexusStagingBug = System.currentTimeMillis();
+		}
+
 		try (TaggedData tag = client.build()
 			.put()
 			.upload(sha1.asHex())
