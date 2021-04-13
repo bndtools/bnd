@@ -2,6 +2,8 @@ package bndtools.core.test.utils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IProject;
@@ -17,7 +19,6 @@ import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 
-import aQute.bnd.build.Workspace;
 import aQute.lib.exceptions.Exceptions;
 import bndtools.central.Central;
 
@@ -72,14 +73,6 @@ public class WorkspaceImporter {
 					}
 
 					projects.forEach(path -> importProject(path, monitor));
-
-					// Manually refresh the workspace now that cnf has been
-					// imported as the CnfWatcher may not have been installed
-					// yet; see #4253.
-					Workspace ws = Central.getWorkspace();
-					ws.clear();
-					ws.forceRefresh();
-					ws.getPlugins();
 					return Status.OK_STATUS;
 				} catch (Exception e) {
 					return new Status(IStatus.ERROR, WorkspaceImporter.class, 0,
@@ -93,8 +86,16 @@ public class WorkspaceImporter {
 		job.schedule();
 		try {
 			if (!job.join(10000, null)) {
+				TaskUtils.dumpWorkspace();
 				throw new IllegalStateException("Timed out waiting for workspace import to complete");
 			}
+
+			// Wait for Workspace object to be complete.
+			final CountDownLatch flag = new CountDownLatch(1);
+			Central.onCnfWorkspace(bndWS -> {
+				flag.countDown();
+			});
+			flag.await(10000, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			throw Exceptions.duck(e);
 		}
@@ -104,6 +105,7 @@ public class WorkspaceImporter {
 		IWorkspaceRoot wsr = ResourcesPlugin.getWorkspace()
 			.getRoot();
 
+		TaskUtils.log("importing sourceProject: " + sourceProject);
 		String projectName = sourceProject.getFileName()
 			.toString();
 		IProject project = wsr.getProject(projectName);

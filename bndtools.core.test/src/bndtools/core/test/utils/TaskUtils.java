@@ -4,11 +4,22 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.jobs.Job;
 
 import aQute.lib.exceptions.Exceptions;
 
 public class TaskUtils {
+
+	static IResourceVisitor VISITOR = resource -> {
+		IPath path = resource.getFullPath();
+		log(path == null ? "null" : path.toString());
+		return true;
+	};
 
 	private TaskUtils() {}
 
@@ -46,5 +57,15 @@ public class TaskUtils {
 
 	public static void synchronously(MonitoredTask task) {
 		synchronously(null, task);
+	}
+
+	public static void dumpWorkspace() {
+		IWorkspace ws = ResourcesPlugin.getWorkspace();
+		try {
+		ws.getRoot()
+			.accept(VISITOR);
+		} catch (CoreException e) {
+			throw Exceptions.duck(e);
+		}
 	}
 }
