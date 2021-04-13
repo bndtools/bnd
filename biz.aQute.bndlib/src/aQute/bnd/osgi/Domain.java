@@ -69,15 +69,15 @@ public abstract class Domain implements Iterable<String> {
 
 	public String translate(String key, String deflt) {
 		String value = get(key);
-		if (value == null)
+		if (value == null) {
 			return deflt;
-
-		if (value.indexOf('%') >= 0) {
-			value = value.trim()
-				.substring(1);
-			return translation.getProperty(value, value);
 		}
-		return null;
+		key = value.trim();
+		if (key.isEmpty() || (key.charAt(0) != '%')) {
+			return value;
+		}
+		key = key.substring(1);
+		return translation.getProperty(key, key);
 	}
 
 	public abstract void set(String key, String value);
