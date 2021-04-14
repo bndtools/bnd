@@ -27,7 +27,7 @@ import org.gradle.api.invocation.Gradle
 import org.gradle.api.tasks.Delete
 
 public class BndWorkspacePlugin implements Plugin<Object> {
-	public static final String PLUGINID = 'biz.aQute.bnd.workspace'
+	public static final String PLUGINID = "biz.aQute.bnd.workspace"
 	/**
 	 * Apply the {@code biz.aQute.bnd.workspace} plugin.
 	 */
@@ -44,7 +44,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 
 	private void configureSettings(Settings settings) {
 		/* Start with the declared build project name */
-		String build = ''
+		String build = ""
 		try {
 			build = settings.bnd_build
 		} catch (MissingPropertyException mpe) {}
@@ -61,13 +61,13 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 		Set<String> projectNames = new LinkedHashSet<>()
 		for (Iterator<String> iter = startParameter.getTaskNames().iterator(); iter.hasNext();) {
 			String taskName = iter.next()
-			if (Objects.equals(taskName, '--tests')) {
+			if (Objects.equals(taskName, "--tests")) {
 				if (iter.hasNext()) {
 					iter.next()
 				}
 				continue
 			}
-			String[] elements = taskName.split(':')
+			String[] elements = taskName.split(":")
 			switch (elements.length) {
 				case 1:
 					projectNames.add(defaultProjectName)
@@ -87,17 +87,17 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 		}
 
 		/* If build used but empty, add all non-private folders of rootDir */
-		if (projectNames.remove('')) {
+		if (projectNames.remove("")) {
 			rootDir.eachDir {
 				String projectName = it.getName()
-				if (!projectName.startsWith('.')) {
+				if (!projectName.startsWith(".")) {
 					projectNames.add(projectName)
 				}
 			}
 		}
 
 		/* Add cnf project to the graph */
-		String cnf = 'cnf'
+		String cnf = "cnf"
 		try {
 			cnf = settings.bnd_cnf.trim()
 		} catch (MissingPropertyException mpe) {}
@@ -113,7 +113,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 		Workspace.addGestalt(Constants.GESTALT_BATCH, null)
 		Workspace workspace = new Workspace(rootDir, cnf).setOffline(startParameter.isOffline())
 		Gradle gradle = settings.getGradle()
-		if (gradle.ext.has('bndWorkspaceConfigure')) {
+		if (gradle.ext.has("bndWorkspaceConfigure")) {
 			gradle.bndWorkspaceConfigure(workspace)
 		}
 
@@ -174,33 +174,33 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 
 	static Workspace getBndWorkspace(Project workspace) {
 		/* Initialize the Bnd workspace */
-		String bnd_cnf = workspace.findProperty('bnd_cnf')
+		String bnd_cnf = workspace.findProperty("bnd_cnf")
 		if (Objects.isNull(bnd_cnf)) {
 			// if not passed from settings
-			workspace.ext.bnd_cnf = bnd_cnf = 'cnf'
+			workspace.ext.bnd_cnf = bnd_cnf = "cnf"
 		}
-		Workspace bndWorkspace = workspace.findProperty('bndWorkspace')
+		Workspace bndWorkspace = workspace.findProperty("bndWorkspace")
 		if (Objects.isNull(bndWorkspace)) {
 			// if not passed from settings
 			Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
 			Workspace.addGestalt(Constants.GESTALT_BATCH, null)
 			Gradle gradle = workspace.getGradle()
 			workspace.ext.bndWorkspace = bndWorkspace = new Workspace(unwrap(workspace.getLayout().getProjectDirectory()), bnd_cnf).setOffline(gradle.getStartParameter().isOffline())
-			if (gradle.ext.has('bndWorkspaceConfigure')) {
+			if (gradle.ext.has("bndWorkspaceConfigure")) {
 				gradle.bndWorkspaceConfigure(bndWorkspace)
 			}
 		}
 
 		/* Configure cnf project */
-		Project cnfProject = workspace.findProperty('cnf')
+		Project cnfProject = workspace.findProperty("cnf")
 		if (Objects.isNull(cnfProject)) {
 			cnfProject = workspace.findProject(bnd_cnf)
 			if (Objects.nonNull(cnfProject)) {
 				workspace.ext.cnf = cnfProject
-				cnfProject.getTasks().register('cleanCache', Delete.class, t -> {
-					t.setDescription('Clean the cache folder.')
-					t.setGroup('build')
-					t.delete(cnfProject.getLayout().getProjectDirectory().dir('cache'))
+				cnfProject.getTasks().register("cleanCache", Delete.class, t -> {
+					t.setDescription("Clean the cache folder.")
+					t.setGroup("build")
+					t.delete(cnfProject.getLayout().getProjectDirectory().dir("cache"))
 				})
 			}
 		}

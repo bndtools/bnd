@@ -12,14 +12,14 @@
  *   baseline
  * }
  * dependencies {
- *     baseline('group': group, 'name': jar.archiveBaseName) {
+ *     baseline("group": group, "name": jar.archiveBaseName) {
  *       version {
  *         strictly "(0,${jar.archiveVersion.get()}["
  *       }
  *       transitive false
  *     }
  * }
- * tasks.register('baseline', Baseline) {
+ * tasks.register("baseline", Baseline) {
  *   bundle = jar
  *   baseline = configurations.baseline
  * }
@@ -33,7 +33,7 @@
  * build will fail. The default is false.</li>
  * <li>baselineReportDirName - This is the name of the baseline reports
  * directory. Can be a name or a path relative to ReportingExtension.getBaseDir().
- * The default name is 'baseline'.</li>
+ * The default name is "baseline".</li>
  * <li>bundle - This is the bundle to be baselined. It can either be a
  * File or a task that produces a bundle. This property must be set.</li>
  * <li>baseline - This is the baseline bundle. It can either be a File
@@ -120,9 +120,9 @@ public class Baseline extends DefaultTask {
 	 *
 	 * <p>
 	 * Can be a name or a path relative to <code>ReportingExtension.getBaseDirectory()</code>.
-	 * The default name is 'baseline'.
+	 * The default name is "baseline".
 	 */
-	@Internal('Represented by reportFile')
+	@Internal("Represented by reportFile")
 	final Property<String> baselineReportDirName
 
 	/**
@@ -131,7 +131,7 @@ public class Baseline extends DefaultTask {
 	 * <p>
 	 * The default is <code>ReportingExtension.getBaseDirectory().dir(baselineReportDirName)</code>.
 	 */
-	@Internal('Represented by reportFile')
+	@Internal("Represented by reportFile")
 	final DirectoryProperty baselineReportDirectory
 
 	/**
@@ -158,20 +158,20 @@ public class Baseline extends DefaultTask {
 		this.layout = getProject().getLayout()
 		this.providers = getProject().getProviders()
 		ObjectFactory objects = getProject().getObjects()
-		baselineReportDirName = objects.property(String.class).convention('baseline')
+		baselineReportDirName = objects.property(String.class).convention("baseline")
 		baselineReportDirectory = objects.directoryProperty().convention(getProject().reporting.getBaseDirectory().dir(baselineReportDirName))
 		String taskName = getName()
 		reportFile = objects.fileProperty().convention(baselineReportDirectory.file(providers.provider(() -> {
 			String bundlename = unwrap(getBundle()).getName()
-			bundlename = bundlename[0..Math.max(-1, bundlename.lastIndexOf('.') - 1)]
+			bundlename = bundlename[0..Math.max(-1, bundlename.lastIndexOf((int)(char) '.') - 1)]
 			return "${taskName}/${bundlename}.txt"
 		})))
 		diffignore = objects.listProperty(String.class).empty()
 		diffpackages = objects.listProperty(String.class).empty()
 		bundleCollection = objects.fileCollection()
 		baselineCollection = objects.fileCollection()
-		inputs.files(bundleCollection).withPathSensitivity(RELATIVE).withPropertyName('bundleCollection')
-		inputs.files(baselineCollection).withPropertyName('baselineCollection')
+		inputs.files(bundleCollection).withPathSensitivity(RELATIVE).withPropertyName("bundleCollection")
+		inputs.files(baselineCollection).withPropertyName("baselineCollection")
 	}
 
 	/**
@@ -237,7 +237,7 @@ public class Baseline extends DefaultTask {
 		getDiffpackages().addAll(diffpackages)
 	}
 
-	@Internal('Used by baseline configuration')
+	@Internal("Used by baseline configuration")
 	Task getBundleTask() {
 		return bundleCollection.getBuiltBy().flatten().findResult { t ->
 			if (t instanceof TaskProvider) {
@@ -248,7 +248,7 @@ public class Baseline extends DefaultTask {
 	}
 
 	@Deprecated
-	@ReplacedBy('reportFile')
+	@ReplacedBy("reportFile")
 	public File getDestination() {
 		return unwrap(getReportFile())
 	}
@@ -265,7 +265,7 @@ public class Baseline extends DefaultTask {
 		IO.mkdirs(report.getParentFile())
 		boolean failure = false
 		try (Processor processor = new Processor(); Jar newer = new Jar(bundle); Jar older = new Jar(baseline)) {
-			getLogger().debug('Baseline bundle {} against baseline {}', bundle, baseline)
+			getLogger().debug("Baseline bundle {} against baseline {}", bundle, baseline)
 
 			var differ = new DiffPluginImpl()
 			differ.setIgnore(new Parameters(Strings.join(unwrap(getDiffignore())), processor))
@@ -274,10 +274,10 @@ public class Baseline extends DefaultTask {
 			.stream()
 			.sorted(Comparator.comparing(info -> info.packageName))
 			var bundleInfo = baseliner.getBundleInfo()
-			try (Formatter f = new Formatter(report, 'UTF-8', Locale.US)) {
-				f.format('===============================================================%n')
-				f.format('%s %s %s-%s',
-				bundleInfo.mismatch ? '*' : ' ',
+			try (Formatter f = new Formatter(report, "UTF-8", Locale.US)) {
+				f.format("===============================================================%n")
+				f.format("%s %s %s-%s",
+				bundleInfo.mismatch ? "*" : " ",
 				bundleInfo.bsn,
 				newer.getVersion(),
 				older.getVersion())
@@ -285,30 +285,30 @@ public class Baseline extends DefaultTask {
 				if (bundleInfo.mismatch) {
 					failure = true
 					if (Objects.nonNull(bundleInfo.suggestedVersion)) {
-						f.format(' suggests %s', bundleInfo.suggestedVersion)
+						f.format(" suggests %s", bundleInfo.suggestedVersion)
 					}
-					f.format('%n%#2S', baseliner.getDiff())
+					f.format("%n%#2S", baseliner.getDiff())
 				}
 
-				f.format('%n===============================================================%n')
+				f.format("%n===============================================================%n")
 
-				String format = '%s %-50s %-10s %-10s %-10s %-10s %-10s %s%n'
-				f.format(format, ' ', 'Name', 'Type', 'Delta', 'New', 'Old', 'Suggest', 'If Prov.')
+				String format = "%s %-50s %-10s %-10s %-10s %-10s %-10s %s%n"
+				f.format(format, " ", "Name", "Type", "Delta", "New", "Old", "Suggest", "If Prov.")
 
 				infos.forEachOrdered(info -> {
 					var packageDiff = info.packageDiff
 					f.format(format,
-					info.mismatch ? '*' : ' ',
+					info.mismatch ? "*" : " ",
 					packageDiff.getName(),
 					packageDiff.getType(),
 					packageDiff.getDelta(),
 					info.newerVersion,
-					Objects.nonNull(info.olderVersion) && info.olderVersion.equals(Version.LOWEST) ? '-': info.olderVersion,
-					Objects.nonNull(info.suggestedVersion) && info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? 'ok' : info.suggestedVersion,
-					info.suggestedIfProviders ?: '-')
+					Objects.nonNull(info.olderVersion) && info.olderVersion.equals(Version.LOWEST) ? "-": info.olderVersion,
+					Objects.nonNull(info.suggestedVersion) && info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? "ok" : info.suggestedVersion,
+					info.suggestedIfProviders ?: "-")
 					if (info.mismatch) {
 						failure = true
-						f.format('%#2S%n', packageDiff)
+						f.format("%#2S%n", packageDiff)
 					}
 				})
 			}

@@ -7,8 +7,8 @@
  * <ul>
  * <li>bundles - This is the collection of files to use for locating
  * bundles during the bndrun execution. The default is
- * 'sourceSets.main.runtimeClasspath' plus
- * 'configurations.archives.artifacts.files'</li>
+ * "sourceSets.main.runtimeClasspath" plus
+ * "configurations.archives.artifacts.files"</li>
  * </ul>
  */
 
@@ -41,7 +41,7 @@ class FileSetRepositoryConvention {
 		bundles(project.sourceSets.main.getRuntimeClasspath())
 		bundles(project.getConfigurations().archives.getArtifacts().getFiles())
 		// need to programmatically add to inputs since @InputFiles in a convention is not processed
-		task.inputs.files(getBundles()).withPropertyName('bundles')
+		task.inputs.files(getBundles()).withPropertyName("bundles")
 	}
 
 	/**

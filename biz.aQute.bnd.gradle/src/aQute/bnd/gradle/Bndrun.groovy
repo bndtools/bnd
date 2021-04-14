@@ -8,8 +8,8 @@
  * Here is examples of using the Bndrun task type:
  * <pre>
  * import aQute.bnd.gradle.Bndrun
- * tasks.register('run', Bndrun) {
- *   bndrun = file('my.bndrun')
+ * tasks.register("run", Bndrun) {
+ *   bndrun = file("my.bndrun")
  * }
  * </pre>
  *
@@ -24,8 +24,8 @@
  * The default for workingDirectory is temporaryDir.</li>
  * <li>bundles - This is the collection of files to use for locating
  * bundles during the bndrun execution. The default is
- * 'sourceSets.main.runtimeClasspath' plus
- * 'configurations.archives.artifacts.files'.</li>
+ * "sourceSets.main.runtimeClasspath" plus
+ * "configurations.archives.artifacts.files".</li>
  * </ul>
  */
 
@@ -97,7 +97,7 @@ public class Bndrun extends DefaultTask {
 		DirectoryProperty temporaryDirProperty = objects.directoryProperty()
 		temporaryDirProperty.set(getTemporaryDir())
 		workingDirectory = objects.directoryProperty().convention(temporaryDirProperty)
-		if (!getProject().hasProperty('bndWorkspace')) {
+		if (!getProject().hasProperty("bndWorkspace")) {
 			getConvention().getPlugins().bundles = new FileSetRepositoryConvention(this)
 		}
 	}
@@ -125,7 +125,7 @@ public class Bndrun extends DefaultTask {
 	}
 
 	@Deprecated
-	@ReplacedBy('workingDirectory')
+	@ReplacedBy("workingDirectory")
 	public File getWorkingDir() {
 		return unwrap(getWorkingDirectory())
 	}
@@ -140,7 +140,7 @@ public class Bndrun extends DefaultTask {
 	 */
 	@TaskAction
 	void bndrunAction() {
-		var workspace = getProject().findProperty('bndWorkspace')
+		var workspace = getProject().findProperty("bndWorkspace")
 		File bndrunFile = unwrap(getBndrun())
 		File workingDirFile = unwrap(getWorkingDirectory())
 		if (Objects.nonNull(workspace) && getProject().getPlugins().hasPlugin(BndPlugin.PLUGINID) && Objects.equals(bndrunFile, getProject().bnd.project.getPropertiesFile())) {
@@ -152,8 +152,8 @@ public class Bndrun extends DefaultTask {
 			IO.mkdirs(workingDirFile)
 			if (Objects.isNull(workspace)) {
 				Properties gradleProperties = new PropertiesWrapper(runWorkspace.getProperties())
-				gradleProperties.put('task', this)
-				gradleProperties.put('project', getProject())
+				gradleProperties.put("task", this)
+				gradleProperties.put("project", getProject())
 				run.setParent(new Processor(runWorkspace, gradleProperties, false))
 			}
 			run.setBase(workingDirFile)
@@ -189,8 +189,8 @@ public class Bndrun extends DefaultTask {
 	 * Execute the Run object.
 	 */
 	protected void worker(var run) {
-		getLogger().info('Running {} in {}', run.getPropertiesFile(), run.getBase())
-		getLogger().debug('Run properties: {}', run.getProperties())
+		getLogger().info("Running {} in {}", run.getPropertiesFile(), run.getBase())
+		getLogger().debug("Run properties: {}", run.getProperties())
 		ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor()
 		try (ProjectLauncher pl = run.getProjectLauncher();
 		ProjectLauncher.LiveCoding lc = pl.liveCoding(ForkJoinPool.commonPool(), scheduledExecutor)) {

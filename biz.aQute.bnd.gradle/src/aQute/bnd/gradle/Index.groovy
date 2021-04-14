@@ -8,14 +8,14 @@
  * Here is an example of using the Index task type:
  * <pre>
  * import aQute.bnd.gradle.Index
- * tasks.register('index', Index) {
- *   destinationDirectory = layout.buildDirectory.dir('libs')
+ * tasks.register("index", Index) {
+ *   destinationDirectory = layout.buildDirectory.dir("libs")
  *   gzip = true
  *   bundles = fileTree(destinationDirectory) {
- *     include '**&#47;*.jar'
- *     exclude '**&#47;*-latest.jar'
- *     exclude '**&#47;*-sources.jar'
- *     exclude '**&#47;*-javadoc.jar'
+ *     include "**&#47;*.jar"
+ *     exclude "**&#47;*-latest.jar"
+ *     exclude "**&#47;*-sources.jar"
+ *     exclude "**&#47;*-javadoc.jar"
  *     builtBy tasks.withType(Jar)
  *   }
  * }
@@ -104,7 +104,7 @@ public class Index extends DefaultTask {
 	 * <p>
 	 * The default is <code>index.xml</code>.
 	 */
-	@Internal('Represented by indexUncompressed and indexCompressed')
+	@Internal("Represented by indexUncompressed and indexCompressed")
 	final Property<String> indexName
 
 	/**
@@ -113,7 +113,7 @@ public class Index extends DefaultTask {
 	 * <p>
 	 * The default value is project.layout.buildDirectory.
 	 */
-	@Internal('Represented by indexUncompressed and indexCompressed')
+	@Internal("Represented by indexUncompressed and indexCompressed")
 	final DirectoryProperty destinationDirectory
 
 	/**
@@ -147,17 +147,17 @@ public class Index extends DefaultTask {
 	public Index() {
 		super()
 		ObjectFactory objects = getProject().getObjects()
-		indexName = objects.property(String.class).convention('index.xml')
+		indexName = objects.property(String.class).convention("index.xml")
 		repositoryName = objects.property(String.class).convention(getName())
 		bundles = objects.fileCollection()
 		destinationDirectory = objects.directoryProperty().convention(getProject().getLayout().getBuildDirectory())
 		base = objects.property(URI.class).convention(destinationDirectory.map(d -> d.getAsFile().toURI()))
 		indexUncompressed = objects.fileProperty().convention(destinationDirectory.file(indexName))
-		indexCompressed = objects.fileProperty().convention(destinationDirectory.file(indexName.map(n -> n.concat('.gz'))))
+		indexCompressed = objects.fileProperty().convention(destinationDirectory.file(indexName.map(n -> n.concat(".gz"))))
 	}
 
 	@Deprecated
-	@ReplacedBy('destinationDirectory')
+	@ReplacedBy("destinationDirectory")
 	public File getDestinationDir() {
 		return unwrap(getDestinationDirectory())
 	}
@@ -199,7 +199,7 @@ public class Index extends DefaultTask {
 			.stream()
 			.sorted()
 			.collect(toList())
-			getLogger().info('Generating index for {}.', sortedBundles)
+			getLogger().info("Generating index for {}.", sortedBundles)
 			new SimpleIndexer()
 			.reporter(processor)
 			.files(sortedBundles)
@@ -212,13 +212,13 @@ public class Index extends DefaultTask {
 				failTask("Index ${indexUncompressedFile} has errors", indexUncompressedFile)
 			}
 
-			getLogger().info('Generated index {}.', indexUncompressedFile)
+			getLogger().info("Generated index {}.", indexUncompressedFile)
 			if (isGzip()) {
 				File indexCompressedFile = unwrap(getIndexCompressed())
 				try (OutputStream out = new GZIPOutputStream(IO.outputStream(indexCompressedFile))) {
 					IO.copy(indexUncompressedFile, out)
 				}
-				getLogger().info('Generated index {}.', indexCompressedFile)
+				getLogger().info("Generated index {}.", indexCompressedFile)
 			}
 		}
 	}

@@ -7,10 +7,10 @@
  * <p>
  * This plugin applies the java plugin to a project and modifies the jar
  * task by adding the properties from the {@link BundleTaskConvention},
- * setting the bndfile to 'bnd.bnd', if the file exists, and building the
+ * setting the bndfile to "bnd.bnd", if the file exists, and building the
  * jar file as a bundle.
  * <p>
- * This plugin also defines a 'baseline' configuration and a baseline task
+ * This plugin also defines a "baseline" configuration and a baseline task
  * of type {@link Baseline}. The baseline task will be set up with the
  * default of baselining the output of the jar task using the baseline
  * configuration. The baseline configuration default dependency
@@ -37,7 +37,7 @@ import org.gradle.api.tasks.TaskContainer
 
 
 public class BndBuilderPlugin implements Plugin<Project> {
-	public static final String PLUGINID = 'biz.aQute.bnd.builder'
+	public static final String PLUGINID = "biz.aQute.bnd.builder"
 
 	/**
 	 * Apply the {@code biz.aQute.bnd.builder} plugin to the specified project.
@@ -45,23 +45,23 @@ public class BndBuilderPlugin implements Plugin<Project> {
 	@Override
 	public void apply(Project project) {
 		if (project.getPlugins().hasPlugin(BndPlugin.PLUGINID)) {
-			throw new GradleException("Project already has '${BndPlugin.PLUGINID}' plugin applied.")
+			throw new GradleException("Project already has \"${BndPlugin.PLUGINID}\" plugin applied.")
 		}
-		project.getPlugins().apply('java')
+		project.getPlugins().apply("java")
 
 		TaskContainer tasks = project.getTasks()
 
-		var jar = tasks.named('jar', t -> {
-			t.setDescription('Assembles a bundle containing the main classes.')
+		var jar = tasks.named("jar", t -> {
+			t.setDescription("Assembles a bundle containing the main classes.")
 			t.convention.getPlugins().bundle = new BundleTaskConvention(t)
-			RegularFile defaultBndfile = project.getLayout().getProjectDirectory().file('bnd.bnd')
+			RegularFile defaultBndfile = project.getLayout().getProjectDirectory().file("bnd.bnd")
 			if (defaultBndfile.getAsFile().isFile()) {
 				t.bndfile.convention(defaultBndfile)
 			}
-			t.doLast('buildBundle', tt -> buildBundle())
+			t.doLast("buildBundle", tt -> buildBundle())
 		})
 
-		Configuration baseline = project.getConfigurations().create('baseline')
+		Configuration baseline = project.getConfigurations().create("baseline")
 		baseline.getDependencies().all((Dependency dep) -> {
 			if (dep instanceof ExternalDependency) {
 				dep.version(mvc -> mvc.strictly(dep.getVersion()))
@@ -71,22 +71,22 @@ public class BndBuilderPlugin implements Plugin<Project> {
 			}
 		})
 
-		tasks.register('baseline', Baseline.class, t -> {
-			t.setDescription('Baseline the project bundle.')
-			t.setGroup('release')
+		tasks.register("baseline", Baseline.class, t -> {
+			t.setDescription("Baseline the project bundle.")
+			t.setGroup("release")
 			t.bundle = jar
 			t.baseline = baseline
 		})
 
 		baseline.defaultDependencies((DependencySet deps) -> {
-			Task baselineTask = tasks.getByName('baseline')
+			Task baselineTask = tasks.getByName("baseline")
 			Task bundleTask = baselineTask.getBundleTask()
 			if (bundleTask) {
 				String archiveBaseName = unwrap(bundleTask.getArchiveBaseName())
 				String archiveVersion = unwrap(bundleTask.getArchiveVersion(), true)
 				String group = project.getGroup().toString()
-				baselineTask.getLogger().debug('Searching for default baseline {}:{}:(0,{}[', group, archiveBaseName, archiveVersion)
-				Dependency baselineDep = project.getDependencies().create('group': group, 'name': archiveBaseName) {
+				baselineTask.getLogger().debug("Searching for default baseline {}:{}:(0,{}[", group, archiveBaseName, archiveVersion)
+				Dependency baselineDep = project.getDependencies().create("group": group, "name": archiveBaseName) {
 					version {
 						strictly("(0,${archiveVersion}[")
 					}
@@ -96,7 +96,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
 					Configuration detached = project.getConfigurations().detachedConfiguration(baselineDep)
 					detached.getResolvedConfiguration().rethrowFailure()
 				} catch(ResolveException e) {
-					baselineTask.getLogger().debug('Baseline configuration resolve error {}, adding {} as baseline', e, unwrap(baselineTask.getBundle()), e)
+					baselineTask.getLogger().debug("Baseline configuration resolve error {}, adding {} as baseline", e, unwrap(baselineTask.getBundle()), e)
 					baselineDep = project.getDependencies().create(project.getObjects().fileCollection().from(baselineTask.getBundle()))
 				}
 				deps.add(baselineDep)

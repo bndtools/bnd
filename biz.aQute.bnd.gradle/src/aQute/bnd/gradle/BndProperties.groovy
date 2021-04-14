@@ -41,14 +41,14 @@ class BndProperties {
 	}
 
 	Object propertyMissing(String name) {
-		if (Objects.equals(name, 'ext') || extensions.extraProperties.has(name) || extensions.findByName(name)) {
+		if (Objects.equals(name, "ext") || extensions.extraProperties.has(name) || extensions.findByName(name)) {
 			throw new MissingPropertyException(name, String)
 		}
 		var value = get(name)
 		if (Objects.nonNull(value)) {
 			return value
 		}
-		return get(name.replace('_', '.'))
+		return get(name.replace((char) '_', (char) '.'))
 	}
 
 	Object trimmed(value) {
