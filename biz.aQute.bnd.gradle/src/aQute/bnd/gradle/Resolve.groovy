@@ -9,9 +9,9 @@
  * Here is an example of using the Resolve task type:
  * <pre>
  * import aQute.bnd.gradle.Resolve
- * def resolveTask = tasks.register('resolve', Resolve) {
- *   bndrun = file('my.bndrun')
- *   outputBndrun = layout.buildDirectory.file('my.bndrun')
+ * def resolveTask = tasks.register("resolve", Resolve) {
+ *   bndrun = file("my.bndrun")
+ *   outputBndrun = layout.buildDirectory.file("my.bndrun")
  * }
  * </pre>
  *
@@ -34,8 +34,8 @@
  * The default for workingDirectory is temporaryDir.</li>
  * <li>bundles - This is the collection of files to use for locating
  * bundles during the resolve process. The default is
- * 'sourceSets.main.runtimeClasspath' plus
- * 'configurations.archives.artifacts.files'.</li>
+ * "sourceSets.main.runtimeClasspath" plus
+ * "configurations.archives.artifacts.files".</li>
  * <li>reportOptional - If true failure reports will include
  * optional requirements. The default is true.</li>
  * </ul>
@@ -120,7 +120,7 @@ public class Resolve extends Bndrun {
 		if (!Objects.equals(outputBndrunFile, bndrunFile)) {
 			try (Writer writer = IO.writer(outputBndrunFile)) {
 				UTF8Properties props = new UTF8Properties()
-				props.setProperty(Constants.INCLUDE, String.format('"%s"', IO.absolutePath(bndrunFile)))
+				props.setProperty(Constants.INCLUDE, String.format("\"%s\"", IO.absolutePath(bndrunFile)))
 				props.store(writer, null)
 			}
 			bndrunFile = outputBndrunFile
@@ -133,11 +133,11 @@ public class Resolve extends Bndrun {
 	 * Resolve the Bndrun object.
 	 */
 	protected void worker(var run) {
-		getLogger().info('Resolving runbundles required for {}', run.getPropertiesFile())
-		getLogger().debug('Run properties: {}', run.getProperties())
+		getLogger().info("Resolving runbundles required for {}", run.getPropertiesFile())
+		getLogger().debug("Run properties: {}", run.getProperties())
 		try {
 			var result = run.resolve(isFailOnChanges(), isWriteOnChanges())
-			getLogger().info('{}: {}', Constants.RUNBUNDLES, result)
+			getLogger().info("{}: {}", Constants.RUNBUNDLES, result)
 		} catch (ResolutionException e) {
 			getLogger().error(ResolveProcess.format(e, isReportOptional()))
 			throw new GradleException("${run.getPropertiesFile()} resolution exception", e)

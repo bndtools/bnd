@@ -8,13 +8,13 @@
  * Here is examples of using the Export task type:
  * <pre>
  * import aQute.bnd.gradle.Export
- * tasks.register('exportExecutable', Export) {
- *   bndrun = file('my.bndrun')
- *   exporter = 'bnd.executablejar'
+ * tasks.register("exportExecutable", Export) {
+ *   bndrun = file("my.bndrun")
+ *   exporter = "bnd.executablejar"
  * }
- * tasks.register('exportRunbundles', Export) {
- *   bndrun = file('my.bndrun')
- *   exporter = 'bnd.runbundles'
+ * tasks.register("exportRunbundles", Export) {
+ *   bndrun = file("my.bndrun")
+ *   exporter = "bnd.runbundles"
  * }
  * </pre>
  *
@@ -24,22 +24,22 @@
  * <li>ignoreFailures - If true the task will not fail if the export
  * fails. The default is false.</li>
  * <li>exporter - The name of the exporter plugin to use.
- * Bnd has two built-in exporter plugins. 'bnd.executablejar'
- * exports an executable jar and 'bnd.runbundles' exports the
- * -runbundles files. The default is 'bnd.executablejar'.</li>
+ * Bnd has two built-in exporter plugins. "bnd.executablejar"
+ * exports an executable jar and "bnd.runbundles" exports the
+ * -runbundles files. The default is "bnd.executablejar".</li>
  * <li>bndrun - This is the bndrun file to be exported.
  * This property must be set.</li>
  * <li>destinationDirectory - This is the directory for the output.
- * The default for destinationDirectory is project.distsDirectory.dir('executable')
- * if the exporter is 'bnd.executablejar', project.distsDirectory.dir('runbundles'/bndrun)
- * if the exporter is 'bnd.runbundles', and project.distsDirectory.dir(task.name)
+ * The default for destinationDirectory is project.distsDirectory.dir("executable")
+ * if the exporter is "bnd.executablejar", project.distsDirectory.dir("runbundles"/bndrun)
+ * if the exporter is "bnd.runbundles", and project.distsDirectory.dir(task.name)
  * for all other exporters.</li>
  * <li>workingDirectory - This is the directory for the export operation.
  * The default for workingDirectory is temporaryDir.</li>
  * <li>bundles - This is the collection of files to use for locating
  * bundles during the bndrun execution. The default is
- * 'sourceSets.main.runtimeClasspath' plus
- * 'configurations.archives.artifacts.files'.</li>
+ * "sourceSets.main.runtimeClasspath" plus
+ * "configurations.archives.artifacts.files".</li>
  * </ul>
  */
 
@@ -70,10 +70,10 @@ public class Export extends Bndrun {
 	 *
 	 * <p>
 	 * If <code>true</code>, then the exporter defaults to
-	 * 'bnd.runbundles'. Otherwise the exporter defaults to
-	 * 'bnd.executablejar'. The default is <code>false</code>.
+	 * "bnd.runbundles". Otherwise the exporter defaults to
+	 * "bnd.executablejar". The default is <code>false</code>.
 	 */
-	@ReplacedBy('exporter')
+	@ReplacedBy("exporter")
 	@Deprecated
 	boolean bundlesOnly = false
 
@@ -81,10 +81,10 @@ public class Export extends Bndrun {
 	 * The name of the exporter for this task.
 	 *
 	 * <p>
-	 * Bnd has two built-in exporter plugins. 'bnd.executablejar'
-	 * exports an executable jar and 'bnd.runbundles' exports the
-	 * -runbundles files. The default is 'bnd.executablejar' unless
-	 * bundlesOnly is false when the default is 'bnd.runbundles'.
+	 * Bnd has two built-in exporter plugins. "bnd.executablejar"
+	 * exports an executable jar and "bnd.runbundles" exports the
+	 * -runbundles files. The default is "bnd.executablejar" unless
+	 * bundlesOnly is false when the default is "bnd.runbundles".
 	 */
 	@Input
 	final Property<String> exporter
@@ -93,9 +93,9 @@ public class Export extends Bndrun {
 	 * The destination directory for the export.
 	 *
 	 * <p>
-	 * The default for destinationDirectory is project.distsDirectory.dir('executable')
-	 * if the exporter is 'bnd.executablejar', project.distsDirectory.dir('runbundles'/bndrun)
-	 * if the exporter is 'bnd.runbundles', and project.distsDirectory.dir(task.name)
+	 * The default for destinationDirectory is project.distsDirectory.dir("executable")
+	 * if the exporter is "bnd.executablejar", project.distsDirectory.dir("runbundles"/bndrun)
+	 * if the exporter is "bnd.runbundles", and project.distsDirectory.dir(task.name)
 	 * for all other exporters.
 	 */
 	@OutputDirectory
@@ -109,16 +109,16 @@ public class Export extends Bndrun {
 		super()
 		ObjectFactory objects = getProject().getObjects()
 		exporter = objects.property(String.class).convention(getProject().provider(() -> getBundlesOnly() ? RUNBUNDLES : EXECUTABLE_JAR))
-		Provider<Directory> distsDirectory = getProject().hasProperty('distsDirectory') ? getProject().distsDirectory : // Gradle 6.0
+		Provider<Directory> distsDirectory = getProject().hasProperty("distsDirectory") ? getProject().distsDirectory : // Gradle 6.0
 		getProject().getLayout().getBuildDirectory().dir(getProject().provider(() -> getProject().distsDirName))
 		destinationDirectory = objects.directoryProperty().convention(distsDirectory.flatMap(distsDir -> {
 			return distsDir.dir(getExporter().map(exporterName -> {
 				switch(exporterName) {
 					case EXECUTABLE_JAR:
-					return 'executable'
+					return "executable"
 					case RUNBUNDLES:
 					File bndrunFile = unwrap(getBndrun())
-					String bndrunName = bndrunFile.getName() - '.bndrun'
+					String bndrunName = bndrunFile.getName() - ".bndrun"
 					return "runbundles/${bndrunName}"
 					default:
 					return exporterName
@@ -128,7 +128,7 @@ public class Export extends Bndrun {
 	}
 
 	@Deprecated
-	@ReplacedBy('destinationDirectory')
+	@ReplacedBy("destinationDirectory")
 	public File getDestinationDir() {
 		return unwrap(getDestinationDirectory())
 	}
@@ -145,8 +145,8 @@ public class Export extends Bndrun {
 	protected void worker(var run) {
 		String exporterName = unwrap(getExporter())
 		File destinationDirFile = unwrap(getDestinationDirectory())
-		getLogger().info('Exporting {} to {} with exporter {}', run.getPropertiesFile(), destinationDirFile, exporterName)
-		getLogger().debug('Run properties: {}', run.getProperties())
+		getLogger().info("Exporting {} to {} with exporter {}", run.getPropertiesFile(), destinationDirFile, exporterName)
+		getLogger().debug("Run properties: {}", run.getProperties())
 		try {
 			Map.Entry<String, ?> export = run.export(exporterName, Collections.emptyMap())
 			if (Objects.nonNull(export)) {

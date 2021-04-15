@@ -15,9 +15,9 @@
  * This properties is ignored if bndfile is specified and the specified file
  * exists.</li>
  * <li>sourceSet - This is the SourceSet to use for the
- * bnd builder. It defaults to 'project.sourceSets.main'.</li>
+ * bnd builder. It defaults to "project.sourceSets.main".</li>
  * <li>classpath - This is the FileCollection to use for the buildpath
- * for the bnd builder. It defaults to 'sourceSet.compileClasspath'.</li>
+ * for the bnd builder. It defaults to "sourceSet.compileClasspath".</li>
  * </ul>
  */
 
@@ -121,15 +121,15 @@ class BundleTaskConvention {
 		buildFile = project.getBuildFile()
 		bndfile = objects.fileProperty()
 		instructions = objects.listProperty(CharSequence.class).empty()
-		bnd = instructions.map(list -> Strings.join('\n', list))
+		bnd = instructions.map(list -> Strings.join("\n", list))
 		classpath = objects.fileCollection()
 		allSource = objects.fileCollection()
 		setSourceSet(project.sourceSets.main)
 		classpathModified = false
 		// need to programmatically add to inputs since @InputFiles in a convention is not processed
-		task.inputs.files(getClasspath()).withNormalizer(ClasspathNormalizer.class).withPropertyName('classpath')
-		task.inputs.file(getBndfile()).optional().withPathSensitivity(RELATIVE).withPropertyName('bndfile')
-		task.inputs.property('bnd', getBnd())
+		task.inputs.files(getClasspath()).withNormalizer(ClasspathNormalizer.class).withPropertyName("classpath")
+		task.inputs.file(getBndfile()).optional().withPathSensitivity(RELATIVE).withPropertyName("bndfile")
+		task.inputs.property("bnd", getBnd())
 	}
 
 	/**
@@ -249,15 +249,15 @@ class BundleTaskConvention {
 		FileCollection sourcepath = allSource.filter((File file) -> file.exists())
 		// create Builder
 		Properties gradleProperties = new PropertiesWrapper()
-		gradleProperties.put('task', jarTask)
-		gradleProperties.put('project', jarTask.getProject())
+		gradleProperties.put("task", jarTask)
+		gradleProperties.put("project", jarTask.getProject())
 		try (Builder builder = new Builder(new Processor(gradleProperties, false))) {
 			// load bnd properties
-			File temporaryBndFile = File.createTempFile('bnd', '.bnd', jarTask.getTemporaryDir())
+			File temporaryBndFile = File.createTempFile("bnd", ".bnd", jarTask.getTemporaryDir())
 			try (Writer writer = IO.writer(temporaryBndFile)) {
 				// write any task manifest entries into the tmp bnd file
 				jarTask.manifest.effectiveManifest.attributes.inject(new UTF8Properties()) { properties, key, value ->
-					if (!Objects.equals(key, 'Manifest-Version')) {
+					if (!Objects.equals(key, "Manifest-Version")) {
 						properties.setProperty(key, value.toString())
 					}
 					return properties
@@ -276,14 +276,14 @@ class BundleTaskConvention {
 				}
 			}
 			builder.setProperties(temporaryBndFile, projectDir) // this will cause project.dir property to be set
-			builder.setProperty('project.output', buildDir.getCanonicalPath())
+			builder.setProperty("project.output", buildDir.getCanonicalPath())
 			// If no bundle to be built, we have nothing to do
 			if (builder.is(Constants.NOBUNDLES)) {
 				return
 			}
 			// Reject sub-bundle projects
 			if (!Objects.equals(builder.getSubBuilders(), singletonList(builder))) {
-				throw new GradleException('Sub-bundles are not supported by this task')
+				throw new GradleException("Sub-bundles are not supported by this task")
 			}
 			File archiveFile = unwrap(jarTask.getArchiveFile())
 			String archiveFileName = unwrap(jarTask.getArchiveFileName())
@@ -297,7 +297,7 @@ class BundleTaskConvention {
 			Jar bundleJar = new Jar(archiveFileName, archiveCopyFile)
 			String reproducible = builder.getProperty(Constants.REPRODUCIBLE)
 			bundleJar.setReproducible(Objects.nonNull(reproducible) ? Processor.isTrue(reproducible) : !jarTask.isPreserveFileTimestamps())
-			bundleJar.updateModified(archiveFile.lastModified(), 'time of Jar task generated jar')
+			bundleJar.updateModified(archiveFile.lastModified(), "time of Jar task generated jar")
 			bundleJar.setManifest(new Manifest())
 			builder.setJar(bundleJar)
 
@@ -316,13 +316,13 @@ class BundleTaskConvention {
 				}
 				return true
 			})
-			builder.setProperty('project.buildpath', buildpath.getAsPath())
+			builder.setProperty("project.buildpath", buildpath.getAsPath())
 			builder.setClasspath(buildpath.getFiles() as File[])
-			jarTask.getLogger().debug('builder classpath: {}', builder.getClasspath()*.getSource())
+			jarTask.getLogger().debug("builder classpath: {}", builder.getClasspath()*.getSource())
 			// set builder sourcepath
-			builder.setProperty('project.sourcepath', sourcepath.getAsPath())
+			builder.setProperty("project.sourcepath", sourcepath.getAsPath())
 			builder.setSourcepath(sourcepath.getFiles() as File[])
-			jarTask.getLogger().debug('builder sourcepath: {}', builder.getSourcePath())
+			jarTask.getLogger().debug("builder sourcepath: {}", builder.getSourcePath())
 			// set bundle symbolic name from tasks's archiveBaseName property if necessary
 			String bundleSymbolicName = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME)
 			if (isEmpty(bundleSymbolicName)) {
@@ -336,7 +336,7 @@ class BundleTaskConvention {
 				builder.setProperty(Constants.BUNDLE_VERSION, MavenVersion.parseMavenString(archiveVersion).getOSGiVersion().toString())
 			}
 
-			jarTask.getLogger().debug('builder properties: {}', builder.getProperties())
+			jarTask.getLogger().debug("builder properties: {}", builder.getProperties())
 
 			// Build bundle
 			Jar builtJar = builder.build()

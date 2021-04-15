@@ -8,7 +8,7 @@
  * Here is examples of using the TestOSGi task type:
  * <pre>
  * import aQute.bnd.gradle.TestOSGi
- * tasks.register('testOSGi', TestOSGi) {
+ * tasks.register("testOSGi", TestOSGi) {
  *   bndrun = resolveTask.flatMap { it.outputBndrun }
  * }
  * </pre>
@@ -25,8 +25,8 @@
  * The default for workingDir is temporaryDir.</li>
  * <li>bundles - This is the collection of files to use for locating
  * bundles during the test case execution. The default is
- * 'sourceSets.main.runtimeClasspath' plus
- * 'configurations.archives.artifacts.files'.</li>
+ * "sourceSets.main.runtimeClasspath" plus
+ * "configurations.archives.artifacts.files".</li>
  * <li>resultsDirectory - This is the directory
  * where the test case results are placed.
  * The default is project.testResultsDir/name.</li>
@@ -82,7 +82,7 @@ public class TestOSGi extends Bndrun {
 	}
 
 	@Deprecated
-	@ReplacedBy('resultsDirectory')
+	@ReplacedBy("resultsDirectory")
 	public File getResultsDir() {
 		return unwrap(getResultsDirectory())
 	}
@@ -92,8 +92,8 @@ public class TestOSGi extends Bndrun {
 	 */
 	@Override
 	protected void worker(var run) {
-		getLogger().info('Running tests for {} in {}', run.getPropertiesFile(), run.getBase())
-		getLogger().debug('Run properties: {}', run.getProperties())
+		getLogger().info("Running tests for {} in {}", run.getPropertiesFile(), run.getBase())
+		getLogger().debug("Run properties: {}", run.getProperties())
 		File resultsDir = unwrap(getResultsDirectory())
 		try {
 			run.test(resultsDir, getTests());
