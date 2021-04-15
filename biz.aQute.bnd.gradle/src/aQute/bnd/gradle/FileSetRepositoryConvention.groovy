@@ -41,7 +41,7 @@ class FileSetRepositoryConvention {
 		bundles(project.sourceSets.main.getRuntimeClasspath())
 		bundles(project.getConfigurations().archives.getArtifacts().getFiles())
 		// need to programmatically add to inputs since @InputFiles in a convention is not processed
-		task.inputs.files(getBundles()).withPropertyName("bundles")
+		task.getInputs().files(getBundles()).withPropertyName("bundles")
 	}
 
 	/**
