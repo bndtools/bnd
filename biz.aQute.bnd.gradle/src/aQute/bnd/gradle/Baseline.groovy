@@ -170,8 +170,8 @@ public class Baseline extends DefaultTask {
 		diffpackages = objects.listProperty(String.class).empty()
 		bundleCollection = objects.fileCollection()
 		baselineCollection = objects.fileCollection()
-		inputs.files(bundleCollection).withPathSensitivity(RELATIVE).withPropertyName("bundleCollection")
-		inputs.files(baselineCollection).withPropertyName("baselineCollection")
+		getInputs().files(bundleCollection).withPathSensitivity(RELATIVE).withPropertyName("bundleCollection")
+		getInputs().files(baselineCollection).withPropertyName("baselineCollection")
 	}
 
 	/**
