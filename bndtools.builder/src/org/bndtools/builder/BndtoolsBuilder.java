@@ -371,9 +371,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 				logger.logWarning("Unable to clean project " + myProject.getName(), e);
 				return;
 			}
-
-			// Tell Eclipse what we did...
-			Central.refreshFile(model.getTarget(), monitor, true);
 		} catch (Exception e) {
 			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Build Error!", e));
 		} finally {

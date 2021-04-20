@@ -69,7 +69,6 @@ import aQute.bnd.service.progress.TaskManager;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.memoize.Memoize;
-import aQute.libg.ints.IntCounter;
 import aQute.service.reporter.Reporter;
 import bndtools.Plugin;
 import bndtools.central.RepositoriesViewRefresher.RefreshModel;
@@ -105,6 +104,7 @@ public class Central implements IStartupParticipant {
 	private static WorkspaceRepositoryChangeDetector			workspaceRepositoryChangeDetector;
 
 	private static RepositoriesViewRefresher					repositoriesViewRefresher	= new RepositoriesViewRefresher();
+	final static FileRefresher										refresher					= new FileRefresher();
 
 	static {
 		try {
@@ -112,7 +112,6 @@ public class Central implements IStartupParticipant {
 				.getBundleContext();
 			Bundle bndlib = FrameworkUtil.getBundle(Workspace.class);
 			auxiliary = new Auxiliary(context, bndlib);
-
 		} catch (Exception e) {
 			// ignore
 		}
@@ -555,30 +554,6 @@ public class Central implements IStartupParticipant {
 			.flatMap(Central::toFullPath);
 	}
 
-	public static void refresh(IPath path) {
-		try {
-			IResource r = ResourcesPlugin.getWorkspace()
-				.getRoot()
-				.findMember(path);
-			if (r != null)
-				return;
-
-			IPath p = (IPath) path.clone();
-			while (p.segmentCount() > 0) {
-				p = p.removeLastSegments(1);
-				IResource resource = ResourcesPlugin.getWorkspace()
-					.getRoot()
-					.findMember(p);
-				if (resource != null) {
-					resource.refreshLocal(IResource.DEPTH_INFINITE, null);
-					return;
-				}
-			}
-		} catch (Exception e) {
-			logger.logError("While refreshing path " + path, e);
-		}
-	}
-
 	public static void refreshPlugins() throws Exception {
 		List<File> refreshedFiles = new ArrayList<>();
 		List<Refreshable> rps = getWorkspace().getPlugins(Refreshable.class);
@@ -641,31 +616,6 @@ public class Central implements IStartupParticipant {
 				repositoriesViewRefresher.repositoryRefreshed((RepositoryPlugin) plugin);
 			}
 		}
-	}
-
-	public static void refreshFile(File f) throws CoreException {
-		refreshFile(f, null, false);
-	}
-
-	public static void refreshFile(File file, IProgressMonitor monitor, boolean derived) throws CoreException {
-		IResource target = toResource(file);
-		if (target == null) {
-			return;
-		}
-		int depth = target.getType() == IResource.FILE ? IResource.DEPTH_ZERO : IResource.DEPTH_INFINITE;
-		if (!target.isSynchronized(depth)) {
-			target.refreshLocal(depth, monitor);
-			if (target.exists() && (target.isDerived() != derived)) {
-				target.setDerived(derived, monitor);
-			}
-		}
-	}
-
-	public static void refresh(Project p) throws Exception {
-		IJavaProject jp = getJavaProject(p);
-		if (jp != null)
-			jp.getProject()
-				.refreshLocal(IResource.DEPTH_INFINITE, null);
 	}
 
 	public void close() {
@@ -844,6 +794,10 @@ public class Central implements IStartupParticipant {
 		}
 	}
 
+	public static boolean inBndLock() {
+		return bndLock.isHeldByCurrentThread();
+	}
+
 	/**
 	 * Convert a processor to a status object
 	 */
@@ -888,24 +842,6 @@ public class Central implements IStartupParticipant {
 		repositoriesViewRefresher.setRepositories(viewer, model);
 	}
 
-	public static boolean refreshFiles(Reporter reporter, Collection<File> files, IProgressMonitor monitor,
-		boolean derived) {
-		IntCounter errors = new IntCounter();
-
-		files.forEach(t -> {
-			try {
-				Central.refreshFile(t, monitor, derived);
-			} catch (CoreException e) {
-				errors.inc();
-				if (reporter != null)
-					reporter.error("failed to refresh %s : %s", t, Exceptions.causes(e));
-				else
-					throw Exceptions.duck(e);
-			}
-		});
-		return errors.isZero();
-	}
-
 	public static List<InternalPluginDefinition> getInternalPluginDefinitions() {
 		return instance.internalPlugins.getTracked()
 			.values()
@@ -913,4 +849,47 @@ public class Central implements IStartupParticipant {
 			.flatMap(Collection::stream)
 			.collect(Collectors.toList());
 	}
+
+	/////// REFRESH MESS
+
+	public static void refresh(Project p) throws Exception {
+		refresher.changed(p.getBase(), false);
+	}
+
+	public static void refresh(IPath path) throws CoreException {
+		refresher.changed(path.toFile(), false);
+	}
+
+	@Deprecated
+	public static boolean refreshFiles(Reporter reporter, Collection<File> files, IProgressMonitor monitor,
+		boolean derived) {
+		refresher.changed(files, derived);
+		return true;
+	}
+
+	public static void refreshFile(File f) throws CoreException {
+		refresher.changed(f, false);
+	}
+
+	@Deprecated
+	public static void refreshFile(File file, IProgressMonitor monitor, boolean derived) throws CoreException {
+		IResource target = toResource(file);
+		if (target == null) {
+			return;
+		}
+
+		if (monitor != null) {
+			int depth = target.getType() == IResource.FILE ? IResource.DEPTH_ZERO : IResource.DEPTH_INFINITE;
+			if (!target.isSynchronized(depth)) {
+				target.refreshLocal(depth, monitor);
+				if (target.exists() && (target.isDerived() != derived)) {
+					target.setDerived(derived, monitor);
+				}
+			}
+		} else {
+			refresher.changed(file, false);
+		}
+	}
+
+
 }

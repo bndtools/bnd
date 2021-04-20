@@ -77,6 +77,17 @@ public class WorkspaceSynchronizer {
 
 			IWorkspaceRoot wsroot = eclipse.getRoot();
 
+			for (IProject p : wsroot.getProjects()) {
+				File projectDir = p.getLocation()
+					.toFile();
+				if (ws.getBase()
+					.equals(projectDir.getParentFile())) {
+					if (!projectDir.isDirectory()) {
+						p.delete(true, monitor);
+					}
+				}
+			}
+
 			if (refresh)
 				refresh(subMonitor.split(20));
 
@@ -94,7 +105,10 @@ public class WorkspaceSynchronizer {
 
 			List<Project> missing = new ArrayList<>();
 
-			for (Project model : Central.bndCall(() -> ws.getAllProjects())) {
+			for (Project model : Central.bndCall(() -> {
+				ws.refreshProjects();
+				return ws.getAllProjects();
+			})) {
 				if (model.isCnf()) {
 					continue;
 				}
@@ -178,6 +192,7 @@ public class WorkspaceSynchronizer {
 					Status status = new Status(Status.ERROR, "bndtools.builder", e.getMessage());
 					throw new CoreException(status);
 				} finally {
+					setAutobuild(previous);
 					atend.run();
 				}
 			});

@@ -2162,9 +2162,6 @@ public class Project extends Processor {
 
 		}
 
-		getWorkspace().changedFile(outputFile);
-		if (!outputFile.equals(logicalFile))
-			getWorkspace().changedFile(logicalFile);
 		return logicalFile;
 	}
 
