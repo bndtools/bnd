@@ -29,7 +29,7 @@
 -conditionalpackage: \
  aQute.lib*,\
  org.bndtools.utils.*
- 
+
 Bundle-ActivationPolicy: lazy
 Bundle-SymbolicName: ${p};singleton:=true
 

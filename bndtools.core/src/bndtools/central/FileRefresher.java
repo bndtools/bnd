@@ -52,11 +52,11 @@ class FileRefresher {
 			assert !Central.inBndLock() : "We may never compete with the bnd lock";
 
 			Set<Item> refresh = new HashSet<>();
-			while (true) {
+			forever: while (true) {
 				synchronized (toRefresh) {
 					refresh.addAll(toRefresh);
 					toRefresh.clear();
-					if (refresh.isEmpty()) {
+					if (refresh.isEmpty() || m.isCanceled()) {
 						active = false;
 						return;
 					}
@@ -64,12 +64,8 @@ class FileRefresher {
 
 				for (Item resource : refresh) {
 					if (m.isCanceled()) {
-						synchronized (toRefresh) {
-							logger.info("interrupted refresh with {}", toRefresh);
-							toRefresh.clear();
-							active = false;
-						}
-						return;
+						logger.info("canceled refresh withh {}", toRefresh);
+						continue forever;
 					}
 
 					IResource r = Central.toResource(resource.f);
