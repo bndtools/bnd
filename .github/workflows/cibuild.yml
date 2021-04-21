@@ -43,6 +43,7 @@ jobs:
           java: '8'
           runner: 'xvfb-run --auto-servernum {0}'
           script: 'build.sh'
+          canonical: true
           fetch-depth: '0'
         - os: 'ubuntu-latest'
           java: '8'
@@ -71,7 +72,7 @@ jobs:
       run: |
         ${{ format(matrix.runner, format('./.github/scripts/{0}', matrix.script)) }}
       env:
-        CANONICAL: ${{ !strategy.fail-fast }}
+        CANONICAL: ${{ matrix.canonical && !strategy.fail-fast }}
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
     - name: Upload Test Reports
