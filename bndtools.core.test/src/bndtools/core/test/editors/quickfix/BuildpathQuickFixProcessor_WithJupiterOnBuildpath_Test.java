@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.eclipse.jdt.internal.ui.text.correction.ProblemLocation;
 import org.eclipse.jdt.ui.text.java.IProblemLocation;
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +15,7 @@ public class BuildpathQuickFixProcessor_WithJupiterOnBuildpath_Test extends Abst
 		addBundlesToBuildpath("junit-jupiter-api");
 	}
 
+	@Ignore
 	@Test
 	void withUnqualifiedClassLiteral_forUnimportedType_asAnnotationParameterBoundedByTypeOnClassPath_suggestsBundles() {
 		// This one has come up frequently in my own development. However, it
