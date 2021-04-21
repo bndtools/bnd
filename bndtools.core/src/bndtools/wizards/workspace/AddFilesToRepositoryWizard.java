@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -23,7 +24,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
-import bndtools.central.RefreshFileJob;
+import bndtools.central.Central;
 import bndtools.types.Pair;
 
 public class AddFilesToRepositoryWizard extends Wizard {
@@ -93,9 +94,14 @@ public class AddFilesToRepositoryWizard extends Wizard {
 					}
 					progress.worked(1);
 				}
-				RefreshFileJob refreshJob = new RefreshFileJob(refresh, false);
-				if (refreshJob.needsToSchedule())
-					refreshJob.schedule();
+
+				for (File f : refresh) {
+					IResource resource = Central.toResource(f);
+					if (resource != null) {
+						monitor.subTask("Refresh " + resource);
+						resource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+					}
+				}
 				progress.done();
 				return status;
 			}

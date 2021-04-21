@@ -5,11 +5,16 @@ import java.util.Set;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.compiler.CompilationParticipant;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Processor.FileLine;
 import aQute.bnd.service.result.Result;
+import aQute.service.reporter.Reporter.SetLocation;
 import bndtools.central.Central;
 
 public class BndSourceGenerateCompilationParticipant extends CompilationParticipant {
@@ -38,22 +43,44 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 	@Override
 	public int aboutToBuild(IJavaProject javaProject) {
 		try {
-			Project project = Central.getProject(javaProject.getProject());
-			if (project == null)
-				return READY_FOR_BUILD;
 
 			MarkerSupport markers = new MarkerSupport(javaProject.getProject());
+			markers.deleteMarkers(MARKER_BND_GENERATE);
 
-			Result<Set<File>, String> result = project.getGenerate()
-				.generate(true);
-			if (result.isOk()) {
-				Set<File> generated = result.unwrap();
-				Set<File> outputs = project.getGenerate()
+			Processor processor = new Processor();
+			Set<File> result = Central.bndCall(() -> {
+				Project project = Central.getProject(javaProject.getProject());
+				if (project == null)
+					return null;
+
+				Result<Set<File>, String> r = project.getGenerate()
+					.generate(true);
+				processor.getInfo(project);
+
+				if (r.isErr()) {
+					SetLocation loc = project.error("%s", r.error()
+						.get());
+					loc.header(Constants.GENERATE);
+					FileLine header = project.getHeader(Constants.GENERATE);
+					if (header != null) {
+						header.set(loc);
+					}
+				}
+				processor.getInfo(project);
+				return project.getGenerate()
 					.getOutputDirs();
-				Central.refreshFiles(project, outputs, null, true);
+			});
+
+			if (result != null) {
+				for (File f : result) {
+					IResource resource = Central.toResource(f);
+					if (resource != null) {
+						resource.refreshLocal(IResource.DEPTH_INFINITE, null);
+					}
+				}
 			}
-			markers.setMarkers(project, MARKER_BND_GENERATE);
-			project.clear();
+			markers.setMarkers(processor, MARKER_BND_GENERATE);
+
 			return READY_FOR_BUILD;
 		} catch (Exception e) {
 			logger.logError("generating phase, aboutToBuild", e);

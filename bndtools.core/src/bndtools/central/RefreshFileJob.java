@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 
+@Deprecated
 public class RefreshFileJob extends WorkspaceJob {
 	private final boolean		derived;
 	private final List<File>	files;
