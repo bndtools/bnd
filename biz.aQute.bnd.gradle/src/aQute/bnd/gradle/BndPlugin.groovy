@@ -125,10 +125,7 @@ public class BndPlugin implements Plugin<Project> {
 				/* bnd can include from -dependson */
 				t.getInputs().files(getBuildDependencies("jar")).withPropertyName("buildDependencies")
 				/* Workspace and project configuration changes should trigger task */
-				t.getInputs().files(bndProject.getWorkspace().getPropertiesFile(),
-				bndProject.getWorkspace().getIncluded(),
-				bndProject.getPropertiesFile(),
-				bndProject.getIncluded()).withPathSensitivity(RELATIVE).withPropertyName("bndFiles")
+				t.getInputs().files(bndConfiguration()).withPathSensitivity(RELATIVE).withPropertyName("bndConfiguration")
 				t.getOutputs().dirs(bndProject.getGenerate().getOutputDirs()).withPropertyName("generateOutputs")
 				t.doLast("generate", tt -> {
 					try {
@@ -323,7 +320,7 @@ public class BndPlugin implements Plugin<Project> {
 
 		var jar = tasks.named("jar", t -> {
 			t.setDescription("Jar this project's bundles.")
-			t.actions.clear() /* Replace the standard task actions */
+			t.getActions().clear() /* Replace the standard task actions */
 			t.setEnabled(!bndProject.isNoBundles())
 			/* use first deliverable as archiveFileName */
 			t.archiveFileName = project.provider(() -> deliverables.find()?.getName() ?: bndProject.getName())
@@ -350,10 +347,7 @@ public class BndPlugin implements Plugin<Project> {
 			/* bnd can include from -dependson */
 			t.getInputs().files(getBuildDependencies("jar")).withPropertyName("buildDependencies")
 			/* Workspace and project configuration changes should trigger jar task */
-			t.getInputs().files(bndProject.getWorkspace().getPropertiesFile(),
-			bndProject.getWorkspace().getIncluded(),
-			bndProject.getPropertiesFile(),
-			bndProject.getIncluded()).withPathSensitivity(RELATIVE).withPropertyName("bndFiles")
+			t.getInputs().files(bndConfiguration()).withPathSensitivity(RELATIVE).withPropertyName("bndConfiguration")
 			t.getOutputs().files(deliverables).withPropertyName("artifacts")
 			t.getOutputs().file(layout.getBuildDirectory().file(Constants.BUILDFILES)).withPropertyName("buildfiles")
 			t.doLast("build", tt -> {
@@ -476,9 +470,7 @@ public class BndPlugin implements Plugin<Project> {
 
 		var assemble = tasks.named("assemble")
 
-		Set<File> bndruns = layout.getProjectDirectory().getAsFileTree().matching(filterable -> {
-			filterable.include("*.bndrun")
-		}).getFiles()
+		Set<File> bndruns = layout.getProjectDirectory().getAsFileTree().matching(filterable -> filterable.include("*.bndrun")).getFiles()
 
 		var exportTasks = bndruns.stream().map((File runFile) -> {
 			tasks.register("export.${runFile.getName() - '.bndrun'}", Export.class, t -> {
@@ -643,12 +635,18 @@ Project ${project.getName()}
 		return path.stream().map((Container c) -> c.getFile()).collect(toList())
 	}
 
-	private void checkErrors(Logger logger, boolean ignoreFailures = false) {
-		checkProjectErrors(bndProject, logger, ignoreFailures)
-	}
-
 	private CommandLineArgumentProvider argProvider(Provider<? extends Iterable<String>> provider) {
 		return () -> provider.getOrElse(Collections.emptyList())
+	}
+
+	private ConfigurableFileCollection bndConfiguration() {
+		Workspace bndWorkspace = bndProject.getWorkspace()
+		return objects.fileCollection().from(bndWorkspace.getPropertiesFile(), bndWorkspace.getIncluded(),
+		bndProject.getPropertiesFile(), bndProject.getIncluded())
+	}
+
+	private void checkErrors(Logger logger, boolean ignoreFailures = false) {
+		checkProjectErrors(bndProject, logger, ignoreFailures)
 	}
 
 	private void checkProjectErrors(aQute.bnd.build.Project p, Logger logger, boolean ignoreFailures = false) {
