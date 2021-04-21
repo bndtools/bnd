@@ -234,8 +234,10 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
 		for (SetupTypes t : found) {
 			switch (t) {
 				case testsrc :
-					// if the testsrc directory does not exist, then don't warn
-					if (testsrc.isDirectory())
+					// if the testsrc directory does not exist or has no
+					// children, then don't warn
+					File[] subs = testsrc.listFiles();
+					if (subs != null && subs.length > 0)
 						warning(model, DEFAULT_PROP_TESTSRC_DIR, null, null,
 							"Bndtools: bnd's testsrc folder '%s' is not in the Eclipse build path", testsrc);
 					break;
