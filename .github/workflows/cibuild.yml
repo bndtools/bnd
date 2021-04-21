@@ -30,8 +30,9 @@ defaults:
     shell: bash
 
 jobs:
-  Build_Matrix:
+  build:
     strategy:
+      fail-fast: ${{ (github.repository != 'bndtools/bnd') || ((github.ref != 'refs/heads/master') && (github.ref != 'refs/heads/next')) || (github.event_name == 'pull_request') }}
       matrix:
         os: [ 'ubuntu-latest' ]
         java: [ '11', '16' ]
@@ -42,7 +43,6 @@ jobs:
           java: '8'
           runner: 'xvfb-run --auto-servernum {0}'
           script: 'build.sh'
-          canonical: ${{ (github.repository == 'bndtools/bnd') && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/next')) && (github.event_name != 'pull_request') }}
           fetch-depth: '0'
         - os: 'ubuntu-latest'
           java: '8'
@@ -71,7 +71,7 @@ jobs:
       run: |
         ${{ format(matrix.runner, format('./.github/scripts/{0}', matrix.script)) }}
       env:
-        CANONICAL: ${{ matrix.canonical }}
+        CANONICAL: ${{ !strategy.fail-fast }}
         JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
         JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
     - name: Upload Test Reports
