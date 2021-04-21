@@ -8,6 +8,7 @@ import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+@Ignore
 public class BuildpathQuickFixProcessor_WithJupiterOnBuildpath_Test extends AbstractBuildpathQuickFixProcessorTest {
 
 	@BeforeAll
