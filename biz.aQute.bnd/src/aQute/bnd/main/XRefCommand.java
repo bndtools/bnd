@@ -94,7 +94,7 @@ public class XRefCommand {
 
 							if (filter.matches(fqn) && source.matches(fqn)) {
 								bnd.getLogger()
-									.info("# include {}", fqn);
+									.debug("# include {}", fqn);
 								set.add(ref);
 
 								try (InputStream in = r.openInputStream()) {
@@ -166,9 +166,12 @@ public class XRefCommand {
 		boolean toConsole = referrredTo.equals("--");
 		if (!toConsole) {
 			File file = bnd.getFile(referrredTo);
+			file.getParentFile()
+				.mkdirs();
 			if (!file.getParentFile()
-				.mkdirs()) {
+				.isDirectory()) {
 				bnd.error("Cannot make parent directory for referred output file %s", referrredTo);
+				return;
 			}
 			out = new PrintStream(file);
 		}
