@@ -117,6 +117,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private boolean				remote;
 	private final AtomicBoolean	open				= new AtomicBoolean(true);
 	Optional<Workspace>			workspace;
+	private AtomicBoolean		polling				= new AtomicBoolean(false);
 
 	/**
 	 * Put result
@@ -666,7 +667,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	private void poll() throws Exception {
-		refresh();
+		if (polling.getAndSet(true) == false)
+			try {
+				refresh();
+			} finally {
+				polling.set(false);
+			}
 	}
 
 	@Override

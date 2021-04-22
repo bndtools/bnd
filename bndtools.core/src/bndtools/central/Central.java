@@ -25,9 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.bndtools.api.BndtoolsConstants;
-import org.bndtools.api.ILogger;
 import org.bndtools.api.IStartupParticipant;
-import org.bndtools.api.Logger;
 import org.bndtools.api.ModelListener;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -55,6 +53,7 @@ import org.osgi.util.function.Consumer;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.plugin.InternalPluginDefinition;
 import aQute.bnd.build.Project;
@@ -77,7 +76,7 @@ import bndtools.preferences.BndPreferences;
 
 public class Central implements IStartupParticipant {
 
-	private static final ILogger								logger						= Logger
+	private static final org.slf4j.Logger						logger						= LoggerFactory
 		.getLogger(Central.class);
 	private static volatile Central								instance					= null;
 	private static final Deferred<Workspace>					anyWorkspaceDeferred		= promiseFactory()
@@ -100,6 +99,7 @@ public class Central implements IStartupParticipant {
 
 	private RepositoryListenerPluginTracker						repoListenerTracker;
 	private final InternalPluginTracker							internalPlugins;
+	final static List<Thread>									waiters						= new ArrayList<>();
 
 	@SuppressWarnings("unused")
 	private static WorkspaceRepositoryChangeDetector			workspaceRepositoryChangeDetector;
@@ -210,7 +210,7 @@ public class Central implements IStartupParticipant {
 
 		IPath path = toPathMustBeInEclipseWorkspace(file);
 		if (path == null) {
-			logger.logError("Cannot find workspace location for bnd configuration file " + file, null);
+			logger.error("Cannot find workspace location for bnd configuration file {}", file);
 			return null;
 		}
 		return ResourcesPlugin.getWorkspace()
@@ -311,7 +311,6 @@ public class Central implements IStartupParticipant {
 			ws.setOffline(new BndPreferences().isWorkspaceOffline());
 
 			ws.addBasicPlugin(new SWTClipboard());
-			ws.addBasicPlugin(new WorkspaceListener(ws));
 			ws.addBasicPlugin(getInstance().repoListenerTracker);
 			ws.addBasicPlugin(getEclipseWorkspaceRepository());
 			ws.addBasicPlugin(new JobProgress());
@@ -328,7 +327,7 @@ public class Central implements IStartupParticipant {
 			if (ws != null) {
 				ws.close();
 			}
-			logger.logError("Workspace creation failure", e);
+			logger.error("Workspace creation failure", e);
 			throw Exceptions.duck(e);
 		}
 	}
@@ -344,7 +343,7 @@ public class Central implements IStartupParticipant {
 	private static Promise<Workspace> callback(Promise<Workspace> promise, Consumer<? super Workspace> callback,
 		String failureMessage) {
 		return promise.thenAccept(callback)
-			.onFailure(failure -> logger.logError(failureMessage, failure));
+			.onFailure(failure -> logger.error(failureMessage, failure));
 	}
 
 	public static Promise<Workspace> onAnyWorkspaceAsync(Consumer<? super Workspace> callback) {
@@ -371,7 +370,7 @@ public class Central implements IStartupParticipant {
 				});
 			return completion.getPromise();
 		})
-			.onFailure(failure -> logger.logError(failureMessage, failure));
+			.onFailure(failure -> logger.error(failureMessage, failure));
 	}
 
 	public static PromiseFactory promiseFactory() {
@@ -448,7 +447,7 @@ public class Central implements IStartupParticipant {
 				}
 				IResourceDelta rootDelta = event.getDelta();
 				if (isCnfChanged(workspace, rootDelta)) {
-					logger.logInfo("cnf changed; refreshing workspace", null);
+					logger.error("cnf changed; refreshing workspace");
 					workspace.refresh();
 				}
 			});
@@ -470,7 +469,7 @@ public class Central implements IStartupParticipant {
 				}
 			}
 		} catch (Exception e) {
-			logger.logError("Central.isCnfChanged() failed", e);
+			logger.error("Central.isCnfChanged() failed", e);
 		}
 		return false;
 	}
@@ -575,7 +574,7 @@ public class Central implements IStartupParticipant {
 				}
 			}
 		} catch (Exception e) {
-			logger.logError("While refreshing path " + path, e);
+			logger.error("While refreshing path {}", path, e);
 		}
 	}
 
@@ -783,63 +782,74 @@ public class Central implements IStartupParticipant {
 	 * @throws Exception If the callable throws an exception.
 	 */
 	public static <V> V bndCall(Callable<V> callable, IProgressMonitor monitorOrNull) throws Exception {
-
-		IProgressMonitor monitor = monitorOrNull == null ? new NullProgressMonitor() : monitorOrNull;
-		Task task = new Task() {
-
-			@Override
-			public void worked(int units) {
-				monitor.worked(units);
-			}
-
-			@Override
-			public void done(String message, Throwable e) {}
-
-			@Override
-			public boolean isCanceled() {
-				return monitor.isCanceled();
-			}
-
-			@Override
-			public void abort() {
-				monitor.setCanceled(true);
-			}
-		};
-		boolean interrupted = Thread.interrupted();
+		synchronized (waiters) {
+			waiters.add(Thread.currentThread());
+			logger.info("Enter bnd lock: {}", waiters);
+		}
 		try {
-			long progress = bndLock.progress();
-			for (int i = 0; i < 120; i++) {
-				if (monitor.isCanceled()) {
-					throw (CancellationException) new CancellationException("Cancelled waiting to acquire bndLock["
-						+ bndLock + "]; has waiters: " + bndLock.getQueueLength()).initCause(bndLock.getOwnerCause());
+			IProgressMonitor monitor = monitorOrNull == null ? new NullProgressMonitor() : monitorOrNull;
+			Task task = new Task() {
+
+				@Override
+				public void worked(int units) {
+					monitor.worked(units);
 				}
-				boolean locked = false;
-				try {
-					locked = bndLock.tryLock(1, TimeUnit.SECONDS);
-				} catch (InterruptedException e) {
-					interrupted = true;
-					throw e;
+
+				@Override
+				public void done(String message, Throwable e) {}
+
+				@Override
+				public boolean isCanceled() {
+					return monitor.isCanceled();
 				}
-				if (locked) {
+
+				@Override
+				public void abort() {
+					monitor.setCanceled(true);
+				}
+			};
+			boolean interrupted = Thread.interrupted();
+			try {
+				long progress = bndLock.progress();
+				for (int i = 0; i < 120; i++) {
+					if (monitor.isCanceled()) {
+						throw (CancellationException) new CancellationException("Cancelled waiting to acquire bndLock["
+							+ bndLock + "]; has waiters: " + bndLock.getQueueLength())
+								.initCause(bndLock.getOwnerCause());
+					}
+					boolean locked = false;
 					try {
-						return TaskManager.with(task, callable::call);
-					} finally {
-						bndLock.unlock();
+						locked = bndLock.tryLock(1, TimeUnit.SECONDS);
+					} catch (InterruptedException e) {
+						interrupted = true;
+						throw e;
+					}
+					if (locked) {
+						try {
+							return TaskManager.with(task, callable::call);
+						} finally {
+							bndLock.unlock();
+						}
+					}
+					long currentProgress = bndLock.progress();
+					if (progress != currentProgress) {
+						progress = currentProgress;
+						i = 0;
 					}
 				}
-				long currentProgress = bndLock.progress();
-				if (progress != currentProgress) {
-					progress = currentProgress;
-					i = 0;
+				throw (TimeoutException) new TimeoutException(
+					"Unable to acquire bndLock[" + bndLock + "]; has waiters: " + bndLock.getQueueLength())
+						.initCause(bndLock.getOwnerCause());
+			} finally {
+				if (interrupted) {
+					Thread.currentThread()
+						.interrupt();
 				}
 			}
-			throw (TimeoutException) new TimeoutException(
-				"Unable to acquire bndLock[" + bndLock + "]; has waiters: " + bndLock.getQueueLength())
-					.initCause(bndLock.getOwnerCause());
 		} finally {
-			if (interrupted) {
-				Thread.currentThread()
-					.interrupt();
+			synchronized (waiters) {
+				waiters.remove(Thread.currentThread());
+				logger.info("Exit bnd lock: {}, remaining {}", waiters);
 			}
 		}
 	}

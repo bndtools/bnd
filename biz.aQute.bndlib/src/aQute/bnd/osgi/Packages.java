@@ -211,4 +211,10 @@ public class Packages implements Map<PackageRef, Attrs> {
 		return super.hashCode();
 	}
 
+	public Packages dup() {
+		Packages packages = new Packages();
+		packages.putAll(this);
+		return packages;
+	}
+
 }

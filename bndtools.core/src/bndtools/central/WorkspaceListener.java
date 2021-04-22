@@ -11,6 +11,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.BndListener;
 
+@Deprecated
 public final class WorkspaceListener extends BndListener {
 	private static final ILogger logger = Logger.getLogger(WorkspaceListener.class);
 

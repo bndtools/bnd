@@ -39,6 +39,7 @@ public class WorkspaceSynchronizer {
 
 	private static final ILogger				logger		= Logger.getLogger(WorkspaceSynchronizer.class);
 	private static IWorkspace					eclipse		= ResourcesPlugin.getWorkspace();
+	private static IWorkspaceRoot				wsroot		= eclipse.getRoot();
 	final static ThreadLocal<IProgressMonitor>	monitors	= new ThreadLocal<>();
 	IWorkspaceDescription						description	= eclipse.getDescription();
 
@@ -75,7 +76,6 @@ public class WorkspaceSynchronizer {
 			if (ws == null || ws.isDefaultWorkspace())
 				return;
 
-			IWorkspaceRoot wsroot = eclipse.getRoot();
 
 			if (refresh)
 				refresh(subMonitor.split(20));
