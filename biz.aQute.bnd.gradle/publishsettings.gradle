@@ -6,5 +6,5 @@ rootProject.name = 'biz.aQute.bnd.gradle'
 rootProject.setBuildFileName('publish.gradle')
 
 gradle.rootProject {
-  layout.buildDirectory.value(layout.projectDirectory.dir('generated'))
+	layout.buildDirectory.value(layout.projectDirectory.dir('generated'))
 }

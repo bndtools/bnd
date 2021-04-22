@@ -4,9 +4,9 @@
 
 /* Add bnd gradle plugin as a script dependency */
 buildscript {
-  dependencies {
-    classpath files(bnd_plugin.tokenize(File.pathSeparatorChar))
-  }
+	dependencies {
+		classpath files(bnd_plugin.tokenize(File.pathSeparatorChar))
+	}
 }
 
 apply plugin: 'biz.aQute.bnd.workspace'

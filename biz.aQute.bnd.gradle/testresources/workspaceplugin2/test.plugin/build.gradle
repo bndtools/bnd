@@ -1,9 +1,9 @@
 class MyExtension {
-  String foo
+	String foo
 
-  MyExtension(String foo) {
-    this.foo = foo
-  }
+	MyExtension(String foo) {
+		this.foo = foo
+	}
 }
 
 assert bnd instanceof ExtensionAware

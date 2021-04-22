@@ -5,20 +5,20 @@
 import aQute.bnd.gradle.Resolve
 
 plugins {
-    id 'biz.aQute.bnd.builder'
+	id 'biz.aQute.bnd.builder'
 }
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 configurations {
-  bundles
+	bundles
 }
 
 dependencies {
-    bundles 'org.apache.felix:org.apache.felix.framework:5.4.0'
-    bundles 'org.apache.felix:org.apache.felix.eventadmin:1.4.6'
+	bundles 'org.apache.felix:org.apache.felix.framework:5.4.0'
+	bundles 'org.apache.felix:org.apache.felix.eventadmin:1.4.6'
 }
 
 ext {
@@ -26,32 +26,32 @@ ext {
 }
 
 task create(type: Resolve) {
-   description "Resolve ${name}.bndrun"
-   group 'export'
-   bndrun "${name}.bndrun"
-   outputBndrun = file("${buildDir}/${name}.bndrun")
-   bundles = configurations.bundles
+	description = "Resolve ${name}.bndrun"
+	group = 'export'
+	bndrun "${name}.bndrun"
+	outputBndrun = file("${buildDir}/${name}.bndrun")
+	bundles = configurations.bundles
 }
 
 task same(type: Resolve) {
-   description "Resolve ${name}.bndrun"
-   group 'export'
-   bndrun file("${name}.bndrun")
-   failOnChanges = true
-   bundles = configurations.bundles
+	description = "Resolve ${name}.bndrun"
+	group = 'export'
+	bndrun file("${name}.bndrun")
+	failOnChanges = true
+	bundles = configurations.bundles
 }
 
 task changefail(type: Resolve) {
-   description "Resolve ${name}.bndrun"
-   group 'export'
-   bndrun = file("${name}.bndrun")
-   failOnChanges = true
-   bundles = configurations.bundles
+	description = "Resolve ${name}.bndrun"
+	group = 'export'
+	bndrun = file("${name}.bndrun")
+	failOnChanges = true
+	bundles = configurations.bundles
 }
 
 task resolvefail(type: Resolve) {
-   description "Resolve ${name}.bndrun"
-   group 'export'
-   bndrun = "${name}.bndrun"
-   bundles = configurations.bundles
+	description = "Resolve ${name}.bndrun"
+	group = 'export'
+	bndrun = "${name}.bndrun"
+	bundles = configurations.bundles
 }
