@@ -37,6 +37,7 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
+import aQute.lib.exceptions.RunnableWithException;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
@@ -172,7 +173,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 			final Project model = ourModel;
 
 			try {
-				return Central.bndCall(() -> {
+				List<RunnableWithException> after = new ArrayList<>();
+				Central.bndCall(() -> {
 					boolean force = kind == FULL_BUILD;
 					model.clear();
 					DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);
@@ -288,29 +290,34 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 							BndtoolsConstants.MARKER_BND_BLOCKER);
 					}
 
-					Central.invalidateIndex();
 
 					File buildFiles[] = model.build();
-
-					if (buildFiles != null) {
-						listeners.updateListeners(buildFiles, myProject);
-						buildLog.setFiles(buildFiles.length);
-					}
-
 					// We can now decorate based on the build we just did.
 					BndProjectInfoAdapter adapter = new BndProjectInfoAdapter(model);
 
-					PackageDecorator.updateDecoration(myProject, adapter);
+					after.add(() -> {
+						Central.invalidateIndex();
+						if (buildFiles != null) {
+							listeners.updateListeners(buildFiles, myProject);
+							buildLog.setFiles(buildFiles.length);
+						}
+						PackageDecorator.updateDecoration(myProject, adapter);
+						ComponentMarker.updateComponentMarkers(myProject, adapter);
 
-					ComponentMarker.updateComponentMarkers(myProject, adapter);
-
+					});
 					if (model.isCnf()) {
 						model.getWorkspace()
-							.refresh(); // this is for bnd plugins built in cnf
+							.refresh(); // this is for bnd plugins built in
+										// cnf
 					}
-
 					return report(model, markers);
 				}, monitor);
+
+				for (RunnableWithException r : after) {
+					r.run();
+				}
+
+				return null;
 			} catch (TimeoutException | InterruptedException e) {
 				logger.logWarning("Unable to build project " + myProject.getName(), e);
 				return postpone();
