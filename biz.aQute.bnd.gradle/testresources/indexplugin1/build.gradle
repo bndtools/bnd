@@ -6,7 +6,7 @@ import aQute.bnd.gradle.Bundle
 import aQute.bnd.gradle.Index
 
 plugins {
-    id 'biz.aQute.bnd.builder'
+	id 'biz.aQute.bnd.builder'
 }
 
 ext.projectprop = 'prop.project'
@@ -14,33 +14,33 @@ group = 'test.bnd.gradle'
 version = '1.0.0'
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 dependencies {
-    implementation 'commons-codec:commons-codec:1.5'
-    implementation 'commons-lang:commons-lang:2.6'
-    testImplementation 'junit:junit:4.9'
+	implementation 'commons-codec:commons-codec:1.5'
+	implementation 'commons-lang:commons-lang:2.6'
+	testImplementation 'junit:junit:4.9'
 }
 
 jar {
-  ext.taskprop = 'prop.task'
-  manifest {
-    attributes('Implementation-Title': project.archivesBaseName,
-               'Implementation-Version': project.version,
-               '-includeresource': '{${.}/bar.txt}',
-               '-include': '${.}/other.bnd',
-               'Override': 'This should be overridden by the bnd file'
-              )
-  }
+	ext.taskprop = 'prop.task'
+	manifest {
+		attributes('Implementation-Title': project.archivesBaseName,
+		'Implementation-Version': project.version,
+		'-includeresource': '{${.}/bar.txt}',
+		'-include': '${.}/other.bnd',
+		'Override': 'This should be overridden by the bnd file'
+		)
+	}
 }
 
 task bundle(type: Bundle) {
-   description 'Bundle'
-   group 'build'
-   from sourceSets.test.output
-   archiveBaseName = "${project.archivesBaseName}_bundle"
-   bnd = '''
+	description = 'Bundle'
+	group = 'build'
+	from sourceSets.test.output
+	archiveBaseName = "${project.archivesBaseName}_bundle"
+	bnd = '''
 -exportcontents: doubler.impl
 -sources: true
 My-Header: my-value
@@ -52,45 +52,45 @@ Project-Output: ${project.output}
 Project-Sourcepath: ${project.sourcepath}
 Project-Buildpath: ${project.buildpath}
 '''
-   bnd 'Here: ${.}'
-   bnd '-includeresource.lib': 'commons-lang-2.6.jar;lib:=true'
-   sourceSet = sourceSets.test
-   classpath = configurations.compileClasspath
-   classpath jar
-   archiveVersion = '1.1.0'
+	bnd 'Here: ${.}'
+	bnd '-includeresource.lib': 'commons-lang-2.6.jar;lib:=true'
+	sourceSet = sourceSets.test
+	classpath = configurations.compileClasspath
+	classpath jar
+	archiveVersion = '1.1.0'
 }
 
 artifacts {
-  runtimeOnly bundle
-  archives bundle
+	runtimeOnly bundle
+	archives bundle
 }
 
 task indexer(type: Index) {
-   description 'Indexer'
-   group 'build'
-   repositoryName = project.name
-   bundles fileTree(destinationDirectory.dir(libsDirName)) {
-    include '**/*.jar'
-    exclude '**/*-latest.jar'
-    exclude '**/*-sources.jar'
-    exclude '**/*-javadoc.jar'
-    builtBy tasks.withType(Jar)
-  }
+	description = 'Indexer'
+	group = 'build'
+	repositoryName = project.name
+	bundles fileTree(destinationDirectory.dir(libsDirName)) {
+		include '**/*.jar'
+		exclude '**/*-latest.jar'
+		exclude '**/*-sources.jar'
+		exclude '**/*-javadoc.jar'
+		builtBy tasks.withType(Jar)
+	}
 }
 
 def indexDir = objects.directoryProperty().convention(layout.buildDirectory.dir('index'))
 
 task copybundles(type: Copy) {
-  from jar
-  into indexDir.dir('bundles')
+	from jar
+	into indexDir.dir('bundles')
 }
 
 task indexer2(type: Index) {
-   description 'Indexer'
-   group 'build'
-   indexName = 'index2.xml'
-   gzip = true
-   destinationDirectory = indexDir
-   base = indexDir.map({ it.asFile.toURI() })
-   bundles = objects.fileCollection().from(copybundles).asFileTree
+	description = 'Indexer'
+	group = 'build'
+	indexName = 'index2.xml'
+	gzip = true
+	destinationDirectory = indexDir
+	base = indexDir.map({ it.asFile.toURI() })
+	bundles = objects.fileCollection().from(copybundles).asFileTree
 }

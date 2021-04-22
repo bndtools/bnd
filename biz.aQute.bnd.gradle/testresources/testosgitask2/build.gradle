@@ -5,34 +5,34 @@
 import aQute.bnd.gradle.TestOSGi
 
 plugins {
-    id 'biz.aQute.bnd.builder'
+	id 'biz.aQute.bnd.builder'
 }
 
 version = '1.0.0'
 
 repositories {
-    mavenLocal().metadataSources { mavenPom(); artifact() }
-    mavenCentral()
+	mavenLocal().metadataSources { mavenPom(); artifact() }
+	mavenCentral()
 }
 
 configurations {
-  framework
+	framework
 }
 
 dependencies {
-    implementation "biz.aQute.bnd:biz.aQute.junit:${bnd_version}"
-    framework 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
+	implementation "biz.aQute.bnd:biz.aQute.junit:${bnd_version}"
+	framework 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
 }
 
 task testosgi(type: TestOSGi) {
-   description "OSGi Test ${name}.bndrun"
-   group 'test'
-   inputs.files jar
-   bndrun "${name}.bndrun"
-   bundles configurations.framework
-   workingDir new File(temporaryDir, 'temptemp')
+	description = "OSGi Test ${name}.bndrun"
+	group = 'test'
+	inputs.files jar
+	bndrun = file("${name}.bndrun")
+	bundles configurations.framework
+	workingDir = new File(temporaryDir, 'temptemp')
 }
 
 check {
-  dependsOn testosgi
+	dependsOn testosgi
 }

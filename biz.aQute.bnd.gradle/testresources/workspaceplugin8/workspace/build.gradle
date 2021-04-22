@@ -6,18 +6,18 @@
  */
 
 buildscript {
-  dependencies {
-    classpath files(bnd_plugin.tokenize(File.pathSeparatorChar))
-  }
+	dependencies {
+		classpath files(bnd_plugin.tokenize(File.pathSeparatorChar))
+	}
 }
 
 apply plugin: 'biz.aQute.bnd.workspace'
 
 task('build') {
-  doLast {
-    if (!project.ext.has('bndWorkspace')) {
-      throw new GradleException("workspace does not have a Bnd Workspace")
-    }
-    println "### Project ${project.name} ${project.path} ${bndWorkspace}"
-  }
+	doLast {
+		if (!project.ext.has('bndWorkspace')) {
+			throw new GradleException("workspace does not have a Bnd Workspace")
+		}
+		println "### Project ${project.name} ${project.path} ${bndWorkspace}"
+	}
 }

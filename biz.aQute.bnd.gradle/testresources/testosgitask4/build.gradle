@@ -5,39 +5,39 @@
 import aQute.bnd.gradle.TestOSGi
 
 plugins {
-    id 'biz.aQute.bnd.builder'
+	id 'biz.aQute.bnd.builder'
 }
 
 version = '1.0.0'
 testResultsDirName = 'testing-results'
 
 repositories {
-    mavenLocal().metadataSources { mavenPom(); artifact() }
-    mavenCentral()
+	mavenLocal().metadataSources { mavenPom(); artifact() }
+	mavenCentral()
 }
 
 dependencies {
-    implementation "biz.aQute.bnd:biz.aQute.junit:${bnd_version}"
-    runtimeOnly 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
+	implementation "biz.aQute.bnd:biz.aQute.junit:${bnd_version}"
+	runtimeOnly 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
 }
 
 task testosgiIgnoreFail(type: TestOSGi) {
-   description "OSGi Test ${name}.bndrun"
-   group 'test'
-   inputs.files jar
-   bndrun "${name}.bndrun"
-   ignoreFailures = true
+	description = "OSGi Test ${name}.bndrun"
+	group = 'test'
+	inputs.files jar
+	bndrun = file("${name}.bndrun")
+	ignoreFailures = true
 }
 
 task testosgiFail(type: TestOSGi) {
-   description "OSGi Test ${name}.bndrun"
-   group 'test'
-   inputs.files jar
-   bndrun "${name}.bndrun"
-   ignoreFailures = false
-   resultsDirectory = file("${buildDir}/${name}-results")
+	description = "OSGi Test ${name}.bndrun"
+	group = 'test'
+	inputs.files jar
+	bndrun = file("${name}.bndrun")
+	ignoreFailures = false
+	resultsDirectory = layout.buildDirectory.dir("${name}-results")
 }
 
 check {
-  dependsOn testosgiIgnoreFail, testosgiFail
+	dependsOn testosgiIgnoreFail, testosgiFail
 }

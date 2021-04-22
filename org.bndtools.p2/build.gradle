@@ -6,156 +6,156 @@ import aQute.bnd.osgi.Jar
 import org.apache.tools.ant.filters.ReplaceTokens
 
 interface Injected {
-    @Inject ExecOperations getExec() 
-    @Inject FileSystemOperations getFs() 
+	@Inject ExecOperations getExec()
+	@Inject FileSystemOperations getFs()
 }
 
 /* Configure this project */
 String masterVersion = String.format('%s-%s-g%.7s',
-                          bnd('gittag'),
-                          bnd('timestamp'),
-                          bnd('Git-SHA'))
+		bnd('gittag'),
+		bnd('timestamp'),
+		bnd('Git-SHA'))
 
 def p2Plugins = tasks.register('p2Plugins', Sync.class) {
-  dependsOn 'jarDependencies'
-  from    bnd('plugins').tokenize(',')
-  into    layout.buildDirectory.dir('plugins')
+	dependsOn 'jarDependencies'
+	from bnd('plugins').tokenize(',')
+	into layout.buildDirectory.dir('plugins')
 }
 
 def p2FeatureProperties = tasks.register('p2FeatureProperties', WriteProperties.class) {
-  inputs.files(p2Plugins).withPropertyName('p2Plugins')
-  outputFile = layout.buildDirectory.file('feature.properties')
-  def plugins = objects.fileTree().from(p2Plugins.map { it.destinationDir })
-  doFirst('collect') { t ->
-    plugins.each {
-      new Jar(it).withCloseable { jar ->
-        t.property("${jar.getBsn()}-version", jar.getVersion())
-      }
-    }
-  }
+	inputs.files(p2Plugins).withPropertyName('p2Plugins')
+	outputFile = layout.buildDirectory.file('feature.properties')
+	def plugins = objects.fileTree().from(p2Plugins.map { it.destinationDir })
+	doFirst('collect') { t ->
+		plugins.each {
+			new Jar(it).withCloseable { jar ->
+				t.property("${jar.getBsn()}-version", jar.getVersion())
+			}
+		}
+	}
 }
 
 def p2FeatureMain = tasks.register('p2FeatureMain', Zip.class) {
-  inputs.files(p2FeatureProperties).withPropertyName('p2FeatureProperties')
-  destinationDirectory = layout.buildDirectory.dir('features')
-  archiveFileName = 'bndtools.main.feature.jar'
-  from             'features/bndtools.main'
-  include          'feature.xml'
-  def propertiesFile = p2FeatureProperties.map { it.outputFile }
-  doFirst('filter') { t ->
-    Properties properties = new Properties()
-    propertiesFile.get().withInputStream {
-        properties.load(it)
-        properties['master-version'] = masterVersion
-    }
-    t.filter(ReplaceTokens, 'tokens': properties)
-  }
+	inputs.files(p2FeatureProperties).withPropertyName('p2FeatureProperties')
+	destinationDirectory = layout.buildDirectory.dir('features')
+	archiveFileName = 'bndtools.main.feature.jar'
+	from 'features/bndtools.main'
+	include 'feature.xml'
+	def propertiesFile = p2FeatureProperties.map { it.outputFile }
+	doFirst('filter') { t ->
+		Properties properties = new Properties()
+		propertiesFile.get().withInputStream {
+			properties.load(it)
+			properties['master-version'] = masterVersion
+		}
+		t.filter(ReplaceTokens, 'tokens': properties)
+	}
 }
 
 def p2FeatureM2e = tasks.register('p2FeatureM2e', Zip.class) {
-  inputs.files(p2FeatureProperties).withPropertyName('p2FeatureProperties')
-  destinationDirectory = layout.buildDirectory.dir('features')
-  archiveFileName    = 'bndtools.m2e.feature.jar'
-  from             'features/bndtools.m2e'
-  include          'feature.xml'
-  def propertiesFile = p2FeatureProperties.map { it.outputFile }
-  doFirst('filter') { t ->
-    Properties properties = new Properties()
-    propertiesFile.get().withInputStream {
-        properties.load(it)
-        properties['master-version'] = masterVersion
-    }
-    t.filter(ReplaceTokens, 'tokens': properties)
-  }
+	inputs.files(p2FeatureProperties).withPropertyName('p2FeatureProperties')
+	destinationDirectory = layout.buildDirectory.dir('features')
+	archiveFileName = 'bndtools.m2e.feature.jar'
+	from 'features/bndtools.m2e'
+	include 'feature.xml'
+	def propertiesFile = p2FeatureProperties.map { it.outputFile }
+	doFirst('filter') { t ->
+		Properties properties = new Properties()
+		propertiesFile.get().withInputStream {
+			properties.load(it)
+			properties['master-version'] = masterVersion
+		}
+		t.filter(ReplaceTokens, 'tokens': properties)
+	}
 }
 
 def p2FeaturePde = tasks.register('p2FeaturePde', Zip.class) {
-  inputs.files(p2FeatureProperties).withPropertyName('p2FeatureProperties')
-  destinationDirectory = layout.buildDirectory.dir('features')
-  archiveFileName    = 'bndtools.pde.feature.jar'
-  from             'features/bndtools.pde'
-  include          'feature.xml'
-  def propertiesFile = p2FeatureProperties.map { it.outputFile }
-  doFirst('filter') { t ->
-    Properties properties = new Properties()
-    propertiesFile.get().withInputStream {
-        properties.load(it)
-        properties['master-version'] = masterVersion
-    }
-    t.filter(ReplaceTokens, 'tokens': properties)
-  }
+	inputs.files(p2FeatureProperties).withPropertyName('p2FeatureProperties')
+	destinationDirectory = layout.buildDirectory.dir('features')
+	archiveFileName = 'bndtools.pde.feature.jar'
+	from 'features/bndtools.pde'
+	include 'feature.xml'
+	def propertiesFile = p2FeatureProperties.map { it.outputFile }
+	doFirst('filter') { t ->
+		Properties properties = new Properties()
+		propertiesFile.get().withInputStream {
+			properties.load(it)
+			properties['master-version'] = masterVersion
+		}
+		t.filter(ReplaceTokens, 'tokens': properties)
+	}
 }
 
 def p2 = tasks.register('p2') {
-  description 'Publish the p2 repositories.'
-  group       'release'
-  enabled JavaVersion.current().isJava8()
-  inputs.files(p2Plugins).withPropertyName('p2Plugins')
-  inputs.files(p2FeatureMain).withPropertyName('p2FeatureMain')
-  inputs.files(p2FeatureM2e).withPropertyName('p2FeatureM2e')
-  inputs.files(p2FeaturePde).withPropertyName('p2FeaturePde')
-  inputs.file('p2.xml').withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName('p2.xml')
-  inputs.file('features/category.xml').withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName('category.xml')
-  def injected = objects.newInstance(Injected) 
-  def buildDirectoryProperty = layout.buildDirectory
-  ext.destinationDirectory = buildDirectoryProperty.dir('p2')
-  outputs.dir(destinationDirectory).withPropertyName('destinationDirectory')
-  def eclipseDir = file('eclipse-3.5.2')
-  def categoryURI = uri('features/category.xml')
-  doLast('exec') { t ->
-    injected.exec.javaexec {
-      classpath "${eclipseDir}/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar"
-      main = 'org.eclipse.equinox.launcher.Main'
-      if (logger.isDebugEnabled()) {
-        args '-consoleLog'
-      }
-      args '-application'
-      args 'org.eclipse.ant.core.antRunner'
-      args '-data'
-      args buildDirectoryProperty.get().asFile
-      if (logger.isDebugEnabled()) {
-        args '-debug'
-      } else {
-        args '-quiet'
-      }
-      args '-buildfile'
-      args 'p2.xml'
-      args 'p2Bndtools'
-    }.assertNormalExitValue()
+	description = 'Publish the p2 repositories.'
+	group = 'release'
+	enabled = JavaVersion.current().isJava8()
+	inputs.files(p2Plugins).withPropertyName('p2Plugins')
+	inputs.files(p2FeatureMain).withPropertyName('p2FeatureMain')
+	inputs.files(p2FeatureM2e).withPropertyName('p2FeatureM2e')
+	inputs.files(p2FeaturePde).withPropertyName('p2FeaturePde')
+	inputs.file('p2.xml').withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName('p2.xml')
+	inputs.file('features/category.xml').withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName('category.xml')
+	def injected = objects.newInstance(Injected)
+	def buildDirectoryProperty = layout.buildDirectory
+	ext.destinationDirectory = buildDirectoryProperty.dir('p2')
+	outputs.dir(destinationDirectory).withPropertyName('destinationDirectory')
+	def eclipseDir = file('eclipse-3.5.2')
+	def categoryURI = uri('features/category.xml')
+	doLast('exec') { t ->
+		injected.exec.javaexec {
+			classpath "${eclipseDir}/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar"
+			main = 'org.eclipse.equinox.launcher.Main'
+			if (logger.isDebugEnabled()) {
+				args '-consoleLog'
+			}
+			args '-application'
+			args 'org.eclipse.ant.core.antRunner'
+			args '-data'
+			args buildDirectoryProperty.get().asFile
+			if (logger.isDebugEnabled()) {
+				args '-debug'
+			} else {
+				args '-quiet'
+			}
+			args '-buildfile'
+			args 'p2.xml'
+			args 'p2Bndtools'
+		}.assertNormalExitValue()
 
-    injected.exec.javaexec {
-      classpath "${eclipseDir}/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar"
-      main = 'org.eclipse.equinox.launcher.Main'
-      if (logger.isDebugEnabled()) {
-        args '-consoleLog'
-      }
-      args '-application'
-      args 'org.eclipse.equinox.p2.publisher.CategoryPublisher'
-      args '-data'
-      args buildDirectoryProperty.get().asFile
-      args '-metadataRepository'
-      args destinationDirectory.get().asFile.toURI()
-      args '-categoryDefinition'
-      args categoryURI
-      args '-compress'
-    }.assertNormalExitValue()
+		injected.exec.javaexec {
+			classpath "${eclipseDir}/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar"
+			main = 'org.eclipse.equinox.launcher.Main'
+			if (logger.isDebugEnabled()) {
+				args '-consoleLog'
+			}
+			args '-application'
+			args 'org.eclipse.equinox.p2.publisher.CategoryPublisher'
+			args '-data'
+			args buildDirectoryProperty.get().asFile
+			args '-metadataRepository'
+			args destinationDirectory.get().asFile.toURI()
+			args '-categoryDefinition'
+			args categoryURI
+			args '-compress'
+		}.assertNormalExitValue()
 
-    injected.fs.delete {
-      delete fileTree(eclipseDir).include('configuration/*.log'),
-        "${eclipseDir}/configuration/org.eclipse.core.runtime",
-        "${eclipseDir}/configuration/org.eclipse.equinox.app",
-        "${eclipseDir}/configuration/org.eclipse.osgi",
-        "${eclipseDir}/p2"
-      }
-    }
+		injected.fs.delete {
+			delete fileTree(eclipseDir).include('configuration/*.log'),
+					"${eclipseDir}/configuration/org.eclipse.core.runtime",
+					"${eclipseDir}/configuration/org.eclipse.equinox.app",
+					"${eclipseDir}/configuration/org.eclipse.osgi",
+					"${eclipseDir}/p2"
+		}
+	}
 }
 
 tasks.named('jar') {
-  inputs.files(p2).withPropertyName('p2')
+	inputs.files(p2).withPropertyName('p2')
 }
 
 tasks.named('release') {
-  onlyIf {
-    JavaVersion.current().isJava8()
-  }
+	onlyIf {
+		JavaVersion.current().isJava8()
+	}
 }

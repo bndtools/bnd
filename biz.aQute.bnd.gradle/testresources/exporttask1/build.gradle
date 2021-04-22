@@ -5,20 +5,20 @@
 import aQute.bnd.gradle.Export
 
 plugins {
-    id 'biz.aQute.bnd.builder'
+	id 'biz.aQute.bnd.builder'
 }
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 configurations {
-  bundles
+	bundles
 }
 
 dependencies {
-    bundles 'org.apache.felix:org.apache.felix.framework:5.4.0'
-    bundles 'org.apache.felix:org.apache.felix.eventadmin:1.4.6'
+	bundles 'org.apache.felix:org.apache.felix.framework:5.4.0'
+	bundles 'org.apache.felix:org.apache.felix.eventadmin:1.4.6'
 }
 
 ext {
@@ -26,24 +26,24 @@ ext {
 }
 
 task export(type: Export) {
-   description "Export ${name}.bndrun"
-   group 'export'
-   bndrun layout.projectDirectory.file("${name}.bndrun")
-   bundles = configurations.bundles
+	description = "Export ${name}.bndrun"
+	group = 'export'
+	bndrun = layout.projectDirectory.file("${name}.bndrun")
+	bundles = configurations.bundles
 }
 
 task exporter(type: Export) {
-   description "Exporter for ${name}.bndrun"
-   group 'export'
-   bndrun objects.fileProperty().value(layout.projectDirectory.file("${name}.bndrun"))
-   bundles = configurations.bundles
-   exporter = 'bnd.runbundles'
+	description = "Exporter for ${name}.bndrun"
+	group = 'export'
+	bndrun = objects.fileProperty().value(layout.projectDirectory.file("${name}.bndrun"))
+	bundles = configurations.bundles
+	exporter = 'bnd.runbundles'
 }
 
 task runbundles(type: Export) {
-   description "Export ${name}.bndrun"
-   group 'export'
-   bndrun "${name}.bndrun"
-   bundlesOnly = true
-   bundles = configurations.bundles
+	description = "Export ${name}.bndrun"
+	group = 'export'
+	bndrun = file("${name}.bndrun")
+	bundlesOnly = true
+	bundles = configurations.bundles
 }

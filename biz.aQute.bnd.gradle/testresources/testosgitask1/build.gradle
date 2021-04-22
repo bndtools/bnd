@@ -6,7 +6,7 @@ import aQute.bnd.gradle.Resolve
 import aQute.bnd.gradle.TestOSGi
 
 plugins {
-    id 'biz.aQute.bnd.builder'
+	id 'biz.aQute.bnd.builder'
 }
 
 version = '1.0.0'
@@ -14,13 +14,13 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 repositories {
-    mavenLocal().metadataSources { mavenPom(); artifact() }
-    mavenCentral()
+	mavenLocal().metadataSources { mavenPom(); artifact() }
+	mavenCentral()
 }
 
 dependencies {
-    implementation "biz.aQute.bnd:biz.aQute.junit:${bnd_version}"
-    runtimeOnly 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
+	implementation "biz.aQute.bnd:biz.aQute.junit:${bnd_version}"
+	runtimeOnly 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
 }
 
 ext {
@@ -28,19 +28,19 @@ ext {
 }
 
 def resolveTask = tasks.register('resolve', Resolve) {
-   description 'Resolve testosgi.bndrun'
-   group 'test'
-   inputs.files tasks.withType(Jar)
-   bndrun = file('testosgi.bndrun')
-   outputBndrun = layout.buildDirectory.file('testosgi.bndrun')
+	description = 'Resolve testosgi.bndrun'
+	group = 'test'
+	inputs.files tasks.withType(Jar)
+	bndrun = file('testosgi.bndrun')
+	outputBndrun = layout.buildDirectory.file('testosgi.bndrun')
 }
 
 def testosgiTask = tasks.register('testosgi', TestOSGi) {
-   description 'OSGi Test testosgi.bndrun'
-   group 'test'
-   bndrun = resolveTask.flatMap { it.outputBndrun }
+	description = 'OSGi Test testosgi.bndrun'
+	group = 'test'
+	bndrun = resolveTask.flatMap { it.outputBndrun }
 }
 
 def checkTask = tasks.named('check') {
-  dependsOn testosgiTask
+	dependsOn testosgiTask
 }

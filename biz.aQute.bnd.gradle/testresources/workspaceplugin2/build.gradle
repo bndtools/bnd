@@ -10,9 +10,9 @@ import aQute.bnd.osgi.Constants
 
 /* Add bnd gradle plugin as a script dependency */
 buildscript {
-  dependencies {
-    classpath bndPlugin
-  }
+	dependencies {
+		classpath bndPlugin
+	}
 }
 
 /* Initialize the bnd workspace */
@@ -24,8 +24,8 @@ ext.cnf = rootProject.project(bnd_cnf)
 
 /* Configure the subprojects */
 subprojects {
-  def bndProject = bndWorkspace.getProject(name)
-  if (bndProject != null) {
-    plugins.apply 'biz.aQute.bnd'
-  }
+	def bndProject = bndWorkspace.getProject(name)
+	if (bndProject != null) {
+		plugins.apply 'biz.aQute.bnd'
+	}
 }
