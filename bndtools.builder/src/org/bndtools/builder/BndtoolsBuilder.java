@@ -4,7 +4,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -17,11 +16,9 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.builder.classpath.BndContainerInitializer;
 import org.bndtools.builder.decorator.ui.PackageDecorator;
-import org.bndtools.utils.workspace.WorkspaceUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
@@ -37,6 +34,7 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 import aQute.lib.exceptions.RunnableWithException;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
@@ -77,7 +75,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 	}
 
 	private BuildLogger	buildLog;
-	private IProject[]	dependsOn;
 	private boolean		postponed;
 
 	/**
@@ -107,14 +104,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
 			MarkerSupport markers = new MarkerSupport(myProject);
 
-			//
-			// First time after a restart
-			//
-
-			if (dependsOn == null) {
-				dependsOn = myProject.getDescription()
-					.getDynamicReferences();
-			}
 
 			Project ourModel = null;
 			try {
@@ -124,7 +113,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 				logger.logError("Exception while trying to fetch bnd project for " + myProject.getName(), e);
 				markers.createMarker(null, IMarker.SEVERITY_ERROR, "Exception while trying to fetch bnd project: " + e,
 					BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
-				return noreport();
+				return null;
 			}
 			if (ourModel == null) {
 				markers.deleteMarkers("*");
@@ -168,11 +157,13 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 					}
 				}
 				markers.createMarker(null, IMarker.SEVERITY_ERROR, msg, BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
-				return noreport();
+				return null;
 			}
 			final Project model = ourModel;
 
 			try {
+				markers.deleteMarkers(BndtoolsConstants.MARKER_BND_BLOCKER);
+
 				List<RunnableWithException> after = new ArrayList<>();
 				Central.bndCall(() -> {
 					boolean force = kind == FULL_BUILD;
@@ -208,18 +199,15 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 						model.setDelayRunDependencies(true);
 						model.prepare();
 
-						markers.validate(model);
-						markers.setMarkers(model, BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
+						Processor processor = new Processor();
+						processor.getInfo(model);
+						after.add(() -> {
+							markers.validate(model);
+							markers.setMarkers(processor, BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
+						});
 						model.clear();
 
-						dependsOn = calculateDependsOn(model);
-
 						boolean changedClasspath = setupChanged && requestClasspathContainerUpdate(myProject);
-
-						if (changedClasspath) {
-							buildLog.basic("Classpath changed");
-							return postpone();
-						}
 
 						force = true;
 					}
@@ -238,11 +226,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 						force = true;
 					}
 
-					if (!force && hasUpstreamChanges()) {
-						buildLog.basic("project had upstream changes");
-						force = true;
-					}
-
 					if (!force && delta.hasNoTarget(model)) {
 						buildLog.basic("project has no target files");
 						force = true;
@@ -256,7 +239,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
 					if (!force) {
 						buildLog.full("Auto/Incr. build, no changes detected");
-						return noreport();
+						return null;
 					}
 
 					WorkingSetTracker.doWorkingSets(model, myProject);
@@ -264,38 +247,47 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 					if (model.isNoBundles()) {
 						buildLog.basic("-nobundles was set, so no build");
 						buildLog.setFiles(0);
-						return noreport();
+						return null;
 					}
-
-					markers.deleteMarkers(BndtoolsConstants.MARKER_BND_BLOCKER);
 
 					if (markers.hasBlockingErrors(delta)) {
 						CompileErrorAction actionOnCompileError = getActionOnCompileError();
 						if (actionOnCompileError != CompileErrorAction.build) {
-							if (actionOnCompileError == CompileErrorAction.delete) {
-								buildLog.basic("Blocking errors, delete build files, quit");
-								deleteBuildFiles(model);
-								markers.createMarker(model, IMarker.SEVERITY_ERROR, "Build errors, deleted files",
-									BndtoolsConstants.MARKER_BND_BLOCKER);
-							} else {
-								buildLog.basic("Blocking errors, leave old build files, quit");
-								markers.createMarker(model, IMarker.SEVERITY_ERROR, "Build errors, leaving files",
-									BndtoolsConstants.MARKER_BND_BLOCKER);
-							}
-							return noreport();
+							after.add(() -> {
+								if (actionOnCompileError == CompileErrorAction.delete) {
+									buildLog.basic("Blocking errors, delete build files, quit");
+									deleteBuildFiles(model);
+									markers.createMarker(model, IMarker.SEVERITY_ERROR, "Build errors, deleted files",
+										BndtoolsConstants.MARKER_BND_BLOCKER);
+								} else {
+									buildLog.basic("Blocking errors, leave old build files, quit");
+									markers.createMarker(model, IMarker.SEVERITY_ERROR, "Build errors, leaving files",
+										BndtoolsConstants.MARKER_BND_BLOCKER);
+								}
+							});
+							return null;
 						}
-						buildLog.basic("Blocking errors, continuing anyway");
-						markers.createMarker(model, IMarker.SEVERITY_WARNING,
-							"Project " + myProject + " has blocking errors but requested to continue anyway",
-							BndtoolsConstants.MARKER_BND_BLOCKER);
-					}
 
+						buildLog.basic("Blocking errors, continuing anyway");
+						after.add(() -> {
+							markers.createMarker(model, IMarker.SEVERITY_WARNING,
+								"Project " + myProject + " has blocking errors but requested to continue anyway",
+								BndtoolsConstants.MARKER_BND_BLOCKER);
+						});
+					}
 
 					File buildFiles[] = model.build();
 					// We can now decorate based on the build we just did.
 					BndProjectInfoAdapter adapter = new BndProjectInfoAdapter(model);
+					File target = model.getTarget();
+					Processor processor = new Processor();
+					processor.getInfo(model);
 
 					after.add(() -> {
+
+						IResource r = Central.toResource(target);
+						r.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+
 						Central.invalidateIndex();
 						if (buildFiles != null) {
 							listeners.updateListeners(buildFiles, myProject);
@@ -303,14 +295,16 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 						}
 						PackageDecorator.updateDecoration(myProject, adapter);
 						ComponentMarker.updateComponentMarkers(myProject, adapter);
-
+						markers.setMarkers(processor, BndtoolsConstants.MARKER_BND_PROBLEM);
+						processor.close();
 					});
 					if (model.isCnf()) {
 						model.getWorkspace()
 							.refresh(); // this is for bnd plugins built in
 										// cnf
 					}
-					return report(model, markers);
+					return null;
+
 				}, monitor);
 
 				for (RunnableWithException r : after) {
@@ -322,7 +316,9 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 				logger.logWarning("Unable to build project " + myProject.getName(), e);
 				return postpone();
 			}
-		} catch (Exception e) {
+		} catch (
+
+		Exception e) {
 			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Build Error!", e));
 		} finally {
 			if (buildLog.isActive())
@@ -331,19 +327,10 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 		}
 	}
 
-	private IProject[] noreport() {
-		return dependsOn;
-	}
-
-	private IProject[] report(Project model, MarkerSupport markers) throws Exception {
-		markers.setMarkers(model, BndtoolsConstants.MARKER_BND_PROBLEM);
-		return dependsOn;
-	}
-
 	private IProject[] postpone() {
 		postponed = true;
 		rememberLastBuiltState();
-		return dependsOn;
+		return null;
 	}
 
 	/**
@@ -389,31 +376,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 		}
 	}
 
-	/*
-	 * Check if any of the projects of which we depend has changes. We use the
-	 * generated/buildfiles as the marker.
-	 */
-	private boolean hasUpstreamChanges() throws Exception {
-
-		for (IProject upstream : dependsOn) {
-			if (!upstream.exists())
-				continue;
-
-			Project up = Central.getProject(upstream);
-			if (up == null)
-				continue;
-
-			IResourceDelta delta = getDelta(upstream);
-			DeltaWrapper dw = new DeltaWrapper(up, delta, buildLog);
-			if (dw.hasBuildfile()) {
-				buildLog.full("Upstream project %s changed", up);
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	private boolean requestClasspathContainerUpdate(IProject myProject) throws CoreException {
 		IJavaProject javaProject = JavaCore.create(myProject);
 		return (javaProject == null) ? false : BndContainerInitializer.requestClasspathContainerUpdate(javaProject);
@@ -427,32 +389,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 					IO.delete(f);
 			}
 		IO.delete(new File(model.getTarget(), Constants.BUILDFILES));
-	}
-
-	private IProject[] calculateDependsOn(Project model) throws Exception {
-		Collection<Project> dependsOn = model.getDependson();
-
-		IWorkspaceRoot wsroot = getProject().getWorkspace()
-			.getRoot();
-
-		List<IProject> result = new ArrayList<>(dependsOn.size() + 1);
-
-		IProject cnfProject = WorkspaceUtils.findCnfProject(wsroot, model.getWorkspace());
-		if (cnfProject != null) {
-			result.add(cnfProject);
-		}
-
-		for (Project project : dependsOn) {
-			IProject targetProj = WorkspaceUtils.findOpenProject(wsroot, project);
-			if (targetProj == null)
-				logger.logWarning("No open project in workspace for Bnd '-dependson' dependency: " + project.getName(),
-					null);
-			else
-				result.add(targetProj);
-		}
-
-		buildLog.full("Calculated dependsOn list: %s", result);
-		return result.toArray(new IProject[0]);
 	}
 
 	private CompileErrorAction getActionOnCompileError() {

@@ -67,16 +67,17 @@ public class EclipseUtil {
 			IO.mkdirs(s);
 		}
 
-		Tag tsttag = new Tag(classpath, "classpathentry");
-		tsttag.addAttribute("kind", "src");
-		tsttag.addAttribute("output", relative(model, model.getTestOutput()));
-		tsttag.addAttribute("path", relative(model, model.getTestSrc()));
-		Tag attributes = new Tag(tsttag, "attributes");
-		Tag attribute = new Tag(attributes, "attribute");
-		attribute.addAttribute("name", "test");
-		attribute.addAttribute("value", "true");
-		IO.mkdirs(model.getTestSrc());
-
+		File testSrc = model.getTestSrc();
+		if (testSrc != null && testSrc.isDirectory() && testSrc.list().length > 0) {
+			Tag tsttag = new Tag(classpath, "classpathentry");
+			tsttag.addAttribute("kind", "src");
+			tsttag.addAttribute("output", relative(model, model.getTestOutput()));
+			tsttag.addAttribute("path", relative(model, model.getTestSrc()));
+			Tag attributes = new Tag(tsttag, "attributes");
+			Tag attribute = new Tag(attributes, "attribute");
+			attribute.addAttribute("name", "test");
+			attribute.addAttribute("value", "true");
+		}
 		return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + classpath.toString();
 	}
 
@@ -129,6 +130,7 @@ public class EclipseUtil {
 			IO.store(project, projectFile);
 		}
 	}
+
 	public static String getProjectDescription(Project model) {
 		Tag projectDescription = new Tag("projectDescription");
 		new Tag(projectDescription, "name", model.getName());

@@ -288,13 +288,17 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
 		if (path == null)
 			return null;
 
-		IFile file = ResourcesPlugin.getWorkspace()
-			.getRoot()
-			.getFile(path);
-		if (file != null)
-			return file.getLocation()
-				.toFile()
-				.getAbsoluteFile();
+		try {
+			IFile file = ResourcesPlugin.getWorkspace()
+				.getRoot()
+				.getFile(path);
+			if (file != null)
+				return file.getLocation()
+					.toFile()
+					.getAbsoluteFile();
+		} catch (Exception e) {
+			// ignore
+		}
 		return null;
 	}
 }
