@@ -405,7 +405,8 @@ public class BndtoolsExplorer extends PackageExplorerPart {
 					Job syncjob = Job.create("Sync bnd workspace", monitor -> {
 						s.synchronize(true, monitor, this::done);
 					});
-					syncjob.setRule(null);
+					syncjob.setRule(ResourcesPlugin.getWorkspace()
+						.getRoot());
 					syncjob.schedule();
 				} catch (Exception e) {
 					throw Exceptions.duck(e);

@@ -104,7 +104,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
 			MarkerSupport markers = new MarkerSupport(myProject);
 
-
 			Project ourModel = null;
 			try {
 				ourModel = Central.getProject(myProject);
@@ -307,10 +306,13 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
 				}, monitor);
 
-				for (RunnableWithException r : after) {
-					r.run();
-				}
-
+				monitor.subTask("Decorating " + myProject);
+				for (RunnableWithException r : after)
+					try {
+						r.run();
+					} catch (Exception e) {
+						logger.logError("unexpected exception", e);
+					}
 				return null;
 			} catch (TimeoutException | InterruptedException e) {
 				logger.logWarning("Unable to build project " + myProject.getName(), e);
