@@ -40,7 +40,7 @@ public class LaunchpadConfigurationTest {
 	@Test
 	public void testConfiguration() throws Exception {
 
-		assertThat(lp.waitForService(X.class, 100)
+		assertThat(lp.waitForService(X.class, 2000)
 			.isPresent()).isFalse();
 
 		Bundle bundle = lp.bundle()
@@ -50,7 +50,7 @@ public class LaunchpadConfigurationTest {
 		assertNotNull(bundle);
 		assertTrue(bundle.getState() == Bundle.ACTIVE);
 
-		assertThat(lp.waitForService(X.class, 500)
+		assertThat(lp.waitForService(X.class, 10_000)
 			.isPresent()).isTrue();
 
 		bundle.uninstall();

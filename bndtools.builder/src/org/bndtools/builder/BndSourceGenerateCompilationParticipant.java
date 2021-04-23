@@ -31,6 +31,7 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 	public boolean isActive(IJavaProject javaProject) {
 		try {
 			MarkerSupport markers = new MarkerSupport(javaProject.getProject());
+			markers.deleteMarkers(MARKER_BND_GENERATE);
 			Project project = Central.getProject(javaProject.getProject());
 			if (project == null)
 				return false;
@@ -54,7 +55,6 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 			if (workspace == null || workspace.isDefaultWorkspace()) {
 				return READY_FOR_BUILD;
 			}
-			markers.deleteMarkers(MARKER_BND_GENERATE);
 
 			List<RunnableWithException> after = new ArrayList<>();
 			Processor processor = new Processor();

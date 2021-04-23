@@ -2,11 +2,10 @@ package bndtools.central;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -25,11 +24,11 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.jobs.Job;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.eclipse.EclipseUtil;
+import aQute.lib.strings.Strings;
 import bndtools.Plugin;
 
 /**
@@ -52,7 +51,7 @@ public class WorkspaceSynchronizer {
 	boolean build(Workspace workspace, IProgressMonitor monitor) throws CoreException {
 
 		try {
-			eclipse.build(IncrementalProjectBuilder.INCREMENTAL_BUILD, monitor);
+			eclipse.build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
 		} catch (OperationCanceledException e) {
 			return true;
 		} catch (Exception e) {
@@ -71,136 +70,83 @@ public class WorkspaceSynchronizer {
 	public void synchronize(boolean refresh, IProgressMonitor monitor, Runnable atend) throws CoreException {
 		SubMonitor subMonitor = SubMonitor.convert(monitor, 100);
 
+		boolean previous = setAutobuild(false);
 		try {
 			Workspace ws = Central.getWorkspace();
 			if (ws == null || ws.isDefaultWorkspace())
 				return;
 
-
-			if (refresh)
-				refresh(subMonitor.split(20));
-
-			subMonitor.setWorkRemaining(80);
-			boolean previous = setAutobuild(false);
-
-			Map<String, IProject> existing = getAllBndEclipseProjects(ws.getBase());
+			Map<String, IProject> eclipseBndProjects = getAllBndEclipseProjects(ws.getBase());
 			IProject cnf = wsroot.getProject(Workspace.CNFDIR);
 			if (!cnf.exists()) {
 				subMonitor.setTaskName("Creating cnf");
 				// must be done inline
 				createProject(ws.getFile(Workspace.CNFDIR), null, subMonitor.split(1));
 			}
-			existing.remove(Workspace.CNFDIR);
+			eclipseBndProjects.remove(Workspace.CNFDIR);
 
-			List<Project> missing = new ArrayList<>();
+			List<String> toBeCreated = new ArrayList<>();
 
-			for (Project model : Central.bndCall(() -> ws.getAllProjects())) {
-				if (model.isCnf()) {
-					continue;
+			Central.bndCall(() -> {
+				ws.refreshProjects();
+				ws.refresh();
+				ws.forceRefresh();
+				for (Project model : ws.getAllProjects()) {
+					if (model.isCnf()) {
+						continue;
+					}
+					IProject exists = eclipseBndProjects.remove(model.getName());
+					if (exists == null) {
+						toBeCreated.add(model.getName());
+					}
+					EclipseUtil.fixDirectories(model);
 				}
-				IProject exists = existing.remove(model.getName());
-				if (exists == null) {
-					missing.add(model);
-				}
-				EclipseUtil.fixDirectories(model);
-			}
+				return null;
+			}, monitor);
 
-			existing.values()
-				.removeIf(project -> !project.isAccessible() || !hasNature(project));
+			Collection<IProject> toBeDeleted = eclipseBndProjects.values();
 
-			if (existing.isEmpty() && missing.isEmpty()) {
-				if (refresh)
-					build(ws, subMonitor);
-				setAutobuild(previous);
-				atend.run();
-				return;
-			}
 			subMonitor.setTaskName("Scheduling creation/deletion of projects");
 			subMonitor.setWorkRemaining(80);
 
-			CountDownLatch missingCounter = new CountDownLatch(missing.size());
-			CountDownLatch existingCounter = new CountDownLatch(existing.size());
-
-			for (IProject project : existing.values()) {
-				Job job = Job.create("remove " + project, (m) -> {
-					try {
-						removeProject(project, m);
-					} finally {
-						existingCounter.countDown();
-					}
-				});
-				job.setRule(null);
-				job.schedule();
+			for (IProject project : toBeDeleted) {
+				removeProject(project, monitor);
 			}
 
 			subMonitor.checkCanceled();
 
-			for (Project project : missing) {
-				Job job = Job.create("add " + project, (m) -> {
-					try {
-						createProject(project.getBase(), project, m);
-					} finally {
-						missingCounter.countDown();
+			Central.bndCall(() -> {
+				for (String projectName : toBeCreated) {
+					Project project = ws.getProject(projectName);
+					if (project != null) {
+						project.clean();
+						createProject(project.getBase(), project, monitor);
 					}
-				});
-				job.setRule(null);
-				job.schedule();
-			}
-
-			if (!refresh) {
-				setAutobuild(previous);
-				atend.run();
-				return;
-			}
-
-			subMonitor.checkCanceled();
-
-			Job job = Job.create("build", (m) -> {
-				try {
-					int totalWork = existing.size() + missing.size() + 100;
-					SubMonitor forBuild = SubMonitor.convert(m, totalWork);
-					forBuild.setTaskName("Waiting for the projects to be created");
-					while (!missingCounter.await(500, TimeUnit.MILLISECONDS)) {
-						forBuild.checkCanceled();
-						forBuild.setWorkRemaining(
-							(int) (totalWork - missingCounter.getCount() - existingCounter.getCount()));
-					}
-					forBuild.setWorkRemaining(60);
-					forBuild.setTaskName("Waiting for the projects to be deleted");
-					while (!existingCounter.await(500, TimeUnit.MILLISECONDS)) {
-						forBuild.checkCanceled();
-						forBuild.setWorkRemaining(
-							(int) (totalWork - missingCounter.getCount() - existingCounter.getCount()));
-					}
-					forBuild.setWorkRemaining(100);
-					build(ws, forBuild);
-				} catch (Exception e) {
-					Status status = new Status(Status.ERROR, "bndtools.builder", e.getMessage());
-					throw new CoreException(status);
-				} finally {
-					atend.run();
+					subMonitor.checkCanceled();
 				}
+				return null;
 			});
-			job.setRule(null);
-			job.schedule();
+
+			if (refresh)
+				wsroot.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+
 		} catch (Exception e) {
 			Status status = new Status(Status.ERROR, "bndtools.builder", e.getMessage());
 			throw new CoreException(status);
+		} finally {
+			atend.run();
+			setAutobuild(previous);
 		}
 	}
 
 	private boolean hasNature(IProject project) {
 		try {
-			return project.hasNature(Plugin.BNDTOOLS_NATURE);
+			if (project.isAccessible())
+				return project.hasNature(Plugin.BNDTOOLS_NATURE);
 		} catch (CoreException e) {
 			logger.logError("cannot get nature from " + project, e);
-			return false;
 		}
-	}
-
-	private void refresh(IProgressMonitor monitor) throws CoreException {
-		eclipse.getRoot()
-			.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+		return false;
 	}
 
 	private boolean setAutobuild(boolean on) throws CoreException {
@@ -222,13 +168,41 @@ public class WorkspaceSynchronizer {
 			}
 
 			if (!inWorkspace(project, base)) {
-				// System.out.println("Not in workspace " + project);
 				continue;
 			}
+
+			if (!isClosedAndEmpty(project) && !hasNature(project) && !project.getName()
+				.equals(Workspace.CNFDIR))
+				continue;
 
 			result.put(project.getName(), project);
 		}
 		return result;
+	}
+
+	private boolean isClosedAndEmpty(IProject project) {
+		if (project.isOpen())
+			return false;
+
+		File projectDir = project.getLocation()
+			.toFile();
+		if (projectDir == null)
+			return true;
+
+		String[] sub = projectDir.list();
+
+		if (sub == null)
+			return true;
+
+		if (sub.length == 0)
+			return true;
+
+		if (Strings.in(sub, ".project")) {
+			boolean onlyOneFile = sub.length == 1;
+			return onlyOneFile;
+		}
+
+		return true;
 	}
 
 	private static boolean inWorkspace(IProject p, File baseDir) {
