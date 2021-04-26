@@ -100,7 +100,7 @@ public class CapReqBuilder {
 			}
 		}
 
-		if ((value instanceof aQute.bnd.version.Version)
+		if (isVersion(value, aQute.bnd.version.Version.class)
 			|| name.equals(ResourceUtils.getVersionAttributeForNamespace(getNamespace()))) {
 			value = toVersions(value);
 		}
@@ -119,22 +119,32 @@ public class CapReqBuilder {
 	}
 
 	public boolean isVersion(Object value) {
-		if (value instanceof Version)
+		return isVersion(value, Version.class);
+	}
+
+	private boolean isVersion(Object value, Class<?> versionClass) {
+		if (versionClass.isInstance(value)) {
 			return true;
-
+		}
 		if (value instanceof Collection) {
-			if (((Collection<?>) value).isEmpty())
-				return true;
-
-			return isVersion(((Collection<?>) value).iterator()
-				.next());
+			Collection<?> v = (Collection<?>) value;
+			if (v.isEmpty()) {
+				return false;
+			}
+			return isVersion(v.iterator()
+				.next(), versionClass);
 		}
 		if (value.getClass()
 			.isArray()) {
-			if (Array.getLength(value) == 0)
+			if (versionClass.isAssignableFrom(value.getClass()
+				.getComponentType())) {
 				return true;
+			}
+			if (Array.getLength(value) == 0) {
+				return false;
+			}
 
-			return isVersion(((Object[]) value)[0]);
+			return isVersion(Array.get(value, 0), versionClass);
 		}
 		return false;
 	}
@@ -428,9 +438,6 @@ public class CapReqBuilder {
 				addDirective(directive, e.getValue());
 			} else {
 				Object typed = attrs.getTyped(name);
-				if (typed instanceof aQute.bnd.version.Version) {
-					typed = toVersions(typed);
-				}
 				addAttribute(name, typed);
 			}
 		}
@@ -448,9 +455,6 @@ public class CapReqBuilder {
 			.filter(Attrs::isAttribute)
 			.forEachOrdered(name -> {
 				Object typed = attrs.getTyped(name);
-				if (typed instanceof aQute.bnd.version.Version) {
-					typed = toVersions(typed);
-				}
 				addAttribute(name, typed);
 			});
 		return this;
