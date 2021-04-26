@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.osgi.resource.Capability;
-import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
@@ -68,24 +67,6 @@ abstract class CapReq {
 			return Objects.equals(namespace, other.getNamespace()) && Objects.equals(attributes, other.getAttributes())
 				&& Objects.equals(directives, other.getDirectives()) && Objects.equals(resource, other.getResource());
 		}
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		if (this instanceof Capability) {
-			Object value = attributes.get(namespace);
-			builder.append(namespace)
-				.append('=')
-				.append(value);
-		} else {
-			String filter = directives.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-			builder.append(filter);
-			if (Namespace.RESOLUTION_OPTIONAL.equals(directives.get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE))) {
-				builder.append("%OPT");
-			}
-		}
-		return builder.toString();
 	}
 
 	protected void toString(StringBuilder sb) {
