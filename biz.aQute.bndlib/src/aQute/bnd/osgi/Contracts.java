@@ -2,7 +2,7 @@ package aQute.bnd.osgi;
 
 import java.util.Collection;
 import java.util.Formatter;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -34,7 +34,7 @@ class Contracts {
 		Contract.class, true);
 	private MultiMap<Collection<Contract>, PackageRef>	overlappingContracts	= new MultiMap<>();
 	private Instructions								instructions;
-	private final Set<Contract>							contracts				= new HashSet<>();
+	private final Set<Contract>							contracts				= new LinkedHashSet<>();
 
 	public class Contract {
 		public String				name;
