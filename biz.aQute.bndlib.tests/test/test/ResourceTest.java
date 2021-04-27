@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -142,7 +143,7 @@ public class ResourceTest {
 		assertEquals(1, findProviders.size());
 
 		CapabilityBuilder rcb = new CapabilityBuilder(ServiceNamespace.SERVICE_NAMESPACE);
-		rcb.addAttribute("objectClass", "org.osgi.service.log.LogService");
+		rcb.addAttribute("objectClass", Arrays.asList("org.osgi.service.log.LogService"));
 		findProviders = ResourceUtils.findProviders(requireLog.get(0),
 			Collections.singleton(rcb.buildSyntheticCapability()));
 		assertEquals(1, findProviders.size());

@@ -5,7 +5,11 @@ import java.util.Map;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 
+import aQute.bnd.build.model.conversions.CapabilityFormatter;
+
 public class CapabilityImpl extends CapReq implements Capability {
+	private static final CapabilityFormatter	cf	= new CapabilityFormatter();
+	private transient String					msg	= null;
 
 	CapabilityImpl(String namespace, Resource resource, Map<String, String> directives,
 		Map<String, Object> attributes) {
@@ -14,9 +18,10 @@ public class CapabilityImpl extends CapReq implements Capability {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("Provide");
-		super.toString(sb);
-		return sb.toString();
+		String m = msg;
+		if (m != null) {
+			return m;
+		}
+		return msg = cf.convert(this);
 	}
 }

@@ -194,7 +194,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 								if (ContentNamespace.CONTENT_NAMESPACE.equals(capReqBuilder.getNamespace())
 									&& ContentNamespace.CAPABILITY_URL_ATTRIBUTE.equals(name)) {
 									URI resolvedUri = resolveUri(valueStr, baseUri);
-									capReqBuilder.addAttribute(name, resolvedUri);
+									capReqBuilder.addAttribute(name, resolvedUri.toString());
 								} else {
 									Object convertedAttr = convertAttribute(valueStr, typeAttr);
 									capReqBuilder.addAttribute(name, convertedAttr);

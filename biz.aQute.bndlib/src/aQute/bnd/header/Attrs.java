@@ -538,7 +538,7 @@ public class Attrs implements Map<String, String> {
 					break;
 				case ',' :
 					result.add(builder.toString());
-					builder = new StringBuilder();
+					builder.setLength(0);
 					break;
 				default :
 					builder.append(c);

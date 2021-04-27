@@ -1,10 +1,8 @@
 package aQute.bnd.osgi;
 
-import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
-
 import java.util.Collection;
 import java.util.Formatter;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -36,7 +34,7 @@ class Contracts {
 		Contract.class, true);
 	private MultiMap<Collection<Contract>, PackageRef>	overlappingContracts	= new MultiMap<>();
 	private Instructions								instructions;
-	private final Set<Contract>							contracts				= new HashSet<>();
+	private final Set<Contract>							contracts				= new LinkedHashSet<>();
 
 	public class Contract {
 		public String				name;
@@ -188,19 +186,16 @@ class Contracts {
 		for (Contract c : contracts) {
 			Attrs attrs = new Attrs(c.decorators);
 			attrs.put(ContractNamespace.CONTRACT_NAMESPACE, c.name);
-			String name = ContractNamespace.CONTRACT_NAMESPACE;
-			while (requirements.containsKey(name)) {
-				name += DUPLICATE_MARKER;
-			}
-
 			try (Formatter f = new Formatter()) {
-				f.format("(&(%s=%s)(version=%s))", ContractNamespace.CONTRACT_NAMESPACE, c.name, c.version);
+				f.format("(&(" + ContractNamespace.CONTRACT_NAMESPACE + "=%s)("
+					+ ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE + "=%s))",
+					c.name, c.version);
 
 				// TODO : shall we also assert the attributes?
 
-				attrs.put("filter:", f.toString());
+				attrs.put(Constants.FILTER_DIRECTIVE, f.toString());
 
-				requirements.put(name, attrs);
+				requirements.add(ContractNamespace.CONTRACT_NAMESPACE, attrs);
 			}
 		}
 
