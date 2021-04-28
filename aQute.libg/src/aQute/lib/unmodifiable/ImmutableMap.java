@@ -10,7 +10,7 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 	@SuppressWarnings("unchecked")
 	final static ImmutableMap<?, ?>	EMPTY	= new ImmutableMap<>();
 	final Entry<K, V>[]				entries;
-	final int[]						hash_bucket;
+	final transient short[]			hash_bucket;
 	transient Set<Entry<K, V>>		entrySet;
 
 	@SafeVarargs
@@ -19,27 +19,30 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 		this.hash_bucket = hash(entries);
 	}
 
-	private static <K, V> int[] hash(Entry<K, V>[] entries) {
+	private static <K, V> short[] hash(Entry<K, V>[] entries) {
 		int length = entries.length;
 		if (length == 0) {
-			return new int[1];
+			return new short[1];
 		}
-		int[] hash_bucket = new int[length * 2];
+		if (length >= (1 << Short.SIZE)) {
+			throw new IllegalArgumentException("map too large: " + length);
+		}
+		short[] hash_bucket = new short[length * 2];
 		for (int i = 0; i < length;) {
 			int slot = linear_probe(entries, hash_bucket, entries[i].getKey());
 			if (slot >= 0) {
 				throw new IllegalArgumentException("duplicate key: " + entries[i].getKey());
 			}
-			hash_bucket[-1 - slot] = ++i;
+			hash_bucket[-1 - slot] = (short) ++i;
 		}
 		return hash_bucket;
 	}
 
 	// https://en.wikipedia.org/wiki/Linear_probing
-	private static <K, V> int linear_probe(Entry<K, V>[] entries, int[] hash_bucket, Object key) {
+	private static <K, V> int linear_probe(Entry<K, V>[] entries, short[] hash_bucket, Object key) {
 		int length = hash_bucket.length;
 		for (int hash = (key.hashCode() & 0x7FFF_FFFF) % length;; hash = (hash + 1) % length) {
-			int slot = hash_bucket[hash] - 1;
+			int slot = Short.toUnsignedInt(hash_bucket[hash]) - 1;
 			if (slot < 0) { // empty
 				return -1 - hash;
 			}

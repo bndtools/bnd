@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.assertj.core.api.MapAssert;
 import org.junit.jupiter.api.Test;
 
 public class MapsTest {
@@ -376,6 +377,32 @@ public class MapsTest {
 			.containsEntry("polygenelubricants", "v1")
 			.containsEntry("GydZG_", "v2")
 			.containsEntry("DESIGNING WORKHOUSES", "v3");
+	}
+
+	@Test
+	public void max_entries() {
+		final int max = (1 << Short.SIZE) - 1;
+		@SuppressWarnings("unchecked")
+		Entry<String, String>[] entries = new Entry[max];
+		for (int i = 0; i < max; i++) {
+			entries[i] = Maps.entry(String.format("k%d", i + 1), String.format("v%d", i + 1));
+		}
+		Map<String, String> map = Maps.ofEntries(entries);
+		MapAssert<String, String> assertion = assertThat(map).hasSize(max);
+		for (int i = 0; i < max; i++) {
+			assertion.containsEntry(entries[i].getKey(), entries[i].getValue());
+		}
+	}
+
+	@Test
+	public void over_max_entries() {
+		final int over_max = (1 << Short.SIZE);
+		@SuppressWarnings("unchecked")
+		Entry<String, String>[] entries = new Entry[over_max];
+		for (int i = 0; i < over_max; i++) {
+			entries[i] = Maps.entry(String.format("k%d", i + 1), String.format("v%d", i + 1));
+		}
+		assertThatIllegalArgumentException().isThrownBy(() -> Maps.ofEntries(entries));
 	}
 
 }

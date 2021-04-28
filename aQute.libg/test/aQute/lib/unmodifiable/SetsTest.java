@@ -263,4 +263,29 @@ public class SetsTest {
 		assertThat(set).containsExactlyInAnyOrder("e5", "polygenelubricants", "GydZG_", "DESIGNING WORKHOUSES", "e1");
 	}
 
+	@Test
+	public void max_entries() {
+		final int max = (1 << Short.SIZE) - 1;
+		String[] entries = new String[max];
+		for (int i = 0; i < max; i++) {
+			entries[i] = String.format("e%d", i + 1);
+		}
+		Set<String> set = Sets.of(entries);
+		assertThat(set).hasSize(max);
+		for (int i = 0; i < max; i++) {
+			assertThat(set.contains(entries[i])).as("contains(%s)", entries[i])
+				.isTrue();
+		}
+	}
+
+	@Test
+	public void over_max_entries() {
+		final int over_max = (1 << Short.SIZE);
+		String[] entries = new String[over_max];
+		for (int i = 0; i < over_max; i++) {
+			entries[i] = String.format("e%d", i + 1);
+		}
+		assertThatIllegalArgumentException().isThrownBy(() -> Sets.of(entries));
+	}
+
 }
