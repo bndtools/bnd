@@ -10,7 +10,7 @@ import java.util.function.Predicate;
 final class ImmutableSet<E> extends AbstractSet<E> implements Set<E> {
 	final static ImmutableSet<?>	EMPTY	= new ImmutableSet<>();
 	final E[]						elements;
-	final int[]						hash_bucket;
+	final transient short[]			hash_bucket;
 
 	@SafeVarargs
 	ImmutableSet(E... elements) {
@@ -18,27 +18,30 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E> {
 		this.hash_bucket = hash(elements);
 	}
 
-	private static <E> int[] hash(E[] elements) {
+	private static <E> short[] hash(E[] elements) {
 		int length = elements.length;
 		if (length == 0) {
-			return new int[1];
+			return new short[1];
 		}
-		int[] hash_bucket = new int[length * 2];
+		if (length >= (1 << Short.SIZE)) {
+			throw new IllegalArgumentException("set too large: " + length);
+		}
+		short[] hash_bucket = new short[length * 2];
 		for (int i = 0; i < length;) {
 			int slot = linear_probe(elements, hash_bucket, elements[i]);
 			if (slot >= 0) {
 				throw new IllegalArgumentException("duplicate element: " + elements[i]);
 			}
-			hash_bucket[-1 - slot] = ++i;
+			hash_bucket[-1 - slot] = (short) ++i;
 		}
 		return hash_bucket;
 	}
 
 	// https://en.wikipedia.org/wiki/Linear_probing
-	private static <E> int linear_probe(E[] elements, int[] hash_bucket, Object e) {
+	private static <E> int linear_probe(E[] elements, short[] hash_bucket, Object e) {
 		int length = hash_bucket.length;
 		for (int hash = (e.hashCode() & 0x7FFF_FFFF) % length;; hash = (hash + 1) % length) {
-			int slot = hash_bucket[hash] - 1;
+			int slot = Short.toUnsignedInt(hash_bucket[hash]) - 1;
 			if (slot < 0) { // empty
 				return -1 - hash;
 			}
