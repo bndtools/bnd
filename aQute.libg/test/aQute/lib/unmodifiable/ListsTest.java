@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,6 +14,9 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.Test;
+
+import aQute.lib.io.ByteBufferInputStream;
+import aQute.lib.io.ByteBufferOutputStream;
 
 public class ListsTest {
 
@@ -376,6 +381,43 @@ public class ListsTest {
 		assertThat(list).isNotEqualTo(Arrays.asList("e5", "e2", "e3", "e4", "e1"));
 		assertThat(list).isNotEqualTo(Arrays.asList("e1", "e2", "e3", "e4"));
 		assertThat(list).isNotEqualTo(Arrays.asList("e1", "e2", "e3", "e4", "e5", "e6"));
+	}
+
+	@Test
+	public void serialization() throws Exception {
+		List<String> list = Lists.of("e1", "e2", "e3", "e4", "e5");
+		ByteBufferOutputStream bos = new ByteBufferOutputStream();
+		try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+			oos.writeObject(list);
+		}
+		ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()));
+		@SuppressWarnings("unchecked")
+		List<String> deser = (List<String>) ois.readObject();
+
+		assertThat(deser).isEqualTo(list)
+			.isNotSameAs(list)
+			.containsExactlyElementsOf(list);
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.add("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("e1"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+	}
+
+	@Test
+	public void serialization_zero() throws Exception {
+		List<String> list = Lists.of();
+		ByteBufferOutputStream bos = new ByteBufferOutputStream();
+		try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+			oos.writeObject(list);
+		}
+		ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()));
+		@SuppressWarnings("unchecked")
+		List<String> deser = (List<String>) ois.readObject();
+
+		assertThat(deser).isSameAs(list);
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.add("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
 	}
 
 }

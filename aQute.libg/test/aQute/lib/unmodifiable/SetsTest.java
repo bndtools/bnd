@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -12,6 +14,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+
+import aQute.lib.io.ByteBufferInputStream;
+import aQute.lib.io.ByteBufferOutputStream;
 
 public class SetsTest {
 
@@ -286,6 +291,43 @@ public class SetsTest {
 			entries[i] = String.format("e%d", i + 1);
 		}
 		assertThatIllegalArgumentException().isThrownBy(() -> Sets.of(entries));
+	}
+
+	@Test
+	public void serialization() throws Exception {
+		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5");
+		ByteBufferOutputStream bos = new ByteBufferOutputStream();
+		try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+			oos.writeObject(set);
+		}
+		ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()));
+		@SuppressWarnings("unchecked")
+		Set<String> deser = (Set<String>) ois.readObject();
+
+		assertThat(deser).isEqualTo(set)
+			.isNotSameAs(set)
+			.containsExactlyElementsOf(set);
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.add("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("e1"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+	}
+
+	@Test
+	public void serialization_zero() throws Exception {
+		Set<String> set = Sets.of();
+		ByteBufferOutputStream bos = new ByteBufferOutputStream();
+		try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+			oos.writeObject(set);
+		}
+		ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()));
+		@SuppressWarnings("unchecked")
+		Set<String> deser = (Set<String>) ois.readObject();
+
+		assertThat(deser).isSameAs(set);
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.add("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
 	}
 
 }
