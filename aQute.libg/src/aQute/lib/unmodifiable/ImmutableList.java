@@ -2,6 +2,11 @@ package aQute.lib.unmodifiable;
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,7 +18,7 @@ import java.util.RandomAccess;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
-final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomAccess {
+final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomAccess, Serializable {
 	final static ImmutableList<?>	EMPTY	= new ImmutableList<>();
 	final E[]						elements;
 
@@ -198,5 +203,62 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 	@Override
 	public void sort(Comparator<? super E> comparator) {
 		throw new UnsupportedOperationException();
+	}
+
+	// Serialization support
+	private static final long serialVersionUID = 1L;
+
+	private void readObject(ObjectInputStream ois) throws InvalidObjectException {
+		throw new InvalidObjectException("proxy required");
+	}
+
+	private Object writeReplace() {
+		return new SerializationProxy(this);
+	}
+
+	private static final class SerializationProxy implements Serializable {
+		private static final long	serialVersionUID	= 1L;
+		private transient Object[]	data;
+
+		SerializationProxy(ImmutableList<?> list) {
+			data = list.elements;
+		}
+
+		private void writeObject(ObjectOutputStream oos) throws IOException {
+			oos.defaultWriteObject();
+			final Object[] local = data;
+			final int length = local.length;
+			oos.writeInt(length);
+			for (int i = 0; i < length; i++) {
+				oos.writeObject(local[i]);
+			}
+		}
+
+		private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+			ois.defaultReadObject();
+			final int length = ois.readInt();
+			if (length < 0) {
+				throw new InvalidObjectException("negative length");
+			}
+			final Object[] local = new Object[length];
+			for (int i = 0; i < length; i++) {
+				local[i] = ois.readObject();
+			}
+			data = local;
+		}
+
+		private Object readResolve() throws InvalidObjectException {
+			try {
+				final Object[] local = data;
+				if (local.length == 0) {
+					return EMPTY;
+				}
+				return new ImmutableList<>(local);
+			} catch (RuntimeException e) {
+				InvalidObjectException ioe = new InvalidObjectException("invalid");
+				ioe.initCause(e);
+				throw ioe;
+			}
+		}
 	}
 }

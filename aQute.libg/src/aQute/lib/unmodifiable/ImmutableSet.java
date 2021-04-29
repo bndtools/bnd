@@ -1,5 +1,10 @@
 package aQute.lib.unmodifiable;
 
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.Collection;
@@ -7,7 +12,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Predicate;
 
-final class ImmutableSet<E> extends AbstractSet<E> implements Set<E> {
+final class ImmutableSet<E> extends AbstractSet<E> implements Set<E>, Serializable {
 	final static ImmutableSet<?>	EMPTY	= new ImmutableSet<>();
 	final E[]						elements;
 	final transient short[]			hash_bucket;
@@ -158,5 +163,62 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E> {
 	@Override
 	public boolean removeIf(Predicate<? super E> filter) {
 		throw new UnsupportedOperationException();
+	}
+
+	// Serialization support
+	private static final long serialVersionUID = 1L;
+
+	private void readObject(ObjectInputStream ois) throws InvalidObjectException {
+		throw new InvalidObjectException("proxy required");
+	}
+
+	private Object writeReplace() {
+		return new SerializationProxy(this);
+	}
+
+	private static final class SerializationProxy implements Serializable {
+		private static final long	serialVersionUID	= 1L;
+		private transient Object[]	data;
+
+		SerializationProxy(ImmutableSet<?> set) {
+			data = set.elements;
+		}
+
+		private void writeObject(ObjectOutputStream oos) throws IOException {
+			oos.defaultWriteObject();
+			final Object[] local = data;
+			final int length = local.length;
+			oos.writeInt(length);
+			for (int i = 0; i < length; i++) {
+				oos.writeObject(local[i]);
+			}
+		}
+
+		private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+			ois.defaultReadObject();
+			final int length = ois.readInt();
+			if (length < 0) {
+				throw new InvalidObjectException("negative length");
+			}
+			final Object[] local = new Object[length];
+			for (int i = 0; i < length; i++) {
+				local[i] = ois.readObject();
+			}
+			data = local;
+		}
+
+		private Object readResolve() throws InvalidObjectException {
+			try {
+				final Object[] local = data;
+				if (local.length == 0) {
+					return EMPTY;
+				}
+				return new ImmutableSet<>(local);
+			} catch (RuntimeException e) {
+				InvalidObjectException ioe = new InvalidObjectException("invalid");
+				ioe.initCause(e);
+				throw ioe;
+			}
+		}
 	}
 }

@@ -1,12 +1,17 @@
 package aQute.lib.unmodifiable;
 
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
+final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Serializable {
 	@SuppressWarnings("unchecked")
 	final static ImmutableMap<?, ?>	EMPTY	= new ImmutableMap<>();
 	final Entry<K, V>[]				entries;
@@ -199,5 +204,80 @@ final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 	@Override
 	public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
 		throw new UnsupportedOperationException();
+	}
+
+	// Serialization support
+	private static final long serialVersionUID = 1L;
+
+	private void readObject(ObjectInputStream ois) throws InvalidObjectException {
+		throw new InvalidObjectException("proxy required");
+	}
+
+	private Object writeReplace() {
+		return new SerializationProxy(this);
+	}
+
+	private static final class SerializationProxy implements Serializable {
+		private static final long	serialVersionUID	= 1L;
+		private transient Object[]	data;
+
+		SerializationProxy(ImmutableMap<?, ?> map) {
+			final Entry<?, ?>[] entries = map.entries;
+			final int length = entries.length;
+			final Object[] local = new Object[length * 2];
+			int i = 0;
+			for (Entry<?, ?> entry : entries) {
+				local[i++] = entry.getKey();
+				local[i++] = entry.getValue();
+			}
+			data = local;
+		}
+
+		private void writeObject(ObjectOutputStream oos) throws IOException {
+			oos.defaultWriteObject();
+			final Object[] local = data;
+			final int length = local.length;
+			oos.writeInt(length);
+			for (int i = 0; i < length; i++) {
+				oos.writeObject(local[i]);
+			}
+		}
+
+		private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+			ois.defaultReadObject();
+			final int length = ois.readInt();
+			if (length < 0) {
+				throw new InvalidObjectException("negative length");
+			}
+			if ((length % 2) != 0) {
+				throw new InvalidObjectException("odd length");
+			}
+			final Object[] local = new Object[length];
+			for (int i = 0; i < length; i++) {
+				local[i] = ois.readObject();
+			}
+			data = local;
+		}
+
+		private Object readResolve() throws InvalidObjectException {
+			try {
+				final Object[] local = data;
+				if (local.length == 0) {
+					return EMPTY;
+				}
+				final int length = local.length / 2;
+				@SuppressWarnings("unchecked")
+				Entry<Object, Object>[] entries = new Entry[length];
+				for (int i = 0; i < length; i++) {
+					final int j = i * 2;
+					entries[i] = new ImmutableEntry<>(local[j], local[j + 1]);
+				}
+				return new ImmutableMap<>(entries);
+			} catch (RuntimeException e) {
+				InvalidObjectException ioe = new InvalidObjectException("invalid");
+				ioe.initCause(e);
+				throw ioe;
+			}
+		}
 	}
 }

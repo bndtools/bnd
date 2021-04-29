@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -14,6 +16,9 @@ import java.util.Set;
 
 import org.assertj.core.api.MapAssert;
 import org.junit.jupiter.api.Test;
+
+import aQute.lib.io.ByteBufferInputStream;
+import aQute.lib.io.ByteBufferOutputStream;
 
 public class MapsTest {
 
@@ -403,6 +408,43 @@ public class MapsTest {
 			entries[i] = Maps.entry(String.format("k%d", i + 1), String.format("v%d", i + 1));
 		}
 		assertThatIllegalArgumentException().isThrownBy(() -> Maps.ofEntries(entries));
+	}
+
+	@Test
+	public void serialization() throws Exception {
+		Map<String, String> map = Maps.of("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4", "k5", "v5");
+		ByteBufferOutputStream bos = new ByteBufferOutputStream();
+		try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+			oos.writeObject(map);
+		}
+		ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()));
+		@SuppressWarnings("unchecked")
+		Map<String, String> deser = (Map<String, String>) ois.readObject();
+
+		assertThat(deser).isEqualTo(map)
+			.isNotSameAs(map)
+			.containsExactlyEntriesOf(map);
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.put("a", "b"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("k1"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+	}
+
+	@Test
+	public void serialization_zero() throws Exception {
+		Map<String, String> map = Maps.of();
+		ByteBufferOutputStream bos = new ByteBufferOutputStream();
+		try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+			oos.writeObject(map);
+		}
+		ObjectInputStream ois = new ObjectInputStream(new ByteBufferInputStream(bos.toByteBuffer()));
+		@SuppressWarnings("unchecked")
+		Map<String, String> deser = (Map<String, String>) ois.readObject();
+
+		assertThat(deser).isSameAs(map);
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.put("a", "b"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
 	}
 
 }
