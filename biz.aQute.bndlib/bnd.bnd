@@ -3,8 +3,9 @@
 
 Bundle-Description: bndlib: A Swiss Army Knife for OSGi
 
--includepackage: \
-	aQute.bnd.*,\
+-privatepackage: \
+	aQute.bnd.annotation.*,\
+	aQute.bnd.*;from:=${p},\
 	aQute.lib.spring,\
 	org.osgi.dto
 
