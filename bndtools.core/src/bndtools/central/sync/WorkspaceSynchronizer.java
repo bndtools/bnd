@@ -148,7 +148,8 @@ public class WorkspaceSynchronizer {
 				});
 				monitor.subTask("Refresh workspace ");
 				wsroot.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-				build(ws, monitor);
+				if (previous)
+					build(ws, monitor);
 			}
 
 		} catch (Exception e) {

@@ -68,7 +68,7 @@ import aQute.lib.exceptions.FunctionWithException;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;
-import bndtools.central.WorkspaceSynchronizer;
+import bndtools.central.sync.WorkspaceSynchronizer;
 import bndtools.preferences.BndPreferences;
 import bndtools.preferences.ui.BndPreferencePage;
 

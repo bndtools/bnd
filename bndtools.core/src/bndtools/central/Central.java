@@ -191,34 +191,12 @@ public class Central implements IStartupParticipant {
 	}
 
 	public static IFile getWorkspaceBuildFile() throws Exception {
-		Workspace ws = Central.getWorkspace();
-		if ((ws == null) || (ws.isDefaultWorkspace())) {
-			return null;
-		}
-
 		IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace()
 			.getRoot();
-		File eclipse = wsroot.getLocation()
-			.toFile();
-
-		File file = ws.getPropertiesFile();
-		if (file.isFile()) {
-			boolean overlappingWorkspaces = ws.getBase()
-				.equals(eclipse);
-			if (overlappingWorkspaces) {
-				WorkspaceSynchronizer workspaceSynchronizer = new WorkspaceSynchronizer();
-				workspaceSynchronizer.synchronize(false, null, () -> {});
-			}
-		}
-
-		IPath path = toPathMustBeInEclipseWorkspace(file);
-		if (path == null) {
-			logger.error("Cannot find workspace location for bnd configuration file {}", file);
+		IProject cnf = wsroot.getProject(Workspace.CNFDIR);
+		if (cnf == null || !cnf.isAccessible())
 			return null;
-		}
-		return ResourcesPlugin.getWorkspace()
-			.getRoot()
-			.getFile(path);
+		return cnf.getFile(Workspace.BUILDFILE);
 	}
 
 	public static EclipseWorkspaceRepository getEclipseWorkspaceRepository() {
@@ -231,6 +209,8 @@ public class Central implements IStartupParticipant {
 
 	public static Workspace getWorkspaceIfPresent() {
 		try {
+			if (getInstance() == null)
+				return null;
 			return getWorkspace();
 		} catch (IllegalStateException e) {
 			throw e;
@@ -409,13 +389,6 @@ public class Central implements IStartupParticipant {
 			return cnfProject.getLocation()
 				.toFile()
 				.getParentFile();
-		}
-
-		File directory = eclipseWorkspace.getLocation()
-			.toFile();
-
-		if (isWorkspace(directory)) {
-			return directory;
 		}
 
 		return null;
