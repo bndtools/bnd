@@ -752,7 +752,7 @@ public class Builder extends Analyzer {
 
 		List<Jar> np = new ArrayList<>();
 		for (Jar j : providers) {
-			if (from.matches(j.getName())) {
+			if (from.matches(j.getName()) ^ from.isNegated()) {
 				np.add(j);
 			}
 		}

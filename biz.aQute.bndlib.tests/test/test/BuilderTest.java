@@ -33,6 +33,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -1379,25 +1380,35 @@ public class BuilderTest {
 	 * Test the from: directive on expanding packages.
 	 */
 	@Test
-	public void testFromOSGiDirective() throws Exception {
-		Builder b = new Builder();
-		try {
+	public void from_directive() throws Exception {
+		try (Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.addClasspath(IO.getFile("jar/org.eclipse.osgi-3.5.0.jar"));
 			b.setProperty("Export-Package", "org.osgi.framework;from:=osgi");
 			b.build();
 			assertTrue(b.check());
 
-			assertEquals("1.3", b.getExports()
-				.getByFQN("org.osgi.framework")
-				.get("version"));
-			assertEquals("osgi", b.getExports()
-				.getByFQN("org.osgi.framework")
-				.get(Constants.FROM_DIRECTIVE));
-		} finally {
-			b.close();
+			assertThat(b.getExports()
+				.getByFQN("org.osgi.framework")).containsEntry("version", "1.3")
+					.containsEntry(Constants.FROM_DIRECTIVE, "osgi");
 		}
+	}
 
+	@Test
+	public void negated_from_directive() throws Exception {
+		try (Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("jar/org.eclipse.osgi-3.5.0.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.setProperty("-includepackage", "org.osgi.framework;from:=!org.eclipse.osgi*");
+			b.setProperty("-exportcontents", "org.osgi.framework");
+			b.build();
+			assertTrue(b.check("Version for package*"));
+
+			assertThat(b.getExports()
+				.getByFQN("org.osgi.framework")).containsEntry("version", "1.3")
+					.extractingByKey(Constants.FROM_DIRECTIVE, InstanceOfAssertFactories.STRING)
+					.contains("osgi.jar");
+		}
 	}
 
 	@Test
