@@ -49,6 +49,7 @@ import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.util.function.Consumer;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
@@ -105,10 +106,12 @@ public class Central implements IStartupParticipant {
 	private static WorkspaceRepositoryChangeDetector			workspaceRepositoryChangeDetector;
 
 	private static RepositoriesViewRefresher					repositoriesViewRefresher	= new RepositoriesViewRefresher();
+	private static BundleContext								context;
+	private static ServiceRegistration<Workspace>				workspaceService;
 
 	static {
 		try {
-			BundleContext context = FrameworkUtil.getBundle(Central.class)
+			context = FrameworkUtil.getBundle(Central.class)
 				.getBundleContext();
 			Bundle bndlib = FrameworkUtil.getBundle(Workspace.class);
 			auxiliary = new Auxiliary(context, bndlib);
@@ -144,7 +147,7 @@ public class Central implements IStartupParticipant {
 	@Override
 	public void stop() {
 		repoListenerTracker.close();
-
+		workspaceService.unregister();
 		instance = null;
 
 		Workspace ws = workspace.peek();
@@ -188,34 +191,12 @@ public class Central implements IStartupParticipant {
 	}
 
 	public static IFile getWorkspaceBuildFile() throws Exception {
-		Workspace ws = Central.getWorkspace();
-		if ((ws == null) || (ws.isDefaultWorkspace())) {
-			return null;
-		}
-
 		IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace()
 			.getRoot();
-		File eclipse = wsroot.getLocation()
-			.toFile();
-
-		File file = ws.getPropertiesFile();
-		if (file.isFile()) {
-			boolean overlappingWorkspaces = ws.getBase()
-				.equals(eclipse);
-			if (overlappingWorkspaces) {
-				WorkspaceSynchronizer workspaceSynchronizer = new WorkspaceSynchronizer();
-				workspaceSynchronizer.synchronize(false, null, () -> {});
-			}
-		}
-
-		IPath path = toPathMustBeInEclipseWorkspace(file);
-		if (path == null) {
-			logger.error("Cannot find workspace location for bnd configuration file {}", file);
+		IProject cnf = wsroot.getProject(Workspace.CNFDIR);
+		if (cnf == null || !cnf.isAccessible())
 			return null;
-		}
-		return ResourcesPlugin.getWorkspace()
-			.getRoot()
-			.getFile(path);
+		return cnf.getFile(Workspace.BUILDFILE);
 	}
 
 	public static EclipseWorkspaceRepository getEclipseWorkspaceRepository() {
@@ -228,6 +209,8 @@ public class Central implements IStartupParticipant {
 
 	public static Workspace getWorkspaceIfPresent() {
 		try {
+			if (getInstance() == null)
+				return null;
 			return getWorkspace();
 		} catch (IllegalStateException e) {
 			throw e;
@@ -322,6 +305,7 @@ public class Central implements IStartupParticipant {
 			addCnfChangeListener(ws);
 
 			workspaceRepositoryChangeDetector = new WorkspaceRepositoryChangeDetector(ws);
+			workspaceService = context.registerService(Workspace.class, ws, null);
 			return ws;
 		} catch (Exception e) {
 			if (ws != null) {
@@ -405,13 +389,6 @@ public class Central implements IStartupParticipant {
 			return cnfProject.getLocation()
 				.toFile()
 				.getParentFile();
-		}
-
-		File directory = eclipseWorkspace.getLocation()
-			.toFile();
-
-		if (isWorkspace(directory)) {
-			return directory;
 		}
 
 		return null;
