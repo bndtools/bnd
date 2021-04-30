@@ -262,4 +262,14 @@ public interface RepositoryPlugin {
 	default boolean isRemote() {
 		return false;
 	}
+
+	/**
+	 * Sync this repository, this will wait for the initialization of the repo.
+	 * Repositories should override this to use a more efficient way.
+	 */
+	default void sync() {
+		try {
+			get("foobar", Version.emptyVersion, null);
+		} catch (Exception e) {}
+	}
 }
