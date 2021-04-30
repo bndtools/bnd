@@ -49,6 +49,7 @@ import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.util.function.Consumer;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
@@ -105,10 +106,12 @@ public class Central implements IStartupParticipant {
 	private static WorkspaceRepositoryChangeDetector			workspaceRepositoryChangeDetector;
 
 	private static RepositoriesViewRefresher					repositoriesViewRefresher	= new RepositoriesViewRefresher();
+	private static BundleContext								context;
+	private static ServiceRegistration<Workspace>				workspaceService;
 
 	static {
 		try {
-			BundleContext context = FrameworkUtil.getBundle(Central.class)
+			context = FrameworkUtil.getBundle(Central.class)
 				.getBundleContext();
 			Bundle bndlib = FrameworkUtil.getBundle(Workspace.class);
 			auxiliary = new Auxiliary(context, bndlib);
@@ -144,7 +147,7 @@ public class Central implements IStartupParticipant {
 	@Override
 	public void stop() {
 		repoListenerTracker.close();
-
+		workspaceService.unregister();
 		instance = null;
 
 		Workspace ws = workspace.peek();
@@ -322,6 +325,7 @@ public class Central implements IStartupParticipant {
 			addCnfChangeListener(ws);
 
 			workspaceRepositoryChangeDetector = new WorkspaceRepositoryChangeDetector(ws);
+			workspaceService = context.registerService(Workspace.class, ws, null);
 			return ws;
 		} catch (Exception e) {
 			if (ws != null) {

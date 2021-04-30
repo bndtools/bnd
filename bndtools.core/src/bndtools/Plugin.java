@@ -33,7 +33,6 @@ import org.osgi.service.url.URLConstants;
 import org.osgi.service.url.URLStreamHandlerService;
 import org.osgi.util.tracker.ServiceTracker;
 
-import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
 import bndtools.services.WorkspaceURLStreamHandlerService;
@@ -82,17 +81,8 @@ public class Plugin extends AbstractUIPlugin {
 		headlessBuildManager = new HeadlessBuildManagerTracker(context);
 		headlessBuildManager.open();
 
-		registerWorkspaceServiceFactory(context);
-
 		runStartupParticipants();
 		QuickFixProcessorFacade.setup(context);
-	}
-
-	private static void registerWorkspaceServiceFactory(BundleContext context) {
-		Dictionary<String, Object> props = new Hashtable<>();
-		props.put("name", "bndtools");
-
-		context.registerService(Workspace.class.getName(), new WorkspaceServiceFactory(), props);
 	}
 
 	private void registerWorkspaceURLHandler(BundleContext context) {
