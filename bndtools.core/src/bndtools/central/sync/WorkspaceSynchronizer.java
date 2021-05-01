@@ -114,15 +114,13 @@ public class WorkspaceSynchronizer {
 
 			for (String pp : projects) {
 				IProject project = wsroot.getProject(pp);
-				if (!project.isOpen()) {
-					System.out.println("deleting closed project " + pp);
-					project.delete(true, subMonitor);
-				} else {
-					if (project != null && project.exists() && project.isAccessible()
-						&& inWorkspace(project, ws.getBase())) {
-						System.out.println("deleting " + pp);
-						refresh |= project.hasNature(Plugin.BNDTOOLS_NATURE);
-						project.delete(true, subMonitor);
+				if (project != null && project.isAccessible() && project.exists()) {
+					if (inWorkspace(project, ws.getBase())) {
+						if (isEmpty(project)) {
+							System.out.println("deleting " + pp);
+							refresh |= project.hasNature(Plugin.BNDTOOLS_NATURE);
+							project.delete(false, subMonitor);
+						}
 					}
 				}
 			}
@@ -160,6 +158,22 @@ public class WorkspaceSynchronizer {
 			atend.run();
 			setAutobuild(previous);
 		}
+	}
+
+	private boolean isEmpty(IProject project) {
+		IPath location = project.getLocation();
+		if (location == null)
+			return false;
+
+		File folder = location.toFile();
+		if (!folder.isDirectory())
+			return true;
+
+		File[] listFiles = folder.listFiles();
+		if (listFiles.length == 0)
+			return true;
+
+		return false;
 	}
 
 	private boolean setAutobuild(boolean on) throws CoreException {
