@@ -1,6 +1,6 @@
 package aQute.bnd.maven.lib.resolve;
 
-import static aQute.lib.exceptions.FunctionWithException.asFunction;
+import static aQute.bnd.exceptions.FunctionWithException.asFunction;
 
 import java.io.File;
 import java.util.Collections;
@@ -33,7 +33,7 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 import biz.aQute.resolve.Bndrun;
 
 @ProviderType

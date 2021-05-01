@@ -17,8 +17,8 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.FileLine;
-import aQute.bnd.service.result.Result;
-import aQute.lib.exceptions.RunnableWithException;
+import aQute.bnd.result.Result;
+import aQute.bnd.exceptions.RunnableWithException;
 import aQute.service.reporter.Reporter.SetLocation;
 import bndtools.central.Central;
 

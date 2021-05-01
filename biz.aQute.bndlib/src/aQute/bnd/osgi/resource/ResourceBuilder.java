@@ -52,7 +52,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.filter.Filter;
 import aQute.lib.hex.Hex;
 import aQute.lib.hierarchy.FolderNode;

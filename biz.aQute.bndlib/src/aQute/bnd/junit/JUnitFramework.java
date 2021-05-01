@@ -42,7 +42,7 @@ import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.version.VersionRange;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 
 /**

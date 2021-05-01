@@ -23,7 +23,7 @@ import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.resource.SyntheticBuilder;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import bndtools.model.resolution.RequirementWrapper;
 
 public abstract class BndBuilderCapReqLoader implements CapReqLoader {

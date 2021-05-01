@@ -14,7 +14,6 @@ Export-Package: \
     aQute.bnd.build.model;-noimport:=true,\
     aQute.bnd.build.model.clauses;-noimport:=true,\
     aQute.bnd.build.model.conversions;-noimport:=true,\
-	aQute.bnd.classfile.*;-noimport:=true,\
     aQute.bnd.component.error;-noimport:=true,\
     aQute.bnd.differ;-noimport:=true,\
     aQute.bnd.filerepo;-noimport:=true,\
@@ -31,8 +30,6 @@ Export-Package: \
 	aQute.bnd.print;-noimport:=true,\
     aQute.bnd.properties;-noimport:=true,\
     aQute.bnd.service.*;-noimport:=true,\
-	aQute.bnd.signatures;-noimport:=true,\
-	aQute.bnd.stream;-noimport:=true,\
 	aQute.bnd.url;-noimport:=true,\
 	aQute.bnd.util.dto;-noimport:=true,\
 	aQute.bnd.util.home;-noimport:=true,\
@@ -78,13 +75,12 @@ Import-Package: \
 	org.osgi.util.promise;version=latest,\
 	aQute.libg;version=project, \
 	biz.aQute.bnd.annotation;version=project,\
+	biz.aQute.bnd.util;version=latest;maven-scope=compile,\
 	slf4j.api;version=latest;maven-scope=compile
 
 -testpath: \
     ${junit},\
     ${mockito}
-
--builderignore: testresources
 
 Bundle-Icon: img/bnd-64.png;size=64
 Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic.nl, bj@bjhargrave.com

@@ -29,7 +29,7 @@ import aQute.bnd.maven.lib.resolve.BndrunContainer;
 import aQute.bnd.maven.lib.resolve.Operation;
 import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.Constants;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 import biz.aQute.resolve.ResolveProcess;
 
 /**

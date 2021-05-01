@@ -33,7 +33,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.resource.ResourceBuilder;
-import aQute.bnd.service.result.Result;
+import aQute.bnd.result.Result;
 import aQute.bnd.service.url.TaggedData;
 import aQute.lib.collections.Iterables;
 import aQute.lib.getopt.Arguments;

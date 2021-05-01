@@ -26,7 +26,7 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 
-import aQute.lib.exceptions.BiFunctionWithException;
+import aQute.bnd.exceptions.BiFunctionWithException;
 import aQute.lib.io.IO.EnvironmentCalculator;
 
 public class IOTest {

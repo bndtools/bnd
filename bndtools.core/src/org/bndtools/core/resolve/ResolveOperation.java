@@ -18,8 +18,8 @@ import org.osgi.service.coordinator.Coordinator;
 import org.osgi.service.resolver.ResolutionException;
 
 import aQute.bnd.build.model.BndEditModel;
-import aQute.lib.exceptions.Exceptions;
-import aQute.lib.exceptions.RunnableWithException;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.RunnableWithException;
 import biz.aQute.resolve.ResolutionCallback;
 import biz.aQute.resolve.ResolverLogger;
 import biz.aQute.resolve.RunResolution;

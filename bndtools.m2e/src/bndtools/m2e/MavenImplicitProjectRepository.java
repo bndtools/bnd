@@ -1,6 +1,6 @@
 package bndtools.m2e;
 
-import static aQute.lib.exceptions.ConsumerWithException.asConsumer;
+import static aQute.bnd.exceptions.ConsumerWithException.asConsumer;
 
 import java.io.File;
 import java.util.Collection;
@@ -27,7 +27,7 @@ import aQute.bnd.maven.lib.resolve.BndrunContainer;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import bndtools.central.Central;
 
 public class MavenImplicitProjectRepository extends AbstractMavenRepository

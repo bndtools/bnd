@@ -1,6 +1,6 @@
 package bndtools.central;
 
-import static aQute.lib.exceptions.FunctionWithException.asFunction;
+import static aQute.bnd.exceptions.FunctionWithException.asFunction;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
@@ -66,9 +66,9 @@ import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.progress.TaskManager;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
-import aQute.lib.memoize.Memoize;
+import aQute.bnd.memoize.Memoize;
 import aQute.libg.ints.IntCounter;
 import aQute.service.reporter.Reporter;
 import bndtools.Plugin;

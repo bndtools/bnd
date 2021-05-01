@@ -12,10 +12,10 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.launchpad.BundleBuilder;
 import aQute.launchpad.BundleSpecBuilder;
 import aQute.launchpad.Launchpad;
-import aQute.lib.exceptions.Exceptions;
 
 /**
  * Utility class for reflectively accessing class definitions inside a bundle.

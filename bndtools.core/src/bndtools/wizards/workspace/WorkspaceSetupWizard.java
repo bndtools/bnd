@@ -41,7 +41,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import aQute.bnd.build.Project;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;

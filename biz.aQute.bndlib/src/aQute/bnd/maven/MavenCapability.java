@@ -9,7 +9,7 @@ import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.version.MavenVersion;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 
 public interface MavenCapability extends Capability {
 

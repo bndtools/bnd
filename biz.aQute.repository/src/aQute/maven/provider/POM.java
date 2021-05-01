@@ -38,7 +38,7 @@ import aQute.lib.io.ByteBufferInputStream;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.xml.XML;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;

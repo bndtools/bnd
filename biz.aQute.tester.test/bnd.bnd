@@ -28,6 +28,7 @@
 	assertj-core;version=latest,\
 	junit-platform-testkit;version="${junit.platform.eclipse.version}";strategy=lowest,\
 	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot;packages=aQute.bnd.osgi,\
 	biz.aQute.tester;version=snapshot;packages=aQute.junit.constants,\
 	biz.aQute.launchpad;version=project,\

@@ -15,6 +15,7 @@
             biz.aQute.bnd.embedded-repo, \
             biz.aQute.bnd.ant, \
             biz.aQute.bnd.gradle, \
+            biz.aQute.bnd.util, \
             biz.aQute.bndlib, \
             biz.aQute.bndlib.tests, \
             biz.aQute.bndall.tests, \

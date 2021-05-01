@@ -25,7 +25,7 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.plugin.maven.CentralCheck;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 import aQute.lib.xml.XML;
 

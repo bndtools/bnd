@@ -52,11 +52,11 @@ import org.junit.platform.testkit.engine.Event;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Constants;
 import aQute.launchpad.BundleSpecBuilder;
 import aQute.launchpad.Launchpad;
 import aQute.launchpad.LaunchpadBuilder;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.tester.bundle.engine.BundleDescriptor;
 import aQute.tester.bundle.engine.BundleEngine;

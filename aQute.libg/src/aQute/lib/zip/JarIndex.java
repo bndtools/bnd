@@ -22,8 +22,8 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
-import aQute.lib.exceptions.Exceptions;
-import aQute.lib.exceptions.SupplierWithException;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.SupplierWithException;
 import aQute.lib.hierarchy.Hierarchy;
 import aQute.lib.io.IO;
 

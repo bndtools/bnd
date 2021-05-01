@@ -4,6 +4,7 @@
 	osgi.annotation;version=latest;maven-scope=provided,\
 	osgi.core;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
+    biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest,\
 	biz.aQute.resolve;version=latest,\
 	bndtools.api;version=latest,\
@@ -29,7 +30,9 @@ Import-Package: \
  ${eclipse.importpackage},\
  *
 
--conditionalpackage: aQute.lib*;-split-package:=first
+-conditionalpackage: \
+    aQute.lib.*,\
+    aQute.libg.*
 
 -includepackage: bndtools.pde.*
 

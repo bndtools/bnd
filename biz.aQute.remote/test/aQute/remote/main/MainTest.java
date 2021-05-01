@@ -13,8 +13,8 @@ import org.osgi.framework.dto.FrameworkDTO;
 
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.Run;
+import aQute.bnd.exceptions.RunnableWithException;
 import aQute.bnd.osgi.Processor;
-import aQute.lib.exceptions.RunnableWithException;
 import aQute.lib.io.IO;
 import aQute.remote.agent.AgentDispatcher.Descriptor;
 import aQute.remote.api.Agent;

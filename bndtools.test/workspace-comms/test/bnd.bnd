@@ -10,6 +10,7 @@
 	bnd.identity;id='biz.aQute.bnd',\
 	bnd.identity;id='biz.aQute.bnd.annotation',\
 	bnd.identity;id='biz.aQute.bnd.gradle',\
+	bnd.identity;id='biz.aQute.bnd.util',\
 	bnd.identity;id='biz.aQute.bndlib',\
 	bnd.identity;id='biz.aQute.junit',\
 	bnd.identity;id='biz.aQute.launcher',\

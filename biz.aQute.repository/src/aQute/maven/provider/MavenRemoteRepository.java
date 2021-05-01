@@ -18,7 +18,7 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequestException;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.uri.URIUtil;

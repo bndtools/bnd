@@ -1,7 +1,9 @@
 
 Private-Package aQute.launchpad.internal
 
--conditionalpackage: aQute.lib*
+-conditionalpackage: \
+    aQute.lib.*,\
+    aQute.libg.*
 
 Import-Package: \
     *;resolution:=optional

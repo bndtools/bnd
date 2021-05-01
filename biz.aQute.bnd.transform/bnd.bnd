@@ -29,6 +29,7 @@ Bundle-Description: Class file and Manifest header Transformation Support
 	osgi.annotation;version=latest,\
 	osgi.core;version=latest,\
 	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest;maven-scope=compile
 

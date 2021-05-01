@@ -29,7 +29,7 @@ import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.ResourceHandle.Location;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 
 abstract class VersionFinder {
 	String		versionSpec;

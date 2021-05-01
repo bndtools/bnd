@@ -11,8 +11,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import aQute.bnd.service.result.Result;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.result.Result;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 
 /**

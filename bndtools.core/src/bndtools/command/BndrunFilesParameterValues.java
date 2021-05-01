@@ -23,7 +23,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 
-import aQute.lib.memoize.Memoize;
+import aQute.bnd.memoize.Memoize;
 import bndtools.central.Central;
 
 public class BndrunFilesParameterValues implements IParameterValues {

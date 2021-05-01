@@ -20,7 +20,7 @@ import org.osgi.resource.Resource;
 import aQute.bnd.annotation.ConsumerType;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.resource.ResourceBuilder;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;

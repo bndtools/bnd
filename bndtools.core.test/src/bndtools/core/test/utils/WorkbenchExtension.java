@@ -1,6 +1,6 @@
 package bndtools.core.test.utils;
 
-import static aQute.lib.exceptions.RunnableWithException.asRunnable;
+import static aQute.bnd.exceptions.RunnableWithException.asRunnable;
 import static bndtools.core.test.utils.TaskUtils.log;
 
 import java.lang.reflect.Modifier;
@@ -18,7 +18,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 
 /**
  * Jupiter extension for setting up a test workspace. This extension does the

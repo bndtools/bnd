@@ -1,6 +1,6 @@
 package bndtools.m2e;
 
-import static aQute.lib.exceptions.Exceptions.unchecked;
+import static aQute.bnd.exceptions.Exceptions.unchecked;
 
 import java.io.File;
 import java.io.InputStream;
@@ -60,7 +60,7 @@ import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.libg.glob.Glob;
 import bndtools.central.Central;
 

@@ -26,7 +26,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.help.instructions.ResolutionInstructions.Runorder;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.service.result.Result;
+import aQute.bnd.result.Result;
 import aQute.lib.io.IO;
 
 public class RunResolutionTest {

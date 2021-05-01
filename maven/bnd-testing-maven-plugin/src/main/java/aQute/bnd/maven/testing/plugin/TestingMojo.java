@@ -33,7 +33,7 @@ import aQute.bnd.maven.lib.resolve.Operation;
 import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.strings.Strings;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.libg.glob.Glob;
 import biz.aQute.resolve.ResolveProcess;
 

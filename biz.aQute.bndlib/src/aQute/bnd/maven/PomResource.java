@@ -21,7 +21,7 @@ import aQute.bnd.osgi.WriteResource;
 import aQute.bnd.stream.MapStream;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
-import aQute.lib.unmodifiable.Lists;
+import aQute.bnd.unmodifiable.Lists;
 import aQute.libg.glob.Glob;
 
 public class PomResource extends WriteResource {

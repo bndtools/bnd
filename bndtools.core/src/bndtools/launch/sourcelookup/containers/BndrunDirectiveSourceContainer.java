@@ -20,7 +20,7 @@ import org.eclipse.jdt.launching.sourcelookup.containers.JavaProjectSourceContai
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Run;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 
 public class BndrunDirectiveSourceContainer extends CompositeSourceContainer {
 	private static final ILogger		logger	= Logger.getLogger(BndrunDirectiveSourceContainer.class);

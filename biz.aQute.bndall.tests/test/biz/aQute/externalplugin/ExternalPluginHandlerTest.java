@@ -15,7 +15,7 @@ import org.junit.rules.TemporaryFolder;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.repository.fileset.FileSetRepository;
-import aQute.bnd.service.result.Result;
+import aQute.bnd.result.Result;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
 

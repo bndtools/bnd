@@ -8,9 +8,9 @@ import java.nio.charset.Charset;
 import java.util.Formatter;
 import java.util.List;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.collections.ExtList;
 import aQute.lib.env.Env;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.getopt.Description;

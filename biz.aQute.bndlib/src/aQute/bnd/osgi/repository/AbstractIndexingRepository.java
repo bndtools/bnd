@@ -19,8 +19,8 @@ import org.osgi.resource.Resource;
 
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.stream.MapStream;
-import aQute.lib.exceptions.Exceptions;
-import aQute.lib.memoize.Memoize;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.memoize.Memoize;
 
 public abstract class AbstractIndexingRepository<KEY, FILE> extends BaseRepository {
 	private final Map<KEY, Supplier<? extends Collection<? extends Resource>>>	resources;

@@ -1,7 +1,7 @@
 package bndtools.m2e;
 
-import static aQute.lib.exceptions.Exceptions.unchecked;
-import static aQute.lib.exceptions.FunctionWithException.asFunction;
+import static aQute.bnd.exceptions.Exceptions.unchecked;
+import static aQute.bnd.exceptions.FunctionWithException.asFunction;
 
 import java.io.File;
 import java.util.Map;

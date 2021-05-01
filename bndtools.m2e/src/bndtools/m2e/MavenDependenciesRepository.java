@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 
 @Component(service = {
 	IMavenProjectChangedListener.class, RepositoryPlugin.class

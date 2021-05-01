@@ -63,8 +63,8 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 
 import aQute.bnd.build.Workspace;
-import aQute.lib.exceptions.Exceptions;
-import aQute.lib.exceptions.FunctionWithException;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.FunctionWithException;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;

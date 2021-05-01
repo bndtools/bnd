@@ -1,6 +1,6 @@
 package bndtools.command;
 
-import static aQute.lib.exceptions.FunctionWithException.asFunction;
+import static aQute.bnd.exceptions.FunctionWithException.asFunction;
 
 import java.util.Arrays;
 import java.util.Objects;

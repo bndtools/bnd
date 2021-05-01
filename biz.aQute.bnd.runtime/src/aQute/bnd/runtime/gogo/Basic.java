@@ -36,8 +36,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.dtoformatter.DTOFormatter;
-import aQute.lib.exceptions.Exceptions;
 import aQute.libg.glob.Glob;
 
 @SuppressWarnings("deprecation")

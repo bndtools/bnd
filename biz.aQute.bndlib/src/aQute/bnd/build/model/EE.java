@@ -10,7 +10,7 @@ import java.util.Optional;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.utf8properties.UTF8Properties;
 
 public enum EE {

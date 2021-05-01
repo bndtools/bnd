@@ -40,7 +40,7 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.maven.PomParser;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferInputStream;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;

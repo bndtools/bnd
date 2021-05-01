@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.osgi.annotation.versioning.ProviderType;
 
-import aQute.bnd.service.result.Result;
+import aQute.bnd.result.Result;
 import aQute.bnd.signatures.ClassSignature;
 import aQute.bnd.signatures.FieldSignature;
 import aQute.bnd.signatures.MethodSignature;

@@ -1,12 +1,15 @@
 -buildpath: \
 	osgi.annotation;version=latest,\
 	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest
 
 -testpath: \
 	${junit}
 
--conditionalpackage: aQute.lib*
+-conditionalpackage: \
+    aQute.lib.*, \
+    aQute.libg.*
 
 -buildrepo:
 -releaserepo:

@@ -11,6 +11,7 @@
 -dependson: \
     biz.aQute.bnd.annotation,\
     biz.aQute.bnd.embedded-repo,\
+    biz.aQute.bnd.util,\
     biz.aQute.bndlib,\
     biz.aQute.repository,\
     biz.aQute.resolve,\
@@ -39,6 +40,7 @@
 
 -buildpath: \
 	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
 	bndtools.api;version=snapshot,\

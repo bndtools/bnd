@@ -24,6 +24,7 @@
 -runtrace: true
 -buildpath:  \
     aQute.libg;version=project, \
+    biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest
 
 -sub: *.bnd

@@ -1,6 +1,6 @@
 package org.bndtools.core.editors.quickfix.facade;
 
-import static aQute.lib.exceptions.FunctionWithException.asFunction;
+import static aQute.bnd.exceptions.FunctionWithException.asFunction;
 
 import java.util.Objects;
 import java.util.stream.Stream;

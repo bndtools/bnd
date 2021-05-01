@@ -23,7 +23,8 @@ Export-Package: org.osgi.service.metatype.annotations
 	org.bndtools.core.*
 
 -conditionalpackage: \
-	aQute.lib*;-split-package:=merge-first, \
+    aQute.lib.*,\
+    aQute.libg.*,\
 	org.bndtools.utils.*,\
 	org.apache.felix.metatype,\
 	org.kxml2.*,\
@@ -45,6 +46,7 @@ Export-Package: org.osgi.service.metatype.annotations
 	org.osgi.namespace.extender;version=latest;maven-scope=provided,\
 	org.osgi.namespace.service;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	biz.aQute.repository;version=latest,\
 	biz.aQute.resolve;version=latest,\

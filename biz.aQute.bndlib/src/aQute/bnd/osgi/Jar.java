@@ -1,6 +1,6 @@
 package aQute.bnd.osgi;
 
-import static aQute.lib.exceptions.BiConsumerWithException.asBiConsumer;
+import static aQute.bnd.exceptions.BiConsumerWithException.asBiConsumer;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
@@ -61,7 +61,7 @@ import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.Iterables;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;

@@ -1,6 +1,6 @@
 package biz.aQute.resolve;
 
-import static aQute.lib.exceptions.SupplierWithException.asSupplierOrElse;
+import static aQute.bnd.exceptions.SupplierWithException.asSupplierOrElse;
 import static java.util.stream.Collectors.toList;
 
 import java.io.BufferedReader;

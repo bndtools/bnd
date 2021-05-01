@@ -1,6 +1,6 @@
 package aQute.bnd.build;
 
-import static aQute.lib.exceptions.RunnableWithException.asRunnable;
+import static aQute.bnd.exceptions.RunnableWithException.asRunnable;
 
 import java.io.File;
 import java.util.ArrayList;

@@ -99,7 +99,7 @@ import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.converter.Converter;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;

@@ -57,7 +57,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import aQute.lib.exceptions.ConsumerWithException;
+import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.lib.stringrover.StringRover;
 import aQute.libg.glob.Glob;
 

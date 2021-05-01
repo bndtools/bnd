@@ -25,7 +25,7 @@ import aQute.bnd.service.progress.ProgressPlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
-import aQute.lib.exceptions.ConsumerWithException;
+import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.lib.io.IO;
 import aQute.maven.provider.FakeNexus;
 import junit.framework.TestCase;

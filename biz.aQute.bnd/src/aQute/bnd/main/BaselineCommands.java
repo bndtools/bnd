@@ -55,7 +55,7 @@ import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
-import aQute.lib.unmodifiable.Lists;
+import aQute.bnd.unmodifiable.Lists;
 import aQute.lib.xml.XML;
 
 /**

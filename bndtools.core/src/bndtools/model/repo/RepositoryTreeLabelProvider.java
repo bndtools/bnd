@@ -11,7 +11,7 @@ import org.eclipse.swt.graphics.Image;
 import aQute.bnd.build.Project;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 
 public class RepositoryTreeLabelProvider extends StyledCellLabelProvider {
 

@@ -2,7 +2,7 @@ package bndtools.utils;
 
 import java.util.Set;
 
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 
 public class JavaLangUtils {
 	private static final Set<String>	KEYWORDS	= Sets.of("abstract", "assert", "boolean", "break", "byte", "case",

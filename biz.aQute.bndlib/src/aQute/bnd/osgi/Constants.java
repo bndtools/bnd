@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 
 public interface Constants {
 	String				AUTOMATIC_MODULE_NAME						= "Automatic-Module-Name";

@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspace;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspaceClient;
 import aQute.lib.aspects.Aspects;
-import aQute.lib.exceptions.Exceptions;
-import aQute.lib.exceptions.FunctionWithException;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.FunctionWithException;
 import aQute.lib.io.IO;
 import aQute.lib.link.Link;
 

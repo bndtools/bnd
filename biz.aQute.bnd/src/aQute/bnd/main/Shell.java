@@ -7,10 +7,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.main.bnd.projectOptions;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.getopt.Description;
 import aQute.lib.justif.Justif;

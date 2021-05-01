@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-import aQute.lib.exceptions.SupplierWithException;
+import aQute.bnd.exceptions.SupplierWithException;
 import aQute.lib.io.IO;
 
 /**

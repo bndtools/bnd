@@ -52,7 +52,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.build.model.BndEditModel;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import bndtools.Plugin;
 import bndtools.UIConstants;
 import bndtools.editor.utils.ToolTips;

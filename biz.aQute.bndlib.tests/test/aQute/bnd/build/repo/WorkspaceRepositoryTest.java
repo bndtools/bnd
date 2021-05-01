@@ -16,7 +16,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.repository.maven.provider.MavenBndRepository;
-import aQute.lib.exceptions.ConsumerWithException;
+import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.lib.io.IO;
 import aQute.libg.map.MAP;
 import aQute.libg.map.MAP.MAPX;

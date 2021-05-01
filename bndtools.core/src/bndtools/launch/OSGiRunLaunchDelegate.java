@@ -29,7 +29,7 @@ import org.eclipse.ui.internal.Workbench;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectLauncher.NotificationType;
-import aQute.bnd.service.result.Result;
+import aQute.bnd.result.Result;
 import bndtools.Plugin;
 
 public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {

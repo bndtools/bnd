@@ -60,7 +60,7 @@ import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
-import aQute.lib.memoize.Memoize;
+import aQute.bnd.memoize.Memoize;
 import aQute.lib.strings.Strings;
 
 public class ResourceUtils {

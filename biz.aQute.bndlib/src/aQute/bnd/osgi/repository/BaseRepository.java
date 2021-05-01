@@ -24,7 +24,7 @@ import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 
 /**
  * WARNING ! Not tested

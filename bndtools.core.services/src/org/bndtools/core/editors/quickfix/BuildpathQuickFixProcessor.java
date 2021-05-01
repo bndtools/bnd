@@ -56,8 +56,8 @@ import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.service.result.Result;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.result.Result;
+import aQute.bnd.exceptions.Exceptions;
 import bndtools.central.Central;
 
 @Component

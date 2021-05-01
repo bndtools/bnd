@@ -63,7 +63,7 @@ import org.osgi.service.component.ComponentConstants;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.osgi.Processor;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.libg.tuple.Pair;
 import bndtools.Plugin;

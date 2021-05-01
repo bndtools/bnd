@@ -70,7 +70,7 @@ import org.osgi.resource.Resource;
 
 import aQute.bnd.osgi.Clazz;
 import aQute.lib.io.IO;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 import bndtools.Plugin;
 import bndtools.model.repo.RepositoryResourceElement;
 import bndtools.model.resolution.CapReqMapContentProvider;

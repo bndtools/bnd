@@ -7,6 +7,7 @@
 	org.osgi.service.component.annotations;version=1.3.0;maven-scope=provided,\
 	org.osgi.service.metatype;version=1.3.0,\
 	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	bndtools.api;version=latest,\
 	org.bndtools.templating;version=latest,\
@@ -27,9 +28,10 @@
 -includeresource: /=resources/unprocessed,\
     {/=resources/processed}
 -conditionalpackage: \
- aQute.lib*,\
- org.bndtools.utils.*
- 
+    aQute.lib.*,\
+    aQute.libg.*,\
+    org.bndtools.utils.*
+
 Bundle-ActivationPolicy: lazy
 Bundle-SymbolicName: ${p};singleton:=true
 

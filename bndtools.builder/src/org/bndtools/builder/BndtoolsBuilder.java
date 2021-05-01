@@ -35,7 +35,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
-import aQute.lib.exceptions.RunnableWithException;
+import aQute.bnd.exceptions.RunnableWithException;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;

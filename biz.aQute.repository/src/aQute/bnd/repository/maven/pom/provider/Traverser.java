@@ -31,7 +31,7 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.maven.MavenCapability;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom.Dependency;
 import aQute.maven.api.MavenScope;

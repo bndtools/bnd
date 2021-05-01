@@ -36,7 +36,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 
 public class CapReqBuilder {
 

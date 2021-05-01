@@ -16,7 +16,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.repository.fileset.FileSetRepository;
-import aQute.bnd.service.result.Result;
+import aQute.bnd.result.Result;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
