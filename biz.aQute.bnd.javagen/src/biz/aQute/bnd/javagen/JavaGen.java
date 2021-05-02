@@ -7,11 +7,11 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.externalplugin.ExternalPlugin;
 import aQute.bnd.service.generate.BuildContext;
 import aQute.bnd.service.generate.Generator;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.fileset.FileSet;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;

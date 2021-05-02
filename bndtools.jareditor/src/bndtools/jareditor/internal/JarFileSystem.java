@@ -34,7 +34,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 
-import aQute.bnd.service.result.Result;
+import aQute.bnd.result.Result;
 import aQute.lib.io.IO;
 import aQute.lib.io.NonClosingInputStream;
 import aQute.lib.zip.ZipUtil;

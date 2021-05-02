@@ -33,10 +33,10 @@ import org.osgi.framework.BundleException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.launchpad.BundleSpecBuilder;
 import aQute.launchpad.Launchpad;
 import aQute.launchpad.LaunchpadBuilder;
-import aQute.lib.exceptions.Exceptions;
 import aQute.tester.test.utils.ServiceLoaderMask;
 import aQute.tester.test.utils.TestBundler;
 import aQute.tester.test.utils.TestRunData;

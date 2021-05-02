@@ -26,7 +26,9 @@ Import-Package: \
 	
 -includeresource.perm: OSGI-INF/permissions.perm;literal="(java.security.AllPermission)"
 
--conditionalpackage: aQute.lib*
+-conditionalpackage: \
+    aQute.lib.*,\
+    aQute.libg.*
 
 -maven-scope: provided
 
@@ -34,6 +36,7 @@ Import-Package: \
 	osgi.annotation;version=latest,\
 	aQute.libg;version=project,\
 	osgi.core;version=latest,\
+	biz.aQute.bnd.util;version=snapshot,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.tester;version=snapshot;packages='aQute.junit.constants',\
 	junit:junit;version='${junit4.tester.version}',\

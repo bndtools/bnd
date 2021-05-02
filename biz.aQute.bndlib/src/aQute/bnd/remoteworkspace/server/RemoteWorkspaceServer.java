@@ -39,7 +39,7 @@ import aQute.bnd.service.specifications.RunSpecification;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.aspects.Aspects;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.link.Link;
 import aQute.lib.utf8properties.UTF8Properties;

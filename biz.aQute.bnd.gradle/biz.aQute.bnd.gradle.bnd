@@ -5,7 +5,7 @@ Bundle-Description: The Bnd Gradle plugins.
     aQute.bnd.gradle.*
 
 -conditionalpackage: \
-    aQute.lib.*, \
+    aQute.lib.*,\
     aQute.libg.*
 
 -includeresource: \

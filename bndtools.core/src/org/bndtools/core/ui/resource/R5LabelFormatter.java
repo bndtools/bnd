@@ -35,7 +35,7 @@ import aQute.bnd.osgi.resource.FilterParser.Op;
 import aQute.bnd.osgi.resource.FilterParser.RangeExpression;
 import aQute.bnd.osgi.resource.FilterParser.SimpleExpression;
 import aQute.bnd.osgi.resource.FilterParser.WithRangeExpression;
-import aQute.lib.unmodifiable.Maps;
+import aQute.bnd.unmodifiable.Maps;
 import bndtools.Plugin;
 
 public class R5LabelFormatter {

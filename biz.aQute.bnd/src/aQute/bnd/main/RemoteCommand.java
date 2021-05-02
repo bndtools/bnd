@@ -45,7 +45,7 @@ import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.remote.api.Agent;
 import aQute.remote.api.Event;
 import aQute.remote.api.Supervisor;

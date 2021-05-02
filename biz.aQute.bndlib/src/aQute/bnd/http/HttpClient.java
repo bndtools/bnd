@@ -62,7 +62,7 @@ import aQute.bnd.service.url.URLConnector;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.util.home.Home;
 import aQute.lib.date.Dates;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.libg.reporter.ReporterAdapter;

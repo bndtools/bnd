@@ -23,7 +23,7 @@ import org.eclipse.jdt.core.search.SearchRequestor;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
-import aQute.lib.unmodifiable.Lists;
+import aQute.bnd.unmodifiable.Lists;
 import bndtools.internal.pkgselection.SearchUtils;
 
 public class JavaSearchScopeTestCaseLister implements ITestCaseLister {

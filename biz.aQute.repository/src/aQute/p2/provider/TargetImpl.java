@@ -29,7 +29,7 @@ import org.w3c.dom.NodeList;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.url.TaggedData;
 import aQute.lib.collections.MultiMap;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.xml.XML;
 import aQute.p2.api.Artifact;

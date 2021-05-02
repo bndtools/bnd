@@ -32,7 +32,7 @@ import aQute.lib.collections.MultiMap;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.libg.generics.Create;
 
 public class JarPrinter extends Processor {

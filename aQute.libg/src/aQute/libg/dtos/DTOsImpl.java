@@ -20,7 +20,7 @@ import org.osgi.dto.DTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 
 public class DTOsImpl implements DTOs {
 	private final static Logger				logger			= LoggerFactory.getLogger(DTOsImpl.class);

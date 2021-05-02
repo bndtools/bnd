@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 import aQute.libg.generics.Create;
 import aQute.service.reporter.Report;

@@ -16,7 +16,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.dnd.IDragAndDropService;
 import org.eclipse.ui.part.EditorPart;
 
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 
 public class GAVIPageListener implements IPartListener {
 

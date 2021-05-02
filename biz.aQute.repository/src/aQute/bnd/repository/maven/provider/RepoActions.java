@@ -13,7 +13,7 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;

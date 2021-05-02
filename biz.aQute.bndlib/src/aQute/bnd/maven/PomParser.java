@@ -20,7 +20,7 @@ import org.w3c.dom.Text;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.lib.xml.XML;
 

@@ -63,7 +63,7 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
 import aQute.lib.io.IO;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 
 /**
  * This is the Resolve Context as outlined in the Resolver specification. It

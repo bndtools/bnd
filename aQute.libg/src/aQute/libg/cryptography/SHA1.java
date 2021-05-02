@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 
 public class SHA1 extends Digest {
 	public final static String ALGORITHM = "SHA-1";

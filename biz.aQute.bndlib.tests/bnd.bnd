@@ -31,6 +31,7 @@
 	aQute.libg;version=project,\
 	biz.aQute.launcher;version=snapshot;packages=*,\
 	biz.aQute.bnd.annotation;version=project,\
+	biz.aQute.bnd.util;version=project,\
 	biz.aQute.bndlib;version=project;packages=*,\
 	biz.aQute.repository;version=snapshot,\
 	biz.aQute.bnd.test;version=project,\

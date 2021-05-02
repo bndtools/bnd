@@ -71,7 +71,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.central.EclipseWorkspaceRepository;

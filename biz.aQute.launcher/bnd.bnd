@@ -8,6 +8,7 @@
 	osgi.core;version=latest;maven-scope=provided,\
 	org.osgi.framework;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest
 
@@ -15,7 +16,10 @@
 	${junit},\
 	slf4j.simple;version=latest
 
--conditionalpackage: aQute.lib*
+-conditionalpackage: \
+    aQute.lib.*,\
+    aQute.libg.*
+
 -includepackage: \
 	aQute.launcher,\
 	aQute.launcher.constants,\

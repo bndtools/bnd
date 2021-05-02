@@ -82,7 +82,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
 import aQute.bnd.properties.BadLocationException;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import biz.aQute.resolve.Bndrun;
 import bndtools.Plugin;
 import bndtools.central.Central;

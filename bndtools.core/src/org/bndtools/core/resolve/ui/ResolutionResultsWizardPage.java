@@ -15,7 +15,7 @@ import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.widgets.Composite;
 
 import aQute.bnd.build.model.BndEditModel;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import bndtools.Plugin;
 
 public class ResolutionResultsWizardPage extends WizardPage implements ResolutionResultPresenter {

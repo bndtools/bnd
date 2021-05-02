@@ -22,6 +22,7 @@
 -includeresource: \
 	${workspace}/LICENSE, \
 	templates=templates, \
+	@${repo;biz.aQute.bnd.util;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.bnd.ant;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.repository;latest}!/!META-INF/*, \
@@ -73,6 +74,7 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	org.osgi.service.log;version=latest,\
 	org.osgi.service.repository;version=latest,\
 	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
     biz.aQute.bnd.ant;version=latest,\
 	biz.aQute.resolve;version=latest,\

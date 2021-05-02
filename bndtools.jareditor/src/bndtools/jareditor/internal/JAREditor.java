@@ -23,8 +23,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.ide.ResourceUtil;
 
-import aQute.lib.exceptions.ConsumerWithException;
-import aQute.lib.exceptions.FunctionWithException;
+import aQute.bnd.exceptions.ConsumerWithException;
+import aQute.bnd.exceptions.FunctionWithException;
 import aQute.lib.strings.Strings;
 
 public class JAREditor extends FormEditor implements IResourceChangeListener {

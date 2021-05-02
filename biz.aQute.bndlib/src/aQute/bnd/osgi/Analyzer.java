@@ -1,7 +1,7 @@
 package aQute.bnd.osgi;
 
-import static aQute.lib.exceptions.FunctionWithException.asFunctionOrElse;
-import static aQute.lib.exceptions.PredicateWithException.asPredicate;
+import static aQute.bnd.exceptions.FunctionWithException.asFunctionOrElse;
+import static aQute.bnd.exceptions.PredicateWithException.asPredicate;
 /**
  * This class can calculate the required headers for a (potential) JAR file. It
  * analyzes a directory or JAR for the packages that are contained and that are

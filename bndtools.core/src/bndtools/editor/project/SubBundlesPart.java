@@ -22,7 +22,7 @@ import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
-import aQute.lib.unmodifiable.Lists;
+import aQute.bnd.unmodifiable.Lists;
 import bndtools.utils.ModificationLock;
 
 public class SubBundlesPart extends SectionPart implements PropertyChangeListener {

@@ -11,7 +11,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.widgets.Display;
 
 import aQute.bnd.build.Workspace;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 import bndtools.central.Central;

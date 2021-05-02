@@ -1,6 +1,6 @@
 package aQute.bnd.osgi;
 
-import static aQute.lib.exceptions.FunctionWithException.asFunction;
+import static aQute.bnd.exceptions.FunctionWithException.asFunction;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toMap;
@@ -66,12 +66,12 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
 import aQute.lib.date.Dates;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.filter.ExtendedFilter;
 import aQute.lib.formatter.Formatters;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
-import aQute.lib.memoize.Memoize;
+import aQute.bnd.memoize.Memoize;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.glob.Glob;

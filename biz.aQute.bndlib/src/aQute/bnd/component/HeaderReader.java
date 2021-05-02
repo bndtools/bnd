@@ -31,7 +31,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.Version;
 import aQute.lib.tag.Tag;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 
 public class HeaderReader extends Processor {
 	private final static Pattern		PROPERTY_PATTERN	= Pattern

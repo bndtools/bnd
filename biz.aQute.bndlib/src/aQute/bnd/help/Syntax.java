@@ -24,7 +24,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.Version;
 import aQute.lib.strings.Strings;
-import aQute.lib.unmodifiable.Maps;
+import aQute.bnd.unmodifiable.Maps;
 
 public class Syntax implements Constants {
 	final String							header;

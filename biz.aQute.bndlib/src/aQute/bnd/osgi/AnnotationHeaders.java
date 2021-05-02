@@ -1,6 +1,6 @@
 package aQute.bnd.osgi;
 
-import static aQute.lib.exceptions.ConsumerWithException.asConsumer;
+import static aQute.bnd.exceptions.ConsumerWithException.asConsumer;
 import static java.util.Collections.emptySet;
 
 import java.io.Closeable;
@@ -46,9 +46,9 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.converter.Converter;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 
 /**
  * This class parses the 'header annotations'. Header annotations are

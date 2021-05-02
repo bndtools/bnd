@@ -38,7 +38,7 @@ import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.url.DefaultURLConnectionHandler;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.MultiMap;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;

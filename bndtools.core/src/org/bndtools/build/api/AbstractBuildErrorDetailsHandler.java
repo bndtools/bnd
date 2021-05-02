@@ -37,7 +37,7 @@ import org.eclipse.ui.IMarkerResolution;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Processor;
-import aQute.lib.unmodifiable.Maps;
+import aQute.bnd.unmodifiable.Maps;
 import aQute.service.reporter.Report.Location;
 
 public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDetailsHandler {

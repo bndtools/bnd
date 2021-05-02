@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 
 /**

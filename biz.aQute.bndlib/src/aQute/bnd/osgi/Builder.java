@@ -1,6 +1,6 @@
 package aQute.bnd.osgi;
 
-import static aQute.lib.exceptions.FunctionWithException.asFunction;
+import static aQute.bnd.exceptions.FunctionWithException.asFunction;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
@@ -64,7 +64,7 @@ import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.regex.PatternConstants;
 import aQute.lib.strings.Strings;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.zip.ZipUtil;
 import aQute.libg.generics.Create;
 
@@ -752,7 +752,7 @@ public class Builder extends Analyzer {
 
 		List<Jar> np = new ArrayList<>();
 		for (Jar j : providers) {
-			if (from.matches(j.getName())) {
+			if (from.matches(j.getName()) ^ from.isNegated()) {
 				np.add(j);
 			}
 		}

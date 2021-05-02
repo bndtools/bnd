@@ -22,7 +22,7 @@ import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA256;
 import aQute.libg.reporter.slf4j.Slf4jReporter;

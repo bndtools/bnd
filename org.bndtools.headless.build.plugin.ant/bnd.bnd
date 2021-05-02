@@ -6,6 +6,7 @@
 	osgi.core;version=latest;maven-scope=provided,\
     org.osgi.service.component.annotations;version=1.3.0;maven-scope=provided,\
 	aQute.libg;version=project,\
+    biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest,\
 	bndtools.api;version=latest,\
 	org.bndtools.headless.build.manager;version=latest,\

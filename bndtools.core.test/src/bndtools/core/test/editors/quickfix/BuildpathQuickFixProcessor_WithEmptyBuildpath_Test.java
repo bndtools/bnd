@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 
 //@Disabled("Currently disabled due to startup flakiness, see https://github.com/bndtools/bnd/issues/4253")
 public class BuildpathQuickFixProcessor_WithEmptyBuildpath_Test extends AbstractBuildpathQuickFixProcessorTest {

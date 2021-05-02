@@ -30,8 +30,8 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.properties.Document;
-import aQute.lib.unmodifiable.Lists;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Lists;
+import aQute.bnd.unmodifiable.Sets;
 import bndtools.Plugin;
 import bndtools.central.Central;
 

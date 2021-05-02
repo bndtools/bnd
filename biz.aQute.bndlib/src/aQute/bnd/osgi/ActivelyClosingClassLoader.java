@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferInputStream;
 import aQute.lib.io.IO;
 

@@ -8,6 +8,7 @@ Bundle-SymbolicName: ${p};singleton:=true
 	osgi.annotation;version=latest;maven-scope=provided,\
 	osgi.core;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	org.eclipse.jface.text,\
 	org.eclipse.core.resources,\

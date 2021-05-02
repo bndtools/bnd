@@ -14,6 +14,7 @@ Import-Package: \
 -buildpath: \
 	osgi.annotation;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	biz.aQute.resolve;version=latest,\
 	biz.aQute.repository;version=latest,\
@@ -28,7 +29,9 @@ Import-Package: \
 	org.eclipse.aether.api;version=${aether.version},\
 	org.slf4j.api;version=latest
 
--conditionalpackage: aQute.lib*;-split-package:=first
+-conditionalpackage: \
+    aQute.lib.*, \
+    aQute.libg.*
 
 -testpath: \
 	${junit},\

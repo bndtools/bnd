@@ -18,8 +18,8 @@ import org.osgi.framework.Version;
 import org.osgi.namespace.extender.ExtenderNamespace;
 import org.osgi.service.configurator.ConfiguratorConstants;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.service.specifications.BuilderSpecification;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.regex.PatternConstants;
 import aQute.lib.strings.Strings;

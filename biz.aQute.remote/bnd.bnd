@@ -9,6 +9,7 @@ aQute.agent.server.port = 29998
 -buildpath: \
 	osgi.core;version=latest;maven-scope=provided,\
     aQute.libg;version=project,\
+    biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest,\
     org.apache.felix.gogo.runtime
 
@@ -20,8 +21,7 @@ aQute.agent.server.port = 29998
     biz.aQute.repository, \
     org.awaitility, \
     biz.aQute.launchpad
-    
-    
+
 -sub: *.bnd
 
 #
@@ -29,9 +29,11 @@ aQute.agent.server.port = 29998
 #
 
 -conditionalpackage: \
-	aQute.lib*,\
+    aQute.lib.*,\
+    aQute.libg.*,\
 	aQute.configurable.*,\
 	aQute.service.reporter,\
+	aQute.bnd.exceptions.*,\
 	aQute.bnd.util.*
 
 #

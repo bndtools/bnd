@@ -42,7 +42,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.AnalyzerPlugin;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.FunctionWithException;
+import aQute.bnd.exceptions.FunctionWithException;
 import aQute.lib.strings.Strings;
 import aQute.lib.xml.XML;
 import aQute.libg.glob.PathSet;

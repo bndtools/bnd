@@ -40,7 +40,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 import biz.aQute.resolve.ResolveProcess;
 
 @Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true)

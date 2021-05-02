@@ -15,7 +15,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.osgi.framework.Version;
 
 import aQute.lib.io.IO;
-import aQute.lib.unmodifiable.Sets;
+import aQute.bnd.unmodifiable.Sets;
 
 /**
  * Models the three available styles for versioning exported packages.

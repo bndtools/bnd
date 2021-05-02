@@ -29,7 +29,7 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.libg.glob.Glob;
 
 /**

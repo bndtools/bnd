@@ -3,9 +3,9 @@ package aQute.launchpad.junit;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.launchpad.Launchpad;
 import aQute.launchpad.LaunchpadBuilder;
-import aQute.lib.exceptions.Exceptions;
 
 public class LaunchpadRule extends TestWatcher {
 	private String				name;

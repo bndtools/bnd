@@ -6,5 +6,6 @@
 -buildpath: \
 	osgi.core;version=latest,\
 	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=project,\
 	biz.aQute.bndlib;version=project,\
 	${junit}

@@ -1,6 +1,6 @@
 package aQute.bnd.repository.maven.provider;
 
-import static aQute.lib.exceptions.ConsumerWithException.asConsumer;
+import static aQute.bnd.exceptions.ConsumerWithException.asConsumer;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;

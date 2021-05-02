@@ -9,7 +9,7 @@ import java.lang.invoke.MethodType;
 import java.util.Map;
 
 import aQute.bnd.osgi.Processor;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 
 public class Run extends Project {
 

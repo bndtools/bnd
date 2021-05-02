@@ -38,9 +38,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.ProviderType;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.stream.MapStream;
-import aQute.lib.unmodifiable.Lists;
+import aQute.bnd.unmodifiable.Lists;
 
 @ProviderType
 public class DependencyResolver {
@@ -361,7 +362,7 @@ public class DependencyResolver {
 		try {
 			project.setDependencyArtifacts(project.createArtifacts(artifactFactory, null, null));
 		} catch (Exception e) {
-			throw aQute.lib.exceptions.Exceptions.duck(e);
+			throw Exceptions.duck(e);
 		}
 	}
 
@@ -375,7 +376,7 @@ public class DependencyResolver {
 		try {
 			project.setDependencyArtifacts(project.createArtifacts(artifactFactory, null, null));
 		} catch (Exception e) {
-			throw aQute.lib.exceptions.Exceptions.duck(e);
+			throw Exceptions.duck(e);
 		}
 	}
 

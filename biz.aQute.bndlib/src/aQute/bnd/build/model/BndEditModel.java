@@ -63,7 +63,7 @@ import aQute.bnd.properties.LineType;
 import aQute.bnd.properties.PropertiesLineReader;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.Iterables;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 

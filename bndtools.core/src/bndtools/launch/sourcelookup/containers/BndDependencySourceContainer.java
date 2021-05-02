@@ -15,7 +15,7 @@ import org.eclipse.debug.core.sourcelookup.ISourceLookupDirector;
 import org.eclipse.debug.core.sourcelookup.containers.CompositeSourceContainer;
 
 import aQute.bnd.build.Run;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import bndtools.launch.util.LaunchUtils;
 
 public class BndDependencySourceContainer extends CompositeSourceContainer {

@@ -18,7 +18,7 @@ import java.util.Dictionary;
 import java.util.List;
 import java.util.Map;
 
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 
 public class Filter {
 

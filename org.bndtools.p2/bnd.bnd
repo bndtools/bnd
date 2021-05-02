@@ -23,6 +23,7 @@ timestamp: ${tstamp}
     org.bndtools.templating.gitrepo, \
     biz.aQute.bnd.embedded-repo, \
     biz.aQute.bnd.maven, \
+    biz.aQute.bnd.util, \
     biz.aQute.bndlib, \
     biz.aQute.repository, \
     biz.aQute.resolve

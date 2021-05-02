@@ -1,7 +1,7 @@
 package aQute.bnd.build;
 
-import static aQute.bnd.service.result.Result.err;
-import static aQute.bnd.service.result.Result.ok;
+import static aQute.bnd.result.Result.err;
+import static aQute.bnd.result.Result.ok;
 
 import java.io.File;
 import java.io.InputStream;
@@ -23,10 +23,10 @@ import org.osgi.framework.VersionRange;
 import aQute.bnd.help.instructions.ProjectInstructions.GeneratorSpec;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.result.Result;
 import aQute.bnd.service.generate.BuildContext;
 import aQute.bnd.service.generate.Generator;
-import aQute.bnd.service.result.Result;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.fileset.FileSet;
 import aQute.lib.io.IO;
 import aQute.lib.redirect.Redirect;

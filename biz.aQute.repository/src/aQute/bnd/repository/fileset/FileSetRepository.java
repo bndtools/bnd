@@ -1,6 +1,6 @@
 package aQute.bnd.repository.fileset;
 
-import static aQute.lib.exceptions.FunctionWithException.asFunctionOrElse;
+import static aQute.bnd.exceptions.FunctionWithException.asFunctionOrElse;
 import static aQute.lib.promise.PromiseCollectors.toPromise;
 
 import java.io.File;
@@ -38,7 +38,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.POM;

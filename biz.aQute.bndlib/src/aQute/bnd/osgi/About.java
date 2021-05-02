@@ -3,7 +3,7 @@ package aQute.bnd.osgi;
 import java.util.Map;
 
 import aQute.bnd.version.Version;
-import aQute.lib.unmodifiable.Maps;
+import aQute.bnd.unmodifiable.Maps;
 
 /**
  * This package contains a number of classes that assists by analyzing JARs and

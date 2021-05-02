@@ -31,7 +31,7 @@ import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 
 import aQute.bnd.build.Run;
 import aQute.bnd.maven.lib.configuration.Bndruns;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 
 public interface MavenRunListenerHelper {
 

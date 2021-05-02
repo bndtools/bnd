@@ -11,7 +11,7 @@ import org.eclipse.jface.wizard.Wizard;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import bndtools.Plugin;
 
 public class ExecutableJarExportWizard extends Wizard implements IRunDescriptionExportWizard {

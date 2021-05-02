@@ -60,7 +60,7 @@ import aQute.bnd.version.Version;
 import aQute.bnd.xmlattribute.ExtensionDef;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
 import aQute.lib.collections.MultiMap;
-import aQute.lib.unmodifiable.Maps;
+import aQute.bnd.unmodifiable.Maps;
 
 /**
  * Processes spec DS annotations into xml.
