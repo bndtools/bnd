@@ -6,7 +6,7 @@
 		<groupId>biz.aQute.bnd</groupId>
 		<artifactId>bnd-plugin-parent</artifactId>
 		<version>${revision}</version>
-		<relativePath>..</relativePath>
+		<relativePath>../bnd-plugin-parent</relativePath>
 	</parent>
 	<artifactId>bnd-resolver-maven-plugin</artifactId>
 	<description>Resolves the -runbundles for an OSGi bndrun file</description>
@@ -43,6 +43,10 @@
 		<dependency>
 			<groupId>biz.aQute.bnd</groupId>
 			<artifactId>biz.aQute.bnd.maven</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>biz.aQute.bnd</groupId>
+			<artifactId>biz.aQute.bnd.util</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>biz.aQute.bnd</groupId>

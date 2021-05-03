@@ -7,7 +7,7 @@
 		<groupId>biz.aQute.bnd</groupId>
 		<artifactId>bnd-plugin-parent</artifactId>
 		<version>${revision}</version>
-		<relativePath>..</relativePath>
+		<relativePath>../bnd-plugin-parent</relativePath>
 	</parent>
 
 	<artifactId>bnd-baseline-maven-plugin</artifactId>
