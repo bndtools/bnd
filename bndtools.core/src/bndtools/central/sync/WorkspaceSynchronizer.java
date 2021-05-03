@@ -1,8 +1,6 @@
 package bndtools.central.sync;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -126,28 +124,8 @@ public class WorkspaceSynchronizer {
 			}
 
 			if (refresh && monitor != null) {
-				Central.bndCall(() -> {
-					List<Project> buildOrder = new ArrayList<>(ws.getBuildOrder());
-					Collections.reverse(buildOrder);
-					buildOrder.forEach((model) -> {
-						try {
-							monitor.subTask("Clean " + model);
-							model.clean();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					});
-					ws.getRepositories()
-						.forEach((rp) -> {
-							monitor.subTask("Syncing repo " + rp.getName());
-							rp.sync();
-						});
-					return null;
-				});
 				monitor.subTask("Refresh workspace ");
 				wsroot.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-				if (previous)
-					build(ws, monitor);
 			}
 
 		} catch (Exception e) {
