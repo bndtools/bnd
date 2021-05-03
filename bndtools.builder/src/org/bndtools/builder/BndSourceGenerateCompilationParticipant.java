@@ -1,8 +1,6 @@
 package org.bndtools.builder;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import org.bndtools.api.ILogger;
@@ -18,7 +16,6 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.FileLine;
 import aQute.bnd.result.Result;
-import aQute.bnd.exceptions.RunnableWithException;
 import aQute.service.reporter.Reporter.SetLocation;
 import bndtools.central.Central;
 
@@ -56,10 +53,9 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 				return READY_FOR_BUILD;
 			}
 
-			List<RunnableWithException> after = new ArrayList<>();
 			Processor processor = new Processor();
 
-			Central.bndCall(() -> {
+			Central.bndCall(after -> {
 				Project model = workspace.getProject(project.getName());
 				if (model != null) {
 
@@ -76,14 +72,14 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 							header.set(loc);
 						}
 					}
-					after.add(() -> {
+					after.accept("Decorating " + project, () -> {
 						markers.setMarkers(processor, MARKER_BND_GENERATE);
 					});
 
 					Set<File> outputs = model.getGenerate()
 						.getOutputDirs();
 
-					after.add(() -> {
+					after.accept("Refreshing outputs", () -> {
 						for (File f : outputs) {
 							IResource r = Central.toResource(f);
 							if (r != null) {
@@ -91,13 +87,9 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 							}
 						}
 					});
-
 				}
 				return null;
 			});
-			for (RunnableWithException r : after) {
-				r.run();
-			}
 		} catch (Exception e) {
 			logger.logError("generating phase, aboutToBuild", e);
 		}

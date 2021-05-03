@@ -3,9 +3,7 @@ package org.bndtools.builder;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,7 +33,6 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
-import aQute.bnd.exceptions.RunnableWithException;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
@@ -163,8 +160,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 			try {
 				markers.deleteMarkers(BndtoolsConstants.MARKER_BND_BLOCKER);
 
-				List<RunnableWithException> after = new ArrayList<>();
-				Central.bndCall(() -> {
+				Central.bndCall(after -> {
 					boolean force = kind == FULL_BUILD;
 					model.clear();
 					DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);
@@ -200,7 +196,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
 						Processor processor = new Processor();
 						processor.getInfo(model);
-						after.add(() -> {
+						after.accept("Decorating " + myProject, () -> {
 							markers.validate(model);
 							markers.setMarkers(processor, BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
 						});
@@ -252,7 +248,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 					if (markers.hasBlockingErrors(delta)) {
 						CompileErrorAction actionOnCompileError = getActionOnCompileError();
 						if (actionOnCompileError != CompileErrorAction.build) {
-							after.add(() -> {
+							after.accept("Decorating " + myProject, () -> {
 								if (actionOnCompileError == CompileErrorAction.delete) {
 									buildLog.basic("Blocking errors, delete build files, quit");
 									deleteBuildFiles(model);
@@ -268,7 +264,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 						}
 
 						buildLog.basic("Blocking errors, continuing anyway");
-						after.add(() -> {
+						after.accept("Decorating " + myProject, () -> {
 							markers.createMarker(model, IMarker.SEVERITY_WARNING,
 								"Project " + myProject + " has blocking errors but requested to continue anyway",
 								BndtoolsConstants.MARKER_BND_BLOCKER);
@@ -282,8 +278,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 					Processor processor = new Processor();
 					processor.getInfo(model);
 
-					after.add(() -> {
-
+					after.accept("Decorating " + myProject, () -> {
 						IResource r = Central.toResource(target);
 						r.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 
@@ -303,16 +298,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 										// cnf
 					}
 					return null;
-
 				}, monitor);
-
-				monitor.subTask("Decorating " + myProject);
-				for (RunnableWithException r : after)
-					try {
-						r.run();
-					} catch (Exception e) {
-						logger.logError("unexpected exception", e);
-					}
 				return null;
 			} catch (TimeoutException | InterruptedException e) {
 				logger.logWarning("Unable to build project " + myProject.getName(), e);
@@ -359,7 +345,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 				return;
 
 			try {
-				Central.bndCall(() -> {
+				Central.bndCall(after -> {
 					model.clean();
 					return null;
 				}, monitor);

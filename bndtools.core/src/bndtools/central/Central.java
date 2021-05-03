@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
@@ -20,6 +19,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -59,16 +59,18 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.annotation.plugin.InternalPluginDefinition;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.FunctionWithException;
+import aQute.bnd.exceptions.RunnableWithException;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.memoize.Memoize;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.progress.TaskManager;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
-import aQute.bnd.memoize.Memoize;
 import aQute.libg.ints.IntCounter;
 import aQute.service.reporter.Reporter;
 import bndtools.Plugin;
@@ -740,7 +742,8 @@ public class Central implements IStartupParticipant {
 	 *             period.
 	 * @throws Exception If the callable throws an exception.
 	 */
-	public static <V> V bndCall(Callable<V> callable) throws Exception {
+	public static <V> V bndCall(FunctionWithException<BiConsumer<String, RunnableWithException>, V> callable)
+		throws Exception {
 		return bndCall(callable, null);
 	}
 
@@ -758,7 +761,8 @@ public class Central implements IStartupParticipant {
 	 *             obtain the lock.
 	 * @throws Exception If the callable throws an exception.
 	 */
-	public static <V> V bndCall(Callable<V> callable, IProgressMonitor monitorOrNull) throws Exception {
+	public static <V> V bndCall(FunctionWithException<BiConsumer<String, RunnableWithException>, V> callable,
+		IProgressMonitor monitorOrNull) throws Exception {
 		synchronized (waiters) {
 			waiters.add(Thread.currentThread());
 			logger.info("Enter bnd lock: {}", waiters);
@@ -787,6 +791,9 @@ public class Central implements IStartupParticipant {
 			};
 			boolean interrupted = Thread.interrupted();
 			try {
+				List<Runnable> after = new ArrayList<>();
+				MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0,
+					"Errors occurred while calling bndCall after actions");
 				long progress = bndLock.progress();
 				for (int i = 0; i < 120; i++) {
 					if (monitor.isCanceled()) {
@@ -803,9 +810,23 @@ public class Central implements IStartupParticipant {
 					}
 					if (locked) {
 						try {
-							return TaskManager.with(task, callable::call);
+							return TaskManager.with(task, () -> callable.apply((name, runnable) -> after.add(() -> {
+								monitor.subTask(name);
+								try {
+									runnable.run();
+								} catch (Exception e) {
+									status.add(new Status(IStatus.ERROR, runnable.getClass(),
+										"Unexpected exception in bndCall after action: " + name, e));
+								}
+							})));
 						} finally {
 							bndLock.unlock();
+							for (Runnable runnable : after) {
+								runnable.run();
+							}
+							if (!status.isOK()) {
+								throw new CoreException(status);
+							}
 						}
 					}
 					long currentProgress = bndLock.progress();
@@ -826,7 +847,7 @@ public class Central implements IStartupParticipant {
 		} finally {
 			synchronized (waiters) {
 				waiters.remove(Thread.currentThread());
-				logger.info("Exit bnd lock: {}, remaining {}", waiters);
+				logger.info("Exit bnd lock: {}", waiters);
 			}
 		}
 	}

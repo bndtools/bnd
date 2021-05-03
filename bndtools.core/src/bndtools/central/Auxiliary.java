@@ -120,8 +120,14 @@ class Auxiliary implements Closeable, WeavingHook {
 
 	@Override
 	public void weave(WovenClass wovenClass) {
-		if (delta == null || delta.isEmpty())
-			return;
+		List<String> extra;
+		synchronized (this) {
+			extra = delta;
+			if (extra == null || extra.isEmpty()) {
+				return;
+			}
+			delta = null;
+		}
 
 		BundleWiring wiring = wovenClass.getBundleWiring();
 		if (wiring == null)
@@ -130,11 +136,6 @@ class Auxiliary implements Closeable, WeavingHook {
 		if (wiring.getBundle() != bndlib)
 			return;
 
-		List<String> extra;
-		synchronized (this) {
-			extra = delta;
-			delta = null;
-		}
 		wovenClass.getDynamicImports()
 			.addAll(extra);
 	}
