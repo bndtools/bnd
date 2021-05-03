@@ -6,7 +6,7 @@
 		<groupId>biz.aQute.bnd</groupId>
 		<artifactId>bnd-plugin-parent</artifactId>
 		<version>${revision}</version>
-		<relativePath>..</relativePath>
+		<relativePath>../bnd-plugin-parent</relativePath>
 	</parent>
 	<artifactId>bnd-export-maven-plugin</artifactId>
 	<description>Resolve and Export OSGi applications.</description>
@@ -43,6 +43,10 @@
 		<dependency>
 			<groupId>biz.aQute.bnd</groupId>
 			<artifactId>biz.aQute.bnd.maven</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>biz.aQute.bnd</groupId>
+			<artifactId>biz.aQute.bnd.util</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>biz.aQute.bnd</groupId>
