@@ -99,7 +99,7 @@ class AddBundleCompletionProposal extends WorkspaceJob implements IJavaCompletio
 	@Override
 	public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 		try {
-			IStatus status = Central.bndCall(() -> {
+			IStatus status = Central.bndCall(after -> {
 
 				BndEditModel model = new BndEditModel(project);
 				model.load();

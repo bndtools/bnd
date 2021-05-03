@@ -85,7 +85,7 @@ public class WorkspaceSynchronizer {
 				createProject(ws.getFile(Workspace.CNFDIR), null, subMonitor.split(1));
 			}
 
-			List<String> models = Central.bndCall(() -> {
+			List<String> models = Central.bndCall(after -> {
 				ws.refreshProjects();
 				ws.refresh();
 				ws.forceRefresh();

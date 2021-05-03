@@ -243,7 +243,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 			}
 
 			try {
-				Central.bndCall(this::calculateProjectClasspath);
+				Central.bndCall(after -> calculateProjectClasspath());
 			} catch (Exception e) {
 				SetLocation error = error("Unable to calculate classpath for project %s", e, project.getName());
 				logger.logError(error.location().message, e);

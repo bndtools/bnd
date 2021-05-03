@@ -3,7 +3,6 @@ package org.bndtools.builder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import org.eclipse.core.resources.IBuildConfiguration;
 import org.eclipse.core.resources.IDynamicReferenceProvider;
@@ -27,8 +26,7 @@ public class BndtoolsDynamicReferenceProvider implements IDynamicReferenceProvid
 			IProject project = buildConfiguration.getProject();
 			Workspace ws = Central.getWorkspace();
 			if (!ws.isDefaultWorkspace()) {
-				Callable<List<IProject>> c = () -> getDependencies(project, ws);
-				return Central.bndCall(c);
+				return Central.bndCall(after -> getDependencies(project, ws));
 			}
 			return Collections.emptyList();
 		} catch (Exception e) {
