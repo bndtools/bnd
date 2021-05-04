@@ -409,7 +409,8 @@ public class Workspace extends Processor {
 	public Project getProjectFromFile(File projectDir) {
 		try {
 			projectDir = projectDir.getCanonicalFile();
-			assert projectDir.isDirectory();
+			if ( !projectDir.isDirectory())
+				return null;
 
 			if (getBase().getCanonicalFile()
 				.equals(projectDir.getParentFile())) {

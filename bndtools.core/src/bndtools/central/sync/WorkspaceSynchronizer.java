@@ -1,10 +1,13 @@
 package bndtools.central.sync;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -21,12 +24,13 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.eclipse.EclipseUtil;
+import aQute.lib.collections.Logic;
+import aQute.lib.fileset.FileSet;
 import bndtools.Plugin;
 import bndtools.central.Central;
 
@@ -74,9 +78,28 @@ public class WorkspaceSynchronizer {
 				return;
 			System.out.println("Syncing");
 
-			Set<String> projects = Stream.of(wsroot.getProjects())
-				.map(IProject::getName)
-				.collect(Collectors.toSet());
+			Map<String, IProject> projects = new TreeMap<>();
+
+			for (IProject project : wsroot.getProjects()) {
+				if (project == null)
+					continue;
+
+				if (!project.exists())
+					continue;
+
+				if (!project.isAccessible())
+					continue;
+
+				IPath location = project.getLocation();
+				if (location == null)
+					continue;
+
+				File projectDir = location.toFile();
+				if (!projectDir.isDirectory())
+					continue;
+
+				projects.put(projectDir.getName(), project);
+			}
 
 			IProject cnf = wsroot.getProject(Workspace.CNFDIR);
 			if (!cnf.exists()) {
@@ -87,51 +110,78 @@ public class WorkspaceSynchronizer {
 
 			List<String> models = Central.bndCall(after -> {
 				ws.refreshProjects();
-				ws.refresh();
 				ws.forceRefresh();
 				return ws.getBuildOrder()
 					.stream()
+					.filter(Project::isValid)
 					.map(Project::getName)
 					.collect(Collectors.toList());
 
 			}, monitor);
+
 			projects.remove(Workspace.CNFDIR);
 			models.remove(Workspace.CNFDIR);
 
+			Set<String> changed = new HashSet<>();
+
+			System.out.println("Projects    " + projects.keySet());
+			System.out.println("Models      " + new TreeSet<>(models));
+			System.out.println("To create   " + new TreeSet<>(Logic.remove(models, projects.keySet())));
+
 			for (String mm : models) {
-				boolean remove = projects.remove(mm);
-				if (remove)
+				IProject project = projects.remove(mm);
+				if (project != null)
 					continue;
 
 				System.out.println("creating " + mm);
 
 				File dir = ws.getFile(mm);
-				IProject project = createProject(dir, null, subMonitor);
-				refresh |= project != null && project.hasNature(Plugin.BNDTOOLS_NATURE);
+				project = createProject(dir, null, subMonitor);
+				changed.add(mm);
 			}
 
-			for (String pp : projects) {
-				IProject project = wsroot.getProject(pp);
-				if (project != null && project.isAccessible() && project.exists()) {
-					if (inWorkspace(project, ws.getBase())) {
-						if (isEmpty(project)) {
-							System.out.println("deleting " + pp);
-							refresh |= project.hasNature(Plugin.BNDTOOLS_NATURE);
-							project.delete(false, subMonitor);
-						}
+			projects.values()
+				.removeIf(project -> {
+					File projectDir = project.getLocation()
+						.toFile();
+
+					boolean inWorkspace = ws.getBase()
+						.equals(projectDir.getParentFile());
+					if (!inWorkspace)
+						return true;
+
+					try {
+						if (!project.hasNature(Plugin.BNDTOOLS_NATURE))
+							return true;
+					} catch (CoreException e) {
+						return true;
 					}
-				}
+
+					return !isEmpty(project);
+
+				});
+
+			System.out.println("To delete   " + new TreeSet<>(projects.keySet()));
+
+			for (Map.Entry<String, IProject> toBeDeleted : projects.entrySet()) {
+				IProject project = toBeDeleted.getValue();
+				System.out.println("deleting " + toBeDeleted);
+				project.delete(true, subMonitor);
+				changed.add(toBeDeleted.getKey());
 			}
 
 			if (refresh && monitor != null) {
-				monitor.subTask("Refresh workspace ");
-				wsroot.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+				try {
+					monitor.subTask("Refresh workspace ");
+					wsroot.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+				} catch (Exception e) {
+					// best effort
+				}
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			Status status = new Status(Status.ERROR, "bndtools.builder", e.getMessage());
-			throw new CoreException(status);
+			logger.logError("Failed to sync", e);
 		} finally {
 			atend.run();
 			setAutobuild(previous);
@@ -139,6 +189,7 @@ public class WorkspaceSynchronizer {
 	}
 
 	private boolean isEmpty(IProject project) {
+
 		IPath location = project.getLocation();
 		if (location == null)
 			return false;
@@ -151,7 +202,15 @@ public class WorkspaceSynchronizer {
 		if (listFiles.length == 0)
 			return true;
 
-		return false;
+		FileSet fs = new FileSet(folder, "**");
+		Set<File> files = fs.getFiles();
+		files.removeIf(f -> {
+			return f.getName()
+				.equals(".project");
+		});
+
+		return files.isEmpty();
+
 	}
 
 	private boolean setAutobuild(boolean on) throws CoreException {
@@ -160,15 +219,6 @@ public class WorkspaceSynchronizer {
 		description.setAutoBuilding(on);
 		eclipse.setDescription(description);
 		return original;
-	}
-
-	private static boolean inWorkspace(IProject p, File baseDir) {
-		IPath location = p.getLocation();
-		if (location == null)
-			return false;
-
-		File dir = location.toFile();
-		return baseDir.equals(dir.getParentFile());
 	}
 
 	public static void removeProject(IProject project, IProgressMonitor monitor) {

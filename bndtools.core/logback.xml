@@ -5,12 +5,6 @@
     </encoder>
   </appender>
 
-  <logger name="aQute.bnd.maven" level="WARN" />
-  <logger name="biz.aQute" level="INFO" />
-  <logger name="bndtools" level="DEBUG" />
-  <logger name="org.bndtools" level="DEBUG" />
-  <logger name="org.apache" level="DEBUG" />
-
   <root level="ERROR">
     <appender-ref ref="STDOUT" />
   </root>
