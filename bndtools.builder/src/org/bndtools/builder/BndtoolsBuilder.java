@@ -104,6 +104,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 			Project ourModel = null;
 			try {
 				ourModel = Central.getProject(myProject);
+
 			} catch (Exception e) {
 				markers.deleteMarkers("*");
 				logger.logError("Exception while trying to fetch bnd project for " + myProject.getName(), e);
@@ -155,12 +156,21 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 				markers.createMarker(null, IMarker.SEVERITY_ERROR, msg, BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
 				return null;
 			}
+
 			final Project model = ourModel;
 
 			try {
 				markers.deleteMarkers(BndtoolsConstants.MARKER_BND_BLOCKER);
 
 				Central.bndCall(after -> {
+					if (!model.isValid()) {
+						after.accept("Not a valid project" + model, () -> {
+							markers.createMarker(null, IMarker.SEVERITY_ERROR, "Not a valid bnd project",
+								BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
+						});
+						return null;
+					}
+
 					boolean force = kind == FULL_BUILD;
 					model.clear();
 					DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);

@@ -45,7 +45,7 @@ public class SynchronizeWorkspaceWithEclipse {
 
 	public SynchronizeWorkspaceWithEclipse() throws IOException {
 		schedule = Processor.getScheduledExecutor()
-			.scheduleAtFixedRate(this::check, 1000, 1000, TimeUnit.MILLISECONDS);
+			.scheduleAtFixedRate(this::check, 1000, 300, TimeUnit.MILLISECONDS);
 
 		macos = "MacOSX".equalsIgnoreCase(osname());
 	}
@@ -80,8 +80,8 @@ public class SynchronizeWorkspaceWithEclipse {
 		Job job = Job.create("bnd sync", (m) -> {
 			System.out.println("Syncing");
 
-			while (System.currentTimeMillis() - dir.lastModified() < 1000) {
-				sleep(1000);
+			while (System.currentTimeMillis() - dir.lastModified() < 500) {
+				sleep(500);
 			}
 			if (m.isCanceled())
 				return;
@@ -90,7 +90,7 @@ public class SynchronizeWorkspaceWithEclipse {
 			ws.synchronize(true, m, () -> {});
 		});
 		job.setRule(root);
-		job.schedule(1000);
+		job.schedule(0);
 	}
 
 	private void sleep(long sleep) {

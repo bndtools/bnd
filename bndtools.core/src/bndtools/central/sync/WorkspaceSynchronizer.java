@@ -1,9 +1,12 @@
 package bndtools.central.sync;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.bndtools.api.ILogger;
@@ -21,12 +24,14 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.eclipse.EclipseUtil;
+import aQute.lib.collections.Logic;
+import aQute.lib.fileset.FileSet;
+import bndtools.Plugin;
 import bndtools.central.Central;
 
 /**
@@ -73,9 +78,12 @@ public class WorkspaceSynchronizer {
 				return;
 			System.out.println("Syncing");
 
-			Map<String, IProject> projects = new HashMap<>();
+			Map<String, IProject> projects = new TreeMap<>();
 
 			for (IProject project : wsroot.getProjects()) {
+				if (project == null)
+					continue;
+
 				if (!project.exists())
 					continue;
 
@@ -87,11 +95,7 @@ public class WorkspaceSynchronizer {
 					continue;
 
 				File projectDir = location.toFile();
-				if (projectDir.isDirectory())
-					continue;
-
-				if (!projectDir.getParentFile()
-					.equals(ws.getBase()))
+				if (!projectDir.isDirectory())
 					continue;
 
 				projects.put(projectDir.getName(), project);
@@ -109,12 +113,20 @@ public class WorkspaceSynchronizer {
 				ws.forceRefresh();
 				return ws.getBuildOrder()
 					.stream()
+					.filter(Project::isValid)
 					.map(Project::getName)
 					.collect(Collectors.toList());
 
 			}, monitor);
+
 			projects.remove(Workspace.CNFDIR);
 			models.remove(Workspace.CNFDIR);
+
+			Set<String> changed = new HashSet<>();
+
+			System.out.println("Projects    " + projects.keySet());
+			System.out.println("Models      " + new TreeSet<>(models));
+			System.out.println("To create   " + new TreeSet<>(Logic.remove(models, projects.keySet())));
 
 			for (String mm : models) {
 				IProject project = projects.remove(mm);
@@ -125,28 +137,51 @@ public class WorkspaceSynchronizer {
 
 				File dir = ws.getFile(mm);
 				project = createProject(dir, null, subMonitor);
+				changed.add(mm);
 			}
 
-			for (String toBeDeleted : projects.keySet()) {
-				IProject project = wsroot.getProject(toBeDeleted);
+			projects.values()
+				.removeIf(project -> {
+					File projectDir = project.getLocation()
+						.toFile();
 
-				if (project != null && isEmpty(project)) {
-					System.out.println("deleting " + toBeDeleted);
-					project.delete(false, subMonitor);
-				}
+					boolean inWorkspace = ws.getBase()
+						.equals(projectDir.getParentFile());
+					if (!inWorkspace)
+						return true;
+
+					try {
+						if (!project.hasNature(Plugin.BNDTOOLS_NATURE))
+							return true;
+					} catch (CoreException e) {
+						return true;
+					}
+
+					return !isEmpty(project);
+
+				});
+
+			System.out.println("To delete   " + new TreeSet<>(projects.keySet()));
+
+			for (Map.Entry<String, IProject> toBeDeleted : projects.entrySet()) {
+				IProject project = toBeDeleted.getValue();
+				System.out.println("deleting " + toBeDeleted);
+				project.delete(true, subMonitor);
+				changed.add(toBeDeleted.getKey());
 			}
 
 			if (refresh && monitor != null) {
-				monitor.subTask("Refresh workspace ");
-				wsroot.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+				try {
+					monitor.subTask("Refresh workspace ");
+					wsroot.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+				} catch (Exception e) {
+					// best effort
+				}
 			}
 
-		} catch (
-
-		Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-			Status status = new Status(Status.ERROR, "bndtools.builder", e.getMessage());
-			throw new CoreException(status);
+			logger.logError("Failed to sync", e);
 		} finally {
 			atend.run();
 			setAutobuild(previous);
@@ -167,7 +202,15 @@ public class WorkspaceSynchronizer {
 		if (listFiles.length == 0)
 			return true;
 
-		return false;
+		FileSet fs = new FileSet(folder, "**");
+		Set<File> files = fs.getFiles();
+		files.removeIf(f -> {
+			return f.getName()
+				.equals(".project");
+		});
+
+		return files.isEmpty();
+
 	}
 
 	private boolean setAutobuild(boolean on) throws CoreException {
