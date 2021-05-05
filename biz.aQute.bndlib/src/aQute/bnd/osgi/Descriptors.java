@@ -669,12 +669,8 @@ public class Descriptors {
 	 * @return The binary name corresponding to the fully-qualified name.
 	 */
 	public static String fqnClassToBinary(String fqn) {
-		Result<String[], String> result = determine(fqn);
-		if (result.isErr()) {
-			throw new IllegalArgumentException(result.error()
-				.orElse("Error in fqn: " + fqn));
-		}
-		String[] parts = result.unwrap();
+		Result<String[]> result = determine(fqn);
+		String[] parts = result.orElseThrow(IllegalArgumentException::new);
 		if (parts[0] == null) {
 			return classToPath(parts[1]);
 		}
@@ -823,7 +819,7 @@ public class Descriptors {
 	 *            qualified class name, or a package name
 	 * @return a Result with 2 element array with [package, class]
 	 */
-	public static Result<String[], String> determine(String fqn) {
+	public static Result<String[]> determine(String fqn) {
 		if (fqn == null || fqn.isEmpty())
 			return Result.err("No qualified name given (either null or empty) %s", fqn);
 

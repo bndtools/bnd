@@ -446,7 +446,7 @@ public class RunResolution {
 	 * @return a result, where the value can be null
 	 */
 
-	public static Result<String, String> getRunBundles(Project project, boolean resolveIfNecessary) {
+	public static Result<String> getRunBundles(Project project, boolean resolveIfNecessary) {
 		try {
 			File f = getCacheFile(project);
 
@@ -474,7 +474,7 @@ public class RunResolution {
 			}
 
 			logger.info("resolve {}", project);
-			Result<RunResolution, String> r = resolve(project, project, null).asResult();
+			Result<RunResolution> r = resolve(project, project, null).asResult();
 			logger.debug("resolve {} {}", project, r);
 
 			return r.flatMap(rr -> {
@@ -495,7 +495,7 @@ public class RunResolution {
 	 *
 	 * @return a result based on isOk
 	 */
-	public Result<RunResolution, String> asResult() {
+	public Result<RunResolution> asResult() {
 		if (isOK())
 			return Result.ok(this);
 		else

@@ -11,8 +11,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import aQute.bnd.result.Result;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.result.Result;
 import aQute.lib.strings.Strings;
 
 /**
@@ -24,7 +24,7 @@ public class TemporaryFile {
 
 	private final static TemporaryProject	tempProject	= new TemporaryProject();
 
-	public static Result<IFolder, String> tempFolder(URI source, String path, IProgressMonitor monitor) {
+	public static Result<IFolder> tempFolder(URI source, String path, IProgressMonitor monitor) {
 		try {
 			String[] parts = Strings.lastPathSegment(path);
 			String name = parts == null ? path : parts[1];
@@ -55,7 +55,7 @@ public class TemporaryFile {
 		}
 	}
 
-	private static Result<IFolder, String> selectTempProject() throws CoreException, IOException {
+	private static Result<IFolder> selectTempProject() throws CoreException, IOException {
 		IProject project = tempProject.getProject();
 		if (project == null) {
 			return Result.err("Unable to get temp project %s", BndtoolsConstants.BNDTOOLS_JAREDITOR_TEMP_PROJECT_NAME);

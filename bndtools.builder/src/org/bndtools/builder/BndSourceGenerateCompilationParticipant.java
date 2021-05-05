@@ -59,7 +59,7 @@ public class BndSourceGenerateCompilationParticipant extends CompilationParticip
 				Project model = workspace.getProject(project.getName());
 				if (model != null) {
 
-					Result<Set<File>, String> result = model.getGenerate()
+					Result<Set<File>> result = model.getGenerate()
 						.generate(true);
 
 					processor.getInfo(model, "generate: ");

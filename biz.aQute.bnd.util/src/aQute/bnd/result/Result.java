@@ -18,25 +18,23 @@ package aQute.bnd.result;
 
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.bnd.exceptions.FunctionWithException;
+import aQute.bnd.exceptions.SupplierWithException;
 
 /**
  * The Result type is an alternative way of chaining together functions in a
  * functional programming style while hiding away error handling structures such
  * as try-catch-blocks and conditionals.<br/>
  * Instead of adding a throws declaration to a function, the return type of the
- * function is instead set to Result<V, E> where V is the original return type,
- * i.e. the "happy case" and E is the error type, usually the Exception type or
- * a String if an error explanation is sufficient.<br/>
+ * function is instead set to Result<V> where V is the original return type,
+ * i.e. the "happy case" and String is the error type.<br/>
  * <br/>
  * Example:
  *
  * <pre>
- * public Result<Float, String> divide(int a, int b) {
+ * public Result<Float> divide(int a, int b) {
  * 	if (b == 0) {
  * 		return Result.err("Can't divide by zero!");
  * 	} else {
@@ -46,24 +44,22 @@ import aQute.bnd.exceptions.FunctionWithException;
  * </pre>
  *
  * @param <V> The value type of the Result.
- * @param <E> The error type of the Result.
  */
-public interface Result<V, E> {
+public interface Result<V> {
 	/**
 	 * Returns an {@link Ok} if the {@code value} parameter is non-{@code null}
-	 * or an {@link Err} otherwise. Either one of {@code value} or {@code error}
-	 * must not be {@code null}.
+	 * or an {@link Err} otherwise. At least one of {@code value} or
+	 * {@code error} must be non-{@code null}.
 	 *
 	 * @param <V> The value type of the Result.
-	 * @param <E> The error type of the Result.
-	 * @param value If non-{@code null}, an {@link Ok} result is returned with
-	 *            the specified value.
+	 * @param value If {@code value} is non-{@code null}, an {@link Ok} result
+	 *            is returned with the specified value.
 	 * @param error If {@code value} is {@code null}, an {@link Err} result is
 	 *            returned with the specified error.
 	 * @return An {@link Ok} if the {@code value} parameter is non-{@code null}
 	 *         or an {@link Err} otherwise.
 	 */
-	static <V, E> Result<V, E> of(V value, E error) {
+	static <V> Result<V> of(V value, CharSequence error) {
 		return (value != null) ? ok(value) : err(error);
 	}
 
@@ -71,12 +67,11 @@ public interface Result<V, E> {
 	 * Returns an {@link Ok} containing the specified {@code value}.
 	 *
 	 * @param <V> The value type of the Result.
-	 * @param <E> The error type of the Result.
-	 * @param value The value to contain in the {@link Ok} result. Must not be
+	 * @param value The value to contain in the {@link Ok} result. May be
 	 *            {@code null}.
 	 * @return An {@link Ok} result.
 	 */
-	static <V, E> Result<V, E> ok(V value) {
+	static <V> Result<V> ok(V value) {
 		return new Ok<>(value);
 	}
 
@@ -84,20 +79,19 @@ public interface Result<V, E> {
 	 * Returns an {@link Err} containing the specified {@code error}.
 	 *
 	 * @param <V> The value type of the Result.
-	 * @param <E> The error type of the Result.
 	 * @param error The error to contain in the {@link Err} result. Must not be
 	 *            {@code null}.
 	 * @return An {@link Err} result.
 	 */
-	static <V, E> Result<V, E> err(E error) {
+	static <V> Result<V> err(CharSequence error) {
 		return new Err<>(error);
 	}
 
-	static <V> Result<V, String> err(String format, Object... args) {
+	static <V> Result<V> err(String format, Object... args) {
 		try {
-			return new Err<>(String.format(format, args));
+			return err(String.format(format, args));
 		} catch (Exception e) {
-			return new Err<>(format + " " + Arrays.toString(args));
+			return err(format + " " + Arrays.toString(args));
 		}
 	}
 
@@ -135,7 +129,7 @@ public interface Result<V, E> {
 	 * @return The error of this instance as an {@link Optional}. Returns
 	 *         {@code Optional.empty()} if this is an {@link Ok} instance.
 	 */
-	Optional<E> error();
+	Optional<String> error();
 
 	/**
 	 * Returns the contained value if this is an {@link Ok} value. Otherwise
@@ -150,10 +144,11 @@ public interface Result<V, E> {
 	 * Express the expectation that this object is an {@link Ok} value.
 	 * Otherwise throws a {@link ResultException} with the specified message.
 	 *
-	 * @param message The message to pass to a potential ResultException.
+	 * @param message The message to pass to a potential ResultException. Must
+	 *            not be {@code null}.
 	 * @throws ResultException If this is an {@link Err} instance.
 	 */
-	V unwrap(String message);
+	V unwrap(CharSequence message);
 
 	/**
 	 * Returns the contained value if this is an {@link Ok} value. Otherwise
@@ -172,7 +167,7 @@ public interface Result<V, E> {
 	 *            is an {@link Err} instance. Must not be {@code null}.
 	 * @return The contained value or the alternate value
 	 */
-	V orElseGet(Supplier<? extends V> orElseSupplier);
+	V orElseGet(SupplierWithException<? extends V> orElseSupplier);
 
 	/**
 	 * Returns the contained value if this is an {@link Ok} value. Otherwise
@@ -183,9 +178,10 @@ public interface Result<V, E> {
 	 *            an {@link Err} instance. Must not be {@code null}. The
 	 *            supplier must return a non-{@code null} result.
 	 * @return The contained value.
-	 * @throws R If this is an {@link Err} instance.
+	 * @throws R The exception returned by the throwableSupplier if this is an
+	 *             {@link Err} instance.
 	 */
-	<R extends Throwable> V orElseThrow(FunctionWithException<? super E, ? extends R> throwableSupplier) throws R;
+	<R extends Throwable> V orElseThrow(FunctionWithException<? super String, ? extends R> throwableSupplier) throws R;
 
 	/**
 	 * Map the contained value if this is an {@link Ok} value. Otherwise return
@@ -193,25 +189,23 @@ public interface Result<V, E> {
 	 *
 	 * @param <U> The new value type.
 	 * @param mapper The function to map the contained value into a new value.
-	 *            Must not be {@code null}. The function must return a
-	 *            non-{@code null} value.
+	 *            Must not be {@code null}.
 	 * @return A result containing the mapped value if this is an {@link Ok}
 	 *         value. Otherwise this.
 	 */
-	<U> Result<U, E> map(FunctionWithException<? super V, ? extends U> mapper);
+	<U> Result<U> map(FunctionWithException<? super V, ? extends U> mapper);
 
 	/**
 	 * Map the contained error if this is an {@link Err} value. Otherwise return
 	 * this.
 	 *
-	 * @param <F> The new error type.
 	 * @param mapper The function to map the contained error into a new error.
 	 *            Must not be {@code null}. The function must return a
 	 *            non-{@code null} error.
 	 * @return A result containing the mapped error if this is an {@link Err}
 	 *         value. Otherwise this.
 	 */
-	<F> Result<V, F> mapErr(FunctionWithException<? super E, ? extends F> mapper);
+	Result<V> mapErr(FunctionWithException<? super String, ? extends CharSequence> mapper);
 
 	/**
 	 * FlatMap the contained value if this is an {@link Ok} value. Otherwise
@@ -224,30 +218,52 @@ public interface Result<V, E> {
 	 * @return The flatmapped result if this is an {@link Ok} value. Otherwise
 	 *         this.
 	 */
-	<U> Result<U, E> flatMap(FunctionWithException<? super V, ? extends Result<? extends U, ? extends E>> mapper);
+	<U> Result<U> flatMap(FunctionWithException<? super V, ? extends Result<? extends U>> mapper);
+
+	/**
+	 * Recover the contained error if this is an {@link Err} value. Otherwise
+	 * return this.
+	 * <p>
+	 * To recover with a recovery value of {@code null}, the
+	 * {@link #recoverWith(FunctionWithException)} method must be used. The
+	 * specified function for {@link #recoverWith(FunctionWithException)} can
+	 * return {@code Result.ok(null)} to supply the desired {@code null} value.
+	 *
+	 * @param recover The function to recover the contained error into a new
+	 *            value. Must not be {@code null}.
+	 * @return A result containing the new non-{@code null} value if this is an
+	 *         {@link Err} value. Otherwise this if this is an {@link Ok} value
+	 *         or the recover function returned {@code null}.
+	 */
+	Result<V> recover(FunctionWithException<? super String, ? extends V> recover);
 
 	/**
 	 * Recover the contained error if this is an {@link Err} value. Otherwise
 	 * return this.
 	 *
 	 * @param recover The function to recover the contained error into a new
-	 *            value. Must not be {@code null}. The function must return a
+	 *            result. Must not be {@code null}. The function must return a
 	 *            non-{@code null} value.
-	 * @return A result containing the new value if this is an {@link Err}
-	 *         value. Otherwise this.
+	 * @return A result if this is an {@link Err} value. Otherwise this.
 	 */
-	Result<V, E> recover(FunctionWithException<? super E, ? extends V> recover);
+	Result<V> recoverWith(FunctionWithException<? super String, ? extends Result<? extends V>> recover);
 
 	/**
-	 * Terminal function that processes the result or the error
+	 * Processes the result.
 	 *
-	 * @param ok the consumer called when ok
-	 * @param err the consumer called when not ok
+	 * @param ok The consumer called this result is an {@link Ok} value. Must
+	 *            not be {@code null}.
+	 * @param err The consumer called when this result is an {@link Err} value.
+	 *            Must not be {@code null}.
 	 */
-	void accept(ConsumerWithException<? super V> ok, ConsumerWithException<? super E> err);
+	void accept(ConsumerWithException<? super V> ok, ConsumerWithException<? super String> err);
 
-	<X> Result<X, E> asError();
-
-	<X extends Throwable> V unwrap(Function<E, X> constructor) throws X;
-
+	/**
+	 * If an {@link Err}, return this coerced to the desired generic type.
+	 *
+	 * @param <U> The desired generic type of the {@link Err}.
+	 * @return this
+	 * @throws ResultException If this is an {@link Ok} instance.
+	 */
+	<U> Result<U> asError();
 }

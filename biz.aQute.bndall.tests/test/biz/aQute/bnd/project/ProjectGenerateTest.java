@@ -226,7 +226,7 @@ public class ProjectGenerateTest {
 			Project project = ws.getProject("p2");
 
 			project.setProperty("-generate", "gen/*;output=gen-src/;generate=throwexception");
-			Result<Set<File>, String> result = project.getGenerate()
+			Result<Set<File>> result = project.getGenerate()
 				.generate(true);
 			assertThat(project.check("'throwexception' failed with")).isTrue();
 		}
@@ -242,7 +242,7 @@ public class ProjectGenerateTest {
 			Project project = ws.getProject("p2");
 
 			project.setProperty("-generate", "<<EMPTY>>;output=gen-src/");
-			Result<Set<File>, String> result = project.getGenerate()
+			Result<Set<File>> result = project.getGenerate()
 				.generate(true);
 			assertThat(result.error()).isNotPresent();
 			assertThat(result.unwrap()).isEmpty();
@@ -260,7 +260,7 @@ public class ProjectGenerateTest {
 			Project project = ws.getProject("p2");
 
 			project.setProperty("-generate", "gen/**.java;output=gen-src/;generate='error'");
-			Result<Set<File>, String> result = project.getGenerate()
+			Result<Set<File>> result = project.getGenerate()
 				.generate(true);
 			assertThat(result.error()
 				.get()).contains("error");

@@ -32,7 +32,7 @@ public class ExternalPluginHandlerTest {
 		try (Workspace ws = getWorkspace("resources/ws-1")) {
 			getRepo(ws);
 
-			Result<Object, String> call = ws.getExternalPlugins()
+			Result<Object> call = ws.getExternalPlugins()
 				.call("hellocallable", Callable.class, callable -> {
 					Object o = callable.call();
 					if (o == null)
@@ -51,7 +51,7 @@ public class ExternalPluginHandlerTest {
 		try (Workspace ws = getWorkspace("resources/ws-1")) {
 			getRepo(ws);
 			ByteArrayOutputStream bout = new ByteArrayOutputStream();
-			Result<Integer, String> call = ws.getExternalPlugins()
+			Result<Integer> call = ws.getExternalPlugins()
 				.call("biz.aQute.bndall.tests.plugin_2.MainClass", null, ws, Collections.emptyMap(),
 					Collections.emptyList(), null, bout, null);
 			System.out.println(call);
@@ -65,7 +65,7 @@ public class ExternalPluginHandlerTest {
 		try (Workspace ws = getWorkspace("resources/ws-1")) {
 			getRepo(ws);
 
-			Result<Object, String> call = ws.getExternalPlugins()
+			Result<Object> call = ws.getExternalPlugins()
 				.call("doesnotexist", Callable.class, callable -> Result.ok(callable.call()));
 			System.out.println(call);
 			assertThat(call.isOk()).isFalse();

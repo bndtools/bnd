@@ -114,6 +114,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.action.Action;
 import aQute.bnd.service.repository.InfoRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.unmodifiable.Lists;
 import aQute.bnd.util.home.Home;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
@@ -133,7 +134,6 @@ import aQute.lib.justif.Justif;
 import aQute.lib.settings.Settings;
 import aQute.lib.strings.Strings;
 import aQute.lib.tag.Tag;
-import aQute.bnd.unmodifiable.Lists;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.lib.xml.XML;
 import aQute.libg.classdump.ClassDumper;
@@ -4508,7 +4508,7 @@ public class bnd extends Processor {
 	@Description("Generate source code")
 	public void _generate(GenerateOptions options) throws Exception {
 		perProject(options, p -> {
-			Result<Set<File>, String> result = p.getGenerate()
+			Result<Set<File>> result = p.getGenerate()
 				.generate(options.force());
 			if (options.verbose()) {
 				out.println(result);

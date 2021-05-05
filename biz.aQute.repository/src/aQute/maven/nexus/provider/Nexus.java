@@ -29,12 +29,12 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequest;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.result.Result;
 import aQute.bnd.service.url.TaggedData;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
 import aQute.lib.xml.XML;
@@ -281,7 +281,7 @@ public class Nexus {
 	 * @throws Exception
 	 */
 
-	public Result<String, String> createStagingRepository(String profileId, String description) throws Exception {
+	public Result<String> createStagingRepository(String profileId, String description) throws Exception {
 		Tag promoteRequest = new Tag("promoteRequest");
 		Tag data = new Tag(promoteRequest, "data");
 		if (description != null) {
