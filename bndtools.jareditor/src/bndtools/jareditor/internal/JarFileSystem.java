@@ -204,8 +204,7 @@ public class JarFileSystem extends FileSystem {
 		@Override
 		public InputStream openInputStream(int options, IProgressMonitor monitor) throws CoreException {
 			return JarFileSystem.openInputStream(jar(), getPath(), monitor)
-				.mapErr(err -> new Status(IStatus.ERROR, Plugin.PLUGIN_ID, err))
-				.orElseThrow(CoreException::new);
+				.orElseThrow(err -> new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, err)));
 		}
 	}
 
@@ -281,7 +280,7 @@ public class JarFileSystem extends FileSystem {
 		return new WeakReference<>(root);
 	}
 
-	static Result<URI, String> jarf(URI jarfileuri, String path) {
+	static Result<URI> jarf(URI jarfileuri, String path) {
 		try {
 			String separator = path.startsWith("/") ? "!" : "!/";
 			return Result
@@ -291,7 +290,7 @@ public class JarFileSystem extends FileSystem {
 		}
 	}
 
-	static Result<Pair<URI, IPath>, String> jarf(URI uri) {
+	static Result<Pair<URI, IPath>> jarf(URI uri) {
 		String s = uri.toString();
 		Matcher matcher = JARF_P.matcher(s);
 		if (!matcher.matches()) {
@@ -303,7 +302,7 @@ public class JarFileSystem extends FileSystem {
 		return Result.ok(new Pair<>(fileuri, path));
 	}
 
-	static Result<InputStream, String> openInputStream(URI uri, String path, IProgressMonitor monitor)
+	static Result<InputStream> openInputStream(URI uri, String path, IProgressMonitor monitor)
 		throws CoreException {
 		ZipInputStream jin = null;
 		try {

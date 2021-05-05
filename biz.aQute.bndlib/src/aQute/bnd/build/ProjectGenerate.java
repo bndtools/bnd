@@ -20,13 +20,13 @@ import java.util.stream.Collectors;
 
 import org.osgi.framework.VersionRange;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.help.instructions.ProjectInstructions.GeneratorSpec;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.result.Result;
 import aQute.bnd.service.generate.BuildContext;
 import aQute.bnd.service.generate.Generator;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.fileset.FileSet;
 import aQute.lib.io.IO;
 import aQute.lib.redirect.Redirect;
@@ -42,7 +42,7 @@ public class ProjectGenerate implements AutoCloseable {
 		this.project = project;
 	}
 
-	public Result<Set<File>, String> generate(boolean force) {
+	public Result<Set<File>> generate(boolean force) {
 		project.clear();
 		if (force)
 			clean();
@@ -52,7 +52,7 @@ public class ProjectGenerate implements AutoCloseable {
 		for (Entry<String, GeneratorSpec> e : project.instructions.generate()
 			.entrySet()) {
 
-			Result<Set<File>, String> step = step(e.getKey(), e.getValue());
+			Result<Set<File>> step = step(e.getKey(), e.getValue());
 			if (step.isErr()) {
 				String qsrc = e.getKey();
 				SetLocation error = project.error("%s : %s;%s", step.error()
@@ -68,7 +68,7 @@ public class ProjectGenerate implements AutoCloseable {
 		return Result.ok(files);
 	}
 
-	private Result<Set<File>, String> step(String sourceWithDuplicate, GeneratorSpec st) {
+	private Result<Set<File>> step(String sourceWithDuplicate, GeneratorSpec st) {
 		try {
 
 			String source = Strings.trim(Processor.removeDuplicateMarker(sourceWithDuplicate));
@@ -217,7 +217,7 @@ public class ProjectGenerate implements AutoCloseable {
 		InputStream stdin, OutputStream stdout, OutputStream stderr) {
 		BuildContext bc = new BuildContext(project, attrs, arguments, stdin, stdout, stderr);
 
-		Result<Boolean, String> call = project.getWorkspace()
+		Result<Boolean> call = project.getWorkspace()
 			.getExternalPlugins()
 			.call(pluginName, Generator.class, p -> {
 
@@ -247,7 +247,7 @@ public class ProjectGenerate implements AutoCloseable {
 
 	private String doGenerateMain(String mainClass, VersionRange range, Map<String, String> attrs,
 		List<String> arguments, InputStream stdin, OutputStream stdout, OutputStream stderr) {
-		Result<Integer, String> call = project.getWorkspace()
+		Result<Integer> call = project.getWorkspace()
 			.getExternalPlugins()
 			.call(mainClass, range, project, attrs, arguments, stdin, stdout, stderr);
 		if (call.isErr())
@@ -260,7 +260,7 @@ public class ProjectGenerate implements AutoCloseable {
 		return null;
 	}
 
-	public Result<Set<File>, String> getInputs() {
+	public Result<Set<File>> getInputs() {
 
 		Set<String> inputs = project.instructions.generate()
 			.keySet();
@@ -269,19 +269,19 @@ public class ProjectGenerate implements AutoCloseable {
 			return Result.ok(Collections.emptySet());
 
 		Set<File> files = new HashSet<>();
-		String errors = "";
+		StringBuilder errors = new StringBuilder();
 		for (String input : inputs) {
 			Set<File> inputFiles = new FileSet(project.getBase(), input).getFiles();
 			if (inputFiles.isEmpty()) {
 				project.error("-generate: no content for %s", input);
 
-				errors = errors.concat(input)
-					.concat(" has no matching files\n");
+				errors.append(input)
+					.append(" has no matching files\n");
 			} else {
 				files.addAll(inputFiles);
 			}
 		}
-		if (errors.isEmpty())
+		if (errors.length() == 0)
 			return Result.ok(files);
 		else
 			return Result.err(errors);

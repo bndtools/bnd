@@ -52,12 +52,12 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.result.Result;
-import aQute.bnd.exceptions.Exceptions;
 import bndtools.central.Central;
 
 @Component
@@ -661,7 +661,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 		doAddProposals(workspace.search(packageName, className), packageName == null || packageName.length() == 0);
 	}
 
-	private void doAddProposals(Result<Map<String, List<BundleId>>, String> wrappedResult, boolean doImport)
+	private void doAddProposals(Result<Map<String, List<BundleId>>> wrappedResult, boolean doImport)
 		throws CoreException, Exception {
 		try (ProjectBuilder pb = new ProjectBuilder(project)) {
 

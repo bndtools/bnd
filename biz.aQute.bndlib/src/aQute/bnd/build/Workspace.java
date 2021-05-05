@@ -57,6 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
 import aQute.bnd.exporter.runbundles.RunbundlesExporter;
 import aQute.bnd.header.Attrs;
@@ -64,6 +65,8 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.maven.support.Maven;
+import aQute.bnd.memoize.CloseableMemoize;
+import aQute.bnd.memoize.Memoize;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
@@ -96,13 +99,10 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.Iterables;
 import aQute.lib.deployer.FileRepo;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.lib.io.NonClosingInputStream;
-import aQute.bnd.memoize.CloseableMemoize;
-import aQute.bnd.memoize.Memoize;
 import aQute.lib.settings.Settings;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -1535,7 +1535,7 @@ public class Workspace extends Processor {
 	 * @throws Exception
 	 * @see #search(String, String)
 	 */
-	public Result<Map<String, List<BundleId>>, String> search(String partialFqn) throws Exception {
+	public Result<Map<String, List<BundleId>>> search(String partialFqn) throws Exception {
 		return data.classIndex.get()
 			.search(partialFqn);
 	}
@@ -1553,7 +1553,7 @@ public class Workspace extends Processor {
 	 * @throws Exception
 	 * @see #search(String)
 	 */
-	public Result<Map<String, List<BundleId>>, String> search(String packageName, String className) throws Exception {
+	public Result<Map<String, List<BundleId>>> search(String packageName, String className) throws Exception {
 		return data.classIndex.get()
 			.search(packageName, className);
 	}
@@ -1688,7 +1688,7 @@ public class Workspace extends Processor {
 		return data.externalPlugins.get();
 	}
 
-	public Result<File, String> getBundle(org.osgi.resource.Resource resource) {
+	public Result<File> getBundle(org.osgi.resource.Resource resource) {
 		BundleId bundleId = ResourceUtils.getBundleId(resource);
 		if (bundleId == null) {
 			return Result.err("Not a bundle %s, identity & bnd.info found but was not sufficient: ", resource);
@@ -1701,7 +1701,7 @@ public class Workspace extends Processor {
 		return getBundle(bundleId.getBsn(), version, null);
 	}
 
-	public Result<File, String> getBundle(String bsn, Version version, Map<String, String> attrs) {
+	public Result<File> getBundle(String bsn, Version version, Map<String, String> attrs) {
 		try {
 
 			List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);

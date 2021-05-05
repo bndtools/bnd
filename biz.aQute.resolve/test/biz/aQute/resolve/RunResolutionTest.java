@@ -101,13 +101,13 @@ public class RunResolutionTest {
 		bndrun.unsetProperty("-runbundles");
 		RunResolution.clearCache(bndrun.getWorkspace());
 
-		Result<String, String> nonExistent = RunResolution.getRunBundles(bndrun, false);
+		Result<String> nonExistent = RunResolution.getRunBundles(bndrun, false);
 		assertThat(nonExistent.unwrap()).isEmpty();
 
-		Result<String, String> force = RunResolution.getRunBundles(bndrun, true);
+		Result<String> force = RunResolution.getRunBundles(bndrun, true);
 		assertThat(force.unwrap()).isNotEmpty();
 
-		Result<String, String> existent = RunResolution.getRunBundles(bndrun, false);
+		Result<String> existent = RunResolution.getRunBundles(bndrun, false);
 		assertThat(existent.unwrap()).isNotEmpty();
 
 		System.out.println("Runbundles " + existent.unwrap());

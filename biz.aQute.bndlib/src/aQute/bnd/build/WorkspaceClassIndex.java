@@ -19,6 +19,7 @@ import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Workspace.ResourceRepositoryStrategy;
 import aQute.bnd.classindex.ClassIndexerAnalyzer;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.resource.RequirementBuilder;
@@ -26,7 +27,6 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.result.Result;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.hierarchy.Hierarchy;
 import aQute.lib.hierarchy.NamedNode;
 import aQute.lib.zip.JarIndex;
@@ -58,11 +58,11 @@ class WorkspaceClassIndex implements AutoCloseable {
 	 * @return a multimap of fqn|pack->bundleid
 	 * @see #search(String, String)
 	 */
-	Result<Map<String, List<BundleId>>, String> search(String partialFqn) throws Exception {
+	Result<Map<String, List<BundleId>>> search(String partialFqn) throws Exception {
 
-		Result<String[], String> determine = Descriptors.determine(partialFqn);
+		Result<String[]> determine = Descriptors.determine(partialFqn);
 		if (determine.isErr())
-			return determine.map(x -> Collections.emptyMap());
+			return determine.asError();
 
 		String[] parts = determine.unwrap();
 		String packageName = parts[0];
@@ -83,7 +83,7 @@ class WorkspaceClassIndex implements AutoCloseable {
 	 * @return a multimap of fqn|pack->bundleid
 	 * @see #search(String)
 	 */
-	public Result<Map<String, List<BundleId>>, String> search(String packageName, String className) throws Exception {
+	public Result<Map<String, List<BundleId>>> search(String packageName, String className) throws Exception {
 
 		String filter = createFilter(packageName, className);
 
@@ -124,7 +124,7 @@ class WorkspaceClassIndex implements AutoCloseable {
 		MultiMap<BundleId, String> result) {
 		try {
 
-			Result<File, String> r = workspace.getBundle(bundle.getBsn(), Version.valueOf(bundle.getVersion()), null);
+			Result<File> r = workspace.getBundle(bundle.getBsn(), Version.valueOf(bundle.getVersion()), null);
 			if (r.isErr()) {
 				return r.error()
 					.get();

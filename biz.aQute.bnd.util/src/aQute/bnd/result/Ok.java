@@ -19,20 +19,18 @@ package aQute.bnd.result;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exceptions.FunctionWithException;
+import aQute.bnd.exceptions.SupplierWithException;
 
 /**
  * This class represents the Ok side of @{link Result}.
  *
  * @param <V> The value type
- * @param <E> The error type
  */
-public final class Ok<V, E> implements Result<V, E> {
+final class Ok<V> implements Result<V> {
 	private final V value;
 
 	/**
@@ -41,7 +39,7 @@ public final class Ok<V, E> implements Result<V, E> {
 	 * @param value the value
 	 */
 	Ok(V value) {
-		this.value = requireNonNull(value);
+		this.value = value;
 	}
 
 	/**
@@ -65,14 +63,14 @@ public final class Ok<V, E> implements Result<V, E> {
 	 */
 	@Override
 	public Optional<V> value() {
-		return Optional.of(value);
+		return Optional.ofNullable(value);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Optional<E> error() {
+	public Optional<String> error() {
 		return Optional.empty();
 	}
 
@@ -88,7 +86,8 @@ public final class Ok<V, E> implements Result<V, E> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public V unwrap(String message) throws ResultException {
+	public V unwrap(CharSequence message) throws ResultException {
+		requireNonNull(message);
 		return value;
 	}
 
@@ -104,7 +103,7 @@ public final class Ok<V, E> implements Result<V, E> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public V orElseGet(Supplier<? extends V> orElseSupplier) {
+	public V orElseGet(SupplierWithException<? extends V> orElseSupplier) {
 		requireNonNull(orElseSupplier);
 		return value;
 	}
@@ -113,7 +112,7 @@ public final class Ok<V, E> implements Result<V, E> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <R extends Throwable> V orElseThrow(FunctionWithException<? super E, ? extends R> throwableSupplier)
+	public <R extends Throwable> V orElseThrow(FunctionWithException<? super String, ? extends R> throwableSupplier)
 		throws R {
 		requireNonNull(throwableSupplier);
 		return value;
@@ -123,39 +122,31 @@ public final class Ok<V, E> implements Result<V, E> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <U> Result<U, E> map(FunctionWithException<? super V, ? extends U> mapper) {
-		requireNonNull(mapper);
+	public <U> Result<U> map(FunctionWithException<? super V, ? extends U> mapper) {
 		try {
-			return new Ok<>(mapper.apply(value));
+			return Result.ok(mapper.apply(value));
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private <F> Result<V, F> coerce() {
-		return (Result<V, F>) this;
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Result<V> mapErr(FunctionWithException<? super String, ? extends CharSequence> mapper) {
+		requireNonNull(mapper);
+		return this;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <F> Result<V, F> mapErr(FunctionWithException<? super E, ? extends F> mapper) {
-		requireNonNull(mapper);
-		return coerce();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public <U> Result<U, E> flatMap(
-		FunctionWithException<? super V, ? extends Result<? extends U, ? extends E>> mapper) {
-		requireNonNull(mapper);
+	public <U> Result<U> flatMap(FunctionWithException<? super V, ? extends Result<? extends U>> mapper) {
 		try {
 			@SuppressWarnings("unchecked")
-			Result<U, E> result = (Result<U, E>) requireNonNull(mapper.apply(value));
+			Result<U> result = (Result<U>) requireNonNull(mapper.apply(value));
 			return result;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
@@ -166,18 +157,25 @@ public final class Ok<V, E> implements Result<V, E> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Result<V, E> recover(FunctionWithException<? super E, ? extends V> recover) {
+	public Result<V> recover(FunctionWithException<? super String, ? extends V> recover) {
 		requireNonNull(recover);
 		return this;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public String toString() {
-		return String.format("Ok(%s)", value);
+	public Result<V> recoverWith(FunctionWithException<? super String, ? extends Result<? extends V>> recover) {
+		requireNonNull(recover);
+		return this;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public void accept(ConsumerWithException<? super V> ok, ConsumerWithException<? super E> err) {
+	public void accept(ConsumerWithException<? super V> ok, ConsumerWithException<? super String> err) {
 		requireNonNull(err);
 		try {
 			ok.accept(value);
@@ -186,14 +184,16 @@ public final class Ok<V, E> implements Result<V, E> {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public <X> Result<X, E> asError() {
-		throw new IllegalArgumentException("must be an error");
+	public <U> Result<U> asError() {
+		throw new ResultException("Not an Err value");
 	}
 
 	@Override
-	public <X extends Throwable> V unwrap(Function<E, X> constructor) {
-		return unwrap();
+	public String toString() {
+		return String.format("Ok(%s)", value);
 	}
-
 }

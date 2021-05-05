@@ -260,9 +260,10 @@ public class NexusCommand extends Processor {
 		+ "then in the url.")
 	public void _createstaging(StagingRepositoryOptions options) throws Exception {
 
-		Result<String, String> createStagingRepository = nexus.createStagingRepository(options._arguments()
+		Result<String> createStagingRepository = nexus.createStagingRepository(options._arguments()
 			.get(0), options.description());
-		String id = createStagingRepository.orElseGet(createStagingRepository.error()::get);
+		String id = createStagingRepository.recover(err -> err)
+			.unwrap();
 		System.out.println(id);
 	}
 

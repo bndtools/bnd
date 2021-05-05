@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import org.osgi.framework.VersionRange;
 import org.osgi.resource.Capability;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exceptions.FunctionWithException;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -25,7 +26,6 @@ import aQute.bnd.service.externalplugin.ExternalPluginNamespace;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.progress.TaskManager;
 import aQute.bnd.version.MavenVersion;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.command.Command;
@@ -38,7 +38,7 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 		this.workspace = workspace;
 	}
 
-	public <T, R> Result<R, String> call(String pluginName, Class<T> c, FunctionWithException<T, Result<R, String>> f) {
+	public <T, R> Result<R> call(String pluginName, Class<T> c, FunctionWithException<T, Result<R>> f) {
 		try {
 
 			String filter = ExternalPluginNamespace.filter(pluginName, c);
@@ -52,7 +52,7 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 
 			Capability cap = optCap.get();
 
-			Result<File, String> bundle = workspace.getBundle(cap.getResource());
+			Result<File> bundle = workspace.getBundle(cap.getResource());
 			if (bundle.isErr())
 				return bundle.asError();
 
@@ -87,7 +87,7 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 		}
 	}
 
-	public Result<Integer, String> call(String mainClass, VersionRange range, Processor context,
+	public Result<Integer> call(String mainClass, VersionRange range, Processor context,
 		Map<String, String> attrs, List<String> args, InputStream stdin, OutputStream stdout, OutputStream stderr) {
 		List<File> cp = new ArrayList<>();
 		try {
@@ -102,7 +102,7 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 
 			Capability cap = optCap.get();
 
-			Result<File, String> bundle = workspace.getBundle(cap.getResource());
+			Result<File> bundle = workspace.getBundle(cap.getResource());
 			if (bundle.isErr())
 				return bundle.asError();
 
@@ -134,7 +134,7 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 					.getVersion();
 				MavenVersion mv = MavenVersion.parseMavenString(v);
 
-				Result<File, String> result = workspace.getBundle(e.getKey(), mv.getOSGiVersion(), null);
+				Result<File> result = workspace.getBundle(e.getKey(), mv.getOSGiVersion(), null);
 				if (result.isErr())
 					return result.asError();
 
