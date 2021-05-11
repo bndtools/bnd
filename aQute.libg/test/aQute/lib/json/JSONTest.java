@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import aQute.lib.collections.MultiMap;
@@ -293,6 +294,21 @@ public class JSONTest extends TestCase {
 			.put(i)
 			.toString();
 		assertEquals("[\"a\",\"b\",\"c\"]", s);
+
+		s = codec.enc()
+			.indent("  ")
+			.put(i)
+			.toString();
+
+		// @formatter:off
+		String expected=
+			   "[\n"
+			   + "  \"a\",\n"
+			   + "  \"b\",\n"
+			   + "  \"c\"\n"
+			   + "]";
+		// @formatter:on
+		assertEquals(expected, s);
 	}
 
 	/**
@@ -338,7 +354,7 @@ public class JSONTest extends TestCase {
 	}
 
 	/**
-	 * Test maps
+	 * Test Stream
 	 *
 	 * @throws Exception
 	 */
@@ -359,14 +375,30 @@ public class JSONTest extends TestCase {
 	 */
 
 	public void testMaps() throws Exception {
-		Encoder enc = codec.enc();
 		Map<String, Object> map = new HashMap<>();
 		map.put("a", new int[] {
 			1, 2
 		});
-		String string = enc.put(map)
+		String string = codec.enc()
+			.put(map)
 			.toString();
 		assertEquals("{\"a\":[1,2]}", string);
+
+		string = codec.enc()
+			.indent("  ")
+			.put(map)
+			.toString();
+
+		// @formatter:off
+		String expected=
+			  "{\n"
+			+ "  \"a\":[\n"
+			+ "    1,\n"
+			+ "    2\n"
+			+ "  ]\n"
+			+ "}";
+		// @formatter:on
+		assertEquals(expected, string);
 	}
 
 	/**
@@ -507,6 +539,21 @@ public class JSONTest extends TestCase {
 			})
 			.toString());
 
+		String s = enc.to()
+			.indent("  ")
+			.put(new int[] {
+				1, 2
+			})
+			.toString();
+
+		// @formatter:off
+		String expected=
+			     "[\n"
+			   + "  1,\n"
+			   + "  2\n"
+			   + "]";
+		// @formatter:on
+		assertEquals(expected, s);
 	}
 
 	/**
@@ -1057,6 +1104,25 @@ public class JSONTest extends TestCase {
 		public Sex			sex;
 		public Date			birthday;
 		public List<Person>	offspring	= new ArrayList<>();
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(birthday, name, offspring, sex);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Person other = (Person) obj;
+			return Objects.equals(birthday, other.birthday) && Objects.equals(name, other.name)
+				&& Objects.equals(offspring, other.offspring) && sex == other.sex;
+		}
+
 	}
 
 	public void testBlog() throws Exception {
@@ -1073,11 +1139,40 @@ public class JSONTest extends TestCase {
 		u1.offspring.add(u3);
 
 		String s = codec.enc()
+			.put(u1)
+			.toString();
+
+		String expected = "{\"name\":\"Peter\",\"offspring\":[{\"name\":\"Mischa\",\"sex\":\"FEMALE\"},{\"name\":\"Thomas\",\"sex\":\"MALE\"}],\"sex\":\"MALE\"}";
+		assertEquals(expected, s);
+
+		Person u4 = codec.dec()
+			.from(s)
+			.get(Person.class);
+		assertTrue(Objects.deepEquals(u1, u4));
+
+		s = codec.enc()
 			.indent("  ")
 			.put(u1)
 			.toString();
-		System.out.println(s);
-		// Person u4 = codec.dec().from(s).get( Person.class );
+
+		// @formatter:off
+		expected =
+			 "{\n"
+			+ "  \"name\":\"Peter\",\n"
+			+ "  \"offspring\":[\n"
+			+ "    {\n"
+			+ "      \"name\":\"Mischa\",\n"
+			+ "      \"sex\":\"FEMALE\"\n"
+			+ "    },\n"
+			+ "    {\n"
+			+ "      \"name\":\"Thomas\",\n"
+			+ "      \"sex\":\"MALE\"\n"
+			+ "    }\n"
+			+ "  ],\n"
+			+ "  \"sex\":\"MALE\"\n"
+			+ "}";
+		// @formatter:on
+		assertEquals(expected, s);
 
 	}
 
@@ -1094,5 +1189,38 @@ public class JSONTest extends TestCase {
 			.put(d)
 			.toString();
 		assertEquals("{'foo':'bar'}".replace('\'', '"'), s);
+	}
+
+	public interface I {
+		int i();
+	}
+
+	public static class II implements I {
+
+		@Override
+		public int i() {
+
+			return 1;
+		}
+
+	}
+
+	public void testInheritHandler() throws Exception {
+		II ii = new II();
+
+		AtomicBoolean match = new AtomicBoolean(false);
+		JSONCodec jsonCodec = new JSONCodec();
+
+		jsonCodec.addHandler(I.class, new Handler() {
+
+			@Override
+			public void encode(Encoder app, Object object, Map<Object, Type> visited) throws IOException, Exception {
+				match.set(true);
+			}
+
+		});
+		jsonCodec.enc()
+			.put(ii);
+		assertTrue(match.get());
 	}
 }

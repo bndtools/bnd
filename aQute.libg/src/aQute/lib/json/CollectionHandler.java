@@ -47,17 +47,23 @@ public class CollectionHandler extends Handler {
 		Iterable<?> collection = (Iterable<?>) object;
 
 		app.append("[");
+		app.indent();
 		String del = "";
 		int index = 0;
 		for (Object o : collection)
 			try {
 				app.append(del);
+				if (!del.isEmpty()) {
+				app.linebreak();
+				}
+
 				app.encode(o, componentType, visited);
 				del = ",";
 				index++;
 			} catch (Exception e) {
 				throw new IllegalArgumentException("[" + index + "]", e);
 			}
+		app.undent();
 		app.append("]");
 	}
 

@@ -80,6 +80,9 @@ public class ObjectHandler extends Handler {
 				}
 
 				app.append(del);
+				if (!del.isEmpty()) {
+					app.linebreak();
+				}
 				StringHandler.string(app, fields[i].getName());
 				app.append(":");
 				app.encode(value, types[i], visited);

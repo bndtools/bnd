@@ -17,6 +17,7 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -126,6 +127,28 @@ public class JSONCodec {
 
 		// Use the local handlers for the common types if exist.
 		Handler h = localHandlers.get(type);
+
+		if (h != null)
+			return h;
+
+		for (Entry<Type, Handler> entry : localHandlers.entrySet()) {
+
+			if (entry.getKey()
+				.equals(type)) {
+				h = entry.getValue();
+			} else {
+				Type handlerType = entry.getKey();
+				if (handlerType instanceof Class && type instanceof Class) {
+					Class<?> clazzHandlerType = (Class<?>) handlerType;
+					Class<?> typeClazz = (Class<?>) type;
+						if (clazzHandlerType.isAssignableFrom(typeClazz)) {
+							h = entry.getValue();
+							break;
+						}
+				}
+			}
+		}
+
 		if (h != null)
 			return h;
 

@@ -11,7 +11,7 @@ public class StringHandler extends Handler {
 		string(app, object.toString());
 	}
 
-	static void string(Appendable app, String s) throws IOException {
+	public static void string(Appendable app, String s) throws IOException {
 
 		app.append('"');
 		for (int i = 0; i < s.length(); i++) {

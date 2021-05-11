@@ -28,6 +28,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 	boolean			deflate;
 	String			tabs		= null;
 	String			indent		= "";
+	String			linebreak	= null;
 	boolean			keepOpen	= false;
 	boolean			closed		= false;
 
@@ -131,7 +132,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		}
 	}
 
-	void encode(Object object, Type type, Map<Object, Type> visited) throws Exception {
+	public void encode(Object object, Type type, Map<Object, Type> visited) throws Exception {
 		codec.encode(this, object, type, visited);
 	}
 
@@ -159,23 +160,38 @@ public class Encoder implements Appendable, Closeable, Flushable {
 
 	public Encoder indent(String tabs) {
 		this.tabs = tabs;
+		if (linebreak == null) {
+			linebreak("\n");
+		}
 		return this;
 	}
 
-	void undent() throws IOException {
+	public Encoder linebreak(String linebreak) {
+		this.linebreak = linebreak;
+		return this;
+	}
+
+	public void undent() throws IOException {
 		if (tabs != null) {
-			app.append("\n");
 			indent = indent.substring(tabs.length());
-			app.append(indent);
+		}
+		linebreak();
+	}
+
+	public void linebreak() throws IOException {
+		if (linebreak != null) {
+			app.append(linebreak);
+			if (tabs != null) {
+				app.append(indent);
+			}
 		}
 	}
 
-	void indent() throws IOException {
+	public void indent() throws IOException {
 		if (tabs != null) {
-			app.append("\n");
 			indent += tabs;
-			app.append(indent);
 		}
+		linebreak();
 	}
 
 	public Encoder keepOpen() {
