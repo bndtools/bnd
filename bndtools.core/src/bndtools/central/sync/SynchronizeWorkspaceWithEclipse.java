@@ -2,21 +2,34 @@ package bndtools.central.sync;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.Job;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
 import aQute.lib.watcher.FileWatcher;
+import bndtools.Plugin;
 import bndtools.central.Central;
 
 /**
@@ -30,24 +43,99 @@ import bndtools.central.Central;
  */
 @Component
 public class SynchronizeWorkspaceWithEclipse {
-	final static IWorkspaceRoot	root			= ResourcesPlugin.getWorkspace()
-		.getRoot();
+	static IWorkspace			eclipse			= ResourcesPlugin.getWorkspace();
+	final static IWorkspaceRoot	root			= eclipse.getRoot();
 	final AtomicBoolean			lock			= new AtomicBoolean();
-	final ScheduledFuture<?>	schedule;
-
+	ScheduledFuture<?>			schedule;
 	long						lastModified	= -1;
 	FileWatcher					watcher;
 	File						dir;
-	final boolean				macos;
+	boolean						macos;
 
 	@Reference
 	Workspace					workspace;
 
-	public SynchronizeWorkspaceWithEclipse() throws IOException {
+	@Activate
+	void activate() throws IOException {
 		schedule = Processor.getScheduledExecutor()
 			.scheduleAtFixedRate(this::check, 1000, 300, TimeUnit.MILLISECONDS);
 
 		macos = "MacOSX".equalsIgnoreCase(osname());
+		workspace.on("workspace sync")
+			.projects(this::sync);
+	}
+
+	@Deactivate
+	void deactivate() throws IOException {
+		schedule.cancel(true);
+		if (watcher != null)
+			IO.close(watcher);
+	}
+
+	private void sync(Collection<Project> models) {
+		if (lock.getAndSet(true) == true) {
+			// already being handled
+			return;
+		}
+
+		boolean previous = setAutobuild(false);
+
+		Job sync = Job.create("sync workspace", monitor -> {
+			Map<String, IProject> projects = Stream.of(root.getProjects())
+				.collect(Collectors.toMap(IProject::getName, p -> p));
+
+			System.out.println(" eclipse projects " + projects.keySet());
+
+			try {
+				Central.bndCall(after -> {
+					boolean refresh = false;
+					for (Project model : models) {
+						IProject project = projects.remove(model.getName());
+						if (project == null) {
+							System.out.println("create " + model);
+							refresh = true;
+							after.accept("create project",
+								() -> WorkspaceSynchronizer.createProject(model.getBase(), model, monitor));
+						}
+					}
+
+					for (IProject project : projects.values()) {
+						if (!project.isAccessible())
+							continue;
+
+						if (!project.hasNature(Plugin.BNDTOOLS_NATURE))
+							continue;
+
+						System.out.println("remove " + project);
+						refresh = true;
+						after.accept("remove project", () -> WorkspaceSynchronizer.removeProject(project, monitor));
+					}
+
+					if (refresh) {
+
+						for (Project p : workspace.getAllProjects())
+							p.clean();
+
+						after.accept("refresh", () -> {
+							root.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+							eclipse.build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
+							eclipse.build(IncrementalProjectBuilder.FULL_BUILD, monitor);
+						});
+					}
+					if (previous)
+						after.accept("resetting autobuild " + previous, () -> setAutobuild(previous));
+					return null;
+				});
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				lock.set(false);
+			}
+
+		});
+		sync.setRule(root);
+		sync.setPriority(Job.SHORT);
+		sync.schedule();
 	}
 
 	private void watcher(File directory) {
@@ -64,48 +152,8 @@ public class SynchronizeWorkspaceWithEclipse {
 		}
 	}
 
-	@Deactivate
-	void deactivate() throws IOException {
-		schedule.cancel(true);
-		if (watcher != null)
-			IO.close(watcher);
-	}
-
-	private void sync() {
-		if (lock.getAndSet(true) == true) {
-			// already being handled
-			return;
-		}
-
-		Job job = Job.create("bnd sync", (m) -> {
-			System.out.println("Syncing");
-
-			while (System.currentTimeMillis() - dir.lastModified() < 500) {
-				sleep(500);
-			}
-			if (m.isCanceled())
-				return;
-			lock.set(false);
-			WorkspaceSynchronizer ws = new WorkspaceSynchronizer();
-			ws.synchronize(true, m, () -> {});
-		});
-		job.setRule(root);
-		job.schedule(0);
-	}
-
-	private void sleep(long sleep) {
-		try {
-			Thread.sleep(sleep);
-		} catch (InterruptedException e) {
-			Thread.currentThread()
-				.interrupt();
-			return;
-		}
-	}
-
 	private void changed(File file1, String kind) {
-		System.out.println("changed " + file1 + " " + kind);
-		sync();
+		workspace.forceRefreshProjects();
 	}
 
 	private String osname() {
@@ -129,9 +177,20 @@ public class SynchronizeWorkspaceWithEclipse {
 		if (lastModified < lastModified2) {
 			lastModified = lastModified2;
 			long diff = System.currentTimeMillis() - lastModified2;
-			System.out.println("workspace time changed " + diff);
-			sync();
+			workspace.forceRefreshProjects();
 		}
 	}
 
+	private boolean setAutobuild(boolean on) {
+		try {
+			IWorkspaceDescription description = eclipse.getDescription();
+			boolean original = description.isAutoBuilding();
+			description.setAutoBuilding(on);
+			eclipse.setDescription(description);
+			return original;
+		} catch (CoreException e) {
+			e.printStackTrace();
+			return true;
+		}
+	}
 }

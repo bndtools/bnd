@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
+import org.osgi.util.promise.Promise;
+
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
 
@@ -267,9 +269,9 @@ public interface RepositoryPlugin {
 	 * Sync this repository, this will wait for the initialization of the repo.
 	 * Repositories should override this to use a more efficient way.
 	 */
-	default void sync() {
-		try {
-			get("foobar", Version.emptyVersion, null);
-		} catch (Exception e) {}
+	default Promise<Void> sync() throws Exception {
+		return Processor.getPromiseFactory()
+			.submit(() -> get("foobar@#$%^&*", Version.emptyVersion, null))
+			.map(f -> null);
 	}
 }

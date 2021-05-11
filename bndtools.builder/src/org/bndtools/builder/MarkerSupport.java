@@ -91,8 +91,10 @@ class MarkerSupport {
 			deleteMarkers(MARKER_BND_MISSING_WORKSPACE);
 			deleteMarkers(MARKER_JAVA_BASELINE);
 		} else {
-			project.deleteMarkers(markerType, true, IResource.DEPTH_INFINITE);
-			deleteCnfMarkersForThisProject(markerType);
+			if (project.exists() && project.isAccessible()) {
+				project.deleteMarkers(markerType, true, IResource.DEPTH_INFINITE);
+				deleteCnfMarkersForThisProject(markerType);
+			}
 		}
 	}
 

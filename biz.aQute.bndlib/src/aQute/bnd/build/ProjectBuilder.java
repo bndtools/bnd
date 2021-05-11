@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
@@ -24,6 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container.TYPE;
+import aQute.bnd.build.api.ArtifactInfo;
+import aQute.bnd.build.api.BuildInfo;
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
@@ -31,6 +34,7 @@ import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Instruction;
@@ -49,6 +53,7 @@ import aQute.lib.collections.SortedList;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.glob.PathSet;
+import aQute.libg.reporter.ReporterAdapter;
 
 public class ProjectBuilder extends Builder {
 	private static final Predicate<String>	pomPropertiesFilter	= new PathSet("META-INF/maven/*/*/pom.properties")
@@ -58,6 +63,86 @@ public class ProjectBuilder extends Builder {
 	Project									project;
 	boolean									initialized;
 	boolean									includeTestpath		= false;
+	BuildInfoImpl							buildInfo;
+
+	static class BuildInfoImpl extends ReporterAdapter implements BuildInfo {
+
+		final List<ArtifactInfoImpl>	artifacts	= new ArrayList<>();
+		final Project					project;
+
+		BuildInfoImpl(Project project) throws Exception {
+			this.project = project;
+		}
+
+		@Override
+		public List<ArtifactInfoImpl> getArtifactInfos() {
+			return new ArrayList<>(artifacts);
+		}
+
+		@Override
+		public Project getProject() {
+			return project;
+		}
+
+		@Override
+		public String toString() {
+			return "BuildInfo[" + project + ": " + artifacts + "]";
+		}
+
+	}
+
+	static class ArtifactInfoImpl extends ReporterAdapter implements ArtifactInfo {
+		final Manifest							manifest;
+		final Packages							exports;
+		final Packages							imports;
+		final Packages							contained;
+		final BundleId							bundleId;
+
+		File									file;
+		List<Location>							errors;
+		Supplier<org.osgi.resource.Resource>	indexer;
+
+		public ArtifactInfoImpl(Builder builder) throws Exception {
+			String bsn = builder.getBsn();
+			String version = builder.getVersion();
+			bundleId = new BundleId(bsn, version);
+			manifest = builder.getJar()
+				.getManifest();
+			exports = builder.getExports()
+				.dup();
+			imports = builder.getImports()
+				.dup();
+			contained = builder.getContained()
+				.dup();
+			getInfo(builder);
+		}
+
+		@Override
+		public BundleId getBundleId() {
+			return bundleId;
+		}
+
+		@Override
+		public Packages getExports() {
+			return exports;
+		}
+
+		@Override
+		public Packages getImports() {
+			return imports;
+		}
+
+		@Override
+		public Packages getContained() {
+			return contained;
+		}
+
+		@Override
+		public String toString() {
+			return "Artifact[" + bundleId + "]";
+		}
+
+	}
 
 	public ProjectBuilder(Project project) {
 		super(project);
@@ -752,7 +837,7 @@ public class ProjectBuilder extends Builder {
 		project.exportedPackages.clear();
 		project.importedPackages.clear();
 		project.containedPackages.clear();
-
+		buildInfo = new BuildInfoImpl(project);
 		return super.builds();
 	}
 
@@ -763,6 +848,7 @@ public class ProjectBuilder extends Builder {
 	@Override
 	protected void startBuild(Builder builder) throws Exception {
 		super.startBuild(builder);
+
 		project.versionMap.remove(builder.getBsn());
 
 		/*
@@ -823,6 +909,9 @@ public class ProjectBuilder extends Builder {
 		Version version = new Version(cleanupVersion(builder.getVersion()));
 		project.versionMap.put(builder.getBsn(), version);
 		super.doneBuild(builder);
+
+		ArtifactInfoImpl artifactInfo = new ArtifactInfoImpl(builder);
+		buildInfo.artifacts.add(artifactInfo);
 	}
 
 	private void xrefClasspath(Map<String, Container> unreferencedClasspathEntries, Packages packages) {
@@ -853,5 +942,9 @@ public class ProjectBuilder extends Builder {
 	public ProjectBuilder includeTestpath() {
 		this.includeTestpath = true;
 		return this;
+	}
+
+	public BuildInfoImpl getBuildInfo() {
+		return buildInfo;
 	}
 }
