@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
+set -ev
+cd docs
 ruby --version
 gem --version
-gem install bundler -v '~> 2.0'
 bundle --version
-cd docs
-./build.sh "$@"
+bundle exec jekyll build

@@ -23,13 +23,18 @@ jobs:
   GitHub_Pages:
     name: GitHub Pages
     runs-on: ubuntu-latest
+    env:
+      BUNDLE_GEMFILE: Gemfile
+      BUNDLE_PATH: vendor/bundle
     steps:
     - name: Git Checkout
       uses: actions/checkout@v2
     - name: Set up Ruby
-      uses: actions/setup-ruby@v1
+      uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.7.x
+        ruby-version: 2.7
+        bundler-cache: true
+        working-directory: docs
     - name: Build
       run: |
         ./.github/scripts/docs.sh
