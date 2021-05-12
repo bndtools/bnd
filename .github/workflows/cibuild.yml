@@ -62,7 +62,7 @@ jobs:
       with:
         fetch-depth: ${{ matrix.fetch-depth }}
     - name: Gradle Wrapper Validation
-      uses: gradle/wrapper-validation-action@v1
+      uses: gradle/wrapper-validation-action@v1.0.3
     - name: Set up Java ${{ matrix.java }}
       uses: actions/setup-java@v2
       with:
