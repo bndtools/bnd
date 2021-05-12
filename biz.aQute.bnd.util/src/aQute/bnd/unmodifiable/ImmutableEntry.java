@@ -9,6 +9,6 @@ final class ImmutableEntry<K, V> extends SimpleImmutableEntry<K, V> implements E
 	private static final long serialVersionUID = 1L;
 
 	ImmutableEntry(K key, V value) {
-		super(requireNonNull(key), requireNonNull(value));
+		super(requireNonNull(key), value);
 	}
 }
