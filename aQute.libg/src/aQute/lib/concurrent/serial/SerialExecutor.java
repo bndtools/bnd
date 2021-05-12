@@ -1,7 +1,5 @@
 package aQute.lib.concurrent.serial;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.concurrent.Callable;
@@ -16,7 +14,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Will execute a set of tasks in order of submit.
  */
-public class SerialExecutor implements Closeable {
+public class SerialExecutor implements AutoCloseable {
 	final static Logger		logger	= LoggerFactory.getLogger(SerialExecutor.class);
 
 	final Executor			executor;
@@ -47,7 +45,7 @@ public class SerialExecutor implements Closeable {
 			try {
 				T value = callable.call();
 				deferred.resolve(value);
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				deferred.fail(e);
 			}
 		};
@@ -69,7 +67,7 @@ public class SerialExecutor implements Closeable {
 					while (true) {
 						Runnable r;
 						synchronized (tasks) {
-							if (tasks.isEmpty()) {
+							if (tasks.isEmpty() || thread.isInterrupted()) {
 								thread = null;
 								return;
 							}
@@ -79,7 +77,7 @@ public class SerialExecutor implements Closeable {
 
 						try {
 							r.run();
-						} catch (Exception e) {
+						} catch (Throwable e) {
 							logger.warn("failed to execute task {} {}", runnable, e, e);
 						}
 					}
@@ -89,7 +87,7 @@ public class SerialExecutor implements Closeable {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		synchronized (tasks) {
 			tasks.clear();
 			Thread t = thread;
