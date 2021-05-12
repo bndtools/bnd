@@ -132,7 +132,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		}
 	}
 
-	public void encode(Object object, Type type, Map<Object, Type> visited) throws Exception {
+	void encode(Object object, Type type, Map<Object, Type> visited) throws Exception {
 		codec.encode(this, object, type, visited);
 	}
 
@@ -171,14 +171,14 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		return this;
 	}
 
-	public void undent() throws IOException {
+	void undent() throws IOException {
 		if (tabs != null) {
 			indent = indent.substring(tabs.length());
 		}
 		linebreak();
 	}
 
-	public void linebreak() throws IOException {
+	void linebreak() throws IOException {
 		if (linebreak != null) {
 			app.append(linebreak);
 			if (tabs != null) {
@@ -187,7 +187,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		}
 	}
 
-	public void indent() throws IOException {
+	void indent() throws IOException {
 		if (tabs != null) {
 			indent += tabs;
 		}

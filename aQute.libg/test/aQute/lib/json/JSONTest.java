@@ -21,7 +21,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import aQute.lib.collections.MultiMap;
@@ -1189,38 +1188,5 @@ public class JSONTest extends TestCase {
 			.put(d)
 			.toString();
 		assertEquals("{'foo':'bar'}".replace('\'', '"'), s);
-	}
-
-	public interface I {
-		int i();
-	}
-
-	public static class II implements I {
-
-		@Override
-		public int i() {
-
-			return 1;
-		}
-
-	}
-
-	public void testInheritHandler() throws Exception {
-		II ii = new II();
-
-		AtomicBoolean match = new AtomicBoolean(false);
-		JSONCodec jsonCodec = new JSONCodec();
-
-		jsonCodec.addHandler(I.class, new Handler() {
-
-			@Override
-			public void encode(Encoder app, Object object, Map<Object, Type> visited) throws IOException, Exception {
-				match.set(true);
-			}
-
-		});
-		jsonCodec.enc()
-			.put(ii);
-		assertTrue(match.get());
 	}
 }
