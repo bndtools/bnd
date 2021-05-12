@@ -11,6 +11,7 @@ Bundle-Description: bndlib: A Swiss Army Knife for OSGi
 
 Export-Package: \
     aQute.bnd.build;-noimport:=true,\
+    aQute.bnd.build.api;-noimport:=true,\
     aQute.bnd.build.model;-noimport:=true,\
     aQute.bnd.build.model.clauses;-noimport:=true,\
     aQute.bnd.build.model.conversions;-noimport:=true,\

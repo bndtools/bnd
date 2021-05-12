@@ -75,7 +75,7 @@ public class ProjectBuilder extends Builder {
 		}
 
 		@Override
-		public List<ArtifactInfoImpl> getArtifactInfos() {
+		public List<ArtifactInfo> getArtifactInfos() {
 			return new ArrayList<>(artifacts);
 		}
 

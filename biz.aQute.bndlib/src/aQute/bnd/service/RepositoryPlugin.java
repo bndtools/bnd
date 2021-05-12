@@ -271,7 +271,9 @@ public interface RepositoryPlugin {
 	 */
 	default Promise<Void> sync() throws Exception {
 		return Processor.getPromiseFactory()
-			.submit(() -> get("foobar@#$%^&*", Version.emptyVersion, null))
-			.map(f -> null);
+			.submit(() -> {
+				get("foobar@#$%^&*", Version.emptyVersion, null);
+				return null;
+			});
 	}
 }

@@ -54,7 +54,6 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.service.repository.Repository;
 import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Promises;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -721,7 +720,7 @@ public class Workspace extends Processor {
 			for (RepositoryPlugin repo : repositories) {
 				promises.add(repo.sync());
 			}
-			return Promises.all(promises)
+			return getPromiseFactory().all(promises)
 				.map(l -> {
 					return repositories;
 				});
@@ -729,7 +728,7 @@ public class Workspace extends Processor {
 			// failures should be visible on the repositories,
 			// this is just about syncing
 		} catch (Exception e) {
-			return Promises.failed(e);
+			return getPromiseFactory().failed(e);
 		}
 	}
 

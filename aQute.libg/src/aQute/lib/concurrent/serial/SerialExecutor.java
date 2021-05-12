@@ -2,20 +2,26 @@ package aQute.lib.concurrent.serial;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.PromiseFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Will execute a set of tasks in order of submit.
  */
 public class SerialExecutor implements Closeable {
+	final static Logger		logger	= LoggerFactory.getLogger(SerialExecutor.class);
+
 	final Executor			executor;
-	final List<Runnable>	tasks	= new ArrayList<>();
+	final Deque<Runnable>	tasks	= new ArrayDeque<>();
+	final PromiseFactory	factory;
 	volatile Thread			thread;
 
 	/**
@@ -25,6 +31,7 @@ public class SerialExecutor implements Closeable {
 	 */
 	public SerialExecutor(Executor executor) {
 		this.executor = executor;
+		this.factory = new PromiseFactory(executor);
 	}
 
 	/**
@@ -35,7 +42,7 @@ public class SerialExecutor implements Closeable {
 	 * @return the promise
 	 */
 	public <T> Promise<T> submit(Callable<T> callable) {
-		Deferred<T> deferred = new Deferred<>();
+		Deferred<T> deferred = factory.deferred();
 		Runnable r = () -> {
 			try {
 				T value = callable.call();
@@ -55,7 +62,7 @@ public class SerialExecutor implements Closeable {
 	 */
 	public void run(Runnable runnable) {
 		synchronized (tasks) {
-			tasks.add(runnable);
+			tasks.push(runnable);
 			if (tasks.size() == 1) {
 				executor.execute(() -> {
 					thread = Thread.currentThread();
@@ -67,9 +74,14 @@ public class SerialExecutor implements Closeable {
 								return;
 							}
 
-							r = tasks.remove(0);
+							r = tasks.pop();
 						}
-						r.run();
+
+						try {
+							r.run();
+						} catch (Exception e) {
+							logger.warn("failed to execute task {} {}", runnable, e, e);
+						}
 					}
 				});
 			}

@@ -16,6 +16,11 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.concurrent.serial.SerialExecutor;
 
+/**
+ * Implements the event bus for the workspace, projects and repositories. It can
+ * create {@link OnWorkspace} objects that client can use to get events. Clients
+ * can close and this will clean up. The class is private to the workspace.
+ */
 class WorkspaceNotifier implements Closeable {
 
 	final MultiMap<ET, Receipt>	ons			= new MultiMap<>();
@@ -162,42 +167,42 @@ class WorkspaceNotifier implements Closeable {
 			}
 
 			@Override
-			public OnWorkspace initial(Consumer<Workspace> cb) {
+			public OnWorkspace initial(Consumer<? super Workspace> cb) {
 				return register(ET.INIT, cb);
 			}
 
 			@Override
-			public OnWorkspace message(Consumer<Workspace> cb) {
+			public OnWorkspace message(Consumer<? super Workspace> cb) {
 				return register(ET.MESSAGE, cb);
 			}
 
 			@Override
-			public OnWorkspace closing(Consumer<Workspace> cb) {
+			public OnWorkspace closing(Consumer<? super Workspace> cb) {
 				return register(ET.CLOSING, cb);
 			}
 
 			@Override
-			public OnWorkspace repositoriesReady(Consumer<Collection<RepositoryPlugin>> cb) {
+			public OnWorkspace repositoriesReady(Consumer<? super Collection<RepositoryPlugin>> cb) {
 				return register(ET.REPOS, cb);
 			}
 
 			@Override
-			public OnWorkspace build(Consumer<BuildInfo> cb) {
+			public OnWorkspace build(Consumer<? super BuildInfo> cb) {
 				return register(ET.BUILD, cb);
 			}
 
 			@Override
-			public OnWorkspace projects(Consumer<Collection<Project>> cb) {
+			public OnWorkspace projects(Consumer<? super Collection<Project>> cb) {
 				return register(ET.PROJECTS, cb);
 			}
 
 			@Override
-			public OnWorkspace changedProject(Consumer<Project> cb) {
+			public OnWorkspace changedProject(Consumer<? super Project> cb) {
 				return register(ET.CHANGEDPROJECT, cb);
 			}
 
 			@Override
-			public OnWorkspace changedRun(Consumer<? extends Run> cb) {
+			public OnWorkspace changedRun(Consumer<? super Run> cb) {
 				return register(ET.CHANGEDBNDRUN, cb);
 			}
 		};
