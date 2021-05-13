@@ -1,6 +1,7 @@
 package aQute.bnd.osgi;
 
 import static aQute.bnd.exceptions.FunctionWithException.asFunction;
+import static aQute.bnd.osgi.Processor.removeDuplicateMarker;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toMap;
@@ -58,20 +59,19 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
-import aQute.bnd.header.Attrs;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.memoize.Memoize;
 import aQute.bnd.osgi.Processor.FileLine;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
 import aQute.lib.date.Dates;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.filter.ExtendedFilter;
 import aQute.lib.formatter.Formatters;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
-import aQute.bnd.memoize.Memoize;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.glob.Glob;
@@ -2227,42 +2227,24 @@ public class Macro {
 	public String _template(String args[]) throws IOException {
 		verifyCommand(args, _templateHelp, null, 3, 30);
 
-		String propertyKey = args[1];
-		String separator = ",";
-
-		StringBuilder templateBuilder = new StringBuilder();
-		String del = "";
-
-		for (int i = 2; i < args.length; i++) {
-			templateBuilder.append(del)
-				.append(args[i]);
-			del = ";";
-		}
-
-		String template = templateBuilder.toString();
-
-		Parameters parameters = domain.decorated(propertyKey);
-		StringBuilder sb = new StringBuilder();
-		del = "";
+		Parameters parameters = domain.decorated(args[1]);
+		String template = Arrays.stream(args, 2, args.length)
+			.collect(Collectors.joining(SEMICOLON));
 
 		try (Processor scope = new Processor(domain)) {
-			for (Map.Entry<String, Attrs> entry : parameters.entrySet()) {
-				String key = entry.getKey();
-				key = Processor.removeDuplicateMarker(key);
-				scope.setProperty("@", key);
-				for (Entry<String, String> attr : entry.getValue()
-					.entrySet()) {
-					scope.setProperty("@" + attr.getKey(), attr.getValue());
-				}
-				String instance = scope.getReplacer()
-					.process(template);
-
-				sb.append(del)
-					.append(instance);
-				del = separator;
-			}
+			Properties properties = scope.getProperties();
+			Macro replacer = scope.getReplacer();
+			String templated = parameters.stream()
+				.mapToObj((key, value) -> {
+					properties.clear(); // avoid attr leakage between keys
+					properties.setProperty("@", removeDuplicateMarker(key));
+					value.forEach((attrKey, attrValue) -> properties.setProperty("@".concat(attrKey), attrValue));
+					String instance = replacer.process(template);
+					return instance;
+				})
+				.collect(Strings.joining());
+			return templated;
 		}
-		return sb.toString();
 	}
 
 	final static String _templateHelp = "${template;macro-name[;template]+}";
