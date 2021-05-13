@@ -739,8 +739,7 @@ public class AlsoLauncherTest {
 	private void doTestReporting(ProjectLauncher l) throws Exception {
 		l.setTrace(true);
 		StringBuilder out = new StringBuilder();
-		StringBuilder err = new StringBuilder();
-		l.setStreams(out, err);
+		l.setStreams(out, out);
 		l.getRunProperties()
 			.put("test.cmd", "framework.stop");
 
@@ -760,9 +759,9 @@ public class AlsoLauncherTest {
 			// end up truncating the matched block and hiding the useful
 			// information.
 			Pattern pattern = Pattern.compile("^Id\\s+\\s+Levl\\s+State.*", Pattern.DOTALL | Pattern.MULTILINE);
-			Matcher match = pattern.matcher(err);
+			Matcher match = pattern.matcher(out);
 			if (!match.find()) {
-				throw new AssertionError("Couldn't find report block in stderr output:\n" + err);
+				throw new AssertionError("Couldn't find report block in output:\n" + out);
 			}
 			final String report = match.group();
 

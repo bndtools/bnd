@@ -102,7 +102,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 
 	private static final String				BND_LAUNCHER			= ".bnd.launcher";
 
-	private PrintStream						out;
+	private PrintStream						out						= System.out;
 	private LauncherConstants				parms;
 	private Framework						systemBundle;
 	private FrameworkWiring					frameworkWiring;
@@ -262,7 +262,6 @@ public class Launcher implements ServiceListener, FrameworkListener {
 
 	public Launcher(Properties p) {
 		this.properties = p;
-		out = System.err;
 	}
 
 	private void loadPropertiesFromFileOrEmbedded() throws Exception {
@@ -1298,53 +1297,56 @@ public class Launcher implements ServiceListener, FrameworkListener {
 	public void report(PrintStream out) {
 		startLevelhandler.sync();
 		try {
-			out.println("------------------------------- REPORT --------------------------");
-			out.println();
-			row(out, "Framework", systemBundle == null ? "<>" : systemBundle.getClass());
-			row(out, "Framework type", parms.services ? "META-INF/services" : "mini framework");
-			row(out, "Storage", parms.storageDir);
-			row(out, "Keep", parms.keep);
-			row(out, "Security", security);
-			row(out, "Has StartLevels", startLevelhandler.hasStartLevels());
-			row(out, "Startlevel", startLevelhandler.getFrameworkStartLevel(systemBundle));
-			list(out, fill("Run bundles", 40), parms.runbundles);
-			row(out, "Java Home", System.getProperty("java.home"));
-			list(out, fill("Classpath", 40), split(System.getProperty("java.class.path"), File.pathSeparator));
-			list(out, fill("System Packages", 40), split(parms.systemPackages, ","));
-			list(out, fill("System Capabilities", 40), split(parms.systemCapabilities, ","));
-			row(out, "Properties");
-			for (Entry<Object, Object> entry : properties.entrySet()) {
-				String key = (String) entry.getKey();
-				String value = (String) entry.getValue();
-				row(out, key, value);
-			}
-			if (systemBundle != null) {
-				BundleContext context = systemBundle.getBundleContext();
-				if (context != null) {
-					Bundle bundles[] = context.getBundles();
-					out.println();
-					out.println("Id    Levl State Modified      Location");
+			synchronized (out) { // avoid interleaving output
+				out.print("------------------------------- REPORT --------------------------");
+				out.print(System.lineSeparator());
+				out.print(System.lineSeparator());
+				row(out, "Framework", systemBundle == null ? "<>" : systemBundle.getClass());
+				row(out, "Framework type", parms.services ? "META-INF/services" : "mini framework");
+				row(out, "Storage", parms.storageDir);
+				row(out, "Keep", parms.keep);
+				row(out, "Security", security);
+				row(out, "Has StartLevels", startLevelhandler.hasStartLevels());
+				row(out, "Startlevel", startLevelhandler.getFrameworkStartLevel(systemBundle));
+				list(out, fill("Run bundles", 40), parms.runbundles);
+				row(out, "Java Home", System.getProperty("java.home"));
+				list(out, fill("Classpath", 40), split(System.getProperty("java.class.path"), File.pathSeparator));
+				list(out, fill("System Packages", 40), split(parms.systemPackages, ","));
+				list(out, fill("System Capabilities", 40), split(parms.systemCapabilities, ","));
+				row(out, "Properties");
+				for (Entry<Object, Object> entry : properties.entrySet()) {
+					String key = (String) entry.getKey();
+					String value = (String) entry.getValue();
+					row(out, key, value);
+				}
+				if (systemBundle != null) {
+					BundleContext context = systemBundle.getBundleContext();
+					if (context != null) {
+						Bundle bundles[] = context.getBundles();
+						out.print(System.lineSeparator());
+						out.print("Id    Levl State Modified      Location");
+						out.print(System.lineSeparator());
 
-					for (Bundle bundle : bundles) {
-						String lastModified = "<>";
-						String loc = bundle.getLocation();
-						Optional<Path> p = URIUtil.pathFromURI(loc);
-						if (p.isPresent() && Files.exists(p.get())) {
-							lastModified = FORMAT.format(Files.getLastModifiedTime(p.get())
-								.toInstant());
-							loc = p.get()
-								.toString();
+						for (Bundle bundle : bundles) {
+							String lastModified = "<>";
+							String loc = bundle.getLocation();
+							Optional<Path> p = URIUtil.pathFromURI(loc);
+							if (p.isPresent() && Files.exists(p.get())) {
+								lastModified = FORMAT.format(Files.getLastModifiedTime(p.get())
+									.toInstant());
+							}
+							out.print(fill(Long.toString(bundle.getBundleId()), 6));
+							out.print(fill(Integer.toString(startLevelhandler.getBundleStartLevel(bundle)), 4));
+							out.print(fill(toState(bundle.getState()), 6));
+							out.print(fill(lastModified, 14));
+
+							out.print(bundle.getLocation());
+
+							out.print(System.lineSeparator());
 						}
-						out.print(fill(Long.toString(bundle.getBundleId()), 6));
-						out.print(fill(startLevelhandler.getBundleStartLevel(bundle) + "", 4));
-						out.print(fill(toState(bundle.getState()), 6));
-						out.print(fill(lastModified, 14));
-
-						out.print(bundle.getLocation());
-
-						out.println();
 					}
 				}
+				out.flush();
 			}
 		} catch (Throwable t) {
 			error("Sorry, can't print framework: %s", t);
@@ -1360,7 +1362,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 				out.print(p);
 			fill = false;
 		}
-		out.println();
+		out.print(System.lineSeparator());
 	}
 
 	static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("YYYYMMddHHmm")
@@ -1413,7 +1415,8 @@ public class Launcher implements ServiceListener, FrameworkListener {
 		for (Object o : l) {
 			String s = o.toString();
 			out.print(del);
-			out.println(s);
+			out.print(s);
+			out.print(System.lineSeparator());
 			del = fill(" ", 40);
 		}
 	}
@@ -1590,10 +1593,14 @@ public class Launcher implements ServiceListener, FrameworkListener {
 		}
 
 		String message = sb.toString();
-		out.println(message);
-		if (e != null)
-			e.printStackTrace(out);
-		out.flush();
+		synchronized (out) { // avoid interleaving output
+			out.print(message);
+			out.print(System.lineSeparator());
+			if (e != null) {
+				e.printStackTrace(out);
+			}
+			out.flush();
+		}
 
 		DatagramSocket socket = commsSocket.get();
 
@@ -1617,10 +1624,14 @@ public class Launcher implements ServiceListener, FrameworkListener {
 				ByteBuffer bb = dos.toByteBuffer();
 				socket.send(new DatagramPacket(bb.array(), bb.arrayOffset(), bb.remaining()));
 			} catch (IOException ioe) {
-				out.println("! Unable to send notification to " + socket.getRemoteSocketAddress());
-				if (parms.trace)
-					ioe.printStackTrace(out);
-				out.flush();
+				synchronized (out) { // avoid interleaving output
+					out.print("! Unable to send notification to " + socket.getRemoteSocketAddress());
+					out.print(System.lineSeparator());
+					if (parms.trace) {
+						ioe.printStackTrace(out);
+					}
+					out.flush();
+				}
 			}
 		}
 	}
