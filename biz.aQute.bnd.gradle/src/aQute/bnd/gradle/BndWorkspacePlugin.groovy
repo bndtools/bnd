@@ -86,11 +86,12 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 			projectNames.add(defaultProjectName)
 		}
 
-		/* If build used but empty, add all non-private folders of rootDir */
+		/* If build used but empty, add all non-private folders of rootDir except special gradle folders */
 		if (projectNames.remove("")) {
+			Set<String> specialFolders = ["buildSrc", "gradle"]
 			rootDir.eachDir {
 				String projectName = it.getName()
-				if (!projectName.startsWith(".")) {
+				if (!projectName.startsWith(".") && !specialFolders.contains(projectName)) {
 					projectNames.add(projectName)
 				}
 			}
