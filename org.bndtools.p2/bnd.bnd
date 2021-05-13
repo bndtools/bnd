@@ -28,9 +28,8 @@ timestamp: ${tstamp}
     biz.aQute.repository, \
     biz.aQute.resolve
 
-other: org.slf4j.api
-
-plugins: ${map;repo;${replacelist;${-dependson},${other};$;\\\\\\;latest}}
+pluginnames: ${-dependson},org.slf4j.api
+plugins: ${map;repo;${template;pluginnames;${@};latest}}
 
 -includeresource: ${target}/p2
 -resourceonly: true
