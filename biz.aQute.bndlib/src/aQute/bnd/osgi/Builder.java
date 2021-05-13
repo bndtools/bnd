@@ -64,7 +64,6 @@ import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.regex.PatternConstants;
 import aQute.lib.strings.Strings;
-import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.zip.ZipUtil;
 import aQute.libg.generics.Create;
 
@@ -280,7 +279,7 @@ public class Builder extends Analyzer {
 		dot.getResources()
 			.keySet()
 			.stream()
-			.filter(path -> !pathStartsWith(path, "WEB-INF") && Arrays.stream(Constants.METAPACKAGES)
+			.filter(path -> !pathStartsWith(path, "WEB-INF") && Constants.METAPACKAGES.stream()
 				.noneMatch(meta -> pathStartsWith(path, meta)))
 			// we collect since we need to mutate the source set
 			.collect(toList())
@@ -1557,8 +1556,7 @@ public class Builder extends Analyzer {
 	 *
 	 */
 	public void removeBundleSpecificHeaders() {
-		Set<String> set = Sets.of(BUNDLE_SPECIFIC_HEADERS);
-		setForceLocal(set);
+		setForceLocal(BUNDLE_SPECIFIC_HEADERS);
 	}
 
 	/**

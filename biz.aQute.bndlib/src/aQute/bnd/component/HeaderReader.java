@@ -219,8 +219,8 @@ public class HeaderReader extends Processor {
 			}
 		}
 		for (String key : info.keySet()) {
-			if (SET_COMPONENT_DIRECTIVES_1_2.contains(key)) {
-				cd.updateVersion(V1_2, "uses 1.2 component directives like " + SET_COMPONENT_DIRECTIVES_1_2);
+			if (COMPONENT_DIRECTIVES_1_2.contains(key)) {
+				cd.updateVersion(V1_2, "uses 1.2 component directives like " + COMPONENT_DIRECTIVES_1_2);
 				return;
 			}
 		}
@@ -232,8 +232,8 @@ public class HeaderReader extends Processor {
 		}
 		// among other things this picks up any specified lifecycle methods
 		for (String key : info.keySet()) {
-			if (SET_COMPONENT_DIRECTIVES_1_1.contains(key)) {
-				cd.updateVersion(V1_1, "1.1 component directives like " + SET_COMPONENT_DIRECTIVES_1_1);
+			if (COMPONENT_DIRECTIVES_1_1.contains(key)) {
+				cd.updateVersion(V1_1, "1.1 component directives like " + COMPONENT_DIRECTIVES_1_1);
 				return;
 			}
 		}
@@ -363,7 +363,7 @@ public class HeaderReader extends Processor {
 			// Skip directives
 			String referenceName = entry.getKey();
 			if (referenceName.endsWith(":")) {
-				if (!SET_COMPONENT_DIRECTIVES.contains(referenceName))
+				if (!COMPONENT_DIRECTIVES.contains(referenceName))
 					error("Unrecognized directive in " + Constants.SERVICE_COMPONENT + " header: %s", referenceName);
 				continue;
 			}

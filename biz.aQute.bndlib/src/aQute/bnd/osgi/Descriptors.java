@@ -171,7 +171,7 @@ public class Descriptors {
 			if (isDefaultPackage())
 				return true;
 
-			return Arrays.stream(Constants.METAPACKAGES)
+			return Constants.METAPACKAGES.stream()
 				.anyMatch(meta -> binaryName.startsWith(meta)
 					&& ((binaryName.length() == meta.length()) || (binaryName.charAt(meta.length()) == '/')));
 		}
