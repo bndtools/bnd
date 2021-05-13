@@ -14,6 +14,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharsetDecoder;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -57,55 +58,69 @@ public class UTF8Properties extends Properties {
 	}
 
 	public UTF8Properties(File file, Reporter reporter, String[] syntaxHeaders) throws Exception {
-		load(file, reporter, syntaxHeaders);
+		load(file, reporter, fromArray(syntaxHeaders));
 	}
 
 	public UTF8Properties(File file, Reporter reporter) throws Exception {
-		load(file, reporter, null);
+		load(file, reporter, (Collection<String>) null);
 	}
 
 	public UTF8Properties() {}
 
+	private static Collection<String> fromArray(String[] array) {
+		return (array != null) ? Arrays.asList(array) : null;
+	}
+
 	public void load(InputStream in, File file, Reporter reporter, String[] syntaxHeaders) throws IOException {
+		load(in, file, reporter, fromArray(syntaxHeaders));
+	}
+
+	public void load(InputStream in, File file, Reporter reporter, Collection<String> syntaxHeaders)
+		throws IOException {
 		String source = decode(IO.read(in));
 		load(source, file, reporter, syntaxHeaders);
 	}
 
 	public void load(InputStream in, File file, Reporter reporter) throws IOException {
-		load(in, file, reporter, null);
+		load(in, file, reporter, (Collection<String>) null);
 	}
 
 	public void load(String source, File file, Reporter reporter) throws IOException {
-		load(source, file, reporter, null);
+		load(source, file, reporter, (Collection<String>) null);
 	}
 
 	public void load(String source, File file, Reporter reporter, String[] syntaxHeaders) throws IOException {
-		PropertiesParser parser = new PropertiesParser(source, file == null ? null : file.getAbsolutePath(), reporter,
-			this);
-		if (syntaxHeaders != null)
-			parser.setSyntaxHeaders(syntaxHeaders);
+		load(source, file, reporter, fromArray(syntaxHeaders));
+	}
 
+	public void load(String source, File file, Reporter reporter, Collection<String> syntaxHeaders) throws IOException {
+		PropertiesParser parser = new PropertiesParser(source, file == null ? null : file.getAbsolutePath(), reporter,
+			this, syntaxHeaders);
 		parser.parse();
 	}
 
 	public void load(File file, Reporter reporter, String[] syntaxHeaders) throws Exception {
+		load(file, reporter, fromArray(syntaxHeaders));
+	}
+
+	public void load(File file, Reporter reporter, Collection<String> syntaxHeaders) throws Exception {
 		String source = decode(IO.read(file));
 		load(source, file, reporter, syntaxHeaders);
 	}
 
 	public void load(File file, Reporter reporter) throws Exception {
-		this.load(file, reporter, null);
+		this.load(file, reporter, (Collection<String>) null);
 	}
 
 	@Override
 	public synchronized void load(InputStream in) throws IOException {
-		load(new NonClosingInputStream(in), null, null, null);
+		load(new NonClosingInputStream(in), null, null, (Collection<String>) null);
 	}
 
 	@Override
 	public synchronized void load(Reader r) throws IOException {
 		String source = IO.collect(new NonClosingReader(r));
-		load(source, null, null, null);
+		load(source, null, null, (Collection<String>) null);
 	}
 
 	private String decode(byte[] buffer) {

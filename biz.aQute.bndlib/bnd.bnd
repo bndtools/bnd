@@ -51,11 +51,13 @@ Export-Package: \
 	!org.osgi.annotation.*,\
 	org.osgi.*
 
+osgi.conditionalpackages: ${retainall;${packages;CONDITIONAL};${packages;NAMED;org.osgi.*}}
+
 Import-Package: \
 	org.osgi.service.repository,\
 	org.osgi.service.log,\
 	org.osgi.dto,\
-	${replacelist;${retainall;${packages;CONDITIONAL};${packages;NAMED;org.osgi.*}};$;\\;provide:=false},\
+	${template;osgi.conditionalpackages;${@};provide:=false},\
 	*
 
 -includeresource: ${workspace}/LICENSE, img/=img/, {readme.md}

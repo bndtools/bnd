@@ -205,6 +205,16 @@ public class MacroTest {
 	}
 
 	@Test
+	public void template_no_leakage() throws IOException {
+		try (Processor proc = new Processor()) {
+			proc.setProperty("foo", "a;v=1,b;x=2,c;v=3");
+			String process = proc.getReplacer()
+				.process("${template;foo;\\\\${@}=\\\\${def;@v;9}}");
+			assertThat(process).isEqualTo("a=1,b=9,c=3");
+		}
+	}
+
+	@Test
 	public void testTemplatesWithDuplicates() throws IOException {
 		try (Processor proc = new Processor()) {
 			proc.setProperty("foo", "a;v=1, a;v=2;x=3");

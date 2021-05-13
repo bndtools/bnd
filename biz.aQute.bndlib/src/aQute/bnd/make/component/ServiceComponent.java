@@ -3,6 +3,7 @@ package aQute.bnd.make.component;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -84,7 +85,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 				try {
 					if (name.indexOf('/') >= 0 || name.endsWith(".xml")) {
 						// Normal service component, we do not process it
-						serviceComponents.put(name, EMPTY);
+						serviceComponents.put(name, Collections.emptyMap());
 					} else {
 						componentEntry(serviceComponents, name, info);
 					}
@@ -216,7 +217,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 			analyzer.getJar()
 				.putResource("OSGI-INF/" + pathSegment + ".xml", resource);
 
-			components.put("OSGI-INF/" + pathSegment + ".xml", EMPTY);
+			components.put("OSGI-INF/" + pathSegment + ".xml", Collections.emptyMap());
 
 		}
 

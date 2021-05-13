@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,8 +39,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
 	private static final Set<String> BUNDLE_SPECIFIC_HEADERS;
 
 	static {
-		Set<String> headers = new HashSet<>();
-		Collections.addAll(headers, Constants.BUNDLE_SPECIFIC_HEADERS);
+		Set<String> headers = new HashSet<>(Constants.BUNDLE_SPECIFIC_HEADERS);
 		headers.add(Constants.SERVICE_COMPONENT);
 		headers.add(Constants.BUNDLE_VERSION);
 		BUNDLE_SPECIFIC_HEADERS = Sets.copyOf(headers);

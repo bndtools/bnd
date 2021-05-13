@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.Spliterator;
 
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +26,8 @@ public class ListsTest {
 		List<String> list = Lists.of();
 		assertThat(list).hasSize(0)
 			.isEmpty();
+		assertThat(list.stream()).hasSize(0)
+			.isEmpty();
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.clear());
@@ -34,6 +37,8 @@ public class ListsTest {
 	public void one() {
 		List<String> list = Lists.of("e1");
 		assertThat(list).hasSize(1)
+			.containsExactly("e1");
+		assertThat(list.stream()).hasSize(1)
 			.containsExactly("e1");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
@@ -46,6 +51,8 @@ public class ListsTest {
 		List<String> list = Lists.of("e1", "e2");
 		assertThat(list).hasSize(2)
 			.containsExactly("e1", "e2");
+		assertThat(list.stream()).hasSize(2)
+			.containsExactly("e1", "e2");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("e1"));
@@ -56,6 +63,8 @@ public class ListsTest {
 	public void three() {
 		List<String> list = Lists.of("e1", "e2", "e3");
 		assertThat(list).hasSize(3)
+			.containsExactly("e1", "e2", "e3");
+		assertThat(list.stream()).hasSize(3)
 			.containsExactly("e1", "e2", "e3");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
@@ -68,6 +77,8 @@ public class ListsTest {
 		List<String> list = Lists.of("e1", "e2", "e3", "e4");
 		assertThat(list).hasSize(4)
 			.containsExactly("e1", "e2", "e3", "e4");
+		assertThat(list.stream()).hasSize(4)
+			.containsExactly("e1", "e2", "e3", "e4");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("e1"));
@@ -78,6 +89,8 @@ public class ListsTest {
 	public void five() {
 		List<String> list = Lists.of("e1", "e2", "e3", "e4", "e5");
 		assertThat(list).hasSize(5)
+			.containsExactly("e1", "e2", "e3", "e4", "e5");
+		assertThat(list.stream()).hasSize(5)
 			.containsExactly("e1", "e2", "e3", "e4", "e5");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
@@ -90,6 +103,8 @@ public class ListsTest {
 		List<String> list = Lists.of("e1", "e2", "e3", "e4", "e5", "e6");
 		assertThat(list).hasSize(6)
 			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6");
+		assertThat(list.stream()).hasSize(6)
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("e1"));
@@ -100,6 +115,8 @@ public class ListsTest {
 	public void seven() {
 		List<String> list = Lists.of("e1", "e2", "e3", "e4", "e5", "e6", "e7");
 		assertThat(list).hasSize(7)
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7");
+		assertThat(list.stream()).hasSize(7)
 			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
@@ -112,6 +129,8 @@ public class ListsTest {
 		List<String> list = Lists.of("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8");
 		assertThat(list).hasSize(8)
 			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8");
+		assertThat(list.stream()).hasSize(8)
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("e1"));
@@ -123,6 +142,8 @@ public class ListsTest {
 		List<String> list = Lists.of("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9");
 		assertThat(list).hasSize(9)
 			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9");
+		assertThat(list.stream()).hasSize(9)
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("e1"));
@@ -133,6 +154,8 @@ public class ListsTest {
 	public void ten() {
 		List<String> list = Lists.of("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10");
 		assertThat(list).hasSize(10)
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10");
+		assertThat(list.stream()).hasSize(10)
 			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
@@ -148,6 +171,8 @@ public class ListsTest {
 		List<String> list = Lists.of(entries);
 		entries[0] = "changed";
 		assertThat(list).hasSize(11)
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10", "e11");
+		assertThat(list.stream()).hasSize(11)
 			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10", "e11");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
@@ -181,6 +206,8 @@ public class ListsTest {
 		List<String> list = Lists.copyOf(source);
 		source.set(0, "changed");
 		assertThat(list).hasSize(3)
+			.containsExactly("e1", "e2", "e1");
+		assertThat(list.stream()).hasSize(3)
 			.containsExactly("e1", "e2", "e1");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
@@ -297,6 +324,8 @@ public class ListsTest {
 		List<String> list = source.subList(1, 3);
 		assertThat(list).hasSize(2)
 			.containsExactly("e2", "e3");
+		assertThat(list.stream()).hasSize(2)
+			.containsExactly("e2", "e3");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> list.remove("e1"));
@@ -304,6 +333,8 @@ public class ListsTest {
 
 		List<String> empty = source.subList(1, 1);
 		assertThat(empty).hasSize(0)
+			.isEmpty();
+		assertThat(empty.stream()).hasSize(0)
 			.isEmpty();
 
 		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> source.subList(-1, 1));
@@ -418,6 +449,13 @@ public class ListsTest {
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+	}
+
+	@Test
+	public void spliterator() throws Exception {
+		List<String> list = Lists.of("e1", "e2", "e3", "e4", "e5");
+		assertThat(list.spliterator()).hasCharacteristics(Spliterator.ORDERED, Spliterator.IMMUTABLE, Spliterator.SIZED,
+			Spliterator.SUBSIZED, Spliterator.NONNULL);
 	}
 
 }

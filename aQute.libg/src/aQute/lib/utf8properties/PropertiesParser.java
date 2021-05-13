@@ -1,6 +1,7 @@
 package aQute.lib.utf8properties;
 
-import java.util.Objects;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
 
 import aQute.lib.hex.Hex;
@@ -47,14 +48,16 @@ final class PropertiesParser {
 	private Properties	properties;
 	private boolean		validKey;
 	private boolean		continuation	= true;
-	private String[]	syntaxHeaders	= new String[0];
+	private final Collection<String>	syntaxHeaders;
 
-	PropertiesParser(String source, String file, Reporter reporter, Properties properties) {
+	PropertiesParser(String source, String file, Reporter reporter, Properties properties,
+		Collection<String> syntaxHeaders) {
 		this.source = source.toCharArray();
 		this.file = file;
 		this.reporter = reporter;
 		this.length = this.source.length;
 		this.properties = properties;
+		this.syntaxHeaders = (syntaxHeaders != null) ? syntaxHeaders : Collections.emptySet();
 	}
 
 	boolean hasNext() {
@@ -180,18 +183,18 @@ final class PropertiesParser {
 		if (key.startsWith("-"))
 			return true;
 
-		return Strings.in(syntaxHeaders, key);
+		return syntaxHeaders.contains(key);
 	}
 
 	private void skipWhitespace() {
 		skip(WS);
 	}
 
-	public boolean isEmptyOrComment(char c) {
+	boolean isEmptyOrComment(char c) {
 		return c == '\n' || c == '#' || c == '!';
 	}
 
-	public void skipLine() {
+	void skipLine() {
 		continuation = false;
 		try {
 			while (!isIn(LINE))
@@ -409,10 +412,4 @@ final class PropertiesParser {
 			loc++;
 		return new String(source, marker, loc - marker);
 	}
-
-	public void setSyntaxHeaders(String[] syntaxHeaders) {
-		Objects.requireNonNull(syntaxHeaders);
-		this.syntaxHeaders = syntaxHeaders;
-	}
-
 }

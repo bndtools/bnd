@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Spliterator;
 
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +26,8 @@ public class SetsTest {
 		Set<String> set = Sets.of();
 		assertThat(set).hasSize(0)
 			.isEmpty();
+		assertThat(set.stream()).hasSize(0)
+			.isEmpty();
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.clear());
@@ -35,6 +38,8 @@ public class SetsTest {
 		Set<String> set = Sets.of("e1");
 		assertThat(set).hasSize(1)
 			.containsExactlyInAnyOrder("e1");
+		assertThat(set.stream()).hasSize(1)
+			.containsExactly("e1");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("e1"));
@@ -46,6 +51,8 @@ public class SetsTest {
 		Set<String> set = Sets.of("e1", "e2");
 		assertThat(set).hasSize(2)
 			.containsExactlyInAnyOrder("e1", "e2");
+		assertThat(set.stream()).hasSize(2)
+			.containsExactly("e1", "e2");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("e1"));
@@ -57,6 +64,8 @@ public class SetsTest {
 		Set<String> set = Sets.of("e1", "e2", "e3");
 		assertThat(set).hasSize(3)
 			.containsExactlyInAnyOrder("e1", "e2", "e3");
+		assertThat(set.stream()).hasSize(3)
+			.containsExactly("e1", "e2", "e3");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("e1"));
@@ -68,6 +77,8 @@ public class SetsTest {
 		Set<String> set = Sets.of("e1", "e2", "e3", "e4");
 		assertThat(set).hasSize(4)
 			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4");
+		assertThat(set.stream()).hasSize(4)
+			.containsExactly("e1", "e2", "e3", "e4");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("e1"));
@@ -79,6 +90,8 @@ public class SetsTest {
 		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5");
 		assertThat(set).hasSize(5)
 			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5");
+		assertThat(set.stream()).hasSize(5)
+			.containsExactly("e1", "e2", "e3", "e4", "e5");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("e1"));
@@ -90,6 +103,8 @@ public class SetsTest {
 		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5", "e6");
 		assertThat(set).hasSize(6)
 			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", "e6");
+		assertThat(set.stream()).hasSize(6)
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("e1"));
@@ -101,6 +116,8 @@ public class SetsTest {
 		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5", "e6", "e7");
 		assertThat(set).hasSize(7)
 			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", "e6", "e7");
+		assertThat(set.stream()).hasSize(7)
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("e1"));
@@ -112,6 +129,8 @@ public class SetsTest {
 		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8");
 		assertThat(set).hasSize(8)
 			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8");
+		assertThat(set.stream()).hasSize(8)
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("e1"));
@@ -123,6 +142,8 @@ public class SetsTest {
 		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9");
 		assertThat(set).hasSize(9)
 			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9");
+		assertThat(set.stream()).hasSize(9)
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("e1"));
@@ -134,6 +155,8 @@ public class SetsTest {
 		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10");
 		assertThat(set).hasSize(10)
 			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10");
+		assertThat(set.stream()).hasSize(10)
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("e1"));
@@ -149,6 +172,8 @@ public class SetsTest {
 		entries[0] = "changed";
 		assertThat(set).hasSize(11)
 			.containsExactlyInAnyOrder("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10", "e11");
+		assertThat(set.stream()).hasSize(11)
+			.containsExactly("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10", "e11");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("e1"));
@@ -182,6 +207,8 @@ public class SetsTest {
 		source.set(0, "changed");
 		assertThat(set).hasSize(2)
 			.containsExactlyInAnyOrder("e1", "e2");
+		assertThat(set.stream()).hasSize(2)
+			.containsExactly("e1", "e2");
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.remove("e1"));
@@ -328,6 +355,13 @@ public class SetsTest {
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.add("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.remove("a"));
 		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> deser.clear());
+	}
+
+	@Test
+	public void spliterator() {
+		Set<String> set = Sets.of("e1", "e2", "e3", "e4", "e5");
+		assertThat(set.spliterator()).hasCharacteristics(Spliterator.DISTINCT, Spliterator.ORDERED,
+			Spliterator.IMMUTABLE, Spliterator.SIZED, Spliterator.SUBSIZED, Spliterator.NONNULL);
 	}
 
 }
