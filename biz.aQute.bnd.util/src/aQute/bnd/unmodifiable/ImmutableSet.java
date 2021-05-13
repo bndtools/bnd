@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Predicate;
 
 final class ImmutableSet<E> extends AbstractSet<E> implements Set<E>, Serializable {
@@ -63,6 +65,12 @@ final class ImmutableSet<E> extends AbstractSet<E> implements Set<E>, Serializab
 	@Override
 	public Iterator<E> iterator() {
 		return new ImmutableIterator<>(elements);
+	}
+
+	@Override
+	public Spliterator<E> spliterator() {
+		return Spliterators.spliterator(elements,
+			Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL);
 	}
 
 	@Override

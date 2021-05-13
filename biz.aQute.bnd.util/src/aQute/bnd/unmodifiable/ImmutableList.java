@@ -15,6 +15,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.RandomAccess;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
@@ -37,6 +39,11 @@ final class ImmutableList<E> extends AbstractList<E> implements List<E>, RandomA
 	@Override
 	public Iterator<E> iterator() {
 		return new ImmutableIterator<>(elements);
+	}
+
+	@Override
+	public Spliterator<E> spliterator() {
+		return Spliterators.spliterator(elements, Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL);
 	}
 
 	@Override
