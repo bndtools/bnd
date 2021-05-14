@@ -28,6 +28,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 	boolean			deflate;
 	String			tabs		= null;
 	String			indent		= "";
+	String			linebreak	= null;
 	boolean			keepOpen	= false;
 	boolean			closed		= false;
 
@@ -159,23 +160,38 @@ public class Encoder implements Appendable, Closeable, Flushable {
 
 	public Encoder indent(String tabs) {
 		this.tabs = tabs;
+		if (linebreak == null) {
+			linebreak("\n");
+		}
+		return this;
+	}
+
+	public Encoder linebreak(String linebreak) {
+		this.linebreak = linebreak;
 		return this;
 	}
 
 	void undent() throws IOException {
 		if (tabs != null) {
-			app.append("\n");
 			indent = indent.substring(tabs.length());
-			app.append(indent);
+		}
+		linebreak();
+	}
+
+	void linebreak() throws IOException {
+		if (linebreak != null) {
+			app.append(linebreak);
+			if (tabs != null) {
+				app.append(indent);
+			}
 		}
 	}
 
 	void indent() throws IOException {
 		if (tabs != null) {
-			app.append("\n");
 			indent += tabs;
-			app.append(indent);
 		}
+		linebreak();
 	}
 
 	public Encoder keepOpen() {

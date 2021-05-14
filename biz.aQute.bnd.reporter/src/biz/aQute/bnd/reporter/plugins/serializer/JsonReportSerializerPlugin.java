@@ -17,7 +17,6 @@ public class JsonReportSerializerPlugin implements ReportSerializerPlugin {
 	private final Encoder			enc		= new JSONCodec().setIgnorenull(true)
 		.enc()
 		.keepOpen()
-		.indent("  ")
 		.writeDefaults();
 
 	@Override
