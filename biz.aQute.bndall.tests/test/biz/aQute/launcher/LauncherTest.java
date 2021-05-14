@@ -231,10 +231,12 @@ public class LauncherTest {
 
 	private String runFramework(File file) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
 		InvocationTargetException, IOException, MalformedURLException {
-		PrintStream out = System.err;
+		PrintStream err = System.err;
+		PrintStream out = System.out;
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		PrintStream out2 = new PrintStream(bout);
 		System.setErr(out2);
+		System.setOut(out2);
 		try {
 			try (URLClassLoader l = new URLClassLoader(new URL[] {
 				file.toURI()
@@ -247,7 +249,8 @@ public class LauncherTest {
 
 			out2.flush();
 		} finally {
-			System.setErr(out);
+			System.setErr(err);
+			System.setOut(out);
 		}
 
 		return new String(bout.toByteArray(), StandardCharsets.UTF_8);
