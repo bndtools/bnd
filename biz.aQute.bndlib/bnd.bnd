@@ -11,6 +11,7 @@ Bundle-Description: bndlib: A Swiss Army Knife for OSGi
 
 Export-Package: \
     aQute.bnd.build;-noimport:=true,\
+    aQute.bnd.build.api;-noimport:=true,\
     aQute.bnd.build.model;-noimport:=true,\
     aQute.bnd.build.model.clauses;-noimport:=true,\
     aQute.bnd.build.model.conversions;-noimport:=true,\
@@ -81,8 +82,9 @@ Import-Package: \
 	slf4j.api;version=latest;maven-scope=compile
 
 -testpath: \
-    ${junit},\
-    ${mockito}
+	${junit},\
+	${mockito},\
+	org.awaitility
 
 Bundle-Icon: img/bnd-64.png;size=64
 Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic.nl, bj@bjhargrave.com

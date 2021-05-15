@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import aQute.bnd.build.DownloadBlocker;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -25,7 +26,6 @@ import aQute.bnd.service.progress.ProgressPlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
-import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.lib.io.IO;
 import aQute.maven.provider.FakeNexus;
 import junit.framework.TestCase;
@@ -191,6 +191,7 @@ public class OSGiRepositoryTest extends TestCase {
 	public void testNoPolling() throws Exception {
 		try (Processor p = new Processor(); Workspace workspace = Workspace.createStandaloneWorkspace(p, ws.toURI())) {
 			workspace.setProperty(Constants.GESTALT, Constants.GESTALT_BATCH);
+			workspace.propertiesChanged();
 			testPolling(workspace, false);
 		}
 	}
@@ -225,6 +226,7 @@ public class OSGiRepositoryTest extends TestCase {
 
 				@Override
 				public void repositoryRefreshed(RepositoryPlugin repository) {
+					System.out.println();
 					refreshed.set(repository);
 					latch.countDown();
 				}

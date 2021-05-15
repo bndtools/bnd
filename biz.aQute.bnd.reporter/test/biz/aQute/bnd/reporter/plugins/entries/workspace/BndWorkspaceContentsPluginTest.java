@@ -78,7 +78,7 @@ public class BndWorkspaceContentsPluginTest extends TestCase {
 		final File bnd2 = new File(p2, "bnd.bnd");
 		bnd2.createNewFile();
 		bnd2.deleteOnExit();
-
+		ws.refreshProjects();
 		return ws;
 	}
 }

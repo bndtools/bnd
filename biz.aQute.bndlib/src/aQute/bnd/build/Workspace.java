@@ -53,10 +53,13 @@ import java.util.stream.Stream;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.service.repository.Repository;
+import org.osgi.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.build.WorkspaceNotifier.ET;
+import aQute.bnd.build.api.OnWorkspace;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
 import aQute.bnd.exporter.runbundles.RunbundlesExporter;
@@ -112,7 +115,7 @@ import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
-	private final static Logger	logger					= LoggerFactory.getLogger(Workspace.class);
+	final static Logger			logger					= LoggerFactory.getLogger(Workspace.class);
 	public static final File	BND_DEFAULT_WS			= IO.getFile(Home.getUserHomeBnd() + "/default-ws");
 	public static final String	BND_CACHE_REPONAME		= "bnd-cache";
 	public static final String	EXT						= "ext";
@@ -178,8 +181,9 @@ public class Workspace extends Processor {
 		.newSetFromMap(new ConcurrentHashMap<Project, Boolean>());
 	private volatile WorkspaceData								data				= new WorkspaceData();
 	private File												buildDir;
-	private final ProjectTracker								projects;
+	private final ProjectTracker								projects			= new ProjectTracker(this);
 	private final ReadWriteLock									lock				= new ReentrantReadWriteLock(true);
+	final WorkspaceNotifier										notifier			= new WorkspaceNotifier(this);
 
 	public static boolean										remoteWorkspaces	= false;
 
@@ -224,6 +228,7 @@ public class Workspace extends Processor {
 			IO.store("", build);
 		}
 		Workspace ws = new Workspace(BND_DEFAULT_WS, CNFDIR);
+		ws.open();
 		return ws;
 	}
 
@@ -284,6 +289,7 @@ public class Workspace extends Processor {
 			if (wsr == null || (ws = wsr.get()) == null) {
 				ws = new Workspace(workspaceDir, bndDir);
 				cache.put(workspaceDir, new WeakReference<>(ws));
+				ws.open();
 			}
 			return ws;
 		}
@@ -297,6 +303,7 @@ public class Workspace extends Processor {
 	 */
 	public Workspace(File workspaceDir) throws Exception {
 		this(workspaceDir, CNFDIR);
+		open();
 	}
 
 	/**
@@ -316,6 +323,7 @@ public class Workspace extends Processor {
 		super(new Processor(getDefaults()));
 		this.maven = new Maven(Processor.getExecutor(), this);
 		this.layout = WorkspaceLayout.BND;
+		addClose(notifier);
 		workspaceDir = workspaceDir.getAbsoluteFile();
 		setBase(workspaceDir); // setBase before call to setFileSystem
 		addBasicPlugin(new LoggingProgressPlugin());
@@ -325,8 +333,6 @@ public class Workspace extends Processor {
 		// normal properties are read
 
 		fixupVersionDefaults();
-
-		projects = new ProjectTracker(this);
 	}
 
 	/*
@@ -340,7 +346,20 @@ public class Workspace extends Processor {
 		this.maven = new Maven(Processor.getExecutor(), this);
 		this.layout = layout;
 		setBuildDir(IO.getFile(BND_DEFAULT_WS, CNFDIR));
-		projects = new ProjectTracker(this);
+	}
+
+	/**
+	 * Open the workspace. This will start sending events and, when interactive,
+	 * might start some processes to create initial configuration like repos.
+	 */
+
+	public void open() {
+		if (isInteractive()) {
+			projects.forceRefresh();
+		}
+		notifier.mute = false;
+		forceInitialization();
+		notifier.projects(projects.getAllProjects());
 	}
 
 	/*
@@ -409,7 +428,7 @@ public class Workspace extends Processor {
 	public Project getProjectFromFile(File projectDir) {
 		try {
 			projectDir = projectDir.getCanonicalFile();
-			if ( !projectDir.isDirectory())
+			if (!projectDir.isDirectory())
 				return null;
 
 			if (getBase().getCanonicalFile()
@@ -456,10 +475,14 @@ public class Workspace extends Processor {
 		projects.refresh();
 	}
 
+	public void forceRefreshProjects() {
+		projects.forceRefresh();
+	}
+
 	@Override
 	public void propertiesChanged() {
 		refreshData();
-
+		gestalt = null;
 		File extDir = new File(getBuildDir(), EXT);
 		File[] extensions = extDir.listFiles();
 		if (extensions != null) {
@@ -479,8 +502,29 @@ public class Workspace extends Processor {
 				}
 			}
 		}
-
 		super.propertiesChanged();
+
+		forceInitialization();
+	}
+
+	private void forceInitialization() {
+
+		if (notifier.mute)
+			return;
+
+		int revision = notifier.initialized();
+		if (isInteractive()) {
+			Promise<List<RepositoryPlugin>> repos = getInitializedRepositories();
+			repos.onSuccess((r) -> {
+				notifier.ifSameRevision(revision, ET.REPOS, r);
+			});
+			repos.onFailure(e -> {
+				notifier.ifSameRevision(revision, ET.REPOS, Collections.emptyList());
+			});
+			for (Project p : getAllProjects()) {
+				p.propertiesChanged();
+			}
+		}
 	}
 
 	public String _workspace(@SuppressWarnings("unused")
@@ -662,6 +706,30 @@ public class Workspace extends Processor {
 			}
 		}
 		return plugins;
+	}
+
+	/**
+	 * Get the repositories and ensure they are all ready.
+	 *
+	 * @return a promise with the list of repos
+	 */
+	public Promise<List<RepositoryPlugin>> getInitializedRepositories() {
+		try {
+			List<RepositoryPlugin> repositories = getRepositories();
+			List<Promise<Void>> promises = new ArrayList<>();
+			for (RepositoryPlugin repo : repositories) {
+				promises.add(repo.sync());
+			}
+			return getPromiseFactory().all(promises)
+				.map(l -> {
+					return repositories;
+				});
+
+			// failures should be visible on the repositories,
+			// this is just about syncing
+		} catch (Exception e) {
+			return getPromiseFactory().failed(e);
+		}
 	}
 
 	public Collection<Project> getBuildOrder() throws Exception {
@@ -993,6 +1061,7 @@ public class Workspace extends Processor {
 
 	@Override
 	public void close() {
+		notifier.closing(this);
 		WorkspaceData oldData = data;
 		data = new WorkspaceData();
 		IO.close(oldData);
@@ -1307,6 +1376,7 @@ public class Workspace extends Processor {
 			.forEachOrdered(wsProperties::put);
 
 		ws.fixupVersionDefaults();
+		ws.open();
 		return ws;
 	}
 
@@ -1726,4 +1796,13 @@ public class Workspace extends Processor {
 		}
 
 	}
+
+	/**
+	 * Get a new notifier that receives notifications from the workspace &
+	 * projects. This object should be closed if it is not longer needed.
+	 */
+	public OnWorkspace on(String ownerName) {
+		return notifier.on(ownerName);
+	}
+
 }

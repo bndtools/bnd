@@ -85,27 +85,30 @@ public class ComponentDecorator extends LabelProvider implements ILightweightLab
 
 				boolean found = false;
 				String customText = null;
-				for (IMarker marker : type.getCompilationUnit()
-					.getResource()
-					.findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE)) {
-					found = true;
-					customText = marker.getAttribute(IMarker.MESSAGE)
-						.toString();
-				}
-
-				if (found) {
-					decoration.addOverlay(componentIcon);
-					if (customText != null) {
-
-						if (customText.equals("OSGi Component")) {
-							decoration.addSuffix(" [Component]");
-
-						} else {
-							decoration.addSuffix(" [" + customText + "]");
-
-						}
+				IResource resource = type.getCompilationUnit()
+					.getResource();
+				if (resource.isAccessible()) {
+					for (IMarker marker : resource.findMarkers(BndtoolsConstants.MARKER_COMPONENT, true,
+						IResource.DEPTH_ONE)) {
+						found = true;
+						customText = marker.getAttribute(IMarker.MESSAGE)
+							.toString();
 					}
 
+					if (found) {
+						decoration.addOverlay(componentIcon);
+						if (customText != null) {
+
+							if (customText.equals("OSGi Component")) {
+								decoration.addSuffix(" [Component]");
+
+							} else {
+								decoration.addSuffix(" [" + customText + "]");
+
+							}
+						}
+
+					}
 				}
 			} else if (element instanceof IPackageFragment) {
 				IPackageFragment frag = (IPackageFragment) element;

@@ -56,6 +56,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container.TYPE;
+import aQute.bnd.build.ProjectBuilder.ArtifactInfoImpl;
+import aQute.bnd.build.ProjectBuilder.BuildInfoImpl;
+import aQute.bnd.exceptions.ConsumerWithException;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
 import aQute.bnd.exporter.runbundles.RunbundlesExporter;
 import aQute.bnd.header.Attrs;
@@ -67,6 +71,8 @@ import aQute.bnd.help.instructions.ProjectInstructions.StaleTest;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.maven.support.Pom;
 import aQute.bnd.maven.support.ProjectPom;
+import aQute.bnd.memoize.CloseableMemoize;
+import aQute.bnd.memoize.Memoize;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
@@ -104,12 +110,8 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.Iterables;
 import aQute.lib.converter.Converter;
-import aQute.bnd.exceptions.ConsumerWithException;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
-import aQute.bnd.memoize.CloseableMemoize;
-import aQute.bnd.memoize.Memoize;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.command.Command;
@@ -1880,14 +1882,16 @@ public class Project extends Processor {
 		// up the chain can actually freeze the time longer
 		//
 		boolean tstamp = false;
+		long now = System.currentTimeMillis();
 		if (getProperty(TSTAMP) == null) {
-			setProperty(TSTAMP, Long.toString(System.currentTimeMillis()));
+			setProperty(TSTAMP, Long.toString(now));
 			tstamp = true;
 		}
 
 		try (ProjectBuilder builder = getBuilder(null)) {
 			if (underTest)
 				builder.setProperty(Constants.UNDERTEST, "true");
+
 			Jar jars[] = builder.builds();
 
 			getInfo(builder);
@@ -1906,105 +1910,122 @@ public class Project extends Processor {
 
 			Set<File> buildFilesSet = Create.set();
 			Set<Supplier<org.osgi.resource.Resource>> resourceBuilders = new HashSet<>();
+			BuildInfoImpl buildInfo = builder.getBuildInfo();
+			try {
+				long lastModified = 0L;
+				int n = 0;
+				for (Jar jar : jars)
+					try {
 
-			long lastModified = 0L;
-			for (Jar jar : jars)
-				try {
-					Manifest m = jar.getManifest();
-					jar.setCalculateFileDigest(true);
-					File file = saveBuildWithoutClose(jar);
-					if (file == null) {
-						error("Could not save %s", jar.getName());
-					} else {
-						buildFilesSet.add(file);
-						if (lastModified < jar.lastModified()) {
-							lastModified = jar.lastModified();
+						Manifest m = jar.getManifest();
+						jar.setCalculateFileDigest(true);
+						File file = saveBuildWithoutClose(jar);
+						if (file == null) {
+							error("Could not save %s", jar.getName());
+						} else {
+							buildFilesSet.add(file);
+							if (lastModified < jar.lastModified()) {
+								lastModified = jar.lastModified();
+							}
+							Supplier<org.osgi.resource.Resource> indexer = ResourceBuilder.memoize(jar, file.toURI(),
+								getName());
+							if (indexer != null) {
+								resourceBuilders.add(indexer);
+							}
+							if (n < buildInfo.artifacts.size()) {
+								ArtifactInfoImpl artifact = buildInfo.artifacts.get(n);
+								artifact.file = file;
+								artifact.indexer = indexer;
+							}
 						}
-						Supplier<org.osgi.resource.Resource> indexer = ResourceBuilder.memoize(jar, file.toURI(),
-							getName());
-						if (indexer != null)
-							resourceBuilders.add(indexer);
+					} finally {
+						jar.close();
+						n++;
 					}
-				} finally {
-					jar.close();
+
+				if (!isOk())
+					return null;
+
+				//
+				// Handle the exports
+				//
+
+				Instructions runspec = new Instructions(getProperty(EXPORT));
+				Set<Instruction> missing = new LinkedHashSet<>();
+
+				Map<File, List<Attrs>> selectedRunFiles = runspec.select(getBase(), Function.identity(), missing);
+
+				if (!missing.isEmpty()) {
+					// this is a new error :-( so make it a warning
+					warning("-export entries %s could not be found", missing);
+				}
+				if (selectedRunFiles.containsKey(getPropertiesFile())) {
+					error("Cannot export the same file that contains the -export instruction %s", getPropertiesFile());
+					return null;
 				}
 
-			if (!isOk())
-				return null;
+				Map<File, Resource> exports = builder.doExports(selectedRunFiles);
 
-			//
-			// Handle the exports
-			//
+				getInfo(builder);
 
-			Instructions runspec = new Instructions(getProperty(EXPORT));
-			Set<Instruction> missing = new LinkedHashSet<>();
-
-			Map<File, List<Attrs>> selectedRunFiles = runspec.select(getBase(), Function.identity(), missing);
-
-			if (!missing.isEmpty()) {
-				// this is a new error :-( so make it a warning
-				warning("-export entries %s could not be found", missing);
-			}
-			if (selectedRunFiles.containsKey(getPropertiesFile())) {
-				error("Cannot export the same file that contains the -export instruction %s", getPropertiesFile());
-				return null;
-			}
-
-			Map<File, Resource> exports = builder.doExports(selectedRunFiles);
-			getInfo(builder);
-
-			if (!isOk())
-				return null;
-
-			for (Map.Entry<File, Resource> ee : exports.entrySet()) {
-				File outputFile = ee.getKey();
-				File actual = write(f -> {
-					IO.copy(ee.getValue()
-						.openInputStream(), f);
-				}, outputFile);
-
-				if (actual != null) {
-					buildFilesSet.add(actual);
-				} else {
-					error("Could not save %s", ee.getKey());
+				if (!isOk()) {
+					return null;
 				}
-			}
 
-			if (!isOk()) {
-				return null;
-			}
+				for (Map.Entry<File, Resource> ee : exports.entrySet()) {
+					File outputFile = ee.getKey();
+					File actual = write(f -> {
+						IO.copy(ee.getValue()
+							.openInputStream(), f);
+					}, outputFile);
 
-			boolean bfsWrite = !bfs.exists() || (lastModified > bfs.lastModified());
-			if (buildfiles != null) {
-				Set<File> removed = Create.set(buildfiles);
-				if (!removed.equals(buildFilesSet)) {
-					bfsWrite = true;
-					removed.removeAll(buildFilesSet);
-					for (File remove : removed) {
-						IO.delete(remove);
-						getWorkspace().changedFile(remove);
+					if (actual != null) {
+						buildFilesSet.add(actual);
+					} else {
+						error("Could not save %s", ee.getKey());
 					}
 				}
-			}
 
-			this.resources = Memoize.supplier(() -> resourceBuilders.stream()
-				.map(Supplier::get)
-				.collect(Collectors.toList()));
+				if (!isOk()) {
+					return null;
+				}
 
-			// Write out the filenames in the buildfiles file
-			// so we can get them later even in another process
-			if (bfsWrite) {
-				try (PrintWriter fw = IO.writer(bfs)) {
-					for (File f : buildFilesSet) {
-						fw.write(IO.absolutePath(f));
-						fw.write('\n');
+				boolean bfsWrite = !bfs.exists() || (lastModified > bfs.lastModified());
+				if (buildfiles != null) {
+					Set<File> removed = Create.set(buildfiles);
+					if (!removed.equals(buildFilesSet)) {
+						bfsWrite = true;
+						removed.removeAll(buildFilesSet);
+						for (File remove : removed) {
+							IO.delete(remove);
+							getWorkspace().changedFile(remove);
+						}
 					}
 				}
-				getWorkspace().changedFile(bfs);
+
+				this.resources = Memoize.supplier(() -> resourceBuilders.stream()
+					.map(Supplier::get)
+					.collect(Collectors.toList()));
+
+				// Write out the filenames in the buildfiles file
+				// so we can get them later even in another process
+				if (bfsWrite) {
+					try (PrintWriter fw = IO.writer(bfs)) {
+						for (File f : buildFilesSet) {
+							fw.write(IO.absolutePath(f));
+							fw.write('\n');
+						}
+					}
+					getWorkspace().changedFile(bfs);
+				}
+				bfs = null; // avoid delete in finally block
+				builtFiles(buildFilesSet);
+
+				return files = buildFilesSet.toArray(new File[0]);
+			} finally {
+				buildInfo.getInfo(this);
+				workspace.notifier.build(buildInfo);
 			}
-			bfs = null; // avoid delete in finally block
-			builtFiles(buildFilesSet);
-			return files = buildFilesSet.toArray(new File[0]);
 		} finally {
 			if (tstamp)
 				unsetProperty(TSTAMP);
@@ -2245,6 +2266,7 @@ public class Project extends Processor {
 		versionMap.clear();
 		refreshData();
 		super.propertiesChanged();
+		workspace.notifier.changedProject(this);
 	}
 
 	public String getName() {
