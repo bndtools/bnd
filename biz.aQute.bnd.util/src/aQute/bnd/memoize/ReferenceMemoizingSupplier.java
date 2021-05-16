@@ -49,4 +49,9 @@ class ReferenceMemoizingSupplier<T> implements Memoize<T> {
 		T referent = memoized.get();
 		return referent;
 	}
+
+	@Override
+	public boolean isPresent() {
+		return peek() != null;
+	}
 }

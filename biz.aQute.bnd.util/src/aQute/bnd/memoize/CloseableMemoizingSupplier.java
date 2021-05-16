@@ -75,6 +75,11 @@ class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMe
 	}
 
 	@Override
+	public boolean isPresent() {
+		return peek() != null;
+	}
+
+	@Override
 	public boolean isClosed() {
 		// read initial _before_ read memoized
 		return !initial && (memoized == null);
@@ -124,12 +129,31 @@ class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMe
 				return this;
 			}
 		}
-		long stamp = lock.readLock();
+		final long stamp = lock.readLock();
 		try {
 			T value = value(memoized);
 			consumer.accept(value);
 		} finally {
 			lock.unlockRead(stamp);
+		}
+		return this;
+	}
+
+	@Override
+	public CloseableMemoize<T> ifPresent(Consumer<? super T> consumer) {
+		// read initial _before_ read memoized
+		if (isPresent()) {
+			requireNonNull(consumer);
+			// prevent closing during accept while allowing multiple accepts
+			final long stamp = lock.readLock();
+			try {
+				T value = memoized;
+				if (value != null) { // may have been just closed
+					consumer.accept(value);
+				}
+			} finally {
+				lock.unlockRead(stamp);
+			}
 		}
 		return this;
 	}

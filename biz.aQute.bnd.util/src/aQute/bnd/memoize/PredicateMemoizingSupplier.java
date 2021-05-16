@@ -62,4 +62,9 @@ class PredicateMemoizingSupplier<T> implements Memoize<T> {
 		}
 		return (T) memoized;
 	}
+
+	@Override
+	public boolean isPresent() {
+		return !initial;
+	}
 }

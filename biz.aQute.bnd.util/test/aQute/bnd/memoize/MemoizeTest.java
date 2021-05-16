@@ -42,12 +42,14 @@ public class MemoizeTest {
 		Memoize<String> memoized = Memoize.supplier(source);
 		assertThat(count).hasValue(0);
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(0);
 
 		assertThat(Stream.generate(memoized::get)
 			.limit(100)).containsOnly("1");
 		assertThat(count).hasValue(1);
 		assertThat(memoized.peek()).isEqualTo("1");
+		assertThat(memoized.isPresent()).isTrue();
 		assertThat(count).hasValue(1);
 	}
 
@@ -62,12 +64,14 @@ public class MemoizeTest {
 		Memoize<String> memoized = Memoize.supplier(function, count);
 		assertThat(count).hasValue(0);
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(0);
 
 		assertThat(Stream.generate(memoized::get)
 			.limit(100)).containsOnly("1");
 		assertThat(count).hasValue(1);
 		assertThat(memoized.peek()).isEqualTo("1");
+		assertThat(memoized.isPresent()).isTrue();
 		assertThat(count).hasValue(1);
 	}
 
@@ -82,34 +86,40 @@ public class MemoizeTest {
 		Memoize<String> memoized = Memoize.refreshingSupplier(source, 300, TimeUnit.MILLISECONDS);
 		assertThat(count).hasValue(0);
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(0);
 
 		assertThat(Stream.generate(memoized::get)
 			.limit(10)).containsOnly("1");
 		assertThat(count).hasValue(1);
 		assertThat(memoized.peek()).isEqualTo("1");
+		assertThat(memoized.isPresent()).isTrue();
 		assertThat(count).hasValue(1);
 
 		sleep(400, TimeUnit.MILLISECONDS);
 
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(1);
 
 		assertThat(Stream.generate(memoized::get)
 			.limit(10)).containsOnly("2");
 		assertThat(count).hasValue(2);
 		assertThat(memoized.peek()).isEqualTo("2");
+		assertThat(memoized.isPresent()).isTrue();
 		assertThat(count).hasValue(2);
 
 		sleep(400, TimeUnit.MILLISECONDS);
 
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(2);
 
 		assertThat(Stream.generate(memoized::get)
 			.limit(10)).containsOnly("3");
 		assertThat(count).hasValue(3);
 		assertThat(memoized.peek()).isEqualTo("3");
+		assertThat(memoized.isPresent()).isTrue();
 		assertThat(count).hasValue(3);
 	}
 
@@ -132,34 +142,40 @@ public class MemoizeTest {
 		Memoize<String> memoized = Memoize.referenceSupplier(source, t -> new WeakReference<>(t, queue));
 		assertThat(count).hasValue(0);
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(0);
 
 		assertThat(Stream.generate(memoized::get)
 			.limit(100)).containsOnly("1");
 		assertThat(count).hasValue(1);
 		assertThat(memoized.peek()).isEqualTo("1");
+		assertThat(memoized.isPresent()).isTrue();
 		assertThat(count).hasValue(1);
 
 		System.gc();
 		assertThat(queue.remove(1000)).isNotNull();
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(1);
 
 		assertThat(Stream.generate(memoized::get)
 			.limit(100)).containsOnly("2");
 		assertThat(count).hasValue(2);
 		assertThat(memoized.peek()).isEqualTo("2");
+		assertThat(memoized.isPresent()).isTrue();
 		assertThat(count).hasValue(2);
 
 		System.gc();
 		assertThat(queue.remove(1000)).isNotNull();
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(2);
 
 		assertThat(Stream.generate(memoized::get)
 			.limit(100)).containsOnly("3");
 		assertThat(count).hasValue(3);
 		assertThat(memoized.peek()).isEqualTo("3");
+		assertThat(memoized.isPresent()).isTrue();
 		assertThat(count).hasValue(3);
 	}
 
@@ -178,10 +194,35 @@ public class MemoizeTest {
 
 		assertThatNullPointerException().isThrownBy(() -> memoized.accept(null));
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(0);
 
 		AtomicReference<Object> value = new AtomicReference<>();
 		memoized.accept(value::set);
+		assertThat(value).hasValue("1");
+	}
+
+	@Test
+	public void ifpresent() {
+		Memoize<String> memoized = Memoize.supplier(source);
+
+		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
+		assertThat(count).hasValue(0);
+
+		AtomicReference<Object> value = new AtomicReference<>("unset");
+		assertThat(catchThrowable(() -> memoized.ifPresent(value::set))).doesNotThrowAnyException();
+		assertThat(value).hasValue("unset");
+		assertThat(catchThrowable(() -> memoized.ifPresent(null))).doesNotThrowAnyException();
+
+		assertThat(Stream.generate(memoized::get)
+			.limit(100)).containsOnly("1");
+		assertThat(count).hasValue(1);
+		assertThat(memoized.peek()).isEqualTo("1");
+		assertThat(memoized.isPresent()).isTrue();
+
+		assertThat(catchThrowable(() -> memoized.ifPresent(value::set))).doesNotThrowAnyException();
+		assertThatNullPointerException().isThrownBy(() -> memoized.ifPresent(null));
 		assertThat(value).hasValue("1");
 	}
 
@@ -195,6 +236,7 @@ public class MemoizeTest {
 		filtered = memoized.filter("2"::equals);
 		assertThat(filtered.get()).isNull();
 		assertThat(filtered.peek()).isNull();
+		assertThat(filtered.isPresent()).isTrue();
 	}
 
 	@Test
@@ -240,6 +282,7 @@ public class MemoizeTest {
 		CloseableMemoize<CloseableClass> memoized = CloseableMemoize.closeableSupplier(source);
 		assertThat(count).hasValue(0);
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(0);
 
 		assertThat(Stream.generate(memoized::get)
@@ -252,16 +295,19 @@ public class MemoizeTest {
 		assertThat(o.closed).hasValue(0);
 		assertThat(count).hasValue(1);
 		assertThat(memoized.peek()).isNotNull();
+		assertThat(memoized.isPresent()).isTrue();
 		assertThat(count).hasValue(1);
 
 		assertThat(catchThrowable(memoized::close)).doesNotThrowAnyException();
 		assertThat(o.closed).hasValue(1);
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(1);
 
 		// close
 		assertThat(catchThrowable(memoized::close)).doesNotThrowAnyException();
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(o.closed).hasValue(1);
 		assertThat(count).hasValue(1);
 		assertThatIllegalStateException().isThrownBy(memoized::get);
@@ -277,6 +323,18 @@ public class MemoizeTest {
 		CloseableMemoize<Closeable> memoized = CloseableMemoize.closeableSupplier(() -> () -> {});
 		CallOnOtherThread s = new CallOnOtherThread(memoized::close, 2000);
 		memoized.accept(c -> {
+			s.call();
+			assertThat(s.hasEnded()).isFalse();
+		});
+		assertThat(s.hasEnded()).isTrue();
+	}
+
+	@Test
+	public void ifpresent_while_close_is_blocked() {
+		CloseableMemoize<Closeable> memoized = CloseableMemoize.closeableSupplier(() -> () -> {});
+		assertThat(catchThrowable(() -> memoized.get())).doesNotThrowAnyException();
+		CallOnOtherThread s = new CallOnOtherThread(memoized::close, 2000);
+		memoized.ifPresent(c -> {
 			s.call();
 			assertThat(s.hasEnded()).isFalse();
 		});
@@ -305,6 +363,7 @@ public class MemoizeTest {
 
 		assertThat(memoized.isClosed()).isTrue();
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThatIllegalStateException().isThrownBy(memoized::get);
 	}
 
@@ -314,18 +373,22 @@ public class MemoizeTest {
 		CloseableMemoize<CloseableClass> memoized = CloseableMemoize.closeableSupplier(source);
 		assertThat(count).hasValue(0);
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(0);
 
 		assertThat(catchThrowable(memoized::close)).doesNotThrowAnyException();
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(0);
 
 		assertThat(catchThrowable(memoized::close)).doesNotThrowAnyException();
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(0);
 
 		assertThatIllegalStateException().isThrownBy(memoized::get);
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(0);
 	}
 
@@ -338,6 +401,7 @@ public class MemoizeTest {
 		assertThatIllegalStateException().isThrownBy(memoized::get);
 		assertThat(memoized.isClosed()).isTrue();
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 	}
 
 	@SuppressWarnings("resource")
@@ -348,6 +412,7 @@ public class MemoizeTest {
 
 		assertThatNullPointerException().isThrownBy(() -> memoized.accept(null));
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(0);
 
 		AtomicReference<CloseableClass> value = new AtomicReference<>();
@@ -360,18 +425,69 @@ public class MemoizeTest {
 		assertThat(o.closed).hasValue(0);
 		assertThat(count).hasValue(1);
 		assertThat(memoized.peek()).isNotNull();
+		assertThat(memoized.isPresent()).isTrue();
 		assertThat(count).hasValue(1);
 
 		assertThat(catchThrowable(memoized::close)).doesNotThrowAnyException();
 		assertThat(o.closed).hasValue(1);
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(1);
 
 		assertThatIllegalStateException().isThrownBy(() -> memoized.accept(value::set));
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(o.closed).hasValue(1);
 		assertThat(count).hasValue(1);
 		assertThat(value).hasValue(o);
+
+	}
+
+	@SuppressWarnings("resource")
+	@Test
+	public void closeable_ifpresent() throws Exception {
+		CloseableClass unused = new CloseableClass(-1);
+		Supplier<CloseableClass> source = () -> new CloseableClass(count.incrementAndGet());
+		CloseableMemoize<CloseableClass> memoized = CloseableMemoize.closeableSupplier(source);
+
+		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
+		assertThat(count).hasValue(0);
+
+		AtomicReference<CloseableClass> value = new AtomicReference<>(unused);
+
+		assertThat(catchThrowable(() -> memoized.ifPresent(value::set))).doesNotThrowAnyException();
+		assertThat(value).hasValue(unused);
+		assertThat(catchThrowable(() -> memoized.ifPresent(null))).doesNotThrowAnyException();
+
+		assertThat(catchThrowable(() -> memoized.get())).doesNotThrowAnyException();
+		assertThat(catchThrowable(() -> memoized.ifPresent(value::set))).doesNotThrowAnyException();
+		assertThatNullPointerException().isThrownBy(() -> memoized.ifPresent(null));
+		CloseableClass o = value.get();
+		assertThat(o).isNotNull();
+		assertThat(o.count).isEqualTo(1);
+		assertThat(o.closed).hasValue(0);
+		assertThat(count).hasValue(1);
+		assertThat(memoized.peek()).isNotNull();
+		assertThat(memoized.isPresent()).isTrue();
+		assertThat(count).hasValue(1);
+
+		assertThat(catchThrowable(memoized::close)).doesNotThrowAnyException();
+		assertThat(o.closed).hasValue(1);
+		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
+		assertThat(count).hasValue(1);
+		value.set(unused);
+		assertThat(catchThrowable(() -> memoized.ifPresent(value::set))).doesNotThrowAnyException();
+		assertThat(value).hasValue(unused);
+		assertThat(catchThrowable(() -> memoized.ifPresent(null))).doesNotThrowAnyException();
+
+		assertThatIllegalStateException().isThrownBy(() -> memoized.accept(value::set));
+		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
+		assertThat(o.closed).hasValue(1);
+		assertThat(count).hasValue(1);
+		assertThat(value).hasValue(unused);
 
 	}
 
@@ -419,16 +535,62 @@ public class MemoizeTest {
 	}
 
 	@Test
+	public void closeable_ifpresent_multi() throws Exception {
+		final int multi = 5;
+		Supplier<CloseableClass> source = () -> new CloseableClass(count.incrementAndGet());
+		ExecutorService threadPool = Executors.newFixedThreadPool(multi);
+		try (CloseableMemoize<AutoCloseable> memoized = CloseableMemoize.closeableSupplier(source)) {
+			assertThat(catchThrowable(() -> memoized.get())).doesNotThrowAnyException();
+			CountDownLatch consumerReady = new CountDownLatch(multi);
+			CountDownLatch consumerSync = new CountDownLatch(1);
+			CountDownLatch consumerDone = new CountDownLatch(multi);
+			Consumer<AutoCloseable> consumer = asConsumer(s -> {
+				consumerReady.countDown();
+				if (consumerSync.await(20, TimeUnit.SECONDS)) {
+					memoized.ifPresent(x -> consumerDone.countDown());
+				}
+			});
+
+			CountDownLatch threadReady = new CountDownLatch(multi);
+			CountDownLatch threadSync = new CountDownLatch(1);
+			for (int i = 0; i < multi; i++) {
+				threadPool.execute(asRunnable(() -> {
+					threadReady.countDown();
+					if (threadSync.await(20, TimeUnit.SECONDS)) {
+						memoized.ifPresent(consumer);
+					}
+				}));
+			}
+			assertThat(threadReady.await(10, TimeUnit.SECONDS))
+				.as("%s threads ready: count %s", multi, threadReady.getCount())
+				.isTrue();
+			threadSync.countDown();
+			assertThat(consumerReady.await(10, TimeUnit.SECONDS))
+				.as("%s consumers ready: count %s", multi, consumerReady.getCount())
+				.isTrue();
+			consumerSync.countDown();
+			assertThat(consumerDone.await(10, TimeUnit.SECONDS))
+				.as("%s consumers done: count %s", multi, consumerDone.getCount())
+				.isTrue();
+			assertThat(count).hasValue(1);
+		} finally {
+			threadPool.shutdown();
+		}
+	}
+
+	@Test
 	public void predicate_supplier() {
 		Memoize<String> memoized = Memoize.predicateSupplier(source, Objects::nonNull);
 		assertThat(count).hasValue(0);
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(0);
 
 		assertThat(Stream.generate(memoized::get)
 			.limit(100)).containsOnly("1");
 		assertThat(count).hasValue(1);
 		assertThat(memoized.peek()).isEqualTo("1");
+		assertThat(memoized.isPresent()).isTrue();
 		assertThat(count).hasValue(1);
 	}
 
@@ -450,6 +612,7 @@ public class MemoizeTest {
 		assertThat(count).hasValue(0);
 		assertThat(acceptorCount).hasValue(0);
 		assertThat(memoized.peek()).isNull();
+		assertThat(memoized.isPresent()).isFalse();
 		assertThat(count).hasValue(0);
 		assertThat(acceptorCount).hasValue(0);
 
@@ -462,6 +625,7 @@ public class MemoizeTest {
 		assertThat(count).hasValue(11);
 		assertThat(acceptorCount).hasValue(11);
 		assertThat(memoized.peek()).isEqualTo("11");
+		assertThat(memoized.isPresent()).isTrue();
 		assertThat(count).hasValue(11);
 		assertThat(acceptorCount).hasValue(11);
 	}
