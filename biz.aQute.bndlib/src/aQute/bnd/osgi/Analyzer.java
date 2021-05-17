@@ -163,9 +163,9 @@ public class Analyzer extends Processor {
 	public Analyzer() {}
 
 	@Override
-	protected void setTypeSpecificPlugins(Set<Object> list) {
-		super.setTypeSpecificPlugins(list);
-		list.add(new ClassIndexerAnalyzer());
+	protected void setTypeSpecificPlugins(PluginsContainer pluginsContainer) {
+		super.setTypeSpecificPlugins(pluginsContainer);
+		pluginsContainer.add(new ClassIndexerAnalyzer());
 	}
 
 	/**

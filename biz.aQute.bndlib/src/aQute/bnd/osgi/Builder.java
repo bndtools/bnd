@@ -1702,17 +1702,17 @@ public class Builder extends Analyzer {
 	static SPIDescriptorGenerator	spiDescriptorGenerator	= new SPIDescriptorGenerator();
 
 	@Override
-	protected void setTypeSpecificPlugins(Set<Object> list) {
-		list.add(makeBnd);
-		list.add(makeCopy);
-		list.add(serviceComponent);
-		list.add(cdiAnnotations);
-		list.add(dsAnnotations);
-		list.add(metatypeAnnotations);
-		list.add(moduleAnnotations);
-		list.add(moduleInfoPlugin);
-		list.add(spiDescriptorGenerator);
-		super.setTypeSpecificPlugins(list);
+	protected void setTypeSpecificPlugins(PluginsContainer pluginsContainer) {
+		pluginsContainer.add(makeBnd);
+		pluginsContainer.add(makeCopy);
+		pluginsContainer.add(serviceComponent);
+		pluginsContainer.add(cdiAnnotations);
+		pluginsContainer.add(dsAnnotations);
+		pluginsContainer.add(metatypeAnnotations);
+		pluginsContainer.add(moduleAnnotations);
+		pluginsContainer.add(moduleInfoPlugin);
+		pluginsContainer.add(spiDescriptorGenerator);
+		super.setTypeSpecificPlugins(pluginsContainer);
 	}
 
 	/**
