@@ -118,10 +118,6 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 			gradle.bndWorkspaceConfigure(workspace)
 		}
 
-		/* Make sure all workspace plugins are loaded before preparing
-		 * projects.
-		 */
-		workspace.getPlugins()
 		/* Prepare each project in the workspace to establish complete 
 		 * dependencies and dependents information.
 		 */
