@@ -693,7 +693,7 @@ public class PomRepositoryTest extends TestCase {
 			String revisions = Strings.join(new String[] {
 				"biz.aQute.bnd:biz.aQute.junit:3.3.0", "biz.aQute.bnd:biz.aQute.launcher:3.3.0",
 				"biz.aQute.bnd:biz.aQute.remote.launcher:3.3.0", "biz.aQute.bnd:biz.aQute.tester:3.3.0",
-				"org.jacoco:org.jacoco.agent:jar:runtime:0.8.6",
+				"org.jacoco:org.jacoco.agent:jar:runtime:0.8.6", "org.jacoco:org.jacoco.agent:0.8.6",
 				"org.apache.felix:org.apache.felix.framework:bin:zip:1.4.0"
 			});
 
@@ -714,12 +714,17 @@ public class PomRepositoryTest extends TestCase {
 			assertFalse(resources.isEmpty());
 
 			assertThat(mcsr.list("*")).contains("biz.aQute.remote.launcher",
-				"biz.aQute.launcher", "biz.aQute.junit", "biz.aQute.tester", //
-				"org.jacoco:org.jacoco.agent", // with classifier
+				"biz.aQute.launcher", "biz.aQute.junit", "biz.aQute.tester",
+				// "org.jacoco:org.jacoco.agent:0.8.6"
+				// a bundle so normal bsn
+				"org.jacoco.agent",
+				// "org.jacoco:org.jacoco.agent:jar:runtime:0.8.6"
+				// with classifier & not a bundle
+				"org.jacoco:org.jacoco.agent:jar:runtime",
 				"org.apache.felix:org.osgi.foundation",// from zip
-				"org.apache.felix:org.apache.felix.framework" // from zip
+				"org.apache.felix:org.apache.felix.framework:bin:zip" // zip
 				);
-		}
+			}
 	}
 
 	public void testMultiplePomFiles() throws Exception {

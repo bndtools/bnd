@@ -27,11 +27,11 @@ import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.maven.MavenCapability;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom.Dependency;
 import aQute.maven.api.MavenScope;
@@ -207,7 +207,9 @@ class Traverser {
 		ResourceBuilder rb = new ResourceBuilder();
 
 		Version frameworkVersion = toFrameworkVersion(archive.revision.version.getOSGiVersion());
-		String bsn = archive.revision.program.toString();
+
+		// g:a:jar and g:a:jar:all are different artifacts respect classifier
+		String bsn = archive.getWithoutVersion();
 
 		try {
 			File binary = repo.get(archive)
