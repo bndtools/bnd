@@ -58,4 +58,10 @@ class MemoizingSupplier<T> implements Memoize<T> {
 	public boolean isPresent() {
 		return !initial;
 	}
+
+	@Override
+	public String toString() {
+		// read initial _before_ read memoized
+		return initial ? "<empty>" : String.valueOf(memoized);
+	}
 }

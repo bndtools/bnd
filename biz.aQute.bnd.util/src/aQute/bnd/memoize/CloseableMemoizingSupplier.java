@@ -2,6 +2,7 @@ package aQute.bnd.memoize;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Objects;
 import java.util.concurrent.locks.StampedLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -156,5 +157,11 @@ class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMe
 			}
 		}
 		return this;
+	}
+
+	@Override
+	public String toString() {
+		// read initial _before_ read memoized
+		return initial ? "<empty>" : Objects.toString(memoized, "<closed>");
 	}
 }
