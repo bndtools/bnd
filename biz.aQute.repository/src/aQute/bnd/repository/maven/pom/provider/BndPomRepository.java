@@ -29,6 +29,7 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
@@ -47,7 +48,6 @@ import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
@@ -286,7 +286,8 @@ public class BndPomRepository extends BaseRepository
 		} else {
 
 			String name = resource.getInfo()
-				.name();
+				.name() + ":" + version;
+
 			archive = Archive.valueOf(name);
 		}
 
@@ -415,7 +416,7 @@ public class BndPomRepository extends BaseRepository
 			return null;
 
 		return Archive.valueOf(resource.getInfo()
-			.name())
+			.name() + ":" + version)
 			.getOther("jar", Archive.SOURCES_CLASSIFIER);
 	}
 

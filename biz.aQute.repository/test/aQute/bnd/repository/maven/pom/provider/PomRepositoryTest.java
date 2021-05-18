@@ -851,7 +851,9 @@ public class PomRepositoryTest extends TestCase {
 			Capability c = capabilities.get(0);
 			String a = (String) c.getAttributes()
 				.get("name");
-			Archive archive = Archive.valueOf(a);
+			org.osgi.framework.Version version = (org.osgi.framework.Version) c.getAttributes()
+				.get("version");
+			Archive archive = Archive.valueOf(a + ":" + version);
 			assertNotNull(archive);
 		}
 	}
