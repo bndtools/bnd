@@ -65,4 +65,29 @@ class RefreshingMemoizingSupplier<T> implements Memoize<T> {
 		}
 		return memoized;
 	}
+
+	@Override
+	public boolean isPresent() {
+		long endtime = timebound;
+		while (System.nanoTime() - endtime >= 0L) { // timebound has passed
+			// critical section: only one at a time
+			synchronized (this) {
+				if (endtime == timebound) {
+					memoized = null; // release to GC
+					// write timebound _after_ write memoized
+					timebound = System.nanoTime(); // mark ttl expired
+					return false;
+				}
+			}
+			endtime = timebound; // recheck
+		}
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		// read timebound _before_ read memoized
+		long endtime = timebound;
+		return (System.nanoTime() - endtime >= 0L) ? "<empty>" : String.valueOf(memoized);
+	}
 }

@@ -125,13 +125,32 @@ public interface Memoize<S> extends Supplier<S> {
 	}
 
 	/**
+	 * Get the memoized value.
+	 *
+	 * @return The memoized value.
+	 */
+	@Override
+	S get();
+
+	/**
 	 * Peek the memoized value, if any.
 	 * <p>
 	 * This method will not result in a call to the source supplier.
 	 *
-	 * @return The value if a value is memoized; otherwise {@code null}.
+	 * @return The memoized value if a value is memoized; otherwise
+	 *         {@code null}.
 	 */
 	S peek();
+
+	/**
+	 * If a value is memoized, return {@code true}. Otherwise return
+	 * {@code false}.
+	 * <p>
+	 * This method will not result in a call to the source supplier.
+	 *
+	 * @return {@code true} if a value is memoized; otherwise {@code false}.
+	 */
+	boolean isPresent();
 
 	/**
 	 * Map this memoizing supplier to a new memoizing supplier.
@@ -190,6 +209,22 @@ public interface Memoize<S> extends Supplier<S> {
 	default Memoize<S> accept(Consumer<? super S> consumer) {
 		requireNonNull(consumer);
 		consumer.accept(get());
+		return this;
+	}
+
+	/**
+	 * If a value is memoized, call the consumer with the value of this
+	 * memoizing supplier. Otherwise do nothing.
+	 *
+	 * @param consumer The consumer to accept the value of this memoizing
+	 *            supplier if a value is memoized. Must not be {@code null} if a
+	 *            value is memoized.
+	 * @return This memoizing supplier.
+	 */
+	default Memoize<S> ifPresent(Consumer<? super S> consumer) {
+		if (isPresent()) {
+			return accept(consumer);
+		}
 		return this;
 	}
 }

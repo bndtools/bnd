@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -48,5 +49,15 @@ class ReferenceMemoizingSupplier<T> implements Memoize<T> {
 	public T peek() {
 		T referent = memoized.get();
 		return referent;
+	}
+
+	@Override
+	public boolean isPresent() {
+		return peek() != null;
+	}
+
+	@Override
+	public String toString() {
+		return Objects.toString(peek(), "<empty>");
 	}
 }

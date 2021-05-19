@@ -762,58 +762,54 @@ public class Workspace extends Processor {
 	}
 
 	@Override
-	protected void setTypeSpecificPlugins(Set<Object> list) {
+	protected void setTypeSpecificPlugins(PluginsContainer pluginsContainer) {
 		try {
-			super.setTypeSpecificPlugins(list);
-			list.add(this);
-			list.add(maven);
-			list.add(settings);
+			super.setTypeSpecificPlugins(pluginsContainer);
+			pluginsContainer.add(maven);
+			pluginsContainer.add(settings);
 
 			if (!isTrue(getProperty(NOBUILDINCACHE))) {
 				CachedFileRepo repo = new CachedFileRepo();
-				list.add(repo);
+				pluginsContainer.add(repo);
 			}
 
 			resourceRepositoryImpl = new ResourceRepositoryImpl();
 			resourceRepositoryImpl.setCache(IO.getFile(getProperty(CACHEDIR, Home.getUserHomeBnd() + "/caches/shas")));
 			resourceRepositoryImpl.setExecutor(getExecutor());
 			resourceRepositoryImpl.setIndexFile(getFile(getBuildDir(), "repo.json"));
-			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(this));
-			customize(resourceRepositoryImpl, null);
-			list.add(resourceRepositoryImpl);
+			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(pluginsContainer));
+			customize(resourceRepositoryImpl, null, pluginsContainer);
+			pluginsContainer.add(resourceRepositoryImpl);
 
 			//
 			// Exporters
 			//
 
-			list.add(new ExecutableJarExporter());
-			list.add(new RunbundlesExporter());
+			pluginsContainer.add(new ExecutableJarExporter());
+			pluginsContainer.add(new RunbundlesExporter());
 
 			HttpClient client = new HttpClient();
 			try {
 				client.setOffline(getOffline());
-				client.setRegistry(this);
+				client.setRegistry(pluginsContainer);
 				client.readSettings(this);
 
 			} catch (Exception e) {
 				exception(e, "Failed to load the communication settings");
 			}
-			list.add(client);
-
-		} catch (RuntimeException e) {
-			throw e;
+			pluginsContainer.add(client);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw Exceptions.duck(e);
 		}
 	}
 
 	/**
 	 * Add any extensions listed
 	 *
-	 * @param list
+	 * @param pluginsContainer
 	 */
 	@Override
-	protected void addExtensions(Set<Object> list) {
+	protected void addExtensions(PluginsContainer pluginsContainer) {
 		//
 		// <bsn>; version=<range>
 		//
@@ -876,14 +872,13 @@ public class Workspace extends Processor {
 							try {
 								Class<?> c = cl.loadClass(e.getKey());
 								ExtensionActivator extensionActivator = (ExtensionActivator) newInstance(c);
-								customize(extensionActivator, blocker.getValue());
+								customize(extensionActivator, blocker.getValue(), pluginsContainer);
 								List<?> plugins = extensionActivator.activate(this, blocker.getValue());
-								list.add(extensionActivator);
+								pluginsContainer.add(extensionActivator);
 
-								if (plugins != null)
-									for (Object plugin : plugins) {
-										list.add(plugin);
-									}
+								if (plugins != null) {
+									pluginsContainer.addAll(plugins);
+								}
 							} catch (ClassNotFoundException cnfe) {
 								error("Loading extension %s, extension activator missing: %s (ignored)", blocker,
 									e.getKey());

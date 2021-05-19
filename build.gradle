@@ -55,6 +55,9 @@ subprojects {
 			}
 			testLogging {
 				exceptionFormat = 'full'
+				info {
+					events "STANDARD_OUT", "STANDARD_ERROR", "STARTED", "FAILED", "PASSED", "SKIPPED"
+				}
 			}
 			if (!logger.isInfoEnabled()) {
 				def stdOut = [:]

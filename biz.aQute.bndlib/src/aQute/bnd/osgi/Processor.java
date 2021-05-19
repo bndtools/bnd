@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.util.AbstractSet;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +43,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
@@ -67,27 +69,29 @@ import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.help.SyntaxAnnotation;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.memoize.CloseableMemoize;
+import aQute.bnd.memoize.Memoize;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryDonePlugin;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.stream.MapStream;
+import aQute.bnd.unmodifiable.Lists;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.Iterables;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.lib.strings.Strings;
-import aQute.bnd.unmodifiable.Lists;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.command.Command;
 import aQute.libg.cryptography.Digester;
@@ -98,7 +102,7 @@ import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
-	private static final Logger	logger			= LoggerFactory.getLogger(Processor.class);
+	static final Logger		logger	= LoggerFactory.getLogger(Processor.class);
 	public static Reporter		log;
 
 	static {
@@ -200,9 +204,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public final static String					LIST_SPLITTER	= "\\s*,\\s*";
 	final List<String>							errors			= new ArrayList<>();
 	final List<String>							warnings		= new ArrayList<>();
-	final Set<Object>							basicPlugins	= new HashSet<>();
-	private final Set<Closeable>				toBeClosed		= new HashSet<>();
-	private Set<Object>							plugins;
+	private final Set<Object>					basicPlugins		= Collections
+		.newSetFromMap(new ConcurrentHashMap<>());
+	private final Set<AutoCloseable>			toBeClosed			= Collections
+		.newSetFromMap(new ConcurrentHashMap<>());
+
+	private volatile CloseableMemoize<CL>		pluginLoader		= newPluginLoader();
+	private volatile Memoize<PluginsContainer>	pluginsContainer	= newPluginsContainer();
 
 	boolean										pedantic;
 	boolean										trace;
@@ -221,9 +229,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	Processor									parent;
 	private final CopyOnWriteArrayList<File>	included		= new CopyOnWriteArrayList<>();
 
-	CL											pluginLoader;
 	Collection<String>							filter;
-	HashSet<String>								missingCommand;
 	Boolean										strict;
 	boolean										fixupMessages;
 
@@ -481,14 +487,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return new Parameters(value, this);
 	}
 
-	public void addClose(Closeable jar) {
-		assert jar != null;
-		toBeClosed.add(jar);
+	public void addClose(AutoCloseable closeable) {
+		assert closeable != null;
+		toBeClosed.add(closeable);
 	}
 
-	public void removeClose(Closeable jar) {
-		assert jar != null;
-		toBeClosed.remove(jar);
+
+	public void removeClose(AutoCloseable closeable) {
+		assert closeable != null;
+		toBeClosed.remove(closeable);
 	}
 
 	@Override
@@ -524,11 +531,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	@Override
 	public <T> List<T> getPlugins(Class<T> clazz) {
-		List<T> plugins = getPlugins().stream()
-			.filter(clazz::isInstance)
-			.map(clazz::cast)
-			.collect(toList());
-		return plugins;
+		List<T> list = getPlugins().getPlugins(clazz);
+		return list;
 	}
 
 	/**
@@ -539,322 +543,430 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	@Override
 	public <T> T getPlugin(Class<T> clazz) {
-		Optional<T> plugin = getPlugins().stream()
-			.filter(clazz::isInstance)
-			.map(clazz::cast)
-			.findFirst();
-		return plugin.orElse(null);
+		T plugin = getPlugins().getPlugin(clazz);
+		return plugin;
 	}
 
 	/**
-	 * Return a list of plugins. Plugins are defined with the -plugin command.
-	 * They are class names, optionally associated with attributes. Plugins can
-	 * implement the Plugin interface to see these attributes. Any object can be
-	 * a plugin.
+	 * Return the PluginsContainer. Plugins are defined with the -plugin
+	 * command. They are class names, optionally associated with attributes.
+	 * Plugins can implement the Plugin interface to see these attributes. Any
+	 * object can be a plugin.
 	 */
-	public Set<Object> getPlugins() {
-		Set<Object> p;
-		synchronized (this) {
-			p = plugins;
-			if (p != null)
-				return p;
+	public PluginsContainer getPlugins() {
+		PluginsContainer pc = pluginsContainer.get();
+		return pc;
+	}
 
-			plugins = p = new CopyOnWriteArraySet<>();
-			missingCommand = new HashSet<>();
-		}
-		// We only use plugins now when they are defined on our level
-		// and not if it is in our parent. We inherit from our parent
-		// through the previous block.
-
-		String spe = getProperty(PLUGIN);
-		if (NONE.equals(spe))
-			return p;
-
-		// The owner of the plugin is always in there.
-		p.add(this);
-		setTypeSpecificPlugins(p);
-
-		if (parent != null)
-			p.addAll(parent.getPlugins());
-
-		//
-		// Look only local
-		//
-
-		spe = mergeLocalProperties(PLUGIN);
-		String pluginPath = mergeProperties(PLUGINPATH);
-		loadPlugins(p, spe, pluginPath);
-
-		addExtensions(p);
-
-		for (RegistryDonePlugin rdp : getPlugins(RegistryDonePlugin.class)) {
-			try {
-				rdp.done();
-			} catch (Exception e) {
-				error("Calling done on %s, gives an exception %s", rdp, e);
+	/**
+	 * Return a memoizer for the PluginsContainer.
+	 */
+	private Memoize<PluginsContainer> newPluginsContainer() {
+		Memoize<PluginsContainer> supplier = Memoize.supplier(() -> {
+			PluginsContainer pc = new PluginsContainer();
+			pc.init();
+			return pc;
+		});
+		// do postInit outside of above memoizer to allow reentrant
+		// access to the inited PluginsContainer
+		AtomicBoolean postInit = new AtomicBoolean(true);
+		return Memoize.predicateSupplier(supplier, pc -> {
+			// only first caller gets to do postInit
+			if (postInit.getAndSet(false)) {
+				pc.postInit();
 			}
+			return true; // always memoize the PluginsContainer
+		});
+	}
+
+	/**
+	 * Member class which contains the current plugin set for the Processor.
+	 */
+	public class PluginsContainer extends AbstractSet<Object> implements Set<Object>, Registry {
+		private final Set<Object>			plugins				= new CopyOnWriteArraySet<>();
+		// The following are only mutated during init(), so they don't need to
+		// be concurrent-safe
+		private final Set<String>			missingCommand		= new HashSet<>();
+		private final Set<AutoCloseable>	closeablePlugins	= new HashSet<>();
+
+		protected PluginsContainer() {}
+
+		/**
+		 * Init actions occur inside of the first-level memoizer.
+		 */
+		protected void init() {
+			String spe = getProperty(PLUGIN);
+			if (NONE.equals(spe)) {
+				return;
+			}
+
+			// The owner of the plugin is always in there.
+			add(Processor.this);
+			setTypeSpecificPlugins(this);
+
+			if (getParent() != null) {
+				addAll(getParent().getPlugins());
+			}
+
+			//
+			// Look only local
+			//
+
+			spe = mergeLocalProperties(PLUGIN);
+			String pluginPath = mergeProperties(PLUGINPATH);
+			loadPlugins(spe, pluginPath);
 		}
-		return p;
-	}
 
-	/**
-	 * Is called when all plugins are loaded
-	 *
-	 * @param p
-	 */
-	protected void addExtensions(Set<Object> p) {
+		/**
+		 * Post init actions must occur outside of the first level memoizer.
+		 * This means these actions can reentrantly see the current state of the
+		 * PluginsContainer, through the Processor, which may be partially
+		 * complete if addExtensions adds more plugins.
+		 */
+		protected void postInit() {
+			addExtensions(this);
 
-	}
-
-	/**
-	 * Magic to load the plugins. This is quite tricky actually since we allow
-	 * plugins to be downloaded (this is mainly intended for repositories since
-	 * in general plugins should use extensions, however to bootstrap the
-	 * extensions we need more). Since downloads might need plugins for
-	 * passwords and protocols we need to first load the paths specified on the
-	 * plugin clause, then check if there are any local plugins (starting with
-	 * aQute.bnd and be able to load from our own class loader).
-	 * <p>
-	 * After that, we load the plugin paths, these can use the built in
-	 * connectors.
-	 * <p>
-	 * Last but not least, we load the remaining plugins.
-	 *
-	 * @param instances
-	 * @param pluginString
-	 */
-	protected void loadPlugins(Set<Object> instances, String pluginString, String pluginPathString) {
-		Parameters plugins = new Parameters(pluginString, this, true);
-		CL loader = getLoader();
-
-		// First add the plugin-specific paths from their path: directives
-		for (Entry<String, Attrs> entry : plugins.entrySet()) {
-			String key = removeDuplicateMarker(entry.getKey());
-			String path = entry.getValue()
-				.get(PATH_DIRECTIVE);
-			if (path != null) {
-				String parts[] = path.split("\\s*,\\s*");
+			for (RegistryDonePlugin rdp : getPlugins(RegistryDonePlugin.class)) {
 				try {
-					for (String p : parts) {
-						File f = getFile(p).getAbsoluteFile();
-						loader.add(f);
-					}
+					rdp.done();
 				} catch (Exception e) {
-					error("Problem adding path %s to loader for plugin %s. Exception: (%s)", path, key, e);
+					exception(e, "Calling done on %s, gives an exception", rdp);
 				}
 			}
 		}
 
-		//
-		// Try to load any plugins that are local
-		// these must start with aQute.bnd.* and
-		// and be possible to load. The main intention
-		// of this code is to load the URL connectors so that
-		// any access to remote plugins can use the connector
-		// model.
-		//
-
-		Set<String> loaded = new HashSet<>();
-		for (Entry<String, Attrs> entry : plugins.entrySet()) {
-			String className = removeDuplicateMarker(entry.getKey());
-			Attrs attrs = entry.getValue();
-
-			logger.debug("Trying pre-plugin {}", className);
-
-			Object plugin = loadPlugin(getClass().getClassLoader(), attrs, className, true);
-			if (plugin != null) {
-				// with the marker!!
-				loaded.add(entry.getKey());
-				instances.add(plugin);
-			}
+		protected Set<Object> plugins() {
+			return plugins;
 		}
 
-		//
-		// Make sure we load each plugin only once
-		// by removing the entries that were successfully loaded
-		//
-		plugins.keySet()
-			.removeAll(loaded);
+		protected <T> Stream<T> stream(Class<T> type) {
+			Stream<T> stream = stream().filter(type::isInstance)
+				.map(type::cast);
+			return stream;
+		}
 
-		loadPluginPath(instances, pluginPathString, loader);
+		@Override
+		public <T> T getPlugin(Class<T> type) {
+			Optional<T> first = stream(type).findFirst();
+			return first.orElse(null);
+		}
 
-		//
-		// Load the remaining plugins
-		//
+		@Override
+		public <T> List<T> getPlugins(Class<T> type) {
+			List<T> list = stream(type).collect(toList());
+			return list;
+		}
 
-		for (Entry<String, Attrs> entry : plugins.entrySet()) {
-			String className = removeDuplicateMarker(entry.getKey());
-			Attrs attrs = entry.getValue();
+		@Override
+		public boolean add(Object plugin) {
+			return plugins().add(plugin);
+		}
 
-			logger.debug("Loading secondary plugin {}", className);
+		@Override
+		public boolean addAll(Collection<? extends Object> collection) {
+			return plugins().addAll(collection);
+		}
 
-			// We can defer the error if the plugin specifies
-			// a command name. In that case, we'll verify that
-			// a bnd file does not contain any references to a
-			// plugin
-			// command. The reason this feature was added was
-			// to compile plugin classes with the same build.
-			String commands = attrs.get(COMMAND_DIRECTIVE);
+		@Override
+		public boolean remove(Object plugin) {
+			return plugins().remove(plugin);
+		}
 
-			Object plugin = loadPlugin(loader, attrs, className, commands != null);
-			if (plugin != null)
-				instances.add(plugin);
-			else {
-				if (commands == null)
-					error("Cannot load the plugin %s", className);
+		@Override
+		public Iterator<Object> iterator() {
+			return plugins().iterator();
+		}
+
+		@Override
+		public Spliterator<Object> spliterator() {
+			return plugins().spliterator();
+		}
+
+		@Override
+		public Stream<Object> stream() {
+			return plugins().stream();
+		}
+
+		@Override
+		public int size() {
+			return plugins().size();
+		}
+
+		@Override
+		public String toString() {
+			return plugins().toString();
+		}
+
+		/**
+		 * Magic to load the plugins. This is quite tricky actually since we
+		 * allow plugins to be downloaded (this is mainly intended for
+		 * repositories since in general plugins should use extensions, however
+		 * to bootstrap the extensions we need more). Since downloads might need
+		 * plugins for passwords and protocols we need to first load the paths
+		 * specified on the plugin clause, then check if there are any local
+		 * plugins (starting with aQute.bnd and be able to load from our own
+		 * class loader).
+		 * <p>
+		 * After that, we load the plugin paths, these can use the built in
+		 * connectors.
+		 * <p>
+		 * Last but not least, we load the remaining plugins.
+		 */
+		protected void loadPlugins(String pluginString, String pluginPathString) {
+			Parameters pluginParameters = new Parameters(pluginString, Processor.this, true);
+			CL loader = getLoader();
+
+			// First add the plugin-specific paths from their path: directives
+			for (Entry<String, Attrs> entry : pluginParameters.entrySet()) {
+				String key = removeDuplicateMarker(entry.getKey());
+				String path = entry.getValue()
+					.get(PATH_DIRECTIVE);
+				if (path != null) {
+					String parts[] = path.split("\\s*,\\s*");
+					try {
+						for (String p : parts) {
+							File f = getFile(p).getAbsoluteFile();
+							loader.add(f);
+						}
+					} catch (Exception e) {
+						error("Problem adding path %s to loader for plugin %s. Exception: (%s)", path, key, e);
+					}
+				}
+			}
+
+			//
+			// Try to load any plugins that are local
+			// these must start with aQute.bnd.* and
+			// and be possible to load. The main intention
+			// of this code is to load the URL connectors so that
+			// any access to remote plugins can use the connector
+			// model.
+			//
+
+			Set<String> loaded = new HashSet<>();
+			for (Entry<String, Attrs> entry : pluginParameters.entrySet()) {
+				String className = removeDuplicateMarker(entry.getKey());
+				Attrs attrs = entry.getValue();
+
+				logger.debug("Trying pre-plugin {}", className);
+
+				Object plugin = loadPlugin(Processor.this.getClass()
+					.getClassLoader(), attrs, className, true);
+				if (plugin != null) {
+					// with the marker!!
+					loaded.add(entry.getKey());
+					add(plugin);
+				}
+			}
+
+			//
+			// Make sure we load each plugin only once
+			// by removing the entries that were successfully loaded
+			//
+			pluginParameters.keySet()
+				.removeAll(loaded);
+
+			loadPluginPath(pluginPathString, loader);
+
+			//
+			// Load the remaining plugins
+			//
+
+			for (Entry<String, Attrs> entry : pluginParameters.entrySet()) {
+				String className = removeDuplicateMarker(entry.getKey());
+				Attrs attrs = entry.getValue();
+
+				logger.debug("Loading secondary plugin {}", className);
+
+				// We can defer the error if the plugin specifies
+				// a command name. In that case, we'll verify that
+				// a bnd file does not contain any references to a
+				// plugin
+				// command. The reason this feature was added was
+				// to compile plugin classes with the same build.
+				String commands = attrs.get(COMMAND_DIRECTIVE);
+
+				Object plugin = loadPlugin(loader, attrs, className, commands != null);
+				if (plugin != null)
+					add(plugin);
 				else {
-					Collection<String> cs = split(commands);
-					missingCommand.addAll(cs);
+					if (commands == null)
+						error("Cannot load the plugin %s", className);
+					else {
+						Collection<String> cs = split(commands);
+						missingCommand.addAll(cs);
+					}
 				}
 			}
 		}
-	}
 
-	/**
-	 * Add the @link {@link Constants#PLUGINPATH} entries (which are file names)
-	 * to the class loader. If this file does not exist, and there is a
-	 * {@link Constants#PLUGINPATH_URL_ATTR} attribute then we download it first
-	 * from that url. You can then also specify a
-	 * {@link Constants#PLUGINPATH_SHA1_ATTR} attribute to verify the file.
-	 *
-	 * @see PLUGINPATH
-	 * @param pluginPath the clauses for the plugin path
-	 * @param loader The class loader to extend
-	 */
-	private void loadPluginPath(Set<Object> instances, String pluginPath, CL loader) {
-		Parameters pluginpath = new Parameters(pluginPath, this);
-		HttpClient client = null;
-		try {
-			nextClause: for (Entry<String, Attrs> entry : pluginpath.entrySet()) {
+		/**
+		 * Add the @link {@link Constants#PLUGINPATH} entries (which are file
+		 * names) to the class loader. If this file does not exist, and there is
+		 * a {@link Constants#PLUGINPATH_URL_ATTR} attribute then we download it
+		 * first from that url. You can then also specify a
+		 * {@link Constants#PLUGINPATH_SHA1_ATTR} attribute to verify the file.
+		 *
+		 * @see PLUGINPATH
+		 * @param pluginPath the clauses for the plugin path
+		 * @param loader The class loader to extend
+		 */
+		private void loadPluginPath(String pluginPath, CL loader) {
+			Parameters pluginPathParameters = new Parameters(pluginPath, Processor.this);
+			HttpClient client = null;
+			try {
+				nextClause: for (Entry<String, Attrs> entry : pluginPathParameters.entrySet()) {
 
-				File f = getFile(entry.getKey()).getAbsoluteFile();
-				if (!f.isFile()) {
+					File f = getFile(entry.getKey()).getAbsoluteFile();
+					if (!f.isFile()) {
 
-					//
-					// File does not exist! Check if we need to download
-					//
+						//
+						// File does not exist! Check if we need to download
+						//
 
-					String url = entry.getValue()
-						.get(PLUGINPATH_URL_ATTR);
-					if (url != null) {
-						try {
-							logger.debug("downloading {} to {}", url, f.getAbsoluteFile());
-							URL u = new URL(url);
-							if (client == null) {
-								@SuppressWarnings("resource")
-								HttpClient c = new HttpClient();
-								c.setRegistry(this);
-								c.readSettings(this);
+						String url = entry.getValue()
+							.get(PLUGINPATH_URL_ATTR);
+						if (url != null) {
+							try {
+								logger.debug("downloading {} to {}", url, f.getAbsoluteFile());
+								URL u = new URL(url);
+								if (client == null) {
+									@SuppressWarnings("resource")
+									HttpClient c = new HttpClient();
+									c.setRegistry(this);
+									c.readSettings(Processor.this);
+
+									//
+									// Allow the URLConnectionHandlers to
+									// interact
+									// with the
+									// connection so they can sign it or
+									// decorate it
+									// with
+									// a password etc.
+									//
+									stream(URLConnectionHandler.class)
+										.forEach(c::addURLConnectionHandler);
+									client = c;
+								}
 
 								//
-								// Allow the URLCOnnectionHandlers to interact
-								// with the
-								// connection so they can sign it or decorate it
-								// with
-								// a password etc.
+								// Copy the url to the file
 								//
-								instances.stream()
-									.filter(URLConnectionHandler.class::isInstance)
-									.map(URLConnectionHandler.class::cast)
-									.forEach(c::addURLConnectionHandler);
-								client = c;
-							}
-
-							//
-							// Copy the url to the file
-							//
-							IO.mkdirs(f.getParentFile());
-							try (Resource resource = Resource.fromURL(u, client)) {
-								try (OutputStream out = IO.outputStream(f)) {
-									resource.write(out);
-								}
-								long lastModified = resource.lastModified();
-								if (lastModified > 0L) {
-									f.setLastModified(lastModified);
-								}
-							}
-
-							//
-							// If there is a sha specified, we verify the
-							// download
-							// of the
-							// the file.
-							//
-							String digest = entry.getValue()
-								.get(PLUGINPATH_SHA1_ATTR);
-							if (digest != null) {
-								if (Hex.isHex(digest.trim())) {
-									byte[] sha1 = Hex.toByteArray(digest);
-									byte[] filesha1 = SHA1.digest(f)
-										.digest();
-									if (!Arrays.equals(sha1, filesha1)) {
-										error(
-											"Plugin path: %s, specified url %s and a sha1 but the file does not match the sha",
-											entry.getKey(), url);
+								IO.mkdirs(f.getParentFile());
+								try (Resource resource = Resource.fromURL(u, client)) {
+									try (OutputStream out = IO.outputStream(f)) {
+										resource.write(out);
 									}
-								} else {
-									error(
-										"Plugin path: %s, specified url %s and a sha1 '%s' but this is not a hexadecimal",
-										entry.getKey(), url, digest);
+									long lastModified = resource.lastModified();
+									if (lastModified > 0L) {
+										f.setLastModified(lastModified);
+									}
 								}
+
+								//
+								// If there is a sha specified, we verify the
+								// download
+								// of the
+								// the file.
+								//
+								String digest = entry.getValue()
+									.get(PLUGINPATH_SHA1_ATTR);
+								if (digest != null) {
+									if (Hex.isHex(digest.trim())) {
+										byte[] sha1 = Hex.toByteArray(digest);
+										byte[] filesha1 = SHA1.digest(f)
+											.digest();
+										if (!Arrays.equals(sha1, filesha1)) {
+											error(
+												"Plugin path: %s, specified url %s and a sha1 but the file does not match the sha",
+												entry.getKey(), url);
+										}
+									} else {
+										error(
+											"Plugin path: %s, specified url %s and a sha1 '%s' but this is not a hexadecimal",
+											entry.getKey(), url, digest);
+									}
+								}
+							} catch (Exception e) {
+								exception(e, "Failed to download plugin %s from %s, error %s", entry.getKey(), url, e);
+								continue nextClause;
 							}
-						} catch (Exception e) {
-							exception(e, "Failed to download plugin %s from %s, error %s", entry.getKey(), url, e);
+						} else {
+							error("No such file %s from %s and no 'url' attribute on the path so it can be downloaded",
+								entry.getKey(), this);
 							continue nextClause;
 						}
-					} else {
-						error("No such file %s from %s and no 'url' attribute on the path so it can be downloaded",
-							entry.getKey(), this);
-						continue nextClause;
 					}
+					logger.debug("Adding {} to loader for plugins", f);
+					loader.add(f);
 				}
-				logger.debug("Adding {} to loader for plugins", f);
-				loader.add(f);
+			} finally {
+				IO.close(client);
 			}
-		} finally {
-			IO.close(client);
+		}
+
+		/**
+		 * Load a plugin and customize it. If the plugin cannot be loaded then
+		 * we return null.
+		 *
+		 * @param loader Name of the loader
+		 * @param attrs
+		 * @param className
+		 */
+		private Object loadPlugin(ClassLoader loader, Attrs attrs, String className, boolean ignoreError) {
+			try {
+				Class<?> c = loader.loadClass(className);
+				Object plugin = publicLookup().findConstructor(c, defaultConstructor)
+					.invoke();
+				customize(plugin, attrs, this);
+				if (plugin instanceof AutoCloseable) {
+					closeablePlugins.add((AutoCloseable) plugin);
+				}
+				return plugin;
+			} catch (NoClassDefFoundError e) {
+				if (!ignoreError)
+					exception(e, "Failed to load plugin %s;%s, error: %s ", className, attrs, e);
+			} catch (ClassNotFoundException e) {
+				if (!ignoreError)
+					exception(e, "Failed to load plugin %s;%s, error: %s ", className, attrs, e);
+			} catch (Error e) {
+				throw e;
+			} catch (Throwable e) {
+				exception(e, "Unexpected error loading plugin %s-%s: %s", className, attrs, e);
+			}
+			return null;
+		}
+
+		boolean isMissingPlugin(String name) {
+			return missingCommand.contains(name);
+		}
+
+		protected void close() {
+			closeablePlugins.forEach(IO::close);
+			closeablePlugins.clear();
+			plugins.clear();
+			missingCommand.clear();
 		}
 	}
+
 
 	/**
-	 * Load a plugin and customize it. If the plugin cannot be loaded then we
-	 * return null.
+	 * Is called after the PluginsContainer is initialized.
 	 *
-	 * @param loader Name of the loader
-	 * @param attrs
-	 * @param className
+	 * @param pluginsContainer
 	 */
-	private Object loadPlugin(ClassLoader loader, Attrs attrs, String className, boolean ignoreError) {
-		try {
-			Class<?> c = loader.loadClass(className);
-			Object plugin = publicLookup().findConstructor(c, defaultConstructor)
-				.invoke();
-			customize(plugin, attrs);
-			if (plugin instanceof Closeable) {
-				addClose((Closeable) plugin);
-			}
-			return plugin;
-		} catch (NoClassDefFoundError e) {
-			if (!ignoreError)
-				exception(e, "Failed to load plugin %s;%s, error: %s ", className, attrs, e);
-		} catch (ClassNotFoundException e) {
-			if (!ignoreError)
-				exception(e, "Failed to load plugin %s;%s, error: %s ", className, attrs, e);
-		} catch (Error e) {
-			throw e;
-		} catch (Throwable e) {
-			exception(e, "Unexpected error loading plugin %s-%s: %s", className, attrs, e);
-		}
-		return null;
+	protected void addExtensions(PluginsContainer pluginsContainer) {
+
 	}
 
-	private static final MethodType defaultConstructor = methodType(void.class);
+	static final MethodType defaultConstructor = methodType(void.class);
 
-	protected void setTypeSpecificPlugins(Set<Object> list) {
-		list.add(getExecutor());
-		list.add(getPromiseFactory());
-		list.add(random);
-		list.addAll(basicPlugins);
+	protected void setTypeSpecificPlugins(PluginsContainer pluginsContainer) {
+		pluginsContainer.add(getExecutor());
+		pluginsContainer.add(getPromiseFactory());
+		pluginsContainer.add(random);
+		pluginsContainer.addAll(basicPlugins);
 	}
 
 	/**
@@ -863,7 +975,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param plugin
 	 * @param map
 	 */
-	protected <T> T customize(T plugin, Attrs map) {
+	protected <T> T customize(T plugin, Attrs map, PluginsContainer pluginsContainer) {
 		if (plugin instanceof Plugin) {
 			((Plugin) plugin).setReporter(this);
 			try {
@@ -871,11 +983,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					map = Attrs.EMPTY_ATTRS;
 				((Plugin) plugin).setProperties(map);
 			} catch (Exception e) {
-				error("While setting properties %s on plugin %s, %s", map, plugin, e);
+				exception(e, "While setting properties %s on plugin %s", map, plugin);
 			}
 		}
 		if (plugin instanceof RegistryPlugin) {
-			((RegistryPlugin) plugin).setRegistry(this);
+			((RegistryPlugin) plugin).setRegistry(pluginsContainer);
 		}
 		return plugin;
 	}
@@ -963,9 +1075,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	@Override
 	public void close() throws IOException {
-		for (Closeable c : toBeClosed) {
-			IO.close(c);
-		}
+		toBeClosed.forEach(IO::close);
 
 		clearPlugins();
 
@@ -973,13 +1083,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	private void clearPlugins() {
-		synchronized (this) {
-			plugins = null;
-		}
-		if (pluginLoader != null) {
-			IO.close(pluginLoader);
-			pluginLoader = null;
-		}
+		CloseableMemoize<CL> outgoingPluginLoader = pluginLoader;
+		Memoize<PluginsContainer> outgoingPluginsContainer = pluginsContainer;
+		pluginLoader = newPluginLoader();
+		pluginsContainer = newPluginsContainer();
+		outgoingPluginsContainer.ifPresent(PluginsContainer::close);
+		IO.close(outgoingPluginLoader);
 	}
 
 	public String _basedir(@SuppressWarnings("unused") String args[]) {
@@ -1834,16 +1943,19 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	protected CL getLoader() {
-		if (pluginLoader == null) {
-			pluginLoader = new CL(this);
-			addClose(pluginLoader);
+		return pluginLoader.get();
+	}
+
+
+	private CloseableMemoize<CL> newPluginLoader() {
+		return CloseableMemoize.closeableSupplier(() -> {
+			CL pluginLoader = new CL(this);
 			if (IO.isWindows() && isInteractive()) {
 				pluginLoader.autopurge(5000);
 			}
-		}
-		return pluginLoader;
+			return pluginLoader;
+		});
 	}
-
 	/*
 	 * Check if this is a valid project.
 	 */
@@ -1991,8 +2103,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param name
 	 */
 	public boolean isMissingPlugin(String name) {
-		getPlugins();
-		return missingCommand != null && missingCommand.contains(name);
+		return getPlugins().isMissingPlugin(name);
 	}
 
 	/**
@@ -2247,18 +2358,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 *
 	 * @param plugin
 	 */
-	public synchronized void addBasicPlugin(Object plugin) {
+	public void addBasicPlugin(Object plugin) {
 		basicPlugins.add(plugin);
-		Set<Object> p = plugins;
-		if (p != null)
-			p.add(plugin);
+		pluginsContainer.ifPresent(pc -> pc.add(plugin));
 	}
 
-	public synchronized void removeBasicPlugin(Object plugin) {
+	public void removeBasicPlugin(Object plugin) {
 		basicPlugins.remove(plugin);
-		Set<Object> p = plugins;
-		if (p != null)
-			p.remove(plugin);
+		pluginsContainer.ifPresent(pc -> pc.remove(plugin));
 	}
 
 	public List<File> getIncluded() {
