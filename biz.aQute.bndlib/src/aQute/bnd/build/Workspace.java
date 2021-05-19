@@ -75,6 +75,7 @@ import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Macro;
+import aQute.bnd.osgi.PluginsContainer;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;

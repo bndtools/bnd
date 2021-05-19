@@ -166,6 +166,20 @@ final class EntryPipeline<K, V> implements MapStream<K, V> {
 	}
 
 	@Override
+	public <R> MapStream<R, V> flatMapKey(Function<? super K, ? extends Stream<? extends R>> mapper) {
+		requireNonNull(mapper);
+		return new EntryPipeline<>(entries().flatMap(e -> mapper.apply(e.getKey())
+			.map(k -> MapStream.entry(k, e.getValue()))));
+	}
+
+	@Override
+	public <S> MapStream<K, S> flatMapValue(Function<? super V, ? extends Stream<? extends S>> mapper) {
+		requireNonNull(mapper);
+		return new EntryPipeline<>(entries().flatMap(e -> mapper.apply(e.getValue())
+			.map(v -> MapStream.entry(e.getKey(), v))));
+	}
+
+	@Override
 	public <R> Stream<R> flatMapToObj(BiFunction<? super K, ? super V, ? extends Stream<? extends R>> mapper) {
 		requireNonNull(mapper);
 		return entries().flatMap(e -> mapper.apply(e.getKey(), e.getValue()));
