@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,6 +17,7 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -27,6 +27,7 @@ import org.osgi.service.component.annotations.Reference;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Processor;
+import aQute.lib.concurrent.serial.TriggerRepeat;
 import aQute.lib.io.IO;
 import aQute.lib.watcher.FileWatcher;
 import bndtools.Plugin;
@@ -45,7 +46,7 @@ import bndtools.central.Central;
 public class SynchronizeWorkspaceWithEclipse {
 	static IWorkspace			eclipse			= ResourcesPlugin.getWorkspace();
 	final static IWorkspaceRoot	root			= eclipse.getRoot();
-	final AtomicBoolean			lock			= new AtomicBoolean();
+	final TriggerRepeat			lock			= new TriggerRepeat();
 	ScheduledFuture<?>			schedule;
 	long						lastModified	= -1;
 	FileWatcher					watcher;
@@ -72,65 +73,79 @@ public class SynchronizeWorkspaceWithEclipse {
 			IO.close(watcher);
 	}
 
-	private void sync(Collection<Project> models) {
-		if (lock.getAndSet(true) == true) {
+	private void sync(Collection<Project> doNotUse) {
+
+		if (!lock.trigger()) {
 			// already being handled
 			return;
 		}
 
 		boolean previous = setAutobuild(false);
 
-		Job sync = Job.create("sync workspace", monitor -> {
+		Job sync = Job.create("sync workspace", (IProgressMonitor monitor) -> {
 			Map<String, IProject> projects = Stream.of(root.getProjects())
 				.collect(Collectors.toMap(IProject::getName, p -> p));
 
-			System.out.println(" eclipse projects " + projects.keySet());
+			do {
+				try {
+					// catch up with some changes
+					Thread.sleep(500);
 
-			try {
-				Central.bndCall(after -> {
-					boolean refresh = false;
-					for (Project model : models) {
-						IProject project = projects.remove(model.getName());
-						if (project == null) {
-							System.out.println("create " + model);
-							refresh = true;
-							after.accept("create project",
-								() -> WorkspaceSynchronizer.createProject(model.getBase(), model, monitor));
+					Central.bndCall(after -> {
+						boolean refresh = false;
+						for (Project model : workspace.getAllProjects()) {
+							IProject project = projects.remove(model.getName());
+							if (project == null) {
+								System.out.println("create " + model);
+								refresh = true;
+								after.accept("create project",
+									() -> WorkspaceSynchronizer.createProject(model.getBase(), model, monitor));
+
+							}
 						}
-					}
 
-					for (IProject project : projects.values()) {
-						if (!project.isAccessible())
-							continue;
+						if (monitor.isCanceled())
+							return null;
 
-						if (!project.hasNature(Plugin.BNDTOOLS_NATURE))
-							continue;
+						for (IProject project : projects.values()) {
+							if (!project.isAccessible())
+								continue;
 
-						System.out.println("remove " + project);
-						refresh = true;
-						after.accept("remove project", () -> WorkspaceSynchronizer.removeProject(project, monitor));
-					}
+							if (!project.hasNature(Plugin.BNDTOOLS_NATURE))
+								continue;
 
-					if (refresh) {
+							System.out.println("remove " + project);
+							refresh = true;
+							after.accept("remove project", () -> WorkspaceSynchronizer.removeProject(project, monitor));
+						}
 
-						for (Project p : workspace.getAllProjects())
-							p.clean();
+						if (monitor.isCanceled())
+							return null;
 
-						after.accept("refresh", () -> {
-							root.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-							eclipse.build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
-							eclipse.build(IncrementalProjectBuilder.FULL_BUILD, monitor);
-						});
-					}
-					if (previous)
-						after.accept("resetting autobuild " + previous, () -> setAutobuild(previous));
-					return null;
-				});
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				lock.set(false);
-			}
+						if (refresh) {
+
+							for (Project p : workspace.getAllProjects()) {
+
+								if (monitor.isCanceled())
+									return null;
+
+								p.clean();
+							}
+
+							after.accept("refresh", () -> {
+								root.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+								eclipse.build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
+								eclipse.build(IncrementalProjectBuilder.FULL_BUILD, monitor);
+							});
+						}
+						if (previous)
+							after.accept("resetting autobuild " + previous, () -> setAutobuild(previous));
+						return null;
+					});
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			} while (lock.doit());
 
 		});
 		sync.setRule(root);
