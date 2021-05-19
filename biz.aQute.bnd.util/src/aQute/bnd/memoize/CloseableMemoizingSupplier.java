@@ -20,20 +20,27 @@ import java.util.function.Supplier;
  * </ul>
  */
 class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMemoize<T> {
-	private final StampedLock			lock;
-	private volatile boolean			initial;
+	private final StampedLock	lock;
+	private volatile boolean	initial;
 	// @GuardedBy("initial")
-	private Object						memoized;
+	private T					memoized;
 
+	interface InitialSupplier<S extends AutoCloseable> extends Supplier<S>, AutoCloseable {
+		@Override
+		default void close() {}
+	}
+
+	@SuppressWarnings("unchecked")
 	CloseableMemoizingSupplier(Supplier<? extends T> supplier) {
 		requireNonNull(supplier);
-		memoized = (Supplier<T>) () -> {
+		memoized = (T) (InitialSupplier<T>) () -> {
 			T result = supplier.get();
 			memoized = result;
 			// write initial _after_ write memoized
 			initial = false;
 			return result;
 		};
+		// write initial _after_ write memoized
 		initial = true;
 		lock = new StampedLock();
 	}
@@ -63,22 +70,20 @@ class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMe
 		return value(memoized);
 	}
 
-	@SuppressWarnings("unchecked")
-	private static <T extends AutoCloseable> T value(Object value) {
+	private static <T extends AutoCloseable> T value(T value) {
 		if (value == null) {
 			throw new IllegalStateException("closed");
 		}
-		return (T) value;
+		return value;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public T peek() {
 		// read initial _before_ read memoized
 		if (initial) {
 			return null;
 		}
-		return (T) memoized;
+		return memoized;
 	}
 
 	@Override
@@ -107,7 +112,7 @@ class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMe
 					initial = false;
 					return; // no value to close
 				}
-				closeable = (AutoCloseable) memoized;
+				closeable = memoized;
 				if (closeable == null) {
 					return; // already closed
 				}
@@ -158,8 +163,7 @@ class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMe
 			// prevent closing during accept while allowing multiple accepts
 			final long stamp = lock.readLock();
 			try {
-				@SuppressWarnings("unchecked")
-				T value = (T) memoized;
+				T value = memoized;
 				if (value != null) { // may have been just closed
 					consumer.accept(value);
 				}
