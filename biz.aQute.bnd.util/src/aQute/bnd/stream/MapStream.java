@@ -120,6 +120,10 @@ public interface MapStream<K, V> extends BaseStream<Entry<K, V>, MapStream<K, V>
 	<R, S> MapStream<R, S> flatMap(
 		BiFunction<? super K, ? super V, ? extends MapStream<? extends R, ? extends S>> mapper);
 
+	<R> MapStream<R, V> flatMapKey(Function<? super K, ? extends Stream<? extends R>> mapper);
+
+	<S> MapStream<K, S> flatMapValue(Function<? super V, ? extends Stream<? extends S>> mapper);
+
 	<O> Stream<O> flatMapToObj(BiFunction<? super K, ? super V, ? extends Stream<? extends O>> mapper);
 
 	IntStream flatMapToInt(BiFunction<? super K, ? super V, ? extends IntStream> mapper);
