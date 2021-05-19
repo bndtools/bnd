@@ -20,16 +20,22 @@ import java.util.function.Supplier;
  * </ul>
  */
 class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMemoize<T> {
-	private final Supplier<? extends T>	supplier;
 	private final StampedLock			lock;
 	private volatile boolean			initial;
 	// @GuardedBy("initial")
-	private T							memoized;
+	private Object						memoized;
 
 	CloseableMemoizingSupplier(Supplier<? extends T> supplier) {
-		this.supplier = requireNonNull(supplier);
-		lock = new StampedLock();
+		requireNonNull(supplier);
+		memoized = (Supplier<T>) () -> {
+			T result = supplier.get();
+			memoized = result;
+			// write initial _after_ write memoized
+			initial = false;
+			return result;
+		};
 		initial = true;
+		lock = new StampedLock();
 	}
 
 	@Override
@@ -48,36 +54,37 @@ class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMe
 	}
 
 	// @GuardedBy("lock.writeLock()")
+	@SuppressWarnings("unchecked")
 	private T initial() {
 		if (initial) {
-			T supplied = supplier.get();
-			memoized = supplied;
-			// write initial _after_ write memoized
-			initial = false;
-			return value(supplied);
+			T result = ((Supplier<T>) memoized).get();
+			return value(result);
 		}
 		return value(memoized);
 	}
 
-	private static <T extends AutoCloseable> T value(T value) {
+	@SuppressWarnings("unchecked")
+	private static <T extends AutoCloseable> T value(Object value) {
 		if (value == null) {
 			throw new IllegalStateException("closed");
 		}
-		return value;
+		return (T) value;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public T peek() {
 		// read initial _before_ read memoized
 		if (initial) {
 			return null;
 		}
-		return memoized;
+		return (T) memoized;
 	}
 
 	@Override
 	public boolean isPresent() {
-		return peek() != null;
+		// read initial _before_ read memoized
+		return !initial && (memoized != null);
 	}
 
 	@Override
@@ -93,11 +100,14 @@ class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMe
 			// critical section: only one at a time
 			final long stamp = lock.writeLock();
 			try {
+				// read initial _before_ read memoized
 				if (initial) {
+					memoized = null; // mark closed
+					// write initial _after_ write memoized
 					initial = false;
 					return; // no value to close
 				}
-				closeable = memoized;
+				closeable = (AutoCloseable) memoized;
 				if (closeable == null) {
 					return; // already closed
 				}
@@ -148,7 +158,8 @@ class CloseableMemoizingSupplier<T extends AutoCloseable> implements CloseableMe
 			// prevent closing during accept while allowing multiple accepts
 			final long stamp = lock.readLock();
 			try {
-				T value = memoized;
+				@SuppressWarnings("unchecked")
+				T value = (T) memoized;
 				if (value != null) { // may have been just closed
 					consumer.accept(value);
 				}
