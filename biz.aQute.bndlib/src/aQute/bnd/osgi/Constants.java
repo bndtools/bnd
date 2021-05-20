@@ -133,6 +133,7 @@ public interface Constants {
 	String		DONOTCOPY									= "-donotcopy";
 	String		EXPORT_CONTENTS								= "-exportcontents";
 	String		EXTENSION									= "-extension";
+	String		WORKSPACE_EXTENSIONS						= "-workspace-extensions";
 	String		EEPROFILE									= "-eeprofile";
 	String		EXECUTABLE									= "-executable";
 	String		EXPORT										= "-export";

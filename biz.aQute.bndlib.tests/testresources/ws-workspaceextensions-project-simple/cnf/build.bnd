@@ -1,0 +1,5 @@
+-plugin: \
+    aQute.bnd.deployer.repository.LocalIndexedRepo; \
+        name = Local; \
+        pretty = true; \
+        local = ${.}/local

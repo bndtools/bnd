@@ -1,0 +1,2 @@
+-workspace-extensions: \
+    test.ws.extension;version=1.0

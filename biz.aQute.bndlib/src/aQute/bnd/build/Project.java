@@ -185,11 +185,13 @@ public class Project extends Processor {
 	public Map<String, Container>								unreferencedClasspathEntries	= new HashMap<>();
 	public ProjectInstructions									instructions					= getInstructions(
 		ProjectInstructions.class);
+	private WorkspaceExtensionHandler							workspaceExtensionHandler;
 
 	public Project(Workspace workspace, File unused, File buildFile) {
 		super(workspace);
 		this.workspace = workspace;
 		setFileMustExist(false);
+		workspaceExtensionHandler = new WorkspaceExtensionHandler(this);
 		if (buildFile != null)
 			setProperties(buildFile);
 
@@ -2266,6 +2268,10 @@ public class Project extends Processor {
 		versionMap.clear();
 		refreshData();
 		super.propertiesChanged();
+		// The extensions need to be done after the Processor has done its
+		// thing, because
+		// we need to Plugins to be cleared
+		workspaceExtensionHandler.doWorkspaceExtensions();
 		workspace.notifier.changedProject(this);
 	}
 

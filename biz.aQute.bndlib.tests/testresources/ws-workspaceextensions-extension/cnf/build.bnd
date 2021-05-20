@@ -1,0 +1,8 @@
+-plugin: \
+    aQute.bnd.deployer.repository.LocalIndexedRepo; \
+        name = Local; \
+        pretty = true; \
+        local = ${.}/local
+        
+-workspace-extensions: \
+    test.ws.extension.extension;version=1.0

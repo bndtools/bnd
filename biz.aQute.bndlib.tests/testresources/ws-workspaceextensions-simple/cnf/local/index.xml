@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<repository xmlns="http://www.osgi.org/xmlns/repository/v1.0.0">
+  <resource>
+    <capability namespace="osgi.identity">
+      <attribute name="osgi.identity" value="test.ws.extension"/>
+      <attribute name="type" value="osgi.bundle"/>
+      <attribute name="version" value="1.0.0.202105121014" type="Version"/>
+    </capability>
+    <capability namespace="osgi.wiring.bundle">
+      <attribute name="bundle-version" value="1.0.0.202105121014" type="Version"/>
+      <attribute name="osgi.wiring.bundle" value="test.ws.extension"/>
+    </capability>
+    <capability namespace="osgi.wiring.host">
+      <attribute name="bundle-version" value="1.0.0.202105121014" type="Version"/>
+      <attribute name="osgi.wiring.host" value="test.ws.extension"/>
+    </capability>
+    <capability namespace="bnd.workspace.extension">
+      <attribute name="include" value="workspace.bnd"/>
+      <attribute name="description" value="Something we can later use in the UI"/>
+      <attribute name="bnd.workspace.extension" value="test.ws.extension"/>
+      <attribute name="version" value="1.0.0"/>
+    </capability>
+    <capability namespace="osgi.content">
+      <attribute name="size" value="698" type="Long"/>
+      <attribute name="url" value="test.ws.extension/test.ws.extension.jar"/>
+      <attribute name="mime" value="application/vnd.osgi.bundle"/>
+      <attribute name="osgi.content" value="A411E497E184CFA0D3FF4B662CFB12E26E4F3692599F5A2BAAC0FB0BE545B1C4"/>
+    </capability>
+  </resource>
+</repository>
