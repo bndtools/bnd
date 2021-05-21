@@ -29,7 +29,10 @@ import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.SupplierWithException;
 import aQute.bnd.maven.MavenCapability;
+import aQute.bnd.memoize.Memoize;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Macro;
@@ -44,10 +47,7 @@ import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
-import aQute.bnd.exceptions.Exceptions;
-import aQute.bnd.exceptions.SupplierWithException;
 import aQute.lib.io.IO;
-import aQute.bnd.memoize.Memoize;
 import aQute.lib.strings.Strings;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
@@ -324,16 +324,15 @@ class IndexFile {
 
 	private Map<Archive, Resource> parseSingle(Archive archive, File single) throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
+		MavenVersion version = archive.revision.version;
 		boolean hasIdentity = rb.addFile(single, single.toURI());
 		if (!hasIdentity) {
 			String name = archive.getWithoutVersion();
-			MavenVersion version = archive.revision.version;
-
-			BridgeRepository.addInformationCapability(rb, name, version.getOSGiVersion(), repo.toString(),
+			BridgeRepository.addInformationCapability(rb, name, version.getOSGiVersion(), archive.toString(),
 				Constants.NOT_A_BUNDLE_S);
 		}
 		MavenCapability.addMavenCapability(rb, archive.revision.group, archive.revision.artifact,
-			archive.revision.version, archive.classifier, repo.toString());
+			version, archive.extension, archive.classifier, repo.getName());
 		Resource resource = rb.build();
 		return Collections.singletonMap(archive, resource);
 	}
@@ -481,9 +480,9 @@ class IndexFile {
 		ResourceBuilder rb = new ResourceBuilder();
 		String bsn = archive.getWithoutVersion();
 		MavenVersion version = archive.revision.version;
-		BridgeRepository.addInformationCapability(rb, bsn, version.getOSGiVersion(), repo.toString(), msg);
+		BridgeRepository.addInformationCapability(rb, bsn, version.getOSGiVersion(), archive.toString(), msg);
 		MavenCapability.addMavenCapability(rb, archive.revision.group, archive.revision.artifact,
-			archive.revision.version, archive.classifier, repo.toString());
+			version, archive.extension, archive.classifier, repo.getName());
 		return rb.build();
 	}
 

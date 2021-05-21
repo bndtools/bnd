@@ -694,6 +694,7 @@ public class PomRepositoryTest extends TestCase {
 				"biz.aQute.bnd:biz.aQute.junit:3.3.0", "biz.aQute.bnd:biz.aQute.launcher:3.3.0",
 				"biz.aQute.bnd:biz.aQute.remote.launcher:3.3.0", "biz.aQute.bnd:biz.aQute.tester:3.3.0",
 				"org.jacoco:org.jacoco.agent:jar:runtime:0.8.6",
+				"org.jacoco:org.jacoco.agent:0.8.6",
 				"org.apache.felix:org.apache.felix.framework:bin:zip:1.4.0"
 			});
 
@@ -715,10 +716,19 @@ public class PomRepositoryTest extends TestCase {
 
 			assertThat(mcsr.list("*")).contains("biz.aQute.remote.launcher",
 				"biz.aQute.launcher", "biz.aQute.junit", "biz.aQute.tester", //
-				"org.jacoco:org.jacoco.agent", // with classifier
+				"org.jacoco.agent", // has bsn
+				"org.jacoco:org.jacoco.agent:jar:runtime", // with classifier
 				"org.apache.felix:org.osgi.foundation",// from zip
-				"org.apache.felix:org.apache.felix.framework" // from zip
+				"org.apache.felix:org.apache.felix.framework:bin:zip" // zip
 				);
+
+				SortedSet<Version> versions = mcsr.versions("org.jacoco.agent");
+				assertThat(versions).hasSize(1);
+				assertThat(mcsr.get("org.jacoco.agent", versions.first(), null)).isFile();
+
+				versions = mcsr.versions("org.jacoco:org.jacoco.agent:jar:runtime");
+				assertThat(versions).hasSize(1);
+				assertThat(mcsr.get("org.jacoco:org.jacoco.agent:jar:runtime", versions.first(), null)).isFile();
 		}
 	}
 
@@ -845,7 +855,7 @@ public class PomRepositoryTest extends TestCase {
 			capabilities = resource.getCapabilities("bnd.info");
 			Capability c = capabilities.get(0);
 			String a = (String) c.getAttributes()
-				.get("name");
+				.get("from");
 			Archive archive = Archive.valueOf(a);
 			assertNotNull(archive);
 		}
