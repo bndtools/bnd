@@ -5,11 +5,11 @@ import java.util.Objects;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.version.MavenVersion;
-import aQute.bnd.exceptions.Exceptions;
 
 public interface MavenCapability extends Capability {
 
@@ -23,10 +23,12 @@ public interface MavenCapability extends Capability {
 
 	String maven_classifier();
 
+	String maven_extension();
+
 	String maven_repository();
 
 	static void addMavenCapability(ResourceBuilder rb, String groupId, String artifactId, MavenVersion version,
-		String classifier, String repository) {
+		String extension, String classifier, String repository) {
 		try {
 			CapabilityBuilder c = new CapabilityBuilder(MAVEN_NAMESPACE);
 			c.addAttribute("maven-groupId", Objects.requireNonNull(groupId));
@@ -34,6 +36,9 @@ public interface MavenCapability extends Capability {
 			c.addAttribute("maven-version", Objects.requireNonNull(version));
 			if (classifier != null) {
 				c.addAttribute("maven-classifier", classifier);
+			}
+			if (extension != null) {
+				c.addAttribute("maven-extension", extension);
 			}
 			if (repository != null) {
 				c.addAttribute("maven-repository", repository);

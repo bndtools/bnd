@@ -44,6 +44,7 @@ import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.maven.MavenCapability;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
@@ -60,7 +61,6 @@ import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
-import aQute.bnd.exceptions.Exceptions;
 import aQute.libg.glob.Glob;
 import bndtools.central.Central;
 
@@ -323,7 +323,7 @@ public class MavenWorkspaceRepository extends AbstractIndexingRepository<IProjec
 				}
 
 				MavenCapability.addMavenCapability(rb, artifact.getGroupId(), artifact.getArtifactId(), mavenVersion,
-					artifact.getClassifier(), from);
+					artifact.getExtension(), artifact.getClassifier(), from);
 
 				if (logger.isDebugEnabled()) {
 					logger.debug("{}: Project {} indexing artifact {} as {}", getName(), project.getName(), artifact,
