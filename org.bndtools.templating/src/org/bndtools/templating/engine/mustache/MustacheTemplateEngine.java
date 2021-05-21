@@ -51,7 +51,7 @@ public class MustacheTemplateEngine implements TemplateEngine {
 			TemplateSettings settings = new TemplateSettings();
 			if (props != null) {
 				settings.leftDelim = props.getProperty("leftDelim", DEFAULT_LEFT_DELIM);
-				settings.rightDelim = props.getProperty("leftDelim", DEFAULT_RIGHT_DELIM);
+				settings.rightDelim = props.getProperty("rightDelim", DEFAULT_RIGHT_DELIM);
 				String process = props.getProperty("process", Constants.DEFAULT_PREPROCESSS_MATCHERS);
 				String processBefore = props.getProperty("process.before", null);
 				if (processBefore != null)
