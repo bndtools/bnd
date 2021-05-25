@@ -2,6 +2,10 @@ package test.component;
 
 import static aQute.bnd.test.BndTestCase.assertOk;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +30,7 @@ import java.util.jar.Manifest;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentConstants;
@@ -64,8 +69,6 @@ import aQute.bnd.test.XmlTester;
 import aQute.bnd.version.Version;
 import aQute.lib.filter.Filter;
 import aQute.lib.io.IO;
-import junit.framework.AssertionFailedError;
-import junit.framework.TestCase;
 
 /**
  * Test for use of DS components specified using spec DS annotations.
@@ -73,7 +76,7 @@ import junit.framework.TestCase;
 @SuppressWarnings({
 	"resource", "restriction", "serial"
 })
-public class DSAnnotationTest extends TestCase {
+public class DSAnnotationTest {
 
 	public static final String	FELIX_1_2				= "http://felix.apache.org/xmlns/scr/v1.2.0-felix";
 
@@ -96,6 +99,7 @@ public class DSAnnotationTest extends TestCase {
 
 	}
 
+	@Test
 	public void testExceedsVersion() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.*ValidNSVersion");
@@ -119,6 +123,7 @@ public class DSAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRequires1_3() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.*RequiresV1_3");
@@ -141,6 +146,7 @@ public class DSAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testValidNamespaceVersion() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ValidNSVersion");
@@ -162,6 +168,7 @@ public class DSAnnotationTest extends TestCase {
 		r.write(System.err);
 	}
 
+	@Test
 	public void testDuplicateExtender() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.ds14.*");
@@ -185,6 +192,7 @@ public class DSAnnotationTest extends TestCase {
 	}
 
 	// #2876
+	@Test
 	public void testExportComponentImplPackage() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.ds14.*");
@@ -215,6 +223,7 @@ public class DSAnnotationTest extends TestCase {
 
 	}
 
+	@Test
 	public void testProperties() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*x");
@@ -574,6 +583,7 @@ public class DSAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBasic() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*_basic");
@@ -1092,6 +1102,7 @@ public class DSAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBasicFelix12() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*_basicFelix12");
@@ -1187,6 +1198,7 @@ public class DSAnnotationTest extends TestCase {
 
 	}
 
+	@Test
 	public void testEnums() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Enums");
@@ -1267,6 +1279,7 @@ public class DSAnnotationTest extends TestCase {
 
 	}
 
+	@Test
 	public void testMethods() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Methods");
@@ -1344,20 +1357,23 @@ public class DSAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testInheritance() throws Exception {
 		testInheritance("-dsannotations-inherit", "true", null);
 	}
 
+	@Test
 	public void testInheritanceFlag() throws Exception {
 		testInheritance(Constants.DSANNOTATIONS_OPTIONS, "inherit", null);
 	}
 
+	@Test
 	public void testInheritanceExtenderFlag() throws Exception {
 		testInheritance(Constants.DSANNOTATIONS_OPTIONS, "inherit,extender",
 			ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
 	}
 
-	public void testInheritance(String key, String value, String extender) throws Exception {
+	void testInheritance(String key, String value, String extender) throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Bottom");
 		b.setProperty(key, value);
@@ -1388,6 +1404,7 @@ public class DSAnnotationTest extends TestCase {
 
 	}
 
+	@Test
 	public void testBadFlag() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Bottom");
@@ -1439,6 +1456,7 @@ public class DSAnnotationTest extends TestCase {
 
 	}
 
+	@Test
 	public void testPrototypes() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Prototypes");
@@ -1501,15 +1519,17 @@ public class DSAnnotationTest extends TestCase {
 
 	}
 
+	@Test
 	public void testBinds() throws Exception {
 		testBinds(null);
 	}
 
+	@Test
 	public void testBindsExtender() throws Exception {
 		testBinds(ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
 	}
 
-	public void testBinds(String extender) throws Exception {
+	void testBinds(String extender) throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*CheckBinds");
 		if (extender != null)
@@ -1590,6 +1610,7 @@ public class DSAnnotationTest extends TestCase {
 
 	}
 
+	@Test
 	public void testBinds13() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*CheckBinds13");
@@ -1621,6 +1642,7 @@ public class DSAnnotationTest extends TestCase {
 		private void bindLogService(LogService l) {}
 	}
 
+	@Test
 	public void testNoUnbindDynamic() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*NoUnbindDynamic");
@@ -1638,6 +1660,7 @@ public class DSAnnotationTest extends TestCase {
 	@Component(name = "testConfigPolicy", configurationPolicy = ConfigurationPolicy.IGNORE)
 	public static class TestConfigPolicy {}
 
+	@Test
 	public void testConfigPolicySetsNamespace() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*TestConfigPolicy");
@@ -1685,6 +1708,7 @@ public class DSAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testIssue347() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*issue347");
@@ -1745,6 +1769,7 @@ public class DSAnnotationTest extends TestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testReferenceInComponent() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ref_on_comp");
@@ -2119,6 +2144,7 @@ public class DSAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBasic13() throws Exception {
 		Jar jar = setupBasic13(null, LogService.class.getName(), SERIALIZABLE_RUNNABLE);
 
@@ -2214,6 +2240,7 @@ public class DSAnnotationTest extends TestCase {
 	}, factoryProperties = "factory.properties")
 	public static class FactoryProperties {}
 
+	@Test
 	public void testFactoryProperties() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryProperties");
@@ -2269,6 +2296,7 @@ public class DSAnnotationTest extends TestCase {
 		ComponentFactory<Object> factory;
 	}
 
+	@Test
 	public void testFactoryReferenceTarget() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryReferenceTarget");
@@ -2299,6 +2327,7 @@ public class DSAnnotationTest extends TestCase {
 		ComponentFactory<Object> factory;
 	}
 
+	@Test
 	public void testFactoryReferenceNoTarget() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryReferenceNoTarget");
@@ -2332,6 +2361,7 @@ public class DSAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testFactoryComponent() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryComponent");
@@ -2366,6 +2396,7 @@ public class DSAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testFactoryComponentNoService() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryComponentNoService");
@@ -2390,6 +2421,7 @@ public class DSAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNoHeaderDups() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13_*");
@@ -2521,6 +2553,7 @@ public class DSAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAnnoConfig13() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13anno_*");
@@ -2659,6 +2692,7 @@ public class DSAnnotationTest extends TestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testAnnoConfigNames13() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13annoNames_config*");
@@ -2746,6 +2780,7 @@ public class DSAnnotationTest extends TestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testAnnoConfigNames14() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS14annoNames_config*");
@@ -2813,6 +2848,7 @@ public class DSAnnotationTest extends TestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testActivationObjects14() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS14_activation_objects*");
@@ -2956,6 +2992,7 @@ public class DSAnnotationTest extends TestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testAnnoConfigOverrides13() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13annoOverride_*");
@@ -3039,6 +3076,7 @@ public class DSAnnotationTest extends TestCase {
 
 	}
 
+	@Test
 	public void testFieldInjection() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*TestFieldInjection");
@@ -3119,6 +3157,7 @@ public class DSAnnotationTest extends TestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testFieldCollectionType() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$TestFieldCollectionType");
@@ -3188,7 +3227,7 @@ public class DSAnnotationTest extends TestCase {
 					found = true;
 				}
 			}
-			assertTrue("objectClass not found: " + o, found);
+			assertTrue(found, "objectClass not found: " + o);
 		}
 	}
 
@@ -3197,17 +3236,17 @@ public class DSAnnotationTest extends TestCase {
 		System.err.println(Constants.REQUIRE_CAPABILITY + ":" + p);
 		Parameters header = new Parameters(p);
 		List<Attrs> attrs = getAll(header, "osgi.service");
-		assertEquals("osgi.service attributes: " + attrs, objectClass.length, attrs.size());
+		assertEquals(objectClass.length, attrs.size(), "osgi.service attributes: " + attrs);
 		for (String o : objectClass) {
 			boolean found = false;
 			for (Attrs at : attrs) {
 				String filter = at.get("filter:", "");
 				if (filter.contains("(objectClass=" + o + ")")) {
-					assertEquals("no effective:=\"active\"", "active", at.get("effective:"));
+					assertEquals("active", at.get("effective:"), "no effective:=\"active\"");
 					found = true;
 				}
 			}
-			assertTrue("objectClass not found: " + o, found);
+			assertTrue(found, "objectClass not found: " + o);
 		}
 
 		checkExtenderVersion(header, extender);
@@ -3292,6 +3331,7 @@ public class DSAnnotationTest extends TestCase {
 		void activate(Map<String, Object> props) {}
 	}
 
+	@Test
 	public void testDesignate() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Designate*");
@@ -3378,6 +3418,7 @@ public class DSAnnotationTest extends TestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testExtraAttributes() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$ExtraAttributes*");
@@ -3437,6 +3478,7 @@ public class DSAnnotationTest extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testExtraAttributes10() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$ExtraAttributes*");
@@ -3506,6 +3548,7 @@ public class DSAnnotationTest extends TestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testPrefixCollisionExtraAttributes() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$PrefixCollisionExtraAttributes*");
@@ -3597,6 +3640,7 @@ public class DSAnnotationTest extends TestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testPrefixCollisionExtraAttributesDefaultPrefix() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS,
@@ -3651,6 +3695,7 @@ public class DSAnnotationTest extends TestCase {
 		void stop() {}
 	}
 
+	@Test
 	public void testMixedStandardBnd() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$MixedStdBnd");
@@ -3678,6 +3723,7 @@ public class DSAnnotationTest extends TestCase {
 		private LogService			log2;
 	}
 
+	@Test
 	public void testVolatileFieldDynamic() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*VolatileField");
@@ -3717,6 +3763,7 @@ public class DSAnnotationTest extends TestCase {
 		private final CopyOnWriteArrayList<LogService>	logs2	= new CopyOnWriteArrayList<>();
 	}
 
+	@Test
 	public void testFinalDynamicCollectionField() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*FinalDynamicCollectionField");
@@ -3758,6 +3805,7 @@ public class DSAnnotationTest extends TestCase {
 
 	// A field in a final class is not final:
 	// https://github.com/bndtools/bnd/issues/2928
+	@Test
 	public void testFinalFieldReference() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.*FinalClassNonFinalField*");
@@ -3782,6 +3830,7 @@ public class DSAnnotationTest extends TestCase {
 		private final List<LogService>			log5	= new CopyOnWriteArrayList<>();
 	}
 
+	@Test
 	public void testFieldCardinality() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*FieldCardinality");
@@ -3853,6 +3902,7 @@ public class DSAnnotationTest extends TestCase {
 		void unsetLogService13(FinalDynamicCollectionField notLs, Map<String, Object> props) {}
 	}
 
+	@Test
 	public void testMismatchedUnbind() throws Exception {
 
 		Builder b = new Builder();
@@ -3906,6 +3956,7 @@ public class DSAnnotationTest extends TestCase {
 		private static final long serialVersionUID = 1L;
 	}
 
+	@Test
 	public void testNotImplementedService() throws Exception {
 		checkClass(NotAMap1.class, 1);
 		checkClass(NotAMap2.class, 1);
@@ -4034,6 +4085,7 @@ public class DSAnnotationTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testIndirectlyImplementedService() throws Exception {
 		checkClass(IsAMap1.class, 0);
 		checkClass(IsAMap2.class, 0);
@@ -4042,7 +4094,7 @@ public class DSAnnotationTest extends TestCase {
 		checkClass(IsAMap4.class, 0);
 	}
 
-	private void checkClass(Class<?> c, int i) throws IOException, Exception, AssertionFailedError {
+	private void checkClass(Class<?> c, int i) throws IOException, Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, c.getName());
 		b.setProperty("Private-Package", "test.component");
@@ -4103,6 +4155,7 @@ public class DSAnnotationTest extends TestCase {
 
 	private List<String> indices = new ArrayList<>();
 
+	@Test
 	public void testReferenceType() throws Exception {
 
 		Builder b = new Builder();
@@ -4159,6 +4212,7 @@ public class DSAnnotationTest extends TestCase {
 	@Component(reference = @Reference(service = LogService.class))
 	public static class ComponentReferenceBad {}
 
+	@Test
 	public void testComponentReference() throws Exception {
 
 		Builder b = new Builder();
@@ -4209,6 +4263,7 @@ public class DSAnnotationTest extends TestCase {
 	 * javac will copy the annotations onto the bridge method. Bnd must ignore
 	 * bridge methods.
 	 */
+	@Test
 	public void testBridgeMethod() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ActivatableComponent");
@@ -4244,6 +4299,7 @@ public class DSAnnotationTest extends TestCase {
 		void bindFormatterLogger(FormatterLogger flogger) {}
 	}
 
+	@Test
 	public void testLoggerSupport() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$LoggerComponent");
@@ -4312,6 +4368,7 @@ public class DSAnnotationTest extends TestCase {
 		void activator() {}
 	}
 
+	@Test
 	public void testConstructorInjection() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$ConstructorInjection");
