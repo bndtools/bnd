@@ -33,6 +33,7 @@ import javax.xml.xpath.XPathExpressionException;
 import org.junit.jupiter.api.Test;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.AnyService;
 import org.osgi.service.component.ComponentConstants;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.ComponentFactory;
@@ -4402,6 +4403,144 @@ public class DSAnnotationTest {
 			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='log']/@interface");
 			xt.assertAttribute("1", "scr:component/reference[@name='log']/@parameter");
 
+		}
+	}
+
+	@Component(reference = {
+		@Reference(name = "component", service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+	})
+	public static class AnyServiceUse {
+		@Activate
+		public AnyServiceUse(@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		Object extensionParam, @Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		List<Object> extensionsParam) {}
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		Object extensionField;
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		List<Object>	extensionsField;
+
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		void setExtensionMethod(Object extensionMethod) {
+
+		}
+	}
+
+	@Test
+	public void anyservice() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$AnyServiceUse");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b);
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, "1.5.0", AnyService.class.getName());
+
+			//
+			// Test all the defaults
+			//
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$AnyServiceUse.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.5.0");
+
+			xt.assertAttribute(AnyService.class.getName(),
+				"scr:component/reference[@name='component']/@interface");
+
+			xt.assertAttribute(AnyService.class.getName(),
+				"scr:component/reference[@name='ExtensionMethod']/@interface");
+			xt.assertAttribute("setExtensionMethod", "scr:component/reference[@name='ExtensionMethod']/@bind");
+
+			xt.assertAttribute(AnyService.class.getName(),
+				"scr:component/reference[@name='extensionField']/@interface");
+			xt.assertAttribute("extensionField", "scr:component/reference[@name='extensionField']/@field");
+
+			xt.assertAttribute(AnyService.class.getName(),
+				"scr:component/reference[@name='extensionsField']/@interface");
+			xt.assertAttribute("extensionsField", "scr:component/reference[@name='extensionsField']/@field");
+			xt.assertAttribute("0..n", "scr:component/reference[@name='extensionsField']/@cardinality");
+			xt.assertAttribute("service", "scr:component/reference[@name='extensionsField']/@field-collection-type");
+
+			xt.assertAttribute(AnyService.class.getName(),
+				"scr:component/reference[@name='extensionParam']/@interface");
+			xt.assertAttribute("0", "scr:component/reference[@name='extensionParam']/@parameter");
+
+			xt.assertAttribute(AnyService.class.getName(),
+				"scr:component/reference[@name='extensionsParam']/@interface");
+			xt.assertAttribute("1", "scr:component/reference[@name='extensionsParam']/@parameter");
+			xt.assertAttribute("0..n", "scr:component/reference[@name='extensionsParam']/@cardinality");
+
+		}
+	}
+
+	@Component
+	public static class AnyServiceUseNoObject {
+		@Activate
+		public AnyServiceUseNoObject(@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		LogService extensionParam, @Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		List<LogService> extensionsParam) {}
+
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		LogService			extensionField;
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		List<LogService>	extensionsField;
+
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		void setExtensionMethod(LogService extensionMethod) {
+
+		}
+	}
+
+	@Test
+	public void anyservice_noobject() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$AnyServiceUseNoObject");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b, 10, 0);
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$AnyServiceUseNoObject.xml");
+			assertNotNull(r);
+			r.write(System.err);
+		}
+	}
+
+	@Component(reference = {
+		@Reference(name = "component", service = AnyService.class)
+	})
+	public static class AnyServiceUseNoTarget {
+		@Activate
+		public AnyServiceUseNoTarget(@Reference(service = AnyService.class)
+		Object extensionParam, @Reference(service = AnyService.class)
+		List<Object> extensionsParam) {}
+
+		@Reference(service = AnyService.class)
+		Object			extensionField;
+		@Reference(service = AnyService.class)
+		List<Object>	extensionsField;
+
+		@Reference(service = AnyService.class)
+		void setExtensionMethod(Object extensionMethod) {
+
+		}
+	}
+
+	@Test
+	public void anyservice_notarget() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$AnyServiceUseNoTarget");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b, 6, 0);
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$AnyServiceUseNoTarget.xml");
+			assertNotNull(r);
+			r.write(System.err);
 		}
 	}
 

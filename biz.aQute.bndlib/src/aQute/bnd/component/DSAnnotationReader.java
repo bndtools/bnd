@@ -73,6 +73,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	public static final Version								V1_2						= new Version("1.2.0");
 	public static final Version								V1_3						= new Version("1.3.0");
 	public static final Version								V1_4						= new Version("1.4.0");
+	public static final Version								V1_5						= new Version("1.5.0");
 	public static final Version								VMAX						= new Version("2.0.0");
 
 	private static final Pattern							BINDNAME					= Pattern
@@ -978,9 +979,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 				if (def.name == null) {
 					def.name = def.field;
 				}
+				// field type is ReferenceTypeSignature
 				ReferenceTypeSignature type = null;
 				if (fieldSig != null) {
-					// field type is ReferenceTypeSignature
 					FieldResolver resolver = new FieldResolver(classSig, fieldSig);
 					type = resolver.resolveField();
 					def.service = determineReferenceType(def, type, resolver, annoService);
@@ -1139,6 +1140,16 @@ public class DSAnnotationReader extends ClassDataCollector {
 					.error("In component '%s', invalid target filter %s for %s: %s", className, def.target, def.name,
 						error)
 					.details(getDetails(def, ErrorType.INVALID_TARGET_FILTER));
+			}
+		}
+
+		if ("org.osgi.service.component.AnyService".equals(def.service)) {
+			def.updateVersion(V1_5, "use of AnyService");
+			if (def.target == null) {
+				analyzer
+					.error("In component '%s', @Reference name '%s' uses 'AnyService' without specifying 'target'.",
+						className, def.name)
+					.details(getDetails(def, ErrorType.ANYSERVICE_NO_TARGET));
 			}
 		}
 
