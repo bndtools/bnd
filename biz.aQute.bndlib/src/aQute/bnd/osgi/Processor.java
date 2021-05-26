@@ -966,7 +966,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			if (overwrite || !target.containsKey(key)) {
 				target.setProperty(key, value);
 			} else if (extensionName != null) {
-				String extensionKey = extensionName + "." + key;
+				String extensionKey = key + "." + extensionName;
 				if (!target.containsKey(extensionKey))
 					target.setProperty(extensionKey, value);
 			}
