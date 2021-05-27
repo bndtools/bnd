@@ -24,14 +24,14 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.model.EE;
-import bndtools.BndConstants;
+import aQute.bnd.osgi.Constants;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.repo.LoadingContentElement;
 import bndtools.utils.ModificationLock;
 
 public class RunFrameworkPart extends BndEditorPart implements PropertyChangeListener {
 	private static final String[]				PROPERTIES			= new String[] {
-		BndConstants.RUNFW, BndConstants.RUNEE
+		Constants.RUNFW, Constants.RUNEE
 	};
 
 	private final ModificationLock				lock				= new ModificationLock();

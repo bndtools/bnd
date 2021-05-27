@@ -299,22 +299,6 @@ public class Instructions implements Map<Instruction, Attrs> {
 	 * base directory, which will match all files in that directory against the
 	 * specification or you can use literal instructions to get files from
 	 * anywhere.
-	 *
-	 * @param base The directory to list files from.
-	 * @return The map that links files to attributes
-	 */
-	@Deprecated
-	public Map<File, Attrs> select(File base) {
-		return MapStream.of(select(base, Function.identity(), null))
-			.mapValue(v -> v.get(0))
-			.collect(MapStream.toMap());
-	}
-
-	/**
-	 * Turn this Instructions into a map of File -> Attrs. You can specify a
-	 * base directory, which will match all files in that directory against the
-	 * specification or you can use literal instructions to get files from
-	 * anywhere.
 	 * <p>
 	 * A mapping function can be provided to rename literal names. This was
 	 * added to map '.' and '' to 'bnd.bnd'. However, this can be generally

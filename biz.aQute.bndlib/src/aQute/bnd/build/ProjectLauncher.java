@@ -287,11 +287,6 @@ public abstract class ProjectLauncher extends Processor {
 		return runvm;
 	}
 
-	@Deprecated
-	public Collection<String> getArguments() {
-		return getRunProgramArgs();
-	}
-
 	public Collection<String> getRunProgramArgs() {
 		return runprogramargs;
 	}
