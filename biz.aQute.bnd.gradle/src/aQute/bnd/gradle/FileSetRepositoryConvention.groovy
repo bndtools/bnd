@@ -15,6 +15,7 @@
 package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.builtBy
+import static org.gradle.api.tasks.PathSensitivity.RELATIVE
 
 import aQute.bnd.repository.fileset.FileSetRepository
 
@@ -41,7 +42,7 @@ class FileSetRepositoryConvention {
 		bundles(project.sourceSets.main.getRuntimeClasspath())
 		bundles(project.getConfigurations().archives.getArtifacts().getFiles())
 		// need to programmatically add to inputs since @InputFiles in a convention is not processed
-		task.getInputs().files(getBundles()).withPropertyName("bundles")
+		task.getInputs().files(getBundles()).withPathSensitivity(RELATIVE).withPropertyName("bundles")
 	}
 
 	/**

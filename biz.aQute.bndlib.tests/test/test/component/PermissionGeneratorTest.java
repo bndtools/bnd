@@ -100,7 +100,6 @@ public class PermissionGeneratorTest {
             "javax.xml.namespace",
             "javax.xml.parsers",
             "javax.xml.xpath",
-            "junit.framework",
             "org.assertj.core.api",
             "org.junit.jupiter.api",
             "org.osgi.framework",

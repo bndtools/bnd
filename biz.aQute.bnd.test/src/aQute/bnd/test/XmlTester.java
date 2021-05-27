@@ -65,22 +65,22 @@ public class XmlTester {
 	}
 
 	public void assertExactAttribute(String value, String expr) throws XPathExpressionException {
-		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
+		System.err.printf("%s => %s%n", expr, o);
 		assertThat(o).isEqualTo(value);
 	}
 
 	public void assertAttribute(String value, String expr) throws XPathExpressionException {
-		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
+		System.err.printf("%s => %s%n", expr, o);
 		assertThat(o).usingComparator((s1, s2) -> s1.trim()
 			.compareTo(s2))
 			.isEqualTo(value);
 	}
 
 	public void assertTrimmedAttribute(String value, String expr) throws XPathExpressionException {
-		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
+		System.err.printf("%s => %s%n", expr, o);
 		assertThat(o).usingComparator((s1, s2) -> s1.trim()
 			.replaceAll("\n", "\\\\n")
 			.compareTo(s2))
@@ -88,20 +88,21 @@ public class XmlTester {
 	}
 
 	public void assertNoAttribute(String expr) throws XPathExpressionException {
-		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
+		System.err.printf("%s => %s%n", expr, o);
 		assertThat(o).isEmpty();
 	}
 
 	public void assertNamespace(String namespace) {
 		Element element = document.getDocumentElement();
 		String xmlns = element.getNamespaceURI();
+		System.err.printf("%s => %s%n", namespace, xmlns);
 		assertThat(xmlns).isEqualTo(namespace);
 	}
 
 	public void assertNumber(Double value, String expr) throws XPathExpressionException {
-		System.err.println(expr);
 		Double o = (Double) xpath.evaluate(expr, document, XPathConstants.NUMBER);
+		System.err.printf("%s => %s%n", expr, o);
 		assertThat(o).isEqualTo(value);
 	}
 

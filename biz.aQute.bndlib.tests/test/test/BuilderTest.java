@@ -640,11 +640,11 @@ public class BuilderTest {
 
 	@Test
 	public void testClassQuery() throws Exception {
-		Builder a = new Builder();
-		try {
+		try (Builder a = new Builder()) {
 			a.addClasspath(new File("bin_test"));
 			a.setExportPackage("test.component");
-			a.setProperty("testcases", "${sort;${classes;extending;junit.framework.TestCase;concrete}}");
+			a.setProperty("testcases",
+				"${sort;${uniq;${classes;EXTENDS;junit.framework.TestCase;CONCRETE};${classes;HIERARCHY_ANNOTATED;org.junit.Test;CONCRETE};${classes;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.platform.commons.annotation.Testable;CONCRETE}}}");
 			a.setProperty("Test-Cases", "${testcases}");
 			a.setProperty("-dsannotations", "!*");
 			a.setProperty("-metatypeannotations", "!*");
@@ -653,9 +653,7 @@ public class BuilderTest {
 			Manifest m = jar.getManifest();
 			Parameters p = new Parameters(m.getMainAttributes()
 				.getValue("Test-Cases"));
-			assertTrue(p.size() >= 4);
-		} finally {
-			a.close();
+			assertThat(p).hasSizeGreaterThanOrEqualTo(4);
 		}
 	}
 

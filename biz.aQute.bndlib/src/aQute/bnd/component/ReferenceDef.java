@@ -42,7 +42,8 @@ class ReferenceDef extends ExtensionDef {
 	String					field;
 	FieldOption				fieldOption;
 	CollectionType			collectionType;
-	boolean					isCollection;
+	boolean					isCollection;			// collection OR optional
+	boolean					isOptional;
 	boolean					isCollectionSubClass;
 	Integer					parameter;
 	String					reasonForVersion;
