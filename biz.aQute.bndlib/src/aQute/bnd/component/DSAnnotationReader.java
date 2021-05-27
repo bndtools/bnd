@@ -993,10 +993,18 @@ public class DSAnnotationReader extends ClassDataCollector {
 					}
 					if (def.isCollection) {
 						if (def.cardinality == null) {
-							def.cardinality = ReferenceCardinality.MULTIPLE;
+							def.cardinality = def.isOptional ? ReferenceCardinality.OPTIONAL
+								: ReferenceCardinality.MULTIPLE;
 						}
 						if (annotation.get("collectionType") != null) {
 							def.collectionType = reference.collectionType();
+						}
+						if (def.isOptional && (def.cardinality != ReferenceCardinality.OPTIONAL)
+							&& (def.cardinality != ReferenceCardinality.MANDATORY)) {
+							analyzer.error(
+								"In component '%s', field '%s' is 'Optional' but cardinality is not '0..1' or '1..1'.",
+								className, def.field)
+								.details(getDetails(def, ErrorType.OPTIONAL_FIELD_WITH_MULTIPLE));
 						}
 					}
 					if ((def.fieldOption == null) && (def.policy == ReferencePolicy.DYNAMIC)
@@ -1090,10 +1098,18 @@ public class DSAnnotationReader extends ClassDataCollector {
 					}
 					if (def.isCollection) {
 						if (def.cardinality == null) {
-							def.cardinality = ReferenceCardinality.MULTIPLE;
+							def.cardinality = def.isOptional ? ReferenceCardinality.OPTIONAL
+								: ReferenceCardinality.MULTIPLE;
 						}
 						if (annotation.get("collectionType") != null) {
 							def.collectionType = reference.collectionType();
+						}
+						if (def.isOptional && (def.cardinality != ReferenceCardinality.OPTIONAL)
+							&& (def.cardinality != ReferenceCardinality.MANDATORY)) {
+							analyzer.error(
+								"In component '%s', constructor argument %s is 'Optional' but cardinality is not '0..1' or '1..1'.",
+								className, def.parameter)
+								.details(getDetails(def, ErrorType.OPTIONAL_FIELD_WITH_MULTIPLE));
 						}
 						if (def.isCollectionSubClass) {
 							analyzer.error(
@@ -1183,26 +1199,34 @@ public class DSAnnotationReader extends ClassDataCollector {
 			paramType = binaryToFQN(param.binary);
 			// Check for collection
 			switch (paramType) {
-				default :
-					// check for subtype of Collection
-					if (!analyzer.assignable(paramType, "java.util.Collection", false)) {
-						break;
-					}
-					def.isCollectionSubClass = true;
-					// FALL-THROUGH
 				case "java.util.Collection" :
 				case "java.util.List" :
 					def.isCollection = true;
-					TypeArgument[] typeArguments = param.classType.typeArguments;
-					if (typeArguments.length != 0) {
-						ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[0]);
-						if (inferred instanceof ClassTypeSignature) {
-							def.collectionType = CollectionType.SERVICE;
-							param = (ClassTypeSignature) inferred;
-							paramType = binaryToFQN(param.binary);
-						}
+					break;
+				default :
+					// check for subtype of Collection
+					if (analyzer.assignable(paramType, "java.util.Collection", false)) {
+						def.isCollection = true;
+						def.isCollectionSubClass = true;
 					}
 					break;
+				case "java.util.Optional" :
+					// We think of Optional as a collection
+					def.isCollection = true;
+					def.isOptional = true;
+					def.updateVersion(V1_5, "use of Optional");
+					break;
+			}
+			if (def.isCollection) {
+				TypeArgument[] typeArguments = param.classType.typeArguments;
+				if (typeArguments.length != 0) {
+					ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[0]);
+					if (inferred instanceof ClassTypeSignature) {
+						def.collectionType = CollectionType.SERVICE;
+						param = (ClassTypeSignature) inferred;
+						paramType = binaryToFQN(param.binary);
+					}
+				}
 			}
 			// compute inferred service
 			boolean tryInfer = (annoService == null) || !annoService.equals(paramType);
@@ -1236,8 +1260,10 @@ public class DSAnnotationReader extends ClassDataCollector {
 					}
 					break;
 				case "java.util.Map" :
-					if (tryInfer && def.isCollection) {
-						def.collectionType = CollectionType.PROPERTIES;
+					if (tryInfer) {
+						if (def.isCollection) {
+							def.collectionType = CollectionType.PROPERTIES;
+						}
 					}
 					break;
 				case "java.util.Map$Entry" :

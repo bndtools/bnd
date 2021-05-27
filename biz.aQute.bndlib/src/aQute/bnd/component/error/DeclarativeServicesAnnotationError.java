@@ -28,7 +28,8 @@ public class DeclarativeServicesAnnotationError {
 		INVALID_COMPONENT_TYPE,
 		CONSTRUCTOR_SIGNATURE_ERROR,
 		VERSION_MISMATCH,
-		ANYSERVICE_NO_TARGET;
+		ANYSERVICE_NO_TARGET,
+		OPTIONAL_FIELD_WITH_MULTIPLE;
 	}
 
 	public final String		className;

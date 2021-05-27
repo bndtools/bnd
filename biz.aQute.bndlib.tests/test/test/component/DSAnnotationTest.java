@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -4417,6 +4418,8 @@ public class DSAnnotationTest {
 		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
 		Object extensionField;
 		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		volatile Optional<Object>	extensionOptionalField;
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
 		List<Object>	extensionsField;
 
 		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
@@ -4465,6 +4468,15 @@ public class DSAnnotationTest {
 			xt.assertAttribute("service", "scr:component/reference[@name='extensionsField']/@field-collection-type");
 
 			xt.assertAttribute(AnyService.class.getName(),
+				"scr:component/reference[@name='extensionOptionalField']/@interface");
+			xt.assertAttribute("extensionOptionalField",
+				"scr:component/reference[@name='extensionOptionalField']/@field");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='extensionOptionalField']/@cardinality");
+			xt.assertAttribute("service",
+				"scr:component/reference[@name='extensionOptionalField']/@field-collection-type");
+			xt.assertAttribute("dynamic", "scr:component/reference[@name='extensionOptionalField']/@policy");
+
+			xt.assertAttribute(AnyService.class.getName(),
 				"scr:component/reference[@name='extensionParam']/@interface");
 			xt.assertAttribute("0", "scr:component/reference[@name='extensionParam']/@parameter");
 
@@ -4486,6 +4498,8 @@ public class DSAnnotationTest {
 		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
 		LogService			extensionField;
 		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		Optional<LogService>	extensionOptionalField;
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
 		List<LogService>	extensionsField;
 
 		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
@@ -4502,7 +4516,7 @@ public class DSAnnotationTest {
 			b.addClasspath(new File("bin_test"));
 
 			Jar jar = b.build();
-			assertOk(b, 10, 0);
+			assertOk(b, 12, 0);
 			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$AnyServiceUseNoObject.xml");
 			assertNotNull(r);
 			r.write(System.err);
@@ -4521,6 +4535,8 @@ public class DSAnnotationTest {
 		@Reference(service = AnyService.class)
 		Object			extensionField;
 		@Reference(service = AnyService.class)
+		Optional<Object>	extensionOptionalField;
+		@Reference(service = AnyService.class)
 		List<Object>	extensionsField;
 
 		@Reference(service = AnyService.class)
@@ -4537,8 +4553,136 @@ public class DSAnnotationTest {
 			b.addClasspath(new File("bin_test"));
 
 			Jar jar = b.build();
-			assertOk(b, 6, 0);
+			assertOk(b, 7, 0);
 			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$AnyServiceUseNoTarget.xml");
+			assertNotNull(r);
+			r.write(System.err);
+		}
+	}
+
+	@Component
+	public static class OptionalUse {
+		@Activate
+		public OptionalUse(@Reference(cardinality = ReferenceCardinality.MANDATORY)
+		Optional<LogService> serviceParam, @Reference
+		Optional<ServiceReference<LogService>> srParam, @Reference
+		Optional<ComponentServiceObjects<LogService>> soParam, @Reference(service = LogService.class)
+		Optional<Map<String, Object>> propsParam, @Reference
+		Optional<Map.Entry<Map<String, Object>, LogService>> tupleParam) {}
+
+		@Reference
+		volatile Optional<LogService>							serviceField;
+
+		@Reference
+		Optional<ServiceReference<LogService>>					srField	= Optional.empty();
+
+		@Reference
+		Optional<ComponentServiceObjects<LogService>>			soField;
+
+		@Reference(service = LogService.class)
+		Optional<Map<String, Object>>							propsField;
+
+		@Reference
+		Optional<Map.Entry<Map<String, Object>, LogService>>	tupleField;
+	}
+
+	@Test
+	public void optional() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$OptionalUse");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b);
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, "1.5.0", LogService.class.getName());
+
+			//
+			// Test all the defaults
+			//
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$OptionalUse.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.5.0");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='serviceField']/@interface");
+			xt.assertAttribute("serviceField", "scr:component/reference[@name='serviceField']/@field");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='serviceField']/@cardinality");
+			xt.assertAttribute("service", "scr:component/reference[@name='serviceField']/@field-collection-type");
+			xt.assertAttribute("dynamic", "scr:component/reference[@name='serviceField']/@policy");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='srField']/@interface");
+			xt.assertAttribute("srField", "scr:component/reference[@name='srField']/@field");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='srField']/@cardinality");
+			xt.assertAttribute("reference", "scr:component/reference[@name='srField']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='soField']/@interface");
+			xt.assertAttribute("soField", "scr:component/reference[@name='soField']/@field");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='soField']/@cardinality");
+			xt.assertAttribute("serviceobjects", "scr:component/reference[@name='soField']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='propsField']/@interface");
+			xt.assertAttribute("propsField", "scr:component/reference[@name='propsField']/@field");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='propsField']/@cardinality");
+			xt.assertAttribute("properties", "scr:component/reference[@name='propsField']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='tupleField']/@interface");
+			xt.assertAttribute("tupleField", "scr:component/reference[@name='tupleField']/@field");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='tupleField']/@cardinality");
+			xt.assertAttribute("tuple", "scr:component/reference[@name='tupleField']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='serviceParam']/@interface");
+			xt.assertAttribute("0", "scr:component/reference[@name='serviceParam']/@parameter");
+			xt.assertAttribute("1..1", "scr:component/reference[@name='serviceParam']/@cardinality");
+			xt.assertAttribute("service", "scr:component/reference[@name='serviceParam']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='srParam']/@interface");
+			xt.assertAttribute("1", "scr:component/reference[@name='srParam']/@parameter");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='srParam']/@cardinality");
+			xt.assertAttribute("reference", "scr:component/reference[@name='srParam']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='soParam']/@interface");
+			xt.assertAttribute("2", "scr:component/reference[@name='soParam']/@parameter");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='soParam']/@cardinality");
+			xt.assertAttribute("serviceobjects", "scr:component/reference[@name='soParam']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='propsParam']/@interface");
+			xt.assertAttribute("3", "scr:component/reference[@name='propsParam']/@parameter");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='propsParam']/@cardinality");
+			xt.assertAttribute("properties", "scr:component/reference[@name='propsParam']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='tupleParam']/@interface");
+			xt.assertAttribute("4", "scr:component/reference[@name='tupleParam']/@parameter");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='tupleParam']/@cardinality");
+			xt.assertAttribute("tuple", "scr:component/reference[@name='tupleParam']/@field-collection-type");
+
+		}
+	}
+
+	@Component
+	public static class OptionalUseMultiple {
+		@Activate
+		public OptionalUseMultiple(@Reference(cardinality = ReferenceCardinality.MULTIPLE)
+		Optional<LogService> serviceParam) {}
+
+		@Reference(cardinality = ReferenceCardinality.MULTIPLE)
+		volatile Optional<LogService> serviceField;
+	}
+
+	@Test
+	public void optional_multiple() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$OptionalUseMultiple");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b, 2, 0);
+			Attributes a = getAttr(jar);
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$OptionalUseMultiple.xml");
 			assertNotNull(r);
 			r.write(System.err);
 		}
