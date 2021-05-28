@@ -2905,45 +2905,6 @@ public class Project extends Processor {
 	}
 
 	/**
-	 * Get a list of the sub builders. A bnd.bnd file can contain the -sub
-	 * option. This will generate multiple deliverables. This method returns the
-	 * builders for each sub file. If no -sub option is present, the list will
-	 * contain a builder for the bnd.bnd file.
-	 *
-	 * @return A list of builders.
-	 * @throws Exception
-	 * @deprecated As of 3.4. Replace with
-	 *
-	 *             <pre>
-	 *             try (ProjectBuilder pb = getBuilder(null)) {
-	 *             	for (Builder b : pb.getSubBuilders()) {
-	 *             		...
-	 *             	}
-	 *             }
-	 *             </pre>
-	 */
-	@Deprecated
-	public Collection<? extends Builder> getSubBuilders() throws Exception {
-		ProjectBuilder pb = getBuilder(null);
-		boolean close = true;
-		try {
-			List<Builder> builders = pb.getSubBuilders();
-			for (Builder b : builders) {
-				if (b == pb) {
-					close = false;
-				} else {
-					pb.removeClose(b);
-				}
-			}
-			return builders;
-		} finally {
-			if (close) {
-				pb.close();
-			}
-		}
-	}
-
-	/**
 	 * Calculate the classpath. We include our own runtime.jar which includes
 	 * the test framework and we include the first of the test frameworks
 	 * specified.

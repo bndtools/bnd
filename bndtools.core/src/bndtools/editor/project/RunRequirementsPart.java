@@ -30,16 +30,19 @@ import org.osgi.resource.Requirement;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
 import aQute.bnd.osgi.Constants;
-import bndtools.BndConstants;
 import bndtools.editor.BndEditor;
 
 public class RunRequirementsPart extends AbstractRequirementListPart {
 
-	@SuppressWarnings("deprecation")
-	private static final String		RUNREQUIRE		= BndConstants.RUNREQUIRE;
+	/**
+	 * @deprecated This is for support of the legacy OBR requirement format, use
+	 *             {@link #RUNREQUIRES} for new format.
+	 */
+	@Deprecated
+	private static final String		RUNREQUIRE		= "-runrequire";
 
 	private static final String[]	SUBSCRIBE_PROPS	= new String[] {
-		RUNREQUIRE, BndConstants.RUNREQUIRES, Constants.RESOLVE
+		RUNREQUIRE, Constants.RUNREQUIRES, Constants.RESOLVE
 	};
 
 	private final Image				resolveIcon		= Icons.desc("resolve")

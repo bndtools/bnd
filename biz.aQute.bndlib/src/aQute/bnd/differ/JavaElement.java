@@ -45,7 +45,9 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Annotation;
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Clazz.FieldDef;
 import aQute.bnd.osgi.Clazz.JAVA;
+import aQute.bnd.osgi.Clazz.MemberDef;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -217,8 +219,8 @@ class JavaElement {
 
 		final Set<Element> members = Create.set();
 		final Set<MethodDef> methods = Create.set();
-		final Set<Clazz.FieldDef> fields = Create.set();
-		final MultiMap<Clazz.Def, Element> annotations = new MultiMap<>();
+		final Set<FieldDef> fields = Create.set();
+		final MultiMap<MemberDef, Element> annotations = new MultiMap<>();
 
 		final TypeRef name = clazz.getClassName();
 
@@ -242,11 +244,11 @@ class JavaElement {
 
 		clazz.parseClassFileWithCollector(new ClassDataCollector() {
 			boolean			memberEnd;
-			Clazz.FieldDef	last;
+			MemberDef	last;
 
 			@Override
 			public void version(int minor, int major) {
-				javas.add(Clazz.JAVA.getJava(major, minor));
+				javas.add(JAVA.getJava(major, minor));
 			}
 
 			@Override
@@ -260,7 +262,7 @@ class JavaElement {
 			}
 
 			@Override
-			public void field(Clazz.FieldDef defined) {
+			public void field(FieldDef defined) {
 				if (defined.isProtected() || defined.isPublic()) {
 					last = defined;
 					fields.add(defined);
@@ -566,7 +568,7 @@ class JavaElement {
 			}
 		}
 
-		for (Clazz.FieldDef f : fields) {
+		for (FieldDef f : fields) {
 			if (f.isSynthetic()) { // Ignore synthetic fields
 				continue;
 			}

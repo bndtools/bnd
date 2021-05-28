@@ -46,20 +46,6 @@ public class Descriptors {
 	final static TypeRef						FLOAT					= new ConcreteRef("F", "float",
 		PRIMITIVE_PACKAGE);
 
-	@Deprecated
-	public enum SignatureType {
-		TYPEVAR,
-		METHOD,
-		FIELD;
-	}
-
-	@Deprecated
-	public class Signature {
-		public Map<String, Signature>	typevariables	= new HashMap<>();
-		public Signature				type;
-		public List<Signature>			parameters;
-	}
-
 	public Descriptors() {
 		packageRefCache.put(DEFAULT_PACKAGE.getBinary(), DEFAULT_PACKAGE);
 	}

@@ -64,6 +64,7 @@ import aQute.bnd.classfile.ConstantPool.MethodTypeInfo;
 import aQute.bnd.classfile.ConstantPool.NameAndTypeInfo;
 import aQute.bnd.classfile.ConstantValueAttribute;
 import aQute.bnd.classfile.DeprecatedAttribute;
+import aQute.bnd.classfile.ElementInfo;
 import aQute.bnd.classfile.ElementValueInfo;
 import aQute.bnd.classfile.ElementValueInfo.EnumConst;
 import aQute.bnd.classfile.ElementValueInfo.ResultConst;
@@ -95,6 +96,7 @@ import aQute.bnd.classfile.StackMapTableAttribute.StackMapFrame;
 import aQute.bnd.classfile.StackMapTableAttribute.VerificationTypeInfo;
 import aQute.bnd.classfile.TypeAnnotationInfo;
 import aQute.bnd.classfile.TypeAnnotationsAttribute;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Annotation.ElementType;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -103,35 +105,15 @@ import aQute.bnd.signatures.FieldSignature;
 import aQute.bnd.signatures.MethodSignature;
 import aQute.bnd.signatures.Signature;
 import aQute.bnd.stream.MapStream;
-import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.unmodifiable.Lists;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.strings.Strings;
-import aQute.bnd.unmodifiable.Lists;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.generics.Create;
 import aQute.libg.glob.Glob;
 
 public class Clazz {
 	private final static Logger logger = LoggerFactory.getLogger(Clazz.class);
-
-	@Deprecated
-	public class ClassConstant {
-		final int		cname;
-		public boolean	referred;
-
-		public ClassConstant(int class_index) {
-			this.cname = class_index;
-		}
-
-		public String getName() {
-			return constantPool.utf8(cname);
-		}
-
-		@Override
-		public String toString() {
-			return "ClassConstant[" + getName() + "]";
-		}
-	}
 
 	public enum JAVA {
 		JDK1_1(45, "JRE-1.1", "(&(osgi.ee=JavaSE)(version=1.1))"), //
@@ -252,11 +234,6 @@ public class Clazz {
 	final static int					ACC_SYNTHETIC	= 0x1000;
 	final static int					ACC_BRIDGE		= 0x0040;
 
-	@Deprecated
-	static protected class Assoc {
-		private Assoc() {}
-	}
-
 	public abstract class Def {
 		private final int access;
 
@@ -324,11 +301,6 @@ public class Clazz {
 			return Clazz.isAnnotation(getAccess());
 		}
 
-		@Deprecated
-		public Collection<TypeRef> getAnnotations() {
-			return null;
-		}
-
 		public TypeRef getOwnerType() {
 			return classDef.getType();
 		}
@@ -336,8 +308,6 @@ public class Clazz {
 		public abstract String getName();
 
 		public abstract TypeRef getType();
-
-		public abstract TypeRef[] getPrototype();
 
 		public Object getClazz() {
 			return Clazz.this;
@@ -350,6 +320,10 @@ public class Clazz {
 		ElementDef(int access, Attribute[] attributes) {
 			super(access);
 			this.attributes = attributes;
+		}
+
+		ElementDef(ElementInfo elementInfo) {
+			this(elementInfo.access, elementInfo.attributes);
 		}
 
 		Attribute[] attributes() {
@@ -429,11 +403,6 @@ public class Clazz {
 		}
 
 		@Override
-		public TypeRef[] getPrototype() {
-			return null;
-		}
-
-		@Override
 		public String toString() {
 			return getName();
 		}
@@ -464,7 +433,7 @@ public class Clazz {
 		private final TypeRef type;
 
 		ClassDef(ClassFile classFile) {
-			super(classFile.access, classFile.attributes);
+			super(classFile);
 			type = analyzer.getTypeRef(classFile.this_class);
 		}
 
@@ -519,26 +488,22 @@ public class Clazz {
 		}
 	}
 
-	public class FieldDef extends ElementDef {
-		private final String	name;
-		private final String	descriptor;
+	public abstract class MemberDef extends ElementDef {
+		private final MemberInfo memberInfo;
 
-		@Deprecated
-		public FieldDef(int access, String name, String descriptor) {
-			super(access, new Attribute[0]);
-			this.name = name;
-			this.descriptor = descriptor;
-		}
-
-		FieldDef(MemberInfo memberInfo) {
-			super(memberInfo.access, memberInfo.attributes);
-			this.name = memberInfo.name;
-			this.descriptor = memberInfo.descriptor;
+		MemberDef(MemberInfo memberInfo) {
+			super(memberInfo);
+			this.memberInfo = memberInfo;
 		}
 
 		@Override
 		public String getName() {
-			return name;
+			return memberInfo.name;
+		}
+
+		@Override
+		public String toString() {
+			return memberInfo.toString();
 		}
 
 		@Override
@@ -546,38 +511,39 @@ public class Clazz {
 			return getDescriptor().getType();
 		}
 
-		@Deprecated
-		public void setDeprecated(boolean deprecated) {}
-
 		public TypeRef getContainingClass() {
 			return getClassName();
 		}
 
 		public String descriptor() {
-			return descriptor;
+			return memberInfo.descriptor;
 		}
 
 		public Descriptor getDescriptor() {
 			return analyzer.getDescriptor(descriptor());
 		}
 
-		@Deprecated
-		public void setConstant(Object o) {}
+		public abstract Object getConstant();
 
+		public abstract String getGenericReturnType();
+	}
+
+	public class FieldDef extends MemberDef {
+		FieldDef(MemberInfo memberInfo) {
+			super(memberInfo);
+		}
+
+		@Override
 		public Object getConstant() {
 			return attribute(ConstantValueAttribute.class).map(a -> a.value)
 				.orElse(null);
 		}
 
+		@Override
 		public String getGenericReturnType() {
 			String signature = getSignature();
 			FieldSignature sig = analyzer.getFieldSignature((signature != null) ? signature : descriptor());
 			return sig.type.toString();
-		}
-
-		@Override
-		public TypeRef[] getPrototype() {
-			return null;
 		}
 
 		@Override
@@ -616,12 +582,7 @@ public class Clazz {
 		}
 	}
 
-	public class MethodDef extends FieldDef {
-		@Deprecated
-		public MethodDef(int access, String method, String descriptor) {
-			super(access, method, descriptor);
-		}
-
+	public class MethodDef extends MemberDef {
 		public MethodDef(MethodInfo methodInfo) {
 			super(methodInfo);
 		}
@@ -636,7 +597,6 @@ public class Clazz {
 			return super.isFinal() || Clazz.this.isFinal();
 		}
 
-		@Override
 		public TypeRef[] getPrototype() {
 			return getDescriptor().getPrototype();
 		}
@@ -737,11 +697,6 @@ public class Clazz {
 		@Override
 		public TypeRef getType() {
 			return type;
-		}
-
-		@Override
-		public TypeRef[] getPrototype() {
-			return null;
 		}
 	}
 
@@ -1657,22 +1612,6 @@ public class Clazz {
 		}
 	}
 
-	/**
-	 * This method parses method or field descriptors and calls
-	 * {@link #referTo(TypeRef, int)} for any types found therein.
-	 *
-	 * @param descriptor The to be parsed descriptor
-	 * @param modifiers
-	 * @see "https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.3"
-	 */
-	@Deprecated
-	public void parseDescriptor(String descriptor, int modifiers) {
-		if (referred == null) {
-			referred = new HashMap<>();
-		}
-		referTo(descriptor, modifiers);
-	}
-
 	public Set<PackageRef> getReferred() {
 		return imports;
 	}
@@ -1680,9 +1619,6 @@ public class Clazz {
 	public String getAbsolutePath() {
 		return path;
 	}
-
-	@Deprecated
-	public void reset() {}
 
 	private Stream<Clazz> hierarchyStream(Analyzer analyzer) {
 		requireNonNull(analyzer);
@@ -1994,9 +1930,6 @@ public class Clazz {
 		return classDef.getAccess();
 	}
 
-	@Deprecated
-	public void setInnerAccess(int access) {}
-
 	public Stream<Annotation> annotations(String binaryNameFilter) {
 		return classDef.annotations(binaryNameFilter);
 	}
@@ -2011,11 +1944,6 @@ public class Clazz {
 
 	public boolean isInnerClass() {
 		return classDef.isInnerClass();
-	}
-
-	@Deprecated
-	public MethodDef getMethodDef(int access, String name, String descriptor) {
-		return new MethodDef(access, name, descriptor);
 	}
 
 	public TypeRef getSuper() {
@@ -2041,9 +1969,6 @@ public class Clazz {
 	public boolean isFinal() {
 		return classDef.isFinal();
 	}
-
-	@Deprecated
-	public void setDeprecated(boolean b) {}
 
 	public boolean isDeprecated() {
 		return classDef.isDeprecated();

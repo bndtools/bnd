@@ -37,6 +37,7 @@ import aQute.bnd.osgi.Annotation;
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.FieldDef;
+import aQute.bnd.osgi.Clazz.MemberDef;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Clazz.MethodParameter;
 import aQute.bnd.osgi.Descriptors.TypeRef;
@@ -110,7 +111,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	final Clazz												clazz;
 	final ClassSignature									classSig;
 	TypeRef[]												interfaces;
-	FieldDef												member;
+	MemberDef												member;
 	MethodSignature											methodSig;
 	FieldSignature											fieldSig;
 	MethodSignature											constructorSig;
@@ -118,7 +119,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	int														constructorArg;
 	TypeRef													className;
 	Analyzer												analyzer;
-	MultiMap<String, Clazz.MethodDef>						methods						= new MultiMap<>();
+	MultiMap<String, MethodDef>								methods						= new MultiMap<>();
 	TypeRef													extendsClass;
 	boolean													baseclass					= true;
 	final Set<Options>										options;

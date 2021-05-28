@@ -107,8 +107,6 @@ public interface Constants {
 
 	String		BUILDERIGNORE								= "-builderignore";
 	String		BUILDPATH									= "-buildpath";
-	@Deprecated
-	String		BUILDPACKAGES								= "-buildpackages";
 	String		BUMPPOLICY									= "-bumppolicy";
 	String		BUNDLEANNOTATIONS							= "-bundleannotations";
 	String		CDIANNOTATIONS								= "-cdiannotations";
@@ -116,8 +114,6 @@ public interface Constants {
 	String		CONDUIT										= "-conduit";
 	String		CONTRACT									= "-contract";
 	String		DEFINE_CONTRACT								= "-define-contract";
-	@Deprecated
-	String		CACHEDIR									= "-cachedir";
 	String		CONDITIONALPACKAGE							= "-conditionalpackage";
 	String		CONNECTION_SETTINGS							= "-connection-settings";
 	String		COMPRESSION									= "-compression";
@@ -248,12 +244,6 @@ public interface Constants {
 
 	String		REMOTEWORKSPACE								= "-remoteworkspace";
 
-	/**
-	 * @deprecated This is for support of the legacy OBR requirement format, use
-	 *             {@link #RUNREQUIRES} for new format.
-	 */
-	@Deprecated
-	String		RUNREQUIRE									= "-runrequire";
 
 	String		RUNBLACKLIST								= "-runblacklist";
 	String		RUNREQUIRES									= "-runrequires";
@@ -544,40 +534,4 @@ public interface Constants {
 	/*
 	 * Deprecated Section
 	 */
-
-	/**
-	 * we use the eclipse setting in eclipse and the javac.source setting in
-	 * offline build
-	 */
-	@Deprecated
-	String		COMPILER_SOURCE								= "-source";
-
-	/**
-	 * we use the eclipse setting in eclipse and the javac.target setting in
-	 * offline build
-	 */
-	@Deprecated
-	String		COMPILER_TARGET								= "-target";
-	@Deprecated
-	String		TESTSUITES									= "Test-Suites";
-	@Deprecated
-	String		TESTREPORT									= "-testreport";
-	@Deprecated
-	String		VERBOSE										= "-verbose";
-	@Deprecated
-	String		RUNPATH_MAIN_DIRECTIVE						= "main:";
-	@Deprecated
-	String		RUNPATH_LAUNCHER_DIRECTIVE					= "launcher:";
-
-	/*
-	 * Was unused and had a bad name
-	 */
-	@Deprecated
-	String		PACKAGE										= "-package";
-
-	@Deprecated
-	String		DEBUG										= "-debug";
-	@Deprecated
-	String		EXPERIMENTS									= "-experiments";
-
 }

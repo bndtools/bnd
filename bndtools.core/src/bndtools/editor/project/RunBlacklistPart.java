@@ -11,12 +11,12 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.osgi.resource.Requirement;
 
-import bndtools.BndConstants;
+import aQute.bnd.osgi.Constants;
 
 public class RunBlacklistPart extends AbstractRequirementListPart {
 
 	private static final String[] SUBSCRIBE_PROPS = new String[] {
-		BndConstants.RUNBLACKLIST
+		Constants.RUNBLACKLIST
 	};
 
 	public RunBlacklistPart(Composite parent, FormToolkit toolkit, int style) {

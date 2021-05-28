@@ -3515,7 +3515,7 @@ public class Analyzer extends Processor {
 				continue;
 
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
-				Clazz.Def member;
+				Clazz.MemberDef member;
 
 				@Override
 				public void extendsClass(TypeRef zuper) throws Exception {
