@@ -992,6 +992,13 @@ public class Launcher implements ServiceListener, FrameworkListener {
 
 	private Bundle install(File f) throws Exception {
 		BundleContext context = systemBundle.getBundleContext();
+		Bundle b = context.getBundle("atomos:boot:" + f.getPath());
+
+		if (b != null) {
+			trace("found (Atomos) connect bundle: location %s for file %s", b.getLocation(), f.getAbsolutePath());
+			return b;
+		}
+
 		try {
 			String location;
 			if (!useReferences()) {
@@ -1002,7 +1009,7 @@ public class Launcher implements ServiceListener, FrameworkListener {
 			} else
 				location = getReferenceUrl(f);
 
-			Bundle b = context.installBundle(location);
+			b = context.installBundle(location);
 			if (b.getLastModified() < f.lastModified()) {
 				b.update();
 			}
