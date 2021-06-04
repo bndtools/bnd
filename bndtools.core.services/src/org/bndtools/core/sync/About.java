@@ -1,4 +1,4 @@
-package bndtools.central.sync;
+package org.bndtools.core.sync;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

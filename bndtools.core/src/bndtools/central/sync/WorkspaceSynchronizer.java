@@ -232,6 +232,7 @@ public class WorkspaceSynchronizer {
 	public static IProject createProject(File directory, Project model, IProgressMonitor monitor) throws CoreException {
 		IPath location = new Path(directory.getAbsolutePath());
 
+		SubMonitor subMonitor = SubMonitor.convert(monitor, 7);
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IProject project = workspace.getRoot()
 			.getProject(directory.getName());
@@ -248,10 +249,12 @@ public class WorkspaceSynchronizer {
 						EclipseUtil.createClasspath(model);
 					}
 				}
+				subMonitor.setWorkRemaining(6);
 				IProjectDescription description = workspace.newProjectDescription(directory.getName());
 				description.setLocation(location);
-				project.create(description, monitor);
-				project.open(monitor);
+				project.create(description, subMonitor.split(1));
+				project.open(subMonitor.split(1));
+				project.refreshLocal(IResource.DEPTH_INFINITE, subMonitor.split(4));
 			} catch (Exception e) {
 				logger.logError("Failed to create project " + project, e);
 			}

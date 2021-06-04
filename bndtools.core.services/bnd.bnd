@@ -12,7 +12,8 @@ Import-Package: \
 # Bundle Content
 
 -includepackage: \
-	org.bndtools.core.editors.quickfix
+	org.bndtools.core.editors.quickfix,\
+	org.bndtools.core.sync
 
 -conditionalpackage: \
     aQute.lib.*,\
@@ -35,5 +36,6 @@ Import-Package: \
 	org.eclipse.swt,\
 	org.eclipse.swt.cocoa.macosx.x86_64,\
 	org.eclipse.jface.text,\
-	org.osgi.service.component.annotations;version=1.3.0
+	org.osgi.service.component.annotations;version='1.3.0',\
+	slf4j.api
 	
