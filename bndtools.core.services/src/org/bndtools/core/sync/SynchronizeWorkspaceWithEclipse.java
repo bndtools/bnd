@@ -1,8 +1,10 @@
-package bndtools.central.sync;
+package org.bndtools.core.sync;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -10,14 +12,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -26,12 +26,13 @@ import org.osgi.service.component.annotations.Reference;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.api.OnWorkspace;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.concurrent.serial.TriggerRepeat;
 import aQute.lib.io.IO;
 import aQute.lib.watcher.FileWatcher;
-import bndtools.Plugin;
 import bndtools.central.Central;
+import bndtools.central.sync.WorkspaceSynchronizer;
 
 /**
  * Synchronizes changes in the bnd workspace with Eclipse. This will use a Java
@@ -46,12 +47,17 @@ import bndtools.central.Central;
 public class SynchronizeWorkspaceWithEclipse {
 	static IWorkspace			eclipse			= ResourcesPlugin.getWorkspace();
 	final static IWorkspaceRoot	root			= eclipse.getRoot();
+	// This restricted API warning can be ignored because the constant
+	// is resolved at compile time.
+	@SuppressWarnings("restriction")
+	final static String			BNDTOOLS_NATURE	= bndtools.Plugin.BNDTOOLS_NATURE;
 	final TriggerRepeat			lock			= new TriggerRepeat();
 	ScheduledFuture<?>			schedule;
 	long						lastModified	= -1;
 	FileWatcher					watcher;
 	File						dir;
 	boolean						macos;
+	OnWorkspace					event;
 
 	@Reference
 	Workspace					workspace;
@@ -62,7 +68,7 @@ public class SynchronizeWorkspaceWithEclipse {
 			.scheduleAtFixedRate(this::check, 1000, 300, TimeUnit.MILLISECONDS);
 
 		macos = "MacOSX".equalsIgnoreCase(osname());
-		workspace.on("workspace sync")
+		event = workspace.on("workspace sync")
 			.projects(this::sync);
 	}
 
@@ -71,6 +77,7 @@ public class SynchronizeWorkspaceWithEclipse {
 		schedule.cancel(true);
 		if (watcher != null)
 			IO.close(watcher);
+		IO.close(event);
 	}
 
 	private void sync(Collection<Project> doNotUse) {
@@ -80,68 +87,83 @@ public class SynchronizeWorkspaceWithEclipse {
 			return;
 		}
 
-		boolean previous = setAutobuild(false);
+		// No need to turn off autobuild as the lock will take care of it
 
 		Job sync = Job.create("sync workspace", (IProgressMonitor monitor) -> {
+
 			Map<String, IProject> projects = Stream.of(root.getProjects())
 				.collect(Collectors.toMap(IProject::getName, p -> p));
 
+			SubMonitor subMonitor = SubMonitor.convert(monitor, 5);
+
 			do {
 				try {
+					// Reset this on every iteration (divides the remaining
+					// time in the monitor into 5, however much is remaining).
+					subMonitor.setWorkRemaining(5);
+					subMonitor.setTaskName("Waiting for changes to finish");
+					// Step 1: wait for catch-up
+					subMonitor.split(1);
 					// catch up with some changes
 					Thread.sleep(500);
 
+					List<Project> createProjects = new ArrayList<>(100);
+					List<IProject> removeProjects = new ArrayList<>(100);
+
 					Central.bndCall(after -> {
-						boolean refresh = false;
-						for (Project model : workspace.getAllProjects()) {
+						Collection<Project> allProjects = workspace.getAllProjects();
+						// Step 2: look for projects to add/update
+						SubMonitor loopMonitor = subMonitor.split(1)
+							.setWorkRemaining(allProjects.size());
+						subMonitor.setTaskName("Scanning bnd workspace for projects to add/refresh");
+						for (Project model : allProjects) {
+							loopMonitor.split(1);
+							loopMonitor.subTask("Checking project " + model.getName());
 							IProject project = projects.remove(model.getName());
 							if (project == null) {
-								System.out.println("create " + model);
-								refresh = true;
-								after.accept("create project",
-									() -> WorkspaceSynchronizer.createProject(model.getBase(), model, monitor));
-
+								createProjects.add(model);
 							}
 						}
 
-						if (monitor.isCanceled())
-							return null;
+						// Step 3: look for projects to remove.
+						loopMonitor = subMonitor.split(1)
+							.setWorkRemaining(projects.size());
+						subMonitor.setTaskName("Scanning Eclipse workspace for projects to remove");
 
 						for (IProject project : projects.values()) {
+							loopMonitor.split(1);
+							loopMonitor.subTask("Checking project " + project.getName());
 							if (!project.isAccessible())
 								continue;
 
-							if (!project.hasNature(Plugin.BNDTOOLS_NATURE))
+							if (!project.hasNature(BNDTOOLS_NATURE))
 								continue;
 
-							System.out.println("remove " + project);
-							refresh = true;
-							after.accept("remove project", () -> WorkspaceSynchronizer.removeProject(project, monitor));
+							removeProjects.add(project);
 						}
-
-						if (monitor.isCanceled())
-							return null;
-
-						if (refresh) {
-
-							for (Project p : workspace.getAllProjects()) {
-
-								if (monitor.isCanceled())
-									return null;
-
-								p.clean();
-							}
-
-							after.accept("refresh", () -> {
-								root.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-								eclipse.build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
-								eclipse.build(IncrementalProjectBuilder.FULL_BUILD, monitor);
-							});
-						}
-						if (previous)
-							after.accept("resetting autobuild " + previous, () -> setAutobuild(previous));
 						return null;
 					});
+
+					// Step 4: add/refresh projects that were found
+					SubMonitor loopMonitor = subMonitor.split(1)
+						.setWorkRemaining(createProjects.size());
+					subMonitor.setTaskName("Adding/creating bnd projects in Eclipse workspace");
+					for (Project create : createProjects) {
+						loopMonitor.subTask("Adding/creating project " + create.getName());
+						IProject p = WorkspaceSynchronizer.createProject(create.getBase(), create,
+							loopMonitor.split(1));
+					}
+
+					// Step 5: remove projects that were not found
+					loopMonitor = subMonitor.split(1)
+						.setWorkRemaining(removeProjects.size());
+					subMonitor.setTaskName("Removing projects that are not part of the bnd workspace");
+					for (IProject remove : removeProjects) {
+						loopMonitor.subTask("Removing project " + remove.getName());
+						WorkspaceSynchronizer.removeProject(remove, loopMonitor.split(1));
+					}
+				} catch (OperationCanceledException e) {
+					throw e;
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -193,19 +215,6 @@ public class SynchronizeWorkspaceWithEclipse {
 			lastModified = lastModified2;
 			long diff = System.currentTimeMillis() - lastModified2;
 			workspace.forceRefreshProjects();
-		}
-	}
-
-	private boolean setAutobuild(boolean on) {
-		try {
-			IWorkspaceDescription description = eclipse.getDescription();
-			boolean original = description.isAutoBuilding();
-			description.setAutoBuilding(on);
-			eclipse.setDescription(description);
-			return original;
-		} catch (CoreException e) {
-			e.printStackTrace();
-			return true;
 		}
 	}
 }
