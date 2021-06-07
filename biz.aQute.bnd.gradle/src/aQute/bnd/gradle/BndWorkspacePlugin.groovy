@@ -53,8 +53,10 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 		/* If in a subproject, use the subproject name */
 		StartParameter startParameter = settings.getStartParameter()
 		File rootDir = settings.getRootDir()
-		for (File currentDir = startParameter.getCurrentDir(); !Objects.equals(currentDir, rootDir); currentDir = currentDir.getParentFile()) {
-			defaultProjectName = currentDir.getName()
+		if (defaultProjectName.isEmpty()) {
+		  for (File currentDir = startParameter.getCurrentDir(); !Objects.equals(currentDir, rootDir); currentDir = currentDir.getParentFile()) {
+		    defaultProjectName = currentDir.getName()
+		  }
 		}
 
 		/* Build a set of project names we need to include from the specified tasks */
