@@ -10,10 +10,14 @@ import java.io.File;
 import java.util.Arrays;
 
 import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import aQute.bnd.classfile.ClassFile;
 import aQute.bnd.classfile.ModuleAttribute;
 import aQute.bnd.classfile.ModuleMainClassAttribute;
+import aQute.bnd.classfile.ModulePackagesAttribute;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -21,6 +25,636 @@ import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 
 public class JPMSModuleInfoPluginTest {
+
+	@ParameterizedTest(name = "Validate Module Access inputs {arguments}")
+	@CsvSource({
+		"OPEN,32", //
+		"open,32", //
+		"0x0020,32", //
+		"0x20,32", //
+		"32,32", //
+		"SYNTHETIC,4096", //
+		"synthetic,4096", //
+		"0x1000,4096", //
+		"4096,4096", //
+		"MANDATED,32768", //
+		"mandated,32768", //
+		"0x8000,32768", //
+		"32768,32768" //
+	})
+	@DisplayName("Validate Module Access inputs produce correct access")
+	public void moduleAccess(String access, int flags) throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.JPMS_MODULE_INFO, "foo;access=" + access);
+			b.setProperty(Constants.BUNDLE_SYMBOLICNAME, "foo");
+			b.setProperty(Constants.BUNDLE_VERSION, "1.2.7");
+			b.setProperty(Constants.PRIVATEPACKAGE, "test.jpms.a.*");
+			b.addClasspath(new File("bin_test"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+
+			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
+			assertNotNull(moduleInfo);
+
+			ClassFile module_info = ClassFile.parseClassFile(new DataInputStream(moduleInfo.openInputStream()));
+
+			assertThat(module_info.this_class).isEqualTo("module-info");
+
+			ModuleAttribute moduleAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModuleAttribute.class::isInstance)
+				.map(ModuleAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(moduleAttribute.module_name).isEqualTo("foo");
+			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7");
+			assertThat(moduleAttribute.module_flags).isEqualTo(flags);
+			assertThat(moduleAttribute.opens).hasSize(0);
+			assertThat(moduleAttribute.exports).hasSize(0);
+			assertThat(moduleAttribute.provides).hasSize(0);
+			assertThat(moduleAttribute.requires).hasSize(1)
+				.anyMatch(e -> e.requires.equals("java.base"));
+			assertThat(moduleAttribute.uses).hasSize(0);
+
+			ModuleMainClassAttribute moduleMainClassAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModuleMainClassAttribute.class::isInstance)
+				.map(ModuleMainClassAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/a");
+		}
+	}
+
+	@Test
+	public void moduleWithOptionsIgnore() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.JPMS_MODULE_INFO, "foo.module;version='1.2.7-module'");
+			b.setProperty(Constants.JPMS_MODULE_INFO_OPTIONS, "java.json.bind;ignore=true");
+			b.setProperty(Constants.BUNDLE_SYMBOLICNAME, "foo");
+			b.setProperty(Constants.BUNDLE_VERSION, "1.2.7");
+			b.setProperty(Constants.PRIVATEPACKAGE, "test.jpms.j.*");
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(IO.getFile("testresources/osgi.annotation-7.0.0.jar"));
+			b.addClasspath(IO.getFile("testresources/geronimo-jcdi_2.0_spec-1.1.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json-api-1.1.3.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+
+			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
+			assertNotNull(moduleInfo);
+
+			ClassFile module_info = ClassFile.parseClassFile(new DataInputStream(moduleInfo.openInputStream()));
+
+			assertThat(module_info.this_class).isEqualTo("module-info");
+
+			ModuleAttribute moduleAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModuleAttribute.class::isInstance)
+				.map(ModuleAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
+			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
+			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.opens).hasSize(0);
+			assertThat(moduleAttribute.exports).hasSize(1)
+				.anyMatch(e -> e.exports.equals("test/jpms/j"));
+			assertThat(moduleAttribute.provides).hasSize(0);
+
+			assertThat(moduleAttribute.requires).hasSize(3)
+				.anyMatch(e -> e.requires.equals("java.base"))
+				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("java.json"));
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/j");
+		}
+	}
+
+	@Test
+	public void moduleWithOptionsStatic() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.JPMS_MODULE_INFO, "foo.module;version='1.2.7-module'");
+			b.setProperty(Constants.JPMS_MODULE_INFO_OPTIONS, "java.json.bind;static=true");
+			b.setProperty(Constants.BUNDLE_SYMBOLICNAME, "foo");
+			b.setProperty(Constants.BUNDLE_VERSION, "1.2.7");
+			b.setProperty(Constants.PRIVATEPACKAGE, "test.jpms.j.*");
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(IO.getFile("testresources/osgi.annotation-7.0.0.jar"));
+			b.addClasspath(IO.getFile("testresources/geronimo-jcdi_2.0_spec-1.1.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json-api-1.1.3.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+
+			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
+			assertNotNull(moduleInfo);
+
+			ClassFile module_info = ClassFile.parseClassFile(new DataInputStream(moduleInfo.openInputStream()));
+
+			assertThat(module_info.this_class).isEqualTo("module-info");
+
+			ModuleAttribute moduleAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModuleAttribute.class::isInstance)
+				.map(ModuleAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
+			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
+			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.opens).hasSize(0);
+			assertThat(moduleAttribute.exports).hasSize(1)
+				.anyMatch(e -> e.exports.equals("test/jpms/j"));
+			assertThat(moduleAttribute.provides).hasSize(0);
+
+			assertThat(moduleAttribute.requires).hasSize(4)
+				.anyMatch(e -> e.requires.equals("java.base"))
+				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("java.json"))
+				.anyMatch(e -> e.requires.equals("java.json.bind"));
+
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("java.json.bind"))
+				.flatExtracting(e -> Arrays.asList(e.requires_flags))
+				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_STATIC_PHASE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/j");
+		}
+	}
+
+	@Test
+	public void moduleWithOptionsMapModuleNameStatic() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.JPMS_MODULE_INFO, "foo.module;version='1.2.7-module'");
+			b.setProperty(Constants.JPMS_MODULE_INFO_OPTIONS,
+				"java.enterprise;substitute=geronimo-jcdi_2.0_spec;static=true");
+			b.setProperty(Constants.BUNDLE_SYMBOLICNAME, "foo");
+			b.setProperty(Constants.BUNDLE_VERSION, "1.2.7");
+			b.setProperty(Constants.PRIVATEPACKAGE, "test.jpms.j.*");
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(IO.getFile("testresources/osgi.annotation-7.0.0.jar"));
+			b.addClasspath(IO.getFile("testresources/geronimo-jcdi_2.0_spec-1.1.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json-api-1.1.3.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+
+			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
+			assertNotNull(moduleInfo);
+
+			ClassFile module_info = ClassFile.parseClassFile(new DataInputStream(moduleInfo.openInputStream()));
+
+			assertThat(module_info.this_class).isEqualTo("module-info");
+
+			ModuleAttribute moduleAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModuleAttribute.class::isInstance)
+				.map(ModuleAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
+			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
+			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.opens).hasSize(0);
+			assertThat(moduleAttribute.exports).hasSize(1)
+				.anyMatch(e -> e.exports.equals("test/jpms/j"));
+			assertThat(moduleAttribute.provides).hasSize(0);
+
+			assertThat(moduleAttribute.requires).hasSize(4)
+				.anyMatch(e -> e.requires.equals("java.base"))
+				.anyMatch(e -> e.requires.equals("java.enterprise"))
+				.anyMatch(e -> e.requires.equals("java.json"))
+				.anyMatch(e -> e.requires.equals("java.json.bind"));
+
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("java.enterprise"))
+				.flatExtracting(e -> Arrays.asList(e.requires_flags))
+				.containsExactlyInAnyOrder(
+					ModuleAttribute.Require.ACC_TRANSITIVE | ModuleAttribute.Require.ACC_STATIC_PHASE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/j");
+		}
+	}
+
+	@Test
+	public void moduleWithOptionsMapModuleName() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.JPMS_MODULE_INFO, "foo.module;version='1.2.7-module'");
+			b.setProperty(Constants.JPMS_MODULE_INFO_OPTIONS, "java.enterprise;substitute=geronimo-jcdi_2.0_spec");
+			b.setProperty(Constants.BUNDLE_SYMBOLICNAME, "foo");
+			b.setProperty(Constants.BUNDLE_VERSION, "1.2.7");
+			b.setProperty(Constants.PRIVATEPACKAGE, "test.jpms.j.*");
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(IO.getFile("testresources/osgi.annotation-7.0.0.jar"));
+			b.addClasspath(IO.getFile("testresources/geronimo-jcdi_2.0_spec-1.1.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json-api-1.1.3.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+
+			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
+			assertNotNull(moduleInfo);
+
+			ClassFile module_info = ClassFile.parseClassFile(new DataInputStream(moduleInfo.openInputStream()));
+
+			assertThat(module_info.this_class).isEqualTo("module-info");
+
+			ModuleAttribute moduleAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModuleAttribute.class::isInstance)
+				.map(ModuleAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
+			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
+			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.opens).hasSize(0);
+			assertThat(moduleAttribute.exports).hasSize(1)
+				.anyMatch(e -> e.exports.equals("test/jpms/j"));
+			assertThat(moduleAttribute.provides).hasSize(0);
+
+			assertThat(moduleAttribute.requires).hasSize(4)
+				.anyMatch(e -> e.requires.equals("java.base"))
+				.anyMatch(e -> e.requires.equals("java.enterprise"))
+				.anyMatch(e -> e.requires.equals("java.json"))
+				.anyMatch(e -> e.requires.equals("java.json.bind"));
+
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("java.enterprise"))
+				.flatExtracting(e -> Arrays.asList(e.requires_flags))
+				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/j");
+		}
+	}
+
+	@Test
+	public void moduleWithAllDynamicImportsOrOptionalIsStatic() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.JPMS_MODULE_INFO, "foo.module;version='1.2.7-module'");
+			b.setProperty(Constants.BUNDLE_SYMBOLICNAME, "foo");
+			b.setProperty(Constants.BUNDLE_VERSION, "1.2.7");
+			b.setProperty(Constants.PRIVATEPACKAGE, "test.jpms.j.*");
+			b.setProperty(Constants.IMPORT_PACKAGE,
+				"javax.json.bind;resolution:=dynamic,javax.json.bind.serializer;resolution:=optional,*");
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(IO.getFile("testresources/osgi.annotation-7.0.0.jar"));
+			b.addClasspath(IO.getFile("testresources/geronimo-jcdi_2.0_spec-1.1.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json-api-1.1.3.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+
+			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
+			assertNotNull(moduleInfo);
+
+			ClassFile module_info = ClassFile.parseClassFile(new DataInputStream(moduleInfo.openInputStream()));
+
+			assertThat(module_info.this_class).isEqualTo("module-info");
+
+			ModuleAttribute moduleAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModuleAttribute.class::isInstance)
+				.map(ModuleAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
+			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
+			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.opens).hasSize(0);
+			assertThat(moduleAttribute.exports).hasSize(1)
+				.anyMatch(e -> e.exports.equals("test/jpms/j"));
+			assertThat(moduleAttribute.provides).hasSize(0);
+
+			assertThat(moduleAttribute.requires).hasSize(4)
+				.anyMatch(e -> e.requires.equals("java.base"))
+				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("java.json"))
+				.anyMatch(e -> e.requires.equals("java.json.bind"));
+
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("java.json.bind"))
+				.flatExtracting(e -> Arrays.asList(e.requires_flags))
+				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_STATIC_PHASE);
+
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.flatExtracting(e -> Arrays.asList(e.requires_flags))
+				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/j");
+		}
+	}
+
+	@Test
+	public void moduleWithAllDynamicImportsIsStatic_2() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.JPMS_MODULE_INFO, "foo.module;version='1.2.7-module'");
+			b.setProperty(Constants.BUNDLE_SYMBOLICNAME, "foo");
+			b.setProperty(Constants.BUNDLE_VERSION, "1.2.7");
+			b.setProperty(Constants.PRIVATEPACKAGE, "test.jpms.i.*");
+			b.setProperty(Constants.IMPORT_PACKAGE, "javax.json.bind.*;resolution:=dynamic,*");
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(IO.getFile("testresources/osgi.annotation-7.0.0.jar"));
+			b.addClasspath(IO.getFile("testresources/geronimo-jcdi_2.0_spec-1.1.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json-api-1.1.3.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+
+			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
+			assertNotNull(moduleInfo);
+
+			ClassFile module_info = ClassFile.parseClassFile(new DataInputStream(moduleInfo.openInputStream()));
+
+			assertThat(module_info.this_class).isEqualTo("module-info");
+
+			ModuleAttribute moduleAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModuleAttribute.class::isInstance)
+				.map(ModuleAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
+			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
+			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.opens).hasSize(0);
+			assertThat(moduleAttribute.exports).hasSize(1)
+				.anyMatch(e -> e.exports.equals("test/jpms/i"));
+			assertThat(moduleAttribute.provides).hasSize(0);
+
+			assertThat(moduleAttribute.requires).hasSize(4)
+				.anyMatch(e -> e.requires.equals("java.base"))
+				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("java.json"))
+				.anyMatch(e -> e.requires.equals("java.json.bind"));
+
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("java.json.bind"))
+				.flatExtracting(e -> Arrays.asList(e.requires_flags))
+				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_STATIC_PHASE);
+
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.flatExtracting(e -> Arrays.asList(e.requires_flags))
+				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/i");
+		}
+	}
+
+	@Test
+	public void moduleWithAllDynamicImportsIsStatic() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.JPMS_MODULE_INFO, "foo.module;version='1.2.7-module'");
+			b.setProperty(Constants.BUNDLE_SYMBOLICNAME, "foo");
+			b.setProperty(Constants.BUNDLE_VERSION, "1.2.7");
+			b.setProperty(Constants.PRIVATEPACKAGE, "test.jpms.i.*");
+			b.setProperty(Constants.IMPORT_PACKAGE, "!javax.json.bind.*,*");
+			b.setProperty(Constants.DYNAMICIMPORT_PACKAGE, "javax.json.bind.*");
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(IO.getFile("testresources/osgi.annotation-7.0.0.jar"));
+			b.addClasspath(IO.getFile("testresources/geronimo-jcdi_2.0_spec-1.1.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json-api-1.1.3.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+
+			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
+			assertNotNull(moduleInfo);
+
+			ClassFile module_info = ClassFile.parseClassFile(new DataInputStream(moduleInfo.openInputStream()));
+
+			assertThat(module_info.this_class).isEqualTo("module-info");
+
+			ModuleAttribute moduleAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModuleAttribute.class::isInstance)
+				.map(ModuleAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
+			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
+			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.opens).hasSize(0);
+			assertThat(moduleAttribute.exports).hasSize(1)
+				.anyMatch(e -> e.exports.equals("test/jpms/i"));
+			assertThat(moduleAttribute.provides).hasSize(0);
+
+			assertThat(moduleAttribute.requires).hasSize(4)
+				.anyMatch(e -> e.requires.equals("java.base"))
+				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("java.json"))
+				.anyMatch(e -> e.requires.equals("java.json.bind"));
+
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("java.json.bind"))
+				.flatExtracting(e -> Arrays.asList(e.requires_flags))
+				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_STATIC_PHASE);
+
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.flatExtracting(e -> Arrays.asList(e.requires_flags))
+				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/i");
+		}
+	}
+
+	@Test
+	public void moduleWithAllResolutionOptionalImportsIsStatic() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.JPMS_MODULE_INFO, "foo.module;version='1.2.7-module'");
+			b.setProperty(Constants.BUNDLE_SYMBOLICNAME, "foo");
+			b.setProperty(Constants.BUNDLE_VERSION, "1.2.7");
+			b.setProperty(Constants.PRIVATEPACKAGE, "test.jpms.i.*");
+			b.setProperty(Constants.IMPORT_PACKAGE, "javax.json.bind.*;resolution:=optional,*");
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(IO.getFile("testresources/osgi.annotation-7.0.0.jar"));
+			b.addClasspath(IO.getFile("testresources/geronimo-jcdi_2.0_spec-1.1.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json-api-1.1.3.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+
+			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
+			assertNotNull(moduleInfo);
+
+			ClassFile module_info = ClassFile.parseClassFile(new DataInputStream(moduleInfo.openInputStream()));
+
+			assertThat(module_info.this_class).isEqualTo("module-info");
+
+			ModuleAttribute moduleAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModuleAttribute.class::isInstance)
+				.map(ModuleAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
+			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
+			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.opens).hasSize(0);
+			assertThat(moduleAttribute.exports).hasSize(1)
+				.anyMatch(e -> e.exports.equals("test/jpms/i"));
+			assertThat(moduleAttribute.provides).hasSize(0);
+
+			assertThat(moduleAttribute.requires).hasSize(4)
+				.anyMatch(e -> e.requires.equals("java.base"))
+				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("java.json"))
+				.anyMatch(e -> e.requires.equals("java.json.bind"));
+
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("java.json.bind"))
+				.flatExtracting(e -> Arrays.asList(e.requires_flags))
+				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_STATIC_PHASE);
+
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.flatExtracting(e -> Arrays.asList(e.requires_flags))
+				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/i");
+		}
+	}
+
+	@Test
+	public void moduleWithNoImportsIsStatic() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.JPMS_MODULE_INFO, "foo.module;modules='java.management';version='1.2.7-module'");
+			b.setProperty(Constants.BUNDLE_SYMBOLICNAME, "foo");
+			b.setProperty(Constants.BUNDLE_VERSION, "1.2.7");
+			b.setProperty(Constants.PRIVATEPACKAGE, "test.jpms.i.*");
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(IO.getFile("testresources/osgi.annotation-7.0.0.jar"));
+			b.addClasspath(IO.getFile("testresources/geronimo-jcdi_2.0_spec-1.1.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json-api-1.1.3.jar"));
+			b.addClasspath(IO.getFile("testresources/javax.json.bind-api-1.0.jar"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+
+			Resource moduleInfo = jar.getResource(Constants.MODULE_INFO_CLASS);
+			assertNotNull(moduleInfo);
+
+			ClassFile module_info = ClassFile.parseClassFile(new DataInputStream(moduleInfo.openInputStream()));
+
+			assertThat(module_info.this_class).isEqualTo("module-info");
+
+			ModuleAttribute moduleAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModuleAttribute.class::isInstance)
+				.map(ModuleAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(moduleAttribute.module_name).isEqualTo("foo.module");
+			assertThat(moduleAttribute.module_version).isEqualTo("1.2.7-module");
+			assertThat(moduleAttribute.module_flags).isEqualTo(0);
+			assertThat(moduleAttribute.opens).hasSize(0);
+			assertThat(moduleAttribute.exports).hasSize(1)
+				.anyMatch(e -> e.exports.equals("test/jpms/i"));
+			assertThat(moduleAttribute.provides).hasSize(0);
+
+			assertThat(moduleAttribute.requires).hasSize(5)
+				.anyMatch(e -> e.requires.equals("java.base"))
+				.anyMatch(e -> e.requires.equals("java.management"))
+				.anyMatch(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.anyMatch(e -> e.requires.equals("java.json"))
+				.anyMatch(e -> e.requires.equals("java.json.bind"));
+
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("java.management"))
+				.flatExtracting(e -> Arrays.asList(e.requires_flags))
+				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_STATIC_PHASE);
+
+			assertThat(moduleAttribute.requires).filteredOn(e -> e.requires.equals("geronimo-jcdi_2.0_spec"))
+				.flatExtracting(e -> Arrays.asList(e.requires_flags))
+				.containsExactlyInAnyOrder(ModuleAttribute.Require.ACC_TRANSITIVE);
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/i");
+		}
+	}
 
 	@Test
 	public void moduleManualConfiguration() throws Exception {
@@ -88,6 +722,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/i");
 		}
 	}
 
@@ -156,6 +799,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/i");
 		}
 	}
 
@@ -210,6 +862,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/i");
 		}
 	}
 
@@ -266,6 +927,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/h");
 		}
 	}
 
@@ -316,6 +986,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/g");
 		}
 	}
 
@@ -364,6 +1043,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/f");
 		}
 	}
 
@@ -423,6 +1111,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/e", "test/jpms/e/other");
 		}
 	}
 
@@ -469,6 +1166,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/d");
 		}
 	}
 
@@ -516,6 +1222,15 @@ public class JPMSModuleInfoPluginTest {
 
 			assertThat(moduleMainClassAttribute).isNotNull();
 			assertThat(moduleMainClassAttribute.main_class).isEqualTo("test/jpms/c/Foo");
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/c");
 		}
 	}
 
@@ -575,6 +1290,16 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/b", "test/jpms/b/internal",
+				"test/jpms/b/other");
 		}
 	}
 
@@ -621,6 +1346,15 @@ public class JPMSModuleInfoPluginTest {
 				.orElse(null);
 
 			assertThat(moduleMainClassAttribute).isNull();
+
+			ModulePackagesAttribute modulePackagesAttribute = Arrays.stream(module_info.attributes)
+				.filter(ModulePackagesAttribute.class::isInstance)
+				.map(ModulePackagesAttribute.class::cast)
+				.findFirst()
+				.orElse(null);
+
+			assertThat(modulePackagesAttribute).isNotNull();
+			assertThat(modulePackagesAttribute.packages).containsExactly("test/jpms/a");
 		}
 	}
 

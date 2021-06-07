@@ -100,7 +100,7 @@ public class WorkspaceSetupWizardPage extends WizardPage {
 			File cnfDir = cnfProject.getLocation()
 				.toFile();
 			warning = String.format(
-				"This Eclipse workspace is already configured as a Bnd workspace. You will not be able to create or import a Bnd workspace from elsewhere.",
+				"This Eclipse workspace is already configured as a Bnd workspace: %s. You will not be able to create or import a Bnd workspace from elsewhere.",
 				cnfDir);
 		}
 		setMessage(warning, WARNING);

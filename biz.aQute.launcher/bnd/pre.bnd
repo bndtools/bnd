@@ -1,0 +1,5 @@
+-includepackage: \
+	aQute.launcher.agent,\
+	aQute.launcher.pre
+
+-baseline:

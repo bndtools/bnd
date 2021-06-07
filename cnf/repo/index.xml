@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<repository xmlns="http://www.osgi.org/xmlns/repository/v1.0.0" name="repo" increment="1587652285000">
+  <resource>
+    <capability namespace="osgi.identity">
+      <attribute name="license" value="Apache-2.0;description=&quot;Apache License, Version 2.0&quot;;link=&quot;https://opensource.org/licenses/Apache-2.0&quot;,EPL-2.0;description=&quot;Eclipse Public License, Version 2.0&quot;;link=&quot;https://opensource.org/licenses/EPL-2.0&quot;"/>
+      <attribute name="osgi.identity" value="biz.aQute.bnd.javagen"/>
+      <attribute name="type" value="osgi.bundle"/>
+      <attribute name="version" value="5.1.0.202004231431-SNAPSHOT" type="Version"/>
+      <attribute name="documentation" value="https://bnd.bndtools.org/"/>
+    </capability>
+    <capability namespace="osgi.wiring.bundle">
+      <attribute name="bundle-version" value="5.1.0.202004231431-SNAPSHOT" type="Version"/>
+      <attribute name="osgi.wiring.bundle" value="biz.aQute.bnd.javagen"/>
+    </capability>
+    <capability namespace="osgi.wiring.host">
+      <attribute name="bundle-version" value="5.1.0.202004231431-SNAPSHOT" type="Version"/>
+      <attribute name="osgi.wiring.host" value="biz.aQute.bnd.javagen"/>
+    </capability>
+    <capability namespace="bnd.external.plugin">
+      <attribute name="objectClass" value="aQute.bnd.service.generate.Generator"/>
+      <attribute name="implementation" value="biz.aQute.bnd.javagen.JavaGen"/>
+      <attribute name="bnd.external.plugin" value="javagen"/>
+    </capability>
+    <capability namespace="osgi.content">
+      <attribute name="size" value="121110" type="Long"/>
+      <attribute name="url" value="biz.aQute.bnd.javagen/biz.aQute.bnd.javagen-5.1.0.jar"/>
+      <attribute name="mime" value="application/vnd.osgi.bundle"/>
+      <attribute name="osgi.content" value="641C5AC069CDA3DDF5C841E87992CFE74A2BBB8341DE5903C791983695785978"/>
+    </capability>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=aQute.bnd.osgi)(version&gt;=4.5.0)(!(version&gt;=5.0.0)))"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=aQute.bnd.service.generate)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.service.generate"/>
+    </requirement>
+    <requirement namespace="osgi.ee">
+      <directive name="filter" value="(&amp;(osgi.ee=JavaSE)(version=1.8))"/>
+    </requirement>
+  </resource>
+</repository>

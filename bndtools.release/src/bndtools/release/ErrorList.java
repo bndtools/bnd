@@ -203,16 +203,16 @@ public class ErrorList {
 		private int getWidth(Drawable cmp, String title, int colNo) {
 			String[][] table = error.getList();
 			int maxLength = title.length();
-			for (int i = 0; i < table.length; i++) {
-				int len = table[i][colNo].length();
+			for (String[] element : table) {
+				int len = element[colNo].length();
 				if (len > maxLength) {
 					maxLength = len;
 				}
 			}
 			maxLength += 2;
 			GC gc = new GC(cmp);
-			int charWidth = gc.getFontMetrics()
-				.getAverageCharWidth();
+			int charWidth = (int) Math.round(gc.getFontMetrics()
+				.getAverageCharacterWidth());
 			gc.dispose();
 			return charWidth * maxLength;
 		}

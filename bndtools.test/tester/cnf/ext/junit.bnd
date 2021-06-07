@@ -1,0 +1,6 @@
+junit: org.apache.servicemix.bundles.junit;version="[4.11,5)",\
+ org.assertj.core;version="[3,4)"
+mockito: org.mockito.mockito-core;version="[2,3)",\
+  net.bytebuddy.byte-buddy;version="[1,2)",\
+  org.objenesis;version="[2,3)"
+-runsystempackages.objenesis: sun.misc,sun.reflect

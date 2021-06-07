@@ -26,12 +26,12 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.remoteworkspace.client.RemoteWorkspaceClientFactory;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspace;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspaceClient;
 import aQute.bnd.service.specifications.BuilderSpecification;
 import aQute.bnd.service.specifications.RunSpecification;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
@@ -48,13 +48,13 @@ public class LaunchpadBuilder implements AutoCloseable {
 	private static final String		EXCLUDEEXPORTS		= "-excludeexports";
 	final static ExecutorService	executor			= Executors.newCachedThreadPool();
 	final static File				projectDir			= IO.work;
-	final static RemoteWorkspace	workspace			= RemoteWorkspaceClientFactory.create(projectDir,
+	final static RemoteWorkspace	defaultWorkspace	= RemoteWorkspaceClientFactory.create(projectDir,
 		new RemoteWorkspaceClient() {});
 	final static RunSpecification	projectTestSetup;
 	final static AtomicInteger		counter				= new AtomicInteger();
 
 	static {
-		projectTestSetup = workspace.analyzeTestSetup(IO.work.getAbsolutePath());
+		projectTestSetup = defaultWorkspace.analyzeTestSetup(IO.work.getAbsolutePath());
 
 		//
 		// We only want the raw setup and not the run spec since this
@@ -74,7 +74,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 		Runtime.getRuntime()
 			.addShutdownHook(new Thread(() -> {
 				try {
-					workspace.close();
+					defaultWorkspace.close();
 				} catch (IOException e) {
 					// ignore
 				}
@@ -92,6 +92,17 @@ public class LaunchpadBuilder implements AutoCloseable {
 	final List<String>				exports			= new ArrayList<>();
 	ClassLoader						myClassLoader;
 	String							parentLoader	= Constants.FRAMEWORK_BUNDLE_PARENT_BOOT;
+	final RemoteWorkspace			workspace;
+
+	/**
+	 * Provide a remote workspace to use, mainly for testing
+	 */
+	public LaunchpadBuilder(RemoteWorkspace workspace) {
+		assert workspace != null;
+		local = new RunSpecification();
+		this.workspace = workspace;
+		this.local.mergeWith(projectTestSetup);
+	}
 
 	/**
 	 * Start a framework assuming the current working directory is the project
@@ -99,6 +110,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 	 */
 	public LaunchpadBuilder() {
 		// This ensures a deep clone.
+		this.workspace = defaultWorkspace;
 		local = new RunSpecification();
 		local.mergeWith(projectTestSetup);
 	}
@@ -213,7 +225,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 	 */
 	public LaunchpadBuilder excludeExport(String... globs) {
 		Stream.of(globs)
-			.flatMap((x) -> Strings.splitAsStream(x))
+			.flatMap(x -> Strings.splitAsStream(x))
 			.map(this::toPredicate)
 			.forEach(excludeExports::add);
 		return this;
@@ -272,8 +284,8 @@ public class LaunchpadBuilder implements AutoCloseable {
 			Framework framework = getFramework(runspec);
 
 			@SuppressWarnings("resource")
-			Launchpad launchpad = new Launchpad(framework, name, className, runspec, closeTimeout, debug, testbundle,
-				byReference);
+			Launchpad launchpad = new Launchpad(workspace, framework, name, className, runspec, closeTimeout, debug,
+				testbundle, byReference);
 
 			launchpad.report("ALL extra system packages\n     %s", toLines(local.extraSystemPackages.keySet()));
 			launchpad.report("Filtered extra system packages\n     %s", toLines(restrictedExports.keySet()));
@@ -420,7 +432,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 
 	Predicate<String> toPredicate(String specification) {
 		Glob g = new Glob(specification);
-		return (test) -> g.matches(test);
+		return test -> g.matches(test);
 	}
 
 	public LaunchpadBuilder copyInstall() {

@@ -240,3 +240,11 @@ Add the maven coordinate of the bundle (extracted from the pom.properties file).
 * Short name: `mavenCoordinate`
 * Properties: no
 * Default Plugin: yes
+
+### Gogo Commands
+
+Add a list of Gogo commands.
+
+* Short name: `gogoCommands`
+* Properties: no
+* Default Plugin: yes

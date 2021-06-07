@@ -3,9 +3,8 @@ package aQute.bnd.maven.testing.plugin;
 import static aQute.bnd.maven.lib.resolve.BndrunContainer.report;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.maven.execution.MavenSession;
@@ -20,6 +19,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.toolchain.ToolchainManager;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.osgi.service.resolver.ResolutionException;
@@ -33,6 +33,7 @@ import aQute.bnd.maven.lib.resolve.Operation;
 import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.strings.Strings;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.libg.glob.Glob;
 import biz.aQute.resolve.ResolveProcess;
 
@@ -92,8 +93,7 @@ public class TestingMojo extends AbstractMojo {
 	private MavenSession										session;
 
 	@Parameter(property = "bnd.testing.scopes", defaultValue = "compile,runtime")
-	private Set<Scope>											scopes	= new HashSet<>(
-		Arrays.asList(Scope.compile, Scope.runtime));
+	private Set<Scope>											scopes	= Sets.of(Scope.compile, Scope.runtime);
 
 	@Parameter(property = "bnd.testing.include.dependency.management", defaultValue = "false")
 	private boolean												includeDependencyManagement;
@@ -110,6 +110,9 @@ public class TestingMojo extends AbstractMojo {
 	@Component
 	@SuppressWarnings("deprecation")
 	private org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
+
+	@Component
+	private ToolchainManager									toolchainManager;
 
 	private Glob												glob	= new Glob("*");
 
@@ -132,6 +135,14 @@ public class TestingMojo extends AbstractMojo {
 		int errors = 0;
 
 		try {
+			List<File> bndrunFiles = bndruns.getFiles(project.getBasedir(), "*.bndrun");
+
+			if (bndrunFiles.isEmpty()) {
+				logger.warn(
+					"No bndrun files were specified with <bndrun> or found as *.bndrun in the project. This is unexpected.");
+				return;
+			}
+
 			BndrunContainer container = new BndrunContainer.Builder(project, session, repositorySession, resolver,
 				artifactFactory, system).setBundles(bundles.getFiles(project.getBasedir()))
 					.setIncludeDependencyManagement(includeDependencyManagement)
@@ -141,7 +152,7 @@ public class TestingMojo extends AbstractMojo {
 
 			Operation operation = getOperation();
 
-			for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
+			for (File runFile : bndrunFiles) {
 				errors += container.execute(runFile, "testing", cwd, operation);
 			}
 		} catch (Exception e) {
@@ -172,6 +183,7 @@ public class TestingMojo extends AbstractMojo {
 				try {
 					String runBundles = run.resolve(failOnChanges, false);
 					if (run.isOk()) {
+						logger.info("{}: {}", Constants.RUNBUNDLES, runBundles);
 						run.setProperty(Constants.RUNBUNDLES, runBundles);
 					}
 				} catch (ResolutionException re) {
@@ -184,6 +196,12 @@ public class TestingMojo extends AbstractMojo {
 					}
 				}
 			}
+			getToolchainJavaHome().ifPresent(home -> run.setProperty("java", new StringBuilder().append(home)
+				.append(File.separatorChar)
+				.append("bin")
+				.append(File.separatorChar)
+				.append("java")
+				.toString()));
 			try {
 				run.test(new File(reportsDir, bndrun), getTests());
 			} finally {
@@ -195,6 +213,15 @@ public class TestingMojo extends AbstractMojo {
 
 			return 0;
 		};
+	}
+
+	@SuppressWarnings("deprecation")
+	private Optional<String> getToolchainJavaHome() {
+		return Optional.ofNullable(toolchainManager)
+			.map(tm -> tm.getToolchainFromBuildContext("jdk", session))
+			.filter(org.apache.maven.toolchain.java.DefaultJavaToolChain.class::isInstance)
+			.map(org.apache.maven.toolchain.java.DefaultJavaToolChain.class::cast)
+			.map(org.apache.maven.toolchain.java.DefaultJavaToolChain::getJavaHome);
 	}
 
 }

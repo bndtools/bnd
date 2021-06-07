@@ -84,8 +84,7 @@ public class RepositoryTargetLocation extends BndTargetLocation {
 			for (String bsn : bsns) {
 				Version version = repository.versions(bsn)
 					.last();
-				File download = repository.get(bsn, version, new HashMap<String, String>(),
-					new RepositoryPlugin.DownloadListener[] {});
+				File download = repository.get(bsn, version, new HashMap<String, String>());
 				try {
 					bundles.add(new TargetBundle(download));
 				} catch (Exception e) {

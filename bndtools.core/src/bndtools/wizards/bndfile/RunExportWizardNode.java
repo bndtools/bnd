@@ -1,5 +1,6 @@
 package bndtools.wizards.bndfile;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.bndtools.core.ui.IRunDescriptionExportWizard;
@@ -83,12 +84,7 @@ public class RunExportWizardNode implements IWizardNode {
 		if (getClass() != obj.getClass())
 			return false;
 		RunExportWizardNode other = (RunExportWizardNode) obj;
-		if (config == null) {
-			if (other.config != null)
-				return false;
-		} else if (!config.equals(other.config))
-			return false;
-		return true;
+		return Objects.equals(config, other.config);
 	}
 
 }

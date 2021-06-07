@@ -35,8 +35,11 @@ public class MessageHyperlinkAdapter implements IHyperlinkListener {
 		Hyperlink link = (Hyperlink) e.getSource();
 		link.setToolTipText(null);
 
-		if (popupDialog != null)
+		if (popupDialog != null) {
 			popupDialog.close();
+			popupDialog = null;
+			return;
+		}
 
 		IMessage[] messages = (IMessage[]) e.data;
 

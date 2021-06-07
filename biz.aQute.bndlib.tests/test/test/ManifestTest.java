@@ -27,6 +27,7 @@ public class ManifestTest extends TestCase {
 		Builder b = new Builder();
 		b.setProperty("Export-Package", "org.osgi.framework");
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
+		b.setProperty("-digests", "SHA-1");
 
 		Jar jar = b.build();
 		jar.calcChecksums(null);
@@ -58,7 +59,7 @@ public class ManifestTest extends TestCase {
 
 		Attributes sl = m.getAttributes("org/osgi/framework/ServiceListener.class");
 		assertNotNull(sl);
-		assertEquals("nzDRN19MrTJG+LP8ayKZITZ653g=", sl.getValue("SHA-Digest"));
+		assertEquals("nzDRN19MrTJG+LP8ayKZITZ653g=", sl.getValue("SHA-1-Digest"));
 
 	}
 

@@ -2,7 +2,6 @@ package bndtools.editor.contents;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -16,6 +15,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.osgi.framework.Version;
 
 import aQute.lib.io.IO;
+import aQute.bnd.unmodifiable.Sets;
 
 /**
  * Models the three available styles for versioning exported packages.
@@ -40,23 +40,15 @@ public enum PackageInfoStyle {
 	SpecAnnotation("package-info.java", "@org.osgi.annotation.versioning.Version(\"%s\")%npackage %s;%n",
 		"org.osgi.annotation.versioning.Version");
 
-	private static final ILogger		logger	= Logger.getLogger(PackageInfoStyle.class);
+	private static final ILogger		logger				= Logger.getLogger(PackageInfoStyle.class);
 
-	private static final Set<String>	PRE_JAVA5_VERSIONS;
+	private static final Set<String>	PRE_JAVA5_VERSIONS	= Sets.of(JavaCore.VERSION_CLDC_1_1, JavaCore.VERSION_1_1,
+		JavaCore.VERSION_1_2, JavaCore.VERSION_1_3, JavaCore.VERSION_1_4);
 
-	static {
-		PRE_JAVA5_VERSIONS = new HashSet<>();
-		PRE_JAVA5_VERSIONS.add(JavaCore.VERSION_CLDC_1_1);
-		PRE_JAVA5_VERSIONS.add(JavaCore.VERSION_1_1);
-		PRE_JAVA5_VERSIONS.add(JavaCore.VERSION_1_2);
-		PRE_JAVA5_VERSIONS.add(JavaCore.VERSION_1_3);
-		PRE_JAVA5_VERSIONS.add(JavaCore.VERSION_1_4);
-	}
-
-	private final String	fileName;
-	private final String	contentPattern;
-	private final String	annotationTypeName;
-	private final Pattern	searchRegex;
+	private final String				fileName;
+	private final String				contentPattern;
+	private final String				annotationTypeName;
+	private final Pattern				searchRegex;
 
 	PackageInfoStyle(String fileName, String contentPattern, String annotationTypeName) {
 		this.fileName = fileName;

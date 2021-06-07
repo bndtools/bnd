@@ -24,14 +24,15 @@ import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
+import aQute.p2.packed.Unpack200;
 import aQute.service.reporter.Reporter;
 
 /**
  * A p2 repository
  */
-@BndPlugin(name = "p2", parameters = P2Config.class)
+@BndPlugin(name = "P2 Repo", parameters = P2Config.class)
 public class P2Repository extends BaseRepository
 	implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Closeable {
 	private P2Config	config;
@@ -69,7 +70,7 @@ public class P2Repository extends BaseRepository
 			IO.mkdirs(location);
 			File indexFile = new File(location, "index.xml.gz");
 
-			return new P2Indexer(reporter, location, client, url, name);
+			return new P2Indexer(new Unpack200(this.workspace), reporter, location, client, url, name);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -97,7 +98,8 @@ public class P2Repository extends BaseRepository
 
 	@Override
 	public String getLocation() {
-		return getP2Index().location.getPath();
+		P2Indexer index = getP2Index();
+		return index.location.getPath();
 	}
 
 	@Override
@@ -131,7 +133,8 @@ public class P2Repository extends BaseRepository
 
 	@Override
 	public File getRoot() throws Exception {
-		return getP2Index().location;
+		P2Indexer index = getP2Index();
+		return index.location;
 	}
 
 	@Override

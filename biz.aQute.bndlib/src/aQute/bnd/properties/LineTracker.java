@@ -48,7 +48,7 @@ public class LineTracker {
 					left = right;
 				else
 					left = mid + 1;
-			} else if (offset == line.offset) {
+			} else {
 				left = right = mid;
 			}
 		}

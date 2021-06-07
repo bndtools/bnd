@@ -61,6 +61,18 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
+	public void testDescription() throws Exception {
+		TwigChecker checker = checker("_printComponentServiceDescription");
+
+		checker.with(map().set("properties", map().set("service.description", map().set("type", "String")
+			.set("values", list("my.description")))))
+			.expect("#### Description")
+			.expectBlankLine()
+			.expect("my.description")
+			.check();
+
+	}
+
 	public void testMavenCoordinate() throws Exception {
 		TwigChecker checker = checker("printMavenCoordinate");
 
@@ -88,6 +100,52 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("**</dependency>")
 			.expect("**```")
 			.check();
+
+		checker.with(map().set("groupId", "groupIdTest")
+			.set("artifactId", "artifactIdTest")
+			.set("version", "versionTest")
+			.set("classifier", "extra"))
+			.expect("```xml")
+			.expect("<dependency>")
+			.expect("    <groupId>groupIdTest</groupId>")
+			.expect("    <artifactId>artifactIdTest</artifactId>")
+			.expect("    <version>versionTest</version>")
+			.expect("    <classifier>extra</classifier>")
+			.expect("</dependency>")
+			.expect("```")
+			.check();
+	}
+
+	public void testSlingFeatureCoordinates() throws Exception {
+		TwigChecker checker = checker("printFeatureCoordinate");
+
+		checker.with(map().set("groupId", "groupIdTest")
+			.set("artifactId", "artifactIdTest")
+			.set("version", "versionTest"))
+			.expect("```")
+			.expect("\"bundles\": [")
+			.expect("   {")
+			.expect("    \"id\": \"groupIdTest:artifactIdTest:versionTest\"")
+			.expect("   }")
+			.expect("]")
+			.expect("```")
+			.check();
+
+		checker.with(map().set("groupId", "groupIdTest")
+			.set("artifactId", "artifactIdTest")
+			.set("version", "versionTest")
+			.set("classifier", "extra"))
+			.with(map().set("sha1", "theChecksum"))
+			.expect("```")
+			.expect("\"bundles\": [")
+			.expect("   {")
+			.expect("    \"id\": \"groupIdTest:artifactIdTest:versionTest:jar:extra\"")
+			.expect("    \"hash\": \"theChecksum\"")
+			.expect("   }")
+			.expect("]")
+			.expect("```")
+			.check();
+
 	}
 
 	public void testOSGiCoordinate() throws Exception {
@@ -261,6 +319,8 @@ public class JtwigPrinterTest extends TestCase {
 			.set("configurationPolicy", "ignore")), list())
 			.expect("### name - *state = not enabled, activation = delayed*")
 			.expectBlankLine()
+			.expect("#### Description")
+			.expectBlankLine()
 			.expect("#### Services")
 			.expectBlankLine()
 			.expect("No services.")
@@ -272,6 +332,30 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("#### Configuration")
 			.expectBlankLine()
 			.expect("No configuration.")
+			.expectBlankLine()
+			.expect("#### Reference bindings")
+			.expectBlankLine()
+			.expect("No bindings.")
+			.expectBlankLine()
+			.expect("#### OSGi-Configurator")
+			.expectBlankLine()
+			.expectBlankLine()
+			.expect("```")
+			.expect("/*")
+			.expect(" * Component: name")
+			.expect(" * policy:    ignore")
+			.expect(" */")
+			.expect("\"\":{")
+			.expect("        //# Component properties")
+			.expect("        // none")
+			.expectBlankLine()
+			.expect("        //# Reference bindings")
+			.expect("        // none")
+			.expectBlankLine()
+			.expect("        //# ObjectClassDefinition - Attributes")
+			.expect("        // (No PidOcd available.)")
+			.expect("}")
+			.expect("```")
 			.check();
 
 		checker.with(list(map().set("name", "name")
@@ -281,6 +365,8 @@ public class JtwigPrinterTest extends TestCase {
 			list())
 			.expect("### name - *state = not enabled, activation = delayed*")
 			.expectBlankLine()
+			.expect("#### Description")
+			.expectBlankLine()
 			.expect("#### Services")
 			.expectBlankLine()
 			.expect("No services.")
@@ -293,10 +379,37 @@ public class JtwigPrinterTest extends TestCase {
 			.expectBlankLine()
 			.expect("No configuration.")
 			.expectBlankLine()
+			.expect("#### Reference bindings")
+			.expectBlankLine()
+			.expect("No bindings.")
+			.expectBlankLine()
+			.expect("#### OSGi-Configurator")
+			.expectBlankLine()
+			.expectBlankLine()
+			.expect("```")
+			.expect("/*")
+			.expect(" * Component: name")
+			.expect(" * policy:    ignore")
+			.expect(" */")
+			.expect("\"\":{")
+			.expect("        //# Component properties")
+			.expect("        // none")
+			.expectBlankLine()
+			.expect("        //# Reference bindings")
+			.expect("        // none")
+			.expectBlankLine()
+			.expect("        //# ObjectClassDefinition - Attributes")
+			.expect("        // (No PidOcd available.)")
+			.expect("}")
+			.expect("```")
+			.expectBlankLine()
+
 			.expect("---")
 			.expectBlankLine()
 			.expect("### name2 - *state = not enabled, activation = delayed*")
 			.expectBlankLine()
+			.expect("#### Description")
+			.expectBlankLine()
 			.expect("#### Services")
 			.expectBlankLine()
 			.expect("No services.")
@@ -308,6 +421,31 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("#### Configuration")
 			.expectBlankLine()
 			.expect("No configuration.")
+			.expectBlankLine()
+			.expect("#### Reference bindings")
+			.expectBlankLine()
+			.expect("No bindings.")
+			.expectBlankLine()
+			.expect("#### OSGi-Configurator")
+			.expectBlankLine()
+			.expectBlankLine()
+			.expect("```")
+			.expect("/*")
+			.expect(" * Component: name2")
+			.expect(" * policy:    ignore")
+			.expect(" */")
+			.expect("\"\":{")
+			.expect("        //# Component properties")
+			.expect("        // none")
+			.expectBlankLine()
+			.expect("        //# Reference bindings")
+			.expect("        // none")
+			.expectBlankLine()
+			.expect("        //# ObjectClassDefinition - Attributes")
+			.expect("        // (No PidOcd available.)")
+			.expect("}")
+			.expect("```")
+
 			.check();
 	}
 
@@ -564,6 +702,142 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("|Required |**false** |")
 			.expect("|Type |**Integer** |")
 			.expect("|Value range |\"VALUE\" |")
+			.check();
+	}
+
+	public void testGogoCommands() throws Exception {
+		TwigChecker checker = checker("printGogoCommands");
+
+		// Minimal one method, one function
+		checker.with(list(map().set("functions", list(map().set("name", "func1")
+			.set("methods", list(map()))))))
+			.expect("### func1")
+			.expectBlankLine()
+			.expect("**Synopsis**")
+			.expectBlankLine()
+			.expect("`func1`")
+			.check();
+
+		// Scope, one method, one function, one option
+		checker.with(list(map().set("name", "scope1")
+			.set("functions", list(map().set("name", "func1")
+				.set("methods", list(map().set("options", list(map().set("names", list("-o"))))))))))
+			.expect("### scope1:func1")
+			.expectBlankLine()
+			.expect("**Synopsis**")
+			.expectBlankLine()
+			.expect("`scope1:func1 [OPTIONS]`")
+			.expectBlankLine()
+			.expect("**Options**")
+			.expectBlankLine()
+			.expect("* `-o VALUE`  ")
+			.check();
+
+		// Scope, description, one function, one method, one argument
+		checker.with(list(map().set("name", "scope1")
+			.set("functions", list(map().set("name", "func1")
+				.set("methods", list(map().set("description", "My description")
+					.set("arguments", list(map().set("name", "file")))))))))
+			.expect("### scope1:func1")
+			.expectBlankLine()
+			.expect("**Synopsis**")
+			.expectBlankLine()
+			.expect("`scope1:func1 FILE`")
+			.expectBlankLine()
+			.expect("**Description**")
+			.expectBlankLine()
+			.expect("My description")
+			.expectBlankLine()
+			.expect("**Arguments**")
+			.expectBlankLine()
+			.expect("* `FILE`  ")
+			.check();
+
+		// Scope, description, one function, one method, one argument, one
+		// option
+		checker.with(list(map().set("name", "scope1")
+			.set("functions", list(map().set("name", "func1")
+				.set("methods", list(map().set("description", "My description")
+					.set("options", list(map().set("names", list("-o"))))
+					.set("arguments", list(map().set("name", "file")))))))))
+			.expect("### scope1:func1")
+			.expectBlankLine()
+			.expect("**Synopsis**")
+			.expectBlankLine()
+			.expect("`scope1:func1 [OPTIONS] FILE`")
+			.expectBlankLine()
+			.expect("**Description**")
+			.expectBlankLine()
+			.expect("My description")
+			.expectBlankLine()
+			.expect("**Arguments**")
+			.expectBlankLine()
+			.expect("* `FILE`  ")
+			.expectBlankLine()
+			.expect("**Options**")
+			.expectBlankLine()
+			.expect("* `-o VALUE`  ")
+			.check();
+
+		// two scopes, description, two methods, two functions, two arguments
+		// full,
+		// two options full
+		checker.with(list(map().set("name", "scope1")
+			.set("functions", list(map().set("name", "func1")
+				.set("methods", list(map())))),
+			map().set("name", "scope2")
+				.set("functions", list(map().set("name", "func2")
+					.set("methods", list(map())),
+					map().set("name", "func3")
+						.set("methods", list(map(), map().set("description", "My description")
+							.set("options", list(map().set("isFlag", true)
+								.set("names", list("-a", "--acc"))
+								.set("description", "This option can..."),
+								map().set("multiValue", true)
+									.set("description", "This option can...")
+									.set("names", list("-o", "--opt"))))
+							.set("arguments", list(map().set("description", "This argument is...")
+								.set("multiValue", true)
+								.set("name", "input_file"),
+								map().set("description", "This argument is...")
+									.set("name", "output_file")))))))))
+			.expect("### scope1:func1")
+			.expectBlankLine()
+			.expect("**Synopsis**")
+			.expectBlankLine()
+			.expect("`scope1:func1`")
+			.expectBlankLine()
+			.expect("### scope2:func2")
+			.expectBlankLine()
+			.expect("**Synopsis**")
+			.expectBlankLine()
+			.expect("`scope2:func2`")
+			.expectBlankLine()
+			.expect("### scope2:func3")
+			.expectBlankLine()
+			.expect("**Synopsis**")
+			.expectBlankLine()
+			.expect("`scope2:func3`")
+			.expectBlankLine()
+			.expect("---")
+			.expectBlankLine()
+			.expect("**Synopsis**")
+			.expectBlankLine()
+			.expect("`scope2:func3 [OPTIONS] INPUT_FILE... OUTPUT_FILE`")
+			.expectBlankLine()
+			.expect("**Description**")
+			.expectBlankLine()
+			.expect("My description")
+			.expectBlankLine()
+			.expect("**Arguments**")
+			.expectBlankLine()
+			.expect("* `INPUT_FILE`  This argument is...")
+			.expect("* `OUTPUT_FILE`  This argument is...")
+			.expectBlankLine()
+			.expect("**Options**")
+			.expectBlankLine()
+			.expect("* `-a, --acc`  This option can...")
+			.expect("* `-o VALUE, --opt VALUE`  This option can...")
 			.check();
 	}
 
@@ -859,7 +1133,6 @@ public class JtwigPrinterTest extends TestCase {
 		project5.set("fileName", "folder1");
 		project5.set("bundles", list(map().set("manifest", manifest3)));
 
-
 		checker.with(map().set("projects", list(project, project5)))
 			.expect("* [**CName**](folder1): CDescription")
 			.expect("  * [**CName2**](folder1/folder2): CDescription2")
@@ -875,8 +1148,7 @@ public class JtwigPrinterTest extends TestCase {
 		checker.with(list())
 			.check();
 
-		checker.with(list().xadd(map()
-			.set("programmingLanguage", "java")
+		checker.with(list().xadd(map().set("programmingLanguage", "java")
 			.set("codeSnippet", "test")))
 			.expect("```java")
 			.expect("test")
@@ -896,10 +1168,9 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("```")
 			.check();
 
-		checker.with(list().xadd(map()
-			.set("steps", list().xadd(map().set("programmingLanguage", "java")
-				.set("codeSnippet", "test1"))
-				.xadd(map().set("programmingLanguage", "java")
+		checker.with(list().xadd(map().set("steps", list().xadd(map().set("programmingLanguage", "java")
+			.set("codeSnippet", "test1"))
+			.xadd(map().set("programmingLanguage", "java")
 				.set("codeSnippet", "test2"))))
 			.xadd(map().set("programmingLanguage", "java")
 				.set("codeSnippet", "test3")))
@@ -924,7 +1195,7 @@ public class JtwigPrinterTest extends TestCase {
 				.set("steps", list().xadd(map().set("title", "SubTitle1")
 					.set("description", "SubDescription 1")
 					.set("programmingLanguage", "java")
-				.set("codeSnippet", "test1"))
+					.set("codeSnippet", "test1"))
 					.xadd(map().set("title", "SubTitle2")
 						.set("description", "SubDescription 2")
 						.set("programmingLanguage", "java")
@@ -1054,7 +1325,7 @@ public class JtwigPrinterTest extends TestCase {
 
 		checker.with("")
 			.with(map().set("type", "url")
-			.set("address", "myurl"))
+				.set("address", "myurl"))
 			.expect("[myurl](myurl)")
 			.check();
 	}

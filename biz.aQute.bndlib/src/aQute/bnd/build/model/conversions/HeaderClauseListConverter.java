@@ -1,11 +1,11 @@
 package aQute.bnd.build.model.conversions;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 
 import aQute.bnd.build.model.clauses.HeaderClause;
-import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor;
 
@@ -22,15 +22,12 @@ public class HeaderClauseListConverter<R> implements Converter<List<R>, String> 
 		if (input == null)
 			return null;
 
-		List<R> result = new ArrayList<>();
-
 		Parameters header = new Parameters(input);
-		for (Entry<String, Attrs> entry : header.entrySet()) {
-			String key = Processor.removeDuplicateMarker(entry.getKey());
-			HeaderClause clause = new HeaderClause(key, entry.getValue());
-			result.add(itemConverter.convert(clause));
-		}
-
+		List<R> result = header.stream()
+			.mapKey(Processor::removeDuplicateMarker)
+			.mapToObj(HeaderClause::new)
+			.map(itemConverter::convert)
+			.collect(toList());
 		return result;
 	}
 

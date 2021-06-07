@@ -3,8 +3,7 @@ package aQute.bnd.maven;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,26 +18,28 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.WriteResource;
+import aQute.bnd.stream.MapStream;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
+import aQute.bnd.unmodifiable.Lists;
 import aQute.libg.glob.Glob;
 
 public class PomResource extends WriteResource {
-	private static final String	VERSION		= "version";
-	private static final String	ARTIFACTID	= "artifactid";
-	private static final String	GROUPID		= "groupid";
-	private static final String	WHERE		= "where";
-	private static final List<String>	local		= Collections
-		.unmodifiableList(Arrays.asList(VERSION, ARTIFACTID, GROUPID, WHERE, "artifactId", "groupId"));
-	final Manifest				manifest;
-	private Map<String, String>	scm;
-	final Processor				processor;
-	final static Pattern		NAME_URL	= Pattern.compile("(.*)(https?://.*)", Pattern.CASE_INSENSITIVE);
-	private final String		where;
-	private final String		groupId;
-	private final String		artifactId;
-	private final String		version;
-	private final String		name;
+	private static final String			VERSION		= "version";
+	private static final String			ARTIFACTID	= "artifactid";
+	private static final String			GROUPID		= "groupid";
+	private static final String			WHERE		= "where";
+	private static final List<String>	local		= Lists.of(VERSION, ARTIFACTID, GROUPID, WHERE, "artifactId",
+		"groupId");
+	final Manifest						manifest;
+	private Map<String, String>			scm;
+	final Processor						processor;
+	final static Pattern				NAME_URL	= Pattern.compile("(.*)(https?://.*)", Pattern.CASE_INSENSITIVE);
+	private final String				where;
+	private final String				groupId;
+	private final String				artifactId;
+	private final String				version;
+	private final String				name;
 
 	public PomResource(Manifest manifest) {
 		this(new Processor(), manifest);
@@ -339,8 +340,15 @@ public class PomResource extends WriteResource {
 		Parameters dependencies = processor.getMergedParameters(Constants.MAVEN_DEPENDENCIES);
 		if (!dependencies.isEmpty()) {
 			Tag tdependencies = new Tag("dependencies");
-			dependencies.values()
-				.forEach(attrs -> tdependencies.addContent(new Tag("dependency").addContent(attrs)));
+			dependencies.stream()
+				.mapKey(Processor::removeDuplicateMarker)
+				.collect(MapStream.toMap((oldValue, value) -> value, LinkedHashMap<String, Attrs>::new))
+				.values()
+				.forEach(attrs -> {
+					if (!attrs.isEmpty()) {
+						tdependencies.addContent(new Tag("dependency").addContent(attrs));
+					}
+				});
 			if (!tdependencies.getContents()
 				.isEmpty()) {
 				project.addContent(tdependencies);

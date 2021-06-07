@@ -8,64 +8,74 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.utf8properties.UTF8Properties;
 
 public enum EE {
 
-	OSGI_Minimum_1_0("OSGi/Minimum-1.0", "OSGi/Minimum", new Version("1.0")),
+	OSGI_Minimum_1_0("OSGi/Minimum-1.0", "OSGi/Minimum", "1.0"),
 
-	OSGI_Minimum_1_1("OSGi/Minimum-1.1", "OSGi/Minimum", new Version("1.1"), OSGI_Minimum_1_0),
+	OSGI_Minimum_1_1("OSGi/Minimum-1.1", "OSGi/Minimum", "1.1", OSGI_Minimum_1_0),
 
-	OSGI_Minimum_1_2("OSGi/Minimum-1.2", "OSGi/Minimum", new Version("1.2"), OSGI_Minimum_1_1),
+	OSGI_Minimum_1_2("OSGi/Minimum-1.2", "OSGi/Minimum", "1.2", OSGI_Minimum_1_1),
 
-	JRE_1_1("JRE-1.1", "JRE", new Version("1.1")),
+	JRE_1_1("JRE-1.1", "JRE", "1.1"),
 
-	J2SE_1_2("J2SE-1.2", "JavaSE", new Version("1.2"), JRE_1_1),
+	J2SE_1_2("J2SE-1.2", "JavaSE", "1.2", JRE_1_1),
 
-	J2SE_1_3("J2SE-1.3", "JavaSE", new Version("1.3"), J2SE_1_2, OSGI_Minimum_1_1),
+	J2SE_1_3("J2SE-1.3", "JavaSE", "1.3", J2SE_1_2, OSGI_Minimum_1_1),
 
-	J2SE_1_4("J2SE-1.4", "JavaSE", new Version("1.4"), J2SE_1_3, OSGI_Minimum_1_2),
+	J2SE_1_4("J2SE-1.4", "JavaSE", "1.4", J2SE_1_3, OSGI_Minimum_1_2),
 
-	J2SE_1_5("J2SE-1.5", "JavaSE", new Version("1.5"), J2SE_1_4),
+	J2SE_1_5("J2SE-1.5", "JavaSE", "1.5", J2SE_1_4),
 
-	JavaSE_1_6("JavaSE-1.6", "JavaSE", new Version("1.6"), J2SE_1_5),
+	JavaSE_1_6("JavaSE-1.6", "JavaSE", "1.6", J2SE_1_5),
 
-	JavaSE_1_7("JavaSE-1.7", "JavaSE", new Version("1.7"), JavaSE_1_6),
+	JavaSE_1_7("JavaSE-1.7", "JavaSE", "1.7", JavaSE_1_6),
 
-	JavaSE_compact1_1_8("JavaSE/compact1-1.8", "JavaSE/compact1", new Version("1.8"), OSGI_Minimum_1_2),
+	JavaSE_compact1_1_8("JavaSE/compact1-1.8", "JavaSE/compact1", "1.8", OSGI_Minimum_1_2),
 
-	JavaSE_compact2_1_8("JavaSE/compact2-1.8", "JavaSE/compact2", new Version("1.8"), JavaSE_compact1_1_8),
+	JavaSE_compact2_1_8("JavaSE/compact2-1.8", "JavaSE/compact2", "1.8", JavaSE_compact1_1_8),
 
-	JavaSE_compact3_1_8("JavaSE/compact3-1.8", "JavaSE/compact3", new Version("1.8"), JavaSE_compact2_1_8),
+	JavaSE_compact3_1_8("JavaSE/compact3-1.8", "JavaSE/compact3", "1.8", JavaSE_compact2_1_8),
 
-	JavaSE_1_8("JavaSE-1.8", "JavaSE", new Version("1.8"), JavaSE_1_7, JavaSE_compact3_1_8),
+	JavaSE_1_8("JavaSE-1.8", "JavaSE", "1.8", JavaSE_1_7, JavaSE_compact3_1_8),
 
-	JavaSE_9_0("JavaSE-9", "JavaSE", new Version("9"), JavaSE_1_8),
+	JavaSE_9_0("JavaSE-9", "JavaSE", "9", JavaSE_1_8),
 
-	JavaSE_10_0("JavaSE-10", "JavaSE", new Version("10"), JavaSE_9_0),
+	JavaSE_10_0("JavaSE-10", "JavaSE", "10", JavaSE_9_0),
 
-	JavaSE_11_0("JavaSE-11", "JavaSE", new Version("11"), JavaSE_10_0),
+	JavaSE_11_0("JavaSE-11", "JavaSE", "11", JavaSE_10_0),
 
-	JavaSE_12_0("JavaSE-12", "JavaSE", new Version("12"), JavaSE_11_0),
+	JavaSE_12_0("JavaSE-12", "JavaSE", "12", JavaSE_11_0),
 
-	JavaSE_13_0("JavaSE-13", "JavaSE", new Version("13"), JavaSE_12_0),
+	JavaSE_13_0("JavaSE-13", "JavaSE", "13", JavaSE_12_0),
+	JavaSE_14_0("JavaSE-14", "JavaSE", "14", JavaSE_13_0),
+	JavaSE_15("JavaSE-15", "JavaSE", "15", JavaSE_14_0),
+	JavaSE_16("JavaSE-16", "JavaSE", "16", JavaSE_15),
+	JavaSE_17("JavaSE-17", "JavaSE", "17", JavaSE_16),
+	JavaSE_18("JavaSE-18", "JavaSE", "18", JavaSE_17),
+	JavaSE_19("JavaSE-19", "JavaSE", "19", JavaSE_18),
+	JavaSE_20("JavaSE-20", "JavaSE", "20", JavaSE_19),
 
-	UNKNOWN("Unknown", "unknown", new Version(0));
+	UNKNOWN("<UNKNOWN>", "UNKNOWN", "0");
 
 	private final String			eeName;
 	private final String			capabilityName;
+	private final String			versionLabel;
 	private final Version			capabilityVersion;
 	private final EE[]				compatible;
 	private transient EnumSet<EE>	compatibleSet;
 	private transient Parameters	packages	= null;
 	private transient Parameters	modules		= null;
 
-	EE(String name, String capabilityName, Version capabilityVersion, EE... compatible) {
-		this.eeName = name;
+	EE(String eeName, String capabilityName, String versionLabel, EE... compatible) {
+		this.eeName = eeName;
 		this.capabilityName = capabilityName;
-		this.capabilityVersion = capabilityVersion;
+		this.versionLabel = versionLabel;
+		this.capabilityVersion = new Version(versionLabel);
 		this.compatible = compatible;
 	}
 
@@ -100,12 +110,24 @@ public enum EE {
 		return capabilityName;
 	}
 
+	public String getVersionLabel() {
+		return versionLabel;
+	}
+
 	public Version getCapabilityVersion() {
 		return capabilityVersion;
 	}
 
 	public static Optional<EE> highestFromTargetVersion(String targetVersion) {
-		Version version = new Version(targetVersion);
+		Version version = Optional.of(targetVersion)
+			.map(Analyzer::cleanupVersion)
+			.map(Version::new)
+			// drop the MICRO version since EEs don't have them
+			.map(v -> new Version(v.getMajor(), v.getMinor(), 0))
+			// practically unreachable since NPE and invalid syntax are caught
+			// earlier
+			.orElseThrow(() -> new IllegalArgumentException(
+				"Argument could not be recognized as a version string: " + targetVersion));
 		return Arrays.stream(values())
 			.filter(ee -> ee.capabilityVersion.compareTo(version) == 0)
 			.sorted(Collections.reverseOrder())

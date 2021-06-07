@@ -7,7 +7,7 @@
 		<groupId>biz.aQute.bnd</groupId>
 		<artifactId>bnd-plugin-parent</artifactId>
 		<version>${revision}</version>
-		<relativePath>..</relativePath>
+		<relativePath>../bnd-plugin-parent</relativePath>
 	</parent>
 
 	<artifactId>bnd-indexer-maven-plugin</artifactId>
@@ -20,6 +20,10 @@
 		<connection>scm:git:https://github.com/bndtools/bnd.git</connection>
 		<developerConnection>scm:git:git@github.com:bndtools/bnd.git</developerConnection>
 	</scm>
+
+	<prerequisites>
+		<maven>${maven.target.version}</maven>
+	</prerequisites>
 
 	<dependencies>
 		<dependency>
@@ -71,7 +75,7 @@
 					<dependency>
 						<groupId>org.osgi</groupId>
 						<artifactId>osgi.core</artifactId>
-						<version>6.0.0</version>
+						<version>${osgi.core.version}</version>
 						<scope>runtime</scope>
 					</dependency>
 				</dependencies>

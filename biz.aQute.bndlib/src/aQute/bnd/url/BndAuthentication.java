@@ -46,7 +46,7 @@ import aQute.lib.settings.Settings;
  * {@code InetAddress} returned by {@link InetAddress#getLocalHost()})
  * </ul>
  */
-@aQute.bnd.annotation.plugin.BndPlugin(name = "url.bnd.authentication", parameters = BndAuthentication.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "url.bnd.authentication", hide = true, parameters = BndAuthentication.Config.class)
 public class BndAuthentication extends DefaultURLConnectionHandler {
 	private final static Logger logger = LoggerFactory.getLogger(BndAuthentication.class);
 
@@ -60,10 +60,10 @@ public class BndAuthentication extends DefaultURLConnectionHandler {
 		String email();
 	}
 
-	private static final String		MACHINE		= "machine";
-	private static final String		PRIVATE_KEY	= "privateKey";
-	private static final String		PUBLIC_KEY	= "publicKey";
-	private static final String		EMAIL		= "email";
+	private static final String	MACHINE					= "machine";
+	private static final String	PRIVATE_KEY				= "privateKey";
+	private static final String	PUBLIC_KEY				= "publicKey";
+	private static final String	EMAIL					= "email";
 	private static final String	X_A_QUTE_AUTHORIZATION	= "X-aQute-Authorization";
 	private String				identity;
 	private String				email;

@@ -557,8 +557,8 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		if (!SHA_256.equalsIgnoreCase(algo))
 			return null;
 
-		String contentFilter = String.format("(%s=%s)", ContentNamespace.CONTENT_NAMESPACE, hashStr);
-		Requirement contentReq = new CapReqBuilder(ContentNamespace.CONTENT_NAMESPACE).filter(contentFilter)
+		Requirement contentReq = CapReqBuilder
+			.createSimpleRequirement(ContentNamespace.CONTENT_NAMESPACE, hashStr, null)
 			.buildSyntheticRequirement();
 
 		List<Capability> caps = new LinkedList<>();

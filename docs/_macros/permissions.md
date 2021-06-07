@@ -4,7 +4,6 @@ class: Builder
 title: permissions (';' ( 'packages' | 'admin' | 'permissions' ) )+
 summary: A file in the format for the OSGi permissions resource.
 ---
-layout: default
 
 
 

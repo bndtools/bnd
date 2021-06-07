@@ -1,6 +1,11 @@
 package test.component;
 
+import static aQute.bnd.test.BndTestCase.assertOk;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,10 +18,10 @@ import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -26,10 +31,13 @@ import java.util.jar.Manifest;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.AnyService;
 import org.osgi.service.component.ComponentConstants;
 import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.ComponentFactory;
 import org.osgi.service.component.ComponentServiceObjects;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.CollectionType;
@@ -59,12 +67,10 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
-import aQute.bnd.test.BndTestCase;
 import aQute.bnd.test.XmlTester;
 import aQute.bnd.version.Version;
 import aQute.lib.filter.Filter;
 import aQute.lib.io.IO;
-import junit.framework.AssertionFailedError;
 
 /**
  * Test for use of DS components specified using spec DS annotations.
@@ -72,12 +78,15 @@ import junit.framework.AssertionFailedError;
 @SuppressWarnings({
 	"resource", "restriction", "serial"
 })
-public class DSAnnotationTest extends BndTestCase {
+public class DSAnnotationTest {
 
 	public static final String	FELIX_1_2				= "http://felix.apache.org/xmlns/scr/v1.2.0-felix";
 
 	private static String[]		SERIALIZABLE_RUNNABLE	= {
 		Serializable.class.getName(), Runnable.class.getName()
+	};
+	private static String[]		FACTORY					= {
+		ComponentFactory.class.getName()
 	};
 	private static String[]		OBJECT					= {
 		Object.class.getName()
@@ -92,16 +101,19 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
+	@Test
 	public void testExceedsVersion() throws Exception {
-		Builder b = new Builder();
-		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ValidNSVersion");
-		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;maximum=1.2.0");
-		b.setProperty("Private-Package", "test.component");
-		b.addClasspath(new File("bin_test"));
-		b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
-		Jar jar = b.build();
-		assertTrue(b.check(
-			"component 1.3.0 version test.component.DSAnnotationTest.ValidNSVersion exceeds -dsannotations-options version;maximum version 1.2.0 because base"));
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.*ValidNSVersion");
+			b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;maximum=1.2.0");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+			Jar jar = b.build();
+			assertThat(b.getErrors()).anyMatch(e -> e.matches(
+				".*ValidNSVersion.*version 1\\.3\\.0 exceeds -dsannotations-options version;maximum version 1\\.2\\.0 because base.*"))
+				.hasSize(1);
+		}
 	}
 
 	@Component()
@@ -113,25 +125,30 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
+	@Test
 	public void testRequires1_3() throws Exception {
-		Builder b = new Builder();
-		b.setProperty(Constants.DSANNOTATIONS, "test.component.*RequiresV1_3");
-		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.2.0;maximum=1.2.0");
-		b.setProperty("Private-Package", "test.component");
-		b.addClasspath(new File("bin_test"));
-		b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
-		Jar jar = b.build();
-		assertTrue(b.check("component 1.3.0 version test.component.DSAnnotationTest\\$RequiresV1_3 exceeds"));
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.*RequiresV1_3");
+			b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.2.0;maximum=1.2.0");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+			Jar jar = b.build();
+			assertThat(b.getErrors()).anyMatch(e -> e.matches(
+				".*RequiresV1_3.*version 1\\.3\\.0 exceeds -dsannotations-options version;maximum version 1\\.2\\.0.*"))
+				.hasSize(1);
 
-		System.out.println(jar.getResources()
-			.keySet());
+			System.out.println(jar.getResources()
+				.keySet());
 
-		Resource resource = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$RequiresV1_3.xml");
-		assertThat(resource).isNotNull();
-		String s = IO.collect(resource.openInputStream());
-		System.out.println(s);
+			Resource resource = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$RequiresV1_3.xml");
+			assertThat(resource).isNotNull();
+			String s = IO.collect(resource.openInputStream());
+			System.out.println(s);
+		}
 	}
 
+	@Test
 	public void testValidNamespaceVersion() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ValidNSVersion");
@@ -153,6 +170,7 @@ public class DSAnnotationTest extends BndTestCase {
 		r.write(System.err);
 	}
 
+	@Test
 	public void testDuplicateExtender() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.ds14.*");
@@ -176,6 +194,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	// #2876
+	@Test
 	public void testExportComponentImplPackage() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.ds14.*");
@@ -206,6 +225,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
+	@Test
 	public void testProperties() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*x");
@@ -234,6 +254,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("Byte", "scr:component/property[@name='byte']/@type");
 		xt.assertAttribute("Boolean", "scr:component/property[@name='boolean']/@type");
 		xt.assertAttribute("Character", "scr:component/property[@name='char']/@type");
+		xt.assertAttribute(Integer.toString('1'), "scr:component/property[@name='char']/@value");
 		xt.assertAttribute("Short", "scr:component/property[@name='short']/@type");
 		xt.assertAttribute("Integer", "scr:component/property[@name='integer']/@type");
 		xt.assertAttribute("Long", "scr:component/property[@name='long']/@type");
@@ -564,6 +585,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
+	@Test
 	public void testBasic() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*_basic");
@@ -605,8 +627,8 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("java.io.Serializable", "component/service/provide[1]/@interface");
 			xt.assertAttribute("java.lang.Runnable", "component/service/provide[2]/@interface");
 
-			xt.assertAttribute("0", "count(component/properties)");
-			xt.assertAttribute("0", "count(component/property)");
+			xt.assertCount(0, "component/properties");
+			xt.assertCount(0, "component/property");
 
 			xt.assertAttribute("xsetLogService", "component/reference[1]/@name");
 			xt.assertAttribute("", "component/reference[1]/@target");
@@ -662,8 +684,8 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-			xt.assertAttribute("0", "count(scr:component/properties)");
-			xt.assertAttribute("0", "count(scr:component/property)");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
 
 			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
 			xt.assertAttribute("", "scr:component/reference[1]/@target");
@@ -707,8 +729,8 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-			xt.assertAttribute("0", "count(scr:component/properties)");
-			xt.assertAttribute("0", "count(scr:component/property)");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
 
 			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
 			xt.assertAttribute("", "scr:component/reference[1]/@target");
@@ -752,8 +774,8 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-			xt.assertAttribute("0", "count(scr:component/properties)");
-			xt.assertAttribute("0", "count(scr:component/property)");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
 
 			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
 			xt.assertAttribute("", "scr:component/reference[1]/@target");
@@ -796,8 +818,8 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-			xt.assertAttribute("0", "count(scr:component/properties)");
-			xt.assertAttribute("0", "count(scr:component/property)");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
 
 			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
 			xt.assertAttribute("", "scr:component/reference[1]/@target");
@@ -834,10 +856,10 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("close", "scr:component/@deactivate");
 			xt.assertAttribute("changed", "scr:component/@modified");
 			xt.assertAttribute("java.lang.Object", "scr:component/service/provide[1]/@interface");
-			xt.assertAttribute("1", "count(scr:component/service/provide)");
+			xt.assertCount(1, "scr:component/service/provide");
 
-			xt.assertAttribute("1", "count(scr:component/properties)");
-			xt.assertAttribute("2", "count(scr:component/property)");
+			xt.assertCount(1, "scr:component/properties");
+			xt.assertCount(2, "scr:component/property");
 
 			xt.assertAttribute("(objectclass=*)", "scr:component/reference[1]/@target");
 			xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
@@ -847,13 +869,13 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("dynamic", "scr:component/reference[1]/@policy");
 			xt.assertAttribute("(objectclass=*)", "scr:component/reference[1]/@target");
 
-			xt.assertAttribute("2", "count(scr:component/property)");
-			xt.assertAttribute("1", "count(scr:component/properties)");
+			xt.assertCount(2, "scr:component/property");
+			xt.assertCount(1, "scr:component/properties");
 			xt.assertAttribute("resource.props", "scr:component/properties[1]/@entry");
 			xt.assertAttribute("greedy", "scr:component/reference[1]/@policy-option");
 		}
 		Attributes a = getAttr(jar);
-		checkProvides(a, SERIALIZABLE_RUNNABLE, OBJECT);
+		checkProvides(a, SERIALIZABLE_RUNNABLE, OBJECT, FACTORY);
 		// n.b. we should merge the 2 logService requires, so when we fix that
 		// we'll need to update this test.
 		// one is plain, other has cardinality multiple.
@@ -889,8 +911,8 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("deactivate", "scr:component/@deactivate");
 		xt.assertAttribute("", "scr:component/@modified");
 
-		xt.assertAttribute("0", "count(scr:component/properties)");
-		xt.assertAttribute("0", "count(scr:component/property)");
+		xt.assertCount(0, "scr:component/properties");
+		xt.assertCount(0, "scr:component/property");
 
 		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("", "scr:component/reference[1]/@target");
@@ -1082,6 +1104,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
+	@Test
 	public void testBasicFelix12() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*_basicFelix12");
@@ -1134,8 +1157,8 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("0", "count(scr:component/properties)");
-		xt.assertAttribute("0", "count(scr:component/property)");
+		xt.assertCount(0, "scr:component/properties");
+		xt.assertCount(0, "scr:component/property");
 
 		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("", "scr:component/reference[1]/@target");
@@ -1177,6 +1200,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
+	@Test
 	public void testEnums() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Enums");
@@ -1257,6 +1281,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
+	@Test
 	public void testMethods() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Methods");
@@ -1334,20 +1359,23 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
+	@Test
 	public void testInheritance() throws Exception {
 		testInheritance("-dsannotations-inherit", "true", null);
 	}
 
+	@Test
 	public void testInheritanceFlag() throws Exception {
 		testInheritance(Constants.DSANNOTATIONS_OPTIONS, "inherit", null);
 	}
 
+	@Test
 	public void testInheritanceExtenderFlag() throws Exception {
 		testInheritance(Constants.DSANNOTATIONS_OPTIONS, "inherit,extender",
 			ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
 	}
 
-	public void testInheritance(String key, String value, String extender) throws Exception {
+	void testInheritance(String key, String value, String extender) throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Bottom");
 		b.setProperty(key, value);
@@ -1378,6 +1406,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
+	@Test
 	public void testBadFlag() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Bottom");
@@ -1429,6 +1458,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
+	@Test
 	public void testPrototypes() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Prototypes");
@@ -1491,15 +1521,17 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
+	@Test
 	public void testBinds() throws Exception {
 		testBinds(null);
 	}
 
+	@Test
 	public void testBindsExtender() throws Exception {
 		testBinds(ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
 	}
 
-	public void testBinds(String extender) throws Exception {
+	void testBinds(String extender) throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*CheckBinds");
 		if (extender != null)
@@ -1580,6 +1612,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
+	@Test
 	public void testBinds13() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*CheckBinds13");
@@ -1611,6 +1644,7 @@ public class DSAnnotationTest extends BndTestCase {
 		private void bindLogService(LogService l) {}
 	}
 
+	@Test
 	public void testNoUnbindDynamic() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*NoUnbindDynamic");
@@ -1628,6 +1662,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component(name = "testConfigPolicy", configurationPolicy = ConfigurationPolicy.IGNORE)
 	public static class TestConfigPolicy {}
 
+	@Test
 	public void testConfigPolicySetsNamespace() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*TestConfigPolicy");
@@ -1675,6 +1710,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
+	@Test
 	public void testIssue347() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*issue347");
@@ -1735,6 +1771,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testReferenceInComponent() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ref_on_comp");
@@ -2109,6 +2146,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
+	@Test
 	public void testBasic13() throws Exception {
 		Jar jar = setupBasic13(null, LogService.class.getName(), SERIALIZABLE_RUNNABLE);
 
@@ -2180,8 +2218,8 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("0", "count(scr:component/properties)");
-		xt.assertAttribute("0", "count(scr:component/property)");
+		xt.assertCount(0, "scr:component/properties");
+		xt.assertCount(0, "scr:component/property");
 
 		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("", "scr:component/reference[1]/@target");
@@ -2204,6 +2242,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}, factoryProperties = "factory.properties")
 	public static class FactoryProperties {}
 
+	@Test
 	public void testFactoryProperties() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryProperties");
@@ -2215,7 +2254,7 @@ public class DSAnnotationTest extends BndTestCase {
 			if (!b.check("Not a valid number blabla for Integer", "Not a valid number 3.0 for Integer"))
 				fail();
 			Attributes a = getAttr(jar);
-			checkProvides(a);
+			checkProvides(a, FACTORY);
 			checkRequires(a, "1.4.0");
 
 			//
@@ -2226,10 +2265,11 @@ public class DSAnnotationTest extends BndTestCase {
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
-			xt.assertAttribute("0", "count(scr:component/properties)");
-			xt.assertAttribute("0", "count(scr:component/property)");
-			xt.assertAttribute("14", "count(scr:component/factory-property)");
-			xt.assertAttribute("1", "count(scr:component/factory-properties)");
+			xt.assertAttribute("ds14", "scr:component/@factory");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
+			xt.assertCount(14, "scr:component/factory-property");
+			xt.assertCount(1, "scr:component/factory-properties");
 
 			xt.assertAttribute("", "scr:component/factory-property[@name='a']/@value");
 			xt.assertAttribute("1\n2", "scr:component/factory-property[@name='a']/text()");
@@ -2237,6 +2277,7 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("Byte", "scr:component/factory-property[@name='byte']/@type");
 			xt.assertAttribute("Boolean", "scr:component/factory-property[@name='boolean']/@type");
 			xt.assertAttribute("Character", "scr:component/factory-property[@name='char']/@type");
+			xt.assertAttribute(Integer.toString('1'), "scr:component/factory-property[@name='char']/@value");
 			xt.assertAttribute("Short", "scr:component/factory-property[@name='short']/@type");
 			xt.assertAttribute("Integer", "scr:component/factory-property[@name='integer']/@type");
 			xt.assertAttribute("Long", "scr:component/factory-property[@name='long']/@type");
@@ -2248,6 +2289,141 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
+	/**
+	 * Check that ComponentFactory osgi.service requirement is correct.
+	 */
+	@Component
+	public static class FactoryReferenceTarget {
+		@Reference(target = "(" + ComponentConstants.COMPONENT_FACTORY + "=factory)")
+		ComponentFactory<Object> factory;
+	}
+
+	@Test
+	public void testFactoryReferenceTarget() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryReferenceTarget");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, FACTORY);
+			assertThat(a.getValue(Constants.REQUIRE_CAPABILITY)).contains("(component.factory=factory)");
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FactoryReferenceTarget.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+			xt.assertAttribute("factory", "scr:component/reference[1]/@name");
+			xt.assertAttribute("org.osgi.service.component.ComponentFactory", "scr:component/reference[1]/@interface");
+			xt.assertAttribute("(component.factory=factory)", "scr:component/reference[1]/@target");
+		}
+	}
+
+	@Component
+	public static class FactoryReferenceNoTarget {
+		@Reference
+		ComponentFactory<Object> factory;
+	}
+
+	@Test
+	public void testFactoryReferenceNoTarget() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryReferenceNoTarget");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
+			assertThat(a.getValue(Constants.REQUIRE_CAPABILITY)).doesNotContain("osgi.service");
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FactoryReferenceNoTarget.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+			xt.assertAttribute("factory", "scr:component/reference[1]/@name");
+			xt.assertAttribute("org.osgi.service.component.ComponentFactory", "scr:component/reference[1]/@interface");
+			xt.assertNoAttribute("scr:component/reference[1]/@target");
+		}
+	}
+
+	@Component(factory = "factory")
+	public static class FactoryComponent implements Serializable, Runnable {
+
+		@Override
+		public void run() {
+			// empty
+		}
+	}
+
+	@Test
+	public void testFactoryComponent() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryComponent");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a, FACTORY, SERIALIZABLE_RUNNABLE);
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
+			assertThat(a.getValue(Constants.PROVIDE_CAPABILITY)).contains("component.factory=factory",
+				"java.lang.Runnable", "java.io.Serializable");
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FactoryComponent.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+			xt.assertAttribute("factory", "scr:component/@factory");
+			xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
+			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
+		}
+	}
+
+	@Component(factory = "factory", service = {})
+	public static class FactoryComponentNoService implements Serializable, Runnable {
+
+		@Override
+		public void run() {
+			// empty
+		}
+	}
+
+	@Test
+	public void testFactoryComponentNoService() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryComponentNoService");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a, FACTORY);
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
+			assertThat(a.getValue(Constants.PROVIDE_CAPABILITY)).contains("component.factory=factory")
+				.doesNotContain("java.lang.Runnable", "java.io.Serializable");
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FactoryComponentNoService.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+			xt.assertAttribute("factory", "scr:component/@factory");
+			xt.assertCount(0, "scr:component/service");
+		}
+	}
+
+	@Test
 	public void testNoHeaderDups() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13_*");
@@ -2379,6 +2555,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
+	@Test
 	public void testAnnoConfig13() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13anno_*");
@@ -2422,8 +2599,8 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("0", "count(scr:component/properties)");
-		xt.assertAttribute("18", "count(scr:component/property)");
+		xt.assertCount(0, "scr:component/properties");
+		xt.assertCount(18, "scr:component/property");
 
 		xt.assertAttribute("foo", "scr:component/property[@name='myString']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='myString']/@type");
@@ -2468,7 +2645,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("1.0", "scr:component/property[@name='myFloat']/@value");
 		xt.assertAttribute("Float", "scr:component/property[@name='myFloat']/@type");
 
-		xt.assertAttribute("97", "scr:component/property[@name='myChar']/@value");
+		xt.assertAttribute(Integer.toString('a'), "scr:component/property[@name='myChar']/@value");
 		xt.assertAttribute("Character", "scr:component/property[@name='myChar']/@type");
 
 		xt.assertAttribute("2", "scr:component/property[@name='myByte']/@value");
@@ -2517,6 +2694,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testAnnoConfigNames13() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13annoNames_config*");
@@ -2557,7 +2735,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("6", "count(scr:component/property)");
+		xt.assertCount(6, "scr:component/property");
 
 		xt.assertAttribute("foo", "scr:component/property[@name='myString1']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='myString1']/@type");
@@ -2604,6 +2782,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testAnnoConfigNames14() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS14annoNames_config*");
@@ -2644,7 +2823,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("2", "count(scr:component/property)");
+		xt.assertCount(2, "scr:component/property");
 
 		xt.assertAttribute("foo", "scr:component/property[@name='test.my-String7']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='test.my-String7']/@type");
@@ -2671,6 +2850,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testActivationObjects14() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS14_activation_objects*");
@@ -2713,7 +2893,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("2", "count(scr:component/property)");
+		xt.assertCount(2, "scr:component/property");
 
 		xt.assertAttribute("foo", "scr:component/property[@name='test.my-String7']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='test.my-String7']/@type");
@@ -2814,6 +2994,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testAnnoConfigOverrides13() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13annoOverride_*");
@@ -2857,7 +3038,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("4", "count(scr:component/property)");
+		xt.assertCount(4, "scr:component/property");
 
 		xt.assertAttribute("a", "scr:component/property[@name='a']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='a']/@type");
@@ -2897,6 +3078,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
+	@Test
 	public void testFieldInjection() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*TestFieldInjection");
@@ -2977,6 +3159,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testFieldCollectionType() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$TestFieldCollectionType");
@@ -3038,11 +3221,15 @@ public class DSAnnotationTest extends BndTestCase {
 			for (Attrs at : attrs) {
 				if (Arrays.asList(o)
 					.equals(at.getTyped("objectClass"))) {
-					assertEquals(1, at.size());
+					if (o == FACTORY) {
+						assertThat(at.keySet()).containsExactlyInAnyOrder("objectClass", "component.factory");
+					} else {
+						assertThat(at.keySet()).containsExactlyInAnyOrder("objectClass");
+					}
 					found = true;
 				}
 			}
-			assertTrue("objectClass not found: " + o, found);
+			assertTrue(found, "objectClass not found: " + o);
 		}
 	}
 
@@ -3051,16 +3238,17 @@ public class DSAnnotationTest extends BndTestCase {
 		System.err.println(Constants.REQUIRE_CAPABILITY + ":" + p);
 		Parameters header = new Parameters(p);
 		List<Attrs> attrs = getAll(header, "osgi.service");
-		assertEquals("osgi.service attributes: " + attrs, objectClass.length, attrs.size());
+		assertEquals(objectClass.length, attrs.size(), "osgi.service attributes: " + attrs);
 		for (String o : objectClass) {
 			boolean found = false;
 			for (Attrs at : attrs) {
-				if (("(objectClass=" + o + ")").equals(at.get("filter:"))) {
-					assertEquals("no effective:=\"active\"", "active", at.get("effective:"));
+				String filter = at.get("filter:", "");
+				if (filter.contains("(objectClass=" + o + ")")) {
+					assertEquals("active", at.get("effective:"), "no effective:=\"active\"");
 					found = true;
 				}
 			}
-			assertTrue("objectClass not found: " + o, found);
+			assertTrue(found, "objectClass not found: " + o);
 		}
 
 		checkExtenderVersion(header, extender);
@@ -3145,6 +3333,7 @@ public class DSAnnotationTest extends BndTestCase {
 		void activate(Map<String, Object> props) {}
 	}
 
+	@Test
 	public void testDesignate() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Designate*");
@@ -3231,6 +3420,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testExtraAttributes() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$ExtraAttributes*");
@@ -3290,6 +3480,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testExtraAttributes10() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$ExtraAttributes*");
@@ -3359,6 +3550,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testPrefixCollisionExtraAttributes() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$PrefixCollisionExtraAttributes*");
@@ -3450,6 +3642,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
+	@Test
 	public void testPrefixCollisionExtraAttributesDefaultPrefix() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS,
@@ -3504,32 +3697,24 @@ public class DSAnnotationTest extends BndTestCase {
 		void stop() {}
 	}
 
+	@Test
 	public void testMixedStandardBnd() throws Exception {
-		Builder b = new Builder();
-		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$MixedStdBnd");
-		b.setProperty("Private-Package", "test.component");
-		b.addClasspath(new File("bin_test"));
-		Jar build = b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(4, b.getErrors()
-			.size());
-		List<String> errors = new ArrayList<>(b.getErrors());
-		Collections.sort(errors);
-		assertEquals(
-			"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Activate on method start with signature ()V. It is an error to mix these two types of annotations",
-			errors.get(0));
-		assertEquals(
-			"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Deactivate on method stop with signature ()V. It is an error to mix these two types of annotations",
-			errors.get(1));
-		assertEquals(
-			"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Modified on method update with signature (Ljava/util/Map;)V. It is an error to mix these two types of annotations",
-			errors.get(2));
-		assertEquals(
-			"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Reference on method setLog with signature (Lorg/osgi/service/log/LogService;)V. It is an error to mix these two types of annotations",
-			errors.get(3));
-		assertEquals(0, b.getWarnings()
-			.size());
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$MixedStdBnd");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+			Jar build = b.build();
+			System.err.println(b.getErrors());
+			System.err.println(b.getWarnings());
+			assertThat("foo");
+			assertThat(b.getErrors())
+				.anyMatch(e -> e.matches(".*MixedStdBnd\\.stop.*aQute\\.bnd\\.annotation\\.component\\.Deactivate.*"))
+				.anyMatch(e -> e.matches(".*MixedStdBnd\\.update.*aQute\\.bnd\\.annotation\\.component\\.Modified.*"))
+				.anyMatch(e -> e.matches(".*MixedStdBnd\\.start.*aQute\\.bnd\\.annotation\\.component\\.Activate.*"))
+				.anyMatch(e -> e.matches(".*MixedStdBnd\\.setLog.*aQute\\.bnd\\.annotation\\.component\\.Reference.*"))
+				.hasSize(4);
+			assertThat(b.getWarnings()).isEmpty();
+		}
 	}
 
 	@Component
@@ -3540,6 +3725,7 @@ public class DSAnnotationTest extends BndTestCase {
 		private LogService			log2;
 	}
 
+	@Test
 	public void testVolatileFieldDynamic() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*VolatileField");
@@ -3579,6 +3765,7 @@ public class DSAnnotationTest extends BndTestCase {
 		private final CopyOnWriteArrayList<LogService>	logs2	= new CopyOnWriteArrayList<>();
 	}
 
+	@Test
 	public void testFinalDynamicCollectionField() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*FinalDynamicCollectionField");
@@ -3620,6 +3807,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	// A field in a final class is not final:
 	// https://github.com/bndtools/bnd/issues/2928
+	@Test
 	public void testFinalFieldReference() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.*FinalClassNonFinalField*");
@@ -3644,6 +3832,7 @@ public class DSAnnotationTest extends BndTestCase {
 		private final List<LogService>			log5	= new CopyOnWriteArrayList<>();
 	}
 
+	@Test
 	public void testFieldCardinality() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*FieldCardinality");
@@ -3715,6 +3904,7 @@ public class DSAnnotationTest extends BndTestCase {
 		void unsetLogService13(FinalDynamicCollectionField notLs, Map<String, Object> props) {}
 	}
 
+	@Test
 	public void testMismatchedUnbind() throws Exception {
 
 		Builder b = new Builder();
@@ -3768,6 +3958,7 @@ public class DSAnnotationTest extends BndTestCase {
 		private static final long serialVersionUID = 1L;
 	}
 
+	@Test
 	public void testNotImplementedService() throws Exception {
 		checkClass(NotAMap1.class, 1);
 		checkClass(NotAMap2.class, 1);
@@ -3896,6 +4087,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
+	@Test
 	public void testIndirectlyImplementedService() throws Exception {
 		checkClass(IsAMap1.class, 0);
 		checkClass(IsAMap2.class, 0);
@@ -3904,7 +4096,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkClass(IsAMap4.class, 0);
 	}
 
-	private void checkClass(Class<?> c, int i) throws IOException, Exception, AssertionFailedError {
+	private void checkClass(Class<?> c, int i) throws IOException, Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, c.getName());
 		b.setProperty("Private-Package", "test.component");
@@ -3965,6 +4157,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	private List<String> indices = new ArrayList<>();
 
+	@Test
 	public void testReferenceType() throws Exception {
 
 		Builder b = new Builder();
@@ -4021,6 +4214,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component(reference = @Reference(service = LogService.class))
 	public static class ComponentReferenceBad {}
 
+	@Test
 	public void testComponentReference() throws Exception {
 
 		Builder b = new Builder();
@@ -4071,6 +4265,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 * javac will copy the annotations onto the bridge method. Bnd must ignore
 	 * bridge methods.
 	 */
+	@Test
 	public void testBridgeMethod() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ActivatableComponent");
@@ -4106,6 +4301,7 @@ public class DSAnnotationTest extends BndTestCase {
 		void bindFormatterLogger(FormatterLogger flogger) {}
 	}
 
+	@Test
 	public void testLoggerSupport() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$LoggerComponent");
@@ -4126,8 +4322,8 @@ public class DSAnnotationTest extends BndTestCase {
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
-			xt.assertAttribute("0", "count(scr:component/properties)");
-			xt.assertAttribute("0", "count(scr:component/property)");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
 
 			// This test method depends upon the compiler generating
 			// MethodParameters attributes so that the DS annotations code will
@@ -4174,6 +4370,7 @@ public class DSAnnotationTest extends BndTestCase {
 		void activator() {}
 	}
 
+	@Test
 	public void testConstructorInjection() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$ConstructorInjection");
@@ -4194,8 +4391,8 @@ public class DSAnnotationTest extends BndTestCase {
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
-			xt.assertAttribute("0", "count(scr:component/properties)");
-			xt.assertAttribute("0", "count(scr:component/property)");
+			xt.assertCount(0, "scr:component/properties");
+			xt.assertCount(0, "scr:component/property");
 
 			xt.assertAttribute("3", "scr:component/@init");
 			xt.assertAttribute("activator", "scr:component/@activate");
@@ -4207,6 +4404,287 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='log']/@interface");
 			xt.assertAttribute("1", "scr:component/reference[@name='log']/@parameter");
 
+		}
+	}
+
+	@Component(reference = {
+		@Reference(name = "component", service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+	})
+	public static class AnyServiceUse {
+		@Activate
+		public AnyServiceUse(@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		Object extensionParam, @Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		List<Object> extensionsParam) {}
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		Object extensionField;
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		volatile Optional<Object>	extensionOptionalField;
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		List<Object>	extensionsField;
+
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		void setExtensionMethod(Object extensionMethod) {
+
+		}
+	}
+
+	@Test
+	public void anyservice() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$AnyServiceUse");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b);
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, "1.5.0", AnyService.class.getName());
+
+			//
+			// Test all the defaults
+			//
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$AnyServiceUse.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.5.0");
+
+			xt.assertAttribute(AnyService.class.getName(),
+				"scr:component/reference[@name='component']/@interface");
+
+			xt.assertAttribute(AnyService.class.getName(),
+				"scr:component/reference[@name='ExtensionMethod']/@interface");
+			xt.assertAttribute("setExtensionMethod", "scr:component/reference[@name='ExtensionMethod']/@bind");
+
+			xt.assertAttribute(AnyService.class.getName(),
+				"scr:component/reference[@name='extensionField']/@interface");
+			xt.assertAttribute("extensionField", "scr:component/reference[@name='extensionField']/@field");
+
+			xt.assertAttribute(AnyService.class.getName(),
+				"scr:component/reference[@name='extensionsField']/@interface");
+			xt.assertAttribute("extensionsField", "scr:component/reference[@name='extensionsField']/@field");
+			xt.assertAttribute("0..n", "scr:component/reference[@name='extensionsField']/@cardinality");
+			xt.assertAttribute("service", "scr:component/reference[@name='extensionsField']/@field-collection-type");
+
+			xt.assertAttribute(AnyService.class.getName(),
+				"scr:component/reference[@name='extensionOptionalField']/@interface");
+			xt.assertAttribute("extensionOptionalField",
+				"scr:component/reference[@name='extensionOptionalField']/@field");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='extensionOptionalField']/@cardinality");
+			xt.assertAttribute("service",
+				"scr:component/reference[@name='extensionOptionalField']/@field-collection-type");
+			xt.assertAttribute("dynamic", "scr:component/reference[@name='extensionOptionalField']/@policy");
+
+			xt.assertAttribute(AnyService.class.getName(),
+				"scr:component/reference[@name='extensionParam']/@interface");
+			xt.assertAttribute("0", "scr:component/reference[@name='extensionParam']/@parameter");
+
+			xt.assertAttribute(AnyService.class.getName(),
+				"scr:component/reference[@name='extensionsParam']/@interface");
+			xt.assertAttribute("1", "scr:component/reference[@name='extensionsParam']/@parameter");
+			xt.assertAttribute("0..n", "scr:component/reference[@name='extensionsParam']/@cardinality");
+
+		}
+	}
+
+	@Component
+	public static class AnyServiceUseNoObject {
+		@Activate
+		public AnyServiceUseNoObject(@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		LogService extensionParam, @Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		List<LogService> extensionsParam) {}
+
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		LogService			extensionField;
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		Optional<LogService>	extensionOptionalField;
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		List<LogService>	extensionsField;
+
+		@Reference(service = AnyService.class, target = "(osgi.jaxrs.extension=true)")
+		void setExtensionMethod(LogService extensionMethod) {
+
+		}
+	}
+
+	@Test
+	public void anyservice_noobject() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$AnyServiceUseNoObject");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b, 12, 0);
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$AnyServiceUseNoObject.xml");
+			assertNotNull(r);
+			r.write(System.err);
+		}
+	}
+
+	@Component(reference = {
+		@Reference(name = "component", service = AnyService.class)
+	})
+	public static class AnyServiceUseNoTarget {
+		@Activate
+		public AnyServiceUseNoTarget(@Reference(service = AnyService.class)
+		Object extensionParam, @Reference(service = AnyService.class)
+		List<Object> extensionsParam) {}
+
+		@Reference(service = AnyService.class)
+		Object			extensionField;
+		@Reference(service = AnyService.class)
+		Optional<Object>	extensionOptionalField;
+		@Reference(service = AnyService.class)
+		List<Object>	extensionsField;
+
+		@Reference(service = AnyService.class)
+		void setExtensionMethod(Object extensionMethod) {
+
+		}
+	}
+
+	@Test
+	public void anyservice_notarget() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$AnyServiceUseNoTarget");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b, 7, 0);
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$AnyServiceUseNoTarget.xml");
+			assertNotNull(r);
+			r.write(System.err);
+		}
+	}
+
+	@Component
+	public static class OptionalUse {
+		@Activate
+		public OptionalUse(@Reference(cardinality = ReferenceCardinality.MANDATORY)
+		Optional<LogService> serviceParam, @Reference
+		Optional<ServiceReference<LogService>> srParam, @Reference
+		Optional<ComponentServiceObjects<LogService>> soParam, @Reference(service = LogService.class)
+		Optional<Map<String, Object>> propsParam, @Reference
+		Optional<Map.Entry<Map<String, Object>, LogService>> tupleParam) {}
+
+		@Reference
+		volatile Optional<LogService>							serviceField;
+
+		@Reference
+		Optional<ServiceReference<LogService>>					srField	= Optional.empty();
+
+		@Reference
+		Optional<ComponentServiceObjects<LogService>>			soField;
+
+		@Reference(service = LogService.class)
+		Optional<Map<String, Object>>							propsField;
+
+		@Reference
+		Optional<Map.Entry<Map<String, Object>, LogService>>	tupleField;
+	}
+
+	@Test
+	public void optional() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$OptionalUse");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b);
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, "1.5.0", LogService.class.getName());
+
+			//
+			// Test all the defaults
+			//
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$OptionalUse.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.5.0");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='serviceField']/@interface");
+			xt.assertAttribute("serviceField", "scr:component/reference[@name='serviceField']/@field");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='serviceField']/@cardinality");
+			xt.assertAttribute("service", "scr:component/reference[@name='serviceField']/@field-collection-type");
+			xt.assertAttribute("dynamic", "scr:component/reference[@name='serviceField']/@policy");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='srField']/@interface");
+			xt.assertAttribute("srField", "scr:component/reference[@name='srField']/@field");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='srField']/@cardinality");
+			xt.assertAttribute("reference", "scr:component/reference[@name='srField']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='soField']/@interface");
+			xt.assertAttribute("soField", "scr:component/reference[@name='soField']/@field");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='soField']/@cardinality");
+			xt.assertAttribute("serviceobjects", "scr:component/reference[@name='soField']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='propsField']/@interface");
+			xt.assertAttribute("propsField", "scr:component/reference[@name='propsField']/@field");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='propsField']/@cardinality");
+			xt.assertAttribute("properties", "scr:component/reference[@name='propsField']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='tupleField']/@interface");
+			xt.assertAttribute("tupleField", "scr:component/reference[@name='tupleField']/@field");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='tupleField']/@cardinality");
+			xt.assertAttribute("tuple", "scr:component/reference[@name='tupleField']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='serviceParam']/@interface");
+			xt.assertAttribute("0", "scr:component/reference[@name='serviceParam']/@parameter");
+			xt.assertAttribute("1..1", "scr:component/reference[@name='serviceParam']/@cardinality");
+			xt.assertAttribute("service", "scr:component/reference[@name='serviceParam']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='srParam']/@interface");
+			xt.assertAttribute("1", "scr:component/reference[@name='srParam']/@parameter");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='srParam']/@cardinality");
+			xt.assertAttribute("reference", "scr:component/reference[@name='srParam']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='soParam']/@interface");
+			xt.assertAttribute("2", "scr:component/reference[@name='soParam']/@parameter");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='soParam']/@cardinality");
+			xt.assertAttribute("serviceobjects", "scr:component/reference[@name='soParam']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='propsParam']/@interface");
+			xt.assertAttribute("3", "scr:component/reference[@name='propsParam']/@parameter");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='propsParam']/@cardinality");
+			xt.assertAttribute("properties", "scr:component/reference[@name='propsParam']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='tupleParam']/@interface");
+			xt.assertAttribute("4", "scr:component/reference[@name='tupleParam']/@parameter");
+			xt.assertAttribute("0..1", "scr:component/reference[@name='tupleParam']/@cardinality");
+			xt.assertAttribute("tuple", "scr:component/reference[@name='tupleParam']/@field-collection-type");
+
+		}
+	}
+
+	@Component
+	public static class OptionalUseMultiple {
+		@Activate
+		public OptionalUseMultiple(@Reference(cardinality = ReferenceCardinality.MULTIPLE)
+		Optional<LogService> serviceParam) {}
+
+		@Reference(cardinality = ReferenceCardinality.MULTIPLE)
+		volatile Optional<LogService> serviceField;
+	}
+
+	@Test
+	public void optional_multiple() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$OptionalUseMultiple");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b, 2, 0);
+			Attributes a = getAttr(jar);
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$OptionalUseMultiple.xml");
+			assertNotNull(r);
+			r.write(System.err);
 		}
 	}
 

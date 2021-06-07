@@ -35,6 +35,7 @@ import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.AnalyzerPlugin;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
 import aQute.lib.collections.MultiMap;
@@ -183,11 +184,11 @@ public class DSAnnotations implements AnalyzerPlugin {
 						.putResource(path, new TagResource(definition.getTag()));
 
 					if (!options.contains(Options.nocapabilities)) {
-						addServiceCapability(definition.service, provides, nouses);
+						addServiceCapability(definition, provides, nouses);
 					}
 
 					if (!options.contains(Options.norequirements)) {
-						MergedRequirement serviceReqMerge = new MergedRequirement("osgi.service");
+						MergedRequirement serviceReqMerge = new MergedRequirement(ServiceNamespace.SERVICE_NAMESPACE);
 						for (ReferenceDef ref : definition.references.values()) {
 							addServiceRequirement(ref, serviceReqMerge);
 						}
@@ -216,18 +217,12 @@ public class DSAnnotations implements AnalyzerPlugin {
 		updateHeader(analyzer, Constants.REQUIRE_CAPABILITY, requires);
 		updateHeader(analyzer, Constants.PROVIDE_CAPABILITY, provides);
 
-		definitionsByName.entrySet()
-			.stream()
-			.filter(e -> e.getValue()
-				.size() > 1)
-			.forEach(e -> {
-				analyzer.error("Same component name %s used in multiple component implementations: %s", e.getKey(),
-					e.getValue()
-						.stream()
-						.map(def -> def.implementation)
-						.collect(toList()));
-			});
-
+		MapStream.of(definitionsByName)
+			.filterValue(l -> l.size() > 1)
+			.forEach((k, v) -> analyzer.error("Same component name %s used in multiple component implementations: %s",
+				k, v.stream()
+					.map(def -> def.implementation)
+					.collect(toList())));
 		return false;
 	}
 
@@ -240,8 +235,9 @@ public class DSAnnotations implements AnalyzerPlugin {
 			DeclarativeServicesAnnotationError dse = new DeclarativeServicesAnnotationError(
 				definition.implementation.getFQN(), null, ErrorType.VERSION_MISMATCH);
 			analyzer
-				.error("component %s version %s exceeds -dsannotations-options version;maximum version %s because %s",
-					definition.version, definition.name, settings.maxVersion, definition.versionReason)
+				.error(
+					"[%s] component %s version %s exceeds -dsannotations-options version;maximum version %s because %s",
+					dse.location(), definition.name, definition.version, settings.maxVersion, definition.versionReason)
 				.details(dse);
 		}
 
@@ -274,7 +270,19 @@ public class DSAnnotations implements AnalyzerPlugin {
 		return actual;
 	}
 
-	private void addServiceCapability(TypeRef[] services, Set<String> provides, boolean nouses) {
+	private void addServiceCapability(ComponentDef definition, Set<String> provides, boolean nouses) {
+		if (definition.factory != null) { // Alternate capability for factory
+			Attrs a = new Attrs();
+			a.put(ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE + ":List<String>",
+				"org.osgi.service.component.ComponentFactory");
+			a.put(ComponentConstants.COMPONENT_FACTORY, definition.factory);
+			Parameters p = new Parameters();
+			p.put(ServiceNamespace.SERVICE_NAMESPACE, a);
+			String s = p.toString();
+			provides.add(s);
+		}
+
+		TypeRef[] services = definition.service;
 		if (services == null) {
 			return;
 		}
@@ -313,6 +321,12 @@ public class DSAnnotations implements AnalyzerPlugin {
 			|| cardinality == ReferenceCardinality.AT_LEAST_ONE;
 
 		String filter = "(" + ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE + "=" + objectClass + ")";
+		if ("org.osgi.service.component.ComponentFactory".equals(objectClass)) {
+			if (ref.target == null) {
+				return; // no requirement if no target filter
+			}
+			filter = "(&" + filter + ref.target + ")";
+		}
 		requires.put(filter, Namespace.EFFECTIVE_ACTIVE, optional, multiple);
 	}
 

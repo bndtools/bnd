@@ -10,29 +10,38 @@ class TestHelper {
   private TestHelper() { }
 
   public static GradleRunner getGradleRunner() {
-    return GradleRunner.create()
-            .withGradleVersion(gradleVersion())
+    return runner(gradleVersion())
   }
 
   public static GradleRunner getGradleRunner(String version) {
     String defaultversion = gradleVersion()
     if (MavenVersion.parseMavenString(defaultversion).compareTo(MavenVersion.parseMavenString(version)) > 0) {
-      version = defaultversion
+      return runner(defaultversion)
     }
-    return GradleRunner.create()
-            .withGradleVersion(version)
+    return runner(version)
+  }
+
+  private static GradleRunner runner(String version) {
+    GradleRunner runner = GradleRunner.create()
+    if (System.getProperty('org.gradle.warning.mode') == 'fail') { // if 'fail' we use the build gradle version
+      return runner
+    }
+    return runner.withGradleVersion(version)
   }
 
   private static String gradleVersion() {
-    if (JavaVersion.current().isJava11Compatible()) {
-      return '5.0'
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_16)) {
+      return '7.0'
     }
-    if (JavaVersion.current().isJava10Compatible()) {
-      return '4.7'
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_15)) {
+      return '6.7'
     }
-    if (JavaVersion.current().isJava9Compatible()) {
-      return '4.2.1'
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
+      return '6.3'
     }
-    return '4.0'
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_13)) {
+      return '6.0'
+    }
+    return '5.3'
   }
 }

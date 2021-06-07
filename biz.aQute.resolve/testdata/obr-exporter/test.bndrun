@@ -1,0 +1,11 @@
+-standalone: true
+-runrequires: bnd.identity;id='org.apache.felix.configadmin'
+
+-plugin: aQute.bnd.repository.maven.provider.MavenBndRepository;\
+		readOnly            =  true;\
+		releaseUrl          = 'https://repo.maven.apache.org/maven2/';\
+		source              = 'org.apache.felix:org.apache.felix.configadmin:1.9.20, \
+						       org.apache.felix:org.apache.felix.framework:6.0.4'
+
+-runfw: org.apache.felix.framework
+-runee: JavaSE-1.8

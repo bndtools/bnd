@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/5.2.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Testing with Launchpad</title>
+<meta name="generator" content="Jekyll v3.9.0" />
+<meta property="og:title" content="Testing with Launchpad" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="note This featue is in beta. Feedback welcome and expect a few deficiencies in documentation and usage." />
+<meta property="og:description" content="note This featue is in beta. Feedback welcome and expect a few deficiencies in documentation and usage." />
+<script type="application/ld+json">
+{"url":"/releases/5.2.0/chapters/315-launchpad-testing.html","headline":"Testing with Launchpad","description":"note This featue is in beta. Feedback welcome and expect a few deficiencies in documentation and usage.","@type":"WebPage","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+		<style>
+			 body {
+				counter-reset: h1 22;
+			}
+		</style>
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/5.2.0/"><img
+			class=menu-logo src="/releases/5.2.0/img/bnd-80x40-white.png"></a>
+			<a href="/releases/5.2.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/5.2.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/5.2.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/5.2.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/5.2.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">5.2.0</button><div class="dropdown-content"></div></div>
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/releases/5.2.0/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li class=selected>Testing with Launchpad
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/875-external-plugins.html">External Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+				<h1> Testing with Launchpad</h1>
+				<p><em>note</em> This featue is in beta. Feedback welcome and expect a few deficiencies in documentation and usage.</p>
+
+<p>An OSGi framework poses special challenges to testing because it is necessary to start a framework instance for each 
+test. There has always been a bnd OSGi testing framework that was developed to test the OSGi specifications and  reference
+implementations. This testing framework packaged the tests as a bundle and had a special version of JUnit that could run
+these tests from inside the framework. Actually quite powerful and it was fully integrated with  Eclipse JUnit testing,
+delivering identical output to the CI build tools. However, the use of a special JUnit runner excluded it for people that wanted
+to use TestNG or other test frameworks.</p>
+
+<p>A second problem was that since tests ran inside the framework as a bundle they could not influence the setup of the OSGi
+framework easily. A last problem was that tests shared the same framework which could result in ordering dependencies.</p>
+
+<h2 id="launchpad">Launchpad</h2>
+
+<p>Launchpad is a bnd runtime library that provides an API to launch a framework that is fully integrated with the 
+bnd workspace. It automatically exports the runtime class path via the framework bundle, ensuring there is a single class space for
+the code on the class path and the code in the bundles. (This does require that bundles properly import their 
+exported packages.)</p>
+
+<p>Launchpad provides a builder that incrementally can build up the specifications of the framework. The builder can
+take <code class="language-plaintext highlighter-rouge">bndrun</code> files or bundle specifications in the same format as that are used to set the <code class="language-plaintext highlighter-rouge">-buildpath</code> or
+<code class="language-plaintext highlighter-rouge">-runbundles</code> in the <code class="language-plaintext highlighter-rouge">bnd.bnd</code> files. Once the information is setup, bnd will calculate the setup based on 
+the classes in the <code class="language-plaintext highlighter-rouge">test</code> folder and launch an OSGi framework.</p>
+
+<p>Once the framework is launched, Launchpad can then inject services and some key framework objects into annotated
+fields. Each field can specify a timeout, target filter, and minimum cardinality. Injection can take place in any object but is
+usually on the test instance.</p>
+
+<p>In the original OSGi testing support test bundles had to be created during the build. In the OSGi test cases for the Blueprint
+reference implementation more than 200 test bundles were used. Although the overhead was relatively small due to the bnd <code class="language-plaintext highlighter-rouge">-make</code> facility,
+it was still a nuisance because the information in a test case had to be synchronized in a <code class="language-plaintext highlighter-rouge">bnd</code> file in another directory. For
+this reason Launchpad contains a <em>bundle builder</em>. This bundle builder used <code class="language-plaintext highlighter-rouge">bnd</code> under the hood. It can use anything that a bnd
+sub bundle could use; it is build in the context of the project that contains the test classes and shares the same 
+<code class="language-plaintext highlighter-rouge">-buildpath</code>. Bundles that are build with the bundle builder can actually leverage nested classes in the test class for
+Bundle Activator or component classes.</p>
+
+<p>Overall this is a comprehensive library for testing OSGi projects in a Bndtools workspace.</p>
+
+<h2 id="quick-start">Quick Start</h2>
+
+<p>You need the <code class="language-plaintext highlighter-rouge">biz.aQute.launchpad</code> library on your <code class="language-plaintext highlighter-rouge">-testpath</code>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bnd.bnd:
+...	
+-buildpath: ...
+-testpath: \
+	osgi.enroute.junit.wrapper, \
+	biz.aQute.launchpad
+</code></pre></div></div>
+
+<p><em>note</em> The biz.aQute.launchpad is available in 4.2 but there are a few minor API changes that did not make it. You can
+therefore use the snapshot version on JFrog or download the latest version and use:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lib/biz.aQute.launchpad.jar;version=file
+</code></pre></div></div>
+
+<p>The next step is to enable your <em>workspace</em> for launchpad. A bnd workspace can have a Remote Workspace Server and
+Launchpad needs it. You therefore need to add the following to your <code class="language-plaintext highlighter-rouge">cnf/build.bnd</code> file.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cnf/build.bnd:
+    -remoteworkspace        true
+</code></pre></div></div>
+
+<p>Using JUnit, we can now create a test. We start with creating a <code class="language-plaintext highlighter-rouge">LaunchpadBuilder</code>. This builder stores information about the to be started framework. It has many
+methods that usually align with the properties for a <code class="language-plaintext highlighter-rouge">bnd.bnd</code> file. The Javadoc contains the details. We could create this
+object in a <code class="language-plaintext highlighter-rouge">@Before</code> method and close it in an <code class="language-plaintext highlighter-rouge">@After</code> method but this object does not have to be closed. It contains only
+the settings.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>LaunchpadBuilder	builder	= new LaunchpadBuilder()
+					.runfw("org.apache.felix.framework");
+</code></pre></div></div>
+
+<p>For this first quick start test we inject a Bundle Context, the core OSGi object that allows us to interact with the framework.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Service
+BundleContext		context;
+</code></pre></div></div>
+
+<p>The method is a normal JUnit test method. We open the Launchpad in a <em>try resource</em> block. Closing the <code class="language-plaintext highlighter-rouge">Launchpad</code> object will
+shutdown the framework. The test is simply verifying that the injection has worked.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void quickStart() throws Exception {
+	try (Launchpad launchpad = builder.create()
+		.inject(this)) {
+		assertNotNull(context);
+	}
+}
+</code></pre></div></div>
+
+<p>Voila! The first Launchpad test case.</p>
+
+<h2 id="two-models">Two Models</h2>
+
+<p>The Launchpad code can be used in different modes:</p>
+
+<ul>
+  <li>Using the class path. In this mode classes on the classpath are exported as framework classes and override 
+any classes in the framework. This mode does not require any support from the test framework but there are
+a number of caveats. This setup works very well if you want to tests POJOs that require an OSGi context.</li>
+  <li>JUnit Runner. In this mode bnd creates a bundle that is the project’s bundle but includes the test classes. These
+test classes use DynamicImport-Package to minimize disruptions to the manifest. The Launchpad Runner will then start
+the framework, install the test bundle, and run the tests. This mode works well when you want to test your finished bundle.</li>
+</ul>
+
+<h2 id="junit-launchpad-runner-mode">JUnit Launchpad Runner Mode</h2>
+
+<p>To use the Launchpad Runner it is necessary to add an <code class="language-plaintext highlighter-rouge">@RunWith</code> annotation on your JUnit test class:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@RunWith(LaunchpadRunner.class)
+public class TestMyCode {
+
+    LaunchpadBuilder    builder = new LaunchpadBuilder().runfw("org.apache.felix.framework").debug();
+
+    @Service
+    Launchpad       launchpad;
+
+    @Test
+    public void testMyCode() {
+        launchpad.report();
+    }
+}
+</code></pre></div></div>
+
+<h3 id="junit-theory">Junit Theory</h3>
+
+<p>The Launchpad Runner is in control to gather the tests and then execute them. The test gathering is handled via the
+standard JUnit support. However, when the test must run, LaunchpadRunner creates a bundle that has the following qualities:</p>
+
+<ul>
+  <li>Fully contains the project’s build artifact. This is the sole bundle for a single bundle project or the first bundle (sorted 
+by name) if a multi bundle project is used. The code actually uses a prior build JAR.</li>
+  <li>All the test classes are added to this JAR</li>
+  <li>A DynamicImport-Package * is added</li>
+</ul>
+
+<p>The runner then launches a framework based on a LaunchpadBuilder that it finds in the the <code class="language-plaintext highlighter-rouge">static</code> field <code class="language-plaintext highlighter-rouge">builder</code>.</p>
+
+<p>It then installs the bundles, and adds the test bundle. To execute a test, it loads the
+class from the test bundle and finds the appropriate method, instantiates the class in an instance, runs the injector
+on this object. and executes the methods.</p>
+
+<p>This mode is similar to the PAX Exam model. It has similar constraints. It does run the <code class="language-plaintext highlighter-rouge">@Before</code> and <code class="language-plaintext highlighter-rouge">@After</code> annotated
+methods but it cannot run the <code class="language-plaintext highlighter-rouge">@BeforeClass</code> and <code class="language-plaintext highlighter-rouge">@AfterClass</code>.</p>
+
+<h2 id="classpath-mode">Classpath Mode</h2>
+
+<p>Launchpad is quite awesome to use but there are some pitfalls to take into account. It is strongly recommended
+to read this section to get an idea how Launchpad handles class sharing between the test classes (which are on the
+normal Java class path) and the classes in bundles. There is more going on than what one suspects looking at the
+simplicity how it can be used. This section details the workings to make you aware of potential bugs and should 
+help in debugging problems. In general, the cleaner your code base, the better this all works. If you have a very messy
+setup with lots of scripts, fragments, require bundle, and very wide code interfaces instead of services then this
+might not be for you …</p>
+
+<h3 id="class-loading">Class Loading</h3>
+
+<p>In Java, class are loaded from the <em>classpath</em>. The class path is a (usually very long) list of Jar files. When a class
+needs to be loaded, Java searches al those Jars for that class, first one wins.</p>
+
+<p>In OSGi, this model is changed for a <em>delegating</em> model. Each bundle <em>imports</em> a set of <em>packages</em> and <em>exports</em> a set 
+of packages. This information is in a bundle’s <em>manifest</em>. When an OSGi framework <em>resolves</em> a bundle, it wires these
+imports to a corresponding export.</p>
+
+<h3 id="lauchpads-classpath">Lauchpad’s Classpath</h3>
+
+<p>When a test case gets started the <em>driver</em> (Eclipse, Gradle, etc.) launches a new Java VM. The class path for that
+VM will consist of all entries on the <code class="language-plaintext highlighter-rouge">-buildpath</code>, <code class="language-plaintext highlighter-rouge">-testpath</code>, and the main and test output folders. When the
+Launchpad builder is first called it will contact the <em>Remote Workspace</em> in the driver and request for an analysis of 
+the test code. The Remote Workspace then uses the project setup to calculate a bundle that would export all the
+test code and its imports. The Launchpad Builder then makes the OSGi framework export all packages that that
+virtual test bundle would have exported. That is, any class visible from the test cases will be exported by 
+the OSGi framework by default. It is possible to <em>exclude exports</em> using glob expressions or predicates from a test case.
+See the <code class="language-plaintext highlighter-rouge">excludeExport()</code> methods.</p>
+
+<h3 id="bundles">Bundles</h3>
+
+<p>A bundle installed on the OSGi Framework should this see all the relevant classes from the class path instead of
+from other bundles. The tricky case is when a bundle exports a package that is also available from the 
+class path. If this package is only exported then the framework cannot substitute it for the package from the 
+class path. In such a bad case the bundle that exports it will see its embedded version of the class while
+the rest of the system sees the version from the class path. This can then result in a class cast exception
+like:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java.lang.ClassCastException: an instance of org.example.Foo cannot be assigned to org.example.Foo
+</code></pre></div></div>
+
+<p>Although the names of those classes are identical, the problem is that they will be loaded by different class
+loaders.</p>
+
+<h3 id="version-sensitivity">Version Sensitivity</h3>
+
+<p>Due to this setup there is very strict sensitivity to the version of the OSGi Framework packages and bundles. Most bnd projects
+have the OSGi framework packages on the <code class="language-plaintext highlighter-rouge">-buildpath</code>. The version of these packages can be lower than the version
+of the Framework because of backward compatibility. Actually, bnd generally recommends to compile against the
+lowest possible framework packages. However, with launchpad these packages will also be used by the Framework, there
+is unfortunately no good way around this. The consequence is that the <code class="language-plaintext highlighter-rouge">-buildpath</code> version of the Framework
+packages must match the exact version used by the implementation of the framework.</p>
+
+<h3 id="excluding-exported-system-packages">Excluding Exported System Packages</h3>
+
+<p>Launchpad will calculate the set of packages that are exported by the framework from the claspath. The so called
+<code class="language-plaintext highlighter-rouge">org.osgi.framework.system.packages.extra</code>. It calculates this by creating bundle from the test sources, adding
+all dependencies, and then exporting the full content. That export statement is then uses for <code class="language-plaintext highlighter-rouge">org.osgi.framework.system.packages.extra</code>.</p>
+
+<p>However, this is generally too wide since it includes all dependencies, not just public dependencies. Version mismatches
+can create nasty problems and sometimes the solution is to exclude exports.</p>
+
+<p>The Launchpad Builder provides a number of methods called <code class="language-plaintext highlighter-rouge">excludeExport()</code> that take either a <em>glob</em> or a predicate.
+The globs/predicates are then ran against the list of calculated export package names. Any matching entry is then
+not exported.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Launchpad b = new LaunchpadBuilder()
+    .excludeExports( "slf4j.*")
+    .create();
+</code></pre></div></div>
+
+<p>If a bndrun file is the <code class="language-plaintext highlighter-rouge">-excludeexports</code> instruction can be placed in the bndrun file containing a list globs.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-excludeexports     aQute.lib*, slf4j.*
+</code></pre></div></div>
+
+<h2 id="naming">Naming</h2>
+
+<p>The Launchpad has a default name of the method and class that called <code class="language-plaintext highlighter-rouge">create()</code>. These names can be overwritten with
+<code class="language-plaintext highlighter-rouge">create(name)</code> and <code class="language-plaintext highlighter-rouge">create(name,className)</code>. The actual name of Launchpad is set under the following framework 
+property names:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>launchpad.name
+launchpad.className
+</code></pre></div></div>
+
+<h2 id="interaction-with-services">Interaction with Services</h2>
+
+<p>Clearly the best part of Launchpad is that you can actually use real services and do not have
+to mock them up. Many a test seems to mostly test their mocks.</p>
+
+<p>With Launchpad, real framework is running. You can inject services or register services.</p>
+
+<p>In the following example we register a service <code class="language-plaintext highlighter-rouge">Foo</code> and then verify if we can get it. We then
+unregister the service and see that it no longer exists.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>interface Foo {}
+
+@Test
+public void services() throws Exception {
+	try (Launchpad launchpad = builder.create()) {
+
+		ServiceRegistration&lt;Foo&gt; register = 
+			launchpad.register(Foo.class, new Foo() {});
+		Optional&lt;Foo&gt; s = 
+			launchpad.waitForService(Foo.class, 100);
+		assertThat(s.isPresent()).isTrue();
+
+		register.unregister();
+
+		s = launchpad.waitForService(Foo.class, 100);
+		assertThat(s.isPresent()).isFalse();
+	}
+}
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">waitForService</code> methods take a timeout in milliseconds. Their purpose is to provide some leeway
+during startup for the system to settle. If a service should be there then it the <code class="language-plaintext highlighter-rouge">getService()</code> methods
+can be used.</p>
+
+<h2 id="injection">Injection</h2>
+
+<p>Injection is not automatic because in many cases you want to handle the setup of the framework before
+you inject. Injection can also happen as often as you want. However, you first need to create and
+start the framework.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void inject() throws Exception {
+	try (Launchpad launchpad = builder.create()) {
+		ServiceRegistration&lt;Foo&gt; register = launchpad.register(Foo.class, new Foo() {});
+
+		class I {
+			@Service
+			Foo foo;
+			@Service
+			Bundle			bundles[];
+			@Service
+			BundleContext	context;
+		}
+		I inject = new I();
+		launchpad.inject(inject);
+		assertThat(inject.bundles).isNotEmpty();
+	}
+}
+</code></pre></div></div>
+
+<h2 id="hello-world">Hello World</h2>
+
+<p>Although Bundle-Activator’s are not recommended to be used (they are singletons), they are very useful in
+test cases. With Launchpad it is not necessary to to make a separate bundle, we can make a bundle with
+an inner class as activator.</p>
+
+<p>We therefore first define the Bundle Activator as a static public inner class of the test class:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public static class Activator implements BundleActivator {
+	@Override
+	public void start(BundleContext context) throws Exception {
+		System.out.println("Hello World");
+	}
+	@Override
+	public void stop(BundleContext context) throws Exception {
+		System.out.println("Goodbye World");
+	}
+}
+</code></pre></div></div>
+
+<p>The Launchpad class contains a special <em>Bundle builder</em>. This bundle builder is based on bnd and can can do everything that
+bnd can do in a <code class="language-plaintext highlighter-rouge">bnd.bnd</code> file. In this case we add the Bundle Activator and start it.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void activator() throws Exception {
+	try (Launchpad launchpad = builder.create()) {
+
+		Bundle start = launchpad.bundle()
+			.bundleActivator(Activator.class)
+			.start();
+	}
+}
+</code></pre></div></div>
+
+<p>When the test is run the output is:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Hello World
+Goodbye World
+</code></pre></div></div>
+
+<h2 id="components">Components</h2>
+
+<p>Since the bundle builder can do anything bnd can do, we can also use inner classes for components. These inner
+classes must be static and public (this is an OSGi DS requirement). The following is an example of a class
+that depends on the <code class="language-plaintext highlighter-rouge">Bar</code> service.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>interface Bar {
+    void bar();
+}
+
+@Component
+public static class C {
+	@Reference Bar bar;
+    @Activate  void activate() { bar.bar(); }
+}
+
+@Test
+public void component() throws Exception {
+	try (Launchpad launchpad = builder
+		.bundles("org.apache.felix.log")
+		.bundles("org.apache.felix.scr")
+		.bundles("org.apache.felix.configadmin")
+		.create()) {
+
+		Bundle b = launchpad.component(C.class);
+        AtomicBoolean   called = new AtomicBoolean(false);
+        launchpad.register(Bar.class, ()-&gt; called.set(true) );
+        assertThat(called.get()).isTrue();
+	}
+}
+</code></pre></div></div>
+
+<p>Adding a component will return a Bundle. Uninstalling the bundle will remove the component.</p>
+
+<h2 id="debugging">Debugging</h2>
+
+<p>Clearly there are lots of things that can go wrong. You can therefore activate the <code class="language-plaintext highlighter-rouge">debug()</code> on the builder or
+Launchpad. This will provide logging to the console.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void debug() {
+	try (Launchpad launchpad = builder
+        .debug()
+		.create()) {
+                        
+        }
+}
+</code></pre></div></div>
+
+<p>If you run this the console will show a lot of diagnostics information.</p>
+
+<h2 id="using-a-bndrun-file">Using a bndrun file</h2>
+
+<p>One of the great innovations in bndtools is the resolver. So far we’ve assembled the list of bundles to run ourselves.
+However, we can also use a <code class="language-plaintext highlighter-rouge">bndrun</code> file and <code class="language-plaintext highlighter-rouge">bndrun</code> files can be resolved.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void bndrun() {
+	try (Launchpad launchpad = builder
+        .bndrun("showit.bndrun")
+		.create()) {         
+        }
+}
+</code></pre></div></div>
+
+<p>If the <code class="language-plaintext highlighter-rouge">bndrun</code> file contains the following after resolving:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-runrequires: \
+    osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
+    osgi.identity;filter:='(osgi.identity=biz.aQute.bnd.runtime.gogo)'
+
+
+-runbundles: \
+    org.apache.felix.gogo.runtime;version='[1.1.0,1.1.1)',\
+    org.apache.felix.gogo.shell;version='[1.1.0,1.1.1)',\
+    biz.aQute.bnd.runtime.gogo;version=snapshot,\
+    org.apache.felix.log;version='[1.0.1,1.0.2)'
+-runfw: org.apache.felix.framework;version='[5.6.10,5.6.10]'
+-runee: JavaSE-1.8
+</code></pre></div></div>
+
+<p>Then we see the following output:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Welcome to Apache Felix Gogo
+g!
+</code></pre></div></div>
+
+<h2 id="making-bundles">Making Bundles</h2>
+
+<p>The Launchpad object contains a special bundle builder. It provides the same capabilities that bnd already has when
+it creates bundles. You can use all the facilities that you can use in the <code class="language-plaintext highlighter-rouge">bnd.bnd</code> file. Export-Package, Import-Package,
+-includeresource, etc.</p>
+
+<p>The following example shows how to create a bundle with a a special header.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void bundles() throws Exception {
+	try (Launchpad launchpad = builder.create()) {
+		Bundle b = launchpad.bundle()
+			.header("FooBar", "1")
+			.install();
+		String string = b.getHeaders()
+			.get("FooBar");
+		assertThat(string).isEqualTo("1");
+	}
+}
+</code></pre></div></div>
+
+<h3 id="inheriting-from-the-project-workspace-or-a-bnd-file">Inheriting from the project, workspace, or a bnd file</h3>
+
+<p>When you create a bundle from the Launchpad class then by default you inherit nothing from the enironment. However,
+it is possible to set the parent of the builder. The <code class="language-plaintext highlighter-rouge">parent(String)</code> or <code class="language-plaintext highlighter-rouge">parent(File)</code> method can set multiple
+parents.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>parent ::= FILE* ( WORKSPACE | PROJECT )?
+</code></pre></div></div>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">WORKSPACE</code> – Inherit from the workspace, excludes inheriting from the project and must be specified last in the set of parents.</li>
+  <li><code class="language-plaintext highlighter-rouge">PROJECT</code> – Inherit from the workspace, excludes inheriting from the project and must be specified last in the set of parents.</li>
+  <li><code class="language-plaintext highlighter-rouge">FILE</code>    – A file path with forward slashes on all platforms. This must point to a bnd/properties file.</li>
+</ul>
+
+<p>The order of the parents is important. Earlier bnd files override the same named value in later bnd files.</p>
+
+<p>Example:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Bundle b = lp.bundle().parent('foo.bnd').parent(WORKSPACE).start();
+</code></pre></div></div>
+
+<h2 id="hiding-a-service">Hiding a Service</h2>
+
+<p>In some scenarios you’d like to hide a service so you can override it with a mocked version. Hiding in OSGi
+can be achieved with the [Servic Hooks] services. The easiest way is to hide a service via the Launchpad Builder.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	LaunchpadBuilder	builder	= new LaunchpadBuilder().runfw("org.apache.felix.framework").hide(SomeService.class);
+</code></pre></div></div>
+
+<p>If you now create a framework, all services <em>not</em> registered via Launchpad will be invisible to all bundles. That is,
+only services registered through Launchpad can be seen by the other bundles in the OSGi framework.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void testHidingViaBuilder() throws Exception {
+	try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+			.create()) {
+
+		boolean isHidden = fw.getServices(String.class)
+				.isEmpty();			
+		assertThat(isHidden).isTrue();
+
+		fw.framework.getBundleContext()
+				.registerService(String.class, "fw", null);
+
+		isHidden = fw.getServices(String.class)
+				.isEmpty();
+		assertThat(isHidden).isTrue();
+
+		ServiceRegistration&lt;String&gt; visibleToAllViaTestbundle = fw.register(String.class, "Hello");
+
+		assertThat(fw.getServices(String.class)).containsOnly("Hello");
+		visibleToAllViaTestbundle.unregister();
+
+		isHidden = fw.getServices(String.class)
+				.isEmpty();
+		assertThat(isHidden).isTrue();
+	}
+}
+</code></pre></div></div>
+
+<p>Although hiding via the Launchpad Builder is the easiest way to hide services, it has the disadvantage that all
+tests hide the same service(s). It is also possible to handle the service hiding in a more controlled way
+by hiding via the Launchpad object.  Using this function does require a bit of orchestration. Once you hide 
+a service it becomes invisible to bundles that look for that service later. However, bundles that already 
+obtained this service will not lose sight of it. It is therefore necessary to hide a service before the 
+corresponding framework is started. Since the default is automatic start, the automatic start must be 
+disabled with the <code class="language-plaintext highlighter-rouge">nostart()</code> method on the builder.</p>
+
+<p>After the framework is then created. the service is hidden and then the framework is started.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Test
+public void testHiding() throws Exception {
+	try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+			.nostart()
+			.create()) {
+
+		@SuppressWarnings("resource")
+		Closeable hide = fw.hide(String.class);
+		fw.start();
+
+		boolean isHidden = fw.getServices(String.class)
+				.isEmpty();
+		assertThat(isHidden).isTrue();
+
+		fw.framework.getBundleContext()
+				.registerService(String.class, "fw", null);
+
+		isHidden = fw.getServices(String.class)
+				.isEmpty();
+		assertThat(isHidden).isTrue();
+
+		ServiceRegistration&lt;String&gt; visibleToAllViaTestbundle = fw.register(String.class, "Hello");
+
+		assertThat(fw.getServices(String.class)).containsOnly("Hello");
+		visibleToAllViaTestbundle.unregister();
+
+		isHidden = fw.getServices(String.class)
+				.isEmpty();
+		assertThat(isHidden).isTrue();
+
+		hide.close();
+		assertThat(fw.getServices(String.class)).containsOnly("fw");
+	}
+}
+</code></pre></div></div>
+
+<p>As you can see from the test code, the <code class="language-plaintext highlighter-rouge">hide</code> method in this case returns a <code class="language-plaintext highlighter-rouge">Closeable</code>. This object can be used to
+remove the hiding of the given service.</p>
+
+<h3 id="visibility">Visibility</h3>
+
+<p>To diagnose any issues it is important to realize that there are some special rules around which bundle does what. Launchpad
+has the Bundle Context of the OSGi Framework as well as a special test bundle. The test bundle is empty but it used to have
+a Bundle Context for the test code that runs outside the Framework. When you hide a service it will register
+Service Hooks that only let services from the test bundle pass through, all other services of the given type are removed
+from visibility.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Closeable Launchpad.hide(SomeService.class);
+</code></pre></div></div>
+
+<p>The service will remain hidden until you close the <code class="language-plaintext highlighter-rouge">Closeable</code>.</p>
+
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/releases/5.2.0/chapters/310-testing.html'></a> <a href='/releases/5.2.0/chapters/320-packaging.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/5.2.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

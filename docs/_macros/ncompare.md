@@ -1,18 +1,17 @@
 ---
 layout: default
 class: Macro
-title: compare STRING STRING
-summary: Compare two strings. 0 is equal, 1 means a > b, -1 is a < b.
+title: ncompare STRING STRING
+summary: Compare two numbers. 0 is equal, 1 means a > b, -1 is a < b.
 ---
 
-	static String	_compare	= "${compare;<astring>;<bstring>}";
+    static final String _ncompareHelp = "${ncompare;<anumber>;<bnumber>}";
 
-	public int _compare(String args[]) throws Exception {
-		verifyCommand(args, _compare, null, 3, 3);
-		int n = args[1].compareTo(args[2]);
-		if (n == 0)
-			return 0;
+    public int _ncompare(String[] args) throws Exception {
+        verifyCommand(args, _ncompareHelp, null, 3, 3);
+        double a = Double.parseDouble(args[1]);
+        double b = Double.parseDouble(args[2]);
+        return Integer.signum(Double.compare(a, b));
+    }
 
-		return n > 0 ? 1 : -1;
-	}
 

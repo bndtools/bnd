@@ -6,9 +6,7 @@ import static java.lang.Boolean.TRUE;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +37,7 @@ import aQute.bnd.osgi.Annotation;
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.FieldDef;
+import aQute.bnd.osgi.Clazz.MemberDef;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Clazz.MethodParameter;
 import aQute.bnd.osgi.Descriptors.TypeRef;
@@ -57,6 +56,7 @@ import aQute.bnd.signatures.ReferenceTypeSignature;
 import aQute.bnd.signatures.Result;
 import aQute.bnd.signatures.TypeArgument;
 import aQute.bnd.signatures.VoidDescriptor;
+import aQute.bnd.unmodifiable.Maps;
 import aQute.bnd.version.Version;
 import aQute.bnd.xmlattribute.ExtensionDef;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
@@ -66,62 +66,52 @@ import aQute.lib.collections.MultiMap;
  * Processes spec DS annotations into xml.
  */
 public class DSAnnotationReader extends ClassDataCollector {
-	private static final Logger					logger						= LoggerFactory
+	private static final Logger								logger						= LoggerFactory
 		.getLogger(DSAnnotationReader.class);
 
-	public static final Version					V1_0						= new Version("1.0.0");
-	public static final Version					V1_1						= new Version("1.1.0");
-	public static final Version					V1_2						= new Version("1.2.0");
-	public static final Version					V1_3						= new Version("1.3.0");
-	public static final Version					V1_4						= new Version("1.4.0");
-	public static final Version					VMAX						= new Version("2.0.0");
+	public static final Version								V1_0						= new Version("1.0.0");
+	public static final Version								V1_1						= new Version("1.1.0");
+	public static final Version								V1_2						= new Version("1.2.0");
+	public static final Version								V1_3						= new Version("1.3.0");
+	public static final Version								V1_4						= new Version("1.4.0");
+	public static final Version								V1_5						= new Version("1.5.0");
+	public static final Version								VMAX						= new Version("2.0.0");
 
-	private static final Pattern				BINDNAME					= Pattern
+	private static final Pattern							BINDNAME					= Pattern
 		.compile("(?:set|add|bind)?(?<name>.*)");
 
-	static final Pattern						IDENTIFIERTOPROPERTY		= Pattern
+	static final Pattern									IDENTIFIERTOPROPERTY		= Pattern
 		.compile("(__)|(_)|(\\$_\\$)|(\\$\\$)|(\\$)");
 
 	// We avoid using the XXX.class.getName() because it breaks the launcher
 	// tests when run in gradle. This is because gradle uses the bin/
 	// folder, not the bndlib jar which packages the ds annotations
-	private static final Instruction			COMPONENT_INSTR				= new Instruction(
+	private static final Instruction						COMPONENT_INSTR				= new Instruction(
 		"org.osgi.service.component.annotations.Component");
-	private static final Instruction			COMPONENT_PROPERTY_INSTR	= new Instruction(
+	private static final Instruction						COMPONENT_PROPERTY_INSTR	= new Instruction(
 		"org.osgi.service.component.annotations.ComponentPropertyType");
 
-	final static Map<String, Class<?>>			wrappers;
+	final static Map<String, Class<?>>						wrappers					= Maps.of("boolean",
+		Boolean.class, "byte", Byte.class, "short", Short.class, "char", Character.class, "int", Integer.class, "long",
+		Long.class, "float", Float.class, "double", Double.class);
 
-	private static final Entry<Pattern, String>	unbind1						= new SimpleImmutableEntry<>(
-		Pattern.compile("add(.*)"), "remove$1");
-	private static final Entry<Pattern, String>	unbind2						= new SimpleImmutableEntry<>(
-		Pattern.compile("(.*)"), "un$1");
-	private static final Entry<Pattern, String>	updated1					= new SimpleImmutableEntry<>(
-		Pattern.compile("(?:add|set|bind)(.*)"), "updated$1");
-	private static final Entry<Pattern, String>	updated2					= new SimpleImmutableEntry<>(
-		Pattern.compile("(.*)"), "updated$1");
+	private static final Entry<Pattern, String>				unbind1						= Maps
+		.entry(Pattern.compile("add(.*)"), "remove$1");
+	private static final Entry<Pattern, String>				unbind2						= Maps
+		.entry(Pattern.compile("(.*)"), "un$1");
+	private static final Entry<Pattern, String>				updated1					= Maps
+		.entry(Pattern.compile("(?:add|set|bind)(.*)"), "updated$1");
+	private static final Entry<Pattern, String>				updated2					= Maps
+		.entry(Pattern.compile("(.*)"), "updated$1");
 
-	private static final String					constructorArgFormat		= "$%03d";
-
-	static {
-		Map<String, Class<?>> map = new HashMap<>();
-		map.put("boolean", Boolean.class);
-		map.put("byte", Byte.class);
-		map.put("short", Short.class);
-		map.put("char", Character.class);
-		map.put("int", Integer.class);
-		map.put("long", Long.class);
-		map.put("float", Float.class);
-		map.put("double", Double.class);
-		wrappers = Collections.unmodifiableMap(map);
-	}
+	private static final String								constructorArgFormat		= "$%03d";
 
 	ComponentDef											component;
 
 	final Clazz												clazz;
 	final ClassSignature									classSig;
 	TypeRef[]												interfaces;
-	FieldDef												member;
+	MemberDef												member;
 	MethodSignature											methodSig;
 	FieldSignature											fieldSig;
 	MethodSignature											constructorSig;
@@ -129,7 +119,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	int														constructorArg;
 	TypeRef													className;
 	Analyzer												analyzer;
-	MultiMap<String, Clazz.MethodDef>						methods						= new MultiMap<>();
+	MultiMap<String, MethodDef>								methods						= new MultiMap<>();
 	TypeRef													extendsClass;
 	boolean													baseclass					= true;
 	final Set<Options>										options;
@@ -163,11 +153,12 @@ public class DSAnnotationReader extends ClassDataCollector {
 			// These types cannot be components so don't bother scanning them
 
 			if (clazz.is(ANNOTATED, COMPONENT_INSTR, analyzer)) {
+				DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(clazz.getFQN(),
+					null, ErrorType.INVALID_COMPONENT_TYPE);
 				analyzer
-					.error("The type %s is not a class and therfore not suitable for the @Component annotation",
-						clazz.getFQN())
-					.details(
-						new DeclarativeServicesAnnotationError(clazz.getFQN(), null, ErrorType.INVALID_COMPONENT_TYPE));
+					.error("[%s] The type is not a class and therefore not suitable for the @Component annotation",
+						details.location())
+					.details(details);
 			}
 			return null;
 		}
@@ -190,10 +181,10 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 				Clazz ec = analyzer.findClass(extendsClass);
 				if (ec == null) {
-					analyzer
-						.error("Missing super class for DS annotations: %s from %s", extendsClass, clazz.getClassName())
-						.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
-							ErrorType.UNABLE_TO_LOCATE_SUPER_CLASS));
+					DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(
+						className.getFQN(), null, null, ErrorType.UNABLE_TO_LOCATE_SUPER_CLASS);
+					analyzer.error("[%s] Missing super class for DS annotations %s", details.location(), extendsClass)
+						.details(details);
 					break;
 				} else {
 					ec.parseClassFileWithCollector(this);
@@ -260,6 +251,10 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 	@Override
 	public void annotation(Annotation annotation) {
+		if ((member != null) && ignoreMember()) {
+			return; // ignore annotations on ignored members
+		}
+
 		try {
 			switch (annotation.getName()
 				.getFQN()) {
@@ -307,8 +302,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 		switch (annotation.elementType()) {
 			case METHOD :
 				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
-					member.descriptor(),
-					ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
+					member.descriptor(), ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
 				break;
 			case FIELD :
 				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
@@ -337,10 +331,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 			if (clazz == null) {
 				analyzer.warning(
-					"Unable to determine whether the annotation %s applied to type %s is a component property type as it is not on the project build path. If this annotation is a component property type then it must be present on the build path in order to be processed",
-					annotation.getName()
-						.getFQN(),
-					className.getFQN())
+					"[%s] Unable to determine whether the annotation %s is a component property type as it is not on the project build path. If this annotation is a component property type then it must be present on the build path in order to be processed",
+					details.location(), annotation.getName()
+						.getFQN())
 					.details(details);
 				return;
 			}
@@ -352,16 +345,15 @@ public class DSAnnotationReader extends ClassDataCollector {
 					new ComponentPropertyTypeDataCollector(propertyDefKey, annotation, details));
 			} else {
 				logger.debug(
-					"The annotation {} on component type {} will not be used for properties as the annotation is not annotated with @ComponentPropertyType",
-					clazz.getFQN(), className.getFQN());
+					"The annotation {} on component {} will not be used for properties as the annotation is not annotated with @ComponentPropertyType",
+					clazz.getFQN(), details.location());
 				return;
 			}
 		} catch (Exception e) {
 			analyzer
-				.exception(e, "An error occurred when attempting to process annotation %s, applied to component %s",
+				.exception(e, "[%s] An error occurred when attempting to process annotation %s", details.location(),
 					annotation.getName()
-						.getFQN(),
-					className.getFQN())
+						.getFQN())
 				.details(details);
 		}
 	}
@@ -430,8 +422,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 						break;
 					}
 				}
-				analyzer
-					.error("Invalid activation object, type %s for field %s", member.descriptor(), details.fieldName)
+				analyzer.error("[%s] Invalid activation object type %s", details.location(), member.descriptor())
 					.details(details);
 
 				break;
@@ -440,12 +431,12 @@ public class DSAnnotationReader extends ClassDataCollector {
 				DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
 					member.getName(), memberDescriptor, ErrorType.CONSTRUCTOR_SIGNATURE_ERROR);
 				if (component.init != null) {
-					analyzer.error("Multiple constructors for %s are annotated @Activate.", details.className)
+					analyzer.error("[%s] Multiple constructors are annotated @Activate.", details.location())
 						.details(details);
 					break;
 				}
 				if (!member.isPublic()) {
-					analyzer.error("Constructors must be public access.")
+					analyzer.error("[%s] Constructors must be public access.", details.location())
 						.details(details);
 					break;
 				}
@@ -518,7 +509,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 			} else if (deactivate && (type == BaseType.I)) {
 				component.updateVersion(V1_1, "deactivate(int)");
 			} else {
-				analyzer.error("Invalid activation object type %s for parameter %s", type, arg)
+				analyzer.error("[%s] Invalid activation object type %s for parameter %s", details.location(), type, arg)
 					.details(details);
 			}
 		}
@@ -533,7 +524,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 			&& ((ClassTypeSignature) resultType).binary.equals("java/util/Map")) {
 			checkMapReturnType(details);
 		} else {
-			analyzer.error("Invalid return type type %s", resultType)
+			analyzer.error("[%s] Invalid return type type %s", details.location(), resultType)
 				.details(details);
 		}
 	}
@@ -554,7 +545,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 				String propertyDefKey = String.format(ComponentDef.PROPERTYDEF_CONSTRUCTORFORMAT, arg);
 				processActivationObject(propertyDefKey, param, memberDescriptor, details, false);
 			} else {
-				analyzer.error("Invalid activation object type %s for constructor parameter %s", type, arg)
+				analyzer
+					.error("[%s] Invalid activation object type %s for constructor parameter %s", details.location(),
+						type, arg)
 					.details(details);
 			}
 		}
@@ -587,15 +580,14 @@ public class DSAnnotationReader extends ClassDataCollector {
 						component.updateVersion(V1_3, "Felix interface type??");
 					} else {
 						analyzer
-							.error("Non annotation type for activation object with descriptor %s, type %s",
-								memberDescriptor, param.binary)
+							.error("[%s] Non annotation type for activation object with descriptor %s, type %s",
+								details.location(), memberDescriptor, param.binary)
 							.details(details);
 					}
 				} catch (Exception e) {
-					analyzer
-						.exception(e,
-							"Exception looking at annotation type for activation object with descriptor %s, type %s",
-							memberDescriptor, param.binary)
+					analyzer.exception(e,
+						"[%s] Exception looking at annotation type for activation object with descriptor %s, type %s",
+						details.location(), memberDescriptor, param.binary)
 						.details(details);
 				}
 				break;
@@ -703,7 +695,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 					try {
 						Clazz r = analyzer.findClass(type);
 						if (r.isAnnotation()) {
-							analyzer.warning("Nested annotation type found in member %s, %s", name, type.getFQN())
+							analyzer
+								.warning("[%s] Nested annotation type found in member %s, %s", details.location(), name,
+									type.getFQN())
 								.details(details);
 							return;
 						}
@@ -711,13 +705,13 @@ public class DSAnnotationReader extends ClassDataCollector {
 						if (memberDescriptor != null) {
 							analyzer
 								.exception(e,
-									"Exception looking at annotation type on member with descriptor %s, type %s",
-									memberDescriptor, type)
+									"[%s] Exception looking at annotation type on member with descriptor %s, type %s",
+									details.location(), memberDescriptor, type)
 								.details(details);
 						} else {
 							analyzer
-								.exception(e, "Exception looking at annotation %s applied to type %s", typeRef.getFQN(),
-									className.getFQN())
+								.exception(e, "[%s] Exception looking at annotation %s", details.location(),
+									typeRef.getFQN())
 								.details(details);
 						}
 					}
@@ -751,8 +745,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 				} else {
 					prefix = null;
 					analyzer.warning(
-						"Field PREFIX_ in %s is not a static final String field with a compile-time constant value: %s",
-						typeRef.getFQN(), c)
+						"[%s] Field PREFIX_ in %s is not a static final String field with a compile-time constant value: %s",
+						details.location(), typeRef.getFQN(), c)
 						.details(details);
 				}
 			} else {
@@ -884,13 +878,14 @@ public class DSAnnotationReader extends ClassDataCollector {
 						break;
 					default : // unknown!
 						sb.append(m.group());
-						analyzer.error("unknown mapping %s in property name %s", m.group(), name);
+						analyzer.error("[%s] unknown mapping %s in property name %s", details.location(), m.group(),
+							name);
 						break;
 				}
 			}
 			return (start == 0) ? name
 				: sb.append(name, start, name.length())
-				.toString();
+					.toString();
 		}
 	}
 
@@ -964,7 +959,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 					if (m.matches()) {
 						def.name = m.group("name");
 					} else {
-						analyzer.error("Invalid name for bind method %s", member.getName())
+						analyzer.error("In component '%s', invalid name for bind method '%s'", className, def.bind)
 							.details(getDetails(def, ErrorType.INVALID_REFERENCE_BIND_METHOD_NAME));
 					}
 				}
@@ -973,8 +968,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 				if (def.service == null) {
 					analyzer
-						.error("In component %s, method %s,  cannot recognize the signature of the descriptor: %s",
-							component.effectiveName(), def.name, member.descriptor())
+						.error("In component '%s', cannot recognize the signature of method '%s': %s",
+							className, def.bind, methodSig)
 						.details(getDetails(def, ErrorType.REFERENCE));
 				}
 				break;
@@ -985,10 +980,11 @@ public class DSAnnotationReader extends ClassDataCollector {
 				if (def.name == null) {
 					def.name = def.field;
 				}
+				// field type is ReferenceTypeSignature
+				ReferenceTypeSignature type = null;
 				if (fieldSig != null) {
-					// field type is ReferenceTypeSignature
 					FieldResolver resolver = new FieldResolver(classSig, fieldSig);
-					ReferenceTypeSignature type = resolver.resolveField();
+					type = resolver.resolveField();
 					def.service = determineReferenceType(def, type, resolver, annoService);
 				}
 
@@ -998,10 +994,18 @@ public class DSAnnotationReader extends ClassDataCollector {
 					}
 					if (def.isCollection) {
 						if (def.cardinality == null) {
-							def.cardinality = ReferenceCardinality.MULTIPLE;
+							def.cardinality = def.isOptional ? ReferenceCardinality.OPTIONAL
+								: ReferenceCardinality.MULTIPLE;
 						}
 						if (annotation.get("collectionType") != null) {
 							def.collectionType = reference.collectionType();
+						}
+						if (def.isOptional && (def.cardinality != ReferenceCardinality.OPTIONAL)
+							&& (def.cardinality != ReferenceCardinality.MANDATORY)) {
+							analyzer.error(
+								"In component '%s', field '%s' is 'Optional' but cardinality is not '0..1' or '1..1'.",
+								className, def.field)
+								.details(getDetails(def, ErrorType.OPTIONAL_FIELD_WITH_MULTIPLE));
 						}
 					}
 					if ((def.fieldOption == null) && (def.policy == ReferencePolicy.DYNAMIC)
@@ -1013,54 +1017,56 @@ public class DSAnnotationReader extends ClassDataCollector {
 					if (def.fieldOption == FieldOption.UPDATE) {
 						if (def.policy != ReferencePolicy.DYNAMIC) {
 							analyzer
-								.error("In component %s, field %s fieldOption is 'update' but policy is not 'dynamic'.",
+								.error(
+									"In component '%s', field '%s' fieldOption is 'update' but policy is not 'dynamic'.",
 									className, def.field)
 								.details(getDetails(def, ErrorType.UPDATE_FIELD_WITH_STATIC));
 						}
 						if ((def.cardinality != ReferenceCardinality.MULTIPLE)
 							&& (def.cardinality != ReferenceCardinality.AT_LEAST_ONE)) {
 							analyzer.error(
-								"In component %s, field %s fieldOption is 'update' but cardinality is not '0..n' or '1..n'.",
+								"In component '%s', field '%s' fieldOption is 'update' but cardinality is not '0..n' or '1..n'.",
 								className, def.field)
 								.details(getDetails(def, ErrorType.UPDATE_FIELD_WITH_UNARY));
 						}
 					} else { // def.fieldOption == FieldOption.REPLACE
 						if (member.isFinal()) {
 							analyzer
-								.error("In component %s field %s is final and fieldOption is not 'update'.", className,
+								.error("In component '%s', field '%s' is final and fieldOption is not 'update'.",
+									className,
 									def.field)
 								.details(getDetails(def, ErrorType.FINAL_FIELD_WITH_REPLACE));
 						}
 						if ((def.policy == ReferencePolicy.DYNAMIC) && !member.isVolatile()) {
 							analyzer
-								.error("In component %s, field %s policy is 'dynamic' and field is not volatile.",
+								.error("In component '%s', field '%s' policy is 'dynamic' and field is not volatile.",
 									className, def.field)
 								.details(getDetails(def, ErrorType.DYNAMIC_FIELD_NOT_VOLATILE));
 						}
 						if (def.isCollectionSubClass) {
 							analyzer.error(
-								"In component %s, field %s is a subclass of Collection and fieldOption is not 'update'.",
+								"In component '%s', field '%s' is a subclass of Collection and fieldOption is not 'update'.",
 								className, def.field)
 								.details(getDetails(def, ErrorType.COLLECTION_SUBCLASS_FIELD_WITH_REPLACE));
 						}
 					}
 				} else {
 					analyzer
-						.error("In component %s, field %s cannot recognize the signature of the descriptor: %s",
-							className, def.field, member.descriptor())
+						.error("In component '%s', cannot recognize the signature of field '%s': %s",
+							className, def.field, (type != null) ? type : member.descriptor())
 						.details(getDetails(def, ErrorType.REFERENCE));
 				}
 				break;
 			}
 			case PARAMETER : {
 				if (!"<init>".equals(member.getName())) {
-					analyzer.error("In component %s, @Reference cannot be used for method parameters", className)
+					analyzer.error("In component '%s', @Reference cannot be used for method parameters", className)
 						.details(getDetails(def, ErrorType.REFERENCE));
 					return;
 				}
 				if (constructorSig == null) {
 					analyzer.error(
-						"In component %s, @Reference can only be used for parameters on the constructor annotated @Activate",
+						"In component '%s', @Reference can only be used for parameters on the constructor annotated @Activate",
 						className)
 						.details(getDetails(def, ErrorType.CONSTRUCTOR_SIGNATURE_ERROR));
 					return;
@@ -1087,35 +1093,43 @@ public class DSAnnotationReader extends ClassDataCollector {
 				def.service = determineReferenceType(def, type, resolver, annoService);
 				if (def.service != null) {
 					if (def.policy == ReferencePolicy.DYNAMIC) {
-						analyzer.error("In component %s, constructor parameters may not be dynamic", className)
+						analyzer.error("In component '%s', constructor parameters may not be dynamic", className)
 							.details(getDetails(def, ErrorType.CONSTRUCTOR_SIGNATURE_ERROR));
 						def.policy = ReferencePolicy.STATIC;
 					}
 					if (def.isCollection) {
 						if (def.cardinality == null) {
-							def.cardinality = ReferenceCardinality.MULTIPLE;
+							def.cardinality = def.isOptional ? ReferenceCardinality.OPTIONAL
+								: ReferenceCardinality.MULTIPLE;
 						}
 						if (annotation.get("collectionType") != null) {
 							def.collectionType = reference.collectionType();
 						}
+						if (def.isOptional && (def.cardinality != ReferenceCardinality.OPTIONAL)
+							&& (def.cardinality != ReferenceCardinality.MANDATORY)) {
+							analyzer.error(
+								"In component '%s', constructor argument %s is 'Optional' but cardinality is not '0..1' or '1..1'.",
+								className, def.parameter)
+								.details(getDetails(def, ErrorType.OPTIONAL_FIELD_WITH_MULTIPLE));
+						}
 						if (def.isCollectionSubClass) {
 							analyzer.error(
-								"In component %s, collection type argument: %s is a subclass of Collection but this is not allowed for a constructor parameter",
+								"In component '%s', constructor argument %s is a subclass of Collection but this is not allowed for a constructor parameter",
 								className, def.parameter)
 								.details(getDetails(def, ErrorType.CONSTRUCTOR_SIGNATURE_ERROR));
 						}
 					}
 					if (def.fieldOption == FieldOption.UPDATE) {
 						analyzer.error(
-							"In component %s, collection type argument: %s is marked with 'update' fieldOption. Changing this to 'replace'.",
+							"In component '%s', constructor argument %s is marked with 'update' fieldOption. Changing this to 'replace'.",
 							className, def.parameter)
 							.details(getDetails(def, ErrorType.CONSTRUCTOR_SIGNATURE_ERROR));
 						def.fieldOption = null;
 					}
 				} else {
 					analyzer.error(
-						"In component %s, constructor argument %s, cannot recognize the signature of the descriptor: %s",
-						className, def.parameter, member.descriptor())
+						"In component '%s', cannot recognize the signature of constructor argument %s: %s", className,
+						def.parameter, type)
 						.details(getDetails(def, ErrorType.REFERENCE));
 				}
 				break;
@@ -1124,8 +1138,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 				def.service = annoService;
 				if (def.name == null) {
 					analyzer.error(
-						"Name must be supplied for a @Reference specified in the @Component annotation. Service: %s",
-						def.service)
+						"In component '%s', 'name' must be specified for a @Reference specified in the @Component annotation. Service: %s",
+						className, def.service)
 						.details(getDetails(def, ErrorType.MISSING_REFERENCE_NAME));
 					return;
 				}
@@ -1139,14 +1153,26 @@ public class DSAnnotationReader extends ClassDataCollector {
 		if (def.target != null) {
 			String error = Verifier.validateFilter(def.target);
 			if (error != null) {
-				analyzer.error("Invalid target filter %s for %s: %s", def.target, def.name, error)
+				analyzer
+					.error("In component '%s', invalid target filter %s for %s: %s", className, def.target, def.name,
+						error)
 					.details(getDetails(def, ErrorType.INVALID_TARGET_FILTER));
+			}
+		}
+
+		if ("org.osgi.service.component.AnyService".equals(def.service)) {
+			def.updateVersion(V1_5, "use of AnyService");
+			if (def.target == null) {
+				analyzer
+					.error("In component '%s', @Reference name '%s' uses 'AnyService' without specifying 'target'.",
+						className, def.name)
+					.details(getDetails(def, ErrorType.ANYSERVICE_NO_TARGET));
 			}
 		}
 
 		if (component.references.containsKey(def.name)) {
 			analyzer
-				.error("In component %s, multiple references with the same name: %s. Previous def: %s, this def: %s",
+				.error("In component '%s', multiple references with the same name: %s. Previous def: %s, this def: %s",
 					className, component.references.get(def.name), def.service, "")
 				.details(getDetails(def, ErrorType.MULTIPLE_REFERENCES_SAME_NAME));
 		} else {
@@ -1174,26 +1200,34 @@ public class DSAnnotationReader extends ClassDataCollector {
 			paramType = binaryToFQN(param.binary);
 			// Check for collection
 			switch (paramType) {
-				default :
-					// check for subtype of Collection
-					if (!analyzer.assignable(paramType, "java.util.Collection", false)) {
-						break;
-					}
-					def.isCollectionSubClass = true;
-					// FALL-THROUGH
 				case "java.util.Collection" :
 				case "java.util.List" :
 					def.isCollection = true;
-					TypeArgument[] typeArguments = param.classType.typeArguments;
-					if (typeArguments.length != 0) {
-						ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[0]);
-						if (inferred instanceof ClassTypeSignature) {
-							def.collectionType = CollectionType.SERVICE;
-							param = (ClassTypeSignature) inferred;
-							paramType = binaryToFQN(param.binary);
-						}
+					break;
+				default :
+					// check for subtype of Collection
+					if (analyzer.assignable(paramType, "java.util.Collection", false)) {
+						def.isCollection = true;
+						def.isCollectionSubClass = true;
 					}
 					break;
+				case "java.util.Optional" :
+					// We think of Optional as a collection
+					def.isCollection = true;
+					def.isOptional = true;
+					def.updateVersion(V1_5, "use of Optional");
+					break;
+			}
+			if (def.isCollection) {
+				TypeArgument[] typeArguments = param.classType.typeArguments;
+				if (typeArguments.length != 0) {
+					ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[0]);
+					if (inferred instanceof ClassTypeSignature) {
+						def.collectionType = CollectionType.SERVICE;
+						param = (ClassTypeSignature) inferred;
+						paramType = binaryToFQN(param.binary);
+					}
+				}
 			}
 			// compute inferred service
 			boolean tryInfer = (annoService == null) || !annoService.equals(paramType);
@@ -1227,8 +1261,10 @@ public class DSAnnotationReader extends ClassDataCollector {
 					}
 					break;
 				case "java.util.Map" :
-					if (tryInfer && def.isCollection) {
-						def.collectionType = CollectionType.PROPERTIES;
+					if (tryInfer) {
+						if (def.isCollection) {
+							def.collectionType = CollectionType.PROPERTIES;
+						}
 					}
 					break;
 				case "java.util.Map$Entry" :
@@ -1381,10 +1417,11 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 	private void checkMapReturnType(DeclarativeServicesAnnotationError details) {
 		if (!options.contains(Options.felixExtensions)) {
-			analyzer.error(
-				"In component %s, to use a return type of Map you must specify the -dsannotations-options felixExtensions flag "
-					+ " and use a felix extension attribute or explicitly specify the appropriate xmlns.",
-				className)
+			analyzer
+				.error(
+					"[%s] To use a return type of Map you must specify the -dsannotations-options felixExtensions flag "
+						+ " and use a felix extension attribute or explicitly specify the appropriate xmlns.",
+					details.location())
 				.details(details);
 		}
 	}
@@ -1400,22 +1437,10 @@ public class DSAnnotationReader extends ClassDataCollector {
 		if (!mismatchedAnnotations.isEmpty()) {
 			for (Entry<String, List<DeclarativeServicesAnnotationError>> e : mismatchedAnnotations.entrySet()) {
 				for (DeclarativeServicesAnnotationError errorDetails : e.getValue()) {
-					if (errorDetails.fieldName != null) {
-						analyzer.error(
-							"The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s on field %s. It is an error to mix these two types of annotations",
-							componentName, e.getKey(), errorDetails.fieldName)
-							.details(errorDetails);
-					} else if (errorDetails.methodName != null) {
-						analyzer.error(
-							"The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s on method %s with signature %s. It is an error to mix these two types of annotations",
-							componentName, e.getKey(), errorDetails.methodName, errorDetails.methodSignature)
-							.details(errorDetails);
-					} else {
-						analyzer.error(
-							"The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s. It is an error to mix these two types of annotations",
-							componentName, e.getKey())
-							.details(errorDetails);
-					}
+					analyzer.error(
+						"[%s] The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s. It is an error to mix these two types of annotations",
+						errorDetails.location(), componentName, e.getKey())
+						.details(errorDetails);
 				}
 			}
 			return;
@@ -1436,9 +1461,6 @@ public class DSAnnotationReader extends ClassDataCollector {
 		}
 		if (annotation.get("enabled") != null) {
 			component.enabled = comp.enabled();
-		}
-		if (annotation.get("factory") != null) {
-			component.factory = comp.factory();
 		}
 		if (annotation.get("immediate") != null) {
 			component.immediate = comp.immediate();
@@ -1489,29 +1511,26 @@ public class DSAnnotationReader extends ClassDataCollector {
 			component.service = Stream.of(declaredServices)
 				.map(TypeRef.class::cast)
 				.peek(typeRef -> {
+					DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(
+						className.getFQN(), null, null, ErrorType.INCOMPATIBLE_SERVICE);
 					try {
 						Clazz service = analyzer.findClass(typeRef);
 						if (!analyzer.assignable(clazz, service)) {
 							analyzer
-								.error("Class %s is not assignable to specified service %s", clazz.getFQN(),
-									typeRef.getFQN())
-								.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
-									ErrorType.INCOMPATIBLE_SERVICE));
+								.error("[%s] The component is not assignable to specified service %s",
+									details.location(), typeRef.getFQN())
+								.details(details);
 						}
 					} catch (Exception e) {
 						analyzer
-							.exception(e,
-								"An error occurred when attempting to process service %s, applied to component %s",
-								typeRef.getFQN(), className.getFQN())
-							.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
-								ErrorType.INCOMPATIBLE_SERVICE));
+							.exception(e, "[%s] An error occurred when attempting to process service %s",
+								details.location(), typeRef.getFQN())
+							.details(details);
 					}
 				})
 				.toArray(TypeRef[]::new);
 		}
 
-		// make sure reference processing knows this is a Reference in Component
-		member = null;
 		Object[] refAnnotations = annotation.get("reference");
 		if (refAnnotations != null) {
 			for (Object o : refAnnotations) {
@@ -1541,12 +1560,36 @@ public class DSAnnotationReader extends ClassDataCollector {
 		this.interfaces = interfaces;
 	}
 
+	/**
+	 * Check whether the current member should be ignored.
+	 *
+	 * @return {@code true} if the current member should be ignored.
+	 *         {@code false} otherwise.
+	 */
+	private boolean ignoreMember() {
+		if (member.isStatic()) {
+			return true; // ignore static members
+		}
+		if (member instanceof MethodDef) {
+			MethodDef method = (MethodDef) member;
+			if (method.isAbstract() // ignore abstract methods
+				|| method.isBridge() // ignore bridge methods
+				|| method.isSynthetic() // ignore synthetic methods
+				|| (!baseclass && method.isPrivate())) {
+				// ignore private methods on subclasses
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public void field(FieldDef field) {
-		if (field.isStatic()) {
+		member = field;
+		if (ignoreMember()) {
 			return;
 		}
-		member = field;
+
 		fieldSig = getFieldSignature(field);
 	}
 
@@ -1568,41 +1611,47 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 	@Override
 	public void method(MethodDef method) {
-		if (method.isAbstract() || method.isStatic() || method.isBridge() || method.isSynthetic()) {
-			return;
-		}
-
-		if (!baseclass && method.isPrivate()) {
-			return;
-		}
-
+		// handle before setting member field
 		if (constructorSig != null) {
 			processConstructorActivationArgs(constructorSig.parameterTypes.length);
 			constructorSig = null;
 		}
 
 		member = method;
+		if (ignoreMember()) {
+			return;
+		}
+
 		methods.add(method.getName(), method);
 		methodSig = getMethodSignature(method);
 	}
 
 	private MethodSignature getMethodSignature(MethodDef method) {
 		String signature = method.getSignature();
-		return analyzer.getMethodSignature((signature != null) ? signature
-			: method.descriptor());
+		return analyzer.getMethodSignature((signature != null) ? signature : method.descriptor());
 	}
 
 	@Override
 	public void memberEnd() {
+		// handle before setting member field
 		if (constructorSig != null) {
 			processConstructorActivationArgs(constructorSig.parameterTypes.length);
 			constructorSig = null;
 		}
+
 		member = null;
 	}
 
 	@Override
 	public void parameter(int p) {
 		parameter = p;
+	}
+
+	@Override
+	public String toString() {
+		if (member == null) {
+			return clazz.toString();
+		}
+		return clazz + "#" + member;
 	}
 }

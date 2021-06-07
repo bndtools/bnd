@@ -1,0 +1,151 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
+-tester: biz.aQute.tester.junit-platform
+
+# Any references to local bundles (e.g. version=snapshot) must include a reference to the
+# project building the bundles in the bnd.bnd -dependon instruction to ensure the necessary
+# dependencies have already been built.
+-runrequires: \
+	bnd.identity;id='biz.aQute.bnd.embedded-repo',\
+	bnd.identity;id='biz.aQute.tester.junit-platform',\
+	bnd.identity;id='bndtools.api',\
+	bnd.identity;id='bndtools.builder',\
+	bnd.identity;id='bndtools.core',\
+	bnd.identity;id='bndtools.core.services',\
+	bnd.identity;id='bndtools.core.test.launch',\
+	bnd.identity;id='bndtools.core.test.tests',\
+	bnd.identity;id='com.google.guava',\
+	bnd.identity;id='javax.annotation',\
+	bnd.identity;id='org.apache.ant',\
+	bnd.identity;id='org.apache.felix.gogo.command',\
+	bnd.identity;id='org.apache.felix.gogo.runtime',\
+	bnd.identity;id='org.apache.felix.gogo.shell',\
+	bnd.identity;id='org.bndtools.headless.build.manager',\
+	bnd.identity;id='org.bndtools.headless.build.plugin.ant',\
+	bnd.identity;id='org.bndtools.headless.build.plugin.gradle',\
+	bnd.identity;id='org.bndtools.templates.template',\
+	bnd.identity;id='org.bndtools.templating',\
+	bnd.identity;id='org.bndtools.templating.gitrepo',\
+	bnd.identity;id='org.bndtools.versioncontrol.ignores.manager',\
+	bnd.identity;id='org.bndtools.versioncontrol.ignores.plugin.git',\
+	bnd.identity;id='org.eclipse.ant.core',\
+	bnd.identity;id='org.eclipse.ant.ui',\
+	bnd.identity;id='org.eclipse.emf.ant',\
+	bnd.identity;id='org.eclipse.emf.codegen.ecore.ui',\
+	bnd.identity;id='org.eclipse.emf.codegen.ui',\
+	bnd.identity;id='org.eclipse.emf.common.ui',\
+	bnd.identity;id='org.eclipse.emf.databinding',\
+	bnd.identity;id='org.eclipse.emf.databinding.edit',\
+	bnd.identity;id='org.eclipse.emf.edit.ui',\
+	bnd.identity;id='org.eclipse.emf.exporter',\
+	bnd.identity;id='org.eclipse.emf.importer',\
+	bnd.identity;id='org.eclipse.emf.importer.ecore',\
+	bnd.identity;id='org.eclipse.emf.importer.java',\
+	bnd.identity;id='org.eclipse.emf.workspace',\
+	bnd.identity;id='org.eclipse.emf.workspace.ui',\
+	bnd.identity;id='org.eclipse.core.databinding.beans',\
+	bnd.identity;id='org.eclipse.core.filesystem',\
+	bnd.identity;id='org.eclipse.e4.tools.services',\
+	bnd.identity;id='org.eclipse.egit.ui',\
+	bnd.identity;id='org.eclipse.equinox.console',\
+	bnd.identity;id='org.eclipse.equinox.event',\
+	bnd.identity;id='org.eclipse.jdt.annotation',\
+	bnd.identity;id='org.eclipse.m2e.binaryproject.ui',\
+	bnd.identity;id='org.eclipse.m2e.discovery',\
+	bnd.identity;id='org.eclipse.m2e.editor',\
+	bnd.identity;id='org.eclipse.m2e.editor.xml',\
+	bnd.identity;id='org.eclipse.m2e.importer',\
+	bnd.identity;id='org.eclipse.m2e.jdt.ui',\
+	bnd.identity;id='org.eclipse.m2e.lifecyclemapping.defaults',\
+	bnd.identity;id='org.eclipse.m2e.profiles.core',\
+	bnd.identity;id='org.eclipse.m2e.profiles.ui',\
+	bnd.identity;id='org.eclipse.m2e.refactoring',\
+	bnd.identity;id='org.eclipse.m2e.scm',\
+	bnd.identity;id='org.eclipse.m2e.sourcelookup.ui',\
+	bnd.identity;id='org.eclipse.osgi.compatibility.state',\
+	bnd.identity;id='org.eclipse.pde.build',\
+	bnd.identity;id='org.eclipse.pde.core',\
+	bnd.identity;id='org.eclipse.pde.genericeditor.extension',\
+	bnd.identity;id='org.eclipse.pde.launching',\
+	bnd.identity;id='org.eclipse.pde.runtime',\
+	bnd.identity;id='org.eclipse.pde.ua.core',\
+	bnd.identity;id='org.eclipse.pde.ua.ui',\
+	bnd.identity;id='org.eclipse.pde.ui',\
+	bnd.identity;id='org.eclipse.sdk',\
+	bnd.identity;id='org.eclipse.ui.browser',\
+	bnd.identity;id='org.eclipse.ui.console',\
+	bnd.identity;id='org.eclipse.ui.ide',\
+	bnd.identity;id='org.eclipse.ui.ide.application',\
+	bnd.identity;id='org.junit.jupiter.engine',\
+	bnd.identity;id='org.junit.platform.launcher',\
+	bnd.identity;id='org.junit.vintage.engine',\
+	bnd.identity;id='org.slf4j.jcl'
+
+-runfw: org.eclipse.osgi;version='[3.15.300.v20200520-1959,3.15.300.v20200520-1959]'
+-runee: JavaSE-1.8
+
+# Useful debugging directives
+# The following directives are useful to have when you are debugging in the IDE
+# or at your console, but are too noisy in a CI environment.
+#
+-runtrace: true
+#
+# For debugging, uncomment this directive and comment out "-runpath.ci"
+-runpath.debug: \
+	ch.qos.logback.classic,\
+	ch.qos.logback.core,\
+	org.apache.felix.logback
+
+# This directive should be uncommented when you are running in the CI environment
+# so that the test output is not too noisy. For debugging, comment this
+# directive and uncomment -runpath.debug
+#-runpath.ci: \
+#	slf4j.nop
+
+-runpath: \
+	slf4j.api
+
+-runrepos: \
+	"Workspace",\
+	"Maven Central",\
+	"Eclipse 2020-06"
+
+-runproperties: \
+	eclipse.application=org.eclipse.ui.ide.workbench,\
+	eclipse.consoleLog=,\
+	eclipse.product=org.eclipse.sdk.ide,\
+	osgi.console=,\
+    osgi.console.enable.builtin=false,\
+    tester.separatethread=true,\
+    tester.trace=true,\
+    osgi.instance.area=${.}/generated/workspace,\
+	org.osgi.framework.bootdelegation='javax.net,javax.management',\
+	bndtools.core.test.dir=${.},\
+	logback.configurationFile=${fileuri;${.}/logback.xml}
+
+-runstartlevel: \
+    order=sortbynameversion,\
+    begin=-1
+
+# The service bundles need to be started before you attempt to start
+# the application itself, otherwise some of the necessary services (eg,
+# IEventBroker) will not be running in time.
+-runbundles+: *service*;startlevel=1,\
+	org.eclipse.equinox.app;startlevel=2,\
+	bndtools.core.test.launch;startlevel=2,\
+	bndtools.core.test*;startlevel=5,\
+	bndtools.*;startlevel=4,\
+	*;startlevel=3
+
+# Help the resolver by removing some candidates
+-runblacklist: \
+	bnd.identity;id='biz.aQute.bnd.annotation',\
+	bnd.identity;id='biz.aQute.bnd.transform',\
+	bnd.identity;id='biz.aQute.junit',\
+	bnd.identity;id='org.apache.felix.scr';version='[0,2.1.16)',\
+	bnd.identity;id='org.osgi.*',\
+	bnd.identity;id='junit-jupiter-*',\
+	bnd.identity;id='junit-platform-*',\
+	bnd.identity;id='junit-vintage-*'
+

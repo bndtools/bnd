@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -33,11 +32,10 @@ import aQute.service.reporter.Reporter;
 /**
  * TODO Needs testing Can be used to override default verification of HTTPS.
  */
-@aQute.bnd.annotation.plugin.BndPlugin(name = "url.https.verification", parameters = HttpsVerification.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "url.https.verification", hide = true, parameters = HttpsVerification.Config.class)
 public class HttpsVerification extends DefaultURLConnectionHandler {
 	static Logger				logger	= LoggerFactory.getLogger(HttpsVerification.class);
 	private SSLSocketFactory	factory;
-	private HostnameVerifier	verifier;
 	private boolean				verify	= true;
 	private String				certificatesPath;
 	private X509Certificate[]	certificateChain;
@@ -61,7 +59,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	}
 
 	/**
-	 * Initialize the SSL Context, factory and verifier.
+	 * Initialize the SSL Context and factory.
 	 *
 	 * @throws NoSuchAlgorithmException
 	 * @throws KeyManagementException
@@ -82,8 +80,6 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 			SSLContext context = SSLContext.getInstance("TLS");
 			context.init(null, trustManagers, new SecureRandom());
 			factory = context.getSocketFactory();
-
-			verifier = (string, session) -> verify;
 		}
 	}
 
@@ -97,7 +93,9 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 			HttpsURLConnection https = (HttpsURLConnection) connection;
 			init();
 			https.setSSLSocketFactory(factory);
-			https.setHostnameVerifier(verifier);
+			if (!verify) {
+				https.setHostnameVerifier((string, session) -> true);
+			}
 		}
 	}
 

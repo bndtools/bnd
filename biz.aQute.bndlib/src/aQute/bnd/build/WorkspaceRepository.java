@@ -4,12 +4,13 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
@@ -21,6 +22,7 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.SortedList;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 
 public class WorkspaceRepository implements RepositoryPlugin, Actionable {
@@ -29,6 +31,8 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 	public WorkspaceRepository(Workspace workspace) {
 		this.workspace = workspace;
 	}
+
+	private static final Pattern EXACT_VERSION_MATCH = Pattern.compile("[0-9]+\\.[0-9]+\\.[0-9]+\\..*");
 
 	private File[] get(String bsn, String range) throws Exception {
 		Collection<Project> projects = workspace.getAllProjects();
@@ -39,7 +43,8 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 				continue;
 			}
 			Version version = versions.get(bsn);
-			boolean exact = range.matches("[0-9]+\\.[0-9]+\\.[0-9]+\\..*");
+			boolean exact = EXACT_VERSION_MATCH.matcher(range)
+				.matches();
 			if (Constants.VERSION_ATTR_LATEST.equals(range) || matchVersion(range, version, exact)) {
 				File file = project.getOutputFile(bsn, version.toString());
 				if (!file.exists()) {
@@ -89,7 +94,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 
 	private boolean matchVersion(String range, Version version, boolean exact) {
 		if (range == null || range.trim()
-			.length() == 0)
+			.isEmpty())
 			return true;
 		VersionRange vr = new VersionRange(range);
 
@@ -118,22 +123,17 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 
 	@Override
 	public List<String> list(String pattern) throws Exception {
+		Glob glob = (pattern != null) ? new Glob(pattern) : null;
 		List<String> names = new ArrayList<>();
 		Collection<Project> projects = workspace.getAllProjects();
 		for (Project project : projects) {
 			for (String bsn : project.getBsns()) {
-				if (pattern != null) {
-					Glob glob = new Glob(pattern);
-					Matcher matcher = glob.matcher(bsn);
-					if (matcher.matches()) {
-						if (!names.contains(bsn)) {
-							names.add(bsn);
-						}
-					}
-				} else {
-					if (!names.contains(bsn)) {
-						names.add(bsn);
-					}
+				if ((glob != null) && !glob.matcher(bsn)
+					.matches()) {
+					continue;
+				}
+				if (!names.contains(bsn)) {
+					names.add(bsn);
 				}
 			}
 		}
@@ -151,7 +151,6 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 				continue;
 			}
 			versions.add(projectVersions.get(bsn));
-			break;
 		}
 		if (versions.isEmpty())
 			return SortedList.empty();
@@ -161,7 +160,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 
 	@Override
 	public String getName() {
-		return "Workspace " + workspace.getBase()
+		return workspace.getBase()
 			.getName();
 	}
 
@@ -188,20 +187,47 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 
 	@Override
 	public Map<String, Runnable> actions(Object... target) throws Exception {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String tooltip(Object... target) throws Exception {
-		// TODO Auto-generated method stub
+		if (target.length == 0) {
+			try (Formatter f = new Formatter()) {
+				f.format("Directory           : %s\n", workspace.getBase());
+				f.format("Projects            : %s\n", workspace.getAllProjects()
+					.size());
+				f.format("Communication       : %s\n", workspace.isOffline() ? "offline" : "online");
+				f.format("Gestalt             : %s\n", workspace.getGestalt());
+				f.format("Workspace errors    : \n    %s\n", Strings.join("\n    ", workspace.getErrors()));
+				f.format("Workspace warnings  : \n    %s\n", Strings.join("\n    ", workspace.getWarnings()));
+				f.format("Plugins             : \n    %s\n", Strings.join("\n    ", workspace.getPlugins()
+					.stream()
+					.filter(p -> !(p instanceof RepositoryPlugin))
+					.toArray()));
+				f.format("Repositories        : \n    %s\n", Strings.join("\n    ", workspace.getRepositories()
+					.stream()
+					.map(r -> String.format("%-40s %s %s", r.getName(), r.canWrite(),
+						r.getStatus() == null ? "" : r.getStatus()))
+					.toArray()));
+				return f.toString();
+			}
+		}
 		return null;
 	}
 
 	@Override
 	public String title(Object... target) throws Exception {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
+	public String getIcon() {
+		return "workspacerepo";
+	}
+
+	@Override
+	public boolean isRemote() {
+		return false;
+	}
 }

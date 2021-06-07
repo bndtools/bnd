@@ -12,7 +12,7 @@ public interface P2Config {
 	/**
 	 * Name of the repository
 	 *
-	 * @param will be used if no name set
+	 * @param defaultName will be used if no name set
 	 */
 	String name(String defaultName);
 
@@ -36,6 +36,9 @@ public interface P2Config {
 	 * If not set or false, this assumes a P2 repository, i.e. the url points to
 	 * a P2 repository directory. If set to true, the url is assumed to point to
 	 * an Eclipse Target platform.
+	 *
+	 * @deprecated
 	 */
+	@Deprecated
 	boolean targetPlatform();
 }

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 import aQute.libg.generics.Create;
 import aQute.service.reporter.Report;
@@ -22,7 +22,7 @@ import aQute.service.reporter.Reporter;
 public class ReporterAdapter implements Reporter, Report, Runnable {
 	final List<String>			errors		= new ArrayList<>();
 	final List<String>			warnings	= new ArrayList<>();
-	final List<LocationImpl>	locations	= new ArrayList<>();
+	final List<Location>	locations	= new ArrayList<>();
 
 	static class LocationImpl extends Location implements SetLocation {
 
@@ -290,7 +290,29 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 	}
 
 	public boolean getInfo(Report other) {
-		return getInfo(other, null);
+		copyEntry(other, other.getErrors(), errors, null);
+		copyEntry(other, other.getWarnings(), warnings, null);
+		return other.isOk();
+	}
+
+	private void copyEntry(Report other, List<String> messages, List<String> target, String prefix) {
+		for (String msg : messages) {
+			String targetmessage = msg;
+			if (prefix != null) {
+				targetmessage = prefix + msg;
+			} else
+				targetmessage = msg;
+
+			target.add(msg);
+			Location location = other.getLocation(msg);
+			if (location != null) {
+				if (prefix != null) {
+					location = location.dup();
+					location.message = targetmessage;
+				}
+				locations.add(location);
+			}
+		}
 	}
 
 	public boolean getInfo(Report other, String prefix) {
@@ -301,7 +323,7 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 
 	@Override
 	public Location getLocation(String msg) {
-		for (LocationImpl loc : locations) {
+		for (Location loc : locations) {
 			if ((loc.message != null) && loc.message.equals(msg))
 				return loc;
 		}

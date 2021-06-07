@@ -42,10 +42,15 @@ public class LauncherTest extends TestCase {
 	private File					t2;
 	private Thread					thread;
 
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
+
 	@Override
 	protected void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp");
-		tmp.mkdirs();
+		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+		IO.delete(tmp);
+		IO.mkdirs(tmp);
 		IO.copy(IO.getFile("testdata/ws"), tmp);
 		workspace = Workspace.getWorkspace(tmp);
 		workspace.refresh();
@@ -104,7 +109,6 @@ public class LauncherTest extends TestCase {
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		framework.stop();
-		IO.delete(tmp);
 		Main.stop();
 		IO.delete(IO.getFile("generated/cache"));
 		IO.delete(IO.getFile("generated/storage"));

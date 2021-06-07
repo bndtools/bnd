@@ -5,10 +5,8 @@ import static aQute.bnd.component.DSAnnotationReader.V1_1;
 import static aQute.bnd.component.DSAnnotationReader.V1_2;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,12 +31,12 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.Version;
 import aQute.lib.tag.Tag;
+import aQute.bnd.unmodifiable.Sets;
 
 public class HeaderReader extends Processor {
 	private final static Pattern		PROPERTY_PATTERN	= Pattern
 		.compile("(([^=:@]+)([:@](Boolean|Byte|Char|Short|Integer|Long|Float|Double|String))?)\\s*=(.*)");
-	private final static Set<String>	LIFECYCLE_METHODS	= new HashSet<>(
-		Arrays.asList("activate", "deactivate", "modified"));
+	private final static Set<String>	LIFECYCLE_METHODS	= Sets.of("activate", "deactivate", "modified");
 
 	private final Analyzer				analyzer;
 
@@ -46,10 +44,9 @@ public class HeaderReader extends Processor {
 	private final static String			BundleContextTR		= "org.osgi.framework.BundleContext";
 	private final static String			MapTR				= Map.class.getName();
 	private final static String			IntTR				= int.class.getName();
-	final static Set<String>			allowed				= new HashSet<>(
-		Arrays.asList(ComponentContextTR, BundleContextTR, MapTR));
-	final static Set<String>			allowedDeactivate	= new HashSet<>(
-		Arrays.asList(ComponentContextTR, BundleContextTR, MapTR, IntTR));
+	final static Set<String>			allowed				= Sets.of(ComponentContextTR, BundleContextTR, MapTR);
+	final static Set<String>			allowedDeactivate	= Sets.of(ComponentContextTR, BundleContextTR, MapTR,
+		IntTR);
 
 	private final static String			ServiceReferenceTR	= "org.osgi.framework.ServiceReference";
 
@@ -222,8 +219,8 @@ public class HeaderReader extends Processor {
 			}
 		}
 		for (String key : info.keySet()) {
-			if (SET_COMPONENT_DIRECTIVES_1_2.contains(key)) {
-				cd.updateVersion(V1_2, "uses 1.2 component directives like " + SET_COMPONENT_DIRECTIVES_1_2);
+			if (COMPONENT_DIRECTIVES_1_2.contains(key)) {
+				cd.updateVersion(V1_2, "uses 1.2 component directives like " + COMPONENT_DIRECTIVES_1_2);
 				return;
 			}
 		}
@@ -235,8 +232,8 @@ public class HeaderReader extends Processor {
 		}
 		// among other things this picks up any specified lifecycle methods
 		for (String key : info.keySet()) {
-			if (SET_COMPONENT_DIRECTIVES_1_1.contains(key)) {
-				cd.updateVersion(V1_1, "1.1 component directives like " + SET_COMPONENT_DIRECTIVES_1_1);
+			if (COMPONENT_DIRECTIVES_1_1.contains(key)) {
+				cd.updateVersion(V1_1, "1.1 component directives like " + COMPONENT_DIRECTIVES_1_1);
 				return;
 			}
 		}
@@ -354,13 +351,6 @@ public class HeaderReader extends Processor {
 		return 6;
 	}
 
-	/**
-	 * @param info
-	 * @param impl TODO
-	 * @param descriptors TODO
-	 * @param pw
-	 * @throws Exception
-	 */
 	void reference(Map<String, String> info, String impl, ComponentDef cd, Map<String, MethodDef> descriptors)
 		throws Exception {
 		Collection<String> dynamic = new ArrayList<>(split(info.get(COMPONENT_DYNAMIC)));
@@ -373,7 +363,7 @@ public class HeaderReader extends Processor {
 			// Skip directives
 			String referenceName = entry.getKey();
 			if (referenceName.endsWith(":")) {
-				if (!SET_COMPONENT_DIRECTIVES.contains(referenceName))
+				if (!COMPONENT_DIRECTIVES.contains(referenceName))
 					error("Unrecognized directive in " + Constants.SERVICE_COMPONENT + " header: %s", referenceName);
 				continue;
 			}

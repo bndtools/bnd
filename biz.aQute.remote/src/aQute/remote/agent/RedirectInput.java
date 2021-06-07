@@ -45,8 +45,8 @@ public class RedirectInput extends InputStream {
 	 */
 	public synchronized void add(String s) throws IOException {
 		byte[] bytes = s.getBytes();
-		for (int i = 0; i < bytes.length; i++) {
-			write(bytes[i]);
+		for (byte element : bytes) {
+			write(element);
 		}
 	}
 

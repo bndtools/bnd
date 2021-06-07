@@ -15,20 +15,23 @@
  * This properties is ignored if bndfile is specified and the specified file
  * exists.</li>
  * <li>sourceSet - This is the SourceSet to use for the
- * bnd builder. It defaults to 'project.sourceSets.main'.</li>
+ * bnd builder. It defaults to "project.sourceSets.main".</li>
  * <li>classpath - This is the FileCollection to use for the buildpath
- * for the bnd builder. It defaults to 'sourceSet.compileClasspath'.</li>
+ * for the bnd builder. It defaults to "sourceSet.compileClasspath".</li>
  * </ul>
  */
 
 package aQute.bnd.gradle
 
-import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.gradle.BndUtils.builtBy
+import static aQute.bnd.gradle.BndUtils.jarLibraryElements
+import static aQute.bnd.gradle.BndUtils.logReport
+import static aQute.bnd.gradle.BndUtils.unwrap
+import static java.util.Collections.singletonList
+import static org.gradle.api.tasks.PathSensitivity.RELATIVE
 
 import java.util.Properties
 import java.util.jar.Manifest
-import java.util.regex.Matcher
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
 
@@ -37,286 +40,330 @@ import aQute.bnd.osgi.Constants
 import aQute.bnd.osgi.Jar
 import aQute.bnd.osgi.Processor
 import aQute.bnd.version.MavenVersion
+import aQute.lib.io.IO
+import aQute.lib.strings.Strings
 import aQute.lib.utf8properties.UTF8Properties
+
 import org.gradle.api.GradleException
-import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.logging.Logger
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.FileCollection
+import org.gradle.api.file.ProjectLayout
+import org.gradle.api.file.RegularFile
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.ClasspathNormalizer
+import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.SourceSet
 
 class BundleTaskConvention {
-  private final Task task
-  private final Project project
-  private File bndfile
-  private final StringBuilder instructions
-  private final ConfigurableFileCollection classpathCollection
-  private boolean classpathModified
-  private SourceSet sourceSet
+	/**
+	 * The bndfile property.
+	 *
+	 * <p>
+	 * A bnd file containing bnd instructions for this project.
+	 */
+	@InputFile
+	@PathSensitive(RELATIVE)
+	@Optional
+	final RegularFileProperty bndfile
 
-  /**
-   * Create a BundleTaskConvention for the specified Jar task.
-   *
-   * <p>
-   * This also sets the default values for the added properties
-   * and adds the bnd file to the task inputs.
-   */
-  BundleTaskConvention(org.gradle.api.tasks.bundling.Jar task) {
-    this.task = task
-    this.project = task.project
-    instructions = new StringBuilder()
-    classpathCollection = project.files()
-    setSourceSet(project.sourceSets.main)
-    classpathModified = false
-    // need to programmatically add to inputs since @InputFiles in a convention is not processed
-    task.inputs.files(classpathCollection).withPropertyName('classpath')
-    task.inputs.file({ getBndfile() }).optional().withPropertyName('bndfile')
-    task.inputs.property('bnd', { getBnd() })
-  }
+	/**
+	 * The classpath property.
+	 *
+	 * <p>
+	 * The default value is sourceSets.main.compileClasspath.
+	 */
+	@InputFiles
+	@Classpath
+	final ConfigurableFileCollection classpath
 
-  /**
-   * Get the bndfile property.
-   * <p>
-   * File path to a bnd file containing bnd instructions for this project.
-   */
-  @InputFile
-  @Optional
-  public File getBndfile() {
-    return bndfile
-  }
-  /**
-   * Set the bndfile property.
-   *
-   * <p>
-   * The argument will be handled using
-   * Project.file().
-   */
-  public void setBndfile(Object file) {
-    bndfile = project.file(file)
-  }
+	/**
+	 * The bnd property.
+	 * <p>
+	 * If the bndfile property points an existing file, this property is ignored.
+	 * Otherwise, the bnd instructions in this property will be used.
+	 */
+	@Input
+	@Optional
+	final Provider<String> bnd
 
-  /**
-   * Get the bnd property.
-   * <p>
-   * If the bndfile property points an existing file, this property is ignored.
-   * Otherwise, the bnd instructions in this property will be used.
-   */
-  @Input
-  @Optional
-  public String getBnd() {
-    return instructions.toString()
-  }
+	private final ConfigurableFileCollection allSource
 
-  /**
-   * Set the bnd property from a multi-line string.
-   */
-  public void setBnd(CharSequence line) {
-     instructions.length = 0
-     bnd(line)
-  }
+	private final org.gradle.api.tasks.bundling.Jar task
+	private final ProjectLayout layout
+	private final ObjectFactory objects
+	private final File buildFile
+	private final ListProperty<CharSequence> instructions
+	private boolean classpathModified
 
-  /**
-   * Add instuctions to the bnd property from a list of multi-line strings.
-   */
-  public void bnd(CharSequence... lines) {
-    lines.each { line ->
-      instructions.append(line).append('\n')
-    }
-  }
+	/**
+	 * Create a BundleTaskConvention for the specified Jar task.
+	 *
+	 * <p>
+	 * This also sets the default values for the added properties
+	 * and adds the bnd file to the task inputs.
+	 */
+	BundleTaskConvention(org.gradle.api.tasks.bundling.Jar task) {
+		this.task = task
+		Project project = task.getProject()
+		layout = project.getLayout()
+		objects = project.getObjects()
+		buildFile = project.getBuildFile()
+		bndfile = objects.fileProperty()
+		instructions = objects.listProperty(CharSequence.class).empty()
+		bnd = instructions.map(list -> Strings.join("\n", list))
+		classpath = objects.fileCollection()
+		allSource = objects.fileCollection()
+		setSourceSet(project.sourceSets.main)
+		classpathModified = false
+		// need to programmatically add to inputs since @InputFiles in a convention is not processed
+		task.getInputs().files(getClasspath()).withNormalizer(ClasspathNormalizer.class).withPropertyName("classpath")
+		task.getInputs().file(getBndfile()).optional().withPathSensitivity(RELATIVE).withPropertyName("bndfile")
+		task.getInputs().property("bnd", getBnd())
+	}
 
-  /**
-   * Set the bnd property from a map.
-   */
-  public void setBnd(Map<String, ?> map) {
-     instructions.length = 0
-     bnd(map)
-  }
+	/**
+	 * Set the bndfile property.
+	 *
+	 * <p>
+	 * The argument will be handled using
+	 * project.layout.projectDirectory.file().
+	 */
+	public void setBndfile(String file) {
+		getBndfile().value(layout.getProjectDirectory().file(file))
+	}
 
-  /**
-   * Add instuctions to the bnd property from a map.
-   */
-  public void bnd(Map<String, ?> map) {
-    map.each { key, value ->
-      instructions.append(key).append('=').append(value).append('\n')
-    }
-  }
+	/**
+	 * Set the bndfile property.
+	 *
+	 * <p>
+	 * The argument will be handled using
+	 * Project.file().
+	 */
+	public void setBndfile(Object file) {
+		getBndfile().set(task.getProject().file(file))
+	}
 
-  /**
-   * Add files to the classpath.
-   *
-   * <p>
-   * The arguments will be handled using
-   * Project.files().
-   */
-  public ConfigurableFileCollection classpath(Object... paths) {
-    classpathModified = true
-    return builtBy(classpathCollection.from(paths), paths)
-  }
+	/**
+	 * Set the bnd property from a multi-line string.
+	 */
+	public void setBnd(CharSequence line) {
+		instructions.empty()
+		bnd(line)
+	}
 
-  /**
-   * Get the classpath property.
-   */
-  @InputFiles
-  public ConfigurableFileCollection getClasspath() {
-    return classpathCollection
-  }
-  /**
-   * Set the classpath property.
-   */
-  public void setClasspath(Object path) {
-    classpathCollection.from = []
-    classpathCollection.builtBy = []
-    classpath(path)
-  }
+	/**
+	 * Set the bnd property from a multi-line string using a
+	 * {@link Provider<? extends CharSequence>}.
+	 */
+	public void setBnd(Provider<? extends CharSequence> lines) {
+		instructions.empty()
+		bnd(lines)
+	}
 
-  /**
-   * Get the sourceSet property.
-   */
-  public SourceSet getSourceSet() {
-    return sourceSet
-  }
-  /**
-   * Set the sourceSet property.
-   */
-  public void setSourceSet(SourceSet sourceSet) {
-    this.sourceSet = sourceSet
-    if (!classpathModified) {
-      setClasspath(sourceSet.compileClasspath)
-      classpathModified = false
-    }
-  }
+	/**
+	 * Add instructions to the bnd property from a list of multi-line strings.
+	 */
+	public void bnd(CharSequence... lines) {
+		instructions.addAll(lines)
+	}
 
-  void buildBundle() {
-    task.configure {
-      // create Builder
-      Properties gradleProperties = new PropertiesWrapper()
-      gradleProperties.put('task', task)
-      gradleProperties.put('project', project)
-      new Builder(new Processor(gradleProperties, false)).withCloseable { Builder builder ->
-        // load bnd properties
-        File temporaryBndFile = File.createTempFile('bnd', '.bnd', temporaryDir)
-        temporaryBndFile.withWriter('UTF-8') { writer ->
-          // write any task manifest entries into the tmp bnd file
-          manifest.effectiveManifest.attributes.inject(new UTF8Properties()) { properties, key, value ->
-            if (key != 'Manifest-Version') {
-              properties.setProperty(key, value.toString())
-            }
-            return properties
-          }.replaceHere(project.projectDir).store(writer, null)
+	/**
+	 * Add a multi-line string of instructions to the bnd property
+	 * using a {@link Provider<? extends CharSequence>}.
+	 */
+	public void bnd(Provider<? extends CharSequence> lines) {
+		instructions.add(lines)
+	}
 
-          // if the bnd file exists, add its contents to the tmp bnd file
-          if (bndfile?.isFile()) {
-            builder.loadProperties(bndfile).store(writer, null)
-          } else if (!bnd.empty) {
-            UTF8Properties props = new UTF8Properties()
-            props.load(bnd, project.buildFile, builder)
-            props.replaceHere(project.projectDir).store(writer, null)
-          }
-        }
-        builder.setProperties(temporaryBndFile, project.projectDir) // this will cause project.dir property to be set
-        builder.setProperty('project.output', project.buildDir.canonicalPath)
+	/**
+	 * Set the bnd property from a map.
+	 */
+	public void setBnd(Map<String, ?> map) {
+		instructions.empty()
+		bnd(map)
+	}
 
-        // If no bundle to be built, we have nothing to do
-        if (builder.is(Constants.NOBUNDLES)) {
-          return
-        }
+	/**
+	 * Add instructions to the bnd property from a map.
+	 */
+	public void bnd(Map<String, ?> map) {
+		ListProperty<CharSequence> list = instructions
+		map.forEach((key, value) -> {
+			list.add("${key}=${value}")
+		})
+	}
 
-        // Reject sub-bundle projects
-        if (builder.getSubBuilders() != [builder]) {
-          throw new GradleException('Sub-bundles are not supported by this task')
-        }
+	/**
+	 * Add files to the classpath.
+	 *
+	 * <p>
+	 * The arguments will be handled using
+	 * ConfigurableFileCollection.from().
+	 */
+	public ConfigurableFileCollection classpath(Object... paths) {
+		classpathModified = true
+		return builtBy(getClasspath().from(paths), paths)
+	}
 
-        // Gradle 5.1 deprecates Jar task properties
-        File archivePath = task.hasProperty('archiveFile') ? task.archiveFile.get().asFile : task.archivePath
-        String archiveName = task.hasProperty('archiveFileName') ? task.archiveFileName.get() : task.archiveName
-        String version = task.hasProperty('archiveVersion') ? task.archiveVersion.get() : task.version
+	/**
+	 * Set the classpath property.
+	 *
+	 * <p>
+	 * The argument will be handled using
+	 * ConfigurableFileCollection.from().
+	 */
+	public void setClasspath(Object path) {
+		getClasspath().setFrom(Collections.emptyList())
+		getClasspath().setBuiltBy(Collections.emptyList())
+		classpath(path)
+	}
 
-        // Include entire contents of Jar task generated jar (except the manifest)
-        project.copy {
-          from archivePath
-          into temporaryDir
-        }
-        File archiveCopyFile = new File(temporaryDir, archiveName)
-        Jar bundleJar = new Jar(archiveName, archiveCopyFile)
-        String reproducible = builder.getProperty(Constants.REPRODUCIBLE)
-        bundleJar.setReproducible((reproducible != null) ? Processor.isTrue(reproducible) : !task.preserveFileTimestamps)
-        bundleJar.updateModified(archiveCopyFile.lastModified(), 'time of Jar task generated jar')
-        bundleJar.setManifest(new Manifest())
-        builder.setJar(bundleJar)
+	/**
+	 * Set the sourceSet.
+	 */
+	public void setSourceSet(SourceSet sourceSet) {
+		allSource.setFrom(sourceSet.getAllSource().getSourceDirectories())
+		jarLibraryElements(task, sourceSet.getCompileClasspathConfigurationName())
+		if (!classpathModified) {
+			setClasspath(sourceSet.getCompileClasspath())
+			classpathModified = false
+		}
+	}
 
-        // set builder classpath
-        ConfigurableFileCollection buildpath = project.files(classpath.files.findAll { File file ->
-          if (!file.exists()) {
-            return false
-          }
-          if (file.directory) {
-            return true
-          }
-          try {
-            new ZipFile(file).withCloseable { ZipFile zip ->
-              zip.entries() // make sure it is a valid zip file and not a pom
-            }
-          } catch (ZipException e) {
-            return false
-          }
-          return true
-        })
-        builder.setProperty('project.buildpath', buildpath.asPath)
-        builder.setClasspath(buildpath.files as File[])
-        logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
+	void buildBundle() {
+		org.gradle.api.tasks.bundling.Jar jarTask = task
+		File projectDir = unwrap(layout.getProjectDirectory())
+		File buildDir = unwrap(layout.getBuildDirectory())
+		File buildFile = this.buildFile
+		FileCollection sourcepath = allSource.filter((File file) -> file.exists())
+		// create Builder
+		Properties gradleProperties = new PropertiesWrapper()
+		gradleProperties.put("task", jarTask)
+		gradleProperties.put("project", jarTask.getProject())
+		try (Builder builder = new Builder(new Processor(gradleProperties, false))) {
+			// load bnd properties
+			File temporaryBndFile = File.createTempFile("bnd", ".bnd", jarTask.getTemporaryDir())
+			try (Writer writer = IO.writer(temporaryBndFile)) {
+				// write any task manifest entries into the tmp bnd file
+				jarTask.manifest.effectiveManifest.attributes.inject(new UTF8Properties()) { properties, key, value ->
+					if (!Objects.equals(key, "Manifest-Version")) {
+						properties.setProperty(key, value.toString())
+					}
+					return properties
+				}.replaceHere(projectDir).store(writer, null)
+				// if the bnd file exists, add its contents to the tmp bnd file
+				File bndfile = unwrap(getBndfile(), true)
+				if (bndfile?.isFile()) {
+					builder.loadProperties(bndfile).store(writer, null)
+				} else {
+					String bnd = unwrap(getBnd())
+					if (!bnd.isEmpty()) {
+						UTF8Properties props = new UTF8Properties()
+						props.load(bnd, buildFile, builder)
+						props.replaceHere(projectDir).store(writer, null)
+					}
+				}
+			}
+			builder.setProperties(temporaryBndFile, projectDir) // this will cause project.dir property to be set
+			builder.setProperty("project.output", buildDir.getCanonicalPath())
+			// If no bundle to be built, we have nothing to do
+			if (builder.is(Constants.NOBUNDLES)) {
+				return
+			}
+			// Reject sub-bundle projects
+			if (!Objects.equals(builder.getSubBuilders(), singletonList(builder))) {
+				throw new GradleException("Sub-bundles are not supported by this task")
+			}
+			File archiveFile = unwrap(jarTask.getArchiveFile())
+			String archiveFileName = unwrap(jarTask.getArchiveFileName())
+			String archiveBaseName = unwrap(jarTask.getArchiveBaseName())
+			String archiveClassifier = unwrap(jarTask.getArchiveClassifier())
+			String archiveVersion = unwrap(jarTask.getArchiveVersion(), true)
 
-        // set builder sourcepath
-        ConfigurableFileCollection sourcepath = project.files(sourceSet.allSource.srcDirs.findAll{it.exists()})
-        builder.setProperty('project.sourcepath', sourcepath.asPath)
-        builder.setSourcepath(sourcepath.files as File[])
-        logger.debug 'builder sourcepath: {}', builder.getSourcePath()
+			// Include entire contents of Jar task generated jar (except the manifest)
+			File archiveCopyFile = new File(jarTask.getTemporaryDir(), archiveFileName)
+			IO.copy(archiveFile, archiveCopyFile)
+			Jar bundleJar = new Jar(archiveFileName, archiveCopyFile)
+			String reproducible = builder.getProperty(Constants.REPRODUCIBLE)
+			bundleJar.setReproducible(Objects.nonNull(reproducible) ? Processor.isTrue(reproducible) : !jarTask.isPreserveFileTimestamps())
+			bundleJar.updateModified(archiveFile.lastModified(), "time of Jar task generated jar")
+			bundleJar.setManifest(new Manifest())
+			builder.setJar(bundleJar)
 
+			// set builder classpath
+			FileCollection buildpath = getClasspath().filter((File file) -> {
+				if (!file.exists()) {
+					return false
+				}
+				if (file.isDirectory()) {
+					return true
+				}
+				try (ZipFile zip = new ZipFile(file)) {
+					zip.entries() // make sure it is a valid zip file and not a pom
+				} catch (ZipException e) {
+					return false
+				}
+				return true
+			})
+			builder.setProperty("project.buildpath", buildpath.getAsPath())
+			builder.setClasspath(buildpath.getFiles() as File[])
+			jarTask.getLogger().debug("builder classpath: {}", builder.getClasspath()*.getSource())
+			// set builder sourcepath
+			builder.setProperty("project.sourcepath", sourcepath.getAsPath())
+			builder.setSourcepath(sourcepath.getFiles() as File[])
+			jarTask.getLogger().debug("builder sourcepath: {}", builder.getSourcePath())
+			// set bundle symbolic name from tasks's archiveBaseName property if necessary
+			String bundleSymbolicName = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME)
+			if (isEmpty(bundleSymbolicName)) {
+				bundleSymbolicName = archiveClassifier.isEmpty() ? archiveBaseName : "${archiveBaseName}-${archiveClassifier}"
+				builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, bundleSymbolicName)
+			}
 
-        // set bundle symbolic name from tasks's baseName property if necessary
-        String bundleSymbolicName = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME)
-        if (isEmpty(bundleSymbolicName)) {
-          builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, baseName)
-        }
+			// set bundle version from task's archiveVersion if necessary
+			String bundleVersion = builder.getProperty(Constants.BUNDLE_VERSION)
+			if (isEmpty(bundleVersion)) {
+				builder.setProperty(Constants.BUNDLE_VERSION, MavenVersion.parseMavenString(archiveVersion).getOSGiVersion().toString())
+			}
 
-        // set bundle version from task's version if necessary
-        String bundleVersion = builder.getProperty(Constants.BUNDLE_VERSION)
-        if (isEmpty(bundleVersion)) {
-          builder.setProperty(Constants.BUNDLE_VERSION, MavenVersion.parseMavenString(version?.toString()).getOSGiVersion().toString())
-        }
+			jarTask.getLogger().debug("builder properties: {}", builder.getProperties())
 
-        logger.debug 'builder properties: {}', builder.getProperties()
+			// Build bundle
+			Jar builtJar = builder.build()
+			if (!builder.isOk()) {
+				// if we already have an error; fail now
+				logReport(builder, jarTask.getLogger())
+				failTask("Bundle ${archiveFileName} has errors", archiveFile)
+			}
 
-        // Build bundle
-        Jar builtJar = builder.build()
-        if (!builder.isOk()) {
-          // if we already have an error; fail now
-          logReport(builder, logger)
-          failBuild("Bundle ${archiveName} has errors", archivePath)
-        }
+			// Write out the bundle
+			builtJar.write(archiveFile)
+			long now = System.currentTimeMillis()
+			archiveFile.setLastModified(now)
 
-        // Write out the bundle
-        builtJar.write(archivePath)
-        long now = System.currentTimeMillis()
-        archivePath.setLastModified(now)
+			logReport(builder, jarTask.getLogger())
+			if (!builder.isOk()) {
+				failTask("Bundle ${archiveFileName} has errors", archiveFile)
+			}
+		}
+	}
 
-        logReport(builder, logger)
-        if (!builder.isOk()) {
-          failBuild("Bundle ${archiveName} has errors", archivePath)
-        }
-      }
-    }
-  }
+	private void failTask(String msg, File archiveFile) {
+		IO.delete(archiveFile)
+		throw new GradleException(msg)
+	}
 
-  private void failBuild(String msg, File archivePath) {
-    project.delete(archivePath)
-    throw new GradleException(msg)
-  }
-
-  private boolean isEmpty(String header) {
-    return (header == null) || header.trim().isEmpty() || Constants.EMPTY_HEADER.equals(header)
-  }
+	private boolean isEmpty(String header) {
+		return Objects.isNull(header) || header.trim().isEmpty() || Constants.EMPTY_HEADER.equals(header)
+	}
 }

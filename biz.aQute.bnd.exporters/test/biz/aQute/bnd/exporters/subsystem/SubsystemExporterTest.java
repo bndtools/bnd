@@ -50,7 +50,7 @@ public class SubsystemExporterTest {
 
 	@Before
 	public void setUp() throws Exception {
-		genWsPath = "generated/tmp/test/" + testName.getMethodName() + "/" + WS_PATH;
+		genWsPath = "generated/tmp/test/" + getClass().getName() + "/" + testName.getMethodName() + "/" + WS_PATH;
 		File wsRoot = IO.getFile(genWsPath);
 		IO.delete(wsRoot);
 		IO.copy(IO.getFile(WS_PATH), wsRoot);

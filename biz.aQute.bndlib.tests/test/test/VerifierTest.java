@@ -1,5 +1,7 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.util.Properties;
 import java.util.jar.Manifest;
@@ -18,6 +20,11 @@ import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class VerifierTest extends TestCase {
+
+	public void testSpaceSeparated() {
+		assertThat(Verifier.isSpaceSeparated("a='x x, ' b c")).isTrue();
+		assertThat(Verifier.isSpaceSeparated("a\t , b, c")).isFalse();
+	}
 
 	public void testExports() throws Exception {
 		try (Builder b = new Builder()) {
@@ -196,7 +203,7 @@ public class VerifierTest extends TestCase {
 				"\\QImport Package org.osgi.framework has an invalid version range syntax ${range;[==,+)}\\E",
 				"\\QNo translation found for macro: range;[==,+)\\E",
 				"\\QExport-Package or -exportcontents refers to missing package 'org.osgi.service.eventadmin'\\E",
-				"Import Package clauses without version range \\(excluding javax\\.\\*\\):",
+				"Import Package clauses without version range:",
 				"Import Package bar has an invalid version range syntax \\[1,x2\\)",
 				"Import Package baz2 has an empty version range syntax \\(1,1\\), likely want to use \\[1.0.0,1.0.0\\]",
 				"Import Package baz has an invalid version range syntax \\[2,1\\): Low Range is higher than High Range: 2.0.0-1.0.0",

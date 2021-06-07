@@ -9,12 +9,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,14 +38,16 @@ import aQute.service.reporter.Reporter;
  * an AgentServer.
  */
 public class EnvoyDispatcher implements Closeable {
-	private ShaCache					cache;
-	private ShaSource					source;
-	private Reporter					main;
-	private File						storage;
-	private String						network;
-	private int							port;
-	private Map<String, DispatcherInfo>	frameworks	= new HashMap<>();
-	private Set<EnvoyImpl>				envoys		= new HashSet<>();
+	private final ShaCache						cache;
+	private final Reporter						main;
+	private final File							storage;
+	private final String						network;
+	private final int							port;
+	private final Map<String, DispatcherInfo>	frameworks		= new HashMap<>();
+	private final Set<EnvoyImpl>				envoys			= new HashSet<>();
+	private Map<String, String>					baseProperties	= new HashMap<>();
+
+	private ShaSource							source;
 
 	class DispatcherInfo {
 		String				name;
@@ -95,8 +101,10 @@ public class EnvoyDispatcher implements Closeable {
 		 */
 		@SuppressWarnings("deprecation")
 		@Override
-		public boolean createFramework(String name, Collection<String> runpath, Map<String, Object> properties)
+		public boolean createFramework(String name, Collection<String> runpath, Map<String, Object> requested)
 			throws Exception {
+			Map<String, Object> properties = new HashMap<>(baseProperties);
+			properties.putAll(requested);
 			main.trace("create framework %s - %s --- %s", name, runpath, properties);
 
 			if (!name.matches("[a-zA-Z0-9_.$-]+"))
@@ -190,12 +198,14 @@ public class EnvoyDispatcher implements Closeable {
 
 	}
 
-	public EnvoyDispatcher(Reporter main, File cache, File storage, String network, int port) {
+	public EnvoyDispatcher(Reporter main, File cache, File storage, String network, int port,
+		Map<String, String> properties) {
 		this.main = main;
 		this.cache = new ShaCache(cache);
 		this.storage = storage;
 		this.network = network;
 		this.port = port;
+		this.baseProperties = properties;
 	}
 
 	public void setRemote(final EnvoySupervisor remote) {
@@ -236,7 +246,7 @@ public class EnvoyDispatcher implements Closeable {
 				InetAddress address = network.equals("*") ? null : InetAddress.getByName(network);
 
 				ServerSocket server = address == null ? new ServerSocket(port) : new ServerSocket(port, 3, address);
-				main.trace("Will wait  for %s:%s to finish", address, port);
+				report(server);
 
 				while (!Thread.currentThread()
 					.isInterrupted())
@@ -260,6 +270,27 @@ public class EnvoyDispatcher implements Closeable {
 			close();
 		} catch (IOException e) {
 			//
+		}
+	}
+
+	private void report(ServerSocket server) throws SocketException {
+		main.trace("Will wait  for %s:%s to finish", server.getInetAddress()
+			.getHostAddress(), port);
+		if (server.getInetAddress()
+			.isAnyLocalAddress()) {
+			Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+			while (networkInterfaces.hasMoreElements()) {
+				NetworkInterface nwi = networkInterfaces.nextElement();
+				if (nwi.isUp() && !nwi.getInterfaceAddresses()
+					.isEmpty()) {
+					List<InterfaceAddress> ias = nwi.getInterfaceAddresses();
+					for (InterfaceAddress ia : ias) {
+						main.trace("network interface %s %s/%d", nwi.getDisplayName(), ia.getAddress()
+							.getHostAddress(),
+							ia.getNetworkPrefixLength());
+					}
+				}
+			}
 		}
 	}
 

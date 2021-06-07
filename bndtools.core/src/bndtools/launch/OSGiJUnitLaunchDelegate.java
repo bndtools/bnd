@@ -1,11 +1,17 @@
 package bndtools.launch;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
 import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.api.RunMode;
 import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.resources.IProject;
@@ -21,6 +27,11 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.IStatusHandler;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.internal.junit.JUnitCorePlugin;
+import org.eclipse.jdt.internal.junit.launcher.JUnitLaunchConfigurationConstants;
+import org.eclipse.jdt.internal.junit.model.TestRunSession;
+import org.eclipse.jdt.junit.TestRunListener;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.SocketUtil;
 import org.osgi.framework.Bundle;
@@ -35,6 +46,7 @@ import bndtools.Plugin;
 import bndtools.launch.util.LaunchUtils;
 
 public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
+	private static final ILogger	logger					= Logger.getLogger(OSGiJUnitLaunchDelegate.class);
 	private final static String		JNAME_S					= "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";
 	private final static Pattern	FAILURES_P				= Pattern.compile("^(" + JNAME_S + ")   # method name\n"		//
 		+ "\\("																												//
@@ -43,11 +55,12 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 		Pattern.UNIX_LINES | Pattern.MULTILINE | Pattern.COMMENTS);
 	public static final String		ORG_BNDTOOLS_TESTNAMES	= "org.bndtools.testnames";
 	private static final String		JDT_JUNIT_BSN			= "org.eclipse.jdt.junit";
-	private static final String		ATTR_JUNIT_PORT			= "org.eclipse.jdt.junit.PORT";
 
 	private int						junitPort;
 	private ProjectTester			bndTester;
 	private EclipseJUnitTester		bndEclipseTester;
+	private boolean					rerunIDE;
+	private boolean					keepAlive;
 
 	@Override
 	protected void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception {
@@ -79,14 +92,6 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 	@Override
 	protected RunMode getRunMode() {
 		return RunMode.TEST;
-	}
-
-	@Override
-	protected IStatus getLauncherStatus() {
-		return createStatus("Problem(s) preparing the runtime environment.", bndTester.getProjectLauncher()
-			.getErrors(),
-			bndTester.getProjectLauncher()
-				.getWarnings());
 	}
 
 	// A couple of hacks to make sure the JUnit plugin is active and notices our
@@ -134,16 +139,118 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 		return super.getLaunch(modifiedConfig.doSave(), mode);
 	}
 
+	private static class TestRunSessionAndPort {
+		final int				port;
+		final TestRunSession	runSession;
+
+		public TestRunSessionAndPort(ILaunch launch, IJavaProject project) {
+			this(launch, project, SocketUtil.findFreePort());
+		}
+
+		public TestRunSessionAndPort(ILaunch launch, IJavaProject project, int port) {
+			this.port = port;
+			runSession = new TestRunSession(launch, project, port);
+			JUnitCorePlugin.getModel()
+				.addTestRunSession(runSession);
+
+			for (TestRunListener listener : JUnitCorePlugin.getDefault()
+				.getNewTestRunListeners()) {
+				listener.sessionLaunched(runSession);
+			}
+		}
+
+		public int getPort() {
+			return port;
+		}
+
+		public void stopTestRun() {
+			runSession.stopTestRun();
+		}
+	}
+
+	private static class ControlThread implements Runnable, AutoCloseable {
+
+		final ServerSocket				listener;
+		final ILaunch					launch;
+		final IJavaProject				project;
+		volatile Socket					socket;
+		volatile TestRunSessionAndPort	testRunSession;
+		volatile DataOutputStream		outStr;
+
+		public ControlThread(ILaunch launch, IJavaProject project, int port) throws IOException {
+			this.launch = launch;
+			this.project = project;
+			listener = new ServerSocket(port);
+		}
+
+		@Override
+		public void run() {
+			try {
+				// Note that this loop will terminate when accept() throws a
+				// SocketException. This ordinarily happens when the
+				// ServerSocket is closed in ControlThread.close(), which is in
+				// turn called by the registered TerminationListener (configured
+				// by launch()) at process termination time.
+				while (true) {
+					socket = listener.accept();
+					outStr = new DataOutputStream(socket.getOutputStream());
+					while (socket.getInputStream()
+						.read() != -1) {
+						testRunSession = new TestRunSessionAndPort(launch, project);
+						outStr.writeInt(testRunSession.getPort());
+					}
+				}
+			} catch (SocketException se) {
+				logger.logInfo("Connection to tester terminated", se);
+			} catch (IOException e) {
+				logger.logError("Error communicating to the tester", e);
+			}
+			// This call is defensive; close() should have already been called
+			// by the time we get here.
+			close();
+		}
+
+		@Override
+		public void close() {
+			IO.close(listener);
+			IO.close(outStr);
+			IO.close(socket);
+			synchronized (this) {
+				if (testRunSession != null) {
+					testRunSession.stopTestRun();
+					testRunSession = null;
+				}
+			}
+		}
+	}
+
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
 		throws CoreException {
 		SubMonitor progress = SubMonitor.convert(monitor, 2);
 
-		try {
-			launch.setAttribute(ATTR_JUNIT_PORT, Integer.toString(junitPort));
-		} catch (Exception e) {
+		final IJavaProject javaProject = JUnitLaunchConfigurationConstants.getJavaProject(configuration);
+		if (javaProject == null)
 			throw new CoreException(
-				new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error obtaining OSGi project tester.", e));
+				new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error obtaining OSGi project tester.", null));
+
+		if (rerunIDE) {
+			ControlThread controlThread;
+			try {
+				controlThread = new ControlThread(launch, javaProject, junitPort);
+			} catch (Exception e) {
+				throw new CoreException(
+					new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Couldn't start control thread for tester.", e));
+			}
+			DebugPlugin.getDefault()
+				.addDebugEventListener(new TerminationListener(launch, () -> controlThread.close()));
+
+			new Thread(controlThread).start();
+		} else {
+
+			TestRunSessionAndPort testRunSessionAndPort = new TestRunSessionAndPort(launch, javaProject, junitPort);
+			DebugPlugin.getDefault()
+				.addDebugEventListener(new TerminationListener(launch, () -> testRunSessionAndPort.stopTestRun()));
 		}
 
 		super.launch(configuration, mode, launch, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
@@ -154,13 +261,22 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
 		// Find free socket for JUnit protocol
 		int port = SocketUtil.findFreePort();
-		bndEclipseTester.setPort(port);
 
-		// Enable tracing?
-		enableTraceOptionIfSetOnConfiguration(configuration, bndTester.getProjectLauncher());
+		keepAlive = enableKeepAlive(configuration);
+		rerunIDE = keepAlive
+			&& configuration.getAttribute(LaunchConstants.ATTR_RERUN_IDE, LaunchConstants.DEFAULT_RERUN_IDE);
+		if (rerunIDE) {
+			bndEclipseTester.setControlPort(port);
+		} else {
+			bndEclipseTester.setPort(port);
+		}
+
+		// Set up launcher properties from FrameworkTabPiece (keep storage,
+		// enable tracing)
+		configureLauncher(configuration);
 
 		// Keep alive?
-		bndTester.setContinuous(enableKeepAlive(configuration));
+		bndTester.setContinuous(keepAlive);
 
 		//
 		// The JUnit runner can set a file with names of failed tests
@@ -243,5 +359,4 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 				new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd tester was not initialised.", null));
 		return bndTester.getProjectLauncher();
 	}
-
 }

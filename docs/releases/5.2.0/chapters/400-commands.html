@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/5.2.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Commands</title>
+<meta name="generator" content="Jekyll v3.9.0" />
+<meta property="og:title" content="Commands" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Use The command line tool can be invoked in several different ways:" />
+<meta property="og:description" content="Use The command line tool can be invoked in several different ways:" />
+<script type="application/ld+json">
+{"url":"/releases/5.2.0/chapters/400-commands.html","headline":"Commands","description":"Use The command line tool can be invoked in several different ways:","@type":"WebPage","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+		<style>
+			 body {
+				counter-reset: h1 27;
+			}
+		</style>
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/5.2.0/"><img
+			class=menu-logo src="/releases/5.2.0/img/bnd-80x40-white.png"></a>
+			<a href="/releases/5.2.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/5.2.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/5.2.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/5.2.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/5.2.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">5.2.0</button><div class="dropdown-content"></div></div>
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/releases/5.2.0/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li class=selected>Commands
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/875-external-plugins.html">External Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+				<h1> Commands</h1>
+				<h2 id="use">Use</h2>
+<p>The command line tool can be invoked in several different ways:</p>
+
+<ul>
+  <li>bnd ‘‘general-options’’ ‘‘cmd’’ ‘‘cmd-options’’</li>
+  <li>bnd ‘‘general-options’’ ‘‘<file>.jar''</file></li>
+  <li>bnd ‘‘general-options’’ ‘‘<file>.bnd''</file></li>
+</ul>
+
+<p>In this text <code class="language-plaintext highlighter-rouge">bnd</code> is used as if it is a command line program. This should be set up as:</p>
+
+<p>java -jar <path to="" bnd="">.jar ...</path></p>
+
+<h3 id="general-options">General Options</h3>
+
+<table>
+  <tbody>
+    <tr>
+      <td> </td>
+      <td>!General Option</td>
+      <td> </td>
+      <td>!Description</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>-failok</td>
+      <td> </td>
+      <td>Same as the property -failok. The current run will create a JAR file even if there were errors.</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>-exceptions</td>
+      <td> </td>
+      <td>Will print the exception when the software has ran into a bad exception and bails out. Normally only a message is printed. For debugging or diagnostic reasons, the exception stack trace can be very helpful.</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="main-options">Main options</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ -f, --full ]             - Do full
+[ -p, --project &lt;string&gt; ] - Identify another project
+[ -t, --test ]             - Build for test
+[ -o, --output &lt;string&gt; ]  - Specify the output file path. The default is
+                            output.jar in the current directory
+</code></pre></div></div>
+
+<h3 id="reference">Reference</h3>
+
+<div>
+<dl class="property-index">
+
+<dt><a href="/releases/5.2.0/commands/action.html">create</a></dt><dd>Create a JAR</dd>
+<dt><a href="/releases/5.2.0/commands/baseline.html">baseline [options] &lt;[newer jar]&gt; &lt;[older jar]&gt;</a></dt><dd>Compare a newer bundle to a baselined bundle and provide versioning advice.</dd>
+<dt><a href="/releases/5.2.0/commands/bash.html">bash</a></dt><dd>Generate autocompletion file for bash</dd>
+<dt><a href="/releases/5.2.0/commands/bnd.html">bnd</a></dt><dd>The swiss army tool for OSGi</dd>
+<dt><a href="/releases/5.2.0/commands/bootstrap.html">bootstrap</a></dt><dd>Interactive gogo shell</dd>
+<dt><a href="/releases/5.2.0/commands/bsn2url.html">bsn2url</a></dt><dd>From a set of bsns, create a list of urls if found in the repo</dd>
+<dt><a href="/releases/5.2.0/commands/build.html">build [options]</a></dt><dd>Build a project. This will create the jars defined in the bnd.bnd and sub-builders.</dd>
+<dt><a href="/releases/5.2.0/commands/buildx.html">buildx [options]</a></dt><dd>Build project, is deprecated but here for backward compatibility. If you use it, you should know how to use it so no more info is provided.</dd>
+<dt><a href="/releases/5.2.0/commands/bump.html">bump [options] &lt;&lt;major|minor|micro&gt;&gt;</a></dt><dd>Bumps the version of a project. Will take the current version and then increment with a major, minor, or micro increment. The default bump is minor.</dd>
+<dt><a href="/releases/5.2.0/commands/changes.html">changes [options]</a></dt><dd>Show the changes in this release of bnd</dd>
+<dt><a href="/releases/5.2.0/commands/clean.html">clean [options] ...</a></dt><dd>Clean a project</dd>
+<dt><a href="/releases/5.2.0/commands/convert.html">convert [options] &lt;[from]&gt; &lt;[to]&gt;</a></dt><dd>Converter to different formats</dd>
+<dt><a href="/releases/5.2.0/commands/create.html">action [options] ...</a></dt><dd>Equivalent jar command c[v0mf] command (supports the jar tool&#39;s syntax). Will wrap the bundle unless --wrapnot is specified</dd>
+<dt><a href="/releases/5.2.0/commands/debug.html">debug [options] ...</a></dt><dd>Show a lot of info about the project you&#39;re in</dd>
+<dt><a href="/releases/5.2.0/commands/defaults.html">defaults</a></dt><dd></dd>
+<dt><a href="/releases/5.2.0/commands/deliverables.html">deliverables [options]</a></dt><dd>Show all deliverables from this workspace. with their current version and path.</dd>
+<dt><a href="/releases/5.2.0/commands/diff.html">diff [options] &lt;[newer file]&gt; &lt;[older file]&gt;</a></dt><dd>Compares two jars. Without specifying the JARs (and when there is a current project) the jars of this project are diffed against their baseline in the baseline repository, using the sub-builder&#39;s options (these can be overridden). If one JAR is given, the tree is shown. Otherwise 2 JARs must be specified and they are then compared to each other.</dd>
+<dt><a href="/releases/5.2.0/commands/digest.html">digest [options] &lt;[file...]&gt;</a></dt><dd>Digest a number of files</dd>
+<dt><a href="/releases/5.2.0/commands/do.html">do [options] ...</a></dt><dd>Execute a file based on its extension. Supported extensions are bnd (build), bndrun (run), and jar (print)</dd>
+<dt><a href="/releases/5.2.0/commands/eclipse-pde.html">eclipse pde [options] &lt;[repo-dir]&gt; &lt;[...]&gt;</a></dt><dd>Import PDE projects into a bnd workspace</dd>
+<dt><a href="/releases/5.2.0/commands/eclipse.html">eclipse [options]</a></dt><dd>Show info about the current directory&#39;s eclipse project</dd>
+<dt><a href="/releases/5.2.0/commands/ees.html">ees &lt;[jar-file]...&gt;</a></dt><dd>Show the Execution Environments of a JAR</dd>
+<dt><a href="/releases/5.2.0/commands/enroute.html">enroute ...</a></dt><dd>enRoute commands</dd>
+<dt><a href="/releases/5.2.0/commands/exportreport.html">exportreport &lt;sub-cmd&gt; [options]</a></dt><dd>Generate and export reports of a workspace, a project or of a Jar.</dd>
+<dt><a href="/releases/5.2.0/commands/extract.html">extract [options] ...</a></dt><dd>Extract files from a JAR file, equivalent jar command x[vf] (syntax supported)</dd>
+<dt><a href="/releases/5.2.0/commands/find.html">find [options] &lt;[file]...&gt;</a></dt><dd>Go through the exports and/or imports and match the given exports/imports globs. If they match, print the file, package and version.</dd>
+<dt><a href="/releases/5.2.0/commands/generate.html">generate</a></dt><dd>Generate autocompletion file for bash</dd>
+<dt><a href="/releases/5.2.0/commands/grep.html">grep [options] &lt;[pattern]&gt; &lt;[file]...&gt;</a></dt><dd>Grep the manifest of bundles/jar files.</dd>
+<dt><a href="/releases/5.2.0/commands/identity.html">identity</a></dt><dd></dd>
+<dt><a href="/releases/5.2.0/commands/index.html">index [options] &lt;[bundles]...&gt;</a></dt><dd>Index bundles from the local file system</dd>
+<dt><a href="/releases/5.2.0/commands/info.html">info [options]</a></dt><dd>Show key project variables</dd>
+<dt><a href="/releases/5.2.0/commands/junit.html">junit [options] &lt;testclass[:method]...&gt;</a></dt><dd>Test a project according to an OSGi test</dd>
+<dt><a href="/releases/5.2.0/commands/macro.html">macro [options] &lt;[macro]&gt; &lt;[...]&gt;</a></dt><dd>Show macro value. Macro can contain the  { and } parentheses but it is also ok without. You can use the &#39;:&#39; instead of the &#39;;&#39; in a macro</dd>
+<dt><a href="/releases/5.2.0/commands/maven.html">maven ( &#39;settings&#39; | &#39;bundle&#39;</a></dt><dd>Special maven commands</dd>
+<dt><a href="/releases/5.2.0/commands/package.html">package [options] &lt;&lt;bnd|bndrun&gt;&gt; &lt;[...]&gt;</a></dt><dd>Package a bnd or bndrun file into a single jar that executes with java -jar &lt;&gt;.jar. The JAR contains all dependencies, including the framework and the launcher. A profile can be specified which will be used to find properties. If a property is not found, a property with the name [&lt;profile&gt;]NAME will be looked up. This allows you to make different profiles for testing and runtime.</dd>
+<dt><a href="/releases/5.2.0/commands/plugins.html">plugins [options]</a></dt><dd>Execute a Project action, or if no parms given, show information about the project</dd>
+<dt><a href="/releases/5.2.0/commands/print.html">print [options] &lt;[jar-file]...&gt;</a></dt><dd>Provides detailed view of the bundle. It will analyze the bundle and then show its contents from different perspectives. If no options are specified, prints the manifest.</dd>
+<dt><a href="/releases/5.2.0/commands/project.html">project [options]</a></dt><dd>Execute a Project action, or if no parms given, show information about the project</dd>
+<dt><a href="/releases/5.2.0/commands/release.html">release [options]</a></dt><dd>Release this project</dd>
+<dt><a href="/releases/5.2.0/commands/repo.html">repo [options] &lt;[sub-cmd]&gt; ...</a></dt><dd>Access to the repositories. Provides a number of sub commands to manipulate the repository (see repo help) that provide access to the installed repos for the current project.</dd>
+<dt><a href="/releases/5.2.0/commands/run.html">run [options] &lt;[bndrun]&gt;</a></dt><dd>Run a project in the OSGi launcher. If not bndrun is specified, the current project is used for the run specification</dd>
+<dt><a href="/releases/5.2.0/commands/runtests.html">runtests [options] ...</a></dt><dd>Run OSGi tests and create report</dd>
+<dt><a href="/releases/5.2.0/commands/schema.html">schema [options] ...</a></dt><dd>Print out the packages from spec jars and check in which ees they appear. Very specific. For example, schema ee.j2se-1.6.0 ee.j2se-1.5.0 ee.j2ee-1.4.0</dd>
+<dt><a href="/releases/5.2.0/commands/select.html">select [options] &lt;[jar-path]&gt; &lt;[...]&gt;</a></dt><dd>Helps finding information in a set of JARs by filtering on manifest data and printing out selected information.</dd>
+<dt><a href="/releases/5.2.0/commands/settings.html">settings [options] &lt;[key][=&lt;[value]&gt;]...&gt;</a></dt><dd>Set bnd global variables. The key can be wildcarded.</dd>
+<dt><a href="/releases/5.2.0/commands/shell.html">shell [options]</a></dt><dd>Open a shell on a project, workspace, or plain bnd defaults and exercise commands and macros</dd>
+<dt><a href="/releases/5.2.0/commands/source.html">source [options] &lt;[jar path]&gt; &lt;[source path]&gt;</a></dt><dd>Merge a binary jar with its sources. It is possible to specify source path</dd>
+<dt><a href="/releases/5.2.0/commands/sync.html">sync [options]</a></dt><dd>Execute a Project action, or if no parms given, show information about the project</dd>
+<dt><a href="/releases/5.2.0/commands/syntax.html">syntax [options] &lt;header|instruction&gt; ...</a></dt><dd>Access the internal bnd database of keywords and options</dd>
+<dt><a href="/releases/5.2.0/commands/test.html">test [options] &lt;testclass[:method]...&gt;</a></dt><dd>Test a project according to an OSGi test</dd>
+<dt><a href="/releases/5.2.0/commands/type.html">type [options] ...</a></dt><dd>List files int a JAR file, equivalent jar command t[vf] (syntax supported)</dd>
+<dt><a href="/releases/5.2.0/commands/verify.html">verify &lt;[jar path]&gt; &lt;[...]&gt;</a></dt><dd>Verify jars</dd>
+<dt><a href="/releases/5.2.0/commands/version.html">version [options]</a></dt><dd>Show version information about bnd</dd>
+<dt><a href="/releases/5.2.0/commands/view.html">view [options] &lt;[jar-file]&gt;&gt; &lt;[resource]&gt; &lt;[...]&gt;</a></dt><dd>View a resource from a JAR file. Manifest will be pretty printed and class files are shown disassembled.</dd>
+<dt><a href="/releases/5.2.0/commands/wrap.html">wrap [options] &lt;[jar-file]&gt; &lt;[...]&gt;</a></dt><dd>Wrap a jar into a bundle. This is a poor man&#39;s facility to quickly turn a non-OSGi JAR into an OSGi bundle. It is usually better to write a bnd file and use the bnd &lt;file&gt;.bnd command because that has greater control. Even better is to wrap in bndtools.</dd>
+<dt><a href="/releases/5.2.0/commands/xref.html">xref [options] &lt;[jar path]&gt; &lt;[...]&gt;</a></dt><dd>Show a cross references for all classes in a set of jars.</dd>
+
+
+</dl>
+</div>
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/releases/5.2.0/chapters/395-generating-documentation.html'></a> <a href='/releases/5.2.0/chapters/600-developer.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/5.2.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

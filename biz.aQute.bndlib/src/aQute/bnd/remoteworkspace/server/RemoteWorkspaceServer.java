@@ -39,7 +39,7 @@ import aQute.bnd.service.specifications.RunSpecification;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.aspects.Aspects;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.link.Link;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -76,18 +76,16 @@ public class RemoteWorkspaceServer implements Closeable {
 		ServerSocket server = new ServerSocket(0, 10, InetAddress.getLoopbackAddress());
 
 		RemoteWorkspace workspaceLocker = Aspects.intercept(RemoteWorkspace.class, new Instance())
-			.around((inv, c) -> {
-				return workspace.readLocked(() -> {
-					try {
-						return c.call();
-					} catch (Throwable e) {
-						throw Exceptions.duck(e);
-					}
-				});
-			})
+			.around((inv, c) -> workspace.readLocked(() -> {
+				try {
+					return c.call();
+				} catch (Throwable e) {
+					throw Exceptions.duck(e);
+				}
+			}))
 			.build();
 
-		this.server = Link.server("remotews", RemoteWorkspaceClient.class, server, (l) -> workspaceLocker, true,
+		this.server = Link.server("remotews", RemoteWorkspaceClient.class, server, l -> workspaceLocker, true,
 			Processor.getExecutor());
 
 		File remotews = RemoteWorkspaceClientFactory.getPortDirectory(workspace.getBase(), workspace.getBase());
@@ -156,7 +154,7 @@ public class RemoteWorkspaceServer implements Closeable {
 					return project.getSpecification();
 
 				} else {
-					try (Run run = new Run(workspace, file)) {
+					try (Run run = Run.createRun(workspace, file)) {
 						return run.getSpecification();
 					}
 				}
@@ -385,7 +383,7 @@ public class RemoteWorkspaceServer implements Closeable {
 			try {
 				return workspace.getAllProjects()
 					.stream()
-					.map(p -> p.toString())
+					.map(Project::toString)
 					.collect(Collectors.toList());
 			} catch (Exception e) {
 				throw Exceptions.duck(e);

@@ -29,7 +29,7 @@ class ProtectedStream extends InputStream {
 	}
 
 	@Override
-	public void mark(int limit) {
+	public synchronized void mark(int limit) {
 		throw new UnsupportedOperationException("mark is not supported");
 	}
 
@@ -54,7 +54,7 @@ class ProtectedStream extends InputStream {
 	}
 
 	@Override
-	public void reset() throws IOException {
+	public synchronized void reset() throws IOException {
 		throw new IOException("Reset not allowed");
 	}
 

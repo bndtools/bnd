@@ -1,14 +1,18 @@
 package aQute.bnd.service;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import aQute.bnd.build.Project;
 import aQute.service.reporter.Reporter;
 
 public class BndListener {
 	final AtomicInteger inside = new AtomicInteger();
 
-	public void changed(@SuppressWarnings("unused") File file) {}
+	public void changed(File file) {}
+
+	public void built(Project project, Collection<File> files) {}
 
 	public void begin() {
 		inside.incrementAndGet();
@@ -22,7 +26,5 @@ public class BndListener {
 		return inside.get() != 0;
 	}
 
-	public void signal(@SuppressWarnings("unused") Reporter reporter) {
-
-	}
+	public void signal(Reporter reporter) {}
 }

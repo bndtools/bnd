@@ -31,9 +31,8 @@ public class Table {
 	}
 
 	public void append(Appendable app) {
-		for (int r = 0; r < matrix.size(); r++) {
-			List<Justif> line = matrix.get(r);
-			for (int c = 0; c < line.size(); c++) {
+		for (List<Justif> line : matrix) {
+			for (Justif element : line) {
 
 			}
 		}

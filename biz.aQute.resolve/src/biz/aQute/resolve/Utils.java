@@ -10,7 +10,6 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 
-import aQute.bnd.annotation.baseline.BaselineIgnore;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
 import aQute.bnd.util.dto.DTO;
@@ -20,7 +19,7 @@ public class Utils {
 
 	public static Version findIdentityVersion(Resource resource) {
 		List<Capability> idCaps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
-		if (idCaps == null || idCaps.isEmpty())
+		if (idCaps.isEmpty())
 			throw new IllegalArgumentException("Resource has no identity capability.");
 		if (idCaps.size() > 1)
 			throw new IllegalArgumentException("Resource has more than one identity capability.");
@@ -47,7 +46,6 @@ public class Utils {
 		public String	requirement;
 	}
 
-	@BaselineIgnore("4.3.0")
 	public static final Pattern	RESOLVE_MESSAGE_P		= Pattern.compile(		//
 		"(?:org\\.osgi\\.service\\.resolver\\.ResolutionException: )?"			//
 			+ "(?<msg>[^:]+): # prefix\n"										//
@@ -60,7 +58,6 @@ public class Utils {
 			+ "(?<cause>\\[caused by:)?",
 		Pattern.COMMENTS | Pattern.CASE_INSENSITIVE);
 
-	@BaselineIgnore("4.3.0")
 	public static final Pattern	RESOLVE_DIRECTIVES_P	= Pattern.compile(		//
 		"(?:^|.*,)filter=(?<filter>[^,]+)(?:$|,.*)",							//
 		Pattern.COMMENTS | Pattern.CASE_INSENSITIVE);

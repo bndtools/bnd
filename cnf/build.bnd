@@ -10,7 +10,7 @@ javac.compliance:       1.8
 javac.debug:            on
 
 # This build requires newer Bnd features
--require-bnd: "(version>=4.3.0)"
+-require-bnd: "(version>=5.1.0)"
 
 #
 # Custom Settings
@@ -19,12 +19,14 @@ Git-Descriptor:         ${system-allow-fail;git describe --dirty --always --abbr
 Git-SHA:                ${system-allow-fail;git rev-list -1 --no-abbrev-commit HEAD}
 
 # This is the version to baseline this build against. See cnf/ext/baseline.mvn.
-baseline.version:       4.2.0
+baseline.version:       5.3.0
 # biz.aQute.bndlib:aQute.bnd.osgi.About.CURRENT needs to be kept in sync with the base.version.
-base.version:           4.4.0
+base.version:           6.0.0
 # Uncomment the following line to build the non-snapshot version.
 #-snapshot:
 Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
+# Don't baseline Bundle-Version
+-diffignore:            Bundle-Version
 
 # Maven info. The maven artifactId defaults to Bundle-SymbolicName
 -groupid:               biz.aQute.bnd
@@ -34,12 +36,10 @@ Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
 Automatic-Module-Name:  ${def;bsn}
 Bundle-Vendor:          Bndtools https://bndtools.org/
 Bundle-Copyright:       Copyright (c) aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
-Bundle-License:         Apache-2.0;\
-                        description="Apache License, Version 2.0";\
-                        link="https://opensource.org/licenses/Apache-2.0",\
-                        EPL-2.0;\
-                        description="Eclipse Public License, Version 2.0";\
-                        link="https://opensource.org/licenses/EPL-2.0"
+SPDX-License-Identifier: (Apache-2.0 OR EPL-2.0)
+Bundle-License:         "${SPDX-License-Identifier}";\
+                        description="This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0, or the Eclipse Public License 2.0.";\
+                        link="https://opensource.org/licenses/Apache-2.0,https://opensource.org/licenses/EPL-2.0"
 Bundle-DocURL:          https://bnd.bndtools.org/
 Bundle-SCM:             url=https://github.com/bndtools/bnd, \
                         connection=scm:git:https://github.com/bndtools/bnd.git, \
@@ -52,7 +52,23 @@ Bundle-Developers: \
         organization=Bndtools; \
         organizationUrl=https://github.com/bndtools; \
         roles="architect,developer"; \
-        timezone=1
+        timezone=1, \
+    bjhargrave; \
+        name="BJ Hargrave"; \
+        email="bj@hargrave.dev"; \
+        url="https://github.com/bjhargrave"; \
+        organization="IBM"; \
+        organizationUrl="https://developer.ibm.com"; \
+        roles="developer"; \
+        timezone="America/New_York", \
+    rotty3000; \
+        name="Ray Augé"; \
+        email="raymond.auge@liferay.com"; \
+        url="https://rotty3000.github.io"; \
+        organization="Liferay Inc."; \
+        organizationUrl="https://www.liferay.com"; \
+        roles="developer"; \
+        timezone="America/New_York"
 
 -make:                  (*).(jar);type=bnd; recipe="bnd/$1.bnd"
 -reproducible: true

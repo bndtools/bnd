@@ -23,7 +23,7 @@ class TestIndexTask extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--parallel', '--stacktrace', '--debug', 'build', 'indexer', 'indexer2')
+            .withArguments('--parallel', '--stacktrace', '--debug', 'indexer', 'indexer2')
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -84,13 +84,13 @@ class TestIndexTask extends Specification {
           }.@value == "libs/${testProject}_bundle-1.1.0.jar"
 
         when:
-          xmlfile = new File(testProjectBuildDir, "index.xml.gz")
+          xmlfile = new File(testProjectBuildDir, "libs/index.xml.gz")
 
         then:
           !xmlfile.isFile()
 
         when:
-          xmlfile = new File(testProjectBuildDir, "index2.xml")
+          xmlfile = new File(testProjectBuildDir, "index/index2.xml")
           assert xmlfile.isFile()
           repository = new XmlSlurper().parse(xmlfile)
 
@@ -107,10 +107,10 @@ class TestIndexTask extends Specification {
             node.name() == 'capability' && node.@namespace == 'osgi.content'
           }.'*'.find { node ->
             node.name() == 'attribute' && node.@name == 'url'
-          }.@value == "libs/${testProject}-1.0.0.jar"
+          }.@value == "bundles/${testProject}-1.0.0.jar"
 
         when:
-          xmlfile = new File(testProjectBuildDir, "index2.xml.gz")
+          xmlfile = new File(testProjectBuildDir, "index/index2.xml.gz")
           assert xmlfile.isFile()
           repository = new XmlSlurper().parse(new GZIPInputStream(new FileInputStream(xmlfile)))
 
@@ -127,12 +127,12 @@ class TestIndexTask extends Specification {
             node.name() == 'capability' && node.@namespace == 'osgi.content'
           }.'*'.find { node ->
             node.name() == 'attribute' && node.@name == 'url'
-          }.@value == "libs/${testProject}-1.0.0.jar"
+          }.@value == "bundles/${testProject}-1.0.0.jar"
 
         when:
           result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--parallel', '--stacktrace', '--debug', 'build', 'indexer', 'indexer2')
+            .withArguments('--parallel', '--stacktrace', '--debug', 'indexer', 'indexer2')
             .withPluginClasspath()
             .forwardOutput()
             .build()

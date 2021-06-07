@@ -163,7 +163,6 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 			return ADDED;
 		} else {
 			// now we're sure newer and older are both not null
-			assert newer != null && older != null;
 			assert newer.getClass() == older.getClass();
 
 			Delta local = Delta.UNCHANGED;

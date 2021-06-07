@@ -1,23 +1,21 @@
 package aQute.bnd.osgi.resource;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
-import java.util.regex.Pattern;
+import java.util.Optional;
 
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
+import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.HostNamespace;
@@ -35,12 +33,10 @@ import org.osgi.service.repository.ContentNamespace;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
-import aQute.libg.filters.AndFilter;
-import aQute.libg.filters.Filter;
-import aQute.libg.filters.LiteralFilter;
-import aQute.libg.filters.SimpleFilter;
+import aQute.bnd.exceptions.Exceptions;
 
 public class CapReqBuilder {
 
@@ -60,7 +56,7 @@ public class CapReqBuilder {
 		this.namespace = requireNonNull(namespace);
 	}
 
-	public CapReqBuilder(String namespace, Attrs attrs) throws Exception {
+	public CapReqBuilder(String namespace, Attrs attrs) {
 		this(namespace);
 		addAttributesOrDirectives(attrs);
 	}
@@ -70,18 +66,12 @@ public class CapReqBuilder {
 		setResource(resource);
 	}
 
-	public static CapReqBuilder clone(Capability capability) throws Exception {
-		CapabilityBuilder builder = new CapabilityBuilder(capability.getNamespace());
-		builder.addAttributes(capability.getAttributes());
-		builder.addDirectives(capability.getDirectives());
-		return builder;
+	public static CapReqBuilder clone(Capability capability) {
+		return new CapReqBuilder(capability.getNamespace()).from(capability);
 	}
 
-	public static CapReqBuilder clone(Requirement requirement) throws Exception {
-		RequirementBuilder builder = new RequirementBuilder(requirement.getNamespace());
-		builder.addAttributes(requirement.getAttributes());
-		builder.addDirectives(requirement.getDirectives());
-		return builder;
+	public static CapReqBuilder clone(Requirement requirement) {
+		return new CapReqBuilder(requirement.getNamespace()).from(requirement);
 	}
 
 	public String getNamespace() {
@@ -97,16 +87,21 @@ public class CapReqBuilder {
 		return this;
 	}
 
-	public CapReqBuilder addAttribute(String name, Object value) throws Exception {
+	public CapReqBuilder addAttribute(String name, Object value) {
 		if (value == null)
 			return this;
 
 		if (value.getClass()
 			.isArray()) {
-			value = Converter.cnv(List.class, value);
+			try {
+				value = Converter.cnv(List.class, value);
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
 		}
 
-		if (name.equals(ResourceUtils.getVersionAttributeForNamespace(namespace))) {
+		if (isVersion(value, aQute.bnd.version.Version.class)
+			|| name.equals(ResourceUtils.getVersionAttributeForNamespace(getNamespace()))) {
 			value = toVersions(value);
 		}
 
@@ -114,31 +109,48 @@ public class CapReqBuilder {
 		return this;
 	}
 
+	public boolean hasAttribute(String name) {
+		return attributes.containsKey(name);
+	}
+
+	public CapReqBuilder removeAttribute(String name) {
+		attributes.remove(name);
+		return this;
+	}
+
 	public boolean isVersion(Object value) {
-		if (value instanceof Version)
+		return isVersion(value, Version.class);
+	}
+
+	private boolean isVersion(Object value, Class<?> versionClass) {
+		if (versionClass.isInstance(value)) {
 			return true;
-
+		}
 		if (value instanceof Collection) {
-			if (((Collection<?>) value).isEmpty())
-				return true;
-
-			return isVersion(((Collection<?>) value).iterator()
-				.next());
+			Collection<?> v = (Collection<?>) value;
+			if (v.isEmpty()) {
+				return false;
+			}
+			return isVersion(v.iterator()
+				.next(), versionClass);
 		}
 		if (value.getClass()
 			.isArray()) {
-			if (Array.getLength(value) == 0)
+			if (versionClass.isAssignableFrom(value.getClass()
+				.getComponentType())) {
 				return true;
+			}
+			if (Array.getLength(value) == 0) {
+				return false;
+			}
 
-			return isVersion(((Object[]) value)[0]);
+			return isVersion(Array.get(value, 0), versionClass);
 		}
 		return false;
 	}
 
-	public CapReqBuilder addAttributes(Map<? extends String, ? extends Object> attributes) throws Exception {
-		for (Entry<? extends String, ? extends Object> e : attributes.entrySet()) {
-			addAttribute(e.getKey(), e.getValue());
-		}
+	public CapReqBuilder addAttributes(Map<? extends String, ? extends Object> attributes) {
+		attributes.forEach(this::addAttribute);
 		return this;
 	}
 
@@ -150,19 +162,25 @@ public class CapReqBuilder {
 		return this;
 	}
 
+	public boolean hasDirective(String name) {
+		return directives.containsKey(ResourceUtils.stripDirective(name));
+	}
+
+	public CapReqBuilder removeDirective(String name) {
+		directives.remove(ResourceUtils.stripDirective(name));
+		return this;
+	}
+
 	public CapReqBuilder addDirectives(Attrs directives) {
-		for (Entry<String, String> e : directives.entrySet()) {
-			String key = Attrs.toDirective(e.getKey());
-			if (key != null)
-				addDirective(key, e.getValue());
-		}
+		directives.stream()
+			.mapKey(Attrs::toDirective)
+			.filterKey(Objects::nonNull)
+			.forEachOrdered(this::addDirective);
 		return this;
 	}
 
 	public CapReqBuilder addDirectives(Map<String, String> directives) {
-		for (Entry<String, String> e : directives.entrySet()) {
-			addDirective(e.getKey(), e.getValue());
-		}
+		directives.forEach(this::addDirective);
 		return this;
 	}
 
@@ -173,7 +191,7 @@ public class CapReqBuilder {
 	}
 
 	public Capability buildSyntheticCapability() {
-		return new CapabilityImpl(namespace, resource, directives, attributes);
+		return new CapabilityImpl(namespace, null, directives, attributes);
 	}
 
 	public Requirement buildRequirement() {
@@ -187,85 +205,89 @@ public class CapReqBuilder {
 		return new RequirementImpl(namespace, null, directives, attributes);
 	}
 
-	public static final CapReqBuilder createPackageRequirement(String pkgName, String range) {
-		Filter filter;
-		SimpleFilter pkgNameFilter = new SimpleFilter(PackageNamespace.PACKAGE_NAMESPACE, pkgName);
-		if (range != null)
-			filter = new AndFilter().addChild(pkgNameFilter)
-				.addChild(new LiteralFilter(Filters.fromVersionRange(range)));
-		else
-			filter = pkgNameFilter;
-
-		return new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE)
-			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+	public static CapReqBuilder createPackageRequirement(String name, String versionRange) {
+		return createPackageRequirement(name, null, versionRange);
 	}
 
-	public static CapReqBuilder createBundleRequirement(String bsn, String range) {
-		Filter filter;
-		SimpleFilter bsnFilter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, bsn);
-		if (range != null)
-			filter = new AndFilter().addChild(bsnFilter)
-				.addChild(new LiteralFilter(Filters.fromVersionRange(range)));
-		else
-			filter = bsnFilter;
-
-		return new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
-
+	public static RequirementBuilder createPackageRequirement(String name, Attrs attrs, String versionRange) {
+		RequirementBuilder builder = new RequirementBuilder(PackageNamespace.PACKAGE_NAMESPACE);
+		if (attrs != null) {
+			builder.addDirectives(attrs);
+			if (versionRange == null) {
+				versionRange = attrs.get(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+			}
+		}
+		builder.addFilter(PackageNamespace.PACKAGE_NAMESPACE, name, versionRange, attrs);
+		// Add package name as an attribute to help other parts of Bnd find the
+		// name of the required package without having to grovel through the
+		// filter string.
+		builder.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, name);
+		return builder;
 	}
 
-	public static CapReqBuilder createSimpleRequirement(String ns, String name, String range) {
-		Filter filter;
-		SimpleFilter bsnFilter = new SimpleFilter(ns, name);
-		if (range != null)
-			filter = new AndFilter().addChild(bsnFilter)
-				.addChild(new LiteralFilter(Filters.fromVersionRange(range)));
-		else
-			filter = bsnFilter;
+	public static CapabilityBuilder createPackageCapability(String name, Attrs attrs, String bundle_symbolic_name,
+		Version bundle_version) {
+		CapabilityBuilder builder = new CapabilityBuilder(PackageNamespace.PACKAGE_NAMESPACE);
+		if (attrs != null) {
+			builder.addAttributesOrDirectives(attrs);
+		}
+		if (!builder.hasAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE)) {
+			builder.addAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, Version.emptyVersion);
+		}
+		builder.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, requireNonNull(name));
+		if (bundle_symbolic_name != null) {
+			builder.addAttribute(PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, bundle_symbolic_name);
+		}
+		if (bundle_version != null) {
+			builder.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, bundle_version);
+		}
+		return builder;
+	}
 
-		return new CapReqBuilder(ns).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+	public static CapReqBuilder createBundleRequirement(String name, String versionRange) {
+		return createSimpleRequirement(IdentityNamespace.IDENTITY_NAMESPACE, name, versionRange);
+	}
 
+	public static CapReqBuilder createSimpleRequirement(String namespace, String name, String versionRange) {
+		RequirementBuilder builder = new RequirementBuilder(namespace);
+		builder.addFilter(namespace, name, versionRange, null);
+		return builder;
+	}
+
+	public static RequirementBuilder createServiceRequirement(String name) {
+		RequirementBuilder builder = new RequirementBuilder(ServiceNamespace.SERVICE_NAMESPACE);
+		builder.addFilter(ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE, name, null, null);
+		return builder;
 	}
 
 	public CharSequence and(Object... exprs) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("(&");
+		StringBuilder sb = new StringBuilder().append('(')
+			.append('&');
 		for (Object expr : exprs) {
-			sb.append("(")
-				.append(toFilter(expr))
-				.append(")");
+			sb.append(toFilter(expr));
 		}
-		sb.append(")");
-		return sb;
+		return sb.append(')');
 	}
 
 	public CharSequence or(Object... exprs) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("(|");
+		StringBuilder sb = new StringBuilder().append('(')
+			.append('|');
 		for (Object expr : exprs) {
-			sb.append("(")
-				.append(toFilter(expr))
-				.append(")");
+			sb.append(toFilter(expr));
 		}
-		sb.append(")");
-		return sb;
+		return sb.append(')');
 	}
 
 	public CharSequence not(Object expr) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("(!(")
-			.append(toFilter(expr))
-			.append(")");
-		return sb;
+		StringBuilder sb = new StringBuilder().append('(')
+			.append('!');
+		sb.append(toFilter(expr));
+		return sb.append(')');
 	}
 
 	private CharSequence toFilter(Object expr) {
 		if (expr instanceof CharSequence)
 			return (CharSequence) expr;
-
-		if (expr instanceof Filter) {
-			return expr.toString();
-		}
 
 		if (expr instanceof VersionRange) {
 			return ((VersionRange) expr).toFilter();
@@ -275,7 +297,7 @@ public class CapReqBuilder {
 	}
 
 	public CapReqBuilder filter(CharSequence f) {
-		return addDirective("filter", f.toString());
+		return addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, f.toString());
 	}
 
 	/**
@@ -283,7 +305,7 @@ public class CapReqBuilder {
 	 *
 	 * @param rr
 	 */
-	public static List<Requirement> getRequirementsFrom(Parameters rr) throws Exception {
+	public static List<Requirement> getRequirementsFrom(Parameters rr) {
 		return getRequirementsFrom(rr, true);
 	}
 
@@ -296,22 +318,19 @@ public class CapReqBuilder {
 	 *            such as "bundle; bsn=org.foo" will be returned as a raw
 	 *            Requirement in the unspecified namespace "bundle".
 	 * @return The list of parsed requirements.
-	 * @throws Exception
 	 */
-	public static List<Requirement> getRequirementsFrom(Parameters rr, boolean unalias) throws Exception {
-		List<Requirement> requirements = new ArrayList<>();
-		for (Entry<String, Attrs> e : rr.entrySet()) {
-			Requirement req = getRequirementFrom(Processor.removeDuplicateMarker(e.getKey()), e.getValue(), unalias);
-			requirements.add(req);
-		}
+	public static List<Requirement> getRequirementsFrom(Parameters rr, boolean unalias) {
+		List<Requirement> requirements = rr.stream()
+			.mapToObj((k, v) -> getRequirementFrom(Processor.removeDuplicateMarker(k), v, unalias))
+			.collect(toList());
 		return requirements;
 	}
 
-	public static Requirement getRequirementFrom(String namespace, Attrs attrs) throws Exception {
+	public static Requirement getRequirementFrom(String namespace, Attrs attrs) {
 		return getRequirementFrom(namespace, attrs, true);
 	}
 
-	public static Requirement getRequirementFrom(String namespace, Attrs attrs, boolean unalias) throws Exception {
+	public static Requirement getRequirementFrom(String namespace, Attrs attrs, boolean unalias) {
 		CapReqBuilder builder = createCapReqBuilder(namespace, attrs);
 		Requirement requirement = builder.buildSyntheticRequirement();
 		if (unalias)
@@ -319,17 +338,10 @@ public class CapReqBuilder {
 		return requirement;
 	}
 
-	public static CapReqBuilder createCapReqBuilder(String namespace, Attrs attrs) throws Exception {
+	public static CapReqBuilder createCapReqBuilder(String namespace, Attrs attrs) {
 		CapReqBuilder builder = new CapReqBuilder(namespace);
-		for (String key : attrs.keySet()) {
-			if (key.endsWith(":")) {
-				String value = attrs.get(key);
-				key = key.substring(0, key.length() - 1);
-				builder.addDirective(key, value);
-			} else {
-				Object value = attrs.getTyped(key);
-				builder.addAttribute(key, value);
-			}
+		if (attrs != null) {
+			builder.addAttributesOrDirectives(attrs);
 		}
 		return builder;
 	}
@@ -342,176 +354,176 @@ public class CapReqBuilder {
 	 * Requirements that are not recognized as aliases will be returned
 	 * unchanged.
 	 */
-	public static Requirement unalias(Requirement requirement) throws Exception {
-		if (requirement == null)
+	public static Requirement unalias(Requirement requirement) {
+		if (requirement == null) {
 			return null;
-
-		final String ns = requirement.getNamespace();
-
-		final Set<String> consumedAttribs = new HashSet<>();
-		final Set<String> consumedDirectives = new HashSet<>();
-
-		if (REQ_ALIAS_LITERAL.equals(ns)) {
-			final String literalNs = Objects.toString(requirement.getAttributes()
-				.get(REQ_ALIAS_LITERAL_ATTRIB), null);
-			consumedAttribs.add(REQ_ALIAS_LITERAL_ATTRIB);
-			if (literalNs == null) {
-				throw new IllegalArgumentException(
-					String.format("Requirement alias %s is missing mandatory attribute '%s' of type String",
-						REQ_ALIAS_LITERAL, REQ_ALIAS_LITERAL_ATTRIB));
+		}
+		switch (requirement.getNamespace()) {
+			case REQ_ALIAS_LITERAL : {
+				String namespace = Objects.toString(requirement.getAttributes()
+					.get(REQ_ALIAS_LITERAL_ATTRIB), null);
+				if (namespace == null) {
+					throw new IllegalArgumentException(
+						String.format("Requirement alias %s is missing mandatory attribute '%s' of type String",
+							REQ_ALIAS_LITERAL, REQ_ALIAS_LITERAL_ATTRIB));
+				}
+				CapReqBuilder builder = new CapReqBuilder(namespace).from(requirement)
+					.removeAttribute(REQ_ALIAS_LITERAL_ATTRIB);
+				return builder.buildSyntheticRequirement();
 			}
-
-			CapReqBuilder builder = new CapReqBuilder(literalNs);
-			copyAttribs(requirement, builder, consumedAttribs);
-			copyDirectives(requirement, builder, Collections.emptySet());
-			requirement = builder.buildSyntheticRequirement();
-		} else if (REQ_ALIAS_IDENTITY.equals(ns)) {
-			final String bsn = Objects.toString(requirement.getAttributes()
-				.get(REQ_ALIAS_IDENTITY_NAME_ATTRIB), null);
-			consumedAttribs.add(REQ_ALIAS_IDENTITY_NAME_ATTRIB);
-			if (bsn == null) {
-				throw new IllegalArgumentException(
-					String.format("Requirement alias '%s' is missing mandatory attribute '%s' of type String",
-						REQ_ALIAS_IDENTITY, REQ_ALIAS_IDENTITY_NAME_ATTRIB));
+			case REQ_ALIAS_IDENTITY : {
+				String name = Objects.toString(requirement.getAttributes()
+					.get(REQ_ALIAS_IDENTITY_NAME_ATTRIB), null);
+				String versionRange = Objects.toString(requirement.getAttributes()
+					.get(REQ_ALIAS_IDENTITY_VERSION_ATTRIB), null);
+				if (name == null) {
+					throw new IllegalArgumentException(
+						String.format("Requirement alias '%s' is missing mandatory attribute '%s' of type String",
+							REQ_ALIAS_IDENTITY, REQ_ALIAS_IDENTITY_NAME_ATTRIB));
+				}
+				CapReqBuilder builder = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).from(requirement)
+					.removeAttribute(REQ_ALIAS_IDENTITY_NAME_ATTRIB)
+					.removeAttribute(REQ_ALIAS_IDENTITY_VERSION_ATTRIB);
+				builder.addFilter(IdentityNamespace.IDENTITY_NAMESPACE, name, versionRange, null);
+				return builder.buildSyntheticRequirement();
 			}
-
-			final VersionRange range = toRange(requirement.getAttributes()
-				.get(REQ_ALIAS_IDENTITY_VERSION_ATTRIB));
-			consumedAttribs.add(REQ_ALIAS_IDENTITY_VERSION_ATTRIB);
-			CapReqBuilder b = CapReqBuilder.createBundleRequirement(bsn, Objects.toString(range, null));
-			copyAttribs(requirement, b, consumedAttribs);
-			copyDirectives(requirement, b, consumedDirectives);
-			requirement = b.buildSyntheticRequirement();
-		}
-
-		return requirement;
-	}
-
-	private static void copyAttribs(Requirement req, CapReqBuilder builder, Set<String> excludes) throws Exception {
-		for (Entry<String, Object> entry : req.getAttributes()
-			.entrySet()) {
-			if (!excludes.contains(entry.getKey()))
-				builder.addAttribute(entry.getKey(), entry.getValue());
+			default : {
+				return requirement;
+			}
 		}
 	}
 
-	private static void copyDirectives(Requirement req, CapReqBuilder builder, Set<String> excludes) throws Exception {
-		for (Entry<String, String> entry : req.getDirectives()
-			.entrySet()) {
-			if (!excludes.contains(entry.getKey()))
-				builder.addDirective(entry.getKey(), entry.getValue());
-		}
-	}
-
-	private static VersionRange toRange(Object o) throws IllegalArgumentException {
-		final VersionRange range;
-		if (o == null)
-			range = null;
-		else if (o instanceof VersionRange)
-			range = (VersionRange) o;
-		else if (o instanceof org.osgi.framework.VersionRange || o instanceof Version || o instanceof String)
-			range = VersionRange.parseOSGiVersionRange(o.toString());
-		else
-			throw new IllegalArgumentException("Expected type String, Version or VersionRange");
-		return range;
-	}
-
-	public static List<Capability> getCapabilitiesFrom(Parameters rr) throws Exception {
-		List<Capability> capabilities = new ArrayList<>();
-		for (Entry<String, Attrs> e : rr.entrySet()) {
-			capabilities.add(getCapabilityFrom(Processor.removeDuplicateMarker(e.getKey()), e.getValue()));
-		}
+	public static List<Capability> getCapabilitiesFrom(Parameters rr) {
+		List<Capability> capabilities = rr.stream()
+			.mapToObj((k, v) -> getCapabilityFrom(Processor.removeDuplicateMarker(k), v))
+			.collect(toList());
 		return capabilities;
 	}
 
-	public static Capability getCapabilityFrom(String namespace, Attrs attrs) throws Exception {
-		CapReqBuilder builder = createCapReqBuilder(namespace, attrs);
-		return builder.buildSyntheticCapability();
+	public static Capability getCapabilityFrom(String namespace, Attrs attrs) {
+		return createCapReqBuilder(namespace, attrs).buildSyntheticCapability();
 	}
 
-	public CapReqBuilder from(Capability c) throws Exception {
-		addAttributes(c.getAttributes());
-		addDirectives(c.getDirectives());
-		return this;
+	public CapReqBuilder from(Capability capability) {
+		return addAttributes(capability.getAttributes()).addDirectives(capability.getDirectives());
 	}
 
-	public CapReqBuilder from(Requirement r) throws Exception {
-		addAttributes(r.getAttributes());
-		addDirectives(r.getDirectives());
-		return this;
+	public CapReqBuilder from(Requirement requirement) {
+		return addAttributes(requirement.getAttributes()).addDirectives(requirement.getDirectives());
 	}
 
-	public static Capability copy(Capability c, Resource r) throws Exception {
-		CapReqBuilder from = new CapReqBuilder(c.getNamespace()).from(c);
-		if (r == null)
-			return from.buildSyntheticCapability();
-		else
-			return from.setResource(r)
-				.buildCapability();
+	public static Capability copy(Capability capability, Resource resource) {
+		CapReqBuilder clone = clone(capability);
+		return (resource != null) ? clone.setResource(resource)
+			.buildCapability() : clone.buildSyntheticCapability();
 	}
 
-	public static Requirement copy(Requirement c, Resource r) throws Exception {
-		CapReqBuilder from = new CapReqBuilder(c.getNamespace()).from(c);
-		if (r == null)
-			return from.buildSyntheticRequirement();
-		else
-			return from.setResource(r)
-				.buildRequirement();
+	public static Requirement copy(Requirement requirement, Resource resource) {
+		CapReqBuilder clone = clone(requirement);
+		return (resource != null) ? clone.setResource(resource)
+			.buildRequirement() : clone.buildSyntheticRequirement();
 	}
 
 	/**
-	 * In bnd, we only use one map for both directives & attributes. This method
-	 * will properly dispatch them AND take care of typing
+	 * In bnd, we use one map for both directives & attributes. This method will
+	 * properly dispatch them AND take care of typing
 	 *
 	 * @param attrs
-	 * @throws Exception
 	 */
-	public void addAttributesOrDirectives(Attrs attrs) throws Exception {
+	public void addAttributesOrDirectives(Attrs attrs) {
 		for (Entry<String, String> e : attrs.entrySet()) {
-			String directive = Attrs.toDirective(e.getKey());
+			String name = e.getKey();
+			String directive = Attrs.toDirective(name);
 			if (directive != null) {
 				addDirective(directive, e.getValue());
 			} else {
-				Object typed = attrs.getTyped(e.getKey());
-				if (typed instanceof aQute.bnd.version.Version) {
-					typed = new Version(typed.toString());
-				}
-				addAttribute(e.getKey(), typed);
+				Object typed = attrs.getTyped(name);
+				addAttribute(name, typed);
 			}
 		}
-
 	}
 
-	public void addFilter(String ns, String name, String version, Attrs attrs) {
-		List<String> parts = new ArrayList<>();
+	/**
+	 * In bnd, we use one map for both directives & attributes. This method will
+	 * ignore directives.
+	 *
+	 * @param attrs
+	 */
+	public CapReqBuilder addAttributes(Attrs attrs) {
+		attrs.keySet()
+			.stream()
+			.filter(Attrs::isAttribute)
+			.forEachOrdered(name -> {
+				Object typed = attrs.getTyped(name);
+				addAttribute(name, typed);
+			});
+		return this;
+	}
 
-		parts.add("(" + ns + "=" + name + ")");
-		if (version != null && VersionRange.isOSGiVersionRange(version)) {
-			VersionRange range = VersionRange.parseOSGiVersionRange(version);
-			parts.add(range.toFilter());
-		}
+	public void addFilter(String nameAttr, String name, String versionRange, Attrs attrs) {
+		StringBuilder filter = new StringBuilder(256).append('(')
+			.append('&')
+			.append('(')
+			.append(requireNonNull(nameAttr))
+			.append('=')
+			.append(requireNonNull(name))
+			.append(')');
+		final int len = filter.length();
 
-		String mandatory = attrs.get(Constants.MANDATORY_DIRECTIVE + ":");
-		if (mandatory != null) {
-			String mandatoryAttrs[] = mandatory.split("\\s*,\\s*");
-			Arrays.sort(mandatoryAttrs);
-			for (String mandatoryAttr : mandatoryAttrs) {
-				String value = attrs.get(mandatoryAttr);
-				if (value != null) {
-					parts.add("(" + mandatoryAttr + "=" + escapeFilterValue(value) + ")");
-				}
+		final String versionAttrName = Optional
+			.ofNullable(ResourceUtils.getVersionAttributeForNamespace(getNamespace()))
+			.orElse(Constants.VERSION_ATTRIBUTE);
+		appendFilterVersionRange(filter, versionAttrName, versionRange);
+		final boolean versionAttrFilterAdded = filter.length() > len;
+
+		// Attribute matching (Core 3.7.7) for wiring namespaces
+		if (getNamespace().startsWith("osgi.wiring.")) {
+			MapStream<String, String> attrStream = MapStream.ofNullable(attrs)
+				.filterKey(Attrs::isAttribute);
+			if (versionAttrFilterAdded) {
+				attrStream = attrStream.filterKey(attrName -> !attrName.equals(versionAttrName));
 			}
+			attrStream.sortedByKey()
+				.forEachOrdered((attrName, attrValue) -> {
+					switch (attrName) {
+						case PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE :
+						case AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE :
+							appendFilterVersionRange(filter, attrName, attrValue);
+							break;
+						default :
+							appendFilterEquals(filter, attrName, attrValue);
+							break;
+					}
+				});
 		}
 
-		StringBuilder sb = new StringBuilder();
-		if (parts.size() > 0)
-			sb.append("(&");
-		for (String s : parts) {
-			sb.append(s);
+		String value = (filter.length() > len) ? filter.append(')')
+			.toString() : filter.substring(2);
+		addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, value);
+	}
+
+	private static void appendFilterEquals(StringBuilder filter, String name, String value) {
+		if (value != null) {
+			filter.append('(')
+				.append(name)
+				.append('=');
+			escapeFilterValue(filter, value).append(')');
 		}
-		if (parts.size() > 0)
-			sb.append(")");
-		addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, sb.toString());
+	}
+
+	private static void appendFilterVersionRange(StringBuilder filter, String name, String versionRange) {
+		Optional.ofNullable(versionRange)
+			.filter(VersionRange::isOSGiVersionRange)
+			.map(VersionRange::parseOSGiVersionRange)
+			.map(range -> range.toFilter(name))
+			.ifPresent(range -> {
+				if ((filter.length() > 1) && (filter.charAt(1) == '&') && (range.length() > 1)
+					&& (range.charAt(1) == '&')) {
+					filter.append(range, 2, range.length() - 1);
+				} else {
+					filter.append(range);
+				}
+			});
 	}
 
 	/**
@@ -521,28 +533,43 @@ public class CapReqBuilder {
 	 * solidus ('\' \u005C) character. Spaces are significant in value. Space
 	 * characters are defined by Character.isWhiteSpace().
 	 */
-
-	private final static Pattern ESCAPE_FILTER_VALUE_P = Pattern.compile("[\\\\*()]");
-
 	public static String escapeFilterValue(String value) {
-		return ESCAPE_FILTER_VALUE_P.matcher(value)
-			.replaceAll("\\\\$0");
+		final int len = value.length();
+		StringBuilder sb = escapeFilterValue(new StringBuilder(len), value);
+		return (len == sb.length()) ? value : sb.toString();
+	}
+
+	private static StringBuilder escapeFilterValue(StringBuilder sb, String value) {
+		final int len = value.length();
+		for (int i = 0; i < len; i++) {
+			char c = value.charAt(i);
+			switch (c) {
+				case '\\' :
+				case '*' :
+				case '(' :
+				case ')' :
+					sb.append('\\')
+						.append(c);
+					break;
+				default :
+					sb.append(c);
+					break;
+			}
+		}
+		return sb;
 	}
 
 	public void and(String... s) {
-		String previous = directives == null ? null : directives.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-		StringBuilder filter = new StringBuilder();
-
+		StringBuilder filter = new StringBuilder().append('(')
+			.append('&');
+		String previous = directives.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 		if (previous != null) {
-			filter.append("(&")
-				.append(previous);
+			filter.append(previous);
 		}
-		for (String subexpr : s)
+		for (String subexpr : s) {
 			filter.append(subexpr);
-
-		if (previous != null) {
-			filter.append(")");
 		}
+		filter.append(')');
 		addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 	}
 
@@ -583,24 +610,15 @@ public class CapReqBuilder {
 	}
 
 	public Attrs toAttrs() {
+		String versionAttrName = Optional.ofNullable(ResourceUtils.getVersionAttributeForNamespace(getNamespace()))
+			.orElse(Constants.VERSION_ATTRIBUTE);
+
 		Attrs attrs = new Attrs();
 
-		if (attributes != null) {
-			for (Entry<String, Object> e : attributes.entrySet()) {
-				Object value = e.getValue();
+		attributes.forEach((key, value) -> attrs.putTyped(key,
+			(key.equals(versionAttrName) || (value instanceof Version)) ? toBndVersions(value) : value));
 
-				if (e.getKey()
-					.equals("version") || value instanceof Version)
-					value = toBndVersions(value);
-
-				attrs.putTyped(e.getKey(), value);
-			}
-		}
-
-		if (directives != null)
-			for (Entry<String, String> e : directives.entrySet()) {
-				attrs.put(e.getKey() + ":", e.getValue());
-			}
+		directives.forEach((key, value) -> attrs.put(key.concat(":"), value));
 
 		return attrs;
 	}
@@ -609,16 +627,34 @@ public class CapReqBuilder {
 		if (value instanceof aQute.bnd.version.Version)
 			return value;
 
-		if (value instanceof Version)
-			return new aQute.bnd.version.Version(value.toString());
+		if (value instanceof Version) {
+			Version osgiVersion = (Version) value;
+			return new aQute.bnd.version.Version(osgiVersion.getMajor(), osgiVersion.getMinor(), osgiVersion.getMicro(),
+				osgiVersion.getQualifier());
+		}
 
 		if (value instanceof String)
 			return new aQute.bnd.version.Version((String) value);
 
+		if (value instanceof Number)
+			try {
+				return new aQute.bnd.version.Version(((Number) value).intValue());
+			} catch (Exception e) {
+				return value;
+			}
+
 		if (value instanceof Collection) {
-			List<aQute.bnd.version.Version> bnds = new ArrayList<>();
-			for (Object m : (Collection<?>) value) {
-				bnds.add((aQute.bnd.version.Version) toBndVersions(m));
+			Collection<?> v = (Collection<?>) value;
+			if (v.isEmpty())
+				return value;
+
+			if (v.iterator()
+				.next() instanceof aQute.bnd.version.Version)
+				return value;
+
+			List<Object> bnds = new ArrayList<>();
+			for (Object m : v) {
+				bnds.add(toBndVersions(m));
 			}
 			return bnds;
 		}
@@ -630,8 +666,11 @@ public class CapReqBuilder {
 		if (value instanceof Version)
 			return value;
 
-		if (value instanceof aQute.bnd.version.Version)
-			return new Version(value.toString());
+		if (value instanceof aQute.bnd.version.Version) {
+			aQute.bnd.version.Version bndVersion = (aQute.bnd.version.Version) value;
+			return new Version(bndVersion.getMajor(), bndVersion.getMinor(), bndVersion.getMicro(),
+				bndVersion.getQualifier());
+		}
 
 		if (value instanceof String)
 			try {
@@ -656,9 +695,9 @@ public class CapReqBuilder {
 				.next() instanceof Version)
 				return value;
 
-			List<Version> osgis = new ArrayList<>();
-			for (Object m : (Collection<?>) value) {
-				osgis.add((Version) toVersions(m));
+			List<Object> osgis = new ArrayList<>();
+			for (Object m : v) {
+				osgis.add(toVersions(m));
 			}
 			return osgis;
 		}
@@ -667,39 +706,42 @@ public class CapReqBuilder {
 			"cannot convert " + value + " to a org.osgi.framework Version(s) object as requested");
 	}
 
-	public static RequirementBuilder createRequirementFromCapability(Capability cap) {
-		RequirementBuilder req = new RequirementBuilder(cap.getNamespace());
-		StringBuilder sb = new StringBuilder("(&");
-		for (Entry<String, Object> e : cap.getAttributes()
-			.entrySet()) {
-			Object v = e.getValue();
-			if (v instanceof Version || e.getKey()
-				.equals("version")) {
-				VersionRange r = new VersionRange(v.toString());
-				String filter = r.toFilter();
-				sb.append(filter);
-
-			} else
-				sb.append("(")
-					.append(e.getKey())
-					.append("=")
-					.append(escapeFilterValue((String) v))
-					.append(")");
+	public static RequirementBuilder createRequirementFromCapability(Capability capability) {
+		final String namespace = capability.getNamespace();
+		RequirementBuilder builder = new RequirementBuilder(namespace);
+		final String versionAttrName = Optional.ofNullable(ResourceUtils.getVersionAttributeForNamespace(namespace))
+			.orElse(Constants.VERSION_ATTRIBUTE);
+		Map<String, Object> capAttributes = capability.getAttributes();
+		StringBuilder filter = new StringBuilder(256);
+		if (capAttributes.size() > 1) {
+			filter.append('(')
+				.append('&');
 		}
-		sb.append(")");
+		capAttributes.forEach((name, v) -> {
+			if (v instanceof Version || name.equals(versionAttrName)
+				|| (namespace.equals(PackageNamespace.PACKAGE_NAMESPACE)
+					&& name.equals(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE))) {
+				appendFilterVersionRange(filter, name, v.toString());
+			} else {
+				appendFilterEquals(filter, name, v.toString());
+			}
+		});
+		if (capAttributes.size() > 1) {
+			filter.append(')');
+		}
 
-		req.and(sb.toString());
-		return req;
+		builder.filter(filter);
+		return builder;
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append('[')
 			.append(namespace)
-			.append('[');
-		sb.append(attributes);
-		sb.append(directives);
+			.append(']')
+			.append(attributes)
+			.append(directives);
 		return sb.toString();
 	}
 }

@@ -1,6 +1,6 @@
 package aQute.bnd.repository.fileset;
 
-import static aQute.lib.exceptions.FunctionWithException.asFunctionOrElse;
+import static aQute.bnd.exceptions.FunctionWithException.asFunctionOrElse;
 import static aQute.lib.promise.PromiseCollectors.toPromise;
 
 import java.io.File;
@@ -18,14 +18,12 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.service.repository.ContentNamespace;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.repository.BridgeRepository;
@@ -40,9 +38,8 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
-import aQute.libg.cryptography.SHA256;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.POM;
 import aQute.service.reporter.Reporter;
@@ -99,47 +96,42 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 				return null;
 			}
 			ResourceBuilder rb = new ResourceBuilder();
-			try (Jar jar = new Jar(file)) {
-				Domain manifest = Domain.domain(jar.getManifest());
-				boolean hasIdentity = rb.addManifest(manifest);
+			try {
+				boolean hasIdentity = rb.addFile(file, null);
 				if (!hasIdentity) {
-					Optional<Revision> revision = jar.getPomXmlResources()
-						.findFirst()
-						.map(asFunctionOrElse(pomResource -> new POM(null, pomResource.openInputStream(), true), null))
-						.map(POM::getRevision);
+					try (Jar jar = new Jar(file)) {
+						Optional<Revision> revision = jar.getPomXmlResources()
+							.findFirst()
+							.map(asFunctionOrElse(pomResource -> new POM(null, pomResource.openInputStream(), true),
+								null))
+							.map(POM::getRevision);
 
-					String name = jar.getModuleName();
-					if (name == null) {
-						name = revision.map(r -> r.program.toString())
-							.orElse(null);
+						String name = jar.getModuleName();
 						if (name == null) {
-							return null;
+							name = revision.map(r -> r.program.toString())
+								.orElse(null);
+							if (name == null) {
+								return null;
+							}
 						}
-					}
 
-					Version version = revision.map(r -> r.version.getOSGiVersion())
-						.orElse(null);
-					if (version == null) {
-						version = new MavenVersion(jar.getModuleVersion()).getOSGiVersion();
-					}
+						Version version = revision.map(r -> r.version.getOSGiVersion())
+							.orElse(null);
+						if (version == null) {
+							version = new MavenVersion(jar.getModuleVersion()).getOSGiVersion();
+						}
 
-					CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-						.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, name)
-						.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version)
-						.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_UNKNOWN);
-					rb.addCapability(identity);
+						CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
+							.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, name)
+							.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version)
+							.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_UNKNOWN);
+						rb.addCapability(identity);
+					}
 				}
 			} catch (Exception f) {
 				return null;
 			}
 			logger.debug("{}: parsing {}", getName(), file);
-			CapReqBuilder content = new CapReqBuilder(ContentNamespace.CONTENT_NAMESPACE)
-				.addAttribute(ContentNamespace.CONTENT_NAMESPACE, SHA256.digest(file)
-					.asHex())
-				.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, file.toURI()
-					.toString())
-				.addAttribute(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, Long.valueOf(file.length()));
-			rb.addCapability(content);
 			return rb.build();
 		});
 		if (logger.isDebugEnabled()) {

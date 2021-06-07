@@ -15,8 +15,12 @@ import aQute.launchpad.junit.LaunchpadRunner;
 @RunWith(LaunchpadRunner.class)
 public class BeforeAfterTest {
 
-	static LaunchpadBuilder	builder	= new LaunchpadBuilder().runfw("org.apache.felix.framework")
-		.bundles("org.assertj.core, org.apache.felix.scr")
+	static final String		org_apache_felix_framework	= "org.apache.felix.framework;version='[5.6.10,5.6.11)'";
+	static final String		org_apache_felix_scr		= "org.apache.felix.scr;version='[2.1.12,2.1.13)'";
+
+	static LaunchpadBuilder	builder						= new LaunchpadBuilder().runfw(org_apache_felix_framework)
+		.bundles("assertj-core")
+		.bundles(org_apache_felix_scr)
 		.debug();
 
 	@Service

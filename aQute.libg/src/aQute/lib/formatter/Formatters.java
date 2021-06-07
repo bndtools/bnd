@@ -51,7 +51,6 @@ public class Formatters {
 				}
 			}
 
-
 			switch (conversion) {
 				// d|f|c|s|h|n|x|X|u|o|z|Z|e|E|g|G|p|\n|%)");
 				case 'd' :

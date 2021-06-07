@@ -7,13 +7,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Formatter;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
@@ -21,20 +25,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container.TYPE;
+import aQute.bnd.build.api.ArtifactInfo;
+import aQute.bnd.build.api.BuildInfo;
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.header.Attrs;
-import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.diff.Diff;
@@ -46,6 +53,7 @@ import aQute.lib.collections.SortedList;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.glob.PathSet;
+import aQute.libg.reporter.ReporterAdapter;
 
 public class ProjectBuilder extends Builder {
 	private static final Predicate<String>	pomPropertiesFilter	= new PathSet("META-INF/maven/*/*/pom.properties")
@@ -54,6 +62,87 @@ public class ProjectBuilder extends Builder {
 	private final DiffPluginImpl			differ				= new DiffPluginImpl();
 	Project									project;
 	boolean									initialized;
+	boolean									includeTestpath		= false;
+	BuildInfoImpl							buildInfo;
+
+	static class BuildInfoImpl extends ReporterAdapter implements BuildInfo {
+
+		final List<ArtifactInfoImpl>	artifacts	= new ArrayList<>();
+		final Project					project;
+
+		BuildInfoImpl(Project project) throws Exception {
+			this.project = project;
+		}
+
+		@Override
+		public List<ArtifactInfo> getArtifactInfos() {
+			return new ArrayList<>(artifacts);
+		}
+
+		@Override
+		public Project getProject() {
+			return project;
+		}
+
+		@Override
+		public String toString() {
+			return "BuildInfo[" + project + ": " + artifacts + "]";
+		}
+
+	}
+
+	static class ArtifactInfoImpl extends ReporterAdapter implements ArtifactInfo {
+		final Manifest							manifest;
+		final Packages							exports;
+		final Packages							imports;
+		final Packages							contained;
+		final BundleId							bundleId;
+
+		File									file;
+		List<Location>							errors;
+		Supplier<org.osgi.resource.Resource>	indexer;
+
+		public ArtifactInfoImpl(Builder builder) throws Exception {
+			String bsn = builder.getBsn();
+			String version = builder.getVersion();
+			bundleId = new BundleId(bsn, version);
+			manifest = builder.getJar()
+				.getManifest();
+			exports = builder.getExports()
+				.dup();
+			imports = builder.getImports()
+				.dup();
+			contained = builder.getContained()
+				.dup();
+			getInfo(builder);
+		}
+
+		@Override
+		public BundleId getBundleId() {
+			return bundleId;
+		}
+
+		@Override
+		public Packages getExports() {
+			return exports;
+		}
+
+		@Override
+		public Packages getImports() {
+			return imports;
+		}
+
+		@Override
+		public Packages getContained() {
+			return contained;
+		}
+
+		@Override
+		public String toString() {
+			return "Artifact[" + bundleId + "]";
+		}
+
+	}
 
 	public ProjectBuilder(Project project) {
 		super(project);
@@ -105,6 +194,12 @@ public class ProjectBuilder extends Builder {
 					addClasspath(output);
 				}
 
+				if (includeTestpath) {
+					for (Container file : project.getTestpath()) {
+						addClasspath(dependencies, file);
+					}
+				}
+
 				for (Container file : project.getBuildpath()) {
 					addClasspath(dependencies, file);
 				}
@@ -133,32 +228,62 @@ public class ProjectBuilder extends Builder {
 		Jar jar = new Jar(file);
 		super.addClasspath(jar);
 		project.unreferencedClasspathEntries.put(jar.getName(), c);
-		if ((dependencies != null) && !Boolean.parseBoolean(c.getAttributes()
-			.getOrDefault("maven-optional", "false"))) {
-			jar.getResources(pomPropertiesFilter)
-				.forEachOrdered(r -> {
-					UTF8Properties pomProperties = new UTF8Properties();
-					try (InputStream in = r.openInputStream()) {
-						pomProperties.load(in);
-					} catch (Exception e) {
-						logger.debug("unable to read pom.properties resource {}", r, e);
-						return;
-					}
-					String depVersion = pomProperties.getProperty("version");
-					String depGroupId = pomProperties.getProperty("groupId");
-					String depArtifactId = pomProperties.getProperty("artifactId");
-					if ((depGroupId != null) && (depArtifactId != null) && (depVersion != null)) {
-						Attrs attrs = new Attrs();
-						attrs.put("groupId", depGroupId);
-						attrs.put("artifactId", depArtifactId);
-						attrs.put("version", depVersion);
-						attrs.put("scope", c.getAttributes()
-							.getOrDefault("maven-scope", getProperty(MAVEN_SCOPE, "compile")));
-						StringBuilder key = new StringBuilder();
-						OSGiHeader.quote(key, IO.absolutePath(file));
-						dependencies.put(key.toString(), attrs);
-					}
-				});
+		Map<String, String> containerAttributes = c.getAttributes();
+		if ((dependencies != null)
+			&& !Boolean.parseBoolean(containerAttributes.getOrDefault("maven-optional", "false"))) {
+			String depGroupId = containerAttributes.get("maven-groupId");
+			String depArtifactId = containerAttributes.get("maven-artifactId");
+			String depVersion = containerAttributes.get("maven-version");
+			String scope = containerAttributes.getOrDefault("maven-scope", getProperty(MAVEN_SCOPE, "compile"));
+			if ((depGroupId != null) && (depArtifactId != null) && (depVersion != null)) {
+				// the repo provided maven attributes to the container
+				Attrs attrs = new Attrs();
+				attrs.put("groupId", depGroupId);
+				attrs.put("artifactId", depArtifactId);
+				attrs.put("version", depVersion);
+				attrs.put("scope", scope);
+				StringBuilder key = new StringBuilder().append(depGroupId)
+					.append(':')
+					.append(depArtifactId)
+					.append(':')
+					.append(depVersion);
+				String depClassifier = containerAttributes.get("maven-classifier");
+				if ((depClassifier != null) && !depClassifier.isEmpty()) {
+					attrs.put("classifier", depClassifier);
+					key.append(":jar:")
+						.append(depClassifier);
+				}
+				dependencies.add(key.toString(), attrs);
+			} else {
+				// fall back to pom.properties in jar
+				jar.getResources(pomPropertiesFilter)
+					.forEachOrdered(r -> {
+						UTF8Properties pomProperties = new UTF8Properties();
+						try (InputStream in = r.openInputStream()) {
+							pomProperties.load(in);
+						} catch (Exception e) {
+							logger.debug("unable to read pom.properties resource {}", r, e);
+							return;
+						}
+						String pomGroupId = pomProperties.getProperty("groupId");
+						String pomArtifactId = pomProperties.getProperty("artifactId");
+						String pomVersion = pomProperties.getProperty("version");
+						if ((pomGroupId != null) && (pomArtifactId != null) && (pomVersion != null)) {
+							Attrs attrs = new Attrs();
+							attrs.put("groupId", pomGroupId);
+							attrs.put("artifactId", pomArtifactId);
+							attrs.put("version", pomVersion);
+							attrs.put("scope", scope);
+							String key = new StringBuilder().append(pomGroupId)
+								.append(':')
+								.append(pomArtifactId)
+								.append(':')
+								.append(pomVersion)
+								.toString();
+							dependencies.add(key, attrs);
+						}
+					});
+			}
 		}
 	}
 
@@ -554,29 +679,29 @@ public class ProjectBuilder extends Builder {
 	}
 
 	private RepositoryPlugin getReleaseRepo() {
-		String repoName = getProperty(Constants.RELEASEREPO);
 
-		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
-		for (RepositoryPlugin r : repos) {
-			if (r.canWrite()) {
-				if (repoName == null || r.getName()
-					.equals(repoName)) {
-					return r;
-				}
+		String repoNames = getProperty(Constants.RELEASEREPO);
+
+		List<RepositoryPlugin> releaseRepos = project.getReleaseRepos(repoNames);
+
+		if (!releaseRepos.isEmpty()) {
+			if (releaseRepos.size() > 1) {
+				warning("Found multiple release repositories [%s], so we will use the first one", repoNames);
 			}
+			return releaseRepos.get(0);
 		}
-		if (repoName == null)
-			error("Could not find a writable repo for the release repo (-releaserepo is not set)");
-		else
-			error("No such -releaserepo %s found", repoName);
 
+		error("No releaserepo(s) found for %s", repoNames);
 		return null;
 	}
 
 	private RepositoryPlugin getBaselineRepo() {
 		String repoName = getProperty(Constants.BASELINEREPO);
-		if (repoName == null)
+		if (repoName == null) {
+			warning("Baselining is active, but no %s is set. Will fall back to release repositories",
+				Constants.BASELINEREPO);
 			return getReleaseRepo();
+		}
 
 		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
 		for (RepositoryPlugin r : repos) {
@@ -614,19 +739,93 @@ public class ProjectBuilder extends Builder {
 	public List<Run> getExportedRuns() throws Exception {
 		Instructions runspec = new Instructions(getProperty(EXPORT));
 		List<Run> runs = new ArrayList<>();
+		Set<Instruction> missing = new LinkedHashSet<>();
 
-		Map<File, Attrs> files = runspec.select(getBase());
+		Map<File, List<Attrs>> files = runspec.select(getBase(), Function.identity(), missing);
 
-		for (Entry<File, Attrs> e : files.entrySet()) {
-			Run run = new Run(project.getWorkspace(), getBase(), e.getKey());
-			for (Entry<String, String> ee : e.getValue()
-				.entrySet()) {
-				run.setProperty(ee.getKey(), ee.getValue());
+		for (Entry<File, List<Attrs>> e : files.entrySet()) {
+			for (Attrs attrs : e.getValue()) {
+				Run run = new Run(project.getWorkspace(), getBase(), e.getKey());
+				attrs.stream()
+					.forEachOrdered(run::setProperty);
+				runs.add(run);
 			}
-			runs.add(run);
 		}
 
 		return runs;
+	}
+
+	Map<File, Resource> doExports(Map<File, List<Attrs>> entries) {
+		Map<File, Resource> result = new LinkedHashMap<>();
+
+		for (Entry<File, List<Attrs>> e : entries.entrySet()) {
+
+			for (Attrs attrs : e.getValue()) {
+
+				File file = e.getKey();
+				try (Run run = Run.createRun(getProject().getWorkspace(), file)) {
+
+					//
+					// History made it that we had an -export instruction and
+					// somehow
+					// later export functions were added using the exporters
+					// that
+					// were not exactly aligned. I think we also had some
+					// separate
+					// function
+					// in bndtools.
+					// The code is now reconciled but we need to support the old
+					// mode of the -export that had some quirks in naming. If no
+					// options are given for the type of exporter or the name
+					// then we assume it must be backward compatible. Otherwise
+					// the -export follows the export function with the
+					// exporters.
+					//
+
+					boolean backwardCompatible = !attrs.containsKey(Constants.EXPORT_TYPE)
+						&& !attrs.containsKey(Constants.EXPORT_NAME);
+
+					String name = run.getName();
+					if (backwardCompatible) {
+
+						if (run.getProperty(BUNDLE_SYMBOLICNAME) == null)
+							run.setProperty(BUNDLE_SYMBOLICNAME, getBsn() + ".run");
+
+						attrs.put(Constants.EXPORT_NAME, name + Constants.DEFAULT_JAR_EXTENSION);
+					}
+					if (attrs.containsKey(Constants.EXPORT_BSN)) {
+						run.setProperty(BUNDLE_SYMBOLICNAME, attrs.get(Constants.EXPORT_BSN));
+					}
+					if (attrs.containsKey(Constants.EXPORT_VERSION)) {
+						run.setProperty(BUNDLE_VERSION, attrs.get(Constants.EXPORT_VERSION));
+					}
+
+					attrs.stream()
+						.forEachOrdered(run::setProperty);
+
+					Entry<String, Resource> export = run.export(null, attrs);
+					getInfo(run);
+					if (isOk()) {
+						File outputFile;
+						if (backwardCompatible) {
+							outputFile = project.getOutputFile(name, run.getBundleVersion());
+						} else {
+							name = attrs.getOrDefault(Constants.EXPORT_NAME, export.getKey());
+							outputFile = getFile(project.getTarget(), name);
+						}
+						Resource put = result.put(outputFile, export.getValue());
+						if (put != null) {
+							error("Duplicate file in -export  %s. Input=%s, Attrs=%s, previous resource %s",
+								outputFile.getName(), file.getName(), attrs, put);
+						}
+					}
+				} catch (Exception ee) {
+					exception(ee, "Failed to export %s, %s", file, ee.getMessage());
+				}
+			}
+		}
+
+		return result;
 	}
 
 	/**
@@ -638,24 +837,8 @@ public class ProjectBuilder extends Builder {
 		project.exportedPackages.clear();
 		project.importedPackages.clear();
 		project.containedPackages.clear();
-
-		Jar[] jars = super.builds();
-
-		if (isOk()) {
-			for (Run export : getExportedRuns()) {
-				addClose(export);
-				if (export.getProperty(BUNDLE_SYMBOLICNAME) == null) {
-					export.setProperty(BUNDLE_SYMBOLICNAME, getBsn() + ".run");
-				}
-				Jar pack = export.pack(getProperty(PROFILE));
-				getInfo(export);
-				if (pack != null) {
-					jars = concat(Jar.class, jars, pack);
-					addClose(pack);
-				}
-			}
-		}
-		return jars;
+		buildInfo = new BuildInfoImpl(project);
+		return super.builds();
 	}
 
 	/**
@@ -665,6 +848,7 @@ public class ProjectBuilder extends Builder {
 	@Override
 	protected void startBuild(Builder builder) throws Exception {
 		super.startBuild(builder);
+
 		project.versionMap.remove(builder.getBsn());
 
 		/*
@@ -725,6 +909,9 @@ public class ProjectBuilder extends Builder {
 		Version version = new Version(cleanupVersion(builder.getVersion()));
 		project.versionMap.put(builder.getBsn(), version);
 		super.doneBuild(builder);
+
+		ArtifactInfoImpl artifactInfo = new ArtifactInfoImpl(builder);
+		buildInfo.artifacts.add(artifactInfo);
 	}
 
 	private void xrefClasspath(Map<String, Container> unreferencedClasspathEntries, Packages packages) {
@@ -750,5 +937,14 @@ public class ProjectBuilder extends Builder {
 	@Override
 	public boolean isInteractive() {
 		return getProject().isInteractive();
+	}
+
+	public ProjectBuilder includeTestpath() {
+		this.includeTestpath = true;
+		return this;
+	}
+
+	public BuildInfoImpl getBuildInfo() {
+		return buildInfo;
 	}
 }

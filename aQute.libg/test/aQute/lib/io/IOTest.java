@@ -1,7 +1,18 @@
 package aQute.lib.io;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.condition.OS.WINDOWS;
+
 import java.io.File;
 import java.io.InputStream;
+import java.io.Writer;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,11 +20,30 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+
+import aQute.bnd.exceptions.BiFunctionWithException;
 import aQute.lib.io.IO.EnvironmentCalculator;
-import junit.framework.TestCase;
 
-public class IOTest extends TestCase {
+public class IOTest {
 
+	private Path tmp;
+
+	@BeforeEach
+	public void before(TestInfo info) throws Exception {
+		Method testMethod = info.getTestMethod()
+			.get();
+		tmp = Paths.get("generated/tmp/test", getClass().getName(), testMethod.getName())
+			.toAbsolutePath();
+		IO.delete(tmp);
+		IO.mkdirs(tmp);
+	}
+
+	@Test
 	public void testEnvVarsForHome() throws Exception {
 		Map<String, String> map = new HashMap<>();
 
@@ -46,18 +76,23 @@ public class IOTest extends TestCase {
 		assertEquals("C:\\Documents and Settings\\foobar", ec2.getSystemEnv("HOME"));
 	}
 
+	@Test
+	@DisabledOnOs(WINDOWS)
 	public void testSafeFileName() {
-		if (IO.isWindows()) {
-			assertEquals("abc%def", IO.toSafeFileName("abc:def"));
-			assertEquals("%abc%def%", IO.toSafeFileName("<abc:def>"));
-			assertEquals("LPT1_", IO.toSafeFileName("LPT1"));
-			assertEquals("COM2_", IO.toSafeFileName("COM2"));
-		} else {
-			assertEquals("abc%def", IO.toSafeFileName("abc/def"));
-			assertEquals("<abc%def>", IO.toSafeFileName("<abc/def>"));
-		}
+		assertEquals("abc%def", IO.toSafeFileName("abc/def"));
+		assertEquals("<abc%def>", IO.toSafeFileName("<abc/def>"));
 	}
 
+	@Test
+	@EnabledOnOs(WINDOWS)
+	public void testSafeFileNameWindows() {
+		assertEquals("abc%def", IO.toSafeFileName("abc:def"));
+		assertEquals("%abc%def%", IO.toSafeFileName("<abc:def>"));
+		assertEquals("LPT1_", IO.toSafeFileName("LPT1"));
+		assertEquals("COM2_", IO.toSafeFileName("COM2"));
+	}
+
+	@Test
 	public void testFilesetCopy() throws Exception {
 		File destDir = new File("generated/fileset-copy-test");
 
@@ -78,6 +113,7 @@ public class IOTest extends TestCase {
 		assertTrue(new File(destDir, "root").exists());
 	}
 
+	@Test
 	public void testCopyURLToByteArray() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -91,6 +127,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToExactHeapByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -105,6 +142,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToSmallerHeapByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -118,6 +156,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToLargerHeapByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -131,6 +170,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToExactDirectByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -145,6 +185,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToSmallerDirectByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -158,6 +199,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToLargerDirectByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -171,6 +213,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToHugeDirectByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -184,6 +227,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCopyToOffsetHeapByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
@@ -206,6 +250,7 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDestDirIsChildOfSource() throws Exception {
 		File parentDir = new File("generated/test/parentDir");
 
@@ -226,6 +271,7 @@ public class IOTest extends TestCase {
 		} catch (IllegalArgumentException e) {}
 	}
 
+	@Test
 	public void testIfCreateSymlinkOrCopyFileDependingOnOS() throws Exception {
 		File link = new File("generated/test/target.dat");
 
@@ -241,38 +287,35 @@ public class IOTest extends TestCase {
 
 		assertTrue(IO.createSymbolicLinkOrCopy(link, source));
 
-		if (IO.isWindows()) {
-			assertFalse(IO.isSymbolicLink(link));
-		} else {
-			assertTrue(IO.isSymbolicLink(link));
-		}
+		assertThat(IO.isSymbolicLink(link)).isNotEqualTo(IO.isWindows());
 	}
 
+	@Test
+	@EnabledOnOs(WINDOWS)
 	public void testOnlyCopyIfReallyNeededOnWindows() throws Exception {
-		if (IO.isWindows()) {
-			File link = new File("generated/test/target.dat");
+		File link = new File("generated/test/target.dat");
 
-			IO.delete(link);
+		IO.delete(link);
 
-			assertFalse(link.exists() || IO.isSymbolicLink(link));
+		assertFalse(link.exists() || IO.isSymbolicLink(link));
 
-			IO.mkdirs(link.getParentFile());
+		IO.mkdirs(link.getParentFile());
 
-			File source = new File("testresources/zipped.dat");
-			assertTrue(source.exists());
+		File source = new File("testresources/zipped.dat");
+		assertTrue(source.exists());
 
-			assertTrue(IO.createSymbolicLinkOrCopy(link, source));
+		assertTrue(IO.createSymbolicLinkOrCopy(link, source));
 
-			assertEquals(link.lastModified(), source.lastModified());
-			assertEquals(link.length(), source.length());
+		assertEquals(link.lastModified(), source.lastModified());
+		assertEquals(link.length(), source.length());
 
-			assertTrue(IO.createSymbolicLinkOrCopy(link, source));
+		assertTrue(IO.createSymbolicLinkOrCopy(link, source));
 
-			assertEquals(link.lastModified(), source.lastModified());
-			assertEquals(link.length(), source.length());
-		}
+		assertEquals(link.lastModified(), source.lastModified());
+		assertEquals(link.length(), source.length());
 	}
 
+	@Test
 	public void testCreateSymlinkOrCopyWillDeleteOriginalLink() throws Exception {
 		File originalSource = new File("testresources/unzipped.dat");
 		File link = new File("generated/test/originalLink");
@@ -297,10 +340,9 @@ public class IOTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCreateDirectory_Symlink() throws Exception {
-		Path rootDirectory = Paths.get("generated/tmp/test/" + getName());
-		IO.delete(rootDirectory);
-		rootDirectory = Files.createDirectories(rootDirectory);
+		Path rootDirectory = tmp;
 
 		Path target = Files.createDirectories(rootDirectory.resolve("target")
 			.toAbsolutePath());
@@ -317,10 +359,9 @@ public class IOTest extends TestCase {
 			.exists());
 	}
 
+	@Test
 	public void testCreateDirectory_SymlinkMissingTarget() throws Exception {
-		Path rootDirectory = Paths.get("generated/tmp/test/" + getName());
-		IO.delete(rootDirectory);
-		rootDirectory = Files.createDirectories(rootDirectory);
+		Path rootDirectory = tmp;
 
 		Path target = rootDirectory.resolve("target")
 			.toAbsolutePath();
@@ -337,10 +378,177 @@ public class IOTest extends TestCase {
 			.exists());
 	}
 
+	@Test
 	public void testCollectEncoded() throws Exception {
 		InputStream in = IO.stream("testString", "UTF-8");
 		String result = IO.collect(in, "UTF-8");
 		assertEquals("testString", result);
+	}
+
+	@Test
+	public void appendableWriter() throws Exception {
+		StringBuilder sb = new StringBuilder();
+		Writer w = IO.appendableToWriter(sb);
+		assertThat(sb).isEmpty();
+
+		w.append('@');
+		assertThat(sb).isNotEmpty()
+			.hasToString("@");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.append(null);
+		assertThat(sb).isNotEmpty()
+			.hasToString("null");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.append(null, 2, 4);
+		assertThat(sb).isNotEmpty()
+			.hasToString("ll");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.append("foobar");
+		assertThat(sb).isNotEmpty()
+			.hasToString("foobar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.append("foobar", 3, 6);
+		assertThat(sb).isNotEmpty()
+			.hasToString("bar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.append("foobar", 3, 3);
+		assertThat(sb).isEmpty();
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.append("foobar", 3, 7);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.append("foobar", -1, 7);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.append("foobar", 0, -1);
+		});
+
+		w.write(64);
+		assertThat(sb).isNotEmpty()
+			.hasToString("@");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.write("foobar".toCharArray());
+		assertThat(sb).isNotEmpty()
+			.hasToString("foobar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.write("foobar".toCharArray(), 3, 3);
+		assertThat(sb).isNotEmpty()
+			.hasToString("bar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.write("foobar".toCharArray(), 3, 0);
+		assertThat(sb).isEmpty();
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar".toCharArray(), 3, 4);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar".toCharArray(), -1, 4);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar".toCharArray(), 0, -1);
+		});
+
+		w.write("foobar");
+		assertThat(sb).isNotEmpty()
+			.hasToString("foobar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.write("foobar", 3, 3);
+		assertThat(sb).isNotEmpty()
+			.hasToString("bar");
+		sb.setLength(0);
+		assertThat(sb).isEmpty();
+
+		w.write("foobar", 3, 0);
+		assertThat(sb).isEmpty();
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar", 3, 4);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar", -1, 4);
+		});
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> {
+			w.write("foobar", 0, -1);
+		});
+	}
+
+	@Test
+	public void limitedInputStream() throws Exception {
+		BiFunctionWithException<String, Integer, InputStream> supplier = (data, limit) -> {
+			InputStream in = IO.stream(data, UTF_8);
+			return new LimitedInputStream(in, limit);
+		};
+
+		InputStream in = supplier.apply("testString", 4);
+		assertThat(IO.collect(in, UTF_8)).isEqualTo("test");
+
+		in = supplier.apply("testString", 4);
+		assertThat(in.skip(0L)).isEqualTo(0L);
+		assertThat(IO.collect(in, UTF_8)).isEqualTo("test");
+
+		in = supplier.apply("testString", 4);
+		assertThat(in.skip(2L)).isEqualTo(2L);
+		assertThat(IO.collect(in, UTF_8)).isEqualTo("st");
+
+		in = supplier.apply("testString", 4);
+		assertThat(in.skip(4L)).isEqualTo(4L);
+		assertThat(IO.collect(in, UTF_8)).isEmpty();
+
+		in = supplier.apply("testString", 4);
+		assertThat(in.skip(80L)).isEqualTo(4L);
+		assertThat(IO.collect(in, UTF_8)).isEmpty();
+
+		in = supplier.apply("testString", 0);
+		assertThat(IO.collect(in, UTF_8)).isEmpty();
+
+		in = supplier.apply("testString", 4);
+		assertThat(in.available()).isEqualTo(4);
+		assertThat(in.read()).isEqualTo('t');
+		assertThat(in.available()).isEqualTo(3);
+		assertThat(in.read()).isEqualTo('e');
+		assertThat(in.available()).isEqualTo(2);
+		assertThat(in.read()).isEqualTo('s');
+		assertThat(in.available()).isEqualTo(1);
+		assertThat(in.read()).isEqualTo('t');
+		assertThat(in.available()).isEqualTo(0);
+		assertThat(in.read()).isEqualTo(-1);
+
+		in = supplier.apply("testString", 4);
+		byte[] buf = new byte[10];
+		int read = in.read(buf);
+		assertThat(read).isEqualTo(4);
+		assertThat(buf).containsExactly('t', 'e', 's', 't', 0, 0, 0, 0, 0, 0);
+
+		in = supplier.apply("testString", 4);
+		buf = new byte[10];
+		read = in.read(buf, 2, 3);
+		assertThat(read).isEqualTo(3);
+		assertThat(buf).containsExactly(0, 0, 't', 'e', 's', 0, 0, 0, 0, 0);
 	}
 
 }

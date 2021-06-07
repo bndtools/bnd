@@ -19,8 +19,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-import javax.xml.xpath.XPathExpressionException;
-
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
@@ -35,15 +33,18 @@ import aQute.lib.strings.Strings;
 import aQute.p2.api.Artifact;
 import aQute.p2.api.ArtifactProvider;
 import aQute.p2.api.P2Index;
+import aQute.p2.packed.Unpack200;
 
 public class P2Impl implements ArtifactProvider {
 	private static final Logger		logger		= LoggerFactory.getLogger(P2Impl.class);
+	private final Unpack200			processor;
 	private final HttpClient		client;
 	private final URI				base;
 	private final Set<URI>			defaults	= Collections.newSetFromMap(new ConcurrentHashMap<URI, Boolean>());
 	private final PromiseFactory	promiseFactory;
 
-	public P2Impl(HttpClient c, URI base, PromiseFactory promiseFactory) throws Exception {
+	public P2Impl(Unpack200 processor, HttpClient c, URI base, PromiseFactory promiseFactory) throws Exception {
+		this.processor = processor;
 		this.client = c;
 		this.promiseFactory = promiseFactory;
 		this.base = normalize(base);
@@ -106,7 +107,7 @@ public class P2Impl implements ArtifactProvider {
 
 		return promiseFactory.submit(() -> {
 			try {
-				ArtifactRepository ar = new ArtifactRepository(in, uri);
+				ArtifactRepository ar = new ArtifactRepository(in, uri, processor.canUnpack());
 				return ar.getArtifacts();
 			} finally {
 				IO.close(in);
@@ -114,14 +115,6 @@ public class P2Impl implements ArtifactProvider {
 		});
 	}
 
-	/**
-	 * @param artifacts
-	 * @param cycles
-	 * @param in
-	 * @return
-	 * @throws IOException
-	 * @throws XPathExpressionException
-	 */
 	private Promise<List<Artifact>> parseCompositeArtifacts(Set<URI> cycles, InputStream in, URI base)
 		throws Exception {
 		if (in == null) {
@@ -143,7 +136,7 @@ public class P2Impl implements ArtifactProvider {
 					deferred.resolveWith(uris.stream()
 						.map(uri -> getArtifacts(cycles, base.resolve(uri)).recover(failed -> {
 							if (!defaults.contains(uri)) {
-								logger.info("Failed to get artifacts for %s", uri, failed.getFailure());
+								logger.info("Failed to get artifacts for {}", uri, failed.getFailure());
 							}
 							return Collections.emptyList();
 						}))
@@ -220,10 +213,6 @@ public class P2Impl implements ArtifactProvider {
  	 *  metadata.repository.factory.order = compositeContent.xml,\!
  	 *  artifact.repository.factory.order = compositeArtifacts.xml,\!
 	 * @formatter:on
-	 * @param artifacts
-	 * @param cycles
-	 * @param base
-	 * @throws Exception
 	 */
 	private Promise<List<Artifact>> parseIndexArtifacts(Set<URI> cycles, final URI uri) throws Exception {
 		Promise<File> file = client.build()

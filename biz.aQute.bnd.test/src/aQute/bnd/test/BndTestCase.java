@@ -1,18 +1,20 @@
 package aQute.bnd.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.List;
 
+import org.opentest4j.AssertionFailedError;
+
 import aQute.service.reporter.Reporter;
-import junit.framework.AssertionFailedError;
-import junit.framework.TestCase;
 
-public abstract class BndTestCase extends TestCase {
+public class BndTestCase {
 
-	protected static void assertOk(Reporter reporter) {
+	public static void assertOk(Reporter reporter) {
 		assertOk(reporter, 0, 0);
 	}
 
-	protected static void assertOk(Reporter reporter, int errors, int warnings) throws AssertionFailedError {
+	public static void assertOk(Reporter reporter, int errors, int warnings) {
 		try {
 			assertEquals(errors, reporter.getErrors()
 				.size());

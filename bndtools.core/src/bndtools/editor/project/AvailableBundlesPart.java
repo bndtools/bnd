@@ -134,9 +134,7 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
 		contentProvider.setShowRepos(false);
 		viewer.setContentProvider(contentProvider);
 		viewer.setLabelProvider(new RepositoryTreeLabelProvider(true));
-		viewer.setFilters(new ViewerFilter[] {
-			includedRepoFilter
-		});
+		viewer.setFilters(includedRepoFilter);
 
 		txtSearch.addModifyListener(e -> {
 			if (scheduledFilterUpdate != null)
@@ -200,13 +198,14 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
 		includedRepos = (tmp == null) ? null : new HashSet<>(tmp);
 		Workspace workspace = model.getWorkspace();
 
-		List<RepositoryPlugin> repos;
-		try {
-			repos = RepositoryUtils.listRepositories(workspace, true);
-		} catch (Exception e) {
-			repos = Collections.emptyList();
+		if (workspace == null) {
+			return Collections.emptyList();
 		}
-		return repos;
+		try {
+			return RepositoryUtils.listRepositories(workspace, true);
+		} catch (Exception e) {
+			return Collections.emptyList();
+		}
 	}
 
 	@Override

@@ -1,8 +1,10 @@
 package aQute.bnd.osgi.resource;
 
 import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -22,9 +24,16 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
+import org.osgi.framework.Filter;
+import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
@@ -45,12 +54,13 @@ import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
-import aQute.lib.filter.Filter;
+import aQute.bnd.memoize.Memoize;
 import aQute.lib.strings.Strings;
 
 public class ResourceUtils {
@@ -119,6 +129,7 @@ public class ResourceUtils {
 			bundle(IdentityNamespace.TYPE_BUNDLE),
 			fragment(IdentityNamespace.TYPE_FRAGMENT),
 			unknown(IdentityNamespace.TYPE_UNKNOWN);
+
 			private String s;
 
 			private Type(String s) {
@@ -169,12 +180,12 @@ public class ResourceUtils {
 		Version bundle_version();
 	}
 
-	private static Stream<Capability> capabilityStream(Resource resource, String namespace) {
+	public static Stream<Capability> capabilityStream(Resource resource, String namespace) {
 		return resource.getCapabilities(namespace)
 			.stream();
 	}
 
-	private static <T extends Capability> Stream<T> capabilityStream(Resource resource, String namespace,
+	public static <T extends Capability> Stream<T> capabilityStream(Resource resource, String namespace,
 		Class<T> type) {
 		return capabilityStream(resource, namespace).map(c -> as(c, type));
 	}
@@ -191,12 +202,52 @@ public class ResourceUtils {
 
 	public static List<ContentCapability> getContentCapabilities(Resource resource) {
 		return capabilityStream(resource, ContentNamespace.CONTENT_NAMESPACE, ContentCapability.class)
-			.collect(toList());
+			.collect(toCapabilities());
 	}
 
 	public static IdentityCapability getIdentityCapability(Resource resource) {
 		return capabilityStream(resource, IdentityNamespace.IDENTITY_NAMESPACE, IdentityCapability.class).findFirst()
 			.orElse(null);
+	}
+
+	public static BundleId getBundleId(Resource resource) {
+		BundleCap b = getBundleCapability(resource);
+		if (b != null && b.osgi_wiring_bundle() != null)
+			return new BundleId(b.osgi_wiring_bundle(), b.bundle_version());
+
+		//
+		// might not be a bundle. Since Maven is our primary repo,
+		// we can try to find the common ways the bsn is simulated.
+		// in maven repos.
+		//
+
+		IdentityCapability identity = ResourceUtils.getIdentityCapability(resource);
+		if (identity != null) {
+			String bsn = identity.osgi_identity();
+			Version version = identity.version();
+			if (version == null)
+				version = Version.LOWEST;
+
+			if (bsn != null) {
+				return new BundleId(bsn, version.toString());
+			}
+		}
+
+		List<Capability> capabilities = resource.getCapabilities("bnd.info");
+		if (capabilities.isEmpty())
+			return null;
+
+		Capability cap = capabilities.get(0);
+		String bsn = (String) cap.getAttributes()
+			.get("name");
+		Version version = (Version) cap.getAttributes()
+			.get("version");
+		if (version == null)
+			version = Version.LOWEST;
+		if (bsn == null)
+			return null;
+
+		return new BundleId(bsn, version);
 	}
 
 	public static String getIdentityVersion(Resource resource) {
@@ -230,7 +281,7 @@ public class ResourceUtils {
 		return null;
 	}
 
-	public static final Version getVersion(Capability cap) {
+	public static Version getVersion(Capability cap) {
 		String attr = getVersionAttributeForNamespace(cap.getNamespace());
 		if (attr == null)
 			return null;
@@ -303,19 +354,30 @@ public class ResourceUtils {
 	public static <T extends Capability> T as(final Capability cap, Class<T> type) {
 		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {
 			type
-		}, (target, method, args) -> (Capability.class == method.getDeclaringClass()) ? publicLookup().unreflect(method)
-			.bindTo(cap)
-			.invokeWithArguments(args) : get(method, cap.getAttributes(), cap.getDirectives(), args));
+		}, (target, method, args) -> {
+			Class<?> declaringClass = method.getDeclaringClass();
+			if ((Capability.class == declaringClass) || (Object.class == declaringClass)) {
+				return publicLookup().unreflect(method)
+					.bindTo(cap)
+					.invokeWithArguments(args);
+			}
+			return get(method, cap.getAttributes(), cap.getDirectives(), args);
+		});
 	}
 
 	@SuppressWarnings("unchecked")
 	public static <T extends Requirement> T as(final Requirement req, Class<T> type) {
 		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {
 			type
-		}, (target, method,
-			args) -> (Requirement.class == method.getDeclaringClass()) ? publicLookup().unreflect(method)
-				.bindTo(req)
-				.invokeWithArguments(args) : get(method, req.getAttributes(), req.getDirectives(), args));
+		}, (target, method, args) -> {
+			Class<?> declaringClass = method.getDeclaringClass();
+			if ((Requirement.class == declaringClass) || (Object.class == declaringClass)) {
+				return publicLookup().unreflect(method)
+					.bindTo(req)
+					.invokeWithArguments(args);
+			}
+			return get(method, req.getAttributes(), req.getDirectives(), args);
+		});
 	}
 
 	private static Object get(Method method, Map<String, Object> attrs, Map<String, String> directives, Object[] args)
@@ -325,13 +387,22 @@ public class ResourceUtils {
 
 		Object value;
 		if (name.startsWith("$"))
-			value = directives.get(name.substring(1));
-		else
-			value = attrs.get(name);
+			value = getValue(directives, name.substring(1));
+		else {
+			value = getValue(attrs, name);
+		}
 		if (value == null && args != null && args.length == 1)
 			value = args[0];
 
 		return cnv.convert(method.getGenericReturnType(), value);
+	}
+
+	private static Object getValue(Map<String, ?> attrs, String name) {
+		Object object = attrs.get(name);
+		if (object != null)
+			return object;
+
+		return attrs.get(name.replace('.', '-'));
 	}
 
 	public static Set<Resource> getResources(Collection<? extends Capability> providers) {
@@ -339,6 +410,13 @@ public class ResourceUtils {
 			return Collections.emptySet();
 
 		return getResources(providers.stream());
+	}
+
+	public static Map<Resource, List<Capability>> getIndexedByResource(Collection<? extends Capability> providers) {
+		if (providers == null || providers.isEmpty())
+			return Collections.emptyMap();
+		return providers.stream()
+			.collect(groupingBy(Capability::getResource, toCapabilities()));
 	}
 
 	private static Set<Resource> getResources(Stream<? extends Capability> providers) {
@@ -379,29 +457,77 @@ public class ResourceUtils {
 		return capabilityEffective.equals(requirementEffective);
 	}
 
+	public static Predicate<Map<String, Object>> filterPredicate(String filterString) {
+		if (filterString == null) {
+			return m -> true;
+		}
+		try {
+			Filter filter = FilterImpl.createFilter(filterString);
+			return filter::matches;
+		} catch (InvalidSyntaxException e) {
+			return m -> false;
+		}
+	}
+
 	public static boolean matches(Requirement requirement, Resource resource) {
-		return capabilityStream(resource, requirement.getNamespace()).anyMatch(c -> matches(requirement, c));
+		return capabilityStream(resource, requirement.getNamespace()).anyMatch(matcher(requirement));
 	}
 
 	public static boolean matches(Requirement requirement, Capability capability) {
-		if (!requirement.getNamespace()
-			.equals(capability.getNamespace()))
-			return false;
+		return matcher(requirement).test(capability);
+	}
 
-		if (!isEffective(requirement, capability))
-			return false;
+	public static Predicate<Capability> matcher(Requirement requirement) {
+		return matcher(requirement, ResourceUtils::filterPredicate);
+	}
 
-		String filter = requirement.getDirectives()
+	public static Predicate<Capability> matcher(Requirement requirement,
+		Function<String, Predicate<Map<String, Object>>> filter) {
+		Predicate<Capability> matcher = capability -> Objects.equals(requirement.getNamespace(),
+			capability.getNamespace()) && isEffective(requirement, capability);
+		return matcher.and(filterMatcher(requirement, filter));
+	}
+
+	// Pattern to find attr names in a filter string
+	private static final Pattern ATTR_NAME = Pattern.compile("\\(\\s*([^()=<>~\\s]+)\\s*[=<>~][^)]+\\)");
+
+	public static Predicate<Capability> filterMatcher(Requirement requirement) {
+		return filterMatcher(requirement, ResourceUtils::filterPredicate);
+	}
+
+	public static Predicate<Capability> filterMatcher(Requirement requirement,
+		Function<String, Predicate<Map<String, Object>>> filter) {
+		String filterDirective = requirement.getDirectives()
 			.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-		if (filter == null)
-			return true;
+		Supplier<Predicate<Map<String, Object>>> predicate = Memoize.supplier(filter, filterDirective);
 
-		try {
-			Filter f = new Filter(filter);
-			return f.matchMap(capability.getAttributes());
-		} catch (Exception e) {
-			return false;
-		}
+		Predicate<Capability> matcher = capability -> {
+			if ((filterDirective != null) && !predicate.get()
+				.test(capability.getAttributes())) {
+				return false;
+			}
+			// Mandatory attribute matching (Core 3.7.8) for wiring namespaces
+			if (capability.getNamespace()
+				.startsWith("osgi.wiring.")) {
+				String mandatoryDirective = capability.getDirectives()
+					.get(AbstractWiringNamespace.CAPABILITY_MANDATORY_DIRECTIVE);
+				if (mandatoryDirective == null) {
+					return true;
+				}
+				if (filterDirective == null) {
+					return false;
+				}
+				Set<String> mandatory = Strings.splitAsStream(mandatoryDirective)
+					.collect(toSet());
+				for (Matcher m = ATTR_NAME.matcher(filterDirective); m.find();) {
+					String attr = m.group(1);
+					mandatory.remove(attr);
+				}
+				return mandatory.isEmpty();
+			}
+			return true;
+		};
+		return matcher;
 	}
 
 	public static String getEffective(Map<String, String> directives) {
@@ -425,28 +551,16 @@ public class ResourceUtils {
 	}
 
 	public static String toRequireCapability(Requirement requirement) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		sb.append(requirement.getNamespace());
-
-		CapReqBuilder r = new CapReqBuilder(requirement.getNamespace());
-		r.addAttributes(requirement.getAttributes());
-		r.addDirectives(requirement.getDirectives());
-		Attrs attrs = r.toAttrs();
-		sb.append(";")
-			.append(attrs);
+		CapReqBuilder builder = CapReqBuilder.clone(requirement);
+		StringBuilder sb = new StringBuilder(builder.getNamespace()).append(';')
+			.append(builder.toAttrs());
 		return sb.toString();
 	}
 
 	public static String toProvideCapability(Capability capability) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		sb.append(capability.getNamespace());
-
-		CapReqBuilder r = new CapReqBuilder(capability.getNamespace());
-		r.addAttributes(capability.getAttributes());
-		r.addDirectives(capability.getDirectives());
-		Attrs attrs = r.toAttrs();
-		sb.append(";")
-			.append(attrs);
+		CapReqBuilder builder = CapReqBuilder.clone(capability);
+		StringBuilder sb = new StringBuilder(builder.getNamespace()).append(';')
+			.append(builder.toAttrs());
 		return sb.toString();
 	}
 
@@ -457,7 +571,7 @@ public class ResourceUtils {
 			// ContentCapability::osgi_content values.
 			// .collect(toMap(ContentCapability::url,
 			// ContentCapability::osgi_content));
-			.collect(Collector.of(HashMap::new, (m, c) -> m.put(c.url(), c.osgi_content()), (m1, m2) -> {
+			.collect(Collector.of(HashMap<URI, String>::new, (m, c) -> m.put(c.url(), c.osgi_content()), (m1, m2) -> {
 				m1.putAll(m2);
 				return m1;
 			}));
@@ -466,8 +580,8 @@ public class ResourceUtils {
 	public static List<Capability> findProviders(Requirement requirement,
 		Collection<? extends Capability> capabilities) {
 		return capabilities.stream()
-			.filter(c -> matches(requirement, c))
-			.collect(toList());
+			.filter(matcher(requirement))
+			.collect(toCapabilities());
 	}
 
 	public static boolean isFragment(Resource resource) {
@@ -523,13 +637,10 @@ public class ResourceUtils {
 	}
 
 	public static List<VersionedClause> toVersionedClauses(Collection<Resource> resources) {
-		List<VersionedClause> runBundles = new ArrayList<>();
-		for (Resource resource : resources) {
-			VersionedClause runBundle = toVersionClause(resource);
-			if (!runBundles.contains(runBundle)) {
-				runBundles.add(runBundle);
-			}
-		}
+		List<VersionedClause> runBundles = resources.stream()
+			.map(ResourceUtils::toVersionClause)
+			.distinct()
+			.collect(toList());
 		return runBundles;
 	}
 
@@ -549,6 +660,11 @@ public class ResourceUtils {
 			.flatMap(Collection::stream));
 	}
 
+	@SuppressWarnings({
+		"rawtypes", "unchecked"
+	})
+	private static final Comparator<Comparable> nullsFirst = Comparator.nullsFirst(Comparator.naturalOrder());
+
 	/**
 	 * Compare two resources. This can be used to act as a comparator. The
 	 * comparison is first done on name and then version.
@@ -562,39 +678,17 @@ public class ResourceUtils {
 		IdentityCapability left = ResourceUtils.getIdentityCapability(a);
 		IdentityCapability right = ResourceUtils.getIdentityCapability(b);
 
-		String myName = left.osgi_identity();
-		String theirName = right.osgi_identity();
-		if (myName == theirName)
-			return 0;
-
-		if (myName == null)
-			return -1;
-
-		if (theirName == null)
-			return 1;
-
-		int n = myName.compareTo(theirName);
-		if (n != 0)
-			return n;
-
-		Version myVersion = left.version();
-		Version theirVersion = right.version();
-
-		if (myVersion == theirVersion)
-			return 0;
-
-		if (myVersion == null)
-			return -1;
-
-		if (theirVersion == null)
-			return 1;
-
-		return myVersion.compareTo(theirVersion);
+		int compare = Objects.compare(left.osgi_identity(), right.osgi_identity(), nullsFirst);
+		if (compare != 0) {
+			return compare;
+		}
+		return Objects.compare(left.version(), right.version(), nullsFirst);
 	}
 
-	public static List<Resource> sort(Collection<Resource> a) {
-		List<Resource> list = new ArrayList<>(a);
-		Collections.sort(list, ResourceUtils::compareTo);
+	public static List<Resource> sort(Collection<Resource> resources) {
+		List<Resource> list = resources.stream()
+			.sorted(ResourceUtils::compareTo)
+			.collect(toList());
 		return list;
 	}
 
@@ -605,9 +699,10 @@ public class ResourceUtils {
 	 * @return a sorted set of resources
 	 */
 	public static List<Resource> sortByNameVersion(Collection<Resource> resources) {
-		ArrayList<Resource> sorted = new ArrayList<>(resources);
-		Collections.sort(sorted, ResourceUtils::compareTo);
-		return sorted;
+		List<Resource> list = resources.stream()
+			.sorted(ResourceUtils::compareTo)
+			.collect(toList());
+		return list;
 	}
 
 	public static boolean isInitialRequirement(Resource resource) {
@@ -622,4 +717,22 @@ public class ResourceUtils {
 		return Constants.IDENTITY_INITIAL_RESOURCE.equals(osgi_identity);
 	}
 
+	public static <CAPABILITY extends Capability> Collector<CAPABILITY, List<CAPABILITY>, List<CAPABILITY>> toCapabilities() {
+		return Collector.of(ArrayList<CAPABILITY>::new, ResourceUtils::capabilitiesAccumulator,
+			ResourceUtils::capabilitiesCombiner);
+	}
+
+	public static <CAPABILITY extends Capability, COLLECTION extends Collection<CAPABILITY>> void capabilitiesAccumulator(
+		COLLECTION collection, CAPABILITY capability) {
+		if (!collection.contains(capability)) {
+			collection.add(capability);
+		}
+	}
+
+	public static <CAPABILITY extends Capability, COLLECTION extends Collection<CAPABILITY>> COLLECTION capabilitiesCombiner(
+		COLLECTION leftCollection, COLLECTION rightCollection) {
+		rightCollection.removeAll(leftCollection);
+		leftCollection.addAll(rightCollection);
+		return leftCollection;
+	}
 }

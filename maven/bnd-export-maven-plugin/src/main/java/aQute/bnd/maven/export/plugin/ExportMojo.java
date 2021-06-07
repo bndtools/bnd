@@ -5,9 +5,8 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 
 import java.io.File;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -41,6 +40,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
+import aQute.bnd.unmodifiable.Sets;
 import biz.aQute.resolve.ResolveProcess;
 
 @Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true)
@@ -90,8 +90,7 @@ public class ExportMojo extends AbstractMojo {
 	private MavenSession										session;
 
 	@Parameter(property = "bnd.export.scopes", defaultValue = "compile,runtime")
-	private Set<Scope>											scopes	= new HashSet<>(
-		Arrays.asList(Scope.compile, Scope.runtime));
+	private Set<Scope>											scopes	= Sets.of(Scope.compile, Scope.runtime);
 
 	@Parameter(property = "bnd.export.skip", defaultValue = "false")
 	private boolean												skip;
@@ -119,6 +118,14 @@ public class ExportMojo extends AbstractMojo {
 		int errors = 0;
 
 		try {
+			List<File> bndrunFiles = bndruns.getFiles(project.getBasedir(), "*.bndrun");
+
+			if (bndrunFiles.isEmpty()) {
+				logger.warn(
+					"No bndrun files were specified with <bndrun> or found as *.bndrun in the project. This is unexpected.");
+				return;
+			}
+
 			BndrunContainer container = new BndrunContainer.Builder(project, session, repositorySession, resolver,
 				artifactFactory, system).setBundles(bundles.getFiles(project.getBasedir()))
 					.setIncludeDependencyManagement(includeDependencyManagement)
@@ -128,7 +135,7 @@ public class ExportMojo extends AbstractMojo {
 
 			Operation operation = getOperation();
 
-			for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
+			for (File runFile : bndrunFiles) {
 				errors += container.execute(runFile, "export", targetDir, operation);
 			}
 		} catch (Exception e) {
@@ -145,6 +152,7 @@ public class ExportMojo extends AbstractMojo {
 				try {
 					String runBundles = run.resolve(failOnChanges, false);
 					if (run.isOk()) {
+						logger.info("{}: {}", Constants.RUNBUNDLES, runBundles);
 						run.setProperty(Constants.RUNBUNDLES, runBundles);
 					}
 				} catch (ResolutionException re) {

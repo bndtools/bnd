@@ -3,12 +3,11 @@
  */
 
 plugins {
-    id 'biz.aQute.bnd.builder'
+	id 'biz.aQute.bnd.builder'
 }
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 version = '1.0'
-

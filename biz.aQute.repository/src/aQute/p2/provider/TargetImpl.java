@@ -1,7 +1,6 @@
 package aQute.p2.provider;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -28,20 +27,25 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.service.url.TaggedData;
 import aQute.lib.collections.MultiMap;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.lib.io.IO;
+import aQute.lib.xml.XML;
 import aQute.p2.api.Artifact;
 import aQute.p2.api.ArtifactProvider;
 import aQute.p2.api.Classifier;
+import aQute.p2.packed.Unpack200;
 import aQute.p2.provider.Feature.Plugin;
 
 public class TargetImpl implements ArtifactProvider {
 	private static final String			FEATURE_GROUP_SUFFIX	= ".feature.group";
 	private static final Version		ZERO					= new Version("0");
 	final static Logger					logger					= LoggerFactory.getLogger(TargetImpl.class);
-	final static DocumentBuilderFactory	dbf						= DocumentBuilderFactory.newInstance();
+	final static DocumentBuilderFactory	dbf						= XML.newDocumentBuilderFactory();
 	final static XPathFactory			xpf						= XPathFactory.newInstance();
 
+	final Unpack200						processor;
 	final HttpClient					client;
 	final PromiseFactory				promiseFactory;
 	final URI							base;
@@ -52,7 +56,8 @@ public class TargetImpl implements ArtifactProvider {
 		public Classifier			classifier;
 	}
 
-	public TargetImpl(HttpClient c, URI base, PromiseFactory promiseFactory) throws Exception {
+	public TargetImpl(Unpack200 processor, HttpClient c, URI base, PromiseFactory promiseFactory) throws Exception {
+		this.processor = processor;
 		this.client = c;
 		this.promiseFactory = promiseFactory;
 		this.base = normalize(base);
@@ -77,7 +82,7 @@ public class TargetImpl implements ArtifactProvider {
 			logger.debug("no locations for {}", base);
 		}
 		for (Location location : locations) {
-			P2Impl p2 = new P2Impl(client, location.repository, promiseFactory);
+			P2Impl p2 = new P2Impl(processor, client, location.repository, promiseFactory);
 			Promise<List<Artifact>> submit = promiseFactory.submit(() -> {
 				List<Artifact> allArtifacts = p2.getAllArtifacts();
 				return filterArtifactsAgainstLocationUnits(location, p2.getAllArtifacts());
@@ -88,7 +93,7 @@ public class TargetImpl implements ArtifactProvider {
 		return promiseFactory.all(promises)
 			.getValue()
 			.stream()
-			.flatMap(l -> l.stream())
+			.flatMap(List::stream)
 			.collect(Collectors.toList());
 	}
 
@@ -155,16 +160,20 @@ public class TargetImpl implements ArtifactProvider {
 			logger.debug("Expanding artifact {}", artifact);
 
 			try {
-				File file = client.build()
+				TaggedData tag = client.build()
 					.get()
 					.useCache()
+					.asTag()
 					.go(artifact.uri);
 
-				Feature f = new Feature(new FileInputStream(file));
-				logger.debug("Adding feature {}", f);
+				File file = processor.unpackAndLinkIfNeeded(tag, null);
+				try (InputStream in = IO.stream(file)) {
+					Feature f = new Feature(in);
+					logger.debug("Adding feature {}", f);
 
-				for (Plugin plugin : f.getPlugins()) {
-					plugins.add(plugin.id, plugin.version);
+					for (Plugin plugin : f.getPlugins()) {
+						plugins.add(plugin.id, plugin.version);
+					}
 				}
 			} catch (Exception e) {
 				logger.error("failed to create feature {} {}", artifact, e.getMessage());
@@ -198,11 +207,11 @@ public class TargetImpl implements ArtifactProvider {
 
 			List<Version> list = plugins.get(artifact.id);
 			if (list == null || list.isEmpty()) {
-				logger.debug("bundle not selected in any feature", artifact.id);
+				logger.debug("bundle {} not selected in any feature", artifact.id);
 				continue;
 			}
 
-			logger.debug("bundle selected in a feature", artifact.id);
+			logger.debug("bundle {} selected in a feature", artifact.id);
 
 			for (Version pluginVersion : list) {
 				if (pluginVersion.equals(ZERO) || pluginVersion.equals(artifact.version)) {

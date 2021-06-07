@@ -14,7 +14,7 @@ public class PromiseCollectors {
 
 	public static <V> Collector<Promise<V>, List<Promise<V>>, Promise<List<V>>> toPromise(
 		PromiseFactory promiseFactory) {
-		return Collector.of(ArrayList::new, List::add, PromiseCollectors::combiner, promiseFactory::all);
+		return Collector.of(ArrayList<Promise<V>>::new, List::add, PromiseCollectors::combiner, promiseFactory::all);
 	}
 
 	private static <E, C extends Collection<E>> C combiner(C t, C u) {

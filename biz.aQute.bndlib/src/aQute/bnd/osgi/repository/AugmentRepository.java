@@ -25,9 +25,8 @@ public class AugmentRepository extends BaseRepository {
 	private final Repository					repository;
 	private final Map<Capability, Capability>	wrapped					= new HashMap<>();
 	private final List<Capability>				augmentedCapabilities	= new ArrayList<>();
-	private final List<Resource>				augmentedBundles		= new ArrayList<>();
 
-	public AugmentRepository(Parameters augments, Repository repository) throws Exception {
+	public AugmentRepository(Parameters augments, Repository repository) {
 		this.repository = repository;
 		init(augments);
 	}
@@ -71,14 +70,10 @@ public class AugmentRepository extends BaseRepository {
 
 	}
 
-	private void init(Parameters augments) throws Exception {
+	private void init(Parameters augments) {
 		MultiMap<Requirement, Augment> operations = new MultiMap<>();
 
-		for (Map.Entry<String, Attrs> e : augments.entrySet()) {
-			String bsn = e.getKey();
-			Attrs attrs = e.getValue();
-			createAugmentOperation(operations, bsn, attrs);
-		}
+		augments.forEach((bsn, attrs) -> createAugmentOperation(operations, bsn, attrs));
 
 		Map<Requirement, Collection<Capability>> allBundles = repository.findProviders(operations.keySet());
 
@@ -101,7 +96,7 @@ public class AugmentRepository extends BaseRepository {
 	}
 
 	private void executeAugmentOperations(Map<Requirement, Collection<Capability>> allBundles,
-		Requirement bundleRequirement, List<Augment> augments) throws Exception {
+		Requirement bundleRequirement, List<Augment> augments) {
 
 		Collection<Capability> matchedBundleCapabilities = allBundles.get(bundleRequirement);
 		Collection<Resource> bundles = ResourceUtils.getResources(matchedBundleCapabilities);
@@ -118,12 +113,11 @@ public class AugmentRepository extends BaseRepository {
 				augmentedCapabilities.addAll(addedCapabilities);
 			}
 
-			Resource wrappedBundle = wrappedBundleBuilder.build();
-			augmentedBundles.add(wrappedBundle);
+			wrappedBundleBuilder.build();
 		}
 	}
 
-	private List<Capability> augment(Augment augment, ResourceBuilder builder) throws Exception {
+	private List<Capability> augment(Augment augment, ResourceBuilder builder) {
 		builder.addRequireCapabilities(augment.additionalRequirements);
 		return builder.addProvideCapabilities(augment.additionalCapabilities);
 	}

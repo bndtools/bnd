@@ -1,0 +1,10 @@
+-plugin: \
+	aQute.bnd.deployer.repository.LocalIndexedRepo;\
+		name=repo1;\
+		local=${workspace}/cnf/repo1;\
+		pretty=true,\
+	aQute.bnd.deployer.repository.LocalIndexedRepo;\
+		name=repo2;\
+		local=${workspace}/cnf/repo2;\
+		pretty=true,\
+	

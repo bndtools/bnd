@@ -5,8 +5,6 @@ summary: Get the repository digests (describing their contents) for all or the s
 class: Workspace
 layout: default
 ---
-layout: default-
-
 
 	public Object _repodigests(String[] args) throws Exception {
 		Macro.verifyCommand(args, "${repodigests;[;<repo names>]...}, get the repository digests", null, 1, 10000);

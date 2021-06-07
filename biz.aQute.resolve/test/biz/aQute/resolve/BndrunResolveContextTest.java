@@ -41,13 +41,17 @@ public class BndrunResolveContextTest extends TestCase {
 
 	private final LogService log = new NullLogService();
 
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
+
 	/**
 	 * Simple test that checks if we can find a resource through the
 	 * findProviders
 	 */
 	public void testSimple() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), getTestName()));
 
 		BndrunResolveContext context = new BndrunResolveContext(new BndEditModel(), registry, log);
 
@@ -69,7 +73,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testSimpleBlacklist() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), getTestName()));
 
 		BndEditModel model = new BndEditModel();
 		Requirement blacklist = new CapReqBuilder("osgi.wiring.package")
@@ -98,10 +102,10 @@ public class BndrunResolveContextTest extends TestCase {
 	public void testBlacklistFramework() throws Exception {
 
 		MockRegistry registry = new MockRegistry();
-		registry
-			.addPlugin(createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.0.index.xml"), getName() + "1"));
-		registry
-			.addPlugin(createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getName() + "2"));
+		registry.addPlugin(
+			createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.0.index.xml"), getTestName() + "1"));
+		registry.addPlugin(
+			createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
 
 		BndEditModel model = new BndEditModel();
 		model.setRunFw("org.apache.felix.framework;version='[4,4.1)'");
@@ -204,7 +208,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testBasicFindProviders() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), getTestName()));
 
 		BndEditModel runModel = new BndEditModel();
 		BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
@@ -233,8 +237,8 @@ public class BndrunResolveContextTest extends TestCase {
 
 		// First try it with repo1 first
 		registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), getName() + "1"));
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo2.index.xml"), getName() + "2"));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), getTestName() + "1"));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo2.index.xml"), getTestName() + "2"));
 
 		context = new BndrunResolveContext(new BndEditModel(), registry, log);
 		providers = context.findProviders(req);
@@ -250,8 +254,8 @@ public class BndrunResolveContextTest extends TestCase {
 
 		// Now try it with repo2 first
 		registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo2.index.xml"), getName() + "3"));
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), getName() + "4"));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo2.index.xml"), getTestName() + "3"));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), getTestName() + "4"));
 
 		context = new BndrunResolveContext(new BndEditModel(), registry, log);
 		providers = context.findProviders(req);
@@ -272,8 +276,8 @@ public class BndrunResolveContextTest extends TestCase {
 			.buildSyntheticRequirement();
 
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), getName() + "1"));
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo2.index.xml"), getName() + "2"));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), getTestName() + "1"));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo2.index.xml"), getTestName() + "2"));
 
 		BndrunResolveContext context;
 		List<Capability> providers;
@@ -281,7 +285,7 @@ public class BndrunResolveContextTest extends TestCase {
 		BndEditModel runModel;
 
 		runModel = new BndEditModel();
-		runModel.setRunRepos(Arrays.asList(getName() + "2", getName() + "1"));
+		runModel.setRunRepos(Arrays.asList(getTestName() + "2", getTestName() + "1"));
 
 		context = new BndrunResolveContext(runModel, registry, log);
 		providers = context.findProviders(req);
@@ -298,7 +302,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testFrameworkIsMandatory() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
 
 		BndEditModel runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework;version='[4,4.1)'");
@@ -318,9 +322,9 @@ public class BndrunResolveContextTest extends TestCase {
 		Resource fwkResource;
 
 		registry = new MockRegistry();
-		registry
-			.addPlugin(createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.0.index.xml"), getName() + "1"));
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName() + "2"));
+		registry.addPlugin(
+			createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.0.index.xml"), getTestName() + "1"));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName() + "2"));
 
 		runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework;version='[4,4.1)'");
@@ -333,9 +337,9 @@ public class BndrunResolveContextTest extends TestCase {
 
 		// Try it the other way round
 		registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName() + "3"));
-		registry
-			.addPlugin(createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.0.index.xml"), getName() + "4"));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName() + "3"));
+		registry.addPlugin(
+			createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.0.index.xml"), getTestName() + "4"));
 
 		runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework;version='[4,4.1)'");
@@ -349,9 +353,9 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testFrameworkCapabilitiesPreferredOverRepository() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/osgi.cmpn-4.3.0.index.xml"), getName() + "1"));
-		registry
-			.addPlugin(createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getName() + "2"));
+		registry.addPlugin(createRepo(IO.getFile("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
+		registry.addPlugin(
+			createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
 
 		BndEditModel runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework");
@@ -376,9 +380,9 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testResolverHookFiltersResult() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/osgi.cmpn-4.3.0.index.xml"), getName() + "1"));
-		registry
-			.addPlugin(createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getName() + "2"));
+		registry.addPlugin(createRepo(IO.getFile("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
+		registry.addPlugin(
+			createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
 
 		// Add a hook that removes all capabilities from resource with id
 		// "osgi.cmpn"
@@ -415,9 +419,9 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testResolverHookFiltersResultWithBlacklist() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml"), getName() + "1"));
-		registry
-			.addPlugin(createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml"), getName() + "2"));
+		registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
+		registry.addPlugin(
+			createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
 
 		// Add a hook that removes all capabilities from resource with id
 		// "osgi.cmpn"
@@ -445,9 +449,9 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testResolverHookFiltersResultWithBlacklistAndVersionRange1() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml"), getName() + "1"));
-		registry
-			.addPlugin(createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml"), getName() + "2"));
+		registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
+		registry.addPlugin(
+			createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
 
 		// Add a hook that removes all capabilities from resource with id
 		// "osgi.cmpn"
@@ -476,9 +480,9 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testResolverHookFiltersResultWithBlacklistAndVersionRange2() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml"), getName() + "1"));
-		registry
-			.addPlugin(createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml"), getName() + "2"));
+		registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
+		registry.addPlugin(
+			createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
 
 		// Add a hook that removes all capabilities from resource with id
 		// "osgi.cmpn"
@@ -505,16 +509,15 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testResolverHookCannotFilterFrameworkCapabilities() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/osgi.cmpn-4.3.0.index.xml"), getName() + "1"));
-		registry
-			.addPlugin(createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getName() + "2"));
+		registry.addPlugin(createRepo(IO.getFile("testdata/osgi.cmpn-4.3.0.index.xml"), getTestName() + "1"));
+		registry.addPlugin(
+			createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml"), getTestName() + "2"));
 
 		// Add a hook that tries to remove all capabilities from resource with
 		// id "org.apache.felix.framework"
 		registry.addPlugin((ResolverHook) (requirement, candidates) -> {
-			for (Iterator<Capability> iter = candidates.iterator(); iter.hasNext();) {
-				Object id = iter.next()
-					.getResource()
+			for (Capability candidate : candidates) {
+				Object id = candidate.getResource()
 					.getCapabilities("osgi.identity")
 					.get(0)
 					.getAttributes()
@@ -549,7 +552,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testPreferLeastRequirementsAndMostCapabilities() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo4/index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo4/index.xml"), getTestName()));
 
 		BndEditModel runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework");
@@ -577,7 +580,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testResolvePreferences() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo4/index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo4/index.xml"), getTestName()));
 
 		BndEditModel runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework");
@@ -588,15 +591,15 @@ public class BndrunResolveContextTest extends TestCase {
 		List<Capability> providers = context.findProviders(requirement);
 
 		assertEquals(3, providers.size());
-		assertEquals(IO.getFile("testdata/repo4/x.1.jar")
+		assertEquals(IO.getFile("testdata/repo4/x.3.jar")
 			.toURI(),
 			findContentURI(providers.get(0)
 				.getResource()));
-		assertEquals(IO.getFile("testdata/repo4/x.3.jar")
+		assertEquals(IO.getFile("testdata/repo4/x.2.jar")
 			.toURI(),
 			findContentURI(providers.get(1)
 				.getResource()));
-		assertEquals(IO.getFile("testdata/repo4/x.2.jar")
+		assertEquals(IO.getFile("testdata/repo4/x.1.jar")
 			.toURI(),
 			findContentURI(providers.get(2)
 				.getResource()));
@@ -604,7 +607,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testSelfCapabilityPreferredOverRepository() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		Repository repo = createRepo(IO.getFile("testdata/repo4.index.xml"), getName());
+		Repository repo = createRepo(IO.getFile("testdata/repo4.index.xml"), getTestName());
 
 		registry.addPlugin(repo);
 
@@ -636,7 +639,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testInputRequirementsAsMandatoryResource() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
 
 		BndEditModel runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework");
@@ -667,7 +670,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testEERequirementResolvesFramework() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
 
 		BndEditModel runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework");
@@ -688,7 +691,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testJREPackageResolvesFramework() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
 
 		BndEditModel runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework");
@@ -709,7 +712,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testJREPackageNotResolved() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
 
 		BndEditModel runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework");
@@ -725,7 +728,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testDontResolveBuildOnlyLibraries() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/buildrepo.index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/buildrepo.index.xml"), getTestName()));
 
 		BndEditModel runModel = new BndEditModel();
 		BndrunResolveContext context;
@@ -735,17 +738,11 @@ public class BndrunResolveContextTest extends TestCase {
 			.findProviders(CapReqBuilder.createPackageRequirement("org.osgi.framework", null)
 				.buildSyntheticRequirement());
 		assertEquals(0, providers1.size());
-
-		context = new BndrunResolveContext(runModel, registry, log);
-		List<Capability> providers2 = context
-			.findProviders(CapReqBuilder.createPackageRequirement("java.security", null)
-				.buildSyntheticRequirement());
-		assertEquals(0, providers2.size());
 	}
 
 	public void testResolveSystemBundleAlias() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
 
 		BndEditModel runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework");
@@ -767,7 +764,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testUnsatisfiedSystemPackage() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
 
 		BndEditModel runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework");
@@ -776,7 +773,7 @@ public class BndrunResolveContextTest extends TestCase {
 		BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
 
 		Requirement req = new CapReqBuilder("osgi.wiring.package")
-			.addDirective("filter", "(osgi.wiring.package=sun.reflect)")
+			.addDirective("filter", "(osgi.wiring.package=sun.nio)")
 			.buildSyntheticRequirement();
 		List<Capability> providers = context.findProviders(req);
 
@@ -785,17 +782,17 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testResolveSystemPackagesExtra() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
 
 		BndEditModel runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework");
 		runModel.setEE(EE.JavaSE_1_6);
-		runModel.setSystemPackages(Collections.singletonList(new ExportedPackage("sun.reflect", new Attrs())));
+		runModel.setSystemPackages(Collections.singletonList(new ExportedPackage("sun.nio", new Attrs())));
 
 		BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
 
 		Requirement req = new CapReqBuilder("osgi.wiring.package")
-			.addDirective("filter", "(osgi.wiring.package=sun.reflect)")
+			.addDirective("filter", "(osgi.wiring.package=sun.nio)")
 			.buildSyntheticRequirement();
 		List<Capability> providers = context.findProviders(req);
 
@@ -808,7 +805,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testUnsatisfiedRequirement() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
 
 		BndEditModel runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework");
@@ -825,7 +822,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testResolveSystemCapabilitiesExtra() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
 
 		BndEditModel runModel = new BndEditModel();
 		runModel.setRunFw("org.apache.felix.framework");
@@ -848,7 +845,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 	public void testResolveProvidedCapabilitiesWithDistro() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getTestName()));
 
 		BndEditModel model = new BndEditModel();
 

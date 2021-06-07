@@ -9,10 +9,12 @@
 	org.osgi.service.coordinator;version=latest,\
 	org.osgi.service.log;version=latest,\
 	org.osgi.service.repository;version=latest,\
+    org.osgi.service.metatype.annotations;version=latest,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
 	aQute.libg;version=project,\
 	biz.aQute.bnd.annotation;version=project,\
+	biz.aQute.bnd.util;version=latest;maven-scope=compile,\
 	biz.aQute.bndlib;version=latest;maven-scope=compile,\
 	slf4j.api;version=latest;maven-scope=compile,\
 	org.tukaani.xz;version=latest
@@ -33,7 +35,6 @@ Export-Package: \
 	aQute.bnd.deployer.repository.wrapper;bnd-plugins=true,\
 	aQute.bnd.repository.maven.provider;bnd-plugins=true,\
 	org.osgi.service.coordinator,\
-	org.osgi.service.indexer,\
 	aQute.bnd.repository.p2.provider;bnd-plugins=true,\
 	aQute.bnd.repository.maven.pom.provider;bnd-plugins=true,\
 	aQute.bnd.repository.osgi;bnd-plugins=true,  \
@@ -41,7 +42,8 @@ Export-Package: \
 	aQute.maven.*, \
 
 -includepackage: \
-	aQute.p2.provider
+	aQute.p2.provider,\
+	aQute.p2.packed
 
 -conditionalpackage:\
 	aQute.lib.*,\
@@ -61,3 +63,4 @@ Import-Package:\
 -fixupmessages.configurable: "Export aQute.bnd.repository.osgi,* private references \\[aQute.configurable\\]"
 
 -baseline: *
+-metatypeannotations: *

@@ -13,7 +13,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import aQute.bnd.build.DownloadBlocker;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -39,7 +41,7 @@ public class OSGiRepositoryTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		tmp = IO.getFile("generated/tmp/test/" + getName());
+		tmp = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName());
 		cache = IO.getFile(tmp, "cache");
 		remote = IO.getFile(tmp, "testdata");
 		ws = IO.getFile(tmp, "ws");
@@ -60,6 +62,49 @@ public class OSGiRepositoryTest extends TestCase {
 	public void testSimple() throws Exception {
 		try (OSGiRepository r = new OSGiRepository()) {
 			assertTrue(testRepo(r));
+		}
+	}
+
+	public void testStatus() throws Exception {
+		workspaceSetup(r -> {
+			Map<String, String> map = new HashMap<>();
+			map.put("locations", "httpx://foo.bar,http://www.foo.bar");
+			r.setProperties(map);
+			r.prepare();
+			assertThat(r.getStatus()).contains("Invalid scheme httpxfor uri httpx://foo.bar");
+		});
+	}
+
+	public void testRemote() throws Exception {
+		workspaceSetup(r -> {
+			Map<String, String> map = new HashMap<>();
+			map.put("locations", IO.getFile("testdata/minir5.xml")
+				.toURI()
+				.toString());
+			r.setProperties(map);
+			r.prepare();
+
+			assertThat(r.getStatus()).isNull();
+			assertThat(r.isRemote()).isFalse();
+		});
+	}
+
+	private void workspaceSetup(ConsumerWithException<OSGiRepository> test) throws Exception {
+		try (Processor p = new Processor(); HttpClient httpClient = new HttpClient()) {
+			httpClient.setCache(cache);
+			httpClient.setRegistry(p);
+			p.addBasicPlugin(httpClient);
+			p.setBase(ws);
+
+			try (Workspace workspace = Workspace.createStandaloneWorkspace(p, ws.toURI())) {
+				try (OSGiRepository r = new OSGiRepository()) {
+					r.setRegistry(workspace);
+					r.setReporter(p);
+					test.accept(r);
+				}
+				assertThat(workspace.check()).isTrue();
+			}
+			assertThat(p.check()).isTrue();
 		}
 	}
 
@@ -125,6 +170,18 @@ public class OSGiRepositoryTest extends TestCase {
 				// second one should not have downloaded
 				assertThat(tasks).hasValue(2);
 
+				// Test with listener
+				DownloadBlocker dlb = new DownloadBlocker(workspace);
+				r.get("dummybundle", new Version("0"), null, dlb);
+				file = dlb.getFile();
+				assertThat(file).exists();
+
+				// check api
+
+				assertThat(r.canWrite()).isFalse();
+				assertThat(r.getLocation()).contains("/repo/minir5.xml");
+
+				assertThat(r.getStatus()).isNull();
 				p.getInfo(workspace);
 				return p.check(checks);
 			}
@@ -134,6 +191,7 @@ public class OSGiRepositoryTest extends TestCase {
 	public void testNoPolling() throws Exception {
 		try (Processor p = new Processor(); Workspace workspace = Workspace.createStandaloneWorkspace(p, ws.toURI())) {
 			workspace.setProperty(Constants.GESTALT, Constants.GESTALT_BATCH);
+			workspace.propertiesChanged();
 			testPolling(workspace, false);
 		}
 	}
@@ -168,6 +226,7 @@ public class OSGiRepositoryTest extends TestCase {
 
 				@Override
 				public void repositoryRefreshed(RepositoryPlugin repository) {
+					System.out.println();
 					refreshed.set(repository);
 					latch.countDown();
 				}
@@ -348,7 +407,7 @@ public class OSGiRepositoryTest extends TestCase {
 			Processor p = new Processor();
 			HttpClient httpClient = new HttpClient()) {
 			Map<String, String> map = new HashMap<>();
-			map.put("locations", "https://dl.bintray.com/bnd/dist/4.1.0/index.xml.gz");
+			map.put("locations", "https://bndtools.jfrog.io/bndtools/bnd-build/eclipse/4.10/index.xml.gz");
 			map.put("cache", cache.getPath());
 			map.put("max.stale", "10000");
 			r.setProperties(map);
@@ -387,19 +446,20 @@ public class OSGiRepositoryTest extends TestCase {
 			List<String> list = r.list(null);
 			assertThat(list).isNotEmpty();
 
-			SortedSet<Version> versions = r.versions("aQute.libg");
+			String bsn = "javax.inject";
+			SortedSet<Version> versions = r.versions(bsn);
 			assertThat(versions).isNotEmpty();
-			File f1 = r.get("aQute.libg", versions.first(), null);
+			File f1 = r.get(bsn, versions.first(), null);
 			assertThat(f1).isNotNull();
 			assertThat(tasks).hasValueGreaterThanOrEqualTo(2); // index + bundle
 																// + redirects
 			int t = tasks.get();
 
-			File f2 = r.get("aQute.libg", versions.first(), null);
+			File f2 = r.get(bsn, versions.first(), null);
 			assertThat(tasks).hasValue(t); // should use cache
 
 			r.getIndex(true);
-			File f3 = r.get("aQute.libg", versions.first(), null);
+			File f3 = r.get(bsn, versions.first(), null);
 			assertThat(tasks).hasValue(t * 2); // should fetch again
 
 		}

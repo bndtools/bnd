@@ -110,11 +110,6 @@ public class DiffPluginImpl implements Differ {
 
 	/**
 	 * Create an element representing a bundle from the Jar.
-	 *
-	 * @param infos
-	 * @param jar The Jar to be analyzed
-	 * @return the elements that should be compared
-	 * @throws Exception
 	 */
 	private Element bundleElement(Analyzer analyzer) throws Exception {
 		List<Element> result = new ArrayList<>();

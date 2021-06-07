@@ -30,7 +30,7 @@ public class SHA512 extends Digest {
 	}
 
 	public SHA512(byte[] b) {
-		super(b, 32);
+		super(b, 64);
 	}
 
 	@Override

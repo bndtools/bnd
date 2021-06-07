@@ -32,7 +32,6 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Clazz;
-import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Instruction;
@@ -43,28 +42,18 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.AnalyzerPlugin;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
-import aQute.lib.exceptions.FunctionWithException;
+import aQute.bnd.exceptions.FunctionWithException;
 import aQute.lib.strings.Strings;
+import aQute.lib.xml.XML;
 import aQute.libg.glob.PathSet;
 
 /**
  * Analyze the class space for any classes that have an OSGi annotation for CCR.
  */
 public class CDIAnnotations implements AnalyzerPlugin {
-	static final DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
-	static final XPathFactory			xpf	= XPathFactory.newInstance();
+	static final DocumentBuilderFactory		dbf					= XML.newDocumentBuilderFactory();
+	static final XPathFactory				xpf					= XPathFactory.newInstance();
 	private static final Predicate<String>	beansResourceFilter	= new PathSet("META-INF/beans.xml").matches();
-
-	static {
-		try {
-			dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-			dbf.setXIncludeAware(false);
-			dbf.setExpandEntityReferences(false);
-		} catch (Throwable t) {
-			throw Exceptions.duck(t);
-		}
-	}
 
 	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
@@ -103,7 +92,7 @@ public class CDIAnnotations implements AnalyzerPlugin {
 					Resource beansResource = currentJar.getResource(Processor.appendPath(path, "META-INF/beans.xml"));
 					return findDiscoveryMode(beansResource);
 				}
-			}), (u, v) -> u, HashMap::new));
+			}), (u, v) -> u, HashMap<String, Discover>::new));
 
 		Instructions instructions = new Instructions(header);
 		Packages contained = analyzer.getContained();
@@ -115,8 +104,7 @@ public class CDIAnnotations implements AnalyzerPlugin {
 		for (Clazz c : analyzer.getClassspace()
 			.values()) {
 
-			if (c.isModule() || c.isEnum() || c.isInterface() || c.isInnerClass() || c.isSynthetic()
-				|| !c.is(QUERY.CONCRETE, null, analyzer)) {
+			if (c.isModule() || c.isEnum() || c.isAnnotation() || c.isInnerClass() || c.isSynthetic()) {
 				// These types cannot be managed beans so don't bother scanning
 				// them. See
 				// http://docs.jboss.org/cdi/spec/2.0/cdi-spec.html#what_classes_are_beans

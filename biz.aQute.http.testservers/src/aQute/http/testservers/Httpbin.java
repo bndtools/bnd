@@ -31,6 +31,10 @@ public class Httpbin extends HttpTestServer {
 		super(config);
 	}
 
+	public Httpbin(Config config, String cn) throws Exception {
+		super(config, cn);
+	}
+
 	/**
 	 * Default page
 	 */

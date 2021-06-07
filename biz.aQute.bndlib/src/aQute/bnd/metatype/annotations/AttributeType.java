@@ -18,14 +18,13 @@ package aQute.bnd.metatype.annotations;
 
 /**
  * Attribute types for the {@link AttributeDefinition} annotation.
- * 
+ *
  * @see AttributeDefinition#type()
  * @author $Id$
  */
 public enum AttributeType {
 	/**
 	 * The {@code String} type.
-	 * 
 	 * <p>
 	 * Attributes of this type should be stored as {@code String},
 	 * {@code List<String>} or {@code String[]} objects, depending on the
@@ -35,7 +34,6 @@ public enum AttributeType {
 
 	/**
 	 * The {@code Long} type.
-	 * 
 	 * <p>
 	 * Attributes of this type should be stored as {@code Long},
 	 * {@code List<Long>} or {@code long[]} objects, depending on the
@@ -45,7 +43,6 @@ public enum AttributeType {
 
 	/**
 	 * The {@code Integer} type.
-	 * 
 	 * <p>
 	 * Attributes of this type should be stored as {@code Integer},
 	 * {@code List<Integer>} or {@code int[]} objects, depending on the
@@ -55,7 +52,6 @@ public enum AttributeType {
 
 	/**
 	 * The {@code Short} type.
-	 * 
 	 * <p>
 	 * Attributes of this type should be stored as {@code Short},
 	 * {@code List<Short>} or {@code short[]} objects, depending on the
@@ -65,7 +61,6 @@ public enum AttributeType {
 
 	/**
 	 * The {@code Character} type.
-	 * 
 	 * <p>
 	 * Attributes of this type should be stored as {@code Character},
 	 * {@code List<Character>} or {@code char[]} objects, depending on the
@@ -75,7 +70,6 @@ public enum AttributeType {
 
 	/**
 	 * The {@code Byte} type.
-	 * 
 	 * <p>
 	 * Attributes of this type should be stored as {@code Byte},
 	 * {@code List<Byte>} or {@code byte[]} objects, depending on the
@@ -85,7 +79,6 @@ public enum AttributeType {
 
 	/**
 	 * The {@code Double} type.
-	 * 
 	 * <p>
 	 * Attributes of this type should be stored as {@code Double},
 	 * {@code List<Double>} or {@code double[]} objects, depending on the
@@ -95,7 +88,6 @@ public enum AttributeType {
 
 	/**
 	 * The {@code Float} type.
-	 * 
 	 * <p>
 	 * Attributes of this type should be stored as {@code Float},
 	 * {@code List<Float>} or {@code float[]} objects, depending on the
@@ -105,7 +97,6 @@ public enum AttributeType {
 
 	/**
 	 * The {@code Boolean} type.
-	 * 
 	 * <p>
 	 * Attributes of this type should be stored as {@code Boolean},
 	 * {@code List<Boolean>} or {@code boolean[]} objects depending on
@@ -115,12 +106,10 @@ public enum AttributeType {
 
 	/**
 	 * The {@code Password} type.
-	 * 
 	 * <p>
 	 * Attributes of this type must be stored as {@code String},
 	 * {@code List<String>} or {@code String[]} objects depending on
 	 * {@link AttributeDefinition#cardinality() cardinality}.
-	 * 
 	 * <p>
 	 * A {@code Password} must be treated as a {@code String} but the type can
 	 * be used to disguise the information when displayed to a user to prevent
@@ -128,7 +117,7 @@ public enum AttributeType {
 	 */
 	PASSWORD("Password");
 
-	private final String	value;
+	private final String value;
 
 	AttributeType(String value) {
 		this.value = value;

@@ -7,6 +7,7 @@ class Messages extends NLS {
 	public static String		JUnitTestParamsLaunchTabPiece_descStartingTimeout;
 	public static String		JUnitTestParamsLaunchTabPiece_errorTimeoutValue;
 	public static String		JUnitTestParamsLaunchTabPiece_labelKeepAlive;
+	public static String		JUnitTestParamsLaunchTabPiece_labelRerunIDE;
 	public static String		JUnitTestParamsLaunchTabPiece_labelStartingTimeout;
 	public static String		JUnitTestParamsLaunchTabPiece_title;
 	static {

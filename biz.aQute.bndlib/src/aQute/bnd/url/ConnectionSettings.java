@@ -4,8 +4,8 @@ import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
+import aQute.bnd.stream.MapStream;
 import aQute.lib.converter.Converter;
 
 /**
@@ -14,7 +14,7 @@ import aQute.lib.converter.Converter;
  * propeties any property key that starts with an upper case is considered to be
  * a header.
  */
-@aQute.bnd.annotation.plugin.BndPlugin(name = "url.settings", parameters = ConnectionSettings.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "url.settings", hide = true, parameters = ConnectionSettings.Config.class)
 public class ConnectionSettings extends DefaultURLConnectionHandler {
 	final Map<String, String>	headers	= new HashMap<>();
 	Config						config;
@@ -45,9 +45,8 @@ public class ConnectionSettings extends DefaultURLConnectionHandler {
 			if (config.readTimeout() != 0)
 				connection.setConnectTimeout(config.readTimeout());
 
-			for (Entry<String, String> entry : headers.entrySet()) {
-				connection.setRequestProperty(entry.getKey(), entry.getValue());
-			}
+			MapStream.of(headers)
+				.forEachOrdered(connection::setRequestProperty);
 
 			if (connection instanceof HttpURLConnection) {
 				HttpURLConnection http = (HttpURLConnection) connection;
@@ -66,12 +65,9 @@ public class ConnectionSettings extends DefaultURLConnectionHandler {
 	@Override
 	public void setProperties(Map<String, String> map) throws Exception {
 		super.setProperties(map);
-		for (Entry<String, String> entry : map.entrySet()) {
-			if (Character.isUpperCase(entry.getKey()
-				.charAt(0))) {
-				headers.put(entry.getKey(), entry.getValue());
-			}
-		}
+		MapStream.of(map)
+			.filterKey(key -> Character.isUpperCase(key.charAt(0)))
+			.forEachOrdered(headers::put);
 		config = Converter.cnv(Config.class, map);
 	}
 

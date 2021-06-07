@@ -122,8 +122,8 @@ public class BER implements Types {
 			return -(toLong(data) + 1);
 		}
 		long n = 0;
-		for (int i = 0; i < data.length; i++) {
-			n = n * 256 + data[i];
+		for (byte element : data) {
+			n = n * 256 + element;
 		}
 		return n;
 	}
@@ -284,19 +284,19 @@ public class BER implements Types {
 	}
 
 	int size(long value) {
-		if (value < 128)
+		if (value < 128L)
 			return 1;
 
-		if (value <= 0xFF)
+		if (value <= 0xFFL)
 			return 2;
 
-		if (value <= 0xFFFF)
+		if (value <= 0xFFFFL)
 			return 3;
 
-		if (value <= 0xFFFFFF)
+		if (value <= 0xFFFFFFL)
 			return 4;
 
-		if (value <= 0xFFFFFFFF)
+		if (value <= 0xFFFFFFFFL)
 			return 5;
 
 		if (value <= 0xFFFFFFFFFFL)

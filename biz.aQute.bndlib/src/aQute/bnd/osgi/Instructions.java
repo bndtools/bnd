@@ -1,21 +1,25 @@
 package aQute.bnd.osgi;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.stream.MapStream;
+import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
 
 public class Instructions implements Map<Instruction, Attrs> {
@@ -86,11 +90,15 @@ public class Instructions implements Map<Instruction, Attrs> {
 	}
 
 	@Override
-	public Set<java.util.Map.Entry<Instruction, Attrs>> entrySet() {
+	public Set<Entry<Instruction, Attrs>> entrySet() {
 		if (map == null)
 			return EMPTY.entrySet();
 
 		return map.entrySet();
+	}
+
+	public MapStream<Instruction, Attrs> stream() {
+		return MapStream.of(this);
 	}
 
 	@Override
@@ -178,9 +186,9 @@ public class Instructions implements Map<Instruction, Attrs> {
 	}
 
 	public void append(Parameters other) {
-		for (Map.Entry<String, Attrs> e : other.entrySet()) {
-			put(new Instruction(e.getKey()), e.getValue());
-		}
+		other.stream()
+			.mapKey(Instruction::new)
+			.forEachOrdered(this::put);
 	}
 
 	public void appendIfAbsent(Parameters other) {
@@ -188,13 +196,10 @@ public class Instructions implements Map<Instruction, Attrs> {
 			.map(Instruction::getInput)
 			.collect(toSet());
 
-		for (Map.Entry<String, Attrs> e : other.entrySet()) {
-			String k = e.getKey();
-			if (present.contains(k))
-				continue;
-
-			put(new Instruction(k), e.getValue());
-		}
+		other.stream()
+			.filterKey(k -> !present.contains(k))
+			.mapKey(Instruction::new)
+			.forEachOrdered(this::put);
 	}
 
 	public <T> Collection<T> select(Collection<T> set, boolean emptyIsAll) {
@@ -274,18 +279,38 @@ public class Instructions implements Map<Instruction, Attrs> {
 		return true;
 	}
 
+	public MapStream<Instruction, Attrs> matchesStream(String value) {
+		requireNonNull(value);
+		AtomicBoolean negated = new AtomicBoolean(false);
+		return stream().filterKey(instruction -> {
+			if (negated.get() || !instruction.matches(value)) {
+				return false;
+			}
+			if (instruction.isNegated()) {
+				negated.set(true);
+				return false;
+			}
+			return true;
+		});
+	}
+
 	/**
 	 * Turn this Instructions into a map of File -> Attrs. You can specify a
 	 * base directory, which will match all files in that directory against the
 	 * specification or you can use literal instructions to get files from
 	 * anywhere.
+	 * <p>
+	 * A mapping function can be provided to rename literal names. This was
+	 * added to map '.' and '' to 'bnd.bnd'. However, this can be generally
+	 * useful.
 	 *
 	 * @param base The directory to list files from.
+	 * @param mapper Maps the literal names.
 	 * @return The map that links files to attributes
 	 */
-	public Map<File, Attrs> select(File base) {
-
-		Map<File, Attrs> result = new HashMap<>();
+	public Map<File, List<Attrs>> select(File base, Function<String, String> mapper, Set<Instruction> missing) {
+		requireNonNull(mapper);
+		MultiMap<File, Attrs> result = new MultiMap<>();
 
 		//
 		// We allow literals to be specified so that we can actually include
@@ -297,10 +322,16 @@ public class Instructions implements Map<Instruction, Attrs> {
 				.isLiteral()
 				&& !instr.getKey()
 					.isNegated()) {
-				File f = IO.getFile(base, instr.getKey()
+				String name = mapper.apply(instr.getKey()
 					.getLiteral());
+				if (name == null)
+					continue;
+
+				File f = IO.getFile(base, name);
 				if (f.isFile())
-					result.put(f, instr.getValue());
+					result.add(f, instr.getValue());
+				else if (missing != null)
+					missing.add(instr.getKey());
 			}
 		}
 
@@ -311,12 +342,16 @@ public class Instructions implements Map<Instruction, Attrs> {
 		if (base != null) {
 			nextFile: for (File f : base.listFiles()) {
 				for (Entry<Instruction, Attrs> instr : entrySet()) {
+					if (instr.getKey()
+						.isLiteral())
+						continue;
+
 					String name = f.getName();
 					if (instr.getKey()
 						.matches(name)) {
 						if (!instr.getKey()
 							.isNegated())
-							result.put(f, instr.getValue());
+							result.add(f, instr.getValue());
 						continue nextFile;
 					}
 				}

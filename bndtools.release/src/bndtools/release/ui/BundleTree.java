@@ -44,7 +44,7 @@ import bndtools.release.nl.Messages;
 
 public class BundleTree extends Composite {
 
-	public final static String		VERSION_STRING				= "(\\d+)(\\.(\\d+)(\\.(\\d+)(\\.("		//$NON-NLS-1$
+	public final static String		VERSION_STRING				= "(\\d+)(\\.(\\d+)(\\.(\\d+)(\\.("					//$NON-NLS-1$
 		+ PatternConstants.TOKEN + "))?)?)?";
 	public final static Pattern		VERSION						= Pattern.compile(VERSION_STRING);
 
@@ -232,9 +232,7 @@ public class BundleTree extends Composite {
 		label.setLayoutData(gridData);
 
 		options = new Combo(composite, SWT.DROP_DOWN | SWT.READ_ONLY);
-		options.setItems(new String[] {
-			Messages.updateVersionsAndRelease, Messages.updateVersions, Messages.release
-		});
+		options.setItems(Messages.updateVersionsAndRelease, Messages.updateVersions, Messages.release);
 		options.add(Messages.comboSelectText, 0);
 		options.select(0);
 

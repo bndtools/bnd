@@ -58,12 +58,12 @@ public class DOT<Vertex> {
 	}
 
 	public DOT<Vertex> ranksep(double ranksep) {
-		graphAttributes.add((f) -> f.format("  ranksep %d;\n", ranksep));
+		graphAttributes.add(f -> f.format("  ranksep %d;\n", ranksep));
 		return this;
 	}
 
 	public DOT<Vertex> nodesep(double nodesep) {
-		graphAttributes.add((f) -> f.format("  nodesep %d;\n", nodesep));
+		graphAttributes.add(f -> f.format("  nodesep %d;\n", nodesep));
 		return this;
 	}
 

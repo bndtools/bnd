@@ -1,13 +1,16 @@
 package aQute.lib.io;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,6 +34,7 @@ import java.nio.channels.FileChannel.MapMode;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
@@ -51,7 +55,9 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
+import aQute.bnd.exceptions.ConsumerWithException;
 import aQute.lib.stringrover.StringRover;
 import aQute.libg.glob.Glob;
 
@@ -172,16 +178,44 @@ public class IO {
 		return copy(reader(in, charset), w);
 	}
 
+	/**
+	 * If InputStream throws EOFException, map it to returning -1. Other
+	 * IOExceptions are propagated.
+	 */
+	private static int read(InputStream in, byte[] b, int off, int len) throws IOException {
+		try {
+			return in.read(b, off, len);
+		} catch (EOFException e) {
+			return -1;
+		}
+	}
+
+	/**
+	 * If ReadableByteChannel throws EOFException, map it to returning -1. Other
+	 * IOExceptions are propagated.
+	 */
+	private static int read(ReadableByteChannel in, ByteBuffer bb) throws IOException {
+		try {
+			return in.read(bb);
+		} catch (EOFException e) {
+			return -1;
+		}
+	}
+
 	public static OutputStream copy(InputStream in, OutputStream out) throws IOException {
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
-			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
+			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
 				out.write(buffer, 0, size);
 			}
 			return out;
 		} finally {
 			in.close();
 		}
+	}
+
+	public static OutputStream copy(InputStream in, OutputStream out, int limit) throws IOException {
+		return copy(new LimitedInputStream(in, limit), out);
 	}
 
 	public static ByteBufferOutputStream copy(InputStream in, ByteBufferOutputStream out) throws IOException {
@@ -196,7 +230,7 @@ public class IO {
 	public static DataOutput copy(InputStream in, DataOutput out) throws IOException {
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
-			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
+			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
 				out.write(buffer, 0, size);
 			}
 			return out;
@@ -208,7 +242,7 @@ public class IO {
 	public static WritableByteChannel copy(ReadableByteChannel in, WritableByteChannel out) throws IOException {
 		try {
 			ByteBuffer bb = ByteBuffer.allocateDirect(BUFFER_SIZE);
-			while (in.read(bb) > 0) {
+			while (read(in, bb) > 0) {
 				bb.flip();
 				out.write(bb);
 				bb.compact();
@@ -228,13 +262,13 @@ public class IO {
 				byte[] buffer = bb.array();
 				int offset = bb.arrayOffset();
 				for (int size, position; bb.hasRemaining()
-					&& (size = in.read(buffer, offset + (position = bb.position()), bb.remaining())) > 0;) {
+					&& (size = read(in, buffer, offset + (position = bb.position()), bb.remaining())) > 0;) {
 					bb.position(position + size);
 				}
 			} else {
 				int length = Math.min(bb.remaining(), BUFFER_SIZE);
 				byte[] buffer = new byte[length];
-				for (int size; length > 0 && (size = in.read(buffer, 0, length)) > 0;) {
+				for (int size; length > 0 && (size = read(in, buffer, 0, length)) > 0;) {
 					bb.put(buffer, 0, size);
 					length = Math.min(bb.remaining(), buffer.length);
 				}
@@ -251,7 +285,7 @@ public class IO {
 
 	public static byte[] copy(InputStream in, byte[] data, int off, int len) throws IOException {
 		try {
-			for (int remaining, size; (remaining = len - off) > 0 && (size = in.read(data, off, remaining)) > 0;) {
+			for (int remaining, size; (remaining = len - off) > 0 && (size = read(in, data, off, remaining)) > 0;) {
 				off += size;
 			}
 			return data;
@@ -317,7 +351,7 @@ public class IO {
 	public static MessageDigest copy(InputStream in, MessageDigest md) throws IOException {
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
-			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
+			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
 				md.update(buffer, 0, size);
 			}
 			return md;
@@ -329,7 +363,7 @@ public class IO {
 	public static MessageDigest copy(ReadableByteChannel in, MessageDigest md) throws IOException {
 		try {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
-			while (in.read(bb) > 0) {
+			while (read(in, bb) > 0) {
 				bb.flip();
 				md.update(bb);
 				bb.compact();
@@ -462,7 +496,7 @@ public class IO {
 		try {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			byte[] buffer = bb.array();
-			for (int size, position; (size = in.read(buffer, position = bb.position(), bb.remaining())) > 0;) {
+			for (int size, position; (size = read(in, buffer, position = bb.position(), bb.remaining())) > 0;) {
 				bb.position(position + size);
 				bb.flip();
 				out.write(bb);
@@ -481,7 +515,7 @@ public class IO {
 		try {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			byte[] buffer = bb.array();
-			for (; in.read(bb) > 0; bb.clear()) {
+			for (; read(in, bb) > 0; bb.clear()) {
 				out.write(buffer, 0, bb.position());
 			}
 			return out;
@@ -493,7 +527,7 @@ public class IO {
 	public static byte[] read(File file) throws IOException {
 		try (FileChannel in = readChannel(file.toPath())) {
 			ByteBuffer bb = ByteBuffer.allocate((int) in.size());
-			while (in.read(bb) > 0) {}
+			while (read(in, bb) > 0) {}
 			return bb.array();
 		}
 	}
@@ -505,7 +539,7 @@ public class IO {
 				return in.map(MapMode.READ_ONLY, 0, size);
 			}
 			ByteBuffer bb = ByteBuffer.allocate((int) size);
-			while (in.read(bb) > 0) {}
+			while (read(in, bb) > 0) {}
 			bb.flip();
 			return bb;
 		}
@@ -592,9 +626,7 @@ public class IO {
 	}
 
 	public static String collect(Reader r) throws IOException {
-		StringWriter w = new StringWriter();
-		copy(r, w);
-		return w.toString();
+		return copy(r, new StringWriter()).toString();
 	}
 
 	/**
@@ -697,7 +729,8 @@ public class IO {
 		base = base.getCanonicalFile();
 		File child = getFile(base, file);
 		if (child.getCanonicalPath()
-			.startsWith(base.getCanonicalPath())) {
+			.startsWith(base.getCanonicalPath()
+				.concat(File.separator))) {
 			return child;
 		}
 		throw new IOException("The file " + child + " is outside of the base " + base);
@@ -762,6 +795,21 @@ public class IO {
 	 */
 	public static void delete(File file) {
 		delete(file.toPath());
+	}
+
+	/**
+	 * Deletes the specified content of the given directory. Folders are
+	 * recursively deleted. This method will not delete the given dir, this can
+	 * be useful in Eclipse or other systems that detect delete-create<br>
+	 * If file(s) cannot be deleted, no feedback is provided (fail silently).
+	 *
+	 * @param dir of whose contents are to be deleted
+	 */
+	public static void deleteContent(File dir) {
+		if (!dir.isDirectory())
+			return;
+		Stream.of(dir.listFiles())
+			.forEach(IO::delete);
 	}
 
 	/**
@@ -872,7 +920,11 @@ public class IO {
 	 * @throws IOException if the rename operation fails
 	 */
 	public static Path rename(Path from, Path to) throws IOException {
-		return Files.move(from, to, StandardCopyOption.REPLACE_EXISTING);
+		try {
+			return Files.move(from, to, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+		} catch (AtomicMoveNotSupportedException e) {
+			return Files.move(from, to, StandardCopyOption.REPLACE_EXISTING);
+		}
 	}
 
 	public static File mkdirs(File dir) throws IOException {
@@ -895,9 +947,9 @@ public class IO {
 
 	public static long drain(InputStream in) throws IOException {
 		try {
-			long result = 0;
+			long result = 0L;
 			byte[] buffer = new byte[BUFFER_SIZE];
-			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
+			for (int size; (size = read(in, buffer, 0, buffer.length)) > 0;) {
 				result += size;
 			}
 			return result;
@@ -931,6 +983,33 @@ public class IO {
 	// This method is required for binary backwards compatibility.
 	public static Throwable close(Closeable in) {
 		return close((AutoCloseable) in);
+	}
+
+	/**
+	 * Will iterate over the given toBeClose and silently close any object that
+	 * implements AutoCloseable.
+	 *
+	 * @param toBeClosed any iterable
+	 * @return true if an exception was thrown during closing
+	 */
+	public static boolean closeAll(Object... toBeClosed) {
+		if (toBeClosed == null)
+			return false;
+
+		boolean exceptionsWereThrown = false;
+		for (Object o : toBeClosed) {
+			if (o instanceof AutoCloseable) {
+				exceptionsWereThrown |= close((AutoCloseable) o) != null;
+			} else if (o instanceof Iterable) {
+				for (Object oo : (Iterable<?>) o) {
+					if (oo instanceof AutoCloseable) {
+						// do not recurse!
+						exceptionsWereThrown |= close((AutoCloseable) oo) != null;
+					}
+				}
+			}
+		}
+		return exceptionsWereThrown;
 	}
 
 	public static URL toURL(String s, File base) throws MalformedURLException {
@@ -981,6 +1060,37 @@ public class IO {
 	public static void store(Object o, Writer w) throws IOException {
 		if (o != null) {
 			w.write(o.toString());
+		}
+	}
+
+	/**
+	 * Store output in a file but ensure that the content is updated atomically.
+	 * To ensure this, the file is first copied to a temporary file in the same
+	 * directory as the target. It is then renamed which will first attempt an
+	 * atomic move but will always replace.
+	 *
+	 * @param store the function provide the output
+	 * @param target the file to store it, parent directories will be created if
+	 *            necessary
+	 */
+	public static void store(ConsumerWithException<OutputStream> store, File target) throws Exception {
+
+		target.getParentFile()
+			.mkdirs();
+
+		File tmp = createTempFile(target.getParentFile(), target.getName(), ".tmp");
+		try {
+
+			try (OutputStream outputStream = outputStream(tmp)) {
+				store.accept(outputStream);
+			}
+			rename(tmp, target);
+
+			assert target.isFile();
+
+		} finally {
+			if (tmp.exists())
+				tmp.delete();
 		}
 	}
 
@@ -1038,6 +1148,10 @@ public class IO {
 
 	public static ByteBuffer encode(CharBuffer cb, Charset encoding) {
 		return encoding.encode(cb);
+	}
+
+	public static ByteBuffer encode(String s, Charset encoding) {
+		return encoding.encode(s);
 	}
 
 	public static BufferedReader reader(String s) {
@@ -1118,6 +1232,114 @@ public class IO {
 
 	public static PrintWriter writer(OutputStream out, Charset encoding) {
 		return new PrintWriter(new OutputStreamWriter(out, encoding));
+	}
+
+	static final class AppendableWriterAdapter extends Writer {
+		private final Appendable appendable;
+
+		AppendableWriterAdapter(Appendable appendable) {
+			super(appendable);
+			this.appendable = appendable;
+		}
+
+		@Override
+		public void write(int c) throws IOException {
+			synchronized (lock) {
+				appendable.append((char) c);
+			}
+		}
+
+		private static void validate(int length, int offset, int count) {
+			if (offset < 0) {
+				throw new IndexOutOfBoundsException("offset less than zero");
+			}
+			if (count < 0) {
+				throw new IndexOutOfBoundsException("count less than zero");
+			}
+			if (offset > length - count) {
+				throw new IndexOutOfBoundsException("offset+count greater than input length");
+			}
+		}
+
+		@Override
+		public void write(char[] cbuf, int off, int len) throws IOException {
+			validate(cbuf.length, off, len);
+			synchronized (lock) {
+				for (int i = off, end = off + len; i < end; i++) {
+					appendable.append(cbuf[i]);
+				}
+			}
+		}
+
+		@Override
+		public void write(String str) throws IOException {
+			requireNonNull(str);
+			synchronized (lock) {
+				appendable.append(str);
+			}
+		}
+
+		@Override
+		public void write(String str, int off, int len) throws IOException {
+			validate(str.length(), off, len);
+			synchronized (lock) {
+				appendable.append(str, off, off + len);
+			}
+		}
+
+		@Override
+		public Writer append(char c) throws IOException {
+			synchronized (lock) {
+				appendable.append(c);
+			}
+			return this;
+		}
+
+		@Override
+		public Writer append(CharSequence csq) throws IOException {
+			if (csq == null) {
+				csq = "null";
+			}
+			synchronized (lock) {
+				appendable.append(csq);
+			}
+			return this;
+		}
+
+		@Override
+		public Writer append(CharSequence csq, int start, int end) throws IOException {
+			if (csq == null) {
+				csq = "null";
+			}
+			validate(csq.length(), start, end - start);
+			synchronized (lock) {
+				appendable.append(csq, start, end);
+			}
+			return this;
+		}
+
+		@Override
+		public void flush() throws IOException {
+			synchronized (lock) {
+				if (appendable instanceof Flushable) {
+					((Flushable) appendable).flush();
+				}
+			}
+		}
+
+		@Override
+		public void close() throws IOException {
+			synchronized (lock) {
+				flush();
+				if (appendable instanceof Closeable) {
+					((Closeable) appendable).close();
+				}
+			}
+		}
+	}
+
+	public static Writer appendableToWriter(Appendable appendable) {
+		return new AppendableWriterAdapter(appendable);
 	}
 
 	public static boolean createSymbolicLink(File link, File target) throws IOException {
@@ -1435,6 +1657,23 @@ public class IO {
 			}
 		}
 		return new String(string, 0, len);
+	}
+
+	public static String getJavaExecutablePath(String name) {
+		Path java_home = JAVA_HOME.toPath();
+		Path command = Paths.get("bin", name);
+		Path executable = java_home.resolve(command);
+		if (Files.exists(executable)) {
+			return absolutePath(executable);
+		}
+		if (java_home.endsWith("jre")) {
+			executable = java_home.getParent()
+				.resolve(command);
+			if (Files.exists(executable)) {
+				return absolutePath(executable);
+			}
+		}
+		return name;
 	}
 
 }

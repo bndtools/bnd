@@ -30,14 +30,19 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
+import bndtools.editor.BndEditor;
+import bndtools.editor.pages.ProjectRunPage;
 import bndtools.launch.LaunchConstants;
 
 public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
@@ -110,20 +115,59 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 
 	@Override
 	public void launch(IEditorPart editor, String mode) {
+		/*
+		 * unfortunately, the editor is the ProjectRunPage and the doSave and
+		 * isDirty methods are not properly implemented. We therefore need to do
+		 * some deep casting :-(
+		 */
+		if (editor instanceof ProjectRunPage) {
+			BndEditor editor2 = (BndEditor) ((ProjectRunPage) editor).getEditor();
+			editor2.commitDirtyPages();
+			if (editor2.getModel()
+				.isDirty()) {
+				Display display = Display.findDisplay(Thread.currentThread());
+				Shell activeShell = display.getActiveShell();
+				MessageDialog dialog = new MessageDialog(activeShell, "Properties have changed", null,
+					"Save properties before launch?", MessageDialog.CONFIRM, new String[] {
+						"Save", "Launch Previous", "Cancel Launch"
+					}, 0);
+				int result = dialog.open();
+				if (result == 0) {
+					/*
+					 * Doing the save in a background job but this throws a
+					 * thread exception for SWT, would be better if this worked
+					 */
+					// Job job = new Job("Save the properties before launching")
+					// {
+					// @Override
+					// protected IStatus run(IProgressMonitor m) {
+					editor2.doSave(null);
+					launch0(editor, mode);
+					// return Status.OK_STATUS;
+					// }
+					// };
+					// job.schedule();
+					return;
+				}
+			}
+		}
+		launch0(editor, mode);
+	}
+
+	private void launch0(IEditorPart editor, String mode) {
 		IEditorInput input = editor.getEditorInput();
 		IJavaElement element = input.getAdapter(IJavaElement.class);
 		if (element != null) {
 			IJavaProject jproject = element.getJavaProject();
 			if (jproject != null) {
-				launch(jproject.getProject()
-					.getFullPath(), jproject.getProject(), mode);
+				launchProject(jproject.getProject(), mode);
 			}
 		} else {
 			IFile file = ResourceUtil.getFile(input);
 			if (file != null) {
 				if (file.getName()
 					.endsWith(LaunchConstants.EXT_BNDRUN)) {
-					launch(file.getFullPath(), file.getProject(), mode);
+					launchBndRun(file, mode);
 				} else if (file.getName()
 					.equals(Project.BNDFILE)) {
 					launch(file.getProject()
@@ -138,11 +182,13 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 		IProject targetProject = elements.get(0)
 			.getJavaProject()
 			.getProject();
-		launch(targetProject.getFullPath(), targetProject, mode);
+		launchProject(targetProject, mode);
 	}
 
 	protected void launchProject(IProject project, String mode) {
-		launch(project.getFullPath(), project, mode);
+		IPath fullPath = project.getFullPath();
+		IPath bndfile = fullPath.append(Project.BNDFILE);
+		launch(bndfile, project, mode);
 	}
 
 	protected void launchBndRun(IFile bndRunFile, String mode) {
@@ -150,9 +196,9 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 	}
 
 	protected void launch(IPath targetPath, IProject targetProject, String mode) {
-		IPath tp = targetPath.makeRelative();
+		IPath tp = targetPath == null ? null : targetPath.makeRelative();
 		try {
-			ILaunchConfiguration config = findLaunchConfig(tp);
+			ILaunchConfiguration config = findLaunchConfig(tp, targetProject);
 			if (config == null) {
 				ILaunchConfigurationWorkingCopy wc = createConfiguration(tp, targetProject);
 				config = wc.doSave();
@@ -163,7 +209,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 		}
 	}
 
-	protected ILaunchConfiguration findLaunchConfig(IPath targetPath) throws CoreException {
+	protected ILaunchConfiguration findLaunchConfig(IPath targetPath, IProject targetProject) throws CoreException {
 		List<ILaunchConfiguration> candidateConfigs = new ArrayList<>();
 		ILaunchManager manager = DebugPlugin.getDefault()
 			.getLaunchManager();
@@ -171,11 +217,18 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 		ILaunchConfigurationType configType = manager.getLaunchConfigurationType(launchId);
 		ILaunchConfiguration[] configs = manager.getLaunchConfigurations(configType);
 
-		for (int i = 0; i < configs.length; i++) {
-			ILaunchConfiguration config = configs[i];
-			String configTargetName = config.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
-			if (configTargetName != null && configTargetName.equals(targetPath.toString())) {
-				candidateConfigs.add(config);
+		for (ILaunchConfiguration config : configs) {
+			String configTargetProject = config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME,
+				(String) null);
+			if (configTargetProject != null && configTargetProject.equals(targetProject.getName())) {
+				if (targetPath != null) {
+					String configTargetName = config.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
+					if (configTargetName != null && configTargetName.equals(targetPath.toString())) {
+						candidateConfigs.add(config);
+					}
+				} else {
+					candidateConfigs.add(config);
+				}
 			}
 		}
 

@@ -142,8 +142,7 @@ class LaunchThread extends Thread implements IProcess {
 			fireTerminateEvent();
 		}
 		IDebugTarget[] debugTargets = launch.getDebugTargets();
-		for (int i = 0; i < debugTargets.length; i++) {
-			IDebugTarget target = debugTargets[i];
+		for (IDebugTarget target : debugTargets) {
 			if (target.canDisconnect()) {
 				try {
 					target.disconnect();
@@ -163,9 +162,9 @@ class LaunchThread extends Thread implements IProcess {
 		if (adapter.equals(IDebugTarget.class)) {
 			ILaunch launch = getLaunch();
 			IDebugTarget[] targets = launch.getDebugTargets();
-			for (int i = 0; i < targets.length; i++) {
-				if (this.equals(targets[i].getProcess())) {
-					return (T) targets[i];
+			for (IDebugTarget target : targets) {
+				if (this.equals(target.getProcess())) {
+					return (T) target;
 				}
 			}
 			return null;

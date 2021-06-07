@@ -84,20 +84,40 @@ The launcher registers a service with object class `Object` that provides some r
 
 ## Embedded Activators
 
-The launcher supports _embedded activators_. These are like normal Bundle Actviator classes but are instead found on the `-runpath`. Any bundle that has the header `Embedded-Activator` will be started. This starting can happen before any bundle is started or after all bundles are started. To start immediate, add a static or instance field called `IMMEDIATE` with a value that equals `true`.
+The launcher supports _embedded activators_. These are like normal Bundle Actviator classes but are instead found on the `-runpath`. Any bundle that has the header `Embedded-Activator` will be started. The start can happen at 3 points that are identified with a static field in the Embedded Activator class. This field is called `IMMEDIATE`. For example:
+
+    public class MyEmbeddedActivator implements BundleActivator {
+        public static String IMMEDIATE = "AFTER_FRAMEWORK_INIT";
+        ...
+    } 
+
+The `IMMEDIATE` field can have the following values:
+
+* `"AFTER_FRAMEWORK_INIT"` –  The Embedded Activator is called after the Framework is initialized but before the framework is started. This means that no bundles are started yet.
+*  `"BEFORE_BUNDLES_START"` – The Embedded Activator is called after the framework has been started but before the bundles are explicitly started _by the launcher_. This will always happening in start level 1. If the framework was started from an existing configuration then any bundles in start level 1 that were persistently started will therefore have been started before the Embedded Activator is started. The launcher starts bundles persistently so if the same configuration is restarted they will be started after the framework is started.
+* `"AFTER_BUNDLES_START"` – Will start the Embedded Activators _after_ all bundles have been persistently started. Since this happens at start level 1, some bundles in higher start levels will not be active.
+
+The reason strings are used is to not require the need for extraneous types on the executable's class path. If a string in `IMMEDIATE` is used that is not part of the previous one then a message must be logged. The behavior will then be `"AFTER_BUNDLES_START"`. Other strings are reserved for future extensions.
+
+For example: 
 
     public class MyActivator implements BundleActivator {
-        public static boolean IMMEDIATE = true;
+        public static String IMMEDIATE = "BEFORE_BUNDLES_START";
 
         public void start(BundleContext context) {}
         
         public void stop(BundleContext context) {}
     }
 
-    In the manifest:
+    bnd.bnd:
+        Embedded-Activator: com.example.MyActivator
 
-    Embedded-Activator: com.example.MyActivator
+For backward compatibility reason the `IMMEDIATE` field the launcher will also recognize a `boolean` field. 
 
+* `true` – Corresponds to the String `BEFORE_BUNDLES_START`. 
+* `false` – Will be the `"AFTER_BUNDLES_START"` case
+
+It is recommended to update to one of the strings instead of the boolean and not use this pattern in new setups.
 
 ## Startlevels
 
@@ -272,3 +292,29 @@ An example remote bndrun file:
 		org.apache.felix.gogo.command,\
 		org.apache.felix.gogo.runtime, \
 		org.apache.felix.shell.remote
+
+### Example bndrun with the -javaagent parameter
+
+One example where a javaagent is used is the [JaCoCo Java Code Coverage Library](https://www.eclemma.org/jacoco/).
+The following example shows how Jacoco v0.8.5 can be started by adding the _-javaagent_ parameter via _-runvm_ as a VM-option.
+
+
+* add jacocoagent.jar to a [bndtools repository](https://bndtools.org/repositories.html): Maven coordinates: _org.jacoco:org.jacoco.agent:jar:runtime:0.8.5_ 
+Note: the _runtime_ classifier is important, to  get the jacocoagent which defines a Premain-Class (see [maven artifacts](https://www.jacoco.org/jacoco/trunk/doc/repo.html))
+* create new _myapp.coverage.bndrun_ which inherits from parent _myapp.bndrun_
+
+		-include: myapp.bndrun
+
+		-runvm.coverage: -javaagent:"${repo;org.jacoco:org.jacoco.agent:jar:runtime;latest}=output=tcpserver,jmx=true"
+
+
+* In Eclipse open the _myapp.coverage.bndrun_ and start your application.
+
+__A few notes about  the example:__
+
+*  The example assumes a [bnd workspace](https://bndtools.org/workspace.html) in Eclipse and a Maven Repository using [_aQute.bnd.repository.maven.provider.MavenBndRepository_](https://bnd.bndtools.org/releases/4.0.0/plugins/maven.html)
+*  This allows specifying dependencies e.g. in _/cnf/central.maven_ (this is what is referenced above via the [_${repo}_ macro](https://bnd.bndtools.org/macros/repo.html))
+*  the additional parameters _=output=tcpserver,jmx=true_ are [JaCoCo-specific](https://www.eclemma.org/jacoco/trunk/doc/agent.html) to start the agent as tcpserver and also expose functionality via JMX
+
+*  _runvm.coverage_ is a [merged instruction](https://bnd.bndtools.org/chapters/820-instructions.html#merged-instructions) (because of the suffix .coverage). It gets merged with a _-runvm_ parameter from the included parent myapp.bndrun. Advantage: Avoid repeating all the VM-options the from the parent _-runvm_ again, but just specify the additional parameters.
+*  Usage in Eclipse: open "Coverage View" , right click "Import Session", choose "Agent Adress 127.0.0.1 Port 6300", press "Next", Select the project to Monitor, Click "Finish"

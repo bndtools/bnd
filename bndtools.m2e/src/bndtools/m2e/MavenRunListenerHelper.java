@@ -1,9 +1,20 @@
 package bndtools.m2e;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Predicate;
 
+import org.apache.maven.lifecycle.MavenExecutionPlan;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -11,18 +22,22 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.IMaven;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.IMavenProjectRegistry;
+
 import aQute.bnd.build.Run;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.maven.lib.configuration.Bndruns;
+import aQute.bnd.exceptions.Exceptions;
 
 public interface MavenRunListenerHelper {
 
 	IMaven					maven					= MavenPlugin.getMaven();
 	IMavenProjectRegistry	mavenProjectRegistry	= MavenPlugin.getMavenProjectRegistry();
+	IWorkspace				iWorkspace				= ResourcesPlugin.getWorkspace();
 
 	default IResource getResource(Run run) {
 		File propertiesFile = run.getPropertiesFile();
@@ -61,27 +76,80 @@ public interface MavenRunListenerHelper {
 	}
 
 	default boolean hasBndMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
-		return projectFacade
-			.getMojoExecutions("biz.aQute.bnd", "bnd-maven-plugin", new NullProgressMonitor(), "bnd-process")
-			.stream()
-			.findFirst()
-			.isPresent();
+		return getBndMavenPlugin(projectFacade).isPresent();
+	}
+
+	default Optional<PluginExecution> getBndMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
+		return getBndMavenPluginById(projectFacade, "biz.aQute.bnd:bnd-maven-plugin");
 	}
 
 	default boolean hasBndResolverMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
-		return projectFacade
-			.getMojoExecutions("biz.aQute.bnd", "bnd-resolver-maven-plugin", new NullProgressMonitor(), "resolve")
-			.stream()
-			.findFirst()
-			.isPresent();
+		return getBndResolverMavenPlugin(projectFacade).isPresent();
+	}
+
+	default Optional<PluginExecution> getBndResolverMavenPlugin(IMavenProjectFacade projectFacade)
+		throws CoreException {
+		return getBndMavenPluginById(projectFacade, "biz.aQute.bnd:bnd-resolver-maven-plugin");
+	}
+
+	default MojoExecution getBndResolverMojoExecution(IMavenProjectFacade projectFacade, IProgressMonitor monitor)
+		throws CoreException {
+		return getMojoExecution(projectFacade, "biz.aQute.bnd:bnd-resolver-maven-plugin", "bnd-resolver:resolve@",
+			exe -> true, monitor);
+	}
+
+	default MojoExecution getBndResolverMojoExecution(IMavenProjectFacade projectFacade,
+		Predicate<MojoExecution> predicate, IProgressMonitor monitor) throws CoreException {
+		return getMojoExecution(projectFacade, "biz.aQute.bnd:bnd-resolver-maven-plugin", "bnd-resolver:resolve@",
+			predicate, monitor);
 	}
 
 	default boolean hasBndTestingMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
-		return projectFacade
-			.getMojoExecutions("biz.aQute.bnd", "bnd-testing-maven-plugin", new NullProgressMonitor(), "testing")
+		return getBndTestingMavenPlugin(projectFacade).isPresent();
+	}
+
+	default Optional<PluginExecution> getBndTestingMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
+		return getBndMavenPluginById(projectFacade, "biz.aQute.bnd:bnd-testing-maven-plugin");
+	}
+
+	default Optional<PluginExecution> getBndMavenPluginById(IMavenProjectFacade projectFacade, String id)
+		throws CoreException {
+		return Optional.ofNullable(getMavenProject(projectFacade).getPlugin(id))
+			.map(Plugin::getExecutionsAsMap)
+			.map(Map<String, PluginExecution>::values)
+			.orElseGet(ArrayList::new)
 			.stream()
+			.findFirst();
+	}
+
+	default MojoExecution getBndTestingMojoExecution(IMavenProjectFacade projectFacade, IProgressMonitor monitor)
+		throws CoreException {
+		return getMojoExecution(projectFacade, "biz.aQute.bnd:bnd-testing-maven-plugin", "bnd-testing:testing@",
+			exe -> true, monitor);
+	}
+
+	default MojoExecution getBndTestingMojoExecution(IMavenProjectFacade projectFacade,
+		Predicate<MojoExecution> predicate, IProgressMonitor monitor) throws CoreException {
+		return getMojoExecution(projectFacade, "biz.aQute.bnd:bnd-testing-maven-plugin", "bnd-testing:testing@",
+			predicate, monitor);
+	}
+
+	default MojoExecution getMojoExecution(IMavenProjectFacade projectFacade, String pluginId, String executionPrefix,
+		Predicate<MojoExecution> predicate, IProgressMonitor monitor) throws CoreException {
+		MavenProject mavenProject = getMavenProject(projectFacade);
+		List<String> tasks = getMavenProject(projectFacade).getPlugin(pluginId)
+			.getExecutionsAsMap()
+			.keySet()
+			.stream()
+			.map(executionPrefix::concat)
+			.collect(toList());
+
+		MavenExecutionPlan plan = maven.calculateExecutionPlan(mavenProject, tasks, true, monitor);
+		return plan.getMojoExecutions()
+			.stream()
+			.filter(predicate)
 			.findFirst()
-			.isPresent();
+			.orElse(null);
 	}
 
 	default boolean isOffline() {
@@ -102,6 +170,19 @@ public interface MavenRunListenerHelper {
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
 			| SecurityException e) {
 			return null;
+		}
+	}
+
+	default boolean containsBndrun(MojoExecution mojoExecution, MavenProject mavenProject, File bndrunFile,
+		IProgressMonitor monitor) {
+		try {
+			Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns", Bndruns.class,
+				monitor);
+
+			return bndruns.getFiles(mavenProject.getBasedir())
+				.contains(bndrunFile);
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
 		}
 	}
 

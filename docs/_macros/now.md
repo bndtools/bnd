@@ -4,8 +4,6 @@ class: Macro
 title: now ( 'long' | DATEFORMAT )
 summary: Current date and time, default is default Date format. The format can be specified as a long or a date format.
 ---
-layout: default
-
 
 	public final static String	_nowHelp	= "${now;pattern|'long'}, returns current time";
 

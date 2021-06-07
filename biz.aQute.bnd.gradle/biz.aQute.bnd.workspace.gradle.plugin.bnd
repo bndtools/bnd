@@ -1,0 +1,13 @@
+Bundle-SymbolicName: ${substring;${propertiesname};0;-${length;.bnd}}
+Bundle-Description: The Bnd Gradle ${substring;${bsn};0;-${length;.gradle.plugin}} plugin marker.
+
+-pom: groupid=${substring;${@bsn};0;-${length;.gradle.plugin}},\
+ artifactid=${@bsn},\
+ version=${versionmask;===s;${@version}}
+
+-maven-dependencies: plugin;\
+ groupId=${-groupid};\
+ artifactId=${p};\
+ version=${versionmask;===s;${base.version}${def;-snapshot;.SNAPSHOT}}
+
+-resourceonly: true

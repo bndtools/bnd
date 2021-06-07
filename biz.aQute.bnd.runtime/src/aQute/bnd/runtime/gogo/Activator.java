@@ -16,8 +16,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceRegistration;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.dtoformatter.DTOFormatter;
-import aQute.lib.exceptions.Exceptions;
 
 public class Activator implements BundleActivator {
 

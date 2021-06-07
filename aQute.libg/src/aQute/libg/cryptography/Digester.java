@@ -11,6 +11,7 @@ import aQute.lib.io.IO;
 public abstract class Digester<T extends Digest> extends OutputStream {
 	protected MessageDigest	md;
 	OutputStream			out[];
+	int						length	= 0;
 
 	public Digester(MessageDigest instance, OutputStream... out) {
 		md = instance;
@@ -20,6 +21,7 @@ public abstract class Digester<T extends Digest> extends OutputStream {
 	@Override
 	public void write(byte[] buffer, int offset, int length) throws IOException {
 		md.update(buffer, offset, length);
+		this.length += length;
 		for (OutputStream o : out) {
 			o.write(buffer, offset, length);
 		}
@@ -28,6 +30,7 @@ public abstract class Digester<T extends Digest> extends OutputStream {
 	@Override
 	public void write(int b) throws IOException {
 		md.update((byte) b);
+		this.length++;
 		for (OutputStream o : out) {
 			o.write(b);
 		}
@@ -60,5 +63,9 @@ public abstract class Digester<T extends Digest> extends OutputStream {
 	public T from(byte[] f) throws Exception {
 		IO.copy(f, this);
 		return digest();
+	}
+
+	public int getLength() {
+		return length;
 	}
 }

@@ -7,13 +7,15 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 
 /**
@@ -23,6 +25,7 @@ import aQute.lib.io.IO;
 class ProjectTracker implements AutoCloseable {
 	private final Workspace				workspace;
 	private final Map<String, Project>	models;
+	private Collection<Project>			lastUpdate	= new ArrayList<>();
 	private boolean						changed;
 
 	ProjectTracker(Workspace workspace) {
@@ -57,6 +60,11 @@ class ProjectTracker implements AutoCloseable {
 	 */
 	synchronized Optional<Project> getProject(String name) {
 		update();
+		if (!models.containsKey(name) && workspace.getFile(name + "/" + Project.BNDFILE)
+			.isFile()) {
+			changed = true;
+			update();
+		}
 		return Optional.ofNullable(models.get(name));
 	}
 
@@ -69,37 +77,54 @@ class ProjectTracker implements AutoCloseable {
 		}
 		changed = false;
 
-		Path base = workspace.getBase()
-			.toPath();
-		Set<String> older = new HashSet<>(models.keySet());
-		try (DirectoryStream<Path> directories = newDirectoryStream(base, Files::isDirectory)) {
-			for (Path directory : directories) {
-				models.compute(directory.getFileName()
-					.toString(), (name, project) -> {
-						if (project != null) {
-							older.remove(name);
-							if (directory.equals(project.getBase()
-								.toPath()) && project.isValid()) {
-								return project;
+		try {
+			Path base = workspace.getBase()
+				.toPath();
+			Set<String> older = new HashSet<>(models.keySet());
+			try (DirectoryStream<Path> directories = newDirectoryStream(base, Files::isDirectory)) {
+				for (Path directory : directories) {
+					models.compute(directory.getFileName()
+						.toString(), (name, project) -> {
+							if (project != null) {
+								older.remove(name);
+								if (directory.equals(project.getBase()
+									.toPath()) && project.isValid()) {
+									return project;
+								}
+								IO.close(project);
 							}
-							IO.close(project);
-						}
-						if (isRegularFile(directory.resolve(Project.BNDPATH))) {
-							project = new Project(workspace, directory.toFile());
-							if (project.isValid()) {
-								return project;
+							if (isRegularFile(directory.resolve(Project.BNDPATH))) {
+								project = new Project(workspace, directory.toFile());
+								if (project.isValid()) {
+									return project;
+								}
+								IO.close(project);
 							}
-							IO.close(project);
-						}
-						return null;
-					});
+							return null;
+						});
+				}
+			} catch (IOException e) {
+				throw Exceptions.duck(e);
 			}
-		} catch (IOException e) {
-			throw Exceptions.duck(e);
-		}
 
-		older.stream()
-			.map(models::remove)
-			.forEach(IO::close);
+			older.stream()
+				.map(models::remove)
+				.forEach(IO::close);
+		} finally {
+			Collection<Project> newSet = models.values();
+			lastUpdate = newSet;
+			workspace.notifier.projects(lastUpdate);
+		}
+	}
+
+	@Override
+	public String toString() {
+		return models.keySet()
+			.toString();
+	}
+
+	synchronized void forceRefresh() {
+		changed = true;
+		update();
 	}
 }

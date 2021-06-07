@@ -21,8 +21,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 public class EmbeddedLauncher {
@@ -33,9 +31,9 @@ public class EmbeddedLauncher {
 
 	public static final String	EMBEDDED_RUNPATH	= "Embedded-Runpath";
 	public static final String	LAUNCHER_PATH		= "launcher.runpath";
-	private static final Pattern	QUOTED_P			= Pattern.compile("^([\"'])(.*)\\1$");
 
 	public static Manifest		MANIFEST;
+	static int					restarts			= 0;
 
 	public static void main(String... args) throws Throwable {
 
@@ -48,7 +46,22 @@ public class EmbeddedLauncher {
 			return;
 		}
 
-		findAndExecute(isVerbose, "main", void.class, args);
+		do {
+			try {
+				System.setProperty("launch.framework.restart.count", Integer.toString(restarts));
+				findAndExecute(isVerbose, "main", void.class, args);
+				return;
+			} catch (Throwable e) {
+				if (e.getClass()
+					.getSimpleName()
+					.equals("FrameworkRestart")) {
+					restarts++;
+					continue;
+				}
+				throw e;
+			}
+		} while (true);
+
 	}
 
 	/**
@@ -110,12 +123,15 @@ public class EmbeddedLauncher {
 			log("looking for -D" + LAUNCHER_PATH);
 		String runpath = System.getProperty(LAUNCHER_PATH);
 		if (runpath != null) {
-			Matcher matcher = QUOTED_P.matcher(runpath);
-			if (matcher.matches()) {
-				runpath = matcher.group(2);
-			}
 			if (isVerbose)
-				log("Going through the following -D" + LAUNCHER_PATH + " %s", runpath);
+				log("found -D" + LAUNCHER_PATH + "=%s", runpath);
+			int l = runpath.length() - 1;
+			if (l > 1) {
+				char q = runpath.charAt(0);
+				if (((q == '\'') || (q == '"')) && (q == runpath.charAt(l))) {
+					runpath = runpath.substring(1, l);
+				}
+			}
 			return executeWithRunPath(isVerbose, methodName, returnType, cl, runpath, true, args);
 		}
 

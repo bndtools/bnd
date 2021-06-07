@@ -5,8 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -22,6 +22,7 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
+import aQute.lib.xml.XML;
 
 public class XMLType {
 
@@ -51,8 +52,8 @@ public class XMLType {
 				line = line.trim();
 				if (line.length() > 0) {
 					String parts[] = line.split("\\s*,\\s*");
-					for (int i = 0; i < parts.length; i++) {
-						String pack = toPackage(parts[i]);
+					for (String part : parts) {
+						String pack = toPackage(part);
 						if (pack != null)
 							refers.add(pack);
 					}
@@ -68,8 +69,8 @@ public class XMLType {
 		if (n < 0 || n + 1 >= fqn.length())
 			return null;
 
-		char c = fqn.charAt(n + 1);
-		if (Character.isJavaIdentifierStart(c) && Character.isUpperCase(c)) {
+		int cp = Character.codePointAt(fqn, n + 1);
+		if (Character.isJavaIdentifierStart(cp) && Character.isUpperCase(cp)) {
 			String other = fqn.substring(0, n);
 			return toPackage(other);
 		}
@@ -87,9 +88,7 @@ public class XMLType {
 			return false;
 		}
 
-		for (Iterator<Map.Entry<String, Resource>> i = dir.entrySet()
-			.iterator(); i.hasNext();) {
-			Map.Entry<String, Resource> entry = i.next();
+		for (Entry<String, Resource> entry : dir.entrySet()) {
 			String path = entry.getKey();
 			Resource resource = entry.getValue();
 			if (paths.matcher(path)
@@ -102,12 +101,12 @@ public class XMLType {
 
 	private void process(Analyzer analyzer, String path, Resource resource) {
 		try {
-			Set<String> set;
+			Set<String> refers;
 			try (InputStream in = resource.openInputStream()) {
-				set = analyze(in);
+				refers = analyze(in);
 			}
-			for (Iterator<String> r = set.iterator(); r.hasNext();) {
-				PackageRef pack = analyzer.getPackageRef(r.next());
+			for (String refer : refers) {
+				PackageRef pack = analyzer.getPackageRef(refer);
 				if (!QN.matcher(pack.getFQN())
 					.matches())
 					analyzer.warning("Package does not seem a package in spring resource (%s): %s", path, pack);
@@ -122,7 +121,7 @@ public class XMLType {
 	}
 
 	protected Transformer getTransformer(java.net.URL url) throws Exception {
-		TransformerFactory tf = TransformerFactory.newInstance();
+		TransformerFactory tf = XML.newTransformerFactory();
 		Source source = new StreamSource(url.openStream());
 		return tf.newTransformer(source);
 	}

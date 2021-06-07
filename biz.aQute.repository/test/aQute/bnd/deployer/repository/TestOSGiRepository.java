@@ -21,7 +21,7 @@ public class TestOSGiRepository extends TestCase {
 
 	@Override
 	public void setUp() {
-		tmp = IO.getFile("generated/tmp/test/" + getName());
+		tmp = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName());
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}

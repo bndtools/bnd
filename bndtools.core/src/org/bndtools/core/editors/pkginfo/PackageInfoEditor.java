@@ -149,7 +149,7 @@ public class PackageInfoEditor extends TextEditor implements IResourceChangeList
 			return;
 
 		if ((delta.getFlags() & IResourceDelta.MARKERS) != 0)
-			SWTConcurrencyUtil.execForControl(getEditorSite().getShell(), true, () -> updateTitleIcon());
+			SWTConcurrencyUtil.execForControl(getEditorSite().getShell(), true, this::updateTitleIcon);
 	}
 
 }

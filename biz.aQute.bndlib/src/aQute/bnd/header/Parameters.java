@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collector;
 
-import aQute.lib.collections.SortedList;
+import aQute.bnd.stream.MapStream;
 import aQute.service.reporter.Reporter;
 
 public class Parameters implements Map<String, Attrs> {
@@ -41,10 +41,9 @@ public class Parameters implements Map<String, Attrs> {
 
 	public Parameters(Map<String, Map<String, String>> basic) {
 		this();
-		if (basic != null)
-			basic.entrySet()
-				.stream()
-				.forEach(e -> map.put(e.getKey(), new Attrs(e.getValue())));
+		MapStream.ofNullable(basic)
+			.mapValue(Attrs::new)
+			.forEach(map::put);
 	}
 
 	@Override
@@ -88,6 +87,10 @@ public class Parameters implements Map<String, Attrs> {
 		return map.entrySet();
 	}
 
+	public MapStream<String, Attrs> stream() {
+		return MapStream.of(this);
+	}
+
 	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
@@ -129,10 +132,9 @@ public class Parameters implements Map<String, Attrs> {
 	}
 
 	public void putAllIfAbsent(Map<String, ? extends Attrs> map) {
-		for (Map.Entry<String, ? extends Attrs> entry : map.entrySet()) {
-			if (!containsKey(entry.getKey()))
-				put(entry.getKey(), entry.getValue());
-		}
+		MapStream.of(map)
+			.filterKey(key -> !containsKey(key))
+			.forEachOrdered(this::put);
 	}
 
 	@Override
@@ -214,9 +216,7 @@ public class Parameters implements Map<String, Attrs> {
 		if (isEmpty())
 			return true;
 
-		SortedList<String> l = new SortedList<>(keySet());
-		SortedList<String> lo = new SortedList<>(other.keySet());
-		if (!l.isEqual(lo))
+		if (!keySet().equals(other.keySet()))
 			return false;
 
 		for (String key : keySet()) {

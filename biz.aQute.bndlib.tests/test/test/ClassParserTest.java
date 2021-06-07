@@ -100,6 +100,7 @@ public class ClassParserTest extends TestCase {
 	protected void tearDown() throws Exception {
 		a.close();
 	}
+
 	/**
 	 * Java Type & Parameter annotations
 	 *

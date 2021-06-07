@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.libg.cryptography.SHA1;
@@ -186,11 +186,11 @@ public class URLCache {
 	public boolean clear(URI uri) throws Exception {
 		File f = getCacheFileFor(uri);
 		boolean exists = f.isFile();
-		if (f != null && exists) {
+		if (exists) {
 			IO.deleteWithException(f);
 		}
 		f = getCacheInfoFileFor(uri);
-		if (f != null && f.isFile()) {
+		if (f.isFile()) {
 			IO.deleteWithException(f);
 		}
 		infos.remove(f);

@@ -4,7 +4,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -169,10 +168,8 @@ public class RepoCommand {
 				repos.add(p.getWorkspace()
 					.getWorkspaceRepository());
 			} else {
-				if (workspace != null) {
-					repos.addAll(workspace.getRepositories());
-					repos.add(workspace.getWorkspaceRepository());
-				}
+				repos.addAll(workspace.getRepositories());
+				repos.add(workspace.getWorkspaceRepository());
 			}
 		}
 		logger.debug("repos {}", repos);
@@ -209,8 +206,7 @@ public class RepoCommand {
 				bnd.out.print(help);
 			}
 		}
-		if (workspace != null)
-			bnd.getInfo(workspace);
+		bnd.getInfo(workspace);
 	}
 
 	/**
@@ -451,10 +447,11 @@ public class RepoCommand {
 				}
 
 				if (bnd.isOk()) {
-					PutResult r = writable.put(new BufferedInputStream(IO.stream(file)),
-						new RepositoryPlugin.PutOptions());
-					logger.debug("put {} in {} ({}) into {}", source, writable.getName(), writable.getLocation(),
-						r.artifact);
+					try (InputStream in = new BufferedInputStream(IO.stream(file))) {
+						PutResult r = writable.put(in, new RepositoryPlugin.PutOptions());
+						logger.debug("put {} in {} ({}) into {}", source, writable.getName(), writable.getLocation(),
+							r.artifact);
+					}
 				}
 			}
 			if (delete)
@@ -541,7 +538,7 @@ public class RepoCommand {
 					.put(map)
 					.flush();
 			else if (!options.diff())
-				bnd.printMultiMap(map);
+				bnd.out.println(MultiMap.format(map));
 			else
 				DiffCommand.show(pw, diff, 0, !options.full());
 		}
@@ -732,9 +729,7 @@ public class RepoCommand {
 		if (dest instanceof ResourceRepository)
 			resources = (ResourceRepository) dest;
 
-		nextFile: for (Iterator<Spec> i = sources.iterator(); i.hasNext();) {
-			Spec spec = i.next();
-
+		nextFile: for (Spec spec : sources) {
 			if (resources != null) {
 				ResourceDescriptor rd = resources.getResourceDescriptor(spec.digest);
 				if (rd != null)
@@ -1024,7 +1019,7 @@ public class RepoCommand {
 			return;
 
 		} else {
-			try (FileInputStream in = new FileInputStream(f)) {
+			try (InputStream in = IO.stream(f)) {
 				destRepo.put(in, null);
 			} catch (Exception e) {
 				bnd.exception(e, "While copying %s to %s: %s", f, destRepo, e.getMessage());

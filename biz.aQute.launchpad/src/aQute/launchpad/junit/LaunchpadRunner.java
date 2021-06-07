@@ -159,7 +159,8 @@ public class LaunchpadRunner extends BlockJUnit4ClassRunner {
 
 			@SuppressWarnings("unchecked")
 			Class<ProbeImpl> c = (Class<ProbeImpl>) probeBundle.loadClass(ProbeImpl.class.getName());
-			Probe probe = c.newInstance();
+			Probe probe = c.getConstructor()
+				.newInstance();
 			launchpad.setProbe(probe);
 		} catch (Exception e) {
 			// ignore

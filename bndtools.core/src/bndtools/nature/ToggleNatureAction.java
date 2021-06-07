@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.action.IAction;
@@ -30,6 +31,7 @@ import org.eclipse.ui.IWorkbenchPart;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
+import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
 
 public class ToggleNatureAction implements IObjectActionDelegate {
@@ -161,11 +163,21 @@ public class ToggleNatureAction implements IObjectActionDelegate {
 			iProject.setDescription(description, null);
 
 			/* refresh the project; files were created outside of Eclipse API */
-			iProject.refreshLocal(IResource.DEPTH_INFINITE, null);
-
+			Job.create("refresh Workspace", monitor -> {
+				try {
+					Central.getWorkspace()
+						.refreshProjects();
+				} catch (Exception e) {
+					new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
+						"Error occurred while toggling Bnd project nature on refreshing Projects", e);
+				}
+				iProject.refreshLocal(IResource.DEPTH_INFINITE, null);
+				monitor.worked(1);
+			})
+				.schedule();
 			return createStatus("Some build files could not be generated. Please review the messages below.",
 				Collections.<String> emptyList(), headlessBuildWarnings);
-		} catch (CoreException e) {
+		} catch (Exception e) {
 			return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error occurred while toggling Bnd project nature",
 				e);
 		}

@@ -75,54 +75,42 @@ public class FilterBuilder {
 	}
 
 	public FilterBuilder eq(String key, Object value) {
-		simple(key, Operator.EQ, value);
-		return this;
+		return simple(key, Operator.EQ, value);
 	}
 
 	public FilterBuilder neq(String key, Object value) {
-		not();
-		simple(key, Operator.EQ, value);
-		end();
-		return this;
+		return not().simple(key, Operator.EQ, value)
+			.end();
 	}
 
 	public FilterBuilder gt(String key, Object value) {
-		not();
-		simple(key, Operator.LE, value);
-		end();
-		return this;
+		return not().simple(key, Operator.LE, value)
+			.end();
 	}
 
 	public FilterBuilder lt(String key, Object value) {
-		not();
-		simple(key, Operator.GE, value);
-		end();
-		return this;
+		return not().simple(key, Operator.GE, value)
+			.end();
 	}
 
 	public FilterBuilder ge(String key, Object value) {
-		simple(key, Operator.GE, value);
-		return this;
+		return simple(key, Operator.GE, value);
 	}
 
 	public FilterBuilder le(String key, Object value) {
-		simple(key, Operator.LE, value);
-		return this;
+		return simple(key, Operator.LE, value);
 	}
 
 	public FilterBuilder isSet(String key) {
-		simple(key, Operator.EQ, "*");
-		return this;
+		return isPresent(key);
 	}
 
 	public FilterBuilder approximate(String key, Object value) {
-		simple(key, Operator.APPROX, value);
-		return this;
+		return simple(key, Operator.APPROX, value);
 	}
 
 	public FilterBuilder simple(String key, Operator op, Object value) {
-		current.members.add("(" + key + op.name + escape(value) + ")");
-		return this;
+		return literal("(" + key + op.name + escape(value) + ")");
 	}
 
 	public FilterBuilder literal(String string) {
@@ -132,33 +120,31 @@ public class FilterBuilder {
 
 	/**
 	 * If value must contain one of the characters reverse solidus ('\' \u005C),
-	 * asterisk ('*' \u002A), paren- theses open ('(' \u0028) or parentheses
-	 * close (')' \u0029), then these characters should be preceded with the
-	 * reverse solidus ('\' \u005C) character. Spaces are significant in value.
-	 * Space characters are defined by Character.isWhiteSpace().
-	 *
-	 * @param value
-	 * @return
+	 * asterisk ('*' \u002A), parentheses open ('(' \u0028) or parentheses close
+	 * (')' \u0029), then these characters should be preceded with the reverse
+	 * solidus ('\' \u005C) character. Spaces are significant in value. Space
+	 * characters are defined by Character.isWhiteSpace().
 	 */
-	static String escape(Object value) {
+	private static String escape(Object value) {
 		String s = value.toString();
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < s.length(); i++) {
+		final int len = s.length();
+		StringBuilder sb = new StringBuilder(len);
+		for (int i = 0; i < len; i++) {
 			char c = s.charAt(i);
+			// we don't escape * to allow users to use it
 			switch (c) {
 				case '(' :
 				case '\\' :
 				case ')' :
-					sb.append("\\");
-
-					// FALL BACK
-
+					sb.append('\\')
+						.append(c);
+					break;
 				default :
 					sb.append(c);
 					break;
 			}
 		}
-		return sb.toString();
+		return (len == sb.length()) ? s : sb.toString();
 	}
 
 	@Override
@@ -167,7 +153,7 @@ public class FilterBuilder {
 	}
 
 	public FilterBuilder isPresent(String key) {
-		return simple(key, Operator.EQ, "*");
+		return literal("(" + key + "=*)");
 	}
 
 	public FilterBuilder in(String key, VersionRange range) {

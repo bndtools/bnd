@@ -30,6 +30,7 @@ import org.osgi.service.coordinator.Coordinator;
 import org.osgi.service.coordinator.Participant;
 import org.osgi.service.log.LogService;
 
+import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Verifier;
@@ -46,35 +47,49 @@ import aQute.lib.strings.Strings;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.cryptography.SHA256;
 
+@BndPlugin(name = "LocalIndexedRepo", parameters = LocalIndexedRepo.Config.class)
 public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable, Participant, Actionable {
 
-	private final String			UPWARDS_ARROW			= " \u2191";
-	private final String			DOWNWARDS_ARROW			= " \u2193";
-	private static final Pattern	REPO_FILE				= Pattern
+	private final String			UPWARDS_ARROW	= " \u2191";
+	private final String			DOWNWARDS_ARROW	= " \u2193";
+	private static final Pattern	REPO_FILE		= Pattern
 		.compile("([-.\\w]+)(-|_)([.\\d]+)(-[-\\w]+)?\\.(jar|lib)");
-	private static final String		CACHE_PATH				= ".cache";
-	public static final String		PROP_LOCAL_DIR			= "local";
-	public static final String		PROP_READONLY			= "readonly";
-	public static final String		PROP_PRETTY				= "pretty";
-	public static final String		PROP_OVERWRITE			= "overwrite";
-	public static final String		PROP_ONLYDIRS			= "onlydirs";
+	private static final String		CACHE_PATH		= ".cache";
+	public static final String		PROP_LOCAL_DIR	= "local";
+	public static final String		PROP_READONLY	= "readonly";
+	public static final String		PROP_PRETTY		= "pretty";
+	public static final String		PROP_OVERWRITE	= "overwrite";
+	public static final String		PROP_ONLYDIRS	= "onlydirs";
+
+	// not actually used (yet). Just to get some parameters
+	interface Config {
+		String local();
+
+		boolean readonly();
+
+		boolean pretty();
+
+		boolean overwrite();
+
+		boolean onlydirs();
+	}
 
 	@SuppressWarnings("deprecation")
-	private boolean					readOnly;
-	private boolean					pretty					= false;
-	private boolean					overwrite				= true;
-	private File					storageDir;
-	private String					onlydirs				= null;
+	private boolean				readOnly;
+	private boolean				pretty					= false;
+	private boolean				overwrite				= true;
+	private File				storageDir;
+	private String				onlydirs				= null;
 
 	// @GuardedBy("newFilesInCoordination")
-	private final List<URI>			newFilesInCoordination	= new LinkedList<>();
-	private static final String		EMPTY_LOCATION			= "";
+	private final List<URI>		newFilesInCoordination	= new LinkedList<>();
+	private static final String	EMPTY_LOCATION			= "";
 
-	public static final String		PROP_LOCATIONS			= "locations";
-	public static final String		PROP_CACHE				= "cache";
+	public static final String	PROP_LOCATIONS			= "locations";
+	public static final String	PROP_CACHE				= "cache";
 
-	private String					locations;
-	protected File					cacheDir				= new File(
+	private String				locations;
+	protected File				cacheDir				= new File(
 		System.getProperty("user.home") + File.separator + DEFAULT_CACHE_DIR);
 
 	@SuppressWarnings("deprecation")
@@ -494,7 +509,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	@Override
 	public Map<String, Runnable> actions(Object... target) throws Exception {
 		Map<String, Runnable> map = new HashMap<>();
-		map.put("Refresh", () -> regenerateAllIndexes());
+		map.put("Refresh", this::regenerateAllIndexes);
 		if (target.length == 3) {
 			String bsn = (String) target[1];
 			String version = (String) target[2];

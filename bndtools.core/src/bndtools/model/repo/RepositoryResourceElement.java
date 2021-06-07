@@ -1,12 +1,14 @@
 package bndtools.model.repo;
 
+import java.util.Objects;
+
 import org.bndtools.utils.resources.ResourceUtils;
 import org.osgi.framework.Version;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.service.RepositoryPlugin;
 
-public class RepositoryResourceElement {
+public class RepositoryResourceElement implements ResourceProvider {
 
 	private final Resource					resource;
 	private final String					name;
@@ -34,6 +36,7 @@ public class RepositoryResourceElement {
 		return version.toString();
 	}
 
+	@Override
 	public Resource getResource() {
 		return resource;
 	}
@@ -55,12 +58,7 @@ public class RepositoryResourceElement {
 		if (getClass() != obj.getClass())
 			return false;
 		RepositoryResourceElement other = (RepositoryResourceElement) obj;
-		if (resource == null) {
-			if (other.resource != null)
-				return false;
-		} else if (!resource.equals(other.resource))
-			return false;
-		return true;
+		return Objects.equals(resource, other.resource);
 	}
 
 }

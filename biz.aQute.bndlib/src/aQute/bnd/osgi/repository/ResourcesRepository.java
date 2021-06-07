@@ -10,62 +10,53 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collector;
 
 import org.osgi.resource.Capability;
-import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.lib.filter.Filter;
 
 public class ResourcesRepository extends BaseRepository {
-	final Set<Resource>			resources	= new LinkedHashSet<>();
-	final Map<String, Filter>	cache		= new ConcurrentHashMap<>();
+	private final Set<Resource>									resources;
+	private final Map<String, Predicate<Map<String, Object>>>	cache;
+
+	public ResourcesRepository() {
+		resources = new LinkedHashSet<>();
+		cache = new ConcurrentHashMap<>();
+	}
 
 	public ResourcesRepository(Resource resource) {
+		this();
 		add(resource);
 	}
 
 	public ResourcesRepository(Collection<? extends Resource> resource) {
+		this();
 		addAll(resource);
 	}
-
-	public ResourcesRepository() {}
 
 	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
 		return requirements.stream()
-			.collect(toMap(identity(), this::findProvider, ResourcesRepository::merger));
+			.collect(toMap(identity(), this::findProvider, ResourceUtils::capabilitiesCombiner));
 	}
 
 	public List<Capability> findProvider(Requirement requirement) {
 		String namespace = requirement.getNamespace();
 		return resources.stream()
-			.flatMap(resource -> resource.getCapabilities(namespace)
-				.stream())
-			.filter(capability -> {
-				if (!requirement.getNamespace()
-					.equals(capability.getNamespace()))
-					return false;
+			.flatMap(resource -> ResourceUtils.capabilityStream(resource, namespace))
+			.filter(ResourceUtils.matcher(requirement, this::filterPredicate))
+			.collect(ResourceUtils.toCapabilities());
+	}
 
-				if (!ResourceUtils.isEffective(requirement, capability))
-					return false;
-
-				String filter = requirement.getDirectives()
-					.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-				if (filter == null)
-					return true;
-
-				try {
-					Filter f = cache.computeIfAbsent(filter, (k) -> new Filter(k));
-					return f.matchMap(capability.getAttributes());
-				} catch (Exception e) {
-					return false;
-				}
-			})
-			.collect(toCapabilities());
+	private Predicate<Map<String, Object>> filterPredicate(String filterString) {
+		if (filterString == null) {
+			return ResourceUtils.filterPredicate(null);
+		}
+		return cache.computeIfAbsent(filterString, ResourceUtils::filterPredicate);
 	}
 
 	public void add(Resource resource) {
@@ -88,19 +79,7 @@ public class ResourcesRepository extends BaseRepository {
 	}
 
 	public static Collector<Capability, List<Capability>, List<Capability>> toCapabilities() {
-		return Collector.of(ArrayList::new, ResourcesRepository::accumulator, ResourcesRepository::merger);
-	}
-
-	private static <E, C extends Collection<E>> void accumulator(C c, E e) {
-		if (!c.contains(e)) {
-			c.add(e);
-		}
-	}
-
-	private static <E, C extends Collection<E>> C merger(C t, C u) {
-		u.removeAll(t);
-		t.addAll(u);
-		return t;
+		return ResourceUtils.toCapabilities();
 	}
 
 	public static Collector<Resource, ResourcesRepository, ResourcesRepository> toResourcesRepository() {
@@ -110,5 +89,10 @@ public class ResourcesRepository extends BaseRepository {
 	private static ResourcesRepository combiner(ResourcesRepository t, ResourcesRepository u) {
 		t.addAll(u.resources);
 		return t;
+	}
+
+	@Override
+	public String toString() {
+		return resources.toString();
 	}
 }

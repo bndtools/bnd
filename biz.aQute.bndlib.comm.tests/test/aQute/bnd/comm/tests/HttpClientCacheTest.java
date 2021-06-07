@@ -17,8 +17,8 @@ import junit.framework.TestCase;
 
 public class HttpClientCacheTest extends TestCase {
 
-	File			tmp		= IO.getFile("generated/tmp");
-	File			cache	= IO.getFile(tmp, "cache");
+	File			tmp;
+	File			cache;
 	private Httpbin	httpServer;
 	String			etag;
 
@@ -51,8 +51,14 @@ public class HttpClientCacheTest extends TestCase {
 		}
 	}
 
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
+
 	@Override
 	public void setUp() throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+		cache = IO.getFile(tmp, "cache");
 		IO.delete(tmp);
 		tmp.mkdirs();
 		Config config = new Config();
@@ -63,7 +69,6 @@ public class HttpClientCacheTest extends TestCase {
 
 	@Override
 	public void tearDown() throws Exception {
-		IO.delete(tmp);
 		IO.close(httpServer);
 	}
 

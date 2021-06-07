@@ -1,7 +1,9 @@
 package aQute.bnd.osgi;
 
+import static aQute.bnd.exceptions.BiConsumerWithException.asBiConsumer;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -29,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
@@ -43,7 +46,6 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.zip.CRC32;
@@ -55,15 +57,18 @@ import java.util.zip.ZipOutputStream;
 
 import aQute.bnd.classfile.ClassFile;
 import aQute.bnd.classfile.ModuleAttribute;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.Iterables;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.lib.zip.ZipUtil;
+import aQute.libg.cryptography.Digester;
+import aQute.libg.cryptography.SHA256;
 import aQute.libg.glob.PathSet;
 
 public class Jar implements Closeable {
@@ -113,6 +118,9 @@ public class Jar implements Closeable {
 	private Compression											compression				= Compression.DEFLATE;
 	private boolean												closed;
 	private String[]											algorithms;
+	private SHA256												sha256;
+	private boolean												calculateFileDigest;
+	private int													fileLength				= -1;
 
 	public Jar(String name) {
 		this.name = name;
@@ -132,8 +140,7 @@ public class Jar implements Closeable {
 	}
 
 	public Jar(String name, InputStream in, long lastModified) throws IOException {
-		this(name);
-		buildFromInputStream(in, lastModified);
+		this(name, in);
 	}
 
 	@SuppressWarnings("resource")
@@ -165,10 +172,10 @@ public class Jar implements Closeable {
 						if (entry.isDirectory()) {
 							continue;
 						}
-						if (filter.test(entry.getName())) {
-							int size = (int) entry.getSize();
-							try (ByteBufferOutputStream bbos = new ByteBufferOutputStream(
-								(size == -1) ? BUFFER_SIZE : size + 1)) {
+						String path = ZipUtil.cleanPath(entry.getName());
+						if (filter.test(path)) {
+							int size = (entry.getSize() < 0) ? BUFFER_SIZE : (1 + (int) entry.getSize());
+							try (ByteBufferOutputStream bbos = new ByteBufferOutputStream(size)) {
 								bbos.write(jin);
 								Resource resource = new EmbeddedResource(bbos.toByteBuffer(),
 									ZipUtil.getModifiedTime(entry));
@@ -211,8 +218,9 @@ public class Jar implements Closeable {
 		return name;
 	}
 
-	public Jar(String string, InputStream resourceAsStream) throws IOException {
-		this(string, resourceAsStream, 0);
+	public Jar(String name, InputStream in) throws IOException {
+		this(name);
+		buildFromInputStream(in);
 	}
 
 	public Jar(String string, File file) throws IOException {
@@ -279,19 +287,24 @@ public class Jar implements Closeable {
 	}
 
 	private Jar buildFromResource(Resource resource) throws Exception {
-		return buildFromInputStream(resource.openInputStream(), resource.lastModified());
+		return buildFromInputStream(resource.openInputStream());
 	}
 
-	private Jar buildFromInputStream(InputStream in, long lastModified) throws IOException {
+	private Jar buildFromInputStream(InputStream in) throws IOException {
 		try (ZipInputStream jin = new ZipInputStream(in)) {
 			for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
 				if (entry.isDirectory()) {
 					continue;
 				}
-				int size = (int) entry.getSize();
-				try (ByteBufferOutputStream bbos = new ByteBufferOutputStream((size == -1) ? BUFFER_SIZE : size + 1)) {
+				int size = (entry.getSize() < 0) ? BUFFER_SIZE : (1 + (int) entry.getSize());
+				try (ByteBufferOutputStream bbos = new ByteBufferOutputStream(size)) {
 					bbos.write(jin);
-					putResource(entry.getName(), new EmbeddedResource(bbos.toByteBuffer(), lastModified), true);
+					Resource resource = new EmbeddedResource(bbos.toByteBuffer(), ZipUtil.getModifiedTime(entry));
+					byte[] extra = entry.getExtra();
+					if (extra != null) {
+						resource.setExtra(Resource.encodeExtra(extra));
+					}
+					putResource(entry.getName(), resource, true);
 				}
 			}
 		}
@@ -308,22 +321,12 @@ public class Jar implements Closeable {
 	}
 
 	public boolean putResource(String path, Resource resource) {
-		check();
 		return putResource(path, resource, true);
-	}
-
-	private static String cleanPath(String path) {
-		int start = 0;
-		int end = path.length();
-		while ((start < end) && (path.charAt(start) == '/')) {
-			start++;
-		}
-		return path.substring(start);
 	}
 
 	public boolean putResource(String path, Resource resource, boolean overwrite) {
 		check();
-		path = cleanPath(path);
+		path = ZipUtil.cleanPath(path);
 
 		if (path.equals(manifestName)) {
 			manifest = null;
@@ -332,7 +335,11 @@ public class Jar implements Closeable {
 		} else if (path.equals(Constants.MODULE_INFO_CLASS)) {
 			moduleAttribute = null;
 		}
-		Map<String, Resource> s = directories.computeIfAbsent(getParent(path), dir -> {
+		String dir = getParent(path);
+		Map<String, Resource> s = directories.get(dir);
+		if (s == null) {
+			s = new TreeMap<>();
+			directories.put(dir, s);
 			// make ancestor directories
 			for (int n; (n = dir.lastIndexOf('/')) > 0;) {
 				dir = dir.substring(0, n);
@@ -340,8 +347,7 @@ public class Jar implements Closeable {
 					break;
 				directories.put(dir, null);
 			}
-			return new TreeMap<>();
-		});
+		}
 		boolean duplicate = s.containsKey(path);
 		if (!duplicate || overwrite) {
 			resources.put(path, resource);
@@ -353,16 +359,18 @@ public class Jar implements Closeable {
 
 	public Resource getResource(String path) {
 		check();
-		path = cleanPath(path);
+		path = ZipUtil.cleanPath(path);
 		return resources.get(path);
 	}
 
-	public Stream<Resource> getResources(Predicate<String> matches) {
-		check();
-		return resources.keySet()
+	public Stream<String> getResourceNames(Predicate<String> matches) {
+		return getResources().keySet()
 			.stream()
-			.filter(matches)
-			.map(resources::get);
+			.filter(matches);
+	}
+
+	public Stream<Resource> getResources(Predicate<String> matches) {
+		return getResourceNames(matches).map(resources::get);
 	}
 
 	private String getParent(String path) {
@@ -381,7 +389,7 @@ public class Jar implements Closeable {
 
 	public Map<String, Resource> getDirectory(String path) {
 		check();
-		path = cleanPath(path);
+		path = ZipUtil.cleanPath(path);
 		return directories.get(path);
 	}
 
@@ -468,8 +476,13 @@ public class Jar implements Closeable {
 
 	public boolean exists(String path) {
 		check();
-		path = cleanPath(path);
+		path = ZipUtil.cleanPath(path);
 		return resources.containsKey(path);
+	}
+
+	public boolean isEmpty() {
+		check();
+		return resources.isEmpty();
 	}
 
 	public void setManifest(Manifest manifest) {
@@ -488,8 +501,9 @@ public class Jar implements Closeable {
 
 	public void setManifestName(String manifestName) {
 		check();
-		if (manifestName == null || manifestName.length() == 0)
-			throw new IllegalArgumentException("Manifest name cannot be null or empty!");
+		manifestName = ZipUtil.cleanPath(manifestName);
+		if (manifestName.isEmpty())
+			throw new IllegalArgumentException("Manifest name must not be empty");
 		this.manifestName = manifestName;
 	}
 
@@ -501,7 +515,7 @@ public class Jar implements Closeable {
 			IO.delete(file);
 			throw t;
 		}
-		file.setLastModified(lastModified);
+		file.setLastModified(lastModified());
 	}
 
 	public void write(String file) throws Exception {
@@ -509,12 +523,21 @@ public class Jar implements Closeable {
 		write(new File(file));
 	}
 
-	public void write(OutputStream out) throws Exception {
+	public void write(OutputStream to) throws Exception {
 		check();
 
 		if (!doNotTouchManifest && !nomanifest && algorithms != null) {
-			doChecksums(out);
+			doChecksums(to);
 			return;
+		}
+
+		OutputStream out = to;
+		Digester<SHA256> digester = null;
+		sha256 = null;
+		fileLength = -1;
+
+		if (calculateFileDigest) {
+			out = digester = SHA256.getDigester(out);
 		}
 
 		ZipOutputStream jout = nomanifest || doNotTouchManifest ? new ZipOutputStream(out) : new JarOutputStream(out);
@@ -548,6 +571,11 @@ public class Jar implements Closeable {
 				writeResource(jout, directories, entry.getKey(), entry.getValue());
 		}
 		jout.finish();
+
+		if (digester != null) {
+			this.sha256 = digester.digest();
+			this.fileLength = digester.getLength();
+		}
 	}
 
 	public void writeFolder(File dir) throws Exception {
@@ -613,7 +641,7 @@ public class Jar implements Closeable {
 			write(f);
 			try (Jar tmp = new Jar(f)) {
 				tmp.setCompression(compression);
-				tmp.calcChecksums(algorithms);
+				tmp.calcChecksums(algs);
 				tmp.write(out);
 			} finally {
 				IO.delete(f);
@@ -643,7 +671,7 @@ public class Jar implements Closeable {
 		if (isReproducible()) {
 			ze.setTime(ZIP_ENTRY_CONSTANT_TIME);
 		} else {
-			ZipUtil.setModifiedTime(ze, lastModified);
+			ZipUtil.setModifiedTime(ze, lastModified());
 		}
 		Resource r = new WriteResource() {
 
@@ -789,13 +817,13 @@ public class Jar implements Closeable {
 	 */
 	private static int write(OutputStream out, int width, byte[] bytes) throws IOException {
 		int w = width;
-		for (int i = 0; i < bytes.length; i++) {
+		for (byte b : bytes) {
 			if (w >= 72 - EOL.length) { // we need to add the EOL!
 				out.write(EOL);
 				out.write(' ');
 				w = 1;
 			}
-			out.write(bytes[i]);
+			out.write(b);
 			w++;
 		}
 		return w;
@@ -804,23 +832,16 @@ public class Jar implements Closeable {
 	/**
 	 * Output an Attributes map. We will sort this map before outputing.
 	 *
-	 * @param value the attrbutes
+	 * @param value the attributes
 	 * @param out the output stream
 	 * @throws IOException when something fails
 	 */
 	private static void attributes(Attributes value, OutputStream out) throws IOException {
-		TreeMap<String, String> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-		for (Map.Entry<Object, Object> entry : value.entrySet()) {
-			map.put(entry.getKey()
-				.toString(),
-				entry.getValue()
-					.toString());
-		}
-
-		map.remove("Manifest-Version"); // get rid of manifest version
-		for (Map.Entry<String, String> entry : map.entrySet()) {
-			writeEntry(out, entry.getKey(), entry.getValue());
-		}
+		MapStream.of(value)
+			.map((k, v) -> MapStream.entry(k.toString(), v.toString()))
+			.filterKey(k -> !k.equals("Manifest-Version"))
+			.sortedByKey(String.CASE_INSENSITIVE_ORDER)
+			.forEachOrdered(asBiConsumer((k, v) -> writeEntry(out, k, v)));
 	}
 
 	private static Manifest clean(Manifest org) {
@@ -897,9 +918,10 @@ public class Jar implements Closeable {
 				}
 				ZipUtil.setModifiedTime(ze, lastModified);
 			}
-			if (resource.getExtra() != null)
-				ze.setExtra(resource.getExtra()
-					.getBytes(UTF_8));
+			String extra = resource.getExtra();
+			if (extra != null) {
+				ze.setExtra(Resource.decodeExtra(extra));
+			}
 			putEntry(jout, ze, resource);
 		} catch (Exception e) {
 			throw new Exception("Problem writing resource " + path, e);
@@ -917,7 +939,7 @@ public class Jar implements Closeable {
 			if (isReproducible()) {
 				ze.setTime(ZIP_ENTRY_CONSTANT_TIME);
 			} else {
-				ZipUtil.setModifiedTime(ze, lastModified);
+				ZipUtil.setModifiedTime(ze, lastModified());
 			}
 			if (compression == Compression.STORE) {
 				ze.setCrc(0L);
@@ -993,18 +1015,17 @@ public class Jar implements Closeable {
 
 	public boolean hasDirectory(String path) {
 		check();
-		path = cleanPath(path);
+		path = ZipUtil.cleanPath(path);
 		return directories.containsKey(path);
 	}
 
 	public List<String> getPackages() {
 		check();
-		return directories.entrySet()
-			.stream()
-			.filter(e -> e.getValue() != null)
-			.map(e -> e.getKey()
-				.replace('/', '.'))
-			.collect(Collectors.toList());
+		return MapStream.of(directories)
+			.filterValue(mdir -> Objects.nonNull(mdir) && !mdir.isEmpty())
+			.keys()
+			.map(k -> k.replace('/', '.'))
+			.collect(toList());
 	}
 
 	public File getSource() {
@@ -1028,7 +1049,7 @@ public class Jar implements Closeable {
 
 	public Resource remove(String path) {
 		check();
-		path = cleanPath(path);
+		path = ZipUtil.cleanPath(path);
 		Resource resource = resources.remove(path);
 		if (resource != null) {
 			String dir = getParent(path);
@@ -1056,7 +1077,7 @@ public class Jar implements Closeable {
 		check();
 		if (algorithms == null)
 			algorithms = new String[] {
-				"SHA", "MD5"
+				"SHA1", "MD5"
 			};
 
 		Manifest m = getManifest();
@@ -1273,26 +1294,26 @@ public class Jar implements Closeable {
 	}
 
 	public void removePrefix(String prefixLow) {
-		prefixLow = cleanPath(prefixLow);
-		String prefixHigh = prefixLow + "\uFFFF";
+		prefixLow = ZipUtil.cleanPath(prefixLow);
+		String prefixHigh = prefixLow.concat("\uFFFF");
 		resources.subMap(prefixLow, prefixHigh)
 			.clear();
 		if (prefixLow.endsWith("/")) {
 			prefixLow = prefixLow.substring(0, prefixLow.length() - 1);
-			prefixHigh = prefixLow + "\uFFFF";
+			prefixHigh = prefixLow.concat("\uFFFF");
 		}
 		directories.subMap(prefixLow, prefixHigh)
 			.clear();
 	}
 
 	public void removeSubDirs(String dir) {
-		dir = cleanPath(dir);
+		dir = ZipUtil.cleanPath(dir);
 		if (!dir.endsWith("/")) {
-			dir = dir + "/";
+			dir = dir.concat("/");
 		}
-		List<String> subDirs = new ArrayList<>(directories.subMap(dir, dir + "\uFFFF")
+		List<String> subDirs = new ArrayList<>(directories.subMap(dir, dir.concat("\uFFFF"))
 			.keySet());
-		subDirs.forEach(subDir -> removePrefix(subDir + "/"));
+		subDirs.forEach(subDir -> removePrefix(subDir.concat("/")));
 	}
 
 	private static final Predicate<String> pomXmlFilter = new PathSet("META-INF/maven/*/*/pom.xml").matches();
@@ -1301,4 +1322,39 @@ public class Jar implements Closeable {
 		return getResources(pomXmlFilter);
 	}
 
+	/**
+	 * Make this jar calculate the SHA256 when it is saved as a file. When this
+	 * JAR is written, the digest is always cleared. If this flag is on, it will
+	 * be calculated and set when the file is successfully saved.
+	 *
+	 * @param onOrOff state of calculating the digest when writing this jar.
+	 *            true is on, otherwise off
+	 */
+
+	public Jar setCalculateFileDigest(boolean onOrOff) {
+		this.calculateFileDigest = onOrOff;
+		return this;
+	}
+
+	/**
+	 * Get the SHA256 digest of the last write operation when
+	 * {@link #setCalculateFileDigest(boolean)} was on.
+	 *
+	 * @return the SHA 256 digest or empty
+	 */
+
+	public Optional<byte[]> getSHA256() {
+		return Optional.ofNullable(sha256)
+			.map(SHA256::digest);
+	}
+
+	/**
+	 * Get the length of the last written file or -1 if unavailable. The length
+	 * is only calculated when the checksum calculation was on during the write.
+	 *
+	 * @return the length of the last written file or -1 if unavailable.
+	 */
+	public int getLength() {
+		return fileLength;
+	}
 }

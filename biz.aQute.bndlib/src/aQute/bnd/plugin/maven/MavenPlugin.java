@@ -16,7 +16,7 @@ import aQute.lib.io.IO;
  * This plugin provides life cycle support for maven projects
  */
 
-@BndPlugin(name = "maven")
+@BndPlugin(name = "maven", hide = true)
 public class MavenPlugin extends LifeCyclePlugin {
 
 	@Override

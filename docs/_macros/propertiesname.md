@@ -1,4 +1,5 @@
-___
+---
+layout: default
 title: 	propertiesname 
 class: 	Project
 summary: Return the name of the properties file

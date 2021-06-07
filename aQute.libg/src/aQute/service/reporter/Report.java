@@ -22,6 +22,19 @@ public interface Report {
 		 */
 		public Object	details;
 		public int		length;
+
+		public Location dup() {
+			Location l = new Location();
+			l.message = message;
+			l.line = line;
+			l.file = file;
+			l.context = context;
+			l.reference = reference;
+			l.methodName = methodName;
+			l.details = details;
+			l.length = length;
+			return l;
+		}
 	}
 
 	/**

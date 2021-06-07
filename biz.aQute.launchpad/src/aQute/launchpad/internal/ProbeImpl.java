@@ -10,10 +10,10 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.component.runtime.ServiceComponentRuntime;
 import org.osgi.service.component.runtime.dto.ComponentDescriptionDTO;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.launchpad.Launchpad;
 import aQute.launchpad.Probe;
 import aQute.launchpad.Service;
-import aQute.lib.exceptions.Exceptions;
 
 public class ProbeImpl implements Probe {
 

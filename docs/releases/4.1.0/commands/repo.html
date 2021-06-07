@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/4.1.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>repo [options] ...</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="repo [options] ..." />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Description" />
+<meta property="og:description" content="Description" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-10-12T20:06:21-04:00" />
+<script type="application/ld+json">
+{"headline":"repo [options] ...","dateModified":"2019-10-12T20:06:21-04:00","datePublished":"2019-10-12T20:06:21-04:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"/releases/4.1.0/commands/repo.html"},"url":"/releases/4.1.0/commands/repo.html","description":"Description","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/4.1.0/"><img
+			class=menu-logo src='/releases/4.1.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/4.1.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/4.1.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/4.1.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/4.1.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/4.1.0/chapters/860-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">4.1.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/4.1.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/150-build.html">Build</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/160-jars.html">Generating JARs</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/220-contracts.html">Contracts</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/230-manifest-annotations.html">Manifest Annotations</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/300-launching.html">Launching</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/400-commandline.html">From the command line</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/610-plugin.html">Plugins</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/800-headers.html">Header Reference</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/820-instructions.html">Instruction</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/850-macros.html">Macro Reference</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/855-macros-ref.html">Macro Index</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/860-commands.html">Command Reference</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/870-plugins.html">Plugins Reference</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> repo [options] <sub-cmd> ...</h1>
+				<h2 id="description">Description</h2>
+
+<p>Access to the repositories. Provides a number of sub commands to manipulate the repository (see repo help) that provide access to the installed repos for the current project.</p>
+
+<h2 id="synopsis">Synopsis</h2>
+
+<h2 id="options">Options</h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ -c, --cache ]            - Include the cache repository
+[ -f, --filerepo &lt;string&gt;* ] - Add a File Repository
+[ -m, --maven ]            - Include the maven repository
+[ -p, --project &lt;string&gt; ] - Specify a project
+[ -r, --release &lt;glob&gt; ]   - Override the name of the release repository
+                            (-releaserepo)
+Available sub-commands:
+
+  copy                        -
+  diff                        - Diff jars (or show tree)
+  get                         - Get an artifact from a repository.
+  list                        - List all artifacts from the current repositories
+                                with their versions
+  put                         - Put an artifact into the repository after it has
+                                been verified.
+  refresh                     - Refresh refreshable repositories
+  repos                       - List the current repositories
+  versions                    - Displays a list of versions for a given bsn that
+                                can be found in the current repositories.
+</code></pre></div></div>
+
+<h2 id="examples">Examples</h2>
+
+<h2 id="sub-commands">Sub-commands</h2>
+
+<h3 id="copy">Copy</h3>
+
+<h4 id="description-1">Description</h4>
+
+<h4 id="synopsis-1">Synopsis</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>copy [options] &lt;source&gt; &lt;dest&gt;
+</code></pre></div></div>
+
+<h4 id="options-1">Options</h4>
+
+<p>[ -d, –dry ]              - Do not really copy but trace the steps</p>
+
+<h3 id="diff">diff</h3>
+
+<h4 id="description-2">Description</h4>
+
+<p>Show the diff tree of a single repo or compare 2
+repos. A diff tree is a detailed tree of all
+aspects of a bundle, including its packages,
+types, methods, fields, and modifiers.</p>
+
+<h4 id="synopsis-2">Synopsis</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gh">diff [options] &lt;newer repo&gt; &lt;[older repo]&gt;
+</span></code></pre></div></div>
+
+<h4 id="options-2">Options</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ -a, --added ]            - Just additions (no removes)
+[ -A, --all ]              - Both add and removes
+[ -d, --diff ]             - Formatted like diff
+[ -f, --full ]             - Show full diff tree (also wen entries are equal)
+[ -j, --json ]             - Serialize to JSON
+[ -r, --remove ]           - Just removes (no additions)
+</code></pre></div></div>
+
+<h3 id="get">get</h3>
+
+<h4 id="description-3">Description</h4>
+
+<p>Get an artifact from a repository.</p>
+
+<h4 id="synopsis-3">Synopsis</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>get [options] &lt;bsn&gt; &lt;[range]&gt;
+</code></pre></div></div>
+
+<h4 id="options-3">Options</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ -f, --from &lt;instruction&gt; ] -
+[ -l, --lowest ]           -
+[ -o, --output &lt;string&gt; ]  - Where to store the artifact
+</code></pre></div></div>
+
+<h3 id="list">list</h3>
+
+<h4 id="description-4">Description</h4>
+
+<p>List all artifacts from the current repositories with their versions</p>
+
+<h4 id="synopsis-4">Synopsis</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>list [options]
+</code></pre></div></div>
+
+<h4 id="options-4">Options</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ -f, --from &lt;instruction&gt; ] - A glob expression on the source repo, default
+                            is all repos
+[ -n, --noversions ]       - Do not list the versions, just the bsns
+[ -q, --query &lt;string&gt; ]   - Optional search term for the list of bsns (given
+                            to the repo)
+</code></pre></div></div>
+
+<h3 id="put">put</h3>
+
+<h4 id="description-5">Description</h4>
+
+<p>Put an artifact into the repository after it has been verified.</p>
+
+<h4 id="synopsis-5">Synopsis</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>put [options] &lt;&lt;jar&gt;...&gt;
+</code></pre></div></div>
+
+<h4 id="options-5">Options</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ -f, --force ]            - Put in repository even if verification fails
+                            (actually, no verification is done).
+</code></pre></div></div>
+
+<h3 id="refresh">refresh</h3>
+
+<h4 id="description-6">Description</h4>
+
+<p>Refresh refreshable repositories</p>
+
+<h4 id="synopsis-6">Synopsis</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>refresh
+</code></pre></div></div>
+
+<h4 id="options-6">Options</h4>
+
+<h3 id="repos">repos</h3>
+
+<h4 id="description-7">Description</h4>
+
+<p>List the current repositories</p>
+
+<h4 id="synopsis-7">Synopsis</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>repos
+</code></pre></div></div>
+
+<h4 id="options-7">Options</h4>
+
+<h3 id="versions">versions</h3>
+
+<h4 id="description-8">Description</h4>
+
+<p>Displays a sorted set of versions for a given bsn that can be found in the current repositories.</p>
+
+<h4 id="synopsis-8">Synopsis</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>versions &lt;bsn&gt;
+</code></pre></div></div>
+
+<h4 id="options-8">Options</h4>
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/4.1.0/commands/release.html'></a> <a href='/releases/4.1.0/commands/run.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.1.0/contact.html">Contact</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.1.0/">Developers</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.1.0/">More</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

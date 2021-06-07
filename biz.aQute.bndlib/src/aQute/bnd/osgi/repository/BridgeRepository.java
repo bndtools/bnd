@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.resource.Capability;
@@ -19,6 +21,7 @@ import org.osgi.service.repository.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
@@ -26,7 +29,7 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.libg.glob.Glob;
 
 /**
@@ -47,10 +50,8 @@ public class BridgeRepository {
 		allBndInfo = rb.buildSyntheticRequirement();
 	}
 
-	private static final SortedSet<Version>					EMPTY_VERSIONS	= new TreeSet<>();
-
 	private final Repository								repository;
-	private final Map<String, Map<Version, ResourceInfo>>	index			= new HashMap<>();
+	private final Map<String, Map<Version, ResourceInfo>>	index	= new HashMap<>();
 
 	@ProviderType
 	public interface InfoCapability extends Capability {
@@ -73,6 +74,7 @@ public class BridgeRepository {
 		boolean			error;
 		String			tooltip;
 		private String	title;
+		private String	name;
 
 		public String getTooltip() {
 			init();
@@ -100,7 +102,7 @@ public class BridgeRepository {
 			String sha256 = cc == null ? "<>" : cc.osgi_content();
 
 			String error = null;
-			String name = null;
+			name = null;
 			String from = null;
 
 			if (info != null) {
@@ -159,6 +161,11 @@ public class BridgeRepository {
 			return BridgeRepository.getInfo(resource);
 		}
 
+		public String getName() {
+			init();
+			return name;
+		}
+
 		public String getTitle() {
 			init();
 			return title;
@@ -173,33 +180,40 @@ public class BridgeRepository {
 			return resource;
 		}
 
+		String getError() {
+			if (!error)
+				return null;
+
+			InfoCapability info = getInfo();
+			return info.name() + "-" + info.version() + " " + info.error();
+		}
+
 		@Override
 		public String toString() {
 			return "ResourceInfo [error=" + error + ", resource=" + resource + "]";
 		}
 	}
 
-	public BridgeRepository(Repository repository) throws Exception {
+	public BridgeRepository(Repository repository) {
 		this.repository = repository;
-		index();
+		Set<Resource> resources = new HashSet<>();
+		find(resources, allIdentity);
+		find(resources, allBndInfo);
+		resources.forEach(this::index);
 	}
 
-	public BridgeRepository(Collection<Resource> resources) throws Exception {
+	public BridgeRepository(ResourcesRepository repository) {
+		this.repository = repository;
+		repository.getResources()
+			.forEach(this::index);
+	}
+
+	public BridgeRepository(Collection<Resource> resources) {
 		this(new ResourcesRepository(resources));
 	}
 
 	public BridgeRepository() {
-		this.repository = new ResourcesRepository();
-	}
-
-	private void index() throws Exception {
-
-		Set<Resource> resources = new HashSet<>();
-
-		find(resources, allIdentity);
-		find(resources, allBndInfo);
-
-		resources.forEach(this::index);
+		this(new ResourcesRepository());
 	}
 
 	private void find(Set<Resource> resources, Requirement req) {
@@ -284,7 +298,7 @@ public class BridgeRepository {
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		Map<Version, ResourceInfo> map = index.get(bsn);
 		if (map == null || map.isEmpty()) {
-			return EMPTY_VERSIONS;
+			return new TreeSet<>();
 		}
 		return new TreeSet<>(map.keySet());
 	}
@@ -351,17 +365,38 @@ public class BridgeRepository {
 		return null;
 	}
 
-	private static InfoCapability getInfo(Resource resource) {
-		List<Capability> capabilities = resource.getCapabilities(BND_INFO);
-		InfoCapability info;
-		if (capabilities.size() >= 1) {
-			info = ResourceUtils.as(capabilities.get(0), InfoCapability.class);
-		} else
-			info = null;
-		return info;
+	public static InfoCapability getInfo(Resource resource) {
+		return ResourceUtils.capabilityStream(resource, BND_INFO, InfoCapability.class)
+			.findFirst()
+			.orElse(null);
 	}
 
 	public Set<Resource> getResources() {
 		return ResourceUtils.getAllResources(repository);
+	}
+
+	final static Pattern NOT_A_BUNDLE_P = Pattern.compile(".*" + Constants.NOT_A_BUNDLE_S + ".*",
+		Pattern.CASE_INSENSITIVE);
+
+	public String getStatus() {
+		return index.entrySet()
+			.stream()
+			.flatMap(e -> e.getValue()
+				.values()
+				.stream())
+			.filter(ResourceInfo::isError)
+			.map(ResourceInfo::getError)
+			.filter(NOT_A_BUNDLE_P.asPredicate()
+				.negate())
+			.findAny()
+			.orElse(null);
+	}
+
+	public List<ResourceInfo> getResourceInfos() {
+		return index.values()
+			.stream()
+			.flatMap(map -> map.values()
+				.stream())
+			.collect(Collectors.toList());
 	}
 }

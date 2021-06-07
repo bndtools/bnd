@@ -10,7 +10,7 @@ import java.util.Map;
 import aQute.lib.date.Dates;
 
 public class DateHandler extends Handler {
-	private static final DateTimeFormatter	DATE_TIME_FORMATTER	= DateTimeFormatter.ISO_LOCAL_DATE_TIME
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 		.withLocale(Locale.ENGLISH)
 		.withZone(Dates.UTC_ZONE_ID);
 

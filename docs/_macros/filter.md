@@ -4,7 +4,6 @@ class: Macro
 title: filter ';' LIST ';' REGEX
 summary: Filters entries in a list that matching a regular expression
 ---
-layout: default
 
 	public String _filter(String args[]) {
 		return filter(args, false);

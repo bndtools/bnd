@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/4.0.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.4.0 -->
+<title>Contracts</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="Contracts" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="The OSGi has a very elegant package version model there are still many that think this is too much work. They do not want to be bothered by the niceties of semantic versions and just want to use, let’s say, Servlet 3.0. For those people (seemingly not interested in minimizing dependencies) the OSGi Alliance came up with Portable Java Contracts. A contract allows you to:" />
+<meta property="og:description" content="The OSGi has a very elegant package version model there are still many that think this is too much work. They do not want to be bothered by the niceties of semantic versions and just want to use, let’s say, Servlet 3.0. For those people (seemingly not interested in minimizing dependencies) the OSGi Alliance came up with Portable Java Contracts. A contract allows you to:" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-10-12T20:27:56-04:00" />
+<script type="application/ld+json">
+{"datePublished":"2019-10-12T20:27:56-04:00","description":"The OSGi has a very elegant package version model there are still many that think this is too much work. They do not want to be bothered by the niceties of semantic versions and just want to use, let’s say, Servlet 3.0. For those people (seemingly not interested in minimizing dependencies) the OSGi Alliance came up with Portable Java Contracts. A contract allows you to:","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"/releases/4.0.0/chapters/220-contracts.html"},"url":"/releases/4.0.0/chapters/220-contracts.html","headline":"Contracts","dateModified":"2019-10-12T20:27:56-04:00","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<style>
+			 body {
+				counter-reset: h1 14;
+			}
+		</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/4.0.0/"><img
+			class=menu-logo src='/releases/4.0.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/4.0.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/4.0.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/4.0.0/chapters/820-instructions.html">Instructions
+			</a><a href="/releases/4.0.0/chapters/850-macros.html">Macros
+			</a><div class="releases"><button class="dropbtn">4.0.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/4.0.0/chapters/100-release.html">Release</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/150-build.html">Build</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/160-jars.html">Generating JARs</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li class=selected>Contracts
+
+
+
+			<li><a href="/releases/4.0.0/chapters/230-manifest-annotations.html">Manifest Annotations</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/300-launching.html">Launching</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/400-commandline.html">From the command line</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/610-plugin.html">Plugins</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/790-format.html">File Format</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/800-headers.html">Header Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/820-instructions.html">Instruction</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/850-macros.html">Macro Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/860-commands.html">Command Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/870-plugins.html">Plugins Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			<div class=enroute><a href="https://enroute.osgi.org">Supported by OSGi enRoute <img src="/releases/4.0.0/img/EnRouteIcon_CMYK.png"></a></div>
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> Contracts</h1>
+				<p>The OSGi has a very elegant package version model there are still many that think this is too much work. They do not want to be bothered by the niceties of semantic versions and just want to use, let’s say, Servlet 3.0. For those people (seemingly not interested in minimizing dependencies) the OSGi Alliance came up with <a href="https://www.osgi.org/portable-java-contract-definitions">Portable Java Contracts</a>. A contract allows you to:</p>
+
+<ul>
+  <li>Declare that a bundle provides the API of the given specification</li>
+  <li>Require that the API comes from a bundle that made the declaration</li>
+</ul>
+
+<p>This very common pattern is called the Capability/Requirement (C/R) model in OSGi, it underlies all of its dependency concepts like Import/Export package and others; it forms the foundation of the OSGi Bundle Repository. If you ever want to know what is happening deep down inside a framework than look at the Wiring API and you see the requirements and capabilities in their most fundamental form.
+You can find more information about the <a href="https://blog.osgi.org/2014/09/portable-java-contracts-for-javax.html">Portable Contracts in this blogpost</a>.</p>
+
+<p>Capabilities declare a set of properties that describe something that a bundle can provide. A Requirement in a bundle has a filter that must match a capability before this bundle can be resolved. To prevent requirements matching completely unrelated capabilities they must both be defined in the same namespace,, where the namespace then defines the semantics of the properties. Using the C/R model we were able to describe most of the OSGi dependencies with surprisingly few additional concepts. For a modern OSGi resolver there is very little difference between the Import-Package and Require-Bundle headers.</p>
+
+<p>So how do those contracts work? Well, the bundle that provides the API for the contract has a contract capability. What this means is that it provides a Provide-Capability clause in the osgi.contract namespace, for example:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Bundle P:
+  Provide-Capability:
+     osgi.contract;
+      osgi.contract=JavaServlet;
+      uses:="javax.servlet,javax.servlet.http";
+      version:Version="3.0"
+  Export-Package: javax.servlet, javax.servlet.http
+</code></pre></div></div>
+
+<p>This contract defines two properties, the contract name (by convention this is the namespace name as property key) and the version. A bundle that wants to rely on this API can add the following requirement to its manifest:
+Bundle R:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  Require-Capability: osgi.contract;
+    filter:="(&amp;(osgi.contract=JavaServlet)(version=3.0))"
+  Import-Package: javax.servlet, javax.servlet.http
+</code></pre></div></div>
+
+<p>Experienced OSGi users should have cringed at these versionless packages, cringing becomes a gut-reaction at the sight of versionless packages. However, in this case it actually cannot harm. The previous example will ensure that Bundle P will be the class loader for the Bundle R for packages javax.servlet, javax.servlet.http. The magic is in the uses: directive, if the Require-Capability in bundle R is resolved to the Provide-Capability in bundle P then bundle R must import these packages from bundle P.</p>
+
+<p>Obviously bnd has support for this (well, since today, i.e. version osgi:biz.aQute.bndlib@2.2.0.20130806-071947 or later). First bnd can make it easier to create the Provide Capability header since the involved packages are in the Export-Package as well as in the Provide-Capability headers. The do-no-repeat-yourself mantra dictated am ${exports} macro. The ${exports} macro is replaced by the exported packages of the bundle, for example:
+Bundle P:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  Provide-Capability: \
+    osgi.contract;\
+      osgi.contract=JavaServlet;\
+      uses:="${exports}";\
+      version:Version="3.0"
+  Export-Package: javax.servlet, javax.servlet.http
+</code></pre></div></div>
+
+<p>That said, the most extensive help you get from bnd is for requiring contracts. Providing a contract is not so cumbersome, after all you’re the provider so you have all the knowledge and the interest in providing metadata. Consuming a contract is less interesting and it is much harder to get the metadata right. In a similar vein, bnd analyzes your classes to find out the dependencies to create the Import-Package statement, doing this by hand is really hard (as other OSGi developing environments can testify!).</p>
+
+<p>So to activate the use of contracts, add the -contract instruction:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bnd.bnd:
+  -contract: *
+</code></pre></div></div>
+
+<p>This instruction will give bnd permission to scan the build path for contracts, i.e. Provide-Capability clauses in the osgi.contract namespace. These declared contracts cause a corresponding requirement in the bundle when the bundle imports packages listed in the uses clause. In the example with Bundle R, bnd will automatically insert the Require-Capability header and remove any versions on the imported packages.
+Sometimes the wildcard for the -contract instruction can be used to limit the contracts that are considered. Sometimes you want a specific contract but not others. Other times you want to skip a specific contract. The following example skips the ‘JavaServlet’ contract:
+bnd.bnd:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  -contract: !JavaServlet,*
+</code></pre></div></div>
+
+<p>The tests provide some examples for people that want to have a deeper understanding: https://github.com/bndtools/bnd/blob/next/biz.aQute.bndlib.tests/src/test/ContractTest.java Contracts will be part of the bnd(tools) 2.2 release (hopefully) at the end of this summer, until then they are experimental. Enjoy. Peter Kriens @pkriens Update: Last example to skip the ‘JavaServlet’ contract was reversed, updated the text to show a reverse example (anything BUT JavaServlet).</p>
+
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/4.0.0/chapters/210-metatype.html'></a> <a href='/releases/4.0.0/chapters/230-manifest-annotations.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.0.0/contact.html">Contact</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.0.0/">Developers</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.0.0/">More</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

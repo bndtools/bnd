@@ -69,6 +69,18 @@ public class UTF8PropertiesTest {
 	}
 
 	@Test
+	public void testQuotedStringInMacro() throws IOException {
+		assertError("-runproperties: ${def;foo;bar='a b c'}", "-runproperties", 0);
+		assertError("-runproperties: $(def;foo;bar='a b c')", "-runproperties", 0);
+		assertError("-runproperties: $[def;foo;bar=\"a b c\"]", "-runproperties", 0);
+		assertError("-runproperties: $<def;foo;bar='a b c'>", "-runproperties", 0);
+		// Guillemet double << >>
+		assertError("-runproperties: $«def;foo;bar='a b c'»", "-runproperties", 0);
+		// Guillemet single < >
+		assertError("-runproperties: $‹def;foo;bar='a b c'›", "-runproperties", 0);
+	}
+
+	@Test
 	public void testMissingDelimeterAfterQuotedString() throws IOException {
 		assertError("-foo: bar='abc' ' '    ;", "-foo", 0,
 			"Found a quote ''' while expecting a delimeter. You should quote the whole values, you can use both single and double quotes:");

@@ -13,10 +13,26 @@
 {{ prefix }}<dependency>
 {{ prefix }}    <groupId>{{ trim(mavenCoordinate.groupId) }}</groupId>
 {{ prefix }}    <artifactId>{{ trim(mavenCoordinate.artifactId) }}</artifactId>
-{{ prefix }}    <version>{{ trim(mavenCoordinate.version) }}</version>
+{{ prefix }}    <version>{{ trim(mavenCoordinate.version) }}</version>{{'\n'}}
+{%- if not empty(mavenCoordinate.classifier) %}{{ prefix }}    <classifier>{{ trim(mavenCoordinate.classifier) }}</classifier>{{'\n'}}{%- endif -%}
 {{ prefix }}</dependency>
 {{ prefix }}```
 {%- endmacro %}
+
+{# 
+# SLING FEATURE COORDINATE
+#}
+{% macro printFeatureCoordinate (mavenCoordinate, checksum) -%}
+```
+{{ prefix }}"bundles": [
+{{ prefix }}   {
+{{ prefix }}    "id": "{{ trim(mavenCoordinate.groupId) }}:{{ trim(mavenCoordinate.artifactId) }}:{{ trim(mavenCoordinate.version) }}{%- if not empty(mavenCoordinate.classifier) %}{{ prefix }}:jar:{{ trim(mavenCoordinate.classifier) }}{%- endif -%}"
+{% if not empty(checksum.sha1) %}{{ prefix }}    "hash": "{{ trim(checksum.sha1) }}"{{'\n'}}{%- endif -%}
+{{ prefix }}   }
+{{ prefix }}]
+{{ prefix }}```
+{%- endmacro %}
+
 
 {# 
 # OSGI COORDINATE
@@ -26,6 +42,20 @@
 ```
 {{ prefix }}Bundle Symbolic Name: {{ trim(symbolicName) }}
 {{ prefix }}Version             : {{ this.printOsgiVersion(version) }}
+{{ prefix }}```
+{%- endmacro %}
+
+{# 
+# CHECKSUM
+#}
+{% macro printChecksum (checksum, prefix) -%}
+{% import _self as this -%}
+```{{'\n'}}
+{%- if not empty(checksum.md5) %}{{ prefix }}md5:    {{ checksum.md5 }}{{'\n'}}{%- endif -%}
+{%- if not empty(checksum.sha1) %}{{ prefix }}sha1:   {{ checksum.sha1 }}{{'\n'}}{%- endif -%}
+{%- if not empty(checksum.sha256) %}{{ prefix }}sha256: {{ checksum.sha256 }}{{'\n'}}{%- endif -%}
+{%- if not empty(checksum.sha256) %}{{ prefix }}sha512: {{ checksum.sha512 }}{{'\n'}}{%- endif -%}
+
 {{ prefix }}```
 {%- endmacro %}
 
@@ -94,11 +124,17 @@
 {%- if not (loop.first) -%}{{ '\n\n---\n\n' }}{%- endif -%}
 {{ this._printComponentTitle(c) }}
 
+{{ this._printComponentServiceDescription(c) }}
+
 {{ this._printComponentServices(c) }}
 
 {{ this._printComponentProperties(c) }}
 
 {{ this._printComponentConfiguration(c, metatypes) }}
+
+{{ this._printComponentReferences(c) }}
+
+{{ this._printComponentJsonConfiguratorSnippet(c, metatypes) }}
 {%- endfor -%}
 {%- endmacro %}
 
@@ -108,6 +144,19 @@
 {% macro _printComponentTitle (c) -%}
 {%- import _self as this -%}
 {{ this.printTitle(c.name,3) }} - *state = {{ (c.defaultEnabled) ? 'enabled' : 'not enabled' }}, activation = {{ (c.immediate) ? 'immediate' : 'delayed' }}*
+{%- endmacro %}
+
+{# 
+# DESCRIPTION
+#}
+{% macro _printComponentServiceDescription (c) -%}
+{%- import _self as this -%}
+{{ this.printTitle('Description',4) }}
+{%- for key, value in c.properties -%}
+{%- if key == 'service.description' -%}
+{{ '\n\n' }}{{ value.values[0] }}
+{%- endif -%}
+{%- endfor -%}
 {%- endmacro %}
 
 {# 
@@ -212,6 +261,117 @@ No information available.
 {%- endif -%}
 {%- endfor -%}
 {%- endif -%}
+{%- endmacro %}
+
+
+{# 
+# COMPONENT REFERENCES
+#}
+{% macro _printComponentReferences (c) -%}
+{%- import _self as this -%}
+{{ this.printTitle('Reference bindings',4) }}{{ '\n\n' }}
+
+{%- if c.references is empty -%}
+No bindings.
+{%- else -%}
+{%- for r in c.references %}
+{{- this.printTableHeaders(['Attribute','Value']) }}
+|name |{{r.name}} |
+|interfaceName |{{r.interfaceName}} |
+|target |{{r.target}} |
+|cardinality |{{r.cardinality}} |
+|policy |{{r.policy}} |
+|policyOption |{{r.policyOption}} |
+|scope |{{r.scope}} |
+{%- endfor -%}
+{%- endif -%}
+{%- endmacro %}
+
+
+{# 
+# COMPONENT JSON-CONFIGURATOR-SNIPPET
+#}
+{% macro _printComponentJsonConfiguratorSnippet (c, metatypes) -%}
+{%- import _self as this -%}
+
+{{ this.printTitle('OSGi-Configurator',4) }}
+
+{% for pid in c.configurationPid %}
+```
+/*
+ * Component: {{ c.name }}
+ * policy:    {{ c.configurationPolicy }}
+ */
+{% set pidOcd = "notset" -%}
+{%- set factoryPidOcd = "notset" -%}
+{%- for ocd in metatypes -%}
+{%- if pid in ocd.pids -%}
+{%- set pidOcd = ocd -%}
+{%- elseif pid in ocd.factoryPids -%}
+{%- set factoryPidOcd = ocd -%}
+{%- endif -%}
+{%- endfor -%}
+{%- set o = "notset" -%}
+{%- if pidOcd != 'notset' -%}
+    "{{ pid }}":{
+{%- set o = pidOcd -%}
+{%- elseif factoryPidOcd != 'notset' -%}
+    "{{ pid }}~FactoryNameChangeIt":{
+{%- set o = factoryPidOcd -%}
+{%- else -%}
+    "{{ pid }}":{
+
+{%- endif %}
+        //# Component properties    
+{%- if c.properties is empty %}
+        // none
+{% else %}
+{%- for key, a in c.properties %}
+        /*
+         * Type = {{ this.printPropertyType(a.type,a.multiValue) }}
+{%- if length(a.values) > 0 %}
+         * Default = {{ this.printPropertyValues(a.type,a.values,a.multiValue) }}
+{%- endif %}
+         */
+         // "{{ key }}": null,{% if loop.last %}{{ '\n' }}{% else%}{% endif %}{{ '\n' }}
+{%- endfor %}
+{%- endif %}
+        //# Reference bindings    
+{%- if c.references is empty %}
+        // none
+{%- else -%}
+{%- for r in c.references %}
+        // "{{r.name}}.target": {% if r.target=='' %}"(component.pid=*)"{% else %}"{{r.target}}"{% endif -%}
+{%- if loop.last -%}{%- if loop.parent.o == 'notset' %}{% else %},{% endif %}{{ '\n' }}{% else %},{%- endif -%}
+{%- endfor %}
+{%- endif %}
+
+        //# ObjectClassDefinition - Attributes
+{%- if o == 'notset' %}
+        // (No PidOcd available.)
+{% else %}
+{%- for a in o.attributes %}
+        /*
+         * Required = {{a.required}}
+         * Type = {{ this.printPropertyType(a.type,(a.cardinality != 0)) }}
+{%- if not empty(a.description) %}
+         * Description = {{ a.description }}
+{%- endif %}
+{%- if length(a.values) > 0 %}
+         * Default = {{ this.printPropertyValues(a.type,a.values,(a.cardinality != 0)) }}
+{%- endif %}
+{%- if (not empty(a.max)) or (not empty(a.min)) %}
+         * Value restriction = `min = {{a.min}}` / `max = {{a.max}}`
+{%- elseif length(a.options) > 0 %}
+         * Value restriction = {{ this.printOptions(a.options) }}
+{%- endif %}
+         */
+         {% if a.required!='true' %}// {% endif -%}"{{ a.id }}": null{% if loop.last %}{% else%},{% endif %}{{ '\n' }}
+{%- endfor %}
+{%- endif -%}
+}
+```
+{%- endfor %}
 {%- endmacro %}
 
 {# 
@@ -383,4 +543,58 @@ No information available.
 {{ ' ' }}{{ address.address -}}
 {%- endif -%}
 {%- endif -%}
+{%- endmacro %}
+
+{# 
+# GOGO COMMANDs
+#}
+{% macro printGogoCommands (commandScopes) -%}
+{%- import _self as this -%}
+{%- for scope in commandScopes -%}
+{%- for function in scope.functions -%}
+{%- if not empty(scope.name) -%}
+{{ this.printTitle(scope.name~':'~function.name,3) }}
+{%- else -%}
+{{ this.printTitle(function.name,3) }}
+{%- endif -%}
+{%- for method in function.methods -%}
+{{- '\n\n' -}}**Synopsis**{{- '\n\n' -}}
+{{- (scope.name is empty)? '`' : '`'~scope.name~':' -}}
+{{- function.name -}}
+{{- (method.options is empty)? '' : ' [OPTIONS]' -}}
+{%- if not empty(method.arguments) -%}
+{%- for argument in method.arguments -%}
+{{- ' '~argument.name|upper -}}{{- (argument.multiValue)? '...' : '' -}}
+{%- endfor -%}
+{%- endif -%}
+{{- '`' -}}
+{%- if not (method.description is empty) -%}
+{{- '\n\n' -}}**Description**{{- '\n\n' -}}
+{{-  method.description }}
+{%- endif -%}
+{%- if not (method.arguments is empty) -%}
+{{ '\n\n' }}**Arguments**{{ '\n' -}}
+{%- for argument in method.arguments -%}
+{{ '\n' }}{{- '* `'~argument.name|upper~'`  ' }}{{ (argument.description is empty)? '' : argument.description -}}
+{% endfor -%}
+{%- endif -%}
+{%- if not (method.options is empty) -%}
+{{ '\n\n' }}**Options**{{ '\n' }}
+{%- for option in method.options -%}
+{{ '\n* `' }}{%- for name in option.names %}{{ name }}{{ (option.isFlag)? '': ' VALUE'}}{{ (option.isFlag and option.multiValue)? '...': ''}}{{ (loop.last )? '' : ', '}}{%- endfor -%}
+{{ '`  ' }}{{(option.description is empty)? '' : option.description -}}
+{%- endfor -%}
+{%- endif -%}
+{%- if not (loop.last) -%}
+{{-  '\n\n---' -}}
+{%- endif -%}
+{%- endfor -%}
+{%- if not (loop.last) -%}
+{{-  '\n\n' -}}
+{%- endif -%}
+{%- endfor -%}
+{%- if not (loop.last) -%}
+{{-  '\n\n' -}}
+{%- endif -%}
+{%- endfor -%}
 {%- endmacro %}

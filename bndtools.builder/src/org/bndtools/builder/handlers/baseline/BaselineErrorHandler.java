@@ -149,7 +149,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 						String name = annot.getElementName();
 						if (ANNOTATION_VERSION_NO_PKG.equals(name) || ANNOTATION_VERSION_OSGI.equals(name)
 							|| ANNOTATION_VERSION_BND.equals(name)) {
-							ASTParser parser = ASTParser.newParser(AST.JLS10);
+							ASTParser parser = ASTParser.newParser(AST.JLS14);
 							parser.setKind(ASTParser.K_COMPILATION_UNIT);
 							parser.setSource(compUnit);
 							parser.setResolveBindings(true);
@@ -228,28 +228,35 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 		final Delta requiresDelta) throws JavaModelException {
 		final List<MarkerData> markers = new LinkedList<>();
 		final CompilationUnit ast = createAST(javaProject, className);
+
 		if (ast != null) {
 			ast.accept(new ASTVisitor() {
 				@Override
 				public boolean visit(MethodDeclaration methodDecl) {
-					String signature = ASTUtil.buildMethodSignature(methodDecl);
-					if (signature.equals(methodName)) {
-						// Create the marker attribs here
-						Map<String, Object> attribs = new HashMap<>();
-						attribs.put(IMarker.CHAR_START, methodDecl.getStartPosition());
-						attribs.put(IMarker.CHAR_END, methodDecl.getStartPosition() + methodDecl.getLength());
-
+					if (ASTUtil.isEqual(methodName, methodDecl)) {
 						String message = String
 							.format("This method was added, which requires a %s change to the package.", requiresDelta);
+						Map<String, Object> attribs = new HashMap<>();
 						attribs.put(IMarker.MESSAGE, message);
+						attribs.put(IMarker.CHAR_START, methodDecl.getStartPosition());
+						attribs.put(IMarker.CHAR_END, methodDecl.getStartPosition() + methodDecl.getLength());
 
 						markers.add(new MarkerData(ast.getJavaElement()
 							.getResource(), attribs, false));
 					}
-
 					return false;
 				}
 			});
+		}
+		if (markers.isEmpty()) {
+			Map<String, Object> attribs = new HashMap<>();
+			String message = String.format("A method %s was added, which requires a %s change to the package.",
+				methodName, requiresDelta);
+			attribs.put(IMarker.MESSAGE, message);
+			attribs.put(IMarker.CHAR_START, 0);
+			attribs.put(IMarker.CHAR_END, 0);
+
+			markers.add(new MarkerData(javaProject.getResource(), attribs, false));
 		}
 		return markers;
 	}

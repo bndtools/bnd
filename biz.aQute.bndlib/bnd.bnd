@@ -3,44 +3,45 @@
 
 Bundle-Description: bndlib: A Swiss Army Knife for OSGi
 
--includepackage: \
-	aQute.bnd.*,\
-	aQute.lib.spring
+-privatepackage: \
+	aQute.bnd.annotation.*,\
+	aQute.bnd.*;from:=${p},\
+	aQute.lib.spring,\
+	org.osgi.dto
 
 Export-Package: \
-	aQute.bnd.osgi;-noimport:=true,\
-	aQute.bnd.classfile.*;-noimport:=true,\
-	aQute.bnd.signatures;-noimport:=true,\
-	aQute.bnd.service.lifecycle;-noimport:=true,\
-	aQute.bnd.osgi.resource;-noimport:=true,\
-	aQute.bnd.maven;-noimport:=true,\
-	aQute.bnd.build;-noimport:=true,\
-	aQute.bnd.osgi.eclipse;-noimport:=true,\
-	aQute.bnd.http;-noimport:=true,\
-	aQute.bnd.differ;-noimport:=true,\
-	aQute.bnd.service.*;-noimport:=true,\
-	aQute.bnd.help.*;-noimport:=true,\
-	aQute.bnd.header;-noimport:=true,\
-	aQute.bnd.version;-noimport:=true,\
-	aQute.bnd.filerepo;-noimport:=true,\
-	aQute.lib.deployer;-noimport:=true,\
-	aQute.bnd.junit;-noimport:=true,\
-	aQute.bnd.properties;-noimport:=true,\
-	aQute.bnd.build.model;-noimport:=true,\
-	aQute.bnd.build.model.clauses;-noimport:=true,\
-	aQute.bnd.build.model.conversions;-noimport:=true,\
-	aQute.service.reporter;-noimport:=true,\
-	aQute.bnd.osgi.repository;-noimport:=true,\
-	aQute.bnd.maven.support;-noimport:=true,\
+    aQute.bnd.build;-noimport:=true,\
+    aQute.bnd.build.api;-noimport:=true,\
+    aQute.bnd.build.model;-noimport:=true,\
+    aQute.bnd.build.model.clauses;-noimport:=true,\
+    aQute.bnd.build.model.conversions;-noimport:=true,\
+    aQute.bnd.component.error;-noimport:=true,\
+    aQute.bnd.differ;-noimport:=true,\
+    aQute.bnd.filerepo;-noimport:=true,\
+    aQute.bnd.header;-noimport:=true,\
+    aQute.bnd.help.*;-noimport:=true,\
+    aQute.bnd.http;-noimport:=true,\
+    aQute.bnd.junit;-noimport:=true,\
+    aQute.bnd.maven;-noimport:=true,\
+    aQute.bnd.maven.support;-noimport:=true,\
+    aQute.bnd.osgi;-noimport:=true,\
+    aQute.bnd.osgi.eclipse;-noimport:=true,\
+    aQute.bnd.osgi.repository;-noimport:=true,\
+    aQute.bnd.osgi.resource;-noimport:=true,\
+	aQute.bnd.print;-noimport:=true,\
+    aQute.bnd.properties;-noimport:=true,\
+    aQute.bnd.service.*;-noimport:=true,\
 	aQute.bnd.url;-noimport:=true,\
 	aQute.bnd.util.dto;-noimport:=true,\
 	aQute.bnd.util.home;-noimport:=true,\
 	aQute.bnd.util.repository;-noimport:=true,\
-	aQute.bnd.component.error;-noimport:=true,\
+	aQute.bnd.version;-noimport:=true,\
+    aQute.lib.deployer;-noimport:=true,\
+    aQute.service.reporter;-noimport:=true,\
 	org.osgi.service.log;-split-package:=first,\
 	org.osgi.service.repository;-split-package:=first,\
-	org.osgi.util.promise;-split-package:=first,\
-	org.osgi.util.function;-split-package:=first
+    org.osgi.util.function;-split-package:=first,\
+	org.osgi.util.promise;-split-package:=first
 
 -conditionalpackage: \
 	aQute.lib.*,\
@@ -51,10 +52,13 @@ Export-Package: \
 	!org.osgi.annotation.*,\
 	org.osgi.*
 
+osgi.conditionalpackages: ${retainall;${packages;CONDITIONAL};${packages;NAMED;org.osgi.*}}
+
 Import-Package: \
 	org.osgi.service.repository,\
 	org.osgi.service.log,\
-	${replacelist;${retainall;${packages;CONDITIONAL};${packages;NAMED;org.osgi.*}};$;\\;provide:=false},\
+	org.osgi.dto,\
+	${template;osgi.conditionalpackages;${@};provide:=false},\
 	*
 
 -includeresource: ${workspace}/LICENSE, img/=img/, {readme.md}
@@ -74,13 +78,17 @@ Import-Package: \
 	org.osgi.util.promise;version=latest,\
 	aQute.libg;version=project, \
 	biz.aQute.bnd.annotation;version=project,\
+	biz.aQute.bnd.util;version=latest;maven-scope=compile,\
 	slf4j.api;version=latest;maven-scope=compile
 
+-testpath: \
+	${junit},\
+	${mockito},\
+	org.awaitility
+
 Bundle-Icon: img/bnd-64.png;size=64
-Bundle-Developers: peter.kriens@aQute.biz, njbartlett@gmail.com
 Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic.nl, bj@bjhargrave.com
 
 -baseline: *
 
 -fixupmessages.converter: "Export aQute.bnd.http,* private references \\[aQute.lib.converter\\]"
--fixupmessages.bundleversion: "The bundle version \\(4.2.0/4.4.0\\) is too low, must be at least 5.0.0";is:=ignore

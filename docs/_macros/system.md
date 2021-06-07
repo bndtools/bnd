@@ -4,8 +4,6 @@ class: Macro
 title: system ';' STRING ( ';' STRING )?
 summary: Execute a system command
 ---
-layout: default
-
 
 
 	public String _system(String args[]) throws Exception {

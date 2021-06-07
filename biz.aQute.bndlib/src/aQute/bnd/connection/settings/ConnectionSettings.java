@@ -23,6 +23,8 @@ import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,13 +44,14 @@ import aQute.bnd.util.home.Home;
 import aQute.lib.collections.Iterables;
 import aQute.lib.concurrentinit.ConcurrentInitialize;
 import aQute.lib.converter.Converter;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.mavenpasswordobfuscator.MavenPasswordObfuscator;
 import aQute.lib.strings.Strings;
 import aQute.lib.xpath.XPathParser;
 import aQute.libg.glob.Glob;
+import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter.SetLocation;
 
 public class ConnectionSettings {
@@ -131,6 +134,12 @@ public class ConnectionSettings {
 					continue;
 				}
 
+				boolean ignoreError = false;
+				if (key.startsWith("-")) {
+					ignoreError = true;
+					key = key.substring(1);
+				}
+
 				switch (key) {
 					case "maven" :
 						key = M2_SETTINGS_XML;
@@ -155,18 +164,14 @@ public class ConnectionSettings {
 								key = IO.absolutePath(tmp);
 								tmps.add(tmp);
 							} else {
-								processor.error(
-									"Specified -connection-settings: %s, but no such environment variable %s is found",
-									connectionSettings, variable);
+								if (!ignoreError) {
+									processor.error(
+										"Specified -connection-settings: %s, but no such environment variable %s is found",
+										connectionSettings, variable);
+								}
 							}
 						}
 						break;
-				}
-
-				boolean ignoreError = false;
-				if (key.startsWith("-")) {
-					ignoreError = true;
-					key = key.substring(1);
 				}
 
 				key = Processor.removeDuplicateMarker(key);
@@ -196,7 +201,6 @@ public class ConnectionSettings {
 	/**
 	 * Set the parameters from within, i.e. not via file
 	 *
-	 * @param uri the uri that must match
 	 * @param value the values
 	 * @throws Exception
 	 */
@@ -207,9 +211,35 @@ public class ConnectionSettings {
 
 			if (server.id == null)
 				server.id = "*";
-
+			else
+				server.id = normalize(server.id);
 			add(server);
 		}
+	}
+
+	private static final Pattern URI_P = Pattern.compile("([^:/?#]+)://([^:/?#]+)(?::(\\d+))?.*");
+
+	private static String normalize(String id) {
+		Matcher m = URI_P.matcher(id);
+		if (!m.matches()) {
+			return id;
+		}
+
+		String scheme = m.group(1)
+			.toLowerCase();
+		String host = m.group(2);
+		String port = m.group(3);
+
+		StringBuilder address = new StringBuilder();
+		address.append(scheme)
+			.append("://")
+			.append(host);
+
+		if (port != null && !port.equals(Integer.toString(URIUtil.getDefaultPort(scheme)))) {
+			address.append(":")
+				.append(port);
+		}
+		return address.toString();
 	}
 
 	private boolean isPrivateKey(ServerDTO server) {
@@ -278,19 +308,7 @@ public class ConnectionSettings {
 
 		@Override
 		public boolean matches(URL url) {
-			String scheme = url.getProtocol()
-				.toLowerCase();
-
-			StringBuilder address = new StringBuilder();
-			address.append(scheme)
-				.append("://")
-				.append(url.getHost());
-
-			if (url.getPort() > 0 && url.getPort() != url.getDefaultPort())
-				address.append(":")
-					.append(url.getPort());
-
-			return match.matcher(address)
+			return match.matcher(normalize(url.toString()))
 				.matches();
 		}
 

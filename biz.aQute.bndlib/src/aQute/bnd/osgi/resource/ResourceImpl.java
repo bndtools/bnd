@@ -2,16 +2,17 @@ package aQute.bnd.osgi.resource;
 
 import static aQute.lib.collections.Logic.retain;
 import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -19,6 +20,7 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.RepositoryContent;
 
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 
 class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent {
@@ -30,22 +32,11 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 
 	private volatile transient Map<URI, String>		locations;
 
-	void setCapabilities(Collection<Capability> capabilities) {
-		Map<String, List<Capability>> prepare = new HashMap<>();
-		for (Capability capability : capabilities) {
-			List<Capability> list = prepare.get(capability.getNamespace());
-			if (list == null) {
-				list = new LinkedList<>();
-				prepare.put(capability.getNamespace(), list);
-			}
-			list.add(capability);
-		}
-		for (Map.Entry<String, List<Capability>> entry : prepare.entrySet()) {
-			entry.setValue(unmodifiableList(new ArrayList<>(entry.getValue())));
-		}
+	void setCapabilities(List<Capability> capabilities) {
+		allCapabilities = unmodifiableList(capabilities);
+		capabilityMap = capabilities.stream()
+			.collect(groupingBy(Capability::getNamespace, collectingAndThen(toList(), Collections::unmodifiableList)));
 
-		allCapabilities = unmodifiableList(new ArrayList<>(capabilities));
-		capabilityMap = prepare;
 		locations = null; // clear so equals/hashCode can recompute
 	}
 
@@ -57,22 +48,10 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		return (caps != null) ? caps : Collections.emptyList();
 	}
 
-	void setRequirements(Collection<Requirement> requirements) {
-		Map<String, List<Requirement>> prepare = new HashMap<>();
-		for (Requirement requirement : requirements) {
-			List<Requirement> list = prepare.get(requirement.getNamespace());
-			if (list == null) {
-				list = new LinkedList<>();
-				prepare.put(requirement.getNamespace(), list);
-			}
-			list.add(requirement);
-		}
-		for (Map.Entry<String, List<Requirement>> entry : prepare.entrySet()) {
-			entry.setValue(unmodifiableList(new ArrayList<>(entry.getValue())));
-		}
-
-		allRequirements = unmodifiableList(new ArrayList<>(requirements));
-		requirementMap = prepare;
+	void setRequirements(List<Requirement> requirements) {
+		allRequirements = unmodifiableList(requirements);
+		requirementMap = requirements.stream()
+			.collect(groupingBy(Requirement::getNamespace, collectingAndThen(toList(), Collections::unmodifiableList)));
 	}
 
 	@Override
@@ -85,29 +64,38 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 
 	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder();
 		List<Capability> identities = getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (identities.size() == 1) {
-			Capability idCap = identities.get(0);
-			Object id = idCap.getAttributes()
-				.get(IdentityNamespace.IDENTITY_NAMESPACE);
-			builder.append(id);
+			Map<String, Object> attributes = identities.get(0)
+				.getAttributes();
+			String id = String.valueOf(attributes.get(IdentityNamespace.IDENTITY_NAMESPACE));
 
-			Object version = idCap.getAttributes()
-				.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-			if (version != null) {
-				builder.append(" version=")
-					.append(version);
+			switch (id) {
+				case Constants.IDENTITY_INITIAL_RESOURCE :
+				case Constants.IDENTITY_SYSTEM_RESOURCE :
+					return id;
+				default :
+					StringBuilder builder = new StringBuilder(id);
+					Object version = attributes.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+					if (version != null) {
+						builder.append(" version=")
+							.append(version);
+					}
+					Object type = attributes.getOrDefault(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE,
+						IdentityNamespace.TYPE_UNKNOWN);
+					if (!IdentityNamespace.TYPE_BUNDLE.equals(type)) {
+						builder.append(" type=")
+							.append(type);
+					}
+					return builder.toString();
 			}
-		} else {
-			// Generic toString
-			builder.append("ResourceImpl [caps=");
-			builder.append(allCapabilities);
-			builder.append(", reqs=");
-			builder.append(allRequirements);
-			builder.append("]");
 		}
-		return builder.toString();
+		// Generic toString
+		return new StringBuilder("ResourceImpl [caps=").append(allCapabilities)
+			.append(", reqs=")
+			.append(allRequirements)
+			.append(']')
+			.toString();
 	}
 
 	@Override
@@ -121,33 +109,21 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		if (this == other)
 			return true;
 
-		if (other == null || !(other instanceof Resource))
+		if (!(other instanceof Resource))
 			return false;
 
 		Map<URI, String> thisLocations = getLocations();
-		Map<URI, String> otherLocations;
-
-		if (other instanceof ResourceImpl) {
-			otherLocations = ((ResourceImpl) other).getLocations();
-		} else {
-			otherLocations = ResourceUtils.getLocations((Resource) other);
-		}
+		Map<URI, String> otherLocations = (other instanceof ResourceImpl) ? ((ResourceImpl) other).getLocations()
+			: ResourceUtils.getLocations((Resource) other);
 
 		Collection<URI> overlap = retain(thisLocations.keySet(), otherLocations.keySet());
 
-		for (URI uri : overlap) {
-			String thisSha = thisLocations.get(uri);
-			String otherSha = otherLocations.get(uri);
-			if (thisSha == otherSha)
-				return true;
-
-			if (thisSha != null && otherSha != null) {
-				if (thisSha.equals(otherSha))
-					return true;
-			}
-		}
-
-		return false;
+		return overlap.stream()
+			.anyMatch(uri -> {
+				String thisSha = thisLocations.get(uri);
+				String otherSha = otherLocations.get(uri);
+				return Objects.equals(thisSha, otherSha);
+			});
 	}
 
 	private Map<URI, String> getLocations() {

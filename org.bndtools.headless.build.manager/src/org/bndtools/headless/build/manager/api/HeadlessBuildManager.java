@@ -18,12 +18,13 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface HeadlessBuildManager {
-    /**
-     * @return an unmodifiable collection containing the information for all plugins
-     */
-    Collection<NamedPlugin> getAllPluginsInformation();
+	/**
+	 * @return an unmodifiable collection containing the information for all
+	 *         plugins
+	 */
+	Collection<NamedPlugin> getAllPluginsInformation();
 
-    /**
+	/**
 	 * Setup/remove files enabling headless build of a project.
 	 *
 	 * @param plugins the plugins to involve in adding/removing the headless
@@ -39,7 +40,8 @@ public interface HeadlessBuildManager {
 	 * @param enabledIgnorePlugins set with enabled version control ignore
 	 *            plugins
 	 */
-    void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins, List<String> warnings);
+	void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins,
+		List<String> warnings);
 
 	@Deprecated
 	void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins);

@@ -2,7 +2,13 @@
 	aQute.bnd.repository.osgi.OSGiRepository; \
 		name=Bndtools Hub; \
 		locations=https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz
-		
+	
+-plugin.enroute-distro: \
+    aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
+        snapshotUrl=https://oss.sonatype.org/content/repositories/osgi/; \
+        releaseUrls=https://repo.maven.apache.org/maven2/; \
+        revision=net.sourceforge.pmd:pmd-java:5.2.3; \
+        name=enRouteDistroPom		
 
 -releaserepo: Release
 

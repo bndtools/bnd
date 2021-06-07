@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferInputStream;
 import aQute.lib.io.IO;
 
@@ -213,9 +213,13 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 				if (bundle == null) {
 					throw nfe;
 				}
-				Bundle system = bundle.getBundleContext()
-					.getBundle(0);
-				return system.loadClass(name);
+				try {
+					return bundle.loadClass(name);
+				} catch (ClassNotFoundException anotherNfe) {
+					Bundle system = bundle.getBundleContext()
+						.getBundle(0);
+					return system.loadClass(name);
+				}
 			}
 		} catch (Throwable t) {
 

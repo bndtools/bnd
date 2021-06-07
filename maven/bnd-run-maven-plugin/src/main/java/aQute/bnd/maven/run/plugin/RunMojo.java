@@ -3,8 +3,6 @@ package aQute.bnd.maven.run.plugin;
 import static aQute.bnd.maven.lib.resolve.BndrunContainer.report;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -34,6 +32,7 @@ import aQute.bnd.maven.lib.configuration.Bundles;
 import aQute.bnd.maven.lib.resolve.BndrunContainer;
 import aQute.bnd.maven.lib.resolve.Operation;
 import aQute.bnd.maven.lib.resolve.Scope;
+import aQute.bnd.unmodifiable.Sets;
 
 @Mojo(name = "run", defaultPhase = LifecyclePhase.PACKAGE, requiresDirectInvocation = true, requiresProject = true, requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 public class RunMojo extends AbstractMojo {
@@ -45,7 +44,7 @@ public class RunMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession								repositorySession;
 
-	@Parameter
+	@Parameter(property = "bnd.run.file")
 	private File												bndrun;
 
 	@Parameter(required = false)
@@ -58,8 +57,10 @@ public class RunMojo extends AbstractMojo {
 	private MavenSession										session;
 
 	@Parameter(property = "bnd.run.scopes", defaultValue = "compile,runtime")
-	private Set<Scope>											scopes	= new HashSet<>(
-		Arrays.asList(Scope.compile, Scope.runtime));
+	private Set<Scope>											scopes	= Sets.of(Scope.compile, Scope.runtime);
+
+	@Parameter(property = "bnd.run.skip", defaultValue = "false")
+	private boolean												skip;
 
 	@Parameter(property = "bnd.run.include.dependency.management", defaultValue = "false")
 	private boolean												includeDependencyManagement;
@@ -79,6 +80,11 @@ public class RunMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
+		if (skip) {
+			logger.debug("skip project as configured");
+			return;
+		}
+
 		if (bndrun == null) {
 			logger.info("Nothing to run.");
 			return;

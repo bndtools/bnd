@@ -8,13 +8,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.osgi.framework.Filter;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.resource.Capability;
-import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+
+import aQute.bnd.osgi.resource.ResourceUtils;
 
 /**
  * @ThreadSafe
@@ -50,33 +48,14 @@ public class CapabilityIndex {
 		List<Capability> caps;
 
 		synchronized (this) {
-			if (capabilityMap.containsKey(requirement.getNamespace()))
-				caps = new ArrayList<>(capabilityMap.get(requirement.getNamespace()));
-			else
-				caps = Collections.emptyList();
+			if (!capabilityMap.containsKey(requirement.getNamespace()))
+				return;
+			caps = new ArrayList<>(capabilityMap.get(requirement.getNamespace()));
 		}
 
-		if (caps.isEmpty())
-			return;
-
-		try {
-			String filterStr = requirement.getDirectives()
-				.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-			Filter filter = filterStr != null ? FrameworkUtil.createFilter(filterStr) : null;
-
-			for (Capability cap : caps) {
-				boolean match;
-				if (filter == null)
-					match = true;
-				else
-					match = filter.match(new MapToDictionaryAdapter(cap.getAttributes()));
-
-				if (match)
-					capabilities.add(cap);
-			}
-		} catch (InvalidSyntaxException e) {
-			// Assume no matches
-		}
+		caps.stream()
+			.filter(ResourceUtils.filterMatcher(requirement))
+			.forEachOrdered(capabilities::add);
 	}
 
 }

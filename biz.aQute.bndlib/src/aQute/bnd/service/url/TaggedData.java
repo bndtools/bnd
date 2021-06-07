@@ -1,5 +1,7 @@
 package aQute.bnd.service.url;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -50,10 +52,10 @@ public class TaggedData implements Closeable {
 	}
 
 	public TaggedData(URLConnection con, InputStream in, File file) throws Exception {
-		this.con = con;
+		this.con = requireNonNull(con);
 		this.responseCode = con instanceof HttpURLConnection ? ((HttpURLConnection) con).getResponseCode()
 			: (in != null ? 200 : -1);
-		this.in = in == null && con != null && (responseCode / 100 == 2) ? con.getInputStream() : in;
+		this.in = in == null && (responseCode / 100 == 2) ? con.getInputStream() : in;
 		this.file = file;
 		this.etag = con.getHeaderField("ETag");
 		this.url = con.getURL()
@@ -63,7 +65,7 @@ public class TaggedData implements Closeable {
 
 	private String getMessage(URLConnection con) {
 		try {
-			if (con == null || !(con instanceof HttpURLConnection))
+			if (!(con instanceof HttpURLConnection))
 				return null;
 
 			HttpURLConnection h = (HttpURLConnection) con;

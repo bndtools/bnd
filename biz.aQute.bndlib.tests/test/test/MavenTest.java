@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
@@ -39,6 +38,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
+import aQute.lib.xml.XML;
 import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
@@ -99,7 +99,6 @@ public class MavenTest extends TestCase {
 		assertNotNull(project);
 		return project;
 	}
-
 
 	/**
 	 * Test parsing a project pom
@@ -342,6 +341,10 @@ public class MavenTest extends TestCase {
 		b.setBundleSymbolicName(bsn);
 		b.setBundleVersion(version);
 		b.setProperty("-resourceonly", "true");
+		b.setProperty("-maven-dependencies",
+			"group1:artifact1:1.0.0-SNAPSHOT;groupId=group1;artifactId=artifact1;version=1.0.0-SNAPSHOT,group2:artifact2:2.0.0;groupId=group2;artifactId=artifact2;version=2.0.0");
+		b.setProperty("-maven-dependencies.fix",
+			"group1:artifact1:1.0.0-SNAPSHOT;groupId=group1;artifactId=artifact1;version=1.0.0");
 		if (developers != null)
 			b.setProperty(Constants.BUNDLE_DEVELOPERS, developers);
 
@@ -355,7 +358,7 @@ public class MavenTest extends TestCase {
 		assertTrue(b.check());
 		Resource r = jar.getResource(where);
 		IO.copy(r.openInputStream(), System.out);
-		Document d = DocumentBuilderFactory.newInstance()
+		Document d = XML.newDocumentBuilderFactory()
 			.newDocumentBuilder()
 			.parse(r.openInputStream());
 		XPath xpath = XPathFactory.newInstance()
@@ -368,5 +371,13 @@ public class MavenTest extends TestCase {
 		assertEquals((scm == null) ? "0" : "1", xpath.evaluate("count(/project/scm)", d));
 		assertEquals(((license == null) || license.trim()
 			.equals("<<EXTERNAL>>")) ? "0" : "1", xpath.evaluate("count(/project/licenses)", d));
+
+		assertEquals("2", xpath.evaluate("count(/project/dependencies/dependency)", d));
+		assertEquals("group1", xpath.evaluate("/project/dependencies/dependency[1]/groupId", d));
+		assertEquals("artifact1", xpath.evaluate("/project/dependencies/dependency[1]/artifactId", d));
+		assertEquals("1.0.0", xpath.evaluate("/project/dependencies/dependency[1]/version", d));
+		assertEquals("group2", xpath.evaluate("/project/dependencies/dependency[2]/groupId", d));
+		assertEquals("artifact2", xpath.evaluate("/project/dependencies/dependency[2]/artifactId", d));
+		assertEquals("2.0.0", xpath.evaluate("/project/dependencies/dependency[2]/version", d));
 	}
 }

@@ -10,27 +10,29 @@ import aQute.lib.date.Dates;
 
 public class MavenVersion implements Comparable<MavenVersion> {
 
-	private static final Pattern			fuzzyVersion		= Pattern
+	private static final Pattern			fuzzyVersion				= Pattern
 		.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([-.]?(.*))?");
-	private static final Pattern			fuzzyVersionRange	= Pattern
+	private static final Pattern			fuzzyVersionRange			= Pattern
 		.compile("(\\(|\\[)\\s*([-.\\w]+)\\s*,\\s*([-.\\w]+)\\s*(\\]|\\))");
-	private static final String				VERSION_STRING		= "(\\d{1,10})(\\.(\\d{1,10})(\\.(\\d{1,10})(\\.([-\\w]+))?)?)?";
-	private static final Pattern			VERSION				= Pattern.compile(VERSION_STRING);
-	private static final Pattern			VERSIONRANGE		= Pattern
+	private static final String				VERSION_STRING				= "(\\d{1,10})(\\.(\\d{1,10})(\\.(\\d{1,10})(\\.([-\\w]+))?)?)?";
+	private static final Pattern			VERSION						= Pattern.compile(VERSION_STRING);
+	private static final Pattern			VERSIONRANGE				= Pattern
 		.compile("((\\(|\\[)" + VERSION_STRING + "," + VERSION_STRING + "(\\]|\\)))|" + VERSION_STRING);
 
 	private static final DateTimeFormatter	MAVEN_SNAPSHOT_DATE_TIME	= DateTimeFormatter
 		.ofPattern("yyyyMMdd.HHmmss", Locale.ROOT)
 		.withZone(Dates.UTC_ZONE_ID);
 
-	public static final MavenVersion	UNRESOLVED	= new MavenVersion("0-UNRESOLVED");
+	public static final MavenVersion		UNRESOLVED					= new MavenVersion("0-UNRESOLVED");
 
-	private static final String			SNAPSHOT	= "SNAPSHOT";
-	public static final MavenVersion	HIGHEST		= new MavenVersion("2147483647.2147483647.2147483647.2147483647");
-	public static final MavenVersion	LOWEST		= new MavenVersion("alpha");
+	private static final String				SNAPSHOT					= "SNAPSHOT";
+	public static final MavenVersion		HIGHEST						= new MavenVersion(
+		"2147483647.2147483647.2147483647.2147483647");
+	public static final MavenVersion		LOWEST						= new MavenVersion("alpha");
+	private static final MavenVersion		ZERO						= new MavenVersion("0");
 
-	private final Version				version;
-	private final ComparableVersion		comparable;
+	private final Version					version;
+	private final ComparableVersion			comparable;
 
 	public MavenVersion(Version osgiVersion) {
 		this.version = osgiVersion;
@@ -121,6 +123,32 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	public MavenVersion toSnapshot() {
 		Version newv = new Version(version.getMajor(), version.getMinor(), version.getMicro(), SNAPSHOT);
 		return new MavenVersion(newv);
+	}
+
+	/**
+	 * Return the plain release version for this Maven Version.
+	 * <p>
+	 * The release version contains no alpha characters.
+	 *
+	 * @return The plain release version for this Maven Version.
+	 */
+	public MavenVersion toReleaseVersion() {
+		String mavenVersion = comparable.toString();
+		for (int i = 0, len = mavenVersion.length(), lastDigit = -1; i < len; i++) {
+			char c = mavenVersion.charAt(i);
+			if ((c == '.') || (c == '-')) {
+				continue;
+			}
+			if (Character.isDigit(c)) {
+				lastDigit = i;
+				continue;
+			}
+			if (lastDigit == -1) {
+				return ZERO;
+			}
+			return new MavenVersion(mavenVersion.substring(0, lastDigit + 1));
+		}
+		return this;
 	}
 
 	public static String validate(String v) {
@@ -253,7 +281,6 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	 * 2,147,483,647 = 10 digits
 	 * </pre>
 	 *
-	 * @param integer
 	 * @return if this fits in an integer
 	 */
 	private static boolean isInteger(String minor) {

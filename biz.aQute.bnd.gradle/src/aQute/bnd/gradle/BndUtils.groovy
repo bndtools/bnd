@@ -9,104 +9,77 @@ import org.gradle.api.Action
 import org.gradle.api.Buildable
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.attributes.LibraryElements
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.FileSystemLocation
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.logging.Logger
 import org.gradle.util.GradleVersion
 
 class BndUtils {
-  private static final boolean IS_GRADLE_MIN_50 = GradleVersion.current().compareTo(GradleVersion.version("5.0"))>=0
+	private BndUtils() { }
 
-  private BndUtils() { }
+	private static final boolean IS_GRADLE_COMPATIBLE_5_6 = GradleVersion.current().compareTo(GradleVersion.version("5.6")) >= 0
 
-  public static void logReport(def report, Logger logger) {
-    if (logger.isWarnEnabled()) {
-      report.getWarnings().each { String msg ->
-        def location = report.getLocation(msg)
-        if (location && location.file) {
-          logger.warn '{}:{}: warning: {}', location.file, location.line, msg
-        } else {
-          logger.warn 'warning: {}', msg
-        }
-      }
-    }
-    if (logger.isErrorEnabled()) {
-      report.getErrors().each { String msg ->
-        def location = report.getLocation(msg)
-        if (location && location.file) {
-          logger.error '{}:{}: error: {}', location.file, location.line, msg
-        } else {
-          logger.error 'error  : {}', msg
-        }
-      }
-    }
-  }
+	public static void logReport(var report, Logger logger) {
+		if (logger.isWarnEnabled()) {
+			report.getWarnings().forEach((String msg) -> {
+				var location = report.getLocation(msg)
+				if (location && location.file) {
+					logger.warn("{}:{}: warning: {}", location.file, location.line, msg)
+				} else {
+					logger.warn("warning: {}", msg)
+				}
+			})
+		}
+		if (logger.isErrorEnabled()) {
+			report.getErrors().forEach((String msg) -> {
+				var location = report.getLocation(msg)
+				if (location && location.file) {
+					logger.error("{}:{}: error: {}", location.file, location.line, msg)
+				} else {
+					logger.error("error  : {}", msg)
+				}
+			})
+		}
+	}
 
-  @CompileStatic
-  public static Object namedTask(Project project, String name) {
-    if (IS_GRADLE_MIN_50) {
-      return project.getTasks().named(name)
-    } else {
-      return project.getTasks().getByName(name)
-    }
-  }
+	@CompileStatic
+	public static ConfigurableFileCollection builtBy(ConfigurableFileCollection collection, Object... paths) {
+		return collection.builtBy(paths.findAll { path ->
+			path instanceof Task || path instanceof TaskProvider || path instanceof Buildable
+		})
+	}
 
-  @CompileStatic
-  public static <T extends Task> Object configureTask(Project project, String name, Action<? super T> configuration) {
-    if (IS_GRADLE_MIN_50) {
-      return project.getTasks().named(name, configuration)
-    } else {
-      return project.getTasks().getByName(name, configuration)
-    }
-  }
+	@CompileStatic
+	public static Object unwrap(Object value) {
+		return unwrap(value, false)
+	}
 
-  @CompileStatic
-  public static <T extends Task> Object createTask(Project project, String name, Action<? super T> configuration) {
-    if (IS_GRADLE_MIN_50) {
-      return project.getTasks().register(name, configuration)
-    } else {
-      return project.getTasks().create(name, configuration)
-    }
-  }
+	@CompileStatic
+	public static Object unwrap(Object value, boolean optional) {
+		if (value instanceof Provider) {
+			value = optional ? value.getOrNull() : value.get()
+		}
+		if (value instanceof FileSystemLocation) {
+			value = value.getAsFile()
+		}
+		return value
+	}
 
-  @CompileStatic
-  public static <T extends Task> Object createTask(Project project, String name, Class<T> type, Action<? super T> configuration) {
-    if (IS_GRADLE_MIN_50) {
-      return project.getTasks().register(name, type, configuration)
-    } else {
-      return project.getTasks().create(name, type, configuration)
-    }
-  }
-
-  @CompileStatic
-  public static <T extends Task> void configureEachTask(Project project, Class<T> type, Action<? super T> configuration) {
-    if (IS_GRADLE_MIN_50) {
-      project.getTasks().withType(type).configureEach(configuration)
-    } else {
-      project.getTasks().withType(type).all(configuration)
-    }
-  }
-
-  @CompileStatic
-  public static ConfigurableFileCollection builtBy(ConfigurableFileCollection collection, Object... paths) {
-    if (IS_GRADLE_MIN_50) {
-      return collection.builtBy(paths.findAll { path ->
-        path instanceof Task || path instanceof TaskProvider || path instanceof Buildable
-      })
-    } else {
-      return collection.builtBy(paths.findAll { path ->
-        path instanceof Task || path instanceof Buildable
-      })
-    }
-  }
-
-  @CompileStatic
-  public static Object toTask(Object t) {
-    if (IS_GRADLE_MIN_50) {
-      if (t instanceof TaskProvider) {
-        return t.get()
-      }
-    }
-    return t
-  }
+	public static void jarLibraryElements(Task task, String configurationName) {
+		if (IS_GRADLE_COMPATIBLE_5_6) {
+			Project project = task.getProject()
+			var attributes = project.configurations[configurationName].attributes
+			if (!Objects.equals(attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE)?.getName(), LibraryElements.JAR)) {
+				try {
+					attributes.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.getObjects().named(LibraryElements.class, LibraryElements.JAR))
+					task.getLogger().info("Set {}:{} configuration attribute {} to {}", project.getPath(), configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE))
+				} catch (IllegalArgumentException e) {
+					task.getLogger().info("Unable to set {}:{} configuration attribute {} to {}", project.getPath(), configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, LibraryElements.JAR, e)
+				}
+			}
+		}
+	}
 }

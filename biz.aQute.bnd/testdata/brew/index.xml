@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<repository increment="0" name="Untitled" xmlns="http://www.osgi.org/xmlns/repository/v1.0.0">
+  <resource>
+    <capability namespace="osgi.identity">
+      <attribute name="osgi.identity" value="org.apache.felix.gogo.runtime"/>
+      <attribute name="type" value="osgi.bundle"/>
+      <attribute name="version" type="Version" value="1.0.0"/>
+    </capability>
+    <capability namespace="osgi.content">
+      <attribute name="osgi.content" value="baad835c6fa65afc1695cc92a9e1afe2967e546cae94d59fa9e49b557052b2b1"/>
+      <attribute name="url" value="org.apache.felix.gogo.runtime-1.0.0.jar"/>
+    </capability>
+  </resource>
+</repository>

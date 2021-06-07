@@ -5,7 +5,7 @@ title: Private-Package PACKAGE-SPEC ( ',' PACKAGE-SPEC )*
 summary: Specifies what packages to include
 ---
 ## Private Package
-The method of inclusion is identical to the Export-Package header, the only difference is, is that these packages are not exported. This header will be copied to the manifest. If a package is selected by noth the export and private package headers, then the export takes precedence.
+The method of inclusion is identical to the Export-Package header, the only difference is, is that these packages are not exported. This header will be copied to the manifest. If a package is selected by the export and private package headers, then the export takes precedence.
 
   Private-Package= com.*
 

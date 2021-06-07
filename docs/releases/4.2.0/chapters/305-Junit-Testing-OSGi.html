@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/4.2.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Plain JUnit Testing with OSGi (PRELIMENARY)</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="Plain JUnit Testing with OSGi (PRELIMENARY)" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This chapter describes how to test using the bnd JUnit Framework in OSGi. This JUnit Framework is specific for the workspace mode of bndtools. This workspace mode is supported by Eclipse, Intellij, Gradle, and the standalone bnd command. It is not supported by Maven for now." />
+<meta property="og:description" content="This chapter describes how to test using the bnd JUnit Framework in OSGi. This JUnit Framework is specific for the workspace mode of bndtools. This workspace mode is supported by Eclipse, Intellij, Gradle, and the standalone bnd command. It is not supported by Maven for now." />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-10-12T19:48:23-04:00" />
+<script type="application/ld+json">
+{"headline":"Plain JUnit Testing with OSGi (PRELIMENARY)","dateModified":"2019-10-12T19:48:23-04:00","datePublished":"2019-10-12T19:48:23-04:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"/releases/4.2.0/chapters/305-Junit-Testing-OSGi.html"},"url":"/releases/4.2.0/chapters/305-Junit-Testing-OSGi.html","description":"This chapter describes how to test using the bnd JUnit Framework in OSGi. This JUnit Framework is specific for the workspace mode of bndtools. This workspace mode is supported by Eclipse, Intellij, Gradle, and the standalone bnd command. It is not supported by Maven for now.","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<style>
+			 body {
+				counter-reset: h1 17;
+			}
+		</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/4.2.0/"><img
+			class=menu-logo src='/releases/4.2.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/4.2.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/4.2.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/4.2.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/4.2.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/4.2.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">4.2.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/4.2.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/150-build.html">Build</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/160-jars.html">Generating JARs</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/220-contracts.html">Contracts</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/230-manifest-annotations.html">Manifest Annotations</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/300-launching.html">Launching</a>
+
+
+
+			<li class=selected>Plain JUnit Testing with OSGi (PRELIMENARY)
+
+
+
+			<li><a href="/releases/4.2.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/400-commands.html">Commands</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/800-headers.html">Headers</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/820-instructions.html">Instruction Reference</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/850-macros.html">Macro Reference</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/855-macros-ref.html">Macro Index</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/870-plugins.html">Plugins</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> Plain JUnit Testing with OSGi (PRELIMENARY)</h1>
+				<p>This chapter describes how to test using the bnd <em>JUnit Framework</em> in OSGi. This JUnit Framework is specific for the
+workspace mode of bndtools. This workspace mode is supported by Eclipse, Intellij, Gradle, and the standalone bnd command.
+It is not supported by Maven for now.</p>
+
+<h2 id="background">Background</h2>
+
+<p>Standard JUnit testing uses the <code class="highlighter-rouge">-buildpath</code> and <code class="highlighter-rouge">testpath</code> instructions to create a class path for a newly launched VM. However,
+in an OSGi world we need more. The original test model for the OSGi was driven by the needs to provide a compliance test
+that could easily be adapted to different frameworks and bundle implementations. It therefore required the testing code
+to be wrapped in bundles. A bnd test framework then setup an OSGi framework based on a <em>run</em> specification in a bnd(run) file.</p>
+
+<p>For test writers this had a number of drawbacks. First, encapsulating test code in bundles was not always easy and always
+an extra step. Over time it also became  cumbersome for the bnd maintainers because it required a special launcher,
+JUnit code, and launching interfaces in build tools. Although the maintenance wasn’t too bad, it created a lot
+of moving parts and sometimes made it hard to pick up the latest and greatest in testing innovations.</p>
+
+<p>In the same time, OPS4J group developed Pax Exam. Pax Exam used the standard JUnit environment and could therefore run
+in all build tools unmodified. However, Pax Exam is heavily coupled to Maven which made it not straightforward to use in
+a bndtools environment where the classpath is not defined by Maven.</p>
+
+<p>Therefore, there was a bit of Pax Exam envy. A couple of years ago the JUnitFramework was added as the bnd alternative
+to Pax Exam with some extra features. It is based on the idea that the JUnit test creates and manages an OSGi framework
+that can be manipulated by the standard off the shelf JUnit code.</p>
+
+<p>A crucial problem in testing like this is managing classes that appear in the test code and that are used inside the
+OSGi framework. For example, if you use an interface class <code class="highlighter-rouge">HelloWorld</code> in a JUnit test and export a service that
+implements this interface from a bundle then it is necessary to ensure that the <code class="highlighter-rouge">HelloWorld</code> class is exported as
+a system package by the OSGi framework. To simplify this, the bnd JUnit Framework analyzes the setup of a bnd project
+and calculates the content of the test code and its imports. All these packages are then exported by the
+OSGi framework from the classpath. This greatly signifies testing.</p>
+
+<p>Although this worked quite well except that it added a large number of classes to the <code class="highlighter-rouge">-testpath</code> of the project under test for
+it needed access to virtually all bndlib and repository code. Although the fact that this made testing bnd code a lot harder is not that
+relevant for others, it also unfortunately includes some OSGi classes that often clashed with the projects that
+were tested because they were not of the proper version.</p>
+
+<p>It was therefore decided to change the strategy and remove the bndlib dependency completely. For this reason, the
+Workspace was extended with an RPC interface. When the JUnit code starts up, it contacts this remote API and
+performs all analysis and bundle building in the remote process. The remote process is either Eclipse, Gradle, or another
+<em>driver</em>.</p>
+
+<p>To test, it is then only necessary to put a small JAR that creates the remote link and handles a number of runtime
+functions.</p>
+
+<h2 id="quick-start">Quick Start</h2>
+
+<p>In this example we write a simple test case that test a Bundle Activator.</p>
+
+<p>To be able to support the remote workspace it is required to add the following line to the <code class="highlighter-rouge">cnf/build.bnd</code> file:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-remoteworkspace = true
+</code></pre></div></div>
+
+<p>This setting enables the workspace to be available over a remote procedure call interface.</p>
+
+<p>To create a test, follow the normal JUnit rules for a test project. In general means that you write your domain code in
+the <code class="highlighter-rouge">src</code> folder (which can be for example <code class="highlighter-rouge">src/main/java</code>) and then the test code in the <code class="highlighter-rouge">test</code> folder (which can for
+example be code in <code class="highlighter-rouge">src/test/java</code> if you follow the maven layout.)</p>
+
+<p>Any domain dependencies are put in the <code class="highlighter-rouge">-buildpath</code> and any test only dependencies on the <code class="highlighter-rouge">-testpath</code>. For example:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-buildpath: \
+    slf4j.api
+
+-testpath: \
+    sl4j.simple, \
+    biz.aQute.bnd.remote.junit
+</code></pre></div></div>
+
+<p>You can now write a simple test class in the <code class="highlighter-rouge">test</code> folder. Let’s call it <code class="highlighter-rouge">HelloTest</code>.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class HelloTest {
+</code></pre></div></div>
+
+<p>There is a special JUnit Framework Builder class that is used to build a framework. In this case we only need a framework
+and no special bundles. Neither the framework nor the bundles that are installed are required</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    JUnitFrameworkBuilder   builder     = new JUnitFrameworkBuilder();
+    JUnitFramework          framework = builder.runfw("org.apache.felix.framework").create();
+</code></pre></div></div>
+
+<p>We define a Bundle Activator is a nested class. This nested class must be created by the OSGi framework as
+Bundle Activator. It must therefore be a <code class="highlighter-rouge">public static</code> class. The JUnit Framework will ensure that this
+class is available on the inside of the OSGi framework as the same class as that we use in the JUnit test code.</p>
+
+<p>We use a semaphore to check if the start and stop methods are actually called.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    public static class Hello implements BundleActivator {
+        static Semaphore semaphore = new Semaphore(0);
+
+        @Override
+        public void start(BundleContext context) throws Exception {
+            System.out.println("Hello");
+            semaphore.release();
+        }
+
+        @Override
+        public void stop(BundleContext context) throws Exception {
+            System.out.println("Goodbye");
+            semaphore.release();
+        }
+    }
+</code></pre></div></div>
+
+<p>What is left is the test method. We create a bundle on the fly with the activator and start it. We then verify that the
+start method is called but not yet the stop method. We then stop the bundle and verify that the semaphore is released
+again.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    @Test
+    public void testActivator() throws BundleException {
+        Bundle hello = framework.bundle()
+            .bundleActivator(Hello.class)
+            .start();
+
+        assertTrue(Hello.semaphore.tryAcquire());
+        assertFalse(Hello.semaphore.tryAcquire());
+
+        hello.stop();
+        assertTrue(Hello.semaphore.tryAcquire());
+
+    }
+}
+</code></pre></div></div>
+
+<h2 id="features">Features</h2>
+
+<p>The following sections detail the features of the JUnit Framework</p>
+
+<h3 id="normal-junit-code-not-even-a-runner">Normal JUnit Code (not even a Runner)</h3>
+
+<p>There are no requirements on JUnit or other test frameworks. Although not tested, it should be possible to use TestNG. The
+reason is that this is not implemented as a JUnit Runner but only uses normal code.</p>
+
+<p>The first thing to do is to create a <em>JUnit Framework Builder</em>. This object creates the initial link to the remote workspace
+where the test code was launched from, analyzes the test code, and then builds an initial <em>run specification</em>.</p>
+
+<p>A Run Specification contains all the information an OSGi framework needs to operate:</p>
+
+<ul>
+  <li>Framework Properties</li>
+  <li>System packages (extra)</li>
+  <li>System capabilities (extra)</li>
+  <li>JARs on the classpath of the OSGi Framework</li>
+  <li>The OSGi Framework</li>
+  <li>Bundles to install</li>
+</ul>
+
+<p>To construct the Run Specification, the JUnit Framework Builder will contact the corresponding workspace to access
+all repositories, resolver, and other features of this workspace. This is setup in such a way that all facilities of the
+enclosing workspace of the test project are available.</p>
+
+<p>The builder provides a number of methods to setup this Run Specification</p>
+
+<ul>
+  <li>Use a bnd or bndrun file. In this case the <code class="highlighter-rouge">-run*</code> instructions are used to setup the OSGi Framework. This feature makes it
+possible to use the resolver to find a proper set of run bundles.</li>
+  <li>Directly adding bundles and JARs. Different methods are provided to add bundles to the <code class="highlighter-rouge">-runpath</code> and <code class="highlighter-rouge">-runbundles</code>.</li>
+  <li>Prefab bundles. For example, it is possible to add all gogo bundles.</li>
+</ul>
+
+<p>There are a (growing) number of methods on the builder to make it easy to setup the parameters of an OSGi framework.
+All these methods are documented with Java code. To look at the details, consult this Java code.</p>
+
+<p>It is also possible to control the start of the framework. In certain cases it is important that a framework is initialized
+but not yet started. This makes it possible to, for example, hide services and replace them with a proxy.</p>
+
+<p>After the Run Specification is setup it is possible to create a new JUnit Framework instance. This class wraps around
+an OSGi Framework and controls it. Such a framework is created with the <code class="highlighter-rouge">create()</code> method. This method can be called
+multiple times for different frameworks. The builder is also still active after creating a framework and can be used
+to further parameterize the to be created framework.</p>
+
+<h2 id="the-junit-framework">The JUnit Framework</h2>
+
+<p>Normally when a JUnit Framework is created from the JUnit Framework Builder it is <em>started</em>. (A framework can also be created
+without being started, see <code class="highlighter-rouge">nostart()</code>). This means that any run bundles are installed and started or an exception would
+have been thrown.</p>
+
+<p>The JUnit Framework has a large number of methods to control the running framework.</p>
+
+<h3 id="bundle-context">Bundle Context</h3>
+
+<p>It is often necessary to have a Bundle Context to work with the OSGi Framework. It is convenient to have access to the Bundle
+Context of the OSGi Framework but unfortunately there are a number of use cases where the framework’s Bundle Context
+acts subtly different. For this reason, the builder automatically adds a synthetic <em>test</em> bundle. Although this bundle does
+not contain any code, it represents the test code. This bundle has the project name but then in upper case.</p>
+
+<p>Calling the <code class="highlighter-rouge">getBundleContext()</code> method will generally return the Bundle Context of the synthetic test bundle since this is the context
+that will usually be used by the actual code when the application runs. However, if the builder is set to <code class="highlighter-rouge">notestbundle()</code>
+then the <code class="highlighter-rouge">getBundleContext()</code> method will then fall back to the Bundle Context of the framework.</p>
+
+<h3 id="lifecycle-management-bundles">Lifecycle Management Bundles</h3>
+
+<p>A number of methods are provided to add more bundles to the running framework. This can go via a bnd/bndrun file, a File
+object, or a run specification. These bundles are installed but not yet started. Bundles can also be stopped and
+started.</p>
+
+<p>For example, the following shows how to install a number of bundles from the repository:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    framework.bundles("com.example.foo;version=3.0, foobar;version=file")
+</code></pre></div></div>
+
+<h3 id="working-with-services">Working with Services</h3>
+
+<p>Convenience methods are provided on the JUnit Framework to get services and register services. Special methods are there
+to wait some time until a service is registered.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    FooService foo = framework.waitForService( FooService.class, 50000 );
+</code></pre></div></div>
+
+<h3 id="injection-of-objects">Injection of objects</h3>
+
+<p>Fetching and waiting for a number of services or other framework related variables is boilerplate code. The JUnit Framework
+therefore contains a mini-injection engine that can inject:</p>
+
+<ul>
+  <li>Services (ServiceReference, Maps, services, etc.)</li>
+  <li>Bundles</li>
+  <li>Bundle Context</li>
+</ul>
+
+<p>Injection services will delay until all services are present.</p>
+
+<p>Injection points must be marked with the <code class="highlighter-rouge">@Service</code> annotation. This annotation provides the following fields:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">timeout</code> – Specify the time to wait for the service to arrive. If the value is 0, the default, then a custom amount of time will be waited.</li>
+  <li><code class="highlighter-rouge">target</code> – A target filter.</li>
+  <li><code class="highlighter-rouge">service</code> – The type of the service to inject. This is used when the type of the target point (method, field) is not
+sufficient to find the service in the service registry. This can happen because the type is a Map or the use of inheritance.</li>
+</ul>
+
+<p>The annotation can be applied to the following types, where T is the service type:</p>
+
+<ul>
+  <li>T</li>
+  <li>ServiceReference<T></T></li>
+  <li>Optional<T></T></li>
+  <li>Optional&lt;ServiceReference<T>&gt;</T></li>
+  <li>Collection<T></T></li>
+  <li>Collection&lt;ServiceReference<T>&gt;</T></li>
+</ul>
+
+<p>The injection can take place on fields (preferred) and on methods. Methods can specify multiple injection points
+with their arguments. The actual service type, if not specified by the @Service annotation is retrieved from the
+first argument.</p>
+
+<p>For example:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    JUnitFramework          framework = builder.runfw("org.apache.felix.framework").create().inject(this);
+
+    @Service
+    Foobar  foobar;
+
+    @Service
+    ConfigurationAdmin cadmin;
+
+    @Service(timeout=30000)
+    void foobar(Foobar foobar, ServiceReference&lt;Foobar&gt; sr) {
+        // ...
+    }
+</code></pre></div></div>
+
+<p>Injection is not limited to the test instance. Any object can be injected at any time.</p>
+
+<h3 id="building-bundles">Building bundles</h3>
+
+<p>In a lot of tests it is necessary to add a bundle to the running framework. The JUnit Framework provides a
+<em>Bundle Builder</em>. This is a builder that builds a <em>Builder Specification</em>. This specification will be send to
+the remote workspoce where it is constructed in the context of the corresponding project.</p>
+
+<p>The Bundle Builder is highly geared to create test bundles. It is, for example, trivial to create a bundle with
+a DS component:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    @Component
+    public static class MyComponent {}
+
+
+    @Test
+    public void test() {
+        Bundle b = framework.bundle().addResource( MyComponent.class ).start();
+    }
+</code></pre></div></div>
+
+<h3 id="proxying">Proxying</h3>
+
+<p>A common use case in testing OSGi application is to hide a service in a complex application and replace it with a special mock
+for testing.   This is supported by the <code class="highlighter-rouge">hide(Class&lt;?&gt; type)</code> method. In general, to use this method it is best to start
+the framework in the <code class="highlighter-rouge">notestbundle()</code> mode so that no bundles are started. Calling the <code class="highlighter-rouge">hide()</code> method will then
+make sure that all services that are going to be registered by any bundle but the test bundle are going to be hidden for
+everybody else. Registering a replacement via the Bundle Context of the test bundle will then be visible to all other bundles.</p>
+
+<p>For example:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    @Test
+    public void test() {
+        JUnitFramework framework = builder
+            .nostart()
+            .runfw("org.apache.felix.framework")
+            .create();
+
+        framework.hide( Foobar.class );
+        framework.start();
+        Foobar mock = mock(Foobar.class);
+        framework.register(mock);
+        ...
+    }
+</code></pre></div></div>
+
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/4.2.0/chapters/300-launching.html'></a> <a href='/releases/4.2.0/chapters/310-testing.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/4.2.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

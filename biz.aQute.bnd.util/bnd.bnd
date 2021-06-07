@@ -1,0 +1,33 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
+Bundle-Description: Util classes
+
+-exportcontents: \
+	aQute.bnd.*
+
+# We include aQute.bnd.exceptions from the aQute.libg project
+# rather than keeping the package in this project since the package
+# is referenced by other packages in the aQute.libg project.
+-privatepackage: \
+	aQute.bnd.exceptions.*,\
+	aQute.bnd.*;from:=${p}
+
+-conditionalpackage: \
+	aQute.lib.*,\
+	aQute.libg.*
+
+-maven-scope: provided
+
+-buildpath: \
+	osgi.annotation;version=latest,\
+	aQute.libg;version=project
+
+-testpath: \
+	${junit},\
+	osgi.core;version=latest,\
+	org.osgi.service.log;version=latest
+
+-builderignore: testresources
+
+#-baseline: *

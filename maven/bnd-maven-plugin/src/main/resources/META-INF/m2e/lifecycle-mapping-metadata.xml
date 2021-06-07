@@ -5,6 +5,7 @@
 			<pluginExecutionFilter>
 				<goals>
 					<goal>bnd-process</goal>
+					<goal>bnd-process-tests</goal>
 				</goals>
 			</pluginExecutionFilter>
 			<action>

@@ -1,6 +1,10 @@
 package aQute.bnd.repository.maven.provider;
 
 import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.Closeable;
 import java.io.File;
@@ -11,20 +15,26 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -52,7 +62,6 @@ import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
-import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.service.maven.ToDependencyPom;
@@ -60,9 +69,11 @@ import aQute.bnd.service.release.ReleaseBracketingPlugin;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
-import aQute.lib.exceptions.Exceptions;
-import aQute.lib.exceptions.FunctionWithException;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.FunctionWithException;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.PathSet;
@@ -80,7 +91,7 @@ import aQute.service.reporter.Reporter;
 /**
  * This is the Bnd repository for Maven.
  */
-@BndPlugin(name = "MavenBndRepository")
+@BndPlugin(name = "MavenBndRepository", parameters = Configuration.class)
 public class MavenBndRepository extends BaseRepository implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable,
 	Refreshable, Actionable, ToDependencyPom, ReleaseBracketingPlugin {
 
@@ -101,7 +112,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private String				name;
 	private HttpClient			client;
 	private ReleasePluginImpl	releasePlugin		= new ReleasePluginImpl(this, null);
-	private File				base;
+	private File				base				= IO.work;
+	private String				status				= null;
+	private boolean				remote;
+	private final AtomicBoolean	open				= new AtomicBoolean(true);
+	Optional<Workspace>			workspace;
+	private AtomicBoolean		polling				= new AtomicBoolean(false);
 
 	/**
 	 * Put result
@@ -118,7 +134,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	 */
 	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
-		init();
+		if (!init())
+			throw new IllegalStateException(status);
+
 		File binaryFile = File.createTempFile("put", ".jar");
 		File pomFile = File.createTempFile(Archive.POM_EXTENSION, ".xml");
 		LocalPutResult result = new LocalPutResult();
@@ -175,12 +193,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 							logger.debug("Already released {} to {}", pom.getRevision(), this);
 							return result;
 						}
-						logger.debug("Redeploying {}", pom.getRevision(), this);
+						logger.debug("Redeploying {} to {}", pom.getRevision(), this);
 					}
 				}
 
 				logger.debug("Put release {}", pom.getRevision());
-				try (Release releaser = storage.release(pom.getRevision(), options.context.getProperties())) {
+				try (Release releaser = storage.release(pom.getRevision(), options.context.getFlattenedProperties())) {
 					if (releaser == null) {
 						logger.debug("Already released {}", pom.getRevision());
 						return result;
@@ -203,30 +221,33 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					result.artifact = storage.toRemoteURI(binaryArchive);
 					releaser.add(binaryArchive, binaryFile);
 
-					if (!isLocal(instructions)) {
+					boolean releaseSources = (instructions.sources != null)
+						&& (!isLocal(instructions) || instructions.sources.force);
+					boolean releaseJavadoc = (instructions.javadoc != null)
+						&& (!isLocal(instructions) || instructions.javadoc.force);
+
+					if (releaseSources || releaseJavadoc) {
 						try (Tool tool = new Tool(options.context, binary)) {
-							if (instructions.sources != null) {
-								if (!NONE.equals(instructions.sources.path)) {
-									try (Jar jar = getSources(tool, options.context, instructions.sources.path)) {
-										save(releaser, pom.getRevision(), jar);
-									}
+							if (releaseSources) {
+								try (Jar jar = getSources(tool, options.context, instructions.sources.path,
+									instructions.sources.options)) {
+									save(releaser, pom.getRevision(), jar);
 								}
 							}
 
-							if (instructions.javadoc != null) {
-								if (!NONE.equals(instructions.javadoc.path)) {
-									try (Jar jar = getJavadoc(tool, options.context, instructions.javadoc.path,
-										instructions.javadoc.options,
-										instructions.javadoc.packages == JavadocPackages.EXPORT)) {
-										save(releaser, pom.getRevision(), jar);
-									}
+							if (releaseJavadoc) {
+								try (Jar jar = getJavadoc(tool, options.context, instructions.javadoc.path,
+									instructions.javadoc.options,
+									instructions.javadoc.packages == JavadocPackages.EXPORT)) {
+									save(releaser, pom.getRevision(), jar);
 								}
 							}
 						}
 					}
 				}
-				if (configuration.noupdateOnRelease() == false && !binaryArchive.isSnapshot())
+				if (configuration.noupdateOnRelease() == false) {
 					index.add(binaryArchive);
+				}
 			}
 			return result;
 		} catch (Exception e) {
@@ -249,6 +270,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					.orElse(null);
 			} else {
 				pom = createPomFromFile(options.context.getFile(instructions.pom.path));
+				if (pom == null) {
+					logger.warn(
+						"A pom path was set in the -maven-release instuction, but no file could be found in {} (base path: {}) ",
+						instructions.pom.path, options.context.getBase());
+				}
 			}
 		} else {
 			if (!configuration.ignore_metainf_maven()) {
@@ -289,15 +315,21 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return instructions.type == ReleaseType.LOCAL;
 	}
 
-	private Jar getSources(Tool tool, Processor context, String path) throws Exception {
+	private Jar getSources(Tool tool, Processor context, String path, Map<String, String> options) throws Exception {
 		Jar jar = toJar(context, path);
+		if ((path != null) && (jar == null)) {
+			logger.warn(
+				"A sources path was set in the -maven-release instuction, but the path does not exist {} (base path: {}) ",
+				path, context.getBase());
+		}
 		if (jar != null) {
 			tool.setSources(jar, "");
 		} else {
-			jar = tool.doSource();
+			jar = tool.doSource(options);
 		}
 		jar.ensureManifest();
 		jar.setName(Archive.SOURCES_CLASSIFIER); // set jar name to classifier
+		jar.setReproducible(context.is(Constants.REPRODUCIBLE));
 		tool.addClose(jar);
 		return jar;
 	}
@@ -305,11 +337,17 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private Jar getJavadoc(Tool tool, Processor context, String path, Map<String, String> options, boolean exports)
 		throws Exception {
 		Jar jar = toJar(context, path);
+		if (path != null && jar == null) {
+			logger.warn(
+				"A javadoc path was set in the -maven-release instuction, but no javadoc could be found in {} (base path: {}) ",
+				path, context.getBase());
+		}
 		if (jar == null) {
 			jar = tool.doJavadoc(options, exports);
 		}
 		jar.ensureManifest();
 		jar.setName(Archive.JAVADOC_CLASSIFIER); // set jar name to classifier
+		jar.setReproducible(context.is(Constants.REPRODUCIBLE));
 		tool.addClose(jar);
 		return jar;
 	}
@@ -327,7 +365,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	private void save(Release releaser, Revision revision, Jar jar) throws Exception {
 		String classifier = jar.getName(); // jar name is classifier
-		String extension = "jar";
+		String extension = Archive.JAR_EXTENSION;
 		File tmp = File.createTempFile(classifier, extension);
 		try {
 			jar.write(tmp);
@@ -367,6 +405,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		Attrs javadoc = p.remove("javadoc");
 		if (javadoc != null) {
 			release.javadoc.path = javadoc.remove("path");
+			release.javadoc.force = Boolean.parseBoolean(javadoc.remove("force"));
 			if (NONE.equals(release.javadoc.path)) {
 				release.javadoc = null;
 			} else {
@@ -386,9 +425,13 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		Attrs sources = p.remove("sources");
 		if (sources != null) {
-			release.sources.path = sources.get("path");
-			if (NONE.equals(release.sources.path))
+			release.sources.path = sources.remove("path");
+			release.sources.force = Boolean.parseBoolean(sources.remove("force"));
+			if (NONE.equals(release.sources.path)) {
 				release.sources = null;
+			} else {
+				release.sources.options = sources;
+			}
 		}
 
 		Attrs pom = p.remove("pom");
@@ -453,8 +496,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Override
 	public File get(String bsn, Version version, Map<String, String> properties, final DownloadListener... listeners)
 		throws Exception {
-		init();
-		index.sync(); // make sure all is downloaded & parsed
+		if (!init())
+			throw new IllegalStateException(status);
 
 		Archive archive = index.find(bsn, version);
 		if (archive == null) {
@@ -470,9 +513,10 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			return f;
 		}
 
+		Map<String, String> attrs = archive.attributes();
 		for (DownloadListener dl : listeners) {
 			try {
-				dl.success(f);
+				dl.success(f, attrs);
 			} catch (Exception e) {
 				logger.warn("updating listener has error", e);
 			}
@@ -487,71 +531,111 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public List<String> list(String pattern) throws Exception {
-		init();
+		if (!init())
+			return Collections.emptyList();
+
 		return index.getBridge()
 			.list(pattern);
 	}
 
 	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
-		init();
+		if (!init())
+			return new TreeSet<>();
+
 		return index.versions(bsn);
 	}
 
 	@Override
 	public String getName() {
-		init();
 		return name;
 	}
 
-	private synchronized void init() {
+	synchronized boolean init() {
+
+		if (!open.get())
+			throw new IllegalStateException("Already closed " + this);
+
+		if (status != null)
+			return false;
+
+		if (inited)
+			return true;
+
+		inited = true;
+
 		try {
-			if (inited)
-				return;
-
-			client = registry.getPlugin(HttpClient.class);
-			inited = true;
-			name = configuration.name("Maven");
-
-			localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
-
 			List<MavenBackingRepository> release = MavenBackingRepository.create(configuration.releaseUrl(), reporter,
 				localRepo, client);
 			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
 				localRepo, client);
-			storage = new MavenRepository(localRepo, getName(), release, snapshot, client.promiseFactory()
+
+			for (MavenBackingRepository mbr : release) {
+				if (mbr.isRemote()) {
+					remote = true;
+					break;
+				}
+			}
+			if (!remote)
+				for (MavenBackingRepository mbr : snapshot) {
+					if (mbr.isRemote()) {
+						remote = true;
+						break;
+					}
+				}
+
+			storage = new MavenRepository(localRepo, name, release, snapshot, client.promiseFactory()
 				.executor(), reporter);
 
-			base = IO.work;
-			if (registry != null) {
-				Workspace ws = registry.getPlugin(Workspace.class);
-				if (ws != null)
-					base = ws.getBuildDir();
-			}
-
 			File indexFile = getIndexFile();
-			String tmp = configuration.multi();
-			String[] multi;
-			if (tmp == null) {
-				multi = new String[0];
-			} else {
-				multi = tmp.trim()
-					.split("\\s*,\\s*");
-			}
 			Processor domain = (registry != null) ? registry.getPlugin(Processor.class) : null;
 			String source = configuration.source();
 			if (source != null) {
 				source = source.replaceAll("(\\s|,|;|\n|\r)+", "\n");
 			}
+			Set<String> multi = Strings.splitAsStream(configuration.multi())
+				.collect(collectingAndThen(toSet(), Sets::copyOf));
 			this.index = new IndexFile(domain, reporter, indexFile, source, storage, client.promiseFactory(), multi);
 			this.index.open();
 
+			try (Formatter f = new Formatter()) {
+				validateUris(release, f);
+				validateUris(snapshot, f);
+
+				String s = f.toString();
+				if (!s.isEmpty()) {
+					status = s;
+					return false;
+				}
+			}
+
 			startPoll();
 			logger.debug("initing {}", this);
+			workspace.ifPresent(ws -> ws.refresh(this));
+			return true;
 		} catch (Exception e) {
 			reporter.exception(e, "Init for MavenBndRepository failed %s", configuration);
-			throw Exceptions.duck(e);
+			status = Exceptions.getDisplayTypeName(e) + " " + Exceptions.causes(e);
+			return false;
 		}
+	}
+
+	private void validateUris(List<MavenBackingRepository> release, Formatter f) {
+		release.stream()
+			.map(mb -> {
+				try {
+					return mb.toURI("");
+				} catch (Exception e) {
+					f.format("Invalid url %s : %s\n", mb, Exceptions.causes(e));
+					return null;
+				}
+			})
+			.filter(Objects::nonNull)
+			.forEach(u -> {
+				String validateURI = client.validateURI(u);
+				if (validateURI != null)
+					f.format("%s : %s\n", u, validateURI);
+			});
 	}
 
 	private void startPoll() {
@@ -583,7 +667,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	private void poll() throws Exception {
-		refresh();
+		if (polling.getAndSet(true) == false)
+			try {
+				refresh();
+			} finally {
+				polling.set(false);
+			}
 	}
 
 	@Override
@@ -594,7 +683,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Override
 	public void setProperties(Map<String, String> map) throws Exception {
 		configuration = Converter.cnv(Configuration.class, map);
-
+		name = configuration.name("Maven");
+		localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
 	}
 
 	@Override
@@ -605,27 +695,29 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Override
 	public void setRegistry(Registry registry) {
 		this.registry = registry;
+		client = registry.getPlugin(HttpClient.class);
+		workspace = Optional.ofNullable(registry.getPlugin(Workspace.class));
+		base = workspace.map(Workspace::getBuildDir)
+			.orElse(IO.work);
 	}
 
 	@Override
 	public void close() throws IOException {
-		IO.close(storage);
-		if (indexPoller != null)
-			indexPoller.cancel(true);
+		if (open.getAndSet(false)) {
+			if (indexPoller != null)
+				indexPoller.cancel(true);
+			IO.close(storage);
+		}
 	}
 
 	@Override
 	public boolean refresh() throws Exception {
-		init();
+		if (!init())
+			return false;
 
+		storage.refresh();
 		return index.refresh(() -> {
-			for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class)) {
-				try {
-					listener.repositoryRefreshed(this);
-				} catch (Exception e) {
-					reporter.exception(e, "Updating listener plugin %s", listener);
-				}
-			}
+			workspace.ifPresent(ws -> ws.refresh(this));
 		});
 	}
 
@@ -636,13 +728,15 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public String toString() {
-		return "MavenBndRepository [localRepo=" + localRepo + ", storage=" + getName() + ", inited=" + inited
-			+ ", redeploy=" + configuration.redeploy() + "]";
+		return "MavenBndRepository [localRepo=" + localRepo + ", storage=" + name + ", inited=" + inited + ", redeploy="
+			+ configuration.redeploy() + "]";
 	}
 
 	@Override
 	public Map<String, Runnable> actions(Object... target) throws Exception {
-		init();
+		if (!init())
+			return Collections.emptyMap();
+
 		switch (target.length) {
 			case 0 :
 				return null;
@@ -658,33 +752,36 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public String tooltip(Object... target) throws Exception {
-		init();
+		if (!init())
+			return status;
+
 		switch (target.length) {
 			case 0 :
 				try (Formatter f = new Formatter()) {
-					f.format("%s (MavenBndRepository)\n", getName());
-					f.format("Revisions %s\n", index.archives.size());
-					for (MavenBackingRepository mbr : storage.getReleaseRepositories())
-						f.format("Release %s  (%s)\n", mbr, getUser(mbr));
-					for (MavenBackingRepository mbr : storage.getSnapshotRepositories())
-						f.format("Snapshot %s (%s)\n", mbr, getUser(mbr));
-					f.format("Storage %s\n", localRepo);
-					f.format("Index %s\n", index.indexFile);
+					if (status != null)
+						f.format("STATUS = %s", status);
+					else {
+						f.format("MavenBndRepository           : %s\n", getName());
+						f.format("Revisions                    : %s\n", index.getArchives()
+							.size());
+						f.format("Storage                      : %s\n", localRepo);
+						f.format("Index                        : %s\n", index.indexFile);
+						f.format("Release repos                : \n    %s\n", storage.getReleaseRepositories()
+							.stream()
+							.filter(Objects::nonNull)
+							.map(Object::toString)
+							.collect(Collectors.joining("\n    ")));
+
+						f.format("Snapshot repos               : \n    %s\n", storage.getSnapshotRepositories()
+							.stream()
+							.filter(Objects::nonNull)
+							.map(Object::toString)
+							.collect(Collectors.joining("\n    ")));
+					}
 					return f.toString();
 				}
 			default :
 				return index.tooltip(target);
-		}
-	}
-
-	private Object getUser(MavenBackingRepository remote) {
-		if (remote == null)
-			return "";
-
-		try {
-			return remote.getUser();
-		} catch (Exception e) {
-			return "error: " + e.toString();
 		}
 	}
 
@@ -696,13 +793,16 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public String title(Object... target) throws Exception {
-		init();
+		if (!init())
+			return name;
+
 		return index.getBridge()
 			.title(target);
 	}
 
 	public boolean dropTarget(URI uri) throws Exception {
-		init();
+		if (!init())
+			return false;
 
 		String t = uri.toString()
 			.trim();
@@ -781,7 +881,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public void toPom(OutputStream out, PomOptions options) throws Exception {
-		init();
+		if (!init())
+			return;
+
 		PomGenerator pg = new PomGenerator(index.getArchives());
 		pg.name(Revision.valueOf(options.gav))
 			.parent(Revision.valueOf(options.parent))
@@ -792,7 +894,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
-		init();
+		if (!init()) {
+			return requirements.stream()
+				.collect(toMap(identity(), requirement -> new ArrayList<>()));
+		}
+
 		return index.getBridge()
 			.getRepository()
 			.findProviders(requirements);
@@ -834,15 +940,16 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		if (primaryArchive == null)
 			return null; // don't get sources when not in index
 
-		Archive sources = primaryArchive.getOther("jar", Archive.SOURCES_CLASSIFIER);
-		if (sources == null)
+		Archive sourcesArchive = primaryArchive.getOther(Archive.JAR_EXTENSION, Archive.SOURCES_CLASSIFIER);
+		if (sourcesArchive == null)
 			return null;
 
-		Promise<File> promise = storage.get(primaryArchive);
+		Promise<File> promise = storage.get(sourcesArchive);
 		if (listeners.length != 0) {
+			Map<String, String> attrs = sourcesArchive.attributes();
 			new DownloadListenerPromise(reporter, "Get sources " + sourceBsn + "-" + version + " for " + getName(),
-				promise, listeners);
-			return storage.toLocalFile(primaryArchive);
+				promise, attrs, listeners);
+			return storage.toLocalFile(sourcesArchive);
 		} else
 			return promise.getValue();
 	}
@@ -853,10 +960,29 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	public Set<Archive> getArchives() {
 		init();
-		return index.archives.keySet();
+		return index.getArchives();
 	}
 
 	public List<Revision> getRevisions(Program program) throws Exception {
+		if (!init())
+			return Collections.emptyList();
+
 		return storage.getRevisions(program);
+	}
+
+	@Override
+	public String getStatus() {
+		if (status != null)
+			return status;
+
+		if (this.index != null) {
+			return this.index.getStatus();
+		}
+		return null;
+	}
+
+	@Override
+	public boolean isRemote() {
+		return remote;
 	}
 }

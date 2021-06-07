@@ -12,6 +12,7 @@
 	osgi.core;version=latest;maven-scope=provided,\
 	org.osgi.service.subsystem;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest
 

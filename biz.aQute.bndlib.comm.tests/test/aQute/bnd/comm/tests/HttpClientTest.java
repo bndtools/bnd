@@ -41,7 +41,6 @@ public class HttpClientTest extends TestCase {
 	protected void tearDown() throws Exception {
 		IO.close(httpServer);
 		IO.close(httpsServer);
-		IO.delete(tmp);
 		super.tearDown();
 	}
 
@@ -117,6 +116,10 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
+
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -130,7 +133,7 @@ public class HttpClientTest extends TestCase {
 		httpsServer = new Httpbin(configs);
 		httpsServer.start();
 
-		tmp = IO.getFile("generated/tmp");
+		tmp = IO.getFile("generated/tmp/test/" + getTestName());
 		IO.delete(tmp);
 		tmp.mkdirs();
 		httpServer.second = false;
@@ -160,11 +163,29 @@ public class HttpClientTest extends TestCase {
 				TaggedData tag = client.build()
 					.timeout(1000)
 					.verb("PUT")
+					.idemPotent(false)
 					.retries(2)
 					.asTag()
 					.go(httpServer.getBaseURI("readtimeout/1"));
 				System.out.println(tag);
 				assertThat(tag.getResponseCode()).isEqualTo(HttpURLConnection.HTTP_GATEWAY_TIMEOUT);
+			}
+		}
+	}
+
+	public void testRetriesOnPut() throws Exception {
+		try (Processor p = new Processor()) {
+			try (HttpClient client = new HttpClient()) {
+				client.setReporter(p);
+
+				TaggedData tag = client.build()
+					.timeout(1000)
+					.verb("PUT")
+					.retries(2)
+					.asTag()
+					.go(httpServer.getBaseURI("readtimeout/1"));
+				System.out.println(tag);
+				assertThat(tag.getResponseCode()).isEqualTo(HttpURLConnection.HTTP_OK);
 			}
 		}
 	}
@@ -263,6 +284,67 @@ public class HttpClientTest extends TestCase {
 					.go(extraServer.getBaseURI("get/foo"));
 
 				assertEquals(526, go3.getResponseCode());
+			}
+		}
+	}
+
+	public void testHostnameVerification() throws Exception {
+		try (Processor p = new Processor()) {
+
+			//
+			// This should fail as the CN of the service cert does not equal the
+			// hostname ("localhost")
+			//
+
+			Config configs = new Config();
+			configs.https = true;
+			try (Httpbin extraServer = new Httpbin(configs, "somehost")) {
+				extraServer.start();
+
+				p.setProperty("-connection-settings", "server;id=\"" + extraServer.getBaseURI() + "\";verify=" + true
+					+ ";trust=\"" + Strings.join(extraServer.getTrustedCertificateFiles(tmp)) + "\"");
+				HttpClient client = new HttpClient();
+				client.setReporter(p);
+				ConnectionSettings cs = new ConnectionSettings(p, client);
+				cs.readSettings();
+
+				TaggedData go3 = client.build()
+					.retries(0)
+					.asTag()
+					.go(extraServer.getBaseURI("get/foo"));
+
+				assertEquals(526, go3.getResponseCode());
+			}
+		}
+	}
+
+	public void testHostnameVerificationDisabled() throws Exception {
+		try (Processor p = new Processor()) {
+
+			//
+			// This should pass even though the CN of the service cert does not
+			// equal the hostname ("localhost"),
+			// because verification is disabled
+			//
+
+			Config configs = new Config();
+			configs.https = true;
+			try (Httpbin extraServer = new Httpbin(configs, "somehost")) {
+				extraServer.start();
+
+				p.setProperty("-connection-settings", "server;id=\"" + extraServer.getBaseURI() + "\";verify=" + false
+					+ ";trust=\"" + Strings.join(extraServer.getTrustedCertificateFiles(tmp)) + "\"");
+				HttpClient client = new HttpClient();
+				client.setReporter(p);
+				ConnectionSettings cs = new ConnectionSettings(p, client);
+				cs.readSettings();
+
+				TaggedData go3 = client.build()
+					.retries(0)
+					.asTag()
+					.go(extraServer.getBaseURI("get/foo"));
+
+				assertEquals(200, go3.getResponseCode());
 			}
 		}
 	}

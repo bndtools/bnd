@@ -1,5 +1,6 @@
 package bndtools.preferences;
 
+import java.io.Closeable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 
 import org.bndtools.api.NamedPlugin;
 import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
@@ -40,6 +42,8 @@ public class BndPreferences {
 	private static final String		PREF_BUILDBEFORELAUNCH			= "buildBeforeLaunch";
 	private static final String		PREF_ENABLE_TEMPLATE_REPO		= "enableTemplateRepo";
 	private static final String		PREF_TEMPLATE_REPO_URI_LIST		= "templateRepoUriList";
+	private static final String		PREF_EXPLORER_PROMPT			= "prompt";
+	private static final String		PREF_PARALLEL					= "parallel";
 
 	static final String				PREF_WORKSPACE_OFFLINE			= "workspaceIsOffline";
 
@@ -60,7 +64,10 @@ public class BndPreferences {
 		store.setDefault(PREF_TEMPLATE_REPO_URI_LIST,
 			"https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz");
 		store.setDefault(PREF_WORKSPACE_OFFLINE, false);
+		store.setDefault(PREF_PARALLEL, false);
 		store.setDefault(PREF_USE_ALIAS_REQUIREMENTS, true);
+		store.setDefault(QuickFixVersioning.PREFERENCE_KEY, QuickFixVersioning.DEFAULT.toString());
+		store.setDefault(PREF_EXPLORER_PROMPT, "");
 	}
 
 	private String mapToPreference(Map<String, Boolean> names) {
@@ -278,6 +285,38 @@ public class BndPreferences {
 		return preferenceToMap(store.getString(PREF_VCS_IGNORES_PLUGINS), allPluginsInformation, onlyEnabled);
 	}
 
+	public void setPrompt(String prompt) {
+		store.setValue(PREF_EXPLORER_PROMPT, prompt);
+	}
+
+	public String getPrompt() {
+		return store.getString(PREF_EXPLORER_PROMPT);
+	}
+
+	public Closeable onPrompt(Consumer<String> listener) {
+		return onString(PREF_EXPLORER_PROMPT, listener);
+	}
+
+	public void setParallel(boolean parallel) {
+		store.setValue(PREF_PARALLEL, parallel);
+	}
+
+	public boolean isParallel() {
+		return store.getBoolean(PREF_PARALLEL);
+	}
+
+
+	public Closeable onString(String key, Consumer<String> listener) {
+		IPropertyChangeListener l = e -> {
+			if (e.getProperty()
+				.equals(key))
+				listener.accept((String) e.getNewValue());
+		};
+		addPropertyChangeListener(l);
+		listener.accept(store.getString(key));
+		return () -> removePropertyChangeListener(l);
+	}
+
 	/**
 	 * Return the enabled version control ignores plugins.
 	 * <ul>
@@ -322,6 +361,17 @@ public class BndPreferences {
 
 	public void setBuildBeforeLaunch(boolean b) {
 		store.setValue(PREF_BUILDBEFORELAUNCH, b);
+	}
+
+	public QuickFixVersioning getQuickFixVersioning() {
+		return QuickFixVersioning.parse(store.getString(QuickFixVersioning.PREFERENCE_KEY));
+	}
+
+	public void setQuickFixVersioning(QuickFixVersioning qfv) {
+		if (qfv == null) {
+			qfv = QuickFixVersioning.DEFAULT;
+		}
+		store.setValue(QuickFixVersioning.PREFERENCE_KEY, qfv.toString());
 	}
 
 	public boolean isWorkspaceOffline() {

@@ -1,0 +1,56 @@
+########################
+## BUILD SETTINGS ##
+########################
+## Java Compiler Options
+#java:                  java
+#javac:                 javac
+javac.source:           1.8
+javac.target:           1.8
+javac.compliance:       1.8
+javac.debug:            on
+
+# This build requires newer Bnd features
+-require-bnd: "(version>=4.3.0)"
+
+#
+# Custom Settings
+#
+Git-Descriptor:         ${system-allow-fail;git describe --dirty --always --abbrev=9}
+Git-SHA:                ${system-allow-fail;git rev-list -1 --no-abbrev-commit HEAD}
+
+# This is the version to baseline this build against. See cnf/ext/baseline.mvn.
+baseline.version:       4.2.0
+# biz.aQute.bndlib:aQute.bnd.osgi.About.CURRENT needs to be kept in sync with the base.version.
+base.version:           4.3.0
+# Uncomment the following line to build the non-snapshot version.
+#-snapshot:
+Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
+
+# Maven info. The maven artifactId defaults to Bundle-SymbolicName
+-groupid:               biz.aQute.bnd
+-pom:                   version=${versionmask;===s;${@version}}
+-maven-release:         pom;path=JAR,javadoc;-classpath="${project.buildpath}"
+
+Automatic-Module-Name:  ${def;bsn}
+Bundle-Vendor:          Bndtools https://bndtools.org/
+Bundle-Copyright:       Copyright (c) aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
+Bundle-License:         Apache-2.0; \
+                        description="Apache License, Version 2.0"; \
+                        link="https://opensource.org/licenses/Apache-2.0"
+Bundle-DocURL:          https://bnd.bndtools.org/
+Bundle-SCM:             url=https://github.com/bndtools/bnd, \
+                        connection=scm:git:https://github.com/bndtools/bnd.git, \
+                        developerConnection=scm:git:git@github.com:bndtools/bnd.git, \
+                        tag=${Git-Descriptor}
+Bundle-Developers: \
+    pkriens; \
+        email=Peter.Kriens@aQute.biz; \
+        name="Peter Kriens"; \
+        organization=Bndtools; \
+        organizationUrl=https://github.com/bndtools; \
+        roles="architect,developer"; \
+        timezone=1
+
+-make:                  (*).(jar);type=bnd; recipe="bnd/$1.bnd"
+-reproducible: true
+-noextraheaders: true

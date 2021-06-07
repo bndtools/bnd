@@ -1,0 +1,4 @@
+# OSGi R7
+org.osgi:osgi.annotation:7.0.0
+org.osgi:org.osgi.framework:1.8.0
+org.osgi:org.osgi.jmx:1.1.0

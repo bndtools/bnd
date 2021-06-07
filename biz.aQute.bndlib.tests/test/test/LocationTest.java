@@ -16,9 +16,13 @@ public class LocationTest extends TestCase {
 	Workspace		ws;
 	private File	tmp;
 
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
+
 	@Override
 	protected void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp");
+		tmp = IO.getFile("generated/tmp/test/" + getTestName());
 		IO.copy(IO.getFile("testresources/ws-location"), tmp);
 		ws = new Workspace(tmp);
 
@@ -27,7 +31,6 @@ public class LocationTest extends TestCase {
 	@Override
 	protected void tearDown() throws Exception {
 		ws.close();
-		IO.delete(tmp);
 	}
 
 	public void testMerged() throws Exception {

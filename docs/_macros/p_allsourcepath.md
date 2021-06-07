@@ -5,8 +5,6 @@ title: 	p_allsourcepath
 summary: Path to all sources
 ---
 
-layout: default-
-
 	public String _p_allsourcepath(String args[]) throws Exception {
 		return list(args, getAllsourcepath());
 	}

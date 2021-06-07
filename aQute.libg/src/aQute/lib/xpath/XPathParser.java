@@ -21,9 +21,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import aQute.lib.converter.Converter;
+import aQute.lib.xml.XML;
 
 public class XPathParser {
-	final static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
+	final static DocumentBuilderFactory	dbf	= XML.newDocumentBuilderFactory();
 	final static XPathFactory			xpf	= XPathFactory.newInstance();
 	final XPath							xp;
 	final Document						doc;

@@ -1,28 +1,32 @@
 package aQute.bnd.version;
 
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import aQute.lib.regex.PatternConstants;
 
 public class Version implements Comparable<Version> {
-	private static final String	HIGHESTCHAR		= "\uFFFF";
-	final int					major;
-	final int					minor;
-	final int					micro;
-	final String				qualifier;
-	final boolean				snapshot;
+	private static final String				HIGHESTCHAR			= "\uFFFF";
+	final int								major;
+	final int								minor;
+	final int								micro;
+	final String							qualifier;
+	final boolean							snapshot;
 
-	public final static String	VERSION_STRING	= "(\\d{1,10})(\\.(\\d{1,10})(\\.(\\d{1,10})(\\.("
+	public final static String				VERSION_STRING		= "(\\d{1,10})(\\.(\\d{1,10})(\\.(\\d{1,10})(\\.("
 		+ PatternConstants.TOKEN + "))?)?)?";
-	public final static Pattern	VERSION			= Pattern.compile(VERSION_STRING);
-	public final static Version	LOWEST			= new Version();
-	public final static Version	HIGHEST			= new Version(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE,
-		HIGHESTCHAR);
+	public final static Pattern				VERSION				= Pattern.compile(VERSION_STRING);
+	public final static Version				LOWEST				= new Version();
+	public final static Version				HIGHEST				= new Version(Integer.MAX_VALUE, Integer.MAX_VALUE,
+		Integer.MAX_VALUE, HIGHESTCHAR);
 
-	public static final Version	emptyVersion	= LOWEST;
-	public static final Version	ONE				= new Version(1, 0, 0);
-	public static final Pattern	SNAPSHOT_P		= Pattern.compile("(.*-)?SNAPSHOT$");
+	public static final Version				emptyVersion		= LOWEST;
+	public static final Version				ONE					= new Version(1, 0, 0);
+	public static final Pattern				SNAPSHOT_P			= Pattern.compile("(.*-)?SNAPSHOT$");
+
+	private static final Comparator<String>	qualifierComparator	= Comparator.nullsFirst(Comparator.naturalOrder());
 
 	public Version() {
 		this(0);
@@ -32,8 +36,8 @@ public class Version implements Comparable<Version> {
 		this.major = major;
 		this.minor = minor;
 		this.micro = micro;
-		this.qualifier = qualifier;
-		this.snapshot = isSnapshot(qualifier);
+		this.qualifier = ((qualifier != null) && qualifier.isEmpty()) ? null : qualifier;
+		this.snapshot = isSnapshot(this.qualifier);
 	}
 
 	public Version(int major, int minor, int micro) {
@@ -95,33 +99,19 @@ public class Version implements Comparable<Version> {
 		if (other == this)
 			return 0;
 
-		Version o = other;
-		int cmp = major - o.major;
+		int cmp = Integer.compare(major, other.major);
 		if (cmp != 0)
 			return cmp;
 
-		cmp = minor - o.minor;
+		cmp = Integer.compare(minor, other.minor);
 		if (cmp != 0)
 			return cmp;
 
-		cmp = micro - o.micro;
+		cmp = Integer.compare(micro, other.micro);
 		if (cmp != 0)
 			return cmp;
 
-		if (qualifier != null)
-			cmp = 1;
-		if (o.qualifier != null)
-			cmp += 2;
-
-		switch (cmp) {
-			case 0 :
-				return 0;
-			case 1 :
-				return 1;
-			case 2 :
-				return -1;
-		}
-		return qualifier.compareTo(o.qualifier);
+		return Objects.compare(qualifier, other.qualifier, qualifierComparator);
 	}
 
 	@Override
@@ -214,7 +204,7 @@ public class Version implements Comparable<Version> {
 	}
 
 	public static boolean isVersion(String version) {
-		return version != null && VERSION.matcher(version)
+		return (version != null) && VERSION.matcher(version)
 			.matches();
 	}
 

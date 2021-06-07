@@ -47,7 +47,7 @@ class TimeMeasurement implements Closeable, ServiceListener, BundleListener, Fra
 		long id = (long) event.getServiceReference()
 			.getProperty(Constants.SERVICE_ID);
 
-		ServiceTiming st = timeseries.computeIfAbsent(id, (key) -> {
+		ServiceTiming st = timeseries.computeIfAbsent(id, key -> {
 			ServiceTiming serviceTiming = new ServiceTiming();
 			ServiceReference<?> ref = event.getServiceReference();
 			return serviceTiming;

@@ -71,10 +71,10 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import bndtools.Plugin;
 import bndtools.central.Central;
-import bndtools.central.WorkspaceR5Repository;
+import bndtools.central.EclipseWorkspaceRepository;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.editor.common.UpDownButtonBarPart;
 import bndtools.editor.common.UpDownButtonBarPart.UpDownListener;
@@ -279,7 +279,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
 				}
 				image = repoImg;
 
-				if (repo instanceof WorkspaceR5Repository) {
+				if (repo instanceof EclipseWorkspaceRepository) {
 					image = projectImg;
 				}
 
@@ -297,9 +297,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
 				String tooltip = null;
 				if (element instanceof Actionable) {
 					try {
-						tooltip = ((Actionable) element).tooltip(new Object[] {
-							element
-						});
+						tooltip = ((Actionable) element).tooltip(element);
 					} catch (Exception e) {
 						// ignore
 					}
@@ -378,8 +376,8 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
 
 			// Load the repos and clear the error message if the Workspace is
 			// initialised later.
-			Central
-				.onWorkspace(workspace -> SWTConcurrencyUtil.execForControl(runReposViewer.getControl(), true, () -> {
+			Central.onAnyWorkspace(
+				workspace -> SWTConcurrencyUtil.execForControl(runReposViewer.getControl(), true, () -> {
 					allRepos.clear();
 					allRepos.addAll(workspace.getPlugins(Repository.class));
 					runReposViewer.setInput(allRepos);

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/4.1.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Service-Component ::= RESOURCE ( ‘,’ RESOURCE )</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="Service-Component ::= RESOURCE ( ‘,’ RESOURCE )" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="/** * Analyze the class space for any classes that have an OSGi annotation for DS. */ public class DSAnnotations implements AnalyzerPlugin { public boolean analyzeJar(Analyzer analyzer) throws Exception { Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS)); if (header.size() == 0) return false; Instructions instructions = new Instructions(header); Collection&lt;Clazz&gt; list = analyzer.getClassspace().values(); String sc = analyzer.getProperty(Constants.SERVICE_COMPONENT); List&lt;String&gt; names = new ArrayList&lt;String&gt;(); if (sc != null &amp;&amp; sc.trim().length() &gt; 0) names.add(sc); for (Clazz c: list) { for (Instruction instruction : instructions.keySet()) { if (instruction.matches(c.getFQN())) { if (instruction.isNegated()) break; ComponentDef definition = AnnotationReader.getDefinition(c, analyzer); if (definition != null) { definition.sortReferences(); definition.prepare(analyzer); String name = &quot;OSGI-INF/&quot; + definition.name + &quot;.xml&quot;; names.add(name); analyzer.getJar().putResource(name, new TagResource(definition.getTag())); } } } } sc = Processor.append(names.toArray(new String[names.size()])); analyzer.setProperty(Constants.SERVICE_COMPONENT, sc); return false; } @Override public String toString() { return &quot;DSAnnotations&quot;; } }" />
+<meta property="og:description" content="/** * Analyze the class space for any classes that have an OSGi annotation for DS. */ public class DSAnnotations implements AnalyzerPlugin { public boolean analyzeJar(Analyzer analyzer) throws Exception { Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS)); if (header.size() == 0) return false; Instructions instructions = new Instructions(header); Collection&lt;Clazz&gt; list = analyzer.getClassspace().values(); String sc = analyzer.getProperty(Constants.SERVICE_COMPONENT); List&lt;String&gt; names = new ArrayList&lt;String&gt;(); if (sc != null &amp;&amp; sc.trim().length() &gt; 0) names.add(sc); for (Clazz c: list) { for (Instruction instruction : instructions.keySet()) { if (instruction.matches(c.getFQN())) { if (instruction.isNegated()) break; ComponentDef definition = AnnotationReader.getDefinition(c, analyzer); if (definition != null) { definition.sortReferences(); definition.prepare(analyzer); String name = &quot;OSGI-INF/&quot; + definition.name + &quot;.xml&quot;; names.add(name); analyzer.getJar().putResource(name, new TagResource(definition.getTag())); } } } } sc = Processor.append(names.toArray(new String[names.size()])); analyzer.setProperty(Constants.SERVICE_COMPONENT, sc); return false; } @Override public String toString() { return &quot;DSAnnotations&quot;; } }" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-10-12T20:06:21-04:00" />
+<script type="application/ld+json">
+{"headline":"Service-Component ::= RESOURCE ( ‘,’ RESOURCE )","dateModified":"2019-10-12T20:06:21-04:00","datePublished":"2019-10-12T20:06:21-04:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"/releases/4.1.0/heads/service_component.html"},"url":"/releases/4.1.0/heads/service_component.html","description":"/** * Analyze the class space for any classes that have an OSGi annotation for DS. */ public class DSAnnotations implements AnalyzerPlugin { public boolean analyzeJar(Analyzer analyzer) throws Exception { Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS)); if (header.size() == 0) return false; Instructions instructions = new Instructions(header); Collection&lt;Clazz&gt; list = analyzer.getClassspace().values(); String sc = analyzer.getProperty(Constants.SERVICE_COMPONENT); List&lt;String&gt; names = new ArrayList&lt;String&gt;(); if (sc != null &amp;&amp; sc.trim().length() &gt; 0) names.add(sc); for (Clazz c: list) { for (Instruction instruction : instructions.keySet()) { if (instruction.matches(c.getFQN())) { if (instruction.isNegated()) break; ComponentDef definition = AnnotationReader.getDefinition(c, analyzer); if (definition != null) { definition.sortReferences(); definition.prepare(analyzer); String name = &quot;OSGI-INF/&quot; + definition.name + &quot;.xml&quot;; names.add(name); analyzer.getJar().putResource(name, new TagResource(definition.getTag())); } } } } sc = Processor.append(names.toArray(new String[names.size()])); analyzer.setProperty(Constants.SERVICE_COMPONENT, sc); return false; } @Override public String toString() { return &quot;DSAnnotations&quot;; } }","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/4.1.0/"><img
+			class=menu-logo src='/releases/4.1.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/4.1.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/4.1.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/4.1.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/4.1.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/4.1.0/chapters/860-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">4.1.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/4.1.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/150-build.html">Build</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/160-jars.html">Generating JARs</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/220-contracts.html">Contracts</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/230-manifest-annotations.html">Manifest Annotations</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/300-launching.html">Launching</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/400-commandline.html">From the command line</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/610-plugin.html">Plugins</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/800-headers.html">Header Reference</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/820-instructions.html">Instruction</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/850-macros.html">Macro Reference</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/855-macros-ref.html">Macro Index</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/860-commands.html">Command Reference</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/870-plugins.html">Plugins Reference</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/4.1.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> Service-Component ::= RESOURCE ( ',' RESOURCE )</h1>
+				<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">/**</span>
+ <span class="p">*</span> <span class="n">Analyze</span> <span class="n">the</span> <span class="n">class</span> <span class="n">space</span> <span class="n">for</span> <span class="n">any</span> <span class="n">classes</span> <span class="n">that</span> <span class="n">have</span> <span class="n">an</span> <span class="n">OSGi</span> <span class="n">annotation</span> <span class="n">for</span> <span class="n">DS</span><span class="p">.</span>
+ <span class="p">*/</span>
+<span class="k">public</span> <span class="n">class</span> <span class="n">DSAnnotations</span> <span class="n">implements</span> <span class="n">AnalyzerPlugin</span> <span class="p">{</span>
+
+	<span class="k">public</span> <span class="k">boolean</span> <span class="n">analyzeJar</span><span class="p">(</span><span class="n">Analyzer</span> <span class="n">analyzer</span><span class="p">)</span> <span class="n">throws</span> <span class="n">Exception</span> <span class="p">{</span>
+		<span class="k">Parameters</span> <span class="n">header</span> <span class="p">=</span> <span class="n">OSGiHeader</span><span class="p">.</span><span class="n">parseHeader</span><span class="p">(</span><span class="n">analyzer</span><span class="p">.</span><span class="n">getProperty</span><span class="p">(</span><span class="n">Constants</span><span class="p">.</span><span class="n">DSANNOTATIONS</span><span class="p">));</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">header</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="p">==</span> <span class="m">0</span><span class="p">)</span>
+			<span class="n">return</span> <span class="nb">false</span><span class="p">;</span>
+
+		<span class="n">Instructions</span> <span class="n">instructions</span> <span class="p">=</span> <span class="n">new</span> <span class="n">Instructions</span><span class="p">(</span><span class="n">header</span><span class="p">);</span>
+		<span class="n">Collection</span><span class="p">&lt;</span><span class="n">Clazz</span><span class="p">&gt;</span> <span class="k">list</span> <span class="p">=</span> <span class="n">analyzer</span><span class="p">.</span><span class="n">getClassspace</span><span class="p">().</span><span class="n">values</span><span class="p">();</span>
+		<span class="k">String</span> <span class="n">sc</span> <span class="p">=</span> <span class="n">analyzer</span><span class="p">.</span><span class="n">getProperty</span><span class="p">(</span><span class="n">Constants</span><span class="p">.</span><span class="n">SERVICE_COMPONENT</span><span class="p">);</span>
+		<span class="k">List</span><span class="p">&lt;</span><span class="k">String</span><span class="p">&gt;</span> <span class="n">names</span> <span class="p">=</span> <span class="n">new</span> <span class="n">ArrayList</span><span class="p">&lt;</span><span class="k">String</span><span class="p">&gt;();</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">sc</span> <span class="c1">!= null &amp;&amp; sc.trim().length() &gt; 0)
+</span>			<span class="n">names</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">sc</span><span class="p">);</span>
+
+		<span class="n">for</span> <span class="p">(</span><span class="n">Clazz</span> <span class="n">c</span><span class="p">:</span> <span class="k">list</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">for</span> <span class="p">(</span><span class="n">Instruction</span> <span class="n">instruction</span> <span class="p">:</span> <span class="n">instructions</span><span class="p">.</span><span class="n">keySet</span><span class="p">())</span> <span class="p">{</span>
+
+				<span class="k">if</span> <span class="p">(</span><span class="n">instruction</span><span class="p">.</span><span class="n">matches</span><span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="n">getFQN</span><span class="p">()))</span> <span class="p">{</span>
+					<span class="k">if</span> <span class="p">(</span><span class="n">instruction</span><span class="p">.</span><span class="n">isNegated</span><span class="p">())</span>
+						<span class="k">break</span><span class="p">;</span>
+					<span class="n">ComponentDef</span> <span class="n">definition</span> <span class="p">=</span> <span class="n">AnnotationReader</span><span class="p">.</span><span class="n">getDefinition</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">analyzer</span><span class="p">);</span>
+					<span class="k">if</span> <span class="p">(</span><span class="n">definition</span> <span class="c1">!= null) {
+</span>						<span class="n">definition</span><span class="p">.</span><span class="n">sortReferences</span><span class="p">();</span>
+						<span class="n">definition</span><span class="p">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">analyzer</span><span class="p">);</span>
+						<span class="k">String</span> <span class="n">name</span> <span class="p">=</span> <span class="s2">"OSGI-INF/"</span> <span class="p">+</span> <span class="n">definition</span><span class="p">.</span><span class="n">name</span> <span class="p">+</span> <span class="s2">".xml"</span><span class="p">;</span>
+						<span class="n">names</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
+						<span class="n">analyzer</span><span class="p">.</span><span class="n">getJar</span><span class="p">().</span><span class="n">putResource</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">new</span> <span class="n">TagResource</span><span class="p">(</span><span class="n">definition</span><span class="p">.</span><span class="n">getTag</span><span class="p">()));</span>
+					<span class="p">}</span>
+				<span class="p">}</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+		<span class="n">sc</span> <span class="p">=</span> <span class="n">Processor</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">names</span><span class="p">.</span><span class="n">toArray</span><span class="p">(</span><span class="n">new</span> <span class="k">String</span><span class="p">[</span><span class="n">names</span><span class="p">.</span><span class="n">size</span><span class="p">()]));</span>
+		<span class="n">analyzer</span><span class="p">.</span><span class="n">setProperty</span><span class="p">(</span><span class="n">Constants</span><span class="p">.</span><span class="n">SERVICE_COMPONENT</span><span class="p">,</span> <span class="n">sc</span><span class="p">);</span>
+		<span class="n">return</span> <span class="nb">false</span><span class="p">;</span>
+	<span class="p">}</span>
+
+	<span class="p">@</span><span class="n">Override</span>
+	<span class="k">public</span> <span class="k">String</span> <span class="n">toString</span><span class="p">()</span> <span class="p">{</span>
+		<span class="n">return</span> <span class="s2">"DSAnnotations"</span><span class="p">;</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+			<span class="k">package</span> <span class="n">aQute</span><span class="p">.</span><span class="n">bnd</span><span class="p">.</span><span class="n">make</span><span class="p">.</span><span class="n">component</span><span class="p">;</span>
+
+		<span class="n">import</span> <span class="n">java</span><span class="p">.</span><span class="n">io</span><span class="p">.*;</span>
+		<span class="n">import</span> <span class="n">java</span><span class="p">.</span><span class="n">util</span><span class="p">.*;</span>
+		<span class="n">import</span> <span class="n">java</span><span class="p">.</span><span class="n">util</span><span class="p">.</span><span class="n">Map</span><span class="p">.</span><span class="n">Entry</span><span class="p">;</span>
+
+		<span class="n">import</span> <span class="n">aQute</span><span class="p">.</span><span class="n">bnd</span><span class="p">.</span><span class="n">annotation</span><span class="p">.</span><span class="n">component</span><span class="p">.*;</span>
+		<span class="n">import</span> <span class="n">aQute</span><span class="p">.</span><span class="n">bnd</span><span class="p">.</span><span class="n">component</span><span class="p">.*;</span>
+		<span class="n">import</span> <span class="n">aQute</span><span class="p">.</span><span class="n">bnd</span><span class="p">.</span><span class="n">header</span><span class="p">.*;</span>
+		<span class="n">import</span> <span class="n">aQute</span><span class="p">.</span><span class="n">bnd</span><span class="p">.</span><span class="n">make</span><span class="p">.</span><span class="n">metatype</span><span class="p">.*;</span>
+		<span class="n">import</span> <span class="n">aQute</span><span class="p">.</span><span class="n">bnd</span><span class="p">.</span><span class="n">osgi</span><span class="p">.*;</span>
+		<span class="n">import</span> <span class="n">aQute</span><span class="p">.</span><span class="n">bnd</span><span class="p">.</span><span class="n">osgi</span><span class="p">.</span><span class="n">Clazz</span><span class="p">.</span><span class="n">QUERY</span><span class="p">;</span>
+		<span class="n">import</span> <span class="n">aQute</span><span class="p">.</span><span class="n">bnd</span><span class="p">.</span><span class="n">osgi</span><span class="p">.</span><span class="n">Descriptors</span><span class="p">.</span><span class="n">TypeRef</span><span class="p">;</span>
+		<span class="n">import</span> <span class="n">aQute</span><span class="p">.</span><span class="n">bnd</span><span class="p">.</span><span class="n">service</span><span class="p">.*;</span>
+		<span class="n">import</span> <span class="n">aQute</span><span class="p">.</span><span class="n">lib</span><span class="p">.</span><span class="n">tag</span><span class="p">.*;</span>
+
+		<span class="p">/**</span>
+		 <span class="p">*</span> <span class="n">This</span> <span class="n">class</span> <span class="n">is</span> <span class="n">an</span> <span class="n">analyzer</span> <span class="n">plugin</span><span class="p">.</span> <span class="n">It</span> <span class="n">looks</span> <span class="n">at</span> <span class="n">the</span> <span class="n">properties</span> <span class="k">and</span> <span class="n">tries</span> <span class="k">to</span>
+		 <span class="p">*</span> <span class="n">find</span> <span class="n">out</span> <span class="k">if</span> <span class="n">the</span> <span class="n">Service</span><span class="p">-</span><span class="n">Component</span> <span class="n">header</span> <span class="n">contains</span> <span class="n">the</span> <span class="n">bnd</span> <span class="n">shortut</span> <span class="n">syntax</span><span class="p">.</span> <span class="k">If</span>
+		 <span class="p">*</span> <span class="k">not</span><span class="p">,</span> <span class="n">the</span> <span class="n">header</span> <span class="n">is</span> <span class="n">copied</span> <span class="k">to</span> <span class="n">the</span> <span class="n">output</span><span class="p">,</span> <span class="k">if</span> <span class="n">it</span> <span class="n">does</span><span class="p">,</span> <span class="n">an</span> <span class="n">XML</span> <span class="n">file</span> <span class="n">is</span> <span class="n">created</span>
+		 <span class="p">*</span> <span class="k">and</span> <span class="n">added</span> <span class="k">to</span> <span class="n">the</span> <span class="n">JAR</span> <span class="k">and</span> <span class="n">the</span> <span class="n">header</span> <span class="n">is</span> <span class="n">modified</span> <span class="n">appropriately</span><span class="p">.</span>
+		 <span class="p">*/</span>
+		<span class="k">public</span> <span class="n">class</span> <span class="n">ServiceComponent</span> <span class="n">implements</span> <span class="n">AnalyzerPlugin</span> <span class="p">{</span>
+
+			<span class="k">public</span> <span class="k">boolean</span> <span class="n">analyzeJar</span><span class="p">(</span><span class="n">Analyzer</span> <span class="n">analyzer</span><span class="p">)</span> <span class="n">throws</span> <span class="n">Exception</span> <span class="p">{</span>
+
+				<span class="n">ComponentMaker</span> <span class="n">m</span> <span class="p">=</span> <span class="n">new</span> <span class="n">ComponentMaker</span><span class="p">(</span><span class="n">analyzer</span><span class="p">);</span>
+
+				<span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="k">String</span><span class="p">&gt;&gt;</span> <span class="n">l</span> <span class="p">=</span> <span class="n">m</span><span class="p">.</span><span class="n">doServiceComponent</span><span class="p">();</span>
+
+				<span class="n">analyzer</span><span class="p">.</span><span class="n">setProperty</span><span class="p">(</span><span class="n">Constants</span><span class="p">.</span><span class="n">SERVICE_COMPONENT</span><span class="p">,</span> <span class="n">Processor</span><span class="p">.</span><span class="n">printClauses</span><span class="p">(</span><span class="n">l</span><span class="p">));</span>
+
+				<span class="n">analyzer</span><span class="p">.</span><span class="n">getInfo</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">Constants</span><span class="p">.</span><span class="n">SERVICE_COMPONENT</span> <span class="p">+</span> <span class="s2">": "</span><span class="p">);</span>
+				<span class="n">m</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+
+				<span class="n">return</span> <span class="nb">false</span><span class="p">;</span>
+			<span class="p">}</span>
+
+			<span class="n">private</span> <span class="n">static</span> <span class="n">class</span> <span class="n">ComponentMaker</span> <span class="n">extends</span> <span class="n">Processor</span> <span class="p">{</span>
+				<span class="n">Analyzer</span>	<span class="n">analyzer</span><span class="p">;</span>
+
+				<span class="n">ComponentMaker</span><span class="p">(</span><span class="n">Analyzer</span> <span class="n">analyzer</span><span class="p">)</span> <span class="p">{</span>
+					<span class="n">super</span><span class="p">(</span><span class="n">analyzer</span><span class="p">);</span>
+					<span class="n">this</span><span class="p">.</span><span class="n">analyzer</span> <span class="p">=</span> <span class="n">analyzer</span><span class="p">;</span>
+				<span class="p">}</span>
+
+				<span class="p">/**</span>
+				 <span class="p">*</span> <span class="n">Iterate</span> <span class="n">over</span> <span class="n">the</span> <span class="n">Service</span> <span class="n">Component</span> <span class="n">entries</span><span class="p">.</span> <span class="n">There</span> <span class="n">are</span> <span class="n">two</span> <span class="n">cases</span><span class="p">:</span>
+				 <span class="p">*</span> <span class="p">&lt;</span><span class="n">ol</span><span class="p">&gt;</span>
+				 <span class="p">*</span> <span class="p">&lt;</span><span class="n">li</span><span class="p">&gt;</span><span class="n">An</span> <span class="n">XML</span> <span class="n">file</span> <span class="n">reference</span><span class="p">&lt;/</span><span class="n">li</span><span class="p">&gt;</span>
+				 <span class="p">*</span> <span class="p">&lt;</span><span class="n">li</span><span class="p">&gt;</span><span class="n">A</span> <span class="n">FQN</span><span class="p">/</span><span class="n">wildcard</span> <span class="k">with</span> <span class="n">a</span> <span class="k">set</span> <span class="k">of</span> <span class="n">attributes</span><span class="p">&lt;/</span><span class="n">li</span><span class="p">&gt;</span>
+				 <span class="p">*</span> <span class="p">&lt;/</span><span class="n">ol</span><span class="p">&gt;</span>
+				 <span class="p">*</span> <span class="n">An</span> <span class="n">XML</span> <span class="n">reference</span> <span class="n">is</span> <span class="n">immediately</span> <span class="n">expanded</span><span class="p">,</span> <span class="n">an</span> <span class="n">FQN</span><span class="p">/</span><span class="n">wildcard</span> <span class="n">is</span> <span class="n">more</span>
+				 <span class="p">*</span> <span class="n">complicated</span> <span class="k">and</span> <span class="n">is</span> <span class="n">delegated</span> <span class="k">to</span>
+				 <span class="p">*</span> <span class="p">{@</span><span class="n">link</span> <span class="p">#</span><span class="n">componentEntry</span><span class="p">(</span><span class="n">Map</span><span class="p">,</span> <span class="k">String</span><span class="p">,</span> <span class="n">Map</span><span class="p">)}.</span>
+				 <span class="p">*</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">throws</span> <span class="n">Exception</span>
+				 <span class="p">*/</span>
+				<span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="k">String</span><span class="p">&gt;&gt;</span> <span class="n">doServiceComponent</span><span class="p">()</span> <span class="n">throws</span> <span class="n">Exception</span> <span class="p">{</span>
+					<span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="k">String</span><span class="p">&gt;&gt;</span> <span class="n">serviceComponents</span> <span class="p">=</span> <span class="n">newMap</span><span class="p">();</span>
+					<span class="k">String</span> <span class="n">header</span> <span class="p">=</span> <span class="n">getProperty</span><span class="p">(</span><span class="n">SERVICE_COMPONENT</span><span class="p">);</span>
+					<span class="k">Parameters</span> <span class="n">sc</span> <span class="p">=</span> <span class="n">parseHeader</span><span class="p">(</span><span class="n">header</span><span class="p">);</span>
+
+					<span class="n">for</span> <span class="p">(</span><span class="n">Entry</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="n">Attrs</span><span class="p">&gt;</span> <span class="n">entry</span> <span class="p">:</span> <span class="n">sc</span><span class="p">.</span><span class="n">entrySet</span><span class="p">())</span> <span class="p">{</span>
+						<span class="k">String</span> <span class="n">name</span> <span class="p">=</span> <span class="n">entry</span><span class="p">.</span><span class="n">getKey</span><span class="p">();</span>
+						<span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="k">String</span><span class="p">&gt;</span> <span class="n">info</span> <span class="p">=</span> <span class="n">entry</span><span class="p">.</span><span class="nf">getValue</span><span class="p">();</span>
+
+						<span class="n">try</span> <span class="p">{</span>
+							<span class="k">if</span> <span class="p">(</span><span class="n">name</span><span class="p">.</span><span class="n">indexOf</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span> <span class="p">&gt;=</span> <span class="m">0</span> <span class="p">||</span> <span class="n">name</span><span class="p">.</span><span class="nf">endsWith</span><span class="p">(</span><span class="s2">".xml"</span><span class="p">))</span> <span class="p">{</span>
+								<span class="p">//</span> <span class="n">Normal</span> <span class="n">service</span> <span class="n">component</span><span class="p">,</span> <span class="n">we</span> <span class="k">do</span> <span class="k">not</span> <span class="n">process</span> <span class="n">it</span>
+								<span class="n">serviceComponents</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">EMPTY</span><span class="p">);</span>
+							<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+								<span class="n">componentEntry</span><span class="p">(</span><span class="n">serviceComponents</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">info</span><span class="p">);</span>
+							<span class="p">}</span>
+						<span class="p">}</span>
+						<span class="n">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span>
+							<span class="n">e</span><span class="p">.</span><span class="n">printStackTrace</span><span class="p">();</span>
+							<span class="n">error</span><span class="p">(</span><span class="s2">"Invalid "</span> <span class="p">+</span> <span class="n">Constants</span><span class="p">.</span><span class="n">SERVICE_COMPONENT</span> <span class="p">+</span> <span class="s2">" header: %s %s, throws %s"</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">e</span><span class="p">);</span>
+							<span class="n">throw</span> <span class="n">e</span><span class="p">;</span>
+						<span class="p">}</span>
+					<span class="p">}</span>
+					<span class="n">return</span> <span class="n">serviceComponents</span><span class="p">;</span>
+				<span class="p">}</span>
+
+				<span class="p">/**</span>
+				 <span class="p">*</span> <span class="n">Parse</span> <span class="n">an</span> <span class="n">entry</span> <span class="k">in</span> <span class="n">the</span> <span class="n">Service</span><span class="p">-</span><span class="n">Component</span> <span class="n">header</span><span class="p">.</span> <span class="n">This</span> <span class="n">header</span> <span class="n">supports</span>
+				 <span class="p">*</span> <span class="n">the</span> <span class="n">following</span> <span class="n">types</span><span class="p">:</span>
+				 <span class="p">*</span> <span class="p">&lt;</span><span class="n">ol</span><span class="p">&gt;</span>
+				 <span class="p">*</span> <span class="p">&lt;</span><span class="n">li</span><span class="p">&gt;</span><span class="n">An</span> <span class="n">FQN</span> <span class="p">+</span> <span class="n">attributes</span> <span class="n">describing</span> <span class="n">a</span> <span class="n">component</span><span class="p">&lt;/</span><span class="n">li</span><span class="p">&gt;</span>
+				 <span class="p">*</span> <span class="p">&lt;</span><span class="n">li</span><span class="p">&gt;</span><span class="n">A</span> <span class="n">wildcard</span> <span class="n">expression</span> <span class="n">for</span> <span class="n">finding</span> <span class="n">annotated</span> <span class="n">components</span><span class="p">.&lt;/</span><span class="n">li</span><span class="p">&gt;</span>
+				 <span class="p">*</span> <span class="p">&lt;/</span><span class="n">ol</span><span class="p">&gt;</span>
+				 <span class="p">*</span> <span class="n">The</span> <span class="n">problem</span> <span class="n">is</span> <span class="n">the</span> <span class="n">distinction</span> <span class="n">between</span> <span class="n">an</span> <span class="n">FQN</span> <span class="k">and</span> <span class="n">a</span> <span class="n">wildcard</span> <span class="n">because</span>
+				 <span class="p">*</span> <span class="n">an</span> <span class="n">FQN</span> <span class="n">can</span> <span class="n">also</span> <span class="n">be</span> <span class="n">used</span> <span class="k">as</span> <span class="n">a</span> <span class="n">wildcard</span><span class="p">.</span> <span class="k">If</span> <span class="n">the</span> <span class="n">info</span> <span class="n">specifies</span>
+				 <span class="p">*</span> <span class="p">{@</span><span class="n">link</span> <span class="n">Constants</span><span class="p">#</span><span class="n">NOANNOTATIONS</span><span class="p">}</span> <span class="k">then</span> <span class="n">wildcards</span> <span class="n">are</span> <span class="n">an</span> <span class="n">error</span> <span class="k">and</span> <span class="n">the</span>
+				 <span class="p">*</span> <span class="n">component</span> <span class="n">must</span> <span class="n">be</span> <span class="n">fully</span> <span class="n">described</span> <span class="n">by</span> <span class="n">the</span> <span class="n">info</span><span class="p">.</span> <span class="n">Otherwise</span> <span class="n">the</span>
+				 <span class="p">*</span> <span class="n">FQN</span><span class="p">/</span><span class="n">wildcard</span> <span class="n">is</span> <span class="n">expanded</span> <span class="n">into</span> <span class="n">a</span> <span class="k">list</span> <span class="k">of</span> <span class="n">classes</span> <span class="k">with</span> <span class="n">annotations</span><span class="p">.</span> <span class="k">If</span>
+				 <span class="p">*</span> <span class="n">this</span> <span class="k">list</span> <span class="n">is</span> <span class="n">empty</span><span class="p">,</span> <span class="n">the</span> <span class="n">FQN</span> <span class="k">case</span> <span class="n">is</span> <span class="n">interpreted</span> <span class="k">as</span> <span class="n">a</span> <span class="n">complete</span>
+				 <span class="p">*</span> <span class="n">component</span> <span class="n">definition</span><span class="p">.</span> <span class="n">For</span> <span class="n">the</span> <span class="n">wildcard</span> <span class="k">case</span><span class="p">,</span> <span class="n">it</span> <span class="n">is</span> <span class="n">checked</span> <span class="k">if</span> <span class="n">any</span>
+				 <span class="p">*</span> <span class="n">matching</span> <span class="n">classes</span> <span class="n">for</span> <span class="n">the</span> <span class="n">wildcard</span> <span class="n">have</span> <span class="n">been</span> <span class="n">compiled</span> <span class="n">for</span> <span class="n">a</span> <span class="n">class</span> <span class="n">file</span>
+				 <span class="p">*</span> <span class="n">format</span> <span class="n">that</span> <span class="n">does</span> <span class="k">not</span> <span class="n">support</span> <span class="n">annotations</span><span class="p">,</span> <span class="n">this</span> <span class="n">can</span> <span class="n">be</span> <span class="n">a</span> <span class="n">problem</span> <span class="k">with</span>
+				 <span class="p">*</span> <span class="n">JSR14</span> <span class="n">who</span> <span class="n">silently</span> <span class="n">ignores</span> <span class="n">annotations</span><span class="p">.</span> <span class="n">An</span> <span class="n">error</span> <span class="n">is</span> <span class="n">reported</span> <span class="k">in</span> <span class="n">such</span>
+				 <span class="p">*</span> <span class="n">a</span> <span class="k">case</span><span class="p">.</span>
+				 <span class="p">*</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">param</span> <span class="n">serviceComponents</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">param</span> <span class="n">name</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">param</span> <span class="n">info</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">throws</span> <span class="n">Exception</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">throws</span> <span class="n">IOException</span>
+				 <span class="p">*/</span>
+				<span class="n">private</span> <span class="n">void</span> <span class="n">componentEntry</span><span class="p">(</span><span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="k">String</span><span class="p">&gt;&gt;</span> <span class="n">serviceComponents</span><span class="p">,</span> <span class="k">String</span> <span class="n">name</span><span class="p">,</span>
+						<span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="k">String</span><span class="p">&gt;</span> <span class="n">info</span><span class="p">)</span> <span class="n">throws</span> <span class="n">Exception</span><span class="p">,</span> <span class="n">IOException</span> <span class="p">{</span>
+
+					<span class="k">boolean</span> <span class="n">annotations</span> <span class="p">=</span> <span class="c1">!Processor.isTrue(info.get(NOANNOTATIONS));
+</span>					<span class="k">boolean</span> <span class="n">fqn</span> <span class="p">=</span> <span class="n">Verifier</span><span class="p">.</span><span class="n">isFQN</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
+
+					<span class="k">if</span> <span class="p">(</span><span class="n">annotations</span><span class="p">)</span> <span class="p">{</span>
+
+						<span class="p">//</span> <span class="n">Annotations</span> <span class="n">possible</span><span class="c1">!
+</span>
+						<span class="n">Collection</span><span class="p">&lt;</span><span class="n">Clazz</span><span class="p">&gt;</span> <span class="n">annotatedComponents</span> <span class="p">=</span> <span class="n">analyzer</span><span class="p">.</span><span class="n">getClasses</span><span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="n">QUERY</span><span class="p">.</span><span class="n">ANNOTATED</span><span class="p">.</span><span class="n">toString</span><span class="p">(),</span>
+								<span class="n">Component</span><span class="p">.</span><span class="n">class</span><span class="p">.</span><span class="n">getName</span><span class="p">(),</span> <span class="p">//</span>
+								<span class="n">QUERY</span><span class="p">.</span><span class="n">NAMED</span><span class="p">.</span><span class="n">toString</span><span class="p">(),</span> <span class="n">name</span> <span class="p">//</span>
+								<span class="p">);</span>
+
+						<span class="k">if</span> <span class="p">(</span><span class="n">fqn</span><span class="p">)</span> <span class="p">{</span>
+							<span class="k">if</span> <span class="p">(</span><span class="n">annotatedComponents</span><span class="p">.</span><span class="n">isEmpty</span><span class="p">())</span> <span class="p">{</span>
+
+								<span class="p">//</span> <span class="n">No</span> <span class="n">annotations</span><span class="p">,</span> <span class="n">fully</span> <span class="n">specified</span> <span class="k">in</span> <span class="n">header</span>
+
+								<span class="n">createComponentResource</span><span class="p">(</span><span class="n">serviceComponents</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">info</span><span class="p">);</span>
+							<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+
+								<span class="p">//</span> <span class="n">We</span> <span class="n">had</span> <span class="n">a</span> <span class="n">FQN</span> <span class="n">so</span> <span class="n">expect</span> <span class="n">only</span> <span class="n">one</span>
+
+								<span class="n">for</span> <span class="p">(</span><span class="n">Clazz</span> <span class="n">c</span> <span class="p">:</span> <span class="n">annotatedComponents</span><span class="p">)</span> <span class="p">{</span>
+									<span class="n">annotated</span><span class="p">(</span><span class="n">serviceComponents</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">info</span><span class="p">);</span>
+								<span class="p">}</span>
+							<span class="p">}</span>
+						<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+
+							<span class="p">//</span> <span class="n">We</span> <span class="n">did</span> <span class="k">not</span> <span class="n">have</span> <span class="n">an</span> <span class="n">FQN</span><span class="p">,</span> <span class="n">so</span> <span class="n">expect</span> <span class="n">the</span> <span class="n">use</span> <span class="k">of</span> <span class="n">wildcards</span>
+
+							<span class="k">if</span> <span class="p">(</span><span class="n">annotatedComponents</span><span class="p">.</span><span class="n">isEmpty</span><span class="p">())</span>
+								<span class="n">checkAnnotationsFeasible</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
+							<span class="k">else</span>
+								<span class="n">for</span> <span class="p">(</span><span class="n">Clazz</span> <span class="n">c</span> <span class="p">:</span> <span class="n">annotatedComponents</span><span class="p">)</span> <span class="p">{</span>
+									<span class="n">annotated</span><span class="p">(</span><span class="n">serviceComponents</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">info</span><span class="p">);</span>
+								<span class="p">}</span>
+						<span class="p">}</span>
+					<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+						<span class="p">//</span> <span class="n">No</span> <span class="n">annotations</span>
+						<span class="k">if</span> <span class="p">(</span><span class="n">fqn</span><span class="p">)</span>
+							<span class="n">createComponentResource</span><span class="p">(</span><span class="n">serviceComponents</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">info</span><span class="p">);</span>
+						<span class="k">else</span>
+							<span class="n">error</span><span class="p">(</span><span class="s2">"Set to %s but entry %s is not an FQN "</span><span class="p">,</span> <span class="n">NOANNOTATIONS</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
+
+					<span class="p">}</span>
+				<span class="p">}</span>
+
+				<span class="p">/**</span>
+				 <span class="p">*</span> <span class="n">Check</span> <span class="k">if</span> <span class="n">annotations</span> <span class="n">are</span> <span class="n">actually</span> <span class="n">feasible</span> <span class="n">looking</span> <span class="n">at</span> <span class="n">the</span> <span class="n">class</span>
+				 <span class="p">*</span> <span class="n">format</span><span class="p">.</span> <span class="k">If</span> <span class="n">the</span> <span class="n">class</span> <span class="n">format</span> <span class="n">does</span> <span class="k">not</span> <span class="n">provide</span> <span class="n">annotations</span> <span class="k">then</span> <span class="n">it</span> <span class="n">is</span>
+				 <span class="p">*</span> <span class="n">no</span> <span class="n">use</span> <span class="n">specifying</span> <span class="n">annotated</span> <span class="n">components</span><span class="p">.</span>
+				 <span class="p">*</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">param</span> <span class="n">name</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">return</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">throws</span> <span class="n">Exception</span>
+				 <span class="p">*/</span>
+				<span class="n">private</span> <span class="n">Collection</span><span class="p">&lt;</span><span class="n">Clazz</span><span class="p">&gt;</span> <span class="n">checkAnnotationsFeasible</span><span class="p">(</span><span class="k">String</span> <span class="n">name</span><span class="p">)</span> <span class="n">throws</span> <span class="n">Exception</span> <span class="p">{</span>
+					<span class="n">Collection</span><span class="p">&lt;</span><span class="n">Clazz</span><span class="p">&gt;</span> <span class="k">not</span> <span class="p">=</span> <span class="n">analyzer</span><span class="p">.</span><span class="n">getClasses</span><span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="n">QUERY</span><span class="p">.</span><span class="n">NAMED</span><span class="p">.</span><span class="n">toString</span><span class="p">(),</span> <span class="n">name</span> <span class="p">//</span>
+							<span class="p">);</span>
+
+					<span class="k">if</span> <span class="p">(</span><span class="k">not</span><span class="p">.</span><span class="n">isEmpty</span><span class="p">())</span> <span class="p">{</span>
+						<span class="k">if</span> <span class="p">(</span><span class="s2">"*"</span><span class="p">.</span><span class="n">equals</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+							<span class="n">return</span> <span class="k">not</span><span class="p">;</span>
+						<span class="n">error</span><span class="p">(</span><span class="s2">"Specified %s but could not find any class matching this pattern"</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
+					<span class="p">}</span>
+
+					<span class="n">for</span> <span class="p">(</span><span class="n">Clazz</span> <span class="n">c</span> <span class="p">:</span> <span class="k">not</span><span class="p">)</span> <span class="p">{</span>
+						<span class="k">if</span> <span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="n">getFormat</span><span class="p">().</span><span class="n">hasAnnotations</span><span class="p">())</span>
+							<span class="n">return</span> <span class="k">not</span><span class="p">;</span>
+					<span class="p">}</span>
+
+					<span class="n">warning</span><span class="p">(</span><span class="s2">"Wildcards are used (%s) requiring annotations to decide what is a component. Wildcard maps to classes that are compiled with java.target &lt; 1.5. Annotations were introduced in Java 1.5"</span><span class="p">,</span>
+							<span class="n">name</span><span class="p">);</span>
+
+					<span class="n">return</span> <span class="k">not</span><span class="p">;</span>
+				<span class="p">}</span>
+
+				<span class="n">void</span> <span class="n">annotated</span><span class="p">(</span><span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="k">String</span><span class="p">&gt;&gt;</span> <span class="n">components</span><span class="p">,</span> <span class="n">Clazz</span> <span class="n">c</span><span class="p">,</span> <span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="k">String</span><span class="p">&gt;</span> <span class="n">info</span><span class="p">)</span> <span class="n">throws</span> <span class="n">Exception</span> <span class="p">{</span>
+					<span class="p">//</span> <span class="n">Get</span> <span class="n">the</span> <span class="n">component</span> <span class="n">definition</span>
+					<span class="p">//</span> <span class="k">from</span> <span class="n">the</span> <span class="n">annotations</span>
+					<span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="k">String</span><span class="p">&gt;</span> <span class="n">map</span> <span class="p">=</span> <span class="n">ComponentAnnotationReader</span><span class="p">.</span><span class="n">getDefinition</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">this</span><span class="p">);</span>
+
+					<span class="p">//</span> <span class="n">Pick</span> <span class="n">the</span> <span class="n">name</span><span class="p">,</span> <span class="n">the</span> <span class="n">annotation</span> <span class="n">can</span> <span class="n">override</span>
+					<span class="p">//</span> <span class="n">the</span> <span class="n">name</span><span class="p">.</span>
+					<span class="k">String</span> <span class="n">localname</span> <span class="p">=</span> <span class="n">map</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">COMPONENT_NAME</span><span class="p">);</span>
+					<span class="k">if</span> <span class="p">(</span><span class="n">localname</span> <span class="p">==</span> <span class="n">null</span><span class="p">)</span>
+						<span class="n">localname</span> <span class="p">=</span> <span class="n">c</span><span class="p">.</span><span class="n">getFQN</span><span class="p">();</span>
+
+					<span class="p">//</span> <span class="n">Override</span> <span class="n">the</span> <span class="n">component</span> <span class="n">info</span> <span class="n">without</span> <span class="n">manifest</span>
+					<span class="p">//</span> <span class="n">entries</span><span class="p">.</span> <span class="n">We</span> <span class="n">merge</span> <span class="n">the</span> <span class="n">properties</span> <span class="n">though</span><span class="p">.</span>
+
+					<span class="k">String</span> <span class="n">merged</span> <span class="p">=</span> <span class="n">Processor</span><span class="p">.</span><span class="n">merge</span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">remove</span><span class="p">(</span><span class="n">COMPONENT_PROPERTIES</span><span class="p">),</span> <span class="n">map</span><span class="p">.</span><span class="n">remove</span><span class="p">(</span><span class="n">COMPONENT_PROPERTIES</span><span class="p">));</span>
+					<span class="k">if</span> <span class="p">(</span><span class="n">merged</span> <span class="c1">!= null &amp;&amp; merged.length() &gt; 0)
+</span>						<span class="n">map</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="n">COMPONENT_PROPERTIES</span><span class="p">,</span> <span class="n">merged</span><span class="p">);</span>
+					<span class="n">map</span><span class="p">.</span><span class="n">putAll</span><span class="p">(</span><span class="n">info</span><span class="p">);</span>
+					<span class="n">createComponentResource</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">localname</span><span class="p">,</span> <span class="n">map</span><span class="p">);</span>
+				<span class="p">}</span>
+
+				<span class="n">private</span> <span class="n">void</span> <span class="n">createComponentResource</span><span class="p">(</span><span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="k">String</span><span class="p">&gt;&gt;</span> <span class="n">components</span><span class="p">,</span> <span class="k">String</span> <span class="n">name</span><span class="p">,</span>
+						<span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="k">String</span><span class="p">&gt;</span> <span class="n">info</span><span class="p">)</span> <span class="n">throws</span> <span class="n">Exception</span> <span class="p">{</span>
+
+					<span class="p">//</span> <span class="n">We</span> <span class="n">can</span> <span class="n">override</span> <span class="n">the</span> <span class="n">name</span> <span class="k">in</span> <span class="n">the</span> <span class="k">parameters</span>
+					<span class="k">if</span> <span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">containsKey</span><span class="p">(</span><span class="n">COMPONENT_NAME</span><span class="p">))</span>
+						<span class="n">name</span> <span class="p">=</span> <span class="n">info</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">COMPONENT_NAME</span><span class="p">);</span>
+
+					<span class="p">//</span> <span class="n">Assume</span> <span class="n">the</span> <span class="n">impl</span><span class="p">==</span><span class="n">name</span><span class="p">,</span> <span class="n">but</span> <span class="n">allow</span> <span class="n">override</span>
+					<span class="k">String</span> <span class="n">impl</span> <span class="p">=</span> <span class="n">name</span><span class="p">;</span>
+					<span class="k">if</span> <span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">containsKey</span><span class="p">(</span><span class="n">COMPONENT_IMPLEMENTATION</span><span class="p">))</span>
+						<span class="n">impl</span> <span class="p">=</span> <span class="n">info</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">COMPONENT_IMPLEMENTATION</span><span class="p">);</span>
+
+					<span class="n">TypeRef</span> <span class="n">implRef</span> <span class="p">=</span> <span class="n">analyzer</span><span class="p">.</span><span class="n">getTypeRefFromFQN</span><span class="p">(</span><span class="n">impl</span><span class="p">);</span>
+					<span class="p">//</span> <span class="n">Check</span> <span class="k">if</span> <span class="n">such</span> <span class="n">a</span> <span class="n">class</span> <span class="nb">exists</span>
+					<span class="n">analyzer</span><span class="p">.</span><span class="n">referTo</span><span class="p">(</span><span class="n">implRef</span><span class="p">);</span>
+
+					<span class="k">boolean</span> <span class="n">designate</span> <span class="p">=</span> <span class="n">designate</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">info</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">COMPONENT_DESIGNATE</span><span class="p">),</span> <span class="nb">false</span><span class="p">)</span>
+							<span class="p">||</span> <span class="n">designate</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">info</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">COMPONENT_DESIGNATEFACTORY</span><span class="p">),</span> <span class="nb">true</span><span class="p">);</span>
+
+					<span class="p">//</span> <span class="k">If</span> <span class="n">we</span> <span class="n">had</span> <span class="n">a</span> <span class="n">designate</span><span class="p">,</span> <span class="n">we</span> <span class="n">want</span> <span class="n">a</span> <span class="n">default</span> <span class="n">configuration</span> <span class="n">policy</span> <span class="k">of</span>
+					<span class="p">//</span> <span class="n">require</span><span class="p">.</span>
+					<span class="k">if</span> <span class="p">(</span><span class="n">designate</span> <span class="p">&amp;&amp;</span> <span class="n">info</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">COMPONENT_CONFIGURATION_POLICY</span><span class="p">)</span> <span class="p">==</span> <span class="n">null</span><span class="p">)</span>
+						<span class="n">info</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="n">COMPONENT_CONFIGURATION_POLICY</span><span class="p">,</span> <span class="s2">"require"</span><span class="p">);</span>
+
+					<span class="p">//</span> <span class="n">We</span> <span class="n">have</span> <span class="n">a</span> <span class="n">definition</span><span class="p">,</span> <span class="n">so</span> <span class="n">make</span> <span class="n">an</span> <span class="n">XML</span> <span class="n">resources</span>
+					<span class="n">Resource</span> <span class="n">resource</span> <span class="p">=</span> <span class="n">createComponentResource</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">impl</span><span class="p">,</span> <span class="n">info</span><span class="p">);</span>
+					<span class="n">analyzer</span><span class="p">.</span><span class="n">getJar</span><span class="p">().</span><span class="n">putResource</span><span class="p">(</span><span class="s2">"OSGI-INF/"</span> <span class="p">+</span> <span class="n">name</span> <span class="p">+</span> <span class="s2">".xml"</span><span class="p">,</span> <span class="n">resource</span><span class="p">);</span>
+
+					<span class="n">components</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="s2">"OSGI-INF/"</span> <span class="p">+</span> <span class="n">name</span> <span class="p">+</span> <span class="s2">".xml"</span><span class="p">,</span> <span class="n">EMPTY</span><span class="p">);</span>
+
+				<span class="p">}</span>
+
+				<span class="p">/**</span>
+				 <span class="p">*</span> <span class="n">Create</span> <span class="n">a</span> <span class="n">Metatype</span> <span class="k">and</span> <span class="n">Designate</span> <span class="k">record</span> <span class="n">out</span> <span class="k">of</span> <span class="n">the</span> <span class="n">given</span>
+				 <span class="p">*</span> <span class="n">configurations</span><span class="p">.</span>
+				 <span class="p">*</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">param</span> <span class="n">name</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">param</span> <span class="n">config</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">throws</span> <span class="n">Exception</span>
+				 <span class="p">*/</span>
+				<span class="n">private</span> <span class="k">boolean</span> <span class="n">designate</span><span class="p">(</span><span class="k">String</span> <span class="n">name</span><span class="p">,</span> <span class="k">String</span> <span class="n">config</span><span class="p">,</span> <span class="k">boolean</span> <span class="n">factory</span><span class="p">)</span> <span class="n">throws</span> <span class="n">Exception</span> <span class="p">{</span>
+					<span class="k">if</span> <span class="p">(</span><span class="n">config</span> <span class="p">==</span> <span class="n">null</span><span class="p">)</span>
+						<span class="n">return</span> <span class="nb">false</span><span class="p">;</span>
+
+					<span class="n">for</span> <span class="p">(</span><span class="k">String</span> <span class="n">c</span> <span class="p">:</span> <span class="n">Processor</span><span class="p">.</span><span class="n">split</span><span class="p">(</span><span class="n">config</span><span class="p">))</span> <span class="p">{</span>
+						<span class="n">TypeRef</span> <span class="n">ref</span> <span class="p">=</span> <span class="n">analyzer</span><span class="p">.</span><span class="n">getTypeRefFromFQN</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+						<span class="n">Clazz</span> <span class="n">clazz</span> <span class="p">=</span> <span class="n">analyzer</span><span class="p">.</span><span class="n">findClass</span><span class="p">(</span><span class="n">ref</span><span class="p">);</span>
+						<span class="k">if</span> <span class="p">(</span><span class="n">clazz</span> <span class="c1">!= null) {
+</span>							<span class="n">analyzer</span><span class="p">.</span><span class="n">referTo</span><span class="p">(</span><span class="n">ref</span><span class="p">);</span>
+							<span class="n">MetaTypeReader</span> <span class="n">r</span> <span class="p">=</span> <span class="n">new</span> <span class="n">MetaTypeReader</span><span class="p">(</span><span class="n">clazz</span><span class="p">,</span> <span class="n">analyzer</span><span class="p">);</span>
+							<span class="n">r</span><span class="p">.</span><span class="n">setDesignate</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">factory</span><span class="p">);</span>
+							<span class="k">String</span> <span class="n">rname</span> <span class="p">=</span> <span class="s2">"OSGI-INF/metatype/"</span> <span class="p">+</span> <span class="n">name</span> <span class="p">+</span> <span class="s2">".xml"</span><span class="p">;</span>
+
+							<span class="n">analyzer</span><span class="p">.</span><span class="n">getJar</span><span class="p">().</span><span class="n">putResource</span><span class="p">(</span><span class="n">rname</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+						<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+							<span class="n">analyzer</span><span class="p">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Cannot find designated configuration class %s for component %s"</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
+						<span class="p">}</span>
+					<span class="p">}</span>
+					<span class="n">return</span> <span class="nb">true</span><span class="p">;</span>
+				<span class="p">}</span>
+
+				<span class="p">/**</span>
+				 <span class="p">*</span> <span class="n">Create</span> <span class="n">the</span> <span class="n">resource</span> <span class="n">for</span> <span class="n">a</span> <span class="n">DS</span> <span class="n">component</span><span class="p">.</span>
+				 <span class="p">*</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">param</span> <span class="k">list</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">param</span> <span class="n">name</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">param</span> <span class="n">info</span>
+				 <span class="p">*</span> <span class="p">@</span><span class="n">throws</span> <span class="n">UnsupportedEncodingException</span>
+				 <span class="p">*/</span>
+				<span class="n">Resource</span> <span class="n">createComponentResource</span><span class="p">(</span><span class="k">String</span> <span class="n">name</span><span class="p">,</span> <span class="k">String</span> <span class="n">impl</span><span class="p">,</span> <span class="n">Map</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span> <span class="k">String</span><span class="p">&gt;</span> <span class="n">info</span><span class="p">)</span>
+						<span class="n">throws</span> <span class="n">Exception</span> <span class="p">{</span>
+					<span class="n">HeaderReader</span> <span class="n">hr</span> <span class="p">=</span> <span class="n">new</span> <span class="n">HeaderReader</span><span class="p">(</span><span class="n">analyzer</span><span class="p">);</span>
+					<span class="n">Tag</span> <span class="n">tag</span> <span class="p">=</span> <span class="n">hr</span><span class="p">.</span><span class="n">createComponentTag</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">impl</span><span class="p">,</span> <span class="n">info</span><span class="p">);</span>
+					<span class="n">hr</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+					<span class="n">return</span> <span class="n">new</span> <span class="n">TagResource</span><span class="p">(</span><span class="n">tag</span><span class="p">);</span>
+				<span class="p">}</span>
+			<span class="p">}</span>
+
+		<span class="p">}</span>
+
+
+
+
+
+
+				<span class="n">private</span> <span class="n">void</span> <span class="n">verifyComponent</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">String</span> <span class="n">serviceComponent</span> <span class="p">=</span> <span class="n">main</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">Constants</span><span class="p">.</span><span class="n">SERVICE_COMPONENT</span><span class="p">);</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">serviceComponent</span> <span class="c1">!= null) {
+</span>		<span class="k">Parameters</span> <span class="n">map</span> <span class="p">=</span> <span class="n">parseHeader</span><span class="p">(</span><span class="n">serviceComponent</span><span class="p">);</span>
+		<span class="n">for</span> <span class="p">(</span><span class="k">String</span> <span class="n">component</span> <span class="p">:</span> <span class="n">map</span><span class="p">.</span><span class="n">keySet</span><span class="p">())</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="p">(</span><span class="n">component</span><span class="p">.</span><span class="n">indexOf</span><span class="p">(</span><span class="s2">"*"</span><span class="p">)</span> <span class="p">&lt;</span> <span class="m">0</span> <span class="p">&amp;&amp;</span> <span class="c1">!dot.exists(component)) {
+</span>				<span class="n">error</span><span class="p">(</span><span class="n">Constants</span><span class="p">.</span><span class="n">SERVICE_COMPONENT</span> <span class="p">+</span> <span class="s2">" entry can not be located in JAR: "</span> <span class="p">+</span> <span class="n">component</span><span class="p">);</span>
+			<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+				<span class="p">//</span> <span class="n">validate</span> <span class="n">component</span> <span class="p">...</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/4.1.0/heads/require_capability.html'></a> <a href='/releases/4.1.0/heads/test_cases.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.1.0/contact.html">Contact</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.1.0/">Developers</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.1.0/">More</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

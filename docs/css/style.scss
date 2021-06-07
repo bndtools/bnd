@@ -49,59 +49,53 @@ $color-vignette:	#F0F0F0;
 	padding-bottom: $text-separation;
 	@include gradient( lightgrey, rgb(179,179,181), rgb(130,132,135));
 	@include drop-shadow(2px,2px,2px,0.1);
-   	@include rounded(3px);
-   	margin-bottom: $block-separation;
-   	> [span] {
+	@include rounded(3px);
+	margin-bottom: $block-separation;
+	> [span] {
 		vertical-align:middle;
-	    margin: 0px;
-   		> * {
-   			color: white;
-   		}
+		margin: 0px;
+		> * {
+			color: white;
+		}
 		> a {
-		    font-size: $font-size * 1.4;
+			font-size: $font-size * 1.4;
 			padding-top:3px;
 			margin-right: $gutter;
-		} 
-   		.menu-logo {
-   			height: $line-height;
-   		}
+		}
+		.menu-logo {
+			height: $line-height;
+			position: relative;
+			top: 5px;
+		}
 		> img {
 		  padding-right: $gutter;
 		}
-   	}
-	.menu-link {
-		color: white;
-		vertical-align: middle;
 	}
-	
+
 	.menu-button {
 		float: right;
 	}
-	
-    @media screen and (max-width: $medium-device) {
-		[span]:last-child {
-   			width: 100%; 
-		}
+
+	@media screen and (max-width: $medium-device) {
 		[span] {
-			width: 50%;
+			min-width: 4em;
+		}
+	}
+
+	@media screen and (max-width: $small-device) {
+		[span] {
+			width: 100%;
 			min-width: 1em;
 		}
 	}
-	
-    @media screen and (max-width: $small-device) {
-		[span] {
-   			width: 100%; 
-			min-width: 1em;
-		}
-	}
-	
+
 }
 
 
 /*
  * Styling of the side bar
  */
- 
+
 .side-nav {
 	@include vignette();
 }
@@ -120,15 +114,53 @@ $color-vignette:	#F0F0F0;
 	}
 }
 
-
 .selected {
-    &:before { content: "\25B7\00A0"; }
-    font-weight: bolder;
-    color: $secondary-color;
+	&:before { content: "\25B7\00A0"; }
+	font-weight: bolder;
+	color: $secondary-color;
 }
 
 embed.illustration {
 	display:block;
 	margin-left: auto;
 	margin-right: auto;
+}
+
+.dropbtn {
+  background-color: #994b3a;
+  color: white;
+  padding: 6px;
+  font-size: 12.6pt;
+  border: none;
+  cursor: pointer;
+}
+
+.releases {
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 100px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 6px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {background-color: #f1f1f1}
+
+.releases:hover .dropdown-content {
+  display: block;
+}
+
+.releases:hover .dropbtn {
+  background-color: #99594b;
 }

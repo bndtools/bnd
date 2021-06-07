@@ -7,12 +7,17 @@ Bundle-Description: \
 	path and parameters are mapped to the method. See Httpbin as an example. This example implements a lot \
 	of methods that are very useful to test HTTP communication.
 
--conditionalpackage: aQute.lib*, fi.*, org.bouncycastle.*
+-conditionalpackage: \
+    aQute.lib.*,\
+    aQute.libg.*,\
+    fi.*,\
+    org.bouncycastle.*
 
 -buildpath: \
 	osgi.annotation;version=latest;maven-scope=provided,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
+	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest;packages=*,\
 	org.nanohttpd:nanohttpd;version=latest,\
 	bcpkix;version=latest,\
@@ -23,7 +28,7 @@ Bundle-Description: \
 	${junit}, \
 	slf4j.api;version=latest, \
 	slf4j.simple;version=latest, \
-	com.google.guava;version=latest, \
+	com.google.guava;version='[19.0,20)', \
 	org.apache.commons.lang3;version=latest, \
 	org.apache.commons.codec;version=latest
 

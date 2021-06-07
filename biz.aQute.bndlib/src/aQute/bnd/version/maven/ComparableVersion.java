@@ -465,6 +465,7 @@ public class ComparableVersion implements Comparable<ComparableVersion> {
 					break;
 				}
 			}
+			trimToSize();
 		}
 
 		@Override

@@ -158,7 +158,7 @@ public class XRefCommand {
 		return packages.values()
 			.stream()
 			.flatMap(List::stream)
-			.collect(Collectors.toCollection(TreeSet::new));
+			.collect(Collectors.toCollection(TreeSet<T>::new));
 	}
 
 	private void printReferred(String referrredTo, String joined) throws FileNotFoundException {

@@ -30,6 +30,7 @@ import aQute.bnd.osgi.repository.SimpleIndexer;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.service.Registry;
+import aQute.lib.xml.XML;
 
 public class R5RepoContentProvider implements IRepositoryContentProvider {
 
@@ -78,11 +79,10 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	public CheckResult checkStream(String name, InputStream stream) throws IOException {
 		XMLStreamReader reader = null;
 		try {
-			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+			XMLInputFactory inputFactory = XML.newXMLInputFactory();
 
 			inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
 			inputFactory.setProperty(XMLInputFactory.IS_VALIDATING, false);
-			inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
 
 			reader = inputFactory.createXMLStreamReader(stream);
 			ParserState state = ParserState.beforeRoot;
@@ -149,13 +149,17 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	@Override
 	public void parseIndex(InputStream stream, URI baseUri, IRepositoryIndexProcessor listener, LogService log)
 		throws Exception {
+		this.parseIndex(baseUri + "", stream, baseUri, listener, log);
+	}
+
+	public void parseIndex(String projectName, InputStream stream, URI baseUri, IRepositoryIndexProcessor listener,
+		LogService log) throws Exception {
 		XMLStreamReader reader = null;
 		try {
-			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+			XMLInputFactory inputFactory = XML.newXMLInputFactory();
 
 			inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
 			inputFactory.setProperty(XMLInputFactory.IS_VALIDATING, false);
-			inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
 
 			reader = inputFactory.createXMLStreamReader(stream);
 
@@ -190,7 +194,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 								if (ContentNamespace.CONTENT_NAMESPACE.equals(capReqBuilder.getNamespace())
 									&& ContentNamespace.CAPABILITY_URL_ATTRIBUTE.equals(name)) {
 									URI resolvedUri = resolveUri(valueStr, baseUri);
-									capReqBuilder.addAttribute(name, resolvedUri);
+									capReqBuilder.addAttribute(name, resolvedUri.toString());
 								} else {
 									Object convertedAttr = convertAttribute(valueStr, typeAttr);
 									capReqBuilder.addAttribute(name, convertedAttr);

@@ -44,6 +44,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	private final PromiseFactory				promiseFactory;
 	private final boolean						localOnly;
 	private final Map<Revision, Promise<POM>>	poms		= new WeakHashMap<>();
+	private final Reporter						reporter;
 
 	public MavenRepository(File base, String id, List<MavenBackingRepository> release,
 		List<MavenBackingRepository> snapshot, Executor executor, Reporter reporter) throws Exception {
@@ -57,6 +58,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		this.promiseFactory = new PromiseFactory(Objects.requireNonNull(executor));
 		this.localOnly = this.release.isEmpty() && this.snapshot.isEmpty();
 		IO.mkdirs(base);
+		this.reporter = reporter;
 	}
 
 	@Override
@@ -84,6 +86,9 @@ public class MavenRepository implements IMavenRepo, Closeable {
 			List<Archive> snapshotArchives = mbr.getSnapshotArchives(revision);
 			archives.addAll(snapshotArchives);
 		}
+		if (archives.isEmpty()) {
+			reporter.error("No metadata for revision %s", revision);
+		}
 
 		return archives;
 	}
@@ -92,10 +97,11 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	public Archive getResolvedArchive(Revision revision, String extension, String classifier) throws Exception {
 		if (revision.isSnapshot()) {
 			for (MavenBackingRepository mbr : snapshot) {
-				MavenVersion v = mbr.getVersion(revision);
+				MavenVersion v = mbr.getVersion(revision, false);
 				if (v != null)
 					return revision.archive(v, extension, classifier);
 			}
+			reporter.error("No metadata for revision %s", revision);
 			return null;
 		} else {
 			return revision.archive(extension, classifier);
@@ -113,26 +119,30 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public Promise<File> get(final Archive archive) throws Exception {
-		return get(archive, true);
+		return get(archive, true, false);
 	}
 
-	private Promise<File> get(Archive archive, boolean thrw) throws Exception {
+	@Override
+	public Promise<File> get(Archive archive, boolean force) throws Exception {
+		return get(archive, true, force);
+	}
+
+	private Promise<File> get(Archive archive, boolean thrw, boolean force) throws Exception {
 		final File file = toLocalFile(archive);
 
 		if (file.isFile() && !archive.isSnapshot()) {
 			return promiseFactory.resolved(file);
 		}
 
-		if (localOnly || isFresh(file)) {
+		if (localOnly || (!force && isFresh(file))) {
 			return promiseFactory.resolved(file.isFile() ? file : null);
 		}
+
 		return promiseFactory.submit(() -> {
-			File f = getFile(archive, file);
+			File f = getFile(archive, file, force);
 			if (thrw && f == null) {
-				if (archive.isSnapshot())
-					throw new FileNotFoundException("For Maven artifact " + archive + " from " + snapshot);
-				else
-					throw new FileNotFoundException("For Maven artifact " + archive + " from " + release);
+				throw new FileNotFoundException(
+					"For Maven artifact " + archive + " from " + (archive.isSnapshot() ? snapshot : release));
 			}
 			return f;
 		});
@@ -147,23 +157,21 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		return diff < TimeUnit.DAYS.toMillis(1);
 	}
 
-	File getFile(Archive archive, File file) throws Exception {
+	File getFile(Archive archive, File file, boolean force) throws Exception {
 		State result = null;
 
 		if (archive.isSnapshot()) {
-			Archive resolved = resolveSnapshot(archive);
+			Archive resolved = resolveSnapshot(archive, force);
 			if (resolved == null) {
 				// Cannot resolved snapshot
 				if (file.isFile()) // use local copy
 					return file;
 				return null;
 			}
-			if (resolved != null) {
-				result = fetch(snapshot, resolved.remotePath, file);
-			}
+			result = fetch(snapshot, resolved.remotePath, file);
 		}
 
-		if (result == null && release != null)
+		if (result == null)
 			result = fetch(release, archive.remotePath, file);
 
 		if (result == null)
@@ -206,15 +214,20 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public Archive resolveSnapshot(Archive archive) throws Exception {
-		if (archive.isResolved())
+		return resolveSnapshot(archive, false);
+	}
+
+	@Override
+	public Archive resolveSnapshot(Archive archive, boolean force) throws Exception {
+		if (!force && archive.isResolved())
 			return archive;
 
 		for (MavenBackingRepository mbr : snapshot) {
-			MavenVersion version = mbr.getVersion(archive.revision);
+			MavenVersion version = mbr.getVersion(archive.revision, force);
 			if (version != null)
 				return archive.resolveSnapshot(version);
 		}
-
+		reporter.error("No metadata for revision %s", archive.revision);
 		return null;
 	}
 
@@ -266,13 +279,13 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	@Override
 	public URI toRemoteURI(Archive archive) throws Exception {
 		if (archive.revision.isSnapshot()) {
-			if (snapshot != null && !snapshot.isEmpty())
+			if (!snapshot.isEmpty()) {
 				return snapshot.get(0)
 					.toURI(archive.remotePath);
-		} else {
-			if (release != null && !release.isEmpty())
-				return release.get(0)
-					.toURI(archive.remotePath);
+			}
+		} else if (!release.isEmpty()) {
+			return release.get(0)
+				.toURI(archive.remotePath);
 		}
 		return toLocalFile(archive).toURI();
 	}
@@ -284,7 +297,8 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public boolean refresh() throws IOException {
-		// TODO
+		snapshot.forEach(MavenBackingRepository::refreshSnapshots);
+		release.forEach(MavenBackingRepository::refreshSnapshots);
 		return false;
 	}
 
@@ -327,7 +341,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 			poms.put(revision, deferred.getPromise());
 		}
 		Archive pomArchive = revision.getPomArchive();
-		deferred.resolveWith(get(pomArchive, false).map(pomFile -> {
+		deferred.resolveWith(get(pomArchive, false, false).map(pomFile -> {
 			if (pomFile == null) {
 				return null;
 			}
@@ -360,7 +374,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	public boolean exists(Archive archive) throws Exception {
 		File file = File.createTempFile(Archive.POM_EXTENSION, ".xml");
 		try {
-			File result = getFile(archive.getPomArchive(), file);
+			File result = getFile(archive.getPomArchive(), file, false);
 			return result != null;
 		} catch (Exception e) {
 			return false;

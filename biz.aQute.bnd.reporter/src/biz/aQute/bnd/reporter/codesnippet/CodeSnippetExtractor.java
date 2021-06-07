@@ -70,7 +70,7 @@ public class CodeSnippetExtractor {
 		 * snippet
 		 */
 		sortedFiles.stream()
-			.flatMap(file -> extractSnippets(file))
+			.flatMap(this::extractSnippets)
 			.forEach(snippet -> {
 				/*
 				 * There is three cases, the snippet has steps, the snippet is a

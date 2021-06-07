@@ -46,13 +46,17 @@ class Server extends NanoHTTPD {
 	final Map<String, HttpContext>	contexts	= new HashMap<>();
 
 	public Server(HttpTestServer.Config config) throws Exception {
+		this(config, "localhost");
+	}
+
+	public Server(HttpTestServer.Config config, String cn) throws Exception {
 		super(config.host, config.port);
 
 		this.config = config;
 		if (config.https) {
 
 			KeyPair pair = createKey();
-			certificateChain = createSelfSignedCertifcate(pair);
+			certificateChain = createSelfSignedCertifcate(pair, cn);
 			KeyStore keystore = createKeystore(pair);
 			SSLContext ctx = createTLSContext(keystore);
 			makeSecure(ctx.getServerSocketFactory(), null);
@@ -180,9 +184,9 @@ class Server extends NanoHTTPD {
 		return ctx;
 	}
 
-	private X509Certificate[] createSelfSignedCertifcate(KeyPair keyPair) throws Exception {
+	private X509Certificate[] createSelfSignedCertifcate(KeyPair keyPair, String cn) throws Exception {
 		X500NameBuilder nameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
-		nameBuilder.addRDN(BCStyle.CN, "localhost");
+		nameBuilder.addRDN(BCStyle.CN, cn);
 
 		Date notBefore = new Date();
 		Date notAfter = new Date(System.currentTimeMillis() + 24 * 3 * 60 * 60 * 1000);

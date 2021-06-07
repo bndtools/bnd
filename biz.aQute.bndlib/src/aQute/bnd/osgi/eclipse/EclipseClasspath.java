@@ -22,6 +22,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import aQute.lib.xml.XML;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -30,7 +31,7 @@ import aQute.service.reporter.Reporter;
  * problems. @version $Revision: 1.2 $
  */
 public class EclipseClasspath {
-	static final DocumentBuilderFactory	documentBuilderFactory	= DocumentBuilderFactory.newInstance();
+	static final DocumentBuilderFactory	documentBuilderFactory	= XML.newDocumentBuilderFactory();
 	File								project;
 	File								workspace;
 	Set<File>							sources					= new LinkedHashSet<>();

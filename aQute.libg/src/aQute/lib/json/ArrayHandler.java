@@ -32,6 +32,9 @@ public class ArrayHandler extends Handler {
 		for (int i = 0; i < l; i++)
 			try {
 				app.append(del);
+				if (!del.isEmpty()) {
+					app.linebreak();
+				}
 				app.encode(Array.get(object, i), componentType, visited);
 				del = ",";
 			} catch (Exception e) {

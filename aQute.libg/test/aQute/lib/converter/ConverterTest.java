@@ -529,4 +529,22 @@ public class ConverterTest extends TestCase {
 		assertEquals(expected, Converter.cnv(URI.class,
 			"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\r\n1.3.1"));
 	}
+
+	public void testFile() throws Exception {
+		Converter c = new Converter();
+		c.setBase(IO.getFile("testresources"));
+		File convert = c.convert(File.class, "osgi-3.0.0.jar");
+		assertThat(convert).isFile();
+	}
+
+	public void testFileSet() throws Exception {
+		Converter c = new Converter();
+		c.setBase(IO.getFile("testresources"));
+		Set<File> convert = c.convert(new TypeReference<Set<File>>() {}, "fileset/**");
+
+		assertThat(convert.size()).isEqualTo(10);
+
+		File[] array = c.convert(File[].class, "fileset/**");
+		assertThat(array.length).isEqualTo(10);
+	}
 }

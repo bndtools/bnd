@@ -165,7 +165,7 @@ public class ResolveCommand extends Processor {
 
 			for (Resolution res : result) {
 				if (options.all()) {
-					bnd.out.format("%s %-60s%n", res.succeeded ? "OK" : "**", res.resource,
+					bnd.out.format("%s %-60s %s%n", res.succeeded ? "OK" : "**", res.resource,
 						res.message == null ? "" : res.message);
 				}
 				if (!res.succeeded) {
@@ -254,26 +254,25 @@ public class ResolveCommand extends Processor {
 						if (bndrun.isOk()) {
 
 							if (options.urls()) {
-								bnd.out.printf("# URLS ", f.getName());
+								bnd.out.println("# URLS");
 								doUrls(resolution.getOrderedResources());
 								bnd.out.println();
 							}
 
 							if (options.bundles()) {
-								bnd.out.printf("# BUNDLES ", f.getName());
+								bnd.out.println("# BUNDLES");
 								doVersionedClauses(resolution.getRunBundles());
 								bnd.out.println();
 							}
 
 							if (options.files()) {
-								bnd.out.printf("# FILES ", f.getName());
+								bnd.out.println("# FILES");
 								doFiles(resolution.getContainers());
 								bnd.out.println();
 							}
 
 							if (options.optionals()) {
-								bnd.out.printf("# OPTIONALS ", f.getName());
-								bnd.out.println("# Optionals");
+								bnd.out.println("# OPTIONALS");
 								doUrls(resolution.optional.keySet());
 								bnd.out.println();
 							}
@@ -281,7 +280,7 @@ public class ResolveCommand extends Processor {
 							bndrun.update(resolution, options.xchange(), options.write());
 						} else {
 							if (!options.quiet()) {
-								bnd.out.printf("Failed to resolve\n");
+								bnd.out.println("Failed to resolve");
 								bnd.out.println(resolution.report(true));
 							}
 						}

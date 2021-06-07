@@ -1,21 +1,21 @@
 package aQute.maven.api;
 
+import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import aQute.bnd.version.MavenVersion;
 
 public class Archive implements Comparable<Archive> {
-	public static final Pattern	ARCHIVE_P			= Pattern.compile(																																																							//
-		"\\s*"																																																																					// skip
-																																																																								// whitespace
-			+ "(?<program>[^:]+:[^:]+)         # program\n"																																																										//
-			+ "(:(?<extension>[^:]+)         # optional extension\n"																																																							//
-			+ "    (:(?<classifier>[^:]*))?  # optional classifer (must be preceded by extension)\n"																																															//
-			+ ")?                            # end of extension\n"																																																								//
-			+ ":(?<version>[^:]+)           # version is last\n"																																																								//
-			+ "\\s*",																																																																			// skip
-																																																																								// whitespace
+	public static final Pattern	ARCHIVE_P			= Pattern.compile(									//
+		"\\s*"																							//
+			+ "(?<program>(?<group>[^:]+):(?<artifact>[^:]+)) # program\n"								//
+			+ "(:(?<extension>[^:]+)         # optional extension\n"									//
+			+ "    (:(?<classifier>[^:]*))?  # optional classifer (must be preceded by extension)\n"	//
+			+ ")?                            # end of extension\n"										//
+			+ ":(?<version>[^:]+)           # version is last\n"										//
+			+ "\\s*",																					//
 		Pattern.COMMENTS);
 
 	public static final String	SOURCES_CLASSIFIER	= "sources";
@@ -81,13 +81,7 @@ public class Archive implements Comparable<Archive> {
 		if (!revision.equals(other.revision))
 			return false;
 
-		if (snapshot == null) {
-			if (other.snapshot != null)
-				return false;
-		} else if (!snapshot.equals(other.snapshot))
-			return false;
-
-		return true;
+		return Objects.equals(snapshot, other.snapshot);
 	}
 
 	public Revision getRevision() {
@@ -169,7 +163,7 @@ public class Archive implements Comparable<Archive> {
 		if (!m.matches())
 			return null;
 
-		Program p = Program.valueOf(m.group("program"));
+		Program p = Program.valueOf(m.group("group"), m.group("artifact"));
 		return p.version(m.group("version"))
 			.archive(m.group("extension"), m.group("classifier"));
 	}
@@ -242,5 +236,12 @@ public class Archive implements Comparable<Archive> {
 
 	public Archive update(MavenVersion version) {
 		return new Archive(new Revision(revision.program, version), version, extension, classifier);
+	}
+
+	public Map<String, String> attributes() {
+		Map<String, String> attrs = revision.attributes();
+		attrs.put("maven-classifier", classifier);
+		attrs.put("maven-extension", extension);
+		return attrs;
 	}
 }

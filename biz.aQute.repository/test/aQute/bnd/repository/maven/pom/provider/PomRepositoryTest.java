@@ -11,6 +11,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,7 @@ public class PomRepositoryTest extends TestCase {
 
 	@Override
 	protected void setUp() {
-		tmp = IO.getFile("generated/tmp/test/" + getName());
+		tmp = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName());
 		localRepo = IO.getFile(MAVEN_REPO_LOCAL);
 		location = IO.getFile(tmp, "index.xml");
 		IO.delete(tmp);
@@ -140,6 +141,62 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	public void testRepoIndexFileRefreshOnReload() throws Exception {
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("revision", "org.apache.aries.blueprint:org.apache.aries.blueprint.cm:1.0.8");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("transitive", "false");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			File file = bpr.get("org.apache.aries.blueprint.cm", new Version("1.0.8"), Collections.emptyMap());
+			assertNotNull(file);
+			assertTrue(file.exists());
+		}
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("revision", "org.apache.aries.blueprint:org.apache.aries.blueprint.cm:1.0.7");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("transitive", "false");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			File file = bpr.get("org.apache.aries.blueprint.cm", new Version("1.0.7"), Collections.emptyMap());
+			assertNotNull(file);
+			assertTrue(file.exists());
+		}
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("revision", "org.apache.aries.blueprint:org.apache.aries.blueprint.cm:1.0.8");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("transitive", "false");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			File file = bpr.get("org.apache.aries.blueprint.cm", new Version("1.0.8"), Collections.emptyMap());
+			assertNotNull(file);
+			assertTrue(file.exists());
+			file = bpr.get("org.apache.aries.blueprint.cm", new Version("1.0.7"), Collections.emptyMap());
+			assertNull(file);
+		}
+	}
+
 	public void testWithSources() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -152,6 +209,7 @@ public class PomRepositoryTest extends TestCase {
 			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
+			bpr.list(null);
 
 			File file = bpr.get("slf4j.api", new Version("1.7.5"), null);
 			assertNotNull(file);
@@ -214,12 +272,9 @@ public class PomRepositoryTest extends TestCase {
 			config.put("name", "test");
 			bpr.setProperties(config);
 
-			try {
-				bpr.list(null);
-				fail("Should throw IllegalArgumentException on missing parent pom.");
-			} catch (Exception iae) {
-				// This exception is expected!
-			}
+			assertTrue(bpr.list(null)
+				.isEmpty());
+			assertEquals("No parent for pom. Missing parent: test:test.parent:1.0.0", bpr.getStatus());
 		}
 	}
 
@@ -284,6 +339,120 @@ public class PomRepositoryTest extends TestCase {
 			Collection<Resource> resources = providers.getValue();
 			assertFalse(resources.isEmpty());
 			assertEquals(1, resources.size());
+		}
+	}
+
+	public void testBndPomRepoNewURIConfig() throws Exception {
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("pom",
+				"https://repo.maven.apache.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			List<String> list = bpr.list(null);
+			assertNotNull(list);
+			assertEquals(1, list.size());
+			RequirementBuilder builder = bpr.newRequirementBuilder("osgi.identity");
+			builder.addDirective("filter", "(osgi.identity=org.apache.felix.gogo.runtime)");
+			Promise<Collection<Resource>> providers = bpr.findProviders(builder.buildExpression());
+			Collection<Resource> resources = providers.getValue();
+			assertFalse(resources.isEmpty());
+			assertEquals(1, resources.size());
+		}
+	}
+
+	public void testBndPomRepoNewURIConfigStatusError() throws Exception {
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("pom",
+				"https://repo.maven.apache.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			bpr.prepare();
+
+			assertFalse(bpr.isOk());
+			// we know that their are two status messages in here
+			assertTrue(bpr.getStatus()
+				.contains("\n"));
+		}
+
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("pom",
+				"https://repo.maven.apache.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			bpr.prepare();
+
+			assertFalse(bpr.isOk());
+			// their should be only one message line
+			assertFalse(bpr.getStatus()
+				.contains("\n"));
+		}
+
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("pom",
+				"https://repo.maven.apache.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom");
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			bpr.prepare();
+
+			assertFalse(bpr.isOk());
+			// their should be only one message line
+			assertFalse(bpr.getStatus()
+				.contains("\n"));
+		}
+
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("snapshotUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrl", "https://repo.maven.apache.org/maven2/");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			bpr.prepare();
+
+			assertFalse(bpr.isOk());
+			// the message should state that no pom is set
+			assertTrue(bpr.getStatus()
+				.contains("pom"));
 		}
 	}
 
@@ -451,12 +620,9 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("name", "test");
-			try {
-				mcsr.setProperties(config);
-				fail();
-			} catch (Exception e) {
-				assertEquals("Neither pom, revision nor query property are set", e.getMessage());
-			}
+			mcsr.setProperties(config);
+			mcsr.prepare();
+			assertEquals("Neither pom, archive nor query property are set", mcsr.getStatus());
 		}
 	}
 
@@ -468,12 +634,9 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String, String> config = new HashMap<>();
 			config.put("query", "q=g:biz.aQute.bnd+a:biz.aQute.bnd+AND+v:3.2.0");
-			try {
-				mcsr.setProperties(config);
-				fail();
-			} catch (Exception e) {
-				assertEquals("Must get a name", e.getMessage());
-			}
+			mcsr.setProperties(config);
+			mcsr.prepare();
+			assertEquals("Must get a name", mcsr.getStatus());
 		}
 	}
 
@@ -529,7 +692,10 @@ public class PomRepositoryTest extends TestCase {
 
 			String revisions = Strings.join(new String[] {
 				"biz.aQute.bnd:biz.aQute.junit:3.3.0", "biz.aQute.bnd:biz.aQute.launcher:3.3.0",
-				"biz.aQute.bnd:biz.aQute.remote.launcher:3.3.0", "biz.aQute.bnd:biz.aQute.tester:3.3.0"
+				"biz.aQute.bnd:biz.aQute.remote.launcher:3.3.0", "biz.aQute.bnd:biz.aQute.tester:3.3.0",
+				"org.jacoco:org.jacoco.agent:jar:runtime:0.8.6",
+				"org.jacoco:org.jacoco.agent:0.8.6",
+				"org.apache.felix:org.apache.felix.framework:bin:zip:1.4.0"
 			});
 
 			config.put("revision", revisions);
@@ -544,10 +710,25 @@ public class PomRepositoryTest extends TestCase {
 
 			RequirementBuilder builder = mcsr.newRequirementBuilder("osgi.identity");
 			builder.addAttribute("filter", "(osgi.identity=biz.aQute.tester)");
-
 			Promise<Collection<Resource>> providers = mcsr.findProviders(builder.buildExpression());
 			Collection<Resource> resources = providers.getValue();
 			assertFalse(resources.isEmpty());
+
+			assertThat(mcsr.list("*")).contains("biz.aQute.remote.launcher",
+				"biz.aQute.launcher", "biz.aQute.junit", "biz.aQute.tester", //
+				"org.jacoco.agent", // has bsn
+				"org.jacoco:org.jacoco.agent:jar:runtime", // with classifier
+				"org.apache.felix:org.osgi.foundation",// from zip
+				"org.apache.felix:org.apache.felix.framework:bin:zip" // zip
+				);
+
+				SortedSet<Version> versions = mcsr.versions("org.jacoco.agent");
+				assertThat(versions).hasSize(1);
+				assertThat(mcsr.get("org.jacoco.agent", versions.first(), null)).isFile();
+
+				versions = mcsr.versions("org.jacoco:org.jacoco.agent:jar:runtime");
+				assertThat(versions).hasSize(1);
+				assertThat(mcsr.get("org.jacoco:org.jacoco.agent:jar:runtime", versions.first(), null)).isFile();
 		}
 	}
 
@@ -674,7 +855,7 @@ public class PomRepositoryTest extends TestCase {
 			capabilities = resource.getCapabilities("bnd.info");
 			Capability c = capabilities.get(0);
 			String a = (String) c.getAttributes()
-				.get("name");
+				.get("from");
 			Archive archive = Archive.valueOf(a);
 			assertNotNull(archive);
 		}

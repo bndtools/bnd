@@ -11,8 +11,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IMemento;
-import org.osgi.framework.namespace.PackageNamespace;
-import org.osgi.resource.Namespace;
 
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.version.VersionRange;
@@ -83,53 +81,13 @@ public class PackageSearchPanel extends SearchPanel {
 					throw new IllegalArgumentException("Invalid version range: " + e.getMessage());
 				}
 			}
-			filter = formatPackageRequirement(packageName, versionRange);
-			if (filter != null)
-				setRequirement(new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE)
-					.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter)
-					.buildSyntheticRequirement());
+			setRequirement(CapReqBuilder.createPackageRequirement(packageName.trim(), versionRangeStr)
+				.buildSyntheticRequirement());
 			setError(null);
 		} catch (Exception e) {
 			setError(e.getMessage());
 			setRequirement(null);
 		}
-	}
-
-	private String formatPackageRequirement(String packageName, VersionRange versionRange) {
-		String filter;
-
-		if (versionRange == null) {
-			filter = String.format("(%s=%s)", PackageNamespace.PACKAGE_NAMESPACE, packageName.trim());
-		} else {
-			StringBuilder builder = new StringBuilder();
-			builder.append("(&(")
-				.append(PackageNamespace.PACKAGE_NAMESPACE)
-				.append('=')
-				.append(packageName)
-				.append(')');
-			if (versionRange.includeLow())
-				builder.append("(version>=")
-					.append(versionRange.getLow())
-					.append(')');
-			else
-				builder.append("(!(version<=")
-					.append(versionRange.getLow())
-					.append("))");
-			if (versionRange.isRange()) {
-				if (versionRange.includeHigh())
-					builder.append("(version<=")
-						.append(versionRange.getHigh())
-						.append(')');
-				else
-					builder.append("(!(version>=")
-						.append(versionRange.getHigh())
-						.append("))");
-			}
-			builder.append(')');
-			filter = builder.toString();
-		}
-
-		return filter;
 	}
 
 	@Override

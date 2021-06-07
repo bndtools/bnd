@@ -34,7 +34,6 @@ import java.util.Formatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -60,9 +59,10 @@ import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.service.url.URLConnector;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.util.home.Home;
 import aQute.lib.date.Dates;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.libg.reporter.ReporterAdapter;
@@ -74,14 +74,14 @@ import aQute.service.reporter.Reporter;
  * parties that are in the bnd registry for proxies and authentication models.
  */
 public class HttpClient implements Closeable, URLConnector {
-	final static Logger								logger				= LoggerFactory.getLogger(HttpClient.class);
+	final static Logger						logger			= LoggerFactory.getLogger(HttpClient.class);
 	@Deprecated
-	public static final SimpleDateFormat			sdf					= new SimpleDateFormat(
-		"EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+	public static final SimpleDateFormat	sdf				= new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z",
+		Locale.ENGLISH);
 
-	static final long								INITIAL_TIMEOUT		= TimeUnit.MINUTES.toMillis(3);
-	static final long								FINAL_TIMEOUT		= TimeUnit.MINUTES.toMillis(5);
-	static final long								MAX_RETRY_DELAY		= TimeUnit.MINUTES.toMillis(10);
+	static final long						INITIAL_TIMEOUT	= TimeUnit.MINUTES.toMillis(3);
+	static final long						FINAL_TIMEOUT	= TimeUnit.MINUTES.toMillis(5);
+	static final long						MAX_RETRY_DELAY	= TimeUnit.MINUTES.toMillis(10);
 
 	static {
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -150,7 +150,7 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	<T> Promise<T> sendAsync(HttpRequest<T> request) {
-		int retries = "GET".equalsIgnoreCase(request.verb) ? request.retries : 0;
+		int retries = request.isIdemPotent ? request.retries : 0;
 		long delay = (request.retryDelay == 0L) ? 1000L : request.retryDelay;
 		return sendAsync(request, retries, delay);
 	}
@@ -241,13 +241,14 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public URLConnectionHandler findMatchingHandler(URL url) {
-		for (URLConnectionHandler urlh : getURLConnectionHandlers()) {
+		Collection<? extends URLConnectionHandler> urlConnectionHandlers = getURLConnectionHandlers();
+		for (URLConnectionHandler urlh : urlConnectionHandlers) {
 			if (urlh.matches(url)) {
 				logger.debug("Decorate {} with handler {}", url, urlh);
 				return urlh;
-			} else
-				logger.debug("No match for {}, handler {}", url, urlh);
+			}
 		}
+		logger.debug("No match for {}, handlers {}", url, urlConnectionHandlers);
 		return null;
 	}
 
@@ -599,7 +600,7 @@ public class HttpClient implements Closeable, URLConnector {
 				task.worked(1);
 				doOutput(put, con);
 			} else {
-				logger.debug("{} {}", request.verb, request.url);
+				logger.debug("{} {}", request.verb, hcon == null ? request.url : hcon);
 			}
 
 			if (request.timeout > 0) {
@@ -681,12 +682,13 @@ public class HttpClient implements Closeable, URLConnector {
 				// 526 Invalid SSL Certificate
 				// Cloudflare could not validate the SSL/TLS certificate that
 				// the origin server presented.
-				throw new RetryException(
-					new TaggedData(request.url.toURI(), HTTP_INVALID_SSL_CERTIFICATE, request.useCacheFile), e);
+				TaggedData tag = new TaggedData(request.url.toURI(), HTTP_INVALID_SSL_CERTIFICATE,
+					request.useCacheFile);
+				throw new RetryException(tag, e);
 			} catch (SocketTimeoutException e) {
 				task.done(e.toString(), null);
-				throw new RetryException(
-					new TaggedData(request.url.toURI(), HTTP_GATEWAY_TIMEOUT, request.useCacheFile), e);
+				TaggedData tag = new TaggedData(request.url.toURI(), HTTP_GATEWAY_TIMEOUT, request.useCacheFile);
+				throw new RetryException(tag, e);
 			} catch (IOException e) {
 				task.done(e.toString(), null);
 				// 520 Unknown Error (Cloudflare)
@@ -694,8 +696,8 @@ public class HttpClient implements Closeable, URLConnector {
 				// the event that the origin server yields something unexpected.
 				// This could include listing large headers, connection resets
 				// or invalid or empty responses.
-				throw new RetryException(new TaggedData(request.url.toURI(), HTTP_UNKNOWN_ERROR, request.useCacheFile),
-					e);
+				TaggedData tag = new TaggedData(request.url.toURI(), HTTP_UNKNOWN_ERROR, request.useCacheFile);
+				throw new RetryException(tag, e);
 			} catch (RetryException e) {
 				throw e;
 			} catch (Throwable t) {
@@ -713,12 +715,11 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 
 		private void setHeaders(Map<String, String> headers, URLConnection con) {
-			if (headers != null) {
-				for (Entry<String, String> e : headers.entrySet()) {
-					logger.debug("set header {}={}", e.getKey(), e.getValue());
-					con.setRequestProperty(e.getKey(), e.getValue());
-				}
+			MapStream<String, String> stream = MapStream.ofNullable(headers);
+			if (logger.isDebugEnabled()) {
+				stream = stream.peek((k, v) -> logger.debug("set header {}={}", k, v));
 			}
+			stream.forEachOrdered(con::setRequestProperty);
 		}
 
 		private Object convert(Type type, File in, TaggedData tag) throws Exception {
@@ -882,4 +883,26 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 
 	}
+
+	/**
+	 * Validate a URI to see if it is supported by this client
+	 *
+	 * @param u the uri
+	 * @return null if ok, otherwise a reason why it is invalid
+	 */
+	public String validateURI(URI u) {
+		String scheme = u.getScheme();
+		if (scheme == null) {
+			return "Invalid uri, no scheme: " + u;
+		}
+		switch (scheme.toLowerCase()) {
+			case "http" :
+			case "https" :
+			case "file" :
+				return null;
+			default :
+				return "Invalid scheme " + scheme + "for uri " + u;
+		}
+	}
+
 }

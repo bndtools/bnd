@@ -55,17 +55,19 @@ import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
+import aQute.bnd.unmodifiable.Lists;
+import aQute.lib.xml.XML;
 
 /**
  * Implements commands to maintain the Package versions db.
  */
 public class BaselineCommands {
 	private final static Logger	logger				= LoggerFactory.getLogger(BaselineCommands.class);
-	static TransformerFactory	transformerFactory	= TransformerFactory.newInstance();
+	static TransformerFactory	transformerFactory	= XML.newTransformerFactory();
 	final bnd					bnd;
 	final Baseline				baseline;
 	final DiffPluginImpl		differ				= new DiffPluginImpl();
-	final Collection<String>	SKIP_HEADERS		= Arrays.asList(Constants.CREATED_BY, Constants.BND_LASTMODIFIED,
+	final Collection<String>	SKIP_HEADERS		= Lists.of(Constants.CREATED_BY, Constants.BND_LASTMODIFIED,
 		Constants.BUNDLE_MANIFESTVERSION, "Manifest-Version", Constants.TOOL);
 
 	BaselineCommands(bnd bnd) throws IOException {

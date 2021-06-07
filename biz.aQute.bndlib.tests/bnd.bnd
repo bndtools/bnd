@@ -31,6 +31,7 @@
 	aQute.libg;version=project,\
 	biz.aQute.launcher;version=snapshot;packages=*,\
 	biz.aQute.bnd.annotation;version=project,\
+	biz.aQute.bnd.util;version=project,\
 	biz.aQute.bndlib;version=project;packages=*,\
 	biz.aQute.repository;version=snapshot,\
 	biz.aQute.bnd.test;version=project,\
@@ -38,6 +39,7 @@
 	javax.json.bind-api;version=1.0,\
 	slf4j.api;version=latest,\
 	slf4j.simple;version=latest,\
+	org.apiguardian:apiguardian-api;version=latest,\
 	${junit},\
 	${mockito}
 

@@ -3,8 +3,8 @@ package bndtools.launch.util;
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-import org.bndtools.api.RunMode;
 import org.bndtools.api.RunListener;
+import org.bndtools.api.RunMode;
 import org.bndtools.api.RunProvider;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -82,6 +82,8 @@ public final class LaunchUtils {
 				targetResource.getLocation()));
 		}
 
+		RunMode.set(run, mode);
+
 		for (RunListener runListener : getRunListeners()) {
 			try {
 				runListener.create(run);
@@ -89,8 +91,6 @@ public final class LaunchUtils {
 				logger.logError("Error in run listener", t);
 			}
 		}
-
-		RunMode.set(run, mode);
 
 		return run;
 	}

@@ -1,18 +1,21 @@
 package bndtools.central;
 
 import java.io.File;
+import java.util.Collection;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.core.resources.ResourcesPlugin;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.BndListener;
 
+@Deprecated
 public final class WorkspaceListener extends BndListener {
 	private static final ILogger logger = Logger.getLogger(WorkspaceListener.class);
 
-	public WorkspaceListener(@SuppressWarnings("unused") Workspace workspace) {}
+	public WorkspaceListener(Workspace workspace) {}
 
 	@Override
 	public void changed(File file) {
@@ -24,7 +27,7 @@ public final class WorkspaceListener extends BndListener {
 				// so we use a job to refresh the file
 				final RefreshFileJob job = new RefreshFileJob(file, true);
 				if (job.needsToSchedule()) {
-					Central.onWorkspace(workspace -> job.schedule());
+					Central.onAnyWorkspace(workspace -> job.schedule());
 				}
 			} else {
 				Central.refreshFile(file, null, true);
@@ -33,4 +36,14 @@ public final class WorkspaceListener extends BndListener {
 			logger.logError("Error refreshing file " + file, e);
 		}
 	}
+
+	@Override
+	public void built(Project model, Collection<File> files) {
+		Central.getProject(model)
+			.ifPresent(project -> {
+				EclipseWorkspaceRepository eclipseWorkspaceRepository = Central.getEclipseWorkspaceRepository();
+				eclipseWorkspaceRepository.index(project, files);
+			});
+	}
+
 }

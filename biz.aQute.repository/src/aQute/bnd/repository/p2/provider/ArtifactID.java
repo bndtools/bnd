@@ -1,5 +1,7 @@
 package aQute.bnd.repository.p2.provider;
 
+import java.util.Objects;
+
 import aQute.bnd.version.Version;
 
 class ArtifactID {
@@ -33,21 +35,6 @@ class ArtifactID {
 		if (getClass() != obj.getClass())
 			return false;
 		ArtifactID other = (ArtifactID) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (md5 == null) {
-			if (other.md5 != null)
-				return false;
-		} else if (!md5.equals(other.md5))
-			return false;
-		if (version == null) {
-			if (other.version != null)
-				return false;
-		} else if (!version.equals(other.version))
-			return false;
-		return true;
+		return Objects.equals(id, other.id) && Objects.equals(md5, other.md5) && Objects.equals(version, other.version);
 	}
 }

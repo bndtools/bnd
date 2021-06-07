@@ -1,4 +1,5 @@
-___
+---
+layout: default
 title: 	propertiesdir 
 class: 	Processor
 summary: The directory of the properties file

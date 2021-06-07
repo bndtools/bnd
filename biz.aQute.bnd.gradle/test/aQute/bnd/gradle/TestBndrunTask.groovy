@@ -11,7 +11,6 @@ class TestBndrunTask extends Specification {
 
     File buildDir = new File('generated')
     File testResources = new File(buildDir, 'testresources')
-    String bnd_version = System.properties['bnd_version']
 
     def "Bnd Bndrun Task Basic Test"() {
         given:
@@ -24,7 +23,7 @@ class TestBndrunTask extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments("-Pbnd_version=${bnd_version}", '--parallel', '--stacktrace', '--debug', 'build', taskname)
+            .withArguments('--parallel', '--stacktrace', '--debug', 'build', taskname)
             .withPluginClasspath()
             .forwardOutput()
             .build()

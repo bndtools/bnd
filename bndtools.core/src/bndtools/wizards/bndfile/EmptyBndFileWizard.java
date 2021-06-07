@@ -19,7 +19,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import bndtools.Plugin;
 
 public class EmptyBndFileWizard extends Wizard implements INewWizard {

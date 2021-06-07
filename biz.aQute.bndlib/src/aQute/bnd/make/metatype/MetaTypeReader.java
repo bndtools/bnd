@@ -305,7 +305,7 @@ public class MetaTypeReader extends WriteResource {
 				factory = this.factory;
 				id = this.designatePid; // for the felix problems
 			} else {
-				if (ocdAnnotation.get("factory") != null) {
+				if ((ocdAnnotation != null) && (ocdAnnotation.get("factory") != null)) {
 					factory = true;
 				}
 			}

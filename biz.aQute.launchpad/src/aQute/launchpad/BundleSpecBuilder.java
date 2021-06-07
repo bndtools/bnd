@@ -15,9 +15,11 @@ import java.util.stream.Stream;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.Version;
+import org.osgi.namespace.extender.ExtenderNamespace;
+import org.osgi.service.configurator.ConfiguratorConstants;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.service.specifications.BuilderSpecification;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.regex.PatternConstants;
 import aQute.lib.strings.Strings;
@@ -27,7 +29,7 @@ import aQute.lib.strings.Strings;
  * create sub builder interfaces that inherit all functions of the outer one.
  */
 public interface BundleSpecBuilder {
-	String	CONFIGURATION_JSON	= "configuration/configuration.json";
+	String	CONFIGURATION_JSON	= "OSGI-INF/configurator/configuration.json";
 	Pattern	SYMBOLICNAME		= Pattern.compile(PatternConstants.SYMBOLICNAME);
 
 	BundleBuilder x();
@@ -117,7 +119,8 @@ public interface BundleSpecBuilder {
 		 * @param value the value
 		 */
 		default BundleSpecBsn attribute(String key, String value) {
-			x().add("Bundle-SymbolicName", x().spec.bundleSymbolicName, bsn(), key, value);
+			BundleBuilder x = x();
+			x.add("Bundle-SymbolicName", x.spec.bundleSymbolicName, bsn(), key, value);
 			return this;
 		}
 
@@ -143,10 +146,11 @@ public interface BundleSpecBuilder {
 	 * Bundle-Version
 	 */
 	default BundleSpecBuilder bundleVersion(String version) {
-		if (x().spec.bundleVersion != null) {
-			throw new IllegalArgumentException("Bundle-Version was already set to: " + x().spec.bundleVersion);
+		BundleBuilder x = x();
+		if (x.spec.bundleVersion != null) {
+			throw new IllegalArgumentException("Bundle-Version was already set to: " + x.spec.bundleVersion);
 		}
-		x().spec.bundleVersion = version;
+		x.spec.bundleVersion = version;
 		new Version(version);
 		return this;
 	}
@@ -155,10 +159,11 @@ public interface BundleSpecBuilder {
 	 * Bundle-Activator
 	 */
 	default BundleSpecBuilder bundleActivator(String bundleActivator) {
-		if (x().spec.bundleActivator != null) {
-			throw new IllegalArgumentException("Bundle-Activator was already set to: " + x().spec.bundleActivator);
+		BundleBuilder x = x();
+		if (x.spec.bundleActivator != null) {
+			throw new IllegalArgumentException("Bundle-Activator was already set to: " + x.spec.bundleActivator);
 		}
-		x().spec.bundleActivator = bundleActivator;
+		x.spec.bundleActivator = bundleActivator;
 		return this;
 	}
 
@@ -250,7 +255,8 @@ public interface BundleSpecBuilder {
 		 * @param value the attribute value
 		 */
 		default BundleSpecFragmentHost attribute(String key, String value) {
-			x().add("Fragment-Host", x().spec.fragmentHost, fragmenthost(), key, value);
+			BundleBuilder x = x();
+			x.add("Fragment-Host", x.spec.fragmentHost, fragmenthost(), key, value);
 			return this;
 		}
 
@@ -277,7 +283,7 @@ public interface BundleSpecBuilder {
 
 	default BundleSpecBuilderRequireBundle requireBundle(String name) {
 		BundleBuilder x = x();
-		String actualName = x().prepare(name, x.spec.requireBundle);
+		String actualName = x.prepare(name, x.spec.requireBundle);
 
 		return new BundleSpecBuilderRequireBundle() {
 
@@ -338,7 +344,8 @@ public interface BundleSpecBuilder {
 		 * @param value the value of the attribute
 		 */
 		default BundleSpecBuilderRequireBundle attribute(String key, String value) {
-			x().add("Require-Bundle ", x().spec.requireBundle, requirebundle(), key, value);
+			BundleBuilder x = x();
+			x.add("Require-Bundle ", x.spec.requireBundle, requirebundle(), key, value);
 			return this;
 		}
 
@@ -362,7 +369,8 @@ public interface BundleSpecBuilder {
 	/**
 	 * Import-Package
 	 *
-	 * @param name name of the package to be imported, may contain wildcards
+	 * @param packageName name of the package to be imported, may contain
+	 *            wildcards
 	 */
 
 	default BundleSpecImportPackage importPackage(String packageName) {
@@ -439,7 +447,8 @@ public interface BundleSpecBuilder {
 		 * @param value the value of the attribute
 		 */
 		default BundleSpecImportPackage attribute(String key, String value) {
-			x().add("Import-Package", x().spec.importPackage, packageName(), key, value);
+			BundleBuilder x = x();
+			x.add("Import-Package", x.spec.importPackage, packageName(), key, value);
 			return this;
 		}
 
@@ -467,7 +476,7 @@ public interface BundleSpecBuilder {
 
 	default BundleSpecExportPackage exportPackage(String name) {
 		BundleBuilder x = x();
-		String packageName = x().prepare(name, x.spec.exportPackage);
+		String packageName = x.prepare(name, x.spec.exportPackage);
 
 		return new BundleSpecExportPackage() {
 
@@ -528,9 +537,9 @@ public interface BundleSpecBuilder {
 		/**
 		 * Set included classes
 		 *
-		 * @param classNames the included class names
+		 * @param classes the included class names
 		 */
-		default BundleSpecExportPackage include(@SuppressWarnings("rawtypes") Class... classes) {
+		default BundleSpecExportPackage include(Class<?>... classes) {
 			return this.include(Stream.of(classes)
 				.map(Class::getName)
 				.toArray(String[]::new));
@@ -547,7 +556,8 @@ public interface BundleSpecBuilder {
 		}
 
 		default BundleSpecExportPackage attribute(String key, String value) {
-			x().add("Export-Package", x().spec.exportPackage, packageName(), key, value);
+			BundleBuilder x = x();
+			x.add("Export-Package", x.spec.exportPackage, packageName(), key, value);
 			return this;
 		}
 
@@ -566,7 +576,7 @@ public interface BundleSpecBuilder {
 
 	default BundleSpecExportContents exportContent(String name) {
 		BundleBuilder x = x();
-		String actualName = x().prepare(name, x.spec.exportContents);
+		String actualName = x.prepare(name, x.spec.exportContents);
 
 		return new BundleSpecExportContents() {
 
@@ -611,7 +621,8 @@ public interface BundleSpecBuilder {
 		}
 
 		default BundleSpecExportContents attribute(String key, String value) {
-			x().add("-exportcontents", x().spec.exportPackage, packageName(), key, value);
+			BundleBuilder x = x();
+			x.add("-exportcontents", x.spec.exportPackage, packageName(), key, value);
 			return this;
 		}
 
@@ -627,7 +638,7 @@ public interface BundleSpecBuilder {
 
 	default BundleSpecBuilder privatePackage(String name) {
 		BundleBuilder x = x();
-		x().prepare(name, x.spec.privatePackage);
+		x.prepare(name, x.spec.privatePackage);
 		return this;
 	}
 
@@ -637,7 +648,7 @@ public interface BundleSpecBuilder {
 
 	default BundleSpecProvideCapability provideCapability(String namespace) {
 		BundleBuilder x = x();
-		String actualNamespace = x().prepare(namespace, x.spec.exportPackage);
+		String actualNamespace = x.prepare(namespace, x.spec.exportPackage);
 
 		return new BundleSpecProvideCapability() {
 
@@ -667,7 +678,7 @@ public interface BundleSpecBuilder {
 		}
 
 		default BundleSpecProvideCapability version(String version) {
-			attribute("version", version);
+			attribute("version:Version", version);
 			return this;
 		}
 
@@ -677,7 +688,8 @@ public interface BundleSpecBuilder {
 		}
 
 		default BundleSpecProvideCapability attribute(String key, String value) {
-			x().add("Provide-Capability", x().spec.provideCapability, namespace(), key, value);
+			BundleBuilder x = x();
+			x.add("Provide-Capability", x.spec.provideCapability, namespace(), key, value);
 			return this;
 		}
 
@@ -693,7 +705,7 @@ public interface BundleSpecBuilder {
 
 	default BundleSpecRequireCapability requireCapability(String namespace) {
 		BundleBuilder x = x();
-		String actualNamespace = x().prepare(namespace, x.spec.exportPackage);
+		String actualNamespace = x.prepare(namespace, x.spec.exportPackage);
 
 		return new BundleSpecRequireCapability() {
 
@@ -733,7 +745,8 @@ public interface BundleSpecBuilder {
 		}
 
 		default BundleSpecRequireCapability attribute(String key, String value) {
-			x().add("Require-Capability", x().spec.requireCapability, namespace(), key, value);
+			BundleBuilder x = x();
+			x.add("Require-Capability", x.spec.requireCapability, namespace(), key, value);
 			return this;
 		}
 
@@ -760,7 +773,7 @@ public interface BundleSpecBuilder {
 
 	default BundleSpecIncludeResource includeResource(String spec) {
 		BundleBuilder x = x();
-		String actualSpec = x().prepare(spec, x().spec.includeresource);
+		String actualSpec = x.prepare(spec, x.spec.includeresource);
 
 		return new BundleSpecIncludeResource() {
 
@@ -817,7 +830,8 @@ public interface BundleSpecBuilder {
 		}
 
 		default BundleSpecIncludeResource attribute(String key, String value) {
-			x().add("-includeresource", x().spec.includeresource, spec(), key, value);
+			BundleBuilder x = x();
+			x.add("-includeresource", x.spec.includeresource, spec(), key, value);
 			return this;
 		}
 
@@ -828,22 +842,26 @@ public interface BundleSpecBuilder {
 	}
 
 	default BundleSpecBuilder failOk() {
-		x().spec.failOk = true;
+		BundleBuilder x = x();
+		x.spec.failOk = true;
 		return this;
 	}
 
 	default BundleSpecBuilder sources() {
-		x().spec.sources = true;
+		BundleBuilder x = x();
+		x.spec.sources = true;
 		return this;
 	}
 
 	default BundleSpecBuilder instruction(String instruction, String value) {
-		x().spec.other.put(instruction, value);
+		BundleBuilder x = x();
+		String put = x.spec.other.put(instruction, value);
 		return this;
 	}
 
 	default BundleSpecBuilder header(String header, String value) {
-		x().spec.other.put(header, value);
+		BundleBuilder x = x();
+		x.spec.other.put(header, value);
 		return this;
 	}
 
@@ -855,7 +873,8 @@ public interface BundleSpecBuilder {
 	}
 
 	default BundleSpecBuilder classpath(String path) {
-		x().spec.classpath.add(path);
+		BundleBuilder x = x();
+		x.spec.classpath.add(path);
 		return this;
 	}
 
@@ -904,7 +923,7 @@ public interface BundleSpecBuilder {
 			if ("file".equals(url.getProtocol())) {
 				f = new File(url.toURI());
 			} else {
-				f = File.createTempFile("xx", "conf");
+				f = File.createTempFile("bundlespecbuilder", "conf");
 				IO.store(url.openStream(), f);
 			}
 			x().addClose(() -> IO.delete(f));
@@ -915,16 +934,29 @@ public interface BundleSpecBuilder {
 		}
 	}
 
+	/**
+	 * Adds a configuration compatible as described by the Configurator spec. It
+	 * will automatically add the necessary Requirement Header.
+	 *
+	 * @param config the {@link File} containing the configuration
+	 * @return the current version of the {@link BundleSpecBuilder}
+	 */
 	default BundleSpecBuilder addConfiguration(File config) {
 		try {
-			addResource(CONFIGURATION_JSON, config.toURI()
+			return addConfiguration(config.toURI()
 				.toURL());
-			return this;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
 
+	/**
+	 * Adds a configuration compatible as described by the Configurator spec. It
+	 * will automatically add the necessary Requirement Header.
+	 *
+	 * @param config the content for the configuration.
+	 * @return the current version of the {@link BundleSpecBuilder}
+	 */
 	default BundleSpecBuilder addConfiguration(String config) {
 		try {
 			File f = Files.createTempFile("x", "config")
@@ -939,13 +971,24 @@ public interface BundleSpecBuilder {
 		return this;
 	}
 
+	/**
+	 * Adds a configuration compatible as described by the Configurator spec. It
+	 * will automatically add the necessary Requirement Header.
+	 *
+	 * @param url the URL, where the Configuration can be found
+	 * @return the current version of the {@link BundleSpecBuilder}
+	 */
 	default BundleSpecBuilder addConfiguration(URL url) {
-		return addResource(CONFIGURATION_JSON, url);
+		return requireCapability(ExtenderNamespace.EXTENDER_NAMESPACE)
+			.filter(String.format("(%s=%s)", ExtenderNamespace.EXTENDER_NAMESPACE,
+				ConfiguratorConstants.CONFIGURATOR_EXTENDER_NAME))
+			.addResource(CONFIGURATION_JSON, url);
 	}
 
 	default Bundle install() throws Exception {
-		BuilderSpecification spec = x().spec;
-		byte[] build = LaunchpadBuilder.workspace.build(LaunchpadBuilder.projectDir.getAbsolutePath(), spec);
+		BundleBuilder x = x();
+		BuilderSpecification spec = x.spec;
+		byte[] build = x.ws.workspace.build(LaunchpadBuilder.projectDir.getAbsolutePath(), spec);
 		String location;
 		if (spec.location == null) {
 			String name = spec.bundleSymbolicName.toString();
@@ -957,14 +1000,15 @@ public interface BundleSpecBuilder {
 		}
 
 		ByteArrayInputStream bin = new ByteArrayInputStream(build);
-		return x().ws.getBundleContext()
+		return x.ws.getBundleContext()
 			.installBundle(location, bin);
 	}
 
 	default Bundle start() {
 		try {
 			Bundle b = install();
-			x().ws.start(b);
+			BundleBuilder x = x();
+			x.ws.start(b);
 			return b;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
@@ -972,7 +1016,8 @@ public interface BundleSpecBuilder {
 	}
 
 	default BundleSpecBuilder resourceOnly() {
-		x().spec.resourceOnly = true;
+		BundleBuilder x = x();
+		x.spec.resourceOnly = true;
 		return this;
 	}
 
@@ -981,7 +1026,8 @@ public interface BundleSpecBuilder {
 	 */
 	@Deprecated
 	default BundleSpecBuilder inherit() {
-		x().spec.parent.add(BuilderSpecification.PROJECT);
+		BundleBuilder x = x();
+		x.spec.parent.add(BuilderSpecification.PROJECT);
 		return this;
 	}
 
@@ -1008,7 +1054,8 @@ public interface BundleSpecBuilder {
 	 */
 	default BundleSpecBuilder parent(String path) {
 
-		List<String> paths = x().spec.parent;
+		BundleBuilder x = x();
+		List<String> paths = x.spec.parent;
 		String last = paths.isEmpty() ? null : paths.get(paths.size() - 1);
 
 		boolean isTerminatedWithProjectOrWorkspace = PROJECT.equals(last) || WORKSPACE.equals(last);
@@ -1020,13 +1067,13 @@ public interface BundleSpecBuilder {
 		boolean isFileParent = !WORKSPACE.equals(path) && !PROJECT.equals(path);
 
 		if (isFileParent) {
-			File f = IO.getFile(x().ws.projectDir, path);
+			File f = IO.getFile(x.ws.projectDir, path);
 			if (!f.isFile())
 				throw new IllegalArgumentException("No such parent file " + f.getAbsolutePath());
 
 			path = f.getAbsolutePath();
 		}
-		x().spec.parent.add(path);
+		x.spec.parent.add(path);
 		return this;
 	}
 
@@ -1042,7 +1089,8 @@ public interface BundleSpecBuilder {
 	 * @return The builder object for chained invocations.
 	 */
 	default BundleSpecBuilder location(String location) {
-		x().spec.location = location;
+		BundleBuilder x = x();
+		x.spec.location = location;
 		return this;
 	}
 }

@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
 
 /**
  * {@code Option} information for an {@link AttributeDefinition}.
- * 
+ *
  * @see AttributeDefinition#options()
  * @author $Id$
  */
@@ -32,21 +32,19 @@ public @interface Option {
 
 	/**
 	 * The human readable label of this Option.
-	 * 
 	 * <p>
 	 * If not specified, the label of this Option is the empty string.
-	 * 
 	 * <p>
 	 * If the label begins with the percent sign ({@code '%'} &#92;u0025), the
 	 * label can be {@link ObjectClassDefinition#localization() localized}.
-	 * 
+	 *
 	 * @see "The label attribute of the Option element of a Meta Type Resource."
 	 */
 	String label() default "";
 
 	/**
 	 * The value of this Option.
-	 * 
+	 *
 	 * @see "The value attribute of the Option element of a Meta Type Resource."
 	 */
 	String value();

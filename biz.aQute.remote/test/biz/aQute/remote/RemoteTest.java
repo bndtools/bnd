@@ -33,36 +33,38 @@ public class RemoteTest extends TestCase {
 	private String					location;
 	private File					tmp;
 
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
+
 	@Override
 	protected void setUp() throws Exception {
-		try {
-			tmp = IO.getFile("generated/tmp");
-			configuration = new HashMap<>();
-			configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
-			configuration.put(Constants.FRAMEWORK_STORAGE, new File(tmp, "fwstorage").getAbsolutePath());
-			configuration.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.osgi.framework.launch;version=1.2");
+		super.setUp();
 
-			framework = new org.apache.felix.framework.FrameworkFactory().newFramework(configuration);
-			framework.init();
-			framework.start();
-			context = framework.getBundleContext();
-			location = "reference:" + IO.getFile("generated/biz.aQute.remote.agent.jar")
-				.toURI()
-				.toString();
-			agent = context.installBundle(location);
-			agent.start();
+		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+		IO.delete(tmp);
+		IO.mkdirs(tmp);
+		configuration = new HashMap<>();
+		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+		configuration.put(Constants.FRAMEWORK_STORAGE, new File(tmp, "fwstorage").getAbsolutePath());
+		configuration.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.osgi.framework.launch;version=1.2");
 
-			super.setUp();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		framework = new org.apache.felix.framework.FrameworkFactory().newFramework(configuration);
+		framework.init();
+		framework.start();
+		context = framework.getBundleContext();
+		location = "reference:" + IO.getFile("generated/biz.aQute.remote.agent.jar")
+			.toURI()
+			.toString();
+		agent = context.installBundle(location);
+		agent.start();
+
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		framework.stop();
 		framework.waitForStop(10000);
-		IO.delete(tmp);
 		super.tearDown();
 	}
 

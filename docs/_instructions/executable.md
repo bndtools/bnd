@@ -1,9 +1,24 @@
 ---
 layout: default
 class: Project
-title: -executable ( rejar= STORE | DEFLATE ) ( ','  strip= matcher ( ',' matcher )* )
-summary: Process an executable jar to strip optional directories of the contained bundles and/or change their compression
+title: -executable ( rejar= STORE | DEFLATE ) ( ','  strip= matcher ( ',' matcher )* ) ( ',' location= FORMAT )
+summary: Process an executable jar to strip optional directories of the contained bundles, and/or change their compression. The location string can also be calculated from bsn and version
 ---
+
+
+## Location
+
+Bundles are stored in a `jar` directory in the executable JAR. The name in this directory is by default the file name in the repository. This filename is, however, also used by the launcher as the location. This implies that if the file name contains the version, a new location is created when the version changes. This ends up with too many duplicates quickly. This is only a problem when you keep the storage area.
+
+The `location` option in the `-executable` instructions can provide a printf format to calculate a location based on the Bundle-SymbolicName and Bundle-Version.
+
+For example:
+
+    -executable: location='${@bsn}-${version;=;${@version}}'
+
+This format will create locations where a bundle will overwrite when the major part of the version is the same. I.e. `com.example.foo-1`. I.e., it will allow multiple bundles that are semantically incompatible but compatible bundles overwrite each other.
+
+## Compression
 
 When an executable JAR is created by the Project Launcher the compression is controlled with the [-compression](compression.html) 
 instruction. However, this über JAR contains bundles and JARs for the run path. Since executable JARs are sometimes used in 

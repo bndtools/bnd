@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import aQute.bnd.classfile.Attribute;
+import aQute.bnd.classfile.MethodInfo;
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.MethodDef;
@@ -41,8 +43,7 @@ public class Coverage {
 
 				@Override
 				public void implementsInterfaces(TypeRef names[]) {
-					@SuppressWarnings("deprecation")
-					MethodDef def = clazz.new MethodDef(0, "<implements>", "()V");
+					MethodDef def = clazz.new MethodDef(new MethodInfo(0, "<implements>", "()V", new Attribute[0]));
 					// TODO
 					for (TypeRef interfaceName : names) {
 						for (Map.Entry<MethodDef, List<MethodDef>> entry : catalog.entrySet()) {

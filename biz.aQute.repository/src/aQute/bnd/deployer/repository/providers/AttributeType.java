@@ -1,9 +1,12 @@
 package aQute.bnd.deployer.repository.providers;
 
-import java.util.LinkedList;
-import java.util.StringTokenizer;
+import static java.util.stream.Collectors.toList;
+
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import aQute.lib.strings.Strings;
 
 public class AttributeType {
 
@@ -18,7 +21,7 @@ public class AttributeType {
 
 	public static final AttributeType	DEFAULT				= STRING;
 
-	private static final Pattern		LIST_TYPE_PATTERN	= Pattern.compile("List<(\\w*)>");
+	private static final Pattern		LIST_TYPE_PATTERN	= Pattern.compile("List(\\s*<\\s*(\\w+)\\s*>)?");
 
 	private final boolean				list;
 	private final ScalarType			baseType;
@@ -27,14 +30,18 @@ public class AttributeType {
 		if (typeName == null)
 			return DEFAULT;
 
+		typeName = typeName.trim();
 		Matcher matcher = LIST_TYPE_PATTERN.matcher(typeName);
 		if (matcher.matches()) {
-			String scalarTypeName = matcher.group(1);
+			if (matcher.group(1) == null) {
+				return STRINGLIST;
+			}
+			String scalarTypeName = matcher.group(2);
 			ScalarType scalarType = ScalarType.valueOf(scalarTypeName);
 			return new AttributeType(true, scalarType);
 		}
 
-		ScalarType scalarType = ScalarType.valueOf(typeName.trim());
+		ScalarType scalarType = ScalarType.valueOf(typeName);
 		return new AttributeType(false, scalarType);
 	}
 
@@ -53,10 +60,9 @@ public class AttributeType {
 
 	public Object parseString(String input) {
 		if (list) {
-			LinkedList<Object> list = new LinkedList<>();
-			StringTokenizer tokenizer = new StringTokenizer(input, ",");
-			while (tokenizer.hasMoreTokens())
-				list.add(baseType.parseString(tokenizer.nextToken()));
+			List<Object> list = Strings.splitAsStream(input)
+				.map(baseType::parseString)
+				.collect(toList());
 			return list;
 		}
 

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/4.2.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Macro Reference</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="Macro Reference" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A simple macro processor is added to the header processing. Variables allow a single definition of a value, and the use of derivations. Each header is a macro that can be expanded. Notice that headers that do not start with an upper case character will not be copied to the manifest, so they can be used as working variables. Variables are expanded by enclosing the name of the variable in ${&lt;name&gt;} (curly braces) or $(&lt;name&gt;) (parenthesis). Additionally, square brackets [], angled brackets &lt;&gt;, double guillemets «», and single guillemets ‹› are also allowed for brackets. If brackets are nested, that is $[replace;acaca;a(.*)a;[$1]] will return [cac]." />
+<meta property="og:description" content="A simple macro processor is added to the header processing. Variables allow a single definition of a value, and the use of derivations. Each header is a macro that can be expanded. Notice that headers that do not start with an upper case character will not be copied to the manifest, so they can be used as working variables. Variables are expanded by enclosing the name of the variable in ${&lt;name&gt;} (curly braces) or $(&lt;name&gt;) (parenthesis). Additionally, square brackets [], angled brackets &lt;&gt;, double guillemets «», and single guillemets ‹› are also allowed for brackets. If brackets are nested, that is $[replace;acaca;a(.*)a;[$1]] will return [cac]." />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-10-12T19:48:23-04:00" />
+<script type="application/ld+json">
+{"headline":"Macro Reference","dateModified":"2019-10-12T19:48:23-04:00","datePublished":"2019-10-12T19:48:23-04:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"/releases/4.2.0/chapters/850-macros.html"},"url":"/releases/4.2.0/chapters/850-macros.html","description":"A simple macro processor is added to the header processing. Variables allow a single definition of a value, and the use of derivations. Each header is a macro that can be expanded. Notice that headers that do not start with an upper case character will not be copied to the manifest, so they can be used as working variables. Variables are expanded by enclosing the name of the variable in ${&lt;name&gt;} (curly braces) or $(&lt;name&gt;) (parenthesis). Additionally, square brackets [], angled brackets &lt;&gt;, double guillemets «», and single guillemets ‹› are also allowed for brackets. If brackets are nested, that is $[replace;acaca;a(.*)a;[$1]] will return [cac].","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<style>
+			 body {
+				counter-reset: h1 27;
+			}
+		</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/4.2.0/"><img
+			class=menu-logo src='/releases/4.2.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/4.2.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/4.2.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/4.2.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/4.2.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/4.2.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">4.2.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/4.2.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/150-build.html">Build</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/160-jars.html">Generating JARs</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/220-contracts.html">Contracts</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/230-manifest-annotations.html">Manifest Annotations</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/300-launching.html">Launching</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/305-Junit-Testing-OSGi.html">Plain JUnit Testing with OSGi (PRELIMENARY)</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/400-commands.html">Commands</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/800-headers.html">Headers</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/820-instructions.html">Instruction Reference</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li class=selected>Macro Reference
+
+
+
+			<li><a href="/releases/4.2.0/chapters/855-macros-ref.html">Macro Index</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/870-plugins.html">Plugins</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/4.2.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> Macro Reference</h1>
+				<p>A simple macro processor is added to the header processing. Variables allow a single definition of a value, and the use of derivations. Each header is a macro that can be expanded. Notice that headers that do not start with an upper case character will not be copied to the manifest, so they can be used as working variables. Variables are expanded by enclosing the name of the variable in <code class="highlighter-rouge">${&lt;name&gt;}</code> (curly braces) or <code class="highlighter-rouge">$(&lt;name&gt;)</code> (parenthesis). Additionally, square brackets [], angled brackets &lt;&gt;, double guillemets «», and single guillemets ‹› are also allowed for brackets. If brackets are nested, that is $[replace;acaca;a(.*)a;[$1]] will return <code class="highlighter-rouge">[cac]</code>.</p>
+
+<p>There are also a number of macros that perform basic functions. All these functions have the following basic syntax:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> macro ::= '${' function '}'
+     | '$\[' function '\]'
+     | '$(' function ')'
+     | '$&lt;' function '&gt;'
+
+ function ::= name ( ';' argument ) *
+</code></pre></div></div>
+
+<p>For example:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>version=1.23.87.200109111023542
+Bundle-Version= ${version}
+Bundle-Description= This bundle has version ${version}
+</code></pre></div></div>
+
+<h2 id="macro-patterns">Macro patterns</h2>
+<p>The default macro pattern is the <code class="highlighter-rouge">${...}</code> pattern, a dollar sign (‘$’) followed by a left curly bracket (‘{‘) and closed by a right curly bracket (‘}’). However, since bndlib is often used inside other systems it also supports alternative macro patterns:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">$(...)</code>,</li>
+  <li><code class="highlighter-rouge">$&lt;...&gt;</code>,</li>
+  <li><code class="highlighter-rouge">$[...]</code>,</li>
+  <li><code class="highlighter-rouge">$«..»</code> (pointing double angle quotation mark \u00AB abd \u00BB), and</li>
+  <li><code class="highlighter-rouge">$‹...›</code> (single pointing angle quotation mark)</li>
+</ul>
+
+<h2 id="arguments">Arguments</h2>
+<p>@Since(“2.3”) Macros can contain arguments. These arguments are available in the expansion as ${0} to ${9}. ${0} is the name of the macro, so the actual arguments start at 1. The name is also available as ${@}. The arguments as an array (without the name of the macro) is available as ${#}. The more traditional * could not be used because it clashes with wildcard keys, it means ALL values.</p>
+
+<p>For example:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>foo: Hello ${1} -&gt; ${foo;Peter} -&gt; "Hello Peter"
+</code></pre></div></div>
+
+<h2 id="wildcarded-keys">Wildcarded Keys</h2>
+<p>Keys can be wildcarded. For example, if you want to set -plugin from different places, then you can set the <code class="highlighter-rouge">plugin.xxx</code> properties in different places and combine them with <code class="highlighter-rouge">-plugins= ${plugins.*}</code>.</p>
+
+<h2 id="expansion-of-">Expansion of ./</h2>
+
+<p>The <code class="highlighter-rouge">./</code> sequence is automatically expanded to the current filename when found in a macro source file. This generally what you want but unfortunately not always. The <code class="highlighter-rouge">./</code> prefix is only replaced when:</p>
+
+<ul>
+  <li>It is at the start of the expansion, or</li>
+  <li>Preceded by a whitespace.</li>
+</ul>
+
+<p>So, do you really require the <code class="highlighter-rouge">./</code> without expansion? If so, then there are the following solutions. The first one is to use another macro to break the sequence:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>.=.
+Some-Header: ${.}/conf/admin.xml
+</code></pre></div></div>
+
+<p>Alternatively there are a couple of macros that return the given value when called appropriately, and thereby break the sequence:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Some-Header-1: ${def;.;.}/conf/jetty/admin.xml
+Some-Header-2: ${uniq;.}/conf/jetty/admin.xml
+Some-Header-3: ${unescape;.}/conf/jetty/admin.xml
+</code></pre></div></div>
+
+<h2 id="booleans">Booleans</h2>
+
+<p>In many places a header is used to indicate false or true. In those cases we use some heuristics. The header/macro or whatever is false when:</p>
+
+<ul>
+  <li>not set</li>
+  <li>empty string</li>
+  <li>‘false’</li>
+  <li>’!’</li>
+  <li>‘off’</li>
+  <li>‘not’</li>
+</ul>
+
+<p>If the value starts with <code class="highlighter-rouge">!</code> and text follows, the <code class="highlighter-rouge">!</code> is removed and the remaining text is interpreted as a boolean and then negated.</p>
+
+<p>In other cases, the value is considered <code class="highlighter-rouge">true</code>.</p>
+
+<h2 id="types">Types</h2>
+<p>@TODO</p>
+
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/4.2.0/chapters/825-instructions-ref.html'></a> <a href='/releases/4.2.0/chapters/855-macros-ref.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/4.2.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

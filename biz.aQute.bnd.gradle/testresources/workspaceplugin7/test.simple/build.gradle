@@ -2,13 +2,13 @@ import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
 import aQute.bnd.gradle.Export
 
 task('export2', type: Export) {
-  dependsOn assemble
-  bndrun = 'export2.bndrun'
-  exporter = EXECUTABLE_JAR
+	dependsOn assemble
+	bndrun = file('export2.bndrun')
+	exporter = EXECUTABLE_JAR
 }
 
 task('export3', type: Export) {
-  dependsOn assemble
-  bndrun = 'bnd.bnd'
-  exporter = EXECUTABLE_JAR
+	dependsOn assemble
+	bndrun = file('bnd.bnd')
+	exporter = EXECUTABLE_JAR
 }

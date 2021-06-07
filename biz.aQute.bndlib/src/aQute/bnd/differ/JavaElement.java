@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Manifest;
@@ -44,7 +45,9 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Annotation;
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Clazz.FieldDef;
 import aQute.bnd.osgi.Clazz.JAVA;
+import aQute.bnd.osgi.Clazz.MemberDef;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -53,6 +56,7 @@ import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Type;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
 import aQute.libg.generics.Create;
@@ -117,8 +121,6 @@ class JavaElement {
 	 * Create an element for the API. We take the exported packages and traverse
 	 * those for their classes. If there is no manifest or it does not describe
 	 * a bundle we assume the whole contents is exported.
-	 *
-	 * @param infos
 	 */
 	JavaElement(Analyzer analyzer) throws Exception {
 		this.analyzer = analyzer;
@@ -127,11 +129,14 @@ class JavaElement {
 			.getManifest();
 		if (manifest != null && manifest.getMainAttributes()
 			.getValue(Constants.BUNDLE_MANIFESTVERSION) != null) {
-			exports = new Packages();
-			for (Map.Entry<String, Attrs> entry : OSGiHeader.parseHeader(manifest.getMainAttributes()
+			exports = OSGiHeader.parseHeader(manifest.getMainAttributes()
 				.getValue(Constants.EXPORT_PACKAGE))
-				.entrySet())
-				exports.put(analyzer.getPackageRef(entry.getKey()), entry.getValue());
+				.stream()
+				.mapKey(analyzer::getPackageRef)
+				.collect(MapStream.toMap((Attrs u, Attrs v) -> {
+					u.mergeWith(v, true);
+					return u;
+				}, Packages::new));
 		} else
 			exports = analyzer.getContained();
 		//
@@ -140,13 +145,11 @@ class JavaElement {
 		// out who the providers and consumers are
 		//
 
-		for (Entry<PackageRef, Attrs> entry : exports.entrySet()) {
-			String value = entry.getValue()
-				.get(Constants.PROVIDER_TYPE_DIRECTIVE);
-			if (value != null) {
-				providerMatcher.put(entry.getKey(), new Instructions(value));
-			}
-		}
+		exports.stream()
+			.mapValue(v -> v.get(Constants.PROVIDER_TYPE_DIRECTIVE))
+			.filterValue(Objects::nonNull)
+			.mapValue(Instructions::new)
+			.forEachOrdered(providerMatcher::put);
 
 		// we now need to gather all the packages but without
 		// creating the packages yet because we do not yet know
@@ -208,11 +211,6 @@ class JavaElement {
 	 * finding all the methods that were added etc. The parsing will take super
 	 * interfaces and super classes into account. For this reason it maintains a
 	 * queue of classes/interfaces to parse.
-	 *
-	 * @param analyzer
-	 * @param clazz
-	 * @param infos
-	 * @throws Exception
 	 */
 	Element classElement(final Clazz clazz) throws Exception {
 		Element e = cache.get(clazz);
@@ -221,8 +219,8 @@ class JavaElement {
 
 		final Set<Element> members = Create.set();
 		final Set<MethodDef> methods = Create.set();
-		final Set<Clazz.FieldDef> fields = Create.set();
-		final MultiMap<Clazz.Def, Element> annotations = new MultiMap<>();
+		final Set<FieldDef> fields = Create.set();
+		final MultiMap<MemberDef, Element> annotations = new MultiMap<>();
 
 		final TypeRef name = clazz.getClassName();
 
@@ -246,11 +244,11 @@ class JavaElement {
 
 		clazz.parseClassFileWithCollector(new ClassDataCollector() {
 			boolean			memberEnd;
-			Clazz.FieldDef	last;
+			MemberDef	last;
 
 			@Override
 			public void version(int minor, int major) {
-				javas.add(Clazz.JAVA.getJava(major, minor));
+				javas.add(JAVA.getJava(major, minor));
 			}
 
 			@Override
@@ -264,7 +262,7 @@ class JavaElement {
 			}
 
 			@Override
-			public void field(Clazz.FieldDef defined) {
+			public void field(FieldDef defined) {
 				if (defined.isProtected() || defined.isPublic()) {
 					last = defined;
 					fields.add(defined);
@@ -570,7 +568,7 @@ class JavaElement {
 			}
 		}
 
-		for (Clazz.FieldDef f : fields) {
+		for (FieldDef f : fields) {
 			if (f.isSynthetic()) { // Ignore synthetic fields
 				continue;
 			}

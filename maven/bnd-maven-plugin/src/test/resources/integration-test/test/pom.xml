@@ -8,6 +8,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
+		<project.build.outputTimestamp>1980-02-01T00:00:00Z</project.build.outputTimestamp>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<someParentVar>parentValue</someParentVar>
@@ -18,9 +19,26 @@
 		<module>test-impl-bundle</module>
 		<module>test-wrapper-bundle</module>
 		<module>test-in-build-pluginManagement-inheritance</module>
+		<module>test-bnd-process-tests-goal</module>
+		<module>test-bnd-process-tests-goal-fragment</module>
+		<module>test-war-bundle</module>
 	</modules>
 
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>3.2.0</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
@@ -56,7 +74,7 @@ Parent-Here: ${.}
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>3.2.0</version>
 				<configuration>
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>

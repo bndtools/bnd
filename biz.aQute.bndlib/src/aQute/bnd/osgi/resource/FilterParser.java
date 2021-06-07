@@ -17,7 +17,7 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 
 public class FilterParser {

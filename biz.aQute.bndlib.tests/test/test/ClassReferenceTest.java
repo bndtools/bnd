@@ -1,158 +1,90 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
+
+import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
-import junit.framework.TestCase;
+import aQute.lib.io.FileTree;
 
-@SuppressWarnings("resource")
-public class ClassReferenceTest extends TestCase {
-	class Inner {
-
-	}
-
-	static {
-		System.err.println(Inner.class);
-	}
-
-	/**
-	 * We create a JAR with the test.classreferenc.ClassReference class. This
-	 * class contains a javax.swing.Box.class reference Prior to Java 1.5, this
-	 * was done in a silly way that is handled specially. After 1.5 it is a
-	 * normal reference.
-	 *
-	 * @throws Exception
-	 */
-
-	public void testSun_1_1() throws Exception {
-		doit("sun_1_1");
-	}
-
-	public void testSun_1_2() throws Exception {
-		doit("sun_1_2");
-	}
-
-	public void testSun_1_3() throws Exception {
-		doit("sun_1_3");
-	}
-
-	public void testSun_1_4() throws Exception {
-		doit("sun_1_4");
-	}
-
-	public void testSun_1_5() throws Exception {
-		doit("sun_1_5");
-	}
-
-	public void testSun_jsr14() throws Exception {
-		doit("sun_jsr14");
-	}
-
-	public void testSun_1_6() throws Exception {
-		doit("sun_1_6");
-	}
-
-	public void testSun_1_7() throws Exception {
-		doit("sun_1_7");
-	}
-
-	public void testSun_1_8() throws Exception {
-		doit("sun_1_8");
-	}
-
-	public void testJdk_9_0() throws Exception {
-		doit("jdk_9_0");
-	}
-
-	public void testJdk_10_0() throws Exception {
-		doit("jdk_10_0");
-	}
-
-	public void testJdk_11_0() throws Exception {
-		doit("jdk_11_0");
-	}
-
-	public void testJdk_12_0() throws Exception {
-		doit("jdk_12_0");
-	}
-
-	public void testEclipse_1_1() throws Exception {
-		doit("eclipse_1_1");
-	}
-
-	public void testEclipse_1_2() throws Exception {
-		doit("eclipse_1_2");
-	}
-
-	public void testEclipse_1_3() throws Exception {
-		doit("eclipse_1_3");
-	}
-
-	public void testEclipse_1_4() throws Exception {
-		doit("eclipse_1_4");
-	}
-
-	public void testEclipse_1_5() throws Exception {
-		doit("eclipse_1_5");
-	}
-
-	public void testEclipse_1_6() throws Exception {
-		doit("eclipse_1_6");
-	}
-
-	public void testEclipse_1_7() throws Exception {
-		doit("eclipse_1_7");
-	}
-
-	public void testEclipse_1_8() throws Exception {
-		doit("eclipse_1_8");
-	}
-
-	public void testEclipse_9_0() throws Exception {
-		doit("eclipse_9_0");
-	}
-
-	public void testEclipse_10_0() throws Exception {
-		doit("eclipse_10_0");
-	}
-
-	public void testEclipse_11_0() throws Exception {
-		doit("eclipse_11_0");
-	}
-
-	public void testEclipse_12_0() throws Exception {
-		doit("eclipse_12_0");
-	}
-
-	public void doit(String p) throws Exception {
+public class ClassReferenceTest {
+	@ParameterizedTest(name = "Check code in compilerversions/src/{arguments}")
+	@ArgumentsSource(CompilerVersionsArgumentsProvider.class)
+	@DisplayName("Class Reference Test")
+	public void classReferences(String pkg) throws Exception {
 		Properties properties = new Properties();
 		properties.put("-classpath", "compilerversions/compilerversions.jar");
-		System.out.println("compiler version " + p);
-		Builder builder = new Builder();
-		properties.put(Constants.EEPROFILE, "auto");
-		properties.put("Export-Package", p);
-		builder.setProperties(properties);
-		Jar jar = builder.build();
-		assertTrue(builder.check());
-		JAVA highestEE = builder.getHighestEE();
-		Map<String, Set<String>> profiles = highestEE.getProfiles();
-		if (profiles != null) {
-			System.out.println("profiles" + profiles);
-			jar.getManifest()
-				.write(System.out);
-		}
+		System.out.println("compiler version " + pkg);
+		try (Builder builder = new Builder()) {
+			properties.put(Constants.EEPROFILE, "auto");
+			properties.put("Export-Package", pkg);
+			builder.setProperties(properties);
+			Jar jar = builder.build();
+			assertThat(builder.check()).isTrue();
+			JAVA highestEE = builder.getHighestEE();
+			Map<String, Set<String>> profiles = highestEE.getProfiles();
+			if (profiles != null) {
+				System.out.println("profiles" + profiles);
+				jar.getManifest()
+					.write(System.out);
+			}
 
-		assertTrue(builder.check());
-		Manifest manifest = jar.getManifest();
-		String imports = manifest.getMainAttributes()
-			.getValue("Import-Package");
-		assertTrue("Package " + p + "contains swing ref ", imports.contains("javax.swing"));
-		assertFalse("Package " + p + "should not contain ClassRef", imports.contains("ClassRef"));
+			assertThat(builder.check()).isTrue();
+			Manifest manifest = jar.getManifest();
+			String imports = manifest.getMainAttributes()
+				.getValue("Import-Package");
+			assertThat(imports).as("Package %s contains swing ref", pkg)
+				.contains("javax.swing")
+				.as("Package %s should not contain ClassRef", pkg)
+				.doesNotContain("ClassRef");
+		}
+	}
+
+	static class CompilerVersionsArgumentsProvider implements ArgumentsProvider {
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+			FileTree tree = new FileTree();
+			List<File> files = tree.getFiles(new File("compilerversions/src"), "*");
+			return files.stream()
+				.filter(File::isDirectory)
+				.map(File::getName)
+				.map(Arguments::of);
+		}
+	}
+
+	@ParameterizedTest(name = "Validate EE exists for {arguments}")
+	@ArgumentsSource(JAVAArgumentsProvider.class)
+	@DisplayName("Validate an EE exists for each JAVA")
+	public void checkEEFor(Clazz.JAVA java) throws Exception {
+		EE ee = EE.parse(java.getEE());
+		assertThat(ee).isNotNull();
+	}
+
+	static class JAVAArgumentsProvider implements ArgumentsProvider {
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+			Clazz.JAVA[] values = Clazz.JAVA.values();
+			return Arrays.stream(values, 0, values.length - 1)
+				.map(Arguments::of);
+		}
 	}
 }

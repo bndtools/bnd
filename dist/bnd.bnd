@@ -11,8 +11,11 @@
             biz.aQute.bnd.exporters, \
             biz.aQute.bnd.reporter, \
             biz.aQute.bnd.runtime, \
+            biz.aQute.bnd.transform, \
             biz.aQute.bnd.embedded-repo, \
+            biz.aQute.bnd.ant, \
             biz.aQute.bnd.gradle, \
+            biz.aQute.bnd.util, \
             biz.aQute.bndlib, \
             biz.aQute.bndlib.tests, \
             biz.aQute.bndall.tests, \
@@ -21,17 +24,23 @@
             biz.aQute.junit, \
             biz.aQute.launcher, \
             biz.aQute.launchpad, \
-            biz.aQute.launchpad.test, \
+            biz.aQute.launchpad.tests, \
             biz.aQute.remote, \
             biz.aQute.repository, \
             biz.aQute.resolve, \
+            biz.aQute.tester, \
+            biz.aQute.tester.junit-platform, \
+            biz.aQute.tester.test, \
             bndtools.api, \
             bndtools.builder, \
             bndtools.core, \
+            bndtools.core.services, \
+            bndtools.core.test, \
             bndtools.jareditor, \
             bndtools.m2e, \
             bndtools.pde, \
             bndtools.release, \
+            org.bndtools.applaunch, \
             org.bndtools.headless.build.manager, \
             org.bndtools.headless.build.plugin.ant, \
             org.bndtools.headless.build.plugin.gradle, \

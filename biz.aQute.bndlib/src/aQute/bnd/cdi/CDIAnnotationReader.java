@@ -15,6 +15,7 @@ import aQute.bnd.osgi.Annotation.ElementType;
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.FieldDef;
+import aQute.bnd.osgi.Clazz.MemberDef;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors;
@@ -58,7 +59,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 	boolean								baseclass				= true;
 	TypeRef								extendsClass;
 	TypeRef								interfaces[];
-	FieldDef							member;
+	MemberDef							member;
 	int									parameter				= -1;
 	ReferenceDef						referenceDef;
 	int									targetIndex				= Clazz.TYPEUSE_INDEX_NONE;
@@ -196,8 +197,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 
 		this.member = method;
 
-		String signature = (member.getSignature() != null) ? member.getSignature()
-			: member.descriptor();
+		String signature = (member.getSignature() != null) ? member.getSignature() : member.descriptor();
 		MethodSignature methodSig = analyzer.getMethodSignature(signature);
 		MethodResolver resolver = new MethodResolver(classSig, methodSig);
 		if (methodSig.parameterTypes.length != 1)
@@ -267,8 +267,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 		ClassResolver resolver;
 		switch (reference.elementType()) {
 			case PARAMETER : {
-				String signature = (member.getSignature() != null) ? member.getSignature()
-					: member.descriptor();
+				String signature = (member.getSignature() != null) ? member.getSignature() : member.descriptor();
 				MethodSignature methodSig = analyzer.getMethodSignature(signature);
 				resolver = new MethodResolver(classSig, methodSig);
 				JavaTypeSignature parameterType = ((MethodResolver) resolver).resolveParameter(parameter);
@@ -384,7 +383,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 	private void doService(Annotation annotation) {
 		switch (annotation.elementType()) {
 			case FIELD : {
-				Clazz.FieldDef fieldDef = member;
+				FieldDef fieldDef = (FieldDef) member;
 				FieldSignature fieldSig;
 				String signature = member.getSignature();
 				if (signature == null) {
@@ -417,9 +416,8 @@ public class CDIAnnotationReader extends ClassDataCollector {
 				break;
 			}
 			case METHOD : {
-				Clazz.MethodDef methodDef = (Clazz.MethodDef) member;
-				String signature = (member.getSignature() != null) ? member.getSignature()
-					: member.descriptor();
+				MethodDef methodDef = (MethodDef) member;
+				String signature = (member.getSignature() != null) ? member.getSignature() : member.descriptor();
 				MethodSignature methodSig = analyzer.getMethodSignature(signature);
 				MethodResolver resolver = new MethodResolver(classSig, methodSig);
 				Result result = resolver.resolveResult();
@@ -450,6 +448,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 				if (targetIndex == Clazz.TYPEUSE_TARGET_INDEX_EXTENDS) {
 					definitions.get(0).service.add(extendsClass);
 				} else if (targetIndex != Clazz.TYPEUSE_INDEX_NONE) {
+					requireNonNull(interfaces);
 					definitions.get(0).service.add(interfaces[targetIndex]);
 				}
 				break;

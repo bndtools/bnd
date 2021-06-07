@@ -48,7 +48,7 @@ import org.eclipse.m2e.core.project.configurator.MojoExecutionBuildParticipant;
 import org.eclipse.m2e.core.project.configurator.MojoExecutionKey;
 import org.eclipse.m2e.core.project.configurator.ProjectConfigurationRequest;
 
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.maven.api.Archive;
 
 public class IndexConfigurator extends AbstractProjectConfigurator implements IResourceChangeListener {
@@ -195,7 +195,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 					} else {
 						SubMonitor buildMonitor = SubMonitor.convert(monitor,
 							"Rebuilding indexes for project " + facade.getProject()
-							.getName(),
+								.getName(),
 							list.size());
 						list.forEach(me -> {
 							try {

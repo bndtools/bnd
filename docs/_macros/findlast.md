@@ -1,7 +1,7 @@
 ---
 layout: default
 class: Macro
-title: find ';' VALUE ';' SEARCHED
+title: findlast ';' VALUE ';' SEARCHED
 summary: The starting position of SEARCHED (not a regex) in VALUE when searching from the end
 ---
 

@@ -30,7 +30,6 @@ import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 
-import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Domain;
@@ -143,14 +142,7 @@ public class BndContainerSourceManager {
 	}
 
 	private static File getSourceBundle(IPath path, Map<String, String> props) {
-		Workspace bndWorkspace;
-
-		try {
-			bndWorkspace = Central.getWorkspace();
-			if (bndWorkspace == null) {
-				return null;
-			}
-		} catch (final Exception e) {
+		if (Central.getWorkspaceIfPresent() == null) {
 			return null;
 		}
 

@@ -26,8 +26,9 @@
 		id="bndtools.core.bndbuilder"
 		name="Bndtools Builder"
 		>
-		<builder callOnEmptyDelta="true" hasNature="true">
+		<builder callOnEmptyDelta="false" hasNature="true">
 			<run class="org.bndtools.builder.BndtoolsBuilder" />
+            <dynamicReference class="org.bndtools.builder.BndtoolsDynamicReferenceProvider"  />
 		</builder>
 	</extension>
 
@@ -41,6 +42,21 @@
 			>
 		</compilationParticipant>
 	</extension>
+	
+    <extension
+        point="org.eclipse.jdt.core.compilationParticipant"
+        name="Bnd Source Generation Compilation Participant"
+        >
+        <compilationParticipant class="org.bndtools.builder.BndSourceGenerateCompilationParticipant"
+            id="bndtools.builder.generate.compilationparticipant"
+            modifiesEnvironment="true"
+            createsProblems="true"
+            >
+        </compilationParticipant>
+    </extension>
+    
+    
+	
 
 	<extension point="org.eclipse.ui.decorators">
 		<decorator
@@ -80,15 +96,35 @@
 		</decorator>
 	</extension>
 
-	<extension
-		point="org.eclipse.core.resources.markers"
-		id="bndproblem"
-		name="Bndtools Problem Marker"
-		>
-		<persistent value="true"/>
-		<super type="org.eclipse.core.resources.problemmarker"/>
-		<super type="org.eclipse.core.resources.textmarker"/>
-	</extension>
+    <extension
+        point="org.eclipse.core.resources.markers"
+        id="bndproblem"
+        name="Bndtools Problem Marker"
+        >
+        <persistent value="true"></persistent>
+        <super type="org.eclipse.core.resources.problemmarker"/>
+        <super type="org.eclipse.core.resources.textmarker"/>
+    </extension>
+
+    <extension
+        point="org.eclipse.core.resources.markers"
+        id="bndblocker"
+        name="Bndtools Block build"
+        >
+        <persistent value="true"/>
+        <super type="org.eclipse.core.resources.problemmarker"/>
+        <super type="org.eclipse.core.resources.textmarker"/>
+    </extension>
+
+    <extension
+        point="org.eclipse.core.resources.markers"
+        id="bndgenerate"
+        name="Bndtools Generate Marker"
+        >
+        <persistent value="true"/>
+        <super type="org.eclipse.core.resources.problemmarker"/>
+        <super type="org.eclipse.core.resources.textmarker"/>
+    </extension>
 
 	<extension
 		point="org.eclipse.core.resources.markers"
@@ -100,6 +136,7 @@
 		<super type="org.eclipse.core.resources.textmarker"/>
 		<super type="org.eclipse.jdt.core.buildpath_problem"/>
 	</extension>
+
 
 	<extension
 		point="org.eclipse.core.resources.markers"
@@ -151,11 +188,6 @@
 	<extension point="bndtools.core.bndtoolsStartupParticipant">
 		<startupParticipant
 			class="org.bndtools.builder.jobs.newproject.NewProjectJobsStartupParticipant" />
-	</extension>
-
-	<extension point="bndtools.core.buildListeners">
-		<listener name="Bundle Index Generation"
-			class="org.bndtools.builder.indexer.BuiltBundleIndexer" />
 	</extension>
 
 	<extension point="bndtools.core.buildErrorDetailsHandlers">

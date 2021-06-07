@@ -20,10 +20,15 @@ public class RemoteJMXTest extends TestCase {
 	private Framework			framework;
 	private File				tmp;
 
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
+
 	@Override
 	protected void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp");
-		tmp.mkdirs();
+		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+		IO.delete(tmp);
+		IO.mkdirs(tmp);
 
 		configuration = new HashMap<>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
@@ -57,7 +62,6 @@ public class RemoteJMXTest extends TestCase {
 	protected void tearDown() throws Exception {
 		framework.stop();
 		framework.waitForStop(10000);
-		IO.delete(tmp);
 		super.tearDown();
 	}
 

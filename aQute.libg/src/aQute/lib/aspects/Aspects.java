@@ -10,13 +10,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
+import aQute.bnd.exceptions.BiFunctionWithException;
+import aQute.bnd.exceptions.ConsumerWithException;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.FunctionWithException;
+import aQute.bnd.exceptions.RunnableWithException;
+import aQute.bnd.exceptions.SupplierWithException;
 import aQute.lib.converter.Converter;
-import aQute.lib.exceptions.BiFunctionWithException;
-import aQute.lib.exceptions.ConsumerWithException;
-import aQute.lib.exceptions.Exceptions;
-import aQute.lib.exceptions.FunctionWithException;
-import aQute.lib.exceptions.RunnableWithException;
-import aQute.lib.exceptions.SupplierWithException;
 
 /**
  * Minute library to do some aspect oriented programming without dragging in the
@@ -169,7 +169,7 @@ public class Aspects {
 				try {
 
 					for (Method m : type.getMethods()) {
-						methods.putIfAbsent(m, (inv) -> m.invoke(delegate, inv.args));
+						methods.putIfAbsent(m, inv -> m.invoke(delegate, inv.args));
 					}
 
 				} catch (Exception e) {
@@ -199,7 +199,7 @@ public class Aspects {
 
 			@Override
 			public <R> InterceptBuilder<T> intercept(RunnableWithException intercept, String name) {
-				return intercept((inv) -> {
+				return intercept(inv -> {
 					intercept.run();
 					return null;
 				}, name);
@@ -240,7 +240,7 @@ public class Aspects {
 					this.before = before;
 				else {
 					ConsumerWithException<Invocation> previous = this.before;
-					this.before = (args) -> {
+					this.before = args -> {
 						previous.accept(args);
 						before.accept(args);
 
@@ -285,7 +285,7 @@ public class Aspects {
 				try {
 
 					if (before == null)
-						this.before = (inv) -> {};
+						this.before = inv -> {};
 
 					if (after == null)
 						this.after = (inv, x) -> x;

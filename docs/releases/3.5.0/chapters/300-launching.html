@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/3.5.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Launching</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Launching" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="bnd integrates an OSGi launcher. This launcher will start a framework and then install and start a list of bundles. Launch descriptions are defined in a bndrun file. (A bnd.bnd file can actually also act as a bndrun file.) The bndrun file inherits properties from the workspace, not the profile." />
+<meta property="og:description" content="bnd integrates an OSGi launcher. This launcher will start a framework and then install and start a list of bundles. Launch descriptions are defined in a bndrun file. (A bnd.bnd file can actually also act as a bndrun file.) The bndrun file inherits properties from the workspace, not the profile." />
+<script type="application/ld+json">
+{"@type":"WebPage","url":"/releases/3.5.0/chapters/300-launching.html","headline":"Launching","description":"bnd integrates an OSGi launcher. This launcher will start a framework and then install and start a list of bundles. Launch descriptions are defined in a bndrun file. (A bnd.bnd file can actually also act as a bndrun file.) The bndrun file inherits properties from the workspace, not the profile.","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<style>
+			 body {
+				counter-reset: h1 17;
+			}
+		</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/3.5.0/"><img
+			class=menu-logo src='/releases/3.5.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/3.5.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/3.5.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/3.5.0/chapters/820-instructions.html">Instructions
+			</a><a href="/releases/3.5.0/chapters/850-macros.html">Macros
+			</a><div class="releases"><button class="dropbtn">3.5.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/3.5.0/chapters/100-release.html">Release</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/150-build.html">Build</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/160-jars.html">Generating JARs</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/220-contracts.html">Contracts</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/230-manifest-annotations.html">Manifest Annotations</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li class=selected>Launching
+
+
+
+			<li><a href="/releases/3.5.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/400-commandline.html">From the command line</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/610-plugin.html">Plugins</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/790-format.html">File Format</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/800-headers.html">Header Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/820-instructions.html">Instruction</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/850-macros.html">Macro Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/860-commands.html">Command Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/870-plugins.html">Plugins Reference</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/3.5.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			<div class=enroute><a href="http://enroute.osgi.org">Supported by OSGi enRoute <img src="/releases/3.5.0/img/EnRouteIcon_CMYK.png"></a></div>
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> Launching</h1>
+				<p>bnd integrates an OSGi launcher. This launcher will start a framework and then install and start a list of bundles. Launch descriptions are defined in a <em>bndrun</em> file. (A bnd.bnd file can actually also act as a bndrun file.) The bndrun file inherits properties from the workspace, not the profile.</p>
+
+<p>The launching environment is described with a number of instructions that start with <code class="highlighter-rouge">-run</code>.</p>
+
+<ul>
+  <li><code class="highlighter-rouge">-runfw</code> — Specify the run framework in repository format</li>
+  <li><code class="highlighter-rouge">-runsystemcapabilities</code> — Capabilities added to the environment</li>
+  <li><code class="highlighter-rouge">-runbundles</code> — A list of bundles to install in repository format</li>
+  <li><code class="highlighter-rouge">-runvm</code> — VM options. Use a comma to separate different options. E.g. <code class="highlighter-rouge">-Dx=4, -Dy=5</code>.</li>
+  <li><code class="highlighter-rouge">-runproperties</code> — System properties for the framework to create</li>
+  <li><code class="highlighter-rouge">-runpath</code> — A list of jars (not required to be bundles) that are put on the classpath and available from the system bundle. Any Export-Package and Provide-Capabilityheaders  are provided as packages/capabilities from the framework. The <code class="highlighter-rouge">-runpath</code> can also override the default launcher.</li>
+  <li><code class="highlighter-rouge">-runsystempackages</code> — An Export-Package list for packages exported by the system bundle.</li>
+  <li><code class="highlighter-rouge">-runkeep</code> – Keep the framework working directory. That is, do not clean at start up</li>
+  <li><code class="highlighter-rouge">-runstorage</code> – The working directory</li>
+  <li><code class="highlighter-rouge">-runnoreferences</code> – Do not use the <code class="highlighter-rouge">reference:</code> scheme when installing. (Sometimes required on Windows).</li>
+</ul>
+
+<p>Additional properties can be specified, and can be inherited from the workspace, that are specific for a launcher or are used for exporting a bndrun to an executable format like OSGi Subsystems, KARs, WARs, or executable JARs.</p>
+
+<h2 id="launcher-architecture">Launcher Architecture</h2>
+
+<p>Launchers are not build into bnd, the actual launching strategy is parameterized. A launcher is associated with a bnd or bndrun file by placing a JAR on the <code class="highlighter-rouge">-runpath</code>. A JAR should have a <code class="highlighter-rouge">Launcher-Plugin</code> header to be a launcher. If no launcher is found on the <code class="highlighter-rouge">-runpath</code> then the built-in <code class="highlighter-rouge">biz.aQute.launcher</code> will be used.</p>
+
+<p>The plugin maps the bnd model specified in a bndrun or bnd file to an external execution. In general this plugin launches or contacts a VM, installs the <code class="highlighter-rouge">-runpath</code>, installs <code class="highlighter-rouge">-runbundles</code>, fires up the bundles. The plugin is also called when the bundles or settings have changed so that it can dynamically update the bundles on the running VM.</p>
+
+<p>There are currently two launchers in the bnd repository:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">biz.aQute.launcher</code> – Default launcher. This launcher starts a VM on the local machine and keeps it synchronized with the changes in the IDE. The launcher can also create an executable JAR.</li>
+  <li><code class="highlighter-rouge">biz.aQute.remote.launcher</code> – A launcher that can communicate with a remote VM, optionally installs a <code class="highlighter-rouge">-runpath</code> (among which a framework), and then synchronizes the <code class="highlighter-rouge">-runbundles</code> and a number of other properties with the remote VM.</li>
+</ul>
+
+<h2 id="bizaqutelauncher">biz.aQute.launcher</h2>
+
+<p>The default launcher in bnd. It creates a new VM with the given options, creates a framework using the OSGi launching API, and then manages the bundles on this framework with the OSGi launching API. It can update the remote framework in real time by changing a properties file that is watched for by the launcher class running in the remote framework.</p>
+
+<h3 id="example-bndrun-file">Example bndrun file</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>JPM-Command: xray
+-runfw:                     org.apache.felix.framework;version='[4,5)'
+-runbundles: \
+	org.apache.felix.shell,\
+	org.apache.felix.shell.tui,\
+	org.apache.felix.scr,\
+	org.apache.felix.http.jetty,\
+	org.apache.felix.configadmin,\
+	org.apache.felix.metatype,\
+	org.apache.felix.log,\
+	org.apache.felix.webconsole,\
+	osgi.cmpn,\
+	aQute.xray.badbundle;version=latest,\
+	aQute.xray.plugin;version=latest,\
+	aQute.xray.hello;version=latest,\
+	com.springsource.org.apache.commons.fileupload;version=1.2.1,\
+	com.springsource.org.apache.commons.io;version=1.4.0,\
+	com.springsource.org.json;version=1.0.0
+
+-runproperties:            org.osgi.service.http.port=8080
+
+-runrequire:\
+	bundle:(symbolicname=org.apache.felix.shell),\
+	bundle:(symbolicname=org.apache.felix.shell.tui),\
+	bundle:(symbolicname=org.apache.felix.webconsole),\
+	bundle:(symbolicname=org.apache.felix.configadmin),\
+	bundle:(symbolicname=org.apache.felix.metatype),\
+	bundle:(symbolicname=org.apache.felix.log),\
+	bundle:(&amp;(symbolicname=osgi.cmpn)(version&gt;=4.2)),\
+	bundle:(&amp;(symbolicname=org.apache.felix.scr)(version&gt;=1.6.0))
+</code></pre></div></div>
+
+<h3 id="exports-from-the-runpath">Exports from the Runpath</h3>
+
+<p>The launcher analyzes the <code class="highlighter-rouge">-runpath</code> JARs. Any additional capabilities in the manifest (packages and Provide Capability headers) in these JARs are automatically added to the framework.</p>
+
+<h3 id="runtime-information">Runtime Information</h3>
+
+<p>The launcher registers a service with object class <code class="highlighter-rouge">Object</code> that provides some runtime information. The following properties are set on this service:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">launcher.arguments</code> – The arguments passed to the <code class="highlighter-rouge">main</code> method.</li>
+  <li><code class="highlighter-rouge">launcher.properties</code> – The properties handed to the launcher. These properties are modified by any overriding properties that were set from the command line.</li>
+  <li><code class="highlighter-rouge">launcher.ready</code> – A boolean set to true, indicating the launcher has done all its work.</li>
+  <li><code class="highlighter-rouge">service.ranking</code> – Set to -1000</li>
+</ul>
+
+<h2 id="embedded-activators">Embedded Activators</h2>
+
+<p>The launcher supports <em>embedded activators</em>. These are like normal Bundle Actviator classes but are instead found on the <code class="highlighter-rouge">-runpath</code>. Any bundle that has the header <code class="highlighter-rouge">Embedded-Activator</code> will be started. This starting can happen before any bundle is started or after all bundles are started. To start immediate, add a static or instance field called <code class="highlighter-rouge">IMMEDIATE</code> with a value that equals <code class="highlighter-rouge">true</code>.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class MyActivator implements BundleActivator {
+    public static boolean IMMEDIATE = true;
+
+    public void start(BundleContext context) {}
+
+    public void stop(BundleContext context) {}
+}
+
+In the manifest:
+
+Embedded-Activator: com.example.MyActivator
+</code></pre></div></div>
+
+<h3 id="packaging">Packaging</h3>
+
+<p>Any bndrun file can be packaged by the launcher plugin. This creates an executable JAR that will contain all its dependencies.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bnd package xyz.bndrun
+</code></pre></div></div>
+
+<p>You can then execute the jar:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ java -jar xyz.jar
+</code></pre></div></div>
+
+<p>You can override all the properties that are embedded in the executable JAR with the <code class="highlighter-rouge">-Dlauncher.properties=&lt;file&gt;</code> option of the Java VM. Instead of consulting its internal properties file, the launcher will read the given file. However, you can also set individual System properties with the <code class="highlighter-rouge">-D</code> option that override a specific launching constant.</p>
+
+<ul>
+  <li><code class="highlighter-rouge">launch.storage.dir</code> – (<code class="highlighter-rouge">-runstorage</code>) Sets the directory for the framework directory. When <code class="highlighter-rouge">org.osgi.framework.storage</code> is also set, then the OSGi property has priority.</li>
+  <li><code class="highlighter-rouge">launch.keep</code> – Keeps the OSGi Framework storage around</li>
+  <li><code class="highlighter-rouge">launch.system.packages</code> – Extra system packages</li>
+  <li><code class="highlighter-rouge">launch.system.capabilities</code> – Extra system capabilities</li>
+  <li><code class="highlighter-rouge">launch.trace</code> – Trace the launcher’s progress</li>
+  <li><code class="highlighter-rouge">launch.timeout</code> – Abort after <code class="highlighter-rouge">timeout</code> milliseconds</li>
+  <li><code class="highlighter-rouge">launch.name</code> – Name of the executable (normally project name)</li>
+  <li><code class="highlighter-rouge">launch.noreferences</code> – Do not use the <code class="highlighter-rouge">reference:</code> scheme (<code class="highlighter-rouge">-runnoreferences</code>)</li>
+  <li><code class="highlighter-rouge">launch.notificationPort</code> – A port to send errors to</li>
+</ul>
+
+<p>For example, if you want to run your executable in trace mode:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ java -Dlaunch.trace=true xyz.jar
+</code></pre></div></div>
+
+<h3 id="exit-codes">Exit codes</h3>
+
+<p>If the framework stops the launcher will exit. It will set a system exit code that reflects the event type from that the framework returned. The shell script that started the launcher can take the system exit code into account to restart the framework in certain cases.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>OSGi FrameworkEvent             Launcher Constant  Value
+STOPPED                         STOPPED            -9
+WAIT_TIMEDOUT	                TIMEDOUT           -3
+ERROR                           ERROR              -2
+WARNING                         WARNING            -1
+STOPPED_BOOTCLASSPATH_MODIFIED  STOPPED_UPDATE     -4
+STOPPED_UPDATE                  STOPPED_UPDATE     -4
+</code></pre></div></div>
+
+<p>The launcher therefore returns the process exit code UPDATE_NEEDED(-4) when it requires an update. This was chosen over doing an in-process update because it is much safer. So the launching script should look something like:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>do {
+  bnd run app.bndrun
+} while ($?==-4)
+</code></pre></div></div>
+
+<h2 id="remote-launching">Remote Launching</h2>
+
+<p>The purpose of the aQute Remote project is to provide remote debugging support for bnd projects. It can be used to debug bundles and bndrun files in a remote machine running an OSGi framework with an agent installed on it; it can also install a framework on a remote machine before it uses the agent. The architecture is heavily optimized to run on small remote machines.</p>
+
+<h3 id="parts">Parts</h3>
+
+<p>This project is the bnd remote launcher. It consists of the following artifacts:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">biz.aQute.remote.launcher</code> – The actual launcher. You can use the <code class="highlighter-rouge">biz.aQute.remote.launcher</code> by placing it on the <code class="highlighter-rouge">-runpath</code>. This will override the default launcher. It contains the agent and the bnd launcher plugin.</li>
+  <li><code class="highlighter-rouge">biz.aQute.remote.agent</code> – The agent that must run as a bundle on a framework, or alternatively, runs on the framework side of the classpath and uses the framework’s Bundle Context. That is, you can put this file on the <code class="highlighter-rouge">-runpath</code> of the <code class="highlighter-rouge">biz.aQute.launcher</code> bndrun and bnd files.</li>
+  <li><code class="highlighter-rouge">biz.aQute.remote.main</code> – An executable JAR compatible with JPM. (That is, you can install it from jpm with <code class="highlighter-rouge">sudo jpm install biz.aQute.remote.main</code> or <code class="highlighter-rouge">sudo jpm install bndremote</code>.</li>
+</ul>
+
+<h3 id="usage">Usage</h3>
+
+<p>The <code class="highlighter-rouge">biz.aQute.remote.launcher</code> should be placed on the <code class="highlighter-rouge">-runpath</code> in a bnd or bndrun file. The remote plugin expects a <code class="highlighter-rouge">-runremote</code> instruction in the parent file. This property has the following syntax:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-runremote ::= remote (',' remote)*
+remote     ::= NAME ( ';' aspect '=' value ) *
+aspect	   ::= 'jdb' | 'shell' | 'host' | 'agent' | `timeout`
+</code></pre></div></div>
+
+<p>It is possible to specity multiple remote clauses. All sections are started simultaneously. The aspects are described in the following sections:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">jdb</code> – The JDB debug port. This is the port that will be opened by the debugger in the IDE. If this aspect is not set, a number is assigned from 16043, incremented for every session. The debugger will wait until this port becomes available on the required host.</li>
+  <li><code class="highlighter-rouge">host</code> – The name of the remote host. Default <code class="highlighter-rouge">localhost</code>. Notice that for some Unixes there is a confusion what localhost is, some Linux variants make localhost 127.0.1.1 while the original is 127.0.0.1. So better make sure.</li>
+  <li><code class="highlighter-rouge">shell</code> – The shell that should be used. There are a number of possibilities for this value
+    <ul>
+      <li>0 – No shell. The IDE shell will not be used</li>
+      <li>&lt; 0 – Try to use an available Gogo shell in the framework and open a session. The input/output of the session is forwarded to the IDE console.</li>
+      <li>1 – Use the System.in/System.out/System.err streams. This will replace the existing streams (this can be prevented with a security manager). This mode will forward all IO to the original streams.</li>
+      <li>
+        <blockquote>
+          <p>1 – A TCP port. The launcher will attach the port from the remote host and forward any I/O.</p>
+        </blockquote>
+      </li>
+    </ul>
+  </li>
+  <li><code class="highlighter-rouge">agent</code> – The port on which the agent is listening, the default is ${aQute.agent.server.port}.</li>
+  <li><code class="highlighter-rouge">timeout</code> – Timeout in seconds for the debug connection</li>
+</ul>
+
+<h3 id="example-bndrun">Example bndrun</h3>
+
+<p>An example remote bndrun file:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>local		=	\
+	local; \
+	shell   =   4003; \
+	jdb     =   1044; \
+	host    =   localhost
+
+-runremote:     ${local}
+-runfw:         org.apache.felix.framework;version='[4,5)'
+-runee:         JavaSE-1.7
+-runproperties: gosh.args=--noshutdown, osgi.shell.telnet.port=4003
+
+-runpath:       biz.aQute.remote.launcher;version=latest
+-runrequires:\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)'
+
+-runbundles:\
+	launch.simple.really;version=latest, \
+	org.apache.felix.gogo.shell,\
+	org.apache.felix.gogo.command,\
+	org.apache.felix.gogo.runtime, \
+	org.apache.felix.shell.remote
+</code></pre></div></div>
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/3.5.0/chapters/250-resolving.html'></a> <a href='/releases/3.5.0/chapters/310-testing.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/3.5.0/contact.html">Contact</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/3.5.0/">Developers</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/3.5.0/">More</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

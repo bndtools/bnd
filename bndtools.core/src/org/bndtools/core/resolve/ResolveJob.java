@@ -52,7 +52,7 @@ public class ResolveJob extends Job {
 				if (Arrays.stream(inputResource.getProject()
 					.getDescription()
 					.getNatureIds())
-					.anyMatch(natureId -> "org.eclipse.m2e.core.maven2Nature".equals(natureId))) {
+					.anyMatch("org.eclipse.m2e.core.maven2Nature"::equals)) {
 
 					return Status.OK_STATUS;
 				}
@@ -90,6 +90,12 @@ public class ResolveJob extends Job {
 		result = operation.getResult();
 
 		return Status.OK_STATUS;
+	}
+
+	@Override
+	protected void canceling() {
+		this.getThread()
+			.interrupt();
 	}
 
 	public ResolutionResult getResolutionResult() {

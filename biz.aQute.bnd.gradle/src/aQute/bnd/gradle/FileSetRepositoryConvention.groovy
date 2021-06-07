@@ -7,14 +7,15 @@
  * <ul>
  * <li>bundles - This is the collection of files to use for locating
  * bundles during the bndrun execution. The default is
- * 'sourceSets.main.runtimeClasspath' plus
- * 'configurations.archives.artifacts.files'</li>
+ * "sourceSets.main.runtimeClasspath" plus
+ * "configurations.archives.artifacts.files"</li>
  * </ul>
  */
 
 package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.builtBy
+import static org.gradle.api.tasks.PathSensitivity.RELATIVE
 
 import aQute.bnd.repository.fileset.FileSetRepository
 
@@ -25,57 +26,53 @@ import org.gradle.api.tasks.InputFiles
 
 
 class FileSetRepositoryConvention {
-  private final Project project
-  private final ConfigurableFileCollection bundleCollection
+	/**
+	 * The bundles for the repository.
+	 */
+	@InputFiles
+	final ConfigurableFileCollection bundles
 
-  /**
-   * Create a FileSetRepositoryConvention.
-   *
-   */
-  FileSetRepositoryConvention(Task task) {
-    this.project = task.project
-    bundleCollection = project.files()
-    bundles(project.sourceSets.main.runtimeClasspath, project.configurations.archives.artifacts.files)
-    // need to programmatically add to inputs since @InputFiles in a convention is not processed
-    task.inputs.files(bundleCollection).withPropertyName('bundles')
-  }
+	/**
+	 * Create a FileSetRepositoryConvention.
+	 *
+	 */
+	FileSetRepositoryConvention(Task task) {
+		Project project = task.getProject()
+		bundles = project.getObjects().fileCollection()
+		bundles(project.sourceSets.main.getRuntimeClasspath())
+		bundles(project.getConfigurations().archives.getArtifacts().getFiles())
+		// need to programmatically add to inputs since @InputFiles in a convention is not processed
+		task.getInputs().files(getBundles()).withPathSensitivity(RELATIVE).withPropertyName("bundles")
+	}
 
-  /**
-   * Add files to use when locating bundles.
-   *
-   * <p>
-   * The arguments will be handled using
-   * Project.files().
-   */
-  public ConfigurableFileCollection bundles(Object... paths) {
-    return builtBy(bundleCollection.from(paths), paths)
-  }
+	/**
+	 * Add files to use when locating bundles.
+	 *
+	 * <p>
+	 * The arguments will be handled using
+	 * ConfigurableFileCollection.from().
+	 */
+	public ConfigurableFileCollection bundles(Object... paths) {
+		return builtBy(getBundles().from(paths), paths)
+	}
 
-  /**
-   * Return the files to use when locating bundles.
-   */
-  @InputFiles
-  public ConfigurableFileCollection getBundles() {
-    return bundleCollection
-  }
+	/**
+	 * Set the files to use when locating bundles.
+	 *
+	 * <p>
+	 * The argument will be handled using
+	 * ConfigurableFileCollection.from().
+	 */
+	public void setBundles(Object path) {
+		getBundles().setFrom(Collections.emptyList())
+		getBundles().setBuiltBy(Collections.emptyList())
+		bundles(path)
+	}
 
-  /**
-   * Set the files to use when locating bundles.
-   *
-   * <p>
-   * The argument will be handled using
-   * Project.files().
-   */
-  public void setBundles(Object path) {
-    bundleCollection.from = []
-    bundleCollection.builtBy = []
-    bundles(path)
-  }
-
-  /**
-   * Return a FileSetRepository using the bundles.
-   */
-  FileSetRepository getFileSetRepository(String name) {
-    return new FileSetRepository(name, bundles.files)
-  }
+	/**
+	 * Return a FileSetRepository using the bundles.
+	 */
+	FileSetRepository getFileSetRepository(String name) {
+		return new FileSetRepository(name, getBundles().getFiles())
+	}
 }

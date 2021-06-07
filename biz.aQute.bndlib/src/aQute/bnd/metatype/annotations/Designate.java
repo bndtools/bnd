@@ -25,17 +25,15 @@ import java.lang.annotation.Target;
  * Generate a {@code Designate} element in the Meta Type Resource for an
  * {@link ObjectClassDefinition} using the annotated Declarative Services
  * component.
- * 
  * <p>
  * This annotation must be used on a type that is also annotated with the
  * Declarative Services {@link aQute.bnd.component.annotations.Component
  * Component} annotation. The component must only have a single PID which is
  * used for the generated {@code Designate} element.
- * 
  * <p>
  * This annotation is not processed at runtime. It must be processed by tools
  * and used to contribute to a Meta Type Resource document for the bundle.
- * 
+ *
  * @see "The Designate element of a Meta Type Resource."
  * @author $Id$
  */
@@ -44,24 +42,22 @@ import java.lang.annotation.Target;
 public @interface Designate {
 	/**
 	 * The type of the {@link ObjectClassDefinition} for this Designate.
-	 * 
 	 * <p>
 	 * The specified type must be annotated with {@link ObjectClassDefinition}.
-	 * 
+	 *
 	 * @see "The ocdref attribute of the Designate element of a Meta Type Resource."
 	 */
 	Class<?> ocd();
 
 	/**
 	 * Specifies whether this Designate is for a factory PID.
-	 * 
 	 * <p>
 	 * If {@code false}, then the PID value from the annotated component will be
 	 * used in the {@code pid} attribute of the generated {@code Designate}
 	 * element. If {@code true}, then the PID value from the annotated component
 	 * will be used in the {@code factoryPid} attribute of the generated
 	 * {@code Designate} element.
-	 * 
+	 *
 	 * @see "The pid and factoryPid attributes of the Designate element of a Meta Type Resource."
 	 */
 	boolean factory() default false;

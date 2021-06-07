@@ -139,16 +139,15 @@ class ReportExporter implements ReportExporterService {
 						.getClassLoader()
 						.getResourceAsStream(
 							"biz/aQute/bnd/reporter/plugins/transformer/templates/" + instruction.template()
-							.get()
-							.substring(8));
+								.get()
+								.substring(8));
 
 					if (embeddedTemplate == null) {
 						throw new IOException("Resource " + instruction.template()
 							.get() + " not found.");
 					}
 
-					templateResource = new EmbeddedResource(IO.read(embeddedTemplate),
-						0L);
+					templateResource = new EmbeddedResource(IO.read(embeddedTemplate), 0L);
 					templateExtension = FileHelper.getExtension(templateFile);
 					templateExtension = instruction.templateType()
 						.orElse(templateExtension);

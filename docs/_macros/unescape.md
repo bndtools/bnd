@@ -4,9 +4,6 @@ class: Macro
 title: unescape ( ';' STRING )*
 summary: The concatenated input will have all \n, \r, \b, \f, and \t replaced with their control code.
 ---
-layout: default
-
-
 
 	public String _unescape(String args[]) {
 		StringBuilder sb = new StringBuilder();

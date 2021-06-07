@@ -7,6 +7,8 @@
 -testpath: \
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
+	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=latest,\
 	biz.aQute.bndlib;version=latest;packages=*,\
 	biz.aQute.http.testservers;version=latest,\
 	com.github.mike10004:fengyouchao-sockslib;version=latest,\
@@ -18,6 +20,6 @@
 	org.apache.commons.lang3;version=latest,\
 	org.apache.commons.codec;version=latest,\
 	biz.aQute.repository;version=latest,\
-	com.google.guava;version=latest,\
+	com.google.guava;version='[19.0,20)',\
 	bcpkix;version=latest,\
 	bcprov;version=latest

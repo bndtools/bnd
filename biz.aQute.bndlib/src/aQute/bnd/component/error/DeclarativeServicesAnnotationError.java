@@ -27,7 +27,9 @@ public class DeclarativeServicesAnnotationError {
 		COMPONENT_PROPERTY_ANNOTATION_PROBLEM,
 		INVALID_COMPONENT_TYPE,
 		CONSTRUCTOR_SIGNATURE_ERROR,
-		VERSION_MISMATCH;
+		VERSION_MISMATCH,
+		ANYSERVICE_NO_TARGET,
+		OPTIONAL_FIELD_WITH_MULTIPLE;
 	}
 
 	public final String		className;
@@ -51,5 +53,20 @@ public class DeclarativeServicesAnnotationError {
 		this.methodSignature = null;
 		this.fieldName = fieldName;
 		this.errorType = errorType;
+	}
+
+	public String location() {
+		if (fieldName != null) {
+			return String.format("%s.%s", className, fieldName);
+		}
+		if (methodName != null) {
+			return String.format("%s.%s%s", className, methodName, methodSignature);
+		}
+		return className;
+	}
+
+	@Override
+	public String toString() {
+		return location() + " " + errorType;
 	}
 }

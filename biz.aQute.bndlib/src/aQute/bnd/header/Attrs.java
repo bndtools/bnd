@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 
 public class Attrs implements Map<String, String> {
@@ -108,20 +108,13 @@ public class Attrs implements Map<String, String> {
 	public Attrs(Map<String, String> map) {
 		this();
 		assert !(map instanceof Attrs);
-		if (map != null)
-			map.entrySet()
-				.stream()
-				.forEach(e -> put(e.getKey(), e.getValue()));
+		MapStream.ofNullable(map)
+			.forEach(this::put);
 	}
 
 	public void putAllTyped(Map<String, Object> attrs) {
-
-		for (Map.Entry<String, Object> entry : attrs.entrySet()) {
-			Object value = entry.getValue();
-			String key = entry.getKey();
-			putTyped(key, value);
-
-		}
+		MapStream.of(attrs)
+			.forEach(this::putTyped);
 	}
 
 	public void putTyped(String key, Object value) {
@@ -226,6 +219,10 @@ public class Attrs implements Map<String, String> {
 		return map.entrySet();
 	}
 
+	public MapStream<String, String> stream() {
+		return MapStream.of(this);
+	}
+
 	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
@@ -260,6 +257,10 @@ public class Attrs implements Map<String, String> {
 		if (key == null)
 			return null;
 
+		return map.put(putType(key), value);
+	}
+
+	private String putType(String key) {
 		int colon = key.indexOf(':');
 		if (colon >= 0) {
 			String type = key.substring(colon + 1)
@@ -314,12 +315,12 @@ public class Attrs implements Map<String, String> {
 						}
 						break;
 				}
-				return map.put(attribute, value);
+				return attribute;
 			}
 		}
 		// default String type
 		types.remove(key);
-		return map.put(key, value);
+		return key;
 	}
 
 	public Type getType(String key) {
@@ -342,9 +343,8 @@ public class Attrs implements Map<String, String> {
 			putAll((Attrs) other);
 			return;
 		}
-		for (Map.Entry<? extends String, ? extends String> e : other.entrySet()) {
-			put(e.getKey(), e.getValue());
-		}
+		MapStream.of(other)
+			.forEach(this::put);
 	}
 
 	@Override
@@ -434,9 +434,7 @@ public class Attrs implements Map<String, String> {
 		if (isEmpty())
 			return true;
 
-		TreeSet<String> l = new TreeSet<>(keySet());
-		TreeSet<String> lo = new TreeSet<>(other.keySet());
-		if (!l.equals(lo))
+		if (!keySet().equals(other.keySet()))
 			return false;
 
 		for (String key : keySet()) {
@@ -540,7 +538,7 @@ public class Attrs implements Map<String, String> {
 					break;
 				case ',' :
 					result.add(builder.toString());
-					builder = new StringBuilder();
+					builder.setLength(0);
 					break;
 				default :
 					builder.append(c);
@@ -556,28 +554,45 @@ public class Attrs implements Map<String, String> {
 	 */
 
 	public void mergeWith(Attrs other, boolean override) {
-		for (Map.Entry<String, String> e : other.entrySet()) {
-			String key = e.getKey();
-			if (override || !containsKey(key)) {
-				map.put(key, e.getValue());
-				Type t = other.getType(key);
-				if (t != Type.STRING) {
-					types.put(key, t);
-				} else {
-					types.remove(key);
-				}
-			}
+		MapStream<String, String> stream = other.stream();
+		if (!override) {
+			stream = stream.filterKey(key -> !containsKey(key));
 		}
+		stream.peekKey(key -> {
+			Type t = other.getType(key);
+			if (t != Type.STRING) {
+				types.put(key, t);
+			} else {
+				types.remove(key);
+			}
+		})
+			.forEachOrdered(map::put);
 	}
 
 	/**
 	 * Check if a directive, if so, return directive name otherwise null
 	 */
 	public static String toDirective(String key) {
-		if (key == null || !key.endsWith(":"))
+		if (key == null) {
 			return null;
+		}
+		int last = key.length() - 1;
+		return ((last >= 0) && (key.charAt(last) == ':')) ? key.substring(0, last) : null;
+	}
 
-		return key.substring(0, key.length() - 1);
+	/**
+	 * Predicate which returns true if the specified key is an attribute key.
+	 */
+	public static boolean isAttribute(String key) {
+		return !isDirective(key);
+	}
+
+	/**
+	 * Predicate which returns true if the specified key is a directive key.
+	 */
+	public static boolean isDirective(String key) {
+		int last = key.length() - 1;
+		return (last >= 0) && (key.charAt(last) == ':');
 	}
 
 	public static Attrs create(String key, String value) {

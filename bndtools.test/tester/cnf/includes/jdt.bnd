@@ -1,0 +1,4 @@
+-include: ${project}/.settings/org.eclipse.jdt.core.prefs
+javac.source 			= ${org.eclipse.jdt.core.compiler.source}
+javac.target 			= ${org.eclipse.jdt.core.compiler.codegen.targetPlatform}
+javac.compliance 		= ${org.eclipse.jdt.core.compiler.compliance}

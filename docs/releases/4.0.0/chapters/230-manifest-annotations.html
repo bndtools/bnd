@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/4.0.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.4.0 -->
+<title>Manifest Annotations</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="Manifest Annotations" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Entering manifest headers is error prone for a number of reasons since these headers are often complex, have different often hard to remember fields, and are singletons. Because they are singletons, there is only one place where they can be entered: the manifest. This is in contrast with the promoted component model where a component is stand-alone. Components should be cheap and easy to rename or move between bundles. This works fine for its Java imports but if you have an associated header in the manifest then it is easy to forget to also move its corresponding headers from the manifest. This can cause orphaned headers or missing headers either in the old bundle or the new bundle. The old bundle can miss the header because multiple components were depending on that header but it was mistakingly removed." />
+<meta property="og:description" content="Entering manifest headers is error prone for a number of reasons since these headers are often complex, have different often hard to remember fields, and are singletons. Because they are singletons, there is only one place where they can be entered: the manifest. This is in contrast with the promoted component model where a component is stand-alone. Components should be cheap and easy to rename or move between bundles. This works fine for its Java imports but if you have an associated header in the manifest then it is easy to forget to also move its corresponding headers from the manifest. This can cause orphaned headers or missing headers either in the old bundle or the new bundle. The old bundle can miss the header because multiple components were depending on that header but it was mistakingly removed." />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-10-12T20:27:56-04:00" />
+<script type="application/ld+json">
+{"datePublished":"2019-10-12T20:27:56-04:00","description":"Entering manifest headers is error prone for a number of reasons since these headers are often complex, have different often hard to remember fields, and are singletons. Because they are singletons, there is only one place where they can be entered: the manifest. This is in contrast with the promoted component model where a component is stand-alone. Components should be cheap and easy to rename or move between bundles. This works fine for its Java imports but if you have an associated header in the manifest then it is easy to forget to also move its corresponding headers from the manifest. This can cause orphaned headers or missing headers either in the old bundle or the new bundle. The old bundle can miss the header because multiple components were depending on that header but it was mistakingly removed.","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"/releases/4.0.0/chapters/230-manifest-annotations.html"},"url":"/releases/4.0.0/chapters/230-manifest-annotations.html","headline":"Manifest Annotations","dateModified":"2019-10-12T20:27:56-04:00","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<style>
+			 body {
+				counter-reset: h1 15;
+			}
+		</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/4.0.0/"><img
+			class=menu-logo src='/releases/4.0.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/4.0.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/4.0.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/4.0.0/chapters/820-instructions.html">Instructions
+			</a><a href="/releases/4.0.0/chapters/850-macros.html">Macros
+			</a><div class="releases"><button class="dropbtn">4.0.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/4.0.0/chapters/100-release.html">Release</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/150-build.html">Build</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/160-jars.html">Generating JARs</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/220-contracts.html">Contracts</a>
+
+
+
+			<li class=selected>Manifest Annotations
+
+
+
+			<li><a href="/releases/4.0.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/300-launching.html">Launching</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/400-commandline.html">From the command line</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/610-plugin.html">Plugins</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/790-format.html">File Format</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/800-headers.html">Header Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/820-instructions.html">Instruction</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/850-macros.html">Macro Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/860-commands.html">Command Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/870-plugins.html">Plugins Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			<div class=enroute><a href="https://enroute.osgi.org">Supported by OSGi enRoute <img src="/releases/4.0.0/img/EnRouteIcon_CMYK.png"></a></div>
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> Manifest Annotations</h1>
+				<p>Entering manifest headers is error prone for a number of reasons since these headers are often complex, have different often hard to remember fields, and are singletons. Because they are singletons, there is only one place where they can be entered: the manifest. This is in contrast with the promoted component model where a component is stand-alone. Components should be cheap and easy to rename or move between bundles. This works fine for its Java imports but if you have an associated header in the manifest then it is easy to forget to also move its corresponding headers from the manifest. This can cause orphaned headers or missing headers either in the old bundle or the new bundle. The old bundle can miss the header because multiple components were depending on that header but it was mistakingly removed.</p>
+
+<p>These headers are notoriously hard to write, it often takes several trials to get all the parts of the requirements correct. Also headers like Bundle-License are non trivial, especially if multiple licenses need to be entered. It is often hard to get the names right, especially if headers are not used very often.</p>
+
+<p>One of the goals of bnd is to rely on Java and not escape to strings in Java to express semantics. The Java language is a rather steep cost from the point of view of coding but the type engine makes this cost-effective especially since it enables the IDE to assist the developers. However, when information then gets encoded in strings the advantages are voided and what is left is the cost.</p>
+
+<h2 id="manifest-annotations">Manifest Annotations</h2>
+
+<p>To address these problems bnd has <em>manifest annotations</em>. A manifest annotation is applied to either a type or another annotation that is then customized. Using the type or the customized annotation on a type will then generate the corresponding header in the manifest. The resulting manifest header will only have  distinct clauses and not have errors.</p>
+
+<p>String fields in the manifest annotations are processed through bnd’s macro processor. This macro processor provides access to all default, builder, project, and workspace macros.</p>
+
+<p>The use of manifest annotations is two-fold. If applied to a type then they cause a clause in the manifest. If they are applied to another annotation then this annotation is a customized annotation. Only when a customized annotation is used to annotate a type then it will generate the corresponding clause in the manifest. The rationale is that this makes it possible to create an annotation for a subsystem. For example, it is possible to create an <code class="highlighter-rouge">@Angular</code> annotation that creates a requirement on a bundle with the javascript for Angular JS. Another example is an annotation <code class="highlighter-rouge">@ASL_2_0</code> that sets the Bundle-License header to the Apache Software License version 2.0.</p>
+
+<p>All these annotations can be found in the biz.aQute.bndlib or biz.aQute.bnd.annotations bundles.</p>
+
+<h2 id="require--provide-capability-manifest-annotations">Require &amp; Provide Capability Manifest Annotations</h2>
+
+<p>Though the class files contain enough information to find the code dependencies, there are many dependencies that are indirect. OSGi <em>extenders</em> are often a hard requirement to make a bundle function correctly but often have clients have no code dependency on the extender. For example, Declarative Services (DS) went out of its way to allow components to be Plain Old Java Objects (POJO). This is good, but the result is that resolving a closure of bundles starting from a client of DS would not drag in the Service Component Runtime (SCR), resulting in a satisfied but rather idle closure.</p>
+
+<p>Meet the <code class="highlighter-rouge">@RequireCapability</code> and <code class="highlighter-rouge">@ProvideCapability</code> headers.</p>
+
+<p>These annotations can be applied to a type or any other annotation. If applied to a type then the annotation’s requirement or capability will be added to the manifest. If applied to an annotation then this annotation is a customized annotation. Nothing happens until the annotated annotation is used. When this annotation is applied somewhere, bnd will automatically add the requirement or capability to the manifest.</p>
+
+<h3 id="requirecapability">RequireCapability</h3>
+
+<p>The <code class="highlighter-rouge">@RequireCapability</code> annotation creates a clause in the Require-Capability manifest header. The annotation has the following fields (for more details consult the Javadoc):</p>
+
+<ul>
+  <li><code class="highlighter-rouge">value</code> – (String) Anything in the value field is appended after the calculated header.</li>
+  <li><code class="highlighter-rouge">ns</code> – (String) The namespace of the requirement</li>
+  <li><code class="highlighter-rouge">effective</code> – (String default <code class="highlighter-rouge">resolve</code>) The effective time</li>
+  <li><code class="highlighter-rouge">filter</code> – The filter directive. There is a handy macro [${frange;<version>][1] that turns a version into a filter expression for a filter range.</version></li>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td><code class="highlighter-rouge">resolution</code> – (<code class="highlighter-rouge">mandatory</code></td>
+          <td><code class="highlighter-rouge">optional</code>) The resolution of the requirement.</td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
+
+<h3 id="providecapability">ProvideCapability</h3>
+
+<p>The <code class="highlighter-rouge">@ProvideCapability</code> annotation creates a clause in the Provide-Capability manifest header. The annotation has the following fields (for more details consult the Javadoc):</p>
+
+<ul>
+  <li><code class="highlighter-rouge">value</code> – (String) Anything in the value field is appended after the calculated header.</li>
+  <li><code class="highlighter-rouge">ns</code> – (String) The namespace of the requirement</li>
+  <li><code class="highlighter-rouge">effective</code> – (String default <code class="highlighter-rouge">resolve</code>) The effective time</li>
+  <li><code class="highlighter-rouge">name</code> – (String) This creates a <code class="highlighter-rouge">&lt;namespace&gt;=&lt;name&gt;</code> attribute, the common convention to set the primary name attribute of a capability in most OSGi namespaces.</li>
+  <li><code class="highlighter-rouge">version</code> – (String) Set the version of the capability.</li>
+  <li><code class="highlighter-rouge">uses</code> – (String[]) Package names that are used by this capability and require the same class loader</li>
+  <li><code class="highlighter-rouge">mandatory</code> – (String[]) List of mandatory attributes</li>
+</ul>
+
+<h3 id="example">Example</h3>
+
+<p>For example the following defines a capability for the OSGi enRoute Configurer.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@RequireCapability(
+  ns        = “osgi.extender”,
+  filter    = "(&amp;(osgi.extender=osgi.enroute.configurer)${frange;1.2.3})",
+  effective = "active")
+</code></pre></div></div>
+
+<p>If this capability is applied to a type then the manifest will contain the corresponding requirement:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@RequireCapability(
+  ns        = “osgi.extender”,
+  filter    = "(&amp;(osgi.extender=osgi.enroute.configurer)${frange;1.2.3})",
+  effective = "active")
+public class Peggy { ... }
+</code></pre></div></div>
+
+<p>This generates the following manifest headers (though the actual header can be larger since it can contain additional requirements):</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Require-Capability: osgi.extender;filter:='(&amp;(osgi.extender=osgi.enroute.configurer`)
+	(&amp;(version&gt;=1.2.3)(!(version&gt;=2.0.0))))';effective:=active
+</code></pre></div></div>
+
+<p>It is also possible to create a customized annotation:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@RequireCapability(
+  ns        = “osgi.extender”,
+  filter    = "(&amp;(osgi.extender=osgi.enroute.configurer)${frange;1.2.3})",
+  effective = "active")
+@Retention(RetentionPolicy)
+@Target( ElementType.TYPE )
+public @interface RequireConfigurer {}
+</code></pre></div></div>
+
+<p>This by itself does not create a clause in the manifest header. To make this happen we need to annotate a type:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@RequireConfigurer
+public class Peggy { ... }
+</code></pre></div></div>
+
+<p>Now the same header will be generated.</p>
+
+<h2 id="bundle-license">Bundle License</h2>
+
+<p>The <code class="highlighter-rouge">@BundleLicense</code> annotation creates entries in the Bundle-License header. The annotation has the following fields:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">name</code> – The name of the license, should preferably the URI to the corresponding <a href="http://opensource.org">Open Source Initiative</a> page about this license.</li>
+  <li><code class="highlighter-rouge">description</code> – A short description of the license.</li>
+  <li><code class="highlighter-rouge">url</code> – The URL to further information about the license</li>
+</ul>
+
+<p>A number of licenses have gotten their own custom annotation:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">ASL_2_0</code></li>
+  <li><code class="highlighter-rouge">BSD_2_Clause</code></li>
+  <li><code class="highlighter-rouge">BSD_3_Clause</code></li>
+  <li><code class="highlighter-rouge">CDDL_1_0</code></li>
+  <li><code class="highlighter-rouge">CPL_1_0</code></li>
+  <li><code class="highlighter-rouge">EPL_1_0</code></li>
+  <li><code class="highlighter-rouge">GPL_2_0</code></li>
+  <li><code class="highlighter-rouge">GPL_3_0</code></li>
+  <li><code class="highlighter-rouge">LGPL_2_1</code></li>
+  <li><code class="highlighter-rouge">MIT_1_0</code></li>
+  <li><code class="highlighter-rouge">MPL_2_0</code></li>
+</ul>
+
+<p>See the Javadoc for additional details.</p>
+
+<h3 id="example-1">Example</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@ASL_2_0
+public class Peggy { ... }
+
+Bundle-License: \
+	http://www.opensource.org/licenses/apache2.0.php; \
+	description='Apache Software License 2.0';\
+	link='http://www.apache.org/licenses/LICENSE-2.0.html'
+</code></pre></div></div>
+
+<h2 id="more-manifest-annotations">More Manifest Annotations</h2>
+
+<ul>
+  <li><code class="highlighter-rouge">@BundleCopyright</code> – Sets the copyright header.</li>
+  <li><code class="highlighter-rouge">@BundleCategory</code> – Sets the bundle category, existing categories are defined in an enum.</li>
+  <li><code class="highlighter-rouge">@BundleContributors</code> – Creates an OSGi header for contributors that maps to the Maven contributors element.</li>
+  <li><code class="highlighter-rouge">@BundleDevelopers</code> – Creates an OSGi header for developers that maps to the Maven developers element.</li>
+  <li><code class="highlighter-rouge">@BundleDocUrl</code> – Provides a documentation URL.</li>
+</ul>
+
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/4.0.0/chapters/220-contracts.html'></a> <a href='/releases/4.0.0/chapters/250-resolving.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.0.0/contact.html">Contact</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.0.0/">Developers</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.0.0/">More</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

@@ -19,8 +19,10 @@ import bndtools.launch.ui.AbstractLaunchTabPiece;
 public class JUnitTestParamsLaunchTabPiece extends AbstractLaunchTabPiece {
 
 	private boolean	keepAlive	= false;
+	private boolean	rerunIDE	= false;
 
 	private Button	keepAliveButton;
+	private Button	rerunIDEButton;
 
 	@Override
 	public Control createControl(Composite parent) {
@@ -37,18 +39,31 @@ public class JUnitTestParamsLaunchTabPiece extends AbstractLaunchTabPiece {
 				setDirty(true);
 				boolean old = keepAlive;
 				keepAlive = keepAliveButton.getSelection();
+				rerunIDEButton.setEnabled(keepAlive);
 				firePropertyChange("keepAlive", old, keepAlive); //$NON-NLS-1$
 			}
 		});
 
-		// Layout
-		GridData gd;
+		rerunIDEButton = new Button(group, SWT.CHECK);
+		rerunIDEButton.setText(Messages.JUnitTestParamsLaunchTabPiece_labelRerunIDE);
 
+		// Listeners
+		rerunIDEButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				setDirty(true);
+				boolean old = rerunIDE;
+				rerunIDE = rerunIDEButton.getSelection();
+				firePropertyChange("rerunIDE", old, rerunIDE); //$NON-NLS-1$
+			}
+		});
+
+		// LAYOUT
 		GridLayout layout = new GridLayout(1, false);
 		group.setLayout(layout);
 
-		gd = new GridData(SWT.LEFT, SWT.CENTER, false, false);
-		keepAliveButton.setLayoutData(gd);
+		keepAliveButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
+		rerunIDEButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		return group;
 	}
@@ -56,6 +71,7 @@ public class JUnitTestParamsLaunchTabPiece extends AbstractLaunchTabPiece {
 	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
 		configuration.setAttribute(LaunchConstants.ATTR_JUNIT_KEEP_ALIVE, LaunchConstants.DEFAULT_JUNIT_KEEP_ALIVE);
+		configuration.setAttribute(LaunchConstants.ATTR_RERUN_IDE, LaunchConstants.DEFAULT_RERUN_IDE);
 	}
 
 	@Override
@@ -68,6 +84,10 @@ public class JUnitTestParamsLaunchTabPiece extends AbstractLaunchTabPiece {
 				LaunchConstants.DEFAULT_JUNIT_KEEP_ALIVE);
 		}
 		keepAliveButton.setSelection(keepAlive);
+
+		rerunIDE = configuration.getAttribute(LaunchConstants.ATTR_RERUN_IDE, LaunchConstants.DEFAULT_RERUN_IDE);
+		rerunIDEButton.setSelection(rerunIDE);
+		rerunIDEButton.setEnabled(keepAlive);
 	}
 
 	@Override
@@ -75,5 +95,6 @@ public class JUnitTestParamsLaunchTabPiece extends AbstractLaunchTabPiece {
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
 		configuration.setAttribute(LaunchConstants.ATTR_JUNIT_KEEP_ALIVE, keepAlive);
 		configuration.removeAttribute(LaunchConstants.ATTR_OLD_JUNIT_KEEP_ALIVE);
+		configuration.setAttribute(LaunchConstants.ATTR_RERUN_IDE, rerunIDE);
 	}
 }

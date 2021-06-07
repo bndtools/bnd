@@ -30,7 +30,8 @@ public class FindProvidersTest extends TestCase {
 				.toURI()
 				.toString());
 			props.put("name", getName());
-			props.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
+			props.put("cache",
+				new File("generated/tmp/test/cache/" + getClass().getName() + "/" + getName()).getAbsolutePath());
 			repo.setProperties(props);
 
 			Requirement req = CapReqBuilder.createPackageRequirement("org.example.a", "[1,2)")
@@ -60,7 +61,8 @@ public class FindProvidersTest extends TestCase {
 				.toURI()
 				.toString());
 			props.put("name", getName());
-			props.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
+			props.put("cache",
+				new File("generated/tmp/test/cache/" + getClass().getName() + "/" + getName()).getAbsolutePath());
 			repo.setProperties(props);
 
 			Requirement req = CapReqBuilder.createPackageRequirement("org.example.a", "[1,2)")
@@ -88,7 +90,8 @@ public class FindProvidersTest extends TestCase {
 				.toURI()
 				.toString());
 			props.put("name", getName());
-			props.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
+			props.put("cache",
+				new File("generated/tmp/test/cache/" + getClass().getName() + "/" + getName()).getAbsolutePath());
 			repo.setProperties(props);
 
 			Requirement req = new CapReqBuilder("osgi.identity")
@@ -130,7 +133,8 @@ public class FindProvidersTest extends TestCase {
 				.toURI()
 				.toString());
 			props.put("name", getName());
-			props.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
+			props.put("cache",
+				new File("generated/tmp/test/cache/" + getClass().getName() + "/" + getName()).getAbsolutePath());
 			repo.setProperties(props);
 
 			Requirement req = CapReqBuilder.createPackageRequirement("aQute.bnd.annotation", "[1.43,2)")

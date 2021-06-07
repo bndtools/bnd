@@ -40,5 +40,21 @@ In this example, the last version in the Released repository for the project's b
 
 Since an error is raised when the baselining detects a semantic version violation it is possible to release a snapshot in a build only when there is a correctly baselined bundle built.
 
+### `@BaselineIgnore` - Fine grained control
 
+Occasionally, scenarios arise where a language construct or change is not accounted for in bnd (bnd developers are humans too), or where a developer wants to overrule the strict opinion of the baseline logic for whatever reason (not recommended but it does happen) for instance in the grey areas of binary compatibility.
 
+Instead of forcing developers to make a choice between disabling baseline (in order to avoid build warnings or failures) and keeping it enabled it's important to know that there is fine grained control available using bnd's `@aQute.bnd.annotation.baseline.BaselineIgnore` annotation.
+
+The value of the `@BaselineIgnore` annotation is a valid OSGi version string.
+
+e.g.
+
+```java
+@BaselineIgnore("2.4.12")
+public Foo getFoo();
+```
+
+When the `@BaselineIgnore` annotation is applied to a *baselined* element, the *baseliner* will ignore the annotated element when baselining against a baseline package whose version is less than the specified version. This means the annotated element will not produce a baselining mismatch. The correct baseline information about the element will be in the baseline report, but the element will not cause baselining to fail. When baselining against a baseline package whose version is greater than or equal to the specified version, this annotation is ignored and the annotated element will be included in the baselining.
+
+The annotation should be used in a scope that is as narrow as possible by applying it to the most specific member causing the baseline _issue_.

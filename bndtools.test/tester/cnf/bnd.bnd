@@ -1,0 +1,4 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
+-nobundles = true

@@ -13,6 +13,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import aQute.bnd.service.reporter.ReportTransformerPlugin;
+import aQute.lib.xml.XML;
 
 public class XsltTransformerPlugin implements ReportTransformerPlugin {
 	static private final String[]		_extT				= {
@@ -22,7 +23,7 @@ public class XsltTransformerPlugin implements ReportTransformerPlugin {
 		"xml"
 	};
 
-	private final TransformerFactory	_transformerFactory	= TransformerFactory.newInstance();
+	private final TransformerFactory	_transformerFactory	= XML.newTransformerFactory();
 
 	@Override
 	public String[] getHandledTemplateExtensions() {

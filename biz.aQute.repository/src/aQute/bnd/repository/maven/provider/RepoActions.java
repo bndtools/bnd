@@ -13,7 +13,7 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;
@@ -73,6 +73,17 @@ class RepoActions {
 				throw Exceptions.duck(e);
 			}
 		});
+
+		if (archive.isSnapshot()) {
+			map.put("Refresh snapshot", () -> {
+				try {
+					repo.index.refresh(archive)
+						.onResolve(() -> repo.workspace.ifPresent(ws -> ws.refresh(repo)));
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+			});
+		}
 
 		addUpdate(archive, map);
 

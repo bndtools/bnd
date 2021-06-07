@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Constants;
@@ -33,26 +32,22 @@ public class SPIDescriptorGenerator implements VerifierPlugin {
 
 		Map<String, ArrayList<String>> providerTypes = new HashMap<>();
 
-		for (Entry<String, Attrs> entry : provideCapabilities.entrySet()) {
-			String key = Processor.removeDuplicateMarker(entry.getKey());
-			if ("osgi.serviceloader".equals(key)) {
-				Attrs attrs = entry.getValue();
-
-				String serviceType = attrs.get("osgi.serviceloader");
+		provideCapabilities.stream()
+			.filterKey(key -> Processor.removeDuplicateMarker(key)
+				.equals("osgi.serviceloader"))
+			.values()
+			.forEachOrdered(attrs -> {
 				String serviceImpl = attrs.get("register:");
-
 				if (serviceImpl == null) {
 					analyzer.warning(
-						"osgi.serviceloader capability found with no 'register:' directive. Descriptor cannot be managed for %s;%s",
-						key, attrs);
-
-					continue;
+						"osgi.serviceloader capability found with no 'register:' directive. Descriptor cannot be managed for osgi.serviceloader;%s",
+						attrs);
+				} else {
+					String serviceType = attrs.get("osgi.serviceloader");
+					providerTypes.computeIfAbsent(serviceType, k -> new ArrayList<>())
+						.add(serviceImpl);
 				}
-
-				providerTypes.computeIfAbsent(serviceType, k -> new ArrayList<>())
-					.add(serviceImpl);
-			}
-		}
+			});
 
 		for (Entry<String, ArrayList<String>> entry : providerTypes.entrySet()) {
 			String key = "META-INF/services/" + entry.getKey();

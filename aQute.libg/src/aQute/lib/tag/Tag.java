@@ -43,8 +43,7 @@ public class Tag {
 	String							name;																																												// Name
 	final Map<String, String>		attributes			= new LinkedHashMap<>();
 	final List<Object>				content				= new ArrayList<>();																																			// Content
-	static final DateTimeFormatter	DATE_TIME_FORMATTER	= DateTimeFormatter
-		.ofPattern("yyyyMMddHHmmss.SSS", Locale.ROOT)
+	static final DateTimeFormatter	DATE_TIME_FORMATTER	= DateTimeFormatter.ofPattern("yyyyMMddHHmmss.SSS", Locale.ROOT)
 		.withZone(ZoneId.systemDefault());
 	boolean							cdata;
 
@@ -94,13 +93,13 @@ public class Tag {
 	 */
 	public Tag(String name, String[] attributes, Object content) {
 		this(name, content);
-		for (int i = 0; i < attributes.length; i += 2)
+		for (int i = 0; (i + 1) < attributes.length; i += 2)
 			addAttribute(attributes[i], attributes[i + 1]);
 	}
 
 	public Tag(String name, String[] attributes, Object... contents) {
 		this(name, contents);
-		for (int i = 0; i < attributes.length; i += 2)
+		for (int i = 0; (i + 1) < attributes.length; i += 2)
 			addAttribute(attributes[i], attributes[i + 1]);
 	}
 

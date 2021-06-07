@@ -262,7 +262,7 @@ public class Header implements Map<String, Props> {
 
 	static public Header parseHeader(String value, Reporter logger, Header result) {
 		if (value == null || value.trim()
-			.length() == 0)
+			.isEmpty())
 			return result;
 
 		QuotedTokenizer qt = new QuotedTokenizer(value, ";=,");
@@ -274,7 +274,7 @@ public class Header implements Map<String, Props> {
 			String name = qt.nextToken(",;");
 
 			del = qt.getSeparator();
-			if (name == null || name.length() == 0) {
+			if (name == null || name.isEmpty()) {
 				if (logger != null && logger.isPedantic()) {
 					logger.warning(
 						"Empty clause, usually caused by repeating a comma without any name field or by having spaces after the backslash of a property file: %s",
@@ -283,8 +283,6 @@ public class Header implements Map<String, Props> {
 				if (name == null)
 					break;
 			} else {
-				name = name.trim();
-
 				aliases.add(name);
 				while (del == ';') {
 					String adname = qt.nextToken();
@@ -295,23 +293,28 @@ public class Header implements Map<String, Props> {
 									"Header contains name field after attribute or directive: %s from %s. Name fields must be consecutive, separated by a ';' like a;b;c;x=3;y=4",
 									adname, value);
 							}
-						if (adname != null && adname.length() > 0)
-							aliases.add(adname.trim());
+						if (adname != null && !adname.isEmpty())
+							aliases.add(adname);
 					} else {
 						String advalue = qt.nextToken();
-						if (clause.containsKey(adname)) {
-							if (logger != null && logger.isPedantic())
-								logger.warning(
-									"Duplicate attribute/directive name %s in %s. This attribute/directive will be ignored",
-									adname, value);
+						del = qt.getSeparator();
+						if (adname == null || adname.isEmpty()) {
+							if (logger != null)
+								logger.error("No name before '=' sign for attribute");
+							continue;
 						}
 						if (advalue == null) {
 							if (logger != null)
 								logger.error("No value after '=' sign for attribute %s", adname);
 							advalue = "";
 						}
-						clause.put(adname.trim(), advalue);
-						del = qt.getSeparator();
+						if (clause.containsKey(adname)) {
+							if (logger != null && logger.isPedantic())
+								logger.warning(
+									"Duplicate attribute/directive name %s in %s. This attribute/directive will be ignored",
+									adname, value);
+						}
+						clause.put(adname, advalue);
 						hadAttribute = true;
 					}
 				}

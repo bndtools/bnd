@@ -10,11 +10,11 @@
  * Here is an example of using the Bundle task type:
  * <pre>
  * import aQute.bnd.gradle.Bundle
- * task bundle(type: Bundle) {
- *   description 'Build my bundle'
- *   group 'build'
+ * tasks.register("bundle", Bundle) {
+ *   description "Build my bundle"
+ *   group "build"
  *   from sourceSets.bundle.output
- *   bndfile = project.file('bundle.bnd')
+ *   bndfile = project.file("bundle.bnd")
  *   sourceSet = sourceSets.bundle
  * }
  * </pre>
@@ -27,41 +27,41 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.Jar
 
 public class Bundle extends Jar {
-  /**
-   * Create a Bundle task.
-   *
-   * <p>
-   * Also adds the BundleTaskConvention to this task.
-   */
-  public Bundle() {
-    super()
-    convention.plugins.bundle = new BundleTaskConvention(this)
-  }
+	/**
+	 * Create a Bundle task.
+	 *
+	 * <p>
+	 * Also adds the BundleTaskConvention to this task.
+	 */
+	public Bundle() {
+		super()
+		getConvention().getPlugins().bundle = new BundleTaskConvention(this)
+	}
 
-  /**
-   * Build the bundle.
-   *
-   * <p>
-   * This method calls super.copy() and then uses the Bnd Builder
-   * to transform the Jar task built jar into a bundle.
-   */
-  @TaskAction
-  @Override
-  protected void copy() {
-    supercopy()
-    buildBundle()
-  }
+	/**
+	 * Build the bundle.
+	 *
+	 * <p>
+	 * This method calls super.copy() and then uses the Bnd Builder
+	 * to transform the Jar task built jar into a bundle.
+	 */
+	@TaskAction
+	@Override
+	protected void copy() {
+		supercopy()
+		buildBundle()
+	}
 
-  /**
-   * Private method to call super.copy().
-   *
-   * <p>
-   * We need to compile the call to super.copy() with @CompileStatic to
-   * avoid a Groovy 2.4 error where the super.copy() call instead results in
-   * calling this.copy() causing a StackOverflowError.
-   */
-  @CompileStatic
-  private void supercopy() {
-    super.copy()
-  }
+	/**
+	 * Private method to call super.copy().
+	 *
+	 * <p>
+	 * We need to compile the call to super.copy() with @CompileStatic to
+	 * avoid a Groovy 2.4 error where the super.copy() call instead results in
+	 * calling this.copy() causing a StackOverflowError.
+	 */
+	@CompileStatic
+	private void supercopy() {
+		super.copy()
+	}
 }

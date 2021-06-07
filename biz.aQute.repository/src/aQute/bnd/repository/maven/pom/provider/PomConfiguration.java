@@ -8,15 +8,34 @@ public interface PomConfiguration {
 	/**
 	 * The url to the remote release repository. Can be a comma separated list
 	 * of urls.
+	 *
+	 * @deprecated use releaseUrl instead
 	 */
+	@Deprecated
 	String releaseUrls();
+
+	/**
+	 * The url to the remote release repository. Can be a comma separated list
+	 * of urls.
+	 */
+	String releaseUrl();
+
+	/**
+	 * The url to the remote snapshot repository. If this is not specified, it
+	 * falls back to the release repository or just local if this is also not
+	 * specified. Can be a comma separated list of urls.
+	 *
+	 * @deprecated use snapshotUrl instead
+	 */
+	@Deprecated
+	String snapshotUrls();
 
 	/**
 	 * The url to the remote snapshot repository. If this is not specified, it
 	 * falls back to the release repository or just local if this is also not
 	 * specified. Can be a comma separated list of urls.
 	 */
-	String snapshotUrls();
+	String snapshotUrl();
 
 	/**
 	 * The path to the local repository

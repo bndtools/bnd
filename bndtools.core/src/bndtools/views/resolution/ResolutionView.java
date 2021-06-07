@@ -2,9 +2,7 @@ package bndtools.views.resolution;
 
 import java.io.File;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -72,6 +70,7 @@ import org.osgi.resource.Resource;
 
 import aQute.bnd.osgi.Clazz;
 import aQute.lib.io.IO;
+import aQute.bnd.unmodifiable.Sets;
 import bndtools.Plugin;
 import bndtools.model.repo.RepositoryResourceElement;
 import bndtools.model.resolution.CapReqMapContentProvider;
@@ -89,29 +88,25 @@ import bndtools.utils.SelectionUtils;
 
 public class ResolutionView extends ViewPart implements ISelectionListener, IResourceChangeListener {
 
-	private static String[]		FILTERED_CAPABILITY_NAMESPACES	= {
-		IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE
-	};
+	private Display				display		= null;
 
-	private Display				display							= null;
-
-	private Tree				reqsTree						= null;
-	private Table				capsTable						= null;
+	private Tree				reqsTree	= null;
+	private Table				capsTable	= null;
 
 	private TreeViewer			reqsViewer;
 	private TableViewer			capsViewer;
 
 	private ViewerFilter		hideSelfImportsFilter;
 
-	private boolean				inputLocked						= false;
-	private boolean				outOfDate						= false;
+	private boolean				inputLocked	= false;
+	private boolean				outOfDate	= false;
 	Set<CapReqLoader>			loaders;
 	private Job					analysisJob;
 
 	private final Set<String>	filteredCapabilityNamespaces;
 
 	public ResolutionView() {
-		filteredCapabilityNamespaces = new HashSet<>(Arrays.asList(FILTERED_CAPABILITY_NAMESPACES));
+		filteredCapabilityNamespaces = Sets.of(IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE);
 		loaders = Collections.emptySet();
 	}
 
@@ -214,12 +209,10 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 		ColumnViewerToolTipSupport.enableFor(capsViewer);
 		capsViewer.setLabelProvider(new CapabilityLabelProvider(true));
 		capsViewer.setContentProvider(new CapReqMapContentProvider());
-		capsViewer.setFilters(new ViewerFilter[] {
-			new ViewerFilter() {
-				@Override
-				public boolean select(Viewer viewer, Object parent, Object element) {
-					return !filteredCapabilityNamespaces.contains(((Capability) element).getNamespace());
-				}
+		capsViewer.setFilters(new ViewerFilter() {
+			@Override
+			public boolean select(Viewer viewer, Object parent, Object element) {
+				return !filteredCapabilityNamespaces.contains(((Capability) element).getNamespace());
 			}
 		});
 
@@ -234,9 +227,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 				return true;
 			}
 		};
-		reqsViewer.setFilters(new ViewerFilter[] {
-			hideSelfImportsFilter
-		});
+		reqsViewer.setFilters(hideSelfImportsFilter);
 
 		reqsViewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
 			LocalSelectionTransfer.getTransfer()

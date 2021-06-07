@@ -15,7 +15,7 @@ import aQute.bnd.osgi.Constants;
  *
  * @author aqute
  */
-@BndPlugin(name = "blueprint")
+@BndPlugin(name = "Blueprint")
 public class SpringXMLType extends XMLTypeProcessor {
 
 	@Override

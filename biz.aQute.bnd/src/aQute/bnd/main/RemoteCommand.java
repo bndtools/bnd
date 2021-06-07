@@ -9,10 +9,10 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -45,6 +45,7 @@ import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.remote.api.Agent;
 import aQute.remote.api.Event;
 import aQute.remote.api.Supervisor;
@@ -59,13 +60,8 @@ class RemoteCommand extends Processor {
 	private Agent								agent;
 	private int									port;
 	private String								host;
-	private static Set<String>					IGNORED_NAMESPACES	= new HashSet<>();
-
-	static {
-		IGNORED_NAMESPACES.add(PackageNamespace.PACKAGE_NAMESPACE); // handled
-																	// specially
-		IGNORED_NAMESPACES.add(ContentNamespace.CONTENT_NAMESPACE);
-	}
+	private static Set<String>					IGNORED_NAMESPACES	= Sets.of(PackageNamespace.PACKAGE_NAMESPACE,
+		ContentNamespace.CONTENT_NAMESPACE);
 
 	/**
 	 * This is the supervisor on the bnd launcher side. It provides the SHA
@@ -226,11 +222,11 @@ class RemoteCommand extends Processor {
 	interface PingOptions extends Options {}
 
 	public void _ping(PingOptions opts) throws Exception {
-		long start = System.currentTimeMillis();
+		long startNanos = System.nanoTime();
 		if (agent.ping())
-			bnd.out.println("Ok " + (System.currentTimeMillis() - start) + "ms");
+			bnd.out.printf("Ok %s ms%n", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos));
 		else
-			bnd.out.println("Could not reach " + host + ":" + port);
+			bnd.out.printf("Could not reach %s:%s%n", host, port);
 	}
 
 	/**

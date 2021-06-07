@@ -68,23 +68,12 @@ public class Annotation {
 		this.policy = requireNonNull(policy);
 	}
 
-	@Deprecated
-	public Annotation(TypeRef name, Map<String, Object> elements, java.lang.annotation.ElementType member,
-		RetentionPolicy policy) {
-		this(name, elements, ElementType.valueOf(member.name()), policy);
-	}
-
 	public TypeRef getName() {
 		return name;
 	}
 
 	public ElementType elementType() {
 		return member;
-	}
-
-	@Deprecated
-	public java.lang.annotation.ElementType getElementType() {
-		return java.lang.annotation.ElementType.valueOf(elementType().name());
 	}
 
 	public RetentionPolicy getRetentionPolicy() {

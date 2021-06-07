@@ -21,11 +21,21 @@ public class BeanProperties extends Properties {
 		.compile("(?<name>[^\\.\\[]+)(?:\\[(?<index>\\d+)\\])?\\.?");
 	private static final long		serialVersionUID	= 1L;
 
+	protected Properties			defaults;
+
+	public BeanProperties() {
+		this(null);
+	}
+
+	public BeanProperties(Properties defaults) {
+		this.defaults = defaults;
+	}
+
 	@Override
 	public String getProperty(String key) {
 		final Matcher m = KEY_P.matcher(key);
 		if (!m.find()) {
-			return null;
+			return defaultValue(key);
 		}
 		String name = m.group("name");
 		Object value = value(name, get(name), m.group("index"));
@@ -33,10 +43,11 @@ public class BeanProperties extends Properties {
 			name = m.group("name");
 			value = value(name, getField(value, name), m.group("index"));
 		}
-		if (value == null) {
-			return null;
-		}
-		return value.toString();
+		return (value != null) ? value.toString() : defaultValue(key);
+	}
+
+	private String defaultValue(String key) {
+		return (defaults != null) ? defaults.getProperty(key) : null;
 	}
 
 	private Object getField(Object target, String fieldName) {

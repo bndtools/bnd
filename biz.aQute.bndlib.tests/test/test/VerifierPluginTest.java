@@ -1,7 +1,11 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -9,11 +13,11 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.service.AnalyzerPlugin;
 import aQute.bnd.service.verifier.VerifierPlugin;
-import junit.framework.TestCase;
 
-public class VerifierPluginTest extends TestCase {
+public class VerifierPluginTest {
 
-	public static void testNoVerifierPluginExecution() throws Exception {
+	@Test
+	void testNoVerifierPluginExecution() throws Exception {
 		final AtomicBoolean executedCheck = new AtomicBoolean(false);
 
 		AnalyzerPlugin analyzerPlugin = analyzer -> {
@@ -37,10 +41,11 @@ public class VerifierPluginTest extends TestCase {
 
 			Jar jar = b.build();
 		}
-		assertTrue(executedCheck.get());
+		assertThat(executedCheck).isTrue();
 	}
 
-	public static void testVerifierPluginExecution() throws Exception {
+	@Test
+	void testVerifierPluginExecution() throws Exception {
 		final AtomicBoolean executedCheck = new AtomicBoolean(false);
 
 		VerifierPlugin verifier = analyzer -> {
@@ -65,7 +70,8 @@ public class VerifierPluginTest extends TestCase {
 
 			Jar jar = b.build();
 		}
-		assertTrue(executedCheck.get());
+
+		assertThat(executedCheck).isTrue();
 	}
 
 }

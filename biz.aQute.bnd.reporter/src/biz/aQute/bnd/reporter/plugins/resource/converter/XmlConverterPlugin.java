@@ -19,6 +19,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
+import aQute.lib.xml.XML;
 import biz.aQute.bnd.reporter.service.resource.converter.ResourceConverterPlugin;
 
 public class XmlConverterPlugin implements ResourceConverterPlugin {
@@ -31,7 +32,7 @@ public class XmlConverterPlugin implements ResourceConverterPlugin {
 
 	public XmlConverterPlugin() {
 		try {
-			final DocumentBuilderFactory b = DocumentBuilderFactory.newInstance();
+			final DocumentBuilderFactory b = XML.newDocumentBuilderFactory();
 			b.setNamespaceAware(true);
 			_db = b.newDocumentBuilder();
 		} catch (final ParserConfigurationException exception) {

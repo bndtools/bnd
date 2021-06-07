@@ -1,5 +1,7 @@
 package aQute.bnd.help;
 
+import java.io.StringReader;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -9,16 +11,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.help.instructions.BuilderInstructions;
 import aQute.bnd.help.instructions.LauncherInstructions;
+import aQute.bnd.help.instructions.ResolutionInstructions;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.Version;
 import aQute.lib.strings.Strings;
+import aQute.bnd.unmodifiable.Maps;
 
 public class Syntax implements Constants {
 	final String							header;
@@ -234,7 +240,7 @@ public class Syntax implements Constants {
 			META_PERSISTENCE + ": persistence/myPu.xml", null, null),
 		new Syntax(PRIVATEPACKAGE, "The " + PRIVATEPACKAGE
 			+ " header contains a declaration of packages to be included in the resulting bundle, the only difference is, is that these packages will not be exported.",
-			PRIVATEPACKAGE + ": com.*", "${packages}", null),
+			PRIVATEPACKAGE + ": com.example.*, foo.bar", "${packages}", null),
 		new Syntax(PRIVATE_PACKAGE, "The " + PRIVATE_PACKAGE
 			+ " header contains a declaration of packages to be included in the resulting bundle, the only difference is, is that these packages will not be exported.",
 			PRIVATE_PACKAGE + ": com.*", "${packages}", null),
@@ -459,6 +465,11 @@ public class Syntax implements Constants {
 				+ " header manifest generation, same format.",
 			EXPORT_CONTENTS + "=!*impl*,*;version=3.0", null, null),
 
+		new Syntax(EXPORT_APIGUARDIAN,
+			"Enable the APIGuardian plugin that searches for @API annotations for calculating the " + EXPORT_PACKAGE
+				+ " header manifest generation, same format.",
+			EXPORT_APIGUARDIAN + "=!*impl*,*;version=3.0", null, null),
+
 		new Syntax(EXPORTTYPE, "This specifies the type of the exported content",
 			EXPORTTYPE + "=bnd.executablejar;foo=bnd, bnd.runbundles;bar=bnd", null, null),
 
@@ -486,10 +497,11 @@ public class Syntax implements Constants {
 			INCLUDEPACKAGE + ": !com.foo.bar, com.foo.* ", null, Verifier.WILDCARDNAMEPATTERN),
 		new Syntax(INCLUDERESOURCE,
 			"Include resources from the file system. You can specify a directory, or file. All files are copied to the root, unless a destination directory is indicated.",
-			INCLUDERESOURCE + ": lib=jar", null, null),
+			INCLUDERESOURCE + ": lib/=jar/, {preprocess.txt}, license.txt;literal:='ASL 2.0, -doesnotexit.txt'", null,
+			null),
 		new Syntax(INCLUDE_RESOURCE,
 			"Include resources from the file system. You can specify a directory, or file. All files are copied to the root, unless a destination directory is indicated.",
-			INCLUDE_RESOURCE + ": lib=jar", null, null),
+			INCLUDE_RESOURCE + ": lib/=jar/, {preprocess.txt}, 'literal';literal;=true,", null, null),
 		new Syntax(INIT, "Executes macros while initializing the project for building", INIT + ": ${my_macro} ", null,
 			null),
 		new Syntax(JAVAAGENT, "Specify if classpath jars with Premain-Class headers are to be used as java agents.",
@@ -540,18 +552,18 @@ public class Syntax implements Constants {
 
 		new Syntax(NOUSES,
 			"Do not calculate the " + USES_DIRECTIVE + " directive on package exports or on capabilities.",
-			NOUSES + "=true",
-			"true,false", Verifier.TRUEORFALSEPATTERN),
-		new Syntax(NOCLASSFORNAME,
-			"Do not calculate " + IMPORT_PACKAGE
-				+ " references for 'Class.forName(\"some.Class\")' usage found in method bodies during class processing.",
+			NOUSES + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(NOCLASSFORNAME, "Do not calculate " + IMPORT_PACKAGE
+			+ " references for 'Class.forName(\"some.Class\")' usage found in method bodies during class processing.",
 			NOCLASSFORNAME + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(NOIMPORTJAVA, "Do not calculate " + IMPORT_PACKAGE + " references for java.* packages.",
+			NOIMPORTJAVA + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 
 		new Syntax(NOEE, "Do not calculate the osgi.ee name space Execution Environment from the class file version.",
 			NOEE + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(NAMESECTION,
-			"Create a name section (second part of manifest) with optional property expansion and addition of custom attributes.",
-			NAMESECTION + "=*;baz=true, abc/def/bar/X.class=3", null, null),
+			"Create a name section (second part of manifest) with optional property expansion and addition of custom attributes. Patterns not ending with \"/\" target resources. Those ending with \"/\" target packages.",
+			NAMESECTION + "=*;baz=true, abc/def/bar/X.class;bar=3", null, null),
 		new Syntax(OUTPUT, "Specify the output directory or file.", OUTPUT + "=my_directory", null, null),
 		new Syntax(OUTPUTMASK,
 			"If set, is used a template to calculate the output file. It can use any macro but the ${@bsn} and ${@version} macros refer to the current JAR being saved. The default is bsn + \".jar\".",
@@ -663,11 +675,10 @@ public class Syntax implements Constants {
 		new Syntax(REMOTEWORKSPACE,
 			"This setting enables the workspace to be available over a remote procedure call interface.",
 			REMOTEWORKSPACE + ": true", "true,false", Verifier.TRUEORFALSEPATTERN),
-		new Syntax(RUNVM,
-			"Additional arguments for the VM invocation. Keys that start with a - are added as options, otherwise they are treated as -D properties for the VM.",
-			RUNVM + "=-Xmax=30, secondOption=secondValue", null, null),
-		new Syntax(RUNPROGRAMARGS, "Additional arguments for the program invocation.",
-			RUNPROGRAMARGS + "=/some/file /another/file some_argument", null, null),
+		new Syntax(RUNVM, "Additional comma-separated arguments for the VM invocation.",
+			RUNVM + "=-Xmax=30, -DsecondOption=secondValue", null, null),
+		new Syntax(RUNPROGRAMARGS, "Additional comma-separated arguments for the program invocation.",
+			RUNPROGRAMARGS + "=/some/file, /another/file, some_argument", null, null),
 		new Syntax(RUNREPOS, "The " + RUNREPOS + " instruction is used to restrict or order the available repositories",
 			RUNREPOS + "=Maven Central, Main, Distro, ...", null, null),
 		new Syntax(RUNREQUIRES, "Comma seperated list of root requirements for a resolve operation.",
@@ -721,40 +732,34 @@ public class Syntax implements Constants {
 			"-x-overwritestrategy=gc", "(classic|delay|gc|windows-only-disposable-names|disposable-names)", null)
 	};
 
-	public final static Map<String, Syntax>	HELP					= new HashMap<>();
+	final static Map<Class<?>, Pattern>		BASE_PATTERNS			= Maps.ofEntries(
+		Maps.entry(Byte.class, Verifier.NUMBERPATTERN), Maps.entry(byte.class, Verifier.NUMBERPATTERN),
+		Maps.entry(Short.class, Verifier.NUMBERPATTERN), Maps.entry(short.class, Verifier.NUMBERPATTERN),
+		Maps.entry(Integer.class, Verifier.NUMBERPATTERN), Maps.entry(int.class, Verifier.NUMBERPATTERN),
+		Maps.entry(Long.class, Verifier.NUMBERPATTERN), Maps.entry(long.class, Verifier.NUMBERPATTERN),
+		Maps.entry(Float.class, Verifier.FLOATPATTERN), Maps.entry(float.class, Verifier.FLOATPATTERN),
+		Maps.entry(Double.class, Verifier.FLOATPATTERN), Maps.entry(double.class, Verifier.FLOATPATTERN),
+		Maps.entry(Boolean.class, Verifier.BOOLEANPATTERN), Maps.entry(boolean.class, Verifier.BOOLEANPATTERN));
 
-	final static Map<Class<?>, Pattern>		BASE_PATTERNS			= new HashMap<>();
-
+	public final static Map<String, Syntax>	HELP;
 	static {
-		BASE_PATTERNS.put(Byte.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(byte.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(Short.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(short.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(Integer.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(int.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(Long.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(long.class, Verifier.NUMBERPATTERN);
-		BASE_PATTERNS.put(Float.class, Verifier.FLOATPATTERN);
-		BASE_PATTERNS.put(float.class, Verifier.FLOATPATTERN);
-		BASE_PATTERNS.put(Double.class, Verifier.FLOATPATTERN);
-		BASE_PATTERNS.put(double.class, Verifier.FLOATPATTERN);
-		BASE_PATTERNS.put(Boolean.class, Verifier.BOOLEANPATTERN);
-		BASE_PATTERNS.put(boolean.class, Verifier.BOOLEANPATTERN);
-
+		Map<String, Syntax> help = new HashMap<>();
 		for (Syntax s : syntaxes) {
-			add(s);
+			add(help, s);
 		}
-		add(BuilderInstructions.class);
-		add(LauncherInstructions.class);
+		add(help, BuilderInstructions.class);
+		add(help, LauncherInstructions.class);
+		add(help, ResolutionInstructions.class);
+		HELP = Maps.copyOf(help);
 	}
 
-	private static void add(Syntax s) {
-		HELP.put(s.header, s);
+	private static void add(Map<String, Syntax> help, Syntax s) {
+		help.put(s.header, s);
 	}
 
-	private static void add(Class<?> class1) {
+	private static void add(Map<String, Syntax> help, Class<?> class1) {
 		for (Syntax syntax : create(class1, Syntax::toInstruction, true)) {
-			add(syntax);
+			add(help, syntax);
 		}
 	}
 
@@ -827,6 +832,17 @@ public class Syntax implements Constants {
 				// properties
 				Syntax[] clauses = create(rtype, Syntax::toProperty, false);
 				syntaxes.add(new Syntax(name, lead, example, values, pattern, clauses));
+			}
+			if (rtype.isEnum()) {
+				Field[] enumConstants = rtype.getFields();
+				Syntax[] fields = new Syntax[enumConstants.length];
+
+				for (int i = 0; i < enumConstants.length; i++) {
+					Field e = enumConstants[i];
+					fields[i] = createEnumField(e);
+				}
+				Syntax syntax = new Syntax(name, lead, example, values, pattern, fields);
+				syntaxes.add(syntax);
 			} else {
 				// simple value
 				syntaxes.add(new Syntax(name, lead, example, values, pattern));
@@ -835,6 +851,29 @@ public class Syntax implements Constants {
 		}
 
 		return syntaxes.toArray(new Syntax[0]);
+	}
+
+	private static Syntax createEnumField(Field e) {
+		String name = e.getName();
+		String lead = null;
+		String example = null;
+		Pattern pattern = Pattern.compile(Pattern.quote(e.getName()));
+		SyntaxAnnotation sa = e.getAnnotation(SyntaxAnnotation.class);
+		if (sa != null) {
+			if (!sa.name()
+				.isEmpty())
+				name = sa.name();
+			if (!sa.lead()
+				.isEmpty())
+				lead = sa.lead();
+			if (!sa.example()
+				.isEmpty())
+				example = sa.example();
+			if (!sa.pattern()
+				.isEmpty())
+				pattern = Pattern.compile(sa.pattern(), Pattern.LITERAL);
+		}
+		return new Syntax(name, lead, example, name, pattern);
 	}
 
 	static String toInstruction(Method m) {
@@ -905,6 +944,25 @@ public class Syntax implements Constants {
 
 	public static <T> T getInstructions(Processor processor, Class<T> type) {
 		return ProcessorHandler.getInstructions(processor, type);
+	}
+
+	public String getInsert() {
+		if (example != null) {
+			try {
+				Properties p = new Properties();
+				p.load(new StringReader(example));
+				String value = p.getProperty(header);
+				if (value != null) {
+					String insert = BndEditModel.format(header, value);
+					if (insert != null)
+						return header + ": " + insert;
+				}
+			} catch (Exception e) {
+				// ignore
+			}
+			return example;
+		}
+		return header + ":";
 	}
 
 }

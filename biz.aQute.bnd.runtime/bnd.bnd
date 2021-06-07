@@ -9,8 +9,9 @@
     org.osgi.service.cm, \
     org.osgi.service.component;version='[1.4,1.5)',\
     org.osgi.service.component.annotations;version='[1.4,1.5)';maven-scope=provided,\
+    biz.aQute.bnd.util;version=latest;maven-scope=provided,\
     biz.aQute.bndlib;version=latest;maven-scope=provided,\
-    org.apache.felix.gogo.runtime;version=0.12,\
+    org.apache.felix.gogo.runtime,\
     org.apache.felix.gogo.command,\
     org.apache.felix.gogo.shell
 
@@ -22,10 +23,13 @@
     slf4j.simple;version=latest
 
 -conditionalpackage: \
-    aQute.lib*,\
+    aQute.lib.*,\
+    aQute.libg.*,\
     aQute.bnd.*,\
     aQute.service.*
  
  
  -sub: *.bnd
  
+ # Don't run tests in parallel with other projects claiming launchpad
+ -noparallel: launchpad;task="test"

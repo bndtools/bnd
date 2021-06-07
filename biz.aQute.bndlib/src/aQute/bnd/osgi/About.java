@@ -1,10 +1,9 @@
 package aQute.bnd.osgi;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.TreeMap;
 
 import aQute.bnd.version.Version;
+import aQute.bnd.unmodifiable.Maps;
 
 /**
  * This package contains a number of classes that assists by analyzing JARs and
@@ -50,10 +49,18 @@ public class About {
 	public static final Version					_4_1		= new Version(4, 1, 0);
 	public static final Version					_4_2		= new Version(4, 2, 0);
 	public static final Version					_4_3		= new Version(4, 3, 0);
-	public static final Version					_4_4		= new Version(4, 4, 0);
-	public static final Version					CURRENT		= _4_4;
+	public static final Version					_5_0		= new Version(5, 0, 0);
+	public static final Version					_5_1		= new Version(5, 1, 0);
+	public static final Version					_5_2		= new Version(5, 2, 0);
+	public static final Version					_5_3		= new Version(5, 3, 0);
+	public static final Version					_6_0		= new Version(6, 0, 0);
+	public static final Version					CURRENT		= _6_0;
 
-	public static final String[]				CHANGES_4_4	= {};
+	public static final String[]				CHANGES_6_0	= {};
+	public static final String[]				CHANGES_5_3	= {};
+	public static final String[]				CHANGES_5_2	= {};
+	public static final String[]				CHANGES_5_1	= {};
+	public static final String[]				CHANGES_5_0	= {};
 	public static final String[]				CHANGES_4_3	= {};
 	public static final String[]				CHANGES_4_2	= {};
 	public static final String[]				CHANGES_4_1	= {};
@@ -215,22 +222,24 @@ public class About {
 		"It is now possible to specify a URL on a plugin path so that if the resource is not on the file system it will get downloaded."
 	};
 
-	public static final Map<Version, String[]>	CHANGES		= new TreeMap<>(Collections.reverseOrder());
-
-	static {
-		CHANGES.put(_4_4, CHANGES_4_4);
-		CHANGES.put(_4_3, CHANGES_4_3);
-		CHANGES.put(_4_2, CHANGES_4_2);
-		CHANGES.put(_4_1, CHANGES_4_1);
-		CHANGES.put(_4_0, CHANGES_4_0);
-		CHANGES.put(_3_5, CHANGES_3_5);
-		CHANGES.put(_3_4, CHANGES_3_4);
-		CHANGES.put(_3_3, CHANGES_3_3);
-		CHANGES.put(_3_2, CHANGES_3_2);
-		CHANGES.put(_3_1, CHANGES_3_1);
-		CHANGES.put(_3_0, CHANGES_3_0);
-		CHANGES.put(_2_4, CHANGES_2_4);
-		CHANGES.put(_2_3, CHANGES_2_3);
-	}
+	public static final Map<Version, String[]>	CHANGES		= Maps.ofEntries(
+		// In decreasing order
+		Maps.entry(_6_0, CHANGES_6_0),																																							//
+		Maps.entry(_5_3, CHANGES_5_3),																																							//
+		Maps.entry(_5_2, CHANGES_5_2),																																							//
+		Maps.entry(_5_1, CHANGES_5_1),																																							//
+		Maps.entry(_5_0, CHANGES_5_0),																																							//
+		Maps.entry(_4_3, CHANGES_4_3),																																							//
+		Maps.entry(_4_2, CHANGES_4_2),																																							//
+		Maps.entry(_4_1, CHANGES_4_1),																																							//
+		Maps.entry(_4_0, CHANGES_4_0),																																							//
+		Maps.entry(_3_5, CHANGES_3_5),																																							//
+		Maps.entry(_3_4, CHANGES_3_4),																																							//
+		Maps.entry(_3_3, CHANGES_3_3),																																							//
+		Maps.entry(_3_2, CHANGES_3_2),																																							//
+		Maps.entry(_3_1, CHANGES_3_1),																																							//
+		Maps.entry(_3_0, CHANGES_3_0),																																							//
+		Maps.entry(_2_4, CHANGES_2_4),																																							//
+		Maps.entry(_2_3, CHANGES_2_3));
 
 }

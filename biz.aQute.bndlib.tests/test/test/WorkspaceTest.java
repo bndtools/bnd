@@ -17,10 +17,14 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.About;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 
@@ -32,9 +36,62 @@ public class WorkspaceTest {
 
 	@Before
 	public void setUp() throws IOException {
-		testDir = new File(TMPDIR, testName.getMethodName());
+		testDir = new File(TMPDIR, getClass().getName() + "/" + testName.getMethodName());
 		IO.delete(testDir);
 		IO.mkdirs(testDir);
+	}
+
+	@Test
+	public void testVersionDefaultsWithBndWorkspace() throws Exception {
+		IO.copy(IO.getFile("testresources/ws"), testDir);
+		IO.getFile(testDir, "cnf")
+			.mkdirs();
+		try (Workspace ws = new Workspace(testDir)) {
+			assertIsCurrent(ws);
+		}
+
+
+		IO.store(Constants.VERSIONDEFAULTS + " 5.2.0\n", IO.getFile(testDir, "cnf/build.bnd"));
+		try (Workspace ws = new Workspace(testDir)) {
+			assertIs5_2_0(ws);
+		}
+	}
+
+	@Test
+	public void testVersionDefaultsWithDefaultWorkspace() throws Exception {
+		try (Workspace ws = Workspace.createDefaultWorkspace()) {
+			assertIsCurrent(ws);
+		}
+
+		// there is no reasonable override
+	}
+
+	@Test
+	public void testVersionDefaultsWithStandaloneWorkspace() throws Exception {
+		Processor run = new Processor();
+		run.setProperty(Constants.STANDALONE, "true");
+		try (Workspace ws = Workspace.createStandaloneWorkspace(run, null)) {
+			assertIsCurrent(ws);
+		}
+
+		run.setProperty(Constants.VERSIONDEFAULTS, "5.2.0");
+		try (Workspace ws = Workspace.createStandaloneWorkspace(run, null)) {
+			assertIs5_2_0(ws);
+		}
+	}
+
+	private void assertIs5_2_0(Workspace ws) {
+		assertThat(ws.getProperty("__versiondefaults__")).isEqualTo("5.2.0");
+	}
+
+	private void assertIsCurrent(Workspace ws) {
+		String v = getCurrentVersionWithoutMicro();
+		assertThat(ws.getProperty("__versiondefaults__")).isEqualTo(v);
+	}
+
+	private String getCurrentVersionWithoutMicro() {
+		String v = new Version(About.CURRENT.getMajor(), About.CURRENT.getMinor(), 0).toString();
+		return v;
 	}
 
 	/**
@@ -42,7 +99,7 @@ public class WorkspaceTest {
 	 */
 	@Test
 	public void testProjectsWhereMacro() throws Exception {
-		IO.copy(new File("testresources/ws"), testDir);
+		IO.copy(IO.getFile("testresources/ws"), testDir);
 		try (Workspace ws = Workspace.getWorkspace(testDir)) {
 			ws.setProperty("allprojects", "${projectswhere}");
 			List<String> projects = Strings.split(ws.getProperty("allprojects"));

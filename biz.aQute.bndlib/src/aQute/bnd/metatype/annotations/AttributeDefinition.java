@@ -71,7 +71,7 @@ import java.lang.annotation.Target;
  * <p>
  * This annotation is not processed at runtime. It must be processed by tools
  * and used to contribute to a Meta Type Resource document for the bundle.
- * 
+ *
  * @see "The AD element of a Meta Type Resource."
  * @author $Id$
  */
@@ -89,33 +89,29 @@ public @interface AttributeDefinition {
 	 * <p>
 	 * If the name begins with the percent sign ({@code '%'} &#92;u0025), the
 	 * name can be {@link ObjectClassDefinition#localization() localized}.
-	 * 
+	 *
 	 * @see "The name attribute of the AD element of a Meta Type Resource."
 	 */
 	String name() default "";
 
 	/**
 	 * The human readable description of this AttributeDefinition.
-	 * 
 	 * <p>
 	 * If not specified, the description of this AttributeDefinition is the
 	 * empty string.
-	 * 
 	 * <p>
 	 * If the description begins with the percent sign ({@code '%'} &#92;u0025),
 	 * the description can be {@link ObjectClassDefinition#localization()
 	 * localized}.
-	 * 
+	 *
 	 * @see "The description attribute of the AD element of a Meta Type Resource."
 	 */
 	String description() default "";
 
 	/**
 	 * The type of this AttributeDefinition.
-	 * 
 	 * <p>
 	 * This must be one of the defined {@link AttributeType attributes types}.
-	 * 
 	 * <p>
 	 * If not specified, the type is derived from the return type of the
 	 * annotated method. Return types of {@code Class} and {@code Enum} are
@@ -134,14 +130,13 @@ public @interface AttributeDefinition {
 	 * types are not supported. Any unrecognized type is mapped to
 	 * {@link AttributeType#STRING STRING}. A tool processing the annotation
 	 * should declare an error for unsupported return types.
-	 * 
+	 *
 	 * @see "The type attribute of the AD element of a Meta Type Resource."
 	 */
 	AttributeType type() default AttributeType.STRING;
 
 	/**
 	 * The cardinality of this AttributeDefinition.
-	 * 
 	 * <p>
 	 * If not specified, the cardinality is derived from the return type of the
 	 * annotated method. For an array return type, the cardinality is a large
@@ -154,66 +149,59 @@ public @interface AttributeDefinition {
 	 * </ol>
 	 * the cardinality is a large negative value. Otherwise, the cardinality is
 	 * 0.
-	 * 
+	 *
 	 * @see "The cardinality attribute of the AD element of a Meta Type Resource."
 	 */
 	int cardinality() default 0;
 
 	/**
 	 * The minimum value for this AttributeDefinition.
-	 * 
 	 * <p>
 	 * If not specified, there is no minimum value.
-	 * 
+	 *
 	 * @see "The min attribute of the AD element of a Meta Type Resource."
 	 */
 	String min() default "";
 
 	/**
 	 * The maximum value for this AttributeDefinition.
-	 * 
 	 * <p>
 	 * If not specified, there is no maximum value.
-	 * 
+	 *
 	 * @see "The max attribute of the AD element of a Meta Type Resource."
 	 */
 	String max() default "";
 
 	/**
 	 * The default value for this AttributeDefinition.
-	 * 
 	 * <p>
 	 * The specified values are concatenated into a comma delimited list to
 	 * become the value of the {@code default} attribute of the generated
 	 * {@code AD} element.
-	 * 
 	 * <p>
 	 * If not specified and the annotated method is an annotation element that
 	 * has a {@code default} value, then the value of this element is the
 	 * {@code default} value of the annotated element. Otherwise, there is no
 	 * default value.
-	 * 
+	 *
 	 * @see "The default attribute of the AD element of a Meta Type Resource."
 	 */
 	String[] defaultValue() default {};
 
 	/**
 	 * The required value for this AttributeDefinition.
-	 * 
 	 * <p>
 	 * If not specified, the value is {@code true}.
-	 * 
+	 *
 	 * @see "The required attribute of the AD element of a Meta Type Resource."
 	 */
 	boolean required() default true;
 
 	/**
 	 * The option information for this AttributeDefinition.
-	 * 
 	 * <p>
 	 * For each specified {@link Option}, an {@code Option} element is generated
 	 * for this AttributeDefinition.
-	 *
 	 * <p>
 	 * If not specified, the option information is derived from the return type
 	 * of the annotated method. If the return type is an {@code enum}, a single
@@ -229,7 +217,7 @@ public @interface AttributeDefinition {
 	 * value of each {@link Option} are set to the name of the corresponding
 	 * {@code enum} value. Otherwise, no {@code Option} elements will be
 	 * generated.
-	 * 
+	 *
 	 * @see "The Option element of a Meta Type Resource."
 	 */
 	Option[] options() default {};

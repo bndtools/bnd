@@ -14,10 +14,10 @@ public enum ScalarType {
 				result = input;
 				break;
 			case Long :
-				result = java.lang.Long.parseLong(input.trim());
+				result = java.lang.Long.valueOf(input.trim());
 				break;
 			case Double :
-				result = java.lang.Double.parseDouble(input.trim());
+				result = java.lang.Double.valueOf(input.trim());
 				break;
 			case Version :
 				result = org.osgi.framework.Version.parseVersion(input.trim());

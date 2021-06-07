@@ -37,7 +37,7 @@ import aQute.lib.collections.MultiMap;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 
-@BndPlugin(name = "subsystem")
+@BndPlugin(name = "Subsystem Exporter")
 public class SubsystemExporter implements Exporter {
 
 	private static final String	ARCHIVE_CONTENT_TYPE		= "-archiveContentType";
@@ -161,7 +161,7 @@ public class SubsystemExporter implements Exporter {
 		// provide capability
 		MultiMap<String, Attrs> provideCapability = new MultiMap<>();
 		Parameters capabilityParameter = project.getProvideCapability();
-		if (provideCapability != null && !provideCapability.entrySet()
+		if (capabilityParameter != null && !capabilityParameter.entrySet()
 			.isEmpty()) {
 			for (Entry<String, Attrs> e : capabilityParameter.entrySet()) {
 				provideCapability.add(e.getKey(), e.getValue());

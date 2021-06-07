@@ -23,7 +23,7 @@ public class TestLocalIndexedRepo extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
-		outputDir = IO.getFile("generated/tmp/test/" + getName());
+		outputDir = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName());
 		IO.deleteWithException(outputDir);
 		if (!outputDir.exists() && !outputDir.mkdirs()) {
 			throw new IOException("Could not create directory " + outputDir);

@@ -23,7 +23,8 @@ Import-Package: \
 -includeresource: probe.jar
 
 -conditionalpackage: \
-    aQute.lib*
+    aQute.lib.*,\
+    aQute.libg.*
 
 -maven-scope: provided
 
@@ -31,12 +32,14 @@ Import-Package: \
     osgi.annotation;version=latest,\
     osgi.core;version=latest,\
     org.osgi.service.component;version='[1.4,1.5)',\
-    aQute.libg;version=latest, \
+    aQute.libg;version=latest,\
     org.osgi.service.component.annotations;version='[1.3,1.4)',\
+    biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest;packages=*,\
-    org.eclipse.jdt.annotation;version=@2, \
-    ${junit}
-    
+    org.eclipse.jdt.annotation;version=@2,\
+    ${junit},\
+    org.osgi.service.configurator,\
+    org.osgi.namespace.extender
 
 -testpath: \
     ${mockito}, \
@@ -50,6 +53,11 @@ Import-Package: \
     org.apache.felix.gogo.shell;version=latest
 
 -runfw: org.apache.felix.framework
+
+-baseline: *
+
+# Don't run tests in parallel with other projects claiming launchpad
+-noparallel: launchpad;task="test"
 
 # For testing purpose, see BundleBuilderTest.java
 Project                 true

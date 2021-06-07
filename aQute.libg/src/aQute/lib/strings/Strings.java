@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import aQute.lib.hex.Hex;
 import aQute.libg.qtokens.QuotedTokenizer;
 
 public class Strings {
@@ -92,18 +94,18 @@ public class Strings {
 		if (o != null)
 			return o.toString();
 
-		for (int i = 0; i < ifNull.length; i++) {
-			if (ifNull[i] != null)
-				return ifNull[i].toString();
+		for (Object element : ifNull) {
+			if (element != null)
+				return element.toString();
 		}
 		return "";
 	}
 
-	public static String join(String[] strings) {
+	public static String join(String... strings) {
 		return join(Arrays.asList(strings));
 	}
 
-	public static String join(Object[] strings) {
+	public static String join(Object... strings) {
 		return join(Arrays.asList(strings));
 	}
 
@@ -140,13 +142,26 @@ public class Strings {
 		return !s.isEmpty();
 	}
 
+	public static boolean nonNullOrEmpty(String s) {
+		return (s != null) && !s.isEmpty();
+	}
+
+	public static boolean nonNullOrTrimmedEmpty(String s) {
+		return (s != null) && !s.trim()
+			.isEmpty();
+	}
+
 	private final static Pattern SIMPLE_LIST_SPLITTER = Pattern.compile("\\s*,\\s*");
 
 	public static Stream<String> splitAsStream(String s) {
+		return splitAsStream(s, SIMPLE_LIST_SPLITTER);
+	}
+
+	public static Stream<String> splitAsStream(String s, Pattern splitter) {
 		if ((s == null) || (s = s.trim()).isEmpty()) {
 			return Stream.empty();
 		}
-		return SIMPLE_LIST_SPLITTER.splitAsStream(s)
+		return splitter.splitAsStream(s)
 			.filter(Strings::notEmpty);
 	}
 
@@ -154,11 +169,27 @@ public class Strings {
 		return splitAsStream(s).collect(toList());
 	}
 
+	public static List<String> split(String s, Pattern splitter) {
+		return splitAsStream(s, splitter).collect(toList());
+	}
+
 	public static Stream<String> splitQuotedAsStream(String s) {
+		return splitQuotedAsStream(s, true);
+	}
+
+	public static Stream<String> splitQuotedAsStream(String s, String separators) {
+		return splitQuotedAsStream(s, separators, true);
+	}
+
+	public static Stream<String> splitQuotedAsStream(String s, boolean retainQuotes) {
+		return splitQuotedAsStream(s, COMMA, retainQuotes);
+	}
+
+	public static Stream<String> splitQuotedAsStream(String s, String separators, boolean retainQuotes) {
 		if ((s == null) || (s = s.trim()).isEmpty()) {
 			return Stream.empty();
 		}
-		return new QuotedTokenizer(s, COMMA, false, true).stream()
+		return new QuotedTokenizer(s, separators, false, retainQuotes).stream()
 			.filter(Strings::notEmpty);
 	}
 
@@ -179,13 +210,14 @@ public class Strings {
 		return splitQuotedAsStream(s).collect(toList());
 	}
 
+	public static List<String> splitQuoted(String s, String separators) {
+		return splitQuotedAsStream(s, separators).collect(toList());
+	}
+
 	public static List<String> split(String regex, String s) {
 		if ((s == null) || (s = s.trim()).isEmpty())
 			return new ArrayList<>();
-		return Pattern.compile(regex)
-			.splitAsStream(s)
-			.filter(Strings::notEmpty)
-			.collect(toList());
+		return split(s, Pattern.compile(regex));
 	}
 
 	public static boolean in(String[] skip, String key) {
@@ -276,9 +308,8 @@ public class Strings {
 	 * separator appears
 	 *
 	 * @param s the string that contains a path
-	 * @return null if no extension or an array of 2 elements, first is the
-	 *         prefix and second is the last segment without the separator at
-	 *         the start
+	 * @return null if no suffix or an array of 2 elements, first is the prefix
+	 *         and second is the suffix without the separator at the start
 	 */
 	public static String[] last(String s, char separator) {
 		int n = s.lastIndexOf(separator);
@@ -315,8 +346,8 @@ public class Strings {
 		return null;
 	}
 
-	public static String stripSuffix(String s, String prefix) {
-		Pattern p = Pattern.compile(prefix);
+	public static String stripSuffix(String s, String suffix) {
+		Pattern p = Pattern.compile(suffix);
 		return stripSuffix(s, p);
 	}
 
@@ -455,4 +486,152 @@ public class Strings {
 		return true;
 	}
 
+	/**
+	 * Convert a number to a string using SI magnitude prefixes like Mega, Giga,
+	 * etc.
+	 */
+
+	enum Magnitude {
+		quaco("g", 1e-23, 0L),
+		zepto("z", 1e-21, 0L),
+		atto("a", 1e-18, 0L),
+		femto("f", 1e-15, 0L),
+		pico("p", 1e-12, 0L),
+		nano("n", 1e-9, 0L),
+		micro("µ", 1e-6, 0L),
+		milli("m", 1e-3, 0L),
+		unit("", 1e0, 1L),
+		kilo("k", 1e3, 0x400L),
+		mega("M", 1e6, 0x100000L),
+		giga("G", 1e9, 0x40000000L),
+		tera("T", 1e12, 0x10000000000L),
+		peta("P", 1e15, 0x4000000000000L),
+		exa("E", 1e18, 0x1000000000000000L);
+
+		final String	prefix;
+		final double	one;
+		final long		byteUnit;
+
+		Magnitude(String prefix, double one, long byteUnit) {
+			this.prefix = prefix;
+			this.one = one;
+			this.byteUnit = byteUnit;
+		}
+	}
+
+	public static String toString(double n, String suffix) {
+		String prefix;
+		boolean isByte = suffix.equals("b");
+		if (isByte) {
+			if (n < 1) {
+				throw new IllegalArgumentException("If bytes are used, then the value must be >= 1, it is " + n);
+			}
+		}
+
+		for (Magnitude m : Magnitude.values()) {
+			if (m == Magnitude.exa || n < 1000 * m.one) {
+				n /= isByte ? m.byteUnit : m.one;
+				String s = m == Magnitude.unit ? String.format("%.0f %s%s", n, m.prefix, suffix)
+					: String.format("%.2f %s%s", n, m.prefix, suffix);
+				return s;
+			}
+		}
+		throw new IllegalArgumentException();
+	}
+
+	/**
+	 * Escape illegal characters in a string with an escape character and the
+	 * 4-digit hex Unicode encoding. A string escaped like this can be unescaped
+	 * with {@link #unescape(String, char)} using the same escape character.
+	 *
+	 * @param string a string to be escaped
+	 * @param illegalCharacters a pattern matching illegal characters, must
+	 *            include the escape character
+	 * @param escape an escape character, must be included in the
+	 *            illegalCharacters
+	 * @return a string that does not contain the illegalCharacters except the
+	 *         escape
+	 */
+	public static String escape(String string, Pattern illegalCharacters, char escape) {
+		if (string == null)
+			return null;
+
+		assert illegalCharacters != null : "illegalCharacters is mandator";
+		assert illegalCharacters.matcher("" + escape)
+			.find() : "the escape character must be in the set of illegalCharacters";
+
+		Matcher m = illegalCharacters.matcher(string);
+		if (!m.find())
+			return string;
+
+		StringBuffer sb = new StringBuffer();
+		do {
+
+			m.appendReplacement(sb, "");
+			for (int i = m.start(); i < m.end(); i++) {
+				char ch = string.charAt(i);
+				sb.append(escape);
+				Hex.append(sb, ch);
+			}
+		} while (m.find());
+
+		m.appendTail(sb);
+		return sb.toString();
+	}
+
+	/**
+	 * Unescape a string with the given escape character. There must be 4 hex
+	 * digits after each escape character.
+	 *
+	 * @param string the string to unescape, can be null
+	 * @param escape the escape character
+	 * @return an Optional, present if the escaping was successful
+	 */
+	public static Optional<String> unescape(String string, char escape) {
+
+		if (string == null)
+			return Optional.empty();
+
+		int n = string.indexOf(escape);
+		if (n < 0)
+			return Optional.of(string);
+
+		StringBuffer sb = new StringBuffer();
+		int start = 0;
+		do {
+			sb.append(string, start, n);
+			if (n + 5 > string.length())
+				return Optional.empty();
+
+			int ch = 0;
+
+			for (int i = n + 1; i < n + 5; i++) {
+				char c = string.charAt(i);
+				if (!Hex.isHexCharacter(c)) {
+					return Optional.empty();
+				}
+				int nibble = Hex.nibble(c);
+				ch = (ch << 4) + nibble;
+			}
+			sb.append((char) ch);
+			start = n + 5;
+			n = string.indexOf(escape, start);
+		} while (n >= 0);
+		sb.append(string, start, string.length());
+		return Optional.of(sb.toString());
+	}
+
+	public static String removeQuotes(String s) {
+		if (s == null)
+			return s;
+
+		s = trim(s);
+		if (s.length() >= 2) {
+			char begin = s.charAt(0), end = s.charAt(s.length() - 1);
+			if (begin == end && "'\"".indexOf(begin) >= 0) {
+				s = s.substring(1, s.length() - 1);
+			}
+		}
+		return s;
+	}
 }

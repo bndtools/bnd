@@ -11,7 +11,7 @@ import aQute.service.reporter.Reporter;
 
 public class MavenFileRepository extends MavenBackingRepository {
 
-	private File remote;
+	private final File remote;
 
 	public MavenFileRepository(File local, File remote, Reporter reporter) throws Exception {
 		super(local, remote.toURI()
@@ -20,7 +20,7 @@ public class MavenFileRepository extends MavenBackingRepository {
 	}
 
 	@Override
-	public TaggedData fetch(String path, File dest) throws Exception {
+	public TaggedData fetch(String path, File dest, boolean force) throws Exception {
 		File source = getFile(path);
 		if (source.isFile()) {
 			IO.mkdirs(dest.getParentFile());
@@ -73,5 +73,10 @@ public class MavenFileRepository extends MavenBackingRepository {
 	@Override
 	public boolean isFile() {
 		return true;
+	}
+
+	@Override
+	public boolean isRemote() {
+		return false;
 	}
 }

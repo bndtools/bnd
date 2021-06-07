@@ -16,7 +16,7 @@ public class RefreshReposHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		new WorkspaceJob("Refresing repositories...") {
+		new WorkspaceJob("Refreshing repositories...") {
 
 			@Override
 			public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {

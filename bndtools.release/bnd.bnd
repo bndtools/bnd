@@ -2,7 +2,7 @@
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 Test: true
-Bundle-SymbolicName: bndtools.release;singleton:=true
+Bundle-SymbolicName: ${p};singleton:=true
 Bundle-Activator: bndtools.release.Activator
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: plugin
@@ -14,7 +14,8 @@ Import-Package: \
 -includepackage: \
 	bndtools.release*
 
--conditionalpackage: aQute.lib.*,\
+-conditionalpackage: \
+    aQute.lib.*,\
     aQute.libg.*,\
 	org.bndtools.utils.*;-split-package:=first
 
@@ -25,6 +26,7 @@ Import-Package: \
 	osgi.annotation;version=latest;maven-scope=provided,\
 	osgi.core;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
+    biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest,\
 	bndtools.utils;version=project;packages=*,\
 	bndtools.api;version=latest, \

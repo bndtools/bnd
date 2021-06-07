@@ -14,7 +14,7 @@ import aQute.bnd.osgi.Analyzer;
  *
  * @author aqute
  */
-@BndPlugin(name = "jpa")
+@BndPlugin(name = "JPA")
 public class JPAComponent extends XMLTypeProcessor {
 
 	@Override

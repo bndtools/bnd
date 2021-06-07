@@ -15,6 +15,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -26,7 +27,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.EnumSet;
@@ -64,6 +64,7 @@ import aQute.bnd.classfile.ConstantPool.MethodTypeInfo;
 import aQute.bnd.classfile.ConstantPool.NameAndTypeInfo;
 import aQute.bnd.classfile.ConstantValueAttribute;
 import aQute.bnd.classfile.DeprecatedAttribute;
+import aQute.bnd.classfile.ElementInfo;
 import aQute.bnd.classfile.ElementValueInfo;
 import aQute.bnd.classfile.ElementValueInfo.EnumConst;
 import aQute.bnd.classfile.ElementValueInfo.ResultConst;
@@ -95,6 +96,7 @@ import aQute.bnd.classfile.StackMapTableAttribute.StackMapFrame;
 import aQute.bnd.classfile.StackMapTableAttribute.VerificationTypeInfo;
 import aQute.bnd.classfile.TypeAnnotationInfo;
 import aQute.bnd.classfile.TypeAnnotationsAttribute;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Annotation.ElementType;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -102,33 +104,16 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.signatures.FieldSignature;
 import aQute.bnd.signatures.MethodSignature;
 import aQute.bnd.signatures.Signature;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.stream.MapStream;
+import aQute.bnd.unmodifiable.Lists;
 import aQute.lib.io.ByteBufferDataInput;
+import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.generics.Create;
 import aQute.libg.glob.Glob;
 
 public class Clazz {
 	private final static Logger logger = LoggerFactory.getLogger(Clazz.class);
-
-	@Deprecated
-	public class ClassConstant {
-		final int		cname;
-		public boolean	referred;
-
-		public ClassConstant(int class_index) {
-			this.cname = class_index;
-		}
-
-		public String getName() {
-			return constantPool.utf8(cname);
-		}
-
-		@Override
-		public String toString() {
-			return "ClassConstant[" + getName() + "]";
-		}
-	}
 
 	public enum JAVA {
 		JDK1_1(45, "JRE-1.1", "(&(osgi.ee=JavaSE)(version=1.1))"), //
@@ -149,13 +134,10 @@ public class Clazz {
 					try (InputStream in = Clazz.class.getResourceAsStream("profiles-" + this + ".properties")) {
 						p.load(in);
 					}
-					profiles = new HashMap<>();
-					for (Map.Entry<Object, Object> prop : p.entrySet()) {
-						String list = (String) prop.getValue();
-						Set<String> set = new HashSet<>();
-						Collections.addAll(set, list.split("\\s*,\\s*"));
-						profiles.put((String) prop.getKey(), set);
-					}
+					profiles = MapStream.of(p)
+						.map((k, v) -> MapStream.entry((String) k, Strings.splitAsStream((String) v)
+							.collect(toSet())))
+						.collect(MapStream.toMap());
 				}
 				return profiles;
 			}
@@ -165,6 +147,13 @@ public class Clazz {
 		OpenJDK11(55, "JavaSE-11", "(&(osgi.ee=JavaSE)(version=11))"), //
 		OpenJDK12(56, "JavaSE-12", "(&(osgi.ee=JavaSE)(version=12))"), //
 		OpenJDK13(57, "JavaSE-13", "(&(osgi.ee=JavaSE)(version=13))"), //
+		OpenJDK14(58, "JavaSE-14", "(&(osgi.ee=JavaSE)(version=14))"), //
+		OpenJDK15(59, "JavaSE-15", "(&(osgi.ee=JavaSE)(version=15))"), //
+		OpenJDK16(60, "JavaSE-16", "(&(osgi.ee=JavaSE)(version=16))"), //
+		OpenJDK17(61, "JavaSE-17", "(&(osgi.ee=JavaSE)(version=17))"), //
+		OpenJDK18(62, "JavaSE-18", "(&(osgi.ee=JavaSE)(version=18))"), //
+		OpenJDK19(63, "JavaSE-19", "(&(osgi.ee=JavaSE)(version=19))"), //
+		OpenJDK20(64, "JavaSE-20", "(&(osgi.ee=JavaSE)(version=20))"), //
 		UNKNOWN(Integer.MAX_VALUE, "<UNKNOWN>", "(osgi.ee=UNKNOWN)");
 
 		final int		major;
@@ -200,12 +189,8 @@ public class Clazz {
 			return major >= J2SE5.major;
 		}
 
-		public static JAVA getJava(int major, @SuppressWarnings("unused") int minor) {
-			for (JAVA j : JAVA.values()) {
-				if (j.major == major)
-					return j;
-			}
-			return UNKNOWN;
+		public static JAVA getJava(int major, int minor) {
+			return format(major);
 		}
 
 		public String getEE() {
@@ -237,8 +222,9 @@ public class Clazz {
 		HIERARCHY_INDIRECTLY_ANNOTATED,
 		RUNTIMEANNOTATIONS,
 		CLASSANNOTATIONS,
-		DEFAULT_CONSTRUCTOR;
-
+		DEFAULT_CONSTRUCTOR,
+		STATIC,
+		INNER;
 	}
 
 	public final static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS, QUERY.IMPORTS,
@@ -247,11 +233,6 @@ public class Clazz {
 
 	final static int					ACC_SYNTHETIC	= 0x1000;
 	final static int					ACC_BRIDGE		= 0x0040;
-
-	@Deprecated
-	static protected class Assoc {
-		private Assoc() {}
-	}
 
 	public abstract class Def {
 		private final int access;
@@ -320,11 +301,6 @@ public class Clazz {
 			return Clazz.isAnnotation(getAccess());
 		}
 
-		@Deprecated
-		public Collection<TypeRef> getAnnotations() {
-			return null;
-		}
-
 		public TypeRef getOwnerType() {
 			return classDef.getType();
 		}
@@ -332,8 +308,6 @@ public class Clazz {
 		public abstract String getName();
 
 		public abstract TypeRef getType();
-
-		public abstract TypeRef[] getPrototype();
 
 		public Object getClazz() {
 			return Clazz.this;
@@ -346,6 +320,10 @@ public class Clazz {
 		ElementDef(int access, Attribute[] attributes) {
 			super(access);
 			this.attributes = attributes;
+		}
+
+		ElementDef(ElementInfo elementInfo) {
+			this(elementInfo.access, elementInfo.attributes);
 		}
 
 		Attribute[] attributes() {
@@ -425,11 +403,6 @@ public class Clazz {
 		}
 
 		@Override
-		public TypeRef[] getPrototype() {
-			return null;
-		}
-
-		@Override
 		public String toString() {
 			return getName();
 		}
@@ -460,7 +433,7 @@ public class Clazz {
 		private final TypeRef type;
 
 		ClassDef(ClassFile classFile) {
-			super(classFile.access, classFile.attributes);
+			super(classFile);
 			type = analyzer.getTypeRef(classFile.this_class);
 		}
 
@@ -472,7 +445,25 @@ public class Clazz {
 		boolean isInnerClass() {
 			String binary = type.getBinary();
 			return attributes(InnerClassesAttribute.class).flatMap(a -> Arrays.stream(a.classes))
-				.anyMatch(inner -> inner.inner_class.equals(binary) && !Modifier.isStatic(inner.inner_access));
+				.filter(inner -> binary.equals(inner.inner_class))
+				/*
+				 * We need all 3 of these checks. Normally the inner class being
+				 * non-static is enough but sometimes inner classes are marked
+				 * static. Kotlin does this for anonymous and local classes and
+				 * older Java compilers did this sometimes for anonymous
+				 * classes. So we further check for no outer class which means
+				 * local and, as of Java 7, anonymous. Since we must also handle
+				 * pre-Java 7 class files, we must finally check the name since
+				 * anonymous classes have no name in source code.
+				 */
+				.anyMatch(inner -> !Modifier.isStatic(inner.inner_access) // inner
+					|| (inner.outer_class == null) // local or anonymous
+					|| (inner.inner_name == null)); // anonymous
+		}
+
+		boolean isPackageInfo() {
+			return type.getBinary()
+				.endsWith("/package-info");
 		}
 
 		@Override
@@ -487,37 +478,32 @@ public class Clazz {
 
 		@Override
 		ElementType elementType() {
-			if (isAnnotation()) {
+			if (super.isAnnotation()) {
 				return ElementType.ANNOTATION_TYPE;
 			}
-			if (isModule()) {
+			if (super.isModule()) {
 				return ElementType.MODULE;
 			}
-			return type.getBinary()
-				.endsWith("/package-info") ? ElementType.PACKAGE : ElementType.TYPE;
+			return isPackageInfo() ? ElementType.PACKAGE : ElementType.TYPE;
 		}
 	}
 
-	public class FieldDef extends ElementDef {
-		private final String	name;
-		private final String	descriptor;
+	public abstract class MemberDef extends ElementDef {
+		private final MemberInfo memberInfo;
 
-		@Deprecated
-		public FieldDef(int access, String name, String descriptor) {
-			super(access, new Attribute[0]);
-			this.name = name;
-			this.descriptor = descriptor;
-		}
-
-		FieldDef(MemberInfo memberInfo) {
-			super(memberInfo.access, memberInfo.attributes);
-			this.name = memberInfo.name;
-			this.descriptor = memberInfo.descriptor;
+		MemberDef(MemberInfo memberInfo) {
+			super(memberInfo);
+			this.memberInfo = memberInfo;
 		}
 
 		@Override
 		public String getName() {
-			return name;
+			return memberInfo.name;
+		}
+
+		@Override
+		public String toString() {
+			return memberInfo.toString();
 		}
 
 		@Override
@@ -525,38 +511,39 @@ public class Clazz {
 			return getDescriptor().getType();
 		}
 
-		@Deprecated
-		public void setDeprecated(boolean deprecated) {}
-
 		public TypeRef getContainingClass() {
 			return getClassName();
 		}
 
 		public String descriptor() {
-			return descriptor;
+			return memberInfo.descriptor;
 		}
 
 		public Descriptor getDescriptor() {
 			return analyzer.getDescriptor(descriptor());
 		}
 
-		@Deprecated
-		public void setConstant(Object o) {}
+		public abstract Object getConstant();
 
+		public abstract String getGenericReturnType();
+	}
+
+	public class FieldDef extends MemberDef {
+		FieldDef(MemberInfo memberInfo) {
+			super(memberInfo);
+		}
+
+		@Override
 		public Object getConstant() {
 			return attribute(ConstantValueAttribute.class).map(a -> a.value)
 				.orElse(null);
 		}
 
+		@Override
 		public String getGenericReturnType() {
 			String signature = getSignature();
 			FieldSignature sig = analyzer.getFieldSignature((signature != null) ? signature : descriptor());
 			return sig.type.toString();
-		}
-
-		@Override
-		public TypeRef[] getPrototype() {
-			return null;
 		}
 
 		@Override
@@ -595,12 +582,7 @@ public class Clazz {
 		}
 	}
 
-	public class MethodDef extends FieldDef {
-		@Deprecated
-		public MethodDef(int access, String method, String descriptor) {
-			super(access, method, descriptor);
-		}
-
+	public class MethodDef extends MemberDef {
 		public MethodDef(MethodInfo methodInfo) {
 			super(methodInfo);
 		}
@@ -612,16 +594,15 @@ public class Clazz {
 
 		@Override
 		public boolean isFinal() {
-			return super.isFinal() || Modifier.isFinal(classDef.getAccess());
+			return super.isFinal() || Clazz.this.isFinal();
 		}
 
-		@Override
 		public TypeRef[] getPrototype() {
 			return getDescriptor().getPrototype();
 		}
 
 		public boolean isBridge() {
-			return (getAccess() & ACC_BRIDGE) != 0;
+			return (super.getAccess() & ACC_BRIDGE) != 0;
 		}
 
 		@Override
@@ -716,11 +697,6 @@ public class Clazz {
 		@Override
 		public TypeRef getType() {
 			return type;
-		}
-
-		@Override
-		public TypeRef[] getPrototype() {
-			return null;
 		}
 	}
 
@@ -1591,8 +1567,6 @@ public class Clazz {
 
 	/**
 	 * Add a new package reference.
-	 *
-	 * @param packageRef A '.' delimited package name
 	 */
 	private void referTo(TypeRef typeRef, int modifiers) {
 		xref.add(typeRef);
@@ -1638,22 +1612,6 @@ public class Clazz {
 		}
 	}
 
-	/**
-	 * This method parses method or field descriptors and calls
-	 * {@link #referTo(TypeRef, int)} for any types found therein.
-	 *
-	 * @param descriptor The to be parsed descriptor
-	 * @param modifiers
-	 * @see "https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.3"
-	 */
-	@Deprecated
-	public void parseDescriptor(String descriptor, int modifiers) {
-		if (referred == null) {
-			referred = new HashMap<>();
-		}
-		referTo(descriptor, modifiers);
-	}
-
 	public Set<PackageRef> getReferred() {
 		return imports;
 	}
@@ -1661,9 +1619,6 @@ public class Clazz {
 	public String getAbsolutePath() {
 		return path;
 	}
-
-	@Deprecated
-	public void reset() {}
 
 	private Stream<Clazz> hierarchyStream(Analyzer analyzer) {
 		requireNonNull(analyzer);
@@ -1744,26 +1699,32 @@ public class Clazz {
 			case ANY :
 				return true;
 
-			case NAMED :
+			case NAMED : {
+				requireNonNull(instr);
 				return instr.matches(getClassName().getDottedOnly()) ^ instr.isNegated();
+			}
 
 			case VERSION : {
+				requireNonNull(instr);
 				String v = classFile.major_version + "." + classFile.minor_version;
 				return instr.matches(v) ^ instr.isNegated();
 			}
 
 			case IMPLEMENTS : {
+				requireNonNull(instr);
 				Set<TypeRef> visited = new HashSet<>();
 				return hierarchyStream(analyzer).flatMap(c -> c.typeStream(analyzer, Clazz::interfaces, visited))
 					.map(TypeRef::getDottedOnly)
 					.anyMatch(instr::matches) ^ instr.isNegated();
 			}
 
-			case EXTENDS :
+			case EXTENDS : {
+				requireNonNull(instr);
 				return hierarchyStream(analyzer).skip(1) // skip this class
 					.map(Clazz::getClassName)
 					.map(TypeRef::getDottedOnly)
 					.anyMatch(instr::matches) ^ instr.isNegated();
+			}
 
 			case PUBLIC :
 				return isPublic();
@@ -1771,23 +1732,30 @@ public class Clazz {
 			case CONCRETE :
 				return !isAbstract();
 
-			case ANNOTATED :
+			case ANNOTATED : {
+				requireNonNull(instr);
 				return typeStream(analyzer, Clazz::annotations, null) //
 					.map(TypeRef::getFQN)
 					.anyMatch(instr::matches) ^ instr.isNegated();
+			}
 
-			case INDIRECTLY_ANNOTATED :
+			case INDIRECTLY_ANNOTATED : {
+				requireNonNull(instr);
 				return typeStream(analyzer, Clazz::annotations, new HashSet<>()) //
 					.map(TypeRef::getFQN)
 					.anyMatch(instr::matches) ^ instr.isNegated();
+			}
 
-			case HIERARCHY_ANNOTATED :
+			case HIERARCHY_ANNOTATED : {
+				requireNonNull(instr);
 				return hierarchyStream(analyzer) //
 					.flatMap(c -> c.typeStream(analyzer, Clazz::annotations, null))
 					.map(TypeRef::getFQN)
 					.anyMatch(instr::matches) ^ instr.isNegated();
+			}
 
 			case HIERARCHY_INDIRECTLY_ANNOTATED : {
+				requireNonNull(instr);
 				Set<TypeRef> visited = new HashSet<>();
 				return hierarchyStream(analyzer) //
 					.flatMap(c -> c.typeStream(analyzer, Clazz::annotations, visited))
@@ -1804,19 +1772,28 @@ public class Clazz {
 			case ABSTRACT :
 				return isAbstract();
 
-			case IMPORTS :
+			case IMPORTS : {
+				requireNonNull(instr);
 				return hierarchyStream(analyzer) //
 					.map(Clazz::getReferred)
 					.flatMap(Set::stream)
 					.distinct()
 					.map(PackageRef::getFQN)
 					.anyMatch(instr::matches) ^ instr.isNegated();
+			}
 
 			case DEFAULT_CONSTRUCTOR :
 				return hasPublicNoArgsConstructor();
-		}
 
-		return instr == null ? false : instr.isNegated();
+			case STATIC :
+				return !isInnerClass();
+
+			case INNER :
+				return isInnerClass();
+
+			default :
+				return instr == null ? false : instr.isNegated();
+		}
 	}
 
 	@Override
@@ -1851,6 +1828,10 @@ public class Clazz {
 
 	public boolean isModule() {
 		return classDef.isModule();
+	}
+
+	public boolean isPackageInfo() {
+		return classDef.isPackageInfo();
 	}
 
 	static boolean isModule(int access) {
@@ -1949,9 +1930,6 @@ public class Clazz {
 		return classDef.getAccess();
 	}
 
-	@Deprecated
-	public void setInnerAccess(int access) {}
-
 	public Stream<Annotation> annotations(String binaryNameFilter) {
 		return classDef.annotations(binaryNameFilter);
 	}
@@ -1968,11 +1946,6 @@ public class Clazz {
 		return classDef.isInnerClass();
 	}
 
-	@Deprecated
-	public MethodDef getMethodDef(int access, String name, String descriptor) {
-		return new MethodDef(access, name, descriptor);
-	}
-
 	public TypeRef getSuper() {
 		return superClass;
 	}
@@ -1986,7 +1959,7 @@ public class Clazz {
 	}
 
 	public List<TypeRef> interfaces() {
-		return (interfaces != null) ? Arrays.asList(interfaces) : emptyList();
+		return (interfaces != null) ? Lists.of(interfaces) : emptyList();
 	}
 
 	public Set<TypeRef> annotations() {
@@ -1996,9 +1969,6 @@ public class Clazz {
 	public boolean isFinal() {
 		return classDef.isFinal();
 	}
-
-	@Deprecated
-	public void setDeprecated(boolean b) {}
 
 	public boolean isDeprecated() {
 		return classDef.isDeprecated();

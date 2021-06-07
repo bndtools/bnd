@@ -1,6 +1,7 @@
 package aQute.maven.api;
 
 import java.nio.file.Path;
+import java.util.Map;
 
 import aQute.bnd.version.MavenVersion;
 
@@ -116,7 +117,7 @@ public class Revision implements Comparable<Revision> {
 		if (s == null)
 			return null;
 
-		String[] parts = s.split(":");
+		String[] parts = Program.split(s);
 		if (parts.length != 3)
 			return null;
 
@@ -125,4 +126,9 @@ public class Revision implements Comparable<Revision> {
 
 	}
 
+	public Map<String, String> attributes() {
+		Map<String, String> attrs = program.attributes();
+		attrs.put("maven-version", version.toString());
+		return attrs;
+	}
 }

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/4.0.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.4.0 -->
+<title>-contract</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="-contract" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="package aQute.bnd.osgi; import java.util.*; import java.util.Map.Entry; import org.osgi.namespace.contract.*; import aQute.bnd.header.*; import aQute.bnd.osgi.Descriptors.PackageRef; import aQute.bnd.version.*; import aQute.lib.collections.*; import aQute.service.reporter.Report.Location; /** * OSGi Contracts are first defined in OSGi Enterprise Release 5.0.0. A Contract * is a namespace to control the versioning of a set of packages. * * @author aqute */ class Contracts { private Analyzer analyzer; private final MultiMap&lt;PackageRef,Contract&gt; contracted = new MultiMap&lt;PackageRef,Contract&gt;( PackageRef.class, Contract.class, true); private MultiMap&lt;Collection&lt;Contract&gt;,PackageRef&gt; overlappingContracts = new MultiMap&lt;Collection&lt;Contract&gt;,PackageRef&gt;(); private Instructions instructions; private final Set&lt;Contract&gt; contracts = new HashSet&lt;Contract&gt;(); public class Contract { public String name; public Attrs decorators; public Collection&lt;String&gt; uses; public Version version; public String from; @Override public String toString() { return &quot;Contract [name=&quot; + name + &quot;;version=&quot; + version + &quot;;from=&quot; + from + &quot;]&quot;; } } public Contracts(Analyzer analyzer) { this.analyzer = analyzer; } Instructions getFilter() { if (instructions == null) { String contract = analyzer.getProperty(Constants.CONTRACT); this.instructions = new Instructions(contract); } return instructions; } public void clear() { contracted.clear(); overlappingContracts.clear(); contracts.clear(); } /** * Collect contracts will take a domain and find any declared contracts. * This happens early so that we have a list of contracts we can later * compare the imports against. */ void collectContracts(String from, Parameters pcs) { contract: for (Entry&lt;String,Attrs&gt; p : pcs.entrySet()) { String namespace = p.getKey(); if (namespace.equals(ContractNamespace.CONTRACT_NAMESPACE)) { Attrs capabilityAttrs = p.getValue(); String name = capabilityAttrs.get(ContractNamespace.CONTRACT_NAMESPACE); if (name == null) { analyzer.warning(&quot;No name (attr %s) defined in bundle %s from contract namespace: %s&quot;, ContractNamespace.CONTRACT_NAMESPACE, from, capabilityAttrs); continue contract; } for (Entry&lt;Instruction,Attrs&gt; i : getFilter().entrySet()) { Instruction instruction = i.getKey(); if (instruction.matches(name)) { if (instruction.isNegated()) { analyzer.trace(&quot;%s rejected due to %s&quot;, namespace, instructions); continue contract; } analyzer.trace(&quot;accepted %s&quot;, p); Contract c = new Contract(); c.name = name; String list = capabilityAttrs.get(ContractNamespace.CAPABILITY_USES_DIRECTIVE + &quot;:&quot;); if (list == null || list.length() == 0) { analyzer.warning(&quot;Contract %s has no uses: directive in %s.&quot;, name, from); continue contract; // next contract } c.uses = Processor.split(list); c.version = (Version) capabilityAttrs.getTyped(ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE); c.from = from; if (c.version == null) { c.version = Version.LOWEST; analyzer.warning(&quot;%s does not declare a version, assumed 0.0.0.&quot;, c); } c.decorators = new Attrs(i.getValue()); // // Build up the package -&gt; contract index // for (String pname : c.uses) { contracted.add(analyzer.getPackageRef(pname), c); } } } } } } /** * Find out if a package is contracted. If there are multiple contracts for * a package we remember this so we can generate a single error. * * @param packageRef * @return */ boolean isContracted(PackageRef packageRef) { List&lt;Contract&gt; list = contracted.get(packageRef); if (list == null || list.isEmpty()) return false; if (list.size() &gt; 1) { // // There are multiple contracts trying to address // this package. We collect those so we can report them // as one error instead of one for each package // overlappingContracts.add(list, packageRef); } contracts.addAll(list); return true; } /** * Called before we print the manifest. Should add any contracts that were * actually used to the requirements. * * @param requirements */ void addToRequirements(Parameters requirements) { for (Contract c : contracts) { Attrs attrs = new Attrs(c.decorators); attrs.put(ContractNamespace.CONTRACT_NAMESPACE, c.name); String range = analyzer.applyVersionPolicy(c.version.toString(), c.decorators.getVersion(), false); String name = ContractNamespace.CONTRACT_NAMESPACE; while (requirements.containsKey(name)) name += &quot;~&quot;; VersionRange r = new VersionRange(range); Formatter f = new Formatter(); try { f.format(&quot;(&amp;(%s=%s)%s)&quot;, ContractNamespace.CONTRACT_NAMESPACE, c.name, r.toFilter()); // TODO : shall we also assert the attributes? attrs.put(&quot;filter:&quot;, f.toString()); requirements.put(name, attrs); } finally { f.close(); } } for (Entry&lt;Collection&lt;Contract&gt;,List&lt;PackageRef&gt;&gt; oc : overlappingContracts.entrySet()) { Location location = analyzer .error(&quot;Contracts %s declare the same packages in their uses: directive: %s. &quot; + &quot;Contracts are found in declaring bundles (see their &#39;from&#39; field), it is possible to control the finding&quot; + &quot;with the -contract instruction&quot;, oc.getKey(), oc.getValue()).location(); location.header = Constants.CONTRACT; } } }" />
+<meta property="og:description" content="package aQute.bnd.osgi; import java.util.*; import java.util.Map.Entry; import org.osgi.namespace.contract.*; import aQute.bnd.header.*; import aQute.bnd.osgi.Descriptors.PackageRef; import aQute.bnd.version.*; import aQute.lib.collections.*; import aQute.service.reporter.Report.Location; /** * OSGi Contracts are first defined in OSGi Enterprise Release 5.0.0. A Contract * is a namespace to control the versioning of a set of packages. * * @author aqute */ class Contracts { private Analyzer analyzer; private final MultiMap&lt;PackageRef,Contract&gt; contracted = new MultiMap&lt;PackageRef,Contract&gt;( PackageRef.class, Contract.class, true); private MultiMap&lt;Collection&lt;Contract&gt;,PackageRef&gt; overlappingContracts = new MultiMap&lt;Collection&lt;Contract&gt;,PackageRef&gt;(); private Instructions instructions; private final Set&lt;Contract&gt; contracts = new HashSet&lt;Contract&gt;(); public class Contract { public String name; public Attrs decorators; public Collection&lt;String&gt; uses; public Version version; public String from; @Override public String toString() { return &quot;Contract [name=&quot; + name + &quot;;version=&quot; + version + &quot;;from=&quot; + from + &quot;]&quot;; } } public Contracts(Analyzer analyzer) { this.analyzer = analyzer; } Instructions getFilter() { if (instructions == null) { String contract = analyzer.getProperty(Constants.CONTRACT); this.instructions = new Instructions(contract); } return instructions; } public void clear() { contracted.clear(); overlappingContracts.clear(); contracts.clear(); } /** * Collect contracts will take a domain and find any declared contracts. * This happens early so that we have a list of contracts we can later * compare the imports against. */ void collectContracts(String from, Parameters pcs) { contract: for (Entry&lt;String,Attrs&gt; p : pcs.entrySet()) { String namespace = p.getKey(); if (namespace.equals(ContractNamespace.CONTRACT_NAMESPACE)) { Attrs capabilityAttrs = p.getValue(); String name = capabilityAttrs.get(ContractNamespace.CONTRACT_NAMESPACE); if (name == null) { analyzer.warning(&quot;No name (attr %s) defined in bundle %s from contract namespace: %s&quot;, ContractNamespace.CONTRACT_NAMESPACE, from, capabilityAttrs); continue contract; } for (Entry&lt;Instruction,Attrs&gt; i : getFilter().entrySet()) { Instruction instruction = i.getKey(); if (instruction.matches(name)) { if (instruction.isNegated()) { analyzer.trace(&quot;%s rejected due to %s&quot;, namespace, instructions); continue contract; } analyzer.trace(&quot;accepted %s&quot;, p); Contract c = new Contract(); c.name = name; String list = capabilityAttrs.get(ContractNamespace.CAPABILITY_USES_DIRECTIVE + &quot;:&quot;); if (list == null || list.length() == 0) { analyzer.warning(&quot;Contract %s has no uses: directive in %s.&quot;, name, from); continue contract; // next contract } c.uses = Processor.split(list); c.version = (Version) capabilityAttrs.getTyped(ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE); c.from = from; if (c.version == null) { c.version = Version.LOWEST; analyzer.warning(&quot;%s does not declare a version, assumed 0.0.0.&quot;, c); } c.decorators = new Attrs(i.getValue()); // // Build up the package -&gt; contract index // for (String pname : c.uses) { contracted.add(analyzer.getPackageRef(pname), c); } } } } } } /** * Find out if a package is contracted. If there are multiple contracts for * a package we remember this so we can generate a single error. * * @param packageRef * @return */ boolean isContracted(PackageRef packageRef) { List&lt;Contract&gt; list = contracted.get(packageRef); if (list == null || list.isEmpty()) return false; if (list.size() &gt; 1) { // // There are multiple contracts trying to address // this package. We collect those so we can report them // as one error instead of one for each package // overlappingContracts.add(list, packageRef); } contracts.addAll(list); return true; } /** * Called before we print the manifest. Should add any contracts that were * actually used to the requirements. * * @param requirements */ void addToRequirements(Parameters requirements) { for (Contract c : contracts) { Attrs attrs = new Attrs(c.decorators); attrs.put(ContractNamespace.CONTRACT_NAMESPACE, c.name); String range = analyzer.applyVersionPolicy(c.version.toString(), c.decorators.getVersion(), false); String name = ContractNamespace.CONTRACT_NAMESPACE; while (requirements.containsKey(name)) name += &quot;~&quot;; VersionRange r = new VersionRange(range); Formatter f = new Formatter(); try { f.format(&quot;(&amp;(%s=%s)%s)&quot;, ContractNamespace.CONTRACT_NAMESPACE, c.name, r.toFilter()); // TODO : shall we also assert the attributes? attrs.put(&quot;filter:&quot;, f.toString()); requirements.put(name, attrs); } finally { f.close(); } } for (Entry&lt;Collection&lt;Contract&gt;,List&lt;PackageRef&gt;&gt; oc : overlappingContracts.entrySet()) { Location location = analyzer .error(&quot;Contracts %s declare the same packages in their uses: directive: %s. &quot; + &quot;Contracts are found in declaring bundles (see their &#39;from&#39; field), it is possible to control the finding&quot; + &quot;with the -contract instruction&quot;, oc.getKey(), oc.getValue()).location(); location.header = Constants.CONTRACT; } } }" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-10-12T20:27:56-04:00" />
+<script type="application/ld+json">
+{"datePublished":"2019-10-12T20:27:56-04:00","description":"package aQute.bnd.osgi; import java.util.*; import java.util.Map.Entry; import org.osgi.namespace.contract.*; import aQute.bnd.header.*; import aQute.bnd.osgi.Descriptors.PackageRef; import aQute.bnd.version.*; import aQute.lib.collections.*; import aQute.service.reporter.Report.Location; /** * OSGi Contracts are first defined in OSGi Enterprise Release 5.0.0. A Contract * is a namespace to control the versioning of a set of packages. * * @author aqute */ class Contracts { private Analyzer analyzer; private final MultiMap&lt;PackageRef,Contract&gt; contracted = new MultiMap&lt;PackageRef,Contract&gt;( PackageRef.class, Contract.class, true); private MultiMap&lt;Collection&lt;Contract&gt;,PackageRef&gt; overlappingContracts = new MultiMap&lt;Collection&lt;Contract&gt;,PackageRef&gt;(); private Instructions instructions; private final Set&lt;Contract&gt; contracts = new HashSet&lt;Contract&gt;(); public class Contract { public String name; public Attrs decorators; public Collection&lt;String&gt; uses; public Version version; public String from; @Override public String toString() { return &quot;Contract [name=&quot; + name + &quot;;version=&quot; + version + &quot;;from=&quot; + from + &quot;]&quot;; } } public Contracts(Analyzer analyzer) { this.analyzer = analyzer; } Instructions getFilter() { if (instructions == null) { String contract = analyzer.getProperty(Constants.CONTRACT); this.instructions = new Instructions(contract); } return instructions; } public void clear() { contracted.clear(); overlappingContracts.clear(); contracts.clear(); } /** * Collect contracts will take a domain and find any declared contracts. * This happens early so that we have a list of contracts we can later * compare the imports against. */ void collectContracts(String from, Parameters pcs) { contract: for (Entry&lt;String,Attrs&gt; p : pcs.entrySet()) { String namespace = p.getKey(); if (namespace.equals(ContractNamespace.CONTRACT_NAMESPACE)) { Attrs capabilityAttrs = p.getValue(); String name = capabilityAttrs.get(ContractNamespace.CONTRACT_NAMESPACE); if (name == null) { analyzer.warning(&quot;No name (attr %s) defined in bundle %s from contract namespace: %s&quot;, ContractNamespace.CONTRACT_NAMESPACE, from, capabilityAttrs); continue contract; } for (Entry&lt;Instruction,Attrs&gt; i : getFilter().entrySet()) { Instruction instruction = i.getKey(); if (instruction.matches(name)) { if (instruction.isNegated()) { analyzer.trace(&quot;%s rejected due to %s&quot;, namespace, instructions); continue contract; } analyzer.trace(&quot;accepted %s&quot;, p); Contract c = new Contract(); c.name = name; String list = capabilityAttrs.get(ContractNamespace.CAPABILITY_USES_DIRECTIVE + &quot;:&quot;); if (list == null || list.length() == 0) { analyzer.warning(&quot;Contract %s has no uses: directive in %s.&quot;, name, from); continue contract; // next contract } c.uses = Processor.split(list); c.version = (Version) capabilityAttrs.getTyped(ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE); c.from = from; if (c.version == null) { c.version = Version.LOWEST; analyzer.warning(&quot;%s does not declare a version, assumed 0.0.0.&quot;, c); } c.decorators = new Attrs(i.getValue()); // // Build up the package -&gt; contract index // for (String pname : c.uses) { contracted.add(analyzer.getPackageRef(pname), c); } } } } } } /** * Find out if a package is contracted. If there are multiple contracts for * a package we remember this so we can generate a single error. * * @param packageRef * @return */ boolean isContracted(PackageRef packageRef) { List&lt;Contract&gt; list = contracted.get(packageRef); if (list == null || list.isEmpty()) return false; if (list.size() &gt; 1) { // // There are multiple contracts trying to address // this package. We collect those so we can report them // as one error instead of one for each package // overlappingContracts.add(list, packageRef); } contracts.addAll(list); return true; } /** * Called before we print the manifest. Should add any contracts that were * actually used to the requirements. * * @param requirements */ void addToRequirements(Parameters requirements) { for (Contract c : contracts) { Attrs attrs = new Attrs(c.decorators); attrs.put(ContractNamespace.CONTRACT_NAMESPACE, c.name); String range = analyzer.applyVersionPolicy(c.version.toString(), c.decorators.getVersion(), false); String name = ContractNamespace.CONTRACT_NAMESPACE; while (requirements.containsKey(name)) name += &quot;~&quot;; VersionRange r = new VersionRange(range); Formatter f = new Formatter(); try { f.format(&quot;(&amp;(%s=%s)%s)&quot;, ContractNamespace.CONTRACT_NAMESPACE, c.name, r.toFilter()); // TODO : shall we also assert the attributes? attrs.put(&quot;filter:&quot;, f.toString()); requirements.put(name, attrs); } finally { f.close(); } } for (Entry&lt;Collection&lt;Contract&gt;,List&lt;PackageRef&gt;&gt; oc : overlappingContracts.entrySet()) { Location location = analyzer .error(&quot;Contracts %s declare the same packages in their uses: directive: %s. &quot; + &quot;Contracts are found in declaring bundles (see their &#39;from&#39; field), it is possible to control the finding&quot; + &quot;with the -contract instruction&quot;, oc.getKey(), oc.getValue()).location(); location.header = Constants.CONTRACT; } } }","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"/releases/4.0.0/instructions/contract.html"},"url":"/releases/4.0.0/instructions/contract.html","headline":"-contract","dateModified":"2019-10-12T20:27:56-04:00","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+
+<body>
+
+
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/4.0.0/"><img
+			class=menu-logo src='/releases/4.0.0/img/bnd-80x40-white.png'></a>
+			<a href="/releases/4.0.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/4.0.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/4.0.0/chapters/820-instructions.html">Instructions
+			</a><a href="/releases/4.0.0/chapters/850-macros.html">Macros
+			</a><div class="releases"><button class="dropbtn">4.0.0</button><div class="dropdown-content"></div></div>
+
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+
+
+			<li><a href="/releases/4.0.0/chapters/100-release.html">Release</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/110-introduction.html">Introduction</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/120-install.html">How to install bnd</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/123-tour-workspace.html">Guided Tour</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/130-concepts.html">Concepts</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/140-best-practices.html">Best practices</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/150-build.html">Build</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/160-jars.html">Generating JARs</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/170-versioning.html">Versioning</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/180-baselining.html">Baselining</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/200-components.html">Service Components</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/210-metatype.html">Metatype</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/220-contracts.html">Contracts</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/230-manifest-annotations.html">Manifest Annotations</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/250-resolving.html">Resolving Dependencies</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/300-launching.html">Launching</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/310-testing.html">Testing</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/320-packaging.html">Packaging Applications</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/400-commandline.html">From the command line</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/600-developer.html">For Developers</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/610-plugin.html">Plugins</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/700-tools.html">Tools bound to bnd</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/790-format.html">File Format</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/800-headers.html">Header Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/820-instructions.html">Instruction</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/825-instructions-ref.html">Instruction Index</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/850-macros.html">Macro Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/860-commands.html">Command Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/870-plugins.html">Plugins Reference</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/880-settings.html">Settings</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/900-errors.html">Errors</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/910-warnings.html">Warnings</a>
+
+
+
+			<li><a href="/releases/4.0.0/chapters/920-faq.html">Frequently Asked Questions</a>
+
+
+</ul>
+
+			<div class=enroute><a href="https://enroute.osgi.org">Supported by OSGi enRoute <img src="/releases/4.0.0/img/EnRouteIcon_CMYK.png"></a></div>
+			</div>
+
+		<li span=9>
+			<div class=notes-margin>
+				<h1> -contract</h1>
+				<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="k">package</span> <span class="n">aQute</span><span class="p">.</span><span class="n">bnd</span><span class="p">.</span><span class="n">osgi</span><span class="p">;</span>
+
+	<span class="n">import</span> <span class="n">java</span><span class="p">.</span><span class="n">util</span><span class="p">.*;</span>
+	<span class="n">import</span> <span class="n">java</span><span class="p">.</span><span class="n">util</span><span class="p">.</span><span class="n">Map</span><span class="p">.</span><span class="n">Entry</span><span class="p">;</span>
+
+	<span class="n">import</span> <span class="n">org</span><span class="p">.</span><span class="n">osgi</span><span class="p">.</span><span class="n">namespace</span><span class="p">.</span><span class="n">contract</span><span class="p">.*;</span>
+
+	<span class="n">import</span> <span class="n">aQute</span><span class="p">.</span><span class="n">bnd</span><span class="p">.</span><span class="n">header</span><span class="p">.*;</span>
+	<span class="n">import</span> <span class="n">aQute</span><span class="p">.</span><span class="n">bnd</span><span class="p">.</span><span class="n">osgi</span><span class="p">.</span><span class="n">Descriptors</span><span class="p">.</span><span class="n">PackageRef</span><span class="p">;</span>
+	<span class="n">import</span> <span class="n">aQute</span><span class="p">.</span><span class="n">bnd</span><span class="p">.</span><span class="k">version</span><span class="p">.*;</span>
+	<span class="n">import</span> <span class="n">aQute</span><span class="p">.</span><span class="n">lib</span><span class="p">.</span><span class="n">collections</span><span class="p">.*;</span>
+	<span class="n">import</span> <span class="n">aQute</span><span class="p">.</span><span class="n">service</span><span class="p">.</span><span class="n">reporter</span><span class="p">.</span><span class="n">Report</span><span class="p">.</span><span class="n">Location</span><span class="p">;</span>
+
+	<span class="p">/**</span>
+	 <span class="p">*</span> <span class="n">OSGi</span> <span class="n">Contracts</span> <span class="n">are</span> <span class="n">first</span> <span class="n">defined</span> <span class="k">in</span> <span class="n">OSGi</span> <span class="n">Enterprise</span> <span class="n">Release</span> <span class="m">5.0.0</span><span class="p">.</span> <span class="n">A</span> <span class="n">Contract</span>
+	 <span class="p">*</span> <span class="n">is</span> <span class="n">a</span> <span class="n">namespace</span> <span class="k">to</span> <span class="n">control</span> <span class="n">the</span> <span class="n">versioning</span> <span class="k">of</span> <span class="n">a</span> <span class="k">set</span> <span class="k">of</span> <span class="n">packages</span><span class="p">.</span>
+	 <span class="p">*</span>
+	 <span class="p">*</span> <span class="p">@</span><span class="n">author</span> <span class="n">aqute</span>
+	 <span class="p">*/</span>
+	<span class="n">class</span> <span class="n">Contracts</span> <span class="p">{</span>
+
+		<span class="n">private</span> <span class="n">Analyzer</span>									<span class="n">analyzer</span><span class="p">;</span>
+		<span class="n">private</span> <span class="n">final</span> <span class="n">MultiMap</span><span class="p">&lt;</span><span class="n">PackageRef</span><span class="p">,</span><span class="n">Contract</span><span class="p">&gt;</span>			<span class="n">contracted</span>				<span class="p">=</span> <span class="n">new</span> <span class="n">MultiMap</span><span class="p">&lt;</span><span class="n">PackageRef</span><span class="p">,</span><span class="n">Contract</span><span class="p">&gt;(</span>
+																							<span class="n">PackageRef</span><span class="p">.</span><span class="n">class</span><span class="p">,</span>
+																							<span class="n">Contract</span><span class="p">.</span><span class="n">class</span><span class="p">,</span> <span class="nb">true</span><span class="p">);</span>
+		<span class="n">private</span> <span class="n">MultiMap</span><span class="p">&lt;</span><span class="n">Collection</span><span class="p">&lt;</span><span class="n">Contract</span><span class="p">&gt;,</span><span class="n">PackageRef</span><span class="p">&gt;</span>	<span class="n">overlappingContracts</span>	<span class="p">=</span> <span class="n">new</span> <span class="n">MultiMap</span><span class="p">&lt;</span><span class="n">Collection</span><span class="p">&lt;</span><span class="n">Contract</span><span class="p">&gt;,</span><span class="n">PackageRef</span><span class="p">&gt;();</span>
+		<span class="n">private</span> <span class="n">Instructions</span>								<span class="n">instructions</span><span class="p">;</span>
+		<span class="n">private</span> <span class="n">final</span> <span class="k">Set</span><span class="p">&lt;</span><span class="n">Contract</span><span class="p">&gt;</span>							<span class="n">contracts</span>				<span class="p">=</span> <span class="n">new</span> <span class="n">HashSet</span><span class="p">&lt;</span><span class="n">Contract</span><span class="p">&gt;();</span>
+
+		<span class="k">public</span> <span class="n">class</span> <span class="n">Contract</span> <span class="p">{</span>
+			<span class="k">public</span> <span class="k">String</span>				<span class="n">name</span><span class="p">;</span>
+			<span class="k">public</span> <span class="n">Attrs</span>				<span class="n">decorators</span><span class="p">;</span>
+			<span class="k">public</span> <span class="n">Collection</span><span class="p">&lt;</span><span class="k">String</span><span class="p">&gt;</span>	<span class="k">uses</span><span class="p">;</span>
+			<span class="k">public</span> <span class="k">Version</span>				<span class="k">version</span><span class="p">;</span>
+			<span class="k">public</span> <span class="k">String</span>				<span class="k">from</span><span class="p">;</span>
+
+			<span class="p">@</span><span class="n">Override</span>
+			<span class="k">public</span> <span class="k">String</span> <span class="n">toString</span><span class="p">()</span> <span class="p">{</span>
+				<span class="n">return</span> <span class="s2">"Contract [name="</span> <span class="p">+</span> <span class="n">name</span> <span class="p">+</span> <span class="s2">";version="</span> <span class="p">+</span> <span class="k">version</span> <span class="p">+</span> <span class="s2">";from="</span> <span class="p">+</span> <span class="k">from</span> <span class="p">+</span> <span class="s2">"]"</span><span class="p">;</span>
+			<span class="p">}</span>
+
+		<span class="p">}</span>
+
+		<span class="k">public</span> <span class="n">Contracts</span><span class="p">(</span><span class="n">Analyzer</span> <span class="n">analyzer</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">this</span><span class="p">.</span><span class="n">analyzer</span> <span class="p">=</span> <span class="n">analyzer</span><span class="p">;</span>
+		<span class="p">}</span>
+
+		<span class="n">Instructions</span> <span class="n">getFilter</span><span class="p">()</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="p">(</span><span class="n">instructions</span> <span class="p">==</span> <span class="n">null</span><span class="p">)</span> <span class="p">{</span>
+				<span class="k">String</span> <span class="n">contract</span> <span class="p">=</span> <span class="n">analyzer</span><span class="p">.</span><span class="n">getProperty</span><span class="p">(</span><span class="n">Constants</span><span class="p">.</span><span class="n">CONTRACT</span><span class="p">);</span>
+				<span class="n">this</span><span class="p">.</span><span class="n">instructions</span> <span class="p">=</span> <span class="n">new</span> <span class="n">Instructions</span><span class="p">(</span><span class="n">contract</span><span class="p">);</span>
+			<span class="p">}</span>
+			<span class="n">return</span> <span class="n">instructions</span><span class="p">;</span>
+		<span class="p">}</span>
+
+		<span class="k">public</span> <span class="n">void</span> <span class="n">clear</span><span class="p">()</span> <span class="p">{</span>
+			<span class="n">contracted</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+			<span class="n">overlappingContracts</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+			<span class="n">contracts</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+		<span class="p">}</span>
+
+		<span class="p">/**</span>
+		 <span class="p">*</span> <span class="n">Collect</span> <span class="n">contracts</span> <span class="n">will</span> <span class="n">take</span> <span class="n">a</span> <span class="n">domain</span> <span class="k">and</span> <span class="n">find</span> <span class="n">any</span> <span class="n">declared</span> <span class="n">contracts</span><span class="p">.</span>
+		 <span class="p">*</span> <span class="n">This</span> <span class="n">happens</span> <span class="n">early</span> <span class="n">so</span> <span class="n">that</span> <span class="n">we</span> <span class="n">have</span> <span class="n">a</span> <span class="k">list</span> <span class="k">of</span> <span class="n">contracts</span> <span class="n">we</span> <span class="n">can</span> <span class="n">later</span>
+		 <span class="p">*</span> <span class="n">compare</span> <span class="n">the</span> <span class="k">imports</span> <span class="n">against</span><span class="p">.</span>
+		 <span class="p">*/</span>
+		<span class="n">void</span> <span class="n">collectContracts</span><span class="p">(</span><span class="k">String</span> <span class="k">from</span><span class="p">,</span> <span class="k">Parameters</span> <span class="n">pcs</span><span class="p">)</span> <span class="p">{</span>
+
+			<span class="n">contract</span><span class="p">:</span> <span class="n">for</span> <span class="p">(</span><span class="n">Entry</span><span class="p">&lt;</span><span class="k">String</span><span class="p">,</span><span class="n">Attrs</span><span class="p">&gt;</span> <span class="n">p</span> <span class="p">:</span> <span class="n">pcs</span><span class="p">.</span><span class="n">entrySet</span><span class="p">())</span> <span class="p">{</span>
+				<span class="k">String</span> <span class="n">namespace</span> <span class="p">=</span> <span class="n">p</span><span class="p">.</span><span class="n">getKey</span><span class="p">();</span>
+
+				<span class="k">if</span> <span class="p">(</span><span class="n">namespace</span><span class="p">.</span><span class="n">equals</span><span class="p">(</span><span class="n">ContractNamespace</span><span class="p">.</span><span class="n">CONTRACT_NAMESPACE</span><span class="p">))</span> <span class="p">{</span>
+					<span class="n">Attrs</span> <span class="n">capabilityAttrs</span> <span class="p">=</span> <span class="n">p</span><span class="p">.</span><span class="nf">getValue</span><span class="p">();</span>
+
+					<span class="k">String</span> <span class="n">name</span> <span class="p">=</span> <span class="n">capabilityAttrs</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">ContractNamespace</span><span class="p">.</span><span class="n">CONTRACT_NAMESPACE</span><span class="p">);</span>
+					<span class="k">if</span> <span class="p">(</span><span class="n">name</span> <span class="p">==</span> <span class="n">null</span><span class="p">)</span> <span class="p">{</span>
+						<span class="n">analyzer</span><span class="p">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"No name (attr %s) defined in bundle %s from contract namespace: %s"</span><span class="p">,</span>
+								<span class="n">ContractNamespace</span><span class="p">.</span><span class="n">CONTRACT_NAMESPACE</span><span class="p">,</span> <span class="k">from</span><span class="p">,</span> <span class="n">capabilityAttrs</span><span class="p">);</span>
+						<span class="n">continue</span> <span class="n">contract</span><span class="p">;</span>
+					<span class="p">}</span>
+
+					<span class="n">for</span> <span class="p">(</span><span class="n">Entry</span><span class="p">&lt;</span><span class="n">Instruction</span><span class="p">,</span><span class="n">Attrs</span><span class="p">&gt;</span> <span class="n">i</span> <span class="p">:</span> <span class="n">getFilter</span><span class="p">().</span><span class="n">entrySet</span><span class="p">())</span> <span class="p">{</span>
+						<span class="n">Instruction</span> <span class="n">instruction</span> <span class="p">=</span> <span class="n">i</span><span class="p">.</span><span class="n">getKey</span><span class="p">();</span>
+						<span class="k">if</span> <span class="p">(</span><span class="n">instruction</span><span class="p">.</span><span class="n">matches</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="p">{</span>
+							<span class="k">if</span> <span class="p">(</span><span class="n">instruction</span><span class="p">.</span><span class="n">isNegated</span><span class="p">())</span> <span class="p">{</span>
+								<span class="n">analyzer</span><span class="p">.</span><span class="n">trace</span><span class="p">(</span><span class="s2">"%s rejected due to %s"</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">instructions</span><span class="p">);</span>
+								<span class="n">continue</span> <span class="n">contract</span><span class="p">;</span>
+							<span class="p">}</span>
+
+							<span class="n">analyzer</span><span class="p">.</span><span class="n">trace</span><span class="p">(</span><span class="s2">"accepted %s"</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
+
+							<span class="n">Contract</span> <span class="n">c</span> <span class="p">=</span> <span class="n">new</span> <span class="n">Contract</span><span class="p">();</span>
+							<span class="n">c</span><span class="p">.</span><span class="n">name</span> <span class="p">=</span> <span class="n">name</span><span class="p">;</span>
+
+							<span class="k">String</span> <span class="k">list</span> <span class="p">=</span> <span class="n">capabilityAttrs</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">ContractNamespace</span><span class="p">.</span><span class="n">CAPABILITY_USES_DIRECTIVE</span> <span class="p">+</span> <span class="s2">":"</span><span class="p">);</span>
+							<span class="k">if</span> <span class="p">(</span><span class="k">list</span> <span class="p">==</span> <span class="n">null</span> <span class="p">||</span> <span class="k">list</span><span class="p">.</span><span class="n">length</span><span class="p">()</span> <span class="p">==</span> <span class="m">0</span><span class="p">)</span> <span class="p">{</span>
+								<span class="n">analyzer</span><span class="p">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Contract %s has no uses: directive in %s."</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="k">from</span><span class="p">);</span>
+								<span class="n">continue</span> <span class="n">contract</span><span class="p">;</span> <span class="p">//</span> <span class="k">next</span> <span class="n">contract</span>
+							<span class="p">}</span>
+
+							<span class="n">c</span><span class="p">.</span><span class="k">uses</span> <span class="p">=</span> <span class="n">Processor</span><span class="p">.</span><span class="n">split</span><span class="p">(</span><span class="k">list</span><span class="p">);</span>
+
+							<span class="n">c</span><span class="p">.</span><span class="k">version</span> <span class="p">=</span> <span class="p">(</span><span class="k">Version</span><span class="p">)</span> <span class="n">capabilityAttrs</span><span class="p">.</span><span class="n">getTyped</span><span class="p">(</span><span class="n">ContractNamespace</span><span class="p">.</span><span class="n">CAPABILITY_VERSION_ATTRIBUTE</span><span class="p">);</span>
+							<span class="n">c</span><span class="p">.</span><span class="k">from</span> <span class="p">=</span> <span class="k">from</span><span class="p">;</span>
+
+							<span class="k">if</span> <span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="k">version</span> <span class="p">==</span> <span class="n">null</span><span class="p">)</span> <span class="p">{</span>
+								<span class="n">c</span><span class="p">.</span><span class="k">version</span> <span class="p">=</span> <span class="k">Version</span><span class="p">.</span><span class="n">LOWEST</span><span class="p">;</span>
+								<span class="n">analyzer</span><span class="p">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"%s does not declare a version, assumed 0.0.0."</span><span class="p">,</span> <span class="n">c</span><span class="p">);</span>
+							<span class="p">}</span>
+							<span class="n">c</span><span class="p">.</span><span class="n">decorators</span> <span class="p">=</span> <span class="n">new</span> <span class="n">Attrs</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="nf">getValue</span><span class="p">());</span>
+
+							<span class="p">//</span>
+							<span class="p">//</span> <span class="n">Build</span> <span class="n">up</span> <span class="n">the</span> <span class="k">package</span> <span class="p">-&gt;</span> <span class="n">contract</span> <span class="n">index</span>
+							<span class="p">//</span>
+							<span class="n">for</span> <span class="p">(</span><span class="k">String</span> <span class="n">pname</span> <span class="p">:</span> <span class="n">c</span><span class="p">.</span><span class="k">uses</span><span class="p">)</span> <span class="p">{</span>
+								<span class="n">contracted</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">analyzer</span><span class="p">.</span><span class="n">getPackageRef</span><span class="p">(</span><span class="n">pname</span><span class="p">),</span> <span class="n">c</span><span class="p">);</span>
+							<span class="p">}</span>
+						<span class="p">}</span>
+					<span class="p">}</span>
+				<span class="p">}</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+
+		<span class="p">/**</span>
+		 <span class="p">*</span> <span class="n">Find</span> <span class="n">out</span> <span class="k">if</span> <span class="n">a</span> <span class="k">package</span> <span class="n">is</span> <span class="n">contracted</span><span class="p">.</span> <span class="k">If</span> <span class="n">there</span> <span class="n">are</span> <span class="n">multiple</span> <span class="n">contracts</span> <span class="n">for</span>
+		 <span class="p">*</span> <span class="n">a</span> <span class="k">package</span> <span class="n">we</span> <span class="n">remember</span> <span class="n">this</span> <span class="n">so</span> <span class="n">we</span> <span class="n">can</span> <span class="n">generate</span> <span class="n">a</span> <span class="n">single</span> <span class="n">error</span><span class="p">.</span>
+		 <span class="p">*</span>
+		 <span class="p">*</span> <span class="p">@</span><span class="n">param</span> <span class="n">packageRef</span>
+		 <span class="p">*</span> <span class="p">@</span><span class="n">return</span>
+		 <span class="p">*/</span>
+		<span class="k">boolean</span> <span class="n">isContracted</span><span class="p">(</span><span class="n">PackageRef</span> <span class="n">packageRef</span><span class="p">)</span> <span class="p">{</span>
+			<span class="k">List</span><span class="p">&lt;</span><span class="n">Contract</span><span class="p">&gt;</span> <span class="k">list</span> <span class="p">=</span> <span class="n">contracted</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">packageRef</span><span class="p">);</span>
+			<span class="k">if</span> <span class="p">(</span><span class="k">list</span> <span class="p">==</span> <span class="n">null</span> <span class="p">||</span> <span class="k">list</span><span class="p">.</span><span class="n">isEmpty</span><span class="p">())</span>
+				<span class="n">return</span> <span class="nb">false</span><span class="p">;</span>
+
+			<span class="k">if</span> <span class="p">(</span><span class="k">list</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="p">&gt;</span> <span class="m">1</span><span class="p">)</span> <span class="p">{</span>
+
+				<span class="p">//</span>
+				<span class="p">//</span> <span class="n">There</span> <span class="n">are</span> <span class="n">multiple</span> <span class="n">contracts</span> <span class="n">trying</span> <span class="k">to</span> <span class="n">address</span>
+				<span class="p">//</span> <span class="n">this</span> <span class="k">package</span><span class="p">.</span> <span class="n">We</span> <span class="n">collect</span> <span class="n">those</span> <span class="n">so</span> <span class="n">we</span> <span class="n">can</span> <span class="n">report</span> <span class="n">them</span>
+				<span class="p">//</span> <span class="k">as</span> <span class="n">one</span> <span class="n">error</span> <span class="n">instead</span> <span class="k">of</span> <span class="n">one</span> <span class="n">for</span> <span class="n">each</span> <span class="k">package</span>
+				<span class="p">//</span>
+
+				<span class="n">overlappingContracts</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="k">list</span><span class="p">,</span> <span class="n">packageRef</span><span class="p">);</span>
+			<span class="p">}</span>
+			<span class="n">contracts</span><span class="p">.</span><span class="n">addAll</span><span class="p">(</span><span class="k">list</span><span class="p">);</span>
+			<span class="n">return</span> <span class="nb">true</span><span class="p">;</span>
+		<span class="p">}</span>
+
+		<span class="p">/**</span>
+		 <span class="p">*</span> <span class="n">Called</span> <span class="n">before</span> <span class="n">we</span> <span class="n">print</span> <span class="n">the</span> <span class="n">manifest</span><span class="p">.</span> <span class="n">Should</span> <span class="n">add</span> <span class="n">any</span> <span class="n">contracts</span> <span class="n">that</span> <span class="n">were</span>
+		 <span class="p">*</span> <span class="n">actually</span> <span class="n">used</span> <span class="k">to</span> <span class="n">the</span> <span class="k">requirements</span><span class="p">.</span>
+		 <span class="p">*</span>
+		 <span class="p">*</span> <span class="p">@</span><span class="n">param</span> <span class="k">requirements</span>
+		 <span class="p">*/</span>
+		<span class="n">void</span> <span class="n">addToRequirements</span><span class="p">(</span><span class="k">Parameters</span> <span class="k">requirements</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">for</span> <span class="p">(</span><span class="n">Contract</span> <span class="n">c</span> <span class="p">:</span> <span class="n">contracts</span><span class="p">)</span> <span class="p">{</span>
+				<span class="n">Attrs</span> <span class="n">attrs</span> <span class="p">=</span> <span class="n">new</span> <span class="n">Attrs</span><span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="n">decorators</span><span class="p">);</span>
+				<span class="n">attrs</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="n">ContractNamespace</span><span class="p">.</span><span class="n">CONTRACT_NAMESPACE</span><span class="p">,</span> <span class="n">c</span><span class="p">.</span><span class="n">name</span><span class="p">);</span>
+				<span class="k">String</span> <span class="k">range</span> <span class="p">=</span> <span class="n">analyzer</span><span class="p">.</span><span class="n">applyVersionPolicy</span><span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="k">version</span><span class="p">.</span><span class="n">toString</span><span class="p">(),</span> <span class="n">c</span><span class="p">.</span><span class="n">decorators</span><span class="p">.</span><span class="n">getVersion</span><span class="p">(),</span> <span class="nb">false</span><span class="p">);</span>
+				<span class="k">String</span> <span class="n">name</span> <span class="p">=</span> <span class="n">ContractNamespace</span><span class="p">.</span><span class="n">CONTRACT_NAMESPACE</span><span class="p">;</span>
+				<span class="k">while</span> <span class="p">(</span><span class="k">requirements</span><span class="p">.</span><span class="n">containsKey</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+					<span class="n">name</span> <span class="p">+=</span> <span class="s2">"~"</span><span class="p">;</span>
+
+				<span class="n">VersionRange</span> <span class="n">r</span> <span class="p">=</span> <span class="n">new</span> <span class="n">VersionRange</span><span class="p">(</span><span class="k">range</span><span class="p">);</span>
+
+				<span class="n">Formatter</span> <span class="n">f</span> <span class="p">=</span> <span class="n">new</span> <span class="n">Formatter</span><span class="p">();</span>
+				<span class="n">try</span> <span class="p">{</span>
+					<span class="n">f</span><span class="p">.</span><span class="n">format</span><span class="p">(</span><span class="s2">"(&amp;(%s=%s)%s)"</span><span class="p">,</span> <span class="n">ContractNamespace</span><span class="p">.</span><span class="n">CONTRACT_NAMESPACE</span><span class="p">,</span> <span class="n">c</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="n">r</span><span class="p">.</span><span class="n">toFilter</span><span class="p">());</span>
+
+					<span class="p">//</span> <span class="n">TODO</span> <span class="p">:</span> <span class="n">shall</span> <span class="n">we</span> <span class="n">also</span> <span class="nb">assert</span> <span class="n">the</span> <span class="n">attributes</span><span class="p">?</span>
+
+					<span class="n">attrs</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="s2">"filter:"</span><span class="p">,</span> <span class="n">f</span><span class="p">.</span><span class="n">toString</span><span class="p">());</span>
+
+					<span class="k">requirements</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">attrs</span><span class="p">);</span>
+				<span class="p">}</span>
+				<span class="n">finally</span> <span class="p">{</span>
+					<span class="n">f</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+				<span class="p">}</span>
+			<span class="p">}</span>
+
+			<span class="n">for</span> <span class="p">(</span><span class="n">Entry</span><span class="p">&lt;</span><span class="n">Collection</span><span class="p">&lt;</span><span class="n">Contract</span><span class="p">&gt;,</span><span class="k">List</span><span class="p">&lt;</span><span class="n">PackageRef</span><span class="p">&gt;&gt;</span> <span class="n">oc</span> <span class="p">:</span> <span class="n">overlappingContracts</span><span class="p">.</span><span class="n">entrySet</span><span class="p">())</span> <span class="p">{</span>
+				<span class="n">Location</span> <span class="n">location</span> <span class="p">=</span> <span class="n">analyzer</span>
+						<span class="p">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Contracts %s declare the same packages in their uses: directive: %s. "</span>
+								<span class="p">+</span> <span class="s2">"Contracts are found in declaring bundles (see their 'from' field), it is possible to control the finding"</span>
+								<span class="p">+</span> <span class="s2">"with the -contract instruction"</span><span class="p">,</span> <span class="n">oc</span><span class="p">.</span><span class="n">getKey</span><span class="p">(),</span> <span class="n">oc</span><span class="p">.</span><span class="nf">getValue</span><span class="p">()).</span><span class="n">location</span><span class="p">();</span>
+				<span class="n">location</span><span class="p">.</span><span class="n">header</span> <span class="p">=</span> <span class="n">Constants</span><span class="p">.</span><span class="n">CONTRACT</span><span class="p">;</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+
+	<span class="p">}</span>
+</code></pre></div></div>
+
+			</div>
+	</ul>
+
+
+<nav class=next-prev>
+	<a href='/releases/4.0.0/instructions/consumer_policy.html'></a> <a href='/releases/4.0.0/instructions/dependson.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.0.0/contact.html">Contact</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.0.0/">Developers</a>
+			</ul>
+		<li span=3>
+			<ul>
+				<li><a href="/releases/4.0.0/">More</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

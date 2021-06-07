@@ -24,14 +24,14 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.model.EE;
-import bndtools.BndConstants;
+import aQute.bnd.osgi.Constants;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.repo.LoadingContentElement;
 import bndtools.utils.ModificationLock;
 
 public class RunFrameworkPart extends BndEditorPart implements PropertyChangeListener {
 	private static final String[]				PROPERTIES			= new String[] {
-		BndConstants.RUNFW, BndConstants.RUNEE
+		Constants.RUNFW, Constants.RUNEE
 	};
 
 	private final ModificationLock				lock				= new ModificationLock();
@@ -57,7 +57,7 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
 		super.initialize(form);
 
 		fwkContentProvider.onContentReady(list -> Display.getDefault()
-			.asyncExec(() -> refreshFromModel()));
+			.asyncExec(this::refreshFromModel));
 
 		frameworkViewer.setInput(model.getWorkspace());
 	}
@@ -165,8 +165,9 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
 	public void commitToModel(boolean onSave) {
 		try {
 			committing = true;
-			model.setRunFw(selectedFramework.trim()
-				.length() > 0 ? selectedFramework.trim() : null);
+			model.setRunFw(selectedFramework == null ? null
+				: selectedFramework.trim()
+					.length() > 0 ? selectedFramework.trim() : null);
 			model.setEE(selectedEE);
 		} finally {
 			committing = false;

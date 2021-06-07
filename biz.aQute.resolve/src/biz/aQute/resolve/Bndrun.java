@@ -3,30 +3,40 @@ package biz.aQute.resolve;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.osgi.resource.Requirement;
 import org.osgi.service.resolver.ResolutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.build.Container;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
+import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.build.model.conversions.CollectionFormatter;
 import aQute.bnd.build.model.conversions.Converter;
 import aQute.bnd.build.model.conversions.HeaderClauseFormatter;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.help.Syntax;
+import aQute.bnd.help.instructions.ResolutionInstructions;
+import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
 
 /**
+ * This is a resolving version of the Run class. The name of this class is known
+ * in the super class so do not rename it or change {@link Run}
  */
 public class Bndrun extends Run {
 	Logger																		logger					= LoggerFactory
 		.getLogger(Bndrun.class);
 	final BndEditModel															model;
+	final ResolutionInstructions												resolutionInstructions;
 	private static final Converter<String, Collection<? extends HeaderClause>>	runbundlesListFormatter	= new CollectionFormatter<>(
 		",", new HeaderClauseFormatter(), null, "", "");
 
@@ -59,11 +69,14 @@ public class Bndrun extends Run {
 		super(model.getWorkspace(), model.getProject()
 			.getPropertiesFile());
 		this.model = model;
+		this.resolutionInstructions = Syntax.getInstructions(model.getProject(), ResolutionInstructions.class);
+
 	}
 
 	public Bndrun(Workspace workspace, File propertiesFile) throws Exception {
 		super(workspace, propertiesFile);
 		this.model = new BndEditModel(this);
+		this.resolutionInstructions = Syntax.getInstructions(model.getProject(), ResolutionInstructions.class);
 	}
 
 	/**
@@ -116,10 +129,11 @@ public class Bndrun extends Run {
 	}
 
 	public boolean update(RunResolution resolution, boolean failOnChanges, boolean writeOnChanges) throws Exception {
+		List<VersionedClause> runBundlesBeforeUpdate = model.getRunBundles();
 		if (resolution.updateBundles(model)) {
 			if (failOnChanges) {
 				error("Fail on changes set to true (--xchange,-x) and there are changes");
-				error("   Existing runbundles   %s", model.getRunBundles());
+				error("   Existing runbundles   %s", runBundlesBeforeUpdate);
 				error("   Calculated runbundles %s", resolution.getRunBundles());
 			} else {
 				if (writeOnChanges) {
@@ -139,4 +153,36 @@ public class Bndrun extends Run {
 	public BndEditModel getModel() {
 		return model;
 	}
+
+	/**
+	 * We override to resolve before we get the runbundles.
+	 */
+	@Override
+	public Collection<Container> getRunbundles() throws Exception {
+		Parameters gestalt = getWorkspace().getGestalt();
+
+		ResolveMode resolve = resolutionInstructions.resolve();
+		if (resolve == null)
+			resolve = ResolveMode.manual;
+
+		switch (resolve) {
+			case auto :
+			case manual :
+			default :
+				break;
+
+			case batch :
+				if (!gestalt.containsKey(Constants.GESTALT_BATCH) && !super.getRunbundles().isEmpty())
+					break;
+
+				// fall through
+
+			case beforelaunch :
+				return RunResolution.getRunBundles(this, true)
+					.map(this::parseRunbundles)
+					.orElseThrow(IllegalArgumentException::new);
+		}
+		return super.getRunbundles();
+	}
+
 }

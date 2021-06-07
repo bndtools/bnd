@@ -25,7 +25,7 @@ public class RemoteRepoTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		tmpName = "generated/tmp/test/" + getName();
+		tmpName = "generated/tmp/test/" + getClass().getName() + "/" + getName();
 		local = IO.getFile(tmpName + "/local");
 		remote = IO.getFile(tmpName + "/remote");
 		Config config = new Config();

@@ -38,16 +38,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
-import org.osgi.framework.namespace.IdentityNamespace;
-import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.resource.CapReqBuilder;
-import aQute.libg.filters.AndFilter;
-import aQute.libg.filters.Filter;
-import aQute.libg.filters.Operator;
-import aQute.libg.filters.SimpleFilter;
 import bndtools.Plugin;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.repo.DependencyPhase;
@@ -287,12 +281,7 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 			if (versionRange != null)
 				reqBuilder.addAttribute("version", versionRange);
 		} else {
-			Filter filter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, bsn);
-			if (versionRange != null)
-				filter = new AndFilter().addChild(filter)
-					.addChild(new SimpleFilter("version", Operator.GreaterThanOrEqual, versionRange));
-			reqBuilder = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+			reqBuilder = CapReqBuilder.createBundleRequirement(bsn, versionRange);
 		}
 		return reqBuilder.buildSyntheticRequirement();
 	}

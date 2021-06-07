@@ -1,17 +1,13 @@
 releaserepo:            ${workspace}/dist/bundles
 mavencentral:           https://repo.maven.apache.org/maven2
+ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
 
--plugin:\
+-plugin.0.Main:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name="Maven Central";\
         releaseUrl="${mavencentral}";\
+        snapshotUrl="${ossrh}";\
         index="${.}/central.mvn";\
-        readOnly=true,\
-    aQute.bnd.repository.maven.provider.MavenBndRepository;\
-        name="OSGi Snapshots";\
-        releaseUrl="https://oss.sonatype.org/content/repositories/osgi-releases/";\
-        snapshotUrl="https://oss.sonatype.org/content/repositories/osgi-snapshots/";\
-        index="${.}/osgi-snapshots.mvn";\
         readOnly=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name="Local";\
@@ -22,48 +18,29 @@ mavencentral:           https://repo.maven.apache.org/maven2
         snapshotUrl="${fileuri;${releaserepo}}";\
         noupdateOnRelease=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
-        name="OSSRH";\
-        releaseUrl="https://oss.sonatype.org/service/local/staging/deploy/maven2/";\
-        snapshotUrl="https://oss.sonatype.org/content/repositories/snapshots/";\
-        noupdateOnRelease=true,\
-    aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name="JFrog";\
         releaseUrl="https://bndtools.jfrog.io/bndtools/libs-release-local/";\
         snapshotUrl="https://bndtools.jfrog.io/bndtools/libs-snapshot-local/";\
-        noupdateOnRelease=true,\
+        noupdateOnRelease=true
+
+-plugin.1.Eclipse:\
     aQute.bnd.repository.osgi.OSGiRepository;\
-        name="Eclipse Oxygen 4.7.3a";\
-        locations="https://dl.bintray.com/bndtools/eclipse-repo/4.7.3a/index.xml.gz";\
+        name="Eclipse 2020-06";\
+        locations="https://bndtools.jfrog.io/bndtools/bnd-build/eclipse/4.16/index.xml.gz";\
         poll.time=-1;\
-        cache="${workspace}/cnf/cache/stable/EclipseOxygen",\
-    aQute.bnd.repository.maven.pom.provider.BndPomRepository;\
-        name="Eclipse m2e 1.8.3 Dependencies";\
-        revision="org.apache.maven:maven-core:3.3.9,org.sonatype.plexus:plexus-build-api:0.0.7";\
-        releaseUrls="${mavencentral}";\
-        location="${workspace}/cnf/cache/stable/EclipseM2EDeps/index.xml",\
+        cache="${workspace}/cnf/cache/stable/Eclipse-2020-06"
+
+-plugin.9.Baseline:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name="Baseline";\
         releaseUrl="${mavencentral}";\
         index="${.}/baseline.mvn";\
         readOnly=true
 
-# m2e debug repos
-#-plugin.m2e.debug:\
-#    aQute.bnd.repository.p2.provider.P2Repository; \
-#        name="Eclipse EMF 2.13"; \
-#        url="https://download.eclipse.org/modeling/emf/emf/builds/release/2.13";\
-#        location="${workspace}/cnf/cache/stable/EclipseEMF",\
-#    aQute.bnd.repository.p2.provider.P2Repository; \
-#        name="Eclipse Webtools 3.6.3"; \
-#        url="https://download.eclipse.org/webtools/downloads/drops/R3.6.3/R-3.6.3-20150216091848/repository/";\
-#        location="${workspace}/cnf/cache/stable/EclipseWTP",\
-
 -buildrepo: Local
 -releaserepo: Release
--releaserepo.ossrh: ${if;(&(|(env.TRAVIS_BRANCH=master)(env.TRAVIS_BRANCH=next))(env.TRAVIS_PULL_REQUEST=false)(env.REPOSITORY_USERNAME=*));OSSRH}
--releaserepo.jfrog: ${if;(&(|(env.BUILD_SOURCEBRANCHNAME=master)(env.BUILD_SOURCEBRANCHNAME=next))(!(env.BUILD_REASON=PullRequest))(env.JFROG_USERNAME=*)(!(env.JFROG_USERNAME=$*)));JFrog}
+-releaserepo.jfrog: ${if;${env;CANONICAL};JFrog}
 
--connection-settings.ossrh: ${if;${-releaserepo.ossrh};${.}/ossrh-settings.xml}
 -connection-settings.jfrog: ${if;${-releaserepo.jfrog};${.}/jfrog-settings.xml}
 
 -baselinerepo: Baseline

@@ -1,60 +1,157 @@
 package bndtools.m2e;
 
+import java.io.File;
+import java.util.function.Predicate;
+
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.bndtools.api.RunMode;
 import org.bndtools.api.RunProvider;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import aQute.bnd.build.Run;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.maven.lib.configuration.Bndruns;
+import biz.aQute.resolve.Bndrun;
 
-@Component(property = Constants.SERVICE_RANKING + ":Integer=1000")
+/*
+ * This provider must be processed before the DefaultRunProvider because
+ * that one does not check to see if the project is M2E.
+ */
+@Component(property = Constants.SERVICE_RANKING + ":Integer=3000")
 public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 
+	private static final Logger			logger	= LoggerFactory.getLogger(MavenRunProvider.class);
+
+	private MavenWorkspaceRepository	mavenWorkspaceRepository;
+
 	@Override
-	public Run create(IResource targetResource, RunMode mode) throws Exception {
+	public Bndrun create(IResource targetResource, RunMode mode) throws Exception {
 		if (!isMavenProject(targetResource)) {
 			return null;
 		}
 
-		IMavenProjectFacade projectFacade = getMavenProjectFacade(targetResource);
+		final IMavenProjectFacade projectFacade = getMavenProjectFacade(targetResource);
 
-		IProgressMonitor monitor = new NullProgressMonitor();
+		Bndrun bndrun = create0(targetResource, projectFacade, mode);
 
-		if ((mode == RunMode.LAUNCH) && hasBndResolverMavenPlugin(projectFacade)) {
-			MojoExecution mojoExecution = projectFacade
-				.getMojoExecutions("biz.aQute.bnd", "bnd-resolver-maven-plugin", monitor, "resolve")
-				.stream()
-				.findFirst()
-				.orElse(null);
+		Workspace workspace = bndrun.getWorkspace();
 
-			MavenProject mavenProject = getMavenProject(projectFacade);
+		final MavenImplicitProjectRepository implicitRepo = new MavenImplicitProjectRepository( //
+			projectFacade, bndrun);
 
-			Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns", Bndruns.class,
-				monitor);
-			return Run.createRun(null, bndruns.getFiles(mavenProject.getBasedir())
-				.get(0));
-		} else if ((mode == RunMode.TEST) && hasBndTestingMavenPlugin(projectFacade)) {
-			MojoExecution mojoExecution = projectFacade
-				.getMojoExecutions("biz.aQute.bnd", "bnd-testing-maven-plugin", monitor, "testing")
-				.stream()
-				.findFirst()
-				.orElse(null);
+		mavenProjectRegistry.addMavenProjectChangedListener( //
+			implicitRepo);
+		iWorkspace.addResourceChangeListener( //
+			implicitRepo, IResourceChangeEvent.POST_CHANGE);
 
-			MavenProject mavenProject = getMavenProject(projectFacade);
+		workspace.addBasicPlugin(implicitRepo);
 
-			Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns", Bndruns.class,
-				monitor);
-			return Run.createRun(null, bndruns.getFiles(mavenProject.getBasedir())
-				.get(0));
+		if (((mode == RunMode.LAUNCH) || (mode == RunMode.TEST)) && (mavenWorkspaceRepository != null)) {
+			workspace.addBasicPlugin(mavenWorkspaceRepository);
+		}
+
+		workspace.refresh();
+
+		if (mode == RunMode.EDIT) {
+			new Job("Create implicit repo") {
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					implicitRepo.createRepo(projectFacade, monitor);
+					return Status.OK_STATUS;
+				}
+			}.schedule();
 		} else {
-			return null;
+			implicitRepo.createRepo(projectFacade, new NullProgressMonitor());
+		}
+
+		return bndrun;
+	}
+
+	private Bndrun create0(IResource targetResource, IMavenProjectFacade projectFacade, RunMode mode) throws Exception {
+		logger.info("Creating a Run for IResource {}", targetResource);
+
+		final MavenProject mavenProject = getMavenProject(projectFacade);
+		final IProgressMonitor monitor = new NullProgressMonitor();
+
+		Predicate<MojoExecution> bndrunMatchs = f -> true;
+		File bndrunFile = null;
+
+		if (targetResource.getName()
+			.endsWith(".bndrun")) {
+
+			File location = targetResource.getLocation()
+				.toFile();
+			bndrunFile = location;
+			bndrunMatchs = mojoExecution -> containsBndrun(mojoExecution, mavenProject, location, monitor);
+		}
+
+		MojoExecution mojoExecution;
+
+		switch (mode) {
+			case LAUNCH :
+			case EDIT :
+			case SOURCES :
+				if ((mojoExecution = getBndResolverMojoExecution(projectFacade, bndrunMatchs, monitor)) != null) {
+
+					if (bndrunFile == null) {
+						Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns",
+							Bndruns.class, monitor);
+
+						bndrunFile = bndruns.getFiles(mavenProject.getBasedir())
+							.get(0);
+					}
+
+					MavenBndrunContainer mavenBndrunContainer = MavenBndrunContainer.getBndrunContainer(projectFacade,
+						mojoExecution, monitor);
+
+					return mavenBndrunContainer.init(bndrunFile, mode.name(), new File(mavenProject.getBuild()
+						.getDirectory()));
+				}
+				break;
+			case TEST :
+				if ((mojoExecution = getBndTestingMojoExecution(projectFacade, bndrunMatchs, monitor)) != null) {
+
+					if (bndrunFile == null) {
+						Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns",
+							Bndruns.class, monitor);
+
+						bndrunFile = bndruns.getFiles(mavenProject.getBasedir())
+							.get(0);
+					}
+
+					MavenBndrunContainer mavenBndrunContainer = MavenBndrunContainer.getBndrunContainer(projectFacade,
+						mojoExecution, monitor);
+
+					return mavenBndrunContainer.init(bndrunFile, mode.name(), new File(mavenProject.getBuild()
+						.getDirectory()));
+				}
+				break;
+			default :
+				break;
+		}
+		return null;
+	}
+
+	@Reference
+	public void setMavenWorkspaceRepository(MavenWorkspaceRepository mavenWorkspaceRepository) {
+		this.mavenWorkspaceRepository = mavenWorkspaceRepository;
+	}
+
+	public void unsetMavenWorkspaceRepository(MavenWorkspaceRepository mavenWorkspaceRepository) {
+		if (this.mavenWorkspaceRepository == mavenWorkspaceRepository) {
+			this.mavenWorkspaceRepository = null;
 		}
 	}
 

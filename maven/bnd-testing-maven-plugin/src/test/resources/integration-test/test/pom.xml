@@ -7,6 +7,11 @@
 	<version>0.0.1</version>
 	<packaging>pom</packaging>
 
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+
 	<distributionManagement>
 		<repository>
 			<id>Test Repo</id>
@@ -108,7 +113,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.1.1</version>
+					<version>3.2.0</version>
 					<configuration>
 						<archive>
 							<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>

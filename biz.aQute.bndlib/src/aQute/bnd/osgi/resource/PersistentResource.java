@@ -1,21 +1,20 @@
 package aQute.bnd.osgi.resource;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.osgi.framework.Version;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.util.dto.DTO;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.converter.Converter;
@@ -213,17 +212,18 @@ public class PersistentResource extends DTO implements Resource {
 		return DataType.STRING.ordinal();
 	}
 
-	private static Attr getAttr(String key, Object value, boolean directive) {
+	private static Attr getDirectiveAttr(String key, String value) {
 		Attr attr = new Attr();
 		attr.key = key;
+		attr.type = DataType.STRING.ordinal();
+		attr.value = value;
+		attr.directive = true;
+		return attr;
+	}
 
-		if (directive) {
-			attr.type = DataType.STRING.ordinal();
-			attr.value = value.toString();
-			attr.directive = true;
-			return attr;
-		}
-
+	private static Attr getAttributeAttr(String key, Object value) {
+		Attr attr = new Attr();
+		attr.key = key;
 		attr.value = value;
 
 		if (value instanceof Collection) {
@@ -257,18 +257,13 @@ public class PersistentResource extends DTO implements Resource {
 	private static RCData getData(boolean require, Map<String, Object> attributes, Map<String, String> directives) {
 		RCData data = new RCData();
 		data.require = require;
-		List<Attr> props = new ArrayList<>(attributes.size() + directives.size());
-
-		for (Entry<String, Object> entry : attributes.entrySet()) {
-			props.add(getAttr(entry.getKey(), entry.getValue(), false));
-		}
-		for (Entry<String, String> entry : directives.entrySet()) {
-			props.add(getAttr(entry.getKey(), entry.getValue(), true));
-			data.directives++;
-		}
-		Collections.sort(props);
-		data.properties = props.toArray(new Attr[0]);
-
+		data.properties = Stream.concat(MapStream.of(attributes)
+			.mapToObj(PersistentResource::getAttributeAttr),
+			MapStream.of(directives)
+				.mapToObj(PersistentResource::getDirectiveAttr))
+			.sorted()
+			.toArray(Attr[]::new);
+		data.directives += directives.size();
 		return data;
 	}
 

@@ -1,7 +1,7 @@
 package aQute.bnd.main;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +19,7 @@ import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
 import aQute.lib.justif.Justif;
 import biz.aQute.bnd.reporter.exporter.ReportExporterBuilder;
 import biz.aQute.bnd.reporter.generator.ReportGeneratorBuilder;
@@ -138,8 +139,8 @@ public class ExportReportCommand extends Processor {
 			System.out.println(prefix + "no reports");
 		} else {
 			reports.forEach((f, r) -> {
-				try {
-					r.write(new FileOutputStream(f));
+				try (OutputStream out = IO.outputStream(new File(f))) {
+					r.write(out);
 					System.out.println(prefix + f);
 				} catch (Exception e1) {
 					exception(e1, prefix + "failed to write report at %s", f);
@@ -293,8 +294,8 @@ public class ExportReportCommand extends Processor {
 
 			String prefix = "Jar[" + jar.getName() + "]: ";
 			reports.forEach((f, r) -> {
-				try {
-					r.write(new FileOutputStream(f));
+				try (OutputStream out = IO.outputStream(new File(f))) {
+					r.write(out);
 					System.out.println(prefix + f);
 				} catch (Exception e1) {
 					exception(e1, prefix + "failed to write report at %s", f);
@@ -382,8 +383,8 @@ public class ExportReportCommand extends Processor {
 
 			String prefix = "Jar[" + jar.getName() + "]: ";
 			reports.forEach((f, r) -> {
-				try {
-					r.write(new FileOutputStream(f));
+				try (OutputStream out = IO.outputStream(new File(f))) {
+					r.write(out);
 					System.out.println(prefix + f);
 				} catch (Exception e1) {
 					exception(e1, prefix + "failed to write report at %s", f);

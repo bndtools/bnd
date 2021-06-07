@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/5.2.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>driver ( ‘;’ NAME )?</title>
+<meta name="generator" content="Jekyll v3.9.0" />
+<meta property="og:title" content="driver ( ‘;’ NAME )?" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Added support for an environment driver of bnd. This driver should be set when bnd is started by for example gradle or ant. The driver can be overridden with the -bnd-driver property. public void testDriver() throws Exception { Attrs attrs = new Attrs(); attrs.put(&quot;x&quot;, &quot;10&quot;);" />
+<meta property="og:description" content="Added support for an environment driver of bnd. This driver should be set when bnd is started by for example gradle or ant. The driver can be overridden with the -bnd-driver property. public void testDriver() throws Exception { Attrs attrs = new Attrs(); attrs.put(&quot;x&quot;, &quot;10&quot;);" />
+<script type="application/ld+json">
+{"url":"/releases/5.2.0/macros/driver.html","headline":"driver ( ‘;’ NAME )?","description":"Added support for an environment driver of bnd. This driver should be set when bnd is started by for example gradle or ant. The driver can be overridden with the -bnd-driver property. public void testDriver() throws Exception { Attrs attrs = new Attrs(); attrs.put(&quot;x&quot;, &quot;10&quot;);","@type":"WebPage","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/5.2.0/"><img
+			class=menu-logo src="/releases/5.2.0/img/bnd-80x40-white.png"></a>
+			<a href="/releases/5.2.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/5.2.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/5.2.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/5.2.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/5.2.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">5.2.0</button><div class="dropdown-content"></div></div>
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/releases/5.2.0/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/875-external-plugins.html">External Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+				<h1> driver ( ';' NAME )?</h1>
+				<p>Added support for an environment driver of bnd. This driver should be set when bnd is started by for example gradle or ant. The driver can be overridden with the -bnd-driver property.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public void testDriver() throws Exception {
+	Attrs attrs = new Attrs();
+	attrs.put("x", "10");
+
+	Workspace w = new Workspace(tmp);
+	
+	assertEquals("unset", w.getDriver());
+	assertEquals( "unset", w.getReplacer().process("${driver}"));
+	assertEquals( "unset", w.getReplacer().process("${driver;unset}"));
+	assertEquals( "", w.getReplacer().process("${driver;set}"));
+	
+	Workspace.setDriver("test");
+	assertEquals("test", w.getDriver());
+	assertEquals( "test", w.getReplacer().process("${driver}"));
+	assertEquals( "test", w.getReplacer().process("${driver;test}"));
+	assertEquals( "", w.getReplacer().process("${driver;nottest}"));
+
+	w.setProperty("-bnd-driver", "test2");
+	assertEquals("test2", w.getDriver());
+	assertEquals( "test2", w.getReplacer().process("${driver}"));
+	assertEquals( "test2", w.getReplacer().process("${driver;test2}"));
+	assertEquals( "", w.getReplacer().process("${driver;nottest}"));
+	
+	
+	w.close();
+}
+
+/**
+ * Get the bnddriver, can be null if not set. The overallDriver is the
+ * environment that runs this bnd.
+ */
+public String getDriver() {
+	if (driver == null) {
+		driver = getProperty(Constants.BNDDRIVER, null);
+		if ( driver != null)
+			driver = driver.trim();
+	}
+
+	if (driver != null)
+		return driver;
+	
+	return overallDriver;
+}
+
+/**
+ * Set the driver of this environment
+ */
+public static void setDriver(String driver) {
+	overallDriver = driver;
+}
+
+/**
+ * Macro to return the driver. Without any arguments, we return the name of
+ * the driver. If there are arguments, we check each of the arguments
+ * against the name of the driver. If it matches, we return the driver name.
+ * If none of the args match the driver name we return an empty string
+ * (which is false).
+ */
+
+public String _driver(String args[]) {
+	if (args.length == 1) {
+		return getDriver();
+	}
+	String driver = getDriver();
+	if (driver == null)
+		driver = getProperty(Constants.BNDDRIVER);
+
+	if (driver != null) {
+		for (int i = 1; i &lt; args.length; i++) {
+			if (args[i].equalsIgnoreCase(driver))
+				return driver;
+		}
+	}
+	return "";
+}
+
+	public void testGestalt() throws Exception {
+	Attrs attrs = new Attrs();
+	attrs.put("x", "10");
+	Workspace.addGestalt("peter", attrs);
+	Workspace w = new Workspace(tmp);
+	
+	assertEquals( "peter", w.getReplacer().process("${gestalt;peter}"));
+	assertEquals( "10", w.getReplacer().process("${gestalt;peter;x}"));
+	assertEquals( "10", w.getReplacer().process("${gestalt;peter;x;10}"));
+	assertEquals( "", w.getReplacer().process("${gestalt;peter;x;11}"));
+	assertEquals( "", w.getReplacer().process("${gestalt;peter;y}"));
+	assertEquals( "", w.getReplacer().process("${gestalt;john}"));
+	assertEquals( "", w.getReplacer().process("${gestalt;john;x}"));
+	assertEquals( "", w.getReplacer().process("${gestalt;john;x;10}"));
+	
+	w.close();
+	w = new Workspace(tmp);
+	w.setProperty("-gestalt", "john;z=100, mieke;a=1000, ci");
+	assertEquals( "peter", w.getReplacer().process("${gestalt;peter}"));
+	assertEquals( "10", w.getReplacer().process("${gestalt;peter;x}"));
+	assertEquals( "10", w.getReplacer().process("${gestalt;peter;x;10}"));
+	assertEquals( "", w.getReplacer().process("${gestalt;peter;x;11}"));
+	assertEquals( "", w.getReplacer().process("${gestalt;peter;y}"));
+	assertEquals( "john", w.getReplacer().process("${gestalt;john}"));
+	assertEquals( "100", w.getReplacer().process("${gestalt;john;z}"));
+	assertEquals( "100", w.getReplacer().process("${gestalt;john;z;100}"));
+	assertEquals( "", w.getReplacer().process("${gestalt;john;z;101}"));
+	assertEquals( "mieke", w.getReplacer().process("${gestalt;mieke}"));
+	assertEquals( "", w.getReplacer().process("${gestalt;mieke;x}"));
+	
+	w.close();
+}
+</code></pre></div></div>
+
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/releases/5.2.0/macros/dir.html'></a> <a href='/releases/5.2.0/macros/ee.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/5.2.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

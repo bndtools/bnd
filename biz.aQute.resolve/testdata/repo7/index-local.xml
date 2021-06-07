@@ -2387,7 +2387,7 @@
     </capability>
     <requirement namespace="osgi.wiring.package">
       <attribute name="status" value="provisional"/>
-      <directive name="filter" value="(&amp;(osgi.wiring.package=org.apache.felix.service.command)(version&gt;=0.10.0)(!(version&gt;=1.0.0)))"/>
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.apache.felix.service.command)(version&gt;=0.10.0)(!(version&gt;=1.0.0))(status=provisional))"/>
     </requirement>
     <requirement namespace="osgi.wiring.package">
       <directive name="filter" value="(&amp;(osgi.wiring.package=org.osgi.framework)(version&gt;=1.5.0)(!(version&gt;=2.0.0)))"/>
@@ -2457,11 +2457,11 @@
     </requirement>
     <requirement namespace="osgi.wiring.package">
       <attribute name="status" value="provisional"/>
-      <directive name="filter" value="(&amp;(osgi.wiring.package=org.apache.felix.service.command)(version&gt;=0.10.0))"/>
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.apache.felix.service.command)(version&gt;=0.10.0)(status=provisional))"/>
     </requirement>
     <requirement namespace="osgi.wiring.package">
       <attribute name="status" value="provisional"/>
-      <directive name="filter" value="(&amp;(osgi.wiring.package=org.apache.felix.service.threadio)(version&gt;=0.10.0))"/>
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.apache.felix.service.threadio)(version&gt;=0.10.0)(status=provisional))"/>
     </requirement>
     <requirement namespace="osgi.wiring.package">
       <directive name="filter" value="(osgi.wiring.package=org.osgi.framework)"/>
@@ -2496,7 +2496,7 @@
     </capability>
     <requirement namespace="osgi.wiring.package">
       <attribute name="status" value="provisional"/>
-      <directive name="filter" value="(&amp;(osgi.wiring.package=org.apache.felix.service.command)(version&gt;=0.10.0))"/>
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.apache.felix.service.command)(version&gt;=0.10.0)(status=provisional))"/>
     </requirement>
     <requirement namespace="osgi.wiring.package">
       <directive name="filter" value="(osgi.wiring.package=org.osgi.framework)"/>
@@ -2943,7 +2943,7 @@
     </requirement>
     <requirement namespace="osgi.wiring.package">
       <attribute name="status" value="provisional"/>
-      <directive name="filter" value="(&amp;(osgi.wiring.package=org.apache.felix.service.command)(version&gt;=0.6.0)(!(version&gt;=1.0.0)))"/>
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.apache.felix.service.command)(version&gt;=0.6.0)(!(version&gt;=1.0.0))(status=provisional))"/>
       <directive name="resolution" value="optional"/>
     </requirement>
     <requirement namespace="osgi.wiring.package">
@@ -3243,7 +3243,7 @@
     </requirement>
     <requirement namespace="osgi.wiring.package">
       <attribute name="poweruser" value="true"/>
-      <directive name="filter" value="(&amp;(osgi.wiring.package=org.easymock.internal)(version&gt;=3.0.0))"/>
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.easymock.internal)(version&gt;=3.0.0)(poweruser=true))"/>
     </requirement>
     <requirement namespace="osgi.wiring.package">
       <directive name="filter" value="(&amp;(osgi.wiring.package=org.objenesis)(version&gt;=1.2.0))"/>

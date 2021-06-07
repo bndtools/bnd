@@ -190,7 +190,7 @@ public class JavaSnippetReaderTest extends TestCase {
 	private JavaSnippetReader getReader() {
 		final Map<String, Integer> idCache = new HashMap<>();
 		final JavaSnippetReader r = new JavaSnippetReader();
-		r.init((i) -> {
+		r.init(i -> {
 			final Integer count = idCache.put(i, Integer.valueOf(idCache.getOrDefault(i, Integer.valueOf(0))
 				.intValue() + 1));
 			if (count != null) {

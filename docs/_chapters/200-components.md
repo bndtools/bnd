@@ -8,35 +8,35 @@ The Service-Component header is compatible with the standard OSGi header syntax.
 
 The syntax for these component definitions is:
 
-  component ::= <name> ( ';' parameter ) * 
-  parameter ::= provide | reference | multiple | optional
-              | reference | properties | factory | servicefactory
-              | immediate | enabled | implementation 
-              | activate | deactivate | modified | configuration-policy
-              | version | designate
+    component ::= <name> ( ';' parameter ) *
+    parameter ::= provide | reference | multiple | optional
+                | reference | properties | factory | servicefactory
+                | immediate | enabled | implementation
+                | activate | deactivate | modified | configuration-policy
+                | version | designate
 
-  reference ::= <name> '=' <interface-class> 
-                 ( '(' <target-filter> ')')? cardinality?
-  cardinality ::= '?' | '*' | '+' | '~'
-  provide  ::= 'provide:=' LIST 
-  multiple  ::= 'multiple:=' LIST 
-  optional  ::= 'optional:=' LIST 
-  dynamic   ::= 'dynamic:=' LIST
-  designate  ::= ( 'designate' | 'designateFactory' ) CLASS
-  factory   ::= 'factory:=' true | false
-  servicefactory := 'servicefactory:=' true | false
-  immediate ::= 'immediate:=' true | false
-  enabled   ::= 'enabled:=' true | false
-  configuration-policy ::= "configuration-policy:=' 
-       ( 'optional' | 'require' | 'ignore' )
-  activate  ::= 'activate:=' METHOD
-  modified  ::= 'modified:=' METHOD
-  deactivate::= 'deactivate:=' METHOD
-  implementation::= 'implementation:=' <implementation-class>
-  properties::= 'properties:=' key '=' value  [=\=]
-                ( ',' key '=' value ) *
-  key       ::= NAME (( '@' | ':' ) type )?
-  value     ::= value ( '|' value )*
+    reference ::= <name> '=' <interface-class>
+                   ( '(' <target-filter> ')')? cardinality?
+    cardinality ::= '?' | '*' | '+' | '~'
+    provide  ::= 'provide:=' LIST
+    multiple  ::= 'multiple:=' LIST
+    optional  ::= 'optional:=' LIST
+    dynamic   ::= 'dynamic:=' LIST
+    designate  ::= ( 'designate' | 'designateFactory' ) CLASS
+    factory   ::= 'factory:=' true | false
+    servicefactory := 'servicefactory:=' true | false
+    immediate ::= 'immediate:=' true | false
+    enabled   ::= 'enabled:=' true | false
+    configuration-policy ::= "configuration-policy:='
+         ( 'optional' | 'require' | 'ignore' )
+    activate  ::= 'activate:=' METHOD
+    modified  ::= 'modified:=' METHOD
+    deactivate::= 'deactivate:=' METHOD
+    implementation::= 'implementation:=' <implementation-class>
+    properties::= 'properties:=' key '=' value
+                  ( ',' key '=' value ) *
+    key       ::= NAME (( '@' | ':' ) type )?
+    value     ::= value ( '|' value )*
 
 If the name of the component maps to a resource, or ends in XML, or there are attributes set, then that clause is copied to the output Service-Component header.
 
@@ -79,13 +79,17 @@ On a method. Indicates this method is the activate method. It has the following 
 ||`addX` ||`removeX`||
 ||`xxxX` ||`unxxxX`||
 For example:
-  @Reference
-  protected void setFoo(LogService l) { ... }
-  protected void unsetFoo(LogService l) { ... }
+
+    @Reference
+    protected void setFoo(LogService l) { ... }
+    protected void unsetFoo(LogService l) { ... }
+
 If you want to override this, use
-  @Reference(unbind="IRefuseToCallMyMethodUnFoo");
-  protected void foo(LogService l) {}
-  protected void IRefuseToCallMyMethodUnFoo(LogService l) {}
+
+    @Reference(unbind="IRefuseToCallMyMethodUnFoo");
+    protected void foo(LogService l) {}
+    protected void IRefuseToCallMyMethodUnFoo(LogService l) {}
+
 Unfortunately Java has no method references so it is not type safe.A non existent `@UnReference` annotation is not very useful because that still requires linking it up symbolically to the associated `@Reference`.
 
 ||!Activate, Modified, and Deactivate||
@@ -94,87 +98,88 @@ The life cycle methods. These annotations have no properties.
   
 Assume the JAR contains the following class:
 
-  package com.acme;
-  import org.osgi.service.event.*;
-  import org.osgi.service.log.*;
-  import aQute.bnd.annotation.component.*;
+    package com.acme;
+    import org.osgi.service.event.*;
+    import org.osgi.service.log.*;
+    import aQute.bnd.annotation.component.*;
 
-  @Component
-  public class AnnotatedComponent implements EventHandler {
-    LogService log;
+    @Component
+    public class AnnotatedComponent implements EventHandler {
+      LogService log;
 
-    @Reference
-    void setLog(LogService log) { this.log=log; }
+      @Reference
+      void setLog(LogService log) { this.log=log; }
 
-    public void handleEvent(Event event) {
-      log.log(LogService.LOG_INFO, event.getTopic());
+      public void handleEvent(Event event) {
+        log.log(LogService.LOG_INFO, event.getTopic());
+      }
     }
-  }
 
 The only thing necessary to register the Declarative Service component is to add the following Service-Component header:
 
-  Service-Component: com.acme.*
+    Service-Component: com.acme.*
 
 This header will look for annotations in all com.acme sub-packages for an annotated component. The resulting XML will look like:
 
   OSGI-INF/com.acme.AnnotatedComponent.xml:
+
     <?xml version='1.0' encoding='utf-8'?>
-      <component name='com.acme.AnnotatedComponent'>
-        <implementation class='com.acme.AnnotatedComponent'/>
-        <service>
-          <provide interface='org.osgi.service.event.EventHandler'/>
-        </service>
-        <reference name='log'
-          interface='org.osgi.service.log.LogService' 
-          bind='setLog'
-          unbind='unsetLog'/>
-      </component>
+    <component name='com.acme.AnnotatedComponent'>
+      <implementation class='com.acme.AnnotatedComponent'/>
+      <service>
+        <provide interface='org.osgi.service.event.EventHandler'/>
+      </service>
+      <reference name='log'
+        interface='org.osgi.service.log.LogService'
+        bind='setLog'
+        unbind='unsetLog'/>
+    </component>
 
 The following example shows a component that is bound to the log service via the setLog method without annotations:  
 
-  Service-Component=aQute.tutorial.component.World; [=\=]
-    log=org.osgi.service.log.LogService  
-   
+    Service-Component=aQute.tutorial.component.World;
+      log=org.osgi.service.log.LogService
+
 The Service Component Runtime (SCR) offers a variety of options on the reference. Some options like the target can be used by adding the target filter after the interface name (this likely requires putting quotes around the interface name+filter). 
 
 References can be suffixed with the following characters to indicate their cardinality:
 
-  Char          Cardinality    Policy
-  ?             0..1           dynamic
-  *             0..n           dynamic
-  +             1..n           dynamic
-  ~             0..1           static
-                1              static
+    Char          Cardinality    Policy
+    ?             0..1           dynamic
+    *             0..n           dynamic
+    +             1..n           dynamic
+    ~             0..1           static
+                  1              static
 
 For a more complex example:
 
-  Service-Component=aQute.tutorial.component.World; [=\=]
-    log=org.osgi.service.log.LogService?; [=\=]
-    http=org.osgi.service.http.HttpService; [=\=]
-    PROCESSORS="xierpa.service.processor.Processor(priority>1)+"; [=\=]
-    properties:="wazaabi=true"
-    
+    Service-Component=aQute.tutorial.component.World;
+      log=org.osgi.service.log.LogService?;
+      http=org.osgi.service.http.HttpService;
+      PROCESSORS="xierpa.service.processor.Processor(priority>1)+";
+      properties:="wazaabi=true"
+
 The previous example will result in the following service component in the resource `OSGI-INF/aQute.tutorial.component.World.xml`:  
 
-  <?xml version="1.0" encoding="utf-8" ?>
-   <component name="aQute.tutorial.component.World">
-     <implementation class="aQute.tutorial.component.World" /> 
-     <reference name="log" 
-       interface="org.osgi.service.log.LogService" 
-       cardinality="0..1" 
-       bind="setLog" 
-       unbind="unsetLog" 
-       policy="dynamic" /> 
-     <reference name="http" 
-       interface="org.osgi.service.http.HttpService" 
-       bind="setHttp" 
-       unbind="unsetHttp" />
-     <reference name="PROCESSORS" 
-       interface="xierpa.service.processor.Processor" 
-       cardinality="1..n" 
-       policy="dynamic" 
-       target="(&(priority>=1)(link=false))" /> 
-   </component> 
+    <?xml version="1.0" encoding="utf-8" ?>
+    <component name="aQute.tutorial.component.World">
+      <implementation class="aQute.tutorial.component.World" />
+      <reference name="log"
+        interface="org.osgi.service.log.LogService"
+        cardinality="0..1"
+        bind="setLog"
+        unbind="unsetLog"
+        policy="dynamic" />
+      <reference name="http"
+        interface="org.osgi.service.http.HttpService"
+        bind="setHttp"
+        unbind="unsetHttp" />
+      <reference name="PROCESSORS"
+        interface="xierpa.service.processor.Processor"
+        cardinality="1..n"
+        policy="dynamic"
+        target="(&(priority>=1)(link=false))" />
+    </component>
 
 The description also supports the immediate, enabled, factory, target, servicefactory, configuration-policy, activate, deactivate, and modified attributes. Refer to the Declarative Services definition for their semantics.
 
@@ -182,9 +187,9 @@ If any feature of the V1.1 namespace is used, then bnd will declare the namespac
 
 Bnd also supports setting the policy and cardinality through the following directives:
 
-  multiple:= LIST    names of references that have x..n
-  optional:= LIST    names of references that have 0..x
-  dynamic:=  LIST    names of references that are dynamic
+    multiple:= LIST    names of references that have x..n
+    optional:= LIST    names of references that have 0..x
+    dynamic:=  LIST    names of references that are dynamic
 
 ## Components and Metatype
 The Service Component Runtime works closely together with the Configuration Admin to allow the components to be controlled through configuration. Configuration Admin knows two types of configuration:
@@ -204,25 +209,25 @@ In practice, this is a powerful model that provides a lot of configurability for
 
 In this model, configurations are declared in an interface. For example, the following interface defines a simple message:
 
-  interface Config {
-    String message(); // message to give
-  }
+    interface Config {
+      String message(); // message to give
+    }
 
 To create a component that can work with this config, we need to designate that interface as the configuration interface for a component.
 
-  @Component(designate=Config.class)
-  public class BasicComponent {
-      Config config;
+    @Component(designate=Config.class)
+    public class BasicComponent {
+        Config config;
 
-      @Activate void activate(Map<String,Object> props) {
-         config = Configurable.createConfig(props);
-         System.out.println("Hi " + config.message());
-      }
+        @Activate void activate(Map<String,Object> props) {
+           config = Configurable.createConfig(props);
+           System.out.println("Hi " + config.message());
+        }
 
-      @Deactivate void deactivate() {
-         System.out.println("Bye " + config.message());
-      }
-  }
+        @Deactivate void deactivate() {
+           System.out.println("Bye " + config.message());
+        }
+    }
 
 This is an immediate component because it does not implement a service interface. It also requires a configuration because we have not specified this explicitly. When you use designate (or designateFactory) the default becomes require. This means that your component will only be created when there is actually configuration for it set.
 
@@ -235,11 +240,11 @@ You can fill in the message in the ''Message'' field. If you save the editor, yo
 
 If you change the message, you will see that the component is first deactivated and then reactivated again. This is the only possibility for the SCR because the component has not implemented a modified method. Adding the following method will change this, now changes to the configuration are signaled to the component and the component can continue to work. This is more complicated then recycling the component but it can create a more optimized system.
 
-  @Modified
-  void modified( Map<String,Object> props) {
-    // reuse activate method
-    activate(props);
-  }
+    @Modified
+    void modified( Map<String,Object> props) {
+      // reuse activate method
+      activate(props);
+    }
 
 It is also possible to take advantage of the configuration factories. In this model 
 

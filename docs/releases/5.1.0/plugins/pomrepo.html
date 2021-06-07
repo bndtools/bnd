@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/5.1.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Bnd Pom Repository</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Bnd Pom Repository" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A Maven POM can be viewed as the root node in an artifact transitive dependency graph. The Bnd Pom Repository plugin reads this graph and provides the set of artifacts as a bnd repository. The purpose of this plugin is to be able to have a single dependency definition that can be used by Maven projects and bnd projects." />
+<meta property="og:description" content="A Maven POM can be viewed as the root node in an artifact transitive dependency graph. The Bnd Pom Repository plugin reads this graph and provides the set of artifacts as a bnd repository. The purpose of this plugin is to be able to have a single dependency definition that can be used by Maven projects and bnd projects." />
+<script type="application/ld+json">
+{"url":"/releases/5.1.0/plugins/pomrepo.html","headline":"Bnd Pom Repository","description":"A Maven POM can be viewed as the root node in an artifact transitive dependency graph. The Bnd Pom Repository plugin reads this graph and provides the set of artifacts as a bnd repository. The purpose of this plugin is to be able to have a single dependency definition that can be used by Maven projects and bnd projects.","@type":"WebPage","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/5.1.0/"><img
+			class=menu-logo src="/releases/5.1.0/img/bnd-80x40-white.png"></a>
+			<a href="/releases/5.1.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/5.1.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/5.1.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/5.1.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/5.1.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">5.1.0</button><div class="dropdown-content"></div></div>
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/releases/5.1.0/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/875-external-plugins.html">External Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.1.0/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+				<h1> Bnd Pom Repository</h1>
+				<p>A Maven POM can be viewed as the root node in an artifact transitive dependency graph. The Bnd Pom Repository plugin reads this graph and provides the set of artifacts as a bnd repository. The purpose of this plugin is to be able to have a single dependency definition that can be used by Maven projects and bnd projects.</p>
+
+<p>The pom can be a file on the local file system, a URL, a group, artifact, version (GAV) coordinate, or a query expression on maven central.</p>
+
+<h2 id="use-cases">Use Cases</h2>
+
+<p>The use case that triggered the development of the Bnd Pom Repository is OSGi enRoute. The artifacts in the OSGi enRoute effort needed to be shared between the Bndtools workspace and the Maven examples. Expressing the dependencies in a POM allows this. In the OSGi enRoute case the distro (the implementations for the OSGi enRoute API) are maintained in a <a href="https://github.com/osgi/osgi.enroute/blob/next/osgi.enroute.pom.distro/pom.xml">POM</a>. This POM is used to provide the compile time dependency (the OSGi enRoute Base API jar) as well as the runtime dependencies.</p>
+
+<h2 id="example">Example</h2>
+
+<p>In OSGi enRoute we need the following dependencies in a <code class="highlighter-rouge">pom.xml</code> file:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;dependencies&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.osgi&lt;/groupId&gt;
+        &lt;artifactId&gt;osgi.enroute.base.api&lt;/artifactId&gt;
+        &lt;version&gt;2.0.0&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.osgi&lt;/groupId&gt;
+        &lt;artifactId&gt;osgi.enroute.pom.distro&lt;/artifactId&gt;
+        &lt;version&gt;2.0.0&lt;/version&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;
+</code></pre></div></div>
+
+<p>In a bndrun file in the same directory we can now use this <code class="highlighter-rouge">pom.xml</code> file as our repository:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-standalone: true
+-plugin.enroute-distro = \
+    aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
+        snapshotUrl=https://oss.sonatype.org/content/repositories/osgi/; \
+        releaseUrl=https://repo.maven.apache.org/maven2/; \
+        pom=${.}/pom.xml; \
+        name=enRouteDistroPom
+</code></pre></div></div>
+
+<p>Opening the <code class="highlighter-rouge">Run</code> tab of the bndrun editor on this file will show you all transitive dependencies.</p>
+
+<h2 id="searching">Searching</h2>
+
+<p>Maven Central supports a <a href="http://blog.sonatype.com/2011/06/you-dont-need-a-browser-to-use-maven-central/">searching facility</a> based on Solr. For example, you want all the artifacts of a given group id. In that case you could use the following Bnd Pom Repository plugin:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-standalone: true
+-plugin.query = \
+    aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
+        releaseUrl=https://repo.maven.apache.org/maven2; \
+        query='q=g:%22biz.aQute.bnd%22'; \
+        name=Query
+</code></pre></div></div>
+
+<p>The query must return a JSON response.</p>
+
+<h2 id="configuration">Configuration</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">releaseUrl</code></td>
+      <td><code class="highlighter-rouge">URI...</code></td>
+      <td> </td>
+      <td>Comma separated list of URLs to the repositories of released artifacts.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">snapshotUrl</code></td>
+      <td><code class="highlighter-rouge">URI...</code></td>
+      <td> </td>
+      <td>Comma separated list of URLs to the repositories of snapshot artifacts.</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>If this is not specified, it falls back to the release repository or just <code class="highlighter-rouge">local</code> if that is also not specified.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">local</code></td>
+      <td><code class="highlighter-rouge">PATH</code></td>
+      <td><code class="highlighter-rouge">~/.m2/repository</code></td>
+      <td>The file path to the local Maven repository.</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>If specified, it should use forward slashes. If the directory does not exist, the plugin will attempt to create it.</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>The default can be overridden with the <code class="highlighter-rouge">maven.repo.local</code> System property.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">revision</code></td>
+      <td><code class="highlighter-rouge">GAV...</code></td>
+      <td> </td>
+      <td>A comma separated list of Maven coordinates. The GAV will be searched in the normal way.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">pom</code></td>
+      <td><code class="highlighter-rouge">URI...</code></td>
+      <td> </td>
+      <td>A comma separated list of URLs to POM files.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">location</code></td>
+      <td><code class="highlighter-rouge">PATH</code></td>
+      <td><code class="highlighter-rouge">cnf/cache/pom-&lt;name&gt;.xml</code></td>
+      <td>Optional cached index of the parsed POMs.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">query</code></td>
+      <td><code class="highlighter-rouge">STRING</code></td>
+      <td> </td>
+      <td>A Solr query string. This is the part after <code class="highlighter-rouge">?</code> and must be properly URL encoded</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">queryUrl</code></td>
+      <td><code class="highlighter-rouge">URI</code></td>
+      <td><code class="highlighter-rouge">http://search.maven.org/solrsearch/select</code></td>
+      <td>Optional URL to the search engine.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">name</code></td>
+      <td><code class="highlighter-rouge">STRING</code></td>
+      <td> </td>
+      <td>Required name of the repo.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">transitive</code></td>
+      <td><code class="highlighter-rouge">true|false</code></td>
+      <td><code class="highlighter-rouge">true</code></td>
+      <td>If set to <em>truthy</em> then dependencies are transitive.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">poll.time</code></td>
+      <td><code class="highlighter-rouge">integer</code></td>
+      <td>5 minutes</td>
+      <td>Number of seconds between checks for changes to POM files referenced by <code class="highlighter-rouge">pom</code> or <code class="highlighter-rouge">revision</code>. If the value is negative or the workspace is in batch/CI mode, then no polling takes place.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>One, and only one, of the <code class="highlighter-rouge">pom</code>, <code class="highlighter-rouge">revision</code>, or <code class="highlighter-rouge">query</code> configurations can be set. If multiple are set then the first in <code class="highlighter-rouge">[pom, revision, query]</code> is used and the remainders are ignored.</p>
+
+<h2 id="authentication">Authentication</h2>
+
+<p>The Maven Bnd Repository uses the bnd Http Client. See the <a href="/instructions/connection-settings">-connection-settings</a> instruction for how to set the proxy and authentication information.</p>
+
+<p>If you use a remote repository then you must configure the credentials. This is described in <a href="/instructions/connection-settings">-connection-settings</a>. Placing the following XML in  <code class="highlighter-rouge">~/.bnd/settings.xml</code> will provide you with the default Nexus credentials:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                          http://maven.apache.org/xsd/settings-1.0.0.xsd"&gt;
+	&lt;servers&gt;
+		&lt;server&gt;
+			&lt;id&gt;http://localhost:8081&lt;/id&gt;
+			&lt;username&gt;admin&lt;/username&gt;
+			&lt;password&gt;admin123&lt;/password&gt;
+		&lt;/server&gt;
+	&lt;/servers&gt;
+&lt;/settings&gt;
+</code></pre></div></div>
+
+<p>Notice that the id must match the scheme, the host, and the port if not the default port for the scheme.</p>
+
+<h2 id="ides">IDEs</h2>
+
+<p>The repository view in the IDE will show detailed information when you hover the mouse over the the repository entry, the program entry, or the revision entry.</p>
+
+<h2 id="caveats">Caveats</h2>
+
+<ul>
+  <li>The repository does not use any Maven code to parse the POMs to keep the dependencies to bnd low. It attempts to strictly follow the rules prescribed for POMs concerning properties, inheritance, and ordering. However, there are a number of issues with this approach.
+    <ul>
+      <li>bnd attempts to follow the rules, maven sometimes relaxes its own and other specification rules so you could run into errors where POMs are wrong but still accepted by Maven.</li>
+      <li>It is possible to add dependencies via a plugin. This is not supported for what should be obvious reasons.</li>
+    </ul>
+  </li>
+  <li>The parser ignores repositories in POMs and restricts the repositories to the ones listes in the <code class="highlighter-rouge">releaseUrl</code> and <code class="highlighter-rouge">snapshotUrl</code> configuration parameters. This is for security reasons.</li>
+  <li>The parser ignores any restrictions on dependencies because the intention of these restrictions is to handle unicity of the class path. The primary purpose of the Bnd Pom Repository is to be used in assembling. Since this is not an issue for the resolver we ignore this. You can always override this with the <code class="highlighter-rouge">-runblacklist</code> instruction.</li>
+</ul>
+
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/releases/5.1.0/plugins/maven.html'></a> <a href='/releases/5.1.0/plugins/signer.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/5.1.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

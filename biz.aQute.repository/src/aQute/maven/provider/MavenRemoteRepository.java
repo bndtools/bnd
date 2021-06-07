@@ -3,6 +3,7 @@ package aQute.maven.provider;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Map;
@@ -17,9 +18,10 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequestException;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
+import aQute.libg.uri.URIUtil;
 import aQute.maven.api.Program;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MetadataParser.ProgramMetadata;
@@ -27,22 +29,30 @@ import aQute.maven.provider.MetadataParser.RevisionMetadata;
 import aQute.service.reporter.Reporter;
 
 public class MavenRemoteRepository extends MavenBackingRepository {
+	private static final int				STAGING_DELAY		= 60 * 60 * 1000;										// 1
+																														// hour
+
 	private final static Logger				logger				= LoggerFactory.getLogger(MavenRemoteRepository.class);
 	final HttpClient						client;
 	final Map<Revision, RevisionMetadata>	revisions			= new ConcurrentHashMap<>();
 	final Map<Program, ProgramMetadata>		programs			= new ConcurrentHashMap<>();
 	final String							base;
 	final static long						DEFAULT_MAX_STALE	= TimeUnit.HOURS.toMillis(1);
+	final boolean							remote;
+	volatile long							nexusStagingBug		= 0L;
 
 	public MavenRemoteRepository(File root, HttpClient client, String base, Reporter reporter) throws Exception {
 		super(root, base, reporter);
 		this.client = client;
 		this.base = base;
+		this.nexusStagingBug = base.contains("staging") ? 0L : Long.MAX_VALUE;
+		URI uri = new URI(base);
+		remote = URIUtil.isRemote(uri);
 	}
 
 	@Override
-	public TaggedData fetch(String path, File file) throws Exception {
-		Promise<TaggedData> promise = fetch(path, file, 3, 1000L);
+	public TaggedData fetch(String path, File file, boolean force) throws Exception {
+		Promise<TaggedData> promise = fetch(path, file, 3, 1000L, force);
 		Throwable failure = promise.getFailure(); // wait for completion
 		if (failure != null) {
 			throw Exceptions.duck(failure);
@@ -50,11 +60,11 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 		return promise.getValue();
 	}
 
-	private Promise<TaggedData> fetch(String path, File file, int retries, long delay) throws Exception {
+	private Promise<TaggedData> fetch(String path, File file, int retries, long delay, boolean force) throws Exception {
 		logger.debug("Fetching {}", path);
 		return client.build()
 			.headers("User-Agent", "Bnd")
-			.useCache(file, DEFAULT_MAX_STALE)
+			.useCache(file, force ? -1 : DEFAULT_MAX_STALE)
 			.asTag()
 			.async(new URL(base + path))
 			.then(success -> success.flatMap(tag -> {
@@ -96,8 +106,8 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 						.getMessage(), delay, retries);
 					@SuppressWarnings("unchecked")
 					Promise<TaggedData> delayed = (Promise<TaggedData>) failed.delay(delay);
-					return delayed.recoverWith(
-						f -> fetch(path, file, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
+					return delayed.recoverWith(f -> fetch(path, file, retries - 1,
+						Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10)), force));
 				}));
 	}
 
@@ -127,6 +137,21 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 					break;
 			}
 		}
+
+		//
+		// Giant hack ... Nexus can split a staging
+		// repository when the uploads are too close in time. So we
+		// delay the 'first' upload if the previous upload was
+		// longer than an hour ago. If the URL does not contain
+		// 'staging', this will not happen since the stagingHack is then set to
+		// MAX
+		//
+
+		if (System.currentTimeMillis() - nexusStagingBug > STAGING_DELAY) {
+			Thread.sleep(5000);
+			nexusStagingBug = System.currentTimeMillis();
+		}
+
 		try (TaggedData tag = client.build()
 			.put()
 			.upload(sha1.asHex())
@@ -172,12 +197,18 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 
 	@Override
 	public String toString() {
-		return "RemoteRepo [base=" + base + ", id=" + id + "]";
+		return "RemoteRepo [base=" + base + ", id=" + id + ", user=" + getUser() + "]";
 	}
 
 	@Override
-	public String getUser() throws Exception {
-		return client.getUserFor(base);
+	public String getUser() {
+		try {
+			return client.getUserFor(base);
+		} catch (MalformedURLException e) {
+			return "no user for invalid url " + e.getMessage();
+		} catch (Exception e) {
+			return "no user : " + Exceptions.causes(e);
+		}
 	}
 
 	@Override
@@ -188,5 +219,10 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 	@Override
 	public boolean isFile() {
 		return false;
+	}
+
+	@Override
+	public boolean isRemote() {
+		return remote;
 	}
 }

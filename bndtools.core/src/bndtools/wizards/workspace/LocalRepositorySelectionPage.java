@@ -50,12 +50,10 @@ class LocalRepositorySelectionPage extends WizardPage {
 		final TableViewer viewer = new TableViewer(table);
 		viewer.setContentProvider(new RepositoryTreeContentProvider());
 		viewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
-		viewer.setFilters(new ViewerFilter[] {
-			new ViewerFilter() {
-				@Override
-				public boolean select(Viewer viewer, Object parentElement, Object element) {
-					return (element instanceof RepositoryPlugin) && ((RepositoryPlugin) element).canWrite();
-				}
+		viewer.setFilters(new ViewerFilter() {
+			@Override
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				return (element instanceof RepositoryPlugin) && ((RepositoryPlugin) element).canWrite();
 			}
 		});
 

@@ -5,56 +5,67 @@
 import aQute.bnd.gradle.Baseline
 
 plugins {
-    id 'biz.aQute.bnd.builder'
+	id 'biz.aQute.bnd.builder'
 }
 
-group 'test'
+group = 'test'
 version = '1.1.0'
 
 repositories {
-    maven {
-      url uri('repodir')
-    }
-    mavenCentral()
+	maven {
+		url uri('repodir')
+	}
+	mavenCentral()
 }
 
 dependencies {
-    compile 'commons-codec:commons-codec:1.5'
-    compile 'commons-lang:commons-lang:2.6'
-    testCompile 'junit:junit:4.9'
+	implementation 'commons-codec:commons-codec:1.5'
+	implementation 'commons-lang:commons-lang:2.6'
+	testImplementation 'junit:junit:4.9'
 }
 
 jar {
-    manifest {
-        attributes('Implementation-Title': baseName,
-                   'Implementation-Version': version,
-                   '-includeresource': '{bar.txt}',
-                   '-include': 'other.bnd',
-                   'Override': 'This should be overridden by the bnd file'
-                   )
-    }
+	manifest {
+		attributes('Implementation-Title': project.archivesBaseName,
+		'Implementation-Version': project.version,
+		'-includeresource': '{bar.txt}',
+		'-include': 'other.bnd',
+		'Override': 'This should be overridden by the bnd file'
+		)
+	}
 }
 
 baseline {
-   description 'Baseline'
-   group 'build'
-   ignoreFailures = true
+	description = 'Baseline'
+	group = 'build'
+	ignoreFailures = true
 }
 
 task baselineDiffpackages(type: Baseline) {
-   description 'Baseline diffpackages'
-   group 'build'
-   bundle jar
-   baseline configurations.baseline
-   diffpackages '!doubler', '*'
-   ignoreFailures = false
+	description = 'Baseline diffpackages'
+	group = 'build'
+	bundle = jar
+	baseline = configurations.baseline
+	diffpackages = ['!doubler']
+	diffpackages '*'
+	ignoreFailures = false
+}
+
+task baselineDiffignore(type: Baseline) {
+	description = 'Baseline diffignore'
+	group = 'build'
+	bundle jar
+	baseline configurations.baseline
+	diffignore 'foo.txt'
+	diffignore = ['OSGI-OPT']
+	ignoreFailures = false
 }
 
 task baselineSelf(type: Baseline) {
-   description 'Baseline Self'
-   group 'build'
-   bundle jar
-   baseline jar.archivePath
-   ignoreFailures = false
-   baselineReportDirName = 'foo'
+	description = 'Baseline Self'
+	group = 'build'
+	bundle jar
+	baseline jar.archiveFile
+	ignoreFailures = false
+	baselineReportDirName = 'foo'
 }

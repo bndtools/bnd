@@ -155,8 +155,8 @@ public class CalltreeResource extends WriteResource {
 	private static void method(PrintWriter out, String element, Clazz.MethodDef source, String closeElement) {
 		out.println("      <" + element + " class='" + source.getContainingClass()
 			.getFQN() + "'" + getAccess(source.getAccess())
-			+ (source.isConstructor() ? "" : " name='" + source.getName() + "'") + " descriptor='"
-			+ source.descriptor() + "' pretty='" + source.toString() + "'" + closeElement);
+			+ (source.isConstructor() ? "" : " name='" + source.getName() + "'") + " descriptor='" + source.descriptor()
+			+ "' pretty='" + source.toString() + "'" + closeElement);
 	}
 
 	private static String getAccess(int access) {

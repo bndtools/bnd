@@ -1,0 +1,9 @@
+#Test-Cases: ${classes;CONCRETE;PUBLIC;NAMED;*Test*}
+Test-Cases: ${classes;CONCRETE;PUBLIC;NAMED;*Test*},some.unknown.TestClass
+
+-buildpath: \
+	org.apache.servicemix.bundles.junit,\
+	org.junit.jupiter.api,\
+	org.opentest4j,\
+	org.junit.jupiter.params,\
+	org.assertj.core

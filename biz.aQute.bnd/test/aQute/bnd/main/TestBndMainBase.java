@@ -1,9 +1,8 @@
 package aQute.bnd.main;
 
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -32,10 +31,8 @@ public class TestBndMainBase {
 	@Rule
 	public CapturedSystemOutput						capturedStdIO			= new CapturedSystemOutput();
 
-	protected static final Function<Path, String>	DEFAULT_SNAPSHOT_FUNC	= p -> {
-																				return p.toFile()
-																					.lastModified() + "";
-																			};
+	protected static final Function<Path, String>	DEFAULT_SNAPSHOT_FUNC	= p -> (p.toFile()
+		.lastModified() + "");
 
 	private static final String						TESTDATA_BASE_DIR		= "testdata";
 
@@ -63,14 +60,14 @@ public class TestBndMainBase {
 	/* Folder based helper */
 	protected void initTestData(final String subdir) throws IOException {
 		folder.copyDataFrom(Paths.get(TESTDATA_BASE_DIR, subdir))
-			.snapshot(DEFAULT_SNAPSHOT_FUNC, 1000l);
+			.snapshot(DEFAULT_SNAPSHOT_FUNC, 1000L);
 		// delay after snapshot to correctly reflect file-modifications based on
 		// timestampchanges
 	}
 
 	protected void initTestDataAll() throws IOException {
 		folder.copyDataFrom(Paths.get("", TESTDATA_BASE_DIR))
-			.snapshot(DEFAULT_SNAPSHOT_FUNC, 1000l);
+			.snapshot(DEFAULT_SNAPSHOT_FUNC, 1000L);
 		// delay after snapshot to correctly reflect file-modifications based on
 		// timestampchanges
 	}
@@ -114,11 +111,23 @@ public class TestBndMainBase {
 	}
 
 	protected void expectOutputContains(String expected) {
-		assertThat("missing output", capturedStdIO.getSystemOutContent(), containsString(expected));
+		assertThat(capturedStdIO.getSystemOutContent()).as("missing output")
+			.contains(expected);
+	}
+
+	protected void expectOutputContainsPattern(String regex) {
+		assertThat(capturedStdIO.getSystemOutContent()).as("output does not contain pattern")
+			.containsPattern(regex);
 	}
 
 	protected void expectErrorContains(String expected) {
-		assertThat("missing error", capturedStdIO.getSystemErrContent(), containsString(expected));
+		assertThat(capturedStdIO.getSystemErrContent()).as("missing error")
+			.contains(expected);
+	}
+
+	protected void expectErrorContainsPattern(String regex) {
+		assertThat(capturedStdIO.getSystemErrContent()).as("error does not contain pattern")
+			.containsPattern(regex);
 	}
 
 	protected void expectNoError(boolean ignoreWarnings, String... expects) {
@@ -130,7 +139,8 @@ public class TestBndMainBase {
 		}
 		if (expects != null) {
 			for (String expect : expects) {
-				assertThat("missing error", capturedStdIO.getSystemErrContent(), containsString(expect));
+				assertThat(capturedStdIO.getSystemErrContent()).as("missing error")
+					.contains(expect);
 				errors = errors.replaceAll(expect, "")
 					.trim();
 			}

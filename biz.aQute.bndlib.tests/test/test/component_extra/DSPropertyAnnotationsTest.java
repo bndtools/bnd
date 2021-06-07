@@ -1,5 +1,7 @@
 package test.component_extra;
 
+import static aQute.bnd.test.BndTestCase.assertOk;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.ElementType;
@@ -17,14 +19,14 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
-import aQute.bnd.test.BndTestCase;
 import aQute.bnd.test.XmlTester;
+import junit.framework.TestCase;
 
 /*
  * Placed in a new package to avoid breaking lots of existing tests with the additional packages
  * we need to import.
  */
-public class DSPropertyAnnotationsTest extends BndTestCase {
+public class DSPropertyAnnotationsTest extends TestCase {
 
 	private Jar jar;
 

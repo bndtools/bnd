@@ -1,28 +1,27 @@
 package test.component;
 
+import static aQute.bnd.test.BndTestCase.assertOk;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.PermissionGenerator;
 import aQute.bnd.osgi.Resource;
-import aQute.bnd.test.BndTestCase;
 
-public class PermissionGeneratorTest extends BndTestCase {
+public class PermissionGeneratorTest {
 	private static Set<String> getPermissionsGeneratedFor(String permissionFile) throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*_basic");
@@ -44,12 +43,14 @@ public class PermissionGeneratorTest extends BndTestCase {
 		Resource resource = jar.getResource("OSGI-INF/permissions.perm");
 		BufferedReader r = new BufferedReader(new InputStreamReader(resource.openInputStream()));
 
-		Set<String> permissions = new TreeSet<>();
+		Set<String> permissions = new HashSet<>();
 		String line = null;
 		while ((line = r.readLine()) != null) {
 			if (!line.isEmpty()) {
-				assertTrue("Found duplicate permission: " + line, permissions.add(line));
 				System.err.println("Permission read: " + line);
+				assertThat(permissions).as("Found duplicate permission: %s", line)
+					.doesNotContain(line);
+				permissions.add(line);
 			}
 		}
 
@@ -59,21 +60,23 @@ public class PermissionGeneratorTest extends BndTestCase {
 	}
 
 	private static Set<String> filterAndSubtract(Set<String> input, String regex) {
-		Set<String> result = new TreeSet<>();
+		Set<String> result = new HashSet<>();
 		Pattern pattern = Pattern.compile(regex);
 		for (Iterator<String> it = input.iterator(); it.hasNext();) {
 			String string = it.next();
 			Matcher matcher = pattern.matcher(string);
 			if (matcher.matches()) {
+				String selected = matcher.group(1);
+				result.add(selected);
 				it.remove();
-				result.add(matcher.group(1));
 			}
 		}
 		return result;
 	}
 
-	private static void assertNotingLeft(Set<String> permissions) {
-		assertEquals("No other permissions expected", Collections.emptySet(), permissions);
+	private static void assertNothingLeft(Set<String> permissions) {
+		assertThat(permissions).as("No other permissions expected")
+			.isEmpty();
 	}
 
 	private static void assertPackageAvailable(Set<String> permissions) {
@@ -83,7 +86,7 @@ public class PermissionGeneratorTest extends BndTestCase {
 			"^\\(org.osgi.framework.PackagePermission \"([^\"]+)\" \"export\"\\)$");
 
 		/* @formatter:off */
-		assertThat(importedPackages).containsExactly(
+		assertThat(importedPackages).containsExactlyInAnyOrder(
 			"aQute.bnd.differ",
             "aQute.bnd.header",
             "aQute.bnd.osgi",
@@ -92,18 +95,19 @@ public class PermissionGeneratorTest extends BndTestCase {
             "aQute.bnd.version",
             "aQute.lib.filter",
             "aQute.lib.io",
+            "aQute.lib.xml",
             "aQute.service.reporter",
             "javax.xml.namespace",
             "javax.xml.parsers",
             "javax.xml.xpath",
-            "junit.framework",
             "org.assertj.core.api",
+            "org.junit.jupiter.api",
             "org.osgi.framework",
             "org.osgi.service.component",
             "org.osgi.service.log",
             "org.w3c.dom",
             "org.xml.sax");
-		assertThat(exportedPackages).containsExactly("test.api");
+		assertThat(exportedPackages).containsExactlyInAnyOrder("test.api");
 		/* @formatter:on */
 	}
 
@@ -114,14 +118,14 @@ public class PermissionGeneratorTest extends BndTestCase {
 			"^\\(org.osgi.framework.ServicePermission \"([^\"]+)\" \"get\"\\)$");
 
 		/* @formatter:off */
-		assertEquals("Registered services",
-				new TreeSet<>(Arrays.asList("java.lang.Runnable",
-						"java.io.Serializable",
-						"java.lang.Object")),
-						registeredServices);
-		assertEquals("Required services",
-				new TreeSet<>(Arrays.asList("org.osgi.service.log.LogService")),
-						requiredServices);
+		assertThat(registeredServices).as("Registered services")
+			.containsExactlyInAnyOrder(
+				"java.io.Serializable",
+				"java.lang.Object",
+				"java.lang.Runnable",
+				"org.osgi.service.component.ComponentFactory");
+		assertThat(requiredServices).as("Required services")
+			.containsExactlyInAnyOrder("org.osgi.service.log.LogService");
 		/* @formatter:on */
 	}
 
@@ -131,118 +135,123 @@ public class PermissionGeneratorTest extends BndTestCase {
 		Set<String> providedCapabilities = filterAndSubtract(permissions,
 			"^\\(org.osgi.framework.CapabilityPermission \"([^\"]+)\" \"provide\"\\)$");
 
-		/* @formatter:off */
-		assertEquals("Provided capabilities",
-				new TreeSet<>(Arrays.asList("osgi.service")),
-				providedCapabilities);
-		assertEquals("Required capabilities",
-				new TreeSet<>(Arrays.asList("osgi.service")),
-						requiredCapabilities);
-		/* @formatter:on */
+		assertThat(providedCapabilities).as("Provided capabilities")
+			.containsExactlyInAnyOrder("osgi.service");
+		assertThat(requiredCapabilities).as("Required capabilities")
+			.containsExactlyInAnyOrder("osgi.service");
 	}
 
 	private static void assertAdminAvailable(Set<String> permissions) {
 		Set<String> adminCapabilities = filterAndSubtract(permissions, "^\\((org.osgi.framework.AdminPermission)\\)$");
-		assertEquals("Admin capabilities", 1, adminCapabilities.size());
+		assertThat(adminCapabilities).as("Admin capabilities")
+			.hasSize(1);
 	}
 
-	public static void testJustPackages() throws Exception {
+	@Test
+	public void testJustPackages() throws Exception {
 		Set<String> permissions = getPermissionsGeneratedFor("${permissions;packages}");
 		assertPackageAvailable(permissions);
-		assertNotingLeft(permissions);
+		assertNothingLeft(permissions);
 	}
 
-	public static void testJustServices() throws Exception {
+	@Test
+	public void testJustServices() throws Exception {
 		Set<String> permissions = getPermissionsGeneratedFor("${permissions;services}");
 		assertServicesAvailable(permissions);
-		assertNotingLeft(permissions);
+		assertNothingLeft(permissions);
 	}
 
-	public static void testJustCapabilities() throws Exception {
+	@Test
+	public void testJustCapabilities() throws Exception {
 		Set<String> permissions = getPermissionsGeneratedFor("${permissions;capabilities}");
 		assertCapabilitiesAvailable(permissions);
-		assertNotingLeft(permissions);
+		assertNothingLeft(permissions);
 	}
 
-	public static void testJustAdmin() throws Exception {
+	@Test
+	public void testJustAdmin() throws Exception {
 		Set<String> permissions = getPermissionsGeneratedFor("${permissions;admin}");
 		assertAdminAvailable(permissions);
-		assertNotingLeft(permissions);
+		assertNothingLeft(permissions);
 	}
 
-	public static void testConcatenatedPermissionsNoAdmin() throws Exception {
+	@Test
+	public void testConcatenatedPermissionsNoAdmin() throws Exception {
 		Set<String> permissions = getPermissionsGeneratedFor(
 			"${permissions;packages}${permissions;services}${permissions;capabilities}");
 		assertPackageAvailable(permissions);
 		assertServicesAvailable(permissions);
 		assertCapabilitiesAvailable(permissions);
-		assertNotingLeft(permissions);
+		assertNothingLeft(permissions);
 	}
 
-	public static void testInlinePermissionsNoAdmin() throws Exception {
+	@Test
+	public void testInlinePermissionsNoAdmin() throws Exception {
 		Set<String> permissions = getPermissionsGeneratedFor("${permissions;packages;services;capabilities}");
 		assertPackageAvailable(permissions);
 		assertServicesAvailable(permissions);
 		assertCapabilitiesAvailable(permissions);
-		assertNotingLeft(permissions);
+		assertNothingLeft(permissions);
 	}
 
-	public static void testInlinePermissions() throws Exception {
+	@Test
+	public void testInlinePermissions() throws Exception {
 		Set<String> permissions = getPermissionsGeneratedFor("${permissions;packages;services;capabilities;admin}");
 		assertPackageAvailable(permissions);
 		assertServicesAvailable(permissions);
 		assertCapabilitiesAvailable(permissions);
 		assertAdminAvailable(permissions);
-		assertNotingLeft(permissions);
+		assertNothingLeft(permissions);
 	}
 
-	public static void testCustomCapabilityParsing() throws Exception {
+	@Test
+	public void testCustomCapabilityParsing() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Require-Capability", "osgi.service;filter:=\"(objectClass=*)\"");
 		Set<String> services = PermissionGenerator.getReferencedServices(b);
-		assertEquals(Collections.singleton("*"), services);
+		assertThat(services).containsExactlyInAnyOrder("*");
 
 		b.setProperty("Require-Capability", "osgi.service;filter:=\"(!(objectClass=*))\"");
 		services = PermissionGenerator.getReferencedServices(b);
-		assertEquals(Collections.emptySet(), services);
+		assertThat(services).isEmpty();
 
 		b.setProperty("Require-Capability", "osgi.service;filter:=\"(!(objectClass=test.Helper))\"");
 		services = PermissionGenerator.getReferencedServices(b);
-		assertEquals(Collections.emptySet(), services);
+		assertThat(services).isEmpty();
 
 		b.setProperty("Require-Capability", "osgi.service;filter:=\"(objectClass=test.*)\"");
 		services = PermissionGenerator.getReferencedServices(b);
-		assertEquals(Collections.singleton("test.*"), services);
+		assertThat(services).containsExactlyInAnyOrder("test.*");
 
 		b.setProperty("Require-Capability", "osgi.service;filter:=\"(|(objectClass=test.*)(objectClass=test2.*))\"");
 		services = PermissionGenerator.getReferencedServices(b);
-		assertEquals(new HashSet<>(Arrays.asList("test.*", "test2.*")), services);
+		assertThat(services).containsExactlyInAnyOrder("test.*", "test2.*");
 
 		b.setProperty("Require-Capability", "osgi.service;filter:=\"(|(objectClass=test.*)(!(objectClass=test2.*)))\"");
 		services = PermissionGenerator.getReferencedServices(b);
-		assertEquals(Collections.singleton("test.*"), services);
+		assertThat(services).containsExactlyInAnyOrder("test.*");
 
 		// In the following cases, there is no way to determine the permissions
 		// needed, so nothing is generated. In these cases it is up to the user
 		// to generate the permission
 		b.setProperty("Require-Capability", "osgi.service;filter:=\"(objectClass=test2.*Helper)\"");
 		services = PermissionGenerator.getReferencedServices(b);
-		assertEquals(Collections.emptySet(), services);
+		assertThat(services).isEmpty();
 
 		b.setProperty("Require-Capability", "osgi.service;filter:=\"(objectClass=test*.*)\"");
 		services = PermissionGenerator.getReferencedServices(b);
-		assertEquals(Collections.emptySet(), services);
+		assertThat(services).isEmpty();
 
 		b.setProperty("Require-Capability", "osgi.service;filter:=\"(other=prop)\"");
 		services = PermissionGenerator.getReferencedServices(b);
-		assertEquals(Collections.emptySet(), services);
+		assertThat(services).isEmpty();
 
 		b.setProperty("Require-Capability", "osgi.service;filter:=\"(&(objectClass=test.*)(objectClass=*Helper))\"");
 		services = PermissionGenerator.getReferencedServices(b);
-		assertEquals(Collections.emptySet(), services);
+		assertThat(services).isEmpty();
 
 		b.setProperty("Require-Capability", "osgi.service;filter:=\"(!(&(objectClass=test.*)(objectClass=*Helper)))\"");
 		services = PermissionGenerator.getReferencedServices(b);
-		assertEquals(Collections.emptySet(), services);
+		assertThat(services).isEmpty();
 	}
 }

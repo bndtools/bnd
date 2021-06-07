@@ -6,27 +6,29 @@ def buildProject = project
 
 /* Configure the workspace project */
 configure(parent) {
-  buildDir = buildProject.buildDir
+	layout.buildDirectory.set(buildProject.layout.buildDirectory)
 
-  def build = tasks.register(bnd_defaultTask) {
-    dependsOn buildProject.absoluteProjectPath('jarDependencies')
-    dependsOn buildProject.absoluteProjectPath('checkDependencies')
-    dependsOn buildProject.absoluteProjectPath('releaseNeeded')
-    description "Assembles, tests and releases the ${buildProject.name} project."
-    group 'build'
-  }
-  defaultTasks = [absoluteProjectPath(build.name)]
+	def build = tasks.register(bnd_defaultTask) {
+		dependsOn buildProject.absoluteProjectPath('jarDependencies')
+		dependsOn buildProject.absoluteProjectPath('checkDependencies')
+		dependsOn buildProject.absoluteProjectPath('releaseNeeded')
+		description = "Assembles, tests and releases the ${buildProject.name} project."
+		group = 'build'
+	}
+	defaultTasks = [
+		absoluteProjectPath(build.name)
+	]
 }
 
 tasks.named('checkDependencies') {
-  mustRunAfter 'jarDependencies'
+	mustRunAfter 'jarDependencies'
 }
 
 tasks.named('releaseDependencies') {
-  mustRunAfter 'jarDependencies', 'checkDependencies'
+	mustRunAfter 'jarDependencies', 'checkDependencies'
 }
 
 tasks.named('clean') {
-  File releaserepo = file(bnd('releaserepo', 'bundles')) /* Release repository. */
-  delete releaserepo
+	File releaserepo = file(bnd('releaserepo', 'bundles')) /* Release repository. */
+	delete releaserepo
 }

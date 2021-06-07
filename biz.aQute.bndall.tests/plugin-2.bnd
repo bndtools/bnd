@@ -1,0 +1,5 @@
+-includepackage: biz.aQute.bndall.tests.plugin_2
+
+Main-Class biz.aQute.bndall.tests.plugin_2.MainClass
+
+Provide-Capability bnd.mainclass; bnd.mainclass=biz.aQute.bndall.tests.plugin_2.MainClass

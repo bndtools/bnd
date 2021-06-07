@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
@@ -60,11 +61,9 @@ public class JSONTest extends TestCase {
 			if (getClass() != obj.getClass())
 				return false;
 			Version other = (Version) obj;
-			if (string == null) {
-				if (other.string != null)
-					return false;
-			} else if (!string.equals(other.string))
+			if (!Objects.equals(string, other.string)) {
 				return false;
+			}
 			return true;
 		}
 
@@ -294,6 +293,21 @@ public class JSONTest extends TestCase {
 			.put(i)
 			.toString();
 		assertEquals("[\"a\",\"b\",\"c\"]", s);
+
+		s = codec.enc()
+			.indent("  ")
+			.put(i)
+			.toString();
+
+		// @formatter:off
+		String expected=
+			   "[\n"
+			   + "  \"a\",\n"
+			   + "  \"b\",\n"
+			   + "  \"c\"\n"
+			   + "]";
+		// @formatter:on
+		assertEquals(expected, s);
 	}
 
 	/**
@@ -339,7 +353,7 @@ public class JSONTest extends TestCase {
 	}
 
 	/**
-	 * Test maps
+	 * Test Stream
 	 *
 	 * @throws Exception
 	 */
@@ -360,14 +374,30 @@ public class JSONTest extends TestCase {
 	 */
 
 	public void testMaps() throws Exception {
-		Encoder enc = codec.enc();
 		Map<String, Object> map = new HashMap<>();
 		map.put("a", new int[] {
 			1, 2
 		});
-		String string = enc.put(map)
+		String string = codec.enc()
+			.put(map)
 			.toString();
 		assertEquals("{\"a\":[1,2]}", string);
+
+		string = codec.enc()
+			.indent("  ")
+			.put(map)
+			.toString();
+
+		// @formatter:off
+		String expected=
+			  "{\n"
+			+ "  \"a\":[\n"
+			+ "    1,\n"
+			+ "    2\n"
+			+ "  ]\n"
+			+ "}";
+		// @formatter:on
+		assertEquals(expected, string);
 	}
 
 	/**
@@ -508,6 +538,21 @@ public class JSONTest extends TestCase {
 			})
 			.toString());
 
+		String s = enc.to()
+			.indent("  ")
+			.put(new int[] {
+				1, 2
+			})
+			.toString();
+
+		// @formatter:off
+		String expected=
+			     "[\n"
+			   + "  1,\n"
+			   + "  2\n"
+			   + "]";
+		// @formatter:on
+		assertEquals(expected, s);
 	}
 
 	/**
@@ -791,7 +836,7 @@ public class JSONTest extends TestCase {
 		data1.d = 3.0d;
 		data1.f = 3.0f;
 		data1.i = 1;
-		data1.l = 2l;
+		data1.l = 2L;
 		data1.s = "abc";
 		data1.sh = -10;
 
@@ -810,7 +855,7 @@ public class JSONTest extends TestCase {
 		data1.d = 3.0d;
 		data1.f = 3.0f;
 		data1.i = 1;
-		data1.l = 2l;
+		data1.l = 2L;
 		data1.s = "abc";
 		data1.sh = -10;
 		data1.map = new HashMap<>();
@@ -834,7 +879,7 @@ public class JSONTest extends TestCase {
 		assertEquals(3.0d, d.d);
 		assertEquals(3.0f, d.f);
 		assertEquals(1, d.i);
-		assertEquals(2l, d.l);
+		assertEquals(2L, d.l);
 		assertEquals("abc", d.s);
 		assertEquals(-10, d.sh);
 	}
@@ -850,7 +895,7 @@ public class JSONTest extends TestCase {
 		assertEquals(3.0d, d.d);
 		assertEquals(3.0f, d.f);
 		assertEquals((Integer) 1, d.i);
-		assertEquals((Long) 2l, d.l);
+		assertEquals((Long) 2L, d.l);
 		assertEquals("abc", d.s);
 		assertEquals((Short) (short) -10, d.sh);
 
@@ -1058,6 +1103,25 @@ public class JSONTest extends TestCase {
 		public Sex			sex;
 		public Date			birthday;
 		public List<Person>	offspring	= new ArrayList<>();
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(birthday, name, offspring, sex);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Person other = (Person) obj;
+			return Objects.equals(birthday, other.birthday) && Objects.equals(name, other.name)
+				&& Objects.equals(offspring, other.offspring) && sex == other.sex;
+		}
+
 	}
 
 	public void testBlog() throws Exception {
@@ -1074,11 +1138,40 @@ public class JSONTest extends TestCase {
 		u1.offspring.add(u3);
 
 		String s = codec.enc()
+			.put(u1)
+			.toString();
+
+		String expected = "{\"name\":\"Peter\",\"offspring\":[{\"name\":\"Mischa\",\"sex\":\"FEMALE\"},{\"name\":\"Thomas\",\"sex\":\"MALE\"}],\"sex\":\"MALE\"}";
+		assertEquals(expected, s);
+
+		Person u4 = codec.dec()
+			.from(s)
+			.get(Person.class);
+		assertTrue(Objects.deepEquals(u1, u4));
+
+		s = codec.enc()
 			.indent("  ")
 			.put(u1)
 			.toString();
-		System.out.println(s);
-		// Person u4 = codec.dec().from(s).get( Person.class );
+
+		// @formatter:off
+		expected =
+			 "{\n"
+			+ "  \"name\":\"Peter\",\n"
+			+ "  \"offspring\":[\n"
+			+ "    {\n"
+			+ "      \"name\":\"Mischa\",\n"
+			+ "      \"sex\":\"FEMALE\"\n"
+			+ "    },\n"
+			+ "    {\n"
+			+ "      \"name\":\"Thomas\",\n"
+			+ "      \"sex\":\"MALE\"\n"
+			+ "    }\n"
+			+ "  ],\n"
+			+ "  \"sex\":\"MALE\"\n"
+			+ "}";
+		// @formatter:on
+		assertEquals(expected, s);
 
 	}
 

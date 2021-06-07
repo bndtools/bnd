@@ -25,7 +25,7 @@ Spring brought dependency injection to the masses that allowed the consumers and
 
 The solution OSGi came up with in 1998 was to use a _service broker_. A broker makes sure that consumers and providers were bound together once they are available. This is the only true modular model that allows all implementation details to remain private inside the module. 
 
-<embed class="illustration" src="/img/chapters/concepts-service.svg" />
+<embed class="illustration" src="{{ '/img/chapters/concepts-service.svg' | prepend:site.baseurl }}" />
 
 A the consequence of this model is that services, an implementation object implementing a Java interface from a specification package, cannot be assumed to be always there. Where Spring calculates the dependencies of its beans to initialize a system in the right order, a broker negotiates when a service is available since it does know any of its implementation details. One of those implementation details is when that service will be available. The broker is therefore dynamic, it can react to changing circumstances, another even more both maligned and misunderstood OSGi feature.
 
@@ -35,13 +35,13 @@ The hardest part of OSGi is to look at it with a clean slate. The core model is 
 
 So to summarize, a bundle is a JAR that imports and exports a set of packages. These imports and exports are bound to other bundles when they are resolved, allowing multiple versions of the same package. Once a bundle is started, it can  then communicate with the external world at its own discretion; it can also get and register services to collaborate with other bundles. The following picture depicts the model of an OSGi application:
 
-<embed class="illustration" src="/img/chapters/concepts-bundles.svg" />
+<embed class="illustration" src="{{ '/img/chapters/concepts-bundles.svg' | prepend:site.baseurl }}" />
 
 The symbols used are defined in the OSGi specifications. The rectangle with rounded corners is a bundle, the triangle is a service (it always points in the dependency direction, i.e. the Reporter bundle depends on the sensor service to be there. Input and output is depicted with the corresponding flow chart symbol.
 
 In a perfect OSGi world, packages are just a minor detail. Until then, we also need some way to show package imports and package exports. In the OSGi specification, we use an open rectangle for imported packages and and black rectangle for exported packages. Private packages are depicted with a grey rectangle, see:
 
-<embed class="illustration" src="/img/chapters/concepts-packages.svg" />
+<embed class="illustration" src="{{ '/img/chapters/concepts-packages.svg' | prepend:site.baseurl }}" />
 
 ## Components
 
@@ -55,7 +55,7 @@ The bndlib _workspace_ is an encapsulation of a set of cohesive _projects_, wher
 
 Projects can depend on other projects in the workspace or import bundles from the repositories. This is depicted in the following figure.
 
-<embed class="illustration" src="/img/chapters/concepts-workspace.svg" />
+<embed class="illustration" src="{{ '/img/chapters/concepts-workspace.svg' | prepend:site.baseurl }}" />
 
 A workspace is a single directory, just like a git workspace it encompasses all its sub directories. Though the name of the workspace directory is free to choose, it is highly recommended to use a naming strategy. In practice you will create many different workspaces and having a naming strategy will significantly simplify the handling of these workspaces.
 

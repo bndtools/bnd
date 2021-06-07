@@ -11,7 +11,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +29,7 @@ import aQute.maven.api.Program;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MetadataParser.ProgramMetadata;
 import aQute.maven.provider.MetadataParser.RevisionMetadata;
+import aQute.maven.provider.MetadataParser.Snapshot;
 import aQute.service.reporter.Reporter;
 
 public abstract class MavenBackingRepository implements Closeable {
@@ -54,7 +57,11 @@ public abstract class MavenBackingRepository implements Closeable {
 		return s.substring(0, 8);
 	}
 
-	public abstract TaggedData fetch(String path, File file) throws Exception;
+	public TaggedData fetch(String path, File file) throws Exception {
+		return fetch(path, file, false);
+	}
+
+	public abstract TaggedData fetch(String path, File file, boolean force) throws Exception;
 
 	protected void checkDigest(String fileDigest, String remoteDigest, File file) {
 		if (remoteDigest == null)
@@ -107,25 +114,30 @@ public abstract class MavenBackingRepository implements Closeable {
 		}
 	}
 
-	RevisionMetadata getMetadata(Revision revision) throws Exception {
+	Optional<RevisionMetadata> getMetadata(Revision revision, boolean force) throws Exception {
+		RevisionMetadata metadata;
+		if (force) {
+			revisions.remove(revision);
+			metadata = null;
+		} else {
+			metadata = revisions.get(revision);
+		}
+		if (metadata != null && metadata.lastUpdated + TimeUnit.HOURS.toMillis(24) > System.currentTimeMillis())
+			return Optional.of(metadata);
+
 		File metafile = IO.getFile(local, revision.metadata(id));
-		RevisionMetadata metadata = revisions.get(revision);
 
-		TaggedData tag = fetch(revision.metadata(), metafile);
+		TaggedData tag = fetch(revision.metadata(), metafile, force);
 		if (tag.getState() == State.NOT_FOUND || tag.getState() == State.OTHER) {
-			if (metadata == null) {
-				metadata = new RevisionMetadata();
-				revisions.put(revision, metadata);
-			}
-			return metadata;
-		}
-
-		if (metadata == null || tag.getState() == State.UPDATED) {
-			metadata = MetadataParser.parseRevisionMetadata(metafile);
+			metadata = new RevisionMetadata();
+			metadata.invalid = true;
 			revisions.put(revision, metadata);
+			return Optional.empty();
 		}
 
-		return metadata;
+		metadata = MetadataParser.parseRevisionMetadata(metafile);
+		revisions.put(revision, metadata);
+		return Optional.of(metadata);
 	}
 
 	ProgramMetadata getMetadata(Program program) throws Exception {
@@ -154,20 +166,33 @@ public abstract class MavenBackingRepository implements Closeable {
 	}
 
 	public List<Archive> getSnapshotArchives(Revision revision) throws Exception {
-		return getMetadata(revision).snapshotVersions.stream()
+		Optional<RevisionMetadata> metadata = getMetadata(revision, false);
+		if (!metadata.isPresent()) {
+			return Collections.emptyList();
+		}
+		return metadata.get().snapshotVersions.stream()
 			.map(snapshotVersion -> revision.archive(snapshotVersion.value, snapshotVersion.extension,
 				snapshotVersion.classifier))
 			.collect(toList());
 	}
 
 	public MavenVersion getVersion(Revision revision) throws Exception {
-		RevisionMetadata metadata = getMetadata(revision);
-		if (metadata.snapshot.timestamp == null || metadata.snapshot.buildNumber == null) {
-			reporter.warning("Snapshot and/or buildnumber not set %s in %s", metadata.snapshot, revision);
+		return getVersion(revision, false);
+	}
+
+	MavenVersion getVersion(Revision revision, boolean force) throws Exception {
+		Optional<RevisionMetadata> metadata = getMetadata(revision, force);
+		if (!metadata.isPresent()) {
 			return null;
 		}
 
-		return revision.version.toSnapshot(metadata.snapshot.timestamp, metadata.snapshot.buildNumber);
+		Snapshot snapshot = metadata.get().snapshot;
+		if (snapshot.timestamp == null || snapshot.buildNumber == null) {
+			reporter.warning("Snapshot and/or buildnumber not set %s in %s", snapshot, revision);
+			return null;
+		}
+
+		return revision.version.toSnapshot(snapshot.timestamp, snapshot.buildNumber);
 	}
 
 	public String getId() {
@@ -220,5 +245,11 @@ public abstract class MavenBackingRepository implements Closeable {
 	}
 
 	public abstract boolean isFile();
+
+	public abstract boolean isRemote();
+
+	void refreshSnapshots() {
+		revisions.clear();
+	}
 
 }

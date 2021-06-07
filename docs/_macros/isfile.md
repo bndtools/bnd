@@ -4,14 +4,6 @@ class: Macro
 title: isfile (';' FILE )+
 summary: Returns true if all given files actually exist and are not a directory or special file.
 ---
-layout: default 
-
-
-
-
-
-
-
 
 	public String _isfile(String args[]) {
 		if (args.length < 2) {

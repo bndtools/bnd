@@ -4,7 +4,6 @@ class: Macro
 title: literal ';' STRING
 summary: A literal value for the macro, i.e. it surrounds the value with the macro prefix and suffix.
 ---
-layout: default
 
 	public String _literal(String args[]) {
 		if (args.length != 2)

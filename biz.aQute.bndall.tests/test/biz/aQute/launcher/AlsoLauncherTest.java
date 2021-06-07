@@ -18,11 +18,15 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.assertj.core.util.Files;
 import org.junit.After;
 import org.junit.Before;
@@ -38,11 +42,14 @@ import aQute.bnd.build.ProjectTester;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
 import aQute.libg.command.Command;
+import biz.aQute.resolve.Bndrun;
 
 public class AlsoLauncherTest {
 	public static final String	TMPDIR		= "generated/tmp/test";
@@ -54,24 +61,24 @@ public class AlsoLauncherTest {
 	private Project				project;
 	private Properties			prior;
 
-
 	@Before
 	public void setUp() throws Exception {
-		testDir = new File(TMPDIR, testName.getMethodName());
+		testDir = new File(TMPDIR, getClass().getName() + "/" + testName.getMethodName());
 		IO.delete(testDir);
 		IO.mkdirs(testDir);
 		prior = new Properties();
 		prior.putAll(System.getProperties());
 
 		File wsRoot = new File(testDir, "test ws");
-		for (String folder : Arrays.asList("cnf", "demo", "biz.aQute.launcher", "biz.aQute.junit",
-			"biz.aQute.tester")) {
+		for (String folder : Arrays.asList("cnf", "demo", "biz.aQute.launcher", "biz.aQute.junit", "biz.aQute.tester",
+			"biz.aQute.tester.junit-platform")) {
 			File tgt = new File(wsRoot, folder);
 			IO.copy(new File("..", folder), tgt);
 			IO.delete(new File(tgt, "generated/buildfiles"));
 		}
 		IO.delete(new File(wsRoot, "cnf/cache"));
 		workspace = new Workspace(wsRoot);
+		workspace.setProperty(Constants.PROFILE, "prod");
 		project = workspace.getProject("demo");
 		project.setTrace(true);
 		assertTrue(project.check());
@@ -83,6 +90,191 @@ public class AlsoLauncherTest {
 		IO.close(project);
 		IO.close(workspace);
 		System.setProperties(prior);
+	}
+
+	/**
+	 * Test that the Bndrun file is loaded when we create a run
+	 */
+	@Test
+	public void testCreateBndrun() throws Exception {
+		Run run = Run.createRun(workspace, project.getFile("x.bndrun"));
+
+		assertThat(run).isInstanceOf(Bndrun.class);
+	}
+
+	@Test
+	public void testExportWithIncludedBundlesInBndrun() throws Exception {
+		project.setProperty("-resourceonly", "true");
+		project.setProperty("-includeresource", "hello;literal=true");
+
+		project.setProperty("-export", "a.bndrun;output=a.bndrun");
+		IO.store("-includeresource: generated/demo.jar", project.getFile("a.bndrun"));
+		File file = project.getFile("generated/demo.jar");
+		file.delete();
+		assertThat(file).doesNotExist();
+
+		File[] build = project.build();
+		assertThat(project.check()).isTrue();
+		assertThat(build).hasSize(2);
+		assertThat(build[0]).isEqualTo(file);
+
+		File run = project.getFile("generated/a.bndrun.jar");
+		assertThat(build[1]).isEqualTo(run);
+
+	}
+
+	@Test
+	public void testExportOptions() throws Exception {
+		project.setProperty("-resourceonly", "true");
+		project.setProperty("-includeresource", "hello;literal=true");
+
+		project.setProperty("-export", //
+			"x.bndrun, " //
+				+ "x.bndrun;duplicate=true," //
+				+ "x.bndrun;name=aa.jar, " //
+				+ "x.bndrun;name=bsn.jar;bsn=foo.bar;version=1.2.3, " //
+				+ "x.bndrun;type=bnd.runbundles;name=runbundles.jar," //
+				+ "x.bndrun;name=foo.jar;Foo=aaa," //
+				+ "export-options.bndrun;-profile=debug;type=bnd.executablejar.pack," //
+				+ "export-options.bndrun;type=bnd.executablejar.pack;name=export-options-prod.jar");
+
+		project.setProperty(Constants.FIXUPMESSAGES, "Duplicate file in -export;is:=warning");
+
+		File[] build = project.build();
+
+		assertThat(project.check("Duplicate file in -export")).isTrue();
+		assertThat(build).hasSize(8);
+
+		assertThat(build[0].getName()).isEqualTo("demo.jar");
+		assertThat(build[1].getName()).isEqualTo("x.bndrun.jar");
+		assertThat(build[2].getName()).isEqualTo("aa.jar");
+		assertThat(build[3].getName()).isEqualTo("bsn.jar");
+		assertThat(build[4].getName()).isEqualTo("runbundles.jar");
+		assertThat(build[5].getName()).isEqualTo("foo.jar");
+		assertThat(build[6].getName()).isEqualTo("export-options.jar");
+		assertThat(build[7].getName()).isEqualTo("export-options-prod.jar");
+
+		File demo = project.getFile("generated/demo.jar");
+		Domain domain = Domain.domain(demo);
+		assertThat(domain.get(Constants.BUNDLE_SYMBOLICNAME)).isEqualTo("demo");
+
+		File runbundles = project.getFile("generated/runbundles.jar");
+		domain = Domain.domain(runbundles);
+		assertThat(domain).isNull();
+
+		File bsn = project.getFile("generated/bsn.jar");
+		domain = Domain.domain(bsn);
+		assertThat(domain.get(Constants.BUNDLE_SYMBOLICNAME)).isEqualTo("foo.bar");
+		assertThat(domain.get(Constants.BUNDLE_VERSION)).isEqualTo("1.2.3");
+
+		File withFoo = project.getFile("generated/foo.jar");
+		domain = Domain.domain(withFoo);
+		assertThat(domain.get("Foo")).isEqualTo("aaa");
+
+		File profile = project.getFile("generated/export-options.jar");
+		domain = Domain.domain(profile);
+		assertThat(domain.get("Bar")
+			.trim()).isEqualTo("DEBUG");
+
+		File profileProd = project.getFile("generated/export-options-prod.jar");
+		domain = Domain.domain(profileProd);
+		assertThat(domain.get("Bar")
+			.trim()).isEqualTo("PROD");
+
+		File run = project.getFile("generated/x.bndrun.jar");
+		assertThat(build[1]).isEqualTo(run);
+
+	}
+
+	@Test
+	public void testSelfExportError() throws Exception {
+		project.setProperty("-resourceonly", "true");
+		project.setProperty("-includeresource", "hello;literal=true");
+
+		project.setProperty("-export", //
+			"bnd.bnd");
+
+		File[] build = project.build();
+
+		assertThat(project.check("Cannot export the same file that contains the -export instruction")).isTrue();
+	}
+
+	@Test
+	public void testExportWithRunKeep() throws Exception {
+		project.setProperty("-runkeep", "true");
+		Entry<String, Resource> export = project.export("bnd.executablejar", null);
+		assertThat(project.check()).isTrue();
+		assertThat(export).isNotNull();
+
+		try (Jar jar = new Jar(".", export.getValue()
+			.openInputStream())) {
+			Resource resource = jar.getResource("launcher.properties");
+			assertThat(resource).isNotNull();
+
+			Properties p = new Properties();
+			p.load(resource.openInputStream());
+
+			assertThat(p.getProperty("launch.keep")).isEqualTo("true");
+
+		}
+	}
+
+	@Test
+	public void testLocationFormat() throws Exception {
+		project.setProperty(Constants.RUNPROPERTIES, "test.cmd=exit");
+		project.setProperty(Constants.RUNTRACE, "true");
+		project.setProperty("-executable", "location='${@bsn}");
+		Entry<String, Resource> export = project.export("bnd.executablejar", null);
+		assertThat(project.check("Cannot find bsn in.*apiguardian-api")).isTrue();
+		assertThat(export).isNotNull();
+
+		try (Jar jar = new Jar(".", export.getValue()
+			.openInputStream())) {
+
+			assertThat(jar.getResources()
+				.keySet()).contains(//
+					"jar/biz.aQute.launcher.jar", // -runpath
+					"jar/org.apache.felix.framework-5.6.10.jar", // -runpath
+					"jar/apiguardian-api-1.1.0.jar", // not a bundle
+					"jar/demo", //
+					"jar/junit-jupiter-api", //
+					"jar/junit-jupiter-engine", //
+					"jar/junit-jupiter-params", //
+					"jar/junit-platform-commons", //
+					"jar/junit-platform-engine", //
+					"jar/junit-vintage-engine", //
+					"jar/org.apache.felix.configadmin", //
+					"jar/org.apache.felix.scr", //
+					"jar/org.apache.servicemix.bundles.junit", //
+					"jar/org.opentest4j" //
+			);
+
+			File tmp = File.createTempFile("foo", ".jar");
+			try {
+
+				jar.write(tmp);
+				Command cmd = new Command();
+				cmd.add(project.getJavaExecutable("java"));
+				cmd.add("-jar");
+				cmd.add(tmp.getAbsolutePath());
+
+				StringBuilder stdout = new StringBuilder();
+				StringBuilder stderr = new StringBuilder();
+				int execute = cmd.execute(stdout, stderr);
+				String output = stdout.append(stderr)
+					.toString();
+				System.out.println(output);
+
+				// These must be bsns ow
+				assertThat(output).contains("installing jar/org.apache.felix.scr",
+					"installing jar/org.apache.felix.configadmin");
+
+				assertThat(execute).isEqualTo(42);
+
+			} finally {
+				tmp.delete();
+			}
+		}
 	}
 
 	@Test
@@ -310,6 +502,7 @@ public class AlsoLauncherTest {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Test
 	public void testPackagerDifference3() throws Exception {
 		// Test project with export
@@ -329,6 +522,7 @@ public class AlsoLauncherTest {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Test
 	public void testPackagerDifference4() throws Exception {
 		// Test file with export
@@ -495,6 +689,13 @@ public class AlsoLauncherTest {
 	@Test
 	public void testCleanup() throws Exception {
 		File target = project.getTarget();
+
+		for (File f : target.listFiles()) {
+			if (f.getName()
+				.startsWith("launch"))
+				f.delete();
+		}
+
 		assertNoProperties(target);
 		try (ProjectLauncher l = project.getProjectLauncher()) {
 			l.setTrace(true);
@@ -516,6 +717,63 @@ public class AlsoLauncherTest {
 				.put("test.cmd", "timeout");
 			l.launch();
 			assertNoProperties(target);
+		}
+	}
+
+	@Test
+	public void testReporting_notUsingReferences() throws Exception {
+		try (ProjectLauncher l = project.getProjectLauncher()) {
+			project.setProperty("-runnoreferences", "true");
+			doTestReporting(l);
+		}
+	}
+
+	@Test
+	public void testReporting_usingReferences() throws Exception {
+		try (ProjectLauncher l = project.getProjectLauncher()) {
+			project.setProperty("-runnoreferences", "false");
+			doTestReporting(l);
+		}
+	}
+
+	private void doTestReporting(ProjectLauncher l) throws Exception {
+		l.setTrace(true);
+		StringBuilder out = new StringBuilder();
+		l.setStreams(out, out);
+		l.getRunProperties()
+			.put("test.cmd", "framework.stop");
+
+		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+			Macro r = project.getReplacer();
+
+			String[] expected = {
+				"org.apache.felix.scr", "org.apache.servicemix.bundles.junit", "assertj-core", "demo"
+			};
+
+			l.launch();
+
+			// High-level test; cuts down our search space for subsequent tests
+			// which makes the output more readable in the event of a subsequent
+			// assertion failure. Don't try and find the end; there is not much
+			// text after the bundle dump anyway, and attempts to find it can
+			// end up truncating the matched block and hiding the useful
+			// information.
+			Pattern pattern = Pattern.compile("^Id\\s+\\s+Levl\\s+State.*", Pattern.DOTALL | Pattern.MULTILINE);
+			Matcher match = pattern.matcher(out);
+			if (!match.find()) {
+				throw new AssertionError("Couldn't find report block in output:\n" + out);
+			}
+			final String report = match.group();
+
+			softly.assertThat(report)
+				.as("System Bundle")
+				.containsPattern("\\n0\\s+\\d*\\s*ACTIV\\s+[<][>]\\s+System Bundle");
+
+			for (String bundle : expected) {
+				softly.assertThat(report)
+					.as(bundle)
+					.containsPattern("ACTIV\\s+\\d{12}\\s+.*\\Q" + bundle + "\\E");
+			}
 		}
 	}
 
@@ -571,6 +829,16 @@ public class AlsoLauncherTest {
 		pt.addTest("test.TestCase2:m1");
 
 		assertThat(pt.test()).isEqualTo(2);
+	}
+
+	@Test
+	public void testTesterQuoted() throws Exception {
+		ProjectTester pt = project.getProjectTester();
+		pt.addTest("'test.Junit4TestCase'");
+		pt.addTest("\"test.TestCase2:m1\"");
+		pt.addTest("\"test.TestCase2:m2\"");
+		assertThat(pt.getTests()).containsExactly("test.Junit4TestCase", "test.TestCase2:m1", "test.TestCase2:m2");
+		assertThat(pt.test()).isEqualTo(1);
 	}
 
 	@Test
@@ -691,6 +959,8 @@ public class AlsoLauncherTest {
 	public void testOlderLauncherOnRunpath() throws Exception {
 		try (Run run = new Run(project.getWorkspace(), project.getFile("old-launcher.bndrun"))) {
 			run.setProperty(Constants.RUNTRACE, "true");
+			// old launcher has a bug which tries to use invalid "MD-5" digest
+			run.setProperty(Constants.DIGESTS, "SHA-1");
 
 			File file = new File(testDir, "packaged.jar");
 			try (Jar pack = run.pack(null)) {

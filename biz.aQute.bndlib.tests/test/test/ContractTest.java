@@ -1,8 +1,12 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Formatter;
+
+import org.assertj.core.api.Condition;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -15,6 +19,117 @@ import aQute.lib.io.IO;
 import junit.framework.TestCase;
 
 public class ContractTest extends TestCase {
+
+	public void testParameterized() throws Exception {
+		Jar bjara = getContractExporter("atest", "2.5", "${exports}");
+
+		Builder a = newBuilder();
+		a.setTrace(true);
+
+		a.addClasspath(bjara); // 1x
+		a.setProperty(Constants.CONTRACT, "atest;resolution:=optional,*");
+		a.setImportPackage("org.osgi.service.cm,*");
+		a.setProperty("Export-Package", "test.refer");
+		Jar ajar = a.build();
+		ajar.getManifest()
+			.write(System.out);
+		assertTrue(a.check());
+
+		Domain domain = Domain.domain(ajar.getManifest());
+		Parameters p = domain.getRequireCapability();
+		p.remove("osgi.ee");
+		assertNotNull(p);
+		assertEquals(1, p.size());
+		Attrs attrs = p.get("osgi.contract");
+		String optional = attrs.get("resolution:");
+		assertEquals("optional", optional);
+		assertEquals("(&(osgi.contract=atest)(version=2.5.0))", attrs.get("filter:"));
+	}
+
+	public void testDefinedContract() throws Exception {
+		Builder b = newBuilder();
+		b.setTrace(true);
+		b.setProperty(Constants.FIXUPMESSAGES, "The JAR is empty...");
+		b.addClasspath(IO.getFile("jar/jsr311-api-1.1.1.jar"));
+		b.setImportPackage("javax.ws.rs.ext");
+
+		b.setProperty(Constants.DEFINE_CONTRACT,
+			"osgi.contract;osgi.contract=JavaJAXRS;version:Version=1.1.1;uses:='javax.ws.rs,javax.ws.rs.core,javax.ws.rs.ext'");
+
+		Jar ajar = b.build();
+		assertTrue(b.check());
+		ajar.getManifest()
+			.write(System.out);
+
+		Domain domain = Domain.domain(ajar.getManifest());
+		Parameters p = domain.getRequireCapability();
+		p.remove("osgi.ee");
+		assertNotNull(p);
+		assertEquals(1, p.size());
+		Attrs attrs = p.get("osgi.contract");
+		String value = attrs.get("osgi.contract");
+		assertEquals("JavaJAXRS", value);
+		assertEquals("(&(osgi.contract=JavaJAXRS)(version=1.1.1))", attrs.get("filter:"));
+		assertThat(domain.getImportPackage()).containsKey("javax.ws.rs.ext")
+			.hasValueSatisfying(new Condition<>(a -> a.get("version") == null, "no version"));
+	}
+
+	public void testDefinedContractMultiple() throws Exception {
+		Builder b = newBuilder();
+		b.setTrace(true);
+		b.setProperty(Constants.FIXUPMESSAGES, "The JAR is empty...");
+		b.addClasspath(IO.getFile("jar/jsp-api.jar"));
+		b.addClasspath(IO.getFile("jar/jsr311-api-1.1.1.jar"));
+		b.setImportPackage("javax.ws.rs.ext,javax.el");
+
+		b.setProperty(Constants.DEFINE_CONTRACT,
+			"osgi.contract;osgi.contract=JavaJAXRS;version:Version=1.1.1;uses:='javax.ws.rs,javax.ws.rs.core,javax.ws.rs.ext',"
+				+ "osgi.contract;osgi.contract=JavaEL;version:Version=2.1;uses:='javax.el'");
+
+		Jar ajar = b.build();
+		assertTrue(b.check());
+		ajar.getManifest()
+			.write(System.out);
+
+		Domain domain = Domain.domain(ajar.getManifest());
+		Parameters p = domain.getRequireCapability();
+
+		assertThat(p.stream()
+			.filterValue(a -> "JavaJAXRS".equals(a.get("osgi.contract")))
+			.values()
+			.findFirst()
+			.orElse(null)).containsEntry("filter:", "(&(osgi.contract=JavaJAXRS)(version=1.1.1))");
+		assertThat(domain.getImportPackage()).containsKey("javax.ws.rs.ext")
+			.hasValueSatisfying(new Condition<>(a -> a.get("version") == null, "no version"));
+
+		assertThat(p.stream()
+			.filterValue(a -> "JavaEL".equals(a.get("osgi.contract")))
+			.values()
+			.findFirst()
+			.orElse(null)).containsEntry("filter:", "(&(osgi.contract=JavaEL)(version=2.1.0))");
+		assertThat(domain.getImportPackage()).containsKey("javax.el")
+			.hasValueSatisfying(new Condition<>(a -> a.get("version") == null, "no version"));
+	}
+
+	public void testNoContract() throws Exception {
+		Builder b = newBuilder();
+		b.setTrace(true);
+		b.setProperty(Constants.FIXUPMESSAGES, "The JAR is empty...");
+		b.addClasspath(IO.getFile("jar/jsr311-api-1.1.1.jar"));
+		b.setImportPackage("javax.ws.rs.ext");
+
+		Jar ajar = b.build();
+		assertTrue(b.check());
+		ajar.getManifest()
+			.write(System.out);
+
+		Domain domain = Domain.domain(ajar.getManifest());
+		Parameters p = domain.getRequireCapability();
+		p.remove("osgi.ee");
+		assertTrue(p.isEmpty());
+		assertThat(domain.getImportPackage()).containsKey("javax.ws.rs.ext")
+			.hasValueSatisfying(new Condition<>(a -> a.get("version") != null, "has version"));
+	}
 
 	/**
 	 * Test the warnings that we have no no version

@@ -45,9 +45,13 @@ public class DistroCommandTest extends TestCase {
 	private Framework	framework;
 	private File		tmp;
 
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
+
 	@Override
 	protected void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp");
+		tmp = IO.getFile("generated/tmp/test/" + getTestName());
 		IO.delete(tmp);
 		tmp.mkdirs();
 
@@ -93,7 +97,6 @@ public class DistroCommandTest extends TestCase {
 	protected void tearDown() throws Exception {
 		framework.stop();
 		framework.waitForStop(10000);
-		IO.delete(tmp);
 		super.tearDown();
 	}
 

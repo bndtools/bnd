@@ -30,7 +30,7 @@ import aQute.lib.strings.Strings;
  * </pre>
  */
 
-class CompositeArtifacts extends XML {
+class CompositeArtifacts extends XMLBase {
 	final List<URI>	uris	= new ArrayList<>();
 	final URI		base;
 

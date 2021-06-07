@@ -18,12 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.felix.resolver.reason.ReasonException;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
@@ -96,21 +97,19 @@ public class ResolveProcess {
 		final List<Resource> resources = new ArrayList<>();
 		for (Resource r : rc.getMandatoryResources()) {
 			reqs: for (Requirement req : r.getRequirements(null)) {
+				String filterDirective = req.getDirectives()
+					.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+				if (filterDirective == null) {
+					continue;
+				}
+				Predicate<Capability> predicate = ResourceUtils.filterMatcher(req);
 				for (Resource found : wirings.keySet()) {
-					String filterStr = req.getDirectives()
-						.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-					try {
-						org.osgi.framework.Filter filter = filterStr != null
-							? org.osgi.framework.FrameworkUtil.createFilter(filterStr)
-							: null;
-
-						for (Capability c : found.getCapabilities(req.getNamespace())) {
-							if (filter != null && filter.matches(c.getAttributes())) {
-								resources.add(found);
-								continue reqs;
-							}
+					for (Capability c : found.getCapabilities(req.getNamespace())) {
+						if (predicate.test(c)) {
+							resources.add(found);
+							continue reqs;
 						}
-					} catch (InvalidSyntaxException e) {}
+					}
 				}
 			}
 		}
@@ -194,7 +193,8 @@ public class ResolveProcess {
 		}
 
 		Map<Resource, List<Wire>> result = invertWirings(wirings, rc2);
-		removeFrameworkAndInputResources(result, rc2);
+		if (Processor.isTrue(properties.getProperty(Constants.RESOLVE_EXCLUDESYSTEM, "true")))
+			removeFrameworkAndInputResources(result, rc2);
 		required.putAll(result);
 		optional = tidyUpOptional(wirings, discoveredOptional, log);
 		return result;
@@ -342,12 +342,12 @@ public class ResolveProcess {
 		if (unresolved.isEmpty()) {
 			return re;
 		}
-		long deadline = System.currentTimeMillis() + 1000L;
+		long startNanos = System.nanoTime();
 		Set<Requirement> list = new HashSet<>(unresolved);
 		Set<Resource> resources = new HashSet<>();
 		try {
 			for (Requirement r : unresolved) {
-				Requirement find = missing(context, r, resources, deadline);
+				Requirement find = missing(context, r, resources, startNanos, TimeUnit.SECONDS.toNanos(1L));
 				if (find != null) {
 					list.add(find);
 				}
@@ -359,11 +359,13 @@ public class ResolveProcess {
 	/*
 	 * Recursively traverse all requirement's resource requirement's
 	 */
-	private static Requirement missing(ResolveContext context, Requirement rq, Set<Resource> resources, long deadline)
+	private static Requirement missing(ResolveContext context, Requirement rq, Set<Resource> resources, long startNanos,
+		long timeoutNanos)
 		throws TimeoutException {
 		resources.add(rq.getResource());
 
-		if (deadline < System.currentTimeMillis())
+		long elapsed = System.nanoTime() - startNanos;
+		if (elapsed > timeoutNanos)
 			throw new TimeoutException();
 
 		List<Capability> providers = context.findProviders(rq);
@@ -433,7 +435,7 @@ public class ResolveProcess {
 
 		resource: for (Resource resource : candidates) {
 			for (Requirement requirement : resource.getRequirements(null)) {
-				Requirement r1 = missing(context, requirement, resources, deadline);
+				Requirement r1 = missing(context, requirement, resources, startNanos, timeoutNanos);
 				if (r1 != null && missing != null) {
 					missing = r1;
 					continue resource;
@@ -541,10 +543,10 @@ public class ResolveProcess {
 		if (rc.isSystemResource(resource) || (ResourceUtils.isFragment(resource) && resources.contains(resource))) {
 			return resource;
 		}
-
+		Predicate<Capability> predicate = ResourceUtils.matcher(wire.getRequirement());
 		for (Resource resolved : resources) {
 			for (Capability resolvedCap : resolved.getCapabilities(capability.getNamespace())) {
-				if (ResourceUtils.matches(wire.getRequirement(), resolvedCap)) {
+				if (predicate.test(resolvedCap)) {
 					return resolved;
 				}
 			}

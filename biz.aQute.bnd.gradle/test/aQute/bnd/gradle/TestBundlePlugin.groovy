@@ -36,7 +36,7 @@ class TestBundlePlugin extends Specification {
           jartask_bundle.isFile()
           JarFile jartask_jar = new JarFile(jartask_bundle)
           Attributes jartask_manifest = jartask_jar.getManifest().getMainAttributes()
-          File bundletask_bundle = new File(testProjectBuildDir, "libs/${testProject}_bundle-1.1.0.jar")
+          File bundletask_bundle = new File(testProjectBuildDir, "libs/${testProject}-1.1.0-bundle.jar")
           bundletask_bundle.isFile()
           JarFile bundletask_jar = new JarFile(bundletask_bundle)
           Attributes bundletask_manifest = bundletask_jar.getManifest().getMainAttributes()
@@ -81,12 +81,12 @@ class TestBundlePlugin extends Specification {
           jartask_jar.getEntry('commons-lang-2.6.jar')
           jartask_jar.close()
 
-          bundletask_manifest.getValue('Bundle-SymbolicName') == "${testProject}_bundle"
+          bundletask_manifest.getValue('Bundle-SymbolicName') == "${testProject}-bundle"
           bundletask_manifest.getValue('Bundle-Version') == '1.1.0'
           bundletask_manifest.getValue('My-Header') == 'my-value'
           bundletask_manifest.getValue('Export-Package') =~ /doubler\.impl/
           !bundletask_manifest.getValue('X-SomeProperty')
-          bundletask_manifest.getValue('Bundle-Name') == "test.bnd.gradle:${testProject}_bundle"
+          bundletask_manifest.getValue('Bundle-Name') == "test.bnd.gradle:${testProject}-bundle"
           bundletask_manifest.getValue('Project-Name') == "${testProject}"
           new File(bundletask_manifest.getValue('Project-Dir')).canonicalFile == testProjectDir
           new File(bundletask_manifest.getValue('Project-Output')).canonicalFile == testProjectBuildDir
@@ -116,5 +116,41 @@ class TestBundlePlugin extends Specification {
         then:
           result.task(':bundle').outcome == UP_TO_DATE
           result.task(':jar').outcome == UP_TO_DATE
+    }
+
+    def "Test Bnd instruction via Provider"() {
+        given:
+          String testProject = 'builderplugin2'
+          File testProjectDir = new File(testResources, testProject).canonicalFile
+          assert testProjectDir.isDirectory()
+          File testProjectBuildDir = new File(testProjectDir, 'build').canonicalFile
+
+        when:
+          def result = TestHelper.getGradleRunner()
+            .withProjectDir(testProjectDir)
+            .withArguments('--parallel', '--stacktrace', '--debug', 'build')
+            .withPluginClasspath()
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(':bundle').outcome == SUCCESS
+          result.task(':jar').outcome == SUCCESS
+
+          File jartask_result = new File(testProjectBuildDir, "libs/${testProject}-1.0.0.jar")
+          jartask_result.isFile()
+          JarFile jartask_jar = new JarFile(jartask_result)
+          Attributes jartask_manifest = jartask_jar.getManifest().getMainAttributes()
+
+          File bundletask_bundle = new File(testProjectBuildDir, "libs/${testProject}-1.0.0-bundle.jar")
+          bundletask_bundle.isFile()
+          JarFile bundletask_jar = new JarFile(bundletask_bundle)
+          Attributes bundletask_manifest = bundletask_jar.getManifest().getMainAttributes()
+
+          jartask_manifest.getValue('XX-Signed') == 'true'
+          bundletask_manifest.getValue('XX-Signed') == 'true'
+          bundletask_manifest.getValue('YY-Sealed') == 'true'
+          bundletask_manifest.getValue('ZZ-Delivered') == 'true'
+          bundletask_manifest.getValue('Bundle-Name') == "test.bnd.gradle:${testProject}-bundle"
     }
 }

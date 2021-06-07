@@ -13,9 +13,9 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public class Dates {
-	public final static ZoneId					UTC_ZONE_ID				= ZoneId.of("UTC");
-	public static final TimeZone				UTC_TIME_ZONE			= TimeZone.getTimeZone("UTC");
-	public static final DateTimeFormatter		RFC_7231_DATE_TIME		= DateTimeFormatter
+	public final static ZoneId					UTC_ZONE_ID						= ZoneId.of("UTC");
+	public static final TimeZone				UTC_TIME_ZONE					= TimeZone.getTimeZone("UTC");
+	public static final DateTimeFormatter		RFC_7231_DATE_TIME				= DateTimeFormatter
 		.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH)
 		.withZone(ZoneId.of("GMT"));
 	// old Date toString format in default Locale
@@ -25,7 +25,7 @@ public class Dates {
 	public static final DateTimeFormatter		DATE_TOSTRING					= DATE_TOSTRING_DEFAULT_LOCALE
 		.withLocale(Locale.ROOT);
 
-	private static final DateTimeFormatter[]	DATE_TIME_FORMATTERS	= new DateTimeFormatter[] {
+	private static final DateTimeFormatter[]	DATE_TIME_FORMATTERS			= new DateTimeFormatter[] {
 		// @formatter:off
 		DateTimeFormatter.ofPattern("yyyyMMddHHmmss.SSSZ", Locale.ROOT),
 		DateTimeFormatter.ISO_OFFSET_DATE.withLocale(Locale.ROOT),

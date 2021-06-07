@@ -4,6 +4,7 @@
 -maven-scope: provided
 
 -buildpath: \
+	osgi.annotation;version=latest,\
 	osgi.core;version=latest,\
 	org.osgi.namespace.contract;version=latest,\
 	org.osgi.namespace.service;version=latest,\
@@ -13,6 +14,7 @@
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
 	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=latest;maven-scope=compile,\
 	biz.aQute.bndlib;version=latest;maven-scope=compile,\
 	biz.aQute.repository;version=latest;maven-scope=compile,\
 	org.apache.felix.resolver;version=latest;packages=org.apache.felix.resolver.*,\
@@ -21,10 +23,11 @@
 -testpath: \
 	${junit},\
 	${mockito},\
+	biz.aQute.bnd.embedded-repo;version=snapshot,\
 	slf4j.simple;version=latest
 
 Export-Package:  \
-	biz.aQute.resolve,\
+	biz.aQute.resolve;bnd-plugins=true,\
 	org.osgi.service.log;-split-package:=first,\
 	org.osgi.service.resolver;-split-package:=first
 
@@ -32,10 +35,12 @@ Export-Package:  \
 	biz.aQute.resolve.*,\
 	org.apache.felix.resolver.*
 
--conditionalpackage: aQute.lib*
+-conditionalpackage: \
+    aQute.lib.*,\
+    aQute.libg.*
 
 -builderignore: testdata
 
--fixupmessages.private: private references
+-fixupmessages.felix: "Export biz.aQute.resolve,* private references \\[org.apache.felix.resolver\\]"
 
 -baseline: *

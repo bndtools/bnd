@@ -5,11 +5,11 @@ import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.stream.MapStream;
 import aQute.lib.converter.Converter;
 import aQute.lib.strings.Strings;
 
@@ -56,11 +56,9 @@ class SpecialConverter extends Converter {
 						Class<?> valueClass = (Class<?>) valueType;
 						Parameters parameters = new Parameters(value);
 
-						return parameters.entrySet()
-							.stream()
-							.collect(Collectors.toMap(Map.Entry::getKey,
-								e -> AttrsHandler.getProperties(e.getValue(), valueClass)));
-
+						return parameters.stream()
+							.mapValue(v -> AttrsHandler.getProperties(v, valueClass))
+							.collect(MapStream.toMap());
 					}
 				} else if (Iterable.class.isAssignableFrom(rawClass)) {
 					List<String> parts = Strings.split(value);

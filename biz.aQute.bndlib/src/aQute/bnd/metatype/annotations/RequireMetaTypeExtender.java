@@ -1,6 +1,6 @@
 /*
  * Copyright (c) OSGi Alliance (2018). All Rights Reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,14 +28,14 @@ import org.osgi.namespace.extender.ExtenderNamespace;
 /**
  * This annotation can be used to require the Meta Type extender to process
  * metatype resources. It can be used directly, or as a meta-annotation.
- * 
+ *
  * @author $Id$
  * @since 1.4
  */
 @Documented
 @Retention(RetentionPolicy.CLASS)
 @Target({
-		ElementType.TYPE, ElementType.PACKAGE
+	ElementType.TYPE, ElementType.PACKAGE
 })
 @Requirement(namespace = ExtenderNamespace.EXTENDER_NAMESPACE, //
 	name = MetaTypeConstants.METATYPE_CAPABILITY_NAME, //

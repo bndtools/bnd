@@ -7,6 +7,11 @@
 	<version>1.0.1</version>
 	<packaging>pom</packaging>
 
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+
 	<distributionManagement>
 		<repository>
 			<id>Test Repo</id>
@@ -18,7 +23,9 @@
 		<module>valid-no-previous</module>
 		<module>valid-with-previous-same</module>
 		<module>valid-with-provider</module>
+		<module>valid-with-provider-no-bundle-version-change</module>
 		<module>invalid-with-provider</module>
+		<module>invalid-with-provider-require-bundle-version-change</module>
 		<module>invalid-with-consumer</module>
 		<module>pre-diff</module>
 		<module>diffpackages</module>
@@ -64,6 +71,16 @@
 					</executions>
 				</plugin>
 
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>3.2.0</version>
+				</plugin>
 				<!-- The following configuration is required because bnd-maven-plugin
 					generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal
 					maven-jar-plugin does not use it. If the jar-plugin is patched to pick up
@@ -71,7 +88,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.1.1</version>
+					<version>3.2.0</version>
 					<configuration>
 						<archive>
 							<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>

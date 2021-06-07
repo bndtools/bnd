@@ -12,56 +12,56 @@ import aQute.lib.io.IO;
 
 public class GitRepoPreferences {
 
-    public static final String INITIAL_GITHUB_REPOS;
-    static {
-        try {
-            INITIAL_GITHUB_REPOS = IO.collect(GitRepoPreferences.class.getResourceAsStream("initialrepos.txt"));
-        } catch (IOException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
+	public static final String INITIAL_GITHUB_REPOS;
+	static {
+		try {
+			INITIAL_GITHUB_REPOS = IO.collect(GitRepoPreferences.class.getResourceAsStream("initialrepos.txt"));
+		} catch (IOException e) {
+			throw new ExceptionInInitializerError(e);
+		}
+	}
 
-    private static final String PREF_GITHUB_REPOS = "githubRepos";
-    private static final String PREF_GIT_REPOS = "gitRepos";
+	private static final String			PREF_GITHUB_REPOS	= "githubRepos";
+	private static final String			PREF_GIT_REPOS		= "gitRepos";
 
-    private final Bundle bundle = FrameworkUtil.getBundle(GitRepoPreferences.class);
-    private final ScopedPreferenceStore store;
+	private final Bundle				bundle				= FrameworkUtil.getBundle(GitRepoPreferences.class);
+	private final ScopedPreferenceStore	store;
 
-    public GitRepoPreferences() {
-        store = new ScopedPreferenceStore(InstanceScope.INSTANCE, bundle.getSymbolicName());
+	public GitRepoPreferences() {
+		store = new ScopedPreferenceStore(InstanceScope.INSTANCE, bundle.getSymbolicName());
 
-        store.setDefault(PREF_GITHUB_REPOS, INITIAL_GITHUB_REPOS);
-    }
+		store.setDefault(PREF_GITHUB_REPOS, INITIAL_GITHUB_REPOS);
+	}
 
-    public Parameters getGithubRepos() {
-        return new Parameters(store.getString(PREF_GITHUB_REPOS));
-    }
+	public Parameters getGithubRepos() {
+		return new Parameters(store.getString(PREF_GITHUB_REPOS));
+	}
 
-    public void setGithubRepos(Parameters params) {
-        store.setValue(PREF_GITHUB_REPOS, params.toString());
-    }
+	public void setGithubRepos(Parameters params) {
+		store.setValue(PREF_GITHUB_REPOS, params.toString());
+	}
 
-    public Parameters getGitRepos() {
-        return new Parameters(store.getString(PREF_GIT_REPOS));
-    }
+	public Parameters getGitRepos() {
+		return new Parameters(store.getString(PREF_GIT_REPOS));
+	}
 
-    public void setGitRepos(Parameters params) {
-        store.setValue(PREF_GIT_REPOS, params.toString());
-    }
+	public void setGitRepos(Parameters params) {
+		store.setValue(PREF_GIT_REPOS, params.toString());
+	}
 
-    public boolean save() {
-        if (store.needsSaving()) {
-            try {
-                store.save();
-            } catch (IOException e) {
-                // ignore
-                return false;
-            }
-        }
-        return true;
-    }
+	public boolean save() {
+		if (store.needsSaving()) {
+			try {
+				store.save();
+			} catch (IOException e) {
+				// ignore
+				return false;
+			}
+		}
+		return true;
+	}
 
-    public static String removeDuplicateMarker(String s) {
-        return s.replaceAll("~+$", "");
-    }
+	public static String removeDuplicateMarker(String s) {
+		return s.replaceAll("~+$", "");
+	}
 }

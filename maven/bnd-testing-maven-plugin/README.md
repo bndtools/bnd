@@ -53,6 +53,10 @@ The `-runee` and `-runrequires` values can be inferred from the maven project as
   * `-runee`, if omitted from the bndrun file, will be inferred from the `<target>` configuration of `maven-compiler-plugin`
   * `-runrequires`, if omitted from the bndrun file, will be inferred from the project's `artifactId` and applied as `osgi.identity;filter:='(osgi.identity=<artifactId>)'`, if the project packaging is `jar` or `war` and the project has the `bnd-maven-plugin`
 
+## Implicit Repository
+
+An *implicit repository* containing the project artifact and project dependencies (as defined through the configuration of `bundles`, `scopes`, `useMavenDependencies` and `includeDependencyManagement`) is created and added when this plugin is executed.
+
 ## Configuration Properties
 
 |Configuration Property          | Description |
@@ -66,8 +70,8 @@ The `-runee` and `-runrequires` values can be inferred from the maven project as
 |`testingSelect`                 | A file path to a test file, overrides anything else. _Defaults to `${testing.select}`._ Override with property `testing.select`.|
 |`testing`                       | A glob expression that is matched against the file name of the listed bndrun files. _Defaults to `${testing}`._ Override with property `testing`.|
 |`test`                          | A comma separated list of the fully qualified names of test classes to run. If not set, or empty, then all the test classes listed in the `Test-Classes` manifest header are run. Use a colon (:) to specify a test method to run on the specified test class. Override with property `test`.|
-|`bundles`                       | This is the collection of files to use for locating bundles during the bndrun resolution. Can contain `bundle` child elements specifying the path to a bundle. These can be absolute paths. You can also specify `include` and `exclude` child elements using Ant-style globs to specify bundles. These are relative to the `${project.basedir}` directory. _Defaults to dependencies in the scopes specified by the `scopes` property, plus the current artifact (if any and `useMavenDependencies` is `true`)._ |
-|`useMavenDependencies`          | If `true`, adds the project's compile and runtime dependencies to the collection of files to use for locating bundles during the bndrun resolution. _Defaults to `true`._|
+|`bundles`                       | A collection of files to include in the *implicit repository*. Can contain `bundle` child elements specifying the path to a bundle. These can be absolute paths. You can also specify `include` and `exclude` child elements using Ant-style globs to specify bundles. These are relative to the `${project.basedir}` directory. _Defaults to dependencies in the scopes specified by the `scopes` property, plus the current artifact (if any and `useMavenDependencies` is `true`)._ |
+|`useMavenDependencies`          | If `true`, adds the project dependencies subject to `scopes` to the collection of files to include in the *implicit repository*. _Defaults to `true`._|
 |`reportOptional`                | If `true`, resolution failure reports (see `resolve`) will include optional requirements. _Defaults to `true`._|
 |`scopes`                        | Specify from which scopes to collect dependencies. _Defaults to `compile, runtime`._ Override with property `bnd.testing.scopes`.|
-|`includeDependencyManagement`   | Include `<dependencyManagement>` when locating bundles during the bndrun resolution. _Defaults to `false`._ Override with property `bnd.testing.include.dependency.management`.|
+|`includeDependencyManagement`   | Include `<dependencyManagement>` subject to `scopes` when collecting files to include in the *implicit repository*. _Defaults to `false`._ Override with property `bnd.testing.include.dependency.management`.|

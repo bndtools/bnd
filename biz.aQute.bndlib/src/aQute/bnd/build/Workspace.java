@@ -1,5 +1,6 @@
 package aQute.bnd.build;
 
+import static aQute.bnd.exceptions.BiFunctionWithException.asBiFunction;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.lang.invoke.MethodType.methodType;
 
@@ -14,7 +15,9 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Formatter;
@@ -25,6 +28,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.Callable;
@@ -32,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -41,11 +47,20 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.service.repository.Repository;
+import org.osgi.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.build.WorkspaceNotifier.ET;
+import aQute.bnd.build.api.OnWorkspace;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
 import aQute.bnd.exporter.runbundles.RunbundlesExporter;
 import aQute.bnd.header.Attrs;
@@ -53,15 +68,27 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.maven.support.Maven;
+import aQute.bnd.memoize.CloseableMemoize;
+import aQute.bnd.memoize.Memoize;
 import aQute.bnd.osgi.About;
+import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Macro;
+import aQute.bnd.osgi.PluginsContainer;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.osgi.repository.AggregateRepository;
+import aQute.bnd.osgi.repository.AugmentRepository;
+import aQute.bnd.osgi.repository.WorkspaceRepositoryMarker;
+import aQute.bnd.osgi.resource.RequirementBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.remoteworkspace.server.RemoteWorkspaceServer;
 import aQute.bnd.resource.repository.ResourceRepositoryImpl;
+import aQute.bnd.result.Result;
 import aQute.bnd.service.BndListener;
+import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.action.Action;
 import aQute.bnd.service.extension.ExtensionActivator;
@@ -69,6 +96,7 @@ import aQute.bnd.service.lifecycle.LifeCyclePlugin;
 import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.service.repository.RepositoryDigest;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.url.MultiURLConnectionHandler;
 import aQute.bnd.util.home.Home;
 import aQute.bnd.version.Version;
@@ -82,34 +110,58 @@ import aQute.lib.io.NonClosingInputStream;
 import aQute.lib.settings.Settings;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.lib.zip.ZipUtil;
 import aQute.libg.glob.Glob;
 import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
-	private final static Logger	logger							= LoggerFactory.getLogger(Workspace.class);
-	public static final File	BND_DEFAULT_WS					= IO.getFile(Home.getUserHomeBnd() + "/default-ws");
-	public static final String	BND_CACHE_REPONAME				= "bnd-cache";
-	public static final String	EXT								= "ext";
-	public static final String	BUILDFILE						= "build.bnd";
-	public static final String	CNFDIR							= "cnf";
-	public static final String	BNDDIR							= "bnd";
-	public static final String	CACHEDIR						= "cache/" + About.CURRENT;
-	public static final String	STANDALONE_REPO_CLASS			= "aQute.bnd.repository.osgi.OSGiRepository";
+	final static Logger			logger					= LoggerFactory.getLogger(Workspace.class);
+	public static final File	BND_DEFAULT_WS			= IO.getFile(Home.getUserHomeBnd() + "/default-ws");
+	public static final String	BND_CACHE_REPONAME		= "bnd-cache";
+	public static final String	EXT						= "ext";
+	public static final String	BUILDFILE				= "build.bnd";
+	public static final String	CNFDIR					= "cnf";
+	public static final String	CACHEDIR				= "cache/" + About.CURRENT;
+	public static final String	STANDALONE_REPO_CLASS	= "aQute.bnd.repository.osgi.OSGiRepository";
 
-	static final int			BUFFER_SIZE						= IOConstants.PAGE_SIZE * 16;
-	private static final String	PLUGIN_STANDALONE				= "-plugin.standalone_";
+	static final int			BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
+	private static final String	PLUGIN_STANDALONE		= Constants.PLUGIN + ".standalone_";
 
-	static class WorkspaceData {
-		List<RepositoryPlugin>	repositories;
-		RemoteWorkspaceServer	remoteServer;
+	class WorkspaceData implements AutoCloseable {
+		final Memoize<List<RepositoryPlugin>>					repositories;
+		final RemoteWorkspaceServer								remoteServer;
+		final CloseableMemoize<WorkspaceClassIndex>				classIndex;
+		final CloseableMemoize<WorkspaceExternalPluginHandler>	externalPlugins;
+
+		WorkspaceData() {
+			repositories = Memoize.supplier(Workspace.this::initRepositories);
+			classIndex = CloseableMemoize.closeableSupplier(() -> new WorkspaceClassIndex(Workspace.this));
+			externalPlugins = CloseableMemoize
+				.closeableSupplier(() -> new WorkspaceExternalPluginHandler(Workspace.this));
+			RemoteWorkspaceServer s = null;
+			if (remoteWorkspaces || Processor.isTrue(getProperty(Constants.REMOTEWORKSPACE))) {
+				try {
+					s = new RemoteWorkspaceServer(Workspace.this);
+				} catch (IOException e) {
+					exception(e, "Could not create remote workspace %s", getBase());
+				}
+			}
+			this.remoteServer = s;
+		}
+
+		@Override
+		public void close() {
+			IO.close(remoteServer);
+			IO.close(classIndex);
+			IO.close(externalPlugins);
+		}
 	}
 
 	private final static Map<File, WeakReference<Workspace>>	cache				= newHashMap();
 	static Processor											defaults			= null;
 	final Map<String, Action>									commands			= newMap();
-	final Maven													maven				= new Maven(
-		Processor.getExecutor());
+	final Maven													maven;
 	private final AtomicBoolean									offline				= new AtomicBoolean();
 	Settings													settings			= new Settings(
 		Home.getUserHomeBnd() + "/settings.json");
@@ -126,10 +178,11 @@ public class Workspace extends Processor {
 	private final WorkspaceLayout								layout;
 	final Set<Project>											trail				= Collections
 		.newSetFromMap(new ConcurrentHashMap<Project, Boolean>());
-	private WorkspaceData										data				= new WorkspaceData();
+	private volatile WorkspaceData								data				= new WorkspaceData();
 	private File												buildDir;
-	private final ProjectTracker								projects;
+	private final ProjectTracker								projects			= new ProjectTracker(this);
 	private final ReadWriteLock									lock				= new ReentrantReadWriteLock(true);
+	final WorkspaceNotifier										notifier			= new WorkspaceNotifier(this);
 
 	public static boolean										remoteWorkspaces	= false;
 
@@ -174,6 +227,7 @@ public class Workspace extends Processor {
 			IO.store("", build);
 		}
 		Workspace ws = new Workspace(BND_DEFAULT_WS, CNFDIR);
+		ws.open();
 		return ws;
 	}
 
@@ -234,30 +288,102 @@ public class Workspace extends Processor {
 			if (wsr == null || (ws = wsr.get()) == null) {
 				ws = new Workspace(workspaceDir, bndDir);
 				cache.put(workspaceDir, new WeakReference<>(ws));
+				ws.open();
 			}
 			return ws;
 		}
 	}
 
+	/**
+	 * Create a workspace on the given directory, assuming that it contains a
+	 * cnf directory. See {@link #Workspace(File, String)}
+	 *
+	 * @param workspaceDir the worksapce directory
+	 */
 	public Workspace(File workspaceDir) throws Exception {
 		this(workspaceDir, CNFDIR);
+		open();
 	}
 
+	/**
+	 * Create a workspace with the given directory and the bnd directory,
+	 * normally cnf. (Though there are some use cases where this is in another
+	 * place.) This will create a {@link WorkspaceLayout#BND} layout set the
+	 * base to the workspaceDir, and read the properties in the `build.bnd` file
+	 * in the bndDir sub directory.
+	 * <p>
+	 * This will read the version specific defaults after the properties are
+	 * read from build.bnd in an _intermediate_ processor.
+	 *
+	 * @param workspaceDir the workspace directory
+	 * @param bndDir the bnd directory with build.bnd
+	 */
 	public Workspace(File workspaceDir, String bndDir) throws Exception {
-		super(getDefaults());
+		super(new Processor(getDefaults()));
+		this.maven = new Maven(Processor.getExecutor(), this);
 		this.layout = WorkspaceLayout.BND;
+		addClose(notifier);
 		workspaceDir = workspaceDir.getAbsoluteFile();
 		setBase(workspaceDir); // setBase before call to setFileSystem
 		addBasicPlugin(new LoggingProgressPlugin());
 		setFileSystem(workspaceDir, bndDir);
-		projects = new ProjectTracker(this);
+
+		// we must process version defaults after the
+		// normal properties are read
+
+		fixupVersionDefaults();
 	}
 
+	/*
+	 * This constructor will create an intermediate parent processor to hold the
+	 * version defaults but will _not_ fix them up. This must be done by the
+	 * caller after the user properties are set.
+	 * @param layout the layout to use
+	 */
 	private Workspace(WorkspaceLayout layout) throws Exception {
-		super(getDefaults());
+		super(new Processor(getDefaults()));
+		this.maven = new Maven(Processor.getExecutor(), this);
 		this.layout = layout;
 		setBuildDir(IO.getFile(BND_DEFAULT_WS, CNFDIR));
-		projects = new ProjectTracker(this);
+	}
+
+	/**
+	 * Open the workspace. This will start sending events and, when interactive,
+	 * might start some processes to create initial configuration like repos.
+	 */
+
+	public void open() {
+		if (isInteractive()) {
+			projects.forceRefresh();
+		}
+		notifier.mute = false;
+		forceInitialization();
+		notifier.projects(projects.getAllProjects());
+	}
+
+	/*
+	 * All constructors create an intermediate processor to hold the version
+	 * defaults. This method will load the version default properties in that
+	 * intermediate processor.
+	 */
+	private void fixupVersionDefaults() throws IOException {
+		Properties props = getParent().getProperties();
+
+		assert props.isEmpty() : "This should only once be called";
+
+		Version actual = new Version(About.CURRENT.getMajor(), About.CURRENT.getMinor(), 0);
+
+		String version = Strings.trim(getProperty(Constants.VERSIONDEFAULTS, actual.toString()));
+		URL url = Workspace.class.getResource(version + ".bnd");
+		if (url == null) {
+			error("%s = %s, this is not a valid released bnd version. Using current version %s",
+				Constants.VERSIONDEFAULTS, version, actual);
+			url = Workspace.class.getResource(actual + ".bnd");
+			assert url != null : "We must have a specific defaults resource";
+		}
+		try (InputStream in = url.openStream()) {
+			props.load(in);
+		}
 	}
 
 	public void setFileSystem(File workspaceDir, String bndDir) throws Exception {
@@ -285,7 +411,6 @@ public class Workspace extends Processor {
 			IO.store("", buildFile);
 		}
 		setProperties(buildFile, workspaceDir);
-		propertiesChanged();
 
 		//
 		// There is a nasty bug/feature in Java that gives errors on our
@@ -295,19 +420,24 @@ public class Workspace extends Processor {
 		//
 
 		Attrs sysProps = OSGiHeader.parseProperties(mergeProperties(SYSTEMPROPERTIES));
-		for (Entry<String, String> e : sysProps.entrySet()) {
-			System.setProperty(e.getKey(), e.getValue());
-		}
+		sysProps.stream()
+			.forEachOrdered(System::setProperty);
 	}
 
 	public Project getProjectFromFile(File projectDir) {
-		projectDir = projectDir.getAbsoluteFile();
-		assert projectDir.isDirectory();
+		try {
+			projectDir = projectDir.getCanonicalFile();
+			if (!projectDir.isDirectory())
+				return null;
 
-		if (getBase().equals(projectDir.getParentFile())) {
-			return getProject(projectDir.getName());
+			if (getBase().getCanonicalFile()
+				.equals(projectDir.getParentFile())) {
+				return getProject(projectDir.getName());
+			}
+			return null;
+		} catch (IOException e) {
+			throw Exceptions.duck(e);
 		}
-		return null;
 	}
 
 	public Project getProject(String bsn) {
@@ -320,18 +450,13 @@ public class Workspace extends Processor {
 			.isPresent();
 	}
 
-	public Collection<Project> getCurrentProjects() {
-		return projects.getAllProjects();
-	}
-
 	@Override
 	public boolean refresh() {
-		data = new WorkspaceData();
-
+		refreshData();
 		gestalt = null;
 		if (super.refresh()) {
 
-			for (Project project : getCurrentProjects()) {
+			for (Project project : getAllProjects()) {
 				project.propertiesChanged();
 			}
 			return true;
@@ -349,16 +474,21 @@ public class Workspace extends Processor {
 		projects.refresh();
 	}
 
+	public void forceRefreshProjects() {
+		projects.forceRefresh();
+	}
+
 	@Override
 	public void propertiesChanged() {
-
-		if (data.remoteServer != null)
-			IO.close(data.remoteServer);
-
-		data = new WorkspaceData();
+		refreshData();
+		gestalt = null;
 		File extDir = new File(getBuildDir(), EXT);
 		File[] extensions = extDir.listFiles();
 		if (extensions != null) {
+			Collator collator = Collator.getInstance(Locale.ROOT);
+			collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+			collator.setStrength(Collator.IDENTICAL); // case-sensitive order
+			Arrays.sort(extensions, (e1, e2) -> collator.compare(e1.getName(), e2.getName()));
 			for (File extension : extensions) {
 				String extensionName = extension.getName();
 				if (extensionName.endsWith(".bnd")) {
@@ -371,18 +501,33 @@ public class Workspace extends Processor {
 				}
 			}
 		}
-
-		if (remoteWorkspaces || Processor.isTrue(getProperty(Constants.REMOTEWORKSPACE))) {
-			try {
-				data.remoteServer = new RemoteWorkspaceServer(this);
-			} catch (IOException e) {
-				exception(e, "Could not create remote workspace %s", getBase());
-			}
-		}
 		super.propertiesChanged();
+
+		forceInitialization();
 	}
 
-	public String _workspace(@SuppressWarnings("unused") String args[]) {
+	private void forceInitialization() {
+
+		if (notifier.mute)
+			return;
+
+		int revision = notifier.initialized();
+		if (isInteractive()) {
+			Promise<List<RepositoryPlugin>> repos = getInitializedRepositories();
+			repos.onSuccess((r) -> {
+				notifier.ifSameRevision(revision, ET.REPOS, r);
+			});
+			repos.onFailure(e -> {
+				notifier.ifSameRevision(revision, ET.REPOS, Collections.emptyList());
+			});
+			for (Project p : getAllProjects()) {
+				p.propertiesChanged();
+			}
+		}
+	}
+
+	public String _workspace(@SuppressWarnings("unused")
+	String args[]) {
 		return IO.absolutePath(getBase());
 	}
 
@@ -403,6 +548,13 @@ public class Workspace extends Processor {
 	}
 
 	/**
+	 * @see #getAllProjects() "Use getAllProjects() instead."
+	 */
+	public Collection<Project> getCurrentProjects() {
+		return getAllProjects();
+	}
+
+	/**
 	 * Inform any listeners that we changed a file (created/deleted/changed).
 	 *
 	 * @param f The changed file
@@ -413,7 +565,7 @@ public class Workspace extends Processor {
 			try {
 				l.changed(f);
 			} catch (Exception e) {
-				logger.debug("Exception in a BndListener changedFile method call", e);
+				logger.debug("Exception in a BndListener changed method call", e);
 			}
 	}
 
@@ -511,11 +663,11 @@ public class Workspace extends Processor {
 						modifiedTime = FileTime.from(seconds, TimeUnit.SECONDS);
 					}
 				}
-				for (JarEntry jentry = jin.getNextJarEntry(); jentry != null; jentry = jin.getNextJarEntry()) {
+				for (JarEntry jentry; (jentry = jin.getNextJarEntry()) != null;) {
 					if (jentry.isDirectory()) {
 						continue;
 					}
-					String jentryName = jentry.getName();
+					String jentryName = ZipUtil.cleanPath(jentry.getName());
 					if (jentryName.startsWith("META-INF/")) {
 						continue;
 					}
@@ -537,21 +689,51 @@ public class Workspace extends Processor {
 		cf.close();
 	}
 
-	public List<RepositoryPlugin> getRepositories() throws Exception {
-		if (data.repositories == null) {
-			data.repositories = getPlugins(RepositoryPlugin.class);
-			for (RepositoryPlugin repo : data.repositories) {
-				if (repo instanceof Prepare) {
+	public List<RepositoryPlugin> getRepositories() {
+		return data.repositories.get();
+	}
+
+	private List<RepositoryPlugin> initRepositories() {
+		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
+		for (RepositoryPlugin repo : plugins) {
+			if (repo instanceof Prepare) {
+				try {
 					((Prepare) repo).prepare();
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
 				}
 			}
 		}
-		return data.repositories;
+		return plugins;
+	}
+
+	/**
+	 * Get the repositories and ensure they are all ready.
+	 *
+	 * @return a promise with the list of repos
+	 */
+	public Promise<List<RepositoryPlugin>> getInitializedRepositories() {
+		try {
+			List<RepositoryPlugin> repositories = getRepositories();
+			List<Promise<Void>> promises = new ArrayList<>();
+			for (RepositoryPlugin repo : repositories) {
+				promises.add(repo.sync());
+			}
+			return getPromiseFactory().all(promises)
+				.map(l -> {
+					return repositories;
+				});
+
+			// failures should be visible on the repositories,
+			// this is just about syncing
+		} catch (Exception e) {
+			return getPromiseFactory().failed(e);
+		}
 	}
 
 	public Collection<Project> getBuildOrder() throws Exception {
 		Set<Project> result = new LinkedHashSet<>();
-		for (Project project : projects.getAllProjects()) {
+		for (Project project : getAllProjects()) {
 			Collection<Project> dependsOn = project.getDependson();
 			getBuildOrder(dependsOn, result);
 			result.add(project);
@@ -579,58 +761,54 @@ public class Workspace extends Processor {
 	}
 
 	@Override
-	protected void setTypeSpecificPlugins(Set<Object> list) {
+	protected void setTypeSpecificPlugins(PluginsContainer pluginsContainer) {
 		try {
-			super.setTypeSpecificPlugins(list);
-			list.add(this);
-			list.add(maven);
-			list.add(settings);
+			super.setTypeSpecificPlugins(pluginsContainer);
+			pluginsContainer.add(maven);
+			pluginsContainer.add(settings);
 
 			if (!isTrue(getProperty(NOBUILDINCACHE))) {
 				CachedFileRepo repo = new CachedFileRepo();
-				list.add(repo);
+				pluginsContainer.add(repo);
 			}
 
 			resourceRepositoryImpl = new ResourceRepositoryImpl();
 			resourceRepositoryImpl.setCache(IO.getFile(getProperty(CACHEDIR, Home.getUserHomeBnd() + "/caches/shas")));
 			resourceRepositoryImpl.setExecutor(getExecutor());
 			resourceRepositoryImpl.setIndexFile(getFile(getBuildDir(), "repo.json"));
-			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(this));
-			customize(resourceRepositoryImpl, null);
-			list.add(resourceRepositoryImpl);
+			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(pluginsContainer));
+			customize(resourceRepositoryImpl, null, pluginsContainer);
+			pluginsContainer.add(resourceRepositoryImpl);
 
 			//
 			// Exporters
 			//
 
-			list.add(new ExecutableJarExporter());
-			list.add(new RunbundlesExporter());
+			pluginsContainer.add(new ExecutableJarExporter());
+			pluginsContainer.add(new RunbundlesExporter());
 
 			HttpClient client = new HttpClient();
 			try {
 				client.setOffline(getOffline());
-				client.setRegistry(this);
+				client.setRegistry(pluginsContainer);
 				client.readSettings(this);
 
 			} catch (Exception e) {
 				exception(e, "Failed to load the communication settings");
 			}
-			list.add(client);
-
-		} catch (RuntimeException e) {
-			throw e;
+			pluginsContainer.add(client);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw Exceptions.duck(e);
 		}
 	}
 
 	/**
 	 * Add any extensions listed
 	 *
-	 * @param list
+	 * @param pluginsContainer
 	 */
 	@Override
-	protected void addExtensions(Set<Object> list) {
+	protected void addExtensions(PluginsContainer pluginsContainer) {
 		//
 		// <bsn>; version=<range>
 		//
@@ -693,14 +871,13 @@ public class Workspace extends Processor {
 							try {
 								Class<?> c = cl.loadClass(e.getKey());
 								ExtensionActivator extensionActivator = (ExtensionActivator) newInstance(c);
-								customize(extensionActivator, blocker.getValue());
+								customize(extensionActivator, blocker.getValue(), pluginsContainer);
 								List<?> plugins = extensionActivator.activate(this, blocker.getValue());
-								list.add(extensionActivator);
+								pluginsContainer.add(extensionActivator);
 
-								if (plugins != null)
-									for (Object plugin : plugins) {
-										list.add(plugin);
-									}
+								if (plugins != null) {
+									pluginsContainer.addAll(plugins);
+								}
 							} catch (ClassNotFoundException cnfe) {
 								error("Loading extension %s, extension activator missing: %s (ignored)", blocker,
 									e.getKey());
@@ -878,9 +1055,10 @@ public class Workspace extends Processor {
 
 	@Override
 	public void close() {
-		if (data.remoteServer != null) {
-			IO.close(data.remoteServer);
-		}
+		notifier.closing(this);
+		WorkspaceData oldData = data;
+		data = new WorkspaceData();
+		IO.close(oldData);
 		synchronized (cache) {
 			WeakReference<Workspace> wsr = cache.get(getBase());
 			if ((wsr != null) && (wsr.get() == this)) {
@@ -895,6 +1073,12 @@ public class Workspace extends Processor {
 		} catch (IOException e) {
 			/* For backwards compatibility, we ignore the exception */
 		}
+	}
+
+	private void refreshData() {
+		WorkspaceData oldData = data;
+		data = new WorkspaceData();
+		oldData.close();
 	}
 
 	/**
@@ -1077,11 +1261,11 @@ public class Workspace extends Processor {
 			setup.format("#\n" //
 				+ "# Plugin %s setup\n" //
 				+ "#\n", alias);
-			setup.format("-plugin.%s = %s", alias, plugin.getName());
+			setup.format(Constants.PLUGIN + ".%s = %s", alias, plugin.getName());
 
-			for (Map.Entry<String, String> e : parameters.entrySet()) {
-				setup.format("; \\\n \t%s = '%s'", e.getKey(), escaped(e.getValue()));
-			}
+			MapStream.of(parameters)
+				.mapValue(this::escaped)
+				.forEachOrdered((k, v) -> setup.format("; \\\n \t%s = '%s'", k, v));
 			setup.format("\n\n");
 
 			String out = setup.toString();
@@ -1147,52 +1331,46 @@ public class Workspace extends Processor {
 	public static Workspace createStandaloneWorkspace(Processor run, URI base) throws Exception {
 		Workspace ws = new Workspace(WorkspaceLayout.STANDALONE);
 
+		AtomicBoolean copyAll = new AtomicBoolean(false);
+		AtomicInteger counter = new AtomicInteger();
+
 		Parameters standalone = new Parameters(run.getProperty(STANDALONE), ws);
-		StringBuilder sb = new StringBuilder();
-		try (Formatter f = new Formatter(sb, Locale.US)) {
-			int counter = 1;
-			for (Map.Entry<String, Attrs> e : standalone.entrySet()) {
-				String locationStr = e.getKey();
+		standalone.stream()
+			.filterKey(locationStr -> {
 				if ("true".equalsIgnoreCase(locationStr)) {
-
-					//
-					// Copy all properties except the type we will add
-					//
-
-					for (Entry<Object, Object> entry : run.getProperties()
-						.entrySet()) {
-						String key = (String) entry.getKey();
-						if (!key.startsWith(PLUGIN_STANDALONE)) {
-							ws.getProperties()
-								.put(key, entry.getValue());
-						}
-					}
-
-					break;
+					copyAll.set(true);
+					return false;
 				}
-
-				URI resolvedLocation = URIUtil.resolve(base, locationStr);
-
-				String key = f.format("%s%02d", PLUGIN_STANDALONE, counter)
-					.toString();
-				sb.setLength(0);
-				Attrs attrs = e.getValue();
+				return true;
+			})
+			.map(asBiFunction((locationStr, attrs) -> {
+				String index = String.format("%02d", counter.incrementAndGet());
 				String name = attrs.get("name");
 				if (name == null) {
-					name = String.format("repo%02d", counter);
+					name = "repo".concat(index);
 				}
-				f.format("%s; name='%s'; locations='%s'", STANDALONE_REPO_CLASS, name, resolvedLocation);
-				for (Map.Entry<String, String> attribEntry : attrs.entrySet()) {
-					if (!"name".equals(attribEntry.getKey()))
-						f.format("; %s='%s'", attribEntry.getKey(), attribEntry.getValue());
+				URI resolvedLocation = URIUtil.resolve(base, locationStr);
+				try (Formatter f = new Formatter(Locale.US)) {
+					f.format(STANDALONE_REPO_CLASS + "; name='%s'; locations='%s'", name, resolvedLocation);
+					attrs.stream()
+						.filterKey(k -> !k.equals("name"))
+						.forEachOrdered((k, v) -> f.format("; %s='%s'", k, v));
+					return MapStream.entry(PLUGIN_STANDALONE.concat(index), f.toString());
 				}
-				String value = f.toString();
-				sb.setLength(0);
-				ws.setProperty(key, value);
-				counter++;
-			}
+			}))
+			.forEachOrdered(ws::setProperty);
+		MapStream<String, Object> runProperties = MapStream.of(run.getProperties())
+			.mapKey(String.class::cast);
+		if (!copyAll.get()) {
+			runProperties = runProperties
+				.filterKey(k -> k.equals(Constants.PLUGIN) || k.startsWith(Constants.PLUGIN + "."));
 		}
+		Properties wsProperties = ws.getProperties();
+		runProperties.filterKey(k -> !k.startsWith(PLUGIN_STANDALONE))
+			.forEachOrdered(wsProperties::put);
 
+		ws.fixupVersionDefaults();
+		ws.open();
 		return ws;
 	}
 
@@ -1389,4 +1567,236 @@ public class Workspace extends Processor {
 			projectswhereCycleCheck.set(null);
 		}
 	}
+
+	public void refresh(RepositoryPlugin repo) {
+		for (RepositoryListenerPlugin listener : getPlugins(RepositoryListenerPlugin.class)) {
+			try {
+				listener.repositoryRefreshed(repo);
+			} catch (Exception e) {
+				exception(e, "Updating listener plugin %s", listener);
+			}
+		}
+	}
+
+	/**
+	 * Search for a partial class name. The partialFqn name may be a simple
+	 * class name (Foo) or a fully qualified class name line (foo.bar.Foo),
+	 * including nested classes, or only a package name prefix (foo.bar or even
+	 * foo.ba).
+	 * <p>
+	 * This method uses the heuristic in {@link Descriptors#determine
+	 * determine()} to split the package name from the (possibly nested) class
+	 * name - the start of the class name is taken as the first element that
+	 * starts with a capital letter. This heuristic works fine in most cases,
+	 * but it is not foolproof. In contexts where you have a better idea of how
+	 * to separate the package name from the class name, you can use
+	 * {@link #search(String, String)} for this purpose.
+	 *
+	 * @param partialFqn a packagename ( '.' classname )*
+	 * @return a multi-map containing the search matches with the matching
+	 *         fully-qualified class name as each entry's key, and a list of
+	 *         matching bundles as the value.
+	 * @throws Exception
+	 * @see #search(String, String)
+	 */
+	public Result<Map<String, List<BundleId>>> search(String partialFqn) throws Exception {
+		return data.classIndex.get()
+			.search(partialFqn);
+	}
+
+	/**
+	 * Search for a class name inside particular package. Use this in preference
+	 * to {@link #search(String)} when you know that the qualifier resolves to a
+	 * package and not to a class.
+	 *
+	 * @param packageName the package to search
+	 * @param className a classname ( '.' classname )*
+	 * @return a multi-map containing the search matches with the matching
+	 *         fully-qualified class name as each entry's key, and a list of
+	 *         matching bundles as the value.
+	 * @throws Exception
+	 * @see #search(String)
+	 */
+	public Result<Map<String, List<BundleId>>> search(String packageName, String className) throws Exception {
+		return data.classIndex.get()
+			.search(packageName, className);
+	}
+
+	/**
+	 * Strategy to use when creating a workspace ResourceRepository.
+	 */
+	enum ResourceRepositoryStrategy {
+		/**
+		 * All Repository plugins and the Workspace repository.
+		 * <p>
+		 * This is the default strategy.
+		 */
+		ALL,
+		/**
+		 * All Repository plugins but not the Workspace repository.
+		 */
+		REPOS,
+		/**
+		 * The Workspace repository but no Repository plugins.
+		 */
+		WORKSPACE
+	}
+
+	/**
+	 * Return an aggregate repository of all the repositories to search. This
+	 * resource repository must be obtained for each operation, it might become
+	 * stale over time.
+	 *
+	 * @param strategy Strategy to use for which repositories to search.
+	 * @return an aggregate repository
+	 * @throws Exception
+	 */
+	Repository getResourceRepository(ResourceRepositoryStrategy strategy) throws Exception {
+		List<Repository> plugins;
+
+		switch (strategy) {
+			case WORKSPACE :
+				plugins = Collections.singletonList(new WorkspaceRepositoryDynamic(this));
+				break;
+			case REPOS :
+				plugins = getPlugins(Repository.class);
+				// replace any WorkspaceRepositoryMarker plugin
+				plugins.removeIf(WorkspaceRepositoryMarker.class::isInstance);
+				break;
+			case ALL :
+				plugins = getPlugins(Repository.class);
+				// replace any WorkspaceRepositoryMarker plugin
+				plugins.removeIf(WorkspaceRepositoryMarker.class::isInstance);
+				plugins.add(new WorkspaceRepositoryDynamic(this));
+				break;
+			default :
+				plugins = Collections.emptyList();
+				break;
+		}
+		AggregateRepository repository = new AggregateRepository(plugins);
+		Parameters augments = getMergedParameters(Constants.AUGMENT);
+		if (augments.isEmpty())
+			return repository;
+
+		return new AugmentRepository(augments, repository);
+	}
+
+	static final String _findprovidersHelp = "${findproviders;<namespace>[;<filter>[;('ALL'|'REPOS'|'WORKSPACE')]]}";
+
+	/**
+	 * A macro that returns a set of resources in bundle selection format from
+	 * the repositories. For example:
+	 *
+	 * <pre>
+	 * ${findproviders;osgi.wiring.package;(osgi.wiring.package=aQute.bnd.build);ALL}
+	 * </pre>
+	 */
+
+	public String _findproviders(String[] args) throws Exception {
+		Macro.verifyCommand(args, _findprovidersHelp, null, 2, 4);
+		String namespace = args[1];
+		String filter = args.length > 2 ? args[2] : null;
+		ResourceRepositoryStrategy strategy = ResourceRepositoryStrategy.ALL;
+		if (args.length > 3) {
+			if (args[3].equalsIgnoreCase(ResourceRepositoryStrategy.ALL.name())) {
+				strategy = ResourceRepositoryStrategy.ALL;
+			} else if (args[3].equalsIgnoreCase(ResourceRepositoryStrategy.REPOS.name())) {
+				strategy = ResourceRepositoryStrategy.REPOS;
+			} else if (args[3].equalsIgnoreCase(ResourceRepositoryStrategy.WORKSPACE.name())) {
+				strategy = ResourceRepositoryStrategy.WORKSPACE;
+			} else {
+				error("Invalid resource repository strategy: %s. Must be one of the following: %s", args[3],
+					Arrays.toString(ResourceRepositoryStrategy.values()));
+			}
+		}
+		return findProviders(namespace, filter, strategy).map(Capability::getResource)
+			.map(ResourceUtils::getBundleId)
+			.filter(Objects::nonNull)
+			.sorted()
+			.distinct()
+			.map(BundleId::toString)
+			.collect(Collectors.joining(","));
+	}
+
+	/**
+	 * Find capability providers in the resources in the workspace's
+	 * repositories.
+	 *
+	 * @param namespace Capability namespace.
+	 * @param filter Filter expression to limit the capabilities. Optional, may
+	 *            be {@code null} or an empty string.
+	 * @return A stream of capabilities found. May be an empty stream.
+	 * @throws Exception
+	 */
+	public Stream<Capability> findProviders(String namespace, String filter) throws Exception {
+		return findProviders(namespace, filter, ResourceRepositoryStrategy.ALL);
+	}
+
+	Stream<Capability> findProviders(String namespace, String filter, ResourceRepositoryStrategy strategy)
+		throws Exception {
+		RequirementBuilder rb = new RequirementBuilder(namespace);
+		if (Strings.nonNullOrTrimmedEmpty(filter)) {
+			rb.filter(filter);
+		}
+		Requirement requirement = rb.buildSyntheticRequirement();
+		return getResourceRepository(strategy).findProviders(Collections.singleton(requirement))
+			.get(requirement)
+			.stream();
+	}
+
+	/**
+	 * Execute a function with a class from a plugin loaded from the
+	 * repositories. See {@link WorkspaceExternalPluginHandler}.
+	 */
+	public WorkspaceExternalPluginHandler getExternalPlugins() {
+		return data.externalPlugins.get();
+	}
+
+	public Result<File> getBundle(org.osgi.resource.Resource resource) {
+		BundleId bundleId = ResourceUtils.getBundleId(resource);
+		if (bundleId == null) {
+			return Result.err("Not a bundle %s, identity & bnd.info found but was not sufficient: ", resource);
+		}
+
+		if (bundleId.getVersion() != null && !Verifier.isVersion(bundleId.getVersion()))
+			return Result.err("Not a proper version %s for %s", bundleId.getVersion(), resource);
+
+		Version version = Version.valueOf(bundleId.getVersion());
+		return getBundle(bundleId.getBsn(), version, null);
+	}
+
+	public Result<File> getBundle(String bsn, Version version, Map<String, String> attrs) {
+		try {
+
+			List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
+			for (RepositoryPlugin rp : plugins) {
+				SortedSet<Version> versions = rp.versions(bsn);
+				File file = rp.get(bsn, version, attrs);
+				if (file != null)
+					return Result.ok(file);
+			}
+
+			WorkspaceRepository workspaceRepository = getWorkspaceRepository();
+			SortedSet<Version> versions = workspaceRepository.versions(bsn);
+			if (!versions.isEmpty()) {
+				File f = workspaceRepository.get(bsn, versions.last(), attrs);
+				if (f != null && f.isFile())
+					return Result.ok(f);
+			}
+
+			return Result.err("Cannot find bundle %s %s", bsn, version);
+		} catch (Exception e) {
+			return Result.err("failed to get bundle %s %s %s", bsn, version, e);
+		}
+
+	}
+
+	/**
+	 * Get a new notifier that receives notifications from the workspace &
+	 * projects. This object should be closed if it is not longer needed.
+	 */
+	public OnWorkspace on(String ownerName) {
+		return notifier.on(ownerName);
+	}
+
 }

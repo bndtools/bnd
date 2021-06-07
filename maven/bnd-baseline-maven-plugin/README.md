@@ -1,7 +1,7 @@
 # bnd-baseline-maven-plugin
 
 The `bnd-baseline-maven-plugin` is a bnd based plugin that verifies OSGi 
-bundles correctly obey semantic versioning rules. If the bundle does not
+bundles correctly obey [semantic versioning rules][1]. If the bundle does not
 correctly follow the rules then the build will fail.
 
 ## What does the `bnd-baseline-maven-plugin` do?
@@ -48,7 +48,7 @@ build log.
 
 ### What versions should I use?
 
-The [Semantic Versioning Whitepaper](https://www.osgi.org/wp-content/uploads/Semantic-Versioning-20190110.pdf)
+The [Semantic Versioning Whitepaper][1]
 defines the rules for semantic versions. In summary for a version `X.Y.Z`:
 
 1. A change which breaks backward compatibility for consumers necessitates a major version change 
@@ -170,6 +170,17 @@ The manifest header names and resource paths to ignore when baseline comparing. 
         </diffignores>
     </configuration>
 
+##### Ignore bundle version
+
+Although the [semantic versioning policy][1] enforces also to maintain semantic bundle versions (and not only semantic package versions), this is often not followed by projects for different reasons.
+It is possible to only check for correct package versions and leave out the bundle version by ignoring the `Bundle-Version` manifest header.
+
+    <configuration>
+        <diffignores>
+           <diffignore>Bundle-Version</diffignore>
+        </diffignores>
+    </configuration>
+
 ## Configuration Properties
 
 |Configuration Property | Description |
@@ -182,4 +193,7 @@ The manifest header names and resource paths to ignore when baseline comparing. 
 |`diffignores`          | See [Diffignores](#diffignores). _Optional._|
 |`continueOnError`      | See [Continue on Error](#continue-on-error). _Defaults to `false`._ Override with property `bnd.baseline.continue.on.error`.|
 |`skip`                 | Skip the baseline process altogether. _Defaults to `false`._ Override with property `bnd.baseline.skip`.|
+|`releaseversions`                 | When searching a version range for the baseline, only consider release versions. That is, don't consider `alpha`, `beta`, `milestone`, or `rc` versions. `snapshot` versions are never considered when searching for the baseline. _Defaults to `false`._ Override with property `bnd.baseline.releaseversions`.|
 
+
+[1]: https://docs.osgi.org/whitepaper/semantic-versioning/

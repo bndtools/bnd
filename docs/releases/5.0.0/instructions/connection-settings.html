@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/5.0.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>-connection-settings</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="-connection-settings" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This chapter discusses the connection settings of bnd that are used when bnd is asked to download or upload a file from a remote server. The connection settings can provide a userid/password for basic authentication, proxies, and/or the trust policy for verifying the host name of a TLS/SSL server. These settings can obviously not be part of the workspace since they are unique to the actual user of the workspace. That is, they need to be stored outside the workspace in a user accessible area." />
+<meta property="og:description" content="This chapter discusses the connection settings of bnd that are used when bnd is asked to download or upload a file from a remote server. The connection settings can provide a userid/password for basic authentication, proxies, and/or the trust policy for verifying the host name of a TLS/SSL server. These settings can obviously not be part of the workspace since they are unique to the actual user of the workspace. That is, they need to be stored outside the workspace in a user accessible area." />
+<script type="application/ld+json">
+{"@type":"WebPage","headline":"-connection-settings","url":"/releases/5.0.0/instructions/connection-settings.html","description":"This chapter discusses the connection settings of bnd that are used when bnd is asked to download or upload a file from a remote server. The connection settings can provide a userid/password for basic authentication, proxies, and/or the trust policy for verifying the host name of a TLS/SSL server. These settings can obviously not be part of the workspace since they are unique to the actual user of the workspace. That is, they need to be stored outside the workspace in a user accessible area.","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/5.0.0/"><img
+			class=menu-logo src="/releases/5.0.0/img/bnd-80x40-white.png"></a>
+			<a href="/releases/5.0.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/5.0.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/5.0.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/5.0.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/5.0.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">5.0.0</button><div class="dropdown-content"></div></div>
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/releases/5.0.0/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.0.0/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+				<h1> -connection-settings</h1>
+				<p>This chapter discusses the connection settings of bnd that are used when bnd is asked to download or upload a file
+from a remote server. The connection settings can provide a userid/password for basic authentication, proxies, and/or
+the trust policy for verifying the host name of a TLS/SSL server. These settings can obviously not be part of the workspace 
+since they are unique to the actual  user of the workspace. That is, they need to be stored outside the workspace
+in a user accessible area.</p>
+
+<p>Since Maven is very popular we’ve followed the same syntax for settings. The supported elements in this file are 
+<code class="highlighter-rouge">&lt;server&gt;</code> and <code class="highlighter-rouge">&lt;proxy&gt;</code>. Other elements are ignored.</p>
+
+<h2 id="finding-the-settings">Finding the Settings</h2>
+
+<p>The default order in which bnd looks for settings is:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>`~/.bnd/connection-settings.xml`
+`~/.m2/settings.xml`
+</code></pre></div></div>
+
+<p>If you want to disable the use of default from the workspace then you can use the <code class="highlighter-rouge">-connection-settings</code> instruction
+in the workspace’s <code class="highlighter-rouge">cnf/build.bnd</code> file. If you set the instruction to <code class="highlighter-rouge">false</code> then it will not look for the aforementioned files.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-connection-settings: false
+</code></pre></div></div>
+
+<p>In this setting, you can also list additional files to parse that must be of the same syntax as the Maven settings file. The names 
+<code class="highlighter-rouge">maven</code> and <code class="highlighter-rouge">bnd</code> are recognized as <code class="highlighter-rouge">~/.m2/settings.xml</code> and <code class="highlighter-rouge">~/.bnd/connection-settings.xml</code> respectively. For example, if
+we first want to look in the home directory in <code class="highlighter-rouge">~/foo/settings.xml</code> and then in the bnd settings, we can set the <code class="highlighter-rouge">-connection-settings</code> to:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-connection-settings: ~/foo/settings.xml, bnd
+</code></pre></div></div>
+
+<p>In addition, you could also specify the maven settings inline. For example:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-connection-settings: \
+   server; \
+       id="http://server"; \
+       username="myUser"; \
+       password=${env;PASSWORD}
+</code></pre></div></div>
+
+<h2 id="logging">Logging</h2>
+
+<p>You can create a log file specific for the connections by specifying:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-connection-log: somefile.txt
+</code></pre></div></div>
+
+<p>This file will contain the detailed trace output</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<p>The settings files have the following XML structure:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;settings&gt;
+  &lt;proxies&gt;
+    &lt;proxy&gt;
+    &lt;id/&gt;
+      &lt;active&gt;        'true' | 'false' &lt;/active&gt;
+      &lt;protocol&gt;      'http'| 'direct' | 'socks' &lt;/protocol&gt;
+      &lt;host&gt;          domain name &lt;/host&gt;
+      &lt;port&gt;          port to use &lt;/port&gt;
+      &lt;username&gt;      user name to use for the proxy &lt;/username&gt;
+      &lt;password&gt;      password to use for the proxy &lt;/password&gt;
+      &lt;verify&gt; true | false &lt;/verify&gt;
+      &lt;nonProxyHosts&gt; glob ( '|' glob )* &lt;/nonProxyHosts&gt;
+    &lt;/proxy&gt;
+  &lt;/proxies&gt;
+  &lt;servers&gt;
+    &lt;server&gt;
+      &lt;id&gt;default&lt;/id&gt;
+	    &lt;username&gt;username&lt;/username&gt;
+        &lt;password&gt;password&lt;/password&gt;
+	    &lt;verify&gt; true | false &lt;/verify&gt;
+	    &lt;trust&gt; comma separated paths to X509 certificates &lt;/trust&gt;
+    &lt;/server&gt;
+  &lt;/servers&gt;
+&lt;/settings&gt;
+</code></pre></div></div>
+
+<p>Any additional elements are ignored.</p>
+
+<h3 id="proxies">Proxies</h3>
+
+<p>The purpose of the proxy definitions is to define a communication proxy. We support <code class="highlighter-rouge">HTTP</code> and <code class="highlighter-rouge">SOCKS</code> proxies. An additional built-in proxy is the <code class="highlighter-rouge">DIRECT</code> ‘proxy’. Proxies can be authenticated with a username and password.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tag</th>
+      <th>Default</th>
+      <th>Values</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">id</code></td>
+      <td><code class="highlighter-rouge">default</code></td>
+      <td><code class="highlighter-rouge">NAME</code></td>
+      <td>Identifies the proxy, must be unique in</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>the list of proxies.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">active</code></td>
+      <td><code class="highlighter-rouge">true</code></td>
+      <td><code class="highlighter-rouge">true | false</code></td>
+      <td>If this proxy is active</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">protocol</code></td>
+      <td><code class="highlighter-rouge">http</code></td>
+      <td><code class="highlighter-rouge">socks | http  | direct</code></td>
+      <td>The proxy protocol to use.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">host</code></td>
+      <td> </td>
+      <td><code class="highlighter-rouge">domain-name</code></td>
+      <td>The domain name or IP address of the proxy host</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">port</code></td>
+      <td> </td>
+      <td><code class="highlighter-rouge">INTEGER</code></td>
+      <td>Port number, maybe absent if default</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>port for protocol</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">username</code></td>
+      <td> </td>
+      <td> </td>
+      <td>User name for authentication to the proxy</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">password</code></td>
+      <td> </td>
+      <td> </td>
+      <td>Password for authentication to the proxy</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">nonProxyHosts</code></td>
+      <td>none</td>
+      <td><code class="highlighter-rouge">GLOB ('|' GLOB)*</code></td>
+      <td>Filter on the destination hosts that should not be proxied</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="servers">Servers</h3>
+
+<p>In maven, the servers are identified by an <em>id</em>; when you define a repository you tell which id to use. In bnd this works 
+slightly different. Instead of using the id we use the id in the settings as a <em>glob</em> expression on the protocol, host name, 
+and port number.  The glob expression must match the scheme, the host and the port if the port is not the default port. 
+To match the url <code class="highlighter-rouge">https://maven2-repository.dev.java.net/</code>, the server component could look like:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;server&gt;
+	&lt;id&gt;https://*java.net&lt;/id&gt;
+	...
+&lt;/server&gt;
+</code></pre></div></div>
+
+<p>The first server that matches the id will provide the parameters.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tag</th>
+      <th>Default</th>
+      <th>Values</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">id</code></td>
+      <td> </td>
+      <td><code class="highlighter-rouge">GLOB</code></td>
+      <td>A glob expression on the scheme + host + port</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">username</code></td>
+      <td> </td>
+      <td> </td>
+      <td>User name for authentication to the server</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">password</code></td>
+      <td> </td>
+      <td> </td>
+      <td>Password for authentication to the server</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">verify</code></td>
+      <td><code class="highlighter-rouge">true</code></td>
+      <td><code class="highlighter-rouge">false | true</code></td>
+      <td>Enable/disable the verification of the host name against a certificate for HTTPS</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">trust</code></td>
+      <td> </td>
+      <td> </td>
+      <td>Provide paths to certificate that provide trust to the host certificate. The format most of a X.509 certificat file. Normally the extension is <code class="highlighter-rouge">.cer</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="oauth2-authentication">oAuth2 authentication</h2>
+
+<p>It also supports Bearer (OAuth2) authentication. If the <code class="highlighter-rouge">&lt;server&gt;</code> configuration has only a password and no username, then Bearer authentication is in effect with the password used as the token.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-connection-settings: server;id="https://*.server.com";password="oauth2token"
+</code></pre></div></div>
+
+<p>will cause</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Authorization: Bearer oauth2token
+</code></pre></div></div>
+
+<p>request header to be sent to servers matching the glob https://*.server.com.</p>
+
+<p>See https://github.github.com/maven-plugins/site-plugin/authentication.html for an example of a <code class="highlighter-rouge">&lt;server&gt;</code> configuration for OAuth2.</p>
+
+<h2 id="commands">Commands</h2>
+
+<p>The bnd command line provides a number of commands to display and verify the settings as well as getting the information from
+getting a remote file.</p>
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/releases/5.0.0/instructions/conduit.html'></a> <a href='/releases/5.0.0/instructions/consumer_policy.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/5.0.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -37,6 +38,8 @@ import aQute.lib.io.ByteBufferInputStream;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.bnd.unmodifiable.Sets;
+import aQute.lib.xml.XML;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;
 import aQute.maven.api.MavenScope;
@@ -49,7 +52,7 @@ import aQute.maven.api.Revision;
 public class POM implements IPom {
 	static Logger						l						= LoggerFactory.getLogger(POM.class);
 
-	static DocumentBuilderFactory		dbf						= DocumentBuilderFactory.newInstance();
+	static DocumentBuilderFactory		dbf						= XML.newDocumentBuilderFactory();
 	static XPathFactory					xpf						= XPathFactory.newInstance();
 	private Revision					revision;
 	private String						packaging;
@@ -58,9 +61,8 @@ public class POM implements IPom {
 	private Map<Program, Dependency>	dependencies			= new LinkedHashMap<>();
 	private Map<Program, Dependency>	dependencyManagement	= new LinkedHashMap<>();
 	private XPath						xp;
-	private String[]					JAR_PACKAGING			= {
-		"bundle", "eclipse-plugin", "eclipse-test-plugin", Archive.POM_EXTENSION
-	};
+	private Set<String>					JAR_PACKAGING			= Sets.of("bundle", "eclipse-plugin",
+		"eclipse-test-plugin", Archive.POM_EXTENSION);
 
 	private MavenRepository				repo;
 
@@ -339,6 +341,9 @@ public class POM implements IPom {
 			}
 		}
 
+		if (value == null)
+			return null;
+
 		return replaceMacros(value);
 	}
 
@@ -405,7 +410,9 @@ public class POM implements IPom {
 	@Override
 	public Archive binaryArchive() {
 		return revision.archive(
-			packaging == null || packaging.isEmpty() || Strings.in(JAR_PACKAGING, packaging) ? "jar" : packaging, null);
+			packaging == null || packaging.isEmpty() || JAR_PACKAGING.contains(packaging) ? Archive.JAR_EXTENSION
+				: packaging,
+			null);
 	}
 
 	@Override
@@ -504,12 +511,7 @@ public class POM implements IPom {
 		if (getClass() != obj.getClass())
 			return false;
 		POM other = (POM) obj;
-		if (revision == null) {
-			if (other.revision != null)
-				return false;
-		} else if (!revision.equals(other.revision))
-			return false;
-		return true;
+		return Objects.equals(revision, other.revision);
 	}
 
 	public boolean isPomOnly() {

@@ -4,9 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -55,10 +56,11 @@ import org.osgi.framework.wiring.FrameworkWiring;
 //import org.osgi.service.component.runtime.dto.ComponentDescriptionDTO;
 import org.osgi.util.tracker.ServiceTracker;
 
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.service.remoteworkspace.RemoteWorkspace;
 import aQute.bnd.service.specifications.RunSpecification;
 import aQute.launchpad.internal.ProbeImpl;
 import aQute.lib.converter.Converter;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.inject.Injector;
 import aQute.lib.io.IO;
 import aQute.lib.startlevel.StartLevelRuntimeHandler;
@@ -102,6 +104,7 @@ public class Launchpad implements AutoCloseable {
 	final RunSpecification						runspec;
 	final boolean								hasTestBundle;
 	final StartLevelRuntimeHandler				startlevels;
+	final RemoteWorkspace						workspace;
 
 	Bundle										testbundle;
 	boolean										debug;
@@ -113,8 +116,9 @@ public class Launchpad implements AutoCloseable {
 	private Bundle								proxyBundle;
 	private Probe								probe					= new ProbeImpl();
 
-	Launchpad(Framework framework, String name, String className, RunSpecification runspec, long closeTimeout,
-		boolean debug, boolean hasTestBundle, boolean byReference) {
+	Launchpad(RemoteWorkspace workspace, Framework framework, String name, String className, RunSpecification runspec,
+		long closeTimeout, boolean debug, boolean hasTestBundle, boolean byReference) {
+		this.workspace = workspace;
 		this.runspec = runspec;
 		this.closeTimeout = closeTimeout;
 		this.hasTestBundle = hasTestBundle;
@@ -251,7 +255,7 @@ public class Launchpad implements AutoCloseable {
 	 */
 	public List<Bundle> bundles(String specification) {
 		try {
-			return LaunchpadBuilder.workspace.getLatestBundles(projectDir.getAbsolutePath(), specification)
+			return workspace.getLatestBundles(projectDir.getAbsolutePath(), specification)
 				.stream()
 				.map(File::new)
 				.map(this::bundle)
@@ -469,7 +473,7 @@ public class Launchpad implements AutoCloseable {
 				return framework.getBundleContext()
 					.installBundle(installURI);
 			}
-			try (FileInputStream fin = new FileInputStream(file)) {
+			try (InputStream fin = IO.stream(file)) {
 				return framework.getBundleContext()
 					.installBundle("-> " + file, fin);
 			} catch (FileNotFoundException e) {
@@ -1093,13 +1097,14 @@ public class Launchpad implements AutoCloseable {
 
 			String className = serviceClass.getName();
 
-			ServiceTracker<?, ?> tracker = injectedDoNotClose.computeIfAbsent(serviceClass, (c) -> {
+			ServiceTracker<?, ?> tracker = injectedDoNotClose.computeIfAbsent(serviceClass, c -> {
 				ServiceTracker<?, ?> t = new ServiceTracker<>(framework.getBundleContext(), className, null);
 				t.open(true);
 				return t;
 			});
 
-			long deadline = System.currentTimeMillis() + timeout;
+			final long startNanos = System.nanoTime();
+			timeout = TimeUnit.MILLISECONDS.toNanos(timeout);
 
 			while (true) {
 
@@ -1119,7 +1124,7 @@ public class Launchpad implements AutoCloseable {
 
 				for (FindHook hook : this.hooks.getServices(new FindHook[0])) {
 					List<ServiceReference<T>> original = new ArrayList<>(unhiddenReferences);
-					hook.find(testbundle.getBundleContext(), className, target, true, (Collection) unhiddenReferences);
+					hook.find(getBundleContext(), className, target, true, (Collection) unhiddenReferences);
 					original.removeAll(unhiddenReferences);
 					for (ServiceReference<T> ref : original) {
 						hookMap.put(ref, hook);
@@ -1142,7 +1147,8 @@ public class Launchpad implements AutoCloseable {
 					return matchedReferences;
 				}
 
-				if (deadline < System.currentTimeMillis()) {
+				long elapsed = System.nanoTime() - startNanos;
+				if (elapsed > timeout) {
 					String error = "Injection of service " + className;
 					if (target != null)
 						error += " with target " + target;
@@ -1183,7 +1189,7 @@ public class Launchpad implements AutoCloseable {
 						}
 					}
 
-					if (exception && timeout > 1)
+					if (exception && timeout > 1L)
 						throw new TimeoutException(error);
 
 					return Collections.emptyList();

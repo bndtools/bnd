@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
+import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter.SetLocation;
 import bndtools.central.Central;
 
@@ -93,8 +94,11 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
 		//
 		File bin = model.getOutput();
 		File testsrc = model.getTestSrc();
+		IO.mkdirs(testsrc);
 		File testbin = model.getTestOutput();
 		Set<File> sourcePath = new HashSet<>(model.getSourcePath());
+		for (File f : sourcePath)
+			IO.mkdirs(f);
 
 		//
 		// All the things we should find when we have traversed the build path
@@ -230,8 +234,10 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
 		for (SetupTypes t : found) {
 			switch (t) {
 				case testsrc :
-					// if the testsrc directory does not exist, then don't warn
-					if (testsrc.isDirectory())
+					// if the testsrc directory does not exist or has no
+					// children, then don't warn
+					File[] subs = testsrc.listFiles();
+					if (subs != null && subs.length > 0)
 						warning(model, DEFAULT_PROP_TESTSRC_DIR, null, null,
 							"Bndtools: bnd's testsrc folder '%s' is not in the Eclipse build path", testsrc);
 					break;
@@ -284,13 +290,17 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
 		if (path == null)
 			return null;
 
-		IFile file = ResourcesPlugin.getWorkspace()
-			.getRoot()
-			.getFile(path);
-		if (file != null)
-			return file.getLocation()
-				.toFile()
-				.getAbsoluteFile();
+		try {
+			IFile file = ResourcesPlugin.getWorkspace()
+				.getRoot()
+				.getFile(path);
+			if (file != null)
+				return file.getLocation()
+					.toFile()
+					.getAbsoluteFile();
+		} catch (Exception e) {
+			// ignore
+		}
 		return null;
 	}
 }

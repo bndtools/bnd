@@ -1,7 +1,6 @@
 package aQute.bnd.main;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.time.Instant;
@@ -91,17 +90,16 @@ public class CommunicationCommands extends Processor {
 				if (options.output() != null && (tag.isOk() || tag.isNotModified())) {
 					f.format("------------%n");
 
-					OutputStream out;
 					if (options.output()
 						.equals(".")) {
-						out = System.out;
+						IO.copy(cache.getCacheFileFor(uri), System.out);
 					} else {
 						File fout = bnd.getFile(options.output());
-						fout.getParentFile()
-							.mkdirs();
-						out = new FileOutputStream(fout);
+						IO.mkdirs(fout.getParentFile());
+						try (OutputStream out = IO.outputStream(fout)) {
+							IO.copy(cache.getCacheFileFor(uri), out);
+						}
 					}
-					IO.copy(cache.getCacheFileFor(uri), out);
 					f.format("------------%n");
 				}
 				tag.close();

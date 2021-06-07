@@ -9,6 +9,7 @@
     org.osgi.namespace.extender;version=latest,\
     org.osgi.namespace.service;version=latest,\
     aQute.libg;version=project,\
+    biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest, \
     bndtools.api;version=latest, \
     org.eclipse.osgi, \

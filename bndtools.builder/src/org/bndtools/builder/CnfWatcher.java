@@ -35,10 +35,10 @@ public class CnfWatcher implements IResourceChangeListener {
 
 	@Override
 	public void resourceChanged(final IResourceChangeEvent event) {
-		if (Central.isWorkspaceInited()) {
+		if (Central.hasCnfWorkspace()) {
 			processEvent(event);
 		} else {
-			Central.onWorkspace(workspace -> processEvent(event));
+			Central.onCnfWorkspace(workspace -> processEvent(event));
 		}
 	}
 

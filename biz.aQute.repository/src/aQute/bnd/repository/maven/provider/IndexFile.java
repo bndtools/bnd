@@ -1,15 +1,17 @@
 package aQute.bnd.repository.maven.provider;
 
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Formatter;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,14 +21,19 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import org.osgi.resource.Resource;
+import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.SupplierWithException;
+import aQute.bnd.maven.MavenCapability;
+import aQute.bnd.memoize.Memoize;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
@@ -37,9 +44,9 @@ import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.BundleCap;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.maven.api.Archive;
@@ -57,28 +64,31 @@ import aQute.service.reporter.Reporter;
  * results without having to wait for the operation to be done.
  */
 class IndexFile {
-	private final static Logger			logger		= LoggerFactory.getLogger(IndexFile.class);
+	private final static Logger					logger		= LoggerFactory.getLogger(IndexFile.class);
 
-	final File							indexFile;
-	final IMavenRepo					repo;
-	private final Processor				domain;
-	private final Macro					replacer;
+	final File									indexFile;
+	final IMavenRepo							repo;
+	private final Processor						domain;
+	private final Macro							replacer;
 
-	final Reporter						reporter;
-	final PromiseFactory				promiseFactory;
-	final Map<Archive, Resource>		archives	= new ConcurrentHashMap<>();
-	final String[]						multi;
-	final String						source;
+	final Reporter								reporter;
+	final PromiseFactory						promiseFactory;
+	final Map<Archive, Resource>				archives	= new ConcurrentHashMap<>();
+	final Set<String>							multi;
+	final String								source;
 
-	private long						lastModified;
-	private long						last		= 0L;
-	volatile Promise<BridgeRepository>	bridge;
+	private volatile long						lastModified;
+	private long								last		= 0L;
+	private volatile Memoize<BridgeRepository>	bridge;
+	private volatile Promise<Boolean>			updateSerializer;
+
+	private String								status;
 
 	/*
 	 * Constructor
 	 */
 	IndexFile(Processor domain, Reporter reporter, File file, String source, IMavenRepo repo,
-		PromiseFactory promiseFactory, String... multi) throws Exception {
+		PromiseFactory promiseFactory, Set<String> multi) throws Exception {
 		this.source = source;
 		this.domain = (domain != null) ? domain : new Processor();
 		this.replacer = this.domain.getReplacer();
@@ -87,39 +97,75 @@ class IndexFile {
 		this.repo = repo;
 		this.promiseFactory = promiseFactory;
 		this.multi = multi;
-		this.bridge = null;
+		this.updateSerializer = promiseFactory.resolved(Boolean.TRUE);
+		this.bridge = Memoize.supplier(BridgeRepository::new);
 	}
 
 	/*
 	 * Open, will refresh this repository, which will load the file
 	 */
 	void open() throws Exception {
-		this.bridge = load();
+		serialize(this::load);
+	}
+
+	/**
+	 * We use chained promises to serialize any updates to the archives map and
+	 * the bridge repository.
+	 *
+	 * @param updater A supplier for the promise that performs the update work.
+	 *            We use a supplier so we can defer calling the method until
+	 *            inside the flatMap operation.
+	 * @return The promise for the current update operation. This can be used to
+	 *         sync on the current update or to add additional callback to run
+	 *         when the current update is done.
+	 */
+	private Promise<Boolean> serialize(SupplierWithException<Promise<Boolean>> updater) {
+		Deferred<Boolean> latch = promiseFactory.deferred();
+		try {
+			synchronized (this) {
+				return updateSerializer = updateSerializer.flatMap(b -> latch.getPromise())
+					.flatMap(b -> updater.get())
+					.recover(failed -> {
+						Throwable failure = Exceptions.unrollCause(failed.getFailure(),
+							InvocationTargetException.class);
+						logger.debug("Failure occured updating index {}", getMessage(failure), failed.getFailure());
+						return Boolean.FALSE;
+					});
+			}
+		} finally {
+			latch.resolve(Boolean.TRUE);
+		}
 	}
 
 	/*
 	 * Persistently add an archive to the index file and refresh. If the archive
 	 * is not kept then this is a noop
 	 */
-	synchronized void add(Archive archive) throws Exception {
+	void add(Archive archive) throws Exception {
 		if (archives.containsKey(archive))
 			return;
 
 		logger.debug("adding {}", archive);
-		this.bridge = update(Arrays.asList(archive));
-		save(Collections.singleton(archive), Collections.emptySet());
+		Set<Archive> toAdd = Collections.singleton(archive);
+		Promise<Boolean> serializer = serialize(
+			() -> update(toAdd).thenAccept(b -> save(toAdd, Collections.emptySet())));
+		sync(serializer);
 	}
 
 	/*
 	 * Remove an archive from the index file and refresh. If the archive is not
 	 * kept then this is a noop
 	 */
-	synchronized void remove(Archive archive) throws Exception {
-		if (removeWithDerived(archive)) {
+	void remove(Archive archive) throws Exception {
+		Promise<Boolean> serializer = serialize(() -> {
+			if (!removeWithDerived(archive)) {
+				return promiseFactory.resolved(Boolean.TRUE);
+			}
 			logger.debug("remove {}", archive);
-			this.bridge = update(null);
-			save(Collections.emptySet(), Collections.singleton(archive));
-		}
+			Set<Archive> toRemove = Collections.singleton(archive);
+			return update(null).thenAccept(b -> save(Collections.emptySet(), toRemove));
+		});
+		sync(serializer);
 	}
 
 	/*
@@ -127,29 +173,26 @@ class IndexFile {
 	 * GAV bsns. If the primary BSN has derived resources then they are also
 	 * removed.
 	 */
-	synchronized void remove(String bsn) throws Exception {
-		logger.debug("remove bsn {}", bsn);
+	void remove(String bsn) throws Exception {
+		Promise<Boolean> serializer = serialize(() -> {
+			logger.debug("remove bsn {}", bsn);
 
-		Set<Archive> toRemove = archives.entrySet()
-			.stream()
-			.filter(entry -> {
-				return isBsn(bsn, entry.getValue());
-			})
-			.map(entry -> {
-				return entry.getKey();
-			})
-			.collect(Collectors.toSet());
+			Set<Archive> toRemove = MapStream.of(archives)
+				.filterValue(v -> isBsn(bsn, v))
+				.keys()
+				.collect(toSet());
+			boolean changed = false;
 
-		boolean changed = false;
+			for (Archive archive : toRemove) {
+				changed |= removeWithDerived(archive);
+			}
 
-		for (Archive archive : toRemove) {
-			changed |= removeWithDerived(archive);
-		}
-
-		if (changed) {
-			this.bridge = update(null);
-			save(Collections.emptySet(), toRemove);
-		}
+			if (!changed) {
+				return promiseFactory.resolved(Boolean.TRUE);
+			}
+			return update(null).thenAccept(b -> save(Collections.emptySet(), toRemove));
+		});
+		sync(serializer);
 	}
 
 	/*
@@ -170,15 +213,14 @@ class IndexFile {
 	 * exclude the default resource. I.e. the one with an empty classifier.
 	 */
 	private boolean isDerived(Archive inMap, Archive parent) {
-		boolean match = inMap.revision.equals(parent.revision) && !"".equals(inMap.classifier);
+		boolean match = inMap.revision.equals(parent.revision) && !inMap.classifier.isEmpty();
 		return match;
 	}
 
 	/*
-	 * Load the index file file. This method ensures the bridge
-	 * @throws Exception
+	 * Load the index file file.
 	 */
-	private synchronized Promise<BridgeRepository> load() throws Exception {
+	private Promise<Boolean> load() throws Exception {
 		lastModified = indexFile.lastModified();
 		Set<Archive> toBeAdded = new HashSet<>();
 
@@ -189,71 +231,66 @@ class IndexFile {
 			toBeAdded.addAll(read(source, false));
 		}
 
-		Set<Archive> older = this.archives.keySet();
-		Set<Archive> toBeDeleted = new HashSet<>(older);
+		Set<Archive> keySet = archives.keySet();
+		Set<Archive> toBeDeleted = new HashSet<>(keySet);
 		toBeDeleted.removeAll(toBeAdded);
-		toBeAdded.removeAll(older);
+		toBeAdded.removeAll(keySet);
 
-		archives.keySet()
-			.removeAll(toBeDeleted);
+		keySet.removeAll(toBeDeleted);
 		return update(toBeAdded);
-
 	}
 
 	/*
 	 * Update the set of archives. This will add the given archives and then
-	 * create a new bridge promise. All newly added archives are scheduled to be
+	 * create a new bridge. All newly added archives are scheduled to be
 	 * download and after downloaded are parsed. This method should only be
-	 * called when synchronized.
+	 * called via the serializer.
 	 */
-	private Promise<BridgeRepository> update(Collection<Archive> toAdd) throws Exception {
-
-		List<Promise<Boolean>> results = new ArrayList<>();
-		if (toAdd != null) {
-			for (Archive a : toAdd) {
-				put(a, info(a, "Loading ..."));
-
-				if (!a.isSnapshot()) {
-					File localFile = repo.toLocalFile(a);
-					if (localFile.isFile() && localFile.length() > 0) {
-						parseSingleOrMultiFile(a, localFile);
-						continue;
-					}
-				}
-
-				Promise<Boolean> promise = repo.get(a)
-					.map(file -> {
-						if (file == null) {
-							return failed(a, "Not found");
-
-						} else {
-							parseSingleOrMultiFile(a, file);
-							return true;
+	private Promise<Boolean> update(Set<Archive> toAdd) {
+		List<Promise<Map<Archive, Resource>>> promises;
+		if (toAdd == null) {
+			promises = Collections.emptyList();
+		} else {
+			promises = toAdd.stream()
+				.map(archive -> {
+					if (!archive.isSnapshot()) {
+						File localFile = repo.toLocalFile(archive);
+						if (localFile.isFile() && localFile.length() > 0) {
+							return promiseFactory.submit(() -> parseSingleOrMultiFile(archive, localFile))
+								.recover(p -> failed(archive, p.getFailure()));
 						}
-					})
-					.recover(p -> {
-						// TODO log
-						return failed(a, getMessage(p.getFailure()));
-					});
-
-				results.add(promise);
-			}
+					}
+					try {
+						return repo.get(archive)
+							.map(file -> (file == null) ? failed(archive, "Not found")
+								: parseSingleOrMultiFile(archive, file))
+							.recover(p -> failed(archive, p.getFailure()));
+					} catch (Exception e) {
+						return promiseFactory.resolved(failed(archive, e));
+					}
+				})
+				.collect(toList());
 		}
-		// snapshot archive resources
-		ResourcesRepository resourcesRepository = promiseFactory.all(results)
-				.map(ignore -> new ResourcesRepository(archives.values()))
-				.getValue();
-
-		return promiseFactory.submit(() -> new BridgeRepository(resourcesRepository));
+		return promiseFactory.all(promises)
+			.map(maps -> {
+				// update archives with results
+				maps.forEach(archives::putAll);
+				// snapshot archive resources
+				ResourcesRepository resourcesRepository = new ResourcesRepository(archives.values());
+				bridge = Memoize.supplier(() -> new BridgeRepository(resourcesRepository));
+				return Boolean.TRUE;
+			});
 	}
 
-	private Boolean failed(Archive a, String msg) throws InterruptedException {
-		put(a, info(a, msg));
-		return false;
+	private Map<Archive, Resource> failed(Archive archive, Throwable t) {
+		Throwable failure = Exceptions.unrollCause(t, InvocationTargetException.class);
+		String message = getMessage(failure);
+		logger.debug("Failed to get {}: {}", archive, message, t);
+		return failed(archive, message);
 	}
 
-	private void put(Archive a, Resource resource) {
-		archives.put(a, resource);
+	private Map<Archive, Resource> failed(Archive archive, String msg) {
+		return Collections.singletonMap(archive, info(archive, msg));
 	}
 
 	private String getMessage(Throwable failure) {
@@ -264,43 +301,44 @@ class IndexFile {
 		return failure.getMessage();
 	}
 
-	private void parseSingleOrMultiFile(Archive archive, File file) {
+	private Map<Archive, Resource> parseSingleOrMultiFile(Archive archive, File file) {
 		try {
 			if (isMulti(file.getName())) {
-				parseMulti(archive, file);
+				return parseMulti(archive, file);
 			} else {
-				parseSingle(archive, file);
+				return parseSingle(archive, file);
 			}
 		} catch (Exception e) {
-			logger.warn("parse ", e);
+			IO.delete(file);
+			return failed(archive, e);
 		}
 	}
 
 	private boolean isMulti(String name) {
-		if (multi == null)
+		if (multi.isEmpty())
 			return false;
 
 		String[] extension = Strings.extension(name.toLowerCase());
-		return extension.length == 2 && Strings.in(multi, extension[1]);
+		return extension.length == 2 && multi.contains(extension[1]);
 	}
 
-	private void parseSingle(Archive archive, File single) throws Exception {
+	private Map<Archive, Resource> parseSingle(Archive archive, File single) throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
+		MavenVersion version = archive.revision.version;
 		boolean hasIdentity = rb.addFile(single, single.toURI());
-
 		if (!hasIdentity) {
 			String name = archive.getWithoutVersion();
-			MavenVersion version = archive.revision.version;
-
-			BridgeRepository.addInformationCapability(rb, name, version.getOSGiVersion(), repo.toString(),
-				"Not a bundle");
+			BridgeRepository.addInformationCapability(rb, name, version.getOSGiVersion(), archive.toString(),
+				Constants.NOT_A_BUNDLE_S);
 		}
-
+		MavenCapability.addMavenCapability(rb, archive.revision.group, archive.revision.artifact,
+			version, archive.extension, archive.classifier, repo.getName());
 		Resource resource = rb.build();
-		put(archive, resource);
+		return Collections.singletonMap(archive, resource);
 	}
 
-	private void parseMulti(Archive archive, File multi) throws Exception {
+	private Map<Archive, Resource> parseMulti(Archive archive, File multi) throws Exception {
+		Map<Archive, Resource> result = new HashMap<>();
 		try (Jar jar = new Jar(multi)) {
 			int n = 1000;
 			for (Entry<String, aQute.bnd.osgi.Resource> entry : jar.getResources()
@@ -308,7 +346,7 @@ class IndexFile {
 				String path = entry.getKey()
 					.toLowerCase();
 				if (path.endsWith(".jar")) {
-					Archive nextArchive = new Archive(archive.revision, null, "jar",
+					Archive nextArchive = new Archive(archive.revision, null, Archive.JAR_EXTENSION,
 						String.format("%s%04d", archive.classifier, n));
 					n++;
 					File dest = repo.toLocalFile(nextArchive);
@@ -319,23 +357,50 @@ class IndexFile {
 						}
 						dest.setLastModified(multi.lastModified());
 					}
-					parseSingleOrMultiFile(nextArchive, dest);
+					result.putAll(parseSingleOrMultiFile(nextArchive, dest));
 				}
 			}
 		}
+		result.putAll(parseSingle(archive, multi));
+		return result;
 	}
 
 	boolean refresh(Runnable refreshAction) throws Exception {
 		if (indexFile.lastModified() != lastModified && last + 10000 < System.currentTimeMillis()) {
 			last = System.currentTimeMillis();
-			this.bridge = load().onResolve(refreshAction);
+			Promise<Boolean> serializer = serialize(this::load).onResolve(refreshAction);
+			sync(serializer);
 			return true;
 		}
 		return false;
 	}
 
+	Promise<Boolean> refresh(Archive archive) {
+		return serialize(() -> repo.get(archive, true)
+			.map(file -> {
+				removeWithDerived(archive);
+				if (file == null) {
+					Map<Archive, Resource> failed = failed(archive, "Not found");
+					archives.putAll(failed);
+					return Boolean.FALSE;
+				}
+				try {
+					Map<Archive, Resource> result = parseSingleOrMultiFile(archive, file);
+					archives.putAll(result);
+					return Boolean.TRUE;
+				} catch (Exception e) {
+					Map<Archive, Resource> failed = failed(archive, e);
+					archives.putAll(failed);
+					return Boolean.FALSE;
+				}
+			}));
+	}
+
 	private Set<Archive> read(File file) throws IOException {
-		assert file.isFile();
+		if (!file.isFile()) {
+			this.status = "Not an index file: " + file;
+			return Collections.emptySet();
+		}
 		return read(IO.collect(file), true);
 	}
 
@@ -343,7 +408,7 @@ class IndexFile {
 		Set<Archive> archives = Strings.splitLinesAsStream(source)
 			.map(s -> toArchive(s, macro))
 			.filter(Objects::nonNull)
-			.collect(Collectors.toSet());
+			.collect(toSet());
 		logger.debug("loaded index {}", archives);
 		return archives;
 	}
@@ -357,10 +422,8 @@ class IndexFile {
 		return bsn.equals(osgi_wiring_bundle);
 	}
 
-	private synchronized void save(Set<Archive> add, Set<Archive> remove) throws Exception {
-
+	private void save(Set<Archive> add, Set<Archive> remove) throws Exception {
 		try (Formatter f = new Formatter()) {
-
 			if (indexFile.isFile()) {
 				String content = IO.collect(indexFile);
 				Strings.splitLinesAsStream(content)
@@ -393,36 +456,38 @@ class IndexFile {
 			s = replacer.process(s);
 		int n = s.indexOf("#");
 		if (n > 0) {
-			s = Strings.trim(s.substring(0, n));
+			s = s.substring(0, n);
 		}
-		return Archive.valueOf(s);
+		s = Strings.trim(s);
+		Archive archive = Archive.valueOf(s);
+		if (archive != null)
+			return archive;
+
+		if (status == null)
+			status = "Invalid GAV " + s;
+		return null;
 	}
 
 	BridgeRepository getBridge() {
-		try {
-			return bridge.getValue();
-		} catch (InvocationTargetException e) {
-			reporter.exception(Exceptions.unrollCause(e, InvocationTargetException.class), "Getting bridge failed");
-		} catch (InterruptedException e) {
-			logger.info("Interrupted");
-			Thread.currentThread()
-				.interrupt();
-		}
-		return new BridgeRepository();
+		sync(updateSerializer);
+		return bridge.get();
 	}
 
 	/*
 	 * Create a resource with error information
 	 */
-	private Resource info(Archive a, String msg) {
+	private Resource info(Archive archive, String msg) {
 		ResourceBuilder rb = new ResourceBuilder();
-		String bsn = a.getWithoutVersion();
-		MavenVersion version = a.revision.version;
-		BridgeRepository.addInformationCapability(rb, bsn, version.getOSGiVersion(), repo.toString(), msg);
+		String bsn = archive.getWithoutVersion();
+		MavenVersion version = archive.revision.version;
+		BridgeRepository.addInformationCapability(rb, bsn, version.getOSGiVersion(), archive.toString(), msg);
+		MavenCapability.addMavenCapability(rb, archive.revision.group, archive.revision.artifact,
+			version, archive.extension, archive.classifier, repo.getName());
 		return rb.build();
 	}
 
-	Collection<Archive> getArchives() {
+	Set<Archive> getArchives() {
+		sync(updateSerializer);
 		return archives.keySet();
 	}
 
@@ -432,8 +497,7 @@ class IndexFile {
 		// First try if this is a BSN, not a GAV
 		//
 
-		String[] parts = bsn.split(":");
-		if (parts.length == 1) {
+		if (bsn.indexOf(':') < 0) {
 			ResourceInfo info = getBridge().getInfo(bsn, version);
 			if (info == null)
 				return null;
@@ -451,8 +515,7 @@ class IndexFile {
 		if (tmp == null)
 			return null;
 
-		return archives.keySet()
-			.stream()
+		return getArchives().stream()
 			.filter(archive -> archive.revision.program.equals(tmp.revision.program)
 				&& archive.revision.version.getOSGiVersion()
 					.equals(version)
@@ -475,19 +538,18 @@ class IndexFile {
 			// Is a GAV
 			//
 
-			String[] parts = bsn.split(":");
+			String[] parts = Program.split(bsn);
 
 			if (parts.length >= 2) {
 				String classifier = parts.length > 2 ? parts[parts.length - 1] : "";
 
 				Program p = Program.valueOf(parts[0], parts[1]);
 				if (p != null) {
-					Set<Version> collect = archives.keySet()
-						.stream()
+					SortedSet<Version> collect = getArchives().stream()
 						.filter(archive -> archive.revision.program.equals(p) && archive.classifier.equals(classifier))
 						.map(archive -> archive.revision.version.getOSGiVersion())
-						.collect(Collectors.toSet());
-					return new TreeSet<>(collect);
+						.collect(toCollection(TreeSet::new));
+					return collect;
 				}
 			}
 		}
@@ -518,17 +580,22 @@ class IndexFile {
 		if (resource == null)
 			return null;
 
-		Archive archive = archives.entrySet()
-			.stream()
-			.filter((Map.Entry<Archive, Resource> e) -> e.getValue() == resource)
-			.map(Map.Entry::getKey)
+		Archive archive = MapStream.of(archives)
+			.filterValue(v -> v == resource)
+			.keys()
 			.findFirst()
 			.orElse(null);
 		return archive;
 	}
 
-	void sync() {
-		getBridge();
+	private void sync(Promise<?> promise) {
+		try {
+			promise.getFailure();
+		} catch (InterruptedException e) {
+			logger.info("Interrupted");
+			Thread.currentThread()
+				.interrupt();
+		}
 	}
 
 	//
@@ -545,4 +612,14 @@ class IndexFile {
 		}
 	}
 
+	public String getStatus() {
+		if (status != null)
+			return status;
+
+		BridgeRepository peek = bridge.peek();
+		if (peek != null) {
+			return peek.getStatus();
+		}
+		return null;
+	}
 }

@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -50,28 +49,28 @@ import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.rewrite.ImportRewrite;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
+import org.eclipse.jdt.core.manipulation.CodeGeneration;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.internal.core.manipulation.StubUtility;
 import org.eclipse.jdt.internal.core.manipulation.util.BasicElementLabels;
 import org.eclipse.jdt.internal.core.manipulation.util.Strings;
 import org.eclipse.jdt.internal.corext.CorextMessages;
-import org.eclipse.jdt.internal.corext.ValidateEditException;
 import org.eclipse.jdt.internal.corext.codemanipulation.AddUnimplementedConstructorsOperation;
 import org.eclipse.jdt.internal.corext.codemanipulation.AddUnimplementedMethodsOperation;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
-import org.eclipse.jdt.internal.corext.codemanipulation.StubUtility;
 import org.eclipse.jdt.internal.corext.dom.ASTNodes;
 import org.eclipse.jdt.internal.corext.dom.IASTSharedValues;
 import org.eclipse.jdt.internal.corext.dom.TokenScanner;
 import org.eclipse.jdt.internal.corext.refactoring.StubTypeContext;
 import org.eclipse.jdt.internal.corext.refactoring.TypeContextChecker;
-import org.eclipse.jdt.internal.corext.template.java.JavaContext;
 import org.eclipse.jdt.internal.corext.util.CodeFormatterUtil;
 import org.eclipse.jdt.internal.corext.util.JavaConventionsUtil;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 import org.eclipse.jdt.internal.corext.util.Messages;
 import org.eclipse.jdt.internal.corext.util.Resources;
+import org.eclipse.jdt.internal.corext.util.ValidateEditException;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jdt.internal.ui.dialogs.FilteredTypesSelectionDialog;
@@ -98,16 +97,12 @@ import org.eclipse.jdt.internal.ui.wizards.dialogfields.Separator;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.StringButtonDialogField;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.StringButtonStatusDialogField;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.StringDialogField;
-import org.eclipse.jdt.ui.CodeGeneration;
 import org.eclipse.jdt.ui.JavaElementLabelProvider;
 import org.eclipse.jdt.ui.wizards.NewContainerWizardPage;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.text.templates.Template;
-import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.ISelection;
@@ -604,7 +599,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 
 	private static IStatus validateJavaTypeName(String text, IJavaProject project) {
 		if (project == null || !project.exists()) {
-			return JavaConventions.validateJavaTypeName(text, JavaCore.VERSION_1_3, JavaCore.VERSION_1_3);
+			return JavaConventions.validateJavaTypeName(text, JavaCore.VERSION_1_3, JavaCore.VERSION_1_3, null);
 		}
 		return JavaConventionsUtil.validateJavaTypeName(text, project);
 	}
@@ -1310,8 +1305,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 	public List<String> getSuperInterfaces() {
 		List<InterfaceWrapper> interfaces = fSuperInterfacesDialogField.getElements();
 		ArrayList<String> result = new ArrayList<>(interfaces.size());
-		for (Iterator<InterfaceWrapper> iter = interfaces.iterator(); iter.hasNext();) {
-			InterfaceWrapper wrapper = iter.next();
+		for (InterfaceWrapper wrapper : interfaces) {
 			result.add(wrapper.interfaceName);
 		}
 		return result;
@@ -1327,8 +1321,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 	 */
 	public void setSuperInterfaces(List<String> interfacesNames, boolean canBeModified) {
 		ArrayList<InterfaceWrapper> interfaces = new ArrayList<>(interfacesNames.size());
-		for (Iterator<String> iter = interfacesNames.iterator(); iter.hasNext();) {
-			interfaces.add(new InterfaceWrapper(iter.next()));
+		for (String interfacesName : interfacesNames) {
+			interfaces.add(new InterfaceWrapper(interfacesName));
 		}
 		fSuperInterfacesDialogField.setElements(interfaces);
 		fSuperInterfacesDialogField.setEnabled(canBeModified);
@@ -1484,7 +1478,6 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 		}
 
 		if (project != null) {
-			assert (root != null);
 			if (project.exists() && packName.length() > 0) {
 				try {
 					@SuppressWarnings("null")
@@ -1904,9 +1897,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 
 		IPackageFragment pack = getPackageFragment();
 		if (pack != null) {
-			dialog.setInitialSelections(new Object[] {
-				pack
-			});
+			dialog.setInitialSelections(pack);
 		}
 
 		if (dialog.open() == Window.OK) {
@@ -2130,8 +2121,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 				// add imports that will be removed again. Having the imports
 				// solves 14661
 				IType[] topLevelTypes = parentCU.getTypes();
-				for (int i = 0; i < topLevelTypes.length; i++) {
-					imports.addImport(topLevelTypes[i].getFullyQualifiedName('.'));
+				for (IType topLevelType : topLevelTypes) {
+					imports.addImport(topLevelType.getFullyQualifiedName('.'));
 				}
 
 				lineDelimiter = StubUtility.getLineDelimiterUsed(enclosingType);
@@ -2148,9 +2139,9 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 				if (enclosingType.isEnum()) {
 					IField[] fields = enclosingType.getFields();
 					if (fields.length > 0) {
-						for (int i = 0, max = fields.length; i < max; i++) {
-							if (!fields[i].isEnumConstant()) {
-								sibling = fields[i];
+						for (IField field : fields) {
+							if (!field.isEnumConstant()) {
+								sibling = field;
 								break;
 							}
 						}
@@ -2238,8 +2229,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 		@SuppressWarnings("unchecked")
 		List<ImportDeclaration> imports = root.imports();
 		Set<String> res = new HashSet<>(imports.size());
-		for (int i = 0; i < imports.size(); i++) {
-			res.add(ASTNodes.asString(imports.get(i)));
+		for (ImportDeclaration import1 : imports) {
+			res.add(ASTNodes.asString(import1));
 		}
 		return res;
 	}
@@ -2264,8 +2255,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 
 		int importsEnd = ASTNodes.getExclusiveEnd(importsDecls.get(importsDecls.size() - 1));
 		IProblem[] problems = root.getProblems();
-		for (int i = 0; i < problems.length; i++) {
-			IProblem curr = problems[i];
+		for (IProblem curr : problems) {
 			if (curr.getSourceEnd() < importsEnd) {
 				int id = curr.getID();
 				if (id == IProblem.UnusedImport || id == IProblem.NotVisibleType) { // not
@@ -2277,8 +2267,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 																					// remove
 																					// both
 					int pos = curr.getSourceStart();
-					for (int k = 0; k < importsDecls.size(); k++) {
-						ImportDeclaration decl = importsDecls.get(k);
+					for (ImportDeclaration decl : importsDecls) {
 						if (decl.getStartPosition() <= pos && pos < decl.getStartPosition() + decl.getLength()) {
 							if (existingImports.isEmpty() || !existingImports.contains(ASTNodes.asString(decl))) {
 								String name = decl.getName()
@@ -2601,49 +2590,6 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 	}
 
 	/**
-	 * @param name the name of the template
-	 * @param parentCU the current compilation unit
-	 * @return returns the template or <code>null</code>
-	 * @deprecated Use getTemplate(String,ICompilationUnit,int)
-	 */
-	@Deprecated
-	protected String getTemplate(String name, ICompilationUnit parentCU) {
-		return getTemplate(name, parentCU, 0);
-	}
-
-	/**
-	 * Returns the string resulting from evaluation the given template in the
-	 * context of the given compilation unit. This accesses the normal template
-	 * page, not the code templates. To use code templates use
-	 * <code>constructCUContent</code> to construct a compilation unit stub or
-	 * getTypeComment for the comment of the type.
-	 *
-	 * @param name the template to be evaluated
-	 * @param parentCU the templates evaluation context
-	 * @param pos a source offset into the parent compilation unit. The template
-	 *            is evaluated at the given source offset
-	 * @return return the template with the given name or <code>null</code> if
-	 *         the template could not be found.
-	 */
-	protected String getTemplate(String name, ICompilationUnit parentCU, int pos) {
-		try {
-			Template template = JavaPlugin.getDefault()
-				.getTemplateStore()
-				.findTemplate(name);
-			if (template != null) {
-				return JavaContext.evaluateTemplate(template, parentCU, pos);
-			}
-		} catch (CoreException e) {
-			JavaPlugin.log(e);
-		} catch (BadLocationException e) {
-			JavaPlugin.log(e);
-		} catch (TemplateException e) {
-			JavaPlugin.log(e);
-		}
-		return null;
-	}
-
-	/**
 	 * Creates the bodies of all unimplemented methods and constructors and adds
 	 * them to the type. Method is typically called by implementers of
 	 * <code>NewTypeWizardPage</code> to add needed method and constructors.
@@ -2665,8 +2611,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 		JavaModelUtil.reconcile(cu);
 		IMethod[] typeMethods = type.getMethods();
 		Set<String> handleIds = new HashSet<>(typeMethods.length);
-		for (int index = 0; index < typeMethods.length; index++)
-			handleIds.add(typeMethods[index].getHandleIdentifier());
+		for (IMethod typeMethod : typeMethods)
+			handleIds.add(typeMethod.getHandleIdentifier());
 		ArrayList<IMethod> newMethods = new ArrayList<>();
 		CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(type.getJavaProject());
 		settings.createComments = isAddComments();
@@ -2685,7 +2631,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 			}
 			if (doConstructors) {
 				AddUnimplementedConstructorsOperation operation = new AddUnimplementedConstructorsOperation(unit,
-					binding, null, -1, false, true, false);
+					binding, null, -1, false, true, false, null);
 				operation.setOmitSuper(true);
 				operation.setCreateComments(isAddComments());
 				operation.run(monitor);
@@ -2694,16 +2640,16 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 		}
 		JavaModelUtil.reconcile(cu);
 		typeMethods = type.getMethods();
-		for (int index = 0; index < typeMethods.length; index++)
-			if (!handleIds.contains(typeMethods[index].getHandleIdentifier()))
-				newMethods.add(typeMethods[index]);
+		for (IMethod typeMethod : typeMethods)
+			if (!handleIds.contains(typeMethod.getHandleIdentifier()))
+				newMethods.add(typeMethod);
 		IMethod[] methods = newMethods.toArray(new IMethod[0]);
 		return methods;
 	}
 
 	private void createImports(ImportsManager imports, String[] createdImports) {
-		for (int index = 0; index < createdImports.length; index++)
-			imports.addImport(createdImports[index]);
+		for (String createdImport : createdImports)
+			imports.addImport(createdImport);
 	}
 
 	// ---- creation ----------------

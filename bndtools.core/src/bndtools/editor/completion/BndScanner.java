@@ -1,7 +1,10 @@
 package bndtools.editor.completion;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.ICharacterScanner;
@@ -34,17 +37,16 @@ public class BndScanner extends RuleBasedScanner {
 		Map<String, IToken> keyWords = new HashMap<>();
 
 		public BndWordRule() {
-			String[] instructions = Syntax.HELP.values()
+			Set<String> instructions = Syntax.HELP.values()
 				.stream()
-				.map(s -> s.getHeader())
-				.toArray(String[]::new);
+				.map(Syntax::getHeader)
+				.collect(Collectors.toSet());
 			addWords(instructions, bsvc.T_INSTRUCTION);
 			addWords(Constants.options, bsvc.T_OPTION);
 			addWords(Constants.directives, bsvc.T_DIRECTIVE);
-			// TODO need to move these constants to Constants to avoid the
-			// dependency on aQute.bnd.make.component which drags in half the
-			// universe
-			// addWords(ServiceComponent.componentDirectives, bsvc.T_COMPONENT);
+			addWords(Constants.COMPONENT_DIRECTIVES, bsvc.T_DIRECTIVE);
+			addWords(Constants.COMPONENT_DIRECTIVES_1_1, bsvc.T_DIRECTIVE);
+			addWords(Constants.COMPONENT_DIRECTIVES_1_2, bsvc.T_DIRECTIVE);
 		}
 
 		private boolean isWordStart(char c) {
@@ -77,9 +79,9 @@ public class BndScanner extends RuleBasedScanner {
 
 		}
 
-		private void addWords(String[] words, IToken token) {
-			for (int i = 0; i < words.length; ++i) {
-				keyWords.put(words[i], token);
+		private void addWords(Collection<String> words, IToken token) {
+			for (String word : words) {
+				keyWords.put(word, token);
 			}
 		}
 	}

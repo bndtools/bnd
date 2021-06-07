@@ -114,4 +114,9 @@ public class FileTree {
 			return result;
 		}
 	}
+
+	@Override
+	public String toString() {
+		return String.format("[files: %s, paths: %s]", files, paths);
+	}
 }

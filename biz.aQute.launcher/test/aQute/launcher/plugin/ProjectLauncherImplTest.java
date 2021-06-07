@@ -19,7 +19,7 @@ public class ProjectLauncherImplTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		tmp = new File("generated/tmp/test/" + getName());
+		tmp = new File("generated/tmp/test/" + getClass().getName() + "/" + getName());
 		IO.delete(tmp);
 		IO.mkdirs(tmp);
 		IO.copy(IO.getFile("testresources/ws"), tmp);
@@ -54,8 +54,7 @@ public class ProjectLauncherImplTest extends TestCase {
 	}
 
 	public void testCwdIsProjectBase() throws Exception {
-		try (ProjectLauncherImpl launcher = new ProjectLauncherImpl(project,
-			new Container(project, launcherJar))) {
+		try (ProjectLauncherImpl launcher = new ProjectLauncherImpl(project, new Container(project, launcherJar))) {
 			launcher.updateFromProject();
 			assertEquals(project.getBase(), launcher.getCwd());
 		}

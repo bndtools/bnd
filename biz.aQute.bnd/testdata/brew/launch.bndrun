@@ -1,0 +1,2 @@
+-standalone: ${.}/index.xml
+-runrequires: osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.runtime)'

@@ -4,10 +4,6 @@ class: Processor
 title: native_capability ( ';' ( 'os.name' | 'os.version' | 'os.processor' ) '=' STRING )*
 summary: Create a Require-Capability header based on the current platform or explicit values
 ---
-layout: default
-
-
-
 
 	/**
 	 * <p>

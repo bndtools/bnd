@@ -40,7 +40,7 @@ public class ProjectTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		tmp = IO.getFile("generated/tmp/test/" + getName())
+		tmp = IO.getFile("generated/tmp/test/" + getClass().getName() + "/" + getName())
 			.getAbsoluteFile();
 		IO.delete(tmp);
 		IO.mkdirs(tmp);

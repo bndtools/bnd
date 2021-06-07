@@ -23,7 +23,7 @@ public class GZipUtils {
 			buffered = new BufferedInputStream(stream);
 
 		buffered.mark(2);
-		int magic = readUShort(buffered);
+		int magic = readUnsignedShort(buffered);
 		buffered.reset();
 
 		InputStream result;
@@ -37,25 +37,12 @@ public class GZipUtils {
 	/*
 	 * Reads unsigned short in Intel byte order.
 	 */
-	private static int readUShort(InputStream in) throws IOException {
-		int b = readUByte(in);
-		return (readUByte(in) << 8) | b;
-	}
-
-	/*
-	 * Reads unsigned byte.
-	 */
-	private static int readUByte(InputStream in) throws IOException {
-		int b = in.read();
-		if (b == -1) {
+	private static int readUnsignedShort(InputStream in) throws IOException {
+		int b1 = in.read();
+		int b2 = in.read();
+		if ((b1 | b2) < 0) {
 			throw new EOFException();
 		}
-		if (b < -1 || b > 255) {
-			// Report on this.in, not argument in; see read{Header, Trailer}.
-			throw new IOException(in.getClass()
-				.getName() + ".read() returned value out of range -1..255: " + b);
-		}
-		return b;
+		return ((b1 << 0) + (b2 << 8));
 	}
-
 }

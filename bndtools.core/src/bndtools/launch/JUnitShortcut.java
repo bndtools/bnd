@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -17,9 +19,18 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IParent;
+import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeHierarchy;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.NodeFinder;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.text.ITextSelection;
@@ -50,6 +61,7 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
 			//
 
 			if (editor instanceof JavaEditor) {
+
 				IJavaElement element = getSelectedJavaElement((JavaEditor) editor);
 				if (element == null) {
 					IEditorInput input = editor.getEditorInput();
@@ -78,23 +90,39 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
 		IProject targetProject = elements.get(0)
 			.getJavaProject()
 			.getProject();
-		IPath projectPath = targetProject.getFullPath()
-			.makeRelative();
 
-		ILaunchConfiguration config = findLaunchConfig(projectPath);
-		ILaunchConfigurationWorkingCopy wc = null;
+		ILaunchConfigurationWorkingCopy wc = findLaunchConfigWC(null, targetProject);
 
-		if (config == null) {
+		if (wc == null) {
+			IPath projectPath = targetProject.getFullPath()
+				.makeRelative();
 			wc = createConfiguration(projectPath, targetProject);
-		} else {
-			wc = config.getWorkingCopy();
 		}
 
 		if (wc != null) {
 			customise(elements, wc);
-			config = wc.doSave();
-			DebugUITools.launch(config, mode);
+			DebugUITools.launch(wc.doSave(), mode);
 		}
+	}
+
+	@Override
+	protected ILaunchConfiguration findLaunchConfig(IPath targetPath, IProject targetProject) throws CoreException {
+		ILaunchConfigurationWorkingCopy wc = findLaunchConfigWC(targetPath, targetProject);
+		if (wc != null) {
+			wc.doSave();
+		}
+		return wc;
+	}
+
+	protected ILaunchConfigurationWorkingCopy findLaunchConfigWC(IPath targetPath, IProject targetProject)
+		throws CoreException {
+		ILaunchConfiguration launch = super.findLaunchConfig(targetPath, targetProject);
+		if (launch == null) {
+			return null;
+		}
+		ILaunchConfigurationWorkingCopy wc = launch.getWorkingCopy();
+		wc.removeAttribute(OSGiJUnitLaunchDelegate.ORG_BNDTOOLS_TESTNAMES);
+		return wc;
 	}
 
 	/*
@@ -117,6 +145,54 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
 		}
 	}
 
+	private static String getParameterString(IMethod method) {
+		StringBuilder builder = new StringBuilder(128);
+		builder.append('(');
+
+		// If we don't have parameters there's no need to build an AST
+		if (method.getNumberOfParameters() > 0) {
+			// In the source, the parameters may have their simple names. But
+			// for biz.aQute.tester.junit-platform to recognise the parameters,
+			// it needs to be passed in the fully-qualified parameter names. The
+			// JavaModel (ie, IMethod) does not resolve the parameters into
+			// their fully-qualified type names, so we need to create an AST
+			// with resolved bindings to do this.
+
+			// Fetch the Java model compilation unit
+			ICompilationUnit cUnit = method.getCompilationUnit();
+			// Parse the source
+			// (the language specification version should suit your needs)
+			ASTParser parser = ASTParser.newParser(AST.JLS14);
+			parser.setSource(cUnit);
+			// Need the bindings to get the fully-qualified names.
+			parser.setResolveBindings(true);
+			// Fetch the AST node for the compilation unit
+			ASTNode unitNode = parser.createAST(null);
+			// It should be an AST compilation unit
+			if (unitNode instanceof CompilationUnit) {
+				CompilationUnit sourceUnit = (CompilationUnit) unitNode;
+				try {
+					ISourceRange sr = method.getNameRange();
+					NodeFinder nf = new NodeFinder(sourceUnit, sr.getOffset(), sr.getLength());
+					ASTNode elementNode = nf.getCoveringNode();
+					while (elementNode != null && !(elementNode instanceof MethodDeclaration)) {
+						elementNode = elementNode.getParent();
+					}
+					if (elementNode != null) {
+						MethodDeclaration methodDec = (MethodDeclaration) elementNode;
+						IMethodBinding binding = methodDec.resolveBinding();
+						builder.append(Stream.of(binding.getParameterTypes())
+							.map(ITypeBinding::getErasure)
+							.map(ITypeBinding::getQualifiedName)
+							.collect(Collectors.joining(",")));
+					}
+				} catch (JavaModelException e) {}
+			}
+		}
+		return builder.append(')')
+			.toString();
+	}
+
 	/*
 	 * Recursive method that traverses the children of a Java Element and
 	 * gathers test case types.
@@ -137,7 +213,7 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
 			case IJavaElement.TYPE : {
 				IType type = (IType) element;
 				if (isTestable(type)) {
-					testNames.add((type).getFullyQualifiedName());
+					testNames.add(type.getFullyQualifiedName());
 				}
 			}
 				break;
@@ -150,7 +226,8 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
 				IMethod method = (IMethod) element;
 				String typeName = ((IType) method.getParent()).getFullyQualifiedName();
 				String methodName = method.getElementName();
-				testNames.add(typeName + ":" + methodName);
+
+				testNames.add(typeName + ":" + methodName + getParameterString(method));
 			}
 				break;
 
@@ -180,24 +257,27 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
 		// Must be a class, not abstract, and public
 		//
 
-		if (!type.isClass() || Flags.isAbstract(flags) || !Flags.isPublic(flags))
+		if (!type.isClass() || Flags.isAbstract(flags) || Flags.isPrivate(flags))
 			return false;
 
 		//
 		// One of the super classes/interfaces must be a Junit class/interface
 		//
 		ITypeHierarchy hierarchy = type.newSupertypeHierarchy(null);
-		for (IType z : hierarchy.getAllSupertypes(type)) {
-			if (z.getFullyQualifiedName()
-				.startsWith("junit."))
-				return true;
+		// JUnit 3 test - class must be public
+		if (Flags.isPublic(flags)) {
+			for (IType z : hierarchy.getAllSupertypes(type)) {
+				if (z.getFullyQualifiedName()
+					.startsWith("junit."))
+					return true;
+			}
 		}
 
-		if (isJUnit4(type))
+		if (isJUnit(type))
 			return true;
 
-		for (IType z : hierarchy.getAllSuperclasses(type)) {
-			if (isJUnit4(z))
+		for (IType z : hierarchy.getAllSupertypes(type)) {
+			if (isJUnit(z, flags))
 				return true;
 		}
 
@@ -207,21 +287,33 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
 	/*
 	 * Check if any of the methods has an annotation from the org.junit package
 	 */
+	private static boolean isJUnit(IType z) throws JavaModelException {
+		return isJUnit(z, z.getFlags());
+	}
 
-	private static boolean isJUnit4(IType z) throws JavaModelException {
+	private static boolean isJUnit(IType z, int typeFlags) throws JavaModelException {
 		for (IMethod m : z.getMethods()) {
-			if (Flags.isPublic(m.getFlags())) {
-				for (IAnnotation annotation : m.getAnnotations()) {
-					String[][] names = m.getDeclaringType()
-						.resolveType(annotation.getElementName());
-					for (String[] pair : names) {
-						if (pair[0].contains("org.junit"))
-							return true;
+			for (IAnnotation annotation : m.getAnnotations()) {
+				IType declaringType = m.getDeclaringType();
+				if (declaringType != null) {
+					String[][] names = declaringType.resolveType(annotation.getElementName());
+					if (names != null) {
+						for (String[] pair : names) {
+							if (pair[0].startsWith("org.junit.")) {
+								final int flags = m.getFlags();
+								// Jupiter allows public, protected &
+								// package-protected methods & classes,
+								// JUnit 4 only public
+								if ((pair[0].startsWith("org.junit.jupiter.") && !Flags.isPrivate(flags))
+									|| (Flags.isPublic(flags) && Flags.isPublic(typeFlags))) {
+									return true;
+								}
+							}
+						}
 					}
 				}
 			}
 		}
-
 		return false;
 	}
 

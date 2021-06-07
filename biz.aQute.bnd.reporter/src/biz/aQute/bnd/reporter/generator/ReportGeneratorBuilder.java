@@ -18,7 +18,9 @@ import biz.aQute.bnd.reporter.plugins.entries.bndproject.CodeSnippetPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bndproject.CommonInfoProjectPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.BndWorkspaceContentsPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.CommonInfoPlugin;
+import biz.aQute.bnd.reporter.plugins.entries.bundle.ChecksumPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.ComponentsPlugin;
+import biz.aQute.bnd.reporter.plugins.entries.bundle.GogoPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.ImportJarResourcePlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.MavenCoordinatePlugin;
@@ -82,7 +84,7 @@ public class ReportGeneratorBuilder {
 	 * @return the builder
 	 */
 	public ReportGeneratorBuilder registerPlugin(final String className) {
-		Objects.requireNonNull("className", className);
+		Objects.requireNonNull(className, "className");
 
 		final String shortName = findPluginName(className);
 		if (!shortName.equals("")) {
@@ -92,8 +94,17 @@ public class ReportGeneratorBuilder {
 		return this;
 	}
 
+	private ReportGeneratorBuilder registerPlugin(final Class<?> pluginClass) {
+		final String shortName = findPluginName(pluginClass);
+		if (!shortName.equals("")) {
+			_pluginNames.put(shortName, pluginClass.getCanonicalName());
+		}
+
+		return this;
+	}
+
 	private ReportGeneratorBuilder registerPluginIfAbsent(final String className) {
-		Objects.requireNonNull("className", className);
+		Objects.requireNonNull(className, "className");
 
 		final String shortName = findPluginName(className);
 		if (!shortName.equals("") && !_pluginNames.containsKey(shortName)) {
@@ -111,7 +122,7 @@ public class ReportGeneratorBuilder {
 	 * @return the builder
 	 */
 	public ReportGeneratorBuilder addPlugin(final String classNameOrPluginName) {
-		Objects.requireNonNull("classNameOrPluginName", classNameOrPluginName);
+		Objects.requireNonNull(classNameOrPluginName, "classNameOrPluginName");
 
 		registerPlugin(classNameOrPluginName);
 		_plugins.add(classNameOrPluginName);
@@ -130,6 +141,7 @@ public class ReportGeneratorBuilder {
 		addPlugin(EntryNamesReference.MANIFEST);
 		addPlugin(EntryNamesReference.MAVEN_COORDINATE);
 		addPlugin(EntryNamesReference.METATYPES);
+		addPlugin(EntryNamesReference.GOGO_COMMANDS);
 
 		return this;
 	}
@@ -191,15 +203,7 @@ public class ReportGeneratorBuilder {
 		try {
 			final Class<?> pluginClass = Class.forName(className);
 			if (pluginClass != null) {
-				final BndPlugin annotation = pluginClass.getAnnotation(BndPlugin.class);
-				if (annotation != null) {
-					final String name = annotation.name() != null ? annotation.name() : "";
-					if (name.startsWith("entry.")) {
-						return name.substring(6);
-					} else {
-						return name;
-					}
-				}
+				return findPluginName(pluginClass);
 			}
 			return "";
 		} catch (@SuppressWarnings("unused")
@@ -209,19 +213,34 @@ public class ReportGeneratorBuilder {
 		}
 	}
 
+	private String findPluginName(final Class<?> pluginClass) {
+		final BndPlugin annotation = pluginClass.getAnnotation(BndPlugin.class);
+		if (annotation != null) {
+			final String name = annotation.name() != null ? annotation.name() : "";
+			if (name.startsWith("entry.")) {
+				return name.substring(6);
+			} else {
+				return name;
+			}
+		}
+		return "";
+	}
+
 	private void registerDefaultPlugins() {
-		registerPlugin(AnyEntryPlugin.class.getCanonicalName());
-		registerPlugin(ImportResourcePlugin.class.getCanonicalName());
-		registerPlugin(ImportJarResourcePlugin.class.getCanonicalName());
-		registerPlugin(BndProjectContentsPlugin.class.getCanonicalName());
-		registerPlugin(FileNamePlugin.class.getCanonicalName());
-		registerPlugin(BndWorkspaceContentsPlugin.class.getCanonicalName());
-		registerPlugin(MavenCoordinatePlugin.class.getCanonicalName());
-		registerPlugin(ComponentsPlugin.class.getCanonicalName());
-		registerPlugin(ImportJarResourcePlugin.class.getCanonicalName());
-		registerPlugin(ManifestPlugin.class.getCanonicalName());
-		registerPlugin(MetatypesPlugin.class.getCanonicalName());
-		registerPlugin(CodeSnippetPlugin.class.getCanonicalName());
+		registerPlugin(AnyEntryPlugin.class);
+		registerPlugin(ImportResourcePlugin.class);
+		registerPlugin(ImportJarResourcePlugin.class);
+		registerPlugin(BndProjectContentsPlugin.class);
+		registerPlugin(FileNamePlugin.class);
+		registerPlugin(BndWorkspaceContentsPlugin.class);
+		registerPlugin(MavenCoordinatePlugin.class);
+		registerPlugin(ComponentsPlugin.class);
+		registerPlugin(ImportJarResourcePlugin.class);
+		registerPlugin(ManifestPlugin.class);
+		registerPlugin(MetatypesPlugin.class);
+		registerPlugin(CodeSnippetPlugin.class);
+		registerPlugin(GogoPlugin.class);
+		registerPlugin(ChecksumPlugin.class);
 	}
 
 	private Processor configureProcessor(final Processor processor) {

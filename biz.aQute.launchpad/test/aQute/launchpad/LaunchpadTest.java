@@ -43,6 +43,9 @@ import aQute.lib.io.IO;
 import aQute.libg.parameters.ParameterMap;
 
 public class LaunchpadTest {
+	static final String					org_apache_felix_framework	= "org.apache.felix.framework;version='[5.6.10,5.6.11)'";
+	static final String					org_apache_felix_scr		= "org.apache.felix.scr;version='[2.1.12,2.1.13)'";
+	static final String					org_apache_felix_log		= "org.apache.felix.log;version='[1.2.0,1.2.1)'";
 	@Rule
 	public final JUnitSoftAssertions	softly	= new JUnitSoftAssertions();
 
@@ -62,7 +65,7 @@ public class LaunchpadTest {
 
 	@Test
 	public void testExportExcludes() throws Exception {
-		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 			.excludeExport("org.slf4j*,aQute.lib*")
 			.create()) {
 			Set<String> p = new ParameterMap(fw.getBundleContext()
@@ -73,7 +76,7 @@ public class LaunchpadTest {
 
 	@Test
 	public void testRunsystemPackages() throws Exception {
-		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 			.bndrun("runsystempackages.bndrun")
 			.create()) {
 			Set<String> p = new ParameterMap(fw.getBundleContext()
@@ -134,7 +137,7 @@ public class LaunchpadTest {
 
 	@Test
 	public void testInjectionInherited() throws Exception {
-		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 			.create()) {
 
 			Foo foo = fw.newInstance(Foo.class);
@@ -146,7 +149,7 @@ public class LaunchpadTest {
 	@Test
 	public void testBundleActivatorCalled() throws Exception {
 
-		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 			.debug()
 			.create()) {
 
@@ -184,15 +187,21 @@ public class LaunchpadTest {
 	@Test
 	public void testConfiguration() throws Exception {
 
-		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 			.create()
 			.inject(this)) {
+
+			Bundle capability = fw.bundle()
+				.provideCapability("osgi.extender")
+				.attribute("osgi.extender", "osgi.configurator")
+				.version("1.0.0")
+				.start();
 
 			Bundle cfg = fw.bundle()
 				.addConfiguration("[{}]")
 				.start();
 
-			URL entry = cfg.getEntry("configuration/configuration.json");
+			URL entry = cfg.getEntry("OSGI-INF/configurator/configuration.json");
 			assertThat(entry).isNotNull();
 
 			String txt = IO.collect(entry.openStream());
@@ -225,8 +234,9 @@ public class LaunchpadTest {
 
 	@Test
 	public void testComponent() throws Exception {
-		try (Launchpad fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr")
-			.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.bundles(org_apache_felix_log)
+			.bundles(org_apache_felix_scr)
+			.runfw(org_apache_felix_framework)
 			.create()) {
 
 			Bundle comp = fw.component(Comp.class);
@@ -254,7 +264,7 @@ public class LaunchpadTest {
 		}
 		X x = new X();
 		try (Launchpad fw = builder.bundles()
-			.runfw("org.apache.felix.framework")
+			.runfw(org_apache_felix_framework)
 			.create()
 			.inject(x)) {
 
@@ -264,7 +274,7 @@ public class LaunchpadTest {
 	@Test
 	public void testTimeoutWithInvisibleAndFiltered() throws Exception {
 		try {
-			try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+			try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 				.create()) {
 
 				Hashtable<String, Object> properties = new Hashtable<>();
@@ -303,7 +313,7 @@ public class LaunchpadTest {
 	@Test
 	public void testTimeoutWithPrivatePackage() throws Exception {
 		try {
-			try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+			try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 				.create()) {
 
 				Bundle a = fw.bundle()
@@ -332,7 +342,7 @@ public class LaunchpadTest {
 	@Test
 	public void testReportingHiddenService() throws Exception {
 		try {
-			try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+			try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 				.create()) {
 
 				fw.framework.getBundleContext()
@@ -358,7 +368,7 @@ public class LaunchpadTest {
 
 	@Test
 	public void testReportingUnimportedExport() throws Exception {
-		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 			.create()) {
 
 			Bundle a = fw.bundle()
@@ -373,7 +383,7 @@ public class LaunchpadTest {
 
 	@Test
 	public void testGetService() throws Exception {
-		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 			.create()) {
 
 			assertThat(fw.getService(String.class)).isEmpty();
@@ -382,7 +392,7 @@ public class LaunchpadTest {
 
 	@Test
 	public void testRegisterService() throws Exception {
-		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 			.create()) {
 			fw.register(String.class, "Hello", "a", 1, "b", 2, "c", new int[] {
 				3, 4, 5
@@ -408,8 +418,9 @@ public class LaunchpadTest {
 
 	@Test
 	public void componentWithExternalReferences() throws Exception {
-		try (Launchpad fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr")
-			.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.bundles(org_apache_felix_log)
+			.bundles(org_apache_felix_scr)
+			.runfw(org_apache_felix_framework)
 			.create()) {
 			fw.component(ExternalRefComp.class);
 		}
@@ -417,7 +428,7 @@ public class LaunchpadTest {
 
 	@Test
 	public void testAutoname() throws Exception {
-		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 			.create()) {
 			assertThat(fw.getName()).isEqualTo("testAutoname");
 			assertThat(fw.getClassName()).isEqualTo(LaunchpadTest.class.getName());
@@ -426,7 +437,7 @@ public class LaunchpadTest {
 
 	@Test
 	public void testSetName() throws Exception {
-		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 			.create("foo")) {
 			assertThat(fw.getName()).isEqualTo("foo");
 			assertThat(fw.getClassName()).isEqualTo(LaunchpadTest.class.getName());
@@ -435,7 +446,7 @@ public class LaunchpadTest {
 
 	@Test
 	public void testSetNameAndClassName() throws Exception {
-		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw(org_apache_felix_framework)
 			.create("foo", "bar")) {
 			assertThat(fw.getName()).isEqualTo("foo");
 			assertThat(fw.getClassName()).isEqualTo("bar");
@@ -448,8 +459,9 @@ public class LaunchpadTest {
 		List<Throwable> e = new CopyOnWriteArrayList<>();
 		Random r = new Random();
 		Semaphore semaphore = new Semaphore(0);
-		builder.bundles("org.apache.felix.log, org.apache.felix.scr")
-			.runfw("org.apache.felix.framework");
+		builder.bundles(org_apache_felix_log)
+			.bundles(org_apache_felix_scr)
+			.runfw(org_apache_felix_framework);
 
 		int n = 20;
 		for (int i = 0; i < n; i++) {
@@ -506,7 +518,7 @@ public class LaunchpadTest {
 
 	@Test
 	public void instantiateInFramework_instantiatesTheClass_insideTheFramework() throws Exception {
-		try (Launchpad lp = builder.runfw("org.apache.felix.framework")
+		try (Launchpad lp = builder.runfw(org_apache_felix_framework)
 			.create()) {
 			Supplier<Bundle> b = lp.instantiateInFramework(TestClass.class);
 			assertThat(b).as("inside")
@@ -521,7 +533,7 @@ public class LaunchpadTest {
 
 	@Test
 	public void instantiateInFramework_withNoDefaultConstructor_throwsException() throws Exception {
-		try (Launchpad lp = builder.runfw("org.apache.felix.framework")
+		try (Launchpad lp = builder.runfw(org_apache_felix_framework)
 			.create()) {
 			assertThatThrownBy(() -> lp.instantiateInFramework(TestClass2.class))
 				.isInstanceOf(NoSuchMethodException.class);

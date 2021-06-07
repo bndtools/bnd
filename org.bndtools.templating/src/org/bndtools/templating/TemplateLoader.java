@@ -10,6 +10,6 @@ import aQute.service.reporter.Reporter;
 @ProviderType
 public interface TemplateLoader {
 
-    Promise<? extends Collection<Template>> findTemplates(String type, Reporter reporter);
+	Promise<? extends Collection<Template>> findTemplates(String type, Reporter reporter);
 
 }

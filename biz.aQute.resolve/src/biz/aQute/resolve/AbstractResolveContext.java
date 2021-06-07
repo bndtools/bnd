@@ -1,6 +1,7 @@
 package biz.aQute.resolve;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toCollection;
 import static org.osgi.framework.Constants.SYSTEM_BUNDLE_SYMBOLICNAME;
 import static org.osgi.framework.namespace.BundleNamespace.BUNDLE_NAMESPACE;
 import static org.osgi.framework.namespace.HostNamespace.HOST_NAMESPACE;
@@ -28,10 +29,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -47,7 +48,6 @@ import org.osgi.service.resolver.HostedCapability;
 import org.osgi.service.resolver.ResolveContext;
 
 import aQute.bnd.deployer.repository.CapabilityIndex;
-import aQute.bnd.deployer.repository.MapToDictionaryAdapter;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
@@ -55,7 +55,6 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
-import aQute.bnd.osgi.resource.Filters;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
@@ -64,10 +63,7 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
 import aQute.lib.io.IO;
-import aQute.libg.filters.AndFilter;
-import aQute.libg.filters.Filter;
-import aQute.libg.filters.LiteralFilter;
-import aQute.libg.filters.SimpleFilter;
+import aQute.bnd.unmodifiable.Sets;
 
 /**
  * This is the Resolve Context as outlined in the Resolver specification. It
@@ -80,41 +76,36 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 * These are the namespaces that we ignore when we copy capabilities from
 	 * -runpath resources.
 	 */
-	static Set<String> IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES = new HashSet<>();
-
-	static {
-		IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(IDENTITY_NAMESPACE);
-		IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(CONTENT_NAMESPACE);
-		IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(BUNDLE_NAMESPACE);
-		IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(HOST_NAMESPACE);
-	}
+	final static Set<String>						IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES	= Sets
+		.of(IDENTITY_NAMESPACE, CONTENT_NAMESPACE, BUNDLE_NAMESPACE, HOST_NAMESPACE);
 
 	/**
 	 * The 'OSGiFramework' contract was something invented by the old indexer
 	 * which is no longer in use.
 	 */
 	@Deprecated
-	protected static final String					CONTRACT_OSGI_FRAMEWORK		= "OSGiFramework";
-	protected static final String					IDENTITY_INITIAL_RESOURCE	= Constants.IDENTITY_INITIAL_RESOURCE;
-	protected static final String					IDENTITY_SYSTEM_RESOURCE	= Constants.IDENTITY_SYSTEM_RESOURCE;
+	protected static final String					CONTRACT_OSGI_FRAMEWORK					= "OSGiFramework";
+	protected static final String					IDENTITY_INITIAL_RESOURCE				= Constants.IDENTITY_INITIAL_RESOURCE;
+	protected static final String					IDENTITY_SYSTEM_RESOURCE				= Constants.IDENTITY_SYSTEM_RESOURCE;
 
 	protected final LogService						log;
-	private final CapabilityIndex					systemCapabilityIndex		= new CapabilityIndex();
-	private final List<Repository>					repositories				= new ArrayList<>();
-	private final List<Requirement>					failed						= new ArrayList<>();
-	private final Map<CacheKey, List<Capability>>	providerCache				= new HashMap<>();
-	private final Set<Resource>						optionalRoots				= new HashSet<>();
-	private final ConcurrentMap<Resource, Integer>	resourcePriorities			= new ConcurrentHashMap<>();
+	private final CapabilityIndex					systemCapabilityIndex					= new CapabilityIndex();
+	private final List<Repository>					repositories							= new ArrayList<>();
+	private final List<Requirement>					failed									= new ArrayList<>();
+	private final Map<CacheKey, List<Capability>>	providerCache							= new HashMap<>();
+	private final Set<Resource>						optionalRoots							= new HashSet<>();
+	private final ConcurrentMap<Resource, Integer>	resourcePriorities						= new ConcurrentHashMap<>();
 	private final Comparator<Capability>			capabilityComparator;
-	private Map<String, Set<String>>				effectiveSet				= new HashMap<>();
-	private final List<ResolverHook>				resolverHooks				= new ArrayList<>();
-	private final List<ResolutionCallback>			callbacks					= new LinkedList<>();
-	private boolean									initialised					= false;
+	private Map<String, Set<String>>				effectiveSet							= new HashMap<>();
+	private final List<ResolverHook>				resolverHooks							= new ArrayList<>();
+	private final List<ResolutionCallback>			callbacks								= new LinkedList<>();
+	private boolean									initialized								= false;
 	private Resource								systemResource;
 	private Resource								inputResource;
-	private Set<Resource>							blacklistedResources		= new HashSet<>();
-	private int										level						= 0;
+	private Set<Resource>							blacklistedResources					= new HashSet<>();
+	private int										level									= 0;
 	private Resource								framework;
+	private final AtomicBoolean						reported								= new AtomicBoolean();
 
 	public AbstractResolveContext(LogService log) {
 		this.log = log;
@@ -122,28 +113,30 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	protected synchronized void init() {
-		if (initialised)
+		if (initialized)
 			return;
 
 		try {
+			initialized = true;
+
 			failed.clear();
-
 			systemCapabilityIndex.addResource(getSystemResource());
-
-			if (level > 0) {
-				DebugReporter dr = new DebugReporter(System.out, this, level);
-				dr.report();
-			}
-
-			initialised = true;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
+	private void initAndReport() {
+		init();
+		if ((getLevel() > 0) && reported.compareAndSet(false, true)) {
+			DebugReporter dr = new DebugReporter(System.out, this, level);
+			dr.report();
+		}
+	}
+
 	@Override
 	public List<Capability> findProviders(Requirement requirement) {
-		init();
+		initAndReport();
 		List<Capability> result = findProviders0(requirement);
 		if (result.isEmpty()) {
 			failed.add(requirement);
@@ -153,13 +146,13 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	@Override
 	public Collection<Resource> getMandatoryResources() {
-		init();
+		initAndReport();
 		return Collections.singleton(getInputResource());
 	}
 
 	@Override
 	public int insertHostedCapability(List<Capability> caps, HostedCapability hc) {
-		init();
+		initAndReport();
 		Integer prioObj = resourcePriorities.get(hc.getResource());
 		int priority = prioObj != null ? prioObj.intValue() : Integer.MAX_VALUE;
 
@@ -184,7 +177,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	@Override
 	public boolean isEffective(Requirement requirement) {
-		init();
+		initAndReport();
 		String effective = requirement.getDirectives()
 			.get(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE);
 		if (effective == null || Namespace.EFFECTIVE_RESOLVE.equals(effective))
@@ -199,12 +192,11 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	@Override
 	public Map<Resource, Wiring> getWirings() {
-		init();
+		initAndReport();
 		return Collections.emptyMap();
 	}
 
 	private List<Capability> findProviders0(Requirement requirement) {
-		init();
 		List<Capability> cached = providerCache.computeIfAbsent(getCacheKey(requirement), k -> {
 			// First stage: framework and self-capabilities. This should never
 			// be reordered by preferences or resolver
@@ -230,68 +222,59 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			// repos.
 			boolean optional = Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives()
 				.get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
-			if (optional && !optionalRoots.contains(requirement.getResource())) {
-				List<Capability> value = new ArrayList<>(firstStageResult);
-				Collections.sort(value, capabilityComparator);
-				return value;
-			} else {
-				List<Capability> secondStageList = findProvidersFromRepositories(requirement, firstStageResult);
-
-				// Concatenate both stages, eliminating duplicates between the
-				// two
-				firstStageResult.addAll(secondStageList);
-				return new ArrayList<>(firstStageResult);
+			List<Capability> result = new ArrayList<>(firstStageResult);
+			Collections.sort(result, capabilityComparator);
+			if (!optional || optionalRoots.contains(requirement.getResource())) {
+				// We sort capabilities from the same resource and mandatory
+				// resources (first stage) BEFORE capabilities from repo
+				// resources (second stage) removing any duplicate capabilities.
+				findProvidersFromRepositories(requirement, firstStageResult).stream()
+					.filter(provider -> !result.contains(provider))
+					.sorted(capabilityComparator)
+					.forEach(result::add);
 			}
+			return result;
 		});
-		List<Capability> result = new ArrayList<>(cached);
-		log.log(LogService.LOG_DEBUG, "for " + requirement + " found " + result);
-		return result;
+		List<Capability> capabilities = new ArrayList<>(cached);
+		log.log(LogService.LOG_DEBUG, "for " + requirement + " found " + capabilities);
+		return capabilities;
 	}
 
 	protected void processMandatoryResource(Requirement requirement, LinkedHashSet<Capability> firstStageResult,
 		Resource resource) {
 		if (resource != null) {
-			List<Capability> selfCaps = resource.getCapabilities(requirement.getNamespace());
-			if (selfCaps != null) {
-				for (Capability selfCap : selfCaps) {
-					if (matches(requirement, selfCap))
-						firstStageResult.add(selfCap);
-				}
-			}
+			ResourceUtils.capabilityStream(resource, requirement.getNamespace())
+				.filter(ResourceUtils.matcher(requirement))
+				.forEachOrdered(firstStageResult::add);
 		}
 	}
 
 	protected ArrayList<Capability> findProvidersFromRepositories(Requirement requirement,
 		LinkedHashSet<Capability> existingWiredCapabilities) {
-		// Second stage results: repository contents; may be reordered.
-		ArrayList<Capability> secondStageResult = new ArrayList<>();
+		// Second stage results: repository contents.
+		Set<Capability> set = new LinkedHashSet<>();
 
 		// Iterate over the repos
 		int order = 0;
-		ArrayList<Capability> repoCapabilities = new ArrayList<>();
 		for (Repository repo : repositories) {
-			repoCapabilities.clear();
-			Collection<Capability> capabilities = findProviders(repo, requirement);
-			if (capabilities != null && !capabilities.isEmpty()) {
-				repoCapabilities.ensureCapacity(capabilities.size());
-				for (Capability capability : capabilities) {
-					if (isPermitted(capability.getResource()) && isCorrectEffectiveness(requirement, capability)) {
-						repoCapabilities.add(capability);
+			for (Capability capability : findProviders(repo, requirement)) {
+				if (isPermitted(capability.getResource()) && ResourceUtils.isEffective(requirement, capability)) {
+					if (set.add(capability)) {
 						setResourcePriority(order, capability.getResource());
 					}
 				}
-				secondStageResult.addAll(repoCapabilities);
 			}
 			order++;
 		}
-		Collections.sort(secondStageResult, capabilityComparator);
 
 		// Convert second-stage results to a list and post-process
-		ArrayList<Capability> secondStageList = new ArrayList<>(secondStageResult);
+		ArrayList<Capability> capabilities = set.stream()
+			.sorted(capabilityComparator)
+			.collect(toCollection(ArrayList::new));
 
 		// Post-processing second stage results
-		postProcessProviders(requirement, existingWiredCapabilities, secondStageList);
-		return secondStageList;
+		postProcessProviders(requirement, existingWiredCapabilities, capabilities);
+		return capabilities;
 	}
 
 	/**
@@ -305,12 +288,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 */
 	protected Collection<Capability> findProviders(Repository repo, Requirement requirement) {
 		Map<Requirement, Collection<Capability>> map = repo.findProviders(Collections.singleton(requirement));
-
-		if (map.isEmpty())
-			return Collections.emptySet();
-
 		Collection<Capability> caps = map.get(requirement);
-
 		caps.removeIf(capability -> blacklistedResources.contains(capability.getResource()));
 		return caps;
 	}
@@ -322,49 +300,6 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	public static Requirement createBundleRequirement(String bsn, String versionStr) {
 		return CapReqBuilder.createBundleRequirement(bsn, versionStr)
 			.buildSyntheticRequirement();
-	}
-
-	private boolean matches(Requirement requirement, Capability selfCap) {
-		boolean match = false;
-		if (isCorrectEffectiveness(requirement, selfCap)) {
-			try {
-				String filterStr = requirement.getDirectives()
-					.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-				org.osgi.framework.Filter filter = filterStr != null
-					? org.osgi.framework.FrameworkUtil.createFilter(filterStr)
-					: null;
-
-				if (filter == null)
-					match = true;
-				else
-					match = filter.match(new MapToDictionaryAdapter(selfCap.getAttributes()));
-			} catch (InvalidSyntaxException e) {
-				log.log(LogService.LOG_ERROR, "Invalid filter directive on requirement: " + requirement, e);
-			}
-		}
-		return match;
-	}
-
-	private boolean isCorrectEffectiveness(Requirement requirement, Capability cap) {
-		boolean result = false;
-
-		String reqEffective = requirement.getDirectives()
-			.get(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE);
-
-		if (reqEffective == null || Namespace.EFFECTIVE_RESOLVE.equals(reqEffective)) {
-			// Resolve time effective requirements will be used by the runtime
-			// resolver in the OSGi framework, and will only be matched by
-			// resolve time capabilities!
-			String capEffective = cap.getDirectives()
-				.get(Namespace.CAPABILITY_EFFECTIVE_DIRECTIVE);
-			result = capEffective == null || Namespace.EFFECTIVE_RESOLVE.equals(capEffective);
-		} else {
-			// If we're not a resolve time requirement then any capability
-			// effectiveness is ok
-			result = true;
-		}
-
-		return result;
 	}
 
 	public void setOptionalRoots(Collection<Resource> roots) {
@@ -398,7 +333,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 		// Remove any jars without an identity capability
 		List<Capability> idCaps = resource.getCapabilities(IDENTITY_NAMESPACE);
-		if (idCaps == null || idCaps.isEmpty()) {
+		if (idCaps.isEmpty()) {
 			log.log(LogService.LOG_ERROR, "Resource is missing an identity capability (osgi.identity).");
 			return false;
 		}
@@ -482,21 +417,15 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			if (getClass() != obj.getClass())
 				return false;
 			CacheKey other = (CacheKey) obj;
-			if (attributes == null) {
-				if (other.attributes != null)
-					return false;
-			} else if (!attributes.equals(other.attributes))
+			if (!Objects.equals(attributes, other.attributes)) {
 				return false;
-			if (directives == null) {
-				if (other.directives != null)
-					return false;
-			} else if (!directives.equals(other.directives))
+			}
+			if (!Objects.equals(directives, other.directives)) {
 				return false;
-			if (namespace == null) {
-				if (other.namespace != null)
-					return false;
-			} else if (!namespace.equals(other.namespace))
+			}
+			if (!Objects.equals(namespace, other.namespace)) {
 				return false;
+			}
 			if (resource == null) {
 				if (other.resource != null)
 					return false;
@@ -682,13 +611,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	public static Requirement createIdentityRequirement(String identity, String versionRange) {
-		// Construct a filter & requirement to find matches
-		Filter filter = new SimpleFilter(IDENTITY_NAMESPACE, identity);
-		if (versionRange != null)
-			filter = new AndFilter().addChild(filter)
-				.addChild(new LiteralFilter(Filters.fromVersionRange(versionRange)));
-		Requirement frameworkReq = new CapReqBuilder(IDENTITY_NAMESPACE)
-			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString())
+		Requirement frameworkReq = CapReqBuilder.createBundleRequirement(identity, versionRange)
 			.buildSyntheticRequirement();
 		return frameworkReq;
 	}
@@ -796,10 +719,10 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	public static Capability createPackageCapability(String packageName, String versionString) throws Exception {
-		CapReqBuilder builder = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE);
-		builder.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, packageName);
-		Version version = versionString != null ? new Version(versionString) : Version.emptyVersion;
-		builder.addAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+		Attrs attrs = (versionString != null)
+			? Attrs.create(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE + ":Version", versionString)
+			: null;
+		CapReqBuilder builder = CapReqBuilder.createPackageCapability(packageName, attrs, null, null);
 		return builder.buildSyntheticCapability();
 	}
 
@@ -821,7 +744,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			return null;
 		}
 		List<Capability> identityCaps = resource.getCapabilities(IDENTITY_NAMESPACE);
-		if (identityCaps == null || identityCaps.isEmpty()) {
+		if (identityCaps.isEmpty()) {
 			return null;
 		}
 		return identityCaps.iterator()

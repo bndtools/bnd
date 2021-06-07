@@ -1,17 +1,19 @@
 package aQute.bnd.build.model.clauses;
 
+import static aQute.bnd.header.OSGiHeader.quote;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
 
 import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.stream.MapStream;
+import aQute.lib.strings.Strings;
 
 public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 
@@ -26,6 +28,23 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 
 		this.name = name;
 		this.attribs = attribs == null ? new Attrs() : attribs;
+	}
+
+	/**
+	 * Accept String syntax as defined by 1 element of a Parameters
+	 *
+	 * @param v one element of Parameter
+	 */
+	public HeaderClause(String v) {
+		Parameters parameters = new Parameters(v);
+		if (parameters.size() != 1)
+			throw new IllegalArgumentException("Invalid header clause (not exactly 1 element) " + v);
+
+		Entry<String, Attrs> next = parameters.entrySet()
+			.iterator()
+			.next();
+		this.name = next.getKey();
+		this.attribs = next.getValue();
 	}
 
 	public void setName(String name) {
@@ -72,45 +91,43 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 	}
 
 	public void formatTo(StringBuilder buffer) {
-		formatTo(buffer, null);
+		formatTo(buffer, null, newlinesBetweenAttributes());
+	}
+
+	public void formatTo(StringBuilder buffer, boolean newlinesBetweenAttributes) {
+		formatTo(buffer, null, newlinesBetweenAttributes);
 	}
 
 	public void formatTo(StringBuilder buffer, Comparator<Entry<String, String>> sorter) {
-		String separator = newlinesBetweenAttributes() ? INTERNAL_LIST_SEPARATOR_NEWLINES : INTERNAL_LIST_SEPARATOR;
-		// If the name contains a comma, then quote the whole thing
-		String tmpName = name;
-		if (tmpName.indexOf(',') > -1)
-			tmpName = "'" + tmpName + "'";
-		buffer.append(tmpName);
+		formatTo(buffer, sorter, newlinesBetweenAttributes());
+	}
 
-		if (attribs != null) {
-			Set<Entry<String, String>> set;
-			if (sorter != null) {
-				set = new TreeSet<>(sorter);
-				set.addAll(attribs.entrySet());
-			} else {
-				set = attribs.entrySet();
-			}
+	public void formatTo(StringBuilder buffer, Comparator<Entry<String, String>> sorter,
+		boolean newlinesBetweenAttributes) {
+		String separator = newlinesBetweenAttributes ? INTERNAL_LIST_SEPARATOR_NEWLINES : INTERNAL_LIST_SEPARATOR;
 
-			for (Iterator<Entry<String, String>> iter = set.iterator(); iter.hasNext();) {
-				Entry<String, String> entry = iter.next();
-				String name = entry.getKey();
-				String value = entry.getValue();
+		if (name.indexOf(',') >= 0)
+			quote(buffer, name, '\'');
+		else
+			buffer.append(name);
 
-				if (value != null && value.length() > 0) {
-					buffer.append(separator);
-
-					// If the value contains any comma or equals, then quote the
-					// whole thing
-					if (value.indexOf(',') > -1 || value.indexOf('=') > -1)
-						value = "'" + value + "'";
-
-					buffer.append(name)
-						.append('=')
-						.append(value);
-				}
-			}
+		MapStream<String, String> entries = MapStream.ofNullable(attribs);
+		if (sorter != null) {
+			entries = entries.sorted(sorter);
 		}
+		entries.filterValue(Strings::nonNullOrEmpty)
+			.forEachOrdered((name, value) -> {
+				buffer.append(separator);
+				int n = buffer.length();
+				quote(buffer, name, '\'');
+				n = buffer.length() - n;
+
+				while (newlinesBetweenAttributes && n++ < 20) {
+					buffer.append(' ');
+				}
+				buffer.append('=');
+				quote(buffer, value, '\'');
+			});
 	}
 
 	protected boolean newlinesBetweenAttributes() {
@@ -154,12 +171,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 				return false;
 		} else if (!attribs.isEqual(other.attribs))
 			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		return true;
+		return Objects.equals(name, other.name);
 	}
 
 	@Override
@@ -168,4 +180,13 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 		formatTo(b);
 		return b.toString();
 	}
+
+	public static Parameters toParameters(List<? extends HeaderClause> l) {
+		Parameters parameters = new Parameters();
+
+		l.forEach(hc -> parameters.put(hc.name, hc.attribs));
+
+		return parameters;
+	}
+
 }

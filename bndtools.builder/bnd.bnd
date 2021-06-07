@@ -6,6 +6,7 @@
 	osgi.core;version=latest;maven-scope=provided,\
     org.osgi.namespace.service;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
+    biz.aQute.bnd.util;version=latest,\
     biz.aQute.bndlib;version=latest,\
     biz.aQute.resolve;version=latest,\
 	biz.aQute.repository;version=latest,\
@@ -39,7 +40,7 @@
     ${mockito}
 
 # Headers
-Bundle-SymbolicName: bndtools.builder; singleton:=true
+Bundle-SymbolicName: ${p};singleton:=true
 Bundle-Activator: org.bndtools.builder.BuilderPlugin
 Bundle-ActivationPolicy: lazy
 

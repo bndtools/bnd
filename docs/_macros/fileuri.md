@@ -1,11 +1,11 @@
 ---
 layout: default
-class: Processor
+class: Macro
 title: fileuri ';' PATH
-summary: Return a file uri for the specified path. Relative paths are resolved against the processor base.
+summary: Return a file uri for the specified path. Relative paths are resolved against the domain processor base.
 ---
 
-The specified path is evaulated against the base path of the Processor
+The specified path is evaluated against the base path of the domain Processor
 and the file uri is returned.
 
 So `${fileuri;.}` will return the file uri of a project base if used in a project's bnd file,

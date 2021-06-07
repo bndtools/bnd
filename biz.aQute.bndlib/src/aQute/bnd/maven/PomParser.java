@@ -1,7 +1,6 @@
 package aQute.bnd.maven;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
@@ -21,7 +20,9 @@ import org.w3c.dom.Text;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.lib.xml.XML;
 
 /**
  * Provides a way to parse a maven pom as properties. This provides most of the
@@ -31,33 +32,19 @@ import aQute.lib.utf8properties.UTF8Properties;
  * for this.
  */
 public class PomParser extends Processor {
-	static DocumentBuilderFactory	dbf			= DocumentBuilderFactory.newInstance();
+	static DocumentBuilderFactory	dbf			= XML.newDocumentBuilderFactory();
 	static XPathFactory				xpathf		= XPathFactory.newInstance();
-	static Set<String>				multiple	= new HashSet<>();
-	static Set<String>				skip		= new HashSet<>();
+	// Set all elements that need enumeration of their elements
+	// these will not use the name of the subelement but instead
+	// they use an index from 0..n
+	static Set<String>				multiple	= Sets.of("mailingLists", "pluginRepositories", "repositories",
+		"resources", "executions", "goals", "includes", "excludes");
+	// These properties are not very useful and
+	// pollute the property space.
+	static Set<String>				skip		= Sets.of("plugins", "dependencies", "reporting", "extensions");
 
 	static {
 		dbf.setNamespaceAware(false);
-
-		// Set all elements that need enumeration of their elements
-		// these will not use the name of the subelement but instead
-		// they use an index from 0..n
-		multiple.add("mailingLists");
-		multiple.add("pluginRepositories");
-		multiple.add("repositories");
-		multiple.add("resources");
-		multiple.add("executions");
-		multiple.add("goals");
-		multiple.add("includes");
-		multiple.add("excludes");
-
-		// These properties are not very useful and
-		// pollute the property space.
-		skip.add("plugins");
-		skip.add("dependencies");
-		skip.add("reporting");
-		skip.add("extensions");
-
 	}
 
 	public Properties getProperties(File pom) throws Exception {

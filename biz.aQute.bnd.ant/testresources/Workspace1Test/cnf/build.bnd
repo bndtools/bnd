@@ -1,0 +1,2 @@
+Foo: foo
+-include ~${workspace}/cnf/bar.bnd

@@ -3,22 +3,17 @@ package bndtools.editor.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
 
-import org.bndtools.core.ui.wizards.jpm.AddJpmDependenciesWizard;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -59,8 +54,6 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.version.Version;
 import bndtools.Plugin;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
@@ -190,10 +183,6 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 					.isSupportedType(transferType))
 					return true;
 
-				if (URLTransfer.getInstance()
-					.isSupportedType(transferType))
-					return true;
-
 				ISelection selection = LocalSelectionTransfer.getTransfer()
 					.getSelection();
 				if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
@@ -218,12 +207,7 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 			public boolean performDrop(Object data) {
 				TransferData transfer = getCurrentEvent().currentDataType;
 
-				if (URLTransfer.getInstance()
-					.isSupportedType(transfer)) {
-					String urlStr = (String) URLTransfer.getInstance()
-						.nativeToJava(transfer);
-					return handleURLDrop(urlStr);
-				} else if (data instanceof String[]) {
+				if (data instanceof String[]) {
 					return handleFileNameDrop((String[]) data);
 				} else if (data instanceof IResource[]) {
 					return handleResourceDrop((IResource[]) data);
@@ -312,41 +296,6 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 
 				handleAdd(adding);
 				return true;
-			}
-
-			private boolean handleURLDrop(String urlStr) {
-				try {
-					URI uri = new URI(sanitizeUrl(urlStr));
-					AddJpmDependenciesWizard wizard = new AddJpmDependenciesWizard(uri);
-					WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
-					if (dialog.open() == Window.OK) {
-						Set<ResourceDescriptor> resources = wizard.getResult();
-						List<VersionedClause> newBundles = new ArrayList<>(resources.size());
-						for (ResourceDescriptor resource : resources) {
-							Attrs attrs = new Attrs();
-							attrs.put(Constants.VERSION_ATTRIBUTE,
-								resource.version != null ? resource.version.toString()
-									: Version.emptyVersion.toString());
-							VersionedClause clause = new VersionedClause(resource.bsn, attrs);
-							newBundles.add(clause);
-						}
-
-						handleAdd(newBundles);
-						return true;
-					}
-					return false;
-				} catch (URISyntaxException e) {
-					MessageDialog.openError(getSection().getShell(), "Error", "The dropped URL was invalid: " + urlStr);
-					return false;
-				}
-			}
-
-			private String sanitizeUrl(String urlStr) {
-				int newline = urlStr.indexOf('\n');
-				if (newline > -1)
-					return urlStr.substring(0, newline)
-						.trim();
-				return urlStr;
 			}
 
 			private void handleAdd(Collection<VersionedClause> newClauses) {

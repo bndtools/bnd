@@ -43,8 +43,10 @@ public class Signer extends Processor {
 	String							alias;
 
 	public void signJar(Jar jar) {
-		if (digestNames == null || digestNames.length == 0)
+		if (digestNames == null || digestNames.length == 0) {
 			error("Need at least one digest algorithm name, none are specified");
+			return;
+		}
 
 		if (keystoreFile == null || !keystoreFile.getAbsoluteFile()
 			.exists()) {
@@ -173,9 +175,9 @@ public class Signer extends Processor {
 			byte[] data = new byte[BUFFER_SIZE];
 			int size = in.read(data);
 			while (size > 0) {
-				for (int a = 0; a < algorithms.length; a++) {
-					if (algorithms[a] != null) {
-						algorithms[a].update(data, 0, size);
+				for (MessageDigest algorithm : algorithms) {
+					if (algorithm != null) {
+						algorithm.update(data, 0, size);
 					}
 				}
 				size = in.read(data);

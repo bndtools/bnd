@@ -22,7 +22,7 @@ import aQute.service.reporter.Reporter;
  * <li>{@code .oauth2Token} — The password for basic authentication
  * </ul>
  */
-@aQute.bnd.annotation.plugin.BndPlugin(name = "url.bearer.authentication", parameters = BearerAuthentication.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "url.bearer.authentication", hide = true, parameters = BearerAuthentication.Config.class)
 public class BearerAuthentication extends DefaultURLConnectionHandler {
 	private final static Logger logger = LoggerFactory.getLogger(BearerAuthentication.class);
 

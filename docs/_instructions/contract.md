@@ -74,6 +74,6 @@ The tests provide some examples for people that want to have a deeper understand
 
 ## Further Reading
 
-See also [Portable Contract Definitions](https://www.osgi.org/portable-java-contract-definitions/)
+See also [Portable Contract Definitions](https://docs.osgi.org/reference/portable-java-contracts.html)
 
 

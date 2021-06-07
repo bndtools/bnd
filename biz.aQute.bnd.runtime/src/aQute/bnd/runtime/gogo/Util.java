@@ -20,8 +20,6 @@ package aQute.bnd.runtime.gogo;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,6 +38,9 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
+
+import aQute.lib.io.IO;
+import aQute.lib.zip.ZipUtil;
 
 public class Util {
 
@@ -136,7 +137,7 @@ public class Util {
 			}
 			File file = new File(localDir, fileName);
 
-			OutputStream os = new FileOutputStream(file);
+			OutputStream os = IO.outputStream(file);
 			URLConnection conn = srcURL.openConnection();
 			Util.setProxyAuth(conn);
 			int total = conn.getContentLength();
@@ -156,7 +157,7 @@ public class Util {
 			is.close();
 
 			if (extract) {
-				is = new FileInputStream(file);
+				is = IO.stream(file);
 				JarInputStream jis = new JarInputStream(is);
 				out.println("Extracting...");
 				unjar(jis, localDir);
@@ -173,13 +174,9 @@ public class Util {
 		byte[] buffer = new byte[4096];
 
 		// Loop through JAR entries.
-		for (JarEntry je = jis.getNextJarEntry(); je != null; je = jis.getNextJarEntry()) {
-			if (je.getName()
-				.startsWith("/")) {
-				throw new IOException("JAR resource cannot contain absolute paths.");
-			}
-
-			File target = new File(dir, je.getName());
+		for (JarEntry je; (je = jis.getNextJarEntry()) != null;) {
+			String path = ZipUtil.cleanPath(je.getName());
+			File target = new File(dir, path);
 
 			// Check to see if the JAR entry is a directory.
 			if (je.isDirectory()) {
@@ -192,12 +189,9 @@ public class Util {
 				continue;
 			}
 
-			int lastIndex = je.getName()
-				.lastIndexOf('/');
-			String name = (lastIndex >= 0) ? je.getName()
-				.substring(lastIndex + 1) : je.getName();
-			String destination = (lastIndex >= 0) ? je.getName()
-				.substring(0, lastIndex) : "";
+			int lastIndex = path.lastIndexOf('/');
+			String name = (lastIndex >= 0) ? path.substring(lastIndex + 1) : path;
+			String destination = (lastIndex >= 0) ? path.substring(0, lastIndex) : "";
 
 			// JAR files use '/', so convert it to platform separator.
 			destination = destination.replace('/', File.separatorChar);
@@ -222,7 +216,7 @@ public class Util {
 			throw new IOException("Target is not a directory: " + targetDir);
 		}
 
-		BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(targetDir, destName)));
+		BufferedOutputStream bos = new BufferedOutputStream(IO.outputStream(new File(targetDir, destName)));
 		int count = 0;
 		while ((count = is.read(buffer)) > 0) {
 			bos.write(buffer, 0, count);
@@ -344,7 +338,6 @@ public class Util {
 		// assert (pieces.length > 1)
 		// minimal case is <string>*<string>
 
-		boolean result = true;
 		int len = pieces.size();
 
 		// Special case, if there is only one piece, then
@@ -358,32 +351,29 @@ public class Util {
 
 		int index = 0;
 
-		loop: for (int i = 0; i < len; i++) {
+		for (int i = 0; i < len; i++) {
 			String piece = pieces.get(i);
 
 			// If this is the first piece, then make sure the
 			// string starts with it.
 			if (i == 0) {
 				if (!s.startsWith(piece)) {
-					result = false;
-					break loop;
+					return false;
 				}
 			}
 
 			// If this is the last piece, then make sure the
 			// string ends with it.
 			if (i == len - 1) {
-				result = s.endsWith(piece);
-				break loop;
+				return s.endsWith(piece);
 			}
 
 			// If this is neither the first or last piece, then
 			// make sure the string contains it.
-			if ((i > 0) && (i < (len - 1))) {
+			if (i > 0) {
 				index = s.indexOf(piece, index);
 				if (index < 0) {
-					result = false;
-					break loop;
+					return false;
 				}
 			}
 
@@ -391,12 +381,12 @@ public class Util {
 			index += piece.length();
 		}
 
-		return result;
+		return true;
 	}
 
 	/**
 	 * Intepret a string as a URI relative to the current working directory.
-	 * 
+	 *
 	 * @param session the session (where the CWD is stored)
 	 * @param relativeUri the input URI
 	 * @return the resulting URI as a string

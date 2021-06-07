@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.util.promise.Promise;
 
 import aQute.maven.provider.MavenBackingRepository;
@@ -26,6 +27,7 @@ import aQute.maven.provider.MavenBackingRepository;
  * SNAPSHOT is replaced with a date stamp + build number). This repository can
  * resolve the latest archive and provide a list of date stamped archives.
  */
+@ProviderType
 public interface IMavenRepo extends Closeable {
 	/**
 	 * The format for an archive is:
@@ -99,6 +101,15 @@ public interface IMavenRepo extends Closeable {
 	Promise<File> get(Archive archive) throws Exception;
 
 	/**
+	 * Get the file, refreshing snapshots when force is true.
+	 *
+	 * @param archive The archive to fetch
+	 * @param force refresh snapshots
+	 * @return the file or null if not found
+	 */
+	Promise<File> get(Archive archive, boolean force) throws Exception;
+
+	/**
 	 * Get the last updated time for a snapshot revision.
 	 *
 	 * @param revision the snapshot revision to get the time from
@@ -124,6 +135,16 @@ public interface IMavenRepo extends Closeable {
 	Archive resolveSnapshot(Archive archive) throws Exception;
 
 	/**
+	 * Take a generic snapshot archive and resolve it to the latest released
+	 * snapshot, refresh the metadata if force is true.
+	 *
+	 * @param archive the archive to resolve
+	 * @param force if true, refresh the metadata
+	 * @return the archive or null if not found
+	 */
+	Archive resolveSnapshot(Archive archive, boolean force) throws Exception;
+
+	/**
 	 * Get the file object for the archive. The file does not have to exist
 	 *
 	 * @param archive the archive to find the file for
@@ -140,8 +161,7 @@ public interface IMavenRepo extends Closeable {
 	URI toRemoteURI(Archive archive) throws Exception;
 
 	/**
-	 * Refresh the repository against the file system and remote repositories.
-	 * Return true if there was a change
+	 * Refresh snapshot metadata so snapshots are retrieved again
 	 */
 	boolean refresh() throws Exception;
 

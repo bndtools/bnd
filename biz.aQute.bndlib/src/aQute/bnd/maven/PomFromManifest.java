@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -136,7 +135,7 @@ public class PomFromManifest extends WriteResource {
 			scm.add(scmheader);
 
 		Tag scmtag = new Tag(project, "scm");
-		if (scm != null && !scm.isEmpty()) {
+		if (!scm.isEmpty()) {
 			for (String cm : this.scm) {
 				new Tag(scmtag, "url").addContent(cm);
 				new Tag(scmtag, "connection").addContent(cm);
@@ -187,8 +186,7 @@ public class PomFromManifest extends WriteResource {
 			Tag ls = new Tag(project, "licenses");
 
 			Parameters map = Processor.parseHeader(licenses, null);
-			for (Iterator<Entry<String, Attrs>> e = map.entrySet()
-				.iterator(); e.hasNext();) {
+			for (Entry<String, Attrs> entry : map.entrySet()) {
 
 				// Bundle-License:
 				// http://www.opensource.org/licenses/apache2.0.php; \
@@ -202,7 +200,6 @@ public class PomFromManifest extends WriteResource {
 				//    <distribution>repo</distribution>
 				//    </license>
 
-				Entry<String, Attrs> entry = e.next();
 				Tag l = new Tag(ls, "license");
 				Map<String, String> values = entry.getValue();
 				String url = entry.getKey();
@@ -222,12 +219,6 @@ public class PomFromManifest extends WriteResource {
 
 	/**
 	 * Utility function to print a tag from a map
-	 *
-	 * @param ps
-	 * @param values
-	 * @param string
-	 * @param tag
-	 * @param object
 	 */
 	private Tag tagFromMap(Tag parent, Map<String, String> values, String string, String tag, String object) {
 		String value = values.get(string);

@@ -2,12 +2,14 @@ package aQute.bnd.osgi;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Formatter;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
@@ -15,8 +17,9 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
-import aQute.bnd.annotation.baseline.BaselineIgnore;
+import aQute.bnd.build.model.EE;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -45,46 +48,36 @@ public class Verifier extends Processor {
 	private boolean				r3;
 	private boolean				usesRequire;
 
-	final static Pattern		EENAME							= Pattern.compile(																			//
-		"CDC-1\\.0/Foundation-1\\.0"																														//
-			+ "|CDC-1\\.1/Foundation-1\\.1"																													//
-			+ "|OSGi/Minimum-1\\.[0-2]"																														//
-			+ "|JRE-1\\.1"																																	//
-			+ "|J2SE-1\\.[2-5]"																																//
-			+ "|JavaSE-1\\.[6-8]"																															//
-			+ "|JavaSE-9"																																	//
-			+ "|JavaSE-[1-9][0-9]"																															//
-			+ "|PersonalJava-1\\.[12]"																														//
-			+ "|CDC-1\\.0/PersonalBasis-1\\.0"																												//
-			+ "|CDC-1\\.0/PersonalJava-1\\.0"																												//
-			+ "|CDC-1\\.1/PersonalBasis-1\\.1"																												//
+	final static Pattern		EENAME	= Pattern.compile(		//
+		"CDC-1\\.0/Foundation-1\\.0"							//
+			+ "|CDC-1\\.1/Foundation-1\\.1"						//
+			+ "|OSGi/Minimum-1\\.[0-2]"							//
+			+ "|JRE-1\\.1"										//
+			+ "|J2SE-1\\.[2-5]"									//
+			+ "|JavaSE-1\\.[6-8]"								//
+			+ "|JavaSE-9"										//
+			+ "|JavaSE-[1-9][0-9]"								//
+			+ "|PersonalJava-1\\.[12]"							//
+			+ "|CDC-1\\.0/PersonalBasis-1\\.0"					//
+			+ "|CDC-1\\.0/PersonalJava-1\\.0"					//
+			+ "|CDC-1\\.1/PersonalBasis-1\\.1"					//
 			+ "|CDC-1\\.1/PersonalJava-1\\.1");
-	public final static String	EES[]							= {																							//
-		"CDC-1.0/Foundation-1.0",																															//
-		"CDC-1.1/Foundation-1.1",																															//
-		"OSGi/Minimum-1.0",																																	//
-		"OSGi/Minimum-1.1",																																	//
-		"OSGi/Minimum-1.2",																																	//
-		"JRE-1.1",																																			//
-		"J2SE-1.2",																																			//
-		"J2SE-1.3",																																			//
-		"J2SE-1.4",																																			//
-		"J2SE-1.5",																																			//
-		"JavaSE-1.6",																																		//
-		"JavaSE-1.7",																																		//
-		"JavaSE-1.8",																																		//
-		"JavaSE-9",																																			//
-		"JavaSE-10",																																		//
-		"JavaSE-11",																																		//
-		"JavaSE-12",																																		//
-		"JavaSE-13",																																		//
-		"PersonalJava-1.1",																																	//
-		"PersonalJava-1.2",																																	//
-		"CDC-1.0/PersonalBasis-1.0",																														//
-		"CDC-1.0/PersonalJava-1.0",																															//
-		"CDC-1.1/PersonalBasis-1.1",																														//
-		"CDC-1.1/PersonalJava-1.1"
-	};
+	public final static String	EES[];
+	static {
+		EE[] ees = EE.values();
+		EES = Stream.concat(Arrays.stream(ees, 0, ees.length - 1)
+			.map(EE::getEEName),
+			Stream.of("CDC-1.0/Foundation-1.0", //
+				"CDC-1.1/Foundation-1.1", //
+				"PersonalJava-1.1", //
+				"PersonalJava-1.2", //
+				"CDC-1.0/PersonalBasis-1.0", //
+				"CDC-1.0/PersonalJava-1.0", //
+				"CDC-1.1/PersonalBasis-1.1", //
+				"CDC-1.1/PersonalJava-1.1"))
+			.toArray(String[]::new);
+	}
+
 	public final static Pattern	ReservedFileNames				= Pattern
 		.compile("CON(\\..+)?|PRN(\\..+)?|AUX(\\..+)?|CLOCK\\$|NUL(\\..+)?|COM[1-9](\\..+)?|LPT[1-9](\\..+)?|"
 			+ "\\$Mft|\\$MftMirr|\\$LogFile|\\$Volume|\\$AttrDef|\\$Bitmap|\\$Boot|\\$BadClus|\\$Secure|"
@@ -95,17 +88,11 @@ public class Verifier extends Processor {
 	final static Pattern		BUNDLEMANIFESTVERSION			= Pattern.compile("2");
 
 	public final static Pattern	TOKEN							= Pattern.compile(PatternConstants.TOKEN);
-	@BaselineIgnore("4.3.0")
 	public final static String	EXTENDED_S						= "[-.\\w]+";
-	@BaselineIgnore("4.3.0")
 	public final static Pattern	EXTENDED_P						= Pattern.compile(EXTENDED_S);
-	@BaselineIgnore("4.3.0")
 	public final static String	QUOTEDSTRING					= "\"[^\"]*\"";
-	@BaselineIgnore("4.3.0")
 	public final static Pattern	QUOTEDSTRING_P					= Pattern.compile(QUOTEDSTRING);
-	@BaselineIgnore("4.3.0")
 	public final static String	ARGUMENT_S						= "(:?" + EXTENDED_S + ")|(?:" + QUOTEDSTRING + ")";
-	@BaselineIgnore("4.3.0")
 	public final static Pattern	ARGUMENT_P						= Pattern.compile(ARGUMENT_S);
 	public final static String	SYMBOLICNAME_STRING				= PatternConstants.SYMBOLICNAME;
 	public final static Pattern	SYMBOLICNAME					= Pattern.compile(SYMBOLICNAME_STRING);
@@ -148,114 +135,114 @@ public class Verifier extends Processor {
 	public final static Pattern	BUNDLE_ACTIVATIONPOLICYPATTERN	= Pattern.compile("lazy");
 
 	public final static String	OSNAMES[]						= {
-		"AIX",																																				// IBM
-		"DigitalUnix",																																		// Compaq
-		"Embos",																																			// Segger
-																																							// Embedded
-																																							// Software
-																																							// Solutions
-		"Epoc32",																																			// SymbianOS
-																																							// Symbian
-																																							// OS
-		"FreeBSD",																																			// Free
-																																							// BSD
-		"HPUX",																																				// hp-ux
-																																							// Hewlett
-																																							// Packard
-		"IRIX",																																				// Silicon
-																																							// Graphics
-		"Linux",																																			// Open
-																																							// source
-		"MacOS",																																			// Apple
-		"NetBSD",																																			// Open
-																																							// source
-		"Netware",																																			// Novell
-		"OpenBSD",																																			// Open
-																																							// source
-		"OS2",																																				// OS/2
-																																							// IBM
-		"QNX",																																				// procnto
-																																							// QNX
-		"Solaris",																																			// Sun
-																																							// (almost
-																																							// an
-																																							// alias
-																																							// of
-																																							// SunOS)
-		"SunOS",																																			// Sun
-																																							// Microsystems
-		"VxWorks",																																			// WindRiver
-																																							// Systems
-		"Windows95", "Win32", "Windows98", "WindowsNT", "WindowsCE", "Windows2000",																			// Win2000
-		"Windows2003",																																		// Win2003
+		"AIX",																																								// IBM
+		"DigitalUnix",																																						// Compaq
+		"Embos",																																							// Segger
+																																											// Embedded
+																																											// Software
+																																											// Solutions
+		"Epoc32",																																							// SymbianOS
+																																											// Symbian
+																																											// OS
+		"FreeBSD",																																							// Free
+																																											// BSD
+		"HPUX",																																								// hp-ux
+																																											// Hewlett
+																																											// Packard
+		"IRIX",																																								// Silicon
+																																											// Graphics
+		"Linux",																																							// Open
+																																											// source
+		"MacOS",																																							// Apple
+		"NetBSD",																																							// Open
+																																											// source
+		"Netware",																																							// Novell
+		"OpenBSD",																																							// Open
+																																											// source
+		"OS2",																																								// OS/2
+																																											// IBM
+		"QNX",																																								// procnto
+																																											// QNX
+		"Solaris",																																							// Sun
+																																											// (almost
+																																											// an
+																																											// alias
+																																											// of
+																																											// SunOS)
+		"SunOS",																																							// Sun
+																																											// Microsystems
+		"VxWorks",																																							// WindRiver
+																																											// Systems
+		"Windows95", "Win32", "Windows98", "WindowsNT", "WindowsCE", "Windows2000",																							// Win2000
+		"Windows2003",																																						// Win2003
 		"WindowsXP", "WindowsVista",
 	};
 
-	public final static String	PROCESSORNAMES[]				= {																							//
+	public final static String	PROCESSORNAMES[]				= {																											//
 		//
-		"68k",																																				// Motorola
-																																							// 68000
-		"ARM_LE",																																			// Intel
-																																							// Strong
-																																							// ARM.
-																																							// Deprecated
-																																							// because
-																																							// it
-																																							// does
-																																							// not
+		"68k",																																								// Motorola
+																																											// 68000
+		"ARM_LE",																																							// Intel
+																																											// Strong
+																																											// ARM.
+																																											// Deprecated
+																																											// because
+																																											// it
+																																											// does
+																																											// not
 		// specify the endianness. See the following two rows.
-		"arm_le",																																			// Intel
-																																							// Strong
-																																							// ARM
-																																							// Little
-																																							// Endian
-																																							// mode
-		"arm_be",																																			// Intel
-																																							// String
-																																							// ARM
-																																							// Big
-																																							// Endian
-																																							// mode
-		"Alpha",																																			//
-		"ia64n",																																			// Hewlett
-																																							// Packard
-																																							// 32
-																																							// bit
-		"ia64w",																																			// Hewlett
-																																							// Packard
-																																							// 64
-																																							// bit
-																																							// mode
-		"Ignite",																																			// psc1k
-																																							// PTSC
-		"Mips",																																				// SGI
-		"PArisc",																																			// Hewlett
-																																							// Packard
-		"PowerPC",																																			// power
-																																							// ppc
-																																							// Motorola/IBM
-																																							// Power
-																																							// PC
-		"Sh4",																																				// Hitachi
-		"Sparc",																																			// SUN
-		"Sparcv9",																																			// SUN
-		"S390",																																				// IBM
-																																							// Mainframe
-																																							// 31
-																																							// bit
-		"S390x",																																			// IBM
-																																							// Mainframe
-																																							// 64-bit
-		"V850E",																																			// NEC
-																																							// V850E
-		"x86",																																				// pentium
-																																							// i386
-		"i486",																																				// i586
-																																							// i686
-																																							// Intel&
-																																							// AMD
-																																							// 32
-																																							// bit
+		"arm_le",																																							// Intel
+																																											// Strong
+																																											// ARM
+																																											// Little
+																																											// Endian
+																																											// mode
+		"arm_be",																																							// Intel
+																																											// String
+																																											// ARM
+																																											// Big
+																																											// Endian
+																																											// mode
+		"Alpha",																																							//
+		"ia64n",																																							// Hewlett
+																																											// Packard
+																																											// 32
+																																											// bit
+		"ia64w",																																							// Hewlett
+																																											// Packard
+																																											// 64
+																																											// bit
+																																											// mode
+		"Ignite",																																							// psc1k
+																																											// PTSC
+		"Mips",																																								// SGI
+		"PArisc",																																							// Hewlett
+																																											// Packard
+		"PowerPC",																																							// power
+																																											// ppc
+																																											// Motorola/IBM
+																																											// Power
+																																											// PC
+		"Sh4",																																								// Hitachi
+		"Sparc",																																							// SUN
+		"Sparcv9",																																							// SUN
+		"S390",																																								// IBM
+																																											// Mainframe
+																																											// 31
+																																											// bit
+		"S390x",																																							// IBM
+																																											// Mainframe
+																																											// 64-bit
+		"V850E",																																							// NEC
+																																											// V850E
+		"x86",																																								// pentium
+																																											// i386
+		"i486",																																								// i586
+																																											// i686
+																																											// Intel&
+																																											// AMD
+																																											// 32
+																																											// bit
 		"x86-64",
 	};
 
@@ -601,10 +588,6 @@ public class Verifier extends Processor {
 				+ ", ExtensionBundle-Activator, or a system bundle fragment makes it impossible to verify unresolved references");
 	}
 
-	/**
-	 * @param p
-	 * @param pack
-	 */
 	private boolean isDynamicImport(PackageRef pack) {
 		if (dynamicImports == null)
 			dynamicImports = new Instructions(main.getDynamicImportPackage());
@@ -616,8 +599,8 @@ public class Verifier extends Processor {
 	}
 
 	private boolean hasOverlap(Set<?> a, Set<?> b) {
-		for (Iterator<?> i = a.iterator(); i.hasNext();) {
-			if (b.contains(i.next()))
+		for (Object element : a) {
+			if (b.contains(element))
 				return true;
 		}
 		return false;
@@ -738,6 +721,10 @@ public class Verifier extends Processor {
 			Set<String> noimports = new HashSet<>();
 			Set<String> toobroadimports = new HashSet<>();
 
+			Parameters eePackages = Optional.ofNullable(analyzer.getHighestEE())
+				.map(ee -> EE.parse(ee.getEE()))
+				.map(EE::getPackages)
+				.orElseGet(Parameters::new);
 			for (Entry<String, Attrs> e : map.entrySet()) {
 
 				String key = Processor.removeDuplicateMarker(e.getKey());
@@ -752,7 +739,7 @@ public class Verifier extends Processor {
 				String version = e.getValue()
 					.get(Constants.VERSION_ATTRIBUTE);
 				if (version == null) {
-					if (!key.startsWith("javax.")) {
+					if (!eePackages.containsKey(key)) {
 						noimports.add(key);
 					}
 				} else {
@@ -789,7 +776,7 @@ public class Verifier extends Processor {
 			}
 
 			if (!noimports.isEmpty()) {
-				Location location = error("Import Package clauses without version range (excluding javax.*): %s",
+				Location location = error("Import Package clauses without version range: %s",
 					noimports).location();
 				location.header = Constants.IMPORT_PACKAGE;
 			}
@@ -1349,9 +1336,8 @@ public class Verifier extends Processor {
 			return false;
 
 		QuotedTokenizer st = new QuotedTokenizer(value.trim(), ",");
-		for (Iterator<String> i = st.getTokenSet()
-			.iterator(); i.hasNext();) {
-			if (!verify(i.next(), regex)) {
+		for (String token : st.getTokenSet()) {
+			if (!verify(token, regex)) {
 				if (error)
 					error("Invalid value for %s, %s does not match %s", name, value, regex.pattern());
 				else
@@ -1398,14 +1384,17 @@ public class Verifier extends Processor {
 	}
 
 	public static boolean isIdentifier(String value) {
-		if (value.length() < 1)
+		final int len = value.length();
+		if (len < 1)
 			return false;
 
-		if (!Character.isJavaIdentifierStart(value.charAt(0)))
+		int cp = Character.codePointAt(value, 0);
+		if (!Character.isJavaIdentifierStart(cp))
 			return false;
 
-		for (int i = 1; i < value.length(); i++) {
-			if (!Character.isJavaIdentifierPart(value.charAt(i)))
+		for (int i = 0; (i += Character.charCount(cp)) < len;) {
+			cp = Character.codePointAt(value, i);
+			if (!Character.isJavaIdentifierPart(cp))
 				return false;
 		}
 		return true;
@@ -1600,5 +1589,40 @@ public class Verifier extends Processor {
 	public static boolean isNumber(String number) {
 		return NUMBERPATTERN.matcher(number)
 			.matches();
+	}
+
+	/**
+	 * The -runvm header is often wrongly used as a space separated header
+	 * instead of a properties. This checks if a header uses commas to separate
+	 * the parts or spaces.
+	 *
+	 * @param r a header
+	 * @return true if spaces are used for separation, false if 1 parameter or
+	 *         commas used
+	 */
+	public static boolean isSpaceSeparated(String r) {
+		QuotedTokenizer qt = new QuotedTokenizer(r, ", \t", true);
+		String token = qt.nextToken();
+		boolean foundSpaceSeparator = false;
+		while (token != null) {
+			switch (token) {
+				case " " :
+				case "\t" :
+					foundSpaceSeparator = true;
+					break;
+
+				case "," :
+					return false;
+
+				case "" :
+					break;
+
+				default :
+					if (foundSpaceSeparator)
+						return true;
+			}
+			token = qt.nextToken();
+		}
+		return false;
 	}
 }

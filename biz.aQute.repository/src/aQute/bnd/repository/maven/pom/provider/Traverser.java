@@ -1,10 +1,9 @@
 package aQute.bnd.repository.maven.pom.provider;
 
 import static aQute.bnd.osgi.repository.BridgeRepository.addInformationCapability;
-import static org.osgi.framework.namespace.IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE;
-import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,9 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
-import org.osgi.framework.Version;
-import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
@@ -25,9 +23,12 @@ import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.http.HttpClient;
-import aQute.bnd.osgi.resource.CapabilityBuilder;
+import aQute.bnd.maven.MavenCapability;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.version.MavenVersion;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom.Dependency;
 import aQute.maven.api.MavenScope;
@@ -42,7 +43,7 @@ class Traverser {
 	static final String						ROOT		= "<>";
 	final ConcurrentMap<Archive, Resource>	resources	= new ConcurrentHashMap<>();
 	private final PromiseFactory			promiseFactory;
-	final List<Revision>					revisions;
+	final List<Archive>						archives;
 	final List<URI>							uris;
 	final AtomicInteger						count		= new AtomicInteger(-1);
 	final Deferred<Map<Archive, Resource>>	deferred;
@@ -56,12 +57,19 @@ class Traverser {
 		this.promiseFactory = client.promiseFactory();
 		this.deferred = promiseFactory.deferred();
 		this.transitive = transitive;
-		this.revisions = new ArrayList<>();
+		this.archives = new ArrayList<>();
 		this.uris = new ArrayList<>();
 	}
 
 	Traverser revisions(Collection<Revision> revisions) {
-		this.revisions.addAll(revisions);
+		Collection<Archive> archives = revisions.stream()
+			.map(r -> r.archive(Archive.JAR_EXTENSION, null))
+			.collect(Collectors.toList());
+		return archives(archives);
+	}
+
+	Traverser archives(Collection<Archive> archives) {
+		this.archives.addAll(archives);
 		return this;
 	}
 
@@ -87,8 +95,8 @@ class Traverser {
 						parsePom(pom, ROOT);
 					}
 				} else {
-					for (Revision revision : revisions)
-						parse(revision.archive("jar", null), ROOT);
+					for (Archive archive : archives)
+						parse(archive, ROOT);
 				}
 			} finally {
 				finish();
@@ -131,20 +139,18 @@ class Traverser {
 					} catch (Throwable throwable) {
 						logger.debug(" failed to parse archive {}: {}", archive, throwable);
 						ResourceBuilder rb = new ResourceBuilder();
-						String bsn = archive.revision.program.toString();
-						Version version = toFrameworkVersion(archive.revision.version.getOSGiVersion());
-						addReserveIdentity(rb, bsn, version);
-						addInformationCapability(rb, archive.toString(), parent, throwable);
+						String name = archive.getWithoutVersion();
+						MavenVersion version = archive.revision.version;
+						addInformationCapability(rb, name, version.getOSGiVersion(), archive.toString(),
+							throwable.toString());
+						MavenCapability.addMavenCapability(rb, archive.revision.group, archive.revision.artifact,
+							version, archive.extension, archive.classifier, repo.getName());
 						resources.put(archive, rb.build());
 					} finally {
 						finish();
 					}
 				});
 		}
-	}
-
-	private Version toFrameworkVersion(aQute.bnd.version.Version v) {
-		return new Version(v.getMajor(), v.getMinor(), v.getMicro(), v.getQualifier());
 	}
 
 	/*
@@ -193,39 +199,31 @@ class Traverser {
 	private void parseResource(Archive archive, String parent) throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
 
-		Version frameworkVersion = toFrameworkVersion(archive.revision.version.getOSGiVersion());
-		String bsn = archive.revision.program.toString();
+		String name = archive.getWithoutVersion();
+		MavenVersion version = archive.revision.version;
 
 		try {
 			File binary = repo.get(archive)
 				.getValue();
 
-			if (!rb.addFile(binary, binary.toURI())) {
-				// no identity
-				addReserveIdentity(rb, bsn, frameworkVersion);
-			}
-			addInformationCapability(rb, archive.toString(), parent);
+			boolean hasIdentity = rb.addFile(binary, binary.toURI());
+			addInformationCapability(rb, name, version.getOSGiVersion(), archive.toString(),
+				hasIdentity ? null : Constants.NOT_A_BUNDLE_S);
 		} catch (Exception e) {
-			addReserveIdentity(rb, bsn, frameworkVersion);
-			addInformationCapability(rb, archive.toString(), parent, e);
+			Throwable theException = Exceptions.unrollCause(e, InvocationTargetException.class);
+			addInformationCapability(rb, name, version.getOSGiVersion(), archive.toString(), theException.toString());
 		}
+		MavenCapability.addMavenCapability(rb, archive.revision.group, archive.revision.artifact,
+			version, archive.extension, archive.classifier, repo.getName());
 		resources.put(archive, rb.build());
 	}
 
-	private void addReserveIdentity(ResourceBuilder rb, String bsn, Version version) {
-		try {
-			CapabilityBuilder c = new CapabilityBuilder(IDENTITY_NAMESPACE);
-			c.addAttribute(IDENTITY_NAMESPACE, bsn);
-			c.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
-			c.addAttribute(CAPABILITY_TYPE_ATTRIBUTE, "application/java-archive");
-			rb.addCapability(c);
-		} catch (Exception ee) {
-			ee.printStackTrace();
-		}
+	public Traverser revision(Revision revision) {
+		return archive(revision.archive(Archive.JAR_EXTENSION, null));
 	}
 
-	public Traverser revision(Revision revision) {
-		revisions.add(revision);
+	public Traverser archive(Archive archive) {
+		archives.add(archive);
 		return this;
 	}
 

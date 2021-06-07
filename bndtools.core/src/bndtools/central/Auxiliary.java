@@ -2,10 +2,11 @@ package bndtools.central;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.framework.Bundle;
@@ -35,8 +36,8 @@ class Auxiliary implements Closeable, WeavingHook {
 	private final AtomicBoolean						closed	= new AtomicBoolean(false);
 	private final ServiceRegistration<WeavingHook>	hook;
 	private final BundleTracker<Bundle>				tracker;
-	private Bundle									bndlib;
-	private List<String>							delta	= new ArrayList<>();
+	private final Bundle							bndlib;
+	private final Deque<String>						delta	= new ConcurrentLinkedDeque<>();
 
 	Auxiliary(BundleContext context, Bundle bndlib) {
 		this.bndlib = bndlib;
@@ -107,22 +108,15 @@ class Auxiliary implements Closeable, WeavingHook {
 		if (out.isEmpty())
 			return false;
 
-		String imports = out.toString();
-		synchronized (this) {
-
-			if (delta == null)
-				delta = new ArrayList<>();
-
-			delta.add(imports);
-		}
+		delta.offerLast(out.toString());
 		return true;
 	}
 
 	@Override
 	public void weave(WovenClass wovenClass) {
-		if (delta == null || delta.isEmpty())
+		if (delta.isEmpty()) {
 			return;
-
+		}
 		BundleWiring wiring = wovenClass.getBundleWiring();
 		if (wiring == null)
 			return;
@@ -130,14 +124,10 @@ class Auxiliary implements Closeable, WeavingHook {
 		if (wiring.getBundle() != bndlib)
 			return;
 
-		List<String> extra;
-		synchronized (this) {
-			extra = delta;
-			delta = null;
+		List<String> dynamicImports = wovenClass.getDynamicImports();
+		for (String dynamicImport; (dynamicImport = delta.pollFirst()) != null;) {
+			dynamicImports.add(dynamicImport);
 		}
-		if (extra != null)
-			wovenClass.getDynamicImports()
-				.addAll(extra);
 	}
 
 	@Override

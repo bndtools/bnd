@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -35,19 +36,13 @@ import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.osgi.framework.Version;
-import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
-import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.resource.CapReqBuilder;
-import aQute.bnd.osgi.resource.Filters;
-import aQute.libg.filters.AndFilter;
-import aQute.libg.filters.LiteralFilter;
-import aQute.libg.filters.SimpleFilter;
 
 public class ResolutionSuccessPanel {
 
@@ -343,12 +338,7 @@ public class ResolutionSuccessPanel {
 		Version version = ResourceUtils.getVersion(identity);
 		Version dropQualifier = new Version(version.getMajor(), version.getMinor(), version.getMicro());
 
-		AndFilter filter = new AndFilter();
-		filter.addChild(new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, id));
-		filter.addChild(new LiteralFilter(Filters.fromVersionRange(dropQualifier.toString())));
-
-		Requirement req = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString())
+		Requirement req = CapReqBuilder.createBundleRequirement(id, dropQualifier.toString())
 			.buildSyntheticRequirement();
 		return req;
 	}

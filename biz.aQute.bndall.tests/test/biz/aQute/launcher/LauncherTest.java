@@ -36,7 +36,7 @@ public class LauncherTest {
 
 	@Before
 	public void before() throws Exception {
-		testDir = new File(TMPDIR, testName.getMethodName());
+		testDir = new File(TMPDIR, getClass().getName() + "/" + testName.getMethodName());
 		IO.delete(testDir);
 		IO.mkdirs(testDir);
 		prior = new Properties();
@@ -80,8 +80,7 @@ public class LauncherTest {
 
 		String result = runFramework(file);
 
-		assertThat(result)
-			.containsPattern("Startlevel\\s+22")
+		assertThat(result).containsPattern("Startlevel\\s+22")
 			.containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle")
 			.containsPattern("21\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log")
 			.containsPattern("10\\s+ACTIV\\s+<>\\s+jar/.?demo.jar")
@@ -141,6 +140,21 @@ public class LauncherTest {
 
 		result = runFramework(file);
 		assertThat(result).contains("not updating jar/demo.jar because identical digest");
+	}
+
+	@Test
+	public void testFrameworkRestart() throws Exception {
+		File file = buildPackage("frameworkrestart.bndrun");
+
+		System.setProperty("test.cmd", "framework.restart");
+
+		assertThat(file).isFile();
+
+		String result = runFramework(file);
+		System.out.println(result);
+
+		assertThat(result).contains("framework restart, first time")
+			.contains("framework restart, second time");
 	}
 
 	/**
@@ -217,10 +231,12 @@ public class LauncherTest {
 
 	private String runFramework(File file) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
 		InvocationTargetException, IOException, MalformedURLException {
-		PrintStream out = System.err;
+		PrintStream err = System.err;
+		PrintStream out = System.out;
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		PrintStream out2 = new PrintStream(bout);
 		System.setErr(out2);
+		System.setOut(out2);
 		try {
 			try (URLClassLoader l = new URLClassLoader(new URL[] {
 				file.toURI()
@@ -233,7 +249,8 @@ public class LauncherTest {
 
 			out2.flush();
 		} finally {
-			System.setErr(out);
+			System.setErr(err);
+			System.setOut(out);
 		}
 
 		return new String(bout.toByteArray(), StandardCharsets.UTF_8);

@@ -1,18 +1,20 @@
-/*
- * Copyright (c) OSGi Alliance (2011, 2017). All Rights Reserved.
+/*******************************************************************************
+ * Copyright (c) Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
 
 package aQute.bnd.component.annotations;
 
@@ -41,7 +43,7 @@ import java.lang.annotation.Target;
  * In the generated Component Description for a component, the references must
  * be ordered in ascending lexicographical order (using {@code String.compareTo}
  * ) of the reference {@link #name() name}s.
- * 
+ *
  * @see "The reference element of a Component Description."
  * @author $Id$
  */
@@ -66,7 +68,7 @@ public @interface Reference {
 	 * <li>Annotated constructor parameter - The name of the reference is the
 	 * parameter name.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @see "The name attribute of the reference element of a Component Description."
 	 */
 	String name() default "";
@@ -84,26 +86,34 @@ public @interface Reference {
 	 * <ul>
 	 * <li>Annotated method - The type of the service is the type of the first
 	 * parameter of the method.</li>
-	 * <li>Annotated field - The type of the service is based upon the type of
-	 * the field being annotated and the cardinality of the reference. If the
-	 * cardinality is either {@link ReferenceCardinality#MULTIPLE 0..n}, or
-	 * {@link ReferenceCardinality#AT_LEAST_ONE 1..n}, the type of the field
+	 * <li>Annotated field - The type of the service is based upon the
+	 * cardinality of the reference and the type of the field being annotated.
+	 * If the cardinality is either {@link ReferenceCardinality#MULTIPLE 0..n},
+	 * or {@link ReferenceCardinality#AT_LEAST_ONE 1..n}, the type of the field
 	 * must be one of {@code java.util.Collection}, {@code java.util.List}, or a
-	 * subtype of {@code java.util.Collection} so the type of the service is the
-	 * generic type of the collection. Otherwise, the type of the service is the
-	 * type of the field.</li>
+	 * subtype of {@code java.util.Collection}, so the type of the service is
+	 * the generic type of the collection. If the cardinality is either
+	 * {@link ReferenceCardinality#OPTIONAL 0..1} or
+	 * {@link ReferenceCardinality#MANDATORY 1..1}, and the type of the field is
+	 * {@code java.util.Optional}, the type of the service is the generic type
+	 * of the {@code java.util.Optional}. Otherwise, the type of the service is
+	 * the type of the field.</li>
 	 * <li>Annotated constructor parameter - The type of the service is based
-	 * upon the type of the parameter being annotated and the cardinality of the
-	 * reference. If the cardinality is either
+	 * upon the cardinality of the reference and the type of the parameter being
+	 * annotated. If the cardinality is either
 	 * {@link ReferenceCardinality#MULTIPLE 0..n}, or
 	 * {@link ReferenceCardinality#AT_LEAST_ONE 1..n}, the type of the parameter
-	 * must be one of {@code java.util.Collection}, {@code java.util.List}, or a
-	 * subtype of {@code java.util.Collection} so the type of the service is the
-	 * generic type of the collection. Otherwise, the type of the service is the
-	 * type of the parameter.</li>
+	 * must be one of {@code java.util.Collection} or {@code java.util.List}, so
+	 * the type of the service is the generic type of the collection. If the
+	 * cardinality is either {@link ReferenceCardinality#OPTIONAL 0..1} or
+	 * {@link ReferenceCardinality#MANDATORY 1..1}, and the type of the
+	 * parameter is {@code java.util.Optional}, the type of the service is the
+	 * generic type of the {@code java.util.Optional}. Otherwise, the type of
+	 * the service is the type of the parameter.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @see "The interface attribute of the reference element of a Component Description."
+	 * @see "AnyService"
 	 */
 	Class<?> service() default Object.class;
 
@@ -118,20 +128,21 @@ public @interface Reference {
 	 * <li>Annotated field - The cardinality is based on the type of the field.
 	 * If the type is either {@code java.util.Collection},
 	 * {@code java.util.List}, or a subtype of {@code java.util.Collection}, the
-	 * cardinality is {@link ReferenceCardinality#MULTIPLE 0..n}. Otherwise the
-	 * cardinality is {@link ReferenceCardinality#MANDATORY 1..1}.</li>
-	 * <li>{@link Component#reference()} element - The cardinality is
+	 * cardinality is {@link ReferenceCardinality#MULTIPLE 0..n}. If the type is
+	 * {@code java.util.Optional}, the cardinality is
+	 * {@link ReferenceCardinality#OPTIONAL 0..1}. Otherwise the cardinality is
 	 * {@link ReferenceCardinality#MANDATORY 1..1}.</li>
 	 * <li>Annotated constructor parameter - The cardinality is based on the
-	 * type of the parameter. If the type is either
-	 * {@code java.util.Collection}, {@code java.util.List}, or a subtype of
-	 * {@code java.util.Collection}, the cardinality is
-	 * {@link ReferenceCardinality#MULTIPLE 0..n}. Otherwise the cardinality is
+	 * type of the parameter. If the type is either {@code java.util.Collection}
+	 * or {@code java.util.List}, the cardinality is
+	 * {@link ReferenceCardinality#MULTIPLE 0..n}. If the type is
+	 * {@code java.util.Optional}, the cardinality is
+	 * {@link ReferenceCardinality#OPTIONAL 0..1}. Otherwise the cardinality is
 	 * {@link ReferenceCardinality#MANDATORY 1..1}.</li>
 	 * <li>{@link Component#reference()} element - The cardinality is
 	 * {@link ReferenceCardinality#MANDATORY 1..1}.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @see "The cardinality attribute of the reference element of a Component Description."
 	 */
 	ReferenceCardinality cardinality() default ReferenceCardinality.MANDATORY;
@@ -154,28 +165,28 @@ public @interface Reference {
 	 * <li>{@link Component#reference()} element - The policy is
 	 * {@link ReferencePolicy#STATIC STATIC}.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @see "The policy attribute of the reference element of a Component Description."
 	 */
 	ReferencePolicy policy() default ReferencePolicy.STATIC;
 
 	/**
 	 * The target property for this reference.
-	 * 
 	 * <p>
-	 * If not specified, no target property is set.
-	 * 
+	 * If not specified, no target property is set. A target property must be
+	 * specified if the {@link #service()} element refers to {@code AnyService}.
+	 *
 	 * @see "The target attribute of the reference element of a Component Description."
 	 */
 	String target() default "";
 
 	/**
 	 * The policy option for this reference.
-	 * 
+	 *
 	 * <p>
 	 * If not specified, the {@link ReferencePolicyOption#RELUCTANT RELUCTANT}
 	 * reference policy option is used.
-	 * 
+	 *
 	 * @see "The policy-option attribute of the reference element of a Component Description."
 	 * @since 1.2
 	 */
@@ -183,11 +194,11 @@ public @interface Reference {
 
 	/**
 	 * The reference scope for this reference.
-	 * 
+	 *
 	 * <p>
 	 * If not specified, the {@link ReferenceScope#BUNDLE bundle} reference
 	 * scope is used.
-	 * 
+	 *
 	 * @see "The scope attribute of the reference element of a Component Description."
 	 * @since 1.3
 	 */
@@ -214,7 +225,7 @@ public @interface Reference {
 	 * <p>
 	 * If there is a bind method name, the component must contain a method with
 	 * that name.
-	 * 
+	 *
 	 * @see "The bind attribute of the reference element of a Component Description."
 	 * @since 1.3
 	 */
@@ -245,7 +256,7 @@ public @interface Reference {
 	 * <p>
 	 * If there is an updated method name, the component must contain a method
 	 * with that name.
-	 * 
+	 *
 	 * @see "The updated attribute of the reference element of a Component Description."
 	 * @since 1.2
 	 */
@@ -276,7 +287,7 @@ public @interface Reference {
 	 * <p>
 	 * If there is an unbind method name, the component must contain a method
 	 * with that name.
-	 * 
+	 *
 	 * @see "The unbind attribute of the reference element of a Component Description."
 	 */
 	String unbind() default "";
@@ -301,7 +312,7 @@ public @interface Reference {
 	 * <p>
 	 * If there is a field name, the component must contain a field with that
 	 * name.
-	 * 
+	 *
 	 * @see "The field attribute of the reference element of a Component Description."
 	 * @since 1.3
 	 */
@@ -325,7 +336,7 @@ public @interface Reference {
 	 * <li>{@link Component#reference()} element - There is no field
 	 * option.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @see "The field-option attribute of the reference element of a Component Description."
 	 * @since 1.3
 	 */
@@ -354,7 +365,7 @@ public @interface Reference {
 	 * <p>
 	 * If there is a parameter number, the component must declare a constructor
 	 * that has a parameter having the zero-based parameter number.
-	 * 
+	 *
 	 * @see "The parameter attribute of the reference element of a Component Description."
 	 * @see "The init attribute of the component element of a Component Description."
 	 * @since 1.4
@@ -371,21 +382,29 @@ public @interface Reference {
 	 * <ul>
 	 * <li>Annotated method - There is no collection type.</li>
 	 * <li>Annotated field - The collection type is based upon the cardinality
-	 * of the reference and the generic type of the field. If the cardinality is
+	 * of the reference and the type of the field. If the cardinality is either
 	 * {@link ReferenceCardinality#MULTIPLE 0..n} or
 	 * {@link ReferenceCardinality#AT_LEAST_ONE 1..n}, the collection type is
-	 * inferred from the generic type of the list or collection. Otherwise,
-	 * there is no collection type</li>
+	 * inferred from the generic type of the {@code java.util.Collection}. If
+	 * the cardinality is either {@link ReferenceCardinality#OPTIONAL 0..1} or
+	 * {@link ReferenceCardinality#MANDATORY 1..1}, and the type of the field is
+	 * {@code java.util.Optional}, the collection type is inferred from the
+	 * generic type of the {@code java.util.Optional}. Otherwise, there is no
+	 * collection type</li>
 	 * <li>Annotated constructor method parameter - The collection type is based
-	 * upon the cardinality of the reference and the generic type of the
-	 * parameter. If the cardinality is {@link ReferenceCardinality#MULTIPLE
-	 * 0..n} or {@link ReferenceCardinality#AT_LEAST_ONE 1..n}, the collection
-	 * type is inferred from the generic type of the list or collection.
-	 * Otherwise, there is no collection type</li>
+	 * upon the cardinality of the reference and the type of the parameter. If
+	 * the cardinality is either {@link ReferenceCardinality#MULTIPLE 0..n} or
+	 * {@link ReferenceCardinality#AT_LEAST_ONE 1..n}, the collection type is
+	 * inferred from the generic type of the {@code java.util.Collection}. If
+	 * the cardinality is either {@link ReferenceCardinality#OPTIONAL 0..1} or
+	 * {@link ReferenceCardinality#MANDATORY 1..1}, and the type of the
+	 * parameter is {@code java.util.Optional}, the collection type is inferred
+	 * from the generic type of the {@code java.util.Optional}. Otherwise, there
+	 * is no collection type</li>
 	 * <li>{@link Component#reference()} element - There is no collection
 	 * type.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @see "The field-collection-type attribute of the reference element of a Component Description."
 	 * @since 1.4
 	 */

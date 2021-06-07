@@ -9,6 +9,7 @@ timestamp: ${tstamp}
     bndtools.api, \
     bndtools.builder, \
     bndtools.core, \
+    bndtools.core.services, \
     bndtools.jareditor, \
     bndtools.m2e, \
     bndtools.pde, \
@@ -22,13 +23,13 @@ timestamp: ${tstamp}
     org.bndtools.templating.gitrepo, \
     biz.aQute.bnd.embedded-repo, \
     biz.aQute.bnd.maven, \
+    biz.aQute.bnd.util, \
     biz.aQute.bndlib, \
     biz.aQute.repository, \
     biz.aQute.resolve
 
-other: org.slf4j.api
-
-plugins: ${map;repo;${replacelist;${-dependson},${other};$;\\\\\\;latest}}
+pluginnames: ${-dependson},org.slf4j.api
+plugins: ${map;repo;${template;pluginnames;${@};latest}}
 
 -includeresource: ${target}/p2
 -resourceonly: true

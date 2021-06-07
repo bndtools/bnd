@@ -1,7 +1,6 @@
 package aQute.bnd.build;
 
 import static aQute.bnd.build.Container.toPaths;
-import static java.util.stream.Collectors.toList;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -42,10 +41,11 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.jar.Attributes;
-import java.util.jar.Attributes.Name;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -56,6 +56,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container.TYPE;
+import aQute.bnd.build.ProjectBuilder.ArtifactInfoImpl;
+import aQute.bnd.build.ProjectBuilder.BuildInfoImpl;
+import aQute.bnd.exceptions.ConsumerWithException;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
 import aQute.bnd.exporter.runbundles.RunbundlesExporter;
 import aQute.bnd.header.Attrs;
@@ -67,6 +71,8 @@ import aQute.bnd.help.instructions.ProjectInstructions.StaleTest;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.maven.support.Pom;
 import aQute.bnd.maven.support.ProjectPom;
+import aQute.bnd.memoize.CloseableMemoize;
+import aQute.bnd.memoize.Memoize;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
@@ -82,8 +88,10 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.eclipse.EclipseClasspath;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
+import aQute.bnd.service.BndListener;
 import aQute.bnd.service.CommandPlugin;
 import aQute.bnd.service.DependencyContributor;
 import aQute.bnd.service.Deploy;
@@ -97,13 +105,11 @@ import aQute.bnd.service.action.NamedAction;
 import aQute.bnd.service.export.Exporter;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
 import aQute.bnd.service.specifications.RunSpecification;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
-import aQute.lib.collections.ExtList;
 import aQute.lib.collections.Iterables;
 import aQute.lib.converter.Converter;
-import aQute.lib.exceptions.ConsumerWithException;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -123,48 +129,62 @@ import aQute.libg.tuple.Pair;
 public class Project extends Processor {
 	private final static Logger logger = LoggerFactory.getLogger(Project.class);
 
-	static class RefreshData {
-		Parameters installRepositories;
+	class RefreshData implements AutoCloseable {
+		final Memoize<Parameters>				installRepositories;
+		final CloseableMemoize<ProjectGenerate>	generate;
+
+		RefreshData() {
+			installRepositories = Memoize.supplier(() -> new Parameters(mergeProperties(BUILDREPO), Project.this));
+			generate = CloseableMemoize.closeableSupplier(() -> new ProjectGenerate(Project.this));
+		}
+
+		@Override
+		public void close() {
+			IO.close(generate);
+		}
 	}
 
-	final static String				DEFAULT_ACTIONS					= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
-	public final static String		BNDFILE							= "bnd.bnd";
-	final static Path				BNDPATH							= Paths.get(BNDFILE);
-	public final static String		BNDCNF							= "cnf";
-	public final static String		SHA_256							= "SHA-256";
-	final Workspace					workspace;
-	private final AtomicBoolean		preparedPaths					= new AtomicBoolean();
-	private final Set<Project>		dependenciesFull				= new LinkedHashSet<>();
-	private final Set<Project>		dependenciesBuild				= new LinkedHashSet<>();
-	private final Set<Project>		dependenciesTest				= new LinkedHashSet<>();
-	private final Set<Project>		dependents						= new LinkedHashSet<>();
-	final Collection<Container>		classpath						= new LinkedHashSet<>();
-	final Collection<Container>		buildpath						= new LinkedHashSet<>();
-	final Collection<Container>		testpath						= new LinkedHashSet<>();
-	final Collection<Container>		runpath							= new LinkedHashSet<>();
-	final Collection<Container>		runbundles						= new LinkedHashSet<>();
-	final Collection<Container>		runfw							= new LinkedHashSet<>();
-	File							runstorage;
-	final Map<File, Attrs>			sourcepath						= new LinkedHashMap<>();
-	final Collection<File>			allsourcepath					= new LinkedHashSet<>();
-	final Collection<Container>		bootclasspath					= new LinkedHashSet<>();
-	final Map<String, Version>		versionMap						= new LinkedHashMap<>();
-	File							output;
-	File							target;
-	private final AtomicInteger		revision						= new AtomicInteger();
-	private File					files[];
-	boolean							delayRunDependencies			= true;
-	final ProjectMessages			msgs							= ReporterMessages.base(this,
-		ProjectMessages.class);
-	private Properties				ide;
-	final Packages					exportedPackages				= new Packages();
-	final Packages					importedPackages				= new Packages();
-	final Packages					containedPackages				= new Packages();
-	final PackageInfo				packageInfo						= new PackageInfo(this);
-	private Makefile				makefile;
-	private volatile RefreshData	data							= new RefreshData();
-	public Map<String, Container>	unreferencedClasspathEntries	= new HashMap<>();
-	public ProjectInstructions		instructions					= getInstructions(ProjectInstructions.class);
+	final static String											DEFAULT_ACTIONS					= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
+	public final static String									BNDFILE							= "bnd.bnd";
+	final static Path											BNDPATH							= Paths.get(BNDFILE);
+	public final static String									BNDCNF							= "cnf";
+	public final static String									SHA_256							= "SHA-256";
+	final Workspace												workspace;
+	private final AtomicBoolean									preparedPaths					= new AtomicBoolean();
+	private final Set<Project>									dependenciesFull				= new LinkedHashSet<>();
+	private final Set<Project>									dependenciesBuild				= new LinkedHashSet<>();
+	private final Set<Project>									dependenciesTest				= new LinkedHashSet<>();
+	private final Set<Project>									dependents						= new LinkedHashSet<>();
+	final Collection<Container>									classpath						= new LinkedHashSet<>();
+	final Collection<Container>									buildpath						= new LinkedHashSet<>();
+	final Collection<Container>									testpath						= new LinkedHashSet<>();
+	final Collection<Container>									runpath							= new LinkedHashSet<>();
+	final Collection<Container>									runbundles						= new LinkedHashSet<>();
+	final Collection<Container>									runfw							= new LinkedHashSet<>();
+	File														runstorage;
+	final Map<File, Attrs>										sourcepath						= new LinkedHashMap<>();
+	final Collection<File>										allsourcepath					= new LinkedHashSet<>();
+	final Collection<Container>									bootclasspath					= new LinkedHashSet<>();
+	final Map<String, Version>									versionMap						= new LinkedHashMap<>();
+	File														output;
+	File														target;
+	private final AtomicInteger									revision						= new AtomicInteger();
+	private File												files[];
+	boolean														delayRunDependencies			= true;
+	final ProjectMessages										msgs							= ReporterMessages
+		.base(this, ProjectMessages.class);
+	private Properties											ide;
+	final Packages												exportedPackages				= new Packages();
+	final Packages												importedPackages				= new Packages();
+	final Packages												containedPackages				= new Packages();
+	final PackageInfo											packageInfo						= new PackageInfo(this);
+	private Makefile											makefile;
+	private volatile Memoize<List<org.osgi.resource.Resource>>	resources						= Memoize
+		.supplier(this::parseBuildResources);
+	private volatile RefreshData								data							= new RefreshData();
+	public Map<String, Container>								unreferencedClasspathEntries	= new HashMap<>();
+	public ProjectInstructions									instructions					= getInstructions(
+		ProjectInstructions.class);
 
 	public Project(Workspace workspace, File unused, File buildFile) {
 		super(workspace);
@@ -566,7 +586,12 @@ public class Project extends Processor {
 
 	private List<Container> parseRunbundles() throws Exception {
 
-		return getBundles(Strategy.HIGHEST, mergeProperties(Constants.RUNBUNDLES), Constants.RUNBUNDLES);
+		return parseRunbundles(mergeProperties(Constants.RUNBUNDLES));
+	}
+
+	protected List<Container> parseRunbundles(String spec) throws Exception {
+
+		return getBundles(Strategy.HIGHEST, spec, Constants.RUNBUNDLES);
 	}
 
 	private List<Container> parseRunFw() throws Exception {
@@ -597,9 +622,7 @@ public class Project extends Processor {
 		decorator.decorate(bundles);
 
 		try {
-			for (Iterator<Entry<String, Attrs>> i = bundles.entrySet()
-				.iterator(); i.hasNext();) {
-				Entry<String, Attrs> entry = i.next();
+			for (Entry<String, Attrs> entry : bundles.entrySet()) {
 				String bsn = removeDuplicateMarker(entry.getKey());
 				Map<String, String> attrs = entry.getValue();
 
@@ -922,9 +945,6 @@ public class Project extends Processor {
 
 	/**
 	 * Handle dependencies for paths that are calculated on demand.
-	 *
-	 * @param testpath2
-	 * @param parseTestpath
 	 */
 	private void justInTime(Collection<Container> path, List<Container> entries, boolean noproject, String name) {
 		if (delayRunDependencies && path.isEmpty())
@@ -1128,11 +1148,12 @@ public class Project extends Processor {
 		}
 	}
 
-	private List<RepositoryPlugin> getReleaseRepos(String names) {
+	List<RepositoryPlugin> getReleaseRepos(String names) {
 		Parameters repoNames = parseReleaseRepos(names);
 		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
 		List<RepositoryPlugin> result = new ArrayList<>();
 		if (repoNames == null) { // -releaserepo unspecified
+			warning("No %s instruction was set. We will look for writable Repositores instead.", RELEASEREPO);
 			for (RepositoryPlugin plugin : plugins) {
 				if (plugin.canWrite()) {
 					result.add(plugin);
@@ -1140,7 +1161,7 @@ public class Project extends Processor {
 				}
 			}
 			if (result.isEmpty()) {
-				msgs.NoNameForReleaseRepository();
+				error("No Writable Repository could be found");
 			}
 			return result;
 		}
@@ -1198,7 +1219,9 @@ public class Project extends Processor {
 			builder.init();
 			for (RepositoryPlugin releaseRepo : releaseRepos) {
 				for (File jar : jars) {
-					releaseRepo(releaseRepo, builder, jar.getName(), new BufferedInputStream(IO.stream(jar)));
+					try (InputStream jarStream = new BufferedInputStream(IO.stream(jar))) {
+						releaseRepo(releaseRepo, builder, jar.getName(), jarStream);
+					}
 				}
 			}
 		}
@@ -1487,8 +1510,8 @@ public class Project extends Processor {
 					// R5 repos only support SHA-256
 					continue;
 
-				Requirement contentReq = new CapReqBuilder(ContentNamespace.CONTENT_NAMESPACE)
-					.filter(String.format("(%s=%s)", ContentNamespace.CONTENT_NAMESPACE, hash))
+				Requirement contentReq = CapReqBuilder
+					.createSimpleRequirement(ContentNamespace.CONTENT_NAMESPACE, hash, null)
 					.buildSyntheticRequirement();
 				Set<Requirement> reqs = Collections.singleton(contentReq);
 
@@ -1547,9 +1570,8 @@ public class Project extends Processor {
 		}
 
 		if (rp != null) {
-			try {
-				rp.put(new BufferedInputStream(IO.stream(file)), new RepositoryPlugin.PutOptions());
-				return;
+			try (InputStream stream = new BufferedInputStream(IO.stream(file))) {
+				rp.put(stream, new RepositoryPlugin.PutOptions());
 			} catch (Exception e) {
 				msgs.DeployingFile_On_Exception_(file, rp.getName(), e);
 			}
@@ -1584,8 +1606,8 @@ public class Project extends Processor {
 		for (File output : outputs) {
 			for (Deploy d : getPlugins(Deploy.class)) {
 				logger.debug("Deploying {} to: {}", output.getName(), d);
-				try {
-					if (d.deploy(this, output.getName(), new BufferedInputStream(IO.stream(output))))
+				try (InputStream jarStream = new BufferedInputStream(IO.stream(output))) {
+					if (d.deploy(this, output.getName(), jarStream))
 						logger.debug("deployed {} successfully to {}", output, d);
 				} catch (Exception e) {
 					msgs.Deploying(e);
@@ -1595,10 +1617,11 @@ public class Project extends Processor {
 	}
 
 	/**
-	 * Macro access to the repository ${repo;<bsn>[;<version>[;<low|high>]]}
+	 * Macro access to the repository
+	 * ${repo;<bsn>[;<versionrange>[;<lowest|highest|exact>]]}
 	 */
 
-	static String _repoHelp = "${repo ';'<bsn> [ ; <version> [; ('HIGHEST'|'LOWEST')]}";
+	static String _repoHelp = "${repo;<bsn>[;<versionrange>[;('HIGHEST'|'LOWEST'|'EXACT')]]}";
 
 	public String _repo(String args[]) throws Exception {
 		if (args.length < 2) {
@@ -1707,10 +1730,7 @@ public class Project extends Processor {
 	}
 
 	public Parameters getInstallRepositories() {
-		if (data.installRepositories == null) {
-			data.installRepositories = new Parameters(mergeProperties(BUILDREPO), this);
-		}
-		return data.installRepositories;
+		return data.installRepositories.get();
 	}
 
 	private void install(RepositoryPlugin repo, Processor context, File f, Attrs value) throws Exception {
@@ -1862,15 +1882,18 @@ public class Project extends Processor {
 		// up the chain can actually freeze the time longer
 		//
 		boolean tstamp = false;
+		long now = System.currentTimeMillis();
 		if (getProperty(TSTAMP) == null) {
-			setProperty(TSTAMP, Long.toString(System.currentTimeMillis()));
+			setProperty(TSTAMP, Long.toString(now));
 			tstamp = true;
 		}
 
 		try (ProjectBuilder builder = getBuilder(null)) {
 			if (underTest)
 				builder.setProperty(Constants.UNDERTEST, "true");
+
 			Jar jars[] = builder.builds();
+
 			getInfo(builder);
 
 			if (isPedantic() && !unreferencedClasspathEntries.isEmpty()) {
@@ -1881,46 +1904,128 @@ public class Project extends Processor {
 				return null;
 			}
 
-			Set<File> builtFiles = Create.set();
-			long lastModified = 0L;
-			for (Jar jar : jars) {
-				File file = saveBuild(jar);
-				if (file == null) {
-					getInfo(builder);
-					error("Could not save %s", jar.getName());
+			//
+			// Save the JARs
+			//
+
+			Set<File> buildFilesSet = Create.set();
+			Set<Supplier<org.osgi.resource.Resource>> resourceBuilders = new HashSet<>();
+			BuildInfoImpl buildInfo = builder.getBuildInfo();
+			try {
+				long lastModified = 0L;
+				int n = 0;
+				for (Jar jar : jars)
+					try {
+
+						Manifest m = jar.getManifest();
+						jar.setCalculateFileDigest(true);
+						File file = saveBuildWithoutClose(jar);
+						if (file == null) {
+							error("Could not save %s", jar.getName());
+						} else {
+							buildFilesSet.add(file);
+							if (lastModified < jar.lastModified()) {
+								lastModified = jar.lastModified();
+							}
+							Supplier<org.osgi.resource.Resource> indexer = ResourceBuilder.memoize(jar, file.toURI(),
+								getName());
+							if (indexer != null) {
+								resourceBuilders.add(indexer);
+							}
+							if (n < buildInfo.artifacts.size()) {
+								ArtifactInfoImpl artifact = buildInfo.artifacts.get(n);
+								artifact.file = file;
+								artifact.indexer = indexer;
+							}
+						}
+					} finally {
+						jar.close();
+						n++;
+					}
+
+				if (!isOk())
+					return null;
+
+				//
+				// Handle the exports
+				//
+
+				Instructions runspec = new Instructions(getProperty(EXPORT));
+				Set<Instruction> missing = new LinkedHashSet<>();
+
+				Map<File, List<Attrs>> selectedRunFiles = runspec.select(getBase(), Function.identity(), missing);
+
+				if (!missing.isEmpty()) {
+					// this is a new error :-( so make it a warning
+					warning("-export entries %s could not be found", missing);
+				}
+				if (selectedRunFiles.containsKey(getPropertiesFile())) {
+					error("Cannot export the same file that contains the -export instruction %s", getPropertiesFile());
 					return null;
 				}
-				builtFiles.add(file);
-				if (lastModified < jar.lastModified()) {
-					lastModified = jar.lastModified();
-				}
-			}
 
-			boolean bfsWrite = !bfs.exists() || (lastModified > bfs.lastModified());
-			if (buildfiles != null) {
-				Set<File> removed = Create.set(buildfiles);
-				if (!removed.equals(builtFiles)) {
-					bfsWrite = true;
-					removed.removeAll(builtFiles);
-					for (File remove : removed) {
-						IO.delete(remove);
-						getWorkspace().changedFile(remove);
+				Map<File, Resource> exports = builder.doExports(selectedRunFiles);
+
+				getInfo(builder);
+
+				if (!isOk()) {
+					return null;
+				}
+
+				for (Map.Entry<File, Resource> ee : exports.entrySet()) {
+					File outputFile = ee.getKey();
+					File actual = write(f -> {
+						IO.copy(ee.getValue()
+							.openInputStream(), f);
+					}, outputFile);
+
+					if (actual != null) {
+						buildFilesSet.add(actual);
+					} else {
+						error("Could not save %s", ee.getKey());
 					}
 				}
-			}
-			// Write out the filenames in the buildfiles file
-			// so we can get them later even in another process
-			if (bfsWrite) {
-				try (PrintWriter fw = IO.writer(bfs)) {
-					for (File f : builtFiles) {
-						fw.write(IO.absolutePath(f));
-						fw.write('\n');
+
+				if (!isOk()) {
+					return null;
+				}
+
+				boolean bfsWrite = !bfs.exists() || (lastModified > bfs.lastModified());
+				if (buildfiles != null) {
+					Set<File> removed = Create.set(buildfiles);
+					if (!removed.equals(buildFilesSet)) {
+						bfsWrite = true;
+						removed.removeAll(buildFilesSet);
+						for (File remove : removed) {
+							IO.delete(remove);
+							getWorkspace().changedFile(remove);
+						}
 					}
 				}
-				getWorkspace().changedFile(bfs);
+
+				this.resources = Memoize.supplier(() -> resourceBuilders.stream()
+					.map(Supplier::get)
+					.collect(Collectors.toList()));
+
+				// Write out the filenames in the buildfiles file
+				// so we can get them later even in another process
+				if (bfsWrite) {
+					try (PrintWriter fw = IO.writer(bfs)) {
+						for (File f : buildFilesSet) {
+							fw.write(IO.absolutePath(f));
+							fw.write('\n');
+						}
+					}
+					getWorkspace().changedFile(bfs);
+				}
+				bfs = null; // avoid delete in finally block
+				builtFiles(buildFilesSet);
+
+				return files = buildFilesSet.toArray(new File[0]);
+			} finally {
+				buildInfo.getInfo(this);
+				workspace.notifier.build(buildInfo);
 			}
-			bfs = null; // avoid delete in finally block
-			return files = builtFiles.toArray(new File[0]);
 		} finally {
 			if (tstamp)
 				unsetProperty(TSTAMP);
@@ -1929,6 +2034,16 @@ public class Project extends Processor {
 				getWorkspace().changedFile(bfs);
 			}
 		}
+	}
+
+	private void builtFiles(Collection<File> files) {
+		List<BndListener> listeners = getWorkspace().getPlugins(BndListener.class);
+		for (BndListener l : listeners)
+			try {
+				l.built(this, files);
+			} catch (Exception e) {
+				logger.debug("Exception in a BndListener built method call", e);
+			}
 	}
 
 	/**
@@ -1940,128 +2055,138 @@ public class Project extends Processor {
 
 	public File saveBuild(Jar jar) throws Exception {
 		try {
-			File outputFile = getOutputFile(jar.getName(), jar.getVersion());
-			File logicalFile = outputFile;
-
-			reportNewer(outputFile.lastModified(), jar);
-
-			File fp = outputFile.getParentFile();
-			if (!fp.isDirectory()) {
-				IO.mkdirs(fp);
-			}
-
-			// On windows we sometimes cannot delete a file because
-			// someone holds a lock in our or another process. So if
-			// we set the -overwritestrategy flag we use an avoiding
-			// strategy.
-			// We will always write to a temp file name. Basically the
-			// calculated name + a variable suffix. We then create
-			// a link with the constant name to this variable name.
-			// This allows us to pick a different suffix when we cannot
-			// delete the file. Yuck, but better than the alternative.
-
-			String overwritestrategy = getProperty("-x-overwritestrategy", "classic");
-			swtch: switch (overwritestrategy) {
-				case "delay" :
-					for (int i = 0; i < 10; i++) {
-						try {
-							IO.deleteWithException(outputFile);
-							jar.write(outputFile);
-							break swtch;
-						} catch (Exception e) {
-							Thread.sleep(500);
-						}
-					}
-
-					// Execute normal case to get classic behavior
-					// FALL THROUGH
-
-				case "classic" :
-					IO.deleteWithException(outputFile);
-					jar.write(outputFile);
-					break swtch;
-
-				case "gc" :
-					try {
-						IO.deleteWithException(outputFile);
-					} catch (Exception e) {
-						System.gc();
-						System.runFinalization();
-						IO.deleteWithException(outputFile);
-					}
-					jar.write(outputFile);
-					break swtch;
-
-				case "windows-only-disposable-names" :
-					if (!IO.isWindows()) {
-						IO.deleteWithException(outputFile);
-						jar.write(outputFile);
-						break swtch;
-					}
-					// Fall through
-
-				case "disposable-names" :
-					int suffix = 0;
-					while (true) {
-						outputFile = new File(outputFile.getParentFile(), outputFile.getName() + "-" + suffix);
-						IO.delete(outputFile);
-						if (!outputFile.isFile()) {
-							// Succeeded to delete the file
-							jar.write(outputFile);
-							Files.createSymbolicLink(logicalFile.toPath(), outputFile.toPath());
-							break;
-						} else {
-							warning("Could not delete build file {} ", overwritestrategy);
-							logger.warn("Cannot delete file {} but that should be ok", outputFile);
-						}
-						suffix++;
-					}
-					break swtch;
-
-				default :
-					error(
-						"Invalid value for -x-overwritestrategy: %s, expected classic, delay, gc, windows-only-disposable-names, disposable-names",
-						overwritestrategy);
-					IO.deleteWithException(outputFile);
-					jar.write(outputFile);
-					break swtch;
-
-			}
-
-			//
-			// For maven we've got the shitty situation that the
-			// files in the generated directories have an ever changing
-			// version number so it is hard to refer to them in test cases
-			// and from for example bndtools if you want to refer to the
-			// latest so the following code attempts to create a link to the
-			// output file if this is using some other naming scheme,
-			// creating a constant name. Would probably be more logical to
-			// always output in the canonical name and then create a link to
-			// the desired name but not sure how much that would break BJ's
-			// maven handling that caused these versioned JARs
-			//
-
-			File canonical = new File(getTarget(), jar.getName() + ".jar");
-			if (!canonical.equals(logicalFile)) {
-				IO.delete(canonical);
-				if (!IO.createSymbolicLink(canonical, outputFile)) {
-					//
-					// As alternative, we copy the file
-					//
-					IO.copy(outputFile, canonical);
-				}
-				getWorkspace().changedFile(canonical);
-			}
-
-			getWorkspace().changedFile(outputFile);
-			if (!outputFile.equals(logicalFile))
-				getWorkspace().changedFile(logicalFile);
-			logger.debug("{} ({}) {}", jar.getName(), outputFile.getName(), jar.getResources()
-				.size());
-			return logicalFile;
+			return saveBuildWithoutClose(jar);
 		} finally {
 			jar.close();
 		}
+	}
+
+	private File saveBuildWithoutClose(Jar jar) throws Exception {
+		File outputFile = getOutputFile(jar.getName(), jar.getVersion());
+
+		reportNewer(outputFile.lastModified(), jar);
+		File logicalFile = write(jar::write, outputFile);
+
+		logger.debug("{} ({}) {}", jar.getName(), outputFile.getName(), jar.getResources()
+			.size());
+		//
+		// For maven we've got the shitty situation that the
+		// files in the generated directories have an ever changing
+		// version number so it is hard to refer to them in test cases
+		// and from for example bndtools if you want to refer to the
+		// latest so the following code attempts to create a link to the
+		// output file if this is using some other naming scheme,
+		// creating a constant name. Would probably be more logical to
+		// always output in the canonical name and then create a link to
+		// the desired name but not sure how much that would break BJ's
+		// maven handling that caused these versioned JARs
+		//
+
+		File canonical = new File(getTarget(), jar.getName() + ".jar");
+		if (!canonical.equals(logicalFile)) {
+			IO.delete(canonical);
+			if (!IO.createSymbolicLink(canonical, outputFile)) {
+				//
+				// As alternative, we copy the file
+				//
+				IO.copy(outputFile, canonical);
+			}
+			getWorkspace().changedFile(canonical);
+		}
+		return logicalFile;
+	}
+
+	private File write(ConsumerWithException<File> jar, File outputFile)
+		throws IOException, InterruptedException, Exception {
+		File logicalFile = outputFile;
+
+		File fp = outputFile.getParentFile();
+		if (!fp.isDirectory()) {
+			IO.mkdirs(fp);
+		}
+
+		// On windows we sometimes cannot delete a file because
+		// someone holds a lock in our or another process. So if
+		// we set the -overwritestrategy flag we use an avoiding
+		// strategy.
+		// We will always write to a temp file name. Basically the
+		// calculated name + a variable suffix. We then create
+		// a link with the constant name to this variable name.
+		// This allows us to pick a different suffix when we cannot
+		// delete the file. Yuck, but better than the alternative.
+
+		String overwritestrategy = getProperty("-x-overwritestrategy", "classic");
+		swtch: switch (overwritestrategy) {
+			case "delay" :
+				for (int i = 0; i < 10; i++) {
+					try {
+						IO.deleteWithException(outputFile);
+						jar.accept(outputFile);
+						break swtch;
+					} catch (Exception e) {
+						Thread.sleep(500);
+					}
+				}
+
+				// Execute normal case to get classic behavior
+				// FALL THROUGH
+
+			case "classic" :
+				IO.deleteWithException(outputFile);
+				jar.accept(outputFile);
+				break swtch;
+
+			case "gc" :
+				try {
+					IO.deleteWithException(outputFile);
+				} catch (Exception e) {
+					System.gc();
+					System.runFinalization();
+					IO.deleteWithException(outputFile);
+				}
+				jar.accept(outputFile);
+				break swtch;
+
+			case "windows-only-disposable-names" :
+				if (!IO.isWindows()) {
+					IO.deleteWithException(outputFile);
+					jar.accept(outputFile);
+					break swtch;
+				}
+				// Fall through
+
+			case "disposable-names" :
+				int suffix = 0;
+				while (true) {
+					outputFile = new File(outputFile.getParentFile(), outputFile.getName() + "-" + suffix);
+					IO.delete(outputFile);
+					if (!outputFile.isFile()) {
+						// Succeeded to delete the file
+						jar.accept(outputFile);
+						Files.createSymbolicLink(logicalFile.toPath(), outputFile.toPath());
+						break;
+					} else {
+						warning("Could not delete build file {} ", overwritestrategy);
+						logger.warn("Cannot delete file {} but that should be ok", outputFile);
+					}
+					suffix++;
+				}
+				break swtch;
+
+			default :
+				error(
+					"Invalid value for -x-overwritestrategy: %s, expected classic, delay, gc, windows-only-disposable-names, disposable-names",
+					overwritestrategy);
+				IO.deleteWithException(outputFile);
+				jar.accept(outputFile);
+				break swtch;
+
+		}
+
+		getWorkspace().changedFile(outputFile);
+		if (!outputFile.equals(logicalFile))
+			getWorkspace().changedFile(logicalFile);
+		return logicalFile;
 	}
 
 	/**
@@ -2109,12 +2234,19 @@ public class Project extends Processor {
 	@Override
 	public boolean refresh() {
 		versionMap.clear();
-		data = new RefreshData();
+		refreshData();
+
 		boolean changed = false;
 		if (isCnf()) {
 			changed = workspace.refresh();
 		}
-		return super.refresh() || changed;
+		return super.refresh() | changed;
+	}
+
+	private void refreshData() {
+		RefreshData tmp = data;
+		data = new RefreshData();
+		tmp.close();
 	}
 
 	public boolean isCnf() {
@@ -2129,11 +2261,12 @@ public class Project extends Processor {
 
 	@Override
 	public void propertiesChanged() {
-		super.propertiesChanged();
 		setChanged();
 		makefile = null;
 		versionMap.clear();
-		data = new RefreshData();
+		refreshData();
+		super.propertiesChanged();
+		workspace.notifier.changedProject(this);
 	}
 
 	public String getName() {
@@ -2142,16 +2275,13 @@ public class Project extends Processor {
 
 	public Map<String, Action> getActions() {
 		Map<String, Action> all = newMap();
-		Map<String, Action> actions = newMap();
 		fillActions(all);
 		getWorkspace().fillActions(all);
 
-		for (Map.Entry<String, Action> action : all.entrySet()) {
-			String key = getReplacer().process(action.getKey());
-			if (key != null && key.trim()
-				.length() != 0)
-				actions.put(key, action.getValue());
-		}
+		Map<String, Action> actions = MapStream.of(all)
+			.mapKey(key -> getReplacer().process(key))
+			.filterKey(Strings::nonNullOrTrimmedEmpty)
+			.collect(MapStream.toMap((u, v) -> v, LinkedHashMap<String, Action>::new));
 		return actions;
 	}
 
@@ -2185,15 +2315,27 @@ public class Project extends Processor {
 		release(false);
 	}
 
+	/**
+	 * Export this project via the exporters. The return is the calculated name
+	 * (can be overridden with the option `name`, which must be the basename
+	 * since the extension is defined by the exporter)
+	 *
+	 * @param type an exporter type like `bnd.executablejar` or null as default
+	 *            `bnd.executablejar.pack`, the original export function
+	 * @param options parameters to the exporters
+	 * @return and entry with the name and resource for the export
+	 * @throws Exception
+	 */
 	public Map.Entry<String, Resource> export(String type, Map<String, String> options) throws Exception {
-		Exporter exporter = getExporter(type);
-		if (exporter == null) {
-			error("No exporter for %s", type);
-			return null;
-		}
+
 		if (options == null) {
 			options = Collections.emptyMap();
 		}
+
+		if (type == null) {
+			type = options.getOrDefault(Constants.EXPORT_TYPE, "bnd.executablejar.pack");
+		}
+
 		Parameters exportTypes = parseHeader(getProperty(Constants.EXPORTTYPE));
 		Map<String, String> attrs = exportTypes.get(type);
 		if (attrs != null) {
@@ -2201,7 +2343,19 @@ public class Project extends Processor {
 			options = attrs;
 		}
 
-		return exporter.export(type, this, options);
+		Exporter exporter = getExporter(type);
+		if (exporter == null) {
+			error("No exporter for %s", type);
+			return null;
+		}
+
+		Entry<String, Resource> entry = exporter.export(type, this, options);
+		if (entry == null) {
+			error("Export failed %s for type %s", this, type);
+			return null;
+		}
+
+		return entry;
 	}
 
 	private Exporter getExporter(String type) {
@@ -2216,6 +2370,11 @@ public class Project extends Processor {
 		return null;
 	}
 
+	/**
+	 * The keep flag is really awkward since it overrides the -runkeep flag in
+	 * the file. Use doExport instead
+	 */
+	@Deprecated
 	public void export(String runFilePath, boolean keep, File output) throws Exception {
 		Map<String, String> options = Collections.singletonMap("keep", Boolean.toString(keep));
 		Entry<String, Resource> export;
@@ -2281,31 +2440,42 @@ public class Project extends Processor {
 		clean(getTargetDir(), "target");
 		clean(getSrcOutput(), "source output");
 		clean(getTestOutput(), "test output");
+		for (File output : getGenerate().getOutputDirs())
+			clean(output, "generate output " + output, false);
+
+		for (File src : getSourcePath()) {
+			IO.mkdirs(src);
+		}
+		IO.mkdirs(getTestSrc());
 	}
 
 	void clean(File dir, String type) throws IOException {
-		if (!dir.exists())
-			return;
+		clean(dir, type, true);
+	}
 
-		String basePath = getBase().getCanonicalPath();
-		String dirPath = dir.getCanonicalPath();
-		if (!dirPath.startsWith(basePath)) {
-			logger.debug("path outside the project dir {}", type);
-			return;
+	void clean(File dirOrFile, String type, boolean recreate) throws IOException {
+		if (dirOrFile.exists()) {
+
+			String basePath = getBase().getCanonicalPath();
+			String dirPath = dirOrFile.getCanonicalPath();
+			if (!dirPath.startsWith(basePath)) {
+				logger.debug("path outside the project dir {}", type);
+				return;
+			}
+
+			if (dirPath.length() == basePath.length()) {
+				error("Trying to delete the project directory for %s", type);
+				return;
+			}
+
+			IO.delete(dirOrFile);
+			if (dirOrFile.exists()) {
+				error("Trying to delete %s (%s), but failed", dirOrFile, type);
+				return;
+			}
 		}
-
-		if (dirPath.length() == basePath.length()) {
-			error("Trying to delete the project directory for %s", type);
-			return;
-		}
-
-		IO.delete(dir);
-		if (dir.exists()) {
-			error("Trying to delete %s (%s), but failed", dir, type);
-			return;
-		}
-
-		IO.mkdirs(dir);
+		if (recreate)
+			IO.mkdirs(dirOrFile);
 	}
 
 	public File[] build() throws Exception {
@@ -2735,45 +2905,6 @@ public class Project extends Processor {
 	}
 
 	/**
-	 * Get a list of the sub builders. A bnd.bnd file can contain the -sub
-	 * option. This will generate multiple deliverables. This method returns the
-	 * builders for each sub file. If no -sub option is present, the list will
-	 * contain a builder for the bnd.bnd file.
-	 *
-	 * @return A list of builders.
-	 * @throws Exception
-	 * @deprecated As of 3.4. Replace with
-	 *
-	 *             <pre>
-	 *             try (ProjectBuilder pb = getBuilder(null)) {
-	 *             	for (Builder b : pb.getSubBuilders()) {
-	 *             		...
-	 *             	}
-	 *             }
-	 *             </pre>
-	 */
-	@Deprecated
-	public Collection<? extends Builder> getSubBuilders() throws Exception {
-		ProjectBuilder pb = getBuilder(null);
-		boolean close = true;
-		try {
-			List<Builder> builders = pb.getSubBuilders();
-			for (Builder b : builders) {
-				if (b == pb) {
-					close = false;
-				} else {
-					pb.removeClose(b);
-				}
-			}
-			return builders;
-		} finally {
-			if (close) {
-				pb.close();
-			}
-		}
-	}
-
-	/**
 	 * Calculate the classpath. We include our own runtime.jar which includes
 	 * the test framework and we include the first of the test frameworks
 	 * specified.
@@ -2903,78 +3034,14 @@ public class Project extends Processor {
 
 	/**
 	 * Pack the project (could be a bndrun file) and save it on disk. Report
-	 * errors if they happen.
-	 */
-	static List<String> ignore = new ExtList<>(BUNDLE_SPECIFIC_HEADERS);
-
-	/**
-	 * Caller must close this JAR
+	 * errors if they happen. Caller must close this JAR
 	 *
 	 * @param profile
 	 * @return a jar with the executable code
 	 * @throws Exception
 	 */
 	public Jar pack(String profile) throws Exception {
-		try (ProjectBuilder pb = getBuilder(null)) {
-			List<Builder> subBuilders = pb.getSubBuilders();
-
-			if (subBuilders.size() != 1) {
-				error("Project has multiple bnd files, please select one of the bnd files").header(EXPORT)
-					.context(profile);
-				return null;
-			}
-
-			Builder b = subBuilders.iterator()
-				.next();
-
-			ignore.remove(BUNDLE_SYMBOLICNAME);
-			ignore.remove(BUNDLE_VERSION);
-			ignore.add(SERVICE_COMPONENT);
-
-			try (ProjectLauncher launcher = getProjectLauncher()) {
-				launcher.getRunProperties()
-					.put("profile", profile); // TODO
-												// remove
-				launcher.getRunProperties()
-					.put(PROFILE, profile);
-				Jar jar = launcher.executable();
-				Manifest m = jar.getManifest();
-				Attributes main = m.getMainAttributes();
-				for (String key : this) {
-					if (Character.isUpperCase(key.charAt(0)) && !ignore.contains(key)) {
-						String value = getProperty(key);
-						if (value == null)
-							continue;
-						Name name = new Name(key);
-						String trimmed = value.trim();
-						if (trimmed.isEmpty())
-							main.remove(name);
-						else if (EMPTY_HEADER.equals(trimmed))
-							main.put(name, "");
-						else
-							main.put(name, value);
-					}
-				}
-
-				if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
-					main.putValue(BUNDLE_SYMBOLICNAME, b.getBsn());
-
-				if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
-					main.putValue(BUNDLE_SYMBOLICNAME, getName());
-
-				if (main.getValue(BUNDLE_VERSION) == null) {
-					main.putValue(BUNDLE_VERSION, Version.LOWEST.toString());
-					warning("No version set, uses 0.0.0");
-				}
-
-				jar.setManifest(m);
-				jar.calcChecksums(new String[] {
-					"SHA1", "MD5"
-				});
-				launcher.removeClose(jar);
-				return jar;
-			}
-		}
+		return ExecutableJarExporter.pack(this, profile);
 	}
 
 	/**
@@ -3366,9 +3433,8 @@ public class Project extends Processor {
 							po.version = version;
 							PutResult put = destination.put(in, po);
 						} catch (Exception e) {
-							logger.error("Failed to copy {}-{}", e, bsn, version);
-							error("Failed to copy %s:%s from %s to %s, error: %s", bsn, version, source, destination,
-								e);
+							logger.error("Failed to copy {}-{}", bsn, version, e);
+							exception(e, "Failed to copy %s:%s from %s to %s", bsn, version, source, destination);
 						}
 					}
 				}
@@ -3388,17 +3454,22 @@ public class Project extends Processor {
 
 		RunSpecification runspecification = new RunSpecification();
 		try {
-			ProjectLauncher l = getProjectLauncher();
 			runspecification.bin = getOutput().getAbsolutePath();
 			runspecification.bin_test = getTestOutput().getAbsolutePath();
 			runspecification.target = getTarget().getAbsolutePath();
 			runspecification.errors.addAll(getErrors());
 			runspecification.extraSystemCapabilities = getRunSystemCapabilities().toBasic();
 			runspecification.extraSystemPackages = getRunSystemPackages().toBasic();
-			runspecification.properties = l.getRunProperties();
 			runspecification.runbundles = toPaths(runspecification.errors, getRunbundles());
 			runspecification.runfw = toPaths(runspecification.errors, getRunFw());
 			runspecification.runpath = toPaths(runspecification.errors, getRunpath());
+
+			try {
+				ProjectLauncher l = getProjectLauncher();
+				runspecification.properties = l.getRunProperties();
+			} catch (IllegalArgumentException iae) {
+				runspecification.properties = null;
+			}
 
 			for (String key : Iterables.iterable(getProperties().propertyNames(), String.class::cast)) {
 				// skip non instructions to prevent macro expansions we do not
@@ -3464,14 +3535,14 @@ public class Project extends Processor {
 
 			List<String> defaultIncludes = Strings.splitAsStream(st.newer())
 				.map(p -> getFile(p).isDirectory() && !p.endsWith("/") ? p + "/" : p)
-				.collect(toList());
+				.collect(Collectors.toList());
 
 			List<File> dependentFiles = tree.getFiles(getBase(), defaultIncludes)
 				.stream()
 				.filter(File::isFile)
 				.filter(f -> f.lastModified() < time)
 				.sorted()
-				.collect(toList());
+				.collect(Collectors.toList());
 
 			boolean staleFiles = !dependentFiles.isEmpty();
 
@@ -3506,7 +3577,8 @@ public class Project extends Processor {
 		if (identity == null)
 			return Container.error(this, r.toString());
 
-		if (r.getCapabilities(ResourceUtils.WORKSPACE_NAMESPACE) != null) {
+		if (!r.getCapabilities(ResourceUtils.WORKSPACE_NAMESPACE)
+			.isEmpty()) {
 			Container bundle = getBundle(identity.osgi_identity(), "snapshot", Strategy.HIGHEST, null);
 			if (bundle != null)
 				return bundle;
@@ -3522,5 +3594,49 @@ public class Project extends Processor {
 
 	public boolean isStandalone() {
 		return getWorkspace().getLayout() == WorkspaceLayout.STANDALONE;
+	}
+
+	@Override
+	public String getChecksum() {
+		try {
+			prepare();
+			return super.getChecksum();
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	/**
+	 * Get the object responsible for source code generation. This object should
+	 * not be stored, a new one is created if the properties of this project
+	 * change.
+	 *
+	 * @return a fresh ProjectGenerate object
+	 */
+	public ProjectGenerate getGenerate() {
+		return data.generate.get();
+	}
+
+	public List<org.osgi.resource.Resource> getResources() {
+		return resources.get();
+	}
+
+	private List<org.osgi.resource.Resource> parseBuildResources() {
+		List<org.osgi.resource.Resource> result = new ArrayList<>();
+		try {
+			File[] fs = getBuildFiles(false);
+			if (fs == null)
+				return result;
+
+			for (File f : fs) {
+				ResourceBuilder rb = new ResourceBuilder();
+				rb.addFile(f, f.toURI());
+				rb.addWorkspaceNamespace(getName());
+				result.add(rb.build());
+			}
+		} catch (Exception e) {
+			this.exception(e, "trying to parse resources");
+		}
+		return result;
 	}
 }

@@ -289,7 +289,7 @@ public class OBRFragment {
 			String sha = SHA1.digest(file)
 				.asHex();
 			content.addAttribute(ContentNamespace.CONTENT_NAMESPACE, sha);
-			content.addAttribute(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, file.length());
+			content.addAttribute(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, Long.valueOf(file.length()));
 			content.addAttribute(ContentNamespace.CAPABILITY_MIME_ATTRIBUTE, MIME_TYPE_OSGI_BUNDLE);
 
 			if (base != null) {

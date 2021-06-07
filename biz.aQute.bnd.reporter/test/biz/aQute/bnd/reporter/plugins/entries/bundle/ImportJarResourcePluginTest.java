@@ -21,25 +21,25 @@ public class ImportJarResourcePluginTest {
 
 	@Test
 	public void testImportJarResourcePath() throws Exception {
-		final Processor p = new Processor();
-		final ImportJarResourcePlugin plugin = new ImportJarResourcePlugin();
+		try (final Jar jar = new Jar("jar"); final Processor p = new Processor();) {
+			final ImportJarResourcePlugin plugin = new ImportJarResourcePlugin();
 
-		p.addBasicPlugin(new PropertiesConverterPlugin());
-		plugin.setReporter(p);
-		plugin.setRegistry(p);
+			p.addBasicPlugin(new PropertiesConverterPlugin());
+			plugin.setReporter(p);
+			plugin.setRegistry(p);
 
-		final Jar jar = new Jar("jar");
-		jar.getResources()
-			.put("myDir/file.cool", new EmbeddedResource("test=test", 0L));
+			jar.getResources()
+				.put("myDir/file.cool", new EmbeddedResource("test=test", 0L));
 
-		final Map<String, String> prop = new HashMap<>();
-		prop.put(ImportJarResourcePlugin.PATH_PROPERTY, "myDir/file.cool");
-		prop.put(ImportResourcePlugin.TYPE_PROPERTY, "properties");
-		plugin.setProperties(prop);
+			final Map<String, String> prop = new HashMap<>();
+			prop.put(ImportJarResourcePlugin.PATH_PROPERTY, "myDir/file.cool");
+			prop.put(ImportResourcePlugin.TYPE_PROPERTY, "properties");
+			plugin.setProperties(prop);
 
-		assertEquals("file", plugin.getProperties()
-			.get(ReportEntryPlugin.ENTRY_NAME_PROPERTY));
-		assertNotNull(plugin.extract(jar, Locale.forLanguageTag("und")));
-		assertTrue(p.isOk());
+			assertEquals("file", plugin.getProperties()
+				.get(ReportEntryPlugin.ENTRY_NAME_PROPERTY));
+			assertNotNull(plugin.extract(jar, Locale.forLanguageTag("und")));
+			assertTrue(p.isOk());
+		}
 	}
 }

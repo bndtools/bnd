@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
+import org.osgi.util.promise.Promise;
+
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
 
@@ -129,6 +131,19 @@ public interface RepositoryPlugin {
 		void success(File file) throws Exception;
 
 		/**
+		 * Called when the file is successfully downloaded from a remote
+		 * repository.
+		 *
+		 * @param file The file that was downloaded
+		 * @param attrs Additional attributes about the file. This may include
+		 *            maven coordinates.
+		 * @throws Exception , are logged and ignored
+		 */
+		default void success(File file, Map<String, String> attrs) throws Exception {
+			success(file);
+		}
+
+		/**
 		 * Called when the file could not be downloaded from a remote
 		 * repository.
 		 *
@@ -215,4 +230,50 @@ public interface RepositoryPlugin {
 	 */
 
 	String getLocation();
+
+	/**
+	 * Return a status of this repository, if it is null, status is ok.
+	 * Otherwise the return value represents a reason.
+	 *
+	 * @return a status or null if all ok
+	 */
+	default String getStatus() {
+		return null;
+	}
+
+	/**
+	 * Convenience method to see if the status is null
+	 */
+
+	default boolean isOk() {
+		return getStatus() == null;
+	}
+
+	/**
+	 * Return a name of an icon
+	 */
+	default String getIcon() {
+		return "repository";
+	}
+
+	/**
+	 * Indicate if this repo is remote or local
+	 *
+	 * @return true if this is a remote repo
+	 */
+	default boolean isRemote() {
+		return false;
+	}
+
+	/**
+	 * Sync this repository, this will wait for the initialization of the repo.
+	 * Repositories should override this to use a more efficient way.
+	 */
+	default Promise<Void> sync() throws Exception {
+		return Processor.getPromiseFactory()
+			.submit(() -> {
+				get("foobar@#$%^&*", Version.emptyVersion, null);
+				return null;
+			});
+	}
 }

@@ -7,78 +7,124 @@
 
 import aQute.lib.io.IO
 
-if (JavaVersion.current().isJava9Compatible()) {
-  ext.jpmsOptions = [
-    '--illegal-access=warn',
-    '--add-opens=java.base/java.lang=ALL-UNNAMED',
-    '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED',
-    '--add-opens=java.base/java.io=ALL-UNNAMED',
-    '--add-opens=java.base/java.net=ALL-UNNAMED',
-    '--add-opens=java.base/java.nio=ALL-UNNAMED',
-    '--add-opens=java.base/java.util=ALL-UNNAMED',
-    '--add-opens=java.base/java.util.jar=ALL-UNNAMED',
-    '--add-opens=java.base/java.util.regex=ALL-UNNAMED',
-    '--add-opens=java.base/java.util.zip=ALL-UNNAMED',
-    '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
-    '--add-opens=java.base/sun.net.www.protocol.file=ALL-UNNAMED',
-    '--add-opens=java.base/sun.net.www.protocol.ftp=ALL-UNNAMED',
-    '--add-opens=java.base/sun.net.www.protocol.http=ALL-UNNAMED',
-    '--add-opens=java.base/sun.net.www.protocol.https=ALL-UNNAMED',
-    '--add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED',
-    '--add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED'
-  ]
+if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
+	ext.jpmsOptions = [
+		'--add-opens=java.base/java.lang=ALL-UNNAMED',
+		'--add-opens=java.base/java.lang.invoke=ALL-UNNAMED',
+		'--add-opens=java.base/java.lang.reflect=ALL-UNNAMED',
+		'--add-opens=java.base/java.io=ALL-UNNAMED',
+		'--add-opens=java.base/java.net=ALL-UNNAMED',
+		'--add-opens=java.base/java.nio=ALL-UNNAMED',
+		'--add-opens=java.base/java.util=ALL-UNNAMED',
+		'--add-opens=java.base/java.util.jar=ALL-UNNAMED',
+		'--add-opens=java.base/java.util.regex=ALL-UNNAMED',
+		'--add-opens=java.base/java.util.zip=ALL-UNNAMED',
+		'--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
+		'--add-opens=java.base/sun.net.www.protocol.file=ALL-UNNAMED',
+		'--add-opens=java.base/sun.net.www.protocol.ftp=ALL-UNNAMED',
+		'--add-opens=java.base/sun.net.www.protocol.http=ALL-UNNAMED',
+		'--add-opens=java.base/sun.net.www.protocol.https=ALL-UNNAMED',
+		'--add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED',
+		'--add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED'
+	]
 }
 
 /* Configure the subprojects */
 subprojects {
-  if (plugins.hasPlugin('biz.aQute.bnd')) {
-    group bnd('-groupid')
-    version bnd('base.version')
-    tasks.named('javadoc') {
-      options.tags = [
-        'Immutable:t:',
-        'ThreadSafe:t:',
-        'NotThreadSafe:t:',
-        'GuardedBy:mf:"Guarded By:"'
-      ]
-    }
-    tasks.named('test') {
-      testLogging {
-        exceptionFormat 'full'
-      }
-      if (JavaVersion.current().isJava9Compatible()) {
-        jvmArgs jpmsOptions
-        environment 'JAVA_OPTS': jpmsOptions.join(' ')
-      }
-      inputs.files(fileTree(project.projectDir) {
-        include 'testresources/', 'testdata/'
-        exclude {
-          def f = it.file
-          if (f.directory && f.list().length == 0) {
-            return true
-          }
-          try {
-            return "git check-ignore ${f}".execute().waitFor() == 0
-          } catch (Exception e) {
-            return false
-          }
-        }
-      }).withPropertyName('testFolders')
-      if (System.properties['maven.repo.local']) {
-        systemProperty 'maven.repo.local', IO.getFile(gradle.startParameter.currentDir, System.properties['maven.repo.local'])
-      }
-    }
-  }
+	if (plugins.hasPlugin('biz.aQute.bnd')) {
+		group = bnd('-groupid')
+		version = bnd('base.version')
+		tasks.withType(JavaCompile).configureEach {
+			options.compilerArgs.add('-Xlint:unchecked')
+		}
+		tasks.named('javadoc') {
+			options.tags = [
+				'Immutable:t:',
+				'ThreadSafe:t:',
+				'NotThreadSafe:t:',
+				'GuardedBy:mf:"Guarded By:"'
+			]
+		}
+		tasks.named('test') {
+			useJUnitPlatform()
+			reports {
+				junitXml {
+					outputPerTestCase = true
+					mergeReruns = true
+				}
+			}
+			testLogging {
+				exceptionFormat = 'full'
+				info {
+					events "STANDARD_OUT", "STANDARD_ERROR", "STARTED", "FAILED", "PASSED", "SKIPPED"
+				}
+			}
+			if (!logger.isInfoEnabled()) {
+				def stdOut = [:]
+				def stdErr = [:]
+				onOutput { descriptor, event ->
+					if (event.destination == TestOutputEvent.Destination.StdErr) {
+						stdErr.get(descriptor, []).add(event)
+					} else {
+						stdOut.get(descriptor, []).add(event)
+					}
+				}
+				afterTest { descriptor, result ->
+					def stdErrEvents = stdErr.remove(descriptor)
+					def stdOutEvents = stdOut.remove(descriptor)
+					if (result.resultType == TestResult.ResultType.FAILURE) {
+						if (stdErrEvents && !stdErrEvents.empty) {
+							logger.lifecycle('\n{} > {} STANDARD_ERROR', descriptor.className, descriptor.name)
+							stdErrEvents.each { event ->
+								logger.lifecycle('    {}', event.message.trim())
+							}
+						}
+						if (stdOutEvents && !stdOutEvents.empty) {
+							logger.lifecycle('\n{} > {} STANDARD_OUT', descriptor.className, descriptor.name)
+							stdOutEvents.each { event ->
+								logger.lifecycle('    {}', event.message.trim())
+							}
+						}
+					}
+				}
+			}
+			if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
+				jvmArgs jpmsOptions
+				environment 'JAVA_OPTS': jpmsOptions.join(' ')
+			}
+			if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
+				jvmArgs '-XX:+ShowCodeDetailsInExceptionMessages'
+			}
+			inputs.files(fileTree(layout.projectDirectory) {
+				include 'testresources/', 'testdata/'
+				exclude {
+					def f = it.file
+					if (f.directory && f.list().length == 0) {
+						return true
+					}
+					try {
+						return "git check-ignore ${f}".execute().waitFor() == 0
+					} catch (Exception e) {
+						return false
+					}
+				}
+			}).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName('testFolders')
+			systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', gradle.startParameter.logLevel.name()
+			if (System.properties['maven.repo.local']) {
+				systemProperty 'maven.repo.local', IO.getFile(gradle.startParameter.currentDir, System.properties['maven.repo.local'])
+			}
+		}
+	}
 }
 
 tasks.named('wrapper') {
-  jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
+	jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
 }
 
 tasks.register('buildscriptDependencies') {
-  doLast {
-    println "bnd_plugin: ${bnd_plugin}"
-    println "bnd_repourl: ${bnd_repourl}"
-    println buildscript.configurations.classpath.asPath
-  }
+	doLast {
+		println "bnd_plugin: ${bnd_plugin}"
+		println "bnd_repourl: ${bnd_repourl}"
+		println buildscript.configurations.classpath.asPath
+	}
 }

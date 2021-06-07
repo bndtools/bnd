@@ -74,7 +74,7 @@ import aQute.service.reporter.Reporter;
  * managed with bnd).
  */
 
-@aQute.bnd.annotation.plugin.BndPlugin(name = "filerepo", parameters = FileRepo.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "Filerepo", parameters = FileRepo.Config.class)
 public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable {
 	private final static Logger logger = LoggerFactory.getLogger(FileRepo.class);
 
@@ -335,7 +335,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		close = map.get(CMD_CLOSE);
 		action = map.get(CMD_AFTER_ACTION);
 
-		trace = map.get(TRACE) != null && Boolean.parseBoolean(map.get(TRACE));
+		trace = Boolean.parseBoolean(map.get(TRACE));
 	}
 
 	/**
@@ -843,9 +843,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/**
 	 * Execute a command. Used in different stages so that the repository can be
 	 * synced with external tools.
-	 *
-	 * @param line
-	 * @param target
 	 */
 	void exec(String line, Object... args) {
 		if (line == null) {
@@ -873,21 +870,15 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				}
 			}
 			// purge remaining placeholders
-			line = line.replaceAll("\\s*\\$[0-9]\\s*", "");
+			line = line.replaceAll("\\s*\\$[0-9]", "");
 
 			int result = 0;
 			StringBuilder stdout = new StringBuilder();
 			StringBuilder stderr = new StringBuilder();
-			if (System.getProperty("os.name")
-				.toLowerCase()
-				.contains("win")) {
-
-				// FIXME ignoring possible shell setting stdin approach used
-				// below does not work in windows
-				Command cmd = new Command("cmd.exe /C " + line);
+			if (IO.isWindows()) {
+				Command cmd = new Command().arg("cmd", "/c", line);
 				cmd.setCwd(getRoot());
 				result = cmd.execute(stdout, stderr);
-
 			} else {
 				if (shell == null) {
 					shell = "sh";

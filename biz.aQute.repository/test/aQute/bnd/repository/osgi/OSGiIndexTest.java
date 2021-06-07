@@ -15,12 +15,18 @@ import aQute.lib.io.IO;
 import junit.framework.TestCase;
 
 public class OSGiIndexTest extends TestCase {
-	File	tmp		= IO.getFile("generated/tmp");
-	File	cache	= IO.getFile(tmp, "name");
+	File	tmp;
+	File	cache;
+
+	private String getTestName() {
+		return getClass().getName() + "/" + getName();
+	}
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		tmp = IO.getFile("generated/tmp/test/" + getTestName());
+		cache = IO.getFile(tmp, "name");
 		IO.delete(tmp);
 	}
 

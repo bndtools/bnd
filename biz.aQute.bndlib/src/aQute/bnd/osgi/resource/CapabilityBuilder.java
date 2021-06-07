@@ -14,11 +14,11 @@ public class CapabilityBuilder extends CapReqBuilder {
 	}
 
 	public Capability build() {
-		return super.buildCapability();
+		return buildCapability();
 	}
 
 	public Capability synthetic() {
-		return super.buildSyntheticCapability();
+		return buildSyntheticCapability();
 	}
 
 }

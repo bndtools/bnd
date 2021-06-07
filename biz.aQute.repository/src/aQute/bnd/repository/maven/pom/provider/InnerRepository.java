@@ -14,6 +14,9 @@ abstract class InnerRepository extends ResourcesRepository {
 		super();
 		this.mavenRepository = mavenRepository;
 		this.location = location;
+		if (location.exists()) {
+			location.delete();
+		}
 	}
 
 	File getLocation() {

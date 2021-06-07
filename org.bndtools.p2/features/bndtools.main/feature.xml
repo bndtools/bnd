@@ -6,7 +6,7 @@
       provider-name="Bndtools"
       plugin="bndtools.core">
 
-   <description url="https://dl.bintray.com/bndtools/bndtools/@base-version@/">
+   <description url="https://bndtools.jfrog.io/bndtools/update-latest">
       OSGi Development Tools for Eclipse based on bnd.
    </description>
 
@@ -16,11 +16,10 @@
 This software uses icons from the FamFamFam &quot;Silk&quot; icon set by Mark James (http://www.famfamfam.com/lab/icons/silk/)
    </copyright>
 
-   <license url="Apache-2.0 OR EPL-2.0">
-      Apache-2.0 OR EPL-2.0
+   <license url="(Apache-2.0 OR EPL-2.0)">
+      SPDX-License-Identifier: (Apache-2.0 OR EPL-2.0)
 
-This program and the accompanying materials are made available under the
-terms of the Apache License, Version 2.0, or the Eclipse Public License 2.0.
+This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0, or the Eclipse Public License 2.0.
 
 ==============
 
@@ -508,12 +507,19 @@ version(s), and exceptions or additional permissions here}.&quot;
    </license>
 
    <url>
-      <update label="Bndtools Update Site" url="https://dl.bintray.com/bndtools/bndtools/@base-version@/"/>
+      <update label="Bndtools Update Site" url="https://bndtools.jfrog.io/bndtools/update-latest"/>
    </url>
 
    <requires>
-      <import feature="org.eclipse.platform" version="4.7.3" match="greaterOrEqual"/>
+      <import feature="org.eclipse.platform" version="4.16.0" match="greaterOrEqual"/>
    </requires>
+
+   <plugin
+         id="biz.aQute.bnd.util"
+         download-size="0"
+         install-size="0"
+         version="@biz.aQute.bnd.util-version@"
+         unpack="false"/>
 
    <plugin
          id="biz.aQute.bndlib"
@@ -548,6 +554,13 @@ version(s), and exceptions or additional permissions here}.&quot;
          download-size="0"
          install-size="0"
          version="@bndtools.core-version@"
+         unpack="false"/>
+
+   <plugin
+         id="bndtools.core.services"
+         download-size="0"
+         install-size="0"
+         version="@bndtools.core.services-version@"
          unpack="false"/>
 
    <plugin

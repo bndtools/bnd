@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +29,8 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.properties.Document;
+import aQute.bnd.unmodifiable.Lists;
+import aQute.bnd.unmodifiable.Sets;
 import bndtools.Plugin;
 import bndtools.central.Central;
 
@@ -38,15 +39,15 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
 	private static final Set<String> BUNDLE_SPECIFIC_HEADERS;
 
 	static {
-		BUNDLE_SPECIFIC_HEADERS = new HashSet<>(Arrays.asList(Constants.BUNDLE_SPECIFIC_HEADERS));
-		BUNDLE_SPECIFIC_HEADERS.add(Constants.SERVICE_COMPONENT);
-		BUNDLE_SPECIFIC_HEADERS.add(Constants.BUNDLE_VERSION);
+		Set<String> headers = new HashSet<>(Constants.BUNDLE_SPECIFIC_HEADERS);
+		headers.add(Constants.SERVICE_COMPONENT);
+		headers.add(Constants.BUNDLE_VERSION);
+		BUNDLE_SPECIFIC_HEADERS = Sets.copyOf(headers);
 	}
 
-	private static final Set<String>	PROJECT_ONLY_HEADERS	= new HashSet<>(Arrays.asList(new String[] {
-		"-buildpath", "-runbundles", "-runsystempackages", "-runpath", "-runvm", "-runtrace", "-runframework", "-runfw",
-		"-sub", "-debug"
-	}));
+	private static final Set<String>	PROJECT_ONLY_HEADERS	= Sets.of(Constants.BUILDPATH, Constants.RUNBUNDLES,
+		Constants.RUNSYSTEMPACKAGES, Constants.RUNPATH, Constants.RUNVM, Constants.RUNTRACE, Constants.RUNFRAMEWORK,
+		Constants.RUNFW, Constants.SUB);
 
 	private final Shell					parentShell;
 	private final IWorkspace			workspace;
@@ -125,9 +126,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
 			// Enable subs and copy entries from project model to new bundle
 			// model
 			if (enableSubs) {
-				projectModel.setSubBndFiles(Arrays.asList(new String[] {
-					"*.bnd"
-				}));
+				projectModel.setSubBndFiles(Lists.of("*.bnd"));
 				for (String propertyName : bundleSpecificHeaders) {
 					Object value = projectModel.genericGet(propertyName);
 					projectModel.genericSet(propertyName, null);

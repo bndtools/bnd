@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.jar.Manifest;
 
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -40,6 +41,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.AggregateRepository;
 import aQute.bnd.osgi.repository.AugmentRepository;
+import aQute.bnd.osgi.repository.WorkspaceRepositoryMarker;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
@@ -57,18 +59,20 @@ import aQute.lib.utf8properties.UTF8Properties;
  * BndEditModel & Project
  */
 public class BndrunResolveContext extends AbstractResolveContext {
-	private final static Logger	logger						= LoggerFactory.getLogger(BndrunResolveContext.class);
+	private final static Logger			logger						= LoggerFactory
+		.getLogger(BndrunResolveContext.class);
 
-	private static final String	BND_AUGMENT					= "bnd.augment";
-	public static final String	RUN_EFFECTIVE_INSTRUCTION	= "-resolve.effective";
-	public static final String	PROP_RESOLVE_PREFERENCES	= "-resolve.preferences";
-	private static final String	NAMESPACE_WHITELIST			= "x-whitelist";
+	private static final String			BND_AUGMENT					= "bnd.augment";
+	public static final String			RUN_EFFECTIVE_INSTRUCTION	= "-resolve.effective";
+	public static final String			PROP_RESOLVE_PREFERENCES	= "-resolve.preferences";
+	private static final String			NAMESPACE_WHITELIST			= "x-whitelist";
 
-	private Registry			registry;
-	private Parameters			resolvePrefs;
-	private final Processor		properties;
-	private Project				project;
-	private boolean				initialized;
+	private Registry					registry;
+	private Parameters					resolvePrefs;
+	private final Processor				properties;
+	private Project						project;
+	private boolean						initialized;
+	private volatile List<ResolverHook>	resolverHooks;
 
 	/**
 	 * Constructor for a BndEditModel. The idea to use a BndEditModel was rather
@@ -121,9 +125,8 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		if (initialized)
 			return;
 
-		initialized = true;
-
 		try {
+			initialized = true;
 
 			if (getLevel() <= 0) {
 				Integer level = Converter.cnv(Integer.class, properties.getProperty("-resolvedebug", "0"));
@@ -330,7 +333,6 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	/**
 	 * Load all the OSGi repositories from our registry
 	 * <p>
-	 * TODO Use Instruction ...
 	 *
 	 * @return
 	 * @throws Exception
@@ -341,23 +343,22 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		// Get all of the repositories from the plugin registry
 		//
 
-		ensureWorkspaceRepository();
-
-		List<Repository> allRepos = registry.getPlugins(Repository.class);
+		List<Repository> allRepos = getAllRepos();
 
 		Collection<Repository> orderedRepositories;
 
-		String rn = properties.mergeProperties(Constants.RUNREPOS);
-		if (rn == null) {
+		String runRepos = properties.mergeProperties(Constants.RUNREPOS);
+		if (runRepos == null) {
 
 			//
 			// No filter set, so we use all
 			//
+
 			orderedRepositories = allRepos;
 
 		} else {
 
-			Parameters repoNames = new Parameters(rn, project);
+			Parameters repoNames = new Parameters(runRepos, project);
 
 			// Map the repository names...
 
@@ -399,22 +400,17 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		return repositoryAugments;
 	}
 
-	/*
-	 * Ensure that the workspace has a repository that models its projects.
-	 */
-	private void ensureWorkspaceRepository() throws Exception {
-		if (project != null) {
-			if (!project.isStandalone() && project.getWorkspace()
-				.getPlugins(WorkspaceRepositoryMarker.class)
-				.isEmpty()) {
-
-				assert !project.getWorkspace()
-					.isInteractive() : "A static workspace repo cannot be used in an interactive environment";
-
-				project.getWorkspace()
-					.addBasicPlugin(new WorkspaceResourcesRepository(project.getWorkspace()));
-			}
+	private List<Repository> getAllRepos() {
+		List<Repository> allRepos;
+		if (project != null && !project.isStandalone() ) {
+			allRepos = project.getWorkspace().getPlugins(Repository.class);
+			allRepos.removeIf( WorkspaceRepositoryMarker.class::isInstance);
+			WorkspaceResourcesRepository wr = new WorkspaceResourcesRepository(project.getWorkspace());
+			allRepos.add(wr);
+		} else {
+			 allRepos = registry.getPlugins(Repository.class);
 		}
+		return allRepos;
 	}
 
 	private Processor findRepositoryAugments(Collection<Repository> orderedRepositories) {
@@ -485,11 +481,12 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		ResourceBuilder resBuilder = new ResourceBuilder();
 
 		CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-			.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, IDENTITY_INITIAL_RESOURCE);
+			.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, IDENTITY_INITIAL_RESOURCE)
+			.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_BUNDLE);
 		resBuilder.addCapability(identity);
 
 		Parameters inputRequirements = new Parameters(properties.mergeProperties(Constants.RUNREQUIRES), project);
-		if (inputRequirements != null && !inputRequirements.isEmpty()) {
+		if (!inputRequirements.isEmpty()) {
 			List<Requirement> requires = CapReqBuilder.getRequirementsFrom(inputRequirements);
 			resBuilder.addRequirements(requires);
 		}
@@ -501,7 +498,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		Parameters blacklist = new Parameters(augments.mergeProperties(Constants.RUNBLACKLIST), project);
 		blacklist.putAll(new Parameters(properties.mergeProperties(Constants.RUNBLACKLIST), project));
 
-		if (blacklist != null && !blacklist.isEmpty()) {
+		if (!blacklist.isEmpty()) {
 			List<Requirement> reject = CapReqBuilder.getRequirementsFrom(blacklist);
 			setBlackList(reject);
 		}
@@ -511,13 +508,36 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		resolvePrefs = new Parameters(properties.getProperty(PROP_RESOLVE_PREFERENCES), project);
 	}
 
+	// Remove any capabilities that come from resources whose osgi.identity
+	// capability is not type=osgi.bundle or type=osgi.fragment
+	private static final ResolverHook bundleTypeResolverHook;
+	static {
+		Predicate<Map<String, Object>> filterPredicate = ResourceUtils
+			.filterPredicate("(|(" + IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE + "=" + IdentityNamespace.TYPE_BUNDLE
+				+ ")(" + IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE + "=" + IdentityNamespace.TYPE_FRAGMENT + "))");
+		Predicate<Capability> capabilityPredicate = capability -> ResourceUtils
+			.capabilityStream(capability.getResource(), IdentityNamespace.IDENTITY_NAMESPACE)
+			.map(Capability::getAttributes)
+			.noneMatch(filterPredicate);
+		bundleTypeResolverHook = (requirement, capabilities) -> capabilities.removeIf(capabilityPredicate);
+	}
+
+	private List<ResolverHook> getResolverHooks() {
+		if (resolverHooks != null) {
+			return resolverHooks;
+		}
+		List<ResolverHook> hooks = registry.getPlugins(ResolverHook.class);
+		hooks.add(bundleTypeResolverHook);
+		return resolverHooks = hooks;
+	}
+
 	@Override
 	protected void postProcessProviders(Requirement requirement, Set<Capability> wired, List<Capability> candidates) {
 		if (candidates.isEmpty())
 			return;
 
 		// Call resolver hooks
-		for (ResolverHook resolverHook : registry.getPlugins(ResolverHook.class)) {
+		for (ResolverHook resolverHook : getResolverHooks()) {
 			resolverHook.filterMatches(requirement, candidates);
 		}
 

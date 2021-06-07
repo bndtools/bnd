@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.osgi.annotation.versioning.ProviderType;
 
+import aQute.bnd.result.Result;
 import aQute.bnd.signatures.ClassSignature;
 import aQute.bnd.signatures.FieldSignature;
 import aQute.bnd.signatures.MethodSignature;
@@ -45,20 +46,6 @@ public class Descriptors {
 	final static TypeRef						FLOAT					= new ConcreteRef("F", "float",
 		PRIMITIVE_PACKAGE);
 
-	@Deprecated
-	public enum SignatureType {
-		TYPEVAR,
-		METHOD,
-		FIELD;
-	}
-
-	@Deprecated
-	public class Signature {
-		public Map<String, Signature>	typevariables	= new HashMap<>();
-		public Signature				type;
-		public List<Signature>			parameters;
-	}
-
 	public Descriptors() {
 		packageRefCache.put(DEFAULT_PACKAGE.getBinary(), DEFAULT_PACKAGE);
 	}
@@ -92,6 +79,8 @@ public class Descriptors {
 		String getDottedOnly();
 
 		boolean isArray();
+
+		boolean isNested();
 
 	}
 
@@ -168,11 +157,37 @@ public class Descriptors {
 			if (isDefaultPackage())
 				return true;
 
-			return Arrays.stream(Constants.METAPACKAGES)
+			return Constants.METAPACKAGES.stream()
 				.anyMatch(meta -> binaryName.startsWith(meta)
 					&& ((binaryName.length() == meta.length()) || (binaryName.charAt(meta.length()) == '/')));
 		}
 
+		/**
+		 * Check if the package name is a valid Java package name.
+		 *
+		 * @return true if the package name is valid; false otherwise.
+		 */
+		public boolean isValidPackageName() {
+			final int len = fqn.length();
+			boolean start = true;
+			for (int i = 0; i < len;) {
+				int cp = Character.codePointAt(fqn, i);
+				if (start) {
+					if (!Character.isJavaIdentifierStart(cp)) {
+						return false;
+					}
+					start = false;
+				} else {
+					if (cp == '.') {
+						start = true;
+					} else if (!Character.isJavaIdentifierPart(cp)) {
+						return false;
+					}
+				}
+				i += Character.charCount(cp);
+			}
+			return !start;
+		}
 	}
 
 	// We "intern" the
@@ -298,6 +313,11 @@ public class Descriptors {
 			return false;
 		}
 
+		@Override
+		public boolean isNested() {
+			return binaryName.indexOf('$') >= 0;
+		}
+
 	}
 
 	private static class ArrayRef implements TypeRef {
@@ -380,7 +400,8 @@ public class Descriptors {
 
 		@Override
 		public String getDottedOnly() {
-			return component.getDottedOnly();
+			return component.getDottedOnly()
+				.concat("[]");
 		}
 
 		@Override
@@ -409,6 +430,11 @@ public class Descriptors {
 		@Override
 		public boolean isArray() {
 			return true;
+		}
+
+		@Override
+		public boolean isNested() {
+			return component.isNested();
 		}
 
 	}
@@ -606,8 +632,55 @@ public class Descriptors {
 		return binary.replace('/', '.');
 	}
 
-	public static String fqnToBinary(String binary) {
-		return binary.replace('.', '/');
+	public static String binaryClassToFQN(String path) {
+		return binaryToFQN(path.substring(0, path.length() - 6)).replace('$', '.');
+	}
+
+	public static String fqnToBinary(String fqn) {
+		return fqn.replace('.', '/');
+	}
+
+	/**
+	 * Converts the given fully-qualified top-level class name into the binary
+	 * class path. For example:
+	 * <p>
+	 * {@code my.pkg.And.Clazz} becomes:
+	 * <p>
+	 * {@code my/pkg/And$Clazz.class}
+	 * <p>
+	 * This method uses {@link Descriptors#determine(String)} to split the class
+	 * and package names, which is imperfect.
+	 *
+	 * @param fqn the fully-qualified name to be converted.
+	 * @return The binary name corresponding to the fully-qualified name.
+	 */
+	public static String fqnClassToBinary(String fqn) {
+		Result<String[]> result = determine(fqn);
+		String[] parts = result.orElseThrow(IllegalArgumentException::new);
+		if (parts[0] == null) {
+			return classToPath(parts[1]);
+		}
+		if (parts[1] == null) {
+			return fqnToBinary(parts[0]) + ".class";
+		}
+		return fqnToBinary(parts[0]) + "/" + classToPath(parts[1]);
+	}
+
+	/**
+	 * Converts the class name (without the package qualifier) into the
+	 * corresponding binary name. For example:
+	 * <p>
+	 * {@code my.pkg.and.Clazz} becomes:
+	 * <p>
+	 * {@code my$pkg$and$Clazz.class} As you can see, this method is not smart
+	 * about distinguishing between package and class nesting - it always
+	 * converts the . into a $.
+	 *
+	 * @param className the name of the class to be converted.
+	 * @return The binary name corresponding to the class name.
+	 */
+	public static String classToPath(String className) {
+		return className.replace('.', '$') + ".class";
 	}
 
 	public static String getPackage(String binaryNameOrFqn) {
@@ -652,6 +725,124 @@ public class Descriptors {
 	public TypeRef getTypeRefFromPath(String path) {
 		assert path.endsWith(".class");
 		return getTypeRef(path.substring(0, path.length() - 6));
+	}
+
+	public static String pathToFqn(String path) {
+		assert path.endsWith(".class");
+
+		StringBuilder sb = new StringBuilder();
+		int j = path.length() - 6;
+		for (int i = 0; i < j; i++) {
+			char c = path.charAt(i);
+			if (c == '/')
+				sb.append('.');
+			else
+				sb.append(c);
+		}
+		return sb.toString();
+	}
+
+	public static boolean isBinaryClass(String resource) {
+		return resource.endsWith(".class");
+	}
+
+	/**
+	 * Java really screwed up in using different names for the binary path and
+	 * the fqns. This calculates the simple name of a potentially nested class.
+	 *
+	 * @param resource ( segment '/')+ (name '$')* name '.class'
+	 * @return the last name
+	 */
+	public static String binaryToSimple(String resource) {
+		if (resource == null)
+			return null;
+
+		assert isBinaryClass(resource);
+
+		int end = resource.length() - 6;
+		int rover = end;
+		while (rover >= 0) {
+			char ch = resource.charAt(rover);
+			if (ch == '$' || ch == '/') {
+				return resource.substring(rover + 1, end);
+			}
+			rover--;
+		}
+		return resource.substring(0, end);
+	}
+
+	/**
+	 * Heuristic for a class name. We assume a segment with
+	 *
+	 * @param fqn can be a class name, nested class, or simple name
+	 * @return true if the last segment starts with an upper case
+	 */
+	public static boolean isClassName(String fqn) {
+		if (fqn.isEmpty())
+			return false;
+
+		int n = fqn.lastIndexOf('.') + 1;
+		if (n >= fqn.length())
+			return false;
+
+		char ch = fqn.charAt(n);
+
+		return Character.isUpperCase(ch);
+	}
+
+	/**
+	 * Return a 2 element array based on the fqn. The first element is the
+	 * package name, the second is the class name. Each can be absent, but not
+	 * both. The class name can be a nested class (will contain a '.' then)
+	 * <p>
+	 * Because there is an inherent ambiguity between packages and nested
+	 * classes, this method uses a heuristic that works most of the time: the
+	 * start of the class name is considered to be the first element that begins
+	 * with a capital letter. Hence "simple.Sample.Sumple" => ["simple",
+	 * "Sample.Sumple" ] and not [ "simple.Sample", "Sumple" ].
+	 *
+	 * @param fqn a Java identifier name, either a simple class name, a
+	 *            qualified class name, or a package name
+	 * @return a Result with 2 element array with [package, class]
+	 */
+	public static Result<String[]> determine(String fqn) {
+		if (fqn == null || fqn.isEmpty())
+			return Result.err("No qualified name given (either null or empty) %s", fqn);
+
+		final int len = fqn.length();
+		int cstart = -1;
+		boolean start = true;
+		for (int i = 0; i < len;) {
+			int cp = Character.codePointAt(fqn, i);
+			if (start) {
+				if (!Character.isJavaIdentifierStart(cp)) {
+					return Result.err("Could not match %s to a qualified Java Identifier :: package? classname", fqn);
+				}
+				if (Character.isUpperCase(cp)) {
+					cstart = i;
+					break;
+				}
+				start = false;
+			} else {
+				if (cp == '.') {
+					start = true;
+				} else if (!Character.isJavaIdentifierPart(cp)) {
+					return Result.err(
+						"Could not match %s to a qualified Java Identifier :: package? classname, char %s", fqn, i);
+				}
+			}
+			i += Character.charCount(cp);
+		}
+		String[] result = new String[2];
+		if (cstart == 0) {
+			result[1] = fqn;
+		} else if (cstart > 0) {
+			result[0] = fqn.substring(0, cstart - 1);
+			result[1] = fqn.substring(cstart);
+		} else {
+			result[0] = fqn;
+		}
+		return Result.ok(result);
 	}
 
 }

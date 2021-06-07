@@ -1,6 +1,7 @@
 package aQute.bnd.osgi;
 
-import static aQute.lib.exceptions.FunctionWithException.asFunction;
+import static aQute.bnd.exceptions.FunctionWithException.asFunction;
+import static aQute.bnd.osgi.Processor.removeDuplicateMarker;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toMap;
@@ -11,7 +12,6 @@ import java.io.StringWriter;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.WrongMethodTypeException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -20,9 +20,11 @@ import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
+import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Deque;
@@ -35,11 +37,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,22 +52,22 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
-import aQute.bnd.header.Attrs;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.memoize.Memoize;
 import aQute.bnd.osgi.Processor.FileLine;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
-import aQute.lib.collections.Iterables;
 import aQute.lib.date.Dates;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.ExtendedFilter;
 import aQute.lib.formatter.Formatters;
 import aQute.lib.hex.Hex;
@@ -84,21 +89,23 @@ import aQute.service.reporter.Reporter.SetLocation;
  * pattern. ${parameter##word} Remove largest prefix pattern.
  */
 public class Macro {
-	private final static String		NULLVALUE		= "c29e43048791e250dfd5723e7b8aa048df802c9262cfa8fbc4475b2e392a8ad2";
-	private final static String		LITERALVALUE	= "017a3ddbfc0fcd27bcdb2590cdb713a379ae59ef";
-	private final static Pattern	NUMERIC_P		= Pattern.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
+	private final static String														NULLVALUE		= "c29e43048791e250dfd5723e7b8aa048df802c9262cfa8fbc4475b2e392a8ad2";
+	private final static String														LITERALVALUE	= "017a3ddbfc0fcd27bcdb2590cdb713a379ae59ef";
+	private final static Pattern													NUMERIC_P		= Pattern
+		.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
 
-	Processor						domain;
-	Reporter						reporter;
-	Object							targets[];
-	boolean							flattening;
-	private boolean					nosystem;
-	ScriptEngine					engine			= null;
-	ScriptContext					context			= null;
-	Bindings						bindings		= null;
-	StringWriter					stdout			= new StringWriter();
-	StringWriter					stderr			= new StringWriter();
-	public boolean					inTest;
+	Processor																		domain;
+	Reporter																		reporter;
+	Object																			targets[];
+	boolean																			flattening;
+	private boolean																	nosystem;
+	ScriptEngine																	engine			= null;
+	ScriptContext																	context			= null;
+	Bindings																		bindings		= null;
+	StringWriter																	stdout			= new StringWriter();
+	StringWriter																	stderr			= new StringWriter();
+	public boolean																	inTest;
+	private final Map<Class<?>, Map<String, BiFunction<Object, String[], Object>>>	macrosByClass	= new ConcurrentHashMap<>();
 
 	public Macro(Processor domain, Object... targets) {
 		this.domain = domain;
@@ -117,40 +124,44 @@ public class Macro {
 
 	String process(CharSequence line, Link link) {
 		StringBuilder sb = new StringBuilder();
-		process(line, 0, '\u0000', '\u0000', sb, link);
+		process(line, 0, '\u0000', '\u0000', sb, link, false);
 		return sb.toString();
 	}
 
-	int process(CharSequence org, int index, char begin, char end, StringBuilder result, Link link) {
+	int process(CharSequence org, int index, char begin, char end, StringBuilder result, Link link, boolean inMacro) {
 		if (org == null) { // treat null like empty string
 			return index;
 		}
 		StringBuilder line = new StringBuilder(org);
 		int nesting = 1;
+		boolean first;
 
+		List<String> args = inMacro ? new ArrayList<>() : Collections.emptyList();
 		StringBuilder variable = new StringBuilder();
+		int pStart = 0;
 
 		outer: while (index < line.length()) {
 			char c1 = line.charAt(index++);
 			if (c1 == end) {
 				if (--nesting == 0) {
-					result.append(replace(variable.toString(), link, begin, end));
+					args.add(variable.substring(pStart));
+					result.append(replace(variable.toString(), args, link, begin, end));
 					return index;
 				}
 			} else if (c1 == begin)
 				nesting++;
-			else if (c1 == '\\' && index < line.length() - 1 && line.charAt(index) == '$') {
-				// remove the escape backslash and interpret the dollar
-				// as a
-				// literal
+			else if (c1 == '\\' && index < line.length() - 1
+				&& (line.charAt(index) == '$' || line.charAt(index) == ';')) {
+				// remove the escape backslash and interpret the dollar or ;
+				// as a literal
+				variable.append(line.charAt(index));
 				index++;
-				variable.append('$');
 				continue outer;
-			} else if (c1 == '$' && index < line.length() - 2) {
+			} else if (c1 == '$' && index < line.length() - 2 && !inMacro) {
 				char c2 = line.charAt(index);
 				char terminator = getTerminator(c2);
 				if (terminator != 0) {
-					index = process(line, index + 1, c2, terminator, variable, link);
+					index = process(line, index + 1, c2, terminator, variable, link, true);
 					continue outer;
 				}
 			} else if (c1 == '.' && index < line.length() && line.charAt(index) == '/') {
@@ -162,6 +173,9 @@ public class Macro {
 					variable.append('/');
 					continue outer;
 				}
+			} else if (inMacro && c1 == ';' && nesting == 1) {
+				args.add(variable.substring(pStart));
+				pStart = variable.length() + 1;
 			}
 			variable.append(c1);
 		}
@@ -188,16 +202,24 @@ public class Macro {
 	}
 
 	protected String getMacro(String key, Link link) {
-		return getMacro(key, link, '{', '}');
+		return getMacro(key, null, link, '{', '}');
 	}
 
-	private String getMacro(String key, Link link, char begin, char end) {
+	private String getMacro(String key, List<String> args2, Link link, char begin, char end) {
 		if (link != null && link.contains(key))
 			return "${infinite:" + link.toString() + "}";
 
 		if (key != null) {
 			key = key.trim();
-			String[] args = SEMICOLON_P.split(key, 0);
+			String[] args;
+			if (args2 == null) {
+				args = SEMICOLON_P.split(key, 0);
+			} else {
+				args = args2.toArray(new String[args2.size()]);
+				for (int i = 0; i < args.length; i++) {
+					args[i] = process(args[i], link);
+				}
+			}
 			if (!args[0].isEmpty()) {
 
 				//
@@ -217,7 +239,7 @@ public class Macro {
 						return domain.stream()
 							.filter(ins::matches)
 							.sorted()
-							.map(k -> replace(k, new Link(domain, link, keyname), begin, end))
+							.map(k -> replace(k, null, new Link(domain, link, keyname), begin, end))
 							.filter(Objects::nonNull)
 							.collect(Strings.joining());
 					}
@@ -326,11 +348,11 @@ public class Macro {
 	}
 
 	public String replace(String key, Link link) {
-		return replace(key, link, '{', '}');
+		return replace(key, null, link, '{', '}');
 	}
 
-	private String replace(String key, Link link, char begin, char end) {
-		String value = getMacro(key, link, begin, end);
+	private String replace(String key, List<String> args, Link link, char begin, char end) {
+		String value = getMacro(key, args, link, begin, end);
 		if (value != LITERALVALUE) {
 			if (value != null)
 				return value;
@@ -397,34 +419,60 @@ public class Macro {
 			; // System.err.println("Huh? Target should never be null " +
 		// domain);
 		else {
-			// Assume macro names do not start with '-'
-			if (method.startsWith("-")) {
-				return null;
-			}
-
-			String part = method.replaceAll("-", "_");
-			for (int i = 0; i < part.length(); i++) {
-				if (!Character.isJavaIdentifierPart(part.charAt(i)))
+			for (int i = 0, len = method.length(); i < len; i++) {
+				char c = method.charAt(i);
+				if (c == '-') {
+					// Assume macro names do not start with '-'
+					if (i == 0) {
+						return null;
+					}
+				} else if (!Character.isJavaIdentifierPart(c)) {
 					return null;
+				}
 			}
 
-			String cname = "_" + part;
-			Method m;
-			try {
-				m = target.getClass()
-					.getMethod(cname, String[].class);
-			} catch (NoSuchMethodException e) {
+			Map<String, BiFunction<Object, String[], Object>> macros = macrosByClass.computeIfAbsent(target.getClass(),
+				c -> Arrays.stream(c.getMethods())
+					.filter(m -> (m.getName()
+						.charAt(0) == '_') && (m.getParameterCount() == 1)
+						&& (m.getParameterTypes()[0] == String[].class))
+					.collect(toMap(m -> m.getName()
+						.substring(1), m -> {
+							Memoize<MethodHandle> mh = Memoize.supplier(() -> {
+								try {
+									return publicLookup().unreflect(m);
+								} catch (Exception e) {
+									throw Exceptions.duck(e);
+								}
+							});
+							if (Modifier.isStatic(m.getModifiers())) {
+								return (Object t, String[] a) -> {
+									try {
+										return mh.get()
+											.invoke(a);
+									} catch (Throwable e) {
+										throw Exceptions.duck(e);
+									}
+								};
+							} else {
+								return (Object t, String[] a) -> {
+									try {
+										return mh.get()
+											.invoke(t, a);
+									} catch (Throwable e) {
+										throw Exceptions.duck(e);
+									}
+								};
+							}
+						})));
+
+			String macro = method.replace('-', '_');
+			BiFunction<Object, String[], Object> invoker = macros.get(macro);
+			if (invoker == null) {
 				return null;
 			}
-			MethodHandle mh;
 			try {
-				mh = publicLookup().unreflect(m);
-			} catch (Exception e) {
-				reporter.warning("Exception in replace: method=%s %s ", method, Exceptions.toString(e));
-				return NULLVALUE;
-			}
-			try {
-				Object result = Modifier.isStatic(m.getModifiers()) ? mh.invoke(args) : mh.invoke(target, args);
+				Object result = invoker.apply(target, args);
 				return result == null ? NULLVALUE : result.toString();
 			} catch (Error e) {
 				throw e;
@@ -530,7 +578,7 @@ public class Macro {
 	static final String _sortHelp = "${sort;<list>...}";
 
 	public String _sort(String[] args) {
-		verifyCommand(args, _sortHelp, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _sortHelp, null, 1, Integer.MAX_VALUE);
 		String result = Arrays.stream(args, 1, args.length)
 			.flatMap(Strings::splitQuotedAsStream)
 			.sorted()
@@ -541,7 +589,7 @@ public class Macro {
 	static final String _nsortHelp = "${nsort;<list>...}";
 
 	public String _nsort(String[] args) {
-		verifyCommand(args, _nsortHelp, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _nsortHelp, null, 1, Integer.MAX_VALUE);
 
 		String result = Arrays.stream(args, 1, args.length)
 			.flatMap(Strings::splitAsStream)
@@ -610,9 +658,8 @@ public class Macro {
 			&& condition.length() != 0;
 	}
 
-	private static final DateTimeFormatter	DATE_TOSTRING	= Dates.DATE_TOSTRING
-		.withZone(Dates.UTC_ZONE_ID);
-	public final static String _nowHelp = "${now;pattern|'long'}, returns current time";
+	private static final DateTimeFormatter	DATE_TOSTRING	= Dates.DATE_TOSTRING.withZone(Dates.UTC_ZONE_ID);
+	public final static String				_nowHelp		= "${now;pattern|'long'}, returns current time";
 
 	public Object _now(String[] args) {
 		verifyCommand(args, _nowHelp, null, 1, 2);
@@ -794,7 +841,6 @@ public class Macro {
 			.map(domain::getFile)
 			.filter(File::exists)
 			.map(File::getParentFile)
-			.filter(File::exists)
 			.map(IO::absolutePath)
 			.collect(Strings.joining());
 		return result;
@@ -807,8 +853,7 @@ public class Macro {
 		}
 		String result = Arrays.stream(args, 1, args.length)
 			.map(domain::getFile)
-			.filter(f -> f.exists() && f.getParentFile()
-				.exists())
+			.filter(File::exists)
 			.map(File::getName)
 			.collect(Strings.joining());
 		return result;
@@ -983,19 +1028,13 @@ public class Macro {
 
 		String mask = args[1];
 
-		Version version = null;
+		Version version;
 		if (args.length >= 3) {
 			if (isLocalTarget(args[2]))
 				return LITERALVALUE;
 
 			version = Version.parseVersion(args[2]);
-		}
-
-		return version(version, mask);
-	}
-
-	String version(Version version, String mask) {
-		if (version == null) {
+		} else {
 			String v = domain.getProperty(Constants.CURRENT_VERSION);
 			if (v == null) {
 				return LITERALVALUE;
@@ -1003,52 +1042,94 @@ public class Macro {
 			version = new Version(v);
 		}
 
+		return version(version, mask);
+	}
+
+	static String version(Version version, String mask) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 
-		for (int i = 0; i < mask.length(); i++) {
+		maskloop: for (int i = 0, len = mask.length(); i < len; i++) {
 			char c = mask.charAt(i);
-			String result = null;
-			if (c != '~') {
-				if (i == 3) {
-					result = version.getQualifier();
-					MavenVersion mv = new MavenVersion(version);
-					if (c == 'S') {
+			if (i == 3) {
+				switch (c) {
+					case '~' :
+						break;
+					case '0' :
+					case '1' :
+					case '2' :
+					case '3' :
+					case '4' :
+					case '5' :
+					case '6' :
+					case '7' :
+					case '8' :
+					case '9' :
+						sb.append(del)
+							.append(c);
+						break;
+					case 's' : {
+						MavenVersion mv = new MavenVersion(version);
 						// we have a request for a Maven snapshot
-						if (mv.isSnapshot())
-							return sb.append("-SNAPSHOT")
-								.toString();
-					} else if (c == 's') {
+						if (mv.isSnapshot()) {
+							sb.append("-SNAPSHOT");
+						}
+						break;
+					}
+					case 'S' : {
+						MavenVersion mv = new MavenVersion(version);
 						// we have a request for a Maven snapshot
-						if (mv.isSnapshot())
-							return sb.append("-SNAPSHOT")
-								.toString();
-						else
-							return sb.toString();
+						if (mv.isSnapshot()) {
+							sb.append("-SNAPSHOT");
+							break;
+						}
+						// FALL-THROUGH
 					}
-				} else if (Character.isDigit(c)) {
-					// Handle masks like +00, =+0
-					result = String.valueOf(c);
-				} else {
-					int x = version.get(i);
-					switch (c) {
-						case '+' :
-							x++;
-							break;
-						case '-' :
-							x--;
-							break;
-						case '=' :
-							break;
+					case '=' : {
+						String qualifier = version.getQualifier();
+						if (qualifier != null) {
+							sb.append(del)
+								.append(qualifier);
+						}
+						break;
 					}
-					result = Integer.toString(x);
+					default :
+						throw new IllegalArgumentException("Invalid mask character " + c + " at index " + i);
 				}
-				if (result != null) {
-					sb.append(del);
-					del = ".";
-					sb.append(result);
-				}
+				return sb.toString();
 			}
+			switch (c) {
+				case '~' :
+					continue maskloop; // don't modify del
+				case '0' :
+				case '1' :
+				case '2' :
+				case '3' :
+				case '4' :
+				case '5' :
+				case '6' :
+				case '7' :
+				case '8' :
+				case '9' :
+					sb.append(del)
+						.append(c);
+					break;
+				case '+' :
+					sb.append(del)
+						.append(version.get(i) + 1);
+					break;
+				case '-' :
+					sb.append(del)
+						.append(Math.max(0, version.get(i) - 1));
+					break;
+				case '=' :
+					sb.append(del)
+						.append(version.get(i));
+					break;
+				default :
+					throw new IllegalArgumentException("Invalid mask character " + c + " at index " + i);
+			}
+			del = ".";
 		}
 		return sb.toString();
 	}
@@ -1072,7 +1153,7 @@ public class Macro {
 
 	public String _range(String[] args) {
 		verifyCommand(args, _rangeHelp, _rangePattern, 2, 3);
-		Version version = null;
+		Version version;
 		if (args.length >= 3) {
 			String string = args[2];
 			if (isLocalTarget(string))
@@ -1129,9 +1210,7 @@ public class Macro {
 		if (nosystem)
 			throw new RuntimeException("Macros in this mode cannot excute system commands");
 
-		verifyCommand(args,
-			"${" + (allowFail ? "system-allow-fail" : "system") + ";<command>[;<in>]}, execute a system command", null,
-			2, 3);
+		verifyCommand(args, allowFail ? _system_allow_failHelp : _systemHelp, null, 2, 3);
 		String command = args[1];
 		String input = null;
 
@@ -1142,9 +1221,13 @@ public class Macro {
 		return domain.system(allowFail, command, input);
 	}
 
+	static final String _systemHelp = "${system;<command>[;<in>]}, execute a system command";
+
 	public String _system(String[] args) throws Exception {
 		return system_internal(false, args);
 	}
+
+	static final String _system_allow_failHelp = "${system-allow-fail;<command>[;<in>]}, execute a system command allowing command failure";
 
 	public String _system_allow_fail(String[] args) throws Exception {
 		String result = "";
@@ -1348,26 +1431,38 @@ public class Macro {
 		// do not report unknown macros while flattening
 		flattening = true;
 		try {
-			Properties flattened = new UTF8Properties();
-			Properties source = domain.getProperties();
-			for (String key : Iterables.iterable(source.propertyNames(), String.class::cast)) {
-				if (!key.startsWith("_")) {
-					String value = source.getProperty(key);
-					if (value == null) {
-						Object raw = source.get(key);
-						reporter.warning("Key '%s' has a non-String value: %s:%s", key,
-							raw == null ? ""
-								: raw.getClass()
-									.getName(),
-							raw);
-					} else {
-						if (ignoreInstructions && key.startsWith("-"))
-							flattened.put(key, value);
-						else
-							flattened.put(key, process(value));
+			Stream<String> keys = StreamSupport.stream(domain.spliterator(), false);
+			Properties flattened = keys.filter(key -> !key.startsWith("_"))
+				.map(key -> {
+					String value = null;
+					for (Processor proc = domain; proc != null; proc = proc.getParent()) {
+						Object raw = proc.getProperties()
+							.get(key);
+						if (raw != null) {
+							if (raw instanceof String) {
+								value = (String) raw;
+							} else if (reporter.isPedantic()) {
+								reporter.warning("Key '%s' has a non-String value: %s:%s", key, raw.getClass()
+									.getName(), raw);
+							}
+							break;
+						}
+
+						Collection<String> keyFilter = proc.filter;
+						if ((keyFilter != null) && (keyFilter.contains(key))) {
+							break;
+						}
 					}
-				}
-			}
+					if (value == null) {
+						return null;
+					}
+					if (!ignoreInstructions || !key.startsWith("-")) {
+						value = process(value);
+					}
+					return new AbstractMap.SimpleEntry<>(key, value);
+				})
+				.filter(Objects::nonNull)
+				.collect(toMap(Entry::getKey, Entry::getValue, (oldValue, newValue) -> newValue, UTF8Properties::new));
 			return flattened;
 		} finally {
 			flattening = false;
@@ -1491,11 +1586,42 @@ public class Macro {
 
 	public String _extension(String[] args) throws Exception {
 		verifyCommand(args, _extensionHelp, null, 2, 2);
-		String name = args[1];
-		int n = name.indexOf('.');
-		if (n < 0)
-			return "";
-		return name.substring(n + 1);
+		String result = Optional.of(args[1])
+			.map(IO::normalizePath)
+			.map(path -> Optional.ofNullable(Strings.lastPathSegment(path))
+				.map(tuple -> tuple[1])
+				.orElse(path))
+			.flatMap(name -> Optional.ofNullable(Strings.extension(name))
+				.map(tuple -> tuple[1]))
+			.orElse("");
+		return result;
+	}
+
+	static final String _basenameextHelp = "${basenameext;<path>[;<extension>]}";
+
+	public String _basenameext(String[] args) throws Exception {
+		verifyCommand(args, _basenameextHelp, null, 2, 3);
+		String extension = Optional.ofNullable((args.length > 2 && !args[2].isEmpty()) ? args[2] : null)
+			.map(ext -> ext.startsWith(".") ? ext.substring(1) : ext)
+			.orElse(".");
+		String result = Optional.of(args[1])
+			.map(IO::normalizePath)
+			.map(path -> Optional.ofNullable(Strings.lastPathSegment(path))
+				.map(tuple -> tuple[1])
+				.orElse(path))
+			.map(name -> Optional.ofNullable(Strings.extension(name))
+				.filter(tuple -> extension.equals(tuple[1]))
+				.map(tuple -> tuple[0])
+				.orElse(name))
+			.orElse("");
+		return result;
+	}
+
+	static final String _bndversionHelp = "${bndversion}, returns the currently running bnd version";
+
+	public String _bndversion(String[] args) throws Exception {
+		verifyCommand(args, _bndversionHelp, null, 1, 1);
+		return About.CURRENT.toStringWithoutQualifier();
 	}
 
 	static final String _stemHelp = "${stem;<string>}";
@@ -1714,7 +1840,7 @@ public class Macro {
 
 		Deque<String> reversed = Arrays.stream(args, 1, args.length)
 			.flatMap(Strings::splitQuotedAsStream)
-			.collect(Collector.of(ArrayDeque::new, (deq, t) -> deq.addFirst(t), (d1, d2) -> {
+			.collect(Collector.of(ArrayDeque<String>::new, ArrayDeque::addFirst, (d1, d2) -> {
 				d2.addAll(d1);
 				return d2;
 			}));
@@ -1781,7 +1907,7 @@ public class Macro {
 			sb.append(args[i])
 				.append(';');
 
-		if (context == null) {
+		if ((context == null) || (engine == null)) {
 			synchronized (this) {
 				if (engine == null)
 					engine = new ScriptEngineManager().getEngineByName("javascript");
@@ -1945,10 +2071,12 @@ public class Macro {
 
 	public String _map(String[] args) throws Exception {
 		verifyCommand(args, _mapHelp, null, 2, Integer.MAX_VALUE);
-		String macro = args[1];
+		String delimiter = SEMICOLON;
+		String prefix = "${" + args[1] + delimiter;
+		String suffix = "}";
 		String result = Arrays.stream(args, 2, args.length)
 			.flatMap(Strings::splitQuotedAsStream)
-			.map(s -> process("${" + macro + SEMICOLON + s + "}"))
+			.map(s -> process(prefix + s + suffix))
 			.collect(Strings.joining());
 		return result;
 	}
@@ -1961,26 +2089,30 @@ public class Macro {
 
 	public String _foreach(String[] args) throws Exception {
 		verifyCommand(args, _foreachHelp, null, 2, Integer.MAX_VALUE);
-		String macro = args[1];
+		String delimiter = SEMICOLON;
+		String prefix = "${" + args[1] + delimiter;
+		String suffix = "}";
 		List<String> list = toList(args, 2, args.length);
 		String result = IntStream.range(0, list.size())
-			.mapToObj(n -> process("${" + macro + SEMICOLON + list.get(n) + SEMICOLON + n + "}"))
+			.mapToObj(n -> process(prefix + list.get(n) + delimiter + n + suffix))
 			.collect(Strings.joining());
 		return result;
 	}
 
 	/**
-	 * Take a list and convert this to the argumets
+	 * Take a list and convert this to the arguments
 	 */
 
 	static final String _applyHelp = "${apply;<macro>[;<list>...]}";
 
 	public String _apply(String[] args) throws Exception {
 		verifyCommand(args, _applyHelp, null, 2, Integer.MAX_VALUE);
-		String macro = args[1];
+		String delimiter = SEMICOLON;
+		String prefix = "${" + args[1] + delimiter;
+		String suffix = "}";
 		String result = Arrays.stream(args, 2, args.length)
 			.flatMap(Strings::splitQuotedAsStream)
-			.collect(Collectors.joining(SEMICOLON, "${" + macro + SEMICOLON, "}"));
+			.collect(Collectors.joining(delimiter, prefix, suffix));
 		return process(result);
 	}
 
@@ -1989,8 +2121,8 @@ public class Macro {
 	 */
 	public String _bytes(String[] args) {
 		try (Formatter sb = new Formatter()) {
-			for (int i = 0; i < args.length; i++) {
-				long l = Long.parseLong(args[1]);
+			for (String arg : args) {
+				long l = Long.parseLong(arg);
 				bytes(sb, l, 0, new String[] {
 					"b", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb", "Yb", "Bb", "Geopbyte"
 				});
@@ -2044,7 +2176,7 @@ public class Macro {
 	 */
 	public Map<String, String> getCommands() {
 		Set<Object> targets = new LinkedHashSet<>();
-		targets.addAll(Arrays.asList(targets));
+		Collections.addAll(targets, this.targets);
 		Processor rover = domain;
 		while (rover != null) {
 			targets.add(rover);
@@ -2073,7 +2205,7 @@ public class Macro {
 					} catch (Throwable e) {
 						throw Exceptions.duck(e);
 					}
-				}, (u, v) -> u, TreeMap::new));
+				}, (u, v) -> u, TreeMap<String, String>::new));
 	}
 
 	/**
@@ -2095,42 +2227,24 @@ public class Macro {
 	public String _template(String args[]) throws IOException {
 		verifyCommand(args, _templateHelp, null, 3, 30);
 
-		String propertyKey = args[1];
-		String separator = ",";
-
-		StringBuilder templateBuilder = new StringBuilder();
-		String del = "";
-
-		for (int i = 2; i < args.length; i++) {
-			templateBuilder.append(del)
-				.append(args[i]);
-			del = ";";
-		}
-
-		String template = templateBuilder.toString();
-
-		Parameters parameters = domain.decorated(propertyKey);
-		StringBuilder sb = new StringBuilder();
-		del = "";
+		Parameters parameters = domain.decorated(args[1]);
+		String template = Arrays.stream(args, 2, args.length)
+			.collect(Collectors.joining(SEMICOLON));
 
 		try (Processor scope = new Processor(domain)) {
-			for (Map.Entry<String, Attrs> entry : parameters.entrySet()) {
-				String key = entry.getKey();
-				key = Processor.removeDuplicateMarker(key);
-				scope.setProperty("@", key);
-				for (Entry<String, String> attr : entry.getValue()
-					.entrySet()) {
-					scope.setProperty("@" + attr.getKey(), attr.getValue());
-				}
-				String instance = scope.getReplacer()
-					.process(template);
-
-				sb.append(del)
-					.append(instance);
-				del = separator;
-			}
+			Properties properties = scope.getProperties();
+			Macro replacer = scope.getReplacer();
+			String templated = parameters.stream()
+				.mapToObj((key, value) -> {
+					properties.clear(); // avoid attr leakage between keys
+					properties.setProperty("@", removeDuplicateMarker(key));
+					value.forEach((attrKey, attrValue) -> properties.setProperty("@".concat(attrKey), attrValue));
+					String instance = replacer.process(template);
+					return instance;
+				})
+				.collect(Strings.joining());
+			return templated;
 		}
-		return sb.toString();
 	}
 
 	final static String _templateHelp = "${template;macro-name[;template]+}";
@@ -2169,4 +2283,23 @@ public class Macro {
 		}
 		return null;
 	}
+
+	static final String _fileuriHelp = "${fileuri;<path>}, Return a file uri for the specified path. Relative paths are resolved against the processor base.";
+
+	public String _fileuri(String args[]) throws Exception {
+		verifyCommand(args, _fileuriHelp, null, 2, 2);
+
+		File f = domain.getFile(args[1])
+			.getCanonicalFile();
+		return f.toURI()
+			.toString();
+	}
+
+	static final String _version_cleanupHelp = "${version_cleanup;<version>}, Cleanup a potential maven version to make it match the OSGi Version syntax.";
+
+	public String _version_cleanup(String args[]) {
+		verifyCommand(args, _version_cleanupHelp, null, 2, 2);
+		return Analyzer.cleanupVersion(args[1]);
+	}
+
 }

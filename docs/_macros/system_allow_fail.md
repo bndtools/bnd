@@ -1,4 +1,5 @@
 ---
+layout: default
 class: Macro
 title: system_allow_fail ';' STRING ( ';' STRING )?
 summary: Execute a system command but ignore any failures

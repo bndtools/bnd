@@ -1,10 +1,14 @@
 package aQute.bnd.help.instructions;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 import aQute.bnd.help.SyntaxAnnotation;
 
 /**
  * Instructions on the Resolution.
  */
+
+@ProviderType
 public interface ResolutionInstructions {
 
 	/**
@@ -51,4 +55,31 @@ public interface ResolutionInstructions {
 	@SyntaxAnnotation(lead = "Specify the runorder and startlevel behavior of the resolved bundles", example = "'-runstartlevel order=leastdependenciesfirst, begin=1, step=1")
 	RunStartLevel runstartlevel(RunStartLevel deflt);
 
+	enum ResolveMode {
+		/**
+		 * Resolve is done manually. This is the default
+		 */
+		@SyntaxAnnotation(lead = "Resolve is manually with the Resolve button")
+		manual,
+		/**
+		 * Run the resolver automatically yon save
+		 */
+		@SyntaxAnnotation(lead = "A resolve will take place before saving")
+		auto,
+		/**
+		 * Run the resolver before launching.
+		 */
+		@SyntaxAnnotation(lead = "A resolve will take place before launching")
+		beforelaunch,
+
+		/**
+		 * Run the resolver before launching during batch mode
+		 */
+		@SyntaxAnnotation(lead = "A resolve will take place before launching when in batch mode (e.g. Gradle) but not in IDE mode (e.g. Eclipse)")
+		batch,
+
+	}
+
+	@SyntaxAnnotation(lead = "Resolve mode defines when resolving takes place. The default, manual, requires a manual step in bndtools. Auto will resolve on save, and beforelaunch runs the resolver before being launched, batchlaunch is like beforelaunch but only in batch mode", example = "'-resolve manual", pattern = "(manual|auto|beforelaunch|batch)")
+	ResolveMode resolve();
 }

@@ -1,15 +1,18 @@
 package test.component;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.util.jar.Manifest;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.service.component.annotations.Component;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 /**
  * The Service-Component header is cleaned up when it contains wildcards. The
@@ -17,7 +20,7 @@ import junit.framework.TestCase;
  * actual file paths are removed. If the Service-Component header is not set
  * then the names are not touched.
  */
-public class WildcardComponents extends TestCase {
+public class WildcardComponents {
 	@Component
 	static class WildcardTestComponent {}
 
@@ -26,6 +29,7 @@ public class WildcardComponents extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testWildcardSpecMatchingOldStyleComponents() throws Exception {
 		try (Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("jar/com.test.scala.jar"));
@@ -41,6 +45,7 @@ public class WildcardComponents extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAnnotationsAndNoHeader() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.*WildcardTestComponent");
@@ -57,6 +62,7 @@ public class WildcardComponents extends TestCase {
 		}
 	}
 
+	@Test
 	public void testWildcardWithAnnotations() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.*WildcardTestComponent");
@@ -74,6 +80,7 @@ public class WildcardComponents extends TestCase {
 		}
 	}
 
+	@Test
 	public void testWildcardNotMatching() throws Exception {
 		try (Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("jar/com.test.scala.jar"));

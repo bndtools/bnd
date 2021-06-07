@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/releases/5.2.0/css/style.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="/js/releases.js"></script>
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Maven Bnd Repository Plugin</title>
+<meta name="generator" content="Jekyll v3.9.0" />
+<meta property="og:title" content="Maven Bnd Repository Plugin" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="The Maven Bnd Repository plugin provides a full interface to the Maven local repository in ~/.m2/repository and remote repositories like Nexus or Artifactory. And it provides of course full access to Maven Central. It implements the standard bnd Repository Plugin and can provide an OSGi Repository for resolving." />
+<meta property="og:description" content="The Maven Bnd Repository plugin provides a full interface to the Maven local repository in ~/.m2/repository and remote repositories like Nexus or Artifactory. And it provides of course full access to Maven Central. It implements the standard bnd Repository Plugin and can provide an OSGi Repository for resolving." />
+<script type="application/ld+json">
+{"url":"/releases/5.2.0/plugins/maven.html","headline":"Maven Bnd Repository Plugin","description":"The Maven Bnd Repository plugin provides a full interface to the Maven local repository in ~/.m2/repository and remote repositories like Nexus or Artifactory. And it provides of course full access to Maven Central. It implements the standard bnd Repository Plugin and can provide an OSGi Repository for resolving.","@type":"WebPage","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+</head>
+
+
+<body>
+
+	
+<ul class="container12 menu-bar">
+	<li span=11><a class=menu-link href="/releases/5.2.0/"><img
+			class=menu-logo src="/releases/5.2.0/img/bnd-80x40-white.png"></a>
+			<a href="/releases/5.2.0/chapters/110-introduction.html">Intro
+			</a><a href="/releases/5.2.0/chapters/800-headers.html">Headers
+			</a><a href="/releases/5.2.0/chapters/825-instructions-ref.html">Instructions
+			</a><a href="/releases/5.2.0/chapters/855-macros-ref.html">Macros
+			</a><a href="/releases/5.2.0/chapters/400-commands.html">Commands
+			</a><div class="releases"><button class="dropbtn">5.2.0</button><div class="dropdown-content"></div></div>
+	<li class=menu-link span=1>
+			<a href="https://github.com/bndtools/bnd" target="_"><img
+	style="position:absolute;top:0;right:0;margin:0;padding:0;z-index:100"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+	alt="Fork me on GitHub"
+	data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+</ul>
+
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			<ul class="side-nav">
+	
+		
+			<li><a href="/releases/5.2.0/chapters/110-introduction.html">Introduction</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/120-install.html">How to install bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/123-tour-workspace.html">Guided Tour</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/125-tour-features.html">Guided Tour Workspace & Projects</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/130-concepts.html">Concepts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/140-best-practices.html">Best practices</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/150-build.html">Build</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/155-project-setup.html">Project Setup</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/160-jars.html">Generating JARs</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/170-versioning.html">Versioning</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/180-baselining.html">Baselining</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/200-components.html">Service Components</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/210-metatype.html">Metatype</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/220-contracts.html">Contracts</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/230-manifest-annotations.html">Bundle Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/235-accessor-properties.html">Accessor Properties</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/240-spi-annotations.html">SPI Annotations</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/250-resolving.html">Resolving Dependencies</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/300-launching.html">Launching</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/305-startlevels.html">Startlevels</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/310-testing.html">Testing</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/315-launchpad-testing.html">Testing with Launchpad</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/320-packaging.html">Packaging Applications</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/330-jpms.html">JPMS Libraries</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/390-wrapping.html">Wrapping Libraries to OSGi Bundles</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/395-generating-documentation.html">Generating Documentation</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/400-commands.html">Commands</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/600-developer.html">For Developers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/650-windows.html">Tips for Windows users</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/700-tools.html">Tools bound to bnd</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/800-headers.html">Headers</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/820-instructions.html">Instruction Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/825-instructions-ref.html">Instruction Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/850-macros.html">Macro Reference</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/855-macros-ref.html">Macro Index</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/870-plugins.html">Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/875-external-plugins.html">External Plugins</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/880-settings.html">Settings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/900-errors.html">Errors</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/910-warnings.html">Warnings</a>
+	  	
+  	
+		
+			<li><a href="/releases/5.2.0/chapters/920-faq.html">Frequently Asked Questions</a>
+	  	
+  	
+</ul>
+
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+				<h1> Maven Bnd Repository Plugin</h1>
+				<p>The Maven Bnd Repository plugin provides a full interface to the Maven local repository in <code class="language-plaintext highlighter-rouge">~/.m2/repository</code> and remote repositories like <a href="http://www.sonatype.com/nexus-repository-sonatype">Nexus</a> or <a href="https://www.jfrog.com/open-source/">Artifactory</a>. And it provides of course full access to Maven Central. It implements the standard bnd Repository Plugin and can provide an OSGi Repository for resolving.</p>
+
+<h3 id="maven-central">Maven Central</h3>
+
+<p>To access Maven Central use the following configuration:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-plugin.central = \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		releaseUrl=https://repo.maven.apache.org/maven2/; \
+		index=${.}/central.maven; \
+		name="Central"
+</code></pre></div></div>
+
+<p>You can add <code class="language-plaintext highlighter-rouge">Group:Artifact:Version</code> coordinates in the <code class="language-plaintext highlighter-rouge">central.maven</code> file. The file can contain comments, empty lines, and can use macros per line. That is, you cannot create a macro with a load of GAV’s.</p>
+
+<h3 id="use-of-m2-local-repository">Use of .m2 Local Repository</h3>
+
+<p>To use your local Maven repository (<code class="language-plaintext highlighter-rouge">~/.m2/repository</code>) you can define the following plugin:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-plugin.local = \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		index=${.}/local.maven; \
+		name="Local"
+</code></pre></div></div>
+
+<h3 id="artifactory-or-nexus-repository">Artifactory or Nexus Repository</h3>
+
+<p>To use a remote release repository based on Nexus or Artifactory you can define the following plugin:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-plugin.release = \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		releaseUrl=http://localhost:8081/nexus/content/repositories/releases/    ; \
+		snapshotUrl=http://localhost:8081/nexus/content/repositories/snapshots/   ; \
+		index=${.}/release.maven; \
+		name="Release"
+</code></pre></div></div>
+
+<p>If you use a remote repository then you must configure the credentials. This is described in <a href="/instructions/connection-settings">-connection-settings</a>. Placing the following XML in  <code class="language-plaintext highlighter-rouge">~/.bnd/settings.xml</code> will provide you with the default Nexus credentials:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                          http://maven.apache.org/xsd/settings-1.0.0.xsd"&gt;
+	&lt;servers&gt;
+		&lt;server&gt;
+			&lt;id&gt;http://localhost:8081&lt;/id&gt;
+			&lt;username&gt;admin&lt;/username&gt;
+			&lt;password&gt;admin123&lt;/password&gt;
+		&lt;/server&gt;
+	&lt;/servers&gt;
+&lt;/settings&gt;
+</code></pre></div></div>
+
+<p>Notice that the id must match the scheme, the host, and the port if not the default port for the scheme.</p>
+
+<h2 id="plugin-configuration">Plugin Configuration</h2>
+
+<p>The class name of the plugin is <code class="language-plaintext highlighter-rouge">aQute.bnd.repository.maven.provider.MavenBndRepository</code>. It can take the following configuration properties:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">releaseUrl</code></td>
+      <td><code class="language-plaintext highlighter-rouge">URI</code></td>
+      <td> </td>
+      <td>Comma separated list of URLs to the repositories of released artifacts.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">snapshotUrl</code></td>
+      <td><code class="language-plaintext highlighter-rouge">URI</code></td>
+      <td> </td>
+      <td>Comma separated list of URLs to the repositories of snapshot artifacts.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">local</code></td>
+      <td><code class="language-plaintext highlighter-rouge">PATH</code></td>
+      <td><code class="language-plaintext highlighter-rouge">~/.m2/repository</code></td>
+      <td>The file path to the local Maven repository.</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>If specified, it should use forward slashes. If the directory does not exist, the plugin will attempt to create it.</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>The default can be overridden with the <code class="language-plaintext highlighter-rouge">maven.repo.local</code> System property.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">readOnly</code></td>
+      <td><code class="language-plaintext highlighter-rouge">true|false</code></td>
+      <td><code class="language-plaintext highlighter-rouge">false</code></td>
+      <td>If set to <em>truthy</em> then this repository is read only.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">name</code></td>
+      <td><code class="language-plaintext highlighter-rouge">NAME</code></td>
+      <td><code class="language-plaintext highlighter-rouge">Maven</code></td>
+      <td>The name of the repository.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">index</code></td>
+      <td><code class="language-plaintext highlighter-rouge">PATH</code></td>
+      <td><code class="language-plaintext highlighter-rouge">cnf/&lt;name&gt;.mvn</code></td>
+      <td>The path to the <em>index</em> file. The index file is a list of Maven <em>coordinates</em>.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">source</code></td>
+      <td><code class="language-plaintext highlighter-rouge">STRING</code></td>
+      <td><code class="language-plaintext highlighter-rouge">org.osgi:org.osgi.service.log:1.3.0 org.osgi:org.osgi.service.log:1.2.0</code></td>
+      <td>A space, comma, semicolon, or newline separated GAV string.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">noupdateOnRelease</code></td>
+      <td><code class="language-plaintext highlighter-rouge">true|false</code></td>
+      <td><code class="language-plaintext highlighter-rouge">false</code></td>
+      <td>If set to <em>truthy</em> then this repository will not update the <code class="language-plaintext highlighter-rouge">index</code> when a non-snapshot artifact is released.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">poll.time</code></td>
+      <td><code class="language-plaintext highlighter-rouge">integer</code></td>
+      <td>5 seconds</td>
+      <td>Number of seconds between checks for changes to the <code class="language-plaintext highlighter-rouge">index</code> file. If the value is negative or the workspace is in batch/CI mode, then no polling takes place.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">multi</code></td>
+      <td><code class="language-plaintext highlighter-rouge">NAME</code></td>
+      <td> </td>
+      <td>Comma separated list of extensions to be searched for indexing containing bundles. For example, a zip file could comprise further bundles. Hence, this zip artifact can be referenced in this plugin for indexing the internal JARs.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>If no <code class="language-plaintext highlighter-rouge">releaseUrl</code> nor a <code class="language-plaintext highlighter-rouge">snapshotUrl</code> are specified then the repository is <em>local only</em>. For finding archives, both URLs are used, first <code class="language-plaintext highlighter-rouge">releaseUrl</code>.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">index</code> file specifies a view on the remote repository, it <em>scopes</em> it. Since we use the bnd repositories to resolve against, it is impossible to resolve against the world. The index file falls under source control, it is stored in the source control management system. This guarantees that at any time the project is checked out it has the same views on its repository. This is paramount to prevent build breackages due to changes in repositories.</p>
+
+<p>Alternative, the GAV’s can be specified in the file where the repository is defined with the  <code class="language-plaintext highlighter-rouge">source</code> configuration property. This is a string separated by either whitespace, commas, semicolons, or any combination thereof.</p>
+
+<p>Both the index file and the source configuration can be replaced by macros. The only difference is that the source can use macros for more than one GAV while the indexFile is processed per line and that line must deliver at most single GAV.</p>
+
+<h2 id="coordinates--terminology">Coordinates &amp; Terminology</h2>
+
+<p>The index file contains a list of <em>coordinates</em>. A coordinate specifies an <em>archive</em> in a Maven <em>revison</em>. An archive is a ZIP, POM, JAR, or any other type of file. In Maven, these files are addressed within a revision with an <em>extension</em> and a <em>classifier</em>. The extension indicates the type of the file and the classifier is a modifier that makes the name unique in the project. A <em>revision</em> is the combination of a <em>program</em> and a <em>version</em>, where the program is the combination of <em>groupId</em> and <em>artifactId</em>.</p>
+
+<p>For an archive, the extension has a default of <code class="language-plaintext highlighter-rouge">jar</code> and the classifier is by default not set (either <code class="language-plaintext highlighter-rouge">null</code> or empty). The syntax for the coordinates is therefore:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>group ':' artifact ( ':' extension ( ':' classifier )? )? ':' version ( '-SNAPSHOT` )?
+</code></pre></div></div>
+
+<p>Valid coordinates are:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>group:artifact:1.0-SNAPSHOT
+commons-cli:commons-cli:jar:sources:1.3.1
+commons-lang:commons-lang:2.6
+commons-logging:commons-logging:1.2
+org.osgi:osgi.core:6.0.0
+org.osgi:osgi.annotation:6.0.1
+</code></pre></div></div>
+
+<p>The file can contain comments (start the line with <code class="language-plaintext highlighter-rouge">#</code>), empty lines and also macros. The domain of the macros is the Workspace. A comment may also be placed after the GAV.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># This is a comment
+${osgi}:${osgi}.service.log:1.4.0
+</code></pre></div></div>
+
+<h2 id="local-repository">Local Repository</h2>
+
+<p>Maven supports a local repository in <code class="language-plaintext highlighter-rouge">~/.m2/repository</code>. All repositories will install through a local repository. The default is the same repository as Maven but this can be overridden with the <code class="language-plaintext highlighter-rouge">local</code> configuration property.</p>
+
+<p>It is possible to define a Maven Bnd Repository without a <code class="language-plaintext highlighter-rouge">releaseUrl</code> or <code class="language-plaintext highlighter-rouge">snapshotUrl</code>. In that case only access to the local repository is provided. Trying to release remotely will be an error for such a repository.</p>
+
+<p>The <a href="/instructions/buildrepo">-buildrepo</a> instruction can be pointed to such a local repository; it will then store a JAR in the local repository after every build. This can be useful if there are Maven projects that consume the output of a bnd workspace.</p>
+
+<h2 id="releasing">Releasing</h2>
+
+<p>In bnd, releasing is done by moving the JARs into a special release repository after they’ve been approved. That is, the location of a JAR defines if it is released, there is no need to reflect the release status in the version.</p>
+
+<p>In Maven, the release status is modeled in the version. To support the  staging model, versions can end in <code class="language-plaintext highlighter-rouge">-SNAPSHOT</code>. Snapshots are treated very differently in the release process. The most important difference is that snapshot versions can overwrite previous versions.</p>
+
+<p>In the release cycle, a JAR is <code class="language-plaintext highlighter-rouge">put</code> to  <em>release</em> repository. The project of the released JAR is provided as <em>context</em>, this means it can inherit from the project and workspace. This plugin will read the <a href="/instructions/maven-release">-maven-release</a> instruction from the context. This can result in generating source and javadoc jars. By default, a local only release only installs the actual binary.</p>
+
+<p>To properly release the revision we need to know Maven specific information that is normally specified in the Maven <em>pom</em>. The bnd build can construct a pom using the <a href="/instructions/pom">-pom</a> instruction. This instruction creates a pom in the JAR at <code class="language-plaintext highlighter-rouge">META-INF/group/artifact/pom.xml</code>. This plugin requires such a pom to be present. If it is not present, the <a href="/instructions/maven-release">-maven-release</a> instruction must provide a PATH to an alternative pom. If no pom can be found then this is aborts the release.</p>
+
+<p>In general, the plugin will first <em>install</em> the JARs and its constituents into the <code class="language-plaintext highlighter-rouge">local</code> revision directory, using the Maven naming rules. If this is successful, it uploads the files to the remote repository using the remote naming rules. It will then update the <code class="language-plaintext highlighter-rouge">maven-metadata</code> to reflect the new release.</p>
+
+<p>In Maven, revisions that end in <code class="language-plaintext highlighter-rouge">-SNAPSHOT</code> are treated special in many places. In bnd, we support this model with the <a href="/instructions/snapshot">-snapshot</a> and <a href="/instructions/pom">-pom</a> instructions. If a <code class="language-plaintext highlighter-rouge">snapshotUrl</code> is specified, then versions that end in <code class="language-plaintext highlighter-rouge">SNAPSHOT</code> are released to that URL.</p>
+
+<h2 id="authentication">Authentication</h2>
+
+<p>The Maven Bnd Repository uses the bnd Http Client. See the <a href="/instructions/connection-settings">-connection-settings</a> instruction for how to set the proxy and authentication information.</p>
+
+<h2 id="ides">IDEs</h2>
+
+<p>The repository view in the IDE will show detailed information when you hover the mouse over the the repository entry, the program entry, or the revision entry.</p>
+
+<p>You can add new entries by:</p>
+
+<ul>
+  <li>Editing the <code class="language-plaintext highlighter-rouge">index</code> file. The repository will be updated immediately</li>
+  <li>Using the menus on the revision or program entries to delete entries</li>
+  <li>Dropping a URL to a POM. This pom will be parsed and then its coordinates are added. POMs from <code class="language-plaintext highlighter-rouge">search.maven.org</code> are also supported.</li>
+  <li>Using the menus to add all runtime or compile time dependencies of another entry.</li>
+</ul>
+
+
+			</div>
+	</ul>
+
+	
+<nav class=next-prev>
+	<a href='/releases/5.2.0/plugins/localindexrepo.html'></a> <a href='/releases/5.2.0/plugins/osgirepo.html'></a>
+</nav>
+<footer class="container12" style="border-top: 1px solid black;padding:10px 0">
+	<ul span=12 row>
+		<li span=12>
+			<ul>
+				<li><a href="/releases/5.2.0/">GitHub</a>
+			</ul>
+	</ul>
+</footer>
+
+</body>
+</html>

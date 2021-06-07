@@ -1,6 +1,10 @@
 package test.component;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
+
+import org.junit.jupiter.api.Test;
 
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.osgi.Builder;
@@ -9,14 +13,12 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
-import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
-public class ComponentOrderingTest extends TestCase {
+public class ComponentOrderingTest {
 
-	static DiffPluginImpl differ = new DiffPluginImpl();
-
-	public static void testOrdering() throws Exception {
+	@Test
+	public void testOrdering() throws Exception {
 		Builder builder = new Builder();
 		builder.addClasspath(new File("bin_test"));
 		builder.setProperty("Service-Component", "OSGI-INF/a.xml,OSGI-INF/b.xml,OSGI-INF/c.xml,OSGI-INF/d.xml");
@@ -35,6 +37,7 @@ public class ComponentOrderingTest extends TestCase {
 			.getMainAttributes()
 			.getValue("Service-Component");
 
+		DiffPluginImpl differ = new DiffPluginImpl();
 		Tree newer = differ.tree(b);
 		Tree older = differ.tree(a);
 

@@ -83,7 +83,7 @@ public class Decoder implements Closeable {
 
 	public Decoder mark() throws NoSuchAlgorithmException {
 		if (digest == null)
-			digest = MessageDigest.getInstance("SHA1");
+			digest = MessageDigest.getInstance("SHA-1");
 		digest.reset();
 		return this;
 	}

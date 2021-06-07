@@ -1,15 +1,13 @@
 package aQute.bnd.osgi;
 
-import static aQute.lib.exceptions.ConsumerWithException.asConsumer;
+import static aQute.bnd.exceptions.ConsumerWithException.asConsumer;
 import static java.util.Collections.emptySet;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.annotation.Target;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -19,7 +17,6 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,12 +41,14 @@ import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.stream.MapStream;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.converter.Converter;
-import aQute.lib.exceptions.Exceptions;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
+import aQute.bnd.unmodifiable.Sets;
 
 /**
  * This class parses the 'header annotations'. Header annotations are
@@ -99,9 +98,10 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		});
 	}
 
-	private static final Instruction	ANNOTATION_INSTRUCTION	= new Instruction("java.lang.annotation.Annotation");
+	private static final Instruction	ANNOTATION_INSTRUCTION		= new Instruction(
+		"java.lang.annotation.Annotation");
 
-	static final Pattern				SIMPLE_PARAM_PATTERN	= Pattern
+	static final Pattern				SIMPLE_PARAM_PATTERN		= Pattern
 		.compile("\\$\\{(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\}");
 
 	// Annotations to ignore scanning further because they are known to be
@@ -111,57 +111,52 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	// for annotations that aren't supposed to be needed on the classpath
 	// (usually
 	// OSGi versioning annotations).
-	static final Set<String>			DO_NOT_SCAN;
+	static final Set<String>			DO_NOT_SCAN					= Sets.of(
+		"org.osgi.annotation.versioning.ProviderType", "org.osgi.annotation.versioning.ConsumerType",
+		"org.osgi.annotation.versioning.Version");
 
-	static {
-		DO_NOT_SCAN = Stream
-			.of("org.osgi.annotation.versioning.ProviderType", "org.osgi.annotation.versioning.ConsumerType",
-				"org.osgi.annotation.versioning.Version")
-			.collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
-	}
-
-	final Analyzer					analyzer;
-	final MultiMap<String, String>	headers						= new MultiMap<>();
+	final Analyzer						analyzer;
+	final MultiMap<String, String>		headers						= new MultiMap<>();
 
 	//
 	// Constant Strings for a fast switch statement
 	//
 
-	static final String				CARDINALITY					= "aQute.bnd.annotation.Cardinality";
-	static final String				RESOLUTION					= "aQute.bnd.annotation.Resolution";
-	static final String				BUNDLE_LICENSE				= "aQute.bnd.annotation.headers.BundleLicense";
-	static final String				REQUIRE_CAPABILITY			= "aQute.bnd.annotation.headers.RequireCapability";
-	static final String				PROVIDE_CAPABILITY			= "aQute.bnd.annotation.headers.ProvideCapability";
-	static final String				BUNDLE_CATEGORY				= "aQute.bnd.annotation.headers.BundleCategory";
-	static final String				BUNDLE_DOC_URL				= "aQute.bnd.annotation.headers.BundleDocURL";
-	static final String				BUNDLE_DEVELOPERS			= "aQute.bnd.annotation.headers.BundleDevelopers";
-	static final String				BUNDLE_CONTRIBUTORS			= "aQute.bnd.annotation.headers.BundleContributors";
-	static final String				BUNDLE_COPYRIGHT			= "aQute.bnd.annotation.headers.BundleCopyright";
-	static final String				STD_REQUIREMENT				= "org.osgi.annotation.bundle.Requirement";
-	static final String				STD_REQUIREMENT_CARDINALITY	= "org.osgi.annotation.bundle.Requirement$Cardinality";
-	static final String				STD_REQUIREMENT_RESOLUTION	= "org.osgi.annotation.bundle.Requirement$Resolution";
-	static final String				STD_REQUIREMENTS			= "org.osgi.annotation.bundle.Requirements";
-	static final String				STD_CAPABILITY				= "org.osgi.annotation.bundle.Capability";
-	static final String				STD_CAPABILITIES			= "org.osgi.annotation.bundle.Capabilities";
-	static final String				STD_HEADER					= "org.osgi.annotation.bundle.Header";
-	static final String				STD_HEADERS					= "org.osgi.annotation.bundle.Headers";
+	static final String					CARDINALITY					= "aQute.bnd.annotation.Cardinality";
+	static final String					RESOLUTION					= "aQute.bnd.annotation.Resolution";
+	static final String					BUNDLE_LICENSE				= "aQute.bnd.annotation.headers.BundleLicense";
+	static final String					REQUIRE_CAPABILITY			= "aQute.bnd.annotation.headers.RequireCapability";
+	static final String					PROVIDE_CAPABILITY			= "aQute.bnd.annotation.headers.ProvideCapability";
+	static final String					BUNDLE_CATEGORY				= "aQute.bnd.annotation.headers.BundleCategory";
+	static final String					BUNDLE_DOC_URL				= "aQute.bnd.annotation.headers.BundleDocURL";
+	static final String					BUNDLE_DEVELOPERS			= "aQute.bnd.annotation.headers.BundleDevelopers";
+	static final String					BUNDLE_CONTRIBUTORS			= "aQute.bnd.annotation.headers.BundleContributors";
+	static final String					BUNDLE_COPYRIGHT			= "aQute.bnd.annotation.headers.BundleCopyright";
+	static final String					STD_REQUIREMENT				= "org.osgi.annotation.bundle.Requirement";
+	static final String					STD_REQUIREMENT_CARDINALITY	= "org.osgi.annotation.bundle.Requirement$Cardinality";
+	static final String					STD_REQUIREMENT_RESOLUTION	= "org.osgi.annotation.bundle.Requirement$Resolution";
+	static final String					STD_REQUIREMENTS			= "org.osgi.annotation.bundle.Requirements";
+	static final String					STD_CAPABILITY				= "org.osgi.annotation.bundle.Capability";
+	static final String					STD_CAPABILITIES			= "org.osgi.annotation.bundle.Capabilities";
+	static final String					STD_HEADER					= "org.osgi.annotation.bundle.Header";
+	static final String					STD_HEADERS					= "org.osgi.annotation.bundle.Headers";
 
 	// Used to detect attributes and directives on Require-Capability and
 	// Provide-Capability
-	static final String				STD_ATTRIBUTE				= "org.osgi.annotation.bundle.Attribute";
-	static final String				STD_DIRECTIVE				= "org.osgi.annotation.bundle.Directive";
+	static final String					STD_ATTRIBUTE				= "org.osgi.annotation.bundle.Attribute";
+	static final String					STD_DIRECTIVE				= "org.osgi.annotation.bundle.Directive";
 
 	// Class we're currently processing
-	Clazz							current;
+	Clazz								current;
 
 	// The annotations we could not load. used to avoid repeatedly logging the
 	// same missing annotation for the same project. Note that this should not
 	// be reset for each #classStart(Clazz).
-	final Set<String>				loggedMissing				= new HashSet<>();
-	final Instructions				instructions;
+	final Set<String>					loggedMissing				= new HashSet<>();
+	final Instructions					instructions;
 
 	// we parse the annotations separately at the end
-	boolean							finalizing;
+	boolean								finalizing;
 
 	static String convert(Object value) {
 		try {
@@ -414,8 +409,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				case STD_CAPABILITIES :
 				case STD_REQUIREMENTS :
 					Object[] annotations = a.get("value");
-					for (int i = 0; i < annotations.length; i++) {
-						mergeAttributesAndDirectives((Annotation) annotations[i]);
+					for (Object anno : annotations) {
+						mergeAttributesAndDirectives((Annotation) anno);
 					}
 					break;
 				default :
@@ -916,15 +911,11 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	}
 
 	private Attrs getAttributes(Annotation a, String... ignores) {
+		List<String> ignoresList = Arrays.asList(ignores);
 		Attrs attrs = new Attrs();
-		outer: for (Entry<String, Object> entry : a.entrySet()) {
-			String key = entry.getKey();
-			for (String ignore : ignores) {
-				if (key.equals(ignore))
-					continue outer;
-			}
-			attrs.putTyped(key, entry.getValue());
-		}
+		MapStream.of(a.entrySet())
+			.filterKey(key -> !ignoresList.contains(key))
+			.forEachOrdered(attrs::putTyped);
 		return attrs;
 	}
 
@@ -936,28 +927,24 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			return;
 
 		Processor next = new Processor();
-		next.addProperties(annotation.entrySet()
-			.stream()
-			.filter(entry -> entry.getKey()
-				.startsWith("#"))
-			.map(entry -> {
-				if (entry.getKey()
-					.equals("#uses") && (entry.getValue() instanceof Object[])
-					&& (((Object[]) entry.getValue()).length > 0)
-					&& (((Object[]) entry.getValue())[0] instanceof TypeRef)) {
-
-					String converted = Arrays.stream((Object[]) entry.getValue())
-						.map(TypeRef.class::cast)
-						.map(TypeRef::getPackageRef)
-						.map(PackageRef::getFQN)
-						.distinct()
-						.collect(Collectors.joining(","));
-
-					return new SimpleEntry<>(entry.getKey(), converted);
+		next.addProperties(MapStream.of(annotation.entrySet())
+			.filterKey(k -> k.startsWith("#"))
+			.map((k, v) -> {
+				if (k.equals("#uses") && (v instanceof Object[])) {
+					Object[] array = (Object[]) v;
+					if ((array.length > 0) && (array[0] instanceof TypeRef)) {
+						String converted = Arrays.stream(array)
+							.map(TypeRef.class::cast)
+							.map(TypeRef::getPackageRef)
+							.map(PackageRef::getFQN)
+							.distinct()
+							.collect(Collectors.joining(","));
+						return MapStream.entry(k, converted);
+					}
 				}
-				return entry;
+				return MapStream.entry(k, convert(v));
 			})
-			.collect(Collectors.toMap(Entry::getKey, entry -> convert(entry.getValue()))));
+			.collect(MapStream.toMap()));
 		next.setProperty("@class", current.getFQN());
 		next.setProperty("@class-short", current.getClassName()
 			.getShortName());

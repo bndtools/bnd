@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspace;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspaceClient;
 import aQute.lib.aspects.Aspects;
-import aQute.lib.exceptions.Exceptions;
-import aQute.lib.exceptions.FunctionWithException;
+import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.exceptions.FunctionWithException;
 import aQute.lib.io.IO;
 import aQute.lib.link.Link;
 
@@ -42,9 +42,7 @@ public class RemoteWorkspaceClientFactory {
 	 * @return a RemoteWorkspace
 	 */
 	public static RemoteWorkspace create(File dir, RemoteWorkspaceClient client) {
-		return findRemoteWorkspace(dir, p -> {
-			return create(p, client);
-		});
+		return findRemoteWorkspace(dir, p -> create(p, client));
 	}
 
 	/**
@@ -66,9 +64,7 @@ public class RemoteWorkspaceClientFactory {
 				logger.debug("Closing remote worksapace link on port {}", port);
 				IO.close(link::close);
 			}, "close")
-			.intercept(() -> {
-				return "RemoteWorkspace[port=" + port + "]";
-			}, "toString")
+			.intercept(() -> ("RemoteWorkspace[port=" + port + "]"), "toString")
 			.build();
 
 	}

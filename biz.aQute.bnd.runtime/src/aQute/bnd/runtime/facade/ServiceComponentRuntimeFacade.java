@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -241,12 +242,7 @@ public class ServiceComponentRuntimeFacade implements SnapshotProvider {
 			ID other = (ID) obj;
 			if (bundle != other.bundle)
 				return false;
-			if (name == null) {
-				if (other.name != null)
-					return false;
-			} else if (!name.equals(other.name))
-				return false;
-			return true;
+			return Objects.equals(name, other.name);
 		}
 	}
 

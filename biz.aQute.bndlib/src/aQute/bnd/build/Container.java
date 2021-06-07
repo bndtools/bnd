@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import aQute.bnd.build.DownloadBlocker.Stage;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
@@ -95,6 +96,10 @@ public class Container {
 		DownloadBlocker blocker = db;
 		if (blocker != null) {
 			File f = blocker.getFile();
+			Map<String, String> dbAttrs = blocker.getAttributes();
+			if (!dbAttrs.isEmpty()) {
+				dbAttrs.forEach(getWritableAttributes()::putIfAbsent);
+			}
 			if (blocker.getStage() == Stage.FAILURE) {
 				String r = blocker.getReason();
 				if (error == null) {
@@ -200,10 +205,15 @@ public class Container {
 		return attributes;
 	}
 
-	public synchronized void putAttribute(String name, String value) {
-		if (attributes == Collections.<String, String> emptyMap())
-			attributes = new HashMap<>(1);
-		attributes.put(name, value);
+	public void putAttribute(String name, String value) {
+		getWritableAttributes().put(name, value);
+	}
+
+	private synchronized Map<String, String> getWritableAttributes() {
+		if (attributes == Collections.<String, String> emptyMap()) {
+			return attributes = new HashMap<>();
+		}
+		return attributes;
 	}
 
 	/**
@@ -398,7 +408,7 @@ public class Container {
 
 				return false;
 			})
-			.map(container -> container.getFile())
+			.map(Container::getFile)
 			.map(File::getAbsolutePath)
 			.collect(Collectors.toList());
 	}
@@ -408,4 +418,11 @@ public class Container {
 		return new Container(project, message);
 	}
 
+	public boolean isOk() {
+		return getError() == null;
+	}
+
+	public BundleId getBundleId() {
+		return new BundleId(getBundleSymbolicName(), getVersion());
+	}
 }

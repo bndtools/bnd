@@ -9,7 +9,6 @@ import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.lang.invoke.MethodType.methodType;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,24 +28,32 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.Permission;
 import java.security.PermissionCollection;
 import java.security.Policy;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Formatter;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.IllegalFormatException;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -65,8 +72,12 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.framework.connect.ConnectFrameworkFactory;
+import org.osgi.framework.connect.ModuleConnector;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.framework.wiring.BundleRevision;
@@ -81,16 +92,17 @@ import aQute.lib.io.ByteBufferDataOutput;
 import aQute.lib.io.IO;
 import aQute.lib.startlevel.StartLevelRuntimeHandler;
 import aQute.lib.strings.Strings;
+import aQute.libg.uri.URIUtil;
 
 /**
  * This is the primary bnd launcher. It implements a launcher that runs on Java
  * 1.8.
  */
-public class Launcher implements ServiceListener {
+public class Launcher implements ServiceListener, FrameworkListener {
 
-	private static final String				BND_LAUNCHER		= ".bnd.launcher";
+	private static final String				BND_LAUNCHER			= ".bnd.launcher";
 
-	private PrintStream						out;
+	private PrintStream						out						= System.out;
 	private LauncherConstants				parms;
 	private Framework						systemBundle;
 	private FrameworkWiring					frameworkWiring;
@@ -99,15 +111,43 @@ public class Launcher implements ServiceListener {
 	private boolean							security;
 	private SimplePermissionPolicy			policy;
 	private Callable<Integer>				mainThread;
-	private final List<BundleActivator>		embedded			= new ArrayList<>();
-	private final Map<Bundle, Throwable>	errors				= new HashMap<>();
-	private final Map<File, Bundle>			installedBundles	= new LinkedHashMap<>();
-	private File							home				= new File(System.getProperty("user.home"));
-	private File							bnd					= new File(home, "bnd");
-	private List<Bundle>					wantsToBeStarted	= new ArrayList<>();
-	private AtomicBoolean					active				= new AtomicBoolean();
-	private AtomicReference<DatagramSocket>	commsSocket			= new AtomicReference<>();
+	private final Map<File, Bundle>			installedBundles		= new LinkedHashMap<>();
+	private File							home					= new File(System.getProperty("user.home"));
+	private File							bnd						= new File(home, "bnd");
+	private List<Bundle>					wantsToBeStarted		= new ArrayList<>();
+	private AtomicBoolean					active					= new AtomicBoolean();
+	private AtomicReference<DatagramSocket>	commsSocket				= new AtomicReference<>();
 	private StartLevelRuntimeHandler		startLevelhandler;
+	private boolean							connect;
+	private BundleActivator					externalActivator;
+	private boolean							restart					= false;
+	private boolean							frameworkInited			= false;
+
+	private ServiceRegistration<?>			launcherServiceRegistraion;
+
+	enum EmbeddedActivatorPhase {
+
+		AFTER_FRAMEWORK_INIT,
+		BEFORE_BUNDLES_START,
+		AFTER_BUNDLES_START,
+		UNKNOWN;
+
+		static EmbeddedActivatorPhase valueOf(Object o) {
+			if (AFTER_FRAMEWORK_INIT.name()
+				.equals(o))
+				return AFTER_FRAMEWORK_INIT;
+
+			if (Boolean.TRUE.equals(o) || BEFORE_BUNDLES_START.name()
+				.equals(o))
+				return BEFORE_BUNDLES_START;
+
+			if (Boolean.FALSE.equals(o) || AFTER_BUNDLES_START.name()
+				.equals(o))
+				return AFTER_BUNDLES_START;
+
+			return UNKNOWN;
+		}
+	}
 
 	/**
 	 * Called from the commandline (and via EmbeddedLauncher in the embedded
@@ -119,6 +159,8 @@ public class Launcher implements ServiceListener {
 			try {
 
 				exitcode = Launcher.run(args);
+			} catch (FrameworkRestart r) {
+				throw r;
 			} catch (Throwable t) {
 				exitcode = 127;
 				// Last resort ... errors should be handled lower
@@ -134,12 +176,37 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
-	/*
+	/**
 	 * Without exit and properties are read. Called reflectively from embedded
 	 */
 	public static int run(String args[]) throws Throwable {
 		Launcher target = new Launcher();
 		target.loadPropertiesFromFileOrEmbedded();
+		return target.launch(args);
+	}
+
+	/**
+	 * Launch with optional properties & optional bundle activator. If the
+	 * properties are null, they are attempted to be read from
+	 * `launcher.properties`.
+	 *
+	 * @param args
+	 * @param properties the properties or null
+	 * @param activator null, or a Bundle Activator that will be called back
+	 *            before the bundles are started, see
+	 *            {@link EmbeddedActivatorPhase#BEFORE_BUNDLES_START}.
+	 * @return the exit code
+	 * @throws Throwable
+	 */
+	public static int launch(String[] args, Properties properties, BundleActivator activator) throws Throwable {
+		Launcher target;
+		if (properties == null) {
+			target = new Launcher();
+			target.loadPropertiesFromFileOrEmbedded();
+		} else {
+			target = new Launcher(properties);
+		}
+		target.externalActivator = activator;
 		return target.launch(args);
 	}
 
@@ -195,7 +262,6 @@ public class Launcher implements ServiceListener {
 
 	public Launcher(Properties p) {
 		this.properties = p;
-		out = System.err;
 	}
 
 	private void loadPropertiesFromFileOrEmbedded() throws Exception {
@@ -319,6 +385,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	private int launch(String args[]) throws Throwable {
+		Integer exitCode = null;
 		try {
 			setSystemProperties();
 			this.parms = new LauncherConstants(properties);
@@ -328,15 +395,16 @@ public class Launcher implements ServiceListener {
 
 			watch();
 
+			trace("java.class.path %s", System.getProperties()
+				.getProperty("java.class.path"));
 			trace("inited runbundles=%s activators=%s timeout=%s", parms.runbundles, parms.activators, parms.timeout);
 			trace("version %s", getVersion());
 
-			int status = activate();
+			int status = activate(args);
 			if (status != 0) {
 				report(out);
 				System.exit(status);
 			}
-
 
 			trace("framework=%s", systemBundle);
 
@@ -356,35 +424,33 @@ public class Launcher implements ServiceListener {
 					// Must be running on a profile which does not support
 					// java.lang.instrument
 				}
-
-				Hashtable<String, Object> argprops = new Hashtable<>();
-				argprops.put(LauncherConstants.LAUNCHER_ARGUMENTS, args);
-				argprops.put(LauncherConstants.LAUNCHER_READY, "true");
-				argprops.put(Constants.SERVICE_RANKING, -1000);
-				systemBundle.getBundleContext()
-					.registerService(new String[] {
-						Object.class.getName(), Launcher.class.getName()
-					}, this, argprops);
-				trace("registered launcher with arguments for syncing");
-			} else {
-				trace("requested to register no services");
+				if (launcherServiceRegistraion != null) {
+					Dictionary<String, Object> launcherServiceProperties = new Hashtable<>();
+					launcherServiceProperties.put(LauncherConstants.LAUNCHER_ARGUMENTS, args);
+					launcherServiceProperties.put(Constants.SERVICE_RANKING, -1000);
+					launcherServiceProperties.put(LauncherConstants.LAUNCHER_READY, "true");
+					launcherServiceRegistraion.setProperties(launcherServiceProperties);
+					trace("setting launcher service registration to %s=true", LauncherConstants.LAUNCHER_READY);
+				}
 			}
-
 
 			// Wait until a Runnable is registered with main.thread=true.
 			// not that this will never happen when we're running on the mini fw
 			// but the test case normally exits.
 			synchronized (this) {
-				while (mainThread == null) {
+				while (mainThread == null && !restart) {
 					trace("will wait for a registered Runnable");
+
 					wait();
 				}
 			}
-			trace("will call main");
-			// report(System.err);
-			Integer exitCode = mainThread.call();
-			trace("main return, code %s", exitCode);
-			return exitCode == null ? 0 : exitCode;
+
+			if (mainThread != null) {
+				trace("will call main");
+				// report(System.err);
+				exitCode = mainThread.call();
+				trace("main return, code %s", exitCode);
+			}
 		} catch (Throwable e) {
 			error("Unexpected error in the run body: %s", e);
 			throw e;
@@ -394,6 +460,9 @@ public class Launcher implements ServiceListener {
 			System.setProperties(initialSystemProperties);
 			// TODO should we wait here?
 		}
+		if (restart)
+			throw new FrameworkRestart();
+		return exitCode == null ? 0 : exitCode;
 	}
 
 	private List<String> split(String value, String separator) {
@@ -408,12 +477,30 @@ public class Launcher implements ServiceListener {
 		return list;
 	}
 
-	private int activate() throws Exception {
+	private int activate(String[] args) throws Exception {
 		Policy.setPolicy(new AllPolicy());
 
 		systemBundle = createFramework();
 		if (systemBundle == null)
 			return LauncherConstants.ERROR;
+
+		BundleContext systemContext = systemBundle.getBundleContext();
+
+		systemContext.addFrameworkListener(this);
+
+		if (parms.services) { // Does not work for our dummy framework
+
+			Dictionary<String, Object> launcherServiceProperties = new Hashtable<>();
+			launcherServiceProperties.put(LauncherConstants.LAUNCHER_ARGUMENTS, args);
+			launcherServiceProperties.put(Constants.SERVICE_RANKING, -1000);
+			launcherServiceRegistraion = systemBundle.getBundleContext()
+				.registerService(new String[] {
+					Object.class.getName(), Launcher.class.getName()
+				}, this, launcherServiceProperties);
+			trace("registered launcher with arguments for syncing");
+		} else {
+			trace("requested to register no services");
+		}
 
 		startLevelhandler.beforeStart(systemBundle);
 
@@ -425,43 +512,70 @@ public class Launcher implements ServiceListener {
 
 		doSecurity();
 
-		List<Bundle> tobestarted = update(System.currentTimeMillis() + 100);
-
 		int result = LauncherConstants.OK;
-
-		BundleContext systemContext = systemBundle.getBundleContext();
 
 		systemContext.addServiceListener(this, "(&(|(objectclass=" + Runnable.class.getName() + ")(objectclass="
 			+ Callable.class.getName() + "))(main.thread=true))");
 
+		List<BundleActivator> startBeforeBundleStart = new LinkedList<>();
+		List<BundleActivator> startAfterBundleStart = new LinkedList<>();
+
+		if (externalActivator != null) {
+			startBeforeBundleStart.add(externalActivator);
+		}
 
 		// Start embedded activators
 		trace("start embedded activators");
-		if (parms.activators != null) {
-			ClassLoader loader = getClass().getClassLoader();
-			for (Object token : parms.activators) {
-				try {
-					Class<?> clazz = loader.loadClass((String) token);
-					BundleActivator activator = (BundleActivator) newInstance(clazz);
-					if (isImmediate(activator)) {
-						start(systemContext, result, activator);
-					}
-					embedded.add(activator);
-					trace("adding activator %s", activator);
-				} catch (Exception e) {
-					throw new IllegalArgumentException("Embedded Bundle Activator incorrect: " + token, e);
+		ClassLoader loader = getClass().getClassLoader();
+		for (Object token : parms.activators) {
+			try {
+				Class<?> clazz = loader.loadClass((String) token);
+				BundleActivator activator = (BundleActivator) newInstance(clazz);
+				Object immediateFieldValue = getImmediateFieldValue(activator);
+				EmbeddedActivatorPhase phase = EmbeddedActivatorPhase.valueOf(immediateFieldValue);
+				switch (phase) {
+					case AFTER_FRAMEWORK_INIT :
+						trace("AFTER_FRAMEWORK_INIT %s", activator);
+						result = start(systemContext, result, activator);
+						break;
+
+					case BEFORE_BUNDLES_START :
+						trace("BEFORE_BUNDLES_START %s", activator);
+						startBeforeBundleStart.add(activator);
+						break;
+
+					case UNKNOWN :
+						trace("!the value of IMMEDIATE is not recognized as one of %s, it is %s",
+							Arrays.toString(EmbeddedActivatorPhase.values()), immediateFieldValue);
+
+						// FALL THROUGH
+
+					default :
+					case AFTER_BUNDLES_START :
+						trace("AFTER_BUNDLES_START %s", activator);
+						startAfterBundleStart.add(activator);
+						break;
 				}
+			} catch (Exception e) {
+				throw new IllegalArgumentException("Embedded Bundle Activator incorrect: " + token, e);
 			}
+		}
+		List<Bundle> tobestarted = update(System.currentTimeMillis() + 100);
+
+		systemBundle.start();
+
+		trace("system bundle started ok");
+
+		for (BundleActivator activator : startBeforeBundleStart) {
+			result = start(systemContext, result, activator);
 		}
 
 		startBundles(tobestarted);
 
-		for (BundleActivator activator : embedded)
-			if (!isImmediate(activator))
-				result = start(systemContext, result, activator);
+		for (BundleActivator activator : startAfterBundleStart) {
+			result = start(systemContext, result, activator);
+		}
 
-		systemBundle.start();
-		trace("system bundle started ok");
 		startLevelhandler.afterStart();
 
 		if (parms.trace) {
@@ -471,15 +585,13 @@ public class Launcher implements ServiceListener {
 		return result;
 	}
 
-	private boolean isImmediate(BundleActivator activator) {
+	private Object getImmediateFieldValue(BundleActivator activator) {
 		try {
 			Field f = activator.getClass()
 				.getField("IMMEDIATE");
-
-			return f.getBoolean(activator);
-		} catch (Exception e) {
-			return false;
-		}
+			return f.get(activator);
+		} catch (Exception e) {}
+		return Boolean.FALSE;
 	}
 
 	private int start(BundleContext systemContext, int result, BundleActivator activator) {
@@ -497,8 +609,6 @@ public class Launcher implements ServiceListener {
 	 * Ensure that all the bundles in the parameters are actually started. We
 	 * can start in embedded mode (bundles are inside our main jar) or in file
 	 * system mode.
-	 *
-	 * @param begin
 	 */
 	private List<Bundle> update(long before) throws Exception {
 
@@ -536,7 +646,9 @@ public class Launcher implements ServiceListener {
 					failed.add(b.getSymbolicName() + "-" + b.getVersion() + " " + e + "\n");
 				}
 			}
-			error("could not resolve the bundles: %s", failed);
+			if (!failed.isEmpty()) {
+				error("could not resolve the bundles: %s", failed);
+			}
 			// return LauncherConstants.RESOLVE_ERROR;
 		}
 
@@ -547,9 +659,9 @@ public class Launcher implements ServiceListener {
 		List<Bundle> all = new ArrayList<>(tobestarted);
 		// Add all bundles that we've tried to start but failed
 		all.addAll(wantsToBeStarted);
+		wantsToBeStarted.clear();
 
-
-		for (Bundle b : tobestarted) {
+		for (Bundle b : all) {
 			try {
 				trace("starting %s", b.getSymbolicName());
 				start(b);
@@ -584,7 +696,7 @@ public class Launcher implements ServiceListener {
 	private void refresh() throws InterruptedException {
 		Semaphore semaphore = new Semaphore(0);
 
-		frameworkWiring.refreshBundles(null, (e) -> {
+		frameworkWiring.refreshBundles(null, e -> {
 			if (e.getType() == FrameworkEvent.PACKAGES_REFRESHED)
 				semaphore.release();
 		});
@@ -681,7 +793,6 @@ public class Launcher implements ServiceListener {
 				error("Failed to update bundle %s, exception %s", f, e);
 			}
 	}
-
 
 	/**
 	 * Convert a path to native when it contains a macro. This is needed for the
@@ -782,7 +893,12 @@ public class Launcher implements ServiceListener {
 			URL resource = getClass().getClassLoader()
 				.getResource(path);
 			Bundle bundle;
-			if (useReferences() && resource.getProtocol()
+			if (connect) {
+				trace("installing %s by connect", path);
+				bundle = context.installBundle(path);
+				updateDigest(digest, bundle);
+				tobestarted.add(bundle);
+			} else if (useReferences() && resource.getProtocol()
 				.equalsIgnoreCase("file")) {
 				trace("installing %s by reference", path);
 
@@ -876,6 +992,13 @@ public class Launcher implements ServiceListener {
 
 	private Bundle install(File f) throws Exception {
 		BundleContext context = systemBundle.getBundleContext();
+		Bundle b = context.getBundle("atomos:boot:" + f.getPath());
+
+		if (b != null) {
+			trace("found (Atomos) connect bundle: location %s for file %s", b.getLocation(), f.getAbsolutePath());
+			return b;
+		}
+
 		try {
 			String location;
 			if (!useReferences()) {
@@ -886,7 +1009,7 @@ public class Launcher implements ServiceListener {
 			} else
 				location = getReferenceUrl(f);
 
-			Bundle b = context.installBundle(location);
+			b = context.installBundle(location);
 			if (b.getLastModified() < f.lastModified()) {
 				b.update();
 			}
@@ -929,10 +1052,6 @@ public class Launcher implements ServiceListener {
 
 					trace("framework event %s %s", result, result.getType());
 					switch (result.getType()) {
-						case FrameworkEvent.STOPPED :
-							trace("framework event stopped");
-							System.exit(LauncherConstants.STOPPED);
-							break;
 
 						case FrameworkEvent.STARTLEVEL_CHANGED :
 							trace("start level changed");
@@ -951,10 +1070,21 @@ public class Launcher implements ServiceListener {
 							System.exit(WARNING);
 							break;
 
+						case FrameworkEvent.STOPPED :
+							trace("framework event stopped");
+							if (!parms.frameworkRestart)
+								System.exit(LauncherConstants.STOPPED);
+							else
+								restart();
+							break;
+
 						case FrameworkEvent.STOPPED_BOOTCLASSPATH_MODIFIED :
 						case FrameworkEvent.STOPPED_UPDATE :
 							trace("framework event update");
-							System.exit(UPDATE_NEEDED);
+							if (!parms.frameworkRestart)
+								System.exit(UPDATE_NEEDED);
+							else
+								restart();
 							break;
 					}
 				} catch (InterruptedException e) {
@@ -963,6 +1093,11 @@ public class Launcher implements ServiceListener {
 			}
 		};
 		wait.start();
+	}
+
+	protected synchronized void restart() {
+		this.restart = true;
+		notifyAll();
 	}
 
 	private void doSecurity() {
@@ -1071,93 +1206,91 @@ public class Launcher implements ServiceListener {
 		}
 
 		Framework systemBundle;
-
 		if (parms.services) {
 			trace("using META-INF/services");
 			// 3) framework = null, lookup in META-INF/services
 
 			ClassLoader loader = getClass().getClassLoader();
 
-			// 3) Lookup in META-INF/services
-			List<String> implementations = getMetaInfServices(loader, FrameworkFactory.class.getName());
-
-			if (implementations.isEmpty())
-				error("Found no fw implementation");
-			if (implementations.size() > 1)
-				error("Found more than one framework implementations: %s", implementations);
-
-			String implementation = implementations.get(0);
-
-			Class<?> clazz = loader.loadClass(implementation);
-			FrameworkFactory factory = (FrameworkFactory) newInstance(clazz);
-			trace("Framework factory %s", factory);
 			@SuppressWarnings({
 				"unchecked", "rawtypes"
 			})
 			Map<String, String> configuration = (Map) p;
-			systemBundle = factory.newFramework(configuration);
-			trace("framework instance %s", systemBundle);
+
+			systemBundle = createConnect(loader, configuration);
+			if (systemBundle == null) {
+				systemBundle = createClassic(systemBundle, loader, configuration);
+			}
 		} else {
 			trace("using embedded mini framework because we were told not to use META-INF/services");
 			// we have to use our own dummy framework
-			systemBundle = new MiniFramework(p);
+			@SuppressWarnings("resource")
+			MiniFramework miniFramework = new MiniFramework(p);
+			systemBundle = miniFramework.setTracing(this::trace);
+		}
+		if (systemBundle == null) {
+			error("Cannot find a framework on the classpath");
+			throw new IllegalStateException("Unfortunately, we could not create a framework");
 		}
 		systemBundle.init();
-
-		try {
-			systemBundle.getBundleContext()
-				.addFrameworkListener(event -> {
-					switch (event.getType()) {
-						case FrameworkEvent.ERROR :
-							error(event.toString(), event.getThrowable());
-							break;
-						case FrameworkEvent.WAIT_TIMEDOUT :
-							trace("Refresh will end due to error or timeout %s", event.toString());
-
-					}
-				});
-		} catch (Exception e) {
-			trace("could not register a framework listener: %s", e);
-		}
 
 		trace("inited system bundle %s", systemBundle);
 		return systemBundle;
 	}
 
-	protected void deleteFiles(File wd) {
-		IO.delete(wd);
+	private Framework createClassic(Framework systemBundle, ClassLoader loader, Map<String, String> configuration) {
+		FrameworkFactory factory = getMetaInfService(loader, FrameworkFactory.class);
+		if (factory != null) {
+			systemBundle = factory.newFramework(configuration);
+			trace("framework instance %s", systemBundle);
+		} else
+			trace("framework factory not found");
+		return systemBundle;
 	}
 
-	/**
-	 * Try to get the stupid service interface ...
-	 *
-	 * @param loader
-	 * @param string
-	 * @throws IOException
+	/*
+	 * Attempts to create an OSGi Connect. This allows a third party bundle on
+	 * the -runpath to control the class loading strategy
+	 * @param loader the class loader of this launcher
+	 * @param configuration the framework configuration
+	 * @return null or a connect framework
 	 */
-	private List<String> getMetaInfServices(ClassLoader loader, String factory) throws IOException {
-		if (loader == null)
-			loader = getClass().getClassLoader();
-
-		Enumeration<URL> e = loader.getResources("META-INF/services/" + factory);
-		List<String> factories = new ArrayList<>();
-
-		while (e.hasMoreElements()) {
-			URL url = e.nextElement();
-			trace("found META-INF/services in %s", url);
-
-			try (BufferedReader rdr = IO.reader(url.openStream(), UTF_8)) {
-				String line;
-				while ((line = rdr.readLine()) != null) {
-					trace("%s", line);
-					line = line.trim();
-					if (!line.startsWith("#") && line.length() > 0) {
-						factories.add(line);
-					}
+	private Framework createConnect(ClassLoader loader, Map<String, String> configuration) {
+		try {
+			ModuleConnector moduleConnector = getMetaInfService(loader, ModuleConnector.class);
+			if (moduleConnector != null) {
+				ConnectFrameworkFactory connectFrameworkFactory = getMetaInfService(loader,
+					ConnectFrameworkFactory.class);
+				if (connectFrameworkFactory != null) {
+					connect = true;
+					Framework connectFramework = connectFrameworkFactory.newFramework(configuration, moduleConnector);
+					trace("connect framework instance %s", connectFramework);
+					return connectFramework;
 				}
 			}
+		} catch (Throwable e) {
+			// ignore, OSGi Connect is optional
 		}
-		return factories;
+		return null;
+	}
+
+	private <T> T getMetaInfService(ClassLoader loader, Class<T> service) {
+		Iterator<T> iterator = ServiceLoader.load(service, loader)
+			.iterator();
+
+		if (!iterator.hasNext()) {
+			return null;
+		}
+		T implementation = iterator.next();
+
+		if (iterator.hasNext())
+			error("Found more than one %s implementation: %s", service, iterator.next());
+
+		return implementation;
+	}
+
+	protected void deleteFiles(File wd) {
+		IO.delete(wd);
 	}
 
 	public void addBundle(File resource) {
@@ -1171,55 +1304,56 @@ public class Launcher implements ServiceListener {
 	public void report(PrintStream out) {
 		startLevelhandler.sync();
 		try {
-			out.println("------------------------------- REPORT --------------------------");
-			out.println();
-			row(out, "Framework", systemBundle == null ? "<>" : systemBundle.getClass());
-			row(out, "Framework type", parms.services ? "META-INF/services" : "mini framework");
-			row(out, "Storage", parms.storageDir);
-			row(out, "Keep", parms.keep);
-			row(out, "Security", security);
-			row(out, "Has StartLevels", startLevelhandler.hasStartLevels());
-			row(out, "Startlevel", startLevelhandler.getFrameworkStartLevel(systemBundle));
-			list(out, fill("Run bundles", 40), parms.runbundles);
-			row(out, "Java Home", System.getProperty("java.home"));
-			list(out, fill("Classpath", 40), split(System.getProperty("java.class.path"), File.pathSeparator));
-			list(out, fill("System Packages", 40), split(parms.systemPackages, ","));
-			list(out, fill("System Capabilities", 40), split(parms.systemCapabilities, ","));
-			row(out, "Properties");
-			for (Entry<Object, Object> entry : properties.entrySet()) {
-				String key = (String) entry.getKey();
-				String value = (String) entry.getValue();
-				row(out, key, value);
-			}
-			if (systemBundle != null) {
-				BundleContext context = systemBundle.getBundleContext();
-				if (context != null) {
-					Bundle bundles[] = context.getBundles();
-					out.println();
-					out.println("Id    Levl State Modified      Location");
+			synchronized (out) { // avoid interleaving output
+				out.print("------------------------------- REPORT --------------------------");
+				out.print(System.lineSeparator());
+				out.print(System.lineSeparator());
+				row(out, "Framework", systemBundle == null ? "<>" : systemBundle.getClass());
+				row(out, "Framework type", parms.services ? "META-INF/services" : "mini framework");
+				row(out, "Storage", parms.storageDir);
+				row(out, "Keep", parms.keep);
+				row(out, "Security", security);
+				row(out, "Has StartLevels", startLevelhandler.hasStartLevels());
+				row(out, "Startlevel", startLevelhandler.getFrameworkStartLevel(systemBundle));
+				list(out, fill("Run bundles", 40), parms.runbundles);
+				row(out, "Java Home", System.getProperty("java.home"));
+				list(out, fill("Classpath", 40), split(System.getProperty("java.class.path"), File.pathSeparator));
+				list(out, fill("System Packages", 40), split(parms.systemPackages, ","));
+				list(out, fill("System Capabilities", 40), split(parms.systemCapabilities, ","));
+				row(out, "Properties");
+				for (Entry<Object, Object> entry : properties.entrySet()) {
+					String key = (String) entry.getKey();
+					String value = (String) entry.getValue();
+					row(out, key, value);
+				}
+				if (systemBundle != null) {
+					BundleContext context = systemBundle.getBundleContext();
+					if (context != null) {
+						Bundle bundles[] = context.getBundles();
+						out.print(System.lineSeparator());
+						out.print("Id    Levl State Modified      Location");
+						out.print(System.lineSeparator());
 
-					for (int i = 0; i < bundles.length; i++) {
-						String loc = bundles[i].getLocation();
-						loc = loc.replaceAll("\\w+:", "");
-						File f = new File(loc);
-						out.print(fill(Long.toString(bundles[i].getBundleId()), 6));
-						out.print(fill(startLevelhandler.getBundleStartLevel(bundles[i]) + "", 4));
-						out.print(fill(toState(bundles[i].getState()), 6));
-						if (f.exists())
-							out.print(fill(toDate(f.lastModified()), 14));
-						else
-							out.print(fill("<>", 14));
+						for (Bundle bundle : bundles) {
+							String lastModified = "<>";
+							String loc = bundle.getLocation();
+							Optional<Path> p = URIUtil.pathFromURI(loc);
+							if (p.isPresent() && Files.exists(p.get())) {
+								lastModified = FORMAT.format(Files.getLastModifiedTime(p.get())
+									.toInstant());
+							}
+							out.print(fill(Long.toString(bundle.getBundleId()), 6));
+							out.print(fill(Integer.toString(startLevelhandler.getBundleStartLevel(bundle)), 4));
+							out.print(fill(toState(bundle.getState()), 6));
+							out.print(fill(lastModified, 14));
 
-						if (errors.containsKey(bundles[i])) {
-							out.print(fill(loc, 50));
-							out.print(errors.get(bundles[i])
-								.toString());
-						} else
-							out.print(bundles[i].getLocation());
+							out.print(bundle.getLocation());
 
-						out.println();
+							out.print(System.lineSeparator());
+						}
 					}
 				}
+				out.flush();
 			}
 		} catch (Throwable t) {
 			error("Sorry, can't print framework: %s", t);
@@ -1235,19 +1369,11 @@ public class Launcher implements ServiceListener {
 				out.print(p);
 			fill = false;
 		}
-		out.println();
+		out.print(System.lineSeparator());
 	}
 
-	String toDate(long t) {
-		Calendar c = Calendar.getInstance();
-		c.setTimeInMillis(t);
-		return fill(c.get(Calendar.YEAR), 4) + fill(c.get(Calendar.MONTH), 2) + fill(c.get(Calendar.DAY_OF_MONTH), 2)
-			+ fill(c.get(Calendar.HOUR_OF_DAY), 2) + fill(c.get(Calendar.MINUTE), 2);
-	}
-
-	private String fill(int n, int width) {
-		return fill(Integer.toString(n), width, '0', -1);
-	}
+	static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("YYYYMMddHHmm")
+		.withZone(ZoneOffset.UTC);
 
 	private String fill(String s, int width) {
 		return fill(s, width, ' ', -1);
@@ -1296,7 +1422,8 @@ public class Launcher implements ServiceListener {
 		for (Object o : l) {
 			String s = o.toString();
 			out.print(del);
-			out.println(s);
+			out.print(s);
+			out.print(System.lineSeparator());
 			del = fill(" ", 40);
 		}
 	}
@@ -1367,7 +1494,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	static class AllPermissionCollection extends PermissionCollection {
-		private static final long			serialVersionUID	= 1L;
+		private static final long				serialVersionUID	= 1L;
 		private static final List<Permission>	PERMISSIONS			= Collections.singletonList(new AllPermission());
 
 		AllPermissionCollection() {
@@ -1473,10 +1600,14 @@ public class Launcher implements ServiceListener {
 		}
 
 		String message = sb.toString();
-		out.println(message);
-		if (e != null)
-			e.printStackTrace(out);
-		out.flush();
+		synchronized (out) { // avoid interleaving output
+			out.print(message);
+			out.print(System.lineSeparator());
+			if (e != null) {
+				e.printStackTrace(out);
+			}
+			out.flush();
+		}
 
 		DatagramSocket socket = commsSocket.get();
 
@@ -1500,10 +1631,14 @@ public class Launcher implements ServiceListener {
 				ByteBuffer bb = dos.toByteBuffer();
 				socket.send(new DatagramPacket(bb.array(), bb.arrayOffset(), bb.remaining()));
 			} catch (IOException ioe) {
-				out.println("! Unable to send notification to " + socket.getRemoteSocketAddress());
-				if (parms.trace)
-					ioe.printStackTrace(out);
-				out.flush();
+				synchronized (out) { // avoid interleaving output
+					out.print("! Unable to send notification to " + socket.getRemoteSocketAddress());
+					out.print(System.lineSeparator());
+					if (parms.trace) {
+						ioe.printStackTrace(out);
+					}
+					out.flush();
+				}
 			}
 		}
 	}
@@ -1546,4 +1681,31 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
+	/**
+	 * Will log any errors, warnings, traces info, and will remove itself when
+	 * the framework is started to not interfere with any logging going on in
+	 * the application
+	 */
+	@Override
+	public void frameworkEvent(FrameworkEvent event) {
+		switch (event.getType()) {
+			case FrameworkEvent.ERROR :
+				if (frameworkInited)
+					trace("%s", event);
+				else
+					error("%s", event);
+				break;
+			case FrameworkEvent.WARNING :
+				trace("%s", event);
+				break;
+
+			case FrameworkEvent.INFO :
+				trace("%s", event);
+				break;
+
+			case FrameworkEvent.STARTED :
+				frameworkInited = true;
+				break;
+		}
+	}
 }

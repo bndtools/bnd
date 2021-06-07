@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.IStartupParticipant;
 import org.bndtools.api.Logger;
+import org.bndtools.core.editors.quickfix.facade.QuickFixProcessorFacade;
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
 import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.eclipse.core.resources.IWorkspace;
@@ -22,6 +24,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -30,7 +33,6 @@ import org.osgi.service.url.URLConstants;
 import org.osgi.service.url.URLStreamHandlerService;
 import org.osgi.util.tracker.ServiceTracker;
 
-import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
 import bndtools.services.WorkspaceURLStreamHandlerService;
@@ -42,7 +44,7 @@ public class Plugin extends AbstractUIPlugin {
 
 	public static final String										PLUGIN_ID			= "bndtools.core";
 	public static final String										BND_EDITOR_ID		= PLUGIN_ID + ".bndEditor";
-	public static final String										JPM_BROWSER_VIEW_ID	= "org.bndtools.core.views.jpm.JPMBrowserView";
+	public static final String										IMG_OK				= "OK";
 
 	public static final Version										DEFAULT_VERSION		= new Version(0, 0, 0);
 
@@ -79,16 +81,8 @@ public class Plugin extends AbstractUIPlugin {
 		headlessBuildManager = new HeadlessBuildManagerTracker(context);
 		headlessBuildManager.open();
 
-		registerWorkspaceServiceFactory(context);
-
 		runStartupParticipants();
-	}
-
-	private static void registerWorkspaceServiceFactory(BundleContext context) {
-		Dictionary<String, Object> props = new Hashtable<>();
-		props.put("name", "bndtools");
-
-		context.registerService(Workspace.class.getName(), new WorkspaceServiceFactory(), props);
+		QuickFixProcessorFacade.setup(context);
 	}
 
 	private void registerWorkspaceURLHandler(BundleContext context) {
@@ -141,6 +135,7 @@ public class Plugin extends AbstractUIPlugin {
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
+		QuickFixProcessorFacade.cleanup();
 		stopStartupParticipants();
 
 		bndActivator.stop(context);
@@ -151,6 +146,7 @@ public class Plugin extends AbstractUIPlugin {
 		super.stop(context);
 		unregisterWorkspaceURLHandler();
 		scheduler.shutdown();
+		Icons.clear();
 	}
 
 	public static Plugin getDefault() {
@@ -262,5 +258,10 @@ public class Plugin extends AbstractUIPlugin {
 
 	public ScheduledExecutorService getScheduler() {
 		return scheduler;
+	}
+
+	@Override
+	protected void initializeImageRegistry(ImageRegistry registry) {
+		registry.put(IMG_OK, imageDescriptorFromPlugin("icons/testok.png"));
 	}
 }

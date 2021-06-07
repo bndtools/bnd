@@ -72,13 +72,17 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 	}
 
 	public HttpTestServer(Config config) throws Exception {
+		this(config, "localhost");
+	}
+
+	public HttpTestServer(Config config, String cn) throws Exception {
 		this.config = config == null ? config = new Config() : config;
 
 		if (config.host == null)
 			config.host = InetAddress.getLoopbackAddress()
 				.getHostAddress();
 
-		server = new Server(config);
+		server = new Server(config, cn);
 
 	}
 

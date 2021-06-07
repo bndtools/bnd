@@ -40,6 +40,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.Strategy;
+import aQute.bnd.stream.MapStream;
 import aQute.lib.io.IO;
 import aQute.lib.startlevel.StartLevelRuntimeHandler;
 import aQute.lib.watcher.FileWatcher;
@@ -60,12 +61,14 @@ public abstract class ProjectLauncher extends Processor {
 
 	final static Logger					logger				= LoggerFactory.getLogger(ProjectLauncher.class);
 	private final Project				project;
+	private final List<Runnable>		onUpdate			= new ArrayList<>();
 	private long						timeout				= 0;
 	private final List<String>			classpath			= new ArrayList<>();
 	private List<String>				runbundles			= Create.list();
 
 	private final List<String>			runvm				= new ArrayList<>();
 	private final List<String>			runprogramargs		= new ArrayList<>();
+	private boolean						runframeworkrestart;
 	private Map<String, String>			runproperties;
 	private Command						java;
 	private Parameters					runsystempackages;
@@ -103,8 +106,32 @@ public abstract class ProjectLauncher extends Processor {
 
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
+		this.setBase(project.getBase());
 		builderInstrs = project.getInstructions(BuilderInstructions.class);
 		launcherInstrs = project.getInstructions(LauncherInstructions.class);
+
+		validate();
+	}
+
+	/**
+	 * Validate some settings
+	 */
+	protected void validate() {
+		Collection<String> runvm = getRunVM();
+		if (runvm.size() == 1)
+			try {
+				for (String r : runvm) {
+					if (Verifier.isSpaceSeparated(r)) {
+						SetLocation location = project.warning(
+							"%s is a comma (,) separated instruction, it looks like you separate its values with spaces? If you need spaces, please quote them: %s",
+							Constants.RUNVM, runvm);
+						project.getHeader(Constants.RUNVM)
+							.set(location);
+					}
+				}
+			} catch (Exception e) {
+				// ignore
+			}
 	}
 
 	/**
@@ -119,14 +146,14 @@ public abstract class ProjectLauncher extends Processor {
 		// pkr: could not use this because this is killing the runtests.
 		// getProject().refresh();
 		runbundles.clear();
+		classpath.clear();
 
 		Collection<Container> run = getProject().getRunbundles();
 
 		for (Container container : run) {
 			File file = container.getFile();
 			if (file != null && (file.isFile() || file.isDirectory())) {
-				runbundles.add(IO.absolutePath(file));
-				int bundleIndex = runbundles.size() - 1;
+				addRunBundle(IO.absolutePath(file));
 			} else {
 				getProject().error("Bundle file \"%s\" does not exist, given error is %s", file, container.getError());
 			}
@@ -136,7 +163,7 @@ public abstract class ProjectLauncher extends Processor {
 			File[] builds = getProject().getBuildFiles(true);
 			if (builds != null)
 				for (File file : builds)
-					runbundles.add(IO.absolutePath(file));
+					addRunBundle(IO.absolutePath(file));
 		}
 
 		Collection<Container> runpath = getProject().getRunpath();
@@ -157,6 +184,7 @@ public abstract class ProjectLauncher extends Processor {
 		runvm.addAll(getProject().getRunVM());
 		runprogramargs.addAll(getProject().getRunProgramArgs());
 		runproperties = getProject().getRunProperties();
+		runframeworkrestart = isTrue(getProject().getProperty(Constants.RUNFRAMEWORKRESTART));
 		storageDir = getProject().getRunStorage();
 
 		setKeep(getProject().getRunKeep());
@@ -228,8 +256,11 @@ public abstract class ProjectLauncher extends Processor {
 		}
 	}
 
-	public void addRunBundle(String f) {
-		runbundles.add(f);
+	public void addRunBundle(String path) {
+		path = IO.normalizePath(path);
+		if (!runbundles.contains(path)) {
+			runbundles.add(path);
+		}
 	}
 
 	public Collection<String> getRunBundles() {
@@ -256,11 +287,6 @@ public abstract class ProjectLauncher extends Processor {
 		return runvm;
 	}
 
-	@Deprecated
-	public Collection<String> getArguments() {
-		return getRunProgramArgs();
-	}
-
 	public Collection<String> getRunProgramArgs() {
 		return runprogramargs;
 	}
@@ -277,6 +303,14 @@ public abstract class ProjectLauncher extends Processor {
 
 	public void update() throws Exception {
 		getProject().refresh();
+		updateFromProject();
+		for (Runnable update : onUpdate) {
+			update.run();
+		}
+	}
+
+	public void onUpdate(Runnable update) {
+		onUpdate.add(update);
 	}
 
 	@Override
@@ -292,10 +326,8 @@ public abstract class ProjectLauncher extends Processor {
 		// Handle the environment
 		//
 
-		Map<String, String> env = getRunEnv();
-		for (Map.Entry<String, String> e : env.entrySet()) {
-			java.var(e.getKey(), e.getValue());
-		}
+		MapStream.of(getRunEnv())
+			.forEachOrdered(java::var);
 
 		java.add(getJavaExecutable("java"));
 		if (getProject().is(Constants.JAVAAGENT)) {
@@ -619,7 +651,7 @@ public abstract class ProjectLauncher extends Processor {
 			properties.put(Constants.LAUNCH_ACTIVATION_EAGER, Boolean.toString(eager));
 
 		Collection<String> activators = getActivators();
-		if (activators.isEmpty())
+		if (!activators.isEmpty())
 			properties.put(Constants.LAUNCH_ACTIVATORS, join(activators, ","));
 
 		if (!keep)
@@ -837,5 +869,9 @@ public abstract class ProjectLauncher extends Processor {
 				}, 600, TimeUnit.MILLISECONDS);
 			}
 		}
+	}
+
+	public boolean isRunFrameworkRestart() {
+		return runframeworkrestart;
 	}
 }

@@ -77,10 +77,14 @@ public class MapHandler extends Handler {
 		Map<?, ?> map = (Map<?, ?>) object;
 
 		app.append("{");
+		app.indent();
 		String del = "";
 		for (Map.Entry<?, ?> e : map.entrySet())
 			try {
 				app.append(del);
+				if (!del.isEmpty()) {
+					app.linebreak();
+				}
 				String key;
 				if (e.getKey() != null && (keyType == String.class || keyType == Object.class))
 					key = e.getKey()
@@ -97,6 +101,7 @@ public class MapHandler extends Handler {
 			} catch (Exception ee) {
 				throw new IllegalArgumentException("[\"" + e.getKey() + "\"]", ee);
 			}
+		app.undent();
 		app.append("}");
 	}
 

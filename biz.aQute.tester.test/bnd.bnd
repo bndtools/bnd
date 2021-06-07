@@ -1,0 +1,46 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
+-nobundles: true
+
+-buildpath: \
+	org.apache.servicemix.bundles.junit;version=latest,\
+	org.junit.jupiter.api;version='${junit.jupiter.eclipse.version}',\
+	org.junit.jupiter.params;version='${junit.jupiter.eclipse.version}',\
+	org.opentest4j,\
+	org.apiguardian,\
+	osgi.core;version=latest
+
+# Note: we don't use the ${junit} macro because we need to use the Eclipse
+# version of the JUnit 5 bundles in the test where possible for maximum
+# compatibility. But we must use the latest version of the launcher
+# and its dependency (junit-platform-commons) as this is required when
+# tests are launched from within the IDE for later versions of
+# Eclipse. BundleEngineTest requires that we share org.junit.platform.engine
+# between the test and the framework-under-test so that needs to be the
+# Eclipse version too.
+
+-testpath: \
+	org.junit.platform.commons;version="${junit.platform.eclipse.version}";strategy=lowest,\
+	org.junit.platform.launcher;version="${junit.platform.eclipse.version}";strategy=lowest,\
+	org.junit.platform.engine;version="${junit.platform.eclipse.version}";strategy=lowest,\
+	org.junit.jupiter.engine;version="${junit.jupiter.eclipse.version}";strategy=lowest,\
+	assertj-core;version=latest,\
+	junit-platform-testkit;version="${junit.platform.eclipse.version}";strategy=lowest,\
+	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=snapshot,\
+	biz.aQute.bndlib;version=snapshot;packages=aQute.bnd.osgi,\
+	biz.aQute.tester;version=snapshot;packages=aQute.junit.constants,\
+	biz.aQute.launchpad;version=project,\
+	biz.aQute.tester.junit-platform;version=project;packages=aQute.tester.bundle.engine,\
+	org.xmlunit:xmlunit-core;version=latest,\
+	org.xmlunit:xmlunit-assertj;version=latest,\
+	slf4j.api;version=latest,\
+	slf4j.simple;version=latest,\
+	org.eclipse.jdt.junit.core;version=latest,\
+	org.eclipse.core.runtime;version=latest,\
+	org.eclipse.equinox.preferences;version=latest,\
+	org.eclipse.equinox.common;version=latest
+
+# Don't run tests in parallel with other projects claiming launchpad
+-noparallel: launchpad;task="test"

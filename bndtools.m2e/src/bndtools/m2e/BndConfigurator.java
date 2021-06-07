@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
@@ -14,10 +17,12 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.build.api.IProjectDecorator;
 import org.bndtools.build.api.IProjectDecorator.BndProjectInfo;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -122,7 +127,7 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 
 	@Override
 	public AbstractBuildParticipant getBuildParticipant(final IMavenProjectFacade projectFacade,
-		MojoExecution execution, IPluginExecutionMetadata executionMetadata) {
+		final MojoExecution execution, IPluginExecutionMetadata executionMetadata) {
 		return new MojoExecutionBuildParticipant(execution, true, true) {
 			@Override
 			public Set<IProject> build(int kind, IProgressMonitor monitor) throws Exception {
@@ -145,6 +150,15 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 					return build;
 				}
 
+				Set<IPath> deltaFilePaths = collectResourceDeltas(getDelta(project)).map(IResourceDelta::getResource)
+					.filter(IFile.class::isInstance)
+					.map(IResource::getFullPath)
+					.collect(Collectors.toSet());
+
+				final String targetDirectory = projectFacade.getMavenProject()
+					.getBuild()
+					.getDirectory();
+
 				// now we make sure jar is built in separate job, doing this
 				// during maven builder will throw lifecycle
 				// errors
@@ -155,15 +169,18 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 						SubMonitor progress = SubMonitor.convert(monitor, 3);
 						execJarMojo(projectFacade, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
-						// Find the maven output directory (usually "target")
-						MavenProject mvnProject = getMavenProject(projectFacade, progress.newChild(1));
-						IPath buildDirPath = Path.fromOSString(mvnProject.getBuild()
-							.getDirectory());
+						IPath targetDirPath = Path.fromOSString(targetDirectory);
 						IPath projectPath = project.getLocation();
-						IPath relativeBuildDirPath = buildDirPath.makeRelativeTo(projectPath);
-						IFolder buildDir = project.getFolder(relativeBuildDirPath);
+						IPath relativeTargetDirPath = targetDirPath.makeRelativeTo(projectPath);
+						IFolder targetDir = project.getFolder(relativeTargetDirPath);
 
-						if (buildDir != null) {
+						boolean needsRefresh = deltaFilePaths.stream()
+							.filter(deltaPath -> !targetDir.getFullPath()
+								.isPrefixOf(deltaPath))
+							.findFirst()
+							.isPresent();
+
+						if (needsRefresh) {
 							// TODO: there *may* be a remaining issue here if a
 							// source-generation plugin gets triggered
 							// by the above invocation of the jar:jar goal.
@@ -176,13 +193,7 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 							// are worried about so we are deferring any extra
 							// work on this until it's shown to be a
 							// real problem.
-							buildDir.refreshLocal(IResource.DEPTH_INFINITE, progress.newChild(1));
-						} else {
-							Logger.getLogger(BndConfigurator.class)
-								.logError(String.format(
-									"Project build folder '%s' does not exist, or is not a child of the project path '%s'",
-									buildDirPath, projectPath), null);
-							progress.worked(1);
+							targetDir.refreshLocal(IResource.DEPTH_INFINITE, progress.newChild(1));
 						}
 
 						return Status.OK_STATUS;
@@ -194,6 +205,16 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 				return build;
 			}
 		};
+	}
+
+	private Stream<IResourceDelta> collectResourceDeltas(IResourceDelta delta) {
+		if (delta == null)
+			return Stream.empty();
+		IResourceDelta[] children = delta.getAffectedChildren();
+		Stream<IResourceDelta> descendants = Arrays.stream(children)
+			.filter(Objects::nonNull)
+			.flatMap(this::collectResourceDeltas);
+		return Stream.concat(descendants, Arrays.stream(children));
 	}
 
 	private MavenProject getMavenProject(final IMavenProjectFacade projectFacade, IProgressMonitor monitor)
@@ -224,8 +245,11 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 			SubMonitor progress = SubMonitor.convert(monitor1);
 			MavenProject mavenProject = getMavenProject(projectFacade, progress.newChild(1));
 
-			List<MojoExecution> mojoExecutions = projectFacade.getMojoExecutions("org.apache.maven.plugins",
-				"maven-jar-plugin", monitor1, "jar");
+			List<MojoExecution> mojoExecutions = new ArrayList<>();
+			mojoExecutions.addAll(
+				projectFacade.getMojoExecutions("org.apache.maven.plugins", "maven-jar-plugin", monitor1, "jar"));
+			mojoExecutions.addAll(
+				projectFacade.getMojoExecutions("org.apache.maven.plugins", "maven-jar-plugin", monitor1, "test-jar"));
 
 			for (MojoExecution mojoExecution : mojoExecutions) {
 				maven.execute(mavenProject, mojoExecution, progress.newChild(1));

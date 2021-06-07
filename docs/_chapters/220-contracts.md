@@ -58,5 +58,5 @@ bnd.bnd:
 
 The tests provide some examples for people that want to have a deeper understanding: https://github.com/bndtools/bnd/blob/next/biz.aQute.bndlib.tests/src/test/ContractTest.java Contracts will be part of the bnd(tools) 2.2 release (hopefully) at the end of this summer, until then they are experimental. Enjoy. Peter Kriens @pkriens Update: Last example to skip the 'JavaServlet' contract was reversed, updated the text to show a reverse example (anything BUT JavaServlet).
 
-[1]: https://www.osgi.org/portable-java-contract-definitions
+[1]: https://docs.osgi.org/reference/portable-java-contracts.html
 [2]: https://blog.osgi.org/2014/09/portable-java-contracts-for-javax.html

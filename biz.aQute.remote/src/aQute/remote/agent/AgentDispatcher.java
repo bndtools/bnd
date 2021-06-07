@@ -114,8 +114,7 @@ public class AgentDispatcher {
 		d.configuration = configuration;
 		d.name = name;
 		boolean isTrace = configuration.get("launch.trace") != null;
-		d.startlevels = StartLevelRuntimeHandler.create(
-			!isTrace ? AgentDispatcher::dummy : AgentDispatcher::log,
+		d.startlevels = StartLevelRuntimeHandler.create(!isTrace ? AgentDispatcher::dummy : AgentDispatcher::log,
 			(Map) configuration);
 
 		//
@@ -135,7 +134,6 @@ public class AgentDispatcher {
 
 		d.startlevels.beforeStart(d.framework);
 		framework.start();
-
 
 		String embedded = (String) configuration.get("biz.aQute.remote.embedded");
 
@@ -230,7 +228,7 @@ public class AgentDispatcher {
 
 	private static void dummy(String msg, Object... args) {}
 
-	private static void log( String msg, Object ... args) {
+	private static void log(String msg, Object... args) {
 		try {
 			System.out.println(String.format(msg, args));
 		} catch (Exception e) {

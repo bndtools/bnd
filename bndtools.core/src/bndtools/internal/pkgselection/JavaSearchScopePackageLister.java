@@ -1,7 +1,6 @@
 package bndtools.internal.pkgselection;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,9 +64,8 @@ public class JavaSearchScopePackageLister implements IPackageLister {
 
 		// Remove non-source and excludes
 		Set<String> packageNames = new LinkedHashSet<>();
-		for (Iterator<IJavaElement> iter = packageList.iterator(); iter.hasNext();) {
+		for (IJavaElement element : packageList) {
 			boolean omit = false;
-			IJavaElement element = iter.next();
 			if (!includeNonSource) {
 				IPackageFragment pkgFragment = (IPackageFragment) element;
 				try {

@@ -1,5 +1,7 @@
 package aQute.bnd.deployer.repository.api;
 
+import java.util.Objects;
+
 public class Referral {
 
 	private final String	url;
@@ -50,11 +52,9 @@ public class Referral {
 		if (getClass() != obj.getClass())
 			return false;
 		Referral other = (Referral) obj;
-		if (url == null) {
-			if (other.url != null)
-				return false;
-		} else if (!url.equals(other.url))
+		if (!Objects.equals(url, other.url)) {
 			return false;
+		}
 		if (depth != other.depth)
 			return false;
 		return true;

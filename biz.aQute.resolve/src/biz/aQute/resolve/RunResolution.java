@@ -1,5 +1,6 @@
 package biz.aQute.resolve;
 
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,11 +15,16 @@ import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.Resolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.build.model.clauses.VersionedClause;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.help.instructions.ResolutionInstructions;
 import aQute.bnd.help.instructions.ResolutionInstructions.RunStartLevel;
@@ -27,8 +33,10 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
+import aQute.bnd.result.Result;
 import aQute.lib.dot.DOT;
-import aQute.lib.exceptions.Exceptions;
+import aQute.lib.io.IO;
+import aQute.lib.json.JSONCodec;
 import aQute.libg.tarjan.Tarjan;
 
 /**
@@ -41,6 +49,9 @@ import aQute.libg.tarjan.Tarjan;
  * projects
  */
 public class RunResolution {
+	final static Logger						logger		= LoggerFactory.getLogger(RunResolution.class);
+
+	private static final JSONCodec			JSON_CODEC	= new JSONCodec();
 	public final Project					project;
 	public final Processor					properties;
 	public final Map<Resource, List<Wire>>	required;
@@ -62,10 +73,28 @@ public class RunResolution {
 	 */
 	public static RunResolution resolve(Project project, Processor actualProperties,
 		Collection<ResolutionCallback> callbacks) {
+		return resolve(project, actualProperties, callbacks, null);
+	}
+
+	/**
+	 * The main workhorse to resolve
+	 *
+	 * @param project used for reporting errors
+	 * @param actualProperties the actual properties used for resolving. This
+	 *            can be the project in builders that do not use the
+	 *            {@link BndEditModel}, otherwise it is generally the
+	 *            {@link BndEditModel}.
+	 * @param callbacks any callbacks
+	 * @param resolverLogger an optional Logger for the resolve Process. The
+	 *            Logger needs to be closed manually.
+	 * @return a Resolution
+	 */
+	public static RunResolution resolve(Project project, Processor actualProperties,
+		Collection<ResolutionCallback> callbacks, ResolverLogger resolverLogger) {
 		if (callbacks == null)
 			callbacks = Collections.emptyList();
-
-		try (ResolverLogger logger = new ResolverLogger()) {
+		ResolverLogger logger = resolverLogger == null ? new ResolverLogger() : resolverLogger;
+		try {
 			try {
 				ResolveProcess resolve = new ResolveProcess();
 				Resolver resolver = new BndResolver(logger);
@@ -76,6 +105,10 @@ public class RunResolution {
 				return new RunResolution(project, actualProperties, e, logger.getLog());
 			} catch (Exception e) {
 				return new RunResolution(project, actualProperties, e, logger.getLog());
+			}
+		} finally {
+			if (resolverLogger == null) {
+				logger.close();
 			}
 		}
 	}
@@ -166,6 +199,15 @@ public class RunResolution {
 		return true;
 	}
 
+	public void updateBundles(Project project) {
+		assert isOK();
+
+		String s = HeaderClause.toParameters(getRunBundles())
+			.toString();
+
+		project.setProperty(Constants.RUNBUNDLES, s);
+	}
+
 	/**
 	 * Sort the resources based on their dependencies. Least dependent bundles
 	 * are first. This method uses a toplogical sort. If there are cycles then
@@ -232,6 +274,16 @@ public class RunResolution {
 			}
 		}
 		return versionedClauses;
+	}
+
+	/**
+	 * Return the current -runbundles.
+	 *
+	 * @return a non-null string in parameters format
+	 */
+	public String getRunBundlesAsString() {
+		return HeaderClause.toParameters(getRunBundles())
+			.toString();
 	}
 
 	/*
@@ -354,4 +406,118 @@ public class RunResolution {
 	public Map<Resource, List<Wire>> getRequired() {
 		return required;
 	}
+
+	public static class CacheDTO {
+		public String					checksum;
+		public List<VersionedClause>	runbundles;
+	}
+
+	/**
+	 * Cache this resolution for the given project. A cache can be retrieved
+	 * with getCached(Project project). This requires a real resolution
+	 */
+
+	public void cache() {
+
+		assert isOK() : "can only be called for a real resolution";
+
+		try {
+			RunResolution.CacheDTO dto = new RunResolution.CacheDTO();
+			dto.checksum = project.getChecksum();
+			dto.runbundles = getRunBundles();
+
+			IO.store(ff -> {
+				JSON_CODEC.enc()
+					.to(ff)
+					.put(dto)
+					.close();
+			}, getCacheFile(project));
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	/**
+	 * Get the run bundles from the cache and resolve if necessary. The run
+	 * bundles
+	 *
+	 * @param project the project to get the run bundles from
+	 * @param resolveIfNecessary if true, call resolve
+	 * @return a result, where the value can be null
+	 */
+
+	public static Result<String> getRunBundles(Project project, boolean resolveIfNecessary) {
+		try {
+			File f = getCacheFile(project);
+
+			if (f.isFile()) {
+				try {
+
+					RunResolution.CacheDTO dto = JSON_CODEC.dec()
+						.from(f)
+						.get(RunResolution.CacheDTO.class);
+
+					if (dto.checksum.equals(project.getChecksum())) {
+						logger.info("read cache for {}", project);
+						return Result.ok(HeaderClause.toParameters(dto.runbundles)
+							.toString());
+					}
+
+				} catch (Exception e) {
+					logger.warn("{} getRunBundles  exception in reading cache {}, ignoring", project, e);
+					IO.delete(f);
+				}
+			}
+
+			if (!resolveIfNecessary) {
+				return Result.ok("");
+			}
+
+			logger.info("resolve {}", project);
+			Result<RunResolution> r = resolve(project, project, null).asResult();
+			logger.debug("resolve {} {}", project, r);
+
+			return r.flatMap(rr -> {
+				logger.info("saving cache {}", project);
+				rr.cache();
+				return Result.ok(rr);
+			})
+				.map(RunResolution::getRunBundlesAsString);
+
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	/**
+	 * Return a result based on the isOk status. If OK, the result is a
+	 * resolution, otherwise it is an error string.
+	 *
+	 * @return a result based on isOk
+	 */
+	public Result<RunResolution> asResult() {
+		if (isOK())
+			return Result.ok(this);
+		else
+			return Result.err(report(false));
+	}
+
+	private static File getCacheFile(Project project) {
+
+		String id = IO.toSafeFileName(project.getPropertiesFile()
+			.getAbsolutePath());
+
+		File cache = project.getWorkspace()
+			.getCache("resolutions/" + id);
+
+		cache.getParentFile()
+			.mkdirs();
+		return cache;
+	}
+
+	public static void clearCache(Workspace ws) {
+		File cache = ws.getCache("resolutions");
+		IO.delete(cache);
+	}
+
 }

@@ -9,4 +9,8 @@
     slf4j.simple, \
 	${junit},\
 	biz.aQute.launchpad;version=latest, \
+	biz.aQute.bnd.util;version=latest,\
 	aQute.libg;version=project
+
+# Don't run tests in parallel with other projects claiming launchpad
+-noparallel: launchpad;task="test"

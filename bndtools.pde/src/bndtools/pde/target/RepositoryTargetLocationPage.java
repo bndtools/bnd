@@ -166,11 +166,11 @@ public class RepositoryTargetLocationPage extends BndTargetLocationPage {
 				bundles.add(bsn + " - " + repository.versions(bsn)
 					.last());
 			}
+			if (bundles.isEmpty())
+				logWarning("Repository is empty: " + repository.getName(), null);
+			else
+				resetMessage();
 		}
-		if (bundles.isEmpty())
-			logWarning("Repository is empty: " + repository.getName(), null);
-		else
-			resetMessage();
 		return bundles;
 	}
 

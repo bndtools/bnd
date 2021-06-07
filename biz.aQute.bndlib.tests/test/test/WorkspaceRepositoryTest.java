@@ -113,7 +113,7 @@ public class WorkspaceRepositoryTest extends TestCase {
 	}
 
 	public void testGetName() {
-		assertEquals("Workspace ws-repo-test", repo.getName());
+		assertEquals("ws-repo-test", repo.getName());
 	}
 
 	public void testGetExact() throws Exception {
