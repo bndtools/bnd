@@ -1,7 +1,7 @@
 ---
 layout: default
 class: Macro
-title: ncompare STRING STRING
+title: ncompare NUMBER NUMBER
 summary: Compare two numbers. 0 is equal, 1 means a > b, -1 is a < b.
 ---
 
