@@ -267,7 +267,9 @@ public class WorkspaceTest {
 		IO.copy(new File("testresources/w o r k s p a c e"), wsdir);
 		try (Workspace ws = Workspace.getWorkspace(wsdir)) {
 			assertEquals("parent", ws.getProperty("override"));
-			assertEquals("ExtPlugin,ParentPlugin", ws.getProperty("-plugin"));
+			assertEquals("ParentPlugin", ws.getProperty("-plugin"));
+			assertEquals("ParentPlugin,ExtPlugin", ws.getMergedParameters("-plugin")
+				.toString());
 			assertEquals("true", ws.getProperty("ext"));
 			assertEquals("abcdef", ws.getProperty("test"));
 		}
