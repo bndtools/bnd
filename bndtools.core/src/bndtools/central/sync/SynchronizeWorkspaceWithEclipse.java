@@ -1,4 +1,4 @@
-package org.bndtools.core.sync;
+package bndtools.central.sync;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +32,6 @@ import aQute.lib.concurrent.serial.TriggerRepeat;
 import aQute.lib.io.IO;
 import aQute.lib.watcher.FileWatcher;
 import bndtools.central.Central;
-import bndtools.central.sync.WorkspaceSynchronizer;
 
 /**
  * Synchronizes changes in the bnd workspace with Eclipse. This will use a Java
@@ -43,7 +42,7 @@ import bndtools.central.sync.WorkspaceSynchronizer;
  * with the file system. Any deltas are processed by creating or deleting the
  * project.
  */
-@Component
+@Component(enabled = false)
 public class SynchronizeWorkspaceWithEclipse {
 	static IWorkspace			eclipse			= ResourcesPlugin.getWorkspace();
 	final static IWorkspaceRoot	root			= eclipse.getRoot();
