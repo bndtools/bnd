@@ -9,8 +9,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import org.bndtools.api.ILogger;
-import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
@@ -38,8 +36,6 @@ import bndtools.central.Central;
  * A utility class to synchronize the bnd & Eclipse workspaces as well as build.
  */
 public class WorkspaceSynchronizer {
-
-	private static final ILogger	logger	= Logger.getLogger(WorkspaceSynchronizer.class);
 	private static IWorkspace		eclipse	= ResourcesPlugin.getWorkspace();
 	private static IWorkspaceRoot	wsroot	= eclipse.getRoot();
 
@@ -56,7 +52,7 @@ public class WorkspaceSynchronizer {
 		} catch (OperationCanceledException e) {
 			return true;
 		} catch (Exception e) {
-			logger.logError("build failed", e);
+			About.logger.error("build failed {}", e, e);
 		}
 		return monitor.isCanceled();
 	}
@@ -181,7 +177,7 @@ public class WorkspaceSynchronizer {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			logger.logError("Failed to sync", e);
+			About.logger.error("Failed to sync {}", e, e);
 		} finally {
 			atend.run();
 			setAutobuild(previous);
@@ -225,7 +221,7 @@ public class WorkspaceSynchronizer {
 		try {
 			project.delete(false, true, monitor);
 		} catch (CoreException e) {
-			logger.logError("Unable to remove project " + project, e);
+			About.logger.error("Unable to remove project {} : {}", project, e, e);
 		}
 	}
 
@@ -256,7 +252,7 @@ public class WorkspaceSynchronizer {
 				project.open(subMonitor.split(1));
 				project.refreshLocal(IResource.DEPTH_INFINITE, subMonitor.split(4));
 			} catch (Exception e) {
-				logger.logError("Failed to create project " + project, e);
+				About.logger.error("Failed to create project {} : {}", project, e, e);
 			}
 		}
 
