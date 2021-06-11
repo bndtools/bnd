@@ -178,6 +178,21 @@ public class FileUtils {
 		}
 	}
 
+	static String containerType(int type) {
+		switch (type) {
+			case IResource.FILE :
+				return "File";
+			case IResource.FOLDER :
+				return "Folder";
+			case IResource.ROOT :
+				return "WorkspaceRoot";
+			case IResource.PROJECT :
+				return "Project";
+			default :
+				return "<unknown>";
+		}
+	}
+
 	public static void mkdirs(IContainer container, IProgressMonitor monitor) throws CoreException {
 		SubMonitor progress = SubMonitor.convert(monitor, 2);
 
@@ -193,7 +208,9 @@ public class FileUtils {
 			folder.create(false, true, progress.newChild(1));
 		} else {
 			throw new CoreException(new Status(IStatus.ERROR, "bndtools.utils", 0,
-				"Can only create plain Folder parent containers.", null));
+				"Attempting to create container " + container + " of type "
+					+ containerType(container.getType()) + ", can only create plain Folder containers.",
+				null));
 		}
 	}
 
