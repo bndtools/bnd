@@ -46,7 +46,7 @@
 	bndtools.api;version=snapshot,\
 	bndtools.core;version=snapshot,\
 	bndtools.core.services;version=snapshot,\
-	assertj-core,\
+	assertj-core;version=${assertj.eclipse.version},\
 	javax.inject,\
 	org.apiguardian:apiguardian-api,\
 	org.opentest4j,\

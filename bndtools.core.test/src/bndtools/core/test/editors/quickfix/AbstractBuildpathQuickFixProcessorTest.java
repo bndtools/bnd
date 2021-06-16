@@ -31,8 +31,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.assertj.core.api.AbstractObjectArrayAssert;
 import org.assertj.core.api.Condition;
-import org.assertj.core.api.ProxyableObjectArrayAssert;
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
@@ -74,8 +74,8 @@ import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.deployer.repository.LocalIndexedRepo;
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Constants;
-import aQute.lib.io.IO;
 import aQute.bnd.unmodifiable.Sets;
+import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.core.test.utils.TaskUtils;
 import bndtools.core.test.utils.WorkbenchTest;
@@ -508,7 +508,7 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 		}
 	};
 
-	protected ProxyableObjectArrayAssert<IJavaCompletionProposal> assertThatProposals(
+	protected AbstractObjectArrayAssert<?, IJavaCompletionProposal> assertThatProposals(
 		IJavaCompletionProposal[] proposals) {
 		String desc = toString(problem);
 		if (proposals == null) {
