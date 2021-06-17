@@ -39,7 +39,7 @@ public class Parameters implements Map<String, Attrs> {
 		OSGiHeader.parseHeader(header, reporter, this);
 	}
 
-	public Parameters(Map<String, Map<String, String>> basic) {
+	public Parameters(Map<? extends String, ? extends Map<? extends String, ? extends String>> basic) {
 		this();
 		MapStream.ofNullable(basic)
 			.mapValue(Attrs::new)
@@ -131,7 +131,7 @@ public class Parameters implements Map<String, Attrs> {
 		this.map.putAll(map);
 	}
 
-	public void putAllIfAbsent(Map<String, ? extends Attrs> map) {
+	public void putAllIfAbsent(Map<? extends String, ? extends Attrs> map) {
 		MapStream.of(map)
 			.filterKey(key -> !containsKey(key))
 			.forEachOrdered(this::put);

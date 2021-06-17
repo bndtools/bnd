@@ -43,6 +43,7 @@ Import-Package: \
 	!org.junit.platform.*,\
 	org.junit.*;version="${range;[==,+);${junit4.tester.version}}",\
 	!javax.annotation.*,\
+	com.sun.*;resolution:=optional,\
 	sun.*;resolution:=optional,\
 	jdk.*;resolution:=optional,\
 	*

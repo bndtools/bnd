@@ -46,12 +46,12 @@ public class RecordAttributeTest {
 					.hasSize(2);
 				attributesAssert.filteredOn(a -> a.name()
 					.equals(SignatureAttribute.NAME))
-					.usingFieldByFieldElementComparator()
+					.usingRecursiveFieldByFieldElementComparator()
 					.containsExactly(new SignatureAttribute("TT;"));
 				attributesAssert.filteredOn(a -> a.name()
 					.equals(RuntimeVisibleAnnotationsAttribute.NAME))
 					.flatExtracting(a -> Arrays.asList(((RuntimeVisibleAnnotationsAttribute) a).annotations))
-					.usingFieldByFieldElementComparator()
+					.usingRecursiveFieldByFieldElementComparator()
 					.containsExactly(new AnnotationInfo("LFoo;", new ElementValueInfo[0]));
 
 				attributesAssert = softly.assertThat(recordAttribute.components)
@@ -61,7 +61,7 @@ public class RecordAttributeTest {
 					.hasSize(1);
 				attributesAssert.filteredOn(a -> a.name()
 					.equals(SignatureAttribute.NAME))
-					.usingFieldByFieldElementComparator()
+					.usingRecursiveFieldByFieldElementComparator()
 					.containsExactly(new SignatureAttribute("TT;"));
 			});
 		}
