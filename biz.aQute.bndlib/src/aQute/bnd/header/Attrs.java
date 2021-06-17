@@ -98,23 +98,23 @@ public class Attrs implements Map<String, String> {
 		}
 	}
 
-	// do not remove, used to make sur Attrs use this one and not the next that
+	// do not remove, used to make sure Attrs use this one and not the next that
 	// takes a Map
 	public Attrs(Attrs attrs) {
 		this();
 		putAll(attrs);
 	}
 
-	public Attrs(Map<String, String> map) {
+	// This constructor is also used by reflective cloning in assertj testing
+	public Attrs(Map<? extends String, ? extends String> map) {
 		this();
-		assert !(map instanceof Attrs);
-		MapStream.ofNullable(map)
-			.forEach(this::put);
+		if (map != null) {
+			putAll(map);
+		}
 	}
 
-	public void putAllTyped(Map<String, Object> attrs) {
-		MapStream.of(attrs)
-			.forEach(this::putTyped);
+	public void putAllTyped(Map<? extends String, ? extends Object> attrs) {
+		attrs.forEach(this::putTyped);
 	}
 
 	public void putTyped(String key, Object value) {
@@ -343,8 +343,7 @@ public class Attrs implements Map<String, String> {
 			putAll((Attrs) other);
 			return;
 		}
-		MapStream.of(other)
-			.forEach(this::put);
+		other.forEach(this::put);
 	}
 
 	@Override
