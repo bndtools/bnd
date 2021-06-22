@@ -42,6 +42,7 @@ import org.osgi.service.component.ComponentServiceObjects;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.CollectionType;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ComponentPropertyType;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.FieldOption;
@@ -4685,6 +4686,40 @@ public class DSAnnotationTest {
 			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$OptionalUseMultiple.xml");
 			assertNotNull(r);
 			r.write(System.err);
+		}
+	}
+
+	@ComponentPropertyType
+	@Retention(RetentionPolicy.CLASS)
+	@Target(ElementType.TYPE)
+	public @interface SatisfyingConditionTarget {
+		String PREFIX_ = "osgi.ds.";
+
+		String value() default "(osgi.condition.id=true)";
+	}
+
+	@Component
+	@SatisfyingConditionTarget("(osgi.condition.id=my.subsystem.ready)")
+	public static class SatisfyingConditionTargetUse {}
+
+	@Test
+	public void satisfying_condition_target_use() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$SatisfyingConditionTargetUse");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+
+			Jar jar = b.build();
+			assertOk(b, 0, 0);
+			Attributes a = getAttr(jar);
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$SatisfyingConditionTargetUse.xml");
+			assertNotNull(r);
+			r.write(System.err);
+
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.5.0");
+
+			xt.assertAttribute("(osgi.condition.id=my.subsystem.ready)",
+				"scr:component/property[@name='osgi.ds.satisfying.condition.target']/@value");
 		}
 	}
 
