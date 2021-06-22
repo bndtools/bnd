@@ -43,29 +43,23 @@ public class LaunchpadRunnerBasicTest {
 	@Test
 	public void testProperties() throws Exception {
 
-		assertThat(lp.waitForService(X.class, 100)
-			.isPresent()).isFalse();
+		assertThat(lp.waitForService(X.class, 100L)).isEmpty();
 
 		try (Closeable c = lp.enable(X.class)) {
-			assertThat(lp.waitForService(X.class, 100)
-				.isPresent()).isTrue();
+			assertThat(lp.waitForService(X.class, 5000L)).isNotEmpty();
 		}
-		assertThat(lp.waitForService(X.class, 100)
-			.isPresent()).isFalse();
+		assertThat(lp.waitForService(X.class, 100L)).isEmpty();
 	}
 
 	@Test
 	public void testProperties2() throws Exception {
 
-		assertThat(lp.waitForService(X.class, 100)
-			.isPresent()).isFalse();
+		assertThat(lp.waitForService(X.class, 100L)).isEmpty();
 
 		try (Closeable c = lp.enable(X.class)) {
-			assertThat(lp.waitForService(X.class, 100)
-				.isPresent()).isTrue();
+			assertThat(lp.waitForService(X.class, 5000L)).isNotEmpty();
 		}
-		assertThat(lp.waitForService(X.class, 100)
-			.isPresent()).isFalse();
+		assertThat(lp.waitForService(X.class, 100L)).isEmpty();
 	}
 
 	@Test
