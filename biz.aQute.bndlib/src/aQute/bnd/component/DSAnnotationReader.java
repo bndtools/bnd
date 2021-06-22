@@ -797,7 +797,10 @@ public class DSAnnotationReader extends ClassDataCollector {
 						key = identifierToPropertyName(key);
 					}
 					if (prefix != null) {
-						key = prefix + key;
+						key = prefix.concat(key);
+					}
+					if (key.equals("osgi.ds.satisfying.condition.target")) {
+						component.updateVersion(V1_5, "use of osgi.ds.satisfying.condition.target property");
 					}
 					return key;
 				}));
