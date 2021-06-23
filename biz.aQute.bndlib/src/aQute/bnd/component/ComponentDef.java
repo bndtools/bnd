@@ -5,6 +5,7 @@ import static aQute.bnd.component.DSAnnotationReader.V1_1;
 import static aQute.bnd.component.DSAnnotationReader.V1_2;
 import static aQute.bnd.component.DSAnnotationReader.V1_3;
 import static aQute.bnd.component.DSAnnotationReader.V1_4;
+import static aQute.bnd.component.DSAnnotationReader.V1_5;
 import static java.util.stream.Collectors.joining;
 
 import java.util.ArrayList;
@@ -153,6 +154,11 @@ class ComponentDef extends ExtensionDef {
 		}
 		if (!factoryProperties.isEmpty()) {
 			updateVersion(V1_4, "factoryProperties");
+		}
+		if (propertyDefs.values()
+			.stream()
+			.anyMatch(p -> p.containsKey("osgi.ds.satisfying.condition.target"))) {
+			updateVersion(V1_5, "use of osgi.ds.satisfying.condition.target property");
 		}
 	}
 
