@@ -7,6 +7,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.text.MessageFormat;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +23,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.debug.core.DebugPlugin;
@@ -29,6 +33,7 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.junit.JUnitCorePlugin;
+import org.eclipse.jdt.internal.junit.JUnitPreferencesConstants;
 import org.eclipse.jdt.internal.junit.launcher.JUnitLaunchConfigurationConstants;
 import org.eclipse.jdt.internal.junit.model.TestRunSession;
 import org.eclipse.jdt.junit.TestRunListener;
@@ -139,32 +144,73 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 		return super.getLaunch(modifiedConfig.doSave(), mode);
 	}
 
-	private static class TestRunSessionAndPort {
-		final int				port;
-		final TestRunSession	runSession;
+	private static class TestRunSessionAndPort extends TestRunSession {
 
-		public TestRunSessionAndPort(ILaunch launch, IJavaProject project) {
-			this(launch, project, SocketUtil.findFreePort());
-		}
+		volatile boolean	keepAlive;
 
-		public TestRunSessionAndPort(ILaunch launch, IJavaProject project, int port) {
-			this.port = port;
-			runSession = new TestRunSession(launch, project, port);
+		public TestRunSessionAndPort(ILaunch launch, IJavaProject project, int port, boolean keepAlive) {
+			super(launch, project, port);
+			this.keepAlive = keepAlive;
+			// Try and honor the "maxCount" setting.
+			// Subtract 1 because we need room to add the new session into the
+			// list.
+			final int maxCount = Platform.getPreferencesService()
+				.getInt(JUnitCorePlugin.CORE_PLUGIN_ID, JUnitPreferencesConstants.MAX_TEST_RUNS, 10, null) - 1;
+
+			List<TestRunSession> runningSessions = JUnitCorePlugin.getModel()
+				.getTestRunSessions();
+			final int size = runningSessions.size();
+
+			if (maxCount < size) {
+				Set<ILaunch> runningLaunches = new HashSet<>();
+				runningLaunches.add(launch);
+				for (TestRunSession trs : runningSessions.subList(0, maxCount)) {
+					if (trs instanceof TestRunSessionAndPort) {
+						runningLaunches.add(trs.getLaunch());
+					}
+				}
+				for (TestRunSession trs : runningSessions.subList(maxCount, size)) {
+					if (trs instanceof TestRunSessionAndPort) {
+						if (runningLaunches.contains(trs.getLaunch())) {
+							// If the launch already has a session, then allow
+							// this session to be cleaned up by JUnit plugin
+							// core by clearing its keepalive flag.
+							((TestRunSessionAndPort) trs).keepAlive = false;
+						} else {
+							runningLaunches.add(trs.getLaunch());
+						}
+					}
+					runningLaunches.add(trs.getLaunch());
+				}
+			}
+
 			JUnitCorePlugin.getModel()
-				.addTestRunSession(runSession);
+				.addTestRunSession(this);
 
 			for (TestRunListener listener : JUnitCorePlugin.getDefault()
 				.getNewTestRunListeners()) {
-				listener.sessionLaunched(runSession);
+				listener.sessionLaunched(this);
 			}
 		}
 
-		public int getPort() {
-			return port;
+		// Setting keepAlive signals JUnit core to enable the
+		// "rerun" menu items. Also prevents the session from
+		// being cleaned up.
+		@Override
+		public boolean isKeptAlive() {
+			return keepAlive;
 		}
 
-		public void stopTestRun() {
-			runSession.stopTestRun();
+		// This override is to fool the Eclipse JDT JUnit plugin core code into
+		// not removing the launch. For Bnd OSGi Test launches,
+		// the launch removal will be handled by other mechanisms, and
+		// when the JUnit core tries to remove the launch it closes the console
+		// (which is not what you want when continuous testing). Returning null
+		// signals to JUnit core that the session is being managed "externally".
+		// Ref bndtools issue #4716
+		@Override
+		public ILaunch getLaunch() {
+			return isStopped() ? null : super.getLaunch();
 		}
 	}
 
@@ -174,13 +220,15 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 		final ILaunch					launch;
 		final IJavaProject				project;
 		volatile Socket					socket;
+		final boolean					keepAlive;
 		volatile TestRunSessionAndPort	testRunSession;
 		volatile DataOutputStream		outStr;
 
-		public ControlThread(ILaunch launch, IJavaProject project, int port) throws IOException {
+		public ControlThread(ILaunch launch, IJavaProject project, int port, boolean keepAlive) throws IOException {
 			this.launch = launch;
 			this.project = project;
 			listener = new ServerSocket(port);
+			this.keepAlive = keepAlive;
 		}
 
 		@Override
@@ -196,8 +244,9 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 					outStr = new DataOutputStream(socket.getOutputStream());
 					while (socket.getInputStream()
 						.read() != -1) {
-						testRunSession = new TestRunSessionAndPort(launch, project);
-						outStr.writeInt(testRunSession.getPort());
+						int port = SocketUtil.findFreePort();
+						testRunSession = new TestRunSessionAndPort(launch, project, port, keepAlive);
+						outStr.writeInt(port);
 					}
 				}
 			} catch (SocketException se) {
@@ -237,7 +286,7 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 		if (rerunIDE) {
 			ControlThread controlThread;
 			try {
-				controlThread = new ControlThread(launch, javaProject, junitPort);
+				controlThread = new ControlThread(launch, javaProject, junitPort, keepAlive);
 			} catch (Exception e) {
 				throw new CoreException(
 					new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Couldn't start control thread for tester.", e));
@@ -248,7 +297,8 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 			new Thread(controlThread).start();
 		} else {
 
-			TestRunSessionAndPort testRunSessionAndPort = new TestRunSessionAndPort(launch, javaProject, junitPort);
+			TestRunSessionAndPort testRunSessionAndPort = new TestRunSessionAndPort(launch, javaProject, junitPort,
+				keepAlive);
 			DebugPlugin.getDefault()
 				.addDebugEventListener(new TerminationListener(launch, () -> testRunSessionAndPort.stopTestRun()));
 		}
