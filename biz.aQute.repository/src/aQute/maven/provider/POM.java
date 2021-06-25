@@ -33,12 +33,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.ByteBufferInputStream;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
-import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.xml.XML;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;
@@ -417,13 +417,27 @@ public class POM implements IPom {
 
 	@Override
 	public Map<Program, Dependency> getDependencies(MavenScope scope, boolean transitive) throws Exception {
-		return getDependencies(EnumSet.of(scope), transitive);
+		return getDependencies(EnumSet.of(scope), transitive, false);
+	}
+
+	@Override
+	public Map<Program, Dependency> getDependencies(MavenScope scope, boolean transitive,
+		boolean dependencyManagement) throws Exception {
+		return getDependencies(EnumSet.of(scope), transitive, dependencyManagement);
+	}
+
+	public Map<Program, Dependency> getDependencies(EnumSet<MavenScope> scope, boolean transitive,
+		boolean dependencyManagement) throws Exception {
+		Map<Program, Dependency> deps = new LinkedHashMap<>();
+		Set<Program> visited = new HashSet<>();
+		getDependencies(deps, scope, transitive, visited, dependencyManagement);
+		return deps;
 	}
 
 	public Map<Program, Dependency> getDependencies(EnumSet<MavenScope> scope, boolean transitive) throws Exception {
 		Map<Program, Dependency> deps = new LinkedHashMap<>();
 		Set<Program> visited = new HashSet<>();
-		getDependencies(deps, scope, transitive, visited);
+		getDependencies(deps, scope, transitive, visited, false);
 		return deps;
 	}
 
@@ -443,7 +457,7 @@ public class POM implements IPom {
 	}
 
 	private void getDependencies(Map<Program, Dependency> deps, EnumSet<MavenScope> scope, boolean transitive,
-		Set<Program> visited) throws Exception {
+		Set<Program> visited, boolean dependencyManagement) throws Exception {
 
 		if (revision == null)
 			return;
@@ -452,7 +466,7 @@ public class POM implements IPom {
 			return;
 
 		if (parent != null)
-			parent.getDependencies(deps, scope, transitive, visited);
+			parent.getDependencies(deps, scope, transitive, visited, dependencyManagement);
 
 		List<Dependency> breadthFirst = new ArrayList<>();
 
@@ -472,13 +486,29 @@ public class POM implements IPom {
 			}
 		}
 
+		if (dependencyManagement) {
+			for (Map.Entry<Program, Dependency> e : this.dependencyManagement.entrySet()) {
+				Dependency d = e.getValue();
+
+				if (deps.containsKey(d.program))
+					continue;
+
+				if (scope.contains(d.scope) || (transitive && MavenScope.import_ == d.scope)) {
+					d.bindToVersion(repo);
+					deps.put(e.getKey(), d);
+					if (transitive && d.scope.isTransitive())
+						breadthFirst.add(d);
+				}
+			}
+		}
+
 		for (Dependency d : breadthFirst)
 			try {
 				POM pom = repo.getPom(d.getRevision());
 				if (pom == null) {
 					continue;
 				}
-				pom.getDependencies(deps, scope, transitive, visited);
+				pom.getDependencies(deps, scope, transitive, visited, dependencyManagement);
 			} catch (Exception ee) {
 				d.error = ee.toString();
 			}

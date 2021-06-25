@@ -75,7 +75,7 @@ public class PomRepositoryTest extends TestCase {
 			.version("1.0.8");
 
 		HttpClient client = new HttpClient();
-		Traverser t = new Traverser(mr, client, true).revision(revision);
+		Traverser t = new Traverser(mr, client, true, false).revision(revision);
 		Map<Archive, Resource> value = t.getResources()
 			.getValue();
 		assertEquals(8, value.size());
@@ -89,7 +89,7 @@ public class PomRepositoryTest extends TestCase {
 			.version("1.0.8");
 
 		HttpClient client = new HttpClient();
-		Traverser t = new Traverser(mr, client, false).revision(revision);
+		Traverser t = new Traverser(mr, client, false, false).revision(revision);
 		Map<Archive, Resource> value = t.getResources()
 			.getValue();
 		assertEquals(1, value.size());
@@ -772,6 +772,81 @@ public class PomRepositoryTest extends TestCase {
 			providers = mcsr.findProviders(builder.buildExpression());
 			resources = providers.getValue();
 			assertFalse(resources.isEmpty());
+		}
+	}
+
+	public void testPomFilesWithDependencyManagement() throws Exception {
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("pom", "testdata/pomrepo/simpleDepManagement.xml");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			List<String> list = bpr.list(null);
+			assertNotNull(list);
+			assertEquals(1, list.size());
+		}
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("pom", "testdata/pomrepo/simpleDepManagement.xml");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("dependencyManagement", "true");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			List<String> list = bpr.list(null);
+			assertNotNull(list);
+			assertEquals(2, list.size());
+		}
+	}
+
+	public void testPomFilesWithDependencyManagementImport() throws Exception {
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("pom", "testdata/pomrepo/depManagementImport.xml");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("dependencyManagement", "true");
+			config.put("transitive", "false");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			List<String> list = bpr.list(null);
+			assertNotNull(list);
+			assertEquals(2, list.size());
+		}
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("pom", "testdata/pomrepo/depManagementImport.xml");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("dependencyManagement", "true");
+			config.put("transitive", "true");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			List<String> list = bpr.list(null);
+			assertNotNull(list);
+			assertEquals(14, list.size());
 		}
 	}
 
