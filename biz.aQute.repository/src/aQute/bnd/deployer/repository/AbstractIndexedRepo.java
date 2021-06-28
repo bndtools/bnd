@@ -526,7 +526,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 
 	ResourceHandle findExactMatch(String identity, String version) throws Exception {
 		VersionRange range = new VersionRange(version);
-		if (range.isRange())
+		if (!range.isSingleVersion())
 			return null;
 		Resource resource = identityMap.getExact(identity, range.getLow());
 		if (resource == null)

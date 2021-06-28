@@ -174,7 +174,7 @@ public final class RepoResourceUtils {
 					result.add(entry.getValue());
 
 				// optimisation: skip versions definitely higher than the range
-				if (range != null && range.isRange() && version.compareTo(range.getHigh()) >= 0)
+				if (range != null && !range.isSingleVersion() && version.compareTo(range.getHigh()) >= 0)
 					break;
 			}
 		}

@@ -100,10 +100,10 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 
 		boolean result;
 		if (exact) {
-			if (vr.isRange())
+			if (!vr.isSingleVersion())
 				result = false;
 			else
-				result = vr.getHigh()
+				result = vr.getLow()
 					.equals(version);
 		} else {
 			result = vr.includes(version);

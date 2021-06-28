@@ -752,7 +752,7 @@ public class Verifier extends Processor {
 					} else {
 						try {
 							VersionRange range = new VersionRange(version);
-							if (!range.isRange()) {
+							if (range.isSingleVersion()) {
 								toobroadimports.add(key);
 							}
 							if (range.includeHigh() == false && range.includeLow() == false && range.getLow()
