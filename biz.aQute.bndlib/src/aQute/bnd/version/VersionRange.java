@@ -8,8 +8,8 @@ import java.util.regex.Pattern;
 public class VersionRange {
 	final Version					high;
 	final Version					low;
-	char							start	= '[';
-	char							end		= ']';
+	final boolean					includeLow;
+	final boolean					includeHigh;
 
 	private final static Pattern	RANGE	= Pattern
 		.compile("(\\(|\\[)\\s*(" + Version.VERSION_STRING + ")\\s*,\\s*(" + Version.VERSION_STRING + ")\\s*(\\)|\\])");
@@ -34,51 +34,54 @@ public class VersionRange {
 
 		Matcher m = RANGE.matcher(string);
 		if (m.matches()) {
-			start = m.group(1)
-				.charAt(0);
+			includeLow = m.group(1)
+				.charAt(0) == '[';
 			String v1 = m.group(2);
 			String v2 = m.group(10);
 			low = new Version(v1);
 			high = new Version(v2);
-			end = m.group(18)
-				.charAt(0);
+			includeHigh = m.group(18)
+				.charAt(0) == ']';
 			if (low.compareTo(high) > 0)
 				throw new IllegalArgumentException("Low Range is higher than High Range: " + low + "-" + high);
 
 		} else {
 			Version v = new Version(string);
 			if (auto == 3) {
-				start = '[';
-				end = ']';
+				includeLow = true;
 				low = v;
 				high = v;
+				includeHigh = true;
 			} else if (auto != 0) {
+				includeLow = true;
 				low = v;
 				high = auto == 1 ? v.bumpMajor() : v.bumpMinor();
-				start = '[';
-				end = ')';
-			} else {
-				low = high = v;
+				includeHigh = false;
+			} else { // single version
+				includeLow = true;
+				low = v;
+				high = Version.HIGHEST;
+				includeHigh = true;
 			}
 		}
 	}
 
-	public VersionRange(boolean b, Version lower, Version upper, boolean c) {
-		start = b ? '[' : '(';
-		end = c ? ']' : ')';
-		low = lower;
-		high = unique(upper);
-	}
-
-	public VersionRange(String low, String higher) {
-		this(new Version(low), new Version(higher));
-	}
-
-	public VersionRange(Version low, Version higher) {
+	public VersionRange(boolean includeLow, Version low, Version high, boolean includeHigh) {
+		this.includeLow = includeLow;
 		this.low = low;
-		this.high = unique(higher);
-		start = '[';
-		end = this.low.equals(this.high) ? ']' : ')';
+		this.high = unique(high);
+		this.includeHigh = includeHigh;
+	}
+
+	public VersionRange(String low, String high) {
+		this(new Version(low), new Version(high));
+	}
+
+	public VersionRange(Version low, Version high) {
+		this.includeLow = true;
+		this.low = low;
+		this.high = unique(high);
+		this.includeHigh = this.low.equals(this.high);
 	}
 
 	static Version unique(Version v) {
@@ -92,28 +95,28 @@ public class VersionRange {
 	}
 
 	public boolean isRange() {
-		return high != low;
+		return getHigh() != getLow();
 	}
 
 	public boolean includeLow() {
-		return start == '[';
+		return includeLow;
 	}
 
 	public boolean includeHigh() {
-		return end == ']';
+		return includeHigh;
 	}
 
 	@Override
 	public String toString() {
-		if (high == Version.HIGHEST)
-			return low.toString();
+		if (isSingleVersion())
+			return getLow().toString();
 
 		StringBuilder sb = new StringBuilder();
-		sb.append(start);
-		sb.append(low);
-		sb.append(',');
-		sb.append(high);
-		sb.append(end);
+		sb.append(includeLow() ? '[' : '(')
+			.append(getLow())
+			.append(',')
+			.append(getHigh())
+			.append(includeHigh() ? ']' : ')');
 		return sb.toString();
 	}
 
@@ -126,20 +129,19 @@ public class VersionRange {
 	}
 
 	public boolean includes(Version v) {
-		if (!isRange()) {
-			return low.compareTo(v) <= 0;
-		}
 		if (includeLow()) {
-			if (v.compareTo(low) < 0)
+			if (v.compareTo(getLow()) < 0)
 				return false;
-		} else if (v.compareTo(low) <= 0)
+		} else if (v.compareTo(getLow()) <= 0)
 			return false;
 
-		if (includeHigh()) {
-			if (v.compareTo(high) > 0)
+		if (!isSingleVersion()) {
+			if (includeHigh()) {
+				if (v.compareTo(getHigh()) > 0)
+					return false;
+			} else if (v.compareTo(getHigh()) >= 0)
 				return false;
-		} else if (v.compareTo(high) >= 0)
-			return false;
+		}
 
 		return true;
 	}
@@ -165,8 +167,8 @@ public class VersionRange {
 	 */
 	public String toFilter(String versionAttribute) {
 		StringBuilder result = new StringBuilder(128);
-		final boolean needPresence = !includeLow() && ((high == Version.HIGHEST) || !includeHigh());
-		final boolean multipleTerms = needPresence || (high != Version.HIGHEST);
+		final boolean needPresence = !includeLow() && (isSingleVersion() || !includeHigh());
+		final boolean multipleTerms = needPresence || !isSingleVersion();
 
 		if (multipleTerms) {
 			result.append('(')
@@ -197,7 +199,7 @@ public class VersionRange {
 				.append(')')
 				.append(')');
 		}
-		if (high != Version.HIGHEST) {
+		if (!isSingleVersion()) {
 			if (includeHigh()) {
 				result.append('(')
 					.append(versionAttribute)
@@ -233,31 +235,27 @@ public class VersionRange {
 	 */
 
 	public VersionRange intersect(VersionRange other) {
-		Version lower;
-		char start = this.start;
-
-		int lowc = this.low.compareTo(other.low);
+		Version low = getLow();
+		boolean includeLow = includeLow();
+		int lowc = low.compareTo(other.getLow());
 		if (lowc <= 0) {
-			lower = other.low;
-			if (lowc != 0 || start == '[') {
-				start = other.start;
+			low = other.getLow();
+			if (lowc != 0 || includeLow) {
+				includeLow = other.includeLow();
 			}
-		} else {
-			lower = this.low;
 		}
-		Version upper;
-		char end = this.end;
 
-		int highc = this.high.compareTo(other.high);
+		Version high = getHigh();
+		boolean includeHigh = includeHigh();
+		int highc = high.compareTo(other.getHigh());
 		if (highc >= 0) {
-			upper = other.high;
-			if (highc != 0 || end == ']') {
-				end = other.end;
+			high = other.getHigh();
+			if (highc != 0 || includeHigh) {
+				includeHigh = other.includeHigh();
 			}
-		} else {
-			upper = this.high;
 		}
-		return new VersionRange(start == '[', lower, upper, end == ']');
+
+		return new VersionRange(includeLow, low, high, includeHigh);
 	}
 
 	public static VersionRange parseVersionRange(String version) {
@@ -281,7 +279,7 @@ public class VersionRange {
 	}
 
 	public boolean isSingleVersion() {
-		return high == Version.HIGHEST;
+		return getHigh() == Version.HIGHEST;
 	}
 
 	/**
@@ -295,7 +293,7 @@ public class VersionRange {
 		if (isSingleVersion()) { // infinity
 			return false;
 		}
-		int comparison = low.compareTo(high);
+		int comparison = getLow().compareTo(getHigh());
 		if (comparison == 0) { // endpoints equal
 			return !includeLow() || !includeHigh();
 		}
