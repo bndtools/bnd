@@ -1830,6 +1830,7 @@ public class Builder extends Analyzer {
 	 * resolve any symbolic reference.
 	 */
 	private final static Pattern	GITREF_P		= Pattern.compile("ref:\\s*(refs/(heads|tags|remotes)/(\\S+))\\s*");
+	private final static Pattern	GIT_WORKTREES_P	= Pattern.compile("gitdir:\\s*(\\S+)\\s*");
 
 	final static String				_githeadHelp	= "${githead}, provide the SHA for the current git head";
 
@@ -1840,55 +1841,80 @@ public class Builder extends Analyzer {
 		// Locate the .git directory
 		//
 
-		File rover = getBase();
-		while (rover != null && rover.isDirectory()) {
-			File headFile = IO.getFile(rover, ".git/HEAD");
-			if (headFile.isFile()) {
-				//
-				// The head is either a symref (ref:
-				// refs/(heads|tags|remotes)/<name>)
-				//
-				String head = IO.collect(headFile)
-					.trim();
-				if (!Hex.isHex(head)) {
-					//
-					// Should be a symref
-					//
-					Matcher m = GITREF_P.matcher(head);
-					if (m.matches()) {
-						String reference = m.group(1);
-						// so the commit is in the following path
-						File file = IO.getFile(rover, ".git/" + reference);
-						if (!file.isFile()) {
-							// sigh, gc'd. Is in .git/packed-refs
-							file = IO.getFile(rover, ".git/packed-refs");
-							if (file.isFile()) {
-								String refs = IO.collect(file);
-								Pattern packedReferenceLinePattern = Pattern
-									.compile("(" + PatternConstants.SHA1 + ")\\s+" + reference + "\\s*\n");
-								Matcher packedReferenceMatcher = packedReferenceLinePattern.matcher(refs);
-								if (packedReferenceMatcher.find()) {
-									head = packedReferenceMatcher.group(1);
-								} else
-									return ""; // give up
-							} else
-								return ""; // give up
+		File GIT_DIR = null;
+		for (File rover = getBase(); (rover != null) && rover.isDirectory(); rover = rover.getParentFile()) {
+			GIT_DIR = IO.getFile(rover, ".git");
+			if (GIT_DIR.exists()) {
+				while (GIT_DIR.isFile()) {
+					String content = IO.collect(GIT_DIR)
+						.trim();
+					Matcher m = GIT_WORKTREES_P.matcher(content);
+					if (!m.matches()) {
+						break;
+					}
+					GIT_DIR = IO.getFile(rover, m.group(1));
+				}
+				break;
+			}
+		}
+		if ((GIT_DIR == null) || !GIT_DIR.isDirectory()) {
+			// Cannot find git directory
+			return "";
+		}
+		File GIT_COMMON_DIR = GIT_DIR;
+		File commondir = IO.getFile(GIT_DIR, "commondir");
+		if (commondir.isFile()) {
+			String content = IO.collect(commondir)
+				.trim();
+			GIT_COMMON_DIR = IO.getFile(GIT_DIR, content);
+		}
+		File HEAD = IO.getFile(GIT_DIR, "HEAD");
+		if (!HEAD.isFile()) {
+			// Cannot find HEAD file
+			return "";
+		}
+		//
+		// The head is either a SHA1 or symref (ref:
+		// refs/(heads|tags|remotes)/<name>)
+		//
+		String content = IO.collect(HEAD)
+			.trim();
+		if (!Hex.isHex(content)) {
+			//
+			// Should be a symref
+			//
+			Matcher m = GITREF_P.matcher(content);
+			if (m.matches()) {
+				String symref = m.group(1);
+				// so the commit is in the following path
+				File file = IO.getFile(GIT_COMMON_DIR, symref);
+				if (!file.isFile()) {
+					// sigh, gc'd. Is in .git/packed-refs
+					file = IO.getFile(GIT_COMMON_DIR, "packed-refs");
+					if (file.isFile()) {
+						String refs = IO.collect(file);
+						Pattern packedReferenceLinePattern = Pattern
+							.compile("(" + PatternConstants.SHA1 + ")\\s+" + symref + "\\s*\n");
+						Matcher packedReferenceMatcher = packedReferenceLinePattern.matcher(refs);
+						if (packedReferenceMatcher.find()) {
+							content = packedReferenceMatcher.group(1);
 						} else {
-							head = IO.collect(file);
+							return ""; // give up
 						}
 					} else {
-						error(
-							"Git repo seems corrupt. It exists, find the HEAD but the content is neither hex nor a sym-ref: %s",
-							head);
+						return ""; // give up
 					}
+				} else {
+					content = IO.collect(file);
 				}
-				return head.trim()
-					.toUpperCase();
+			} else {
+				error(
+					"Git repo seems corrupt. It exists, find the HEAD but the content is neither hex nor a sym-ref: %s",
+					content);
 			}
-			rover = rover.getParentFile();
 		}
-		// Cannot find git directory
-		return "";
+		return content.trim()
+			.toUpperCase();
 	}
 
 	/**
