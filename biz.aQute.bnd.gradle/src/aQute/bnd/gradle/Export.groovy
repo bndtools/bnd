@@ -30,9 +30,9 @@
  * <li>bndrun - This is the bndrun file to be exported.
  * This property must be set.</li>
  * <li>destinationDirectory - This is the directory for the output.
- * The default for destinationDirectory is project.distsDirectory.dir("executable")
- * if the exporter is "bnd.executablejar", project.distsDirectory.dir("runbundles"/bndrun)
- * if the exporter is "bnd.runbundles", and project.distsDirectory.dir(task.name)
+ * The default for destinationDirectory is project.base.distsDirectory.dir("executable")
+ * if the exporter is "bnd.executablejar", project.base.distsDirectory.dir("runbundles"/bndrun)
+ * if the exporter is "bnd.runbundles", and project.base.distsDirectory.dir(task.name)
  * for all other exporters.</li>
  * <li>workingDirectory - This is the directory for the export operation.
  * The default for workingDirectory is temporaryDir.</li>
@@ -47,6 +47,7 @@ package aQute.bnd.gradle
 
 import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
 import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES
+import static aQute.bnd.gradle.BndUtils.isGradleCompatible
 import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.gradle.BndUtils.unwrap
 
@@ -93,9 +94,9 @@ public class Export extends Bndrun {
 	 * The destination directory for the export.
 	 *
 	 * <p>
-	 * The default for destinationDirectory is project.distsDirectory.dir("executable")
-	 * if the exporter is "bnd.executablejar", project.distsDirectory.dir("runbundles"/bndrun)
-	 * if the exporter is "bnd.runbundles", and project.distsDirectory.dir(task.name)
+	 * The default for destinationDirectory is project.base.distsDirectory.dir("executable")
+	 * if the exporter is "bnd.executablejar", project.base.distsDirectory.dir("runbundles"/bndrun)
+	 * if the exporter is "bnd.runbundles", and project.base.distsDirectory.dir(task.name)
 	 * for all other exporters.
 	 */
 	@OutputDirectory
@@ -109,8 +110,8 @@ public class Export extends Bndrun {
 		super()
 		ObjectFactory objects = getProject().getObjects()
 		exporter = objects.property(String.class).convention(getProject().provider(() -> getBundlesOnly() ? RUNBUNDLES : EXECUTABLE_JAR))
-		Provider<Directory> distsDirectory = getProject().hasProperty("distsDirectory") ? getProject().distsDirectory : // Gradle 6.0
-		getProject().getLayout().getBuildDirectory().dir(getProject().provider(() -> getProject().distsDirName))
+		Provider<Directory> distsDirectory = isGradleCompatible("7.1") ? getProject().base.getDistsDirectory()
+		: getProject().distsDirectory
 		destinationDirectory = objects.directoryProperty().convention(distsDirectory.flatMap(distsDir -> {
 			return distsDir.dir(getExporter().map(exporterName -> {
 				switch(exporterName) {

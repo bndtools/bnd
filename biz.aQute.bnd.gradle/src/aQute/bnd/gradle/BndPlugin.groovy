@@ -16,6 +16,7 @@ package aQute.bnd.gradle
 
 import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
 import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES
+import static aQute.bnd.gradle.BndUtils.isGradleCompatible
 import static aQute.bnd.gradle.BndUtils.jarLibraryElements
 import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.gradle.BndUtils.unwrap
@@ -38,8 +39,10 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.ProjectLayout
+import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.logging.Logger
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
@@ -89,8 +92,13 @@ public class BndPlugin implements Plugin<Project> {
 
 		layout.getBuildDirectory().set(bndProject.getTargetDir())
 		project.getPlugins().apply("java")
-		project.libsDirName = "."
-		project.testResultsDirName = bndProject.getProperty("test-reports", "test-reports")
+		if (isGradleCompatible("7.1")) {
+			project.base.getLibsDirectory().value(layout.getBuildDirectory())
+			project.java.getTestResultsDir().value(layout.getBuildDirectory().dir(bndProject.getProperty("test-reports", "test-reports")))
+		} else {
+			project.libsDirName = "."
+			project.testResultsDirName = bndProject.getProperty("test-reports", "test-reports")
+		}
 
 		if (project.hasProperty("bnd_defaultTask")) {
 			project.setDefaultTasks(Strings.split(project.bnd_defaultTask))
@@ -146,10 +154,10 @@ public class BndPlugin implements Plugin<Project> {
 				String compileTaskName = getCompileJavaTaskName()
 				getJava().srcDirs = srcDirs
 				getResources().srcDirs = srcDirs
-				getJava().outputDir = destinationDir
+				getJava().getDestinationDirectory().fileValue(destinationDir)
 				getOutput().resourcesDir = destinationDir
 				tasks.named(compileTaskName, t -> {
-					t.destinationDir = destinationDir
+					t.getDestinationDirectory().fileValue(destinationDir)
 					if (generate) {
 						t.getInputs().files(generate).withPropertyName(generate.getName())
 					}
@@ -163,10 +171,10 @@ public class BndPlugin implements Plugin<Project> {
 				String compileTaskName = getCompileJavaTaskName()
 				getJava().srcDirs = srcDirs
 				getResources().srcDirs = srcDirs
-				getJava().outputDir = destinationDir
+				getJava().getDestinationDirectory().fileValue(destinationDir)
 				getOutput().resourcesDir = destinationDir
 				tasks.named(compileTaskName, t -> {
-					t.destinationDir = destinationDir
+					t.getDestinationDirectory().fileValue(destinationDir)
 					jarLibraryElements(t, getCompileClasspathConfigurationName())
 				})
 				getOutput().dir(destinationDir, "builtBy": compileTaskName)
@@ -176,47 +184,83 @@ public class BndPlugin implements Plugin<Project> {
 		project.afterEvaluate {
 			project.sourceSets {
 				main {
-					convention.getPlugins().forEach((lang, sourceDirSets) -> {
-						var sourceDirSet = sourceDirSets[lang]
-						if (sourceDirSet.hasProperty("srcDirs") && sourceDirSet.hasProperty("outputDir")){
-							File destinationDir = getJava().getOutputDir()
-							String compileTaskName = getCompileTaskName(lang)
-							String resourceTaskName = getProcessResourcesTaskName()
-							try {
-								tasks.named(compileTaskName, t -> {
-									t.destinationDir = destinationDir
-									t.getInputs().files(tasks.named(resourceTaskName)).withPropertyName(resourceTaskName)
-									if (generate) {
-										t.getInputs().files(generate).withPropertyName(generate.getName())
-									}
-								})
-								sourceDirSet.srcDirs = getJava().getSrcDirs()
-								sourceDirSet.outputDir = destinationDir
-								getOutput().dir(destinationDir, "builtBy": compileTaskName)
-							} catch (UnknownDomainObjectException e) {
-								// no such task
+					Map<String,Object> sourceDirectorySets = new LinkedHashMap<>();
+					extensions.getExtensionsSchema().forEach(schema -> {
+						String name = schema.getName()
+						var sourceDirectorySet = extensions.getByName(name)
+						if (sourceDirectorySet instanceof SourceDirectorySet) {
+							sourceDirectorySets.put(name, sourceDirectorySet)
+						}
+					})
+					convention.getPlugins().forEach((name, plugin) -> {
+						if (!sourceDirectorySets.containsKey(name)) {
+							var sourceDirectorySet = plugin[name]
+							if ((sourceDirectorySet instanceof SourceDirectorySet) ||
+								(sourceDirectorySet.hasProperty("srcDirs") && sourceDirectorySet.hasProperty("outputDir"))) {
+								sourceDirectorySets.put(name, sourceDirectorySet)
 							}
+						}
+					})
+					sourceDirectorySets.forEach((name, sourceDirectorySet) -> {
+						Provider<Directory> destinationDir = getJava().getClassesDirectory()
+						String compileTaskName = getCompileTaskName(name)
+						String resourceTaskName = getProcessResourcesTaskName()
+						try {
+							tasks.named(compileTaskName, t -> {
+								t.getDestinationDirectory().value(destinationDir)
+								t.getInputs().files(tasks.named(resourceTaskName)).withPropertyName(resourceTaskName)
+								if (generate) {
+									t.getInputs().files(generate).withPropertyName(generate.getName())
+								}
+							})
+							sourceDirectorySet.srcDirs = getJava().getSrcDirs()
+							if (sourceDirectorySet instanceof SourceDirectorySet) {
+								sourceDirectorySet.getDestinationDirectory().value(destinationDir)
+							} else {
+								sourceDirectorySet.outputDir = bndProject.getSrcOutput()
+							}
+							getOutput().dir(destinationDir, "builtBy": compileTaskName)
+						} catch (UnknownDomainObjectException e) {
+							// no such task
 						}
 					})
 				}
 				test {
-					convention.getPlugins().forEach((lang, sourceDirSets) -> {
-						var sourceDirSet = sourceDirSets[lang]
-						if (sourceDirSet.hasProperty("srcDirs") && sourceDirSet.hasProperty("outputDir")){
-							File destinationDir = getJava().getOutputDir()
-							String compileTaskName = getCompileTaskName(lang)
-							String resourceTaskName = getProcessResourcesTaskName()
-							try {
-								tasks.named(compileTaskName, t -> {
-									t.destinationDir = destinationDir
-									t.getInputs().files(tasks.named(resourceTaskName)).withPropertyName(resourceTaskName)
-								})
-								sourceDirSet.srcDirs = getJava().getSrcDirs()
-								sourceDirSet.outputDir = destinationDir
-								getOutput().dir(destinationDir, "builtBy": compileTaskName)
-							} catch (UnknownDomainObjectException e) {
-								// no such task
+					Map<String,Object> sourceDirectorySets = new LinkedHashMap<>();
+					extensions.getExtensionsSchema().forEach(schema -> {
+						String name = schema.getName()
+						var sourceDirectorySet = extensions.getByName(name)
+						if (sourceDirectorySet instanceof SourceDirectorySet) {
+							sourceDirectorySets.put(name, sourceDirectorySet)
+						}
+					})
+					convention.getPlugins().forEach((name, plugin) -> {
+						if (!sourceDirectorySets.containsKey(name)) {
+							var sourceDirectorySet = plugin[name]
+							if ((sourceDirectorySet instanceof SourceDirectorySet) ||
+								(sourceDirectorySet.hasProperty("srcDirs") && sourceDirectorySet.hasProperty("outputDir"))) {
+								sourceDirectorySets.put(name, sourceDirectorySet)
 							}
+						}
+					})
+					sourceDirectorySets.forEach((name, sourceDirectorySet) -> {
+						Provider<Directory> destinationDir = getJava().getClassesDirectory()
+						String compileTaskName = getCompileTaskName(name)
+						String resourceTaskName = getProcessResourcesTaskName()
+						try {
+							tasks.named(compileTaskName, t -> {
+								t.getDestinationDirectory().value(destinationDir)
+								t.getInputs().files(tasks.named(resourceTaskName)).withPropertyName(resourceTaskName)
+							})
+							sourceDirectorySet.srcDirs = getJava().getSrcDirs()
+							if (sourceDirectorySet instanceof SourceDirectorySet) {
+								sourceDirectorySet.getDestinationDirectory().value(destinationDir)
+							} else {
+								sourceDirectorySet.outputDir = bndProject.getSrcOutput()
+							}
+							getOutput().dir(destinationDir, "builtBy": compileTaskName)
+						} catch (UnknownDomainObjectException e) {
+							// no such task
 						}
 					})
 				}
@@ -233,17 +277,17 @@ public class BndPlugin implements Plugin<Project> {
 		}
 		/* Set up compile tasks */
 		ConfigurableFileCollection javacBootclasspath = objects.fileCollection().from(decontainer(bndProject.getBootclasspath()))
-		Property<String> javacSource = objects.property(String.class).convention(bndProject.getProperty("javac.source"))
+		Property<JavaVersion> javacSource = objects.property(JavaVersion.class).convention(JavaVersion.toVersion(bndProject.getProperty("javac.source")))
 		if (javacSource.isPresent()) {
-			project.sourceCompatibility = javacSource.get()
+			project.java.sourceCompatibility = javacSource.get()
 		} else {
-			javacSource.convention(project.provider(() -> project.sourceCompatibility.toString()))
+			javacSource.convention(project.provider(() -> project.java.sourceCompatibility))
 		}
-		Property<String> javacTarget = objects.property(String.class).convention(bndProject.getProperty("javac.target"))
+		Property<JavaVersion> javacTarget = objects.property(JavaVersion.class).convention(JavaVersion.toVersion(bndProject.getProperty("javac.target")))
 		if (javacTarget.isPresent()) {
-			project.targetCompatibility = javacTarget.get()
+			project.java.targetCompatibility = javacTarget.get()
 		} else {
-			javacTarget.convention(project.provider(() -> project.targetCompatibility.toString()))
+			javacTarget.convention(project.provider(() -> project.java.targetCompatibility))
 		}
 		String javac = bndProject.getProperty("javac")
 		Property<String> javacProfile = objects.property(String.class)
@@ -254,8 +298,8 @@ public class BndPlugin implements Plugin<Project> {
 		boolean javacDeprecation = isTrue(bndProject.getProperty("javac.deprecation", "true"))
 		String javacEncoding = bndProject.getProperty("javac.encoding", "UTF-8")
 		tasks.withType(JavaCompile.class).configureEach(t -> {
-			t.setSourceCompatibility(javacSource.get())
-			t.setTargetCompatibility(javacTarget.get())
+			t.setSourceCompatibility(javacSource.get().toString())
+			t.setTargetCompatibility(javacTarget.get().toString())
 			Property<Boolean> supportsRelease = objects.property(Boolean.class)
 			if (t.hasProperty("javaCompiler")) {
 				// Gradle 6.7
@@ -264,7 +308,7 @@ public class BndPlugin implements Plugin<Project> {
 			Property<Integer> javacRelease = objects.property(Integer.class).convention(project.provider(() -> {
 				if (supportsRelease.getOrElse(Boolean.valueOf(JavaVersion.current().isJava9Compatible())).booleanValue()) {
 					if (Objects.equals(javacSource.get(), javacTarget.get()) && javacBootclasspath.isEmpty() && !javacProfile.isPresent()) {
-						return Integer.valueOf(JavaVersion.toVersion(javacSource.get()).getMajorVersion())
+						return Integer.valueOf(javacSource.get().getMajorVersion())
 					}
 				}
 				return null
@@ -296,7 +340,7 @@ public class BndPlugin implements Plugin<Project> {
 				Logger logger = tt.getLogger()
 				checkErrors(logger)
 				if (logger.isInfoEnabled()) {
-					logger.info("Compile to {}", tt.getDestinationDir())
+					logger.info("Compile to {}", unwrap(tt.getDestinationDirectory()))
 					List<String> allCompilerArgs = tt.getOptions().getAllCompilerArgs()
 					if (tt.getOptions().hasProperty("release") && tt.getOptions().getRelease().isPresent()) {
 						// Gradle 6.6
@@ -550,11 +594,11 @@ project.dir:            ${layout.getProjectDirectory()}
 target:                 ${unwrap(layout.getBuildDirectory())}
 project.dependson:      ${bndProject.getDependson()}
 project.sourcepath:     ${project.sourceSets.main.getAllSource().getSourceDirectories().getAsPath()}
-project.output:         ${compileJava.getDestinationDir()}
+project.output:         ${unwrap(compileJava.getDestinationDirectory())}
 project.buildpath:      ${compileJava.getClasspath().getAsPath()}
 project.allsourcepath:  ${project.bnd.allSrcDirs.getAsPath()}
 project.testsrc:        ${project.sourceSets.test.getAllSource().getSourceDirectories().getAsPath()}
-project.testoutput:     ${compileTestJava.getDestinationDir()}
+project.testoutput:     ${unwrap(compileTestJava.getDestinationDirectory())}
 project.testpath:       ${compileTestJava.getClasspath().getAsPath()}
 project.bootclasspath:  ${compileJava.getOptions().getBootstrapClasspath()?.getAsPath()?:""}
 project.deliverables:   ${deliverables.getFiles()}

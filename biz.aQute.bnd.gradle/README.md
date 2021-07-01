@@ -5,8 +5,7 @@ A typical Gradle build is a non-Bnd workspace build.
 A Bnd Workspace build uses the information specified in the Bnd Workspace's `cnf/build.bnd` file and each project's `bnd.bnd` file to configure the Gradle projects and tasks.
 
 The [`biz.aQute.bnd.gradle`][2] jar contains the Bnd Gradle Plugins.
-These plugins requires at least Gradle 5.3 for Java 8 to Java 12,
-at least Gradle 6.0 for Java 13,
+These plugins requires at least Gradle 6.1 for Java 8 to Java 13,
 at least Gradle 6.3 for Java 14,
 at least Gradle 6.7 for Java 15,
 and at least Gradle 7.0 for Java 16.
@@ -377,7 +376,6 @@ This property must be set.
 ### destinationDirectory
 
 The directory for the output.
-The default for destinationDirectory is _${project.distsDirectory}_/executable if the exporter is `bnd.executablejar`, _${project.distsDirectory}_/runbundles/_${bndrun.name - '.bndrun'}_ if the exporter is `bnd.runbundles`, and _${project.distsDirectory}_/_${task.name}_ for all other exporters.
 
 ### workingDirectory
 
@@ -437,7 +435,7 @@ Use a colon (`:`) to specify a test method to run on the specified test class.
 ### resultsDirectory
 
 The directory for the test results.
-The default is _${project.buildDir}/${project.testResultsDirName}/${task.name}_.
+The default is _${project.java.testResultsDir}/${task.name}_.
 
 ## Create a task of the `Index` type
 

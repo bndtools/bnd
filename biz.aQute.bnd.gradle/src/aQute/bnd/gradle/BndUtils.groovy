@@ -20,7 +20,9 @@ import org.gradle.util.GradleVersion
 class BndUtils {
 	private BndUtils() { }
 
-	private static final boolean IS_GRADLE_COMPATIBLE_5_6 = GradleVersion.current().compareTo(GradleVersion.version("5.6")) >= 0
+	public static boolean isGradleCompatible(String requestedVersion) {
+		return GradleVersion.current().compareTo(GradleVersion.version(requestedVersion)) >= 0
+	}
 
 	public static void logReport(var report, Logger logger) {
 		if (logger.isWarnEnabled()) {
@@ -69,16 +71,14 @@ class BndUtils {
 	}
 
 	public static void jarLibraryElements(Task task, String configurationName) {
-		if (IS_GRADLE_COMPATIBLE_5_6) {
-			Project project = task.getProject()
-			var attributes = project.configurations[configurationName].attributes
-			if (!Objects.equals(attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE)?.getName(), LibraryElements.JAR)) {
-				try {
-					attributes.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.getObjects().named(LibraryElements.class, LibraryElements.JAR))
-					task.getLogger().info("Set {}:{} configuration attribute {} to {}", project.getPath(), configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE))
-				} catch (IllegalArgumentException e) {
-					task.getLogger().info("Unable to set {}:{} configuration attribute {} to {}", project.getPath(), configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, LibraryElements.JAR, e)
-				}
+		Project project = task.getProject()
+		var attributes = project.configurations[configurationName].attributes
+		if (!Objects.equals(attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE)?.getName(), LibraryElements.JAR)) {
+			try {
+				attributes.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.getObjects().named(LibraryElements.class, LibraryElements.JAR))
+				task.getLogger().info("Set {}:{} configuration attribute {} to {}", project.getPath(), configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, attributes.getAttribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE))
+			} catch (IllegalArgumentException e) {
+				task.getLogger().info("Unable to set {}:{} configuration attribute {} to {}", project.getPath(), configurationName, LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, LibraryElements.JAR, e)
 			}
 		}
 	}
