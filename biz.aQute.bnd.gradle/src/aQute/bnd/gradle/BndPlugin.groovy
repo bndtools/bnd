@@ -90,7 +90,7 @@ public class BndPlugin implements Plugin<Project> {
 		layout.getBuildDirectory().set(bndProject.getTargetDir())
 		project.getPlugins().apply("java")
 		project.libsDirName = "."
-		project.testResultsDirName = project.bnd("test-reports", "test-reports")
+		project.testResultsDirName = bndProject.getProperty("test-reports", "test-reports")
 
 		if (project.hasProperty("bnd_defaultTask")) {
 			project.setDefaultTasks(Strings.split(project.bnd_defaultTask))
@@ -233,26 +233,26 @@ public class BndPlugin implements Plugin<Project> {
 		}
 		/* Set up compile tasks */
 		ConfigurableFileCollection javacBootclasspath = objects.fileCollection().from(decontainer(bndProject.getBootclasspath()))
-		Property<String> javacSource = objects.property(String.class).convention(project.bnd("javac.source"))
+		Property<String> javacSource = objects.property(String.class).convention(bndProject.getProperty("javac.source"))
 		if (javacSource.isPresent()) {
 			project.sourceCompatibility = javacSource.get()
 		} else {
 			javacSource.convention(project.provider(() -> project.sourceCompatibility.toString()))
 		}
-		Property<String> javacTarget = objects.property(String.class).convention(project.bnd("javac.target"))
+		Property<String> javacTarget = objects.property(String.class).convention(bndProject.getProperty("javac.target"))
 		if (javacTarget.isPresent()) {
 			project.targetCompatibility = javacTarget.get()
 		} else {
 			javacTarget.convention(project.provider(() -> project.targetCompatibility.toString()))
 		}
-		String javac = project.bnd("javac")
+		String javac = bndProject.getProperty("javac")
 		Property<String> javacProfile = objects.property(String.class)
-		if (!project.bnd("javac.profile", "").isEmpty()) {
-			javacProfile.convention(project.bnd("javac.profile"))
+		if (!bndProject.getProperty("javac.profile", "").isEmpty()) {
+			javacProfile.convention(bndProject.getProperty("javac.profile"))
 		}
-		boolean javacDebug = project.bndis("javac.debug")
-		boolean javacDeprecation = isTrue(project.bnd("javac.deprecation", "true"))
-		String javacEncoding = project.bnd("javac.encoding", "UTF-8")
+		boolean javacDebug = bndProject.is("javac.debug")
+		boolean javacDeprecation = isTrue(bndProject.getProperty("javac.deprecation", "true"))
+		String javacEncoding = bndProject.getProperty("javac.encoding", "UTF-8")
 		tasks.withType(JavaCompile.class).configureEach(t -> {
 			t.setSourceCompatibility(javacSource.get())
 			t.setTargetCompatibility(javacTarget.get())
@@ -321,7 +321,7 @@ public class BndPlugin implements Plugin<Project> {
 			/* use first deliverable as archiveFileName */
 			t.archiveFileName = project.provider(() -> deliverables.find()?.getName() ?: bndProject.getName())
 			/* Additional excludes for projectDir inputs */
-			t.ext.projectDirInputsExcludes = Strings.splitAsStream(project.bndMerge(Constants.BUILDERIGNORE))
+			t.ext.projectDirInputsExcludes = Strings.splitAsStream(bndProject.mergeProperties(Constants.BUILDERIGNORE))
 			.map(i -> i.concat("/"))
 			.collect(toList())
 			/* all other files in the project like bnd and resources */
@@ -389,7 +389,7 @@ public class BndPlugin implements Plugin<Project> {
 		var release = tasks.register("release", t -> {
 			t.setDescription("Release this project to the release repository.")
 			t.setGroup("release")
-			t.setEnabled(!bndProject.isNoBundles() && !project.bnd(Constants.RELEASEREPO, "unset").isEmpty())
+			t.setEnabled(!bndProject.isNoBundles() && !bndProject.getProperty(Constants.RELEASEREPO, "unset").isEmpty())
 			t.getInputs().files(jar).withPropertyName(jar.getName())
 			t.doLast("release", tt -> {
 				try {
@@ -414,7 +414,7 @@ public class BndPlugin implements Plugin<Project> {
 		})
 
 		var test = tasks.named("test", t -> {
-			t.setEnabled(!project.bndis(Constants.NOJUNIT) && !project.bndis("no.junit"))
+			t.setEnabled(!bndProject.is(Constants.NOJUNIT) && !bndProject.is("no.junit"))
 			/* tests can depend upon jars from -dependson */
 			t.getInputs().files(getBuildDependencies("jar")).withPropertyName("buildDependencies")
 			t.doFirst("checkErrors", tt -> checkErrors(tt.getLogger(), tt.ignoreFailures))
@@ -423,7 +423,7 @@ public class BndPlugin implements Plugin<Project> {
 		var testOSGi = tasks.register("testOSGi", TestOSGi.class, t -> {
 			t.setDescription("Runs the OSGi JUnit tests by launching a framework and running the tests in the launched framework.")
 			t.setGroup("verification")
-			t.setEnabled(!project.bndis(Constants.NOJUNITOSGI) && !project.bndUnprocessed(Constants.TESTCASES, "").isEmpty())
+			t.setEnabled(!bndProject.is(Constants.NOJUNITOSGI) && !bndProject.getUnprocessedProperty(Constants.TESTCASES, "").isEmpty())
 			t.getInputs().files(jar).withPropertyName(jar.getName())
 			t.bndrun = bndProject.getPropertiesFile()
 		})
@@ -579,7 +579,7 @@ Project ${project.getName()}
 				bndProject.getPropertyKeys(true)
 				.stream()
 				.sorted()
-				.forEachOrdered(key -> println("${key}: ${project.bnd(key, '')}"))
+				.forEachOrdered(key -> println("${key}: ${bndProject.getProperty(key, '')}"))
 				println()
 				checkErrors(tt.getLogger(), true)
 			})
