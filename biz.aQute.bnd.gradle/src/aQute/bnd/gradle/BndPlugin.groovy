@@ -241,10 +241,6 @@ public class BndPlugin implements Plugin<Project> {
 		}
 		Property<String> javacTarget = objects.property(String.class).convention(project.bnd("javac.target"))
 		if (javacTarget.isPresent()) {
-			if (Objects.equals(javacTarget.get(), "jsr14")) {
-				javacTarget.set("1.5")
-				javacBootclasspath.setFrom(bndProject.getBundle("ee.j2se", "1.5", null, ["strategy":"lowest"]).getFile())
-			}
 			project.targetCompatibility = javacTarget.get()
 		} else {
 			javacTarget.convention(project.provider(() -> project.targetCompatibility.toString()))
