@@ -673,10 +673,8 @@ If you do need to write a `build.gradle` file for a Bnd project, there are some 
 * The `bnd.project` property of the project contains the [Project][9] object.
 
 Bnd properties for a project can be accessed in several ways.
-Given the example property name `foo`, you can use the [`bnd` function][15], `bnd('foo', 'defaultValue')`, or directly from the [bnd extension][16], `bnd.foo`.
-To access Bnd properties without any macro processing you can use the [`bndUnprocessed` function][15], `bndUnprocessed('foo', 'defaultValue')`.
-
-You can also use the `Index` task type described above to generate an index.
+Given the example Bnd property name `foo`, you can use the [bnd extension][16], `bnd.get('foo', 'defaultValue')`, or directly `bnd.foo`.
+To access Bnd properties without any macro processing you can use the [`unprocessed` function][16], `bnd.unprocessed('foo', 'defaultValue')`.
 
 ## Using other JVM languages with the Bnd Gradle Plugins for Bnd Workspace builds
 
@@ -751,8 +749,7 @@ For full details on what the Bnd Gradle Plugins do, check out the [source code][
 [11]: https://github.com/bndtools/bnd/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/filter/root/gradle.properties
 [12]: https://github.com/bndtools/bnd/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/unprocessed/root/settings.gradle
 [13]: https://github.com/bndtools/bnd/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/unprocessed/root/build.gradle
-[15]: src/aQute/bnd/gradle/BndPluginConvention.groovy
-[16]: src/aQute/bnd/gradle/BndProperties.groovy
+[16]: src/aQute/bnd/gradle/BndPluginExtension.groovy
 [18]: https://docs.gradle.org/current/dsl/org.gradle.api.tasks.bundling.Jar.html
 [19]: https://docs.gradle.org/current/dsl/org.gradle.api.reporting.ReportingExtension.html#org.gradle.api.reporting.ReportingExtension:baseDir
 [20]: #gradle-plugins-for-bnd-workspace-builds
