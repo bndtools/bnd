@@ -12,13 +12,13 @@ interface Injected {
 
 /* Configure this project */
 String masterVersion = String.format('%s-%s-g%.7s',
-		bnd('gittag'),
-		bnd('timestamp'),
-		bnd('Git-SHA'))
+		bnd.get('gittag'),
+		bnd.get('timestamp'),
+		bnd.get('Git-SHA'))
 
 def p2Plugins = tasks.register('p2Plugins', Sync.class) {
 	dependsOn 'jarDependencies'
-	from bnd('plugins').tokenize(',')
+	from bnd.get('plugins').tokenize(',')
 	into layout.buildDirectory.dir('plugins')
 }
 
