@@ -46,7 +46,7 @@ tasks.named('test') {
 	def target = layout.buildDirectory.dir('testresources')
 	inputs.files(tasks.named('jar')).withPropertyName('jar')
 	inputs.dir(testresources).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName('testresources')
-	systemProperty 'bnd_version', bnd('bnd_version')
+	systemProperty 'bnd_version', bnd.get('bnd_version')
 	systemProperty 'org.gradle.warning.mode', gradle.startParameter.warningMode.name().toLowerCase()
 	def injected = objects.newInstance(Injected)
 	doFirst('copy') { t ->

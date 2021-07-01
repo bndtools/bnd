@@ -29,7 +29,7 @@
  * "configurations.archives.artifacts.files".</li>
  * <li>resultsDirectory - This is the directory
  * where the test case results are placed.
- * The default is project.testResultsDir/name.</li>
+ * The default is project.java.testResultsDir/name.</li>
  * <li>tests - The test class names to be run.
  * If not set, all test classes are run.
  * Use a colon (:) to specify a test method to run on the specified test class.</li>
@@ -38,6 +38,7 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.gradle.BndUtils.isGradleCompatible
 import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.gradle.BndUtils.unwrap
 
@@ -65,7 +66,7 @@ public class TestOSGi extends Bndrun {
 	 *
 	 * <p>
 	 * The default for resultsDirectory is
-	 * "${buildDir}/${testResultsDirName}/${task.name}"
+	 * "${project.java.testResultsDir}/${task.name}"
 	 */
 	@OutputDirectory
 	final DirectoryProperty resultsDirectory
@@ -76,9 +77,10 @@ public class TestOSGi extends Bndrun {
 	 */
 	public TestOSGi() {
 		super()
-		Provider<Directory> testResultsDirectory = getProject().getLayout().getBuildDirectory().dir(getProject().provider(() -> getProject().testResultsDirName))
+		Provider<Directory> testResultsDir = isGradleCompatible("7.1") ? getProject().java.getTestResultsDir()
+		: getProject().getLayout().getBuildDirectory().dir(getProject().provider(() -> getProject().testResultsDirName))
 		String taskName = getName()
-		resultsDirectory = getProject().getObjects().directoryProperty().convention(testResultsDirectory.map(d -> d.dir(taskName)))
+		resultsDirectory = getProject().getObjects().directoryProperty().convention(testResultsDir.map(d -> d.dir(taskName)))
 	}
 
 	@Deprecated

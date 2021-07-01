@@ -11,7 +11,7 @@ def windows = System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('w
 def mvnw = rootProject.file(windows ? 'mvnw.cmd' : 'mvnw')
 
 def deploy = tasks.register('deploy', Exec.class) {
-	def releaserepo = uri(bnd('releaserepo', dist.file('bundles'))) /* Release repository. */
+	def releaserepo = uri(bnd.get('releaserepo', dist.file('bundles'))) /* Release repository. */
 	dependsOn dist.tasks.named('releaseDependencies')
 	if (windows) {
 		executable 'cmd'
@@ -33,7 +33,7 @@ def deploy = tasks.register('deploy', Exec.class) {
 }
 
 def deployJFrog = tasks.register('deployJFrog', Exec.class) {
-	enabled = !bnd('-releaserepo.jfrog', '').empty
+	enabled = !bnd.get('-releaserepo.jfrog', '').empty
 	def settings = cnf.file('ext/jfrog-settings.xml')
 	def deployState = deploy.map { it.state }
 	onlyIf {

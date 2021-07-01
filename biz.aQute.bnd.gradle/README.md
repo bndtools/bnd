@@ -5,8 +5,7 @@ A typical Gradle build is a non-Bnd workspace build.
 A Bnd Workspace build uses the information specified in the Bnd Workspace's `cnf/build.bnd` file and each project's `bnd.bnd` file to configure the Gradle projects and tasks.
 
 The [`biz.aQute.bnd.gradle`][2] jar contains the Bnd Gradle Plugins.
-These plugins requires at least Gradle 5.3 for Java 8 to Java 12,
-at least Gradle 6.0 for Java 13,
+These plugins requires at least Gradle 6.1 for Java 8 to Java 13,
 at least Gradle 6.3 for Java 14,
 at least Gradle 6.7 for Java 15,
 and at least Gradle 7.0 for Java 16.
@@ -377,7 +376,6 @@ This property must be set.
 ### destinationDirectory
 
 The directory for the output.
-The default for destinationDirectory is _${project.distsDirectory}_/executable if the exporter is `bnd.executablejar`, _${project.distsDirectory}_/runbundles/_${bndrun.name - '.bndrun'}_ if the exporter is `bnd.runbundles`, and _${project.distsDirectory}_/_${task.name}_ for all other exporters.
 
 ### workingDirectory
 
@@ -437,7 +435,7 @@ Use a colon (`:`) to specify a test method to run on the specified test class.
 ### resultsDirectory
 
 The directory for the test results.
-The default is _${project.buildDir}/${project.testResultsDirName}/${task.name}_.
+The default is _${project.java.testResultsDir}/${task.name}_.
 
 ## Create a task of the `Index` type
 
@@ -673,10 +671,8 @@ If you do need to write a `build.gradle` file for a Bnd project, there are some 
 * The `bnd.project` property of the project contains the [Project][9] object.
 
 Bnd properties for a project can be accessed in several ways.
-Given the example property name `foo`, you can use the [`bnd` function][15], `bnd('foo', 'defaultValue')`, or directly from the [bnd extension][16], `bnd.foo`.
-To access Bnd properties without any macro processing you can use the [`bndUnprocessed` function][15], `bndUnprocessed('foo', 'defaultValue')`.
-
-You can also use the `Index` task type described above to generate an index.
+Given the example Bnd property name `foo`, you can use the [bnd extension][16], `bnd.get('foo', 'defaultValue')`, or directly `bnd.foo`.
+To access Bnd properties without any macro processing you can use the [`unprocessed` function][16], `bnd.unprocessed('foo', 'defaultValue')`.
 
 ## Using other JVM languages with the Bnd Gradle Plugins for Bnd Workspace builds
 
@@ -751,8 +747,7 @@ For full details on what the Bnd Gradle Plugins do, check out the [source code][
 [11]: https://github.com/bndtools/bnd/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/filter/root/gradle.properties
 [12]: https://github.com/bndtools/bnd/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/unprocessed/root/settings.gradle
 [13]: https://github.com/bndtools/bnd/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/unprocessed/root/build.gradle
-[15]: src/aQute/bnd/gradle/BndPluginConvention.groovy
-[16]: src/aQute/bnd/gradle/BndProperties.groovy
+[16]: src/aQute/bnd/gradle/BndPluginExtension.groovy
 [18]: https://docs.gradle.org/current/dsl/org.gradle.api.tasks.bundling.Jar.html
 [19]: https://docs.gradle.org/current/dsl/org.gradle.api.reporting.ReportingExtension.html#org.gradle.api.reporting.ReportingExtension:baseDir
 [20]: #gradle-plugins-for-bnd-workspace-builds

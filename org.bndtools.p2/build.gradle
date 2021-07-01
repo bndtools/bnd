@@ -12,13 +12,13 @@ interface Injected {
 
 /* Configure this project */
 String masterVersion = String.format('%s-%s-g%.7s',
-		bnd('gittag'),
-		bnd('timestamp'),
-		bnd('Git-SHA'))
+		bnd.get('gittag'),
+		bnd.get('timestamp'),
+		bnd.get('Git-SHA'))
 
 def p2Plugins = tasks.register('p2Plugins', Sync.class) {
 	dependsOn 'jarDependencies'
-	from bnd('plugins').tokenize(',')
+	from bnd.get('plugins').tokenize(',')
 	into layout.buildDirectory.dir('plugins')
 }
 
@@ -105,7 +105,7 @@ def p2 = tasks.register('p2') {
 	doLast('exec') { t ->
 		injected.exec.javaexec {
 			classpath "${eclipseDir}/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar"
-			main = 'org.eclipse.equinox.launcher.Main'
+			mainClass = 'org.eclipse.equinox.launcher.Main'
 			if (logger.isDebugEnabled()) {
 				args '-consoleLog'
 			}
@@ -125,7 +125,7 @@ def p2 = tasks.register('p2') {
 
 		injected.exec.javaexec {
 			classpath "${eclipseDir}/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar"
-			main = 'org.eclipse.equinox.launcher.Main'
+			mainClass = 'org.eclipse.equinox.launcher.Main'
 			if (logger.isDebugEnabled()) {
 				args '-consoleLog'
 			}
