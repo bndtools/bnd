@@ -39,10 +39,10 @@ import org.gradle.api.tasks.options.Option
  * This property must be set.</li>
  * <li>workingDirectory - This is the directory for the test case execution.
  * The default for workingDir is temporaryDir.</li>
- * <li>bundles - This is the collection of files to use for locating
- * bundles during the test case execution. The default is
+ * <li>bundles - The bundles to added to a FileSetRepository for non-Bnd Workspace builds. The default is
  * "sourceSets.main.runtimeClasspath" plus
- * "configurations.archives.artifacts.files".</li>
+ * "configurations.archives.artifacts.files".
+ * This must not be used for Bnd Workspace builds.</li>
  * <li>resultsDirectory - This is the directory
  * where the test case results are placed.
  * The default is project.java.testResultsDir/name.</li>

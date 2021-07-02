@@ -342,6 +342,7 @@ The default is _${temporaryDir}_.
 
 The collection of files to use for locating bundles during the resolve process.
 The default is _${project.sourceSets.main.runtimeClasspath}_ plus _${project.configurations.archives.artifacts.files}_.
+This property must not be used for and is ignored in Bnd Workspace builds.
 
 ### reportOptional
 
@@ -394,6 +395,7 @@ The default is _${temporaryDir}_.
 
 The collection of files to use for locating bundles during the bndrun export.
 The default is _${project.sourceSets.main.runtimeClasspath}_ plus _${project.configurations.archives.artifacts.files}_.
+This property must not be used for and is ignored in Bnd Workspace builds.
 
 ## Create a task of the `TestOSGi` type
 
@@ -430,6 +432,7 @@ The default is _${temporaryDir}_.
 
 The collection of files to use for locating bundles during the bndrun execution.
 The default is _${project.sourceSets.main.runtimeClasspath}_ plus _${project.configurations.archives.artifacts.files}_.
+This property must not be used for and is ignored in Bnd Workspace builds.
 
 ### tests
 
@@ -545,6 +548,7 @@ The default is _${temporaryDir}_.
 
 The collection of files to use for locating bundles during the bndrun execution.
 The default is _${project.sourceSets.main.runtimeClasspath}_ plus _${project.configurations.archives.artifacts.files}_.
+This property must not be used for and is ignored in Bnd Workspace builds.
 
 # Gradle Plugins for Bnd Workspace Builds
 

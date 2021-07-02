@@ -56,10 +56,10 @@ import org.gradle.api.tasks.OutputDirectory
  * for all other exporters.</li>
  * <li>workingDirectory - This is the directory for the export operation.
  * The default for workingDirectory is temporaryDir.</li>
- * <li>bundles - This is the collection of files to use for locating
- * bundles during the bndrun execution. The default is
+ * <li>bundles - The bundles to added to a FileSetRepository for non-Bnd Workspace builds. The default is
  * "sourceSets.main.runtimeClasspath" plus
- * "configurations.archives.artifacts.files".</li>
+ * "configurations.archives.artifacts.files".
+ * This must not be used for Bnd Workspace builds.</li>
  * </ul>
  */
 public class Export extends Bndrun {
