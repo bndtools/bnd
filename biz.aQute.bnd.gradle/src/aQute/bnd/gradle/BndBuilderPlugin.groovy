@@ -1,22 +1,3 @@
-/**
- * BndBuilderPlugin for Gradle.
- *
- * <p>
- * The plugin name is {@code biz.aQute.bnd.builder}.
- *
- * <p>
- * This plugin applies the java plugin to a project and modifies the jar
- * task by adding the properties from the {@link BundleTaskConvention},
- * setting the bndfile to "bnd.bnd", if the file exists, and building the
- * jar file as a bundle.
- * <p>
- * This plugin also defines a "baseline" configuration and a baseline task
- * of type {@link Baseline}. The baseline task will be set up with the
- * default of baselining the output of the jar task using the baseline
- * configuration. The baseline configuration default dependency
- * will use the prior version of the jar.
- */
-
 package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.unwrap
@@ -34,8 +15,24 @@ import org.gradle.api.artifacts.ResolveException
 import org.gradle.api.file.RegularFile
 import org.gradle.api.tasks.TaskContainer
 
-
-
+/**
+ * BndBuilderPlugin for Gradle.
+ *
+ * <p>
+ * The plugin name is {@code biz.aQute.bnd.builder}.
+ *
+ * <p>
+ * This plugin applies the java plugin to a project and modifies the jar
+ * task by adding the {@code bundle} extension {@link BundleTaskExtension},
+ * setting the bndfile to "bnd.bnd", if the file exists, and building the
+ * jar file as a bundle.
+ * <p>
+ * This plugin also defines a "baseline" configuration and a baseline task
+ * of type {@link Baseline}. The baseline task will be set up with the
+ * default of baselining the output of the jar task using the baseline
+ * configuration. The baseline configuration default dependency
+ * will use the prior version of the jar.
+ */
 public class BndBuilderPlugin implements Plugin<Project> {
 	public static final String PLUGINID = "biz.aQute.bnd.builder"
 
@@ -53,12 +50,13 @@ public class BndBuilderPlugin implements Plugin<Project> {
 
 		var jar = tasks.named("jar", t -> {
 			t.setDescription("Assembles a bundle containing the main classes.")
-			t.convention.getPlugins().bundle = new BundleTaskConvention(t)
+			BundleTaskExtension extension = t.getExtensions().create("bundle", BundleTaskExtension.class, t)
+			t.getConvention().getPlugins().put("bundle", new BundleTaskConvention(extension, t))
 			RegularFile defaultBndfile = project.getLayout().getProjectDirectory().file("bnd.bnd")
 			if (defaultBndfile.getAsFile().isFile()) {
-				t.bndfile.convention(defaultBndfile)
+				extension.getBndfile().convention(defaultBndfile)
 			}
-			t.doLast("buildBundle", tt -> buildBundle())
+			t.doLast("buildBundle", tt -> extension.buildBundle())
 		})
 
 		Configuration baseline = project.getConfigurations().create("baseline")
