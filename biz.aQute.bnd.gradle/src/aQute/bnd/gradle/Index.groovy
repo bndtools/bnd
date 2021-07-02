@@ -1,3 +1,30 @@
+package aQute.bnd.gradle
+
+import static aQute.bnd.gradle.BndUtils.builtBy
+import static aQute.bnd.gradle.BndUtils.logReport
+import static aQute.bnd.gradle.BndUtils.unwrap
+import static java.util.stream.Collectors.toList
+
+import aQute.bnd.osgi.repository.SimpleIndexer
+import aQute.bnd.osgi.Processor
+import aQute.lib.io.IO
+
+import java.util.zip.GZIPOutputStream
+
+import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.model.ReplacedBy
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
+
 /**
  * Index task type for Gradle.
  *
@@ -40,34 +67,6 @@
  * must be set.</li>
  * </ul>
  */
-
-package aQute.bnd.gradle
-
-import static aQute.bnd.gradle.BndUtils.builtBy
-import static aQute.bnd.gradle.BndUtils.logReport
-import static aQute.bnd.gradle.BndUtils.unwrap
-import static java.util.stream.Collectors.toList
-
-import aQute.bnd.osgi.repository.SimpleIndexer
-import aQute.bnd.osgi.Processor
-import aQute.lib.io.IO
-
-import java.util.zip.GZIPOutputStream
-
-import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
-import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.model.ObjectFactory
-import org.gradle.api.model.ReplacedBy
-import org.gradle.api.provider.Property
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.TaskAction
-
 public class Index extends DefaultTask {
 	/**
 	 * Whether a gzip'd index should be made.

@@ -1,3 +1,20 @@
+package aQute.bnd.gradle
+
+import static aQute.bnd.gradle.BndUtils.logReport
+import static aQute.bnd.gradle.BndUtils.unwrap
+
+import aQute.bnd.osgi.Constants
+import aQute.lib.io.IO
+import aQute.lib.utf8properties.UTF8Properties
+import biz.aQute.resolve.ResolveProcess
+
+import org.gradle.api.GradleException
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputFile
+
+import org.osgi.service.resolver.ResolutionException
+
 /**
  * Resolve task type for Gradle.
  *
@@ -40,24 +57,6 @@
  * optional requirements. The default is true.</li>
  * </ul>
  */
-
-package aQute.bnd.gradle
-
-import static aQute.bnd.gradle.BndUtils.logReport
-import static aQute.bnd.gradle.BndUtils.unwrap
-
-import aQute.bnd.osgi.Constants
-import aQute.lib.io.IO
-import aQute.lib.utf8properties.UTF8Properties
-import biz.aQute.resolve.ResolveProcess
-
-import org.gradle.api.GradleException
-import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.OutputFile
-
-import org.osgi.service.resolver.ResolutionException
-
 public class Resolve extends Bndrun {
 	/**
 	 * Whether resolve changes should fail the task.

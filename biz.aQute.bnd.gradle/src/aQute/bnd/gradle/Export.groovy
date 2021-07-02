@@ -1,3 +1,23 @@
+package aQute.bnd.gradle
+
+import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
+import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES
+import static aQute.bnd.gradle.BndUtils.isGradleCompatible
+import static aQute.bnd.gradle.BndUtils.logReport
+import static aQute.bnd.gradle.BndUtils.unwrap
+
+import aQute.lib.io.IO
+
+import org.gradle.api.GradleException
+import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.model.ReplacedBy
+import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputDirectory
+
 /**
  * Export task type for Gradle.
  *
@@ -42,27 +62,6 @@
  * "configurations.archives.artifacts.files".</li>
  * </ul>
  */
-
-package aQute.bnd.gradle
-
-import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
-import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES
-import static aQute.bnd.gradle.BndUtils.isGradleCompatible
-import static aQute.bnd.gradle.BndUtils.logReport
-import static aQute.bnd.gradle.BndUtils.unwrap
-
-import aQute.lib.io.IO
-
-import org.gradle.api.GradleException
-import org.gradle.api.file.Directory
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.model.ObjectFactory
-import org.gradle.api.model.ReplacedBy
-import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.OutputDirectory
-
 public class Export extends Bndrun {
 	/**
 	 * This property is replaced by exporter.

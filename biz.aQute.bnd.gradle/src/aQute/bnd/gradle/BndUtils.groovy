@@ -1,7 +1,3 @@
-/**
- * BndUtils class.
- */
-
 package aQute.bnd.gradle
 
 import groovy.transform.CompileStatic
@@ -17,6 +13,9 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.logging.Logger
 import org.gradle.util.GradleVersion
 
+/**
+ * BndUtils class.
+ */
 class BndUtils {
 	private BndUtils() { }
 

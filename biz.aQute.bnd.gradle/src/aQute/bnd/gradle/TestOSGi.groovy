@@ -1,3 +1,19 @@
+package aQute.bnd.gradle
+
+import static aQute.bnd.gradle.BndUtils.isGradleCompatible
+import static aQute.bnd.gradle.BndUtils.logReport
+import static aQute.bnd.gradle.BndUtils.unwrap
+
+import org.gradle.api.GradleException
+import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.model.ReplacedBy
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.options.Option
+
 /**
  * OSGi Test task type for Gradle.
  *
@@ -35,23 +51,6 @@
  * Use a colon (:) to specify a test method to run on the specified test class.</li>
  * </ul>
  */
-
-package aQute.bnd.gradle
-
-import static aQute.bnd.gradle.BndUtils.isGradleCompatible
-import static aQute.bnd.gradle.BndUtils.logReport
-import static aQute.bnd.gradle.BndUtils.unwrap
-
-import org.gradle.api.GradleException
-import org.gradle.api.file.Directory
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.model.ReplacedBy
-import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.options.Option
-
 public class TestOSGi extends Bndrun {
 	/**
 	 * Configures the test class names to be run.

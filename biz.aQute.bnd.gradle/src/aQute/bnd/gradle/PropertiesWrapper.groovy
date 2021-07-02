@@ -1,12 +1,11 @@
-/**
- * PropertiesWrapper for Gradle.
- *
- */
-
 package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.unwrap
 
+/**
+ * PropertiesWrapper for Gradle.
+ *
+ */
 class PropertiesWrapper extends Properties {
 	protected Properties defaults
 

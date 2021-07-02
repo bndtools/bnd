@@ -1,34 +1,3 @@
-/**
- * OSGi Bndrun task type for Gradle.
- *
- * <p>
- * This task type can be used to execute a bndrun file.
- *
- * <p>
- * Here is examples of using the Bndrun task type:
- * <pre>
- * import aQute.bnd.gradle.Bndrun
- * tasks.register("run", Bndrun) {
- *   bndrun = file("my.bndrun")
- * }
- * </pre>
- *
- * <p>
- * Properties:
- * <ul>
- * <li>ignoreFailures - If true the task will not fail if the execution
- * fails. The default is false.</li>
- * <li>bndrun - This is the bndrun file to be run.
- * This property must be set.</li>
- * <li>workingDirectory - This is the directory for the execution.
- * The default for workingDirectory is temporaryDir.</li>
- * <li>bundles - This is the collection of files to use for locating
- * bundles during the bndrun execution. The default is
- * "sourceSets.main.runtimeClasspath" plus
- * "configurations.archives.artifacts.files".</li>
- * </ul>
- */
-
 package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.logReport
@@ -59,6 +28,36 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.TaskAction
 
+/**
+ * OSGi Bndrun task type for Gradle.
+ *
+ * <p>
+ * This task type can be used to execute a bndrun file.
+ *
+ * <p>
+ * Here is examples of using the Bndrun task type:
+ * <pre>
+ * import aQute.bnd.gradle.Bndrun
+ * tasks.register("run", Bndrun) {
+ *   bndrun = file("my.bndrun")
+ * }
+ * </pre>
+ *
+ * <p>
+ * Properties:
+ * <ul>
+ * <li>ignoreFailures - If true the task will not fail if the execution
+ * fails. The default is false.</li>
+ * <li>bndrun - This is the bndrun file to be run.
+ * This property must be set.</li>
+ * <li>workingDirectory - This is the directory for the execution.
+ * The default for workingDirectory is temporaryDir.</li>
+ * <li>bundles - This is the collection of files to use for locating
+ * bundles during the bndrun execution. The default is
+ * "sourceSets.main.runtimeClasspath" plus
+ * "configurations.archives.artifacts.files".</li>
+ * </ul>
+ */
 public class Bndrun extends DefaultTask {
 	/**
 	 * Whether execution failures should be ignored.

@@ -1,3 +1,9 @@
+package aQute.bnd.gradle
+
+import groovy.transform.CompileStatic
+import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.bundling.Jar
+
 /**
  * Bundle task type for Gradle.
  *
@@ -19,13 +25,6 @@
  * }
  * </pre>
  */
-
-package aQute.bnd.gradle
-
-import groovy.transform.CompileStatic
-import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.bundling.Jar
-
 public class Bundle extends Jar {
 	/**
 	 * Create a Bundle task.
