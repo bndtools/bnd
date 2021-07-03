@@ -39,6 +39,9 @@ def testosgiTask = tasks.register('testosgi', TestOSGi) {
 	description = 'OSGi Test testosgi.bndrun'
 	group = 'test'
 	bndrun = resolveTask.flatMap { it.outputBndrun }
+	javaLauncher = javaToolchains.launcherFor {
+		languageVersion = JavaLanguageVersion.of(JavaVersion.current().getMajorVersion())
+	}
 }
 
 def checkTask = tasks.named('check') {

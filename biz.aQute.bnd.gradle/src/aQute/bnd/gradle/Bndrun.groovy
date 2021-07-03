@@ -7,8 +7,14 @@ import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.ScheduledExecutorService
 
 import aQute.bnd.build.ProjectLauncher
+import aQute.lib.io.IO
 
 import org.gradle.api.GradleException
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.Optional
+import org.gradle.jvm.toolchain.JavaLauncher
 
 /**
  * OSGi Bndrun task type for Gradle.
@@ -38,15 +44,29 @@ import org.gradle.api.GradleException
  * "sourceSets.main.runtimeClasspath" plus
  * "configurations.archives.artifacts.files".
  * This must not be used for Bnd Workspace builds.</li>
+ * <li>javaLauncher - Configures the default java executable to be used for execution.</li>
  * </ul>
  */
 public class Bndrun extends AbstractBndrun {
+	/**
+	 * Configures the default java executable to be used for execution.
+	 * <p>
+	 * This java launcher is used if the bndrun does not specify the
+	 * {@code java} property or specifies it with the default value
+	 * {@code java}. 
+	 */
+	@Nested
+	@Optional
+	final Property<JavaLauncher> javaLauncher
+
 	/**
 	 * Create a Bndrun task.
 	 *
 	 */
 	public Bndrun() {
 		super()
+		ObjectFactory objects = getProject().getObjects()
+		javaLauncher = objects.property(JavaLauncher.class)
 	}
 
 	/**
@@ -54,6 +74,9 @@ public class Bndrun extends AbstractBndrun {
 	 */
 	@Override
 	protected void worker(var run) {
+		if (getJavaLauncher().isPresent() && Objects.equals(run.getProperty("java", "java"), "java")) {
+			run.setProperty("java", IO.absolutePath(getJavaLauncher().get().getExecutablePath().getAsFile()))
+		}
 		getLogger().info("Running {} in {}", run.getPropertiesFile(), run.getBase())
 		getLogger().debug("Run properties: {}", run.getProperties())
 		ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor()
