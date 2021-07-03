@@ -89,7 +89,9 @@ var p2FeaturePde = tasks.register('p2FeaturePde', Zip.class) {
 var p2 = tasks.register('p2') {
 	description = 'Publish the p2 repositories.'
 	group = 'release'
-	enabled = JavaVersion.current().isJava8()
+	var javaLauncher = javaToolchains.launcherFor {
+		languageVersion = JavaLanguageVersion.of(8)
+	}
 	inputs.files(p2Plugins).withPropertyName('p2Plugins')
 	inputs.files(p2FeatureMain).withPropertyName('p2FeatureMain')
 	inputs.files(p2FeatureM2e).withPropertyName('p2FeatureM2e')
@@ -104,6 +106,7 @@ var p2 = tasks.register('p2') {
 	var categoryURI = uri('features/category.xml')
 	doLast('exec') { t ->
 		injected.exec.javaexec {
+			executable = javaLauncher.get().getExecutablePath().getAsFile().getAbsolutePath()
 			classpath "${eclipseDir}/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar"
 			mainClass = 'org.eclipse.equinox.launcher.Main'
 			if (logger.isDebugEnabled()) {
@@ -124,6 +127,7 @@ var p2 = tasks.register('p2') {
 		}.assertNormalExitValue()
 
 		injected.exec.javaexec {
+			executable = javaLauncher.get().getExecutablePath().getAsFile().getAbsolutePath()
 			classpath "${eclipseDir}/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar"
 			mainClass = 'org.eclipse.equinox.launcher.Main'
 			if (logger.isDebugEnabled()) {
@@ -152,10 +156,4 @@ var p2 = tasks.register('p2') {
 
 tasks.named('jar') {
 	inputs.files(p2).withPropertyName('p2')
-}
-
-tasks.named('release') {
-	onlyIf {
-		JavaVersion.current().isJava8()
-	}
 }
