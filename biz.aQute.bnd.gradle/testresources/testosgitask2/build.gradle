@@ -30,7 +30,7 @@ task testosgi(type: TestOSGi) {
 	inputs.files jar
 	bndrun = file("${name}.bndrun")
 	bundles configurations.framework
-	workingDir = new File(temporaryDir, 'temptemp')
+	workingDirectory = new File(temporaryDir, 'temptemp')
 }
 
 check {

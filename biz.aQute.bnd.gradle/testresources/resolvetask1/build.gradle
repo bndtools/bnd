@@ -28,7 +28,7 @@ ext {
 task create(type: Resolve) {
 	description = "Resolve ${name}.bndrun"
 	group = 'export'
-	bndrun "${name}.bndrun"
+	bndrun = file("${name}.bndrun")
 	outputBndrun = file("${buildDir}/${name}.bndrun")
 	bundles = configurations.bundles
 }
@@ -36,7 +36,7 @@ task create(type: Resolve) {
 task same(type: Resolve) {
 	description = "Resolve ${name}.bndrun"
 	group = 'export'
-	bndrun file("${name}.bndrun")
+	bndrun = file("${name}.bndrun")
 	failOnChanges = true
 	bundles = configurations.bundles
 }
@@ -52,6 +52,6 @@ task changefail(type: Resolve) {
 task resolvefail(type: Resolve) {
 	description = "Resolve ${name}.bndrun"
 	group = 'export'
-	bndrun = "${name}.bndrun"
+	bndrun = file("${name}.bndrun")
 	bundles = configurations.bundles
 }

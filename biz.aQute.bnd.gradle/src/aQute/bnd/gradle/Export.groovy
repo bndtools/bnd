@@ -41,53 +41,34 @@ import org.gradle.api.tasks.OutputDirectory
  * <p>
  * Properties:
  * <ul>
- * <li>ignoreFailures - If true the task will not fail if the export
- * fails. The default is false.</li>
- * <li>exporter - The name of the exporter plugin to use.
- * Bnd has two built-in exporter plugins. "bnd.executablejar"
- * exports an executable jar and "bnd.runbundles" exports the
- * -runbundles files. The default is "bnd.executablejar".</li>
  * <li>bndrun - This is the bndrun file to be exported.
  * This property must be set.</li>
+ * <li>bundles - The bundles to added to a FileSetRepository for non-Bnd Workspace builds. The default is
+ * "sourceSets.main.runtimeClasspath" plus
+ * "configurations.archives.artifacts.files".
+ * This must not be used for Bnd Workspace builds.</li>
+ * <li>ignoreFailures - If true the task will not fail if the export
+ * fails. The default is false.</li>
+ * <li>workingDirectory - This is the directory for the export operation.
+ * The default for workingDirectory is temporaryDir.</li>
  * <li>destinationDirectory - This is the directory for the output.
  * The default for destinationDirectory is project.base.distsDirectory.dir("executable")
  * if the exporter is "bnd.executablejar", project.base.distsDirectory.dir("runbundles"/bndrun)
  * if the exporter is "bnd.runbundles", and project.base.distsDirectory.dir(task.name)
  * for all other exporters.</li>
- * <li>workingDirectory - This is the directory for the export operation.
- * The default for workingDirectory is temporaryDir.</li>
- * <li>bundles - The bundles to added to a FileSetRepository for non-Bnd Workspace builds. The default is
- * "sourceSets.main.runtimeClasspath" plus
- * "configurations.archives.artifacts.files".
- * This must not be used for Bnd Workspace builds.</li>
+ * <li>exporter - The name of the exporter plugin to use.
+ * Bnd has two built-in exporter plugins. "bnd.executablejar"
+ * exports an executable jar and "bnd.runbundles" exports the
+ * -runbundles files. The default is "bnd.executablejar".</li>
  * </ul>
  */
-public class Export extends Bndrun {
+public class Export extends AbstractBndrun {
 	/**
-	 * This property is replaced by exporter.
-	 * This property is only used when the exporter
-	 * property is not specified.
-	 *
-	 * <p>
-	 * If <code>true</code>, then the exporter defaults to
-	 * "bnd.runbundles". Otherwise the exporter defaults to
-	 * "bnd.executablejar". The default is <code>false</code>.
+	 * @deprecated Replaced by exporter.
 	 */
 	@ReplacedBy("exporter")
 	@Deprecated
 	boolean bundlesOnly = false
-
-	/**
-	 * The name of the exporter for this task.
-	 *
-	 * <p>
-	 * Bnd has two built-in exporter plugins. "bnd.executablejar"
-	 * exports an executable jar and "bnd.runbundles" exports the
-	 * -runbundles files. The default is "bnd.executablejar" unless
-	 * bundlesOnly is false when the default is "bnd.runbundles".
-	 */
-	@Input
-	final Property<String> exporter
 
 	/**
 	 * The destination directory for the export.
@@ -100,6 +81,18 @@ public class Export extends Bndrun {
 	 */
 	@OutputDirectory
 	final DirectoryProperty destinationDirectory
+
+	/**
+	 * The name of the exporter for this task.
+	 *
+	 * <p>
+	 * Bnd has two built-in exporter plugins. "bnd.executablejar"
+	 * exports an executable jar and "bnd.runbundles" exports the
+	 * -runbundles files. The default is "bnd.executablejar" unless
+	 * bundlesOnly is false when the default is "bnd.runbundles".
+	 */
+	@Input
+	final Property<String> exporter
 
 	/**
 	 * Create a Export task.
@@ -115,27 +108,16 @@ public class Export extends Bndrun {
 			return distsDir.dir(getExporter().map(exporterName -> {
 				switch(exporterName) {
 					case EXECUTABLE_JAR:
-					return "executable"
+						return "executable"
 					case RUNBUNDLES:
-					File bndrunFile = unwrap(getBndrun())
-					String bndrunName = bndrunFile.getName() - ".bndrun"
-					return "runbundles/${bndrunName}"
+						File bndrunFile = unwrap(getBndrun())
+						String bndrunName = bndrunFile.getName() - ".bndrun"
+						return "runbundles/${bndrunName}"
 					default:
-					return exporterName
+						return exporterName
 				}
 			}))
 		}))
-	}
-
-	@Deprecated
-	@ReplacedBy("destinationDirectory")
-	public File getDestinationDir() {
-		return unwrap(getDestinationDirectory())
-	}
-
-	@Deprecated
-	public void setDestinationDir(Object dir) {
-		getDestinationDirectory().set(getProject().file(dir))
 	}
 
 	/**

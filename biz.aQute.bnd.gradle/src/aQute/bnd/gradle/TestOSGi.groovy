@@ -7,7 +7,6 @@ import static aQute.bnd.gradle.BndUtils.unwrap
 import org.gradle.api.GradleException
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.model.ReplacedBy
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
@@ -32,17 +31,17 @@ import org.gradle.api.tasks.options.Option
  * <p>
  * Properties:
  * <ul>
- * <li>ignoreFailures - If true the task will not fail if the any
- * test cases fail. Otherwise, the task will fail if any test case
- * fails. The default is false.</li>
  * <li>bndrun - This is the bndrun file to be tested.
  * This property must be set.</li>
- * <li>workingDirectory - This is the directory for the test case execution.
- * The default for workingDir is temporaryDir.</li>
  * <li>bundles - The bundles to added to a FileSetRepository for non-Bnd Workspace builds. The default is
  * "sourceSets.main.runtimeClasspath" plus
  * "configurations.archives.artifacts.files".
  * This must not be used for Bnd Workspace builds.</li>
+ * <li>ignoreFailures - If true the task will not fail if the any
+ * test cases fail. Otherwise, the task will fail if any test case
+ * fails. The default is false.</li>
+ * <li>workingDirectory - This is the directory for the test case execution.
+ * The default for workingDir is temporaryDir.</li>
  * <li>resultsDirectory - This is the directory
  * where the test case results are placed.
  * The default is project.java.testResultsDir/name.</li>
@@ -53,14 +52,6 @@ import org.gradle.api.tasks.options.Option
  */
 public class TestOSGi extends Bndrun {
 	/**
-	 * Configures the test class names to be run.
-	 */
-	@Input
-	@Optional
-	@Option(description = "Configures the test class names to be run.")
-	List<String> tests
-
-	/**
 	 * The directory where the test case results are placed.
 	 *
 	 * <p>
@@ -69,6 +60,14 @@ public class TestOSGi extends Bndrun {
 	 */
 	@OutputDirectory
 	final DirectoryProperty resultsDirectory
+	
+	/**
+	 * Configures the test class names to be run.
+	 */
+	@Input
+	@Optional
+	@Option(description = "Configures the test class names to be run.")
+	List<String> tests
 
 	/**
 	 * Create a TestOSGi task.
@@ -80,12 +79,6 @@ public class TestOSGi extends Bndrun {
 		: getProject().getLayout().getBuildDirectory().dir(getProject().provider(() -> getProject().testResultsDirName))
 		String taskName = getName()
 		resultsDirectory = getProject().getObjects().directoryProperty().convention(testResultsDir.map(d -> d.dir(taskName)))
-	}
-
-	@Deprecated
-	@ReplacedBy("resultsDirectory")
-	public File getResultsDir() {
-		return unwrap(getResultsDirectory())
 	}
 
 	/**

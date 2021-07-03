@@ -44,6 +44,6 @@ task runbundles(type: Export) {
 	description = "Export ${name}.bndrun"
 	group = 'export'
 	bndrun = file("${name}.bndrun")
-	bundlesOnly = true
+	exporter = 'bnd.runbundles'
 	bundles = configurations.bundles
 }

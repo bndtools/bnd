@@ -9,12 +9,12 @@ import org.gradle.api.file.ConfigurableFileCollection
  * Task convention to make a FileSetRepository from
  * a bundles property.
  * 
- * @deprecated Function moved into Bndrun task type.
+ * @deprecated Function moved into AbstractBndrun type.
  */
 
 @Deprecated
 class FileSetRepositoryConvention {
-	private final Bndrun bndrunTask
+	private final AbstractBndrun bndrunTask
 
 	FileSetRepositoryConvention(Task task) {
 		this.bndrunTask = task
