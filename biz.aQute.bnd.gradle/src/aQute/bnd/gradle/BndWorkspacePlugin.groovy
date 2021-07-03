@@ -1,15 +1,3 @@
-/**
- * BndWorkspacePlugin for Gradle.
- *
- * <p>
- * The plugin name is {@code biz.aQute.bnd.workspace}.
- * <p>
- * This plugin can be applied to the Settings object in
- * settings.gradle. It can also be applied to the root
- * project in build.gradle.
- *
- */
-
 package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.unwrap
@@ -26,6 +14,17 @@ import org.gradle.api.initialization.Settings
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.tasks.Delete
 
+/**
+ * BndWorkspacePlugin for Gradle.
+ *
+ * <p>
+ * The plugin name is {@code biz.aQute.bnd.workspace}.
+ * <p>
+ * This plugin can be applied to the Settings object in
+ * settings.gradle. It can also be applied to the root
+ * project in build.gradle.
+ *
+ */
 public class BndWorkspacePlugin implements Plugin<Object> {
 	public static final String PLUGINID = "biz.aQute.bnd.workspace"
 	/**

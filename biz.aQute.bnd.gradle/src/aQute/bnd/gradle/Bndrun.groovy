@@ -1,3 +1,38 @@
+package aQute.bnd.gradle
+
+import static aQute.bnd.gradle.BndUtils.builtBy
+import static aQute.bnd.gradle.BndUtils.logReport
+import static aQute.bnd.gradle.BndUtils.unwrap
+import static org.gradle.api.tasks.PathSensitivity.RELATIVE
+
+import java.util.concurrent.Executors
+import java.util.concurrent.ForkJoinPool
+import java.util.concurrent.ScheduledExecutorService
+
+import aQute.bnd.build.ProjectLauncher
+import aQute.bnd.build.Workspace
+import aQute.bnd.osgi.Processor
+import aQute.bnd.repository.fileset.FileSetRepository
+import aQute.lib.io.IO
+
+import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
+import org.gradle.api.Project
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.ProjectLayout
+import org.gradle.api.file.RegularFile
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.model.ReplacedBy
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.TaskAction
+
 /**
  * OSGi Bndrun task type for Gradle.
  *
@@ -22,43 +57,12 @@
  * This property must be set.</li>
  * <li>workingDirectory - This is the directory for the execution.
  * The default for workingDirectory is temporaryDir.</li>
- * <li>bundles - This is the collection of files to use for locating
- * bundles during the bndrun execution. The default is
+ * <li>bundles - The bundles to added to a FileSetRepository for non-Bnd Workspace builds. The default is
  * "sourceSets.main.runtimeClasspath" plus
- * "configurations.archives.artifacts.files".</li>
+ * "configurations.archives.artifacts.files".
+ * This must not be used for Bnd Workspace builds.</li>
  * </ul>
  */
-
-package aQute.bnd.gradle
-
-import static aQute.bnd.gradle.BndUtils.logReport
-import static aQute.bnd.gradle.BndUtils.unwrap
-import static org.gradle.api.tasks.PathSensitivity.RELATIVE
-
-import java.util.concurrent.Executors
-import java.util.concurrent.ForkJoinPool
-import java.util.concurrent.ScheduledExecutorService
-
-import aQute.bnd.build.ProjectLauncher
-import aQute.bnd.build.Workspace
-import aQute.bnd.osgi.Processor
-import aQute.lib.io.IO
-
-import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.ProjectLayout
-import org.gradle.api.file.RegularFile
-import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.model.ObjectFactory
-import org.gradle.api.model.ReplacedBy
-import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.TaskAction
-
 public class Bndrun extends DefaultTask {
 	/**
 	 * Whether execution failures should be ignored.
@@ -87,18 +91,34 @@ public class Bndrun extends DefaultTask {
 	final DirectoryProperty workingDirectory
 
 	/**
+	 * The bundles to added to a FileSetRepository for non-Bnd Workspace builds.
+	 * <p>
+	 * This must not be used for Bnd Workspace builds.
+	 */
+	@InputFiles
+	@PathSensitive(RELATIVE)
+	final ConfigurableFileCollection bundles
+
+	/**
 	 * Create a Bndrun task.
 	 *
 	 */
 	public Bndrun() {
 		super()
-		ObjectFactory objects = getProject().getObjects()
+		Project project = getProject()
+		ObjectFactory objects = project.getObjects()
 		bndrun = objects.fileProperty()
 		DirectoryProperty temporaryDirProperty = objects.directoryProperty()
 		temporaryDirProperty.set(getTemporaryDir())
 		workingDirectory = objects.directoryProperty().convention(temporaryDirProperty)
-		if (!getProject().hasProperty("bndWorkspace")) {
-			getConvention().getPlugins().bundles = new FileSetRepositoryConvention(this)
+		bundles = objects.fileCollection()
+		if (project.hasProperty("bndWorkspace")) {
+			bundles.disallowChanges() // bundles must not be used for Bnd workspace builds
+		} else {
+			bundles(project.sourceSets.main.getRuntimeClasspath())
+			bundles(project.getConfigurations().archives.getArtifacts().getFiles())
+			// We add this in case someone actually looks for this convention
+			getConvention().getPlugins().put("bundles", new FileSetRepositoryConvention(this))
 		}
 	}
 
@@ -122,6 +142,30 @@ public class Bndrun extends DefaultTask {
 	 */
 	public void setBndrun(Object file) {
 		getBndrun().set(getProject().file(file))
+	}
+
+	/**
+	 * Add files to use when locating bundles.
+	 *
+	 * <p>
+	 * The arguments will be handled using
+	 * ConfigurableFileCollection.from().
+	 */
+	public ConfigurableFileCollection bundles(Object... paths) {
+		return builtBy(getBundles().from(paths), paths)
+	}
+
+	/**
+	 * Set the files to use when locating bundles.
+	 *
+	 * <p>
+	 * The argument will be handled using
+	 * ConfigurableFileCollection.from().
+	 */
+	public void setBundles(Object path) {
+		getBundles().setFrom(Collections.emptyList())
+		getBundles().setBuiltBy(Collections.emptyList())
+		bundles(path)
 	}
 
 	@Deprecated
@@ -162,8 +206,9 @@ public class Bndrun extends DefaultTask {
 				File cnf = new File(workingDirFile, Workspace.CNFDIR)
 				IO.mkdirs(cnf)
 				runWorkspace.setBuildDir(cnf)
-				if (getConvention().findPlugin(FileSetRepositoryConvention)) {
-					runWorkspace.addBasicPlugin(getFileSetRepository(name))
+				if (Objects.isNull(workspace)) {
+					FileSetRepository fileSetRepository = new FileSetRepository(name, getBundles().getFiles())
+					runWorkspace.addBasicPlugin(fileSetRepository)
 					runWorkspace.getRepositories().forEach(repo -> repo.list(null))
 				}
 			}

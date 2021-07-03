@@ -1,14 +1,16 @@
-/**
- * BndPluginConvention for Gradle.
- */
-
 package aQute.bnd.gradle
 
 import org.gradle.api.Project
 
+/**
+ * BndPluginConvention for Gradle.
+ * 
+ * @deprecated Replaced by BndPluginExtension.
+ */
 @Deprecated
 class BndPluginConvention {
 	private final BndPluginExtension extension
+
 	BndPluginConvention(BndPluginExtension extension) {
 		this.extension = extension
 	}

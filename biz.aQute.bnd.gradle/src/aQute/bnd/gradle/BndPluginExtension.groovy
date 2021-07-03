@@ -1,3 +1,7 @@
+package aQute.bnd.gradle
+
+import aQute.bnd.build.Project
+
 /**
  * BndPluginExtension for Gradle.
  *
@@ -5,11 +9,6 @@
  * Add property access for bnd properties to projects that apply
  * the {@code biz.aQute.bnd} plugin.
  */
-
-package aQute.bnd.gradle
-
-import aQute.bnd.build.Project
-
 class BndPluginExtension {
 	final Project project
 	BndPluginExtension(Project bndProject) {
@@ -50,7 +49,7 @@ class BndPluginExtension {
 		}
 		return value
 	}
-	
+
 	Object propertyMissing(String name) {
 		if (Objects.equals(name, "ext") || extensions.extraProperties.has(name) || extensions.findByName(name)) {
 			throw new MissingPropertyException(name, String)

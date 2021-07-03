@@ -1,17 +1,3 @@
-/**
- * BndPlugin for Gradle.
- *
- * <p>
- * The plugin name is {@code biz.aQute.bnd}.
- *
- * <p>
- * If the bndWorkspace property is set, it will be used for the bnd Workspace.
- *
- * <p>
- * If the bnd_defaultTask property is set, it will be used for the the default
- * task.
- */
-
 package aQute.bnd.gradle
 
 import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
@@ -54,6 +40,19 @@ import org.gradle.api.tasks.compile.CompileOptions
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.process.CommandLineArgumentProvider
 
+/**
+ * BndPlugin for Gradle.
+ *
+ * <p>
+ * The plugin name is {@code biz.aQute.bnd}.
+ *
+ * <p>
+ * If the bndWorkspace property is set, it will be used for the bnd Workspace.
+ *
+ * <p>
+ * If the bnd_defaultTask property is set, it will be used for the the default
+ * task.
+ */
 public class BndPlugin implements Plugin<Project> {
 	public static final String PLUGINID = "biz.aQute.bnd"
 	private Project project

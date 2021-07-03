@@ -1,3 +1,42 @@
+package aQute.bnd.gradle
+
+import static aQute.bnd.gradle.BndUtils.builtBy
+import static aQute.bnd.gradle.BndUtils.unwrap
+import static org.gradle.api.tasks.PathSensitivity.RELATIVE
+
+import aQute.bnd.differ.DiffPluginImpl
+import aQute.bnd.header.Parameters
+import aQute.bnd.osgi.Instructions
+import aQute.bnd.osgi.Jar
+import aQute.bnd.osgi.Processor
+import aQute.bnd.version.Version
+import aQute.lib.io.IO
+import aQute.lib.strings.Strings
+
+import java.util.Comparator
+
+import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
+import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.file.ProjectLayout
+import org.gradle.api.file.RegularFile
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.model.ReplacedBy
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.TaskProvider
+
 /**
  * Baseline task type for Gradle.
  *
@@ -46,46 +85,6 @@
  * The default is all exported packages.</li>
  * </ul>
  */
-
-package aQute.bnd.gradle
-
-import static aQute.bnd.gradle.BndUtils.builtBy
-import static aQute.bnd.gradle.BndUtils.unwrap
-import static org.gradle.api.tasks.PathSensitivity.RELATIVE
-
-import aQute.bnd.differ.DiffPluginImpl
-import aQute.bnd.header.Parameters
-import aQute.bnd.osgi.Instructions
-import aQute.bnd.osgi.Jar
-import aQute.bnd.osgi.Processor
-import aQute.bnd.version.Version
-import aQute.lib.io.IO
-import aQute.lib.strings.Strings
-
-import java.util.Comparator
-
-import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
-import org.gradle.api.Task
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.file.ProjectLayout
-import org.gradle.api.file.RegularFile
-import org.gradle.api.model.ObjectFactory
-import org.gradle.api.model.ReplacedBy
-import org.gradle.api.provider.ListProperty
-import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
-import org.gradle.api.provider.ProviderFactory
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.TaskProvider
-
 public class Baseline extends DefaultTask {
 	/**
 	 * Whether baseline failures should be ignored.
@@ -243,7 +242,7 @@ public class Baseline extends DefaultTask {
 			if (t instanceof TaskProvider) {
 				t = t.get()
 			}
-			t instanceof Task && t.getConvention().findPlugin(BundleTaskConvention.class) ? t : null
+			t instanceof Task && t.getExtensions().findByName("bundle") ? t : null
 		}
 	}
 

@@ -38,17 +38,19 @@ task bundle(type: Bundle) {
 	from jarTask.map { zipTree(it.archiveFile) }
 	archiveClassifier = 'bundle'
 
-	bnd = jarTask.flatMap { jar ->
-		jar.archiveFile.map { file ->
-			"-include: jar:${file.asFile.toURI()}!/META-INF/MANIFEST.MF"
+	bundle {
+		bnd = jarTask.flatMap { jar ->
+			jar.archiveFile.map { file ->
+				"-include: jar:${file.asFile.toURI()}!/META-INF/MANIFEST.MF"
+			}
 		}
-	}
-
-	bnd extraInstructions
-
-	bnd '''
+		
+		bnd extraInstructions
+		
+		bnd '''
 Bundle-Name: ${project.group}:${task.archiveBaseName}-${task.archiveClassifier}
 '''
+	}
 }
 
 artifacts {

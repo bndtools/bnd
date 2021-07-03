@@ -1,10 +1,16 @@
+package aQute.bnd.gradle
+
+import groovy.transform.CompileStatic
+import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.bundling.Jar
+
 /**
  * Bundle task type for Gradle.
  *
  * <p>
  * This task type extends the Jar task type and can be used 
  * for tasks that make bundles. The Bundle task type adds the
- * properties from the BundleTaskConvention.
+ * properties from the BundleTaskExtension.
  *
  * <p>
  * Here is an example of using the Bundle task type:
@@ -14,28 +20,26 @@
  *   description "Build my bundle"
  *   group "build"
  *   from sourceSets.bundle.output
- *   bndfile = project.file("bundle.bnd")
- *   sourceSet = sourceSets.bundle
+ *   bundle {
+ *     bndfile = project.file("bundle.bnd")
+ *     sourceSet = sourceSets.bundle
+ *     classpath = sourceSets.bundle.compileClasspath
+ *   }
  * }
  * </pre>
  */
-
-package aQute.bnd.gradle
-
-import groovy.transform.CompileStatic
-import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.bundling.Jar
-
 public class Bundle extends Jar {
+	private final BundleTaskExtension extension
 	/**
 	 * Create a Bundle task.
 	 *
 	 * <p>
-	 * Also adds the BundleTaskConvention to this task.
+	 * Also adds the BundleTaskExtension to this task.
 	 */
 	public Bundle() {
 		super()
-		getConvention().getPlugins().bundle = new BundleTaskConvention(this)
+		extension = getExtensions().create("bundle", BundleTaskExtension.class, this)
+		getConvention().getPlugins().put("bundle", new BundleTaskConvention(extension, this))
 	}
 
 	/**
@@ -49,7 +53,7 @@ public class Bundle extends Jar {
 	@Override
 	protected void copy() {
 		supercopy()
-		buildBundle()
+		extension.buildBundle()
 	}
 
 	/**

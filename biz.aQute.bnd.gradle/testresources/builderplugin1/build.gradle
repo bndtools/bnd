@@ -32,7 +32,7 @@ jar {
 		'Override': 'This should be overridden by the bnd file'
 		)
 	}
-	bnd = ['Override': 'This will be ignored since there is a bnd file for this task']
+	bundle.bnd = ['Override': 'This will be ignored since there is a bnd file for this task']
 }
 
 task bundle(type: Bundle) {
@@ -40,7 +40,8 @@ task bundle(type: Bundle) {
 	group = 'build'
 	from sourceSets.test.output
 	archiveClassifier = 'bundle'
-	bnd = '''
+	bundle {
+		bnd = '''
 -exportcontents: doubler.impl
 -sources: true
 My-Header: my-value
@@ -52,11 +53,12 @@ Project-Output: ${project.output}
 Project-Sourcepath: ${project.sourcepath}
 Project-Buildpath: ${project.buildpath}
 '''
-	bnd 'Here: ${.}'
-	bnd '-includeresource.lib': 'commons-lang-2.6.jar;lib:=true'
-	sourceSet = sourceSets.test
-	classpath = configurations.compileClasspath
-	classpath jar
+		bnd 'Here: ${.}'
+		bnd '-includeresource.lib': 'commons-lang-2.6.jar;lib:=true'
+		sourceSet = sourceSets.test
+		classpath = configurations.compileClasspath
+		classpath jar
+	}
 	archiveVersion = '1.1.0'
 }
 

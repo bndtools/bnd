@@ -1,3 +1,19 @@
+package aQute.bnd.gradle
+
+import static aQute.bnd.gradle.BndUtils.isGradleCompatible
+import static aQute.bnd.gradle.BndUtils.logReport
+import static aQute.bnd.gradle.BndUtils.unwrap
+
+import org.gradle.api.GradleException
+import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.model.ReplacedBy
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.options.Option
+
 /**
  * OSGi Test task type for Gradle.
  *
@@ -23,10 +39,10 @@
  * This property must be set.</li>
  * <li>workingDirectory - This is the directory for the test case execution.
  * The default for workingDir is temporaryDir.</li>
- * <li>bundles - This is the collection of files to use for locating
- * bundles during the test case execution. The default is
+ * <li>bundles - The bundles to added to a FileSetRepository for non-Bnd Workspace builds. The default is
  * "sourceSets.main.runtimeClasspath" plus
- * "configurations.archives.artifacts.files".</li>
+ * "configurations.archives.artifacts.files".
+ * This must not be used for Bnd Workspace builds.</li>
  * <li>resultsDirectory - This is the directory
  * where the test case results are placed.
  * The default is project.java.testResultsDir/name.</li>
@@ -35,23 +51,6 @@
  * Use a colon (:) to specify a test method to run on the specified test class.</li>
  * </ul>
  */
-
-package aQute.bnd.gradle
-
-import static aQute.bnd.gradle.BndUtils.isGradleCompatible
-import static aQute.bnd.gradle.BndUtils.logReport
-import static aQute.bnd.gradle.BndUtils.unwrap
-
-import org.gradle.api.GradleException
-import org.gradle.api.file.Directory
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.model.ReplacedBy
-import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.options.Option
-
 public class TestOSGi extends Bndrun {
 	/**
 	 * Configures the test class names to be run.
