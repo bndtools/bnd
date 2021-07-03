@@ -66,9 +66,9 @@ tasks.create('displayArtifacts') {
 	}
 }
 
-def pomFile = file("$buildDir/pom.xml")
+var pomFile = file("$buildDir/pom.xml")
 
-def copyPublishedPom = tasks.create('copyPublishedPom') {
+var copyPublishedPom = tasks.create('copyPublishedPom') {
 	inputs.files(configurations.pom).withPathSensitivity(PathSensitivity.NONE)
 	outputs.file(pomFile)
 	doLast {

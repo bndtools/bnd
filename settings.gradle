@@ -30,7 +30,7 @@ buildscript {
 		}
 	}
 	/* Add bnd gradle plugin to buildscript classpath of rootProject */
-	def bndPlugin = files(configurations.classpath.files)
+	var bndPlugin = files(configurations.classpath.files)
 	gradle.rootProject {
 		buildscript {
 			dependencies {

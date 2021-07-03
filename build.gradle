@@ -60,8 +60,8 @@ subprojects {
 				}
 			}
 			if (!logger.isInfoEnabled()) {
-				def stdOut = [:]
-				def stdErr = [:]
+				var stdOut = [:]
+				var stdErr = [:]
 				onOutput { descriptor, event ->
 					if (event.destination == TestOutputEvent.Destination.StdErr) {
 						stdErr.get(descriptor, []).add(event)
@@ -70,8 +70,8 @@ subprojects {
 					}
 				}
 				afterTest { descriptor, result ->
-					def stdErrEvents = stdErr.remove(descriptor)
-					def stdOutEvents = stdOut.remove(descriptor)
+					var stdErrEvents = stdErr.remove(descriptor)
+					var stdOutEvents = stdOut.remove(descriptor)
 					if (result.resultType == TestResult.ResultType.FAILURE) {
 						if (stdErrEvents && !stdErrEvents.empty) {
 							logger.lifecycle('\n{} > {} STANDARD_ERROR', descriptor.className, descriptor.name)
@@ -98,7 +98,7 @@ subprojects {
 			inputs.files(fileTree(layout.projectDirectory) {
 				include 'testresources/', 'testdata/'
 				exclude {
-					def f = it.file
+					var f = it.file
 					if (f.directory && f.list().length == 0) {
 						return true
 					}
