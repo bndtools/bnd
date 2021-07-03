@@ -5,9 +5,7 @@ A typical Gradle build is a non-Bnd workspace build.
 A Bnd Workspace build uses the information specified in the Bnd Workspace's `cnf/build.bnd` file and each project's `bnd.bnd` file to configure the Gradle projects and tasks.
 
 The [`biz.aQute.bnd.gradle`][2] jar contains the Bnd Gradle Plugins.
-These plugins requires at least Gradle 6.1 for Java 8 to Java 13,
-at least Gradle 6.3 for Java 14,
-at least Gradle 6.7 for Java 15,
+These plugins requires at least Gradle 6.7 for Java 8 to Java 15,
 and at least Gradle 7.0 for Java 16.
 
 This README represents the capabilities and features of the Bnd Gradle Plugins in the branch containing this README.
@@ -448,6 +446,11 @@ Use a colon (`:`) to specify a test method to run on the specified test class.
 The directory for the test results.
 The default is _${project.java.testResultsDir}/${task.name}_.
 
+### javaLauncher
+
+Specify the default java executable to be used for execution.
+This java launcher is used if the bndrun does not specify the `java` property or specifies it with the default value `java`. 
+
 ## Create a task of the `Index` type
 
 The `Index` task type will generate an index for a set of bundles.
@@ -549,6 +552,11 @@ The default is _${temporaryDir}_.
 The collection of files to use for locating bundles during the bndrun execution.
 The default is _${project.sourceSets.main.runtimeClasspath}_ plus _${project.configurations.archives.artifacts.files}_.
 This property must not be used for and is ignored in Bnd Workspace builds.
+
+### javaLauncher
+
+Specify the default java executable to be used for execution.
+This java launcher is used if the bndrun does not specify the `java` property or specifies it with the default value `java`. 
 
 # Gradle Plugins for Bnd Workspace Builds
 

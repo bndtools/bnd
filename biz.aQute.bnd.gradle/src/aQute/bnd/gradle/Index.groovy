@@ -17,7 +17,6 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
-import org.gradle.api.model.ReplacedBy
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
@@ -51,6 +50,13 @@ import org.gradle.api.tasks.TaskAction
  * <p>
  * Properties:
  * <ul>
+ * <li>base - The base URI for the generated index. The default is
+ * the file: URI of the destinationDirectory.</li>
+ * The default value is buildDir.</li>
+ * <li>bundles - This is the bundles to be indexed. This property
+ * must be set.</li>
+ * <li>destinationDirectory - The destination directory for the index.
+ * This is used as the URI base of the generated index.
  * <li>gzip - If <code>true</code>, then a gzip'd copy of the index will be made.
  * Otherwise, only the uncompressed index will be made. The default is
  * <code>false</code>.</li>
@@ -58,16 +64,33 @@ import org.gradle.api.tasks.TaskAction
  * <code>index.xml</code>.</li>
  * <li>repositoryName - The name attribute in the generated index. The default is
  * the name of the task.</li>
- * <li>destinationDirectory - The destination directory for the index.
- * This is used as the URI base of the generated index.
- * <li>base - The base URI for the generated index. The default is
- * the file: URI of the destinationDirectory.</li>
- * The default value is buildDir.</li>
- * <li>bundles - This is the bundles to be indexed. This property
- * must be set.</li>
  * </ul>
  */
 public class Index extends DefaultTask {
+	/**
+	 * The URI base of the generated index.
+	 *
+	 * <p>
+	 * The default is the file: URI of the destinationDir.
+	 */
+	@Input
+	final Property<URI> base
+	
+	/**
+	 * The bundles to be indexed.
+	 */
+	@InputFiles
+	final ConfigurableFileCollection bundles
+
+	/**
+	 * The destination directory for the index.
+	 *
+	 * <p>
+	 * The default value is project.layout.buildDirectory.
+	 */
+	@Internal("Represented by indexUncompressed and indexCompressed")
+	final DirectoryProperty destinationDirectory
+
 	/**
 	 * Whether a gzip'd index should be made.
 	 *
@@ -80,24 +103,6 @@ public class Index extends DefaultTask {
 	boolean gzip = false
 
 	/**
-	 * The URI base of the generated index.
-	 *
-	 * <p>
-	 * The default is the file: URI of the destinationDir.
-	 */
-	@Input
-	final Property<URI> base
-
-	/**
-	 * The name attribute in the generated index.
-	 *
-	 * <p>
-	 * The default is the name of the task.
-	 */
-	@Input
-	final Property<String> repositoryName
-
-	/**
 	 * The name of the index file.
 	 *
 	 * <p>
@@ -107,13 +112,13 @@ public class Index extends DefaultTask {
 	final Property<String> indexName
 
 	/**
-	 * The destination directory for the index.
+	 * The name attribute in the generated index.
 	 *
 	 * <p>
-	 * The default value is project.layout.buildDirectory.
+	 * The default is the name of the task.
 	 */
-	@Internal("Represented by indexUncompressed and indexCompressed")
-	final DirectoryProperty destinationDirectory
+	@Input
+	final Property<String> repositoryName
 
 	/**
 	 * The uncompressed index file.
@@ -134,12 +139,6 @@ public class Index extends DefaultTask {
 	final RegularFileProperty indexCompressed
 
 	/**
-	 * The bundles to be indexed.
-	 */
-	@InputFiles
-	final ConfigurableFileCollection bundles
-
-	/**
 	 * Create an Index task.
 	 *
 	 */
@@ -153,17 +152,6 @@ public class Index extends DefaultTask {
 		base = objects.property(URI.class).convention(destinationDirectory.map(d -> d.getAsFile().toURI()))
 		indexUncompressed = objects.fileProperty().convention(destinationDirectory.file(indexName))
 		indexCompressed = objects.fileProperty().convention(destinationDirectory.file(indexName.map(n -> n.concat(".gz"))))
-	}
-
-	@Deprecated
-	@ReplacedBy("destinationDirectory")
-	public File getDestinationDir() {
-		return unwrap(getDestinationDirectory())
-	}
-
-	@Deprecated
-	public void setDestinationDir(Object dir) {
-		getDestinationDirectory().set(getProject().file(dir))
 	}
 
 	/**

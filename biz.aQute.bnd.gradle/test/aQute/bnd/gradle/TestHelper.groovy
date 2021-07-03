@@ -33,12 +33,6 @@ class TestHelper {
     if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_16)) {
       return '7.0'
     }
-    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_15)) {
-      return '6.7'
-    }
-    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
-      return '6.3'
-    }
-    return '6.1'
+    return '6.7'
   }
 }

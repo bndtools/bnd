@@ -35,29 +35,29 @@ import org.osgi.service.resolver.ResolutionException
  * <p>
  * Properties:
  * <ul>
- * <li>ignoreFailures - If true the task will not fail if the execution
- * fails. The default is false.</li>
- * <li>failOnChanges - If true the task will fail if the resolve process
- * results in a different value for -runbundles than the current value.
- * The default is false.</li>
- * <li>writeOnChanges - If true the task will write changes to the value
- * of the -runbundles property. The default is true.</li>
  * <li>bndrun - This is the bndrun file to be resolved.
  * This property must be set.</li>
- * <li>outputBndrun - This is the output file for the calculated
- * -runbundles property. The default is the input bndrun file
- * which means the input bndrun file will be updated in place.</li>
- * <li>workingDirectory - This is the directory for the resolve process.
- * The default for workingDirectory is temporaryDir.</li>
  * <li>bundles - The bundles to added to a FileSetRepository for non-Bnd Workspace builds. The default is
  * "sourceSets.main.runtimeClasspath" plus
  * "configurations.archives.artifacts.files".
  * This must not be used for Bnd Workspace builds.</li>
+ * <li>ignoreFailures - If true the task will not fail if the execution
+ * fails. The default is false.</li>
+ * <li>workingDirectory - This is the directory for the resolve process.
+ * The default for workingDirectory is temporaryDir.</li>
+ * <li>failOnChanges - If true the task will fail if the resolve process
+ * results in a different value for -runbundles than the current value.
+ * The default is false.</li>
+ * <li>outputBndrun - This is the output file for the calculated
+ * -runbundles property. The default is the input bndrun file
+ * which means the input bndrun file will be updated in place.</li>
  * <li>reportOptional - If true failure reports will include
  * optional requirements. The default is true.</li>
+ * <li>writeOnChanges - If true the task will write changes to the value
+ * of the -runbundles property. The default is true.</li>
  * </ul>
  */
-public class Resolve extends Bndrun {
+public class Resolve extends AbstractBndrun {
 	/**
 	 * Whether resolve changes should fail the task.
 	 *
@@ -70,28 +70,6 @@ public class Resolve extends Bndrun {
 	boolean failOnChanges = false
 
 	/**
-	 * Whether resolve changes should be writen back.
-	 *
-	 * <p>
-	 * If <code>true</code>, then a change to the current -runbundles
-	 * value will be writen back into the bndrun file. The default is
-	 * <code>true</code>.
-	 */
-	@Input
-	boolean writeOnChanges = true
-
-	/**
-	 * Whether to report optional requirements.
-	 *
-	 * <p>
-	 * If <code>true</code>, optional requirements will be reported. The
-	 * default is <code>true</code>.
-	 *
-	 */
-	@Input
-	boolean reportOptional = true
-
-	/**
 	 * Return the output file for the calculated `-runbundles`
 	 * property.
 	 *
@@ -102,6 +80,28 @@ public class Resolve extends Bndrun {
 	 */
 	@OutputFile
 	final RegularFileProperty outputBndrun
+	
+	/**
+	 * Whether to report optional requirements.
+	 *
+	 * <p>
+	 * If <code>true</code>, optional requirements will be reported. The
+	 * default is <code>true</code>.
+	 *
+	 */
+	@Input
+	boolean reportOptional = true
+	
+	/**
+	 * Whether resolve changes should be writen back.
+	 *
+	 * <p>
+	 * If <code>true</code>, then a change to the current -runbundles
+	 * value will be writen back into the bndrun file. The default is
+	 * <code>true</code>.
+	 */
+	@Input
+	boolean writeOnChanges = true
 
 	/**
 	 * Create a Resolve task.
@@ -114,6 +114,7 @@ public class Resolve extends Bndrun {
 	/**
 	 * Create the Bndrun object.
 	 */
+	@Override
 	protected Object createRun(var workspace, File bndrunFile) {
 		File outputBndrunFile = unwrap(getOutputBndrun())
 		if (!Objects.equals(outputBndrunFile, bndrunFile)) {
@@ -131,6 +132,7 @@ public class Resolve extends Bndrun {
 	/**
 	 * Resolve the Bndrun object.
 	 */
+	@Override
 	protected void worker(var run) {
 		getLogger().info("Resolving runbundles required for {}", run.getPropertiesFile())
 		getLogger().debug("Run properties: {}", run.getProperties())

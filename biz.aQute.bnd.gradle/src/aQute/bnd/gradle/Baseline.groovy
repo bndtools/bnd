@@ -25,7 +25,6 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
 import org.gradle.api.model.ObjectFactory
-import org.gradle.api.model.ReplacedBy
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -244,12 +243,6 @@ public class Baseline extends DefaultTask {
 			}
 			t instanceof Task && t.getExtensions().findByName("bundle") ? t : null
 		}
-	}
-
-	@Deprecated
-	@ReplacedBy("reportFile")
-	public File getDestination() {
-		return unwrap(getReportFile())
 	}
 
 	/**
