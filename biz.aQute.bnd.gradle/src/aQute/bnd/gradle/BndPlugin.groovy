@@ -276,19 +276,9 @@ public class BndPlugin implements Plugin<Project> {
 		}
 		/* Set up compile tasks */
 		ConfigurableFileCollection javacBootclasspath = objects.fileCollection().from(decontainer(bndProject.getBootclasspath()))
-		Property<JavaVersion> javacSource = objects.property(JavaVersion.class).convention(JavaVersion.toVersion(bndProject.getProperty("javac.source")))
-		if (javacSource.isPresent()) {
-			project.java.sourceCompatibility = javacSource.get()
-		} else {
-			javacSource.convention(project.provider(() -> project.java.sourceCompatibility))
-		}
-		Property<JavaVersion> javacTarget = objects.property(JavaVersion.class).convention(JavaVersion.toVersion(bndProject.getProperty("javac.target")))
-		if (javacTarget.isPresent()) {
-			project.java.targetCompatibility = javacTarget.get()
-		} else {
-			javacTarget.convention(project.provider(() -> project.java.targetCompatibility))
-		}
-		String javac = bndProject.getProperty("javac")
+		String javac = bndProject.getProperty("javac", "javac")
+		Property<String> javacSource = objects.property(String.class).convention(bndProject.getProperty("javac.source"))
+		Property<String> javacTarget = objects.property(String.class).convention(bndProject.getProperty("javac.target"))
 		Property<String> javacProfile = objects.property(String.class)
 		if (!bndProject.getProperty("javac.profile", "").isEmpty()) {
 			javacProfile.convention(bndProject.getProperty("javac.profile"))
@@ -297,22 +287,26 @@ public class BndPlugin implements Plugin<Project> {
 		boolean javacDeprecation = isTrue(bndProject.getProperty("javac.deprecation", "true"))
 		String javacEncoding = bndProject.getProperty("javac.encoding", "UTF-8")
 		tasks.withType(JavaCompile.class).configureEach(t -> {
-			t.setSourceCompatibility(javacSource.get().toString())
-			t.setTargetCompatibility(javacTarget.get().toString())
-			Property<Boolean> supportsRelease = objects.property(Boolean.class)
-			if (t.hasProperty("javaCompiler")) {
-				// Gradle 6.7
-				supportsRelease.convention(t.getJavaCompiler().map(javaCompiler -> Boolean.valueOf(javaCompiler.getMetadata().getLanguageVersion().canCompileOrRun(9))))
-			}
-			Property<Integer> javacRelease = objects.property(Integer.class).convention(project.provider(() -> {
-				if (supportsRelease.getOrElse(Boolean.valueOf(JavaVersion.current().isJava9Compatible())).booleanValue()) {
-					if (Objects.equals(javacSource.get(), javacTarget.get()) && javacBootclasspath.isEmpty() && !javacProfile.isPresent()) {
-						return Integer.valueOf(javacSource.get().getMajorVersion())
-					}
-				}
-				return null
-			}))
 			CompileOptions options = t.getOptions()
+			if (javacSource.isPresent()) {
+				t.setSourceCompatibility(javacSource.get())
+			}
+			if (javacTarget.isPresent()) {
+				t.setTargetCompatibility(javacTarget.get())
+			}
+			if (javacSource.isPresent() && javacTarget.isPresent()) {
+				Property<Boolean> supportsRelease = objects.property(Boolean.class).value(t.getJavaCompiler().map(javaCompiler -> Boolean.valueOf(javaCompiler.getMetadata().getLanguageVersion().canCompileOrRun(9))))
+				options.getRelease().convention(project.provider(() -> {
+					if (supportsRelease.getOrElse(Boolean.valueOf(JavaVersion.current().isJava9Compatible())).booleanValue()) {
+						JavaVersion sourceVersion = JavaVersion.toVersion(javacSource.get())
+						JavaVersion targetVersion = JavaVersion.toVersion(javacTarget.get())
+						if (Objects.equals(sourceVersion, targetVersion) && javacBootclasspath.isEmpty() && !javacProfile.isPresent()) {
+							return Integer.valueOf(sourceVersion.getMajorVersion())
+						}
+					}
+					return null
+				}))
+			}
 			if (javacDebug) {
 				options.getDebugOptions().setDebugLevel("source,lines,vars")
 			}
@@ -329,25 +323,15 @@ public class BndPlugin implements Plugin<Project> {
 				options.setBootstrapClasspath(javacBootclasspath)
 			}
 			options.getCompilerArgumentProviders().add(argProvider(javacProfile.map(profile -> Arrays.asList("-profile", profile))))
-			if (options.hasProperty("release")) {
-				// Gradle 6.6
-				options.getRelease().set(javacRelease)
-			} else {
-				options.getCompilerArgumentProviders().add(argProvider(javacRelease.map(release -> Arrays.asList("--release", release.toString()))))
-			}
 			t.doFirst("checkErrors", tt -> {
 				Logger logger = tt.getLogger()
 				checkErrors(logger)
 				if (logger.isInfoEnabled()) {
 					logger.info("Compile to {}", unwrap(tt.getDestinationDirectory()))
-					List<String> allCompilerArgs = tt.getOptions().getAllCompilerArgs()
-					if (tt.getOptions().hasProperty("release") && tt.getOptions().getRelease().isPresent()) {
-						// Gradle 6.6
-						logger.info("--release {} {}", tt.getOptions().getRelease().get(), allCompilerArgs.join(" "))
-					} else if (allCompilerArgs.contains("--release")) {
-						logger.info("{}", allCompilerArgs.join(" "))
+					if (tt.getOptions().getRelease().isPresent()) {
+						logger.info("--release {} {}", tt.getOptions().getRelease().get(), tt.getOptions().getAllCompilerArgs().join(" "))
 					} else {
-						logger.info("-source {} -target {} {}", tt.getSourceCompatibility(), tt.getTargetCompatibility(), allCompilerArgs.join(" "))
+						logger.info("-source {} -target {} {}", tt.getSourceCompatibility(), tt.getTargetCompatibility(), tt.getOptions().getAllCompilerArgs().join(" "))
 					}
 					logger.info("-classpath {}", tt.getClasspath().getAsPath())
 					if (Objects.nonNull(tt.getOptions().getBootstrapClasspath())) {
