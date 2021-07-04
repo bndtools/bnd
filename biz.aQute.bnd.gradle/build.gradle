@@ -24,10 +24,10 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
 	}
 }
 
-def pluginUnderTestResources = layout.buildDirectory.dir('plugin-under-test')
+var pluginUnderTestResources = layout.buildDirectory.dir('plugin-under-test')
 
-def pluginUnderTestMetadata = tasks.register('pluginUnderTestMetadata', WriteProperties.class) {
-	def pluginClasspath = objects.fileCollection().from(configurations.runtimeClasspath.allArtifacts.files, configurations.runtimeClasspath)
+var pluginUnderTestMetadata = tasks.register('pluginUnderTestMetadata', WriteProperties.class) {
+	var pluginClasspath = objects.fileCollection().from(configurations.runtimeClasspath.allArtifacts.files, configurations.runtimeClasspath)
 	inputs.files(pluginClasspath).withNormalizer(ClasspathNormalizer).withPropertyName('pluginClasspath')
 	outputFile = pluginUnderTestResources.map { it.file('plugin-under-test-metadata.properties') }
 	doFirst('implementation-classpath') { t->
@@ -42,13 +42,13 @@ sourceSets {
 }
 
 tasks.named('test') {
-	def testresources = file('testresources')
-	def target = layout.buildDirectory.dir('testresources')
+	var testresources = file('testresources')
+	var target = layout.buildDirectory.dir('testresources')
 	inputs.files(tasks.named('jar')).withPropertyName('jar')
 	inputs.dir(testresources).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName('testresources')
 	systemProperty 'bnd_version', bnd.get('bnd_version')
 	systemProperty 'org.gradle.warning.mode', gradle.startParameter.warningMode.name().toLowerCase()
-	def injected = objects.newInstance(Injected)
+	var injected = objects.newInstance(Injected)
 	doFirst('copy') { t ->
 		// copy test resources into build dir
 		injected.fs.delete {

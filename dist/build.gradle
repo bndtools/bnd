@@ -2,13 +2,13 @@
  * dist Gradle build script
  */
 
-def buildProject = project
+var buildProject = project
 
 /* Configure the workspace project */
 configure(parent) {
 	layout.buildDirectory.set(buildProject.layout.buildDirectory)
 
-	def build = tasks.register(bnd_defaultTask) {
+	var build = tasks.register(bnd_defaultTask) {
 		dependsOn buildProject.absoluteProjectPath('jarDependencies')
 		dependsOn buildProject.absoluteProjectPath('checkDependencies')
 		dependsOn buildProject.absoluteProjectPath('releaseNeeded')

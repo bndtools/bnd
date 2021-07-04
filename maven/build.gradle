@@ -2,16 +2,16 @@
  * maven Gradle build script
  */
 
-def localrepo = System.getProperty('maven.repo.local')
+var localrepo = System.getProperty('maven.repo.local')
 if (localrepo) {
 	localrepo = relativePath(uri(gradle.startParameter.currentDir).resolve(localrepo))
 }
-def dist = parent.project(bnd_build)
-def windows = System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')
-def mvnw = rootProject.file(windows ? 'mvnw.cmd' : 'mvnw')
+var dist = parent.project(bnd_build)
+var windows = System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')
+var mvnw = rootProject.file(windows ? 'mvnw.cmd' : 'mvnw')
 
-def deploy = tasks.register('deploy', Exec.class) {
-	def releaserepo = uri(bnd.get('releaserepo', dist.file('bundles'))) /* Release repository. */
+var deploy = tasks.register('deploy', Exec.class) {
+	var releaserepo = uri(bnd.get('releaserepo', dist.file('bundles'))) /* Release repository. */
 	dependsOn dist.tasks.named('releaseDependencies')
 	if (windows) {
 		executable 'cmd'
@@ -32,12 +32,12 @@ def deploy = tasks.register('deploy', Exec.class) {
 	args 'deploy'
 }
 
-def deployJFrog = tasks.register('deployJFrog', Exec.class) {
+var deployJFrog = tasks.register('deployJFrog', Exec.class) {
 	enabled = !bnd.get('-releaserepo.jfrog', '').empty
-	def settings = cnf.file('ext/jfrog-settings.xml')
-	def deployState = deploy.map { it.state }
+	var settings = cnf.file('ext/jfrog-settings.xml')
+	var deployState = deploy.map { it.state }
 	onlyIf {
-		def state = deployState.get()
+		var state = deployState.get()
 		state.didWork && (state.failure == null)
 	}
 	dependsOn deploy
@@ -64,7 +64,7 @@ deploy.configure {
 	finalizedBy deployJFrog
 }
 
-def mvnClean = tasks.register('mvnClean', Exec.class) {
+var mvnClean = tasks.register('mvnClean', Exec.class) {
 	if (windows) {
 		executable 'cmd'
 		args '/c', mvnw
@@ -86,7 +86,7 @@ tasks.named('clean') {
 	dependsOn mvnClean
 }
 
-def mvnTestCompile = tasks.register('test-compile', Exec.class) {
+var mvnTestCompile = tasks.register('test-compile', Exec.class) {
 	dependsOn dist.tasks.named('releaseDependencies')
 	if (windows) {
 		executable 'cmd'
