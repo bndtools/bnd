@@ -24,8 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -41,12 +39,7 @@ import org.assertj.core.presentation.StandardRepresentation;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IElementChangedListener;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaElementDelta;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -132,17 +125,24 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 
 		Path bundleRoot = Paths.get(System.getProperty("bndtools.core.test.dir"))
 			.resolve("./generated/");
+		log("Attempting to import fodder bundles from " + bundleRoot);
 		Files.walk(bundleRoot, 1)
 			.filter(x -> x.getFileName()
 				.toString()
 				.contains(".fodder."))
 			.forEach(bundle -> {
 				try {
+					log("Adding fodder bundle to localRepo: " + bundle);
 					localRepo.put(IO.stream(bundle), null);
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
 				}
 			});
+		TaskUtils.log(() -> ("Local Index contains:\n\t" + localRepo.list("*")
+			.stream()
+			.collect(Collectors.joining(",\n\t"))));
+		TaskUtils.updateWorkspace("beforeAllBase()");
+
 		initSUTClass();
 
 		eclipseProject = ResourcesPlugin.getWorkspace()
@@ -170,17 +170,7 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 		synchronously("createPackageFragment", monitor -> pack = root.createPackageFragment("test", false, monitor));
 
 		// Wait for build to finish - attempted fix for #4553.
-		//
-		// Note that there is a possible race condition here as I'm not sure if
-		// it's guaranteed that the build would have started yet; if we start
-		// trying to wait for it before it actually starts it might return
-		// straight away instead of waiting for the finish. Need to think of a
-		// way to make sure we don't start waiting for it to finish until we
-		// know that it's already started.
-		Job.getJobManager()
-			.join(ResourcesPlugin.FAMILY_MANUAL_BUILD, null);
-		Job.getJobManager()
-			.join(ResourcesPlugin.FAMILY_AUTO_BUILD, null);
+		TaskUtils.waitForBuild("beforeAllBase()");
 	}
 
 	protected static final String DEFAULT_CLASS_NAME = "Test";
@@ -190,35 +180,6 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 		locs = null;
 		problems = null;
 		problem = null;
-	}
-
-	static void waitForClasspathUpdate() throws Exception {
-		waitForClasspathUpdate(null);
-	}
-
-	static void waitForClasspathUpdate(String context) throws Exception {
-		String prefix = context == null ? "" : context + ": ";
-		CountDownLatch flag = new CountDownLatch(1);
-		IElementChangedListener listener = new ClasspathChangedListener(flag);
-		JavaCore.addElementChangedListener(listener, ElementChangedEvent.POST_CHANGE);
-		try {
-			// This call to forceRefresh() here is unnecessary if you are adding
-			// to
-			// the buildpath, but it seems to be necessary when clearing the
-			// build
-			// path. Without it, the Project object seems to hang around without
-			// updating and doesn't update its buildpath setting.
-			bndProject.forceRefresh();
-			Central.refreshFile(bndProject.getPropertiesFile());
-			log(prefix + "waiting for classpath to update");
-			if (flag.await(10000, TimeUnit.MILLISECONDS)) {
-				log(prefix + "done waiting for classpath to update");
-			} else {
-				log(prefix + "WARNING: timed out waiting for classpath to update");
-			}
-		} finally {
-			JavaCore.removeElementChangedListener(listener);
-		}
 	}
 
 	static void clearBuildpath() {
@@ -231,7 +192,8 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 				model.setBuildPath(Collections.emptyList());
 				model.saveChanges();
 				Central.refresh(bndProject);
-				waitForClasspathUpdate("clearBuildpath()");
+				TaskUtils.requestClasspathUpdate("clearBuildpath()");
+				TaskUtils.waitForBuild("clearBuildpath()");
 			} else {
 				log("buildpath was not set; not trying to clear it");
 			}
@@ -250,51 +212,10 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 			}
 			model.saveChanges();
 			Central.refresh(bndProject);
-			waitForClasspathUpdate("addBundleToBuildpath");
+			TaskUtils.requestClasspathUpdate("addBundleToBuildpath()");
+			TaskUtils.waitForBuild("addBundleToBuildpath()");
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
-		}
-	}
-
-	// Listener used for synchronizing on classpath changes
-	static class ClasspathChangedListener implements IElementChangedListener {
-
-		final CountDownLatch flag;
-
-		ClasspathChangedListener(CountDownLatch flag) {
-			this.flag = flag;
-		}
-
-		@Override
-		public void elementChanged(ElementChangedEvent event) {
-			visit(event.getDelta());
-		}
-
-		private void visit(IJavaElementDelta delta) {
-			IJavaElement el = delta.getElement();
-			switch (el.getElementType()) {
-				case IJavaElement.JAVA_MODEL :
-					visitChildren(delta);
-					break;
-				case IJavaElement.JAVA_PROJECT :
-					if (isClasspathChanged(delta.getFlags())) {
-						flag.countDown();
-					}
-					break;
-				default :
-					break;
-			}
-		}
-
-		private boolean isClasspathChanged(int flags) {
-			return 0 != (flags
-				& (IJavaElementDelta.F_CLASSPATH_CHANGED | IJavaElementDelta.F_RESOLVED_CLASSPATH_CHANGED));
-		}
-
-		public void visitChildren(IJavaElementDelta delta) {
-			for (IJavaElementDelta c : delta.getAffectedChildren()) {
-				visit(c);
-			}
 		}
 	}
 

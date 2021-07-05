@@ -37,6 +37,7 @@ public class WorkbenchExtension implements BeforeAllCallback {
 
 	@Override
 	public void beforeAll(ExtensionContext context) throws Exception {
+		TaskUtils.setAutobuild(false);
 		BundleContext bc = FrameworkUtil.getBundle(context.getRequiredTestClass())
 			.getBundleContext();
 
