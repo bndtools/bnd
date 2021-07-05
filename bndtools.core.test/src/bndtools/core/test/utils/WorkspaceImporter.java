@@ -2,25 +2,18 @@ package bndtools.core.test.utils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 
 import aQute.bnd.exceptions.Exceptions;
-import bndtools.central.Central;
 
 public class WorkspaceImporter {
 	private static final IOverwriteQuery	overwriteQuery	= file -> IOverwriteQuery.ALL;
@@ -37,14 +30,17 @@ public class WorkspaceImporter {
 
 	public void reimportProject(String projectName) {
 		try {
+			IWorkspace ws = ResourcesPlugin.getWorkspace();
 			IWorkspaceRoot wsr = ResourcesPlugin.getWorkspace()
 				.getRoot();
 
-			IProject project = wsr.getProject(projectName);
-			if (project.exists()) {
-				project.delete(true, true, null);
-			}
-			importProject(root.resolve(projectName), null);
+			ws.run(monitor -> {
+				IProject project = wsr.getProject(projectName);
+				if (project.exists()) {
+					project.delete(true, true, null);
+				}
+				importProject(root.resolve(projectName), null);
+			}, null);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -62,41 +58,21 @@ public class WorkspaceImporter {
 		IWorkspace ws = ResourcesPlugin.getWorkspace();
 		IWorkspaceRoot wsr = ResourcesPlugin.getWorkspace()
 			.getRoot();
-		Job job = new WorkspaceJob("Clean and import all") {
-			@Override
-			public IStatus runInWorkspace(IProgressMonitor monitor) {
-				try {
-					// Clean the workspace
-					IProject[] existingProjects = wsr.getProjects();
-					for (IProject project : existingProjects) {
-						project.delete(true, true, monitor);
-					}
-
-					projects.forEach(path -> importProject(path, monitor));
-					return Status.OK_STATUS;
-				} catch (Exception e) {
-					return new Status(IStatus.ERROR, WorkspaceImporter.class, 0,
-						"Error during import: " + e.getMessage(), e);
-				}
-			}
-		};
-		// Lock the entire workspace so that we don't run simultaneously with
-		// other jobs; see eg #4573.
-		job.setRule(wsr);
-		job.schedule();
 		try {
-			if (!job.join(10000, null)) {
-				TaskUtils.dumpWorkspace();
-				throw new IllegalStateException("Timed out waiting for workspace import to complete");
-			}
+			ws.run(monitor -> {
+				// Clean the workspace
+				IProject[] existingProjects = wsr.getProjects();
+				for (IProject project : existingProjects) {
+					project.delete(true, true, monitor);
+				}
 
-			// Wait for Workspace object to be complete.
-			final CountDownLatch flag = new CountDownLatch(1);
-			Central.onCnfWorkspace(bndWS -> {
-				flag.countDown();
-			});
-			flag.await(10000, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException e) {
+				projects.forEach(path -> importProject(path, monitor));
+			}, null);
+
+			TaskUtils.updateWorkspace("importAllProjects()");
+			TaskUtils.requestClasspathUpdate("importAllProjects()");
+			TaskUtils.waitForBuild("importAllProjects()");
+		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
