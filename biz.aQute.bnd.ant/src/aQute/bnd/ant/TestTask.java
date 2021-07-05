@@ -45,7 +45,9 @@ public class TestTask extends BaseTask {
 						runProject = new Project(baseProject.getWorkspace(), baseDir, runFile);
 						runProject.setParent(baseProject);
 					}
-					projects.add(runProject);
+					if (runProject != null) {
+						projects.add(runProject);
+					}
 				}
 			}
 
