@@ -1,8 +1,5 @@
 package biz.aQute.launcher;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -15,28 +12,34 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
 
+@ExtendWith(SoftAssertionsExtension.class)
 public class LauncherTest {
 	public static final String	TMPDIR		= "generated/tmp/test";
-	@Rule
-	public final TestName		testName	= new TestName();
+	@InjectSoftAssertions
+	SoftAssertions softly;
+
 	private File				testDir;
 
 	private Properties			prior;
 
-	@Before
-	public void before() throws Exception {
-		testDir = new File(TMPDIR, getClass().getName() + "/" + testName.getMethodName());
+	@BeforeEach
+	public void before(TestInfo testInfo) throws Exception {
+		testDir = new File(TMPDIR, getClass().getName() + "/" + testInfo.getTestMethod().get());
 		IO.delete(testDir);
 		IO.mkdirs(testDir);
 		prior = new Properties();
@@ -50,7 +53,7 @@ public class LauncherTest {
 	 * run twice to see if the second run will not reinstall the bundles.
 	 */
 
-	@After
+	@AfterEach
 	public void after() {
 		System.setProperties(prior);
 	}
@@ -63,7 +66,8 @@ public class LauncherTest {
 
 		String result = runFramework(file);
 
-		assertThat(result).containsPattern("startlevel: not handled")
+		softly.assertThat(result)
+			.containsPattern("startlevel: not handled")
 			.containsPattern("Startlevel\\s+1")
 			.containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle")
 			.containsPattern("1\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log")
@@ -80,7 +84,8 @@ public class LauncherTest {
 
 		String result = runFramework(file);
 
-		assertThat(result).containsPattern("Startlevel\\s+22")
+		softly.assertThat(result)
+			.containsPattern("Startlevel\\s+22")
 			.containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle")
 			.containsPattern("21\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log")
 			.containsPattern("10\\s+ACTIV\\s+<>\\s+jar/.?demo.jar")
@@ -98,7 +103,8 @@ public class LauncherTest {
 
 		String result = runFramework(file);
 
-		assertThat(result).containsPattern("Startlevel\\s+23")
+		softly.assertThat(result)
+			.containsPattern("Startlevel\\s+23")
 			.containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle")
 			.containsPattern("22\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log")
 			.containsPattern("11\\s+ACTIV\\s+<>\\s+jar/.?demo.jar")
@@ -117,7 +123,8 @@ public class LauncherTest {
 
 		String result = runFramework(file);
 
-		assertThat(result).containsPattern("Startlevel\\s+12")
+		softly.assertThat(result)
+			.containsPattern("Startlevel\\s+12")
 			.containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle")
 			.containsPattern("22\\s+RSLVD\\s+<>\\s+jar/.?org.apache.felix.log")
 			.containsPattern("11\\s+ACTIV\\s+<>\\s+jar/.?demo.jar")
@@ -133,13 +140,13 @@ public class LauncherTest {
 
 		System.setProperty("test.cmd", "quit.no.exit");
 
-		assertThat(file).isFile();
-
 		String result = runFramework(file);
-		assertThat(result).contains("installing jar/demo.jar");
+		softly.assertThat(result)
+			.contains("installing jar/demo.jar");
 
 		result = runFramework(file);
-		assertThat(result).contains("not updating jar/demo.jar because identical digest");
+		softly.assertThat(result)
+			.contains("not updating jar/demo.jar because identical digest");
 	}
 
 	@Test
@@ -148,12 +155,11 @@ public class LauncherTest {
 
 		System.setProperty("test.cmd", "framework.restart");
 
-		assertThat(file).isFile();
-
 		String result = runFramework(file);
 		System.out.println(result);
 
-		assertThat(result).contains("framework restart, first time")
+		softly.assertThat(result)
+			.contains("framework restart, first time")
 			.contains("framework restart, second time");
 	}
 
@@ -169,10 +175,9 @@ public class LauncherTest {
 
 		System.setProperty("test.cmd", "quit.no.exit");
 
-		assertThat(file).isFile();
-
 		String result = runFrameworkWithRunMethod(file);
-		assertThat(result).contains("installing jar/demo.jar", "Exited with 197");
+		softly.assertThat(result)
+			.contains("installing jar/demo.jar", "Exited with 197");
 
 	}
 
@@ -186,13 +191,11 @@ public class LauncherTest {
 		File file = buildPackage("keep_notrace.bndrun");
 
 		System.setProperty("test.cmd", "quit.no.exit");
-
-		assertThat(file).isFile();
-
 		System.setProperty("launch.trace", "false");
 
 		String result = runFrameworkWithRunMethod(file);
-		assertThat(result).contains("quit.no.exit")
+		softly.assertThat(result)
+			.contains("quit.no.exit")
 			.doesNotContain("[EmbeddedLauncher] looking for Embedded-Runpath in META-INF/MANIFEST.MF");
 	}
 
@@ -206,13 +209,27 @@ public class LauncherTest {
 		File file = buildPackage("keep_notrace.bndrun");
 
 		System.setProperty("test.cmd", "quit.no.exit");
-		assertThat(file).isFile();
-
 		System.setProperty("launch.trace", "true");
 
 		String result = runFrameworkWithRunMethod(file);
-		assertThat(result).contains("installing jar/demo.jar",
+		softly.assertThat(result)
+			.contains("installing jar/demo.jar",
 			"[EmbeddedLauncher] looking for Embedded-Runpath in META-INF/MANIFEST.MF");
+	}
+
+	private void assertNoErrorsOrWarnings(Processor p, String context) throws IOException {
+		softly.assertThat(p.check())
+			.as(context + ": check()")
+			.isTrue();
+		softly.assertThat(p.isPerfect())
+			.as(context + ": isPerfect()")
+			.isTrue();
+		softly.assertThat(p.getWarnings())
+			.as(context + ": getWarnings()")
+			.isEmpty();
+		softly.assertThat(p.getErrors())
+			.as(context + ": getErrors()")
+			.isEmpty();
 	}
 
 	private File buildPackage(String bndrun) throws Exception {
@@ -220,11 +237,20 @@ public class LauncherTest {
 		try (Workspace ws = new Workspace(new File("..")); Run run = Run.createRun(ws, tgt)) {
 			File file = new File(testDir, "packaged.jar");
 			try (Jar pack = run.pack(null)) {
-				assertTrue(ws.check());
-				assertTrue(run.check());
+				assertNoErrorsOrWarnings(run, "run pre pack");
+				assertNoErrorsOrWarnings(ws, "ws pre pack");
 				pack.write(file);
 			}
-			assertTrue(run.check());
+			assertNoErrorsOrWarnings(run, "run post pack");
+			softly.assertThat(file)
+				.as("file")
+				.isFile();
+			// Short-circuit the test execution if we have discovered errors
+			// already as the rest of it won't produce sensible results.
+			if (softly.assertionErrorsCollected()
+				.size() > 0) {
+				softly.assertAll();
+			}
 			return file;
 		}
 	}
