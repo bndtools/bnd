@@ -806,11 +806,11 @@ public interface BundleSpecBuilder {
 	}
 
 	default BundleSpecIncludeResource include(String target, String source) {
-		return includeResource(null, source, false, false);
+		return includeResource(target, source, false, false);
 	}
 
 	default BundleSpecIncludeResource includeIfPresent(String target, String source) {
-		return includeResource(null, source, false, true);
+		return includeResource(target, source, false, true);
 	}
 
 	default BundleSpecIncludeResource preprocessIfPresent(String target, String source) {
@@ -818,7 +818,7 @@ public interface BundleSpecBuilder {
 	}
 
 	default BundleSpecIncludeResource preprocess(String target, String source) {
-		return includeResource(null, source, true, false);
+		return includeResource(target, source, true, false);
 	}
 
 	interface BundleSpecIncludeResource extends BundleSpecBuilder {
