@@ -1,4 +1,4 @@
-apply plugin: 'groovy'
+apply plugin: "groovy"
 
 interface Injected {
 	@Inject FileSystemOperations getFs()
@@ -9,47 +9,47 @@ repositories {
 }
 
 dependencies {
-	compileOnly localGroovy()
-	compileOnly gradleApi()
-	testImplementation gradleTestKit()
-	testImplementation("org.spockframework:spock-core:2.0-M4-groovy-${GroovySystem.shortVersion}") {
-		exclude group: 'org.codehaus.groovy'
-		exclude group: 'org.junit.platform'
+	compileOnly(localGroovy())
+	compileOnly(gradleApi())
+	testImplementation(gradleTestKit())
+	testImplementation("org.spockframework:spock-core:2.0-groovy-3.0") {
+		exclude(group: "org.codehaus.groovy")
+		exclude(group: "org.junit.platform")
 	}
 }
 
 if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
 	tasks.withType(GroovyCompile.class).configureEach {
-		groovyOptions.fork 'jvmArgs': jpmsOptions
+		groovyOptions.fork("jvmArgs": jpmsOptions)
 	}
 }
 
-var pluginUnderTestResources = layout.buildDirectory.dir('plugin-under-test')
+var pluginUnderTestResources = layout.buildDirectory.dir("plugin-under-test")
 
-var pluginUnderTestMetadata = tasks.register('pluginUnderTestMetadata', WriteProperties.class) {
+var pluginUnderTestMetadata = tasks.register("pluginUnderTestMetadata", WriteProperties.class) {
 	var pluginClasspath = objects.fileCollection().from(configurations.runtimeClasspath.allArtifacts.files, configurations.runtimeClasspath)
-	inputs.files(pluginClasspath).withNormalizer(ClasspathNormalizer).withPropertyName('pluginClasspath')
-	outputFile = pluginUnderTestResources.map { it.file('plugin-under-test-metadata.properties') }
-	doFirst('implementation-classpath') { t->
-		t.property('implementation-classpath',  pluginClasspath.asPath)
+	inputs.files(pluginClasspath).withNormalizer(ClasspathNormalizer.class).withPropertyName("pluginClasspath")
+	outputFile = pluginUnderTestResources.map { it.file("plugin-under-test-metadata.properties") }
+	doFirst("implementation-classpath") { t ->
+		t.property("implementation-classpath",  pluginClasspath.asPath)
 	}
 }
 
 sourceSets {
 	test {
-		output.dir(pluginUnderTestResources, 'builtBy': pluginUnderTestMetadata)
+		output.dir(pluginUnderTestResources, "builtBy": pluginUnderTestMetadata)
 	}
 }
 
-tasks.named('test') {
-	var testresources = file('testresources')
-	var target = layout.buildDirectory.dir('testresources')
-	inputs.files(tasks.named('jar')).withPropertyName('jar')
-	inputs.dir(testresources).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName('testresources')
-	systemProperty 'bnd_version', bnd.get('bnd_version')
-	systemProperty 'org.gradle.warning.mode', gradle.startParameter.warningMode.name().toLowerCase()
+tasks.named("test") {
+	var testresources = file("testresources")
+	var target = layout.buildDirectory.dir("testresources")
+	inputs.files(tasks.named("jar")).withPropertyName("jar")
+	inputs.dir(testresources).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("testresources")
+	systemProperty("bnd_version", bnd.get("bnd_version"))
+	systemProperty("org.gradle.warning.mode", gradle.startParameter.warningMode.name().toLowerCase())
 	var injected = objects.newInstance(Injected)
-	doFirst('copy') { t ->
+	doFirst("copy") { t ->
 		// copy test resources into build dir
 		injected.fs.delete {
 			delete target
@@ -61,6 +61,6 @@ tasks.named('test') {
 	}
 }
 
-tasks.named('release') {
-	dependsOn 'groovydoc'
+tasks.named("release") {
+	dependsOn("groovydoc")
 }

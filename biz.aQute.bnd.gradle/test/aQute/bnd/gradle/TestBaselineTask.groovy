@@ -9,30 +9,30 @@ import spock.lang.Specification
 
 class TestBaselineTask extends Specification {
 
-    File buildDir = new File('generated')
-    File testResources = new File(buildDir, 'testresources')
+    File buildDir = new File("generated")
+    File testResources = new File(buildDir, "testresources")
 
     def "Simple Bnd Baseline Task Test"() {
         given:
-          String testProject = 'baselinetask1'
+          String testProject = "baselinetask1"
           File testProjectDir = new File(testResources, testProject).canonicalFile
           assert testProjectDir.isDirectory()
-          File testProjectReportsDir = new File(testProjectDir, 'build/reports').canonicalFile
+          File testProjectReportsDir = new File(testProjectDir, "build/reports").canonicalFile
 
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--parallel', '--stacktrace', '--debug', 'baseline', 'baselineSelf', 'baselineDiffpackages', 'baselineDiffignore')
+            .withArguments("--parallel", "--stacktrace", "--debug", "baseline", "baselineSelf", "baselineDiffpackages", "baselineDiffignore")
             .withPluginClasspath()
             .forwardOutput()
             .build()
 
         then:
-          result.task(':jar').outcome == SUCCESS
-          result.task(':baseline').outcome == SUCCESS
-          result.task(':baselineSelf').outcome == SUCCESS
-          result.task(':baselineDiffpackages').outcome == SUCCESS
-          result.task(':baselineDiffignore').outcome == SUCCESS
+          result.task(":jar").outcome == SUCCESS
+          result.task(":baseline").outcome == SUCCESS
+          result.task(":baselineSelf").outcome == SUCCESS
+          result.task(":baselineDiffpackages").outcome == SUCCESS
+          result.task(":baselineDiffignore").outcome == SUCCESS
 
           testProjectReportsDir.isDirectory()
           File baseline = new File(testProjectReportsDir, "baseline/baseline/${testProject}-1.1.0.txt")
@@ -49,43 +49,43 @@ class TestBaselineTask extends Specification {
 
     def "Bnd Baseline Configuration Test"() {
         given:
-          String testProject = 'baselinetask2'
+          String testProject = "baselinetask2"
           File testProjectDir = new File(testResources, testProject).canonicalFile
           assert testProjectDir.isDirectory()
 
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--parallel', '--stacktrace', 'echo')
+            .withArguments("--parallel", "--stacktrace", "echo")
             .withPluginClasspath()
             .forwardOutput()
             .build()
 
         then:
-          result.task(':echo').outcome == SUCCESS
+          result.task(":echo").outcome == SUCCESS
 
-          result.getOutput() =~ Pattern.quote('Bundle-SymbolicName: biz.aQute.bnd')
-          result.getOutput() =~ Pattern.quote('Bundle-Version: 2.4.1')
+          result.getOutput() =~ Pattern.quote("Bundle-SymbolicName: biz.aQute.bnd")
+          result.getOutput() =~ Pattern.quote("Bundle-Version: 2.4.1")
     }
 
     def "Bnd No Baseline Test"() {
         given:
-          String testProject = 'baselinetask3'
+          String testProject = "baselinetask3"
           File testProjectDir = new File(testResources, testProject).canonicalFile
           assert testProjectDir.isDirectory()
-          File testProjectReportsDir = new File(testProjectDir, 'build/reports').canonicalFile
+          File testProjectReportsDir = new File(testProjectDir, "build/reports").canonicalFile
 
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--parallel', '--stacktrace', 'tasks', 'baseline')
+            .withArguments("--parallel", "--stacktrace", "tasks", "baseline")
             .withPluginClasspath()
             .forwardOutput()
             .build()
 
         then:
-          result.task(':tasks').outcome == SUCCESS
-          result.task(':baseline').outcome == SUCCESS
+          result.task(":tasks").outcome == SUCCESS
+          result.task(":baseline").outcome == SUCCESS
 
           testProjectReportsDir.isDirectory()
           File baseline = new File(testProjectReportsDir, "baseline/baseline/${testProject}-1.0.txt")
@@ -94,22 +94,22 @@ class TestBaselineTask extends Specification {
 
     def "Bnd Baseline Configuration Task Test"() {
         given:
-          String testProject = 'baselinetask4'
+          String testProject = "baselinetask4"
           File testProjectDir = new File(testResources, testProject).canonicalFile
           assert testProjectDir.isDirectory()
-          File testProjectReportsDir = new File(testProjectDir, 'build/reports').canonicalFile
+          File testProjectReportsDir = new File(testProjectDir, "build/reports").canonicalFile
 
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--parallel', '--stacktrace', '--debug', 'baseline')
+            .withArguments("--parallel", "--stacktrace", "--debug", "baseline")
             .withPluginClasspath()
             .forwardOutput()
             .build()
 
         then:
-          result.task(':jar').outcome == SUCCESS
-          result.task(':baseline').outcome == SUCCESS
+          result.task(":jar").outcome == SUCCESS
+          result.task(":baseline").outcome == SUCCESS
 
           testProjectReportsDir.isDirectory()
           File baseline = new File(testProjectReportsDir, "baseline/baseline/${testProject}-1.1.0.txt")

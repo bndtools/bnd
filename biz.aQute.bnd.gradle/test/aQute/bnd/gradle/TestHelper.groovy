@@ -23,7 +23,7 @@ class TestHelper {
 
   private static GradleRunner runner(String version) {
     GradleRunner runner = GradleRunner.create()
-    if (System.getProperty('org.gradle.warning.mode') == 'fail') { // if 'fail' we use the build gradle version
+    if (System.getProperty("org.gradle.warning.mode") == "fail") { // if "fail" we use the build gradle version
       return runner
     }
     return runner.withGradleVersion(version)
@@ -31,8 +31,8 @@ class TestHelper {
 
   private static String gradleVersion() {
     if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_16)) {
-      return '7.0'
+      return "7.0"
     }
-    return '6.7'
+    return "6.7"
   }
 }

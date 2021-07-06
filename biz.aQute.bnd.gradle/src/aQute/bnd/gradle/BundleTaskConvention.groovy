@@ -27,7 +27,7 @@ class BundleTaskConvention {
 	}
 
 	private static BundleTaskExtension getBundleTaskExtension(org.gradle.api.tasks.bundling.Jar task) {
-		return task.getExtensions().findByType(BundleTaskExtension.class) ?: task.getExtensions().create("bundle", BundleTaskExtension.class, task)
+		return task.getExtensions().findByType(BundleTaskExtension.class) ?: task.getExtensions().create(BundleTaskExtension.NAME, BundleTaskExtension.class, task)
 	}
 
 	public RegularFileProperty getBndfile() {

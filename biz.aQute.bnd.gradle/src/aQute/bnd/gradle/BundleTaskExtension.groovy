@@ -65,6 +65,8 @@ import org.gradle.api.tasks.SourceSet
  * </ul>
  */
 class BundleTaskExtension {
+	public static final String NAME = "bundle"
+
 	/**
 	 * The bndfile property.
 	 *

@@ -9,43 +9,43 @@ import aQute.lib.io.IO
 
 if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
 	ext.jpmsOptions = [
-		'--add-opens=java.base/java.lang=ALL-UNNAMED',
-		'--add-opens=java.base/java.lang.invoke=ALL-UNNAMED',
-		'--add-opens=java.base/java.lang.reflect=ALL-UNNAMED',
-		'--add-opens=java.base/java.io=ALL-UNNAMED',
-		'--add-opens=java.base/java.net=ALL-UNNAMED',
-		'--add-opens=java.base/java.nio=ALL-UNNAMED',
-		'--add-opens=java.base/java.util=ALL-UNNAMED',
-		'--add-opens=java.base/java.util.jar=ALL-UNNAMED',
-		'--add-opens=java.base/java.util.regex=ALL-UNNAMED',
-		'--add-opens=java.base/java.util.zip=ALL-UNNAMED',
-		'--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
-		'--add-opens=java.base/sun.net.www.protocol.file=ALL-UNNAMED',
-		'--add-opens=java.base/sun.net.www.protocol.ftp=ALL-UNNAMED',
-		'--add-opens=java.base/sun.net.www.protocol.http=ALL-UNNAMED',
-		'--add-opens=java.base/sun.net.www.protocol.https=ALL-UNNAMED',
-		'--add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED',
-		'--add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED'
+		"--add-opens=java.base/java.lang=ALL-UNNAMED",
+		"--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
+		"--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+		"--add-opens=java.base/java.io=ALL-UNNAMED",
+		"--add-opens=java.base/java.net=ALL-UNNAMED",
+		"--add-opens=java.base/java.nio=ALL-UNNAMED",
+		"--add-opens=java.base/java.util=ALL-UNNAMED",
+		"--add-opens=java.base/java.util.jar=ALL-UNNAMED",
+		"--add-opens=java.base/java.util.regex=ALL-UNNAMED",
+		"--add-opens=java.base/java.util.zip=ALL-UNNAMED",
+		"--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
+		"--add-opens=java.base/sun.net.www.protocol.file=ALL-UNNAMED",
+		"--add-opens=java.base/sun.net.www.protocol.ftp=ALL-UNNAMED",
+		"--add-opens=java.base/sun.net.www.protocol.http=ALL-UNNAMED",
+		"--add-opens=java.base/sun.net.www.protocol.https=ALL-UNNAMED",
+		"--add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED",
+		"--add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED"
 	]
 }
 
 /* Configure the subprojects */
 subprojects {
-	if (plugins.hasPlugin('biz.aQute.bnd')) {
-		group = bnd.get('-groupid')
-		version = bnd.get('base.version')
+	if (plugins.hasPlugin("biz.aQute.bnd")) {
+		group = bnd.get("-groupid")
+		version = bnd.get("base.version")
 		tasks.withType(JavaCompile).configureEach {
-			options.compilerArgs.add('-Xlint:unchecked')
+			options.compilerArgs.add("-Xlint:unchecked")
 		}
-		tasks.named('javadoc') {
+		tasks.named("javadoc") {
 			options.tags = [
-				'Immutable:t:',
-				'ThreadSafe:t:',
-				'NotThreadSafe:t:',
-				'GuardedBy:mf:"Guarded By:"'
+				"Immutable:t:",
+				"ThreadSafe:t:",
+				"NotThreadSafe:t:",
+				"GuardedBy:mf:\"Guarded By:\""
 			]
 		}
-		tasks.named('test') {
+		tasks.named("test") {
 			useJUnitPlatform()
 			reports {
 				junitXml {
@@ -54,7 +54,7 @@ subprojects {
 				}
 			}
 			testLogging {
-				exceptionFormat = 'full'
+				exceptionFormat = "full"
 				info {
 					events "STANDARD_OUT", "STANDARD_ERROR", "STARTED", "FAILED", "PASSED", "SKIPPED"
 				}
@@ -74,15 +74,15 @@ subprojects {
 					var stdOutEvents = stdOut.remove(descriptor)
 					if (result.resultType == TestResult.ResultType.FAILURE) {
 						if (stdErrEvents && !stdErrEvents.empty) {
-							logger.lifecycle('\n{} > {} STANDARD_ERROR', descriptor.className, descriptor.name)
+							logger.lifecycle("\n{} > {} STANDARD_ERROR", descriptor.className, descriptor.name)
 							stdErrEvents.each { event ->
-								logger.lifecycle('    {}', event.message.trim())
+								logger.lifecycle("    {}", event.message.trim())
 							}
 						}
 						if (stdOutEvents && !stdOutEvents.empty) {
-							logger.lifecycle('\n{} > {} STANDARD_OUT', descriptor.className, descriptor.name)
+							logger.lifecycle("\n{} > {} STANDARD_OUT", descriptor.className, descriptor.name)
 							stdOutEvents.each { event ->
-								logger.lifecycle('    {}', event.message.trim())
+								logger.lifecycle("    {}", event.message.trim())
 							}
 						}
 					}
@@ -90,13 +90,13 @@ subprojects {
 			}
 			if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
 				jvmArgs jpmsOptions
-				environment 'JAVA_OPTS': jpmsOptions.join(' ')
+				environment "JAVA_OPTS": jpmsOptions.join(" ")
 			}
 			if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
-				jvmArgs '-XX:+ShowCodeDetailsInExceptionMessages'
+				jvmArgs "-XX:+ShowCodeDetailsInExceptionMessages"
 			}
 			inputs.files(fileTree(layout.projectDirectory) {
-				include 'testresources/', 'testdata/'
+				include "testresources/", "testdata/"
 				exclude {
 					var f = it.file
 					if (f.directory && f.list().length == 0) {
@@ -108,20 +108,20 @@ subprojects {
 						return false
 					}
 				}
-			}).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName('testFolders')
-			systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', gradle.startParameter.logLevel.name()
-			if (System.properties['maven.repo.local']) {
-				systemProperty 'maven.repo.local', IO.getFile(gradle.startParameter.currentDir, System.properties['maven.repo.local'])
+			}).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("testFolders")
+			systemProperty "org.slf4j.simpleLogger.defaultLogLevel", gradle.startParameter.logLevel.name()
+			if (System.properties["maven.repo.local"]) {
+				systemProperty "maven.repo.local", IO.getFile(gradle.startParameter.currentDir, System.properties["maven.repo.local"])
 			}
 		}
 	}
 }
 
-tasks.named('wrapper') {
-	jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
+tasks.named("wrapper") {
+	jarFile = rootProject.file(".gradle-wrapper/gradle-wrapper.jar")
 }
 
-tasks.register('buildscriptDependencies') {
+tasks.register("buildscriptDependencies") {
 	doLast {
 		println "bnd_plugin: ${bnd_plugin}"
 		println "bnd_repourl: ${bnd_repourl}"

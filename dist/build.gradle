@@ -9,26 +9,26 @@ configure(parent) {
 	layout.buildDirectory.set(buildProject.layout.buildDirectory)
 
 	var build = tasks.register(bnd_defaultTask) {
-		dependsOn buildProject.absoluteProjectPath('jarDependencies')
-		dependsOn buildProject.absoluteProjectPath('checkDependencies')
-		dependsOn buildProject.absoluteProjectPath('releaseNeeded')
+		dependsOn buildProject.absoluteProjectPath("jarDependencies")
+		dependsOn buildProject.absoluteProjectPath("checkDependencies")
+		dependsOn buildProject.absoluteProjectPath("releaseNeeded")
 		description = "Assembles, tests and releases the ${buildProject.name} project."
-		group = 'build'
+		group = "build"
 	}
 	defaultTasks = [
 		absoluteProjectPath(build.name)
 	]
 }
 
-tasks.named('checkDependencies') {
-	mustRunAfter 'jarDependencies'
+tasks.named("checkDependencies") {
+	mustRunAfter "jarDependencies"
 }
 
-tasks.named('releaseDependencies') {
-	mustRunAfter 'jarDependencies', 'checkDependencies'
+tasks.named("releaseDependencies") {
+	mustRunAfter "jarDependencies", "checkDependencies"
 }
 
-tasks.named('clean') {
-	File releaserepo = file(bnd.get('releaserepo', 'bundles')) /* Release repository. */
+tasks.named("clean") {
+	File releaserepo = file(bnd.get("releaserepo", "bundles")) /* Release repository. */
 	delete releaserepo
 }
