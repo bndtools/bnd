@@ -1,7 +1,6 @@
 package bndtools.core.test.editors.quickfix;
 
 import static bndtools.core.test.utils.TaskUtils.log;
-import static bndtools.core.test.utils.TaskUtils.synchronously;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.jdt.core.compiler.IProblem.HierarchyHasProblems;
 import static org.eclipse.jdt.core.compiler.IProblem.ImportNotFound;
@@ -70,6 +69,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.unmodifiable.Sets;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
+import bndtools.core.test.utils.LoggingProgressMonitor;
 import bndtools.core.test.utils.TaskUtils;
 import bndtools.core.test.utils.WorkbenchTest;
 
@@ -158,16 +158,17 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 			TaskUtils.dumpWorkspace();
 			throw new IllegalStateException("Could not get bndProject from the current workspace");
 		}
-		synchronously("open project", eclipseProject::open);
+		eclipseProject.open(new LoggingProgressMonitor("open()ing project"));
 		IJavaProject javaProject = JavaCore.create(eclipseProject);
 
 		IFolder sourceFolder = eclipseProject.getFolder("src");
 		if (!sourceFolder.exists()) {
-			synchronously("create src", monitor -> sourceFolder.create(true, true, monitor));
+			sourceFolder.create(true, true, new LoggingProgressMonitor("create()ing source folder"));
 		}
 
 		IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(sourceFolder);
-		synchronously("createPackageFragment", monitor -> pack = root.createPackageFragment("test", false, monitor));
+		pack = root.createPackageFragment("test", false,
+			new LoggingProgressMonitor("createPackageFragment() \"test\""));
 
 		// Wait for build to finish - attempted fix for #4553.
 		TaskUtils.waitForBuild("beforeAllBase()");
