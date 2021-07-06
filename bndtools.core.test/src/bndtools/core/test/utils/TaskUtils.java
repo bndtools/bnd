@@ -1,9 +1,5 @@
 package bndtools.core.test.utils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import org.bndtools.api.BndtoolsConstants;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspace;
@@ -12,8 +8,6 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ClasspathContainerInitializer;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
@@ -43,39 +37,7 @@ public class TaskUtils {
 	}
 
 	public static void log(String msg) {
-	//	System.err.println(System.currentTimeMillis() + ": " + msg);
-	}
-
-	public static void synchronously(String msg, MonitoredTask task) {
-		try {
-			String suffix = msg == null ? "" : ": " + msg;
-			CountDownLatch flag = new CountDownLatch(1);
-			log("Synchronously executing" + suffix);
-			Job job = Job.create(msg, monitor -> {
-				try {
-					task.run(monitor);
-				} catch (InvocationTargetException e) {
-					throw Exceptions.duck(e.getTargetException());
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
-				} finally {
-					flag.countDown();
-				}
-			});
-			job.schedule();
-			log("Waiting for flag" + suffix);
-			if (!flag.await(10000, TimeUnit.MILLISECONDS)) {
-				log("WARN: timed out waiting for operation to finish" + suffix);
-			} else {
-				log("Finished waiting for flag" + suffix);
-			}
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
-		}
-	}
-
-	public static void synchronously(MonitoredTask task) {
-		synchronously(null, task);
+		// System.err.println(System.currentTimeMillis() + ": " + msg);
 	}
 
 	public static void dumpWorkspace() {
@@ -102,19 +64,19 @@ public class TaskUtils {
 	}
 
 	// Synchronously build the workspace
-	public static void buildFull() {
+	public static void buildFull(String context) {
 		try {
 			ResourcesPlugin.getWorkspace()
-				.build(IncrementalProjectBuilder.FULL_BUILD, new NullProgressMonitor());
+				.build(IncrementalProjectBuilder.FULL_BUILD, new LoggingProgressMonitor(context));
 		} catch (CoreException e) {
 			throw Exceptions.duck(e);
 		}
 	}
 
-	public static void buildIncremental() {
+	public static void buildIncremental(String context) {
 		try {
 			ResourcesPlugin.getWorkspace()
-				.build(IncrementalProjectBuilder.INCREMENTAL_BUILD, new NullProgressMonitor());
+				.build(IncrementalProjectBuilder.INCREMENTAL_BUILD, new LoggingProgressMonitor(context));
 		} catch (CoreException e) {
 			throw Exceptions.duck(e);
 		}
@@ -138,6 +100,7 @@ public class TaskUtils {
 					.getRoot());
 
 				for (IJavaProject project : javaModel.getJavaProjects()) {
+					log(() -> context + ": Updating classpath for " + project.getElementName());
 					initializer.requestClasspathContainerUpdate(BndtoolsConstants.BND_CLASSPATH_ID, project, null);
 				}
 			}
@@ -147,9 +110,9 @@ public class TaskUtils {
 		log(context + ": done classpath update");
 	}
 
-	public static void waitForBuild(String context) throws InterruptedException {
+	public static void waitForBuild(String context) {
 		log(context + ": Initiating build");
-		buildIncremental();
+		buildIncremental(context);
 		log(context + ": done waiting for build to complete");
 	}
 }

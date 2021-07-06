@@ -9,6 +9,7 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
@@ -62,12 +63,13 @@ public class WorkspaceImporter {
 			ws.run(monitor -> {
 				// Clean the workspace
 				IProject[] existingProjects = wsr.getProjects();
+				SubMonitor loopMonitor = SubMonitor.convert(monitor, existingProjects.length * 2);
 				for (IProject project : existingProjects) {
-					project.delete(true, true, monitor);
+					project.delete(true, true, loopMonitor.split(1));
 				}
 
-				projects.forEach(path -> importProject(path, monitor));
-			}, null);
+				projects.forEach(path -> importProject(path, loopMonitor.split(1)));
+			}, new LoggingProgressMonitor("importAllProjects()"));
 
 			TaskUtils.updateWorkspace("importAllProjects()");
 			TaskUtils.requestClasspathUpdate("importAllProjects()");
