@@ -74,13 +74,16 @@ public class Resolve extends AbstractBndrun {
 	 * property.
 	 *
 	 * <p>
-	 * This output file will -include the input bndrun file and can be
-	 * thus be used by other tasks, such as TestOSGi as a resolved
-	 * input bndrun file.
+	 * By default, the input <code>bndrun</code> file is used as the output
+	 * bndrun file. That is, the input bndrun file will be updated in place.
+	 * If this property is set to a value other than the input bndrun file,
+	 * the output bndrun file will <code>-include</code> the input bndrun file
+	 * and can be thus be used by other tasks, such as TestOSGi as a
+	 * resolved input bndrun file.
 	 */
 	@OutputFile
 	final RegularFileProperty outputBndrun
-	
+
 	/**
 	 * Whether to report optional requirements.
 	 *
@@ -91,13 +94,13 @@ public class Resolve extends AbstractBndrun {
 	 */
 	@Input
 	boolean reportOptional = true
-	
+
 	/**
-	 * Whether resolve changes should be writen back.
+	 * Whether resolve changes should be writen.
 	 *
 	 * <p>
-	 * If <code>true</code>, then a change to the current -runbundles
-	 * value will be writen back into the bndrun file. The default is
+	 * If <code>true</code>, then a change to the current <code>-runbundles</code>
+	 * value will be writen to the output bndrun file. The default is
 	 * <code>true</code>.
 	 */
 	@Input
