@@ -1,6 +1,7 @@
 package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.unwrap
+import static aQute.bnd.build.Project.BNDFILE
 
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -52,7 +53,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
 			t.setDescription("Assembles a bundle containing the main classes.")
 			BundleTaskExtension extension = t.getExtensions().create(BundleTaskExtension.NAME, BundleTaskExtension.class, t)
 			t.getConvention().getPlugins().put(BundleTaskExtension.NAME, new BundleTaskConvention(extension, t))
-			RegularFile defaultBndfile = project.getLayout().getProjectDirectory().file("bnd.bnd")
+			RegularFile defaultBndfile = project.getLayout().getProjectDirectory().file(BNDFILE)
 			if (defaultBndfile.getAsFile().isFile()) {
 				extension.getBndfile().convention(defaultBndfile)
 			}
