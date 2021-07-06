@@ -12,16 +12,16 @@ import aQute.lib.utf8properties.UTF8Properties
 
 class TestExportTask extends Specification {
 
-    File buildDir = new File('generated')
-    File testResources = new File(buildDir, 'testresources')
+    File buildDir = new File("generated")
+    File testResources = new File(buildDir, "testresources")
 
     def "Simple Bnd Export Task Executable Jar Test"() {
         given:
-          String testProject = 'exporttask1'
+          String testProject = "exporttask1"
           File testProjectDir = new File(testResources, testProject).canonicalFile
           assert testProjectDir.isDirectory()
           def reporter = new Slf4jReporter(TestResolveTask.class)
-          String taskname = 'export'
+          String taskname = "export"
 
         when:
           File bndrun = new File(testProjectDir, "${taskname}.bndrun")
@@ -30,13 +30,13 @@ class TestExportTask extends Specification {
         then:
           bndrun.isFile()
           props.load(bndrun, reporter)
-          props.getProperty('-runbundles') =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
+          props.getProperty("-runbundles") =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
 
         when:
           props = new UTF8Properties()
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--parallel', '--stacktrace', '--debug', taskname)
+            .withArguments("--parallel", "--stacktrace", "--debug", taskname)
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -45,33 +45,33 @@ class TestExportTask extends Specification {
           result.task(":${taskname}").outcome == SUCCESS
           bndrun.isFile()
           props.load(bndrun, reporter)
-          props.getProperty('-runbundles') =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
+          props.getProperty("-runbundles") =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
 
-          File distributions = new File(testProjectDir, 'build/distributions')
+          File distributions = new File(testProjectDir, "build/distributions")
 
           File executable = new File(distributions, "executable/${taskname}.jar")
           executable.isFile()
           JarFile executable_jar = new JarFile(executable)
           Attributes executable_manifest = executable_jar.getManifest().getMainAttributes()
-          def runpath = executable_manifest.getValue('Embedded-Runpath')
+          def runpath = executable_manifest.getValue("Embedded-Runpath")
           runpath =~ /jar\/biz\.aQute\.launcher/
           runpath =~ /jar\/org\.apache\.felix\.framework/
-          executable_jar.getEntry('jar/org.apache.felix.eventadmin-1.4.6.jar')
-          executable_jar.getEntry('launcher.properties')
+          executable_jar.getEntry("jar/org.apache.felix.eventadmin-1.4.6.jar")
+          executable_jar.getEntry("launcher.properties")
           UTF8Properties launchprops = new UTF8Properties()
-          launchprops.load(executable_jar.getInputStream(executable_jar.getEntry('launcher.properties')), null, reporter)
-          launchprops.getProperty('launch.bundles') =~ /jar\/org\.apache\.felix\.eventadmin-1\.4\.6\.jar/
-          launchprops.getProperty('launch.keep') == 'true'
+          launchprops.load(executable_jar.getInputStream(executable_jar.getEntry("launcher.properties")), null, reporter)
+          launchprops.getProperty("launch.bundles") =~ /jar\/org\.apache\.felix\.eventadmin-1\.4\.6\.jar/
+          launchprops.getProperty("launch.keep") == "true"
           executable_jar.close()
     }
 
     def "Simple Bnd Export Task Runbundles Jar Test"() {
         given:
-          String testProject = 'exporttask1'
+          String testProject = "exporttask1"
           File testProjectDir = new File(testResources, testProject).canonicalFile
           assert testProjectDir.isDirectory()
           def reporter = new Slf4jReporter(TestResolveTask.class)
-          String taskname = 'runbundles'
+          String taskname = "runbundles"
 
         when:
           File bndrun = new File(testProjectDir, "${taskname}.bndrun")
@@ -80,13 +80,13 @@ class TestExportTask extends Specification {
         then:
           bndrun.isFile()
           props.load(bndrun, reporter)
-          props.getProperty('-runbundles') =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
+          props.getProperty("-runbundles") =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
 
         when:
           props = new UTF8Properties()
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--parallel', '--stacktrace', '--debug', taskname)
+            .withArguments("--parallel", "--stacktrace", "--debug", taskname)
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -95,22 +95,22 @@ class TestExportTask extends Specification {
           result.task(":${taskname}").outcome == SUCCESS
           bndrun.isFile()
           props.load(bndrun, reporter)
-          props.getProperty('-runbundles') =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
+          props.getProperty("-runbundles") =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
 
-          File distributions = new File(testProjectDir, 'build/distributions')
+          File distributions = new File(testProjectDir, "build/distributions")
 
           File folder = new File(distributions, "runbundles/${taskname}")
           folder.isDirectory()
-          new File(folder, 'org.apache.felix.eventadmin-1.4.6.jar').isFile()
+          new File(folder, "org.apache.felix.eventadmin-1.4.6.jar").isFile()
     }
 
     def "Bnd Export Task Named Exporter Test"() {
         given:
-          String testProject = 'exporttask1'
+          String testProject = "exporttask1"
           File testProjectDir = new File(testResources, testProject).canonicalFile
           assert testProjectDir.isDirectory()
           def reporter = new Slf4jReporter(TestResolveTask.class)
-          String taskname = 'exporter'
+          String taskname = "exporter"
 
         when:
           File bndrun = new File(testProjectDir, "${taskname}.bndrun")
@@ -119,13 +119,13 @@ class TestExportTask extends Specification {
         then:
           bndrun.isFile()
           props.load(bndrun, reporter)
-          props.getProperty('-runbundles') =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
+          props.getProperty("-runbundles") =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
 
         when:
           props = new UTF8Properties()
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--parallel', '--stacktrace', '--debug', taskname)
+            .withArguments("--parallel", "--stacktrace", "--debug", taskname)
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -134,12 +134,12 @@ class TestExportTask extends Specification {
           result.task(":${taskname}").outcome == SUCCESS
           bndrun.isFile()
           props.load(bndrun, reporter)
-          props.getProperty('-runbundles') =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
+          props.getProperty("-runbundles") =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
 
-          File distributions = new File(testProjectDir, 'build/distributions')
+          File distributions = new File(testProjectDir, "build/distributions")
 
           File folder = new File(distributions, "runbundles/${taskname}")
           folder.isDirectory()
-          new File(folder, 'org.apache.felix.eventadmin-1.4.6.jar').isFile()
+          new File(folder, "org.apache.felix.eventadmin-1.4.6.jar").isFile()
     }
 }

@@ -4,15 +4,15 @@
 // ../gradlew --no-daemon --settings-file publishsettings.gradle displayArtifacts publishPlugins
 
 plugins {
-	id 'com.gradle.plugin-publish' version '0.12.0'
-	id 'java'
-	id 'java-gradle-plugin'
-	id 'maven-publish'
+	id "com.gradle.plugin-publish" version "0.12.0"
+	id "java"
+	id "java-gradle-plugin"
+	id "maven-publish"
 }
 
-ext.groupId = 'biz.aQute.bnd'
-ext.artifactId = 'biz.aQute.bnd.gradle'
-ext.artifactVersion = '5.2.0'
+ext.groupId = "biz.aQute.bnd"
+ext.artifactId = "biz.aQute.bnd.gradle"
+ext.artifactVersion = "5.2.0"
 
 repositories {
 	mavenCentral()
@@ -49,7 +49,7 @@ artifacts {
 	}
 }
 
-tasks.create('displayArtifacts') {
+tasks.create("displayArtifacts") {
 	doLast {
 		println "gradle.publish.key: ${project.findProperty('gradle.publish.key')}"
 		println "gradle.publish.secret: ${project.findProperty('gradle.publish.secret')}"
@@ -68,7 +68,7 @@ tasks.create('displayArtifacts') {
 
 var pomFile = file("$buildDir/pom.xml")
 
-var copyPublishedPom = tasks.create('copyPublishedPom') {
+var copyPublishedPom = tasks.create("copyPublishedPom") {
 	inputs.files(configurations.pom).withPathSensitivity(PathSensitivity.NONE)
 	outputs.file(pomFile)
 	doLast {
@@ -87,7 +87,7 @@ afterEvaluate {
 			}
 		}
 	}
-	tasks.named('generatePomFileForPluginMavenPublication') {
+	tasks.named("generatePomFileForPluginMavenPublication") {
 		destination = pomFile
 		enabled = false
 		finalizedBy copyPublishedPom
@@ -95,28 +95,28 @@ afterEvaluate {
 }
 
 pluginBundle {
-	website = 'https://github.com/bndtools/bnd'
-	vcsUrl = 'https://github.com/bndtools/bnd.git'
+	website = "https://github.com/bndtools/bnd"
+	vcsUrl = "https://github.com/bndtools/bnd.git"
 
 	description = "Gradle Plugin for developing OSGi bundles with Bnd. Bnd is the premiere tool for creating OSGi bundles. This gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/master/biz.aQute.bnd.gradle/README.md for information on using in a Bnd Workspace and a typical Gradle build."
-	tags = ['osgi', 'bnd']
+	tags = ["osgi", "bnd"]
 
 	plugins {
 		bndProjectPlugin {
-			id = 'biz.aQute.bnd'
-			displayName = 'Bnd Project Plugin'
+			id = "biz.aQute.bnd"
+			displayName = "Bnd Project Plugin"
 			description = "Gradle Plugin for developing OSGi bundles with Bnd. Bnd is the premiere tool for creating OSGi bundles. This gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/${project.artifactVersion}.REL/biz.aQute.bnd.gradle/README.md for information on using in a Bnd Workspace and a typical Gradle build."
 			version = project.artifactVersion
 		}
 		bndBuilderPlugin {
-			id = 'biz.aQute.bnd.builder'
-			displayName = 'Bnd Builder Plugin'
+			id = "biz.aQute.bnd.builder"
+			displayName = "Bnd Builder Plugin"
 			description = "Gradle Plugin for developing OSGi bundles with Bnd. Bnd is the premiere tool for creating OSGi bundles. This gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/${project.artifactVersion}.REL/biz.aQute.bnd.gradle/README.md for information on using in a Bnd Workspace and a typical Gradle build."
 			version = project.artifactVersion
 		}
 		bndWorkspacePlugin {
-			id = 'biz.aQute.bnd.workspace'
-			displayName = 'Bnd Workspace Plugin'
+			id = "biz.aQute.bnd.workspace"
+			displayName = "Bnd Workspace Plugin"
 			description = "Gradle Plugin for developing OSGi bundles with Bnd. Bnd is the premiere tool for creating OSGi bundles. This gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/${project.artifactVersion}.REL/biz.aQute.bnd.gradle/README.md for information on using in a Bnd Workspace and a typical Gradle build."
 			version = project.artifactVersion
 		}

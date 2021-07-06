@@ -10,29 +10,29 @@ import spock.lang.Specification
 
 class TestIndexTask extends Specification {
 
-    File buildDir = new File('generated')
-    File testResources = new File(buildDir, 'testresources')
+    File buildDir = new File("generated")
+    File testResources = new File(buildDir, "testresources")
 
     def "Simple Bnd Index Task Test"() {
         given:
-          String testProject = 'indexplugin1'
+          String testProject = "indexplugin1"
           File testProjectDir = new File(testResources, testProject).canonicalFile
           assert testProjectDir.isDirectory()
-          File testProjectBuildDir = new File(testProjectDir, 'build').canonicalFile
+          File testProjectBuildDir = new File(testProjectDir, "build").canonicalFile
 
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--parallel', '--stacktrace', '--debug', 'indexer', 'indexer2')
+            .withArguments("--parallel", "--stacktrace", "--debug", "indexer", "indexer2")
             .withPluginClasspath()
             .forwardOutput()
             .build()
 
         then:
-          result.task(':bundle').outcome == SUCCESS
-          result.task(':jar').outcome == SUCCESS
-          result.task(':indexer').outcome == SUCCESS
-          result.task(':indexer2').outcome == SUCCESS
+          result.task(":bundle").outcome == SUCCESS
+          result.task(":jar").outcome == SUCCESS
+          result.task(":indexer").outcome == SUCCESS
+          result.task(":indexer2").outcome == SUCCESS
 
           testProjectBuildDir.isDirectory()
 
@@ -45,12 +45,12 @@ class TestIndexTask extends Specification {
           JarFile bundletask_jar = new JarFile(bundletask_bundle)
           Attributes bundletask_manifest = bundletask_jar.getManifest().getMainAttributes()
 
-          jartask_manifest.getValue('Bundle-SymbolicName') == "${testProject}"
-          jartask_manifest.getValue('Bundle-Version') == '1.0.0'
+          jartask_manifest.getValue("Bundle-SymbolicName") == "${testProject}"
+          jartask_manifest.getValue("Bundle-Version") == "1.0.0"
           jartask_jar.close()
 
-          bundletask_manifest.getValue('Bundle-SymbolicName') == "${testProject}_bundle"
-          bundletask_manifest.getValue('Bundle-Version') == '1.1.0'
+          bundletask_manifest.getValue("Bundle-SymbolicName") == "${testProject}_bundle"
+          bundletask_manifest.getValue("Bundle-Version") == "1.1.0"
           bundletask_jar.close()
 
         when:
@@ -60,27 +60,27 @@ class TestIndexTask extends Specification {
 
         then:
           repository.@name == testProject
-          repository.lookupNamespace('') == 'http://www.osgi.org/xmlns/repository/v1.0.0'
+          repository.lookupNamespace("") == "http://www.osgi.org/xmlns/repository/v1.0.0"
           repository.resource.size() == 2
-          repository.resource[0].'*'.find { node ->
-            node.name() == 'capability' && node.@namespace == 'osgi.identity'
-          }.'*'.find { node ->
-            node.name() == 'attribute' && node.@name == 'osgi.identity'
+          repository.resource[0]."*".find { node ->
+            node.name() == "capability" && node.@namespace == "osgi.identity"
+          }."*".find { node ->
+            node.name() == "attribute" && node.@name == "osgi.identity"
           }.@value == testProject
-          repository.resource[0].'*'.find { node ->
-            node.name() == 'capability' && node.@namespace == 'osgi.content'
-          }.'*'.find { node ->
-            node.name() == 'attribute' && node.@name == 'url'
+          repository.resource[0]."*".find { node ->
+            node.name() == "capability" && node.@namespace == "osgi.content"
+          }."*".find { node ->
+            node.name() == "attribute" && node.@name == "url"
           }.@value == "libs/${testProject}-1.0.0.jar"
-          repository.resource[1].'*'.find { node ->
-            node.name() == 'capability' && node.@namespace == 'osgi.identity'
-          }.'*'.find { node ->
-            node.name() == 'attribute' && node.@name == 'osgi.identity'
+          repository.resource[1]."*".find { node ->
+            node.name() == "capability" && node.@namespace == "osgi.identity"
+          }."*".find { node ->
+            node.name() == "attribute" && node.@name == "osgi.identity"
           }.@value == "${testProject}_bundle"
-          repository.resource[1].'*'.find { node ->
-            node.name() == 'capability' && node.@namespace == 'osgi.content'
-          }.'*'.find { node ->
-            node.name() == 'attribute' && node.@name == 'url'
+          repository.resource[1]."*".find { node ->
+            node.name() == "capability" && node.@namespace == "osgi.content"
+          }."*".find { node ->
+            node.name() == "attribute" && node.@name == "url"
           }.@value == "libs/${testProject}_bundle-1.1.0.jar"
 
         when:
@@ -95,18 +95,18 @@ class TestIndexTask extends Specification {
           repository = new XmlSlurper().parse(xmlfile)
 
         then:
-          repository.@name == 'indexer2'
-          repository.lookupNamespace('') == 'http://www.osgi.org/xmlns/repository/v1.0.0'
+          repository.@name == "indexer2"
+          repository.lookupNamespace("") == "http://www.osgi.org/xmlns/repository/v1.0.0"
           repository.resource.size() == 1
-          repository.resource[0].'*'.find { node ->
-            node.name() == 'capability' && node.@namespace == 'osgi.identity'
-          }.'*'.find { node ->
-            node.name() == 'attribute' && node.@name == 'osgi.identity'
+          repository.resource[0]."*".find { node ->
+            node.name() == "capability" && node.@namespace == "osgi.identity"
+          }."*".find { node ->
+            node.name() == "attribute" && node.@name == "osgi.identity"
           }.@value == testProject
-          repository.resource[0].'*'.find { node ->
-            node.name() == 'capability' && node.@namespace == 'osgi.content'
-          }.'*'.find { node ->
-            node.name() == 'attribute' && node.@name == 'url'
+          repository.resource[0]."*".find { node ->
+            node.name() == "capability" && node.@namespace == "osgi.content"
+          }."*".find { node ->
+            node.name() == "attribute" && node.@name == "url"
           }.@value == "bundles/${testProject}-1.0.0.jar"
 
         when:
@@ -115,32 +115,32 @@ class TestIndexTask extends Specification {
           repository = new XmlSlurper().parse(new GZIPInputStream(new FileInputStream(xmlfile)))
 
         then:
-          repository.@name == 'indexer2'
-          repository.lookupNamespace('') == 'http://www.osgi.org/xmlns/repository/v1.0.0'
+          repository.@name == "indexer2"
+          repository.lookupNamespace("") == "http://www.osgi.org/xmlns/repository/v1.0.0"
           repository.resource.size() == 1
-          repository.resource[0].'*'.find { node ->
-            node.name() == 'capability' && node.@namespace == 'osgi.identity'
-          }.'*'.find { node ->
-            node.name() == 'attribute' && node.@name == 'osgi.identity'
+          repository.resource[0]."*".find { node ->
+            node.name() == "capability" && node.@namespace == "osgi.identity"
+          }."*".find { node ->
+            node.name() == "attribute" && node.@name == "osgi.identity"
           }.@value == testProject
-          repository.resource[0].'*'.find { node ->
-            node.name() == 'capability' && node.@namespace == 'osgi.content'
-          }.'*'.find { node ->
-            node.name() == 'attribute' && node.@name == 'url'
+          repository.resource[0]."*".find { node ->
+            node.name() == "capability" && node.@namespace == "osgi.content"
+          }."*".find { node ->
+            node.name() == "attribute" && node.@name == "url"
           }.@value == "bundles/${testProject}-1.0.0.jar"
 
         when:
           result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--parallel', '--stacktrace', '--debug', 'indexer', 'indexer2')
+            .withArguments("--parallel", "--stacktrace", "--debug", "indexer", "indexer2")
             .withPluginClasspath()
             .forwardOutput()
             .build()
 
         then:
-          result.task(':bundle').outcome == UP_TO_DATE
-          result.task(':jar').outcome == UP_TO_DATE
-          result.task(':indexer').outcome == UP_TO_DATE
-          result.task(':indexer2').outcome == UP_TO_DATE
+          result.task(":bundle").outcome == UP_TO_DATE
+          result.task(":jar").outcome == UP_TO_DATE
+          result.task(":indexer").outcome == UP_TO_DATE
+          result.task(":indexer2").outcome == UP_TO_DATE
     }
 }

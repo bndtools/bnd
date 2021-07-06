@@ -12,17 +12,17 @@ import aQute.lib.utf8properties.UTF8Properties
 
 class TestResolveTask extends Specification {
 
-    File buildDir = new File('generated')
-    File testResources = new File(buildDir, 'testresources')
+    File buildDir = new File("generated")
+    File testResources = new File(buildDir, "testresources")
 
     def "Simple Bnd Resolve Task Generate -runbundles Test"() {
         given:
-          String testProject = 'resolvetask1'
+          String testProject = "resolvetask1"
           File testProjectDir = new File(testResources, testProject).canonicalFile
           assert testProjectDir.isDirectory()
-          File testProjectBuildDir = new File(testProjectDir, 'build').canonicalFile
+          File testProjectBuildDir = new File(testProjectDir, "build").canonicalFile
           def reporter = new Slf4jReporter(TestResolveTask.class)
-          String taskname = 'create'
+          String taskname = "create"
 
         when:
           File bndrun = new File(testProjectDir, "${taskname}.bndrun")
@@ -31,13 +31,13 @@ class TestResolveTask extends Specification {
         then:
           bndrun.isFile()
           props.load(bndrun, reporter)
-          !props.getProperty('-runbundles')
+          !props.getProperty("-runbundles")
 
         when:
           props = new UTF8Properties()
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--parallel', '--stacktrace', '--debug', taskname)
+            .withArguments("--parallel", "--stacktrace", "--debug", taskname)
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -46,7 +46,7 @@ class TestResolveTask extends Specification {
           result.task(":${taskname}").outcome == SUCCESS
           bndrun.isFile()
           props.load(bndrun, reporter)
-          !props.getProperty('-runbundles')
+          !props.getProperty("-runbundles")
 
         when:
           File outputBndrun = new File(testProjectBuildDir, "${taskname}.bndrun")
@@ -55,16 +55,16 @@ class TestResolveTask extends Specification {
         then:
           outputBndrun.isFile()
           props.load(outputBndrun, reporter)
-          props.getProperty('-runbundles') =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
+          props.getProperty("-runbundles") =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
     }
 
     def "Simple Bnd Resolve Task Same -runbundles Test"() {
         given:
-          String testProject = 'resolvetask1'
+          String testProject = "resolvetask1"
           File testProjectDir = new File(testResources, testProject).canonicalFile
           assert testProjectDir.isDirectory()
           def reporter = new Slf4jReporter(TestResolveTask.class)
-          String taskname = 'same'
+          String taskname = "same"
 
         when:
           File bndrun = new File(testProjectDir, "${taskname}.bndrun")
@@ -73,13 +73,13 @@ class TestResolveTask extends Specification {
         then:
           bndrun.isFile()
           props.load(bndrun, reporter)
-          props.getProperty('-runbundles') =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
+          props.getProperty("-runbundles") =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
 
         when:
           props = new UTF8Properties()
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--parallel', '--stacktrace', '--debug', taskname)
+            .withArguments("--parallel", "--stacktrace", "--debug", taskname)
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -88,16 +88,16 @@ class TestResolveTask extends Specification {
           result.task(":${taskname}").outcome == SUCCESS
           bndrun.isFile()
           props.load(bndrun, reporter)
-          props.getProperty('-runbundles') =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
+          props.getProperty("-runbundles") =~ /org\.apache\.felix\.eventadmin\s*;\s*version\s*=\s*'\[1\.4\.6,1\.4\.7\)'/
     }
 
     def "Simple Bnd Resolve Task Fail On Change Test"() {
         given:
-          String testProject = 'resolvetask1'
+          String testProject = "resolvetask1"
           File testProjectDir = new File(testResources, testProject).canonicalFile
           assert testProjectDir.isDirectory()
           def reporter = new Slf4jReporter(TestResolveTask.class)
-          String taskname = 'changefail'
+          String taskname = "changefail"
 
         when:
           File bndrun = new File(testProjectDir, "${taskname}.bndrun")
@@ -106,13 +106,13 @@ class TestResolveTask extends Specification {
         then:
           bndrun.isFile()
           props.load(bndrun, reporter)
-          props.getProperty('-runbundles') =~ /foo/
+          props.getProperty("-runbundles") =~ /foo/
 
         when:
           props = new UTF8Properties()
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--parallel', '--stacktrace', '--debug', taskname)
+            .withArguments("--parallel", "--stacktrace", "--debug", taskname)
             .withPluginClasspath()
             .forwardOutput()
             .buildAndFail()
@@ -122,16 +122,16 @@ class TestResolveTask extends Specification {
           result.output =~ /${taskname}\.bndrun resolution failure/
           bndrun.isFile()
           props.load(bndrun, reporter)
-          props.getProperty('-runbundles') =~ /foo/
+          props.getProperty("-runbundles") =~ /foo/
     }
 
     def "Simple Bnd Resolve Task Resolve Fail Test"() {
         given:
-          String testProject = 'resolvetask1'
+          String testProject = "resolvetask1"
           File testProjectDir = new File(testResources, testProject).canonicalFile
           assert testProjectDir.isDirectory()
           def reporter = new Slf4jReporter(TestResolveTask.class)
-          String taskname = 'resolvefail'
+          String taskname = "resolvefail"
 
         when:
           File bndrun = new File(testProjectDir, "${taskname}.bndrun")
@@ -140,13 +140,13 @@ class TestResolveTask extends Specification {
         then:
           bndrun.isFile()
           props.load(bndrun, reporter)
-          !props.getProperty('-runbundles')
+          !props.getProperty("-runbundles")
 
         when:
           props = new UTF8Properties()
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--parallel', '--stacktrace', '--debug', taskname)
+            .withArguments("--parallel", "--stacktrace", "--debug", taskname)
             .withPluginClasspath()
             .forwardOutput()
             .buildAndFail()
@@ -157,6 +157,6 @@ class TestResolveTask extends Specification {
           result.output =~ /osgi\.identity: \(osgi\.identity=org\.apache\.felix\.foo\)/
           bndrun.isFile()
           props.load(bndrun, reporter)
-          !props.getProperty('-runbundles')
+          !props.getProperty("-runbundles")
     }
 }
