@@ -10,7 +10,6 @@ import org.apache.tools.ant.BuildException;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectTester;
-import aQute.bnd.build.Workspace;
 
 public class TestTask extends BaseTask {
 
@@ -20,12 +19,11 @@ public class TestTask extends BaseTask {
 
 	@Override
 	public void execute() throws BuildException {
-
 		try {
 			// Prepare list of projects...
 			List<Project> projects;
 			File baseDir = getProject().getBaseDir();
-			Project baseProject = Workspace.getProject(baseDir);
+			Project baseProject = getBndProject(baseDir);
 			if (runFiles == null) {
 				projects = Collections.singletonList(baseProject);
 			} else {

@@ -23,15 +23,9 @@ public class PrepareTask extends BaseTask {
 	@Override
 	public void execute() throws BuildException {
 		try {
-			if (basedir == null || !basedir.isDirectory())
-				throw new BuildException("The given base dir does not exist " + basedir);
-
-			Workspace workspace = Workspace.getWorkspace(basedir.getParentFile());
+			Project project = getBndProject(basedir);
+			Workspace workspace = project.getWorkspace();
 			workspace.addBasicPlugin(new ConsoleProgress());
-
-			Project project = workspace.getProject(basedir.getName());
-			if (project == null)
-				throw new BuildException("Unable to find bnd project in directory: " + basedir);
 
 			project.setProperty("in.ant", "true");
 			project.setProperty("environment", "ant");

@@ -3,7 +3,6 @@ package aQute.bnd.ant;
 import org.apache.tools.ant.BuildException;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 
 /**
  * <p>
@@ -35,7 +34,7 @@ public class ReleaseTask extends BaseTask {
 	@Override
 	public void execute() throws BuildException {
 		try {
-			Project project = Workspace.getProject(getProject().getBaseDir());
+			Project project = getBndProject(getProject().getBaseDir());
 			if (releaseRepo == null) {
 				project.release(false);
 			} else {

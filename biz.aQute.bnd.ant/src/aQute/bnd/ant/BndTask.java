@@ -119,12 +119,8 @@ public class BndTask extends BaseTask {
 
 		}
 
-		if (basedir == null)
-			throw new BuildException("No basedir set");
-
 		try {
-			Project project = Workspace.getProject(basedir);
-
+			Project project = getBndProject(basedir);
 			Workspace ws = project.getWorkspace();
 			for (Property prop : workspaceProps) {
 				ws.setProperty(prop.getName(), prop.getValue());
