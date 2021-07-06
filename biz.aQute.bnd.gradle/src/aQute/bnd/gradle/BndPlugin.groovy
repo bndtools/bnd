@@ -86,8 +86,8 @@ public class BndPlugin implements Plugin<Project> {
 			checkErrors(project.getLogger())
 			throw new GradleException("Project ${bndProject.getName()} is not a valid bnd project")
 		}
-		BndPluginExtension extension = project.getExtensions().create("bnd", BndPluginExtension.class, bndProject)
-		project.getConvention().getPlugins().put("bnd", new BndPluginConvention(extension))
+		BndPluginExtension extension = project.getExtensions().create(BndPluginExtension.NAME, BndPluginExtension.class, bndProject)
+		project.getConvention().getPlugins().put(BndPluginExtension.NAME, new BndPluginConvention(extension))
 
 		layout.getBuildDirectory().set(bndProject.getTargetDir())
 		project.getPlugins().apply("java")

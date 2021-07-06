@@ -50,8 +50,8 @@ public class BndBuilderPlugin implements Plugin<Project> {
 
 		var jar = tasks.named("jar", t -> {
 			t.setDescription("Assembles a bundle containing the main classes.")
-			BundleTaskExtension extension = t.getExtensions().create("bundle", BundleTaskExtension.class, t)
-			t.getConvention().getPlugins().put("bundle", new BundleTaskConvention(extension, t))
+			BundleTaskExtension extension = t.getExtensions().create(BundleTaskExtension.NAME, BundleTaskExtension.class, t)
+			t.getConvention().getPlugins().put(BundleTaskExtension.NAME, new BundleTaskConvention(extension, t))
 			RegularFile defaultBndfile = project.getLayout().getProjectDirectory().file("bnd.bnd")
 			if (defaultBndfile.getAsFile().isFile()) {
 				extension.getBndfile().convention(defaultBndfile)

@@ -38,8 +38,8 @@ public class Bundle extends Jar {
 	 */
 	public Bundle() {
 		super()
-		extension = getExtensions().create("bundle", BundleTaskExtension.class, this)
-		getConvention().getPlugins().put("bundle", new BundleTaskConvention(extension, this))
+		extension = getExtensions().create(BundleTaskExtension.NAME, BundleTaskExtension.class, this)
+		getConvention().getPlugins().put(BundleTaskExtension.NAME, new BundleTaskConvention(extension, this))
 	}
 
 	/**

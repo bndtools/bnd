@@ -241,7 +241,7 @@ public class Baseline extends DefaultTask {
 			if (t instanceof TaskProvider) {
 				t = t.get()
 			}
-			t instanceof Task && t.getExtensions().findByName("bundle") ? t : null
+			t instanceof Task && t.getExtensions().findByName(BundleTaskExtension.NAME) ? t : null
 		}
 	}
 

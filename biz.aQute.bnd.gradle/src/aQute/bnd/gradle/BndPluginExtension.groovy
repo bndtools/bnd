@@ -10,6 +10,7 @@ import aQute.bnd.build.Project
  * the {@code biz.aQute.bnd} plugin.
  */
 class BndPluginExtension {
+	public static final String NAME = "bnd"
 	final Project project
 	BndPluginExtension(Project bndProject) {
 		this.project = bndProject
