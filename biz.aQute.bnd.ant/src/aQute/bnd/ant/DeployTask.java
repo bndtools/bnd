@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 
 public class DeployTask extends BaseTask {
 	private final static Logger	logger		= LoggerFactory.getLogger(DeployTask.class);
@@ -21,7 +20,7 @@ public class DeployTask extends BaseTask {
 	@Override
 	public void execute() throws BuildException {
 		try {
-			Project project = Workspace.getProject(getProject().getBaseDir());
+			Project project = getBndProject(getProject().getBaseDir());
 
 			// Deploy the files that need to be released
 			for (FileSet fileset : filesets) {

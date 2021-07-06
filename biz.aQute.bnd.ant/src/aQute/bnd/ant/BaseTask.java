@@ -8,11 +8,13 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.strings.Strings;
@@ -198,5 +200,21 @@ public class BaseTask extends Task implements Reporter {
 	@Override
 	public SetLocation warning(String s, Object... args) {
 		return reporter.warning(s, args);
+	}
+
+	protected Project getBndProject(File basedir) {
+		if ((basedir == null) || !basedir.isDirectory()) {
+			throw new BuildException("The given base dir does not exist " + basedir);
+		}
+		Project project;
+		try {
+			project = Workspace.getProject(basedir);
+		} catch (Exception e) {
+			throw new BuildException(e);
+		}
+		if (project == null) {
+			throw new BuildException("Unable to find bnd project in directory: " + basedir);
+		}
+		return project;
 	}
 }
