@@ -40,6 +40,8 @@ buildscript {
 	}
 }
 
+rootProject.name = "bnd"
+
 gradle.ext.bndWorkspaceConfigure = { workspace ->
 	/*
 	 * Compute the build time stamp. 
