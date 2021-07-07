@@ -52,11 +52,11 @@ tasks.named("test") {
 	doFirst("copy") { t ->
 		// copy test resources into build dir
 		injected.fs.delete {
-			delete target
+			delete(target)
 		}
 		injected.fs.copy {
-			from testresources
-			into target
+			from(testresources)
+			into(target)
 		}
 	}
 }
