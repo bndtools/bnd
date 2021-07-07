@@ -9,11 +9,11 @@ buildscript {
 	repositories {
 		mavenCentral()
 		maven {
-			url uri(bnd_repourl)
+			url = uri(bnd_repourl)
 		}
 	}
 	dependencies {
-		classpath bnd_plugin
+		classpath(bnd_plugin)
 	}
 	/* Since the files in the repository change with each build, we need to recheck for changes */
 	configurations.classpath {
@@ -34,7 +34,7 @@ buildscript {
 	gradle.rootProject {
 		buildscript {
 			dependencies {
-				classpath bndPlugin
+				classpath(bndPlugin)
 			}
 		}
 	}
