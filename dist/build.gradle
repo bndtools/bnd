@@ -6,12 +6,12 @@ var buildProject = project
 
 /* Configure the workspace project */
 configure(parent) {
-	layout.buildDirectory.set(buildProject.layout.buildDirectory)
+	layout.getBuildDirectory().value(buildProject.layout.getBuildDirectory())
 
 	var build = tasks.register(bnd_defaultTask) {
-		dependsOn buildProject.absoluteProjectPath("jarDependencies")
-		dependsOn buildProject.absoluteProjectPath("checkDependencies")
-		dependsOn buildProject.absoluteProjectPath("releaseNeeded")
+		dependsOn(buildProject.absoluteProjectPath("jarDependencies"))
+		dependsOn(buildProject.absoluteProjectPath("checkDependencies"))
+		dependsOn(buildProject.absoluteProjectPath("releaseNeeded"))
 		description = "Assembles, tests and releases the ${buildProject.name} project."
 		group = "build"
 	}
@@ -21,14 +21,14 @@ configure(parent) {
 }
 
 tasks.named("checkDependencies") {
-	mustRunAfter "jarDependencies"
+	mustRunAfter("jarDependencies")
 }
 
 tasks.named("releaseDependencies") {
-	mustRunAfter "jarDependencies", "checkDependencies"
+	mustRunAfter("jarDependencies", "checkDependencies")
 }
 
 tasks.named("clean") {
 	File releaserepo = file(bnd.get("releaserepo", "bundles")) /* Release repository. */
-	delete releaserepo
+	delete(releaserepo)
 }

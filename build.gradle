@@ -56,7 +56,7 @@ subprojects {
 			testLogging {
 				exceptionFormat = "full"
 				info {
-					events "STANDARD_OUT", "STANDARD_ERROR", "STARTED", "FAILED", "PASSED", "SKIPPED"
+					events("STANDARD_OUT", "STANDARD_ERROR", "STARTED", "FAILED", "PASSED", "SKIPPED")
 				}
 			}
 			if (!logger.isInfoEnabled()) {
@@ -89,17 +89,17 @@ subprojects {
 				}
 			}
 			if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
-				jvmArgs jpmsOptions
-				environment "JAVA_OPTS": jpmsOptions.join(" ")
+				jvmArgs(jpmsOptions)
+				environment("JAVA_OPTS": jpmsOptions.join(" "))
 			}
 			if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
-				jvmArgs "-XX:+ShowCodeDetailsInExceptionMessages"
+				jvmArgs("-XX:+ShowCodeDetailsInExceptionMessages")
 			}
-			inputs.files(fileTree(layout.projectDirectory) {
-				include "testresources/", "testdata/"
+			inputs.files(fileTree(layout.getProjectDirectory()) {
+				include("testresources/", "testdata/")
 				exclude {
-					var f = it.file
-					if (f.directory && f.list().length == 0) {
+					var f = it.getFile()
+					if (f.isDirectory() && f.list().length == 0) {
 						return true
 					}
 					try {
@@ -109,9 +109,9 @@ subprojects {
 					}
 				}
 			}).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("testFolders")
-			systemProperty "org.slf4j.simpleLogger.defaultLogLevel", gradle.startParameter.logLevel.name()
-			if (System.properties["maven.repo.local"]) {
-				systemProperty "maven.repo.local", IO.getFile(gradle.startParameter.currentDir, System.properties["maven.repo.local"])
+			systemProperty("org.slf4j.simpleLogger.defaultLogLevel", gradle.getStartParameter().getLogLevel().name())
+			if (System.getProperty("maven.repo.local")) {
+				systemProperty("maven.repo.local", IO.getFile(gradle.getStartParameter().getCurrentDir(), System.getProperty("maven.repo.local")))
 			}
 		}
 	}
