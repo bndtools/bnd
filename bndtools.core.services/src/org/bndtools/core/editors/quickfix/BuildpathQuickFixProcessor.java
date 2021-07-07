@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,6 +54,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
@@ -98,6 +100,9 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	public boolean hasCorrections(ICompilationUnit unit, int problemId) {
 		// System.err.println(PROBLEM_TYPES.get(problemId));
 		switch (problemId) {
+			case IProblem.DiscouragedReference :
+				// System.out.println("DiscouragedReference");
+				return true;
 			case IProblem.HierarchyHasProblems :
 				// System.out.println("HierarchyHasProblems");
 				return true;
@@ -315,6 +320,19 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			for (IProblemLocation location : locations) {
 				this.location = location;
 				switch (location.getProblemId()) {
+					case IProblem.DiscouragedReference : {
+						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						Type type = findFirstParentOfType(node, Type.class);
+						if (type == null) {
+							ImportDeclaration importDec = findFirstParentOfType(node, ImportDeclaration.class);
+							addProposalsForImport(importDec);
+						} else {
+							ITypeBinding binding = type.resolveBinding();
+							addProposals(binding.getPackage()
+								.getName(), getClassName(binding));
+						}
+						continue;
+					}
 					case IProblem.TypeArgumentMismatch :
 					case IProblem.HierarchyHasProblems : {
 						// This error often doesn't directly give us information
@@ -427,20 +445,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 						ASTNode node = location.getCoveredNode(context.getASTRoot());
 						ImportDeclaration importDec = findFirstParentOfType(node, ImportDeclaration.class);
 						if (importDec != null) {
-							Name name = importDec.getName();
-							if (importDec.isStatic() && !importDec.isOnDemand()) {
-								// It should be a QualifiedName unless there is
-								// an error in Eclipse...
-								if (name instanceof QualifiedName) {
-									addProposals(((QualifiedName) name).getQualifier()
-										.getFullyQualifiedName());
-								}
-							} else if (importDec.isOnDemand() || name instanceof QualifiedName) {
-								addProposals(name.getFullyQualifiedName());
-							}
-							// Don't make any suggestions for a SimpleName as it
-							// is in the default package, which can't be
-							// exported by any bundle.
+							addProposalsForImport(importDec);
 						}
 						continue;
 					}
@@ -563,6 +568,26 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 		}
 	}
 
+	private void addProposalsForImport(ImportDeclaration importDec) throws Exception {
+		if (importDec == null) {
+			return;
+		}
+		Name name = importDec.getName();
+		if (importDec.isStatic() && !importDec.isOnDemand()) {
+			// It should be a QualifiedName unless there is
+			// an error in Eclipse...
+			if (name instanceof QualifiedName) {
+				addProposals(((QualifiedName) name).getQualifier()
+					.getFullyQualifiedName());
+			}
+		} else if (importDec.isOnDemand() || name instanceof QualifiedName) {
+			addProposals(name.getFullyQualifiedName());
+		}
+		// Don't make any suggestions for a SimpleName as it
+		// is in the default package, which can't be
+		// exported by any bundle.
+	}
+
 	private void addProposalsForType(Type type) throws CoreException, Exception {
 		if (type == null) {
 			return;
@@ -592,8 +617,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			throw new NullPointerException();
 		}
 		final ITypeBinding erasure = typeBinding.getErasure();
-		final StringBuilder className = new StringBuilder(128);
-		getClassName(erasure, className);
+		String className = getClassName(erasure);
 		if (erasure.getPackage() != null) {
 			final String packageName = erasure.getPackage()
 				.getName();
@@ -612,21 +636,27 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			//
 			// Note that ICompilationUnit.getPackageDeclaration(String) doesn't
 			// quite seem to behave as advertised - it can actually create a
-			// package definitition. Hence this alternative that streams over
+			// package definition. Hence this alternative that streams over
 			// the available package declarations instead.
 			if (!Stream.of(context.getCompilationUnit()
 				.getPackageDeclarations())
 				.filter(Objects::nonNull)
 				.map(IPackageDeclaration::getElementName)
 				.anyMatch(packageName::equals)) {
-				doAddProposals(workspace.search(packageName, className.toString()), true);
+				doAddProposals(workspace.search(packageName, className), true);
 				return;
 			}
 		}
-		addProposals(className.toString());
+		addProposals(className);
 	}
 
-	private void getClassName(ITypeBinding typeBinding, StringBuilder buffer) {
+	private static String getClassName(ITypeBinding typeBinding) {
+		final StringBuilder className = new StringBuilder(128);
+		getClassName(typeBinding, className);
+		return className.toString();
+	}
+
+	private static void getClassName(ITypeBinding typeBinding, StringBuilder buffer) {
 		ITypeBinding parent = typeBinding.getDeclaringClass();
 		if (parent != null) {
 			getClassName(parent, buffer);
@@ -688,7 +718,25 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			TypeRef type = pb.getTypeRefFromFQN(fqn);
 			if (type == null)
 				return false;
-			return pb.findResource(type.getPath()) != null;
+
+			String pack = type.getPackageRef()
+				.getPath();
+			boolean result = pb.getClasspath()
+				.stream()
+				.filter(jar -> jar.getResource(type.getPath()) != null)
+				.anyMatch(jar -> {
+					try {
+						Manifest m = jar.getManifest();
+						if (m == null) {
+							return true;
+						}
+						return new Parameters(m.getMainAttributes()
+							.getValue(Constants.EXPORT_PACKAGE), null, true).containsKey(pack);
+					} catch (Exception e) {
+						return false;
+					}
+				});
+			return result;
 		} catch (Exception e1) {
 			return false;
 		}

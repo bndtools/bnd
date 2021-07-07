@@ -286,4 +286,34 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
 	}
 
+	@Test
+	public void withEmbeddedPackageOnBuildPath_suggestsOriginalBundle() {
+		// If you have a buildpath that embeds an exported package from another
+		// bundle but doesn't export it, then it will cause a "discouraged
+		// access" warning. If it is a package that is exported by another
+		// bundle, the easy way to fix it is to add the other bundle to the
+		// build path.
+		String header = "package test; "
+			+ "import iface.embedded.*; class " + DEFAULT_CLASS_NAME + " extends ";
+		String source = header + "Embedded {}";
+
+		assertThatProposals(proposalsFor(header.length() + 2, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.embedded.Embedded"));
+
+	}
+
+	@Test
+	public void withEmbeddedImportOnBuildPath_suggestsOriginalBundle() {
+		// If you have a buildpath that embeds an exported package from another
+		// bundle but doesn't export it, then it will cause a "discouraged
+		// access" warning. If it is a package that is exported by another
+		// bundle, the easy way to fix it is to add the other bundle to the
+		// build path.
+		String header = "package test; import ";
+		String source = header + "iface.embedded.Embedded; class " + DEFAULT_CLASS_NAME + " extends Embedded {}";
+
+		assertThatProposals(proposalsFor(header.length() + 2, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.embedded.Embedded"));
+
+	}
 }
