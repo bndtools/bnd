@@ -30,9 +30,8 @@ var pluginUnderTestMetadata = tasks.register("pluginUnderTestMetadata", WritePro
 	var pluginClasspath = objects.fileCollection().from(configurations.runtimeClasspath.allArtifacts.files, configurations.runtimeClasspath)
 	inputs.files(pluginClasspath).withNormalizer(ClasspathNormalizer.class).withPropertyName("pluginClasspath")
 	outputFile = pluginUnderTestResources.map { it.file("plugin-under-test-metadata.properties") }
-	doFirst("implementation-classpath") { t ->
-		t.property("implementation-classpath",  pluginClasspath.asPath)
-	}
+	encoding = "UTF-8"
+	property("implementation-classpath", project.provider(() -> pluginClasspath.getAsPath()))
 }
 
 sourceSets {
@@ -47,7 +46,7 @@ tasks.named("test") {
 	inputs.files(tasks.named("jar")).withPropertyName("jar")
 	inputs.dir(testresources).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("testresources")
 	systemProperty("bnd_version", bnd.get("bnd_version"))
-	systemProperty("org.gradle.warning.mode", gradle.startParameter.warningMode.name().toLowerCase())
+	systemProperty("org.gradle.warning.mode", gradle.getStartParameter().getWarningMode().name().toLowerCase())
 	var injected = objects.newInstance(Injected)
 	doFirst("copy") { t ->
 		// copy test resources into build dir
