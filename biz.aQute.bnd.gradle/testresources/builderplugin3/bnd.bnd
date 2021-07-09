@@ -1,0 +1,18 @@
+-exportcontents: doubler
+-sources: true
+My-Header: my-value
+text: TEXT
+Override: Override the jar task manifest
+Bundle-Name: ${project.group}:${task.archiveBaseName}
+Project-Name: ${project.name}
+Project-Dir: ${project.dir}
+Project-Output: ${project.output}
+Project-Sourcepath: ${project.sourcepath}
+Project-Buildpath: ${project.buildpath}
+-includeresource.lib: commons-lang-2.6.jar;lib:=true
+Gradle-Project-Prop: ${project.projectprop}
+Gradle-Task-Prop: ${task.taskprop}
+Gradle-Task-Project-Prop: ${task.project.projectprop}
+Gradle-Missing-Prop: ${task.projectprop}
+Here: ${.}
+-reproducible: true

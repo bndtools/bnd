@@ -9,7 +9,8 @@ Bundle-Description: The Bnd Gradle plugins.
     aQute.libg.*
 
 -includeresource: \
-    resources
+    resources,\
+    ${target}/classes/kotlin/main
 #
 # The groovy compiler must be run from the gradle build
 #

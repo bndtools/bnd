@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="**/*.groovy" kind="src" output="bin" path="src"/>
-	<classpathentry excluding="**/*.groovy" kind="src" output="bin_test" path="test">
+	<classpathentry excluding="**/*.groovy,**/*.kt" kind="src" output="bin" path="src"/>
+	<classpathentry excluding="**/*.groovy,**/*.kt" kind="src" output="bin_test" path="test">
 		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>
