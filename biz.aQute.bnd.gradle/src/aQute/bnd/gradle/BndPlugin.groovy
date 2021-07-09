@@ -352,7 +352,7 @@ public class BndPlugin implements Plugin<Project> {
 			.map(i -> i.concat("/"))
 			.collect(toList())
 			/* all other files in the project like bnd and resources */
-			t.getInputs().files(layout.getProjectDirectory().getAsFileTree().matching(filterable -> {
+			t.getInputs().files(objects.fileTree().from(layout.getProjectDirectory()).matching(filterable -> {
 				project.sourceSets.forEach(sourceSet -> {
 					/* exclude sourceSet dirs */
 					filterable.exclude(sourceSet.getAllSource().getSourceDirectories().collect {
