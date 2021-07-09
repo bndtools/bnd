@@ -28,9 +28,13 @@ Bndtools is the development environment of Bnd.
 Gradle is used to build Bnd/Bndtools.
 The repo has a `build.gradle` file that builds all projects in proper order.
 
-`./gradlew` - Assembles, tests and releases the non-maven projects into `dist/bundles`.
+`./gradlew :build` - Assembles, tests, and releases the non-plugin projects into `dist/bundles`.
 
-`./gradlew :build :maven:deploy` - Assembles and releases the projects into `dist/bundles`.
+After building the non-plugin projects, you can build the Maven and Gradle plugin projects
+
+`./gradlew :maven:deploy` - Assembles, tests, and releases the Maven plugin projects into `dist/bundles`.
+
+`./gradlew :gradle-plugins:build :gradle-plugins:publish` - Assembles, tests, and releases the Gradle plugin projects into `dist/bundles`.
 
 The repo includes the gradle wrapper, `gradlew`, command.
 
@@ -43,7 +47,7 @@ A Maven snapshot repository of the latest build is available at <https://bndtool
 
 ### Using the latest development SNAPSHOT build of Bnd/Bndtools
 
-* [Bnd Gradle Plugins](biz.aQute.bnd.gradle/README.md#using-the-latest-development-snapshot-build-of-the-bnd-gradle-plugins)
+* [Bnd Gradle Plugins](gradle-pluguins/README.md#using-the-latest-development-snapshot-build-of-the-bnd-gradle-plugins)
 * [Bnd Maven Plugins](maven/README.md#using-the-latest-development-snapshot-build-of-the-bnd-maven-plugins)
 * Bndtools snapshot p2 update site: <https://bndtools.jfrog.io/bndtools/update-snapshot>
 

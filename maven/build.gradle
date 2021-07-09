@@ -88,7 +88,7 @@ tasks.named("clean") {
 }
 
 var mvnTestCompile = tasks.register("test-compile", Exec.class) {
-	dependsOn(dist.tasks.named("releaseDependencies"))
+	dependsOn(dist.tasks.named("jarDependencies"))
 	if (windows) {
 		executable = "cmd"
 		args("/c", mvnw)

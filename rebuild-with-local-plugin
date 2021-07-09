@@ -5,7 +5,7 @@
 ## Rebuild using the locally built bnd gradle plugin
 ##
 ## Since this will use the gradle plugin in dist/bundles, your gradle tasks
-## must not include :biz.aQute.bnd.gradle:release which will attempt to
+## must not include :gradle-plugins:publish which will attempt to
 ## overwrite the plugin being used for the build.
 ##
 ##############################################################################

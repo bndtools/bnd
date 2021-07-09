@@ -83,3 +83,4 @@ jobs:
         path: |
           */generated/test-reports/*/TEST-*.xml
           maven/*/target/surefire-reports/TEST-*.xml
+          gradle-plugins/*/build/test-results/*/TEST-*.xml

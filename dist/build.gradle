@@ -31,4 +31,5 @@ tasks.named("releaseDependencies") {
 tasks.named("clean") {
 	File releaserepo = file(bnd.get("releaserepo", "bundles")) /* Release repository. */
 	delete(releaserepo)
+	delete("m2")
 }
