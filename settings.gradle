@@ -11,9 +11,11 @@ buildscript {
 		maven {
 			url = uri(bnd_repourl)
 		}
+		gradlePluginPortal()
 	}
 	dependencies {
 		classpath(bnd_plugin)
+		classpath("com.gradle:gradle-enterprise-gradle-plugin:3.6.3")
 	}
 	/* Since the files in the repository change with each build, we need to recheck for changes */
 	configurations.classpath {
@@ -56,3 +58,4 @@ gradle.ext.bndWorkspaceConfigure = { workspace ->
 }
 
 apply plugin: "biz.aQute.bnd.workspace"
+apply plugin: "com.gradle.enterprise"
