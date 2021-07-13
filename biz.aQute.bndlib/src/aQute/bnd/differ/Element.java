@@ -2,6 +2,7 @@ package aQute.bnd.differ;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 import aQute.bnd.service.diff.Delta;
@@ -43,13 +44,17 @@ class Element implements Tree {
 		this(type, name, Arrays.asList(children), Delta.MINOR, Delta.MAJOR, null);
 	}
 
+	Element(Type type, String name, List<Element> children) {
+		this(type, name, children, Delta.MINOR, Delta.MAJOR, null);
+	}
+
 	Element(Type type, String name, Collection<? extends Element> children, Delta add, Delta remove, String comment) {
 		this.type = type;
 		this.name = name;
 		this.add = add;
 		this.remove = remove;
 		this.comment = comment;
-		if (children != null && children.size() > 0) {
+		if (children != null && !children.isEmpty()) {
 			this.children = children.toArray(EMPTY);
 			Arrays.sort(this.children);
 		} else

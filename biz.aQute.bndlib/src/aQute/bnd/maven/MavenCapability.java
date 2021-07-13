@@ -13,7 +13,13 @@ import aQute.bnd.version.MavenVersion;
 
 public interface MavenCapability extends Capability {
 
-	String MAVEN_NAMESPACE = "bnd.maven";
+	String	MAVEN_NAMESPACE					= "bnd.maven";
+	String	CAPABILITY_GROUPID_ATTRIBUTE	= "maven-groupId";
+	String	CAPABILITY_ARTIFACTID_ATTRIBUTE	= "maven-artifactId";
+	String	CAPABILITY_VERSION_ATTRIBUTE	= "maven-version";
+	String	CAPABILITY_CLASSIFIER_ATTRIBUTE	= "maven-classifier";
+	String	CAPABILITY_EXTENSION_ATTRIBUTE	= "maven-extension";
+	String	CAPABILITY_REPOSITORY_ATTRIBUTE	= "maven-repository";
 
 	String maven_groupId();
 
@@ -31,17 +37,17 @@ public interface MavenCapability extends Capability {
 		String extension, String classifier, String repository) {
 		try {
 			CapabilityBuilder c = new CapabilityBuilder(MAVEN_NAMESPACE);
-			c.addAttribute("maven-groupId", Objects.requireNonNull(groupId));
-			c.addAttribute("maven-artifactId", Objects.requireNonNull(artifactId));
-			c.addAttribute("maven-version", Objects.requireNonNull(version));
+			c.addAttribute(CAPABILITY_GROUPID_ATTRIBUTE, Objects.requireNonNull(groupId));
+			c.addAttribute(CAPABILITY_ARTIFACTID_ATTRIBUTE, Objects.requireNonNull(artifactId));
+			c.addAttribute(CAPABILITY_VERSION_ATTRIBUTE, Objects.requireNonNull(version));
 			if (classifier != null) {
-				c.addAttribute("maven-classifier", classifier);
+				c.addAttribute(CAPABILITY_CLASSIFIER_ATTRIBUTE, classifier);
 			}
 			if (extension != null) {
-				c.addAttribute("maven-extension", extension);
+				c.addAttribute(CAPABILITY_EXTENSION_ATTRIBUTE, extension);
 			}
 			if (repository != null) {
-				c.addAttribute("maven-repository", repository);
+				c.addAttribute(CAPABILITY_REPOSITORY_ATTRIBUTE, repository);
 			}
 			rb.addCapability(c);
 		} catch (Exception e) {

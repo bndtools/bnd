@@ -5,6 +5,20 @@ public enum Type {
 	BUNDLE,
 	API,
 	MANIFEST,
+
+	// XML Resource Repository Differ Types - START
+	ATTRIBUTE,
+	DIRECTIVE,
+	REQUIREMENT,
+	REQUIREMENTS,
+	CAPABILITY,
+	CAPABILITIES,
+	REPOSITORY,
+	RESOURCE_ID,
+	FILTER,
+	EXPRESSION,
+	// XML Resource Repository Differ Types - END
+
 	PACKAGE,
 	CLASS,
 	INTERFACE,
@@ -34,7 +48,6 @@ public enum Type {
 	REVISION;
 
 	public boolean isInherited() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 }
