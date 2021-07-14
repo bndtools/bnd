@@ -108,6 +108,17 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 			projectNames.addAll(settings.bnd_include.trim().split(/\s*,\s*/))
 		} catch (MissingPropertyException mpe) {}
 
+		/* Remove any projects which must always be excluded */
+		try {
+			projectNames.removeAll(settings.bnd_exclude.trim().split(/\s*,\s*/))
+		} catch (MissingPropertyException mpe) {}
+
+		/* Remove any projects which are composite builds */
+		projectNames.removeIf(projectName -> {
+			File projectDir = new File(rootDir, projectName)
+			return new File(projectDir, "settings.gradle").isFile() || new File(projectDir, "settings.gradle.kts").isFile()
+		})
+
 		/* Initialize the Bnd workspace */
 		Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
 		Workspace.addGestalt(Constants.GESTALT_BATCH, null)
@@ -117,7 +128,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 			gradle.bndWorkspaceConfigure(workspace)
 		}
 
-		/* Prepare each project in the workspace to establish complete 
+		/* Prepare each project in the workspace to establish complete
 		 * dependencies and dependents information.
 		 */
 		workspace.getAllProjects().forEach(p -> p.prepare())
