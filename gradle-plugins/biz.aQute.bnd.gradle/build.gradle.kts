@@ -107,6 +107,11 @@ publishing {
 			name = "Dist"
 			url = uri(rootProject.layout.getProjectDirectory()).resolve(bnd_distrepo)
 		}
+		if (maven_repo_local != null) {
+			mavenLocal {
+				url = uri(maven_repo_local)
+			}
+		}
 		if (System.getenv("CANONICAL").toBoolean()) {
 			val releaseType = if (version.toString().endsWith("SNAPSHOT")) "snapshot" else "release"
 			maven {
