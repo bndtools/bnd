@@ -11,13 +11,12 @@ interface Injected {
 }
 
 // From gradle.properties
-val project_group: String by project
-val project_version: String by project
-val bnd_version : String by project
-val distRepoPath: String by project
+val bnd_group: String by project
+val bnd_version: String by project
+val bnd_distrepo: String by project
 
-group = project_group
-version = project_version
+group = bnd_group
+version = bnd_version
 
 java {
 	sourceCompatibility = JavaVersion.VERSION_1_8
@@ -106,7 +105,7 @@ publishing {
 	repositories {
 		maven {
 			name = "Dist"
-			url = uri(rootProject.layout.getProjectDirectory()).resolve(distRepoPath)
+			url = uri(rootProject.layout.getProjectDirectory()).resolve(bnd_distrepo)
 		}
 		if (System.getenv("CANONICAL").toBoolean()) {
 			val releaseType = if (version.toString().endsWith("SNAPSHOT")) "snapshot" else "release"
