@@ -56,3 +56,6 @@ gradle.ext.bndWorkspaceConfigure = { workspace ->
 }
 
 apply plugin: "biz.aQute.bnd.workspace"
+
+includeBuild("gradle-plugins")
+
