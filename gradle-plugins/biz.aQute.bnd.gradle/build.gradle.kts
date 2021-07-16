@@ -21,6 +21,8 @@ version = bnd_version
 java {
 	sourceCompatibility = JavaVersion.VERSION_1_8
 	targetCompatibility = JavaVersion.VERSION_1_8
+	withJavadocJar()
+	withSourcesJar()
 }
 
 val maven_repo_local: String? by rootProject.extra
@@ -194,9 +196,14 @@ tasks.jar {
 	from(dslSourceSet.output)
 	// Include generated pom file
 	into(archiveBaseName.map { "META-INF/maven/${project.group}/${it}" }) {
-		from(project.provider { tasks.getByName("generatePomFileForPluginMavenPublication") })
+		from(tasks.named("generatePomFileForPluginMavenPublication"))
 		rename(".*", "pom.xml")
 	}
+}
+
+tasks.named<Jar>("sourcesJar") {
+	// Include dsl SourceSet
+	from(dslSourceSet.allSource)
 }
 
 // Configure test
