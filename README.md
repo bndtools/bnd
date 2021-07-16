@@ -47,7 +47,7 @@ A Maven snapshot repository of the latest build is available at <https://bndtool
 
 ### Using the latest development SNAPSHOT build of Bnd/Bndtools
 
-* [Bnd Gradle Plugins](gradle-pluguins/README.md#using-the-latest-development-snapshot-build-of-the-bnd-gradle-plugins)
+* [Bnd Gradle Plugins](gradle-plugins/README.md#using-the-latest-development-snapshot-build-of-the-bnd-gradle-plugins)
 * [Bnd Maven Plugins](maven/README.md#using-the-latest-development-snapshot-build-of-the-bnd-maven-plugins)
 * Bndtools snapshot p2 update site: <https://bndtools.jfrog.io/bndtools/update-snapshot>
 
