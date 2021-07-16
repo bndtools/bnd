@@ -24,15 +24,11 @@ java {
 	targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+val maven_repo_local: String? by rootProject.extra
 repositories {
 	mavenLocal {
-		val localrepo = System.getProperty("maven.repo.local")
-		if (localrepo != null) {
-			var rootGradle = gradle
-			while (rootGradle.getParent() != null) {
-				rootGradle = rootGradle.getParent()
-			}
-			url = uri(rootGradle.getStartParameter().getCurrentDir()).resolve(localrepo)
+		if (maven_repo_local != null) {
+			url = uri(maven_repo_local)
 		}
 		metadataSources {
 			mavenPom()
@@ -224,6 +220,9 @@ tasks.test {
 	inputs.files(testresources).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("testresources")
 	systemProperty("bnd_version", bnd_version)
 	systemProperty("org.gradle.warning.mode", gradle.getStartParameter().getWarningMode().name.toLowerCase())
+	if (maven_repo_local != null) {
+		systemProperty("maven.repo.local", maven_repo_local)
+	}
 	val injected = objects.newInstance<Injected>()
 	doFirst {
 		// copy test resources into build dir

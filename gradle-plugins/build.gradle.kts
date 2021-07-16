@@ -20,6 +20,15 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_9)) {
 	))
 }
 
+val localrepo = System.getProperty("maven.repo.local")
+if (localrepo != null) {
+	var rootGradle = gradle
+	while (rootGradle.getParent() != null) {
+		rootGradle = rootGradle.getParent()
+	}
+	val maven_repo_local by extra(rootGradle.getStartParameter().getCurrentDir().resolve(localrepo).normalize().getAbsolutePath())
+}
+
 tasks.register("clean") {
 	val taskName = name
 	dependsOn(subprojects.map { it.tasks.named(taskName) })
