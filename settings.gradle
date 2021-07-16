@@ -12,8 +12,10 @@ buildscript {
 			url = uri(bnd_repourl)
 		}
 	}
+	var bndConfiguration = configurations.create("bnd")
+	configurations.classpath.extendsFrom(bndConfiguration)
 	dependencies {
-		classpath(bnd_plugin)
+		bnd(bnd_plugin)
 	}
 	/* Since the files in the repository change with each build, we need to recheck for changes */
 	configurations.classpath {
@@ -30,7 +32,7 @@ buildscript {
 		}
 	}
 	/* Add bnd gradle plugin to buildscript classpath of rootProject */
-	var bndPlugin = files(configurations.classpath.files)
+	var bndPlugin = files(bndConfiguration.files)
 	gradle.rootProject {
 		buildscript {
 			dependencies {
