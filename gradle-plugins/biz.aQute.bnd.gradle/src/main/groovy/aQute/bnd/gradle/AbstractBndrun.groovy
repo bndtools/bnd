@@ -145,7 +145,7 @@ public abstract class AbstractBndrun extends DefaultTask {
 			var runWorkspace = run.getWorkspace()
 			IO.mkdirs(workingDirFile)
 			if (Objects.isNull(workspace)) {
-				Properties gradleProperties = new PropertiesWrapper(runWorkspace.getProperties())
+				Properties gradleProperties = new BeanProperties(runWorkspace.getProperties())
 				gradleProperties.put("task", this)
 				gradleProperties.put("project", getProject())
 				run.setParent(new Processor(runWorkspace, gradleProperties, false))
