@@ -11,7 +11,9 @@ import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileSystemLocation;
 import org.gradle.api.logging.Logger;
+import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.util.GradleVersion;
 
@@ -96,5 +98,16 @@ public class BndUtils {
 						LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, LibraryElements.JAR, e);
 			}
 		}
+	}
+
+	@SuppressWarnings("deprecation")
+	public static SourceSetContainer sourceSets(Project project) {
+		SourceSetContainer sourceSets = isGradleCompatible("7.1") ? project.getExtensions()
+			.getByType(JavaPluginExtension.class)
+			.getSourceSets()
+			: project.getConvention()
+				.getPlugin(org.gradle.api.plugins.JavaPluginConvention.class)
+				.getSourceSets();
+		return sourceSets;
 	}
 }
