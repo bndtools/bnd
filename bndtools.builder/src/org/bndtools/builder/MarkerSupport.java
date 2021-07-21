@@ -36,6 +36,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IJavaModelMarker;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
@@ -46,8 +47,10 @@ import aQute.service.reporter.Report.Location;
 import aQute.service.reporter.Reporter.SetLocation;
 
 class MarkerSupport {
-	private static final ILogger	logger	= Logger.getLogger(BndtoolsBuilder.class);
-	private final IProject			project;
+	private static final ILogger			logger			= Logger.getLogger(BndtoolsBuilder.class);
+	private final IProject					project;
+
+	private static final org.slf4j.Logger	consoleLogger	= LoggerFactory.getLogger(MarkerSupport.class);
 
 	MarkerSupport(IProject project) {
 		this.project = project;
@@ -188,7 +191,7 @@ class MarkerSupport {
 					if (dw.isTestBin(marker.getResource()))
 						continue;
 
-					System.out.println("error marker " + marker);
+					consoleLogger.debug("error marker {}", marker);
 					return true;
 				}
 			}
