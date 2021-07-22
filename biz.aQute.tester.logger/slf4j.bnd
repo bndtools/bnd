@@ -1,0 +1,8 @@
+Bundle-Description: \
+	A tester listener that logs test output via SLF4J.\
+	Test start, test plan start and test plan end will be logged at info level, \
+	test finish success -> info, test finish abort -> warning, test finish \
+	failure -> error, dynamic test registered -> info.
+
+-includepackage: \
+	aQute.tester.listeners.slf4j

@@ -1,0 +1,33 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+-sub: *.bnd
+
+Bundle-Description: \
+	A tester listener that logs test output via the OSGi logging service.\
+	Test start, test plan start and test plan end will be logged at info level, \
+	test finish success -> info, test finish abort -> warning, test finish \
+	failure -> error, dynamic test registered -> info.
+
+Import-Package: \
+	org.junit.platform.*;version="${range;[==,+);${junit.platform.tester.version}}",\
+	org.junit.*;version="${range;[==,+);${junit4.tester.version}}";resolution:=optional,\
+	*
+
+-includepackage: \
+	aQute.tester.*
+	
+-conditionalpackage: \
+    aQute.lib.*,\
+    aQute.libg.*
+
+-maven-scope: provided
+
+-buildpath: \
+	org.junit.platform:junit-platform-engine;version='${junit.platform.tester.version}',\
+	org.osgi.service.component.annotations,\
+	org.eclipse.osgi,\
+	org.junit.platform.launcher,\
+	slf4j.api,\
+	aQute.libg
+
+-baseline: *
