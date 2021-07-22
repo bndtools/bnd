@@ -100,8 +100,8 @@
 #	bnd.identity;id='org.apache.felix.gogo.command',\
 #	bnd.identity;id='org.apache.felix.gogo.runtime',\
 #	bnd.identity;id='org.apache.felix.gogo.shell',\
-#	bnd.identity;id='org.eclipse.equinox.console'
-
+#	bnd.identity;id='org.eclipse.equinox.console',\
+#	bnd.identity;id='biz.aQute.tester.logger.osgi'
 
 # This directive should be uncommented when you are running in the CI environment
 # so that the test output is not too noisy. For debugging, comment this
@@ -138,6 +138,7 @@
 # IEventBroker) will not be running in time.
 -runbundles+: *service*;startlevel=1,\
 	org.eclipse.equinox.app;startlevel=2,\
+	biz.aQute.tester.logger.osgi;startlevel=2,\
 	bndtools.core.test.launch;startlevel=2,\
 	bndtools.core.test*;startlevel=5,\
 	bndtools.*;startlevel=4,\
