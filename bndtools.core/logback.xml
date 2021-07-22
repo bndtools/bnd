@@ -5,6 +5,7 @@
     </encoder>
   </appender>
 
+  <logger name="aQute" level="INFO" />
   <logger name="biz.aQute" level="INFO" />
 
   <root level="ERROR">
