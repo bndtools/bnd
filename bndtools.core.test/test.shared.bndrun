@@ -73,9 +73,9 @@
 	bnd.identity;id='org.eclipse.ui.console',\
 	bnd.identity;id='org.eclipse.ui.ide',\
 	bnd.identity;id='org.eclipse.ui.ide.application',\
-	bnd.identity;id='org.junit.jupiter.engine',\
-	bnd.identity;id='org.junit.platform.launcher',\
-	bnd.identity;id='org.junit.vintage.engine',\
+	bnd.identity;id='junit-jupiter-engine',\
+	bnd.identity;id='junit-platform-launcher',\
+	bnd.identity;id='junit-vintage-engine',\
 	bnd.identity;id='org.slf4j.jcl'
 
 -runfw: org.eclipse.osgi;version='[3.15.300.v20200520-1959,3.15.300.v20200520-1959]'
@@ -150,7 +150,5 @@
 	bnd.identity;id='biz.aQute.junit',\
 	bnd.identity;id='org.apache.felix.scr';version='[0,2.1.16)',\
 	bnd.identity;id='org.osgi.*',\
-	bnd.identity;id='junit-jupiter-*',\
-	bnd.identity;id='junit-platform-*',\
-	bnd.identity;id='junit-vintage-*'
+	bnd.identity;id='org.junit.*'
 
