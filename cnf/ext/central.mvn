@@ -83,7 +83,6 @@ org.junit.platform:junit-platform-launcher:${junit.platform.version}
 org.opentest4j:opentest4j:${opentest4j.tester.version}
 org.opentest4j:opentest4j:1.2.0
 org.apiguardian:apiguardian-api:1.1.0
-org.assertj:assertj-core:${assertj.eclipse.version}
 org.assertj:assertj-core:${assertj.version}
 org.xmlunit:xmlunit-core:2.6.3
 org.xmlunit:xmlunit-assertj:2.6.3
