@@ -380,8 +380,15 @@ public class BundleSelectorResolver {
 			// https://github.com/bndtools/bnd/issues/3882
 			testClass.getDeclaredMethods();
 			testClass.getDeclaredFields();
+			// This is for https://github.com/bndtools/bnd/issues/4766, however
+			// it was hard to create a test case in launchpad that would
+			// reproduce the issue so there is no test case coverage for this
+			// at the moment unfortunately. The ArrayStoreException can happen
+			// as a result of the missing or unresolvable classes referenced in
+			// the annotations.
+			testClass.getAnnotations();
 			return testClass;
-		} catch (ClassNotFoundException | NoClassDefFoundError cnfe) {
+		} catch (ClassNotFoundException | NoClassDefFoundError | ArrayStoreException cnfe) {
 			info(() -> "Couldn't load and/or resolve class " + className + ": " + cnfe);
 			StaticFailureDescriptor unresolvedClassDescriptor = new StaticFailureDescriptor(bd.getUniqueId()
 				.append("test", className), className, cnfe);
