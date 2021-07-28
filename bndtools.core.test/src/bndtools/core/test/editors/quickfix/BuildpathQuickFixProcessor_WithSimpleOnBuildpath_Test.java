@@ -12,6 +12,37 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 	}
 
 	@Test
+	void withMissingSuperException_causingUnhandled_suggestsBundles() {
+		String header = "package test; import simple.pkg.ClassThrowingExceptionExtendingExceptionFromAnotherBundle; class "
+			+ DEFAULT_CLASS_NAME + " {" + "public void test() {"
+			+ "ClassThrowingExceptionExtendingExceptionFromAnotherBundle c; ";
+		String source = header + "c.test();}}";
+
+		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignException"));
+	}
+
+	@Test
+	void withMissingSuperException_causingCantThrow_withSimpleReference_suggestsBundles() {
+		String header = "package test; import simple.pkg.ExceptionIndirectlyExtendingExceptionFromAnotherBundle; class "
+			+ DEFAULT_CLASS_NAME + " {" + "public void test() {" + " try { System.out.println(); } catch (";
+		String source = header + "ExceptionIndirectlyExtendingExceptionFromAnotherBundle e) {}}}";
+
+		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignException"));
+	}
+
+	@Test
+	void withMissingSuperException_causingCantThrow_withFullyQualifiedReference_suggestsBundles() {
+		String header = "package test; class " + DEFAULT_CLASS_NAME + " {" + "public void test() {"
+			+ " try { System.out.println(); } catch (";
+		String source = header + "simple.pkg.ExceptionIndirectlyExtendingExceptionFromAnotherBundle e) {}}}";
+
+		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignException"));
+	}
+
+	@Test
 	void withInconsistentHierarchy_forClassDefinition_thatImplementsAnInterfaceFromAnotherBundle_suggestsBundles() {
 		String header = "package test; class ";
 		String source = header + DEFAULT_CLASS_NAME + " extends simple.pkg.ClassWithInterfaceFromAnotherBundle {}";
@@ -220,17 +251,17 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 			+ "String myMethod() { \n" + "  field.length();" + "  method();" + "  return field;" + "}" + "}";
 
 		// HierarchyHasProblems on "Test"
-		assertThatProposals(proposalsFor(20 + 1, 0, source)).haveExactly(1, suggestsBundle(
-			"bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
+		assertThatProposals(proposalsFor(20 + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
 		// UnknownName on "field.length()"
-		assertThatProposals(proposalsFor(111 + 1, 0, source)).haveExactly(1, suggestsBundle(
-			"bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
+		assertThatProposals(proposalsFor(111 + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
 		// UnknownMethod on "method()"
-		assertThatProposals(proposalsFor(128 + 1, 0, source)).haveExactly(1, suggestsBundle(
-			"bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
+		assertThatProposals(proposalsFor(128 + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
 		// UnknownField on "return field"
-		assertThatProposals(proposalsFor(146 + 1, 0, source)).haveExactly(1, suggestsBundle(
-			"bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
+		assertThatProposals(proposalsFor(146 + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignRecursiveClass"));
 	}
 
 	@Test
@@ -293,8 +324,7 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 		// access" warning. If it is a package that is exported by another
 		// bundle, the easy way to fix it is to add the other bundle to the
 		// build path.
-		String header = "package test; "
-			+ "import iface.embedded.*; class " + DEFAULT_CLASS_NAME + " extends ";
+		String header = "package test; " + "import iface.embedded.*; class " + DEFAULT_CLASS_NAME + " extends ";
 		String source = header + "Embedded {}";
 
 		assertThatProposals(proposalsFor(header.length() + 2, 0, source)).haveExactly(1,
