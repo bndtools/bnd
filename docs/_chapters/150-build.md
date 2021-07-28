@@ -63,7 +63,7 @@ For example, the Maven plugin that is built-in to bndlib has an extension file c
 	testbin=target/test-classes
 	target-dir=target
 
-We will not explain this plugin here (you can find it in the [plugin sections}(/chapters/870-plugins.html)), it only illustrates here how it is possible to setup the environment for a specific optional functionality like a plugin.
+We will not explain this plugin here (you can find it in the [plugin sections](/chapters/870-plugins.html)), it only illustrates here how it is possible to setup the environment for a specific optional functionality like a plugin.
 
 If you create local extension files then you should use a prefix to identify this is your file, like:
 
@@ -73,7 +73,7 @@ It is possible to use file links to maintain these files in one place when you h
 
 ### Extension File loading mechanism and order
 
-Extension files will be loaded in alphabetical order. If a files defines a property that was already defined in another previously loaded file or the `build.bnd`, the property will be asigned a namespace. `-plugin` in `/cnf/ext/test.bnd` will become `-plugin.test`. Please note that this mechansim is just a best guess curtesy and has its limits. If `-plugin.test` was already defined previously, the old value will be overwritten.
+Extension files will be loaded in alphabetical order. If a files defines a property that was already defined in another previously loaded file or the `build.bnd`, the property will be assigned a namespace. `-plugin` in `/cnf/ext/test.bnd` will become `-plugin.test`. Please note that this mechanism is just a best guess courtesy and has its limits. If `-plugin.test` was already defined previously, the old value will be overwritten.
 
 ### Local customizations
 
