@@ -2,6 +2,7 @@ package bndtools.core.test.editors.quickfix;
 
 import static bndtools.core.test.utils.TaskUtils.log;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.eclipse.jdt.core.compiler.IProblem.CannotThrowType;
 import static org.eclipse.jdt.core.compiler.IProblem.DiscouragedReference;
 import static org.eclipse.jdt.core.compiler.IProblem.HierarchyHasProblems;
 import static org.eclipse.jdt.core.compiler.IProblem.ImportNotFound;
@@ -14,6 +15,7 @@ import static org.eclipse.jdt.core.compiler.IProblem.UndefinedField;
 import static org.eclipse.jdt.core.compiler.IProblem.UndefinedMethod;
 import static org.eclipse.jdt.core.compiler.IProblem.UndefinedName;
 import static org.eclipse.jdt.core.compiler.IProblem.UndefinedType;
+import static org.eclipse.jdt.core.compiler.IProblem.UnhandledException;
 import static org.eclipse.jdt.core.compiler.IProblem.UnresolvedVariable;
 
 import java.nio.file.Files;
@@ -238,7 +240,8 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 	private static final String			CLASS_FOOTER	= " var};";
 	protected static final Set<Integer>	SUPPORTED		= Sets.of(ImportNotFound, UndefinedType, IsClassPathCorrect,
 		HierarchyHasProblems, ParameterMismatch, TypeMismatch, UndefinedConstructor, UndefinedField, UndefinedMethod,
-		UndefinedName, UnresolvedVariable, TypeArgumentMismatch, DiscouragedReference);
+		UndefinedName, UnresolvedVariable, TypeArgumentMismatch, DiscouragedReference, CannotThrowType,
+		UnhandledException);
 
 	protected IJavaCompletionProposal[] proposalsForStaticImport(String imp) {
 		return proposalsFor(29, 0, "package test; import static " + imp + ";");
@@ -387,11 +390,12 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 			IJavaCompletionProposal[] proposals = sut.getCorrections(assistContext, locs);
 
 			// if (proposals != null) {
-			// System.err.println("Proposals: " + Stream.of(proposals).map(x ->
-			// {
+			// System.err.println("Proposals: " + Stream.of(proposals)
+			// .map(x -> {
 			// return "toString: " + x.toString() + "\ndisplaystring: " +
 			// x.getDisplayString();
-			// }).collect(Collectors.joining("\n")));
+			// })
+			// .collect(Collectors.joining("\n")));
 			// } else {
 			// System.err.println("No proposals");
 			// }

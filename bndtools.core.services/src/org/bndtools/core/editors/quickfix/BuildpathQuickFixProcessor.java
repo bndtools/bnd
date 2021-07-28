@@ -29,6 +29,7 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
@@ -100,6 +101,9 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 	public boolean hasCorrections(ICompilationUnit unit, int problemId) {
 		// System.err.println(PROBLEM_TYPES.get(problemId));
 		switch (problemId) {
+			case IProblem.CannotThrowType :
+				// System.out.println("CannotThrowType");
+				return true;
 			case IProblem.DiscouragedReference :
 				// System.out.println("DiscouragedReference");
 				return true;
@@ -135,6 +139,9 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 				return true;
 			case IProblem.UndefinedName :
 				// System.out.println("UndefinedName");
+				return true;
+			case IProblem.UnhandledException :
+				// System.out.println("UnhandledException");
 				return true;
 			case IProblem.UnresolvedVariable :
 				// System.out.println("UnresolvedVariable");
@@ -209,6 +216,34 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			for (ITypeBinding typeParam : binding.getTypeArguments()) {
 				visitBindingHierarchy(typeParam);
 			}
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	// Searches the superclass binding hierarchy only.
+	// Useful when it is known that the type mismatch is due to a missing
+	// superclass (eg, exception-related).
+	void visitSuperclassBindingHierarchy(ITypeBinding binding) {
+		try {
+			if (binding == null) {
+				return;
+			}
+			String qualifiedName = binding.getQualifiedName();
+
+			if (qualifiedName.startsWith("java.")) {
+				return;
+			}
+			// Prevent infinite recursion
+			if (!visited.add(binding)) {
+				return;
+			}
+			// A "recovered" type binding indicates the type has not been
+			// fully resolved - usually because it's not on the classpath.
+			if (binding.isRecovered()) {
+				addProposals(binding);
+			}
+			visitSuperclassBindingHierarchy(binding.getSuperclass());
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -333,9 +368,39 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 						}
 						continue;
 					}
+					// Error can occur because it's actually an unchecked
+					// exception but the compiler doesn't know because the
+					// superclass is not on the classpath.
+					case IProblem.UnhandledException : {
+						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						MethodInvocation mi = findFirstParentOfType(node, MethodInvocation.class);
+						if (mi != null) {
+							IMethodBinding mb = mi.resolveMethodBinding();
+							if (mb != null) {
+								for (ITypeBinding exceptionType : mb.getExceptionTypes()) {
+									visitSuperclassBindingHierarchy(exceptionType);
+								}
+							}
+						}
+						continue;
+					}
+					// CannotThrowType can happen if an exception's
+					// superclass is not on the classpath.
+					case IProblem.CannotThrowType : {
+						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						Type type = findFirstParentOfType(node, Type.class);
+						if (type != null) {
+							visitSuperclassBindingHierarchy(type.resolveBinding());
+						}
+						continue;
+					}
+					// TypeArgumentMismatch can happen if the common superclass
+					// between the type argument and type parameter is not on
+					// the classpath.
 					case IProblem.TypeArgumentMismatch :
 					case IProblem.HierarchyHasProblems : {
-						// This error often doesn't directly give us information
+						// HierarchyHasProblems often doesn't directly give us
+						// information
 						// as
 						// to the cause of the problem. It is caused when you
 						// reference a type that is on the classpath, but which
