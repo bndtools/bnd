@@ -606,6 +606,14 @@ public class ResourceUtils {
 		return id;
 	}
 
+	public static String getIdentity(Resource resource) throws IllegalArgumentException {
+		return getIdentity(getIdentityCapability(resource));
+	}
+
+	public static Version getVersion(Resource resource) throws IllegalArgumentException {
+		return getVersion(getIdentityCapability(resource));
+	}
+
 	/**
 	 * Create a VersionedClause by applying a version range mask to the
 	 * resource! Masks are defined by

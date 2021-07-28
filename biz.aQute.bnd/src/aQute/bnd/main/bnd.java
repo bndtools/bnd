@@ -88,6 +88,7 @@ import aQute.bnd.main.BaselineCommands.baseLineOptions;
 import aQute.bnd.main.BaselineCommands.schemaOptions;
 import aQute.bnd.main.DiffCommand.diffOptions;
 import aQute.bnd.main.RepoCommand.repoOptions;
+import aQute.bnd.main.XmlRepoDiffCommand.XmlRepoDiffOptions;
 import aQute.bnd.maven.MavenCommand;
 import aQute.bnd.maven.PomFromManifest;
 import aQute.bnd.osgi.About;
@@ -4496,6 +4497,13 @@ public class bnd extends Processor {
 			out.println(s);
 		}
 		getInfo(c);
+	}
+
+	@Description("Shows the differences between two XML resource repositories")
+	public void _xmlrepodiff(XmlRepoDiffOptions options) throws Exception {
+		try (XmlRepoDiffCommand cmd = new XmlRepoDiffCommand(this)) {
+			cmd.diff(options);
+		}
 	}
 
 	@Description("Generate source code")
