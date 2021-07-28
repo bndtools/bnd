@@ -63,13 +63,17 @@ For example, the Maven plugin that is built-in to bndlib has an extension file c
 	testbin=target/test-classes
 	target-dir=target
 
-We will not explain this plugin here (you can find it in the plugin sections), it only illustrates here how it is possible to setup the environment for a specific optional functionality like a plugin.
+We will not explain this plugin here (you can find it in the [plugin sections](/chapters/870-plugins.html)), it only illustrates here how it is possible to setup the environment for a specific optional functionality like a plugin.
 
 If you create local extension files then you should use a prefix to identify this is your file, like:
 
 	com.acme-local.bnd
 
 It is possible to use file links to maintain these files in one place when you have many workspaces.
+
+### Extension File loading mechanism and order
+
+Extension files will be loaded in alphabetical order. If a files defines a property that was already defined in another previously loaded file or the `build.bnd`, the property will be assigned a namespace. `-plugin` in `/cnf/ext/test.bnd` will become `-plugin.test`. Please note that this mechanism is just a best guess courtesy and has its limits. If `-plugin.test` was already defined previously, the old value will be overwritten.
 
 ### Local customizations
 
@@ -83,7 +87,7 @@ A _plugin_ is a piece of code that runs inside bnd. The workspace provides a num
 There are a number of built in properties that are set by bnd:
 
 |-----------------+-----------------------------------------------------------------|
-| Property name   | Description                                                     | 
+| Property name   | Description                                                     |
 |-----------------|:----------------------------------------------------------------|
 |`project`		  | Name of the project. This is the name of the bnd file without   |
 |                 | the .bnd extension. If this name is bnd.bnd, then the directory |
@@ -134,10 +138,7 @@ An example of a launcher set is:
 Debugging the launcher is greatly simplified with the `-runtrace` property set to `true`. This provides a lot of feedback what the launcher is doing.
 
 ### Access to arguments
-When the launcher is ready it will register itself as a service with the following properties:
-
-|`launcher.arguments`|The command line arguments|
-|`launcher.ready`|Indicating the launcher is read|
+When the Framework is started the Launcher will register itself as a service of type `java.lang.Object` with the property `launcher.arguments` to provide access the arguments handed to the launcher. After all Bundles have been installed and started the ServiceRegistration will be updated with the property `launcher.ready=true`.
 
 ### Access to main thread
 In certain cases it is necessary to grab the main thread after launching. The default launcher will launch all the bundles and then wait for any of those bundles to register a `Runnable` service with a service property `main.thread=true`. If such  service is registered, the launcher will call the run method and exit when this method returns.
