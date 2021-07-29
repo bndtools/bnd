@@ -13,9 +13,9 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 
 	@Test
 	void withMissingSuperException_causingUnhandled_suggestsBundles() {
-		String header = "package test; import simple.pkg.ClassThrowingExceptionExtendingExceptionFromAnotherBundle; class "
+		String header = "package test; import simple.pkg.ClassThrowingExceptionExtendingForeignException; class "
 			+ DEFAULT_CLASS_NAME + " {" + "public void test() {"
-			+ "ClassThrowingExceptionExtendingExceptionFromAnotherBundle c; ";
+			+ "ClassThrowingExceptionExtendingForeignException c; ";
 		String source = header + "c.test();}}";
 
 		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).haveExactly(1,
@@ -23,10 +23,45 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 	}
 
 	@Test
+	void withMissingSuperException_causingUnhandled_onSuperMethodInvocation_suggestsBundles() {
+		String header = "package test; import simple.pkg.ClassThrowingExceptionExtendingForeignException; class "
+			+ DEFAULT_CLASS_NAME + " extends ClassThrowingExceptionExtendingForeignException {"
+			+ "@Override public void test() {";
+		String source = header + "super.test();}}";
+
+		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignException"));
+	}
+
+	@Test
+	void withMissingSuperException_causingUnhandled_onConstructorInvocation_suggestsBundles() {
+		String header = "package test; import simple.pkg.ClassThrowingExceptionExtendingForeignException; class "
+			+ DEFAULT_CLASS_NAME + " {" + "public void test() {"
+			+ "ClassThrowingExceptionExtendingForeignException c = ";
+		String source = header + "new ClassThrowingExceptionExtendingForeignException();}}";
+
+		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignException"));
+	}
+
+	@Test
+	void withMissingSuperException_causingUnhandled_onSuperConstructorInvocation_suggestsBundles() {
+		String header = "package test; import simple.pkg.ClassThrowingExceptionExtendingForeignException; class "
+			+ DEFAULT_CLASS_NAME + " extends ClassThrowingExceptionExtendingForeignException {" + "public "
+			+ DEFAULT_CLASS_NAME
+			+ "() {} " + "public " + DEFAULT_CLASS_NAME
+			+ "(String param) { ";
+		String source = header + "super();}}";
+
+		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignException"));
+	}
+
+	@Test
 	void withMissingSuperException_causingCantThrow_withSimpleReference_suggestsBundles() {
-		String header = "package test; import simple.pkg.ExceptionIndirectlyExtendingExceptionFromAnotherBundle; class "
+		String header = "package test; import simple.pkg.ExceptionIndirectlyExtendingForeignException; class "
 			+ DEFAULT_CLASS_NAME + " {" + "public void test() {" + " try { System.out.println(); } catch (";
-		String source = header + "ExceptionIndirectlyExtendingExceptionFromAnotherBundle e) {}}}";
+		String source = header + "ExceptionIndirectlyExtendingForeignException e) {}}}";
 
 		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).haveExactly(1,
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignException"));
@@ -36,7 +71,7 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 	void withMissingSuperException_causingCantThrow_withFullyQualifiedReference_suggestsBundles() {
 		String header = "package test; class " + DEFAULT_CLASS_NAME + " {" + "public void test() {"
 			+ " try { System.out.println(); } catch (";
-		String source = header + "simple.pkg.ExceptionIndirectlyExtendingExceptionFromAnotherBundle e) {}}}";
+		String source = header + "simple.pkg.ExceptionIndirectlyExtendingForeignException e) {}}}";
 
 		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).haveExactly(1,
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignException"));
