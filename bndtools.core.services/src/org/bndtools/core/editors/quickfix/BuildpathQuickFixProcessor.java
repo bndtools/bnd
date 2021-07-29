@@ -26,6 +26,7 @@ import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.IBinding;
@@ -40,6 +41,7 @@ import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.QualifiedType;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SimpleType;
+import org.eclipse.jdt.core.dom.SuperConstructorInvocation;
 import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
@@ -290,6 +292,19 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 		}
 	}
 
+	@SafeVarargs
+	final ASTNode findFirstParentWithOneOfTypes(ASTNode node, Class<? extends ASTNode>... types) {
+		while (node != null) {
+			for (Class<?> type : types) {
+				if (type.isAssignableFrom(node.getClass())) {
+					return node;
+				}
+			}
+			node = node.getParent();
+		}
+		return null;
+	}
+
 	<N extends ASTNode> N findFirstParentOfType(ASTNode node, Class<N> type) {
 		while (node != null) {
 			if (type.isAssignableFrom(node.getClass())) {
@@ -372,10 +387,21 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 					// exception but the compiler doesn't know because the
 					// superclass is not on the classpath.
 					case IProblem.UnhandledException : {
-						ASTNode node = location.getCoveredNode(context.getASTRoot());
-						MethodInvocation mi = findFirstParentOfType(node, MethodInvocation.class);
-						if (mi != null) {
-							IMethodBinding mb = mi.resolveMethodBinding();
+						final ASTNode node = location.getCoveredNode(context.getASTRoot());
+						ASTNode e = findFirstParentWithOneOfTypes(node, Expression.class,
+							SuperConstructorInvocation.class);
+						if (e != null) {
+							IMethodBinding mb = null;
+							if (e instanceof MethodInvocation) {
+								mb = ((MethodInvocation) e).resolveMethodBinding();
+							} else if (e instanceof SuperMethodInvocation) {
+								mb = ((SuperMethodInvocation) e).resolveMethodBinding();
+							} else if (e instanceof ClassInstanceCreation) {
+								mb = ((ClassInstanceCreation) e).resolveConstructorBinding();
+							} else if (e instanceof SuperConstructorInvocation) {
+								mb = ((SuperConstructorInvocation) e).resolveConstructorBinding();
+							}
+
 							if (mb != null) {
 								for (ITypeBinding exceptionType : mb.getExceptionTypes()) {
 									visitSuperclassBindingHierarchy(exceptionType);
@@ -764,7 +790,7 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 				pb.includeTestpath();
 
 			Map<String, List<BundleId>> result = wrappedResult
-				.orElseThrow(s -> new CoreException(new Status(IStatus.ERROR, "bndtools.core.services", s)));
+				.orElseThrow(s -> new CoreException(new Status(IStatus.ERROR, getClass(), s)));
 
 			result.entrySet()
 				.stream()
