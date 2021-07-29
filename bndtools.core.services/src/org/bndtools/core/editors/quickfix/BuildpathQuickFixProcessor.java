@@ -198,10 +198,6 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 				return;
 			}
 			String qualifiedName = binding.getQualifiedName();
-
-			if (qualifiedName.startsWith("java.")) {
-				return;
-			}
 			// Prevent infinite recursion
 			if (!visited.add(binding)) {
 				return;
@@ -211,12 +207,17 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 			if (binding.isRecovered()) {
 				addProposals(binding);
 			}
+			for (ITypeBinding typeParam : binding.getTypeArguments()) {
+				visitBindingHierarchy(typeParam);
+			}
+			// Short-circuit - if we've come to an in-built Java class we can
+			// assume that the hierarchy is resolved.
+			if (qualifiedName.startsWith("java.")) {
+				return;
+			}
 			visitBindingHierarchy(binding.getSuperclass());
 			for (ITypeBinding iface : binding.getInterfaces()) {
 				visitBindingHierarchy(iface);
-			}
-			for (ITypeBinding typeParam : binding.getTypeArguments()) {
-				visitBindingHierarchy(typeParam);
 			}
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
