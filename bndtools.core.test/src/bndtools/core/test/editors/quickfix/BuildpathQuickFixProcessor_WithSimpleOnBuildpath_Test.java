@@ -117,6 +117,31 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
 	}
 
+	@Disabled("Disabled due to Eclipse bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=566145")
+	@Test
+	void withInconsistentHierarchy_forTypeArgumentImplementingForeignInterface_suggestsBundles() {
+		String header = "package test; class " + DEFAULT_CLASS_NAME
+			+ " {void test() { java.util.List<java.io.Serializable> list = ";
+		String source = header + "new java.util.ArrayList<simple.pkg.ClassWithInterfaceExtendingMyInterface>();}}";
+
+		// TypeMismatch occurs at the end of header
+		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.InterfaceExtendingMyInterface"));
+	}
+
+	@Test
+	void withInconsistentHierarchy_forTypeArgumentExtendingForeignClass_suggestsBundles() {
+		String header = "package test; class " + DEFAULT_CLASS_NAME
+			+ " {void test() { java.util.List<? extends Throwable> list = ";
+		String source = header
+			+ "new java.util.ArrayList<simple.pkg.ExceptionIndirectlyExtendingForeignException>();}}";
+
+		// TypeMismatch occurs at the end of header
+		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0",
+				"iface.bundle.MyForeignException, iface.bundle.MyInterface"));
+	}
+
 	@Test
 	void withMissingBound_fromClassWithMethodReturningBoundFromAnotherBundle_suggestsBundles() {
 		String header = "package test; class ";
@@ -327,7 +352,7 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
 	}
 
-	@Disabled("Disabled due to Eclipse bug")
+	@Disabled("Disabled due to Eclipse bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=566145")
 	@Test
 	void withFQClassLiteral_inheritingFromInterfaceFromAnotherBundle_asAnnotationParameter_suggestsBundles() {
 		String header = "package test; " + "import simple.annotation.MyTag;" + "@MyTag(";

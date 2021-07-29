@@ -1,6 +1,8 @@
 package iface.bundle;
 
-public interface InterfaceExtendingMyInterface {
+import java.io.Serializable;
+
+public interface InterfaceExtendingMyInterface extends Serializable {
 
 	void myInterfaceMethod();
 }
