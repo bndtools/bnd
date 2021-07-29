@@ -327,7 +327,7 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyInterface"));
 	}
 
-	@Disabled("Disabled due to Eclipse bug")
+	@Disabled("Disabled due to Eclipse bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=566145")
 	@Test
 	void withFQClassLiteral_inheritingFromInterfaceFromAnotherBundle_asAnnotationParameter_suggestsBundles() {
 		String header = "package test; " + "import simple.annotation.MyTag;" + "@MyTag(";
