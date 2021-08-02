@@ -49,6 +49,16 @@ public class ProjectGenerate implements AutoCloseable {
 
 
 		Set<File> files = new TreeSet<>();
+
+		// First prepare, otherwise we might delete overlapping directories
+
+		for (Entry<String, GeneratorSpec> e : project.instructions.generate()
+			.entrySet()) {
+			Result<Void> result = prepare(e.getKey(), e.getValue());
+			if (!result.isOk())
+				return result.asError();
+		}
+
 		for (Entry<String, GeneratorSpec> e : project.instructions.generate()
 			.entrySet()) {
 
@@ -68,32 +78,38 @@ public class ProjectGenerate implements AutoCloseable {
 		return Result.ok(files);
 	}
 
+	private Result<Void> prepare(String sourceWithDuplicate, GeneratorSpec st) {
+		String source = Strings.trim(Processor.removeDuplicateMarker(sourceWithDuplicate));
+		if (source.isEmpty() || source.equals(Constants.EMPTY_HEADER))
+			return Result.ok(null);
+
+		String output = st.output();
+		if (output == null)
+			return err("No mandatory 'output' files/directories specified");
+
+		if (!output.endsWith("/"))
+			output += "/";
+
+		Set<File> sourceFiles = new FileSet(project.getBase(), source).getFiles();
+		if (sourceFiles.isEmpty())
+			return err("No source files/directories specified");
+
+		File out = project.getFile(output);
+		if (out.isDirectory()) {
+			for (File f : out.listFiles()) {
+				IO.delete(f);
+			}
+		} else {
+			out.mkdirs();
+		}
+		return Result.ok(null);
+	}
+
 	private Result<Set<File>> step(String sourceWithDuplicate, GeneratorSpec st) {
 		try {
-
 			String source = Strings.trim(Processor.removeDuplicateMarker(sourceWithDuplicate));
 			if (source.isEmpty() || source.equals(Constants.EMPTY_HEADER))
 				return Result.ok(Collections.emptySet());
-
-			String output = st.output();
-			if (output == null)
-				return err("No mandatory 'output' files/directories specified");
-
-			if (!output.endsWith("/"))
-				output += "/";
-
-			Set<File> sourceFiles = new FileSet(project.getBase(), source).getFiles();
-			if (sourceFiles.isEmpty())
-				return err("No source files/directories specified");
-
-			File out = project.getFile(output);
-			if (out.isDirectory()) {
-				for (File f : out.listFiles()) {
-					IO.delete(f);
-				}
-			} else {
-				out.mkdirs();
-			}
 
 			if (st.system()
 				.isPresent())

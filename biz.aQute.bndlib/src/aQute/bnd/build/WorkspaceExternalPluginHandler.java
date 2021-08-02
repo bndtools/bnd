@@ -87,26 +87,42 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 		}
 	}
 
-	public Result<Integer> call(String mainClass, VersionRange range, Processor context,
-		Map<String, String> attrs, List<String> args, InputStream stdin, OutputStream stdout, OutputStream stderr) {
+	public Result<Integer> call(String mainClass, VersionRange range, Processor context, Map<String, String> attrs,
+		List<String> args, InputStream stdin, OutputStream stdout, OutputStream stderr) {
 		List<File> cp = new ArrayList<>();
 		try {
+
+			Parameters cpp = new Parameters(attrs.get("classpath"));
+
+			for (Map.Entry<String, Attrs> e : cpp.entrySet()) {
+				String v = e.getValue()
+					.getVersion();
+				MavenVersion mv = MavenVersion.parseMavenString(v);
+
+				Result<File> result = workspace.getBundle(e.getKey(), mv.getOSGiVersion(), null);
+				if (result.isErr())
+					return result.asError();
+
+				cp.add(result.unwrap());
+			}
 
 			String filter = MainClassNamespace.filter(mainClass, range);
 
 			Optional<Capability> optCap = workspace.findProviders(MainClassNamespace.MAINCLASS_NAMESPACE, filter)
 				.findAny();
 
-			if (!optCap.isPresent())
-				return Result.err("no such main class %s", mainClass);
+			if (optCap.isPresent()) {
 
-			Capability cap = optCap.get();
+				Capability cap = optCap.get();
 
-			Result<File> bundle = workspace.getBundle(cap.getResource());
-			if (bundle.isErr())
-				return bundle.asError();
+				Result<File> bundle = workspace.getBundle(cap.getResource());
+				if (bundle.isErr())
+					return bundle.asError();
 
-			cp.add(bundle.unwrap());
+				cp.add(bundle.unwrap());
+			} else if (cp.isEmpty()) {
+				return Result.err("no bundle found with main class %s", mainClass);
+			}
 
 			Command c = new Command();
 
@@ -126,20 +142,6 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 
 			c.add(context.getProperty("java", IO.getJavaExecutablePath("java")));
 			c.add("-cp");
-
-			Parameters cpp = new Parameters(attrs.get("classpath"));
-
-			for (Map.Entry<String, Attrs> e : cpp.entrySet()) {
-				String v = e.getValue()
-					.getVersion();
-				MavenVersion mv = MavenVersion.parseMavenString(v);
-
-				Result<File> result = workspace.getBundle(e.getKey(), mv.getOSGiVersion(), null);
-				if (result.isErr())
-					return result.asError();
-
-				cp.add(result.unwrap());
-			}
 
 			String classpath = Strings.join(File.pathSeparator, cp);
 			c.add(classpath);

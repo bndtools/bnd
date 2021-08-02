@@ -1770,7 +1770,6 @@ public class Workspace extends Processor {
 
 			List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
 			for (RepositoryPlugin rp : plugins) {
-				SortedSet<Version> versions = rp.versions(bsn);
 				File file = rp.get(bsn, version, attrs);
 				if (file != null)
 					return Result.ok(file);

@@ -54,13 +54,13 @@ import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.memoize.Memoize;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
-import aQute.bnd.memoize.Memoize;
 import aQute.lib.strings.Strings;
 
 public class ResourceUtils {
@@ -132,7 +132,7 @@ public class ResourceUtils {
 
 			private String s;
 
-			private Type(String s) {
+			Type(String s) {
 				this.s = s;
 			}
 
@@ -240,8 +240,7 @@ public class ResourceUtils {
 		Capability cap = capabilities.get(0);
 		String bsn = (String) cap.getAttributes()
 			.get("name");
-		Version version = (Version) cap.getAttributes()
-			.get("version");
+		Version version = getVersion(cap);
 		if (version == null)
 			version = Version.LOWEST;
 		if (bsn == null)
@@ -327,6 +326,8 @@ public class ResourceUtils {
 
 	public static String getVersionAttributeForNamespace(String namespace) {
 		switch (namespace) {
+			case "bnd.info" :
+				return "version";
 			case IdentityNamespace.IDENTITY_NAMESPACE :
 				return IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE;
 			case BundleNamespace.BUNDLE_NAMESPACE :
