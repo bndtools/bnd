@@ -10,6 +10,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.SynchronousBundleListener;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.startlevel.BundleStartLevel;
 import org.osgi.framework.startlevel.FrameworkStartLevel;
@@ -189,7 +190,7 @@ public class StartLevelRuntimeHandler implements Closeable {
 				setDefaultStartlevel(this.systemBundle, defaultStartlevel);
 
 				systemBundle.getBundleContext()
-					.addBundleListener(event -> {
+					.addBundleListener((SynchronousBundleListener) event -> {
 						Bundle bundle = event.getBundle();
 						if (bundle.getBundleId() == 0)
 							return;
