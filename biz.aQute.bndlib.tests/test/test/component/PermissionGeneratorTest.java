@@ -83,7 +83,7 @@ public class PermissionGeneratorTest {
 		Set<String> importedPackages = filterAndSubtract(permissions,
 			"^\\(org.osgi.framework.PackagePermission \"([^\"]+)\" \"import\"\\)$");
 		Set<String> exportedPackages = filterAndSubtract(permissions,
-			"^\\(org.osgi.framework.PackagePermission \"([^\"]+)\" \"export\"\\)$");
+			"^\\(org.osgi.framework.PackagePermission \"([^\"]+)\" \"exportonly,import\"\\)$");
 
 		/* @formatter:off */
 		assertThat(importedPackages).containsExactlyInAnyOrder(

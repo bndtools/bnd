@@ -69,7 +69,7 @@ public class PermissionGenerator {
 						.keySet()) {
 						sb.append("(org.osgi.framework.PackagePermission \"");
 						sb.append(exp);
-						sb.append("\" \"export\")\n");
+						sb.append("\" \"exportonly,import\")\n");
 					}
 				}
 			}
