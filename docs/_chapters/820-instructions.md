@@ -102,7 +102,7 @@ The syntax for a selector is:
 	             '=' ?  
 	                  '*' | ( '.' | '?' | '|' | '$' | . | other ) * 
 	             ( '.*' ) ? 
-	             ( ':i' ) ? 
+	             ( ':i' | ':o' | ':io' ) ? 
 
 A selector is an expression that is matched against all members of the scope. For example, `com.example.*` will match any package name that starts with `com.example`, for example `com.example.foo`, as well as `com.example` itself. The syntax used to describe the wildcarding is based on a globbing kind model, however, the selector is translated into a regular expression according to some simple rules.
 
@@ -117,6 +117,8 @@ The replacement rules to build the regular expression are as follows:
 If you want to go ballistic with regular expressions, then you can go ahead. As long as the wildcards are triggered by one of the defined characters, the replaced string will be used as a regular expression. 
 
 If the selector ends with `:i` then a case insensitive match is requested, this will ignore any case differences.
+If the selector ends with `:o` then the selector is marked optional. This means that when Bnd might warn about unused selectors, it will not warn that an optional selector is unused.
+You can specify both flags by ending the selector with `:io`.
 
 A selector can be prefixed with an exclamation mark, this indicates that a match must be treated as a removal operation. To understand removal, it is necessary to realize that the selectors are not declarative, the order of the selectors is relevant.
 
