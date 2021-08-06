@@ -1267,8 +1267,8 @@ public class AnalyzerTest extends TestCase {
 	 */
 	public void testSuperfluous() throws Exception {
 		Properties base = new Properties();
-		base.put(Constants.IMPORT_PACKAGE, "*, =com.foo, com.foo.bar.*");
-		base.put(Constants.EXPORT_PACKAGE, "*, com.bar, baz.*");
+		base.put(Constants.IMPORT_PACKAGE, "*, =com.foo, com.foo.bar.*, com.baz.bar.*:io");
+		base.put(Constants.EXPORT_PACKAGE, "*, com.bar, baz.*, bar.*:o");
 		File tmp = IO.getFile("jar/ds.jar");
 		try (Analyzer h = new Analyzer()) {
 			h.setJar(tmp);
@@ -1276,8 +1276,8 @@ public class AnalyzerTest extends TestCase {
 			Manifest m = h.calcManifest();
 			m.write(System.err);
 			assertTrue(h.check( //
-				"Unused Export-Package instructions: \\[baz.*\\]", //
-				"Unused Import-Package instructions: \\[com.foo.bar.*\\]"));
+				"Unused Export-Package instructions: \\Q[baz.*]\\E", //
+				"Unused Import-Package instructions: \\Q[com.foo.bar.*]\\E"));
 			assertTrue(h.getImports()
 				.getByFQN("com.foo") != null);
 			assertTrue(h.getExports()

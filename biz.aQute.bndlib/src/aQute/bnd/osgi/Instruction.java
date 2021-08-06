@@ -52,6 +52,10 @@ public class Instruction {
 	private static final Pattern	WILDCARD	= Pattern.compile(ESCAPING + "[*?|({\\[]");
 	private static final Pattern	BACKSLASH	= Pattern.compile(ESCAPING + "\\\\");
 	private static final Pattern	ANY			= Pattern.compile(".*");
+	private static final char		FLAG_CASE_INSENSITIVE	= 'i';
+	private static final char		FLAG_OPTIONAL			= 'o';
+	private static final Pattern	FLAGS_P					= Pattern
+		.compile(":(?<flags>[" + FLAG_CASE_INSENSITIVE + FLAG_OPTIONAL + "]+)$");
 
 	private final String			input;
 	private final String			match;
@@ -87,17 +91,29 @@ public class Instruction {
 		int start = 0;
 		int end = s.length();
 
+		int flags = 0;
+		Matcher flagsMatcher = FLAGS_P.matcher(s);
+		if (flagsMatcher.find()) {
+			String flagsString = flagsMatcher.group("flags");
+			final int length = flagsString.length();
+			end -= length + 1;
+			for (int i = 0; i < length; i++) {
+				switch (flagsString.charAt(i)) {
+					case FLAG_CASE_INSENSITIVE :
+						flags |= Pattern.CASE_INSENSITIVE;
+						break;
+					case FLAG_OPTIONAL :
+						optional = true;
+						break;
+				}
+			}
+		}
+
 		if (s.charAt(start) == '!') {
 			negated = true;
 			start++;
 		} else {
 			negated = false;
-		}
-
-		int flags = 0;
-		if (s.endsWith(":i")) {
-			flags = Pattern.CASE_INSENSITIVE;
-			end -= 2;
 		}
 
 		if (s.charAt(start) == '=') {
@@ -111,7 +127,8 @@ public class Instruction {
 		// also include the last full package. I.e.
 		// com.foo.* includes com.foo (unlike OSGi)
 		if (s.regionMatches(end - 2, ".*", 0, 2)) {
-			s = s.substring(start, end - 2) + "(?:.*)?";
+			s = s.substring(start, end - 2)
+				.concat("(?:.*)?");
 			literal = false;
 		} else {
 			s = s.substring(start, end);

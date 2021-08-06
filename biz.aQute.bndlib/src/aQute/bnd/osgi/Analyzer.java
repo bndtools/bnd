@@ -338,7 +338,6 @@ public class Analyzer extends Processor {
 				getRequireBundlePackages().ifPresent(hostPackages -> referredAndExported.keySet()
 					.removeAll(hostPackages));
 
-				Set<Instruction> unused = Create.set();
 				String h = getProperty(IMPORT_PACKAGE);
 				if (h == null) // If not set use a default
 					h = "*";
@@ -349,13 +348,13 @@ public class Analyzer extends Processor {
 
 				Instructions filter = new Instructions(h);
 
+				Set<Instruction> unused = Create.set();
 				imports = filter(filter, referredAndExported, unused);
 				if (!unused.isEmpty()) {
 					// We ignore the end wildcard catch
 					if (!(unused.size() == 1 && unused.iterator()
 						.next()
-						.toString()
-						.equals("*")))
+						.isAny()))
 						warning("Unused " + Constants.IMPORT_PACKAGE + " instructions: %s ", unused)
 							.header(Constants.IMPORT_PACKAGE)
 							.context(unused.iterator()
