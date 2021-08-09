@@ -19,8 +19,10 @@ import java.util.Properties;
 import java.util.jar.Manifest;
 import java.util.zip.ZipFile;
 
+import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.ProjectLayout;
@@ -37,6 +39,7 @@ import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.SourceSet;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -77,6 +80,8 @@ public class BundleTaskExtension {
 	 * The bndfile property.
 	 * <p>
 	 * A bnd file containing bnd instructions for this project.
+	 *
+	 * @return The property for the bndfile.
 	 */
 	@InputFile
 	@PathSensitive(RELATIVE)
@@ -89,6 +94,8 @@ public class BundleTaskExtension {
 	 * The classpath property.
 	 * <p>
 	 * The default value is sourceSets.main.compileClasspath.
+	 *
+	 * @return The property for the classpath.
 	 */
 	@InputFiles
 	@Classpath
@@ -101,6 +108,8 @@ public class BundleTaskExtension {
 	 * <p>
 	 * If the bndfile property points an existing file, this property is
 	 * ignored. Otherwise, the bnd instructions in this property will be used.
+	 *
+	 * @return The property for the bnd instructions.
 	 */
 	@Input
 	@Optional
@@ -112,7 +121,6 @@ public class BundleTaskExtension {
 
 	private final org.gradle.api.tasks.bundling.Jar	task;
 	private final ProjectLayout						layout;
-	private final ObjectFactory						objects;
 	private final File								buildFile;
 	private final ListProperty<CharSequence>		instructions;
 
@@ -121,12 +129,14 @@ public class BundleTaskExtension {
 	 * <p>
 	 * This also sets the default values for the added properties and adds the
 	 * bnd file to the task inputs.
+	 *
+	 * @param task The Jar task for this extension.
 	 */
 	public BundleTaskExtension(org.gradle.api.tasks.bundling.Jar task) {
 		this.task = task;
 		Project project = task.getProject();
 		layout = project.getLayout();
-		objects = project.getObjects();
+		ObjectFactory objects = project.getObjects();
 		buildFile = project.getBuildFile();
 		bndfile = objects.fileProperty();
 		instructions = objects.listProperty(CharSequence.class)
@@ -154,6 +164,8 @@ public class BundleTaskExtension {
 
 	/**
 	 * Set the bnd property from a multi-line string.
+	 *
+	 * @param line bnd instructions.
 	 */
 	public void setBnd(CharSequence line) {
 		instructions.empty();
@@ -162,6 +174,8 @@ public class BundleTaskExtension {
 
 	/**
 	 * Add instructions to the bnd property from a list of multi-line strings.
+	 *
+	 * @param lines bnd instructions.
 	 */
 	public void bnd(CharSequence... lines) {
 		instructions.addAll(lines);
@@ -169,6 +183,8 @@ public class BundleTaskExtension {
 
 	/**
 	 * Set the bnd property from a multi-line string using a {@link Provider}.
+	 *
+	 * @param lines A provider of bnd instructions.
 	 */
 	public void setBnd(Provider<? extends CharSequence> lines) {
 		instructions.empty();
@@ -178,6 +194,8 @@ public class BundleTaskExtension {
 	/**
 	 * Add a multi-line string of instructions to the bnd property using a
 	 * {@link Provider}.
+	 *
+	 * @param lines A provider bnd instructions.
 	 */
 	public void bnd(Provider<? extends CharSequence> lines) {
 		instructions.add(lines);
@@ -185,6 +203,8 @@ public class BundleTaskExtension {
 
 	/**
 	 * Set the bnd property from a map.
+	 *
+	 * @param map A map of bnd instructions.
 	 */
 	public void setBnd(Map<String, ?> map) {
 		instructions.empty();
@@ -193,18 +213,19 @@ public class BundleTaskExtension {
 
 	/**
 	 * Add instructions to the bnd property from a map.
+	 *
+	 * @param map A map of bnd instructions.
 	 */
 	public void bnd(Map<String, ?> map) {
-		ListProperty<CharSequence> list = instructions;
-		map.forEach((key, value) -> {
-			list.add(key + "=" + value);
-		});
+		map.forEach((key, value) -> instructions.add(key + "=" + value));
 	}
 
 	/**
 	 * Add files to the classpath.
-	 * <p>
-	 * The arguments will be handled using ConfigurableFileCollection.from().
+	 *
+	 * @param paths The arguments will be handled using
+	 *            ConfigurableFileCollection.from().
+	 * @return The property for the classpath.
 	 */
 	public ConfigurableFileCollection classpath(Object... paths) {
 		return builtBy(getClasspath().from(paths), paths);
@@ -212,8 +233,9 @@ public class BundleTaskExtension {
 
 	/**
 	 * Set the classpath property.
-	 * <p>
-	 * The argument will be handled using ConfigurableFileCollection.from().
+	 *
+	 * @param path The argument will be handled using
+	 *            ConfigurableFileCollection.from().
 	 */
 	public void setClasspath(Object path) {
 		getClasspath().setFrom(Collections.emptyList());
@@ -223,159 +245,193 @@ public class BundleTaskExtension {
 
 	/**
 	 * Set the sourceSet.
+	 *
+	 * @param sourceSet A sourceSet to use to find source code.
 	 */
 	public void setSourceSet(SourceSet sourceSet) {
-		allSource.setFrom(sourceSet.getAllSource()
+		getAllSource().setFrom(sourceSet.getAllSource()
 			.getSourceDirectories());
-		jarLibraryElements(task, sourceSet.getCompileClasspathConfigurationName());
+		jarLibraryElements(getTask(), sourceSet.getCompileClasspathConfigurationName());
 	}
 
-	public void buildBundle() throws Exception {
-		org.gradle.api.tasks.bundling.Jar jarTask = task;
-		File projectDir = unwrap(layout.getProjectDirectory());
-		File buildDir = unwrap(layout.getBuildDirectory());
-		File buildFile = this.buildFile;
-		FileCollection sourcepath = allSource.filter(file -> file.exists());
-		// create Builder
-		Properties gradleProperties = new BeanProperties();
-		gradleProperties.put("task", jarTask);
-		gradleProperties.put("project", jarTask.getProject());
-		try (Builder builder = new Builder(new Processor(gradleProperties, false))) {
-			// load bnd properties
-			File temporaryBndFile = File.createTempFile("bnd", ".bnd", jarTask.getTemporaryDir());
-			try (Writer writer = IO.writer(temporaryBndFile)) {
-				// write any task manifest entries into the tmp bnd file
-				MapStream.of(jarTask.getManifest()
-					.getEffectiveManifest()
-					.getAttributes())
-					.filterKey(key -> !Objects.equals(key, "Manifest-Version"))
-					.mapValue(Object::toString)
-					.collect(MapStream.toMap((k1, k2) -> {
-						throw new IllegalStateException("Duplicate key " + k1);
-					}, UTF8Properties::new))
-					.replaceHere(projectDir)
-					.store(writer, null);
-				// if the bnd file exists, add its contents to the tmp bnd file
-				File bndfile = unwrap(getBndfile(), true);
-				if ((bndfile != null) && bndfile.isFile()) {
-					builder.loadProperties(bndfile)
-						.store(writer, null);
-				} else {
-					String bnd = unwrap(getBnd());
-					if (!bnd.isEmpty()) {
-						UTF8Properties props = new UTF8Properties();
-						props.load(bnd, buildFile, builder);
-						props.replaceHere(projectDir)
+	ConfigurableFileCollection getAllSource() {
+		return allSource;
+	}
+
+	File getBuildFile() {
+		return buildFile;
+	}
+
+	ProjectLayout getLayout() {
+		return layout;
+	}
+
+	org.gradle.api.tasks.bundling.Jar getTask() {
+		return task;
+	}
+
+	public Action<Task> buildAction() {
+		return new BuildAction();
+	}
+
+	private class BuildAction implements Action<Task> {
+		@Override
+		public void execute(Task t) {
+			try {
+				File projectDir = unwrap(getLayout().getProjectDirectory());
+				File buildDir = unwrap(getLayout().getBuildDirectory());
+				File buildFile = getBuildFile();
+				FileCollection sourcepath = getAllSource().filter(file -> file.exists());
+				// create Builder
+				Properties gradleProperties = new BeanProperties();
+				gradleProperties.put("task", getTask());
+				gradleProperties.put("project", getTask().getProject());
+				try (Builder builder = new Builder(new Processor(gradleProperties, false))) {
+					// load bnd properties
+					File temporaryBndFile = File.createTempFile("bnd", ".bnd", getTask().getTemporaryDir());
+					try (Writer writer = IO.writer(temporaryBndFile)) {
+						// write any task manifest entries into the tmp bnd
+						// file
+						MapStream.of(getTask().getManifest()
+							.getEffectiveManifest()
+							.getAttributes())
+							.filterKey(key -> !Objects.equals(key, "Manifest-Version"))
+							.mapValue(Object::toString)
+							.collect(MapStream.toMap((k1, k2) -> {
+								throw new IllegalStateException("Duplicate key " + k1);
+							}, UTF8Properties::new))
+							.replaceHere(projectDir)
 							.store(writer, null);
+						// if the bnd file exists, add its contents to the
+						// tmp bnd file
+						File bndfile = unwrap(getBndfile(), true);
+						if (Objects.nonNull(bndfile) && bndfile.isFile()) {
+							builder.loadProperties(bndfile)
+								.store(writer, null);
+						} else {
+							String bnd = unwrap(getBnd());
+							if (!bnd.isEmpty()) {
+								UTF8Properties props = new UTF8Properties();
+								props.load(bnd, buildFile, builder);
+								props.replaceHere(projectDir)
+									.store(writer, null);
+							}
+						}
+					}
+					// this will cause project.dir property to be set
+					builder.setProperties(temporaryBndFile, projectDir);
+					builder.setProperty("project.output", buildDir.getCanonicalPath());
+					// If no bundle to be built, we have nothing to do
+					if (builder.is(Constants.NOBUNDLES)) {
+						return;
+					}
+					// Reject sub-bundle projects
+					if (!Objects.equals(builder.getSubBuilders(), singletonList(builder))) {
+						throw new GradleException("Sub-bundles are not supported by this task");
+					}
+					File archiveFile = unwrap(getTask().getArchiveFile());
+					String archiveFileName = unwrap(getTask().getArchiveFileName());
+					String archiveBaseName = unwrap(getTask().getArchiveBaseName());
+					String archiveClassifier = unwrap(getTask().getArchiveClassifier());
+					String archiveVersion = unwrap(getTask().getArchiveVersion(), true);
+
+					// Include entire contents of Jar task generated jar
+					// (except the
+					// manifest)
+					File archiveCopyFile = new File(getTask().getTemporaryDir(), archiveFileName);
+					IO.copy(archiveFile, archiveCopyFile);
+					Jar bundleJar = new Jar(archiveFileName, archiveCopyFile);
+					String reproducible = builder.getProperty(Constants.REPRODUCIBLE);
+					bundleJar.setReproducible(Objects.nonNull(reproducible) ? Processor.isTrue(reproducible)
+						: !getTask().isPreserveFileTimestamps());
+					bundleJar.updateModified(archiveFile.lastModified(), "time of Jar task generated jar");
+					bundleJar.setManifest(new Manifest());
+					builder.setJar(bundleJar);
+
+					// set builder classpath
+					FileCollection buildpath = getClasspath().filter(file -> {
+						if (!file.exists()) {
+							return false;
+						}
+						if (file.isDirectory()) {
+							return true;
+						}
+						try (ZipFile zip = new ZipFile(file)) {
+							// make sure it is a valid zip file and not a
+							// pom
+							zip.entries();
+						} catch (IOException e) {
+							return false;
+						}
+						return true;
+					});
+					builder.setProperty("project.buildpath", buildpath.getAsPath());
+					builder.setClasspath(buildpath.getFiles()
+						.toArray(new File[0]));
+					getTask().getLogger()
+						.debug("builder classpath: {}", builder.getClasspath()
+							.stream()
+							.map(Jar::getSource)
+							.collect(toList()));
+					// set builder sourcepath
+					builder.setProperty("project.sourcepath", sourcepath.getAsPath());
+					builder.setSourcepath(sourcepath.getFiles()
+						.toArray(new File[0]));
+					getTask().getLogger()
+						.debug("builder sourcepath: {}", builder.getSourcePath());
+					// set bundle symbolic name from tasks's archiveBaseName
+					// property if
+					// necessary
+					String bundleSymbolicName = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME);
+					if (isEmpty(bundleSymbolicName)) {
+						bundleSymbolicName = archiveClassifier.isEmpty() ? archiveBaseName
+							: archiveBaseName + "-" + archiveClassifier;
+						builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, bundleSymbolicName);
+					}
+
+					// set bundle version from task's archiveVersion if
+					// necessary
+					String bundleVersion = builder.getProperty(Constants.BUNDLE_VERSION);
+					if (isEmpty(bundleVersion)) {
+						builder.setProperty(Constants.BUNDLE_VERSION, MavenVersion.parseMavenString(archiveVersion)
+							.getOSGiVersion()
+							.toString());
+					}
+
+					getTask().getLogger()
+						.debug("builder properties: {}", builder.getProperties());
+
+					// Build bundle
+					Jar builtJar = builder.build();
+					if (!builder.isOk()) {
+						// if we already have an error; fail now
+						logReport(builder, getTask().getLogger());
+						failTask("Bundle " + archiveFileName + " has errors", archiveFile);
+					}
+
+					// Write out the bundle
+					builtJar.write(archiveFile);
+					long now = System.currentTimeMillis();
+					archiveFile.setLastModified(now);
+
+					logReport(builder, getTask().getLogger());
+					if (!builder.isOk()) {
+						failTask("Bundle " + archiveFileName + " has errors", archiveFile);
 					}
 				}
-			}
-			// this will cause project.dir property to be set
-			builder.setProperties(temporaryBndFile, projectDir);
-			builder.setProperty("project.output", buildDir.getCanonicalPath());
-			// If no bundle to be built, we have nothing to do
-			if (builder.is(Constants.NOBUNDLES)) {
-				return;
-			}
-			// Reject sub-bundle projects
-			if (!Objects.equals(builder.getSubBuilders(), singletonList(builder))) {
-				throw new GradleException("Sub-bundles are not supported by this task");
-			}
-			File archiveFile = unwrap(jarTask.getArchiveFile());
-			String archiveFileName = unwrap(jarTask.getArchiveFileName());
-			String archiveBaseName = unwrap(jarTask.getArchiveBaseName());
-			String archiveClassifier = unwrap(jarTask.getArchiveClassifier());
-			String archiveVersion = unwrap(jarTask.getArchiveVersion(), true);
-
-			// Include entire contents of Jar task generated jar (except the
-			// manifest)
-			File archiveCopyFile = new File(jarTask.getTemporaryDir(), archiveFileName);
-			IO.copy(archiveFile, archiveCopyFile);
-			Jar bundleJar = new Jar(archiveFileName, archiveCopyFile);
-			String reproducible = builder.getProperty(Constants.REPRODUCIBLE);
-			bundleJar.setReproducible(
-				Objects.nonNull(reproducible) ? Processor.isTrue(reproducible) : !jarTask.isPreserveFileTimestamps());
-			bundleJar.updateModified(archiveFile.lastModified(), "time of Jar task generated jar");
-			bundleJar.setManifest(new Manifest());
-			builder.setJar(bundleJar);
-
-			// set builder classpath
-			FileCollection buildpath = getClasspath().filter(file -> {
-				if (!file.exists()) {
-					return false;
-				}
-				if (file.isDirectory()) {
-					return true;
-				}
-				try (ZipFile zip = new ZipFile(file)) {
-					// make sure it is a valid zip file and not a pom
-					zip.entries();
-				} catch (IOException e) {
-					return false;
-				}
-				return true;
-			});
-			builder.setProperty("project.buildpath", buildpath.getAsPath());
-			builder.setClasspath(buildpath.getFiles()
-				.toArray(new File[0]));
-			jarTask.getLogger()
-				.debug("builder classpath: {}", builder.getClasspath()
-					.stream()
-					.map(Jar::getSource)
-					.collect(toList()));
-			// set builder sourcepath
-			builder.setProperty("project.sourcepath", sourcepath.getAsPath());
-			builder.setSourcepath(sourcepath.getFiles()
-				.toArray(new File[0]));
-			jarTask.getLogger()
-				.debug("builder sourcepath: {}", builder.getSourcePath());
-			// set bundle symbolic name from tasks's archiveBaseName property if
-			// necessary
-			String bundleSymbolicName = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME);
-			if (isEmpty(bundleSymbolicName)) {
-				bundleSymbolicName = archiveClassifier.isEmpty() ? archiveBaseName
-					: archiveBaseName + "-" + archiveClassifier;
-				builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, bundleSymbolicName);
-			}
-
-			// set bundle version from task's archiveVersion if necessary
-			String bundleVersion = builder.getProperty(Constants.BUNDLE_VERSION);
-			if (isEmpty(bundleVersion)) {
-				builder.setProperty(Constants.BUNDLE_VERSION, MavenVersion.parseMavenString(archiveVersion)
-					.getOSGiVersion()
-					.toString());
-			}
-
-			jarTask.getLogger()
-				.debug("builder properties: {}", builder.getProperties());
-
-			// Build bundle
-			Jar builtJar = builder.build();
-			if (!builder.isOk()) {
-				// if we already have an error; fail now
-				logReport(builder, jarTask.getLogger());
-				failTask("Bundle " + archiveFileName + " has errors", archiveFile);
-			}
-
-			// Write out the bundle
-			builtJar.write(archiveFile);
-			long now = System.currentTimeMillis();
-			archiveFile.setLastModified(now);
-
-			logReport(builder, jarTask.getLogger());
-			if (!builder.isOk()) {
-				failTask("Bundle " + archiveFileName + " has errors", archiveFile);
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
 			}
 		}
-	}
 
-	private void failTask(String msg, File archiveFile) {
-		IO.delete(archiveFile);
-		throw new GradleException(msg);
-	}
+		private void failTask(String msg, File archiveFile) {
+			IO.delete(archiveFile);
+			throw new GradleException(msg);
+		}
 
-	private boolean isEmpty(String header) {
-		return Objects.isNull(header) || header.trim()
-			.isEmpty() || Constants.EMPTY_HEADER.equals(header);
+		private boolean isEmpty(String header) {
+			return Objects.isNull(header) || header.trim()
+				.isEmpty() || Constants.EMPTY_HEADER.equals(header);
+		}
 	}
 }
