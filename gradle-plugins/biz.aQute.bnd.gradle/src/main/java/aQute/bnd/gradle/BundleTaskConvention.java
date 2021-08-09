@@ -106,6 +106,7 @@ public class BundleTaskConvention {
 	}
 
 	public void buildBundle() throws Exception {
-		extension.buildBundle();
+		extension.buildAction()
+			.execute(task);
 	}
 }
