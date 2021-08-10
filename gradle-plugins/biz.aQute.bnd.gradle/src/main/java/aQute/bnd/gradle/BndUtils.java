@@ -9,8 +9,11 @@ import org.gradle.api.Task;
 import org.gradle.api.attributes.AttributeContainer;
 import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.Directory;
+import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileSystemLocation;
 import org.gradle.api.logging.Logger;
+import org.gradle.api.plugins.BasePluginExtension;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSetContainer;
@@ -109,5 +112,28 @@ public class BndUtils {
 				.getPlugin(org.gradle.api.plugins.JavaPluginConvention.class)
 				.getSourceSets();
 		return sourceSets;
+	}
+
+	@SuppressWarnings("deprecation")
+	public static DirectoryProperty distDirectory(Project project) {
+		DirectoryProperty distDirectory = isGradleCompatible("7.1") ? project.getExtensions()
+			.getByType(BasePluginExtension.class)
+			.getDistsDirectory()
+			: project.getConvention()
+				.getPlugin(org.gradle.api.plugins.BasePluginConvention.class)
+				.getDistsDirectory();
+		return distDirectory;
+	}
+
+	@SuppressWarnings("deprecation")
+	public static Provider<Directory> testResultsDir(Project project) {
+		Provider<Directory> testResultsDir = isGradleCompatible("7.1") ? project.getExtensions()
+			.getByType(JavaPluginExtension.class)
+			.getTestResultsDir()
+			: project.getLayout()
+				.dir(project.provider(() -> project.getConvention()
+					.getPlugin(org.gradle.api.plugins.JavaPluginConvention.class)
+					.getTestResultsDir()));
+		return testResultsDir;
 	}
 }
