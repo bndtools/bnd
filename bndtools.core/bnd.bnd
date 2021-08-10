@@ -20,7 +20,8 @@ Export-Package: org.osgi.service.metatype.annotations
 -includepackage: \
 	bndtools.*,\
 	org.bndtools.build.api.*,\
-	org.bndtools.core.*
+	org.bndtools.core.*,\
+	org.bndtools.facade
 
 -conditionalpackage: \
     aQute.lib.*,\
