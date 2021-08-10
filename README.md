@@ -14,7 +14,7 @@ This program and the accompanying materials are made available under the terms o
 
 ## API
 
-Though we am usually pretty good at backward compatibility, there is no guarantee.
+Though we are usually pretty good at backward compatibility, there is no guarantee.
 This is an unpaid project. Bnd properties will be backward compatible if there is any possibility.
 
 If you're building a tool with a general audience  that includes Bnd for a general audience I would appreciate if you got in touch with us so we can keep in touch. We are always interested in ideas.
