@@ -230,12 +230,7 @@ public class Baseline extends DefaultTask {
 			.convention(baselineReportDirectory.file(providers.provider(() -> {
 				File bundlefile = unwrap(getBundle());
 				String[] parts = Strings.extension(bundlefile.getName());
-				if (parts == null) {
-					parts = new String[] {
-						bundlefile.getName()
-					};
-				}
-				return String.format("%s/%s.txt", taskName, parts[0]);
+				return String.format("%s/%s.txt", taskName, (parts != null) ? parts[0] : bundlefile.getName());
 			})));
 		diffignore = objects.listProperty(String.class)
 			.empty();
