@@ -9,4 +9,8 @@ buildscript {
 	}
 }
 
+gradle.ext.bndWorkspaceConfigure = { workspace ->
+	workspace.setProperty("BndWorkspaceConfigure", "set")
+}
+
 apply plugin: 'biz.aQute.bnd.workspace'
