@@ -54,8 +54,6 @@ import aQute.lib.io.IO;
  * </ul>
  */
 public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN extends WORKER> extends DefaultTask {
-	private static final String					BND_PLUGINID	= "biz.aQute.bnd";	// TODO
-	// BndPlugin.PLUGINID;
 	private final RegularFileProperty			bndrun;
 	private final ConfigurableFileCollection	bundles;
 	private boolean								ignoreFailures	= false;
@@ -201,7 +199,7 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 		File bndrunFile = unwrap(getBndrun());
 		File workingDirFile = unwrap(getWorkingDirectory());
 		if (Objects.nonNull(workspace) && getProject().getPlugins()
-			.hasPlugin(BND_PLUGINID)) {
+			.hasPlugin(BndPlugin.PLUGINID)) {
 			BndPluginExtension extension = getProject().getExtensions()
 				.getByType(BndPluginExtension.class);
 			if (Objects.equals(bndrunFile, extension.getProject()

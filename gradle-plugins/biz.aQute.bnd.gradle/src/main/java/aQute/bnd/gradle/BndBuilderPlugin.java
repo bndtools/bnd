@@ -38,8 +38,6 @@ import aQute.bnd.unmodifiable.Maps;
  */
 public class BndBuilderPlugin implements Plugin<Project> {
 	public static final String	PLUGINID		= "biz.aQute.bnd.builder";
-	private static final String	BND_PLUGINID	= "biz.aQute.bnd";			// TODO
-																			// BndPlugin.PLUGINID;
 
 	/**
 	 * Apply the {@code biz.aQute.bnd.builder} plugin to the specified project.
@@ -47,8 +45,8 @@ public class BndBuilderPlugin implements Plugin<Project> {
 	@Override
 	public void apply(Project project) {
 		if (project.getPlugins()
-			.hasPlugin(BND_PLUGINID)) {
-			throw new GradleException("Project already has \"" + BND_PLUGINID + "\" plugin applied.");
+			.hasPlugin(BndPlugin.PLUGINID)) {
+			throw new GradleException("Project already has \"" + BndPlugin.PLUGINID + "\" plugin applied.");
 		}
 		project.getPlugins()
 			.apply("java");

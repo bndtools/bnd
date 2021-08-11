@@ -57,6 +57,7 @@ class TestBndPlugin extends Specification {
           simple_manifest.getValue("Bundle-Version") =~ /0\.0\.0\./
           simple_manifest.getValue("Foo") == "foo"
           simple_manifest.getValue("Bar") == "bar"
+          simple_manifest.getValue("BndWorkspaceConfigure") == "set"
           simple_manifest.getValue("Import-Package") =~ /junit\.framework/
           simple_jar.getEntry("test/simple/Simple.class")
           simple_jar.getEntry("test/simple/Test.class")
