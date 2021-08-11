@@ -216,15 +216,11 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 	private void configureWorkspaceProject(Project workspace) throws Exception {
 		Workspace bndWorkspace = getBndWorkspace(workspace);
 
-		@SuppressWarnings({
-			"unchecked", "rawtypes"
-		})
-		Class<Plugin<Project>> BndPlugin = (Class) Class.forName("aQute.bnd.gradle.BndPlugin");
 		/* Configure the Bnd projects */
 		for (Project project : workspace.getSubprojects()) {
 			if (Objects.nonNull(bndWorkspace.getProject(project.getName()))) {
 				project.getPlugins()
-					.apply(BndPlugin); // TODO fix to class constant
+					.apply(BndPlugin.class);
 			}
 		}
 	}
