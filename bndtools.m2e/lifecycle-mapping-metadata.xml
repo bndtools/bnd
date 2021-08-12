@@ -8,6 +8,7 @@
 				<versionRange>[3.0.0,)</versionRange>
 				<goals>
 					<goal>bnd-process</goal>
+					<goal>bnd-process-tests</goal>
 				</goals>
 			</pluginExecutionFilter>
 			<action>
