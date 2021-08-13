@@ -44,6 +44,11 @@ public class BndrunEESourceContainer extends CompositeSourceContainer {
 	}
 
 	@Override
+	public boolean isComposite() {
+		return vm != null;
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		return obj instanceof BndrunEESourceContainer;
 	}
@@ -74,6 +79,10 @@ public class BndrunEESourceContainer extends CompositeSourceContainer {
 
 	@Override
 	protected ISourceContainer[] createSourceContainers() {
+		if (vm == null) {
+			logger.logError("Couldn't find VM for " + run.getRunee(), null);
+			return EMPTY_SOURCE;
+		}
 		try {
 			LibraryLocation[] libs = vm.getLibraryLocations();
 			if (libs == null) {
