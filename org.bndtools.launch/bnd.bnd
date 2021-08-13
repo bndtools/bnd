@@ -1,0 +1,66 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+Bundle-SymbolicName: ${p};singleton:=true
+Bundle-ActivationPolicy: lazy
+
+Import-Package: \
+ ${eclipse.importpackage},\
+ *
+
+# Bundle Content
+
+-privatepackage: \
+	bndtools.launch.*
+
+-conditionalpackage: \
+    aQute.lib.*,\
+    aQute.libg.*,\
+    org.bndtools.utils.*
+
+-buildpath: \
+	aQute.libg;version=project,\
+	biz.aQute.bnd.util;version=snapshot,\
+	biz.aQute.bndlib;version=snapshot,\
+	biz.aQute.resolve;version=latest,\
+	bndtools.utils;version=project,\
+	bndtools.api;version=snapshot,\
+	bndtools.core;version=snapshot,\
+	org.osgi.service.component.annotations;version='1.3.0',\
+	slf4j.api,\
+	org.apiguardian,\
+	org.eclipse.core.runtime,\
+	org.eclipse.osgi,\
+	org.eclipse.debug.core,\
+	org.eclipse.jdt.launching,\
+	org.eclipse.core.resources,\
+	org.eclipse.core.runtime,\
+	org.eclipse.equinox.common,\
+	org.eclipse.equinox.registry,\
+	org.eclipse.core.commands,\
+	org.eclipse.core.jobs,\
+	org.eclipse.ui,\
+	org.eclipse.ui.ide,\
+	org.eclipse.ui.browser,\
+	org.eclipse.ui.editors,\
+	org.eclipse.ui.workbench,\
+	org.eclipse.ui.forms,\
+	org.eclipse.ui.workbench.texteditor,\
+	org.eclipse.jdt.core,\
+	org.eclipse.debug.ui,\
+	org.eclipse.jface.text,\
+	org.eclipse.jdt.ui,\
+	org.eclipse.jface,\
+	org.eclipse.ui.editors,\
+	org.eclipse.jdt.junit.core,\
+	org.eclipse.equinox.preferences,\
+	org.eclipse.swt,\
+	org.eclipse.swt.cocoa.macosx.x86_64,\
+	osgi.annotation,\
+	org.eclipse.core.expressions,\
+	org.eclipse.jdt.debug.ui,\
+	org.eclipse.e4.core.services,\
+	org.eclipse.e4.ui.workbench
+	
+-testpath: \
+	${junit}

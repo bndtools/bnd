@@ -80,6 +80,7 @@
 	org.bndtools.headless.build.manager;version=snapshot,\
 	org.bndtools.headless.build.plugin.ant;version=snapshot,\
 	org.bndtools.headless.build.plugin.gradle;version=snapshot,\
+	org.bndtools.launch;version=snapshot,\
 	org.bndtools.templates.template;version=snapshot,\
 	org.bndtools.templating;version=snapshot,\
 	org.bndtools.templating.gitrepo;version=snapshot,\

@@ -2,6 +2,7 @@ package bndtools.editor.completion;
 
 import java.util.stream.Collectors;
 
+import org.bndtools.api.editor.IBndEditor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DefaultTextHover;
 import org.eclipse.jface.text.IDocument;
@@ -13,13 +14,12 @@ import org.eclipse.swt.graphics.Point;
 
 import aQute.bnd.help.Syntax;
 import aQute.bnd.osgi.Processor;
-import bndtools.editor.BndEditor;
 
 public class BndHover extends DefaultTextHover {
 
-	private final BndEditor bndEditor;
+	private final IBndEditor bndEditor;
 
-	public BndHover(BndEditor bndEditor, ISourceViewer sourceViewer) {
+	public BndHover(IBndEditor bndEditor, ISourceViewer sourceViewer) {
 		super(sourceViewer);
 		this.bndEditor = bndEditor;
 	}

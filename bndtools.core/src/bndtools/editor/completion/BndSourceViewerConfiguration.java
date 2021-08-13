@@ -2,6 +2,7 @@ package bndtools.editor.completion;
 
 import java.util.Properties;
 
+import org.bndtools.api.editor.IBndEditor;
 import org.bndtools.core.editors.BndMarkerAnnotationHover;
 import org.bndtools.core.editors.BndMarkerQuickAssistProcessor;
 import org.eclipse.jdt.ui.text.IColorManager;
@@ -24,8 +25,6 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.SWT;
 
-import bndtools.editor.BndEditor;
-
 public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
 
 	Token					T_DEFAULT;
@@ -41,9 +40,9 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
 
 	BndScanner				scanner;
 	MultiLineCommentScanner	multiLineCommentScanner;
-	private BndEditor		bndEditor;
+	private IBndEditor		bndEditor;
 
-	public BndSourceViewerConfiguration(BndEditor bndEditor, IColorManager colorManager) {
+	public BndSourceViewerConfiguration(IBndEditor bndEditor, IColorManager colorManager) {
 		this.bndEditor = bndEditor;
 		T_DEFAULT = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVA_DEFAULT)));
 		T_MACRO = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.TASK_TAG), null, SWT.BOLD));

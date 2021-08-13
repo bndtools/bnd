@@ -6,6 +6,7 @@ import org.bndtools.api.Logger;
 import org.bndtools.api.RunListener;
 import org.bndtools.api.RunMode;
 import org.bndtools.api.RunProvider;
+import org.bndtools.api.launch.LaunchConstants;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -19,7 +20,6 @@ import org.osgi.util.tracker.ServiceTracker;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
 import bndtools.central.Central;
-import bndtools.launch.LaunchConstants;
 
 public final class LaunchUtils {
 	private static final ILogger							logger	= Logger.getLogger(LaunchUtils.class);

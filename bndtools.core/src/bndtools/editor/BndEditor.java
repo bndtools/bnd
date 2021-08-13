@@ -15,6 +15,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.RunMode;
+import org.bndtools.api.editor.IBndEditor;
+import org.bndtools.api.launch.LaunchConstants;
 import org.bndtools.core.jobs.JobUtil;
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.core.resolve.ResolveJob;
@@ -80,9 +82,9 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.help.instructions.ResolutionInstructions.ResolveMode;
 import aQute.bnd.properties.BadLocationException;
-import aQute.bnd.exceptions.Exceptions;
 import biz.aQute.resolve.Bndrun;
 import bndtools.Plugin;
 import bndtools.central.Central;
@@ -94,12 +96,11 @@ import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
 import bndtools.editor.pages.TestSuitesPage;
 import bndtools.editor.pages.WorkspacePage;
-import bndtools.launch.LaunchConstants;
 import bndtools.launch.util.LaunchUtils;
 import bndtools.preferences.BndPreferences;
 import bndtools.types.Pair;
 
-public class BndEditor extends ExtendedFormEditor implements IResourceChangeListener {
+public class BndEditor extends ExtendedFormEditor implements IResourceChangeListener, IBndEditor {
 
 	private static final ILogger				logger				= Logger.getLogger(BndEditor.class);
 	public static final String					SYNC_MESSAGE		= "Workspace is loading, please wait...";
@@ -225,6 +226,9 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 	private IHandlerActivation	resolveHandlerActivation;
 	private JobChangeAdapter	resolveJobListener;
 
+	/* (non-Javadoc)
+	 * @see bndtools.editor.IBndEditor#doSave(org.eclipse.core.runtime.IProgressMonitor)
+	 */
 	@Override
 	public void doSave(IProgressMonitor monitor) {
 
@@ -242,10 +246,10 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		}
 	}
 
-	/**
-	 * Commit the active page to the edit model or if no active page, commit all
-	 * pages
+	/* (non-Javadoc)
+	 * @see bndtools.editor.IBndEditor#commitDirtyPages()
 	 */
+	@Override
 	public void commitDirtyPages() {
 		if (sourcePage.isActive() && sourcePage.isDirty()) {
 			sourcePage.commit(true);
@@ -732,10 +736,6 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		}
 	}
 
-	public BndEditModel getEditModel() {
-		return this.model;
-	}
-
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
 		IResource myResource = ResourceUtil.getResource(getEditorInput());
@@ -876,6 +876,10 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see bndtools.editor.IBndEditor#getModel()
+	 */
+	@Override
 	public BndEditModel getModel() {
 		return model;
 	}
