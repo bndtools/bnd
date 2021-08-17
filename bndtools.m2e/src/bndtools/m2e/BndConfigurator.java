@@ -6,9 +6,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.maven.plugin.MojoExecution;
@@ -17,7 +17,6 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.build.api.IProjectDecorator;
 import org.bndtools.build.api.IProjectDecorator.BndProjectInfo;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -34,6 +33,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.m2e.core.MavenPlugin;
+import org.eclipse.m2e.core.embedder.ArtifactKey;
 import org.eclipse.m2e.core.embedder.IMaven;
 import org.eclipse.m2e.core.embedder.IMavenExecutionContext;
 import org.eclipse.m2e.core.internal.MavenPluginActivator;
@@ -56,6 +56,8 @@ import bndtools.launch.JUnitShortcut;
 
 public class BndConfigurator extends AbstractProjectConfigurator {
 
+	private static final String					ARTIFACT_PATTERN				= "%s-%s.%s";
+	private static final String					CLASSIFIER_ARTIFACT_PATTERN	= "%s-%s-%s.%s";
 	protected final static Class<JUnitShortcut> shortcutClazz;
 	static {
 		/*
@@ -131,15 +133,33 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 		return new MojoExecutionBuildParticipant(execution, true, true) {
 			@Override
 			public Set<IProject> build(int kind, IProgressMonitor monitor) throws Exception {
+				String goal = execution.getGoal();
+				monitor.beginTask("Executing Goal " + goal, 2);
+
+				projectFacade.getMavenProject()
+					.getProperties()
+					.forEach((k, v) -> System.err.println(k + " - " + v));
+
+				final IProject project = projectFacade.getProject();
+
+				// check if we need to run. After the jars get build, opened or
+				// just viewed we might be called and another run can cause a
+				// build loop
+				if (!needsBuilding(getDelta(project), projectFacade)) {
+					monitor.done();
+					return null;
+				}
+
 				// build mojo like normal
 				final Set<IProject> build = super.build(kind, monitor);
-
+				monitor.worked(1);
 				// nothing to do if configuration build
 				if (kind == AbstractBuildParticipant2.PRECONFIGURE_BUILD) {
 					return build;
 				}
 
-				final IProject project = projectFacade.getProject();
+				boolean isTest = goal.endsWith("-tests");
+
 				IMarker[] imarkers = project.findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, false,
 					IResource.DEPTH_INFINITE);
 
@@ -150,11 +170,6 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 					return build;
 				}
 
-				Set<IPath> deltaFilePaths = collectResourceDeltas(getDelta(project)).map(IResourceDelta::getResource)
-					.filter(IFile.class::isInstance)
-					.map(IResource::getFullPath)
-					.collect(Collectors.toSet());
-
 				final String targetDirectory = projectFacade.getMavenProject()
 					.getBuild()
 					.getDirectory();
@@ -163,48 +178,85 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 				// during maven builder will throw lifecycle
 				// errors
 
-				Job job = new WorkspaceJob("Executing " + project.getName() + " jar:jar goal") {
+				Job job = new WorkspaceJob(
+					"Executing " + project.getName() + " jar:" + (isTest ? "test-" : "") + "jar goal") {
 					@Override
 					public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-						SubMonitor progress = SubMonitor.convert(monitor, 3);
-						execJarMojo(projectFacade, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+						try {
+							SubMonitor progress = SubMonitor.convert(monitor, 3);
+							execJarMojo(projectFacade, progress.newChild(1, SubMonitor.SUPPRESS_NONE), isTest);
 
-						IPath targetDirPath = Path.fromOSString(targetDirectory);
-						IPath projectPath = project.getLocation();
-						IPath relativeTargetDirPath = targetDirPath.makeRelativeTo(projectPath);
-						IFolder targetDir = project.getFolder(relativeTargetDirPath);
+							// We need to trigger a refresh
+							IPath targetDirPath = Path.fromOSString(targetDirectory);
+							IPath projectPath = project.getLocation();
+							IPath relativeTargetDirPath = targetDirPath.makeRelativeTo(projectPath);
+							IFolder targetDir = project.getFolder(relativeTargetDirPath);
 
-						boolean needsRefresh = deltaFilePaths.stream()
-							.filter(deltaPath -> !targetDir.getFullPath()
-								.isPrefixOf(deltaPath))
-							.findFirst()
-							.isPresent();
-
-						if (needsRefresh) {
-							// TODO: there *may* be a remaining issue here if a
-							// source-generation plugin gets triggered
-							// by the above invocation of the jar:jar goal.
-							// This could cause Eclipse to think that the Java
-							// sources are dirty and queue the project
-							// for rebuilding, thus entering an infinite loop.
-							// One solution would be to find the output artifact
-							// jar and refresh ONLY that. However we
-							// have not been able to create the condition we
-							// are worried about so we are deferring any extra
-							// work on this until it's shown to be a
-							// real problem.
-							targetDir.refreshLocal(IResource.DEPTH_INFINITE, progress.newChild(1));
+							project.getFolder(relativeTargetDirPath)
+								.refreshLocal(IResource.DEPTH_INFINITE, progress.newChild(1));
+							return Status.OK_STATUS;
+						} catch (Throwable e) {
+							return new Status(IStatus.ERROR, this.getClass(),
+								"Error executing jar goal: " + e.getMessage(), e);
 						}
-
-						return Status.OK_STATUS;
 					}
 				};
 				job.setRule(project);
 				job.schedule();
-
+				monitor.worked(1);
 				return build;
 			}
+
 		};
+	}
+
+	private boolean needsBuilding(IResourceDelta delta, IMavenProjectFacade projectFacade) {
+		if (delta == null)
+			return true;
+		IResourceDelta[] children = delta.getAffectedChildren();
+		Stream<IResourceDelta> descendants = Arrays.stream(children)
+			.filter(Objects::nonNull)
+			.flatMap(this::collectResourceDeltas);
+		Optional<IResourceDelta> leftOver = descendants
+			.filter(Objects::nonNull)
+			.filter(d -> {
+				IPath fullPath = d.getResource()
+					.getFullPath();
+				if(d.getKind() != IResourceDelta.CHANGED) {
+					return true;
+				}
+				if(fullPath.toFile().isDirectory()) {
+					return false;
+				} else if (isOurArtifact(fullPath.lastSegment(), projectFacade)
+					&& (d.getFlags() & IResourceDelta.CONTENT) != 0) {
+					return false;
+				}
+				return true;
+			})
+			.findFirst();
+		return leftOver.isPresent();
+	}
+
+
+	private boolean isOurArtifact(String lastSegment, IMavenProjectFacade projectFacade) {
+		ArtifactKey artifactKey = projectFacade.getArtifactKey();
+		String artifact = null;
+		if (artifactKey.getClassifier() == null) {
+			artifact = String.format(ARTIFACT_PATTERN, artifactKey.getArtifactId(), artifactKey.getVersion(),
+				projectFacade.getMavenProject()
+					.getPackaging());
+		} else {
+			artifact = String.format(CLASSIFIER_ARTIFACT_PATTERN, artifactKey.getArtifactId(), artifactKey.getVersion(),
+				artifactKey.getClassifier(), projectFacade.getMavenProject()
+					.getPackaging());
+		}
+		if (artifact.equals(lastSegment)) {
+			return true;
+		}
+		artifact = String.format(CLASSIFIER_ARTIFACT_PATTERN, artifactKey.getArtifactId(), artifactKey.getVersion(),
+			"tests", projectFacade.getMavenProject()
+				.getPackaging());
+		return artifact.equals(lastSegment);
 	}
 
 	private Stream<IResourceDelta> collectResourceDeltas(IResourceDelta delta) {
@@ -230,7 +282,8 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 		return mavenProject;
 	}
 
-	private void execJarMojo(final IMavenProjectFacade projectFacade, IProgressMonitor monitor) throws CoreException {
+	private void execJarMojo(final IMavenProjectFacade projectFacade, IProgressMonitor monitor, boolean isTest)
+		throws CoreException {
 		final IMaven maven = MavenPlugin.getMaven();
 		ProjectRegistryManager projectRegistryManager = MavenPluginActivator.getDefault()
 			.getMavenProjectManagerImpl();
@@ -245,11 +298,14 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 			SubMonitor progress = SubMonitor.convert(monitor1);
 			MavenProject mavenProject = getMavenProject(projectFacade, progress.newChild(1));
 
-			List<MojoExecution> mojoExecutions = new ArrayList<>();
-			mojoExecutions.addAll(
-				projectFacade.getMojoExecutions("org.apache.maven.plugins", "maven-jar-plugin", monitor1, "jar"));
-			mojoExecutions.addAll(
-				projectFacade.getMojoExecutions("org.apache.maven.plugins", "maven-jar-plugin", monitor1, "test-jar"));
+			List<MojoExecution> mojoExecutions = null;
+			if (!isTest) {
+				mojoExecutions = projectFacade.getMojoExecutions("org.apache.maven.plugins", "maven-jar-plugin",
+					monitor1, "jar");
+			} else {
+				mojoExecutions = projectFacade.getMojoExecutions("org.apache.maven.plugins", "maven-jar-plugin",
+					monitor1, "test-jar");
+			}
 
 			for (MojoExecution mojoExecution : mojoExecutions) {
 				maven.execute(mavenProject, mojoExecution, progress.newChild(1));
