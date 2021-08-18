@@ -60,6 +60,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
+import aQute.bnd.workspace.extension.LibraryNamespace;
 import aQute.lib.converter.Converter;
 import aQute.lib.strings.Strings;
 
@@ -326,8 +327,10 @@ public class ResourceUtils {
 
 	public static String getVersionAttributeForNamespace(String namespace) {
 		switch (namespace) {
+			case LibraryNamespace.NAMESPACE :
 			case "bnd.info" :
 				return "version";
+
 			case IdentityNamespace.IDENTITY_NAMESPACE :
 				return IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE;
 			case BundleNamespace.BUNDLE_NAMESPACE :
@@ -347,7 +350,7 @@ public class ResourceUtils {
 				return ImplementationNamespace.CAPABILITY_VERSION_ATTRIBUTE;
 			case ServiceNamespace.SERVICE_NAMESPACE :
 			default :
-				return null;
+				return "version";
 		}
 	}
 

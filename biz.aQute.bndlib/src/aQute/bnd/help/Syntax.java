@@ -22,9 +22,9 @@ import aQute.bnd.help.instructions.ResolutionInstructions;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.unmodifiable.Maps;
 import aQute.bnd.version.Version;
 import aQute.lib.strings.Strings;
-import aQute.bnd.unmodifiable.Maps;
 
 public class Syntax implements Constants {
 	final String							header;
@@ -269,6 +269,13 @@ public class Syntax implements Constants {
 
 			), version, bundle_symbolic_name, bundle_version),
 
+		new Syntax(LIBRARY, "The " + LIBRARY
+			+ " instruction includes a library. A library is included in a bundle in a repository. "
+			+ "It is identified by a capability, a bundle can contain multiple libraries. When used in a "
+			+ "workspace, it will include the `workspace.bnd` file from the library by default. For a project, "
+			+ "this is `project.bnd`. The `include` attribute can identify a file in the library. Libraries are "
+			+ "versioned independently from the bundle. The library can contain additional files, also binary.",
+			LIBRARY + ": foo;version=1.2.3", null, null),
 		new Syntax(REQUIRE_BUNDLE,
 			"The " + REQUIRE_BUNDLE + " header specifies the required exports from another bundle.",
 			REQUIRE_BUNDLE + ": com.acme.chess", null, Verifier.WILDCARDNAMEPATTERN,

@@ -129,6 +129,7 @@ public interface Constants {
 	String		DONOTCOPY									= "-donotcopy";
 	String		EXPORT_CONTENTS								= "-exportcontents";
 	String		EXTENSION									= "-extension";
+	String		LIBRARY										= "-library";
 	String		EEPROFILE									= "-eeprofile";
 	String		EXECUTABLE									= "-executable";
 	String		EXPORT										= "-export";
@@ -244,7 +245,6 @@ public interface Constants {
 
 	String		REMOTEWORKSPACE								= "-remoteworkspace";
 
-
 	String		RUNBLACKLIST								= "-runblacklist";
 	String		RUNREQUIRES									= "-runrequires";
 	String		RUNEE										= "-runee";
@@ -309,7 +309,7 @@ public interface Constants {
 		CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE, REPRODUCIBLE, INCLUDEPACKAGE,
 		CDIANNOTATIONS, REMOTEWORKSPACE, MAVEN_DEPENDENCIES, BUILDERIGNORE, STALECHECK, MAVEN_SCOPE, RUNSTARTLEVEL,
 		RUNOPTIONS, NOCLASSFORNAME, EXPORT_APIGUARDIAN, RESOLVE, DEFINE_CONTRACT, GENERATE, RUNFRAMEWORKRESTART,
-		NOIMPORTJAVA, VERSIONDEFAULTS);
+		NOIMPORTJAVA, VERSIONDEFAULTS, LIBRARY);
 
 	// Ignore bundle specific headers. These headers do not make a lot of sense
 	// to inherit

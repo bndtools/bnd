@@ -2266,6 +2266,9 @@ public class Project extends Processor {
 		versionMap.clear();
 		refreshData();
 		super.propertiesChanged();
+		if (workspace.doExtend(this)) {
+			super.propertiesChanged();
+		}
 		workspace.notifier.changedProject(this);
 	}
 
