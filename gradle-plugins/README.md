@@ -82,7 +82,7 @@ tasks.register('bundle',  Bundle) {
 }
 ```
 
-In either usage mode, the following properties, in addition to the `Jar` task properties, can be configured.
+In either usage mode, the following `bundle` extension properties, in addition to the `Jar` task properties, can be configured.
 
 ### bndfile
 
@@ -122,7 +122,7 @@ sourceSets {
 tasks.register('bundle', Bundle) {
   from sourceSets.bundle.output
   bundle {
-    bndfile = 'bundle.bnd'
+    bndfile = file('bundle.bnd')
     sourceSet = sourceSets.bundle
     classpath = sourceSets.bundle.compileClasspath
   }
@@ -767,7 +767,7 @@ For full details on what the Bnd Gradle Plugins do, check out the [source code][
 [11]: https://github.com/bndtools/bnd/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/filter/root/gradle.properties
 [12]: https://github.com/bndtools/bnd/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/unprocessed/root/settings.gradle
 [13]: https://github.com/bndtools/bnd/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/unprocessed/root/build.gradle
-[16]: biz.aQute.bnd.gradle/src/main/groovy/aQute/bnd/gradle/BndPluginExtension.groovy
+[16]: biz.aQute.bnd.gradle/src/main/java/aQute/bnd/gradle/BndPluginExtension.java
 [18]: https://docs.gradle.org/current/dsl/org.gradle.api.tasks.bundling.Jar.html
 [19]: https://docs.gradle.org/current/dsl/org.gradle.api.reporting.ReportingExtension.html#org.gradle.api.reporting.ReportingExtension:baseDir
 [20]: #gradle-plugins-for-bnd-workspace-builds
