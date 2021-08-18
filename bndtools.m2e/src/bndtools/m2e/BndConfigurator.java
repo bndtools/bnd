@@ -136,10 +136,6 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 				String goal = execution.getGoal();
 				monitor.beginTask("Executing Goal " + goal, 2);
 
-				projectFacade.getMavenProject()
-					.getProperties()
-					.forEach((k, v) -> System.err.println(k + " - " + v));
-
 				final IProject project = projectFacade.getProject();
 
 				// check if we need to run. After the jars get build, opened or
