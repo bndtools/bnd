@@ -45,7 +45,9 @@ public class MavenRunProvider implements MavenRunListenerHelper, RunProvider {
 		final IMavenProjectFacade projectFacade = getMavenProjectFacade(targetResource);
 
 		Bndrun bndrun = create0(targetResource, projectFacade, mode);
-
+		if (bndrun == null) {
+			return null;
+		}
 		Workspace workspace = bndrun.getWorkspace();
 
 		final MavenImplicitProjectRepository implicitRepo = new MavenImplicitProjectRepository( //
