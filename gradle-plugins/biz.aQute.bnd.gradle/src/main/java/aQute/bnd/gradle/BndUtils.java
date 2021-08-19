@@ -1,5 +1,6 @@
 package aQute.bnd.gradle;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -66,19 +67,24 @@ public class BndUtils {
 		return collection.builtBy(builtBy);
 	}
 
-	public static <T> T unwrap(Object value) {
-		return unwrap(value, false);
+	public static <T> T unwrap(Provider<? extends T> provider) {
+		return provider.get();
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T> T unwrap(Object value, boolean optional) {
-		if (value instanceof Provider) {
-			value = optional ? ((Provider<?>) value).getOrNull() : ((Provider<?>) value).get();
-		}
-		if (value instanceof FileSystemLocation) {
-			value = ((FileSystemLocation) value).getAsFile();
-		}
-		return (T) value;
+	public static <T> T unwrapOrNull(Provider<? extends T> provider) {
+		return provider.getOrNull();
+	}
+
+	public static File unwrapFile(FileSystemLocation location) {
+		return location.getAsFile();
+	}
+
+	public static File unwrapFile(Provider<? extends FileSystemLocation> provider) {
+		return unwrapFile(unwrap(provider));
+	}
+
+	public static File unwrapFileOrNull(Provider<? extends FileSystemLocation> provider) {
+		return provider.isPresent() ? unwrapFile(provider) : null;
 	}
 
 	public static void jarLibraryElements(Task task, String configurationName) {

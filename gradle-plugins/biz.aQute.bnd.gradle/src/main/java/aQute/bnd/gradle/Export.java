@@ -5,6 +5,7 @@ import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES;
 import static aQute.bnd.gradle.BndUtils.distDirectory;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.unwrap;
+import static aQute.bnd.gradle.BndUtils.unwrapFile;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -154,7 +155,7 @@ public class Export extends AbstractBndrun<Project, Run> {
 						case EXECUTABLE_JAR :
 							return "executable";
 						case RUNBUNDLES :
-							File bndrunFile = unwrap(getBndrun());
+							File bndrunFile = unwrapFile(getBndrun());
 							String[] parts = Strings.extension(bndrunFile.getName());
 							return String.format("runbundles/%s", (parts != null) ? parts[0] : bndrunFile.getName());
 						default :
@@ -173,7 +174,7 @@ public class Export extends AbstractBndrun<Project, Run> {
 	@Override
 	protected void worker(Project run) throws Exception {
 		String exporterName = unwrap(getExporter());
-		File destinationDirFile = unwrap(getDestinationDirectory());
+		File destinationDirFile = unwrapFile(getDestinationDirectory());
 		getLogger().info("Exporting {} to {} with exporter {}", run.getPropertiesFile(), destinationDirFile,
 			exporterName);
 		getLogger().debug("Run properties: {}", run.getProperties());

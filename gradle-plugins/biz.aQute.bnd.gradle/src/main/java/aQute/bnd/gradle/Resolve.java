@@ -1,7 +1,7 @@
 package aQute.bnd.gradle;
 
 import static aQute.bnd.gradle.BndUtils.logReport;
-import static aQute.bnd.gradle.BndUtils.unwrap;
+import static aQute.bnd.gradle.BndUtils.unwrapFile;
 
 import java.io.File;
 import java.io.Writer;
@@ -213,7 +213,7 @@ public class Resolve extends AbstractBndrun<biz.aQute.resolve.Bndrun, biz.aQute.
 	 */
 	@Override
 	protected biz.aQute.resolve.Bndrun createRun(Workspace workspace, File bndrunFile) throws Exception {
-		File outputBndrunFile = unwrap(getOutputBndrun());
+		File outputBndrunFile = unwrapFile(getOutputBndrun());
 		if (!Objects.equals(outputBndrunFile, bndrunFile)) {
 			try (Writer writer = IO.writer(outputBndrunFile)) {
 				UTF8Properties props = new UTF8Properties();

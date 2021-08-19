@@ -2,7 +2,7 @@ package aQute.bnd.gradle;
 
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.testResultsDir;
-import static aQute.bnd.gradle.BndUtils.unwrap;
+import static aQute.bnd.gradle.BndUtils.unwrapFile;
 
 import java.io.File;
 import java.util.List;
@@ -121,7 +121,7 @@ public class TestOSGi extends Bndrun {
 		}
 		getLogger().info("Running tests for {} in {}", run.getPropertiesFile(), run.getBase());
 		getLogger().debug("Run properties: {}", run.getProperties());
-		File resultsDir = unwrap(getResultsDirectory());
+		File resultsDir = unwrapFile(getResultsDirectory());
 		try {
 			run.test(resultsDir, getTests());
 		} finally {

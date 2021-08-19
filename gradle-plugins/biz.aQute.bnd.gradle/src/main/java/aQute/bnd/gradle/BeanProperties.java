@@ -1,6 +1,5 @@
 package aQute.bnd.gradle;
 
-import static aQute.bnd.gradle.BndUtils.unwrap;
 import static java.lang.invoke.MethodHandles.publicLookup;
 
 import java.lang.invoke.MethodHandle;
@@ -12,7 +11,9 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.gradle.api.file.FileSystemLocation;
 import org.gradle.api.internal.DynamicObjectAware;
+import org.gradle.api.provider.Provider;
 import org.gradle.internal.metaobject.DynamicInvokeResult;
 import org.gradle.internal.metaobject.DynamicObject;
 import org.slf4j.Logger;
@@ -47,7 +48,7 @@ public class BeanProperties extends Properties {
 			name = m.group("name");
 			value = value(name, getField(value, name), m.group("index"));
 		}
-		value = unwrap(value, true);
+		value = unwrap(value);
 		return (value != null) ? value.toString() : defaultValue(key);
 	}
 
@@ -55,7 +56,17 @@ public class BeanProperties extends Properties {
 		return (defaults != null) ? defaults.getProperty(key) : null;
 	}
 
-	private Object getField(Object target, String fieldName) {
+	private static Object unwrap(Object value) {
+		if (value instanceof Provider) {
+			value = ((Provider<?>) value).getOrNull();
+		}
+		if (value instanceof FileSystemLocation) {
+			value = ((FileSystemLocation) value).getAsFile();
+		}
+		return value;
+	}
+
+	private static Object getField(Object target, String fieldName) {
 		try {
 			if (target instanceof DynamicObjectAware) {
 				DynamicObject dynamicObject = ((DynamicObjectAware) target).getAsDynamicObject();
@@ -82,7 +93,7 @@ public class BeanProperties extends Properties {
 		return null;
 	}
 
-	private Object value(String name, Object value, String index) {
+	private static Object value(String name, Object value, String index) {
 		if ((value == null) || (index == null)) {
 			return value;
 		}

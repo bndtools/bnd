@@ -2,6 +2,8 @@ package aQute.bnd.gradle;
 
 import static aQute.bnd.build.Project.BNDFILE;
 import static aQute.bnd.gradle.BndUtils.unwrap;
+import static aQute.bnd.gradle.BndUtils.unwrapFile;
+import static aQute.bnd.gradle.BndUtils.unwrapOrNull;
 
 import java.util.Objects;
 
@@ -97,7 +99,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
 			Jar bundleTask = task.getBundleTask();
 			if (Objects.nonNull(bundleTask)) {
 				String archiveBaseName = unwrap(bundleTask.getArchiveBaseName());
-				String archiveVersion = unwrap(bundleTask.getArchiveVersion(), true);
+				String archiveVersion = unwrapOrNull(bundleTask.getArchiveVersion());
 				String group = project.getGroup()
 					.toString();
 				task.getLogger()
@@ -116,7 +118,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
 				} catch (ResolveException e) {
 					task.getLogger()
 						.debug("Baseline configuration resolve error {}, adding {} as baseline", e,
-							unwrap(task.getBundle()), e);
+							unwrapFile(task.getBundle()), e);
 					baselineDep = project.getDependencies()
 						.create(project.getObjects()
 							.fileCollection()

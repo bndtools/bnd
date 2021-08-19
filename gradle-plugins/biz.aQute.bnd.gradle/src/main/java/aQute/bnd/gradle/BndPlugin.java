@@ -4,7 +4,7 @@ import static aQute.bnd.gradle.BndUtils.isGradleCompatible;
 import static aQute.bnd.gradle.BndUtils.jarLibraryElements;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.sourceSets;
-import static aQute.bnd.gradle.BndUtils.unwrap;
+import static aQute.bnd.gradle.BndUtils.unwrapFile;
 import static aQute.bnd.osgi.Processor.isTrue;
 import static aQute.bnd.osgi.Processor.removeDuplicateMarker;
 import static java.lang.invoke.MethodHandles.publicLookup;
@@ -470,8 +470,7 @@ public class BndPlugin implements Plugin<Project> {
 							Logger logger = tt.getLogger();
 							checkErrors(logger);
 							if (logger.isInfoEnabled()) {
-								File destinationDirectory = unwrap(t.getDestinationDirectory());
-								logger.info("Compile to {}", destinationDirectory);
+								logger.info("Compile to {}", unwrapFile(t.getDestinationDirectory()));
 								if (t.getOptions()
 									.getRelease()
 									.isPresent()) {

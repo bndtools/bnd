@@ -2,6 +2,7 @@ package aQute.bnd.gradle;
 
 import static aQute.bnd.gradle.BndUtils.builtBy;
 import static aQute.bnd.gradle.BndUtils.unwrap;
+import static aQute.bnd.gradle.BndUtils.unwrapFile;
 import static java.util.stream.Collectors.toList;
 import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
 
@@ -228,7 +229,7 @@ public class Baseline extends DefaultTask {
 		String taskName = getName();
 		reportFile = objects.fileProperty()
 			.convention(baselineReportDirectory.file(providers.provider(() -> {
-				File bundlefile = unwrap(getBundle());
+				File bundlefile = unwrapFile(getBundle());
 				String[] parts = Strings.extension(bundlefile.getName());
 				return String.format("%s/%s.txt", taskName, (parts != null) ? parts[0] : bundlefile.getName());
 			})));
@@ -353,9 +354,9 @@ public class Baseline extends DefaultTask {
 	 */
 	@TaskAction
 	public void baselineAction() throws Exception {
-		File bundle = unwrap(getBundle());
-		File baseline = unwrap(getBaseline());
-		File report = unwrap(getReportFile());
+		File bundle = unwrapFile(getBundle());
+		File baseline = unwrapFile(getBaseline());
+		File report = unwrapFile(getReportFile());
 		List<String> diffignoreList = unwrap(getDiffignore());
 		List<String> diffpackagesList = unwrap(getDiffpackages());
 		IO.mkdirs(report.getParentFile());
