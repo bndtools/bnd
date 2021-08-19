@@ -5,6 +5,9 @@ import static aQute.bnd.gradle.BndUtils.jarLibraryElements;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.sourceSets;
 import static aQute.bnd.gradle.BndUtils.unwrap;
+import static aQute.bnd.gradle.BndUtils.unwrapFile;
+import static aQute.bnd.gradle.BndUtils.unwrapFileOrNull;
+import static aQute.bnd.gradle.BndUtils.unwrapOrNull;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
@@ -278,8 +281,8 @@ public class BundleTaskExtension {
 		@Override
 		public void execute(Task t) {
 			try {
-				File projectDir = unwrap(getLayout().getProjectDirectory());
-				File buildDir = unwrap(getLayout().getBuildDirectory());
+				File projectDir = unwrapFile(getLayout().getProjectDirectory());
+				File buildDir = unwrapFile(getLayout().getBuildDirectory());
 				File buildFile = getBuildFile();
 				FileCollection sourcepath = getAllSource().filter(file -> file.exists());
 				// create Builder
@@ -304,7 +307,7 @@ public class BundleTaskExtension {
 							.store(writer, null);
 						// if the bnd file exists, add its contents to the
 						// tmp bnd file
-						File bndfile = unwrap(getBndfile(), true);
+						File bndfile = unwrapFileOrNull(getBndfile());
 						if (Objects.nonNull(bndfile) && bndfile.isFile()) {
 							builder.loadProperties(bndfile)
 								.store(writer, null);
@@ -329,11 +332,11 @@ public class BundleTaskExtension {
 					if (!Objects.equals(builder.getSubBuilders(), singletonList(builder))) {
 						throw new GradleException("Sub-bundles are not supported by this task");
 					}
-					File archiveFile = unwrap(getTask().getArchiveFile());
+					File archiveFile = unwrapFile(getTask().getArchiveFile());
 					String archiveFileName = unwrap(getTask().getArchiveFileName());
 					String archiveBaseName = unwrap(getTask().getArchiveBaseName());
 					String archiveClassifier = unwrap(getTask().getArchiveClassifier());
-					String archiveVersion = unwrap(getTask().getArchiveVersion(), true);
+					String archiveVersion = unwrapOrNull(getTask().getArchiveVersion());
 
 					// Include entire contents of Jar task generated jar
 					// (except the

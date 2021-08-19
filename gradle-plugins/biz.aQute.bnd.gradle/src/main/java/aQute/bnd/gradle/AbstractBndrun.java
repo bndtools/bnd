@@ -3,7 +3,7 @@ package aQute.bnd.gradle;
 import static aQute.bnd.gradle.BndUtils.builtBy;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.sourceSets;
-import static aQute.bnd.gradle.BndUtils.unwrap;
+import static aQute.bnd.gradle.BndUtils.unwrapFile;
 import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
 
 import java.io.File;
@@ -196,8 +196,8 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 	@TaskAction
 	public void bndrunAction() throws Exception {
 		Workspace workspace = (Workspace) getProject().findProperty("bndWorkspace");
-		File bndrunFile = unwrap(getBndrun());
-		File workingDirFile = unwrap(getWorkingDirectory());
+		File bndrunFile = unwrapFile(getBndrun());
+		File workingDirFile = unwrapFile(getWorkingDirectory());
 		if (Objects.nonNull(workspace) && getProject().getPlugins()
 			.hasPlugin(BndPlugin.PLUGINID)) {
 			BndPluginExtension extension = getProject().getExtensions()

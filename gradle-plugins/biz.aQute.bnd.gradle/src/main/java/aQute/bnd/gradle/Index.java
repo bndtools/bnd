@@ -3,6 +3,7 @@ package aQute.bnd.gradle;
 import static aQute.bnd.gradle.BndUtils.builtBy;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.unwrap;
+import static aQute.bnd.gradle.BndUtils.unwrapFile;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
@@ -250,7 +251,7 @@ public class Index extends DefaultTask {
 	 */
 	@TaskAction
 	public void indexerAction() throws Exception {
-		File indexUncompressedFile = unwrap(getIndexUncompressed());
+		File indexUncompressedFile = unwrapFile(getIndexUncompressed());
 		try (Processor processor = new Processor()) {
 			List<File> sortedBundles = getBundles().getFiles()
 				.stream()
@@ -270,7 +271,7 @@ public class Index extends DefaultTask {
 
 			getLogger().info("Generated index {}.", indexUncompressedFile);
 			if (isGzip()) {
-				File indexCompressedFile = unwrap(getIndexCompressed());
+				File indexCompressedFile = unwrapFile(getIndexCompressed());
 				try (OutputStream out = new GZIPOutputStream(IO.outputStream(indexCompressedFile))) {
 					IO.copy(indexUncompressedFile, out);
 				}

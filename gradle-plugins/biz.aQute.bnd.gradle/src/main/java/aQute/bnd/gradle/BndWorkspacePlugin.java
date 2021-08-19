@@ -1,6 +1,6 @@
 package aQute.bnd.gradle;
 
-import static aQute.bnd.gradle.BndUtils.unwrap;
+import static aQute.bnd.gradle.BndUtils.unwrapFile;
 
 import java.io.File;
 import java.util.Iterator;
@@ -241,7 +241,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 			Workspace.setDriver(Constants.BNDDRIVER_GRADLE);
 			Workspace.addGestalt(Constants.GESTALT_BATCH, null);
 			Gradle gradle = workspace.getGradle();
-			File rootDir = unwrap(workspace.getLayout()
+			File rootDir = unwrapFile(workspace.getLayout()
 				.getProjectDirectory());
 			bndWorkspace = new Workspace(rootDir, bnd_cnf);
 			bndWorkspace.setOffline(gradle.getStartParameter()
