@@ -563,4 +563,23 @@ public class MavenVersionTest {
 		assertThat(v).isGreaterThanOrEqualTo(v.toReleaseVersion());
 	}
 
+	@Test
+	/**
+	 * Test
+	 * <a href="https://issues.apache.org/jira/browse/MNG-6964">MNG-6964</a>
+	 * edge cases for qualifiers that start with "-0.", which was showing A == C
+	 * and B == C but A &lt; B.
+	 */
+	public void testMng6964() {
+		MavenVersion a = MavenVersion.parseMavenString("1-0.alpha");
+		MavenVersion b = MavenVersion.parseMavenString("1-0.beta");
+		MavenVersion c = MavenVersion.parseMavenString("1");
+
+		assertThat(a).isLessThan(b)
+			.isLessThan(c);
+		assertThat(b).isGreaterThan(a)
+			.isLessThan(c);
+		assertThat(c).isGreaterThan(b)
+			.isGreaterThan(a);
+	}
 }

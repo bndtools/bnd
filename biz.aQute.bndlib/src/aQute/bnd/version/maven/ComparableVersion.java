@@ -126,7 +126,7 @@ public class ComparableVersion implements Comparable<ComparableVersion> {
 			switch (item.getType()) {
 				case INT_ITEM :
 					int itemValue = ((IntItem) item).value;
-					return (value < itemValue) ? -1 : ((value == itemValue) ? 0 : 1);
+					return Integer.compare(value, itemValue);
 				case LONG_ITEM :
 				case BIGINTEGER_ITEM :
 					return -1;
@@ -200,7 +200,7 @@ public class ComparableVersion implements Comparable<ComparableVersion> {
 					return 1;
 				case LONG_ITEM :
 					long itemValue = ((LongItem) item).value;
-					return (value < itemValue) ? -1 : ((value == itemValue) ? 0 : 1);
+					return Long.compare(value, itemValue);
 				case BIGINTEGER_ITEM :
 					return -1;
 
@@ -474,8 +474,15 @@ public class ComparableVersion implements Comparable<ComparableVersion> {
 				if (size() == 0) {
 					return 0; // 1-0 = 1- (normalize) = 1
 				}
-				Item first = get(0);
-				return first.compareTo(null);
+				// Compare the entire list of items with null - not just the
+				// first one, MNG-6964
+				for (Item i : this) {
+					int result = i.compareTo(null);
+					if (result != 0) {
+						return result;
+					}
+				}
+				return 0;
 			}
 			switch (item.getType()) {
 				case INT_ITEM :
