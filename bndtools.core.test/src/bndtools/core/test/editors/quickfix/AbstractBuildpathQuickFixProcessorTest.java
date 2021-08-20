@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.jdt.core.compiler.IProblem.CannotThrowType;
 import static org.eclipse.jdt.core.compiler.IProblem.DiscouragedReference;
 import static org.eclipse.jdt.core.compiler.IProblem.HierarchyHasProblems;
+import static org.eclipse.jdt.core.compiler.IProblem.IllegalCast;
 import static org.eclipse.jdt.core.compiler.IProblem.ImportNotFound;
 import static org.eclipse.jdt.core.compiler.IProblem.IsClassPathCorrect;
 import static org.eclipse.jdt.core.compiler.IProblem.ParameterMismatch;
@@ -241,7 +242,7 @@ abstract class AbstractBuildpathQuickFixProcessorTest {
 	protected static final Set<Integer>	SUPPORTED		= Sets.of(ImportNotFound, UndefinedType, IsClassPathCorrect,
 		HierarchyHasProblems, ParameterMismatch, TypeMismatch, UndefinedConstructor, UndefinedField, UndefinedMethod,
 		UndefinedName, UnresolvedVariable, TypeArgumentMismatch, DiscouragedReference, CannotThrowType,
-		UnhandledException);
+		UnhandledException, IllegalCast);
 
 	protected IJavaCompletionProposal[] proposalsForStaticImport(String imp) {
 		return proposalsFor(29, 0, "package test; import static " + imp + ";");
