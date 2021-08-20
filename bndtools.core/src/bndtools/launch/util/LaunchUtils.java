@@ -11,6 +11,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -72,6 +73,9 @@ public final class LaunchUtils {
 				if ((run = runProvider.create(targetResource, mode)) != null) {
 					break;
 				}
+			} catch (CoreException e) {
+				StatusManager.getManager()
+					.handle(e.getStatus(), StatusManager.BLOCK);
 			} catch (Throwable t) {
 				logger.logError("Error in run listener", t);
 			}

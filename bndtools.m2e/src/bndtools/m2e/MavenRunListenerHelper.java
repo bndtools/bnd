@@ -23,15 +23,17 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.IMaven;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 
 import aQute.bnd.build.Run;
-import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.exceptions.Exceptions;
+import aQute.bnd.maven.lib.configuration.Bndruns;
 
 public interface MavenRunListenerHelper {
 
@@ -137,7 +139,13 @@ public interface MavenRunListenerHelper {
 	default MojoExecution getMojoExecution(IMavenProjectFacade projectFacade, String pluginId, String executionPrefix,
 		Predicate<MojoExecution> predicate, IProgressMonitor monitor) throws CoreException {
 		MavenProject mavenProject = getMavenProject(projectFacade);
-		List<String> tasks = getMavenProject(projectFacade).getPlugin(pluginId)
+		Plugin plugin = getMavenProject(projectFacade).getPlugin(pluginId);
+		if (plugin == null) {
+			IStatus status = new Status(IStatus.ERROR, "bndtools.m2e", IStatus.ERROR,
+				createErrorMessage(pluginId), null);
+			throw new CoreException(status);
+		}
+		List<String> tasks = plugin
 			.getExecutionsAsMap()
 			.keySet()
 			.stream()
@@ -150,6 +158,17 @@ public interface MavenRunListenerHelper {
 			.filter(predicate)
 			.findFirst()
 			.orElse(null);
+	}
+
+	default String createErrorMessage(String pluginId) {
+		StringBuilder builder = new StringBuilder("Maven Plugin ");
+		builder.append(pluginId);
+		builder.append(" could not be found in your projects maven setup. Please make sure you configured ");
+		builder.append(pluginId);
+		builder.append(" for the bndrun file you want to resolve. Please consult the ");
+		builder.append(pluginId);
+		builder.append(" documentation for details.");
+		return builder.toString();
 	}
 
 	default boolean isOffline() {
