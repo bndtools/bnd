@@ -12,6 +12,17 @@ public class BuildpathQuickFixProcessor_WithSimpleOnBuildpath_Test extends Abstr
 	}
 
 	@Test
+	void withMissingClass_causingCantCast_suggestsBundles() {
+		String header = "package test; import simple.pkg.ClassExtendingClassFromAnotherBundle; import simple.MyClass; class "
+			+ DEFAULT_CLASS_NAME + " {" + "public void test() {" + "MyClass d = null; "
+			+ "ClassExtendingClassFromAnotherBundle c = ";
+		String source = header + "(ClassExtendingClassFromAnotherBundle)d;}}";
+
+		assertThatProposals(proposalsFor(header.length() + 1, 0, source)).haveExactly(1,
+			suggestsBundle("bndtools.core.test.fodder.iface", "1.0.0", "iface.bundle.MyForeignClass"));
+	}
+
+	@Test
 	void withMissingSuperException_causingUnhandled_suggestsBundles() {
 		String header = "package test; import simple.pkg.ClassThrowingExceptionExtendingForeignException; class "
 			+ DEFAULT_CLASS_NAME + " {" + "public void test() {"

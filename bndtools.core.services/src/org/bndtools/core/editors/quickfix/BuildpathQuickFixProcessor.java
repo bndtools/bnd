@@ -26,6 +26,7 @@ import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.CastExpression;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldAccess;
@@ -111,6 +112,9 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 				return true;
 			case IProblem.HierarchyHasProblems :
 				// System.out.println("HierarchyHasProblems");
+				return true;
+			case IProblem.IllegalCast :
+				// System.out.println("IllegalCast");
 				return true;
 			case IProblem.IsClassPathCorrect :
 				// System.out.println("IsClassPathCorrect");
@@ -439,6 +443,15 @@ public class BuildpathQuickFixProcessor implements IQuickFixProcessor {
 						// add those as suggestions.
 						ASTNode node = location.getCoveredNode(context.getASTRoot());
 						visitNodeAncestry(node);
+						continue;
+					}
+					case IProblem.IllegalCast : {
+						ASTNode node = location.getCoveredNode(context.getASTRoot());
+						if (node instanceof CastExpression) {
+							CastExpression cast = (CastExpression) node;
+							visitBindingHierarchy(cast.getType()
+								.resolveBinding());
+						}
 						continue;
 					}
 					case IProblem.TypeMismatch : {
