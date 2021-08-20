@@ -26,6 +26,7 @@ import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.NormalizeLineEndings;
 
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
@@ -66,6 +67,7 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 	 */
 	@InputFile
 	@PathSensitive(RELATIVE)
+	@NormalizeLineEndings
 	public RegularFileProperty getBndrun() {
 		return bndrun;
 	}
