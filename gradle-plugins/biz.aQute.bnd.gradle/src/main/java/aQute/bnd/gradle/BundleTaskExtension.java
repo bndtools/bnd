@@ -1,6 +1,7 @@
 package aQute.bnd.gradle;
 
 import static aQute.bnd.gradle.BndUtils.builtBy;
+import static aQute.bnd.gradle.BndUtils.isGradleCompatible;
 import static aQute.bnd.gradle.BndUtils.jarLibraryElements;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.sourceSets;
@@ -41,6 +42,8 @@ import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.TaskInputFilePropertyBuilder;
+import org.gradle.work.NormalizeLineEndings;
 
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.osgi.Builder;
@@ -88,6 +91,7 @@ public class BundleTaskExtension {
 	 */
 	@InputFile
 	@PathSensitive(RELATIVE)
+	@NormalizeLineEndings
 	@Optional
 	public RegularFileProperty getBndfile() {
 		return bndfile;
@@ -156,11 +160,14 @@ public class BundleTaskExtension {
 			.files(getClasspath())
 			.withNormalizer(ClasspathNormalizer.class)
 			.withPropertyName("classpath");
-		task.getInputs()
+		TaskInputFilePropertyBuilder bndfileInput = task.getInputs()
 			.file(getBndfile())
 			.optional()
 			.withPathSensitivity(RELATIVE)
 			.withPropertyName("bndfile");
+		if (isGradleCompatible("7.2")) {
+			bndfileInput.normalizeLineEndings();
+		}
 		task.getInputs()
 			.property("bnd", getBnd());
 	}
