@@ -23,6 +23,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.osgi.framework.launch.FrameworkFactory;
@@ -338,15 +339,17 @@ public abstract class ProjectLauncher extends Processor {
 
 		String jdb = getRunJdb();
 		if (jdb != null) {
-			int port = 1044;
-			try {
-				port = Integer.parseInt(jdb);
-			} catch (Exception e) {
-				// ok, value can also be ok, or on, or true
+			Matcher matcher = RUNJDB_P.matcher(jdb);
+			String address;
+			String suspend;
+			if (matcher.matches()) {
+				address = matcher.group("address");
+				suspend = "-".equals(matcher.group("sign")) ? "n" : "y";
+			} else {
+				address = "1044";
+				suspend = "y";
 			}
-			String suspend = port > 0 ? "y" : "n";
-
-			java.add("-Xrunjdwp:server=y,transport=dt_socket,address=" + Math.abs(port) + ",suspend=" + suspend);
+			java.add("-agentlib:jdwp=transport=dt_socket,server=y,address=" + address + ",suspend=" + suspend);
 		}
 
 		java.addAll(split(System.getenv("JAVA_OPTS"), "\\s+"));
@@ -571,6 +574,9 @@ public abstract class ProjectLauncher extends Processor {
 	public void setCwd(File cwd) {
 		this.cwd = cwd;
 	}
+
+	private static final Pattern RUNJDB_P = Pattern
+		.compile("^\\s*(?<sign>[-+])?(?<address>(?:[^\\s]+:)?\\d{1,5})\\s*$");
 
 	public String getRunJdb() {
 		return getProject().getProperty(Constants.RUNJDB);
