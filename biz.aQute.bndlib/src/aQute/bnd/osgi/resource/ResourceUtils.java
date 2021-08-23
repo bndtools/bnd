@@ -59,8 +59,8 @@ import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.library.LibraryNamespace;
 import aQute.bnd.version.Version;
-import aQute.bnd.workspace.extension.LibraryNamespace;
 import aQute.lib.converter.Converter;
 import aQute.lib.strings.Strings;
 

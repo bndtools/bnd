@@ -1,4 +1,4 @@
-package aQute.bnd.workspace.extension;
+package aQute.bnd.service.library;
 
 import org.osgi.framework.Constants;
 
