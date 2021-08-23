@@ -1510,6 +1510,7 @@ public class IO {
 				}
 			} else {
 				switch (c) {
+					case ':' :
 					case '/' :
 						sb.append('%');
 						break;

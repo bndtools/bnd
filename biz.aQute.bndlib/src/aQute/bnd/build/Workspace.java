@@ -74,6 +74,7 @@ import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.BundleId;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.PluginsContainer;
 import aQute.bnd.osgi.Processor;
@@ -84,6 +85,7 @@ import aQute.bnd.osgi.repository.AugmentRepository;
 import aQute.bnd.osgi.repository.WorkspaceRepositoryMarker;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.remoteworkspace.server.RemoteWorkspaceServer;
 import aQute.bnd.resource.repository.ResourceRepositoryImpl;
 import aQute.bnd.result.Result;
@@ -133,9 +135,11 @@ public class Workspace extends Processor {
 		final RemoteWorkspaceServer								remoteServer;
 		final CloseableMemoize<WorkspaceClassIndex>				classIndex;
 		final CloseableMemoize<WorkspaceExternalPluginHandler>	externalPlugins;
+		final CloseableMemoize<LibraryHandler>					libraryHandler;
 
 		WorkspaceData() {
 			repositories = Memoize.supplier(Workspace.this::initRepositories);
+			libraryHandler = CloseableMemoize.closeableSupplier(() -> new LibraryHandler(Workspace.this));
 			classIndex = CloseableMemoize.closeableSupplier(() -> new WorkspaceClassIndex(Workspace.this));
 			externalPlugins = CloseableMemoize
 				.closeableSupplier(() -> new WorkspaceExternalPluginHandler(Workspace.this));
@@ -152,6 +156,7 @@ public class Workspace extends Processor {
 
 		@Override
 		public void close() {
+			IO.close(libraryHandler);
 			IO.close(remoteServer);
 			IO.close(classIndex);
 			IO.close(externalPlugins);
@@ -330,7 +335,6 @@ public class Workspace extends Processor {
 
 		// we must process version defaults after the
 		// normal properties are read
-
 		fixupVersionDefaults();
 	}
 
@@ -502,12 +506,13 @@ public class Workspace extends Processor {
 			}
 		}
 		super.propertiesChanged();
-
+		if (doExtend(this)) {
+			super.propertiesChanged();
+		}
 		forceInitialization();
 	}
 
 	private void forceInitialization() {
-
 		if (notifier.mute)
 			return;
 
@@ -1739,9 +1744,10 @@ public class Workspace extends Processor {
 			rb.filter(filter);
 		}
 		Requirement requirement = rb.buildSyntheticRequirement();
-		return getResourceRepository(strategy).findProviders(Collections.singleton(requirement))
-			.get(requirement)
-			.stream();
+		Collection<Capability> resultCollection = getResourceRepository(strategy)
+			.findProviders(Collections.singleton(requirement))
+			.get(requirement);
+		return resultCollection != null ? resultCollection.stream() : Stream.empty();
 	}
 
 	/**
@@ -1753,6 +1759,10 @@ public class Workspace extends Processor {
 	}
 
 	public Result<File> getBundle(org.osgi.resource.Resource resource) {
+		return getBundle(resource, ResourceRepositoryStrategy.ALL);
+	}
+
+	public Result<File> getBundle(org.osgi.resource.Resource resource, ResourceRepositoryStrategy strategy) {
 		BundleId bundleId = ResourceUtils.getBundleId(resource);
 		if (bundleId == null) {
 			return Result.err("Not a bundle %s, identity & bnd.info found but was not sufficient: ", resource);
@@ -1766,26 +1776,35 @@ public class Workspace extends Processor {
 	}
 
 	public Result<File> getBundle(String bsn, Version version, Map<String, String> attrs) {
-		try {
+		return getBundle(bsn, version, attrs, ResourceRepositoryStrategy.ALL);
+	}
 
+	public Result<File> getBundle(String bsn, Version version, Map<String, String> attrs,
+		ResourceRepositoryStrategy strategy) {
+		try {
 			List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
-			for (RepositoryPlugin rp : plugins) {
-				File file = rp.get(bsn, version, attrs);
-				if (file != null)
-					return Result.ok(file);
+
+			if (strategy == ResourceRepositoryStrategy.ALL || strategy == ResourceRepositoryStrategy.REPOS) {
+				for (RepositoryPlugin rp : plugins) {
+					File file = rp.get(bsn, version, attrs);
+					if (file != null)
+						return Result.ok(file);
+				}
 			}
 
-			WorkspaceRepository workspaceRepository = getWorkspaceRepository();
-			SortedSet<Version> versions = workspaceRepository.versions(bsn);
-			if (!versions.isEmpty()) {
-				File f = workspaceRepository.get(bsn, versions.last(), attrs);
-				if (f != null && f.isFile())
-					return Result.ok(f);
+			if (strategy == ResourceRepositoryStrategy.ALL || strategy == ResourceRepositoryStrategy.WORKSPACE) {
+				WorkspaceRepository workspaceRepository = getWorkspaceRepository();
+				SortedSet<Version> versions = workspaceRepository.versions(bsn);
+				if (!versions.isEmpty()) {
+					File f = workspaceRepository.get(bsn, versions.last(), attrs);
+					if (f != null && f.isFile())
+						return Result.ok(f);
+				}
 			}
 
 			return Result.err("Cannot find bundle %s %s", bsn, version);
 		} catch (Exception e) {
-			return Result.err("failed to get bundle %s %s %s", bsn, version, e);
+			return Result.err("Failed to get bundle %s %s %s", bsn, version, e);
 		}
 
 	}
@@ -1798,4 +1817,99 @@ public class Workspace extends Processor {
 		return notifier.on(ownerName);
 	}
 
+	/**
+	 * Functions that the workspace likes to apply to its children before the
+	 * properties are processed. I.e. this should be called in
+	 * {@link Processor#propertiesChanged}
+	 * <p>
+	 * This is initially used to do the library functionality but it is open for
+	 * others where the properties might be affected after some initial
+	 * processing.
+	 *
+	 * @param processor the processor to augment
+	 * @return true if the properties were changed
+	 */
+	public boolean doExtend(Processor processor) {
+		String libraries = processor.mergeProperties(Constants.LIBRARY);
+		if (Strings.nonNullOrEmpty(libraries)) {
+			data.libraryHandler.get()
+				.update(processor, libraries, Constants.LIBRARY);
+			return true;
+		} else
+			return false;
+	}
+
+	/**
+	 * Get a cached directory of an expanded resource. The resource must be a
+	 * JAR file.
+	 *
+	 * @param resource a resource
+	 * @return a result with the directory or an error
+	 */
+
+	public Result<File> getExpandedInCache(org.osgi.resource.Resource resource) {
+		try {
+			IdentityCapability id = ResourceUtils.getIdentityCapability(resource);
+			if (id == null)
+				return Result.err("the resource %s has no identity capability", resource);
+
+			String bsn = id.osgi_identity();
+			if (bsn == null)
+				return Result.err("the resource %s lacks a symbolic name", resource);
+
+			if (!Verifier.isBsn(bsn))
+				return Result.err("the resource %s has an invalid symbolic name", resource);
+
+			Version version = id.version();
+			if (version == null)
+				version = Version.emptyVersion;
+
+			Result<File> result = getBundle(resource, ResourceRepositoryStrategy.ALL);
+			if (result.isErr()) {
+				return result;
+			}
+
+			return getExpandedInCache("urn:resource:" + bsn + "-" + version, result.unwrap());
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	/**
+	 * Get a cached directory of an inputstream to a Jar.
+	 *
+	 * @param urn A unique resource name of the structure 'urn:' scheme ':' ...
+	 * @param file an file of a Jar
+	 * @return a result with the directory or an error
+	 * @throws IOException
+	 */
+	public Result<File> getExpandedInCache(String urn, File file) throws IOException {
+		String safeFileName = IO.toSafeFileName(urn);
+		File cache = getCache("expanded/" + safeFileName);
+		File receiptFile = IO.getFile(cache, ".receipt");
+		if (cache.exists()) {
+			try {
+				if (receiptFile.isFile()) {
+					String receipt = IO.collect(receiptFile);
+					if (file.toString()
+						.equals(receipt))
+						return Result.ok(cache);
+				}
+			} catch (Exception e) {
+				// ignore
+			}
+			IO.delete(cache);
+		}
+		cache.mkdirs();
+		if (!cache.isDirectory())
+			return Result.err("cannot create cache directory %s for %s from %s", cache, urn, file);
+
+		try (Jar jar = new Jar(file)) {
+			jar.expand(cache);
+			IO.store(file.toString(), receiptFile);
+			return Result.ok(cache);
+		} catch (Exception e) {
+			return Result.err("Failed to expand %s into %s: %s", file, cache, e);
+		}
+	}
 }
