@@ -1,68 +1,28 @@
 ---
 layout: default
 class: Project
-title: -runjdb  PORT
-summary: Specify a JDB port on invocation when launched outside a debugger so the debugger can attach later. 
+title: -runjdb  ADDRESS
+summary: Specify a JDB socket transport address on invocation when launched outside a debugger so the debugger can attach later. 
 ---
 
-	public int launch() throws Exception {
-		prepare();
-		java = new Command();
-		
-		
-		//
-		// Handle the environment
-		//
-		
-		Map<String,String> env = getRunEnv();
-		for ( Map.Entry<String,String> e:env.entrySet()) {
-			java.var(e.getKey(), e.getValue());
-		}
-		
-		java.add(project.getProperty("java", "java"));
-		String javaagent = project.getProperty(Constants.JAVAAGENT);
-		if (Processor.isTrue(javaagent)) {
-			for (String agent : agents) {
-				java.add("-javaagent:" + agent);
-			}
-		}
+This instruction launches the VM with the
 
-		String jdb = getRunJdb();
-		if (jdb != null) {
-			int port = 1044;
-			try {
-				port = Integer.parseInt(project.getProperty(Constants.RUNJDB));
-			}
-			catch (Exception e) {
-				// ok, value can also be ok, or on, or true
-			}
-			String suspend = port > 0 ? "y" : "n";
+    -agentlib:jdwp=transport=dt_socket,server=y,address=<address>,suspend=y
+ 
+ command line argument.
 
-			java.add("-Xrunjdwp:server=y,transport=dt_socket,address=" + Math.abs(port) + ",suspend=" + suspend);
-		}
-		
-		java.add("-cp");
-		java.add(Processor.join(getClasspath(), File.pathSeparator));
-		java.addAll(getRunVM());
-		java.add(getMainTypeName());
-		java.addAll(getRunProgramArgs());
-		if (timeout != 0)
-			java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
+The socket transport address can include a host name (or IP address) and a port. For example:
 
-		File cwd = getCwd();
-		if (cwd != null)
-			java.setCwd(cwd);
+    -runjdb: localhost:10001
 
-		project.trace("cmd line %s", java);
-		try {
-			int result = java.execute(System.in, System.err, System.err);
-			if (result == Integer.MIN_VALUE)
-				return TIMEDOUT;
-			reportResult(result);
-			return result;
-		}
-		finally {
-			cleanup();
-			listeners.clear();
-		}
-	}
+The socket transport address can be just a port number. For example:
+
+    -runjdb: 10001
+
+Note: Starting with Java 9, using just a port number means that the launched VM will only listen on `localhost` for the connection. If you want to remote debug, you will need to specify a host name (or IP address), or an asterisk (`*`) to accept from any host. For example:
+
+    -runjdb: *:10001
+
+If the socket transport address starts with a minus sign (`-`), then the launched VM is not suspended: `suspend=n`. The minus sign is removed from the socket transport address before it is used for the `address` option.
+
+If the specified socket transport address is not a port number or a host:port value, then the address `1044` is used.
