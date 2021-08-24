@@ -68,8 +68,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
 			t.getConvention()
 				.getPlugins()
 				.put(BundleTaskExtension.NAME, new BundleTaskConvention(extension, t));
-			if (defaultBndfile.getAsFile()
-				.isFile()) {
+			if (unwrapFile(defaultBndfile).isFile()) {
 				extension.getBndfile()
 					.convention(defaultBndfile);
 			}
@@ -96,7 +95,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
 		});
 
 		baseline.defaultDependencies(deps -> {
-			Baseline task = baselineTask.get();
+			Baseline task = unwrap(baselineTask);
 			Jar bundleTask = task.getBundleTask();
 			if (Objects.nonNull(bundleTask)) {
 				String archiveBaseName = unwrap(bundleTask.getArchiveBaseName());
