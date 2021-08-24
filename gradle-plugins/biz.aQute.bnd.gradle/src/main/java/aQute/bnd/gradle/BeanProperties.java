@@ -1,5 +1,7 @@
 package aQute.bnd.gradle;
 
+import static aQute.bnd.gradle.BndUtils.unwrapFile;
+import static aQute.bnd.gradle.BndUtils.unwrapOrNull;
 import static java.lang.invoke.MethodHandles.publicLookup;
 
 import java.lang.invoke.MethodHandle;
@@ -58,10 +60,10 @@ public class BeanProperties extends Properties {
 
 	private static Object unwrap(Object value) {
 		if (value instanceof Provider) {
-			value = ((Provider<?>) value).getOrNull();
+			value = unwrapOrNull((Provider<?>) value);
 		}
 		if (value instanceof FileSystemLocation) {
-			value = ((FileSystemLocation) value).getAsFile();
+			value = unwrapFile((FileSystemLocation) value);
 		}
 		return value;
 	}

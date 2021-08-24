@@ -15,13 +15,13 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.Directory;
 import org.gradle.api.initialization.Settings;
-import org.gradle.api.internal.DynamicObjectAware;
+import org.gradle.api.internal.plugins.DslObject;
 import org.gradle.api.invocation.Gradle;
-import org.gradle.api.plugins.ExtensionAware;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.tasks.Delete;
 import org.gradle.internal.metaobject.DynamicInvokeResult;
 import org.gradle.internal.metaobject.DynamicObject;
+import org.gradle.language.base.plugins.LifecycleBasePlugin;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exceptions.Exceptions;
@@ -60,7 +60,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 	}
 
 	private void configureSettings(Settings settings) throws Exception {
-		DynamicObject dynamicObject = ((DynamicObjectAware) settings).getAsDynamicObject();
+		DynamicObject dynamicObject = new DslObject(settings).getAsDynamicObject();
 
 		/* Start with the declared build project name */
 		DynamicInvokeResult result = dynamicObject.tryGetProperty("bnd_build");
@@ -127,7 +127,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 
 		/* Add cnf project to the graph */
 		result = dynamicObject.tryGetProperty("cnf");
-		String cnf = result.isFound() ? (String) result.getValue() : "cnf";
+		String cnf = result.isFound() ? (String) result.getValue() : Workspace.CNFDIR;
 		projectNames.add(cnf);
 
 		/* Add any projects which must always be included */
@@ -147,8 +147,8 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 		/* Remove any projects which are composite builds */
 		projectNames.removeIf(projectName -> {
 			File projectDir = new File(rootDir, projectName);
-			return new File(projectDir, "settings.gradle").isFile()
-				|| new File(projectDir, "settings.gradle.kts").isFile();
+			return new File(projectDir, Settings.DEFAULT_SETTINGS_FILE).isFile()
+				|| new File(projectDir, Settings.DEFAULT_SETTINGS_FILE + ".kts").isFile();
 		});
 
 		/* Initialize the Bnd workspace */
@@ -232,7 +232,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 		String bnd_cnf = (String) workspace.findProperty("bnd_cnf");
 		if (Objects.isNull(bnd_cnf)) {
 			// if not passed from settings
-			bnd_cnf = "cnf";
+			bnd_cnf = Workspace.CNFDIR;
 			ext.set("bnd_cnf", bnd_cnf);
 		}
 		Workspace bndWorkspace = (Workspace) workspace.findProperty("bndWorkspace");
@@ -261,8 +261,8 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 					.dir("cache");
 				cnfProject.getTasks()
 					.register("cleanCache", Delete.class, t -> {
-						t.setDescription("Clean the cache folder.");
-						t.setGroup("build");
+						t.setDescription("Clean the cnf cache folder.");
+						t.setGroup(LifecycleBasePlugin.BUILD_GROUP);
 						t.delete(cacheDir);
 					});
 			}
@@ -272,7 +272,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 	}
 
 	private static void bndWorkspaceConfigure(Workspace workspace, Gradle gradle) {
-		ExtraPropertiesExtension ext = ((ExtensionAware) gradle).getExtensions()
+		ExtraPropertiesExtension ext = new DslObject(gradle).getExtensions()
 			.getExtraProperties();
 		if (ext.has("bndWorkspaceConfigure")) {
 			Object bndWorkspaceConfigure = ext.get("bndWorkspaceConfigure");
@@ -286,7 +286,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 				action.execute(workspace);
 			} else {
 				throw new GradleException(
-					String.format("The bndWorkspaceConfigure %s is not a Closure or a Action", bndWorkspaceConfigure));
+					String.format("The bndWorkspaceConfigure %s is not a Closure or an Action", bndWorkspaceConfigure));
 			}
 		}
 	}

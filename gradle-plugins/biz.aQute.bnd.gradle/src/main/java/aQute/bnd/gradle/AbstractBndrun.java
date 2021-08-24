@@ -15,6 +15,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
@@ -154,7 +155,7 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 		} else {
 			SourceSet mainSourceSet = sourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
 			Configuration archivesConfiguration = project.getConfigurations()
-				.getByName("archives");
+				.getByName(Dependency.ARCHIVES_CONFIGURATION);
 			bundles(mainSourceSet.getRuntimeClasspath());
 			bundles(archivesConfiguration.getArtifacts()
 				.getFiles());

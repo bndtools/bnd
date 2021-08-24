@@ -4,6 +4,7 @@ import static aQute.bnd.gradle.BndUtils.isGradleCompatible;
 import static aQute.bnd.gradle.BndUtils.jarLibraryElements;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.sourceSets;
+import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
 import static aQute.bnd.osgi.Processor.isTrue;
 import static aQute.bnd.osgi.Processor.removeDuplicateMarker;
@@ -417,10 +418,10 @@ public class BndPlugin implements Plugin<Project> {
 				.configureEach(t -> {
 					CompileOptions options = t.getOptions();
 					if (javacSource.isPresent()) {
-						t.setSourceCompatibility(javacSource.get());
+						t.setSourceCompatibility(unwrap(javacSource));
 					}
 					if (javacTarget.isPresent()) {
-						t.setTargetCompatibility(javacTarget.get());
+						t.setTargetCompatibility(unwrap(javacTarget));
 					}
 					if (javacSource.isPresent() && javacTarget.isPresent()) {
 						Property<Boolean> supportsRelease = objects.property(Boolean.class)
@@ -433,8 +434,8 @@ public class BndPlugin implements Plugin<Project> {
 								if (supportsRelease.getOrElse(Boolean.valueOf(JavaVersion.current()
 									.isJava9Compatible()))
 									.booleanValue()) {
-									JavaVersion sourceVersion = JavaVersion.toVersion(javacSource.get());
-									JavaVersion targetVersion = JavaVersion.toVersion(javacTarget.get());
+									JavaVersion sourceVersion = JavaVersion.toVersion(unwrap(javacSource));
+									JavaVersion targetVersion = JavaVersion.toVersion(unwrap(javacTarget));
 									if (Objects.equals(sourceVersion, targetVersion) && javacBootclasspath.isEmpty()
 										&& !javacProfile.isPresent()) {
 										return Integer.valueOf(sourceVersion.getMajorVersion());
@@ -474,9 +475,8 @@ public class BndPlugin implements Plugin<Project> {
 								if (t.getOptions()
 									.getRelease()
 									.isPresent()) {
-									logger.info("--release {} {}", t.getOptions()
-										.getRelease()
-										.get(),
+									logger.info("--release {} {}", unwrap(t.getOptions()
+										.getRelease()),
 										Strings.join(" ", t.getOptions()
 											.getAllCompilerArgs()));
 								} else {
@@ -802,10 +802,9 @@ public class BndPlugin implements Plugin<Project> {
 			TaskProvider<Task> echo = tasks.register("echo", t -> {
 				t.setDescription("Displays the bnd project information.");
 				t.setGroup(HelpTasksPlugin.HELP_GROUP);
-				JavaCompile compileJava = tasks.named(JavaPlugin.COMPILE_JAVA_TASK_NAME, JavaCompile.class)
-					.get();
-				JavaCompile compileTestJava = tasks.named(JavaPlugin.COMPILE_TEST_JAVA_TASK_NAME, JavaCompile.class)
-					.get();
+				JavaCompile compileJava = unwrap(tasks.named(JavaPlugin.COMPILE_JAVA_TASK_NAME, JavaCompile.class));
+				JavaCompile compileTestJava = unwrap(
+					tasks.named(JavaPlugin.COMPILE_TEST_JAVA_TASK_NAME, JavaCompile.class));
 				t.doLast("echo", new Action<Task>() {
 					@Override
 					public void execute(Task tt) {
@@ -818,18 +817,14 @@ public class BndPlugin implements Plugin<Project> {
 								.getProjectDirectory());
 							f.format("project.name:           %s%n", project.getName());
 							f.format("project.dir:            %s%n", layout.getProjectDirectory());
-							f.format("target:                 %s%n", layout.getBuildDirectory()
-								.get()
-								.getAsFile());
+							f.format("target:                 %s%n", unwrapFile(layout.getBuildDirectory()));
 							f.format("project.dependson:      %s%n", dependson);
 							f.format("project.sourcepath:     %s%n",
 								sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
 									.getAllSource()
 									.getSourceDirectories()
 									.getAsPath());
-							f.format("project.output:         %s%n", compileJava.getDestinationDirectory()
-								.get()
-								.getAsFile());
+							f.format("project.output:         %s%n", unwrapFile(compileJava.getDestinationDirectory()));
 							f.format("project.buildpath:      %s%n", compileJava.getClasspath()
 								.getAsPath());
 							f.format("project.allsourcepath:  %s%n", allSrcDirs.getAsPath());
@@ -838,9 +833,8 @@ public class BndPlugin implements Plugin<Project> {
 									.getAllSource()
 									.getSourceDirectories()
 									.getAsPath());
-							f.format("project.testoutput:     %s%n", compileTestJava.getDestinationDirectory()
-								.get()
-								.getAsFile());
+							f.format("project.testoutput:     %s%n",
+								unwrapFile(compileTestJava.getDestinationDirectory()));
 							f.format("project.testpath:       %s%n", compileTestJava.getClasspath()
 								.getAsPath());
 							FileCollection bootstrapClasspath = compileJava.getOptions()

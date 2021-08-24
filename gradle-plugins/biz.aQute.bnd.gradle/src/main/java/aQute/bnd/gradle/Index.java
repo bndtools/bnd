@@ -213,8 +213,7 @@ public class Index extends DefaultTask {
 			.convention(getProject().getLayout()
 				.getBuildDirectory());
 		base = objects.property(URI.class)
-			.convention(destinationDirectory.map(d -> d.getAsFile()
-				.toURI()));
+			.convention(destinationDirectory.map(d -> unwrapFile(d).toURI()));
 		indexUncompressed = objects.fileProperty()
 			.convention(destinationDirectory.file(indexName));
 		indexCompressed = objects.fileProperty()
