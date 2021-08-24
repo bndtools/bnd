@@ -16,6 +16,7 @@ import org.gradle.api.artifacts.ExternalDependency;
 import org.gradle.api.artifacts.ModuleDependency;
 import org.gradle.api.artifacts.ResolveException;
 import org.gradle.api.file.RegularFile;
+import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.Jar;
@@ -60,7 +61,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
 		TaskContainer tasks = project.getTasks();
 
 		@SuppressWarnings("deprecation")
-		TaskProvider<Jar> jar = tasks.named("jar", Jar.class, t -> {
+		TaskProvider<Jar> jar = tasks.named(JavaPlugin.JAR_TASK_NAME, Jar.class, t -> {
 			t.setDescription("Assembles a bundle containing the main classes.");
 			BundleTaskExtension extension = t.getExtensions()
 				.create(BundleTaskExtension.NAME, BundleTaskExtension.class, t);
