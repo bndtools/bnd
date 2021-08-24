@@ -15,9 +15,8 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.Directory;
 import org.gradle.api.initialization.Settings;
-import org.gradle.api.internal.DynamicObjectAware;
+import org.gradle.api.internal.plugins.DslObject;
 import org.gradle.api.invocation.Gradle;
-import org.gradle.api.plugins.ExtensionAware;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.tasks.Delete;
 import org.gradle.internal.metaobject.DynamicInvokeResult;
@@ -61,7 +60,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 	}
 
 	private void configureSettings(Settings settings) throws Exception {
-		DynamicObject dynamicObject = ((DynamicObjectAware) settings).getAsDynamicObject();
+		DynamicObject dynamicObject = new DslObject(settings).getAsDynamicObject();
 
 		/* Start with the declared build project name */
 		DynamicInvokeResult result = dynamicObject.tryGetProperty("bnd_build");
@@ -273,7 +272,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 	}
 
 	private static void bndWorkspaceConfigure(Workspace workspace, Gradle gradle) {
-		ExtraPropertiesExtension ext = ((ExtensionAware) gradle).getExtensions()
+		ExtraPropertiesExtension ext = new DslObject(gradle).getExtensions()
 			.getExtraProperties();
 		if (ext.has("bndWorkspaceConfigure")) {
 			Object bndWorkspaceConfigure = ext.get("bndWorkspaceConfigure");
