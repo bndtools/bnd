@@ -49,7 +49,7 @@ public class Utils {
 	public static final Pattern	RESOLVE_MESSAGE_P		= Pattern.compile(		//
 		"(?:org\\.osgi\\.service\\.resolver\\.ResolutionException: )?"			//
 			+ "(?<msg>[^:]+): # prefix\n"										//
-			+ "(?<bsn>[^\\s]+)  # the bsn\n"									//
+			+ "(?<bsn>\\S+)  # the bsn\n"										//
 			+ "(?<version>[^:]+): # version\n"									//
 			+ "missing requirement Require\\[ # upto the requirement\n"			//
 			+ "(?<ns>[^\\]]+)\\] # namespace\n"									//

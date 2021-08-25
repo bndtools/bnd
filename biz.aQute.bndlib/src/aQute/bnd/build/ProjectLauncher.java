@@ -576,7 +576,7 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	private static final Pattern RUNJDB_P = Pattern
-		.compile("^\\s*(?<sign>[-+])?(?<address>(?:[^\\s]+:)?\\d{1,5})\\s*$");
+		.compile("^\\s*(?<sign>[-+])?(?<address>(?:\\S+:)?\\d{1,5})\\s*$");
 
 	public String getRunJdb() {
 		return getProject().getProperty(Constants.RUNJDB);

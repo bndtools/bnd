@@ -1643,7 +1643,7 @@ public class MacroTest {
 		try (Processor p = new Processor()) {
 			p.setProperty("specs", "a0,b0, c0,    d0");
 			Macro m = new Macro(p);
-			assertEquals("xa0y,xb0y,xc0y,xd0y", m.process("${replace;${specs};([^\\s]+);x$1y}"));
+			assertEquals("xa0y,xb0y,xc0y,xd0y", m.process("${replace;${specs};(\\S+);x$1y}"));
 			assertEquals("a,b,c,d", m.process("${replace;${specs};0}"));
 		} catch (IOException e) {
 			fail(e);
