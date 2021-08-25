@@ -513,7 +513,7 @@ public class ReplacerTest {
 		Processor p = new Processor();
 		p.getMap()
 			.put("specs", "a,b, c,    d");
-		assertEquals("xay,xby,xcy,xdy", p.process("${replace;${specs};([^\\s]+);x$1y}"));
+		assertEquals("xay,xby,xcy,xdy", p.process("${replace;${specs};(\\S+);x$1y}"));
 		p.check();
 	}
 
