@@ -43,7 +43,8 @@ test-reports: demotest-reports
 -buildrepo:
 -releaserepo:
 Export-Package: \
-	test.api
+	test.api,\
+	test.api2
 
 -runproperties.testlauncher1: in.project=project
 -runproperties.testlauncher2: in.bndrun=project

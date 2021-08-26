@@ -11,6 +11,7 @@ import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.diff.Delta;
@@ -152,7 +153,7 @@ public class DiffTest extends TestCase {
 		DiffPluginImpl differ = new DiffPluginImpl();
 		Baseline baseline = new Baseline(processor, differ);
 
-		Info info = baseline.baseline(newer, older, null)
+		Info info = baseline.baseline(newer, older, new Instructions("test.api"))
 			.iterator()
 			.next();
 
@@ -176,7 +177,7 @@ public class DiffTest extends TestCase {
 			DiffPluginImpl differ = new DiffPluginImpl();
 			Baseline baseline = new Baseline(processor, differ);
 
-			Info info = baseline.baseline(newer, older, null)
+			Info info = baseline.baseline(newer, older, new Instructions("test.api"))
 				.iterator()
 				.next();
 
@@ -190,6 +191,34 @@ public class DiffTest extends TestCase {
 			assertThat(diff.getDelta()).isEqualTo(Delta.MAJOR);
 			diff = info.packageDiff.get("test.api.Interf");
 			assertThat(diff.getDelta()).isEqualTo(Delta.MAJOR);
+			assertThat(info.mismatch).isFalse();
+			show(info.packageDiff, 2);
+		}
+	}
+
+	public void testBaselineOverridePackage() throws Exception {
+		try (Jar older = new Jar(IO.getFile("../demo/generated/demo.jar")); Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setExportPackage("test.api2");
+			b.build();
+			assertTrue(b.check());
+			Jar newer = b.getJar();
+
+			Processor processor = new Processor();
+
+			DiffPluginImpl differ = new DiffPluginImpl();
+			Baseline baseline = new Baseline(processor, differ);
+
+			Info info = baseline.baseline(newer, older, new Instructions("test.api2"))
+				.iterator()
+				.next();
+
+			Diff diff = info.packageDiff;
+			assertThat(diff.getDelta()).isEqualTo(Delta.MAJOR);
+			diff = info.packageDiff.get("test.api2.A");
+			assertThat(diff.getDelta()).isEqualTo(Delta.UNCHANGED);
+			diff = info.packageDiff.get("test.api2.B");
+			assertThat(diff.getDelta()).isEqualTo(Delta.REMOVED);
 			assertThat(info.mismatch).isFalse();
 			show(info.packageDiff, 2);
 		}

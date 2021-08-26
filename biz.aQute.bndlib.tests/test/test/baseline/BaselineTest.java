@@ -719,7 +719,7 @@ public class BaselineTest extends TestCase {
 
 			Collection<? extends Diff> children = packageDiff.getChildren();
 
-			assertEquals(3, children.size());
+			assertEquals(4, children.size());
 
 			Iterator<? extends Diff> iterator = children.iterator();
 
