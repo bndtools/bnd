@@ -113,6 +113,7 @@ class JavaElement {
 		"org.osgi.annotation.versioning.ProviderType");
 	static final Set<String>			CONSUMER_TYPE		= Sets.of("aQute.bnd.annotation.ConsumerType",
 		"org.osgi.annotation.versioning.ConsumerType");
+	static final Set<String>			VERSION_ANNOTATION	= Sets.of("org.osgi.annotation.versioning.Version");
 	final Analyzer						analyzer;
 	final Map<PackageRef, Instructions>	providerMatcher		= Create.map();
 	final Map<TypeRef, Integer>			innerAccess			= new HashMap<>();
@@ -208,6 +209,17 @@ class JavaElement {
 			PackageRef pkg = entry.getKey();
 			String version = exports.get(pkg)
 				.get(Constants.VERSION_ATTRIBUTE);
+			if (version == null) { // fallback to Version annotation
+				version = children.stream()
+					.filter(child -> (child.getType() == ANNOTATED) && VERSION_ANNOTATION.contains(child.getName()))
+					.flatMap(child -> Arrays.stream(child.getChildren()))
+					.filter(grandchild -> grandchild.getType() == PROPERTY)
+					.map(Element::getName)
+					.filter(property -> property.startsWith("value='"))
+					.map(property -> property.substring(7, property.length() - 1))
+					.findFirst()
+					.orElse(null);
+			}
 			if (version != null) {
 				Version v = new Version(version);
 				children.add(new Element(VERSION, v.toStringWithoutQualifier(), null, IGNORED, IGNORED, null));
