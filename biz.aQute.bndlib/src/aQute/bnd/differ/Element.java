@@ -129,7 +129,7 @@ class Element implements Tree {
 	}
 
 	@Override
-	public Tree[] getChildren() {
+	public Element[] getChildren() {
 		return children;
 	}
 

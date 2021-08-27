@@ -666,11 +666,11 @@ public class BaselineTest extends TestCase {
 
 			Diff packageDiff = change.packageDiff;
 
-			Collection<? extends Diff> children = packageDiff.getChildren();
+			Collection<Diff> children = packageDiff.getChildren();
 
 			assertEquals(5, children.size());
 
-			Iterator<? extends Diff> iterator = children.iterator();
+			Iterator<Diff> iterator = children.iterator();
 
 			Diff diff = iterator.next();
 			assertEquals(Delta.MICRO, diff.getDelta());
@@ -717,11 +717,11 @@ public class BaselineTest extends TestCase {
 
 			Diff packageDiff = change.packageDiff;
 
-			Collection<? extends Diff> children = packageDiff.getChildren();
+			Collection<Diff> children = packageDiff.getChildren();
 
 			assertEquals(4, children.size());
 
-			Iterator<? extends Diff> iterator = children.iterator();
+			Iterator<Diff> iterator = children.iterator();
 
 			Diff diff = iterator.next();
 			assertEquals(Delta.UNCHANGED, diff.getDelta());

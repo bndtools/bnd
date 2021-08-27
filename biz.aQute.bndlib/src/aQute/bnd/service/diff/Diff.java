@@ -30,7 +30,7 @@ public interface Diff {
 
 	Tree getNewer();
 
-	Collection<? extends Diff> getChildren();
+	Collection<Diff> getChildren();
 
 	Diff get(String name);
 

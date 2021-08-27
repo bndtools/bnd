@@ -21,11 +21,11 @@ public class XmlRepoDifferTest {
 		Tree olderTree = XmlRepoDiffer.resource(IO.getFile("testresources/xmlrepo/older.xml"));
 
 		Diff diff = newerTree.diff(olderTree);
-		Collection<? extends Diff> resources = diff.getChildren();
+		Collection<Diff> resources = diff.getChildren();
 
 		for (Diff resourceDiff : resources) {
 			String resourceName = resourceDiff.getName();
-			Collection<? extends Diff> resourceElements = resourceDiff.getChildren();
+			Collection<Diff> resourceElements = resourceDiff.getChildren();
 
 			if (resourceName.equals("org.apache.felix.cm.json")) {
 				assertThat(resourceDiff.getDelta()).isEqualTo(Delta.UNCHANGED);
@@ -53,7 +53,7 @@ public class XmlRepoDifferTest {
 							.get("bnd.maven:org.apache.felix:org.apache.felix.configadmin");
 						assertThat(bndMavenCapDiff.getDelta()).isEqualTo(Delta.MAJOR);
 
-						Collection<? extends Diff> bndMavenCapDiffAttributes = bndMavenCapDiff.getChildren();
+						Collection<Diff> bndMavenCapDiffAttributes = bndMavenCapDiff.getChildren();
 						for (Diff df : bndMavenCapDiffAttributes) {
 							String name = df.getName();
 							if (df.getType() == Type.ATTRIBUTE) {
@@ -69,7 +69,7 @@ public class XmlRepoDifferTest {
 						Diff identityCapDiff = resourceElement.get("osgi.identity:org.apache.felix.configadmin");
 						assertThat(identityCapDiff.getDelta()).isEqualTo(Delta.MAJOR);
 
-						Collection<? extends Diff> identityCapDiffAttributes = identityCapDiff.getChildren();
+						Collection<Diff> identityCapDiffAttributes = identityCapDiff.getChildren();
 						for (Diff df : identityCapDiffAttributes) {
 							String name = df.getName();
 							if (df.getType() == Type.ATTRIBUTE) {
@@ -141,7 +141,7 @@ public class XmlRepoDifferTest {
 
 				for (Diff resourceElement : resourceElements) {
 					Type type = resourceElement.getType();
-					Collection<? extends Diff> children = resourceElement.getChildren();
+					Collection<Diff> children = resourceElement.getChildren();
 					if (type == Type.REQUIREMENTS) {
 						assertThat(resourceElement.getDelta()).isEqualTo(Delta.REMOVED);
 
@@ -252,11 +252,11 @@ public class XmlRepoDifferTest {
 		Tree olderTree = XmlRepoDiffer.resource(IO.getFile("testresources/xmlrepo/older.xml"), true);
 
 		Diff diff = newerTree.diff(olderTree);
-		Collection<? extends Diff> resources = diff.getChildren();
+		Collection<Diff> resources = diff.getChildren();
 
 		for (Diff resourceDiff : resources) {
 			String resourceName = resourceDiff.getName();
-			Collection<? extends Diff> resourceElements = resourceDiff.getChildren();
+			Collection<Diff> resourceElements = resourceDiff.getChildren();
 
 			if (resourceName.equals("org.apache.felix.configadmin")) {
 				assertThat(resourceDiff.getDelta()).isEqualTo(Delta.MAJOR);
