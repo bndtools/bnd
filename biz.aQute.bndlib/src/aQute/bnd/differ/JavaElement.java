@@ -24,6 +24,7 @@ import static aQute.bnd.service.diff.Type.PROPERTY;
 import static aQute.bnd.service.diff.Type.RETURN;
 import static aQute.bnd.service.diff.Type.VERSION;
 
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -425,12 +426,13 @@ class JavaElement {
 			 * element contains either PROPERTY children or ANNOTATED children.
 			 */
 			private Element annotatedToElement(Annotation annotation) {
+				Delta delta = (annotation.getRetentionPolicy() == RetentionPolicy.RUNTIME) ? CHANGED : MICRO;
 				Collection<Element> properties = Create.set();
 				for (Entry<String, Object> entry : annotation.entrySet()) {
-					addAnnotationMember(properties, entry.getKey(), entry.getValue());
+					addAnnotationMember(properties, entry.getKey(), entry.getValue(), delta);
 				}
 				return new Element(ANNOTATED, annotation.getName()
-					.getFQN(), properties, CHANGED, CHANGED, null);
+					.getFQN(), properties, delta, delta, null);
 			}
 
 			/*
@@ -439,14 +441,14 @@ class JavaElement {
 			 * will repeat recursively but suffixes the key with the index, or a
 			 * simple value which is turned into a string.
 			 */
-			private void addAnnotationMember(Collection<Element> properties, String key, Object member) {
+			private void addAnnotationMember(Collection<Element> properties, String key, Object member, Delta delta) {
 				if (member instanceof Annotation) {
 					properties.add(annotatedToElement((Annotation) member));
 				} else if (member.getClass()
 					.isArray()) {
 					int l = Array.getLength(member);
 					for (int i = 0; i < l; i++) {
-						addAnnotationMember(properties, key + "." + i, Array.get(member, i));
+						addAnnotationMember(properties, key + "." + i, Array.get(member, i), delta);
 					}
 				} else {
 					StringBuilder sb = new StringBuilder();
@@ -459,7 +461,7 @@ class JavaElement {
 					} else
 						sb.append(member);
 
-					properties.add(new Element(PROPERTY, sb.toString(), null, CHANGED, CHANGED, null));
+					properties.add(new Element(PROPERTY, sb.toString(), null, delta, delta, null));
 				}
 			}
 
