@@ -57,6 +57,7 @@ import aQute.bnd.osgi.Packages;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Type;
 import aQute.bnd.stream.MapStream;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
 import aQute.libg.generics.Create;
@@ -108,6 +109,10 @@ class JavaElement {
 	static final Element				DOUBLE_R			= new Element(RETURN, "double");
 	static final Element				OBJECT_R			= new Element(RETURN, "java.lang.Object");
 
+	static final Set<String>			PROVIDER_TYPE		= Sets.of("aQute.bnd.annotation.ProviderType",
+		"org.osgi.annotation.versioning.ProviderType");
+	static final Set<String>			CONSUMER_TYPE		= Sets.of("aQute.bnd.annotation.ConsumerType",
+		"org.osgi.annotation.versioning.ConsumerType");
 	final Analyzer						analyzer;
 	final Map<PackageRef, Instructions>	providerMatcher		= Create.map();
 	final Map<TypeRef, Integer>			innerAccess			= new HashMap<>();
@@ -185,16 +190,29 @@ class JavaElement {
 		Set<Element> result = new HashSet<>();
 
 		for (Map.Entry<PackageRef, List<Element>> entry : packages.entrySet()) {
-			List<Element> set = entry.getValue();
-			set.removeIf(element -> notAccessible.contains(analyzer.getTypeRefFromFQN(element.getName())));
-			String version = exports.get(entry.getKey())
+			List<Element> children = entry.getValue();
+			children.removeIf(child -> notAccessible.contains(analyzer.getTypeRefFromFQN(child.getName())));
+			// Find package-info in children, if present, and hoist its
+			// annotations into the package's children and remove the
+			// package-info child
+			children.stream()
+				.filter(child -> child.getName()
+					.endsWith(".package-info"))
+				.findFirst()
+				.ifPresent(child -> {
+					children.remove(child);
+					Arrays.stream(child.getChildren())
+						.filter(grandchild -> grandchild.getType() == ANNOTATED)
+						.forEach(grandchild -> children.add(grandchild));
+				});
+			PackageRef pkg = entry.getKey();
+			String version = exports.get(pkg)
 				.get(Constants.VERSION_ATTRIBUTE);
 			if (version != null) {
 				Version v = new Version(version);
-				set.add(new Element(VERSION, v.toStringWithoutQualifier(), null, IGNORED, IGNORED, null));
+				children.add(new Element(VERSION, v.toStringWithoutQualifier(), null, IGNORED, IGNORED, null));
 			}
-			Element pd = new Element(PACKAGE, entry.getKey()
-				.getFQN(), set, MINOR, MAJOR, null);
+			Element pd = new Element(PACKAGE, pkg.getFQN(), children, MINOR, MAJOR, null);
 			result.add(pd);
 		}
 
@@ -377,17 +395,13 @@ class JavaElement {
 					members.add(e);
 
 					//
-					// Check for the provider/consumer. We use strings because
-					// these are not officially
-					// released yet
+					// Check for the provider/consumer
 					//
 					String name = annotation.getName()
 						.getFQN();
-					if ("aQute.bnd.annotation.ProviderType".equals(name)
-						|| "org.osgi.annotation.versioning.ProviderType".equals(name)) {
+					if (PROVIDER_TYPE.contains(name)) {
 						provider.set(true);
-					} else if ("aQute.bnd.annotation.ConsumerType".equals(name)
-						|| "org.osgi.annotation.versioning.ConsumerType".equals(name)) {
+					} else if (CONSUMER_TYPE.contains(name)) {
 						provider.set(false);
 					}
 				} else if (last != null)
