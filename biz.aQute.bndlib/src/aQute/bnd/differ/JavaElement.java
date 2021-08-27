@@ -302,24 +302,22 @@ class JavaElement {
 
 			@Override
 			public void extendsClass(TypeRef name) throws Exception {
-				String comment = null;
-				if (!clazz.isInterface())
-					comment = inherit(members, name);
-
+				if (!clazz.isInterface()) {
+					inherit(members, name);
+				}
 				Clazz c = analyzer.findClass(name);
 				if ((c == null || c.isPublic()) && !name.isObject())
-					members.add(new Element(EXTENDS, name.getFQN(), null, MICRO, MAJOR, comment));
+					members.add(new Element(EXTENDS, name.getFQN(), null, MICRO, MAJOR, null));
 			}
 
 			@Override
-			public void implementsInterfaces(TypeRef names[]) throws Exception {
+			public void implementsInterfaces(TypeRef[] names) throws Exception {
 				Arrays.sort(names); // ignore type reordering
 				for (TypeRef name : names) {
-
-					String comment = null;
-					if (clazz.isInterface() || clazz.isAbstract())
-						comment = inherit(members, name);
-					members.add(new Element(IMPLEMENTS, name.getFQN(), null, MINOR, MAJOR, comment));
+					if (clazz.isInterface() || clazz.isAbstract()) {
+						inherit(members, name);
+					}
+					members.add(new Element(IMPLEMENTS, name.getFQN(), null, MINOR, MAJOR, null));
 				}
 			}
 
@@ -327,7 +325,7 @@ class JavaElement {
 			 */
 			Set<Element> OBJECT = Create.set();
 
-			public String inherit(final Set<Element> members, TypeRef name) throws Exception {
+			private void inherit(final Set<Element> members, TypeRef name) throws Exception {
 				if (name.isObject()) {
 					if (OBJECT.isEmpty()) {
 						Clazz c = analyzer.findClass(name);
@@ -335,43 +333,47 @@ class JavaElement {
 							// Bnd fails on Java 9 class files #1598
 							// Caused by Java 9 not making class rsources
 							// available
-							return null;
+							return;
 						}
 						Element s = classElement(c);
-						for (Element child : s.children) {
-							if (INHERITED.contains(child.type)) {
-								String n = child.getName();
-								if (child.type == METHOD) {
-									if (n.startsWith("<init>") || "getClass()".equals(child.getName())
+						for (Element child : s.getChildren()) {
+							if (INHERITED.contains(child.getType())) {
+								if (child.getType() == METHOD) {
+									String n = child.getName();
+									if (n.startsWith("<init>") || n.equals("getClass()")
 										|| n.startsWith("wait(") || n.startsWith("notify(")
-										|| n.startsWith("notifyAll("))
+										|| n.startsWith("notifyAll(")) {
 										continue;
+									}
 								}
-								if (isStatic(child))
+								if (isStatic(child)) {
 									continue;
+								}
 								OBJECT.add(child);
 							}
 						}
 					}
 					members.addAll(OBJECT);
 				} else {
-
 					Clazz c = analyzer.findClass(name);
 					if (c == null) {
-						return inherit(members, analyzer.getTypeRef("java/lang/Object"));
+						inherit(members, analyzer.getTypeRef("java/lang/Object"));
+						return;
 					}
 					Element s = classElement(c);
-					for (Element child : s.children) {
-
-						if (isStatic(child))
-							continue;
-
-						if (INHERITED.contains(child.type) && !child.name.startsWith("<")) {
+					for (Element child : s.getChildren()) {
+						if (INHERITED.contains(child.getType())) {
+							if (child.getName()
+								.startsWith("<")) {
+								continue;
+							}
+							if (isStatic(child)) {
+								continue;
+							}
 							members.add(child);
 						}
 					}
 				}
-				return null;
 			}
 
 			private boolean isStatic(Element child) {

@@ -257,9 +257,9 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 	public Data serialize() {
 		Data data = new Data();
 		data.type = getType();
-		data.delta = delta;
+		data.delta = getDelta();
 		data.name = getName();
-		data.children = children.stream()
+		data.children = getChildren().stream()
 			.map(Diff::serialize)
 			.toArray(Data[]::new);
 		return data;
