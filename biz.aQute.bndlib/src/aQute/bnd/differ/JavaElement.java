@@ -27,8 +27,11 @@ import static aQute.bnd.service.diff.Type.VERSION;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,6 +40,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Manifest;
 
@@ -119,7 +123,7 @@ class JavaElement {
 	final Map<PackageRef, Instructions>	providerMatcher		= Create.map();
 	final Map<TypeRef, Integer>			innerAccess			= new HashMap<>();
 	final Set<TypeRef>					notAccessible		= Create.set();
-	final Map<Object, Element>			cache				= Create.map();
+	final Map<TypeRef, Element>			cache				= Create.map();
 	final MultiMap<PackageRef, Element>	packages;
 	final Set<JAVA>						javas				= Create.set();
 	final Packages						exports;
@@ -243,16 +247,20 @@ class JavaElement {
 	 * queue of classes/interfaces to parse.
 	 */
 	Element classElement(final Clazz clazz) throws Exception {
-		Element e = cache.get(clazz);
-		if (e != null)
-			return e;
+		final TypeRef name = clazz.getClassName();
+		//
+		// Check if we already had this clazz in the cache
+		//
+		Element classElement = cache.get(name);
+		if (classElement != null) {
+			return classElement;
+		}
 
 		final Set<Element> members = Create.set();
 		final Set<MethodDef> methods = Create.set();
 		final Set<FieldDef> fields = Create.set();
 		final MultiMap<MemberDef, Element> annotations = new MultiMap<>();
 
-		final TypeRef name = clazz.getClassName();
 
 		final String fqn = name.getFQN();
 		final String shortName = name.getShortName();
@@ -263,14 +271,6 @@ class JavaElement {
 		Instructions matchers = providerMatcher.get(name.getPackageRef());
 		boolean p = matchers != null && matchers.matches(shortName);
 		final AtomicBoolean provider = new AtomicBoolean(p);
-
-		//
-		// Check if we already had this clazz in the cache
-		//
-
-		Element before = cache.get(clazz); // for super classes
-		if (before != null)
-			return before;
 
 		clazz.parseClassFileWithCollector(new ClassDataCollector() {
 			boolean			memberEnd;
@@ -302,18 +302,45 @@ class JavaElement {
 
 			@Override
 			public void extendsClass(TypeRef name) throws Exception {
-				if (!clazz.isInterface()) {
-					inherit(members, name);
+				while (name != null) {
+					if (!clazz.isInterface()) {
+						inherit(members, name);
+					}
+					if (name.isObject()) {
+						break;
+					}
+					Clazz c = analyzer.findClass(name);
+					if ((c == null) || c.isPublic()) {
+						members.add(new Element(EXTENDS, name.getFQN(), null, MICRO, MAJOR, null));
+					}
+					if (c == null) {
+						break;
+					}
+					name = c.getSuper();
 				}
-				Clazz c = analyzer.findClass(name);
-				if ((c == null || c.isPublic()) && !name.isObject())
-					members.add(new Element(EXTENDS, name.getFQN(), null, MICRO, MAJOR, null));
 			}
 
 			@Override
 			public void implementsInterfaces(TypeRef[] names) throws Exception {
-				Arrays.sort(names); // ignore type reordering
-				for (TypeRef name : names) {
+				Deque<TypeRef> queue = new ArrayDeque<>(names.length);
+				Collections.addAll(queue, names);
+				Set<TypeRef> allInterfaces = new TreeSet<>();
+				while (!queue.isEmpty()) {
+					TypeRef name = queue.removeFirst();
+					if (!allInterfaces.contains(name)) {
+						Clazz c = analyzer.findClass(name);
+						if ((c == null) || c.isPublic()) {
+							allInterfaces.add(name);
+						}
+						if (c != null) {
+							TypeRef[] interfaces = c.getInterfaces();
+							if (interfaces != null) {
+								Collections.addAll(queue, interfaces);
+							}
+						}
+					}
+				}
+				for (TypeRef name : allInterfaces) {
 					if (clazz.isInterface() || clazz.isAbstract()) {
 						inherit(members, name);
 					}
@@ -627,9 +654,9 @@ class JavaElement {
 		access(members, access_flags, clazz.isDeprecated(), provider.get());
 
 		// And make the result
-		Element s = new Element(type, fqn, members, MINOR, MAJOR, null);
-		cache.put(clazz, s);
-		return s;
+		classElement = new Element(type, fqn, members, MINOR, MAJOR, null);
+		cache.put(name, classElement);
+		return classElement;
 	}
 
 	private String toString(TypeRef[] prototype) {

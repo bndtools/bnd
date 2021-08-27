@@ -44,7 +44,8 @@ test-reports: demotest-reports
 -releaserepo:
 Export-Package: \
 	test.api,\
-	test.api2
+	test.api2,\
+	test.api3
 
 -runproperties.testlauncher1: in.project=project
 -runproperties.testlauncher2: in.bndrun=project
