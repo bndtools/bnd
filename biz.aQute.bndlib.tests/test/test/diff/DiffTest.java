@@ -191,6 +191,10 @@ public class DiffTest extends TestCase {
 			assertThat(diff.getDelta()).isEqualTo(Delta.MAJOR);
 			diff = info.packageDiff.get("test.api.Interf");
 			assertThat(diff.getDelta()).isEqualTo(Delta.MAJOR);
+			diff = info.packageDiff.get("test.api.Interf2");
+			assertThat(diff.getDelta()).isEqualTo(Delta.MINOR);
+			diff = info.packageDiff.get("test.api.AbstractInterf2");
+			assertThat(diff.getDelta()).isEqualTo(Delta.MINOR);
 			assertThat(info.mismatch).isFalse();
 			show(info.packageDiff, 2);
 		}
