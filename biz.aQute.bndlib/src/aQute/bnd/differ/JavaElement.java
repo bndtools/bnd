@@ -160,10 +160,9 @@ class JavaElement {
 		for (Clazz c : analyzer.getClassspace()
 			.values()) {
 
-			if (c.isSynthetic())
-				continue;
-
-			if (c.isPublic() || c.isProtected()) {
+			// For a package, the annotations are in the synthetic package-info
+			// interface.
+			if ((!c.isSynthetic() && (c.isPublic() || c.isProtected())) || c.isPackageInfo()) {
 				PackageRef packageName = c.getClassName()
 					.getPackageRef();
 
