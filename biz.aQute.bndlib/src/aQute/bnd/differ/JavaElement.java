@@ -24,10 +24,14 @@ import static aQute.bnd.service.diff.Type.PROPERTY;
 import static aQute.bnd.service.diff.Type.RETURN;
 import static aQute.bnd.service.diff.Type.VERSION;
 
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +40,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Manifest;
 
@@ -57,6 +62,7 @@ import aQute.bnd.osgi.Packages;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Type;
 import aQute.bnd.stream.MapStream;
+import aQute.bnd.unmodifiable.Sets;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
 import aQute.libg.generics.Create;
@@ -108,11 +114,16 @@ class JavaElement {
 	static final Element				DOUBLE_R			= new Element(RETURN, "double");
 	static final Element				OBJECT_R			= new Element(RETURN, "java.lang.Object");
 
+	static final Set<String>			PROVIDER_TYPE		= Sets.of("aQute.bnd.annotation.ProviderType",
+		"org.osgi.annotation.versioning.ProviderType");
+	static final Set<String>			CONSUMER_TYPE		= Sets.of("aQute.bnd.annotation.ConsumerType",
+		"org.osgi.annotation.versioning.ConsumerType");
+	static final Set<String>			VERSION_ANNOTATION	= Sets.of("org.osgi.annotation.versioning.Version");
 	final Analyzer						analyzer;
 	final Map<PackageRef, Instructions>	providerMatcher		= Create.map();
 	final Map<TypeRef, Integer>			innerAccess			= new HashMap<>();
 	final Set<TypeRef>					notAccessible		= Create.set();
-	final Map<Object, Element>			cache				= Create.map();
+	final Map<TypeRef, Element>			cache				= Create.map();
 	final MultiMap<PackageRef, Element>	packages;
 	final Set<JAVA>						javas				= Create.set();
 	final Packages						exports;
@@ -185,16 +196,40 @@ class JavaElement {
 		Set<Element> result = new HashSet<>();
 
 		for (Map.Entry<PackageRef, List<Element>> entry : packages.entrySet()) {
-			List<Element> set = entry.getValue();
-			set.removeIf(element -> notAccessible.contains(analyzer.getTypeRefFromFQN(element.getName())));
-			String version = exports.get(entry.getKey())
+			List<Element> children = entry.getValue();
+			children.removeIf(child -> notAccessible.contains(analyzer.getTypeRefFromFQN(child.getName())));
+			// Find package-info in children, if present, and hoist its
+			// annotations into the package's children and remove the
+			// package-info child
+			children.stream()
+				.filter(child -> child.getName()
+					.endsWith(".package-info"))
+				.findFirst()
+				.ifPresent(child -> {
+					children.remove(child);
+					Arrays.stream(child.getChildren())
+						.filter(grandchild -> grandchild.getType() == ANNOTATED)
+						.forEach(grandchild -> children.add(grandchild));
+				});
+			PackageRef pkg = entry.getKey();
+			String version = exports.get(pkg)
 				.get(Constants.VERSION_ATTRIBUTE);
+			if (version == null) { // fallback to Version annotation
+				version = children.stream()
+					.filter(child -> (child.getType() == ANNOTATED) && VERSION_ANNOTATION.contains(child.getName()))
+					.flatMap(child -> Arrays.stream(child.getChildren()))
+					.filter(grandchild -> grandchild.getType() == PROPERTY)
+					.map(Element::getName)
+					.filter(property -> property.startsWith("value='"))
+					.map(property -> property.substring(7, property.length() - 1))
+					.findFirst()
+					.orElse(null);
+			}
 			if (version != null) {
 				Version v = new Version(version);
-				set.add(new Element(VERSION, v.toStringWithoutQualifier(), null, IGNORED, IGNORED, null));
+				children.add(new Element(VERSION, v.toStringWithoutQualifier(), null, IGNORED, IGNORED, null));
 			}
-			Element pd = new Element(PACKAGE, entry.getKey()
-				.getFQN(), set, MINOR, MAJOR, null);
+			Element pd = new Element(PACKAGE, pkg.getFQN(), children, MINOR, MAJOR, null);
 			result.add(pd);
 		}
 
@@ -212,16 +247,20 @@ class JavaElement {
 	 * queue of classes/interfaces to parse.
 	 */
 	Element classElement(final Clazz clazz) throws Exception {
-		Element e = cache.get(clazz);
-		if (e != null)
-			return e;
+		final TypeRef name = clazz.getClassName();
+		//
+		// Check if we already had this clazz in the cache
+		//
+		Element classElement = cache.get(name);
+		if (classElement != null) {
+			return classElement;
+		}
 
 		final Set<Element> members = Create.set();
 		final Set<MethodDef> methods = Create.set();
 		final Set<FieldDef> fields = Create.set();
 		final MultiMap<MemberDef, Element> annotations = new MultiMap<>();
 
-		final TypeRef name = clazz.getClassName();
 
 		final String fqn = name.getFQN();
 		final String shortName = name.getShortName();
@@ -232,14 +271,6 @@ class JavaElement {
 		Instructions matchers = providerMatcher.get(name.getPackageRef());
 		boolean p = matchers != null && matchers.matches(shortName);
 		final AtomicBoolean provider = new AtomicBoolean(p);
-
-		//
-		// Check if we already had this clazz in the cache
-		//
-
-		Element before = cache.get(clazz); // for super classes
-		if (before != null)
-			return before;
 
 		clazz.parseClassFileWithCollector(new ClassDataCollector() {
 			boolean			memberEnd;
@@ -271,24 +302,49 @@ class JavaElement {
 
 			@Override
 			public void extendsClass(TypeRef name) throws Exception {
-				String comment = null;
-				if (!clazz.isInterface())
-					comment = inherit(members, name);
-
-				Clazz c = analyzer.findClass(name);
-				if ((c == null || c.isPublic()) && !name.isObject())
-					members.add(new Element(EXTENDS, name.getFQN(), null, MICRO, MAJOR, comment));
+				while (name != null) {
+					if (!clazz.isInterface()) {
+						inherit(members, name);
+					}
+					if (name.isObject()) {
+						break;
+					}
+					Clazz c = analyzer.findClass(name);
+					if ((c == null) || c.isPublic()) {
+						members.add(new Element(EXTENDS, name.getFQN(), null, MICRO, MAJOR, null));
+					}
+					if (c == null) {
+						break;
+					}
+					name = c.getSuper();
+				}
 			}
 
 			@Override
-			public void implementsInterfaces(TypeRef names[]) throws Exception {
-				Arrays.sort(names); // ignore type reordering
-				for (TypeRef name : names) {
-
-					String comment = null;
-					if (clazz.isInterface() || clazz.isAbstract())
-						comment = inherit(members, name);
-					members.add(new Element(IMPLEMENTS, name.getFQN(), null, MINOR, MAJOR, comment));
+			public void implementsInterfaces(TypeRef[] names) throws Exception {
+				Deque<TypeRef> queue = new ArrayDeque<>(names.length);
+				Collections.addAll(queue, names);
+				Set<TypeRef> allInterfaces = new TreeSet<>();
+				while (!queue.isEmpty()) {
+					TypeRef name = queue.removeFirst();
+					if (!allInterfaces.contains(name)) {
+						Clazz c = analyzer.findClass(name);
+						if ((c == null) || c.isPublic()) {
+							allInterfaces.add(name);
+						}
+						if (c != null) {
+							TypeRef[] interfaces = c.getInterfaces();
+							if (interfaces != null) {
+								Collections.addAll(queue, interfaces);
+							}
+						}
+					}
+				}
+				for (TypeRef name : allInterfaces) {
+					if (clazz.isInterface() || clazz.isAbstract()) {
+						inherit(members, name);
+					}
+					members.add(new Element(IMPLEMENTS, name.getFQN(), null, MINOR, MAJOR, null));
 				}
 			}
 
@@ -296,7 +352,7 @@ class JavaElement {
 			 */
 			Set<Element> OBJECT = Create.set();
 
-			public String inherit(final Set<Element> members, TypeRef name) throws Exception {
+			private void inherit(final Set<Element> members, TypeRef name) throws Exception {
 				if (name.isObject()) {
 					if (OBJECT.isEmpty()) {
 						Clazz c = analyzer.findClass(name);
@@ -304,43 +360,47 @@ class JavaElement {
 							// Bnd fails on Java 9 class files #1598
 							// Caused by Java 9 not making class rsources
 							// available
-							return null;
+							return;
 						}
 						Element s = classElement(c);
-						for (Element child : s.children) {
-							if (INHERITED.contains(child.type)) {
-								String n = child.getName();
-								if (child.type == METHOD) {
-									if (n.startsWith("<init>") || "getClass()".equals(child.getName())
+						for (Element child : s.getChildren()) {
+							if (INHERITED.contains(child.getType())) {
+								if (child.getType() == METHOD) {
+									String n = child.getName();
+									if (n.startsWith("<init>") || n.equals("getClass()")
 										|| n.startsWith("wait(") || n.startsWith("notify(")
-										|| n.startsWith("notifyAll("))
+										|| n.startsWith("notifyAll(")) {
 										continue;
+									}
 								}
-								if (isStatic(child))
+								if (isStatic(child)) {
 									continue;
+								}
 								OBJECT.add(child);
 							}
 						}
 					}
 					members.addAll(OBJECT);
 				} else {
-
 					Clazz c = analyzer.findClass(name);
 					if (c == null) {
-						return inherit(members, analyzer.getTypeRef("java/lang/Object"));
+						inherit(members, analyzer.getTypeRef("java/lang/Object"));
+						return;
 					}
 					Element s = classElement(c);
-					for (Element child : s.children) {
-
-						if (isStatic(child))
-							continue;
-
-						if (INHERITED.contains(child.type) && !child.name.startsWith("<")) {
+					for (Element child : s.getChildren()) {
+						if (INHERITED.contains(child.getType())) {
+							if (child.getName()
+								.startsWith("<")) {
+								continue;
+							}
+							if (isStatic(child)) {
+								continue;
+							}
 							members.add(child);
 						}
 					}
 				}
-				return null;
 			}
 
 			private boolean isStatic(Element child) {
@@ -377,17 +437,13 @@ class JavaElement {
 					members.add(e);
 
 					//
-					// Check for the provider/consumer. We use strings because
-					// these are not officially
-					// released yet
+					// Check for the provider/consumer
 					//
 					String name = annotation.getName()
 						.getFQN();
-					if ("aQute.bnd.annotation.ProviderType".equals(name)
-						|| "org.osgi.annotation.versioning.ProviderType".equals(name)) {
+					if (PROVIDER_TYPE.contains(name)) {
 						provider.set(true);
-					} else if ("aQute.bnd.annotation.ConsumerType".equals(name)
-						|| "org.osgi.annotation.versioning.ConsumerType".equals(name)) {
+					} else if (CONSUMER_TYPE.contains(name)) {
 						provider.set(false);
 					}
 				} else if (last != null)
@@ -399,12 +455,13 @@ class JavaElement {
 			 * element contains either PROPERTY children or ANNOTATED children.
 			 */
 			private Element annotatedToElement(Annotation annotation) {
+				Delta delta = (annotation.getRetentionPolicy() == RetentionPolicy.RUNTIME) ? CHANGED : MICRO;
 				Collection<Element> properties = Create.set();
 				for (Entry<String, Object> entry : annotation.entrySet()) {
-					addAnnotationMember(properties, entry.getKey(), entry.getValue());
+					addAnnotationMember(properties, entry.getKey(), entry.getValue(), delta);
 				}
 				return new Element(ANNOTATED, annotation.getName()
-					.getFQN(), properties, CHANGED, CHANGED, null);
+					.getFQN(), properties, delta, delta, null);
 			}
 
 			/*
@@ -413,14 +470,14 @@ class JavaElement {
 			 * will repeat recursively but suffixes the key with the index, or a
 			 * simple value which is turned into a string.
 			 */
-			private void addAnnotationMember(Collection<Element> properties, String key, Object member) {
+			private void addAnnotationMember(Collection<Element> properties, String key, Object member, Delta delta) {
 				if (member instanceof Annotation) {
 					properties.add(annotatedToElement((Annotation) member));
 				} else if (member.getClass()
 					.isArray()) {
 					int l = Array.getLength(member);
 					for (int i = 0; i < l; i++) {
-						addAnnotationMember(properties, key + "." + i, Array.get(member, i));
+						addAnnotationMember(properties, key + "." + i, Array.get(member, i), delta);
 					}
 				} else {
 					StringBuilder sb = new StringBuilder();
@@ -433,7 +490,7 @@ class JavaElement {
 					} else
 						sb.append(member);
 
-					properties.add(new Element(PROPERTY, sb.toString(), null, CHANGED, CHANGED, null));
+					properties.add(new Element(PROPERTY, sb.toString(), null, delta, delta, null));
 				}
 			}
 
@@ -597,9 +654,9 @@ class JavaElement {
 		access(members, access_flags, clazz.isDeprecated(), provider.get());
 
 		// And make the result
-		Element s = new Element(type, fqn, members, MINOR, MAJOR, null);
-		cache.put(clazz, s);
-		return s;
+		classElement = new Element(type, fqn, members, MINOR, MAJOR, null);
+		cache.put(name, classElement);
+		return classElement;
 	}
 
 	private String toString(TypeRef[] prototype) {

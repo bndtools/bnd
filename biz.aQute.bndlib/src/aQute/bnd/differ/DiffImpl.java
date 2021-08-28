@@ -11,7 +11,6 @@ import static aQute.bnd.service.diff.Delta.UNCHANGED;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Formattable;
 import java.util.FormattableFlags;
@@ -24,6 +23,7 @@ import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.diff.Type;
+import aQute.bnd.unmodifiable.Lists;
 import aQute.libg.generics.Create;
 
 /**
@@ -39,7 +39,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 
 	final Tree					older;
 	final Tree					newer;
-	final Collection<DiffImpl>	children;
+	final List<Diff>		children;
 	final Delta					delta;
 
 	/**
@@ -93,11 +93,11 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 
 		int o = 0;
 		int n = 0;
-		List<DiffImpl> children = new ArrayList<>();
+		List<Diff> children = new ArrayList<>();
 		while (true) {
 			Tree nw = n < newerChildren.length ? newerChildren[n] : null;
 			Tree ol = o < olderChildren.length ? olderChildren[o] : null;
-			DiffImpl diff;
+			Diff diff;
 
 			if (nw == null && ol == null)
 				break;
@@ -130,7 +130,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 		}
 
 		// make sure they're read only
-		this.children = Collections.unmodifiableCollection(children);
+		this.children = Lists.copyOf(children);
 		delta = getDelta(null);
 	}
 
@@ -167,12 +167,14 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 
 			Delta local = Delta.UNCHANGED;
 
-			for (DiffImpl child : children) {
+			for (Diff child : children) {
 				Delta sub = child.getDelta(ignore);
 				if (sub == REMOVED)
-					sub = child.older.ifRemoved();
+					sub = child.getOlder()
+						.ifRemoved();
 				else if (sub == ADDED)
-					sub = child.newer.ifAdded();
+					sub = child.getNewer()
+						.ifAdded();
 
 				// The escalate method is used to calculate the default
 				// transition in the
@@ -197,7 +199,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 	}
 
 	@Override
-	public Collection<? extends Diff> getChildren() {
+	public Collection<Diff> getChildren() {
 		return children;
 	}
 
@@ -233,7 +235,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 
 	@Override
 	public Diff get(String name) {
-		for (DiffImpl child : children) {
+		for (Diff child : children) {
 			if (child.getName()
 				.equals(name))
 				return child;
@@ -255,14 +257,11 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 	public Data serialize() {
 		Data data = new Data();
 		data.type = getType();
-		data.delta = delta;
+		data.delta = getDelta();
 		data.name = getName();
-		data.children = new Data[children.size()];
-
-		int i = 0;
-		for (Diff d : children)
-			data.children[i++] = d.serialize();
-
+		data.children = getChildren().stream()
+			.map(Diff::serialize)
+			.toArray(Data[]::new);
 		return data;
 	}
 

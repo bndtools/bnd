@@ -14,7 +14,6 @@ import java.util.Formatter;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,56 +173,39 @@ public class Baseline {
 						default :
 							break;
 					}
-					Stream<? extends Diff> children;
 					switch (diff.getType()) {
 						case PACKAGE :
-							// For a package, the annotations are in the
-							// synthetic package-info interface.
-							children = diff.getChildren()
-								.stream()
-								.flatMap(child -> child.getName()
-									.endsWith(".package-info")
-										? child.getChildren()
-											.stream()
-										: Stream.empty());
-							break;
 						case INTERFACE :
-							if (diff.getName()
-								.endsWith(".package-info")) {
-								return true; // ignore package-info changes
-							}
-							// FALL-THROUGH
 						case ANNOTATION :
 						case CLASS :
 						case ENUM :
 						case FIELD :
 						case METHOD :
-							children = diff.getChildren()
-								.stream();
-							break;
+							boolean ignore = diff.getChildren()
+								.stream()
+								.filter(child -> (child.getType() == Type.ANNOTATED)
+									&& BASELINEIGNORE.contains(child.getName()))
+								.flatMap(child -> child.getChildren()
+									.stream())
+								.filter(child -> child.getType() == Type.PROPERTY)
+								.map(Diff::getName)
+								.filter(property -> property.startsWith("value='"))
+								.map(property -> property.substring(7, property.length() - 1))
+								.anyMatch(version -> {
+									try {
+										return Version.valueOf(version)
+											.compareTo(info.olderVersion) > 0;
+									} catch (Exception e) {
+										bnd.exception(e,
+											"BaselineIgnore unable to compare specified version %s to baseline package version %s",
+											version, info.olderVersion);
+										return false;
+									}
+								});
+							return ignore;
 						default :
 							return false;
 					}
-					boolean ignore = children.filter(
-							child -> (child.getType() == Type.ANNOTATED) && BASELINEIGNORE.contains(child.getName()))
-						.flatMap(child -> child.getChildren()
-							.stream())
-						.filter(child -> child.getType() == Type.PROPERTY)
-						.map(Diff::getName)
-						.filter(property -> property.startsWith("value='"))
-						.map(property -> property.substring(7, property.length() - 1))
-						.anyMatch(version -> {
-							try {
-								return Version.valueOf(version)
-									.compareTo(info.olderVersion) > 0;
-							} catch (Exception e) {
-								bnd.exception(e,
-									"BaselineIgnore unable to compare specified version %s to baseline package version %s",
-									version, info.olderVersion);
-								return false;
-							}
-						});
-					return ignore;
 				});
 
 				info.suggestedVersion = bump(delta, info.olderVersion, 1, 0);

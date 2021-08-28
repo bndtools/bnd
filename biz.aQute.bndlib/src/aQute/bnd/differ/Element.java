@@ -54,11 +54,13 @@ class Element implements Tree {
 		this.add = add;
 		this.remove = remove;
 		this.comment = comment;
-		if (children != null && !children.isEmpty()) {
-			this.children = children.toArray(EMPTY);
-			Arrays.sort(this.children);
-		} else
+		if ((children == null) || children.isEmpty()) {
 			this.children = EMPTY;
+		} else {
+			this.children = children.stream()
+				.sorted()
+				.toArray(Element[]::new);
+		}
 	}
 
 	public Element(Data data) {
@@ -67,30 +69,27 @@ class Element implements Tree {
 		this.comment = data.comment;
 		this.add = data.add;
 		this.remove = data.rem;
-		if (data.children == null)
-			children = EMPTY;
-		else {
-			this.children = new Element[data.children.length];
-			for (int i = 0; i < children.length; i++)
-				children[i] = new Element(data.children[i]);
-			Arrays.sort(this.children);
+		if ((data.children == null) || (data.children.length == 0)) {
+			this.children = EMPTY;
+		} else {
+			this.children = Arrays.stream(data.children)
+				.map(Element::new)
+				.sorted()
+				.toArray(Element[]::new);
 		}
 	}
 
 	@Override
 	public Data serialize() {
 		Data data = new Data();
-		data.type = this.type;
-		data.name = this.name;
-		data.add = this.add;
-		data.rem = this.remove;
-		data.comment = this.comment;
-		if (children.length != 0) {
-			data.children = new Data[children.length];
-			for (int i = 0; i < children.length; i++) {
-				data.children[i] = children[i].serialize();
-			}
-		}
+		data.type = getType();
+		data.name = getName();
+		data.add = ifAdded();
+		data.rem = ifRemoved();
+		data.comment = getComment();
+		data.children = Arrays.stream(getChildren())
+			.map(Element::serialize)
+			.toArray(Data[]::new);
 		return data;
 	}
 
@@ -110,9 +109,9 @@ class Element implements Tree {
 
 	@Override
 	public int compareTo(Tree other) {
-		if (type == other.getType())
-			return name.compareTo(other.getName());
-		return type.compareTo(other.getType());
+		if (getType() == other.getType())
+			return getName().compareTo(other.getName());
+		return getType().compareTo(other.getType());
 	}
 
 	@Override
@@ -125,11 +124,11 @@ class Element implements Tree {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(type, name);
+		return Objects.hash(getType(), getName());
 	}
 
 	@Override
-	public Tree[] getChildren() {
+	public Element[] getChildren() {
 		return children;
 	}
 
@@ -150,8 +149,9 @@ class Element implements Tree {
 
 	@Override
 	public Element get(String name) {
-		for (Element e : children) {
-			if (e.name.equals(name))
+		for (Element e : getChildren()) {
+			if (e.getName()
+				.equals(name))
 				return e;
 		}
 		return null;
@@ -166,16 +166,16 @@ class Element implements Tree {
 
 	private void toString(StringBuilder sb, String indent) {
 		sb.append(indent)
-			.append(type)
+			.append(getType())
 			.append(" ")
-			.append(name)
+			.append(getName())
 			.append(" (")
-			.append(add)
+			.append(ifAdded())
 			.append("/")
-			.append(remove)
+			.append(ifRemoved())
 			.append(")")
 			.append("\n");
-		for (Element e : children)
+		for (Element e : getChildren())
 			e.toString(sb, indent + " ");
 	}
 

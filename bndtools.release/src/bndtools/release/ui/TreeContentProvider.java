@@ -24,7 +24,7 @@ public class TreeContentProvider implements ITreeContentProvider {
 			return ((List<?>) parent).toArray();
 		}
 		if (parent instanceof Baseline) {
-			Collection<? extends Diff> diffs = ((Baseline) parent).getDiff()
+			Collection<Diff> diffs = ((Baseline) parent).getDiff()
 				.getChildren();
 			List<Diff> filteredDiffs = new ArrayList<>();
 			for (Diff diff : diffs) {
@@ -54,7 +54,7 @@ public class TreeContentProvider implements ITreeContentProvider {
 	}
 
 	private Object[] getChildren(Diff parent) {
-		Collection<? extends Diff> diffs = parent.getChildren();
+		Collection<Diff> diffs = parent.getChildren();
 		List<Diff> filteredDiffs = new ArrayList<>();
 		for (Diff diff : diffs) {
 			if (!showAll && (diff.getDelta() == Delta.IGNORED || diff.getDelta() == Delta.UNCHANGED)) {

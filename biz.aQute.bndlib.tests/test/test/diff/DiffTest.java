@@ -191,8 +191,47 @@ public class DiffTest extends TestCase {
 			assertThat(diff.getDelta()).isEqualTo(Delta.MAJOR);
 			diff = info.packageDiff.get("test.api.Interf");
 			assertThat(diff.getDelta()).isEqualTo(Delta.MAJOR);
+			diff = info.packageDiff.get("test.api.Interf2");
+			assertThat(diff.getDelta()).isEqualTo(Delta.MINOR);
+			diff = info.packageDiff.get("test.api.AbstractInterf2");
+			assertThat(diff.getDelta()).isEqualTo(Delta.MINOR);
 			assertThat(info.mismatch).isFalse();
 			show(info.packageDiff, 2);
+		}
+	}
+
+	public void testInsertSuper() throws Exception {
+		try (Jar older = new Jar(IO.getFile("../demo/generated/demo.jar")); Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setExportPackage("test.api3");
+			b.build();
+			assertTrue(b.check());
+			Jar newer = b.getJar();
+
+			Processor processor = new Processor();
+
+			DiffPluginImpl differ = new DiffPluginImpl();
+			Baseline baseline = new Baseline(processor, differ);
+
+			Info info = baseline.baseline(newer, older, new Instructions("test.api3"))
+				.iterator()
+				.next();
+
+			Diff diff = info.packageDiff;
+			show(diff, 2);
+			diff = info.packageDiff.get("test.api3.SuperInterface");
+			assertThat(diff.getDelta()).isEqualTo(Delta.UNCHANGED);
+			diff = info.packageDiff.get("test.api3.SubInterface");
+			assertThat(diff.getDelta()).isEqualTo(Delta.ADDED);
+			diff = info.packageDiff.get("test.api3.SuperInterfaceImplementor");
+			assertThat(diff.getDelta()).isEqualTo(Delta.MINOR);
+			diff = info.packageDiff.get("test.api3.SuperClass");
+			assertThat(diff.getDelta()).isEqualTo(Delta.UNCHANGED);
+			diff = info.packageDiff.get("test.api3.SubClass");
+			assertThat(diff.getDelta()).isEqualTo(Delta.ADDED);
+			diff = info.packageDiff.get("test.api3.SuperClassExtender");
+			assertThat(diff.getDelta()).isEqualTo(Delta.MICRO);
+			assertThat(info.mismatch).isFalse();
 		}
 	}
 
