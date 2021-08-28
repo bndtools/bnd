@@ -9,6 +9,7 @@ import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
 import java.io.File;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.gradle.api.DefaultTask;
@@ -20,6 +21,7 @@ import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
@@ -27,10 +29,13 @@ import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.work.NormalizeLineEndings;
 
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.EE;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
@@ -60,6 +65,7 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 	private final ConfigurableFileCollection	bundles;
 	private boolean								ignoreFailures	= false;
 	private final DirectoryProperty				workingDirectory;
+	private final Provider<String>				targetVersion;
 
 	/**
 	 * The bndrun file for the execution.
@@ -149,11 +155,17 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 		workingDirectory = objects.directoryProperty()
 			.convention(temporaryDirProperty);
 		bundles = objects.fileCollection();
+		SourceSet mainSourceSet = sourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+		targetVersion = project.getTasks()
+			.named(mainSourceSet.getCompileJavaTaskName(), JavaCompile.class)
+			.map(t -> t.getOptions()
+				.getRelease()
+				.map(r -> r.toString())
+				.getOrElse(t.getTargetCompatibility()));
 		if (project.hasProperty("bndWorkspace")) {
 			// bundles must not be used for Bnd workspace builds
 			bundles.disallowChanges();
 		} else {
-			SourceSet mainSourceSet = sourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
 			Configuration archivesConfiguration = project.getConfigurations()
 				.getByName(Dependency.ARCHIVES_CONFIGURATION);
 			bundles(mainSourceSet.getRuntimeClasspath());
@@ -240,6 +252,7 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 				}
 			}
 			run.getInfo(runWorkspace);
+			inferRunEE(run);
 			logReport(run, getLogger());
 			if (!run.isOk()) {
 				throw new GradleException(String.format("%s workspace errors", run.getPropertiesFile()));
@@ -270,4 +283,22 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 	 * @throws Exception If the worker action has an exception.
 	 */
 	abstract protected void worker(WORKER run) throws Exception;
+
+	/**
+	 * Set -runee from the build environment if not already set in the Run
+	 * object.
+	 *
+	 * @param run The Run object.
+	 */
+	protected void inferRunEE(RUN run) {
+		String runee = run.getProperty(Constants.RUNEE);
+		if (Objects.isNull(runee)) {
+			runee = Optional.ofNullable(targetVersion.getOrElse(System.getProperty("java.specification.version")))
+				.flatMap(EE::highestFromTargetVersion)
+				.orElse(EE.JavaSE_1_8) // Fallback to Java 8
+				.getEEName();
+			run.setProperty(Constants.RUNEE, runee);
+			getLogger().info("Bnd inferred {}: {}", Constants.RUNEE, run.getProperty(Constants.RUNEE));
+		}
+	}
 }
