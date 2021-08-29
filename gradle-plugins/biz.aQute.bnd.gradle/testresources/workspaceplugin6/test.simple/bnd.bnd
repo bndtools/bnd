@@ -7,7 +7,6 @@ Test-Cases: test.simple.Test
 -includeresource: test.txt
 
 -runfw: org.eclipse.osgi;version='[3.13.0,3.14.0)'
--runrequires: osgi.identity;filter:='(osgi.identity=test.simple)'
 
 -runbundles: \
 	osgi.enroute.junit.wrapper

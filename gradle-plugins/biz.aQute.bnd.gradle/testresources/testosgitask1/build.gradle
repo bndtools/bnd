@@ -23,10 +23,6 @@ dependencies {
 	runtimeOnly 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
 }
 
-ext {
-	osgiIdentity = 'testosgitask1'
-}
-
 def resolveTask = tasks.register('resolve', Resolve) {
 	description = 'Resolve testosgi.bndrun'
 	group = 'test'
