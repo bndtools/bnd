@@ -1,10 +1,8 @@
 -include: ${.}/included.bnd
 
 -runfw: ${runfw}
--runee: JavaSE-1.8
 
--runrequires: osgi.identity;filter:='(osgi.identity=${junit})',\
- osgi.identity;filter:='(osgi.identity=${project.osgiIdentity})'
+-runrequires.junit: osgi.identity;filter:='(osgi.identity=${junit})'
 
 -runproperties:
 

@@ -1,5 +1,6 @@
 package aQute.bnd.gradle;
 
+import static aQute.bnd.exceptions.FunctionWithException.asFunctionOrElse;
 import static aQute.bnd.gradle.BndUtils.builtBy;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.sourceSets;
@@ -8,6 +9,7 @@ import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -19,6 +21,7 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Provider;
@@ -36,10 +39,12 @@ import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 
 /**
  * Abstract Bndrun task type for Gradle.
@@ -65,7 +70,9 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 	private final ConfigurableFileCollection	bundles;
 	private boolean								ignoreFailures	= false;
 	private final DirectoryProperty				workingDirectory;
+	private final String						projectName;
 	private final Provider<String>				targetVersion;
+	private final FileCollection				artifacts;
 
 	/**
 	 * The bndrun file for the execution.
@@ -148,6 +155,7 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 	public AbstractBndrun() {
 		super();
 		Project project = getProject();
+		projectName = project.getName();
 		ObjectFactory objects = project.getObjects();
 		bndrun = objects.fileProperty();
 		DirectoryProperty temporaryDirProperty = objects.directoryProperty()
@@ -162,15 +170,16 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 				.getRelease()
 				.map(r -> r.toString())
 				.getOrElse(t.getTargetCompatibility()));
+		Configuration archivesConfiguration = project.getConfigurations()
+			.getByName(Dependency.ARCHIVES_CONFIGURATION);
+		artifacts = archivesConfiguration.getArtifacts()
+			.getFiles();
 		if (project.hasProperty("bndWorkspace")) {
 			// bundles must not be used for Bnd workspace builds
 			bundles.disallowChanges();
 		} else {
-			Configuration archivesConfiguration = project.getConfigurations()
-				.getByName(Dependency.ARCHIVES_CONFIGURATION);
 			bundles(mainSourceSet.getRuntimeClasspath());
-			bundles(archivesConfiguration.getArtifacts()
-				.getFiles());
+			bundles(artifacts);
 			// We add this in case someone actually looks for this convention
 			getConvention().getPlugins()
 				.put("bundles", new FileSetRepositoryConvention(this));
@@ -253,6 +262,7 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 			}
 			run.getInfo(runWorkspace);
 			inferRunEE(run);
+			inferRunRequires(run);
 			logReport(run, getLogger());
 			if (!run.isOk()) {
 				throw new GradleException(String.format("%s workspace errors", run.getPropertiesFile()));
@@ -299,6 +309,33 @@ public abstract class AbstractBndrun<WORKER extends aQute.bnd.build.Project, RUN
 				.getEEName();
 			run.setProperty(Constants.RUNEE, runee);
 			getLogger().info("Bnd inferred {}: {}", Constants.RUNEE, run.getProperty(Constants.RUNEE));
+		}
+	}
+
+	/**
+	 * Set -runrequires from the build environment if not already set in the Run
+	 * object.
+	 *
+	 * @param run The Run object.
+	 */
+	protected void inferRunRequires(RUN run) {
+		String runrequires = run.getProperty(Constants.RUNREQUIRES);
+		if (Objects.isNull(runrequires) && !artifacts.isEmpty()) {
+			runrequires = artifacts.getFiles()
+				.stream()
+				.filter(File::isFile)
+				.map(file -> Optional.of(file)
+					.map(asFunctionOrElse(Domain::domain, null))
+					.map(Domain::getBundleSymbolicName)
+					.map(Map.Entry::getKey)
+					.orElse(projectName))
+				.distinct()
+				.map(bsn -> String.format("osgi.identity;filter:='(osgi.identity=%s)'", bsn))
+				.collect(Strings.joining());
+			if (!runrequires.isEmpty()) {
+				run.setProperty(Constants.RUNREQUIRES, runrequires);
+				getLogger().info("Bnd inferred {}: {}", Constants.RUNREQUIRES, run.getProperty(Constants.RUNREQUIRES));
+			}
 		}
 	}
 }
