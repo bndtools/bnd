@@ -17,6 +17,7 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.build.api.IProjectDecorator;
 import org.bndtools.build.api.IProjectDecorator.BndProjectInfo;
+import org.bndtools.facade.ExtensionFacade;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -52,13 +53,14 @@ import org.osgi.service.component.annotations.Reference;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
-import bndtools.launch.JUnitShortcut;
 
 public class BndConfigurator extends AbstractProjectConfigurator {
 
 	private static final String					ARTIFACT_PATTERN				= "%s-%s.%s";
 	private static final String					CLASSIFIER_ARTIFACT_PATTERN	= "%s-%s-%s.%s";
-	protected final static Class<JUnitShortcut> shortcutClazz;
+
+	@SuppressWarnings("rawtypes")
+	protected final static Class<ExtensionFacade> shortcutClazz;
 	static {
 		/*
 		 * The class JUnitShortcut is loaded here because: a) this class is
@@ -68,7 +70,7 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 		 * plugin.xml. This reference causes the import to be added to
 		 * bndtools.m2e so that this process works.
 		 */
-		shortcutClazz = JUnitShortcut.class;
+		shortcutClazz = ExtensionFacade.class;
 	}
 
 	ILogger logger = Logger.getLogger(BndConfigurator.class);

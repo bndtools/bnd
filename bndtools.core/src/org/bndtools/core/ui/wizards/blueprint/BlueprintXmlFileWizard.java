@@ -9,6 +9,7 @@ import java.util.Stack;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.api.editor.IBndEditor;
 import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -38,7 +39,6 @@ import aQute.bnd.osgi.Builder;
 import aQute.libg.glob.Glob;
 import bndtools.Plugin;
 import bndtools.central.Central;
-import bndtools.editor.BndEditor;
 import bndtools.editor.model.IDocumentWrapper;
 
 public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
@@ -195,8 +195,8 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
 		IEditorPart editor = ResourceUtil.findEditor(workbench.getActiveWorkbenchWindow()
 			.getActivePage(), bndFile);
 		IDocument doc = null;
-		if (editor instanceof BndEditor) {
-			editModel = ((BndEditor) editor).getEditModel();
+		if (editor instanceof IBndEditor) {
+			editModel = ((IBndEditor) editor).getModel();
 		} else {
 			editModel = new BndEditModel(Central.getWorkspace());
 			doc = FileUtils.readFully(bndFile);

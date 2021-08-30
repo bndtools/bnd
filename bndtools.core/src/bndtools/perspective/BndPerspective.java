@@ -1,5 +1,6 @@
 package bndtools.perspective;
 
+import org.bndtools.api.perspective.BndPerspectiveConstants;
 import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.ui.IFolderLayout;
@@ -14,9 +15,6 @@ public class BndPerspective implements IPerspectiveFactory {
 
 	private static final String	BNDTOOLS_PACKAGE_EXPLORER	= "bndtools.PackageExplorer";
 
-	public static final String	ID_PROJECT_EXPLORER			= "org.eclipse.ui.navigator.ProjectExplorer";	//$NON-NLS-1$
-
-	public static final String	VIEW_ID_JUNIT_RESULTS		= "org.eclipse.jdt.junit.ResultView";
 	private static final String	VIEW_ID_CONSOLE				= "org.eclipse.ui.console.ConsoleView";
 	private static final String	VIEW_ID_SEARCH				= "org.eclipse.search.ui.views.SearchView";
 
@@ -39,7 +37,7 @@ public class BndPerspective implements IPerspectiveFactory {
 		outputFolder.addPlaceholder(VIEW_ID_CONSOLE);
 		outputFolder.addPlaceholder(IPageLayout.ID_BOOKMARKS);
 		outputFolder.addPlaceholder(IProgressConstants.PROGRESS_VIEW_ID);
-		outputFolder.addPlaceholder(VIEW_ID_JUNIT_RESULTS);
+		outputFolder.addPlaceholder(BndPerspectiveConstants.VIEW_ID_JUNIT_RESULTS);
 
 		IFolderLayout outlineFolder = layout.createFolder("right", IPageLayout.RIGHT, (float) 0.75, editorArea); //$NON-NLS-1$
 		outlineFolder.addView(IPageLayout.ID_OUTLINE);
@@ -52,7 +50,7 @@ public class BndPerspective implements IPerspectiveFactory {
 		layout.addActionSet(IPageLayout.ID_NAVIGATE_ACTION_SET);
 
 		// views - java
-		layout.addShowViewShortcut(VIEW_ID_JUNIT_RESULTS);
+		layout.addShowViewShortcut(BndPerspectiveConstants.VIEW_ID_JUNIT_RESULTS);
 		layout.addShowViewShortcut(JavaUI.ID_PACKAGES);
 		layout.addShowViewShortcut(JavaUI.ID_TYPE_HIERARCHY);
 		layout.addShowViewShortcut(JavaUI.ID_SOURCE_VIEW);
@@ -71,7 +69,7 @@ public class BndPerspective implements IPerspectiveFactory {
 		layout.addShowViewShortcut(IPageLayout.ID_OUTLINE);
 		layout.addShowViewShortcut(IPageLayout.ID_PROBLEM_VIEW);
 		layout.addShowViewShortcut(IPageLayout.ID_PROJECT_EXPLORER);
-		layout.addShowViewShortcut(ID_PROJECT_EXPLORER);
+		layout.addShowViewShortcut(BndPerspectiveConstants.ID_PROJECT_EXPLORER);
 
 		// new actions - Java project creation wizard
 		layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWPROJECT);

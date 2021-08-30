@@ -122,7 +122,7 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
 	@Override
 	public void initialize(FormEditor formEditor) {
 		BndEditor bndEditor = (BndEditor) formEditor;
-		editModel = bndEditor.getEditModel();
+		editModel = bndEditor.getModel();
 		editModel.addPropertyChangeListener(propChangeListener);
 		setSourceViewerConfiguration(new BndSourceViewerConfiguration(bndEditor, JavaUI.getColorManager()));
 	}
