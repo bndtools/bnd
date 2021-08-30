@@ -8,6 +8,7 @@ javac.source:           1.8
 javac.target:           1.8
 javac.compliance:       1.8
 javac.debug:            on
+-noimportjava: true
 
 # This build requires newer Bnd features
 -require-bnd: "(version>=5.1.0)"
