@@ -200,7 +200,7 @@ public class Activator implements BundleActivator, Runnable {
 								.orElse(null));
 						return;
 					case ABORTED :
-						message("", "TEST %s <<< ABORTED: %s", testName(testIdentifier),
+						trace("", "TEST %s <<< ABORTED: %s", testName(testIdentifier),
 							testExecutionResult.getThrowable()
 								.orElse(null));
 				}
@@ -208,7 +208,7 @@ public class Activator implements BundleActivator, Runnable {
 
 			@Override
 			public void executionSkipped(TestIdentifier testIdentifier, String reason) {
-				message("", "TEST %s <<< SKIPPED", testName(testIdentifier));
+				trace("", "TEST %s <<< SKIPPED", testName(testIdentifier));
 			}
 		});
 		trace("automatic testing of all bundles with " + aQute.bnd.osgi.Constants.TESTCASES + " header");
@@ -388,7 +388,8 @@ public class Activator implements BundleActivator, Runnable {
 				+ "Three syntaxes are available:\n"
 				+ " 1. \":bundle.symbolic.name\" - run all tests in the specified bundle\n"
 				+ " 2. \"fully.qualified.ClassName\" - run all tests in the specified class\n"
-				+ " 3. \"fully.qualified.ClassName#methodName\" - run the specified test method") String... tests) {
+				+ " 3. \"fully.qualified.ClassName#methodName\" - run the specified test method")
+			String... tests) {
 			if (tests != null && tests.length > 0) {
 				Stream.of(tests)
 					.map(Activator::toSelector)
@@ -409,8 +410,8 @@ public class Activator implements BundleActivator, Runnable {
 		}
 
 		@Descriptor("sets the tester.names filter")
-		public void setTesterNames(
-			@Descriptor("The new tester.names filter to apply to automatic testing") String... tests) {
+		public void setTesterNames(@Descriptor("The new tester.names filter to apply to automatic testing")
+		String... tests) {
 			Activator.this.setTesterNames(tests == null ? null
 				: Stream.of(tests)
 					.collect(Collectors.joining(",")));
