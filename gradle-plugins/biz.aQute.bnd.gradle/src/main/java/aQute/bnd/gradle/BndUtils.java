@@ -3,6 +3,7 @@ package aQute.bnd.gradle;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.BiFunction;
 
 import org.gradle.api.Buildable;
 import org.gradle.api.Project;
@@ -15,10 +16,13 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileSystemLocation;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.plugins.BasePluginExtension;
+import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskProvider;
+import org.gradle.jvm.toolchain.JavaToolchainService;
+import org.gradle.jvm.toolchain.JavaToolchainSpec;
 import org.gradle.util.GradleVersion;
 
 import aQute.service.reporter.Report;
@@ -141,5 +145,14 @@ public class BndUtils {
 					.getPlugin(org.gradle.api.plugins.JavaPluginConvention.class)
 					.getTestResultsDir()));
 		return testResultsDir;
+	}
+
+	public static <TOOL> Provider<TOOL> defaultToolFor(Project project,
+		BiFunction<JavaToolchainService, JavaToolchainSpec, Provider<TOOL>> tool) {
+		ExtensionContainer extensions = project.getExtensions();
+		JavaToolchainSpec toolchain = extensions.getByType(JavaPluginExtension.class)
+			.getToolchain();
+		JavaToolchainService service = extensions.getByType(JavaToolchainService.class);
+		return tool.apply(service, toolchain);
 	}
 }
