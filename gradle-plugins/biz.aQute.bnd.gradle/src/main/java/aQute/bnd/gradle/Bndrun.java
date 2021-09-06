@@ -1,5 +1,6 @@
 package aQute.bnd.gradle;
 
+import static aQute.bnd.gradle.BndUtils.defaultToolFor;
 import static aQute.bnd.gradle.BndUtils.logReport;
 import static aQute.bnd.gradle.BndUtils.unwrap;
 import static aQute.bnd.gradle.BndUtils.unwrapFile;
@@ -15,6 +16,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
 import org.gradle.jvm.toolchain.JavaLauncher;
+import org.gradle.jvm.toolchain.JavaToolchainService;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
@@ -75,7 +77,8 @@ public class Bndrun extends AbstractBndrun<Project, Run> {
 	public Bndrun() {
 		super();
 		ObjectFactory objects = getProject().getObjects();
-		javaLauncher = objects.property(JavaLauncher.class);
+		javaLauncher = objects.property(JavaLauncher.class)
+			.convention(defaultToolFor(getProject(), JavaToolchainService::launcherFor));
 	}
 
 	/**

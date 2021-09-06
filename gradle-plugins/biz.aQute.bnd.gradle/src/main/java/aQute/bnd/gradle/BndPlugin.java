@@ -808,7 +808,7 @@ public class BndPlugin implements Plugin<Project> {
 				t.doLast("echo", new Action<Task>() {
 					@Override
 					public void execute(Task tt) {
-						try (Formatter f = new Formatter(System.out)) {
+						try (Formatter f = new Formatter()) {
 							f.format("------------------------------------------------------------%n");
 							f.format("Project %s // Bnd version %s%n", project.getName(), About.CURRENT);
 							f.format("------------------------------------------------------------%n");
@@ -850,6 +850,7 @@ public class BndPlugin implements Plugin<Project> {
 							f.format("javac.source:           %s%n", javacSource.getOrElse(""));
 							f.format("javac.target:           %s%n", javacTarget.getOrElse(""));
 							f.format("javac.profile:          %s%n", javacProfile.getOrElse(""));
+							System.out.print(f.toString());
 						}
 						checkErrors(tt.getLogger(), true);
 					}
@@ -862,7 +863,7 @@ public class BndPlugin implements Plugin<Project> {
 				t.doLast("bndproperties", new Action<Task>() {
 					@Override
 					public void execute(Task tt) {
-						try (Formatter f = new Formatter(System.out)) {
+						try (Formatter f = new Formatter()) {
 							f.format("------------------------------------------------------------%n");
 							f.format("Project %s %n", project.getName());
 							f.format("------------------------------------------------------------%n");
@@ -872,6 +873,7 @@ public class BndPlugin implements Plugin<Project> {
 								.sorted()
 								.forEachOrdered(key -> f.format("%s: %s%n", key, bndProject.getProperty(key, "")));
 							f.format("%n");
+							System.out.print(f.toString());
 						}
 						checkErrors(tt.getLogger(), true);
 					}
