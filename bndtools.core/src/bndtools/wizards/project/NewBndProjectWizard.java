@@ -186,18 +186,18 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard implements ISkippi
 					case Folder :
 						if (!path.isEmpty()) {
 							IFolder folder = project.getFolder(path);
-							FileUtils.mkdirs(folder, progress.newChild(1, SubMonitor.SUPPRESS_ALL_LABELS));
+							FileUtils.mkdirs(folder, progress.split(1, SubMonitor.SUPPRESS_ALL_LABELS));
 						}
 						break;
 					case File :
 						IFile file = project.getFile(path);
-						FileUtils.mkdirs(file.getParent(), progress.newChild(1, SubMonitor.SUPPRESS_ALL_LABELS));
+						FileUtils.mkdirs(file.getParent(), progress.split(1, SubMonitor.SUPPRESS_ALL_LABELS));
 						try (InputStream in = resource.getContent()) {
 							if (file.exists())
-								file.setContents(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+								file.setContents(in, 0, progress.split(1, SubMonitor.SUPPRESS_NONE));
 							else
-								file.create(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-							file.setCharset(resource.getTextEncoding(), progress.newChild(1));
+								file.create(in, 0, progress.split(1, SubMonitor.SUPPRESS_NONE));
+							file.setCharset(resource.getTextEncoding(), progress.split(1));
 						}
 						break;
 					default :

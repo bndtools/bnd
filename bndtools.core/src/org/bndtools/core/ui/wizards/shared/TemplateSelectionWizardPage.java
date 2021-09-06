@@ -289,7 +289,7 @@ public class TemplateSelectionWizardPage extends WizardPage {
 				// Force the promises in sequence
 				for (Pair<String, Promise<? extends Collection<Template>>> namedPromise : promises) {
 					String name = namedPromise.getFirst();
-					SubMonitor childMonitor = monitor.newChild(1, SubMonitor.SUPPRESS_NONE);
+					SubMonitor childMonitor = monitor.split(1, SubMonitor.SUPPRESS_NONE);
 					childMonitor.beginTask(name, 1);
 					try {
 						Throwable failure = namedPromise.getSecond()

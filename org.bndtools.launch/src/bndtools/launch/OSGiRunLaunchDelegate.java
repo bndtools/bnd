@@ -155,7 +155,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 				}
 			})));
 
-		super.launch(configuration, mode, launch, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+		super.launch(configuration, mode, launch, progress.split(1, SubMonitor.SUPPRESS_NONE));
 	}
 
 	@Override

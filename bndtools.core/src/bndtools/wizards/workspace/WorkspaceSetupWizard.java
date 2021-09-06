@@ -155,9 +155,9 @@ public class WorkspaceSetupWizard extends Wizard implements INewWizard, ISkippin
 
 									// No existing project in the workspace, so
 									// import the generated project.
-									SubMonitor subProgress1 = progress.newChild(1);
-									project.create(subProgress1.newChild(1));
-									project.open(subProgress1.newChild(1));
+									SubMonitor subProgress1 = progress.split(1);
+									project.create(subProgress1.split(1));
+									project.open(subProgress1.split(1));
 
 									// Now make sure it is associated with the
 									// right location
@@ -182,19 +182,19 @@ public class WorkspaceSetupWizard extends Wizard implements INewWizard, ISkippin
 											new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, null));
 									}
 
-									SubMonitor subProgress2 = progress.newChild(1);
+									SubMonitor subProgress2 = progress.split(1);
 
 									// Open it if closed
-									project.open(subProgress2.newChild(1));
+									project.open(subProgress2.split(1));
 									// Refresh, as the template may have
 									// generated new content
-									project.refreshLocal(IResource.DEPTH_INFINITE, subProgress2.newChild(1));
+									project.refreshLocal(IResource.DEPTH_INFINITE, subProgress2.split(1));
 								}
 							}
 						}
 					}
 					if (cleanBuild)
-						workspace.build(IncrementalProjectBuilder.CLEAN_BUILD, progress.newChild(2));
+						workspace.build(IncrementalProjectBuilder.CLEAN_BUILD, progress.split(2));
 				}
 			};
 			getContainer().run(true, true, monitor -> {

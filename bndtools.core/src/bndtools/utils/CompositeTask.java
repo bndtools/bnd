@@ -27,7 +27,7 @@ public class CompositeTask implements IRunnableWithProgress {
 
 		for (int i = 0; i < tasks.size(); i++) {
 			tasks.get(i)
-				.run(progress.newChild(weights.get(i), SubMonitor.SUPPRESS_NONE));
+				.run(progress.split(weights.get(i), SubMonitor.SUPPRESS_NONE));
 			if (progress.isCanceled())
 				return;
 		}

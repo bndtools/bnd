@@ -182,7 +182,7 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 					public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 						try {
 							SubMonitor progress = SubMonitor.convert(monitor, 3);
-							execJarMojo(projectFacade, progress.newChild(1, SubMonitor.SUPPRESS_NONE), isTest);
+							execJarMojo(projectFacade, progress.split(1, SubMonitor.SUPPRESS_NONE), isTest);
 
 							// We need to trigger a refresh
 							IPath targetDirPath = Path.fromOSString(targetDirectory);
@@ -191,7 +191,7 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 							IFolder targetDir = project.getFolder(relativeTargetDirPath);
 
 							project.getFolder(relativeTargetDirPath)
-								.refreshLocal(IResource.DEPTH_INFINITE, progress.newChild(1));
+								.refreshLocal(IResource.DEPTH_INFINITE, progress.split(1));
 							return Status.OK_STATUS;
 						} catch (Throwable e) {
 							return new Status(IStatus.ERROR, this.getClass(),
@@ -294,7 +294,7 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 
 		context.execute((context1, monitor1) -> {
 			SubMonitor progress = SubMonitor.convert(monitor1);
-			MavenProject mavenProject = getMavenProject(projectFacade, progress.newChild(1));
+			MavenProject mavenProject = getMavenProject(projectFacade, progress.split(1));
 
 			List<MojoExecution> mojoExecutions = null;
 			if (!isTest) {
@@ -306,7 +306,7 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 			}
 
 			for (MojoExecution mojoExecution : mojoExecutions) {
-				maven.execute(mavenProject, mojoExecution, progress.newChild(1));
+				maven.execute(mavenProject, mojoExecution, progress.split(1));
 			}
 
 			// We can now decorate based on the build we just did.

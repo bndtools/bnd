@@ -60,10 +60,10 @@ public class CreateFileChange extends ResourceChange {
 			.getRoot();
 
 		IFile file = root.getFile(path);
-		file.create(source, updateFlags, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+		file.create(source, updateFlags, progress.split(1, SubMonitor.SUPPRESS_NONE));
 
 		if (encoding != null)
-			file.setCharset(encoding, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+			file.setCharset(encoding, progress.split(1, SubMonitor.SUPPRESS_NONE));
 
 		return new DeleteResourceChange(path, true);
 	}

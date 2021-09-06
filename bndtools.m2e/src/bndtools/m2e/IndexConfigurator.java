@@ -90,7 +90,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 				.getMavenProject(groupId, artifactId, version);
 
 			if (found != null) {
-				return getMavenOutputFile(extension, found, progress.newChild(1));
+				return getMavenOutputFile(extension, found, progress.split(1));
 			}
 			return null;
 		}
@@ -154,7 +154,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 			// Do a longer check to see if we need to rebuild
 
 			final SubMonitor progress = SubMonitor.convert(monitor);
-			MavenProject project = getMavenProject(facade, progress.newChild(1));
+			MavenProject project = getMavenProject(facade, progress.split(1));
 
 			Map<ArtifactKey, String> keysToTypes = new HashMap<>();
 			for (Artifact a : project.getArtifacts()) {
@@ -171,14 +171,14 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 			for (IResourceChangeEvent event : events) {
 				IResourceDelta delta = event.getDelta();
 
-				needsBuild = needsBuild(delta, keysToTypes, facade, progress.newChild(1));
+				needsBuild = needsBuild(delta, keysToTypes, facade, progress.split(1));
 
 				IProject[] refs = facade.getProject()
 					.getReferencedProjects();
 				for (int i = 0; !needsBuild && i < refs.length; i++) {
 					IMavenProjectFacade pf = MavenPlugin.getMavenProjectRegistry()
 						.getProject(refs[i]);
-					needsBuild = pf != null ? needsBuild(delta, keysToTypes, pf, progress.newChild(1)) : false;
+					needsBuild = pf != null ? needsBuild(delta, keysToTypes, pf, progress.split(1)) : false;
 				}
 
 				if (needsBuild) {
@@ -316,7 +316,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 					context.getExecutionRequest()
 						.setWorkspaceReader(new IndexerWorkspaceRepository());
 
-					final MavenProject mavenProject = getMavenProject(projectFacade, progress.newChild(1));
+					final MavenProject mavenProject = getMavenProject(projectFacade, progress.split(1));
 
 					context.execute((context1, monitor1) -> {
 						maven.execute(mavenProject, getMojoExecution(), monitor1);
@@ -327,9 +327,9 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 						IPath projectPath = project1.getLocation();
 						IPath relativeBuildDirPath = buildDirPath.makeRelativeTo(projectPath);
 						IFolder buildDir = project1.getFolder(relativeBuildDirPath);
-						buildDir.refreshLocal(IResource.DEPTH_INFINITE, progress.newChild(1));
+						buildDir.refreshLocal(IResource.DEPTH_INFINITE, progress.split(1));
 						return null;
-					}, progress.newChild(1));
+					}, progress.split(1));
 				}
 				return null;
 			}
