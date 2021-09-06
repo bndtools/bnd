@@ -26,7 +26,7 @@
 ```
 {{ prefix }}"bundles": [
 {{ prefix }}   {
-{{ prefix }}    "id": "{{ trim(mavenCoordinate.groupId) }}:{{ trim(mavenCoordinate.artifactId) }}:{{ trim(mavenCoordinate.version) }}{%- if not empty(mavenCoordinate.classifier) %}{{ prefix }}:jar:{{ trim(mavenCoordinate.classifier) }}{%- endif -%}"
+{{ prefix }}    "id": "{{ trim(mavenCoordinate.groupId) }}:{{ trim(mavenCoordinate.artifactId) }}{%- if not empty(mavenCoordinate.classifier) %}{{ prefix }}:jar:{{ trim(mavenCoordinate.classifier) }}{%- endif -%}:{{ trim(mavenCoordinate.version) }}"
 {% if not empty(checksum.sha1) %}{{ prefix }}    "hash": "{{ trim(checksum.sha1) }}"{{'\n'}}{%- endif -%}
 {{ prefix }}   }
 {{ prefix }}]

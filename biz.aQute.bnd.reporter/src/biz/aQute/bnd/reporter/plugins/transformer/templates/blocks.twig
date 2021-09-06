@@ -71,12 +71,6 @@
 {{ printer.printChecksum(report.checksum) }}
 {%- endif -%}
 
-{%- if not empty(report.mavenCoordinate) -%}
-{{ '\n\n' }}{{ printer.printTitle('Feature-Coordinate',3) }}
-
-{{ printer.printFeatureCoordinate(report.mavenCoordinate,report.checksum) }}
-{%- endif -%}
-
 {%- endif -%}
 {%- endif -%}
 {%- endmacro %}
