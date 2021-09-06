@@ -168,13 +168,17 @@ public class BndPomRepository extends BaseRepository
 				.executor(), reporter);
 
 			boolean transitive = configuration.transitive(true);
+			boolean dependencyManagement = configuration.dependencyManagement(false);
 
 			if (pomFiles != null) {
-				repoImpl = new PomRepository(repository, client, location, transitive).uris(pomFiles);
+				repoImpl = new PomRepository(repository, client, location, transitive, dependencyManagement)
+					.uris(pomFiles);
 			} else if (archives != null) {
-				repoImpl = new PomRepository(repository, client, location, transitive).archives(archives);
+				repoImpl = new PomRepository(repository, client, location, transitive, dependencyManagement)
+					.archives(archives);
 			} else if (query != null) {
-				repoImpl = new SearchRepository(repository, location, query, queryUrl, workspace, client, transitive);
+				repoImpl = new SearchRepository(repository, location, query, queryUrl, workspace, client, transitive,
+					dependencyManagement);
 			} else {
 				repository.close();
 				return false;

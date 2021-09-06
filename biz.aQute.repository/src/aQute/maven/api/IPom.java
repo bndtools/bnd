@@ -70,4 +70,7 @@ public interface IPom {
 	Map<Program, Dependency> getDependencies(MavenScope scope, boolean transitive) throws Exception;
 
 	boolean hasValidGAV();
+
+	Map<Program, Dependency> getDependencies(MavenScope scope, boolean transitive, boolean dependencyManagement)
+		throws Exception;
 }

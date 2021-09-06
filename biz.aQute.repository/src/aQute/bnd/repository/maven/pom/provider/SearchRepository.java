@@ -35,15 +35,17 @@ class SearchRepository extends InnerRepository {
 	final HttpClient			client;
 	final File					cacheFile;
 	final boolean				transitive;
+	final boolean				dependencyManagement;
 
 	SearchRepository(MavenRepository repo, File location, String query, String queryUrl, Reporter reporter,
-		HttpClient client, boolean transitive) throws Exception {
+		HttpClient client, boolean transitive, boolean dependencyManagement) throws Exception {
 		super(repo, location);
 		this.query = query;
 		this.queryUrl = queryUrl;
 		this.reporter = reporter;
 		this.client = client;
 		this.transitive = transitive;
+		this.dependencyManagement = dependencyManagement;
 		cacheFile = new File(location.getParentFile(), "pom-" + repo.getName() + ".query");
 		read();
 	}
@@ -51,7 +53,7 @@ class SearchRepository extends InnerRepository {
 	@Override
 	void refresh() throws Exception {
 		SearchResult result = query();
-		Traverser traverser = new Traverser(getMavenRepository(), client, transitive)
+		Traverser traverser = new Traverser(getMavenRepository(), client, transitive, dependencyManagement)
 			.revisions(result.response.docsToRevisions());
 		Promise<Map<Archive, Resource>> p = traverser.getResources();
 		Collection<Resource> resources = p.getValue()

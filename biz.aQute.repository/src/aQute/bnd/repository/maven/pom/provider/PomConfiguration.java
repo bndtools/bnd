@@ -87,4 +87,10 @@ public interface PomConfiguration {
 	// default: 5 Minutes
 	int poll_time(int pollTimeInSecs);
 
+	/**
+	 * Also considers the dependency management section of a pom. Default is
+	 * false.
+	 */
+	boolean dependencyManagement(boolean deflt);
+
 }

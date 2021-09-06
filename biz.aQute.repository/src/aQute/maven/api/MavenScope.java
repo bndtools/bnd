@@ -35,7 +35,7 @@ public enum MavenScope {
 	/**
 	 *
 	 */
-	import_(false),;
+	import_(true);
 
 	private boolean transitive;
 

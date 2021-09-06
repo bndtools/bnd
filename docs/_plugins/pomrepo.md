@@ -58,7 +58,7 @@ The query must return a JSON response.
 
 | Property         | Type  | Default | Description |
 |------------------|-------|---------|-------------|
-| `releaseUrl`    | `URI...` |      | Comma separated list of URLs to the repositories of released artifacts.| 
+| `releaseUrl`    | `URI...` |      | Comma separated list of URLs to the repositories of released artifacts.|
 | `snapshotUrl`   | `URI...` |      | Comma separated list of URLs to the repositories of snapshot artifacts.|
 |                  |       |         | If this is not specified, it falls back to the release repository or just `local` if that is also not specified.|
 | `local`          | `PATH`| `~/.m2/repository` | The file path to the local Maven repository.  |
@@ -72,6 +72,7 @@ The query must return a JSON response.
 | `name`           | `STRING`|       | Required name of the repo.|
 | `transitive`     | `true|false` | `true` | If set to _truthy_ then dependencies are transitive.|
 | `poll.time`      | `integer`| 5 minutes | Number of seconds between checks for changes to POM files referenced by `pom` or `revision`. If the value is negative or the workspace is in batch/CI mode, then no polling takes place.|
+| `dependencyManagement` | `boolean`| false | If set to `true`, dependencies in the `dependencyManagement` section will be handled as actual dependencies.|
 
 
 One, and only one, of the `pom`, `revision`, or `query` configurations can be set. If multiple are set then the first in `[pom, revision, query]` is used and the remainders are ignored.

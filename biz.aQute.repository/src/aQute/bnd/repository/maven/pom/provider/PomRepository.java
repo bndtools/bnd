@@ -35,10 +35,13 @@ class PomRepository extends InnerRepository {
 	private final HttpClient		client;
 	private final PromiseFactory	promiseFactory;
 	final boolean					transitive;
+	final boolean					dependencyManagement;
 
-	PomRepository(MavenRepository repo, HttpClient client, File location, boolean transitive) {
+	PomRepository(MavenRepository repo, HttpClient client, File location, boolean transitive,
+		boolean dependencyManagement) {
 		super(repo, location);
 		this.transitive = transitive;
+		this.dependencyManagement = dependencyManagement;
 		this.archives = new ArrayList<>();
 		this.uris = new ArrayList<>();
 		this.client = client;
@@ -46,7 +49,7 @@ class PomRepository extends InnerRepository {
 	}
 
 	public PomRepository(MavenRepository repo, HttpClient client, File location) {
-		this(repo, client, location, true);
+		this(repo, client, location, true, false);
 	}
 
 	PomRepository revisions(Collection<Revision> revisions) throws Exception {
@@ -77,11 +80,11 @@ class PomRepository extends InnerRepository {
 	}
 
 	void readUris() throws Exception {
-		save(new Traverser(getMavenRepository(), client, transitive).uris(uris));
+		save(new Traverser(getMavenRepository(), client, transitive, dependencyManagement).uris(uris));
 	}
 
 	void readArchives() throws Exception {
-		save(new Traverser(getMavenRepository(), client, transitive).archives(archives));
+		save(new Traverser(getMavenRepository(), client, transitive, dependencyManagement).archives(archives));
 	}
 
 	void save(Traverser traverser) throws Exception {

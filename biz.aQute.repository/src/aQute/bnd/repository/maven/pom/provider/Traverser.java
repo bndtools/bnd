@@ -50,10 +50,12 @@ class Traverser {
 	final MavenRepository					repo;
 	final HttpClient						client;
 	final boolean							transitive;
+	final boolean							dependencyManagement;
 
-	Traverser(MavenRepository repo, HttpClient client, boolean transitive) {
+	Traverser(MavenRepository repo, HttpClient client, boolean transitive, boolean dependencyManagement) {
 		this.repo = repo;
 		this.client = client;
+		this.dependencyManagement = dependencyManagement;
 		this.promiseFactory = client.promiseFactory();
 		this.deferred = promiseFactory.deferred();
 		this.transitive = transitive;
@@ -184,7 +186,7 @@ class Traverser {
 	private void parsePom(POM pom, String parent) throws Exception {
 
 		Map<Program, Dependency> dependencies = pom.getDependencies(EnumSet.of(MavenScope.compile, MavenScope.runtime),
-			false);
+			transitive, dependencyManagement);
 		for (Dependency d : dependencies.values()) {
 
 			d.bindToVersion(repo);
