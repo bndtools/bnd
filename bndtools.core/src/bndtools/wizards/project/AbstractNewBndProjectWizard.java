@@ -112,20 +112,20 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
 		IFile bndBndFile = project.getProject()
 			.getFile(Project.BNDFILE);
 		if (bndBndFile.exists()) {
-			bndBndFile.setContents(bndInput, false, false, progress.newChild(1));
+			bndBndFile.setContents(bndInput, false, false, progress.split(1));
 		}
 
-		BndProject proj = generateBndProject(project.getProject(), progress.newChild(1));
+		BndProject proj = generateBndProject(project.getProject(), progress.split(1));
 
 		progress.setWorkRemaining(proj.getResources()
 			.size());
 		for (Map.Entry<String, BndProjectResource> resource : proj.getResources()
 			.entrySet()) {
-			importResource(project.getProject(), resource.getKey(), resource.getValue(), progress.newChild(1));
+			importResource(project.getProject(), resource.getKey(), resource.getValue(), progress.split(1));
 		}
 
 		if (!bndBndFile.exists()) {
-			bndBndFile.create(bndInput, false, progress.newChild(1));
+			bndBndFile.create(bndInput, false, progress.split(1));
 		}
 
 		/* Version control ignores */

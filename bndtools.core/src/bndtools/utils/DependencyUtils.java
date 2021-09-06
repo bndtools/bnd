@@ -57,7 +57,7 @@ public class DependencyUtils {
 			}
 
 			// Process the selection
-			processor.process(selected, subMonitor.newChild(1));
+			processor.process(selected, subMonitor.split(1));
 			processed.add(selected);
 		} finally {
 			callStack.pop();

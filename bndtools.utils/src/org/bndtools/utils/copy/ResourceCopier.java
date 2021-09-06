@@ -46,10 +46,10 @@ public class ResourceCopier {
 			}
 
 			if (dst.exists()) {
-				dst.setContents(is, false, true, progress.newChild(2, SubMonitor.SUPPRESS_NONE));
+				dst.setContents(is, false, true, progress.split(2, SubMonitor.SUPPRESS_NONE));
 			} else {
-				FileUtils.recurseCreate(dst.getParent(), progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-				dst.create(is, false, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+				FileUtils.recurseCreate(dst.getParent(), progress.split(1, SubMonitor.SUPPRESS_NONE));
+				dst.create(is, false, progress.split(1, SubMonitor.SUPPRESS_NONE));
 			}
 
 			if (replacer != null) {

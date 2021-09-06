@@ -318,7 +318,7 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 				.addDebugEventListener(new TerminationListener(launch, () -> testRunSessionAndPort.stopTestRun()));
 		}
 
-		super.launch(configuration, mode, launch, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+		super.launch(configuration, mode, launch, progress.split(1, SubMonitor.SUPPRESS_NONE));
 	}
 
 	private int configureTester(ILaunchConfiguration configuration) throws CoreException, IOException {

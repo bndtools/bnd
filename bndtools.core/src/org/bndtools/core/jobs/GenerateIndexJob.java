@@ -64,7 +64,7 @@ public class GenerateIndexJob extends Job {
 			}
 		};
 		try {
-			ws.run(runnable, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+			ws.run(runnable, progress.split(1, SubMonitor.SUPPRESS_NONE));
 		} catch (CoreException e) {
 			return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error refreshing workspace files.", e);
 		}

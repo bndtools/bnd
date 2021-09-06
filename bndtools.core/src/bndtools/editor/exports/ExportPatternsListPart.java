@@ -200,9 +200,9 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 						String formattedPackageInfo = packageInfoStyle.format(pkg.getVersion(), pkg.getName());
 						ByteArrayInputStream input = new ByteArrayInputStream(formattedPackageInfo.getBytes("UTF-8"));
 						if (pkgInfoFile.exists())
-							pkgInfoFile.setContents(input, false, true, progress.newChild(1, 0));
+							pkgInfoFile.setContents(input, false, true, progress.split(1, 0));
 						else
-							pkgInfoFile.create(input, false, progress.newChild(1, 0));
+							pkgInfoFile.create(input, false, progress.split(1, 0));
 					} catch (CoreException e1) {
 						status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
 							"Error creating file " + pkgInfoFile.getFullPath(), e1));

@@ -48,10 +48,10 @@ public class FileUtils {
 		if (container == null || container.exists())
 			return;
 
-		recurseCreate(container.getParent(), progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+		recurseCreate(container.getParent(), progress.split(1, SubMonitor.SUPPRESS_NONE));
 
 		if (container instanceof IFolder)
-			((IFolder) container).create(false, true, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+			((IFolder) container).create(false, true, progress.split(1, SubMonitor.SUPPRESS_NONE));
 		else
 			throw new CoreException(new Status(IStatus.ERROR, BundleUtils.getBundleSymbolicName(FileUtils.class), 0,
 				"Cannot create new projects or workspace roots automatically.", null));
@@ -201,11 +201,11 @@ public class FileUtils {
 
 		IContainer parent = container.getParent();
 		if (parent != null)
-			mkdirs(parent, progress.newChild(1));
+			mkdirs(parent, progress.split(1));
 
 		if (container.getType() == IResource.FOLDER) {
 			IFolder folder = (IFolder) container;
-			folder.create(false, true, progress.newChild(1));
+			folder.create(false, true, progress.split(1));
 		} else {
 			throw new CoreException(new Status(IStatus.ERROR, "bndtools.utils", 0,
 				"Attempting to create container " + container + " of type "
