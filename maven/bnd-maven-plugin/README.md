@@ -82,6 +82,7 @@ For further usage information, see the integration test projects under the inclu
 |`warOutputDir`            | The directory where the `bnd-maven-plugin` will extract it's contents when packaging is `war`. _Defaults to `${project.build.directory}/${project.build.finalName}`._|
 |`packagingTypes`                | The list of maven packaging types for which the plugin will execute. *Defaults to `jar,war`*. Override with property `bnd.packagingTypes`. |
 |`skip`                 | Skip the project. _Defaults to `false`._ Override with property `bnd.skip`.|
+|`skipIfEmpty`         | Skip processing if `includeClassesDir` is `true` and the `${project.build.outputDirectory}` is empty. _Defaults to `false`._ Override with property `bnd.skipIfEmpty`.|
 
 ### Default Bundle Headers
 
@@ -242,6 +243,7 @@ The `bnd-process-tests` is not executed by default, therefore at least one expli
 | `skip`                  | Skip the project. _Defaults to `false`._ Override with property `bnd-tests.skip`. |
 | `artifactFragment`      | If true, make the tests artifact a fragment using `${project.artifactId}` as the `Fragment-Host` header and setting the `Bundle-SymbolicName` of the tests artifact to `${project.artifactId}-tests`. *Defaults to `false`*. |
 | `testCases`             | Specify the filter that will determine which classes to identify as test cases. *Defaults to `junit5`*. |
+|`skipIfEmpty`         | Skip processing if `includeClassesDir` is `true` and the `${project.build.testOutputDirectory}` is empty. _Defaults to `false`._ Override with property `bnd.skipIfEmpty`.|
 
 Some details are predefined for simplicity:
 - `${project.build.testSourceDirectory}` is used as a the source directory

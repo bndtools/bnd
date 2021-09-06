@@ -22,6 +22,8 @@
 		<module>test-bnd-process-tests-goal</module>
 		<module>test-bnd-process-tests-goal-fragment</module>
 		<module>test-war-bundle</module>
+		<module>test-bnd-process-skipIfEmpty</module>
+		<module>test-bnd-process-tests-skipIfEmpty</module>
 	</modules>
 
 	<build>
@@ -79,6 +81,12 @@ Parent-Here: ${.}
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
 					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
 				</configuration>
 			</plugin>
 		</plugins>

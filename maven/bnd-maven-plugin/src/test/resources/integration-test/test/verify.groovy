@@ -22,6 +22,12 @@ File tests_test_bundle_fragment = new File(basedir, 'test-bnd-process-tests-goal
 assert tests_test_bundle_fragment.isFile()
 File war_bundle = new File(basedir, 'test-war-bundle/target/test-war-bundle-0.0.1-SNAPSHOT.war')
 assert war_bundle.isFile()
+File test_bnd_process_skipIfEmpty = new File(basedir, 'test-bnd-process-skipIfEmpty/target/test-bnd-process-skipIfEmpty-0.0.1.jar')
+assert !test_bnd_process_skipIfEmpty.exists()
+File test_bnd_process_tests_skipIfEmpty = new File(basedir, 'test-bnd-process-tests-skipIfEmpty/target/test-bnd-process-tests-skipIfEmpty-0.0.1.jar')
+assert !test_bnd_process_tests_skipIfEmpty.exists()
+File test_bnd_process_tests_skipIfEmpty_tests = new File(basedir, 'test-bnd-process-tests-skipIfEmpty/target/test-bnd-process-tests-skipIfEmpty-0.0.1-tests.jar')
+assert test_bnd_process_tests_skipIfEmpty_tests.isFile()
 
 // Load manifests
 JarFile api_jar = new JarFile(api_bundle)

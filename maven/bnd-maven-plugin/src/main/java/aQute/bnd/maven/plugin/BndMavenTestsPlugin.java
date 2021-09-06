@@ -56,7 +56,7 @@ public class BndMavenTestsPlugin extends AbstractBndMavenPlugin {
 	@Parameter(defaultValue = "${project.build.testResources}", readonly = true)
 	private List<org.apache.maven.model.Resource>	resources;
 
-	@Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true)
+	@Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true, required = false)
 	private File									mainClassesDir;
 
 	@Parameter(defaultValue = "${project.build.testOutputDirectory}", readonly = true)
@@ -104,7 +104,9 @@ public class BndMavenTestsPlugin extends AbstractBndMavenPlugin {
 	@Override
 	protected void processBuildPath(List<Object> buildpath) {
 		// Add the main classes directory at the tip of the build path
-		buildpath.add(0, mainClassesDir);
+		if (!isEmpty(mainClassesDir)) {
+			buildpath.add(0, mainClassesDir);
+		}
 	}
 
 	@Override

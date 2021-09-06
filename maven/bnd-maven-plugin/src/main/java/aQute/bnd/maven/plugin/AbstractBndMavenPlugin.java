@@ -17,8 +17,10 @@ package aQute.bnd.maven.plugin;
  */
 
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -31,6 +33,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
@@ -57,6 +60,7 @@ import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.osgi.Builder;
@@ -102,6 +106,9 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 
 	@Parameter(property = "bnd.packagingTypes", defaultValue = PACKAGING_JAR + "," + PACKAGING_WAR)
 	List<String>			packagingTypes;
+
+	@Parameter(property = "bnd.skipIfEmpty", defaultValue = "false")
+	boolean					skipIfEmpty;
 
 	/**
 	 * File path to a bnd file containing bnd instructions for this project.
@@ -151,6 +158,14 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (isSkip()) {
 			logger.debug("skip project as configured");
+			return;
+		}
+
+		File classesDir = getClassesDir();
+
+		if (skipIfEmpty && includeClassesDir && isEmpty(classesDir)) {
+			logger.debug(
+				"skip project because includeClassesDir=true, compiler output directory is empty and skipIfEmpty=true");
 			return;
 		}
 
@@ -647,6 +662,23 @@ public abstract class AbstractBndMavenPlugin extends AbstractMojo {
 			else
 				throw new MojoFailureException("Errors in bnd processing, see log for details.");
 		}
+	}
+
+	protected boolean isEmpty(File directory) {
+		if (directory == null || !directory.isDirectory()) {
+			return true;
+		}
+
+		Path path = directory.toPath();
+		try (Stream<Path> entries = Files.list(path)) {
+			return !entries.filter(Files::isRegularFile)
+				.findFirst()
+				.isPresent();
+		} catch (IOException ioe) {
+			Exceptions.duck(ioe);
+		}
+
+		return false;
 	}
 
 	private void expandJar(Jar jar, File dir) throws Exception {
