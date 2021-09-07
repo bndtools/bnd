@@ -116,7 +116,7 @@ public class JtwigPrinterTest extends TestCase {
 			.check();
 	}
 
-	public void testSlingFeatureCoordinates() throws Exception {
+	public void testFeatureCoordinates() throws Exception {
 		TwigChecker checker = checker("printFeatureCoordinate");
 
 		checker.with(map().set("groupId", "groupIdTest")
@@ -139,7 +139,7 @@ public class JtwigPrinterTest extends TestCase {
 			.expect("```")
 			.expect("\"bundles\": [")
 			.expect("   {")
-			.expect("    \"id\": \"groupIdTest:artifactIdTest:versionTest:jar:extra\"")
+			.expect("    \"id\": \"groupIdTest:artifactIdTest:jar:extra:versionTest\"")
 			.expect("    \"hash\": \"theChecksum\"")
 			.expect("   }")
 			.expect("]")
