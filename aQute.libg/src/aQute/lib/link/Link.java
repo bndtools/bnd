@@ -17,6 +17,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
@@ -56,8 +57,9 @@ public class Link<L, R> extends Thread implements Closeable {
 	final AtomicBoolean						quit		= new AtomicBoolean(false);
 	final AtomicBoolean						started		= new AtomicBoolean(false);
 	final Executor							executor;
+	final Socket							socket;
+	final ThreadLocal<Integer>				msgid		= new ThreadLocal<>();
 	volatile boolean						transfer	= false;
-	private ThreadLocal<Integer>			msgid		= new ThreadLocal<>();
 
 	R										remote;
 	L										local;
@@ -89,12 +91,26 @@ public class Link<L, R> extends Thread implements Closeable {
 	 * @param out where messages are send to
 	 */
 	public Link(Class<R> remoteType, DataInputStream in, DataOutputStream out, Executor es) {
+		this(remoteType, new DataInputStream(in), new DataOutputStream(out), es, null);
+	}
+
+	/**
+	 * Create a new link based on an Data in/output stream. This link is still
+	 * closed. Call open to activate the link.
+	 *
+	 * @param remoteType the remote type
+	 * @param in the incoming messages stream
+	 * @param out where messages are send to
+	 * @param socket An optional socket
+	 */
+	public Link(Class<R> remoteType, DataInputStream in, DataOutputStream out, Executor es, Socket socket) {
 		super("link::" + remoteType.getName());
 		setDaemon(true);
 		this.remoteClass = remoteType;
 		this.in = new DataInputStream(in);
 		this.out = new DataOutputStream(out);
 		this.executor = es;
+		this.socket = socket;
 	}
 
 	/**
@@ -105,7 +121,8 @@ public class Link<L, R> extends Thread implements Closeable {
 	 * @param socket the socket
 	 */
 	public Link(Class<R> type, Socket socket, Executor es) throws IOException {
-		this(type, socket.getInputStream(), socket.getOutputStream(), es);
+		this(type, new DataInputStream(socket.getInputStream()), new DataOutputStream(socket.getOutputStream()), es,
+			socket);
 	}
 
 	/**
@@ -571,4 +588,11 @@ public class Link<L, R> extends Thread implements Closeable {
 		}
 	}
 
+	/**
+	 * Some links are connected over sockets. In that case, the socket is
+	 * available from here.
+	 */
+	public Optional<Socket> getSocket() {
+		return Optional.ofNullable(socket);
+	}
 }
