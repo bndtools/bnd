@@ -113,14 +113,14 @@ class LibraryHandler implements AutoCloseable {
 	 * sorted set so we can use 'first' after the stream sort.
 	 */
 	class RepoLibrary extends Library implements Comparable<RepoLibrary> {
-		final String	where;
+		final String	path;
 		final Resource	resource;
 		final String	name;
 		final Version	version;
 
 		RepoLibrary(String name, Capability cap) {
 			this.name = name;
-			this.where = (String) cap.getAttributes()
+			this.path = (String) cap.getAttributes()
 				.getOrDefault(LibraryNamespace.CAPABILITY_PATH_ATTRIBUTE, "library");
 			version = ResourceUtils.getVersion(cap);
 			this.resource = cap.getResource();
@@ -136,7 +136,7 @@ class LibraryHandler implements AutoCloseable {
 				return;
 			}
 
-			File root = IO.getFile(cache.unwrap(), this.where);
+			File root = IO.getFile(cache.unwrap(), this.path);
 			if (!root.isDirectory()) {
 				error(p, header, name, "No cached expansion for library %s in resource %s", name, resource);
 				return;
