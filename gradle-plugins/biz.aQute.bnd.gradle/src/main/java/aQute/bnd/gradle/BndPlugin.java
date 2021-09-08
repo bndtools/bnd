@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.StreamSupport;
 
@@ -80,6 +81,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.result.Result;
 import aQute.bnd.stream.MapStream;
 import aQute.bnd.unmodifiable.Maps;
+import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 
 /**
@@ -476,9 +478,9 @@ public class BndPlugin implements Plugin<Project> {
 									.getRelease()
 									.isPresent()) {
 									logger.info("--release {} {}", unwrap(t.getOptions()
-										.getRelease()),
-										Strings.join(" ", t.getOptions()
-											.getAllCompilerArgs()));
+										.getRelease()), Strings.join(" ",
+											t.getOptions()
+												.getAllCompilerArgs()));
 								} else {
 									logger.info("-source {} -target {} {}", t.getSourceCompatibility(),
 										t.getTargetCompatibility(), Strings.join(" ", t.getOptions()
@@ -842,11 +844,13 @@ public class BndPlugin implements Plugin<Project> {
 							f.format("project.bootclasspath:  %s%n",
 								Objects.nonNull(bootstrapClasspath) ? bootstrapClasspath.getAsPath() : "");
 							f.format("project.deliverables:   %s%n", deliverables.getFiles());
-							String executable = compileJava.getOptions()
+							String executable = Optional.ofNullable(compileJava.getOptions()
 								.getForkOptions()
-								.getExecutable();
-							f.format("javac:                  %s%n",
-								Objects.nonNull(executable) ? executable : "javac");
+								.getExecutable())
+								.orElseGet(() -> compileJava.getJavaCompiler()
+									.map(javaCompiler -> IO.absolutePath(unwrapFile(javaCompiler.getExecutablePath())))
+									.getOrElse("javac"));
+							f.format("javac:                  %s%n", executable);
 							f.format("javac.source:           %s%n", javacSource.getOrElse(""));
 							f.format("javac.target:           %s%n", javacTarget.getOrElse(""));
 							f.format("javac.profile:          %s%n", javacProfile.getOrElse(""));
