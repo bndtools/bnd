@@ -171,8 +171,10 @@ class LibraryHandler implements AutoCloseable {
 	/*
 	 * Called from workspace to update the processor
 	 */
-	void update(Processor p, String extend, String header) {
-		Parameters es = new Parameters(extend);
+	void update(Processor p, String library, String header) {
+
+		Parameters es = new Parameters(library);
+
 		for (Entry<String, Attrs> entry : es.entrySet())
 			try {
 				String name = Processor.removeDuplicateMarker(entry.getKey());

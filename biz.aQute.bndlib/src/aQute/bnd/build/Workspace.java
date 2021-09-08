@@ -1830,7 +1830,7 @@ public class Workspace extends Processor {
 	 * @return true if the properties were changed
 	 */
 	public boolean doExtend(Processor processor) {
-		String libraries = processor.mergeProperties(Constants.LIBRARY);
+		String libraries = processor.mergeLocalProperties(Constants.LIBRARY);
 		if (Strings.nonNullOrEmpty(libraries)) {
 			data.libraryHandler.get()
 				.update(processor, libraries, Constants.LIBRARY);
@@ -1869,7 +1869,8 @@ public class Workspace extends Processor {
 				return result;
 			}
 
-			return getExpandedInCache("urn:resource:" + bsn + "-" + version, result.unwrap());
+			return getExpandedInCache("urn:resource:" + bsn + "-" + version.toStringWithoutQualifier(),
+				result.unwrap());
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -1889,7 +1890,7 @@ public class Workspace extends Processor {
 		File receiptFile = IO.getFile(cache, ".receipt");
 		if (cache.exists()) {
 			try {
-				if (receiptFile.isFile()) {
+				if (receiptFile.isFile() && receiptFile.lastModified() > file.lastModified()) {
 					String receipt = IO.collect(receiptFile);
 					if (file.toString()
 						.equals(receipt))
