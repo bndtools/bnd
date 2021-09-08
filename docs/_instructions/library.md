@@ -64,13 +64,13 @@ capability in the `bnd.library` name space. This capability looks like:
         bnd.library; \
             bnd.library     = foo; \
             version         = 1.2.3; \
-            where           = lib/foo 
+            path           = lib/foo 
 
 The following attributes are defined for the `bnd.library` capabilities:
 
 * `bnd.library` – The name of the library. Names should be kept simple but the names are shared between all libraries. 
 * `version` – The version of the library.
-* `where` – A path to a directory in the bundle. The contents of this directory are the root of the library. This root
+* `path` – A path to a directory in the bundle. The contents of this directory are the root of the library. This root
   is copied to the workspace cache.
 
 The root of the library should contain the bnd files to be included. The defaults (`workspace.bnd`, `project.bnd`, and 
