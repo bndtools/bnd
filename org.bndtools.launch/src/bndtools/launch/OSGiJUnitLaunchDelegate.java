@@ -161,7 +161,8 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
 	private static class TestRunSessionAndPort extends TestRunSession {
 
-		volatile boolean keepAlive;
+		volatile boolean	keepAlive;
+		volatile boolean	isReusedLaunch	= false;
 
 		public TestRunSessionAndPort(ILaunch launch, IJavaProject project, int port, boolean keepAlive) {
 			super(launch, project, port);
@@ -176,26 +177,25 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 				.getTestRunSessions();
 			final int size = runningSessions.size();
 
+			// TODO: This code interacts in a complicated manner with the
+			// Eclipse core. It could do with some decent regression tests..
 			if (maxCount < size) {
 				Set<ILaunch> runningLaunches = new HashSet<>();
 				runningLaunches.add(launch);
 				for (TestRunSession trs : runningSessions.subList(0, maxCount)) {
-					if (trs instanceof TestRunSessionAndPort) {
-						runningLaunches.add(trs.getLaunch());
+					if (trs instanceof TestRunSessionAndPort && !runningLaunches.add(trs.getLaunch())) {
+						((TestRunSessionAndPort) trs).isReusedLaunch = true;
 					}
 				}
 				for (TestRunSession trs : runningSessions.subList(maxCount, size)) {
-					if (trs instanceof TestRunSessionAndPort) {
-						if (runningLaunches.contains(trs.getLaunch())) {
-							// If the launch already has a session, then allow
-							// this session to be cleaned up by JUnit plugin
-							// core by clearing its keepalive flag.
-							((TestRunSessionAndPort) trs).keepAlive = false;
-						} else {
-							runningLaunches.add(trs.getLaunch());
-						}
+					if (trs instanceof TestRunSessionAndPort && !runningLaunches.add(trs.getLaunch())) {
+						TestRunSessionAndPort trsp = (TestRunSessionAndPort) trs;
+						// If the launch already has a session, then allow
+						// this session to be cleaned up by JUnit plugin
+						// core by clearing its keepalive flag.
+						trsp.keepAlive = false;
+						trsp.isReusedLaunch = true;
 					}
-					runningLaunches.add(trs.getLaunch());
 				}
 			}
 
@@ -216,16 +216,23 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 			return keepAlive;
 		}
 
-		// This override is to fool the Eclipse JDT JUnit plugin core code into
-		// not removing the launch. For Bnd OSGi Test launches,
-		// the launch removal will be handled by other mechanisms, and
-		// when the JUnit core tries to remove the launch it closes the console
-		// (which is not what you want when continuous testing). Returning null
-		// signals to JUnit core that the session is being managed "externally".
-		// Ref bndtools issue #4716
+		// The Eclipse JUnit interface assumes that there is a one-to-one
+		// relationship between a TestRunSession and an ILaunch. We violate
+		// that assumption in continuous testing mode because one launch can
+		// generated multiple TestRunSessions in its lifetime.
+		//
+		// Because of the above assumption, Eclipse JUnit core attempts to
+		// remove the TestRunSession's corresponding ILaunch from the
+		// LaunchManager when the session is removed.
+		//
+		// We use the "isReused" flag to indicate that a launch has been
+		// reused by another test session. If it has been reused, then we
+		// return "null" which signals to the rest of the code that the
+		// launch is being managed "externally". So when the session is cleaned
+		// up, the launch will not be removed. Ref bndtools issue #4716
 		@Override
 		public ILaunch getLaunch() {
-			return isStopped() ? null : super.getLaunch();
+			return isReusedLaunch ? null : super.getLaunch();
 		}
 	}
 
@@ -420,8 +427,7 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 	@Override
 	protected ProjectLauncher getProjectLauncher() throws CoreException {
 		if (bndTester == null)
-			throw new CoreException(
-				new Status(IStatus.ERROR, PLUGIN_ID, 0, "Bnd tester was not initialised.", null));
+			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Bnd tester was not initialised.", null));
 		return bndTester.getProjectLauncher();
 	}
 }
