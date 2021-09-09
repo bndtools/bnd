@@ -37,7 +37,7 @@ public class Bundle extends Jar {
 		BundleTaskExtension extension = getExtensions().create(BundleTaskExtension.NAME, BundleTaskExtension.class,
 			this);
 		getConvention().getPlugins()
-			.put(BundleTaskExtension.NAME, new BundleTaskConvention(extension, this));
+			.put(BundleTaskExtension.NAME, new BundleTaskConvention(extension));
 		doLast("buildBundle", extension.buildAction());
 	}
 }

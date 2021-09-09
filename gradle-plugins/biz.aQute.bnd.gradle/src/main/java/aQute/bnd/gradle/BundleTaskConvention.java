@@ -14,18 +14,16 @@ import org.gradle.api.tasks.SourceSet;
  */
 @Deprecated
 public class BundleTaskConvention {
-	private final BundleTaskExtension				extension;
-	private final org.gradle.api.tasks.bundling.Jar	task;
-	private boolean									classpathModified;
+	private final BundleTaskExtension	extension;
+	private boolean						classpathModified;
 
-	public BundleTaskConvention(BundleTaskExtension extension, org.gradle.api.tasks.bundling.Jar task) {
+	public BundleTaskConvention(BundleTaskExtension extension) {
 		this.extension = extension;
-		this.task = task;
 		classpathModified = false;
 	}
 
 	public BundleTaskConvention(org.gradle.api.tasks.bundling.Jar task) {
-		this(getBundleTaskExtension(task), task);
+		this(getBundleTaskExtension(task));
 	}
 
 	private static BundleTaskExtension getBundleTaskExtension(org.gradle.api.tasks.bundling.Jar task) {
@@ -44,7 +42,8 @@ public class BundleTaskConvention {
 
 	public void setBndfile(String file) {
 		extension.getBndfile()
-			.value(task.getProject()
+			.value(extension.getTask()
+				.getProject()
 				.getLayout()
 				.getProjectDirectory()
 				.file(file));
@@ -52,7 +51,8 @@ public class BundleTaskConvention {
 
 	public void setBndfile(Object file) {
 		extension.getBndfile()
-			.set(task.getProject()
+			.set(extension.getTask()
+				.getProject()
 				.file(file));
 	}
 
@@ -107,6 +107,6 @@ public class BundleTaskConvention {
 
 	public void buildBundle() throws Exception {
 		extension.buildAction()
-			.execute(task);
+			.execute(extension.getTask());
 	}
 }
