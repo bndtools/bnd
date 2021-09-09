@@ -12,9 +12,11 @@ import java.net.URL;
 import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
@@ -51,6 +53,7 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 	// be concurrent-safe
 	private final Set<String>			missingCommand		= new HashSet<>();
 	private final Set<AutoCloseable>	closeablePlugins	= new HashSet<>();
+	private final Map<Class<?>, Attrs>	interfaces			= new HashMap<>();
 
 	protected PluginsContainer() {}
 
@@ -356,14 +359,15 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		boolean ignoreError) {
 		try {
 			Class<?> c = loader.loadClass(className);
-			Object plugin = publicLookup().findConstructor(c, defaultConstructor)
-				.invoke();
-			processor.customize(plugin, attrs, this);
-			add(plugin);
-			if (plugin instanceof AutoCloseable) {
-				closeablePlugins.add((AutoCloseable) plugin);
+			if (c.isInterface()) {
+				interfaces.put(c, attrs);
+			} else {
+				Object plugin = publicLookup().findConstructor(c, defaultConstructor)
+					.invoke();
+				processor.customize(plugin, attrs, this);
+				addCloseable(plugin);
+				return plugin;
 			}
-			return plugin;
 		} catch (NoClassDefFoundError e) {
 			if (!ignoreError)
 				processor.exception(e, "Failed to load plugin %s;%s", className, attrs);
@@ -378,6 +382,12 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		return null;
 	}
 
+	public void addCloseable(Object plugin) {
+		if (plugin instanceof AutoCloseable)
+			closeablePlugins.add((AutoCloseable) plugin);
+		add(plugin);
+	}
+
 	boolean isMissingPlugin(String name) {
 		return missingCommand.contains(name);
 	}
@@ -388,4 +398,9 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 		plugins.clear();
 		missingCommand.clear();
 	}
+
+	public Map<Class<?>, Attrs> getInterfaces() {
+		return interfaces;
+	}
+
 }

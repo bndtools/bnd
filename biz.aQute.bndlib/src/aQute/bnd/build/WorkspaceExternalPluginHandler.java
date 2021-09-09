@@ -4,24 +4,34 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.osgi.framework.VersionRange;
 import org.osgi.resource.Capability;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.exceptions.Exceptions;
 import aQute.bnd.exceptions.FunctionWithException;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.memoize.Memoize;
+import aQute.bnd.osgi.PluginsContainer;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.MainClassNamespace;
 import aQute.bnd.result.Result;
+import aQute.bnd.service.Plugin;
 import aQute.bnd.service.externalplugin.ExternalPluginNamespace;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 import aQute.bnd.service.progress.TaskManager;
@@ -31,8 +41,10 @@ import aQute.lib.strings.Strings;
 import aQute.libg.command.Command;
 
 public class WorkspaceExternalPluginHandler implements AutoCloseable {
+	final static Logger						logger	= LoggerFactory.getLogger("aQute.bnd.build");
 
-	final Workspace workspace;
+	final Workspace							workspace;
+	final Map<Capability, URLClassLoader>	loaders	= new HashMap<>();
 
 	WorkspaceExternalPluginHandler(Workspace workspace) {
 		this.workspace = workspace;
@@ -56,12 +68,9 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 			if (bundle.isErr())
 				return bundle.asError();
 
-			Object object = cap.getAttributes()
-				.get("implementation");
-			if (object == null || !(object instanceof String))
-				return Result.err("no proper class attribute in plugin capability %s is %s", pluginName, object);
-
-			String className = (String) object;
+			String className = ExternalPluginNamespace.getImplementation(cap);
+			if (className == null)
+				return Result.err("no proper class attribute in plugin capability %s is %s", pluginName, cap);
 
 			URL url = bundle.unwrap()
 				.toURI()
@@ -196,6 +205,139 @@ public class WorkspaceExternalPluginHandler implements AutoCloseable {
 	}
 
 	@Override
-	public void close() {}
+	public void close() {
+		loaders.values()
+			.forEach(IO::close);
+	}
+
+	/**
+	 * Returns list of external plugin proxies that implement the given
+	 * interface. The proxies will load the actual plugin on demand when used.
+	 * That is, the plugins will be quite cheap unless used.
+	 *
+	 * @param interf the interface listed in `-plugin`.
+	 * @param attrs the attributes from the that interface, the name specifies
+	 *            the name of the plugin, wildcards allowed
+	 * @return a list of plugins loaded from the external plugin set
+	 */
+	@SuppressWarnings("unchecked")
+	public Result<List<Object>> getImplementations(Class<?> interf, Attrs attrs) {
+		assert interf.isInterface();
+
+		try {
+
+			String filter = ExternalPluginNamespace.filter(attrs.getOrDefault("name", "*"), interf);
+			List<Capability> externalCapabilities = workspace
+				.findProviders(ExternalPluginNamespace.EXTERNAL_PLUGIN_NAMESPACE, filter)
+				.collect(Collectors.toList());
+
+			List<Object> plugins = new ArrayList<>();
+			for (Capability c : externalCapabilities) {
+				Memoize<Object> delegate = Memoize.supplier(() -> load(c, attrs).unwrap());
+				Object proxy = Proxy.newProxyInstance(interf.getClassLoader(), new Class[] {
+					interf, AutoCloseable.class
+				}, new InvocationHandler() {
+
+					@Override
+					public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+
+						if (method.getDeclaringClass() == Object.class) {
+							return method.invoke(this, args);
+						}
+
+						if (method.getDeclaringClass() == AutoCloseable.class) {
+							if (delegate.isPresent()) {
+								Object object = delegate.get();
+								if (object instanceof AutoCloseable)
+									((AutoCloseable) object).close();
+							}
+							return null;
+						}
+
+
+						Object object = delegate.get();
+						if (object == null)
+							throw new IllegalStateException("Could not load external plugin for capability " + c);
+						return method.invoke(object, args);
+					}
+
+					@Override
+					public String toString() {
+						return "Proxy plugin: " + c;
+					}
+				});
+				plugins.add(proxy);
+			}
+			return Result.ok(plugins);
+		} catch (Exception e) {
+			return Result.err("failed to load external plugins %s (%s): %s", interf, attrs, e);
+		}
+	}
+
+	private Result<Object> load(Capability cap, Attrs attrs) {
+		String implementation = ExternalPluginNamespace.getImplementation(cap);
+		if (implementation == null) {
+			return null;
+		}
+		try {
+			Result<URLClassLoader> loader = getLoader(cap);
+			if (loader.isErr())
+				return loader.asError();
+
+			Class<?> loadedClass = loader.unwrap()
+				.loadClass(implementation);
+
+			Object plugin = loadedClass.newInstance();
+			if (plugin instanceof Plugin) {
+				((Plugin) plugin).setProperties(attrs);
+			}
+			if (plugin instanceof java.io.Closeable) {
+				// TODO
+			}
+			return Result.ok(plugin);
+		} catch (Exception e) {
+			Workspace.logger.info("failed to load class %s for external plugin load for %s: e", implementation, cap, e);
+			return null;
+		}
+	}
+
+	private synchronized Result<URLClassLoader> getLoader(Capability cap) {
+		URLClassLoader urlClassLoader = loaders.get(cap);
+		if (urlClassLoader == null)
+			try {
+				Result<File> bundle = workspace.getBundle(cap.getResource());
+				if (bundle.isErr())
+					return bundle.asError();
+
+				URL url = bundle.unwrap()
+					.toURI()
+					.toURL();
+
+				urlClassLoader = new URLClassLoader(new URL[] {
+					url
+				}, Workspace.class.getClassLoader());
+
+			} catch (Exception e) {
+				return Result.err("failed to create class loader for %s: %s", cap, e);
+			}
+		return Result.ok(urlClassLoader);
+	}
+
+	void setAbstractPlugins(Processor p, PluginsContainer plugins) {
+		for (Map.Entry<Class<?>, Attrs> entry : plugins.getInterfaces()
+			.entrySet()) {
+
+			Result<List<Object>> r = getImplementations(entry.getKey(), entry.getValue());
+			if (r.isErr()) {
+				p.error("%s", r.error()
+					.get());
+			} else {
+				for (Object plugin : r.unwrap()) {
+					plugins.addCloseable(plugin);
+				}
+			}
+		}
+
+	}
 
 }

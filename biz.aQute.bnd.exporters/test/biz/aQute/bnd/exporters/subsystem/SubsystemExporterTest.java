@@ -54,7 +54,7 @@ public class SubsystemExporterTest {
 		IO.copy(IO.getFile(WS_PATH), wsRoot);
 		ws = new Workspace(wsRoot);
 		ws.addBasicPlugin(new SubsystemExporter());
-
+		assertThat(ws.check()).isTrue();
 		Project p1 = ws.getProject(proj_bundle_1);
 		assertThat(p1).isNotNull();
 		assertThat(p1.build()).hasSize(1);

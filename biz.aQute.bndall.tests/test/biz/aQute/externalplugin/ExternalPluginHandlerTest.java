@@ -13,8 +13,10 @@ import java.util.concurrent.Callable;
 import org.junit.jupiter.api.Test;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.result.Result;
+import aQute.bnd.service.generate.Generator;
 import aQute.bnd.test.jupiter.InjectTemporaryDirectory;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
@@ -40,6 +42,54 @@ public class ExternalPluginHandlerTest {
 			assertThat(call.isOk()).isTrue();
 			assertThat(call.unwrap()).isEqualTo("hello");
 		}
+	}
+
+	@Test
+	@SuppressWarnings({
+		"unchecked", "rawtypes"
+	})
+	public void testListOfImplementations() throws Exception {
+		Callable callable;
+		try (Workspace ws = getWorkspace("resources/ws-1")) {
+			getRepo(ws);
+
+			Result<List<Object>> implementations = ws.getExternalPlugins()
+				.getImplementations(Callable.class, Attrs.EMPTY_ATTRS);
+
+			assertThat(implementations.isOk()).isTrue();
+			List<Object> unwrap = implementations.unwrap();
+			assertThat(unwrap).hasSize(1);
+
+			callable = (Callable) unwrap.get(0);
+			assertThat(callable.call()).isEqualTo("hello");
+		}
+	}
+
+	@Test
+	public void testMultipleImplementations() throws Exception {
+		try (Workspace ws = getWorkspace("resources/ws-1")) {
+			getRepo(ws);
+
+			Result<List<Object>> implementations = ws.getExternalPlugins()
+				.getImplementations(Generator.class, Attrs.EMPTY_ATTRS);
+
+			assertThat(implementations.isOk()).isTrue();
+			List<Object> unwrap = implementations.unwrap();
+			assertThat(unwrap).hasSize(4);
+		}
+	}
+
+	@Test
+	public void testAbstractPlugin() throws Exception {
+		Callable<?> plugin;
+		try (Workspace ws = getWorkspace("resources/ws-1")) {
+			getRepo(ws);
+
+			plugin = ws.getPlugin(Callable.class);
+			assertThat(plugin).isNotNull();
+			assertThat(plugin.call()).isEqualTo("hello");
+		}
+		assertThat(plugin.call()).isEqualTo("goodbye");
 	}
 
 	@Test
@@ -75,6 +125,7 @@ public class ExternalPluginHandlerTest {
 		List<File> files = tree.getFiles(IO.getFile("generated"), "*.jar");
 		FileSetRepository repo = new FileSetRepository("test", files);
 		ws.addBasicPlugin(repo);
+		ws.propertiesChanged();
 	}
 
 	private Workspace getWorkspace(File file) throws Exception {

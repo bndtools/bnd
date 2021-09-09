@@ -1830,6 +1830,11 @@ public class Workspace extends Processor {
 	 * @return true if the properties were changed
 	 */
 	public boolean doExtend(Processor processor) {
+		PluginsContainer plugins = processor.getPlugins();
+		if (!plugins.getInterfaces()
+			.isEmpty()) {
+			getExternalPlugins().setAbstractPlugins(processor, plugins);
+		}
 		String libraries = processor.mergeLocalProperties(Constants.LIBRARY);
 		if (Strings.nonNullOrEmpty(libraries)) {
 			data.libraryHandler.get()

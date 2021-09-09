@@ -1,6 +1,7 @@
 package aQute.bnd.service.externalplugin;
 
 import org.osgi.framework.Constants;
+import org.osgi.resource.Capability;
 
 /**
  * External Plugins are executable code that the Workspace can execute. An
@@ -58,5 +59,13 @@ public interface ExternalPluginNamespace {
 	String	NAME_A				= CAPABILITY_NAME_ATTRIBUTE;
 	String	IMPLEMENTATION_A	= CAPABILITY_IMPLEMENTATION_ATTRIBUTE;
 	String	OBJECTCLASS_A		= CAPABILITY_OBJECTCLASS_ATTRIBUTE;
+
+	static String getImplementation(Capability c) {
+		Object object = c.getAttributes()
+			.get(CAPABILITY_IMPLEMENTATION_ATTRIBUTE);
+		if (object instanceof String)
+			return (String) object;
+		return null;
+	}
 
 }
