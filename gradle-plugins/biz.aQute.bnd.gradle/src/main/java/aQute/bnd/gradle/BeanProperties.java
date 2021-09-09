@@ -21,6 +21,9 @@ import org.gradle.internal.metaobject.DynamicObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Properties subclass which introspects objects for field values.
+ */
 public class BeanProperties extends Properties {
 	private static final Logger		logger				= LoggerFactory.getLogger(BeanProperties.class);
 
@@ -28,12 +31,23 @@ public class BeanProperties extends Properties {
 		.compile("(?<name>[^\\.\\[]+)(?:\\[(?<index>\\d+)\\])?\\.?");
 	private static final long		serialVersionUID	= 1L;
 
+	/**
+	 * Default values for properties. May be {@code null}.
+	 */
 	protected Properties			defaults;
 
+	/**
+	 * Create a new BeanProperties with no defaults.
+	 */
 	public BeanProperties() {
 		this(null);
 	}
 
+	/**
+	 * Create a new BeanProperties with the specified defaults.
+	 *
+	 * @param defaults Default values for properties. May be {@code null}.
+	 */
 	public BeanProperties(Properties defaults) {
 		this.defaults = defaults;
 	}

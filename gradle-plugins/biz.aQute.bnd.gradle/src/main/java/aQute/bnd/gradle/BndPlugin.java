@@ -96,6 +96,9 @@ import aQute.lib.strings.Strings;
  */
 public class BndPlugin implements Plugin<Project> {
 	private static final org.slf4j.Logger	logger		= LoggerFactory.getLogger(BndPlugin.class);
+	/**
+	 * Name of the plugin.
+	 */
 	public static final String				PLUGINID	= "biz.aQute.bnd";
 	private Project							project;
 	private Project							workspace;

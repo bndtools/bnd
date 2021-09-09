@@ -313,6 +313,11 @@ public class Baseline extends DefaultTask {
 		getDiffpackages().addAll(diffpackages);
 	}
 
+	/**
+	 * Get the task which makes the bundle being baselined.
+	 *
+	 * @return The task which makes the bundle being baselined.
+	 */
 	@Internal("Used by baseline configuration")
 	public org.gradle.api.tasks.bundling.Jar getBundleTask() {
 		Deque<Object> queue = new ArrayDeque<>(bundleCollection.getBuiltBy());

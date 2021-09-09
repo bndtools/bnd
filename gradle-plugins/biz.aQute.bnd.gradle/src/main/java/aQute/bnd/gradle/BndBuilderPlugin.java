@@ -40,6 +40,9 @@ import aQute.bnd.unmodifiable.Maps;
  * jar.
  */
 public class BndBuilderPlugin implements Plugin<Project> {
+	/**
+	 * Name of the plugin.
+	 */
 	public static final String	PLUGINID		= "biz.aQute.bnd.builder";
 
 	/**
@@ -67,7 +70,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
 				.create(BundleTaskExtension.NAME, BundleTaskExtension.class, t);
 			t.getConvention()
 				.getPlugins()
-				.put(BundleTaskExtension.NAME, new BundleTaskConvention(extension, t));
+				.put(BundleTaskExtension.NAME, new BundleTaskConvention(extension));
 			if (unwrapFile(defaultBndfile).isFile()) {
 				extension.getBndfile()
 					.convention(defaultBndfile);
