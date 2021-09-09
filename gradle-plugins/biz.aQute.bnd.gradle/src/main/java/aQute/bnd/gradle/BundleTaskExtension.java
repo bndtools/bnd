@@ -76,6 +76,9 @@ import aQute.lib.utf8properties.UTF8Properties;
  * </ul>
  */
 public class BundleTaskExtension {
+	/**
+	 * Name of the extension.
+	 */
 	public static final String					NAME	= "bundle";
 
 	private final RegularFileProperty			bndfile;
@@ -280,6 +283,11 @@ public class BundleTaskExtension {
 		return task;
 	}
 
+	/**
+	 * Return the Action to build the bundle for the task.
+	 *
+	 * @return The Action to build the bundle for the task.
+	 */
 	public Action<Task> buildAction() {
 		return new BuildAction();
 	}

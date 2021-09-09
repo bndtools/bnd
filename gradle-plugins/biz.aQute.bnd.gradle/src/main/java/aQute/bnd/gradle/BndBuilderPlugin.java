@@ -40,6 +40,9 @@ import aQute.bnd.unmodifiable.Maps;
  * jar.
  */
 public class BndBuilderPlugin implements Plugin<Project> {
+	/**
+	 * Name of the plugin.
+	 */
 	public static final String	PLUGINID		= "biz.aQute.bnd.builder";
 
 	/**

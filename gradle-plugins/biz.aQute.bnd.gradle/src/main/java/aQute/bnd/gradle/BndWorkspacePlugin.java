@@ -39,6 +39,9 @@ import groovy.lang.Closure;
  * also be applied to the root project in build.gradle.
  */
 public class BndWorkspacePlugin implements Plugin<Object> {
+	/**
+	 * Name of the plugin.
+	 */
 	public static final String PLUGINID = "biz.aQute.bnd.workspace";
 
 	/**
@@ -225,6 +228,13 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 		}
 	}
 
+	/**
+	 * Return the Bnd Workspace for the specified Gradle project.
+	 *
+	 * @param workspace The Gradle project for the workspace.
+	 * @return The Bnd Workspace for the specified Gradle project.
+	 * @throws Exception An exception while finding the Bnd Workspace.
+	 */
 	public static Workspace getBndWorkspace(Project workspace) throws Exception {
 		ExtraPropertiesExtension ext = workspace.getExtensions()
 			.getExtraProperties();
