@@ -12,6 +12,7 @@ import java.net.URL;
 import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -47,6 +48,7 @@ import aQute.libg.cryptography.SHA1;
 public class PluginsContainer extends AbstractSet<Object> implements Set<Object>, Registry {
 	private static final Logger			logger				= LoggerFactory.getLogger(PluginsContainer.class);
 	private static final MethodType		defaultConstructor	= methodType(void.class);
+	private static Object				IGNORE				= new Object();
 
 	private final Set<Object>			plugins				= new CopyOnWriteArraySet<>();
 	private final Set<AutoCloseable>	closeablePlugins	= new CopyOnWriteArraySet<>();
@@ -362,6 +364,7 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 			Class<?> c = loader.loadClass(className);
 			if (c.isInterface()) {
 				interfaces.put(c, attrs);
+				return IGNORE;
 			} else {
 				Object plugin = publicLookup().findConstructor(c, defaultConstructor)
 					.invoke();
@@ -401,7 +404,7 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 	}
 
 	public Map<Class<?>, Attrs> getInterfaces() {
-		return interfaces;
+		return Collections.unmodifiableMap(interfaces);
 	}
 
 }
