@@ -49,10 +49,11 @@ public class PluginsContainer extends AbstractSet<Object> implements Set<Object>
 	private static final MethodType		defaultConstructor	= methodType(void.class);
 
 	private final Set<Object>			plugins				= new CopyOnWriteArraySet<>();
+	private final Set<AutoCloseable>	closeablePlugins	= new CopyOnWriteArraySet<>();
+
 	// The following are only mutated during init(), so they don't need to
 	// be concurrent-safe
 	private final Set<String>			missingCommand		= new HashSet<>();
-	private final Set<AutoCloseable>	closeablePlugins	= new HashSet<>();
 	private final Map<Class<?>, Attrs>	interfaces			= new HashMap<>();
 
 	protected PluginsContainer() {}
