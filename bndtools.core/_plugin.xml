@@ -414,7 +414,7 @@
 		<statusHandler
 			id="bndtools.launch.ui.internal.NoVMForEEStatusHandler"
 			class="org.bndtools.facade.ExtensionFacade:org.eclipse.debug.core.IStatusHandler"
-			plugin="bndtools.core" code="101">
+			plugin="org.bndtools.launch" code="101">
 		</statusHandler>
 	</extension>
 
@@ -855,11 +855,11 @@
 		<statusHandler
 			id="bndtools.launch.ui.internal.LaunchStatusHandler"
 			class="org.bndtools.facade.ExtensionFacade:org.eclipse.debug.core.IStatusHandler"
-			plugin="bndtools.core" code="0" />
+			plugin="org.bndtools.launch" code="0" />
 		<statusHandler
 			id="bndtools.launch.ui.internal.JUnitViewOpenerStatusHandler"
 			class="org.bndtools.facade.ExtensionFacade:org.eclipse.debug.core.IStatusHandler"
-			plugin="bndtools.core" code="999" />
+			plugin="org.bndtools.launch" code="999" />
 	</extension>
 
 	<extension point="runExportWizards">
